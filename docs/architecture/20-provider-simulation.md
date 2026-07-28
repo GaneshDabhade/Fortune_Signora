@@ -28,6 +28,7 @@ Eight principles, ratified 2026-07-28. These are permanent — a change to any o
 6. **Faults surface through production error semantics.**
 7. **Webhooks traverse the real inbound HTTP endpoint** once it exists.
 8. **Shared contract tests are the primary guarantee** that simulated and production adapters remain interchangeable.
+9. **Provider Independence.** Each provider generator is **independently removable** without affecting the Provider Platform, Normalization, Knowledge Graph, Observation Engine, or Scenario Engine. **Scenarios compose providers; providers never depend on each other.** The framework must never become dependent on any single provider — including Bombora.
 
 ## The governing constraints
 
@@ -353,7 +354,19 @@ The reason is not pedantry. A fabricated schema produces a normalizer that works
 
 **This applies to Bombora exactly as it applies to the other four.** If Bombora's payload format cannot be verified through documentation or a legitimately recorded response, Bombora is deferred — its behavioural importance is not a reason to guess its schema.
 
-Provenance is verified **per provider, before its generator is built** (task T34), and the verified source is recorded against each generator so a future reader knows what the shape was derived from.
+### Provider Qualification
+
+Provenance is assessed **per provider, before its generator is built** (task T34, *Provider Qualification*). Each provider receives one of three statuses, recorded in `docs/architecture/provider-qualification.md`:
+
+| Status | Meaning | Consequence |
+|---|---|---|
+| **Qualified** | A permitted source is in hand and recorded | Generator may be implemented |
+| **Conditional** | Architecture is settled; a legitimate payload source is still required | Generator waits; **nothing else does** |
+| **Deferred** | Not pursued in this phase, with a documented reason | Remains in the roadmap; implementable later **without architectural change** |
+
+A Conditional or Deferred provider **never blocks the milestone**. That is what Provider Independence buys: the framework, the Port, the contract suite, the scenario engine, the fault injector, and the delivery mechanism are all provider-agnostic, so qualification outcomes change *which generators exist*, never *whether the framework works*.
+
+**Bombora is an independent track.** Its failure to qualify must not block completion of the Provider Simulation Framework. If it qualifies, it is implemented; if not, it is recorded as deferred with a reason, every architectural contract is preserved, and implementation continues with the remaining qualified providers.
 
 ---
 
@@ -374,7 +387,9 @@ Scenarios are **version-controlled manifests**, not code. Each declares the full
 | Expected signals | From M5A |
 | Expected buying scores | From M5B |
 | Expected opportunities | From M6 |
-| Expected AI recommendations | From M11 |
+| Expected Knowledge Graph state | From M3A |
+| Expected AI reasoning | From M9 |
+| Expected recommendations | From M11 |
 
 **Later sections are declared now and asserted later.** A manifest written in M2.0 already states what a scenario *should* eventually produce; each milestone activates the next layer of assertions. This is what makes the progressive-assertion model concrete rather than aspirational — the expected outcome is written before the code that produces it, so a milestone cannot quietly redefine success.
 
@@ -415,6 +430,20 @@ The simulator produces **provider payloads only**. It must never read:
 Everything downstream is **discovered by the platform**. This is enforced structurally — an import-linter contract forbidding `signora_platform/simulation/` from importing any module — because it is the rule whose violation is most tempting and least visible: reading a Signal to decide what payload to emit next would make every scenario pass while proving nothing about the pipeline.
 
 ---
+
+## Deterministic replay
+
+**Every execution records five values**, without which a regression result is unattributable:
+
+| Recorded | Why |
+|---|---|
+| Scenario | Which narrative ran |
+| Seed | The randomness that produced this exact sequence |
+| Manifest version | What outcome was expected |
+| Generator version | Which payload shapes were emitted |
+| Virtual clock (mode, span) | Whether timing affected the result |
+
+Together these make any run reproducible from its record alone. Without generator version in particular, a change in AI output could be caused by a model change, a prompt change, a dataset change, *or* a quietly-updated payload shape — and distinguishing them after the fact is impossible.
 
 ## Contract testing — a permanent invariant
 

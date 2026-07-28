@@ -3,7 +3,7 @@
 > **Owner:** Technical Program Manager · **Audience:** Everyone
 > **Cadence:** Updated at every milestone boundary and every sprint close. Updating this is part of the [Definition of Done](IMPLEMENTATION_ROADMAP.md#12-definition-of-done-global).
 > **Last updated:** 2026-07-28 · **Reporting period:** M1.2 delivery
-> **Revision:** v13 — **Simulation Architecture Review approved.** Eight principles permanent; five Phase 1 providers ratified (Apollo, BuiltWith, Crunchbase, CoreSignal, **Bombora**); payload provenance rule adopted; Scenario Manifests introduced; webhooks deferred. M2.0 breakdown presented — **awaiting approval**. **Revision v11 —** M1.5 Frontend Foundation complete. Design system, shared component library, application shell, query layer, session and workspace management, permission-aware routing, feedback primitives, and component testing in CI. **`@vitejs/plugin-react` debt repaid** — `--legacy-peer-deps` removed everywhere. The frontend foundation is now a contract (CLAUDE.md §20c)
+> **Revision:** v14 — **M2.0 in progress.** T34 Provider Qualification complete: **all five providers Conditional** — no permitted payload source exists in the repository. T35–T37 delivered; the framework is provider-agnostic and unblocked. **Revision v13 —** Simulation Architecture Review approved. Eight principles permanent; five Phase 1 providers ratified (Apollo, BuiltWith, Crunchbase, CoreSignal, **Bombora**); payload provenance rule adopted; Scenario Manifests introduced; webhooks deferred. M2.0 breakdown presented — **awaiting approval**. **Revision v11 —** M1.5 Frontend Foundation complete. Design system, shared component library, application shell, query layer, session and workspace management, permission-aware routing, feedback primitives, and component testing in CI. **`@vitejs/plugin-react` debt repaid** — `--legacy-peer-deps` removed everywhere. The frontend foundation is now a contract (CLAUDE.md §20c)
 
 ---
 
@@ -85,8 +85,8 @@ Whether the substrate the 13 pipeline modules will be built on is sound.
 
 | Indicator | Current | Target |
 |---|---|---|
-| Backend tests | **313 passing**, 0 skipped, 0 xfail | 0 skipped — a skipped test is an untested claim |
-| Coverage | **95.63%** (CI gate 95%) | ≥95% |
+| Backend tests | **375 passing**, 0 skipped, 0 xfail | 0 skipped — a skipped test is an untested claim |
+| Coverage | **95.86%** (CI gate 95%) | ≥95% |
 | mypy strict | Clean, 113 files | Clean |
 | Migrations reversible | **7 of 7** revisions | 100% |
 | Disaster recovery validated | **4 of 4** components restart-safe | All |
@@ -128,8 +128,8 @@ Whether the modular monolith is staying modular. These are the violations that a
 
 | Indicator | Current | Target |
 |---|---|---|
-| import-linter contracts | **3 kept, 0 broken** | 0 broken |
-| Contracts proven to fail on a deliberate violation | 3 of 3 | 100% |
+| import-linter contracts | **4 kept, 0 broken** | 0 broken |
+| Contracts proven to fail on a deliberate violation | 4 of 4 | 100% |
 | Cross-module imports bypassing `public/` | **0** | 0 |
 | Direct cross-module database access | **0** | 0 |
 | Modules reading platform infrastructure tables | **0** (enforced by grant, not convention) | 0 |
@@ -242,10 +242,10 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 
 | Order | Task | Complexity | Status |
 |---|---|---|---|
-| 1 | **T34 Payload provenance verification** (gate) | S · 0.5 ew | ⬜ |
-| 2 | T35 Provider Port + shared adapter contract suite | L · 3 ew | ⬜ |
-| 3 | T36 Safety guards (4 controls) | M · 1.5 ew | ⬜ |
-| 4 | T37 Dataset Store + Virtual Clock | M · 2 ew | ⬜ |
+| 1 | **T34 Provider Qualification** (gate) | S · 0.5 ew | ✅ **All five Conditional** |
+| 2 | T35 Provider Port + shared adapter contract suite | L · 3 ew | ✅ |
+| 3 | T36 Safety guards (4 controls) | M · 1.5 ew | ✅ |
+| 4 | T37 Dataset Store + Virtual Clock | M · 2 ew | ✅ |
 | 5 | T38 Scenario Engine + Manifest schema | L · 3 ew | ⬜ |
 | 6 | T39 Generators: Apollo, BuiltWith, Crunchbase, CoreSignal | L · 3.5 ew | ⬜ |
 | 7 | **T40 Bombora temporal intent generator** | L · 3 ew | ⬜ |

@@ -1,0 +1,37 @@
+"""Provider Simulation Framework.
+
+Produces realistic provider payloads without a provider
+(docs/architecture/20-provider-simulation.md).
+
+**This package must never import a module.** It is platform
+infrastructure, and the simulator having no privileged downstream
+knowledge (principle 2) is enforced by an import-linter contract rather
+than by convention — reading a Signal to decide what payload to emit next
+would make every scenario pass while proving nothing about the pipeline.
+"""
+
+from signora_platform.simulation.clock import ClockMode, VirtualClock
+from signora_platform.simulation.dataset import Dataset, DatasetError, content_hash, load
+from signora_platform.simulation.safety import (
+    PERMITTED_ENVIRONMENTS,
+    SimulationForbiddenError,
+    SimulationStatus,
+    enforce,
+    evaluate,
+    is_permitted,
+)
+
+__all__ = [
+    "PERMITTED_ENVIRONMENTS",
+    "ClockMode",
+    "Dataset",
+    "DatasetError",
+    "SimulationForbiddenError",
+    "SimulationStatus",
+    "VirtualClock",
+    "content_hash",
+    "enforce",
+    "evaluate",
+    "is_permitted",
+    "load",
+]

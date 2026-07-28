@@ -1,0 +1,18 @@
+{
+  "_comment": "Minimal dataset proving the store's contracts. Entity content is generic and vendor-agnostic - it is the CAST, not a provider payload, so the payload provenance rule does not apply to it. Provider-shaped payloads are generated from this by per-provider generators, which DO require provenance.",
+  "content_hash": "fce83823d92c9902",
+  "entities": {
+    "acme-corp": {
+      "name": "Acme Corp",
+      "domain": "acme.example",
+      "country": "US",
+      "founded": 2018
+    },
+    "globex": {
+      "name": "Globex",
+      "domain": "globex.example",
+      "country": "GB",
+      "founded": 2015
+    }
+  }
+}

@@ -633,7 +633,7 @@ make smoke
 
 | ID | Task | Complexity | Depends on |
 |---|---|---|---|
-| **T34** | **Payload provenance verification** — for each of the five providers, obtain and record a source from the four permitted categories | S · 0.5 ew | — |
+| **T34** | **Provider Qualification** — assess each provider against the provenance policy; assign Qualified / Conditional / Deferred; record in `docs/architecture/provider-qualification.md` | S · 0.5 ew | — |
 | **T35** | Provider Port definition + **shared adapter contract test suite** | L · 3 ew | — |
 | **T36** | Safety guards: environment refusal, ingestion marking, health visibility, alert | M · 1.5 ew | T35 |
 | **T37** | Dataset Store (immutable, versioned, content-hashed) + Virtual Clock | M · 2 ew | — |
@@ -649,7 +649,7 @@ make smoke
 
 Three ordering decisions worth stating:
 
-- **T34 first, and it is a gate.** Provenance is verified *before* a generator is written. Its permitted outcome is "defer this provider" — discovering after building a generator that its shape was guessed means discarding the generator, the golden files, and every scenario assertion built on it.
+- **T34 first, and it is a gate — but not a blocker.** Qualification happens *before* a generator is written; discovering afterwards that a shape was guessed means discarding the generator, its golden files, and every assertion built on it. A **Conditional** or **Deferred** outcome stops that provider's generator and nothing else: Provider Independence (principle 9) means the framework, Port, contract suite, scenario engine, fault injector, and delivery mechanism are all provider-agnostic. **Bombora is an independent track and cannot block the milestone.**
 - **T35 second.** The Port and its contract suite exist before anything implements them. Writing the suite against the first adapter would shape the contract around the simulator, which is precisely backwards — the contract belongs to production.
 - **T36 third, before any payload exists.** The guard that prevents production activation is built before there is anything to activate. A simulator that works before its guard does is a simulator that can be run somewhere it should not.
 
@@ -663,6 +663,8 @@ Three ordering decisions worth stating:
 | **AC-16** | **Contract Interchangeability** — one contract suite runs against both adapters and asserts **identical normalized output**, not merely identical adapter behaviour |
 | **AC-17** | **Payload Provenance** — every generator records which of the four permitted sources its shape derives from. No generator ships without one. |
 | **AC-18** | **Temporal Intent Fidelity** — Bombora produces trajectories, not snapshots: rising, sustained, falling, decaying, and reactivating intent are each distinguishable downstream, and correlated multi-topic intent produces stronger intelligence than any single topic |
+| **AC-19** | **Intent Fidelity** — the Bombora simulator reproduces intent emergence, sustained intent, decay, reactivation, multiple concurrent topics, competitive overlap, delayed reporting, and noise **using only provider payload generation**, never inspecting downstream platform state. *Applies only if Bombora qualifies.* |
+| **AC-20** | **Provider Independence** — each generator is independently removable without affecting Provider Platform, Normalization, Knowledge Graph, Observation Engine, or Scenario Engine; scenarios compose providers, providers never depend on each other |
 | **AC-13** | **Security Invariants** extended with the milestone's guarantees, each proven to fail when removed |
 
 #### Demo scenario
@@ -700,8 +702,10 @@ Three ordering decisions worth stating:
 #### Definition of Done
 
 - [ ] Demo Checklist passes in full
-- [ ] AC-4, AC-16, AC-17, AC-18, AC-13 all passed
-- [ ] **Every generator records its provenance source**; any provider without one is deferred, not fabricated
+- [ ] AC-4, AC-16, AC-17, AC-20, AC-13 all passed; AC-18 and AC-19 passed **if Bombora qualifies**, otherwise its deferral is recorded with a reason
+- [ ] **Every generator records its provenance source**; any provider without one is Conditional or Deferred, never fabricated
+- [ ] **Every execution records** scenario, seed, manifest version, generator version, and virtual clock
+- [ ] **Removing any single generator** leaves the framework and every other provider working — asserted, not assumed
 - [ ] Import-linter contract forbidding `signora_platform/simulation/` from importing any module — **proven to fail** on a deliberate violation
 - [ ] Datasets versioned, content-hashed, and immutable; a mutation attempt fails
 - [ ] 13 Scenario Manifests committed with their full expected journey declared, M2.0 layer asserted
@@ -1127,6 +1131,8 @@ All four are test-enforced, not conventions.
 | **AC-9 — AI Evaluation Gate** | M8 | Golden sets exist; regression CI-enforced; evidence-completeness a release gate |
 | **AC-10 — Module Boundary Audit** | Every milestone | import-linter contracts extended and **proven to fail** on a deliberate violation |
 | **AC-14 — Frontend Foundation Integrity** | M1.5 | Every business screen addable without touching shell, routing, auth, or query infrastructure; **no mock business data in the codebase**; component tests in CI |
+| **AC-19 — Intent Fidelity** | M2.0 | Bombora reproduces emergence, sustain, decay, reactivation, concurrency, competitive overlap, delayed reporting, and noise from payload generation alone, never inspecting downstream state (if qualified) |
+| **AC-20 — Provider Independence** | M2.0 + every later provider | Each generator independently removable; scenarios compose providers, providers never depend on each other |
 | **AC-16 — Contract Interchangeability** | M2.0 | One contract suite runs against both the simulated and production adapter, asserting **identical normalized output** |
 | **AC-17 — Payload Provenance** | M2.0 | Every generator records which of the four permitted sources its shape derives from; no generator ships without one |
 | **AC-18 — Temporal Intent Fidelity** | M2.0 | Bombora produces trajectories, not snapshots; rising, sustained, falling, decaying, and reactivating intent each distinguishable downstream |
