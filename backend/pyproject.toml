@@ -83,6 +83,7 @@ asyncio_default_test_loop_scope = "session"
 testpaths = ["modules", "signora_platform", "tests"]
 addopts = "-ra --strict-markers"
 markers = [
+    "security_invariant: permanent architectural guarantee (tests/security_invariants)",
     "integration: tests that require a running PostgreSQL instance",
 ]
 

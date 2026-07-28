@@ -16,7 +16,7 @@
 **Implementation proceeds as one prioritized stream.** The roadmap's dependency graph governs *order*; it does not imply concurrency. Optimising for minimal context switching is the ruling constraint, not maximal parallelism.
 
 ```
-M1.1 Platform Runtime → M1.2 Authentication Boundary → M1.3 Infrastructure
+M1.1 Platform Runtime → M1.2 Authentication Boundary → M1.3A Deployment Foundation → M1.3B Cloud Infrastructure → M1.4 Platform Smoke Test
      → M2.0 Provider Simulation Framework → M2.1 → M3 → … → M15
 ```
 
@@ -113,7 +113,7 @@ Two findings drive the M1 structure:
 | Event bus relay + worker fleet + DLQ | 🔴 Blocks all 13 modules | M1.1 |
 | Observability (OTel, Sentry, structured logging) | 🟠 Blocks operability | M1.1 |
 | Better Auth issuer (Next.js) | 🔴 Blocks all human access | M1.2 |
-| Terraform / AWS IaC | Blocks any deploy | M1.3 |
+| Terraform / AWS IaC | Blocks any deploy | M1.3B |
 | **Provider Simulation Framework** | 🟠 Blocks offline dev, deterministic demos, AI regression | **M2.0** |
 | Provider Abstraction Layer | Built *with* the simulator (its first implementation) | M2.0 |
 | AI Provider Abstraction Layer + Prompt Registry | Blocks both AI engines | M8 |
@@ -133,13 +133,15 @@ M1 is split into three; M2.0 is inserted before data ingestion. **All other mile
 | M0 ✅ | M0 | — |
 | **M1.1** Platform Runtime | M1 | ~15.5 ew |
 | **M1.2** Authentication Boundary | M1 | ~11.5 ew |
-| **M1.3** Infrastructure | M1 | ~6 ew |
+| **M1.3A** Deployment Foundation | M1 | ~4 ew |
+| **M1.3B** Cloud Infrastructure | M1 | ~6 ew |
+| **M1.4** Platform Smoke Test | *(release gate)* | ~1.5 ew |
 | **M2.0** Provider Simulation Framework | *(internal enablement)* | ~17–24 ew |
 | M2.1 Provider Platform & Normalization | M2 | ~14–20 ew |
 | M3 Knowledge Graph & Observation Engine | M3 | ~17–23 ew |
 | M4–M15 | M4–M13 | ~160–220 ew |
 
-**Total to GA: ~225–305 ew.** See §1 for calendar at various team sizes.
+**Total to GA: ~230–310 ew.** See §1 for calendar at various team sizes.
 
 ---
 
@@ -279,38 +281,89 @@ Every milestone specifies: Scope · Simulator Requirement · Demo Scenario · **
 
 ---
 
-### 🔄 M1.3 — Infrastructure
+### 🔄 M1.3A — Deployment Foundation
 
-**Scope:** Terraform (VPC, RDS PostgreSQL 17, two ElastiCache clusters, Secrets Manager) · ECS services · Traefik/ALB with TLS · deployment pipeline · staging · automated migrations · rollback validation.
+**Scope:** Production Docker images (API, worker) · production Docker Compose stack · health checks · readiness checks · secrets management · migration runner · local production deployment.
 
-**Effort:** ~6 ew · **Critical path:** T19→T20 = 6 ew serial · **Tasks:** T19–T20
+**Effort:** ~4 ew · **Critical path:** T19→T20→T21 = 4 ew serial · **Tasks:** T19–T21
 
 **Simulator requirement:** ❌ Not required.
 
+**Why this comes first:** the application platform and the cloud platform fail for entirely different reasons, and debugging both at once means never knowing which one is broken. A container that will not start, a migration runner that races two API replicas, a readiness probe that reports healthy before the database is reachable — each of these is a two-minute diagnosis locally and an afternoon inside ECS. M1.3A proves the application is deployable; M1.3B proves AWS is configured. Neither answer is trustworthy if both are being asked simultaneously.
+
 **Demo scenario:**
-> *"Ship it and un-ship it."* Merge to `main`; the pipeline runs migrations as a privileged pre-deploy task, deploys API and workers, and passes health/readiness. Then deliberately deploy a broken build, watch readiness fail, and **roll back using the documented procedure — timed.** Show `signora_app` connecting as a non-superuser, and secrets resolving from Secrets Manager with none present in the image.
+> *"docker compose up, and it's production."* From a clean checkout with no local Python or Node toolchain, bring up the full stack — Postgres, Redis, migration runner, API, worker pools, frontend — using production images. Migrations run once as a discrete pre-start step under the **migration identity**; the API then starts under `signora_app` and the frontend under `signora_auth`. Sign in, create a workspace, watch an event traverse the outbox relay into a worker. Then stop the database and watch readiness turn red while liveness stays green.
+
+**Demo checklist:**
+- [ ] API and worker images build from a clean checkout with no local toolchain
+- [ ] Images are non-root, multi-stage, and contain no build toolchain in the final layer
+- [ ] `docker history` shows **no embedded secrets**; all configuration arrives by environment
+- [ ] Migration runner executes once as a discrete step, under the **migration identity**
+- [ ] Migration runner is safe to run concurrently — two simultaneous starts do not race
+- [ ] API starts as `signora_app`; frontend starts as `signora_auth` — **verified from inside the running containers**
+- [ ] `/health` (liveness) stays green when the database is stopped; `/ready` turns red
+- [ ] Worker pools start, consume from Redis, and report healthy
+- [ ] Full demo flow — sign in → create workspace → event relayed → worker processes it — passes against the composed stack
+- [ ] Stack comes up from `docker compose up` alone, with no manual step
+- [ ] Security Invariants suite passes **against the composed stack**, not only against a developer database
+
+**User-visible outcome:** None directly. The internal outcome is that "it works on my machine" stops being a meaningful distinction — the thing that runs locally is the thing that will run in production.
+
+**Definition of Done:**
+- [ ] Demo Checklist passes in full
+- [ ] Secrets sourced from environment with a documented local mechanism that shares no values with production
+- [ ] Migration runner documented as a release step, not a service behaviour
+- [ ] `docs/architecture/13-deployment.md` updated with the container topology as built
+- [ ] AC-3A passed
+
+**Rollback strategy:**
+- **Application:** image tags are immutable and versioned; rollback is running the previous tag.
+- **Migrations:** reversible (CI-enforced). Expand-then-contract is adopted here, before cloud deployment makes it expensive to learn.
+- **Blast radius:** local only. That is the point of doing it first.
+
+**Operational readiness checklist:**
+- [ ] Runbook: bring the stack up, tear it down, reset to clean state
+- [ ] Documented: which identity runs which process, and why
+- [ ] Container logs are structured JSON carrying `workspace_id` / `correlation_id`
+- [ ] Image build is reproducible and pinned
+
+---
+
+### 🔄 M1.3B — Cloud Infrastructure
+
+**Scope:** Terraform (VPC, RDS PostgreSQL 17, two ElastiCache clusters, Secrets Manager) · ECS services · ALB with TLS · deployment pipeline · staging · automated migrations · rollback validation.
+
+**Effort:** ~6 ew · **Critical path:** T22→T23 = 6 ew serial · **Tasks:** T22–T23
+
+**Simulator requirement:** ❌ Not required.
+
+**Entry condition:** M1.3A complete. Every question this milestone asks is about AWS configuration, because the application-level questions were answered locally.
+
+**Demo scenario:**
+> *"Ship it and un-ship it."* Merge to `main`; the pipeline runs migrations as a privileged pre-deploy task, deploys API and workers, and passes health/readiness. Then deliberately deploy a broken build, watch readiness fail, and **roll back using the documented procedure — timed.** Show `signora_app` connecting as a non-superuser in the deployed environment, and secrets resolving from Secrets Manager with none present in the image.
 
 **Demo checklist:**
 - [ ] `terraform plan` clean and idempotent on a second run
 - [ ] Staging provisioned end to end from code
 - [ ] Pipeline deploys API + at least one worker pool
-- [ ] Migration task runs pre-deploy under the **privileged** identity
+- [ ] Migration task runs pre-deploy under the **migration identity**, never from a service
 - [ ] `/health` and `/ready` green post-deploy
-- [ ] Application connects as `signora_app` — verified in the deployed environment
+- [ ] Application connects as `signora_app`, frontend as `signora_auth` — verified in the deployed environment
 - [ ] Two separate ElastiCache clusters confirmed (queue vs. cache)
-- [ ] `docker history` / image inspection shows **no embedded secrets**
+- [ ] Secrets resolve from Secrets Manager; image inspection shows none embedded
 - [ ] TLS terminated; HTTP redirects to HTTPS
 - [ ] **Broken build deployed, rollback executed and timed (<10 min)**
 - [ ] RDS backup restore performed once into a scratch instance
+- [ ] Security Invariants suite passes against the deployed staging environment
 
 **User-visible outcome:** None directly — but this is what makes M1.2's login reachable by anyone outside a developer's laptop.
 
 **Definition of Done:**
 - [ ] Demo Checklist passes in full
 - [ ] All secrets from AWS Secrets Manager
-- [ ] **Expand-then-contract migration rule adopted and documented** — no deploy ships a destructive schema change alongside the code depending on it
+- [ ] **Expand-then-contract migration rule enforced** — no deploy ships a destructive schema change alongside the code depending on it
 - [ ] `ADR-0022` updated with as-built topology
-- [ ] AC-3 passed
+- [ ] AC-3B passed
 
 **Rollback strategy:**
 - **Application:** ECS retains the previous task definition; rollback is a revision revert. Target **under 10 minutes, verified**.
@@ -327,6 +380,65 @@ Every milestone specifies: Scope · Simulator Requirement · Demo Scenario · **
 - [ ] Pipeline requires green CI to proceed
 - [ ] On-call rotation and escalation defined
 - [ ] Staging is a faithful shape of production
+
+---
+
+### 🆕 M1.4 — Platform Smoke Test
+
+**Scope:** A single command that verifies the complete runtime platform and demo flow in one execution, wired into CI and release validation.
+
+**Effort:** ~1.5 ew · **Tasks:** T24
+
+**Simulator requirement:** ❌ Not required — but M2.0 extends this command rather than replacing it.
+
+**Why this exists as its own milestone:** verification of the whole platform is currently spread across a backend suite, a frontend suite, a cross-tier contract test, and a Demo Checklist that a human reads. Each is individually green while the *composition* goes unverified — which is precisely where the M1.2 credential defect lived. One command that exercises the real stack end to end turns "everything passes" into a claim about the system rather than about its parts.
+
+**The command:**
+
+```
+make smoke        # or: uv run smoke
+```
+
+**What it verifies, in order:**
+
+| Stage | Assertion |
+|---|---|
+| 1. Stack up | Production images start; every container reaches healthy |
+| 2. Migrations | Applied under the migration identity; schema at `head` |
+| 3. Identities | API is `signora_app`, frontend is `signora_auth`, neither is the owner |
+| 4. Security invariants | The full suite passes **against the running stack** |
+| 5. Auth | Sign in; a token is minted by the frontend and accepted by the API |
+| 6. Demo flow | Create a workspace; a second user cannot see it (404, not 403) |
+| 7. Event pipeline | The resulting event traverses outbox → relay → worker and is processed exactly once |
+| 8. Observability | One `correlation_id` is traceable across API, relay, and worker logs |
+| 9. Failure paths | Stop the database: readiness red, liveness green; restart: recovery without intervention |
+| 10. Teardown | Stack down; no orphaned volumes or containers |
+
+**Demo scenario:**
+> *"One command, one answer."* Run `make smoke` on a clean machine. It builds, starts, migrates, verifies, exercises, breaks, recovers, and tears down — exiting non-zero on the first failed guarantee with a message naming which one.
+
+**Demo checklist:**
+- [ ] Single command, no prerequisites beyond Docker
+- [ ] Runs green from a clean checkout
+- [ ] Exits non-zero and names the failed stage on any failure
+- [ ] Runs in CI on every merge to `main`
+- [ ] Runs as a release gate before any deploy to staging or production
+- [ ] Completes in under 10 minutes — beyond that it stops being run
+- [ ] Deliberately breaking any one stage produces a clear, specific failure
+
+**User-visible outcome:** None. The outcome is that "is the platform working?" has one answer instead of five partial ones.
+
+**Definition of Done:**
+- [ ] Demo Checklist passes in full
+- [ ] Wired into CI and documented as a release gate
+- [ ] Each stage's failure mode verified by deliberately breaking it
+- [ ] Documented in `docs/architecture/13-deployment.md`
+
+**Rollback strategy:** Not applicable — the command is additive and ships no runtime change.
+
+**Operational readiness checklist:**
+- [ ] Runbook: interpreting each stage's failure
+- [ ] Command is the documented first step of incident triage
 
 ---
 
@@ -495,14 +607,32 @@ Rationale: cheap unblocking work first (T1, T2, T6); logging (T3) before the rel
 
 **Sequential order:** T12 → T13 → T14 → T15 → T16 → T17 → T18
 
-### M1.3 — Infrastructure
+### M1.3A — Deployment Foundation
 
 | ID | Task | Complexity | Depends on |
 |---|---|---|---|
-| T19 | Terraform baseline | L · 3 ew | — |
-| T20 | ECS + deploy pipeline + rollback validation | L · 3 ew | T19, T9 |
+| T19 | Production Docker images (API, worker, frontend) | M · 1.5 ew | — |
+| T20 | Migration runner + secrets management | M · 1.5 ew | T19 |
+| T21 | Production Compose stack + health/readiness wiring | M · 1 ew | T19, T20 |
 
-**Sequential order:** T19 → T20
+**Sequential order:** T19 → T20 → T21
+
+### M1.3B — Cloud Infrastructure
+
+| ID | Task | Complexity | Depends on |
+|---|---|---|---|
+| T22 | Terraform baseline (VPC, RDS, 2× ElastiCache, Secrets Manager) | L · 3 ew | T21 |
+| T23 | ECS + deploy pipeline + rollback validation | L · 3 ew | T22, T9 |
+
+**Sequential order:** T22 → T23
+
+### M1.4 — Platform Smoke Test
+
+| ID | Task | Complexity | Depends on |
+|---|---|---|---|
+| T24 | Single-command platform verification, wired into CI | M · 1.5 ew | T21 |
+
+**Depends on M1.3A, not M1.3B:** the command must run against the local production stack, so it is available as a gate *before* cloud deployment rather than after.
 
 ---
 
@@ -648,10 +778,10 @@ All four are test-enforced, not conventions.
 | **A — Pipeline** | M2.1 → M11 (critical path) | 2–3 eng | From M2.0 completion |
 | **B — AI Platform** | M8, then M9/M10 support | 1–2 eng | From M4 |
 | **C — Product Surface** | M1.2, then M7/M12 frontend | 1–2 eng + design | Continuous |
-| **D — Platform & Ops** | M1.1, M1.3, M15 | 1 eng | Continuous |
+| **D — Platform & Ops** | M1.1, M1.3A, M1.3B, M1.4, M15 | 1 eng | Continuous |
 | **E — Simulation** | M2.0, then scenario extension per milestone | 1 eng, then ~0.5 | M2.0 onward |
 
-**When staffing allows:** M1.1, M1.2, and M1.3 have no interdependencies except T20←T9, so they parallelise almost perfectly — the fastest available compression of the M1 phase.
+**When staffing allows:** M1.1, M1.2, and M1.3A/B have no interdependencies except T23←T9 and T22←T21, so they parallelise almost perfectly — the fastest available compression of the M1 phase.
 
 **Stream E never ends.** Each milestone extends the scenario library with its own assertions (~0.5 ew per milestone). This is what keeps the library current rather than rotting into stale fixtures.
 
@@ -663,7 +793,9 @@ All four are test-enforced, not conventions.
 |---|---|---|
 | **AC-1 — Event Bus Contract** | M1.1 | At-least-once delivery; platform-owned idempotency; DLQ; `correlation_id` traced end-to-end |
 | **AC-2 — Auth Boundary Integrity** | M1.2 | No private key in Python tier; claims match contract exactly; contract test green |
-| **AC-3 — Deployment & Rollback** | M1.3 | Rollback executed and timed; expand-then-contract migrations; non-superuser connection in a deployed environment |
+| **AC-3A — Application Deployability** | M1.3A | Stack starts from production images alone; migrations run under the migration identity; each tier connects under its own least-privileged role; readiness distinguishes liveness from dependency failure |
+| **AC-3B — Deployment & Rollback** | M1.3B | Rollback executed and timed; expand-then-contract migrations; non-superuser connection in a deployed environment |
+| **AC-3C — Platform Verification** | M1.4 | One command verifies the whole platform; every stage proven to fail loudly when deliberately broken |
 | **AC-4 — Simulator Fidelity** | M2.0 | Identical adapter contract; config-only switching; enters only at Provider layer; determinism proven; production guard test-enforced |
 | **AC-5 — Provider Abstraction Integrity** | M2.1 | Provider Port unchanged from M2.0; no vendor SDK type outside an adapter |
 | **AC-6 — Tenancy Under Load** | M3 | Every new table: `workspace_id`, forced RLS, `SECURITY DEFINER` predicates, `WHERE`-less query test, both session shapes |
@@ -671,6 +803,7 @@ All four are test-enforced, not conventions.
 | **AC-8 — AI Abstraction & Safety** | M9 | No vendor SDK in domain/application; output validated before trust; prompt versions recorded |
 | **AC-9 — AI Evaluation Gate** | M8 | Golden sets exist; regression CI-enforced; evidence-completeness a release gate |
 | **AC-10 — Module Boundary Audit** | Every milestone | import-linter contracts extended and **proven to fail** on a deliberate violation |
+| **AC-13 — Security Invariants** | Every milestone | The suite is extended with the milestone's new guarantees, and every added invariant is **proven to fail** when its guarantee is deliberately removed |
 | **AC-11 — Scale Validation** | M15 | RLS, Meilisearch, pgvector load-tested at target scale using simulator-generated volume |
 | **AC-12 — Security & Compliance** | M15 | Least privilege verified; PII policy implemented; SOC 2 evidence collectable |
 
@@ -706,7 +839,7 @@ A milestone is done when **every** statement holds:
 5. **Observable** — every async flow traceable via `correlation_id`, emitting latency/throughput/error metrics.
 6. **Secure** — tenant isolation proven by test; no secrets in code; least privilege verified.
 7. **Documented** — architecture documents updated in the same change; new ADR for any new technology or vendor.
-8. **Deployable** — runs in a deployed environment (from M1.3 onward).
+8. **Deployable** — starts from a production image under its own least-privileged identity (from M1.3A), and runs in a deployed environment (from M1.3B).
 9. **Demonstrable** — the Demo Scenario runs successfully, **using simulated provider data wherever live integrations are unavailable**.
 10. **Reversible** — rollback strategy documented and, for infrastructure milestones, executed at least once.
 11. **Operationally ready** — readiness checklist complete: runbooks, alerts, dashboards.
@@ -735,6 +868,6 @@ Single stream. **M1.1 only** — M1.2 does not begin until M1.1's Demo Checklist
 | 10 | **T5** Sentry | Small; completes observability |
 | 11 | **T11** Pipeline metrics | Needs T4 and the full relay chain in place |
 
-**Then:** M1.1 Demo Checklist → M1.2 → M1.3 → M2.0.
+**Then:** M1.1 Demo Checklist → M1.2 → M1.3A → M1.3B → M1.4 → M2.0.
 
 **Deferred until staffing allows:** the Knowledge Graph spike. Under single-stream execution it would displace critical-path work; it should run as soon as a second engineer is available, since it retires the roadmap's largest estimation variance.

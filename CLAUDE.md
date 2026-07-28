@@ -82,6 +82,11 @@ Claude must:
 - A module owns its own tables. No other module's code may write to them directly, and ideally no other module's database role can either.
 - Any schema change must be accompanied by a corresponding update to the relevant architecture documentation in the same change — undocumented schema drift is treated as a bug, per Claude Rules (§21).
 - Migrations are additive and reversible by default; destructive migrations (drops, non-backward-compatible column changes) require explicit confirmation before being applied, consistent with the general caution this project applies to hard-to-reverse actions.
+- **Migration credentials and runtime credentials are separate identities, always.** This is a permanent engineering rule, not a deployment preference:
+  - **Runtime services must never execute using migration or owner credentials.** A service connected as the owner is exempt from Row-Level Security on every table it touches, which silently voids the entire tenancy model no matter how correct the policies are.
+  - **Schema migrations execute only under the migration identity** — as a discrete release step, never from inside a running service.
+  - **Runtime services execute only under the least-privileged application identity** for their tier: `signora_app` for the API and workers, `signora_auth` for the authentication tier. Each tier's credential must be unable to reach the other's data.
+  - Claude must never widen a runtime role's privileges to make a task work, never run migrations from application code, and never introduce a connection string that lets a service connect as the owner — including in local development or test configuration, where an over-privileged connection makes isolation tests pass vacuously.
 - The database is PostgreSQL 17+; the ORM is SQLAlchemy 2.x (async); migrations are Alembic (`docs/architecture/adr/0006-data-platform-primary-database-and-multi-tenancy.md`, `docs/architecture/adr/0005-orm-and-schema-migrations.md`). Every migration touching a workspace-owned table must include its RLS policy and `FORCE ROW LEVEL SECURITY` statement in the same migration that creates the table, not a follow-up. SQLAlchemy models live only in a module's `infrastructure/` layer — never imported by `domain/`, `application/`, or `public/`.
 
 ## 9. Event Standards
@@ -110,6 +115,7 @@ Claude must:
 - Integration tests exercise a module against a real (test) database and real event dispatch. End-to-end tests exercise full pipeline flows as described in `docs/architecture/07-data-flow.md`.
 - Tests must cover the failure paths (transient provider failure, malformed AI output, RLS/workspace-boundary violations attempted, idempotent re-delivery of an event) — not only the golden path.
 - A task is not complete if tests are failing, skipped, or commented out to make a change appear to pass. Never weaken or delete a test to make it pass without understanding why it failed.
+- **The Security Invariants suite (`backend/tests/security_invariants/`) is permanent.** It states architectural guarantees — token verification, Casbin enforcement, workspace isolation, RLS, per-tier database privileges, event durability, idempotency, retry, dead-lettering — rather than feature behaviour. Claude must never delete, skip, or weaken one of these tests to make a change pass; a failure there means a guarantee the architecture depends on has stopped holding. New guarantees are added to it as the system grows, and deliberate overlap with feature tests is intended so that rewriting a feature cannot remove its guarantee.
 - Backend tests use Pytest, with pytest-mock for mocking and HTTPX's async client for API-layer tests. Frontend unit/component tests use Vitest; end-to-end browser tests use Playwright (`docs/architecture/adr/0023-testing-strategy.md`). Do not introduce a second testing framework for a layer that already has a ratified one.
 
 ## 12. Documentation Standards

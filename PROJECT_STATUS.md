@@ -3,7 +3,7 @@
 > **Owner:** Technical Program Manager · **Audience:** Everyone
 > **Cadence:** Updated at every milestone boundary and every sprint close. Updating this is part of the [Definition of Done](IMPLEMENTATION_ROADMAP.md#12-definition-of-done-global).
 > **Last updated:** 2026-07-28 · **Reporting period:** M1.2 delivery
-> **Revision:** v5 — **M1.2 Authentication Boundary complete.** Demo Checklist 10/10; AC-2 passed; Architecture Validation Report issued
+> **Revision:** v6 — **M1.2 complete and approved.** Security Invariants suite established (47 invariants); M1.3 split into M1.3A/M1.3B; M1.4 Platform Smoke Test added
 
 ---
 
@@ -13,8 +13,10 @@
 M0  Foundation             ████████████████████ 100%  ✅ Complete
 M1.1 Platform Runtime      ████████████████████ 100%  ✅ Complete
 M1.2 Auth Boundary         ████████████████████ 100%  ✅ Complete
-M1.3 Infrastructure        ░░░░░░░░░░░░░░░░░░░░   0%  🔴 CURRENT — next
-M2.0 Simulation Framework  ░░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (after M1.3)
+M1.3A Deployment Foundation ░░░░░░░░░░░░░░░░░░░   0%  🔴 CURRENT — next
+M1.3B Cloud Infrastructure  ░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (after M1.3A)
+M1.4 Platform Smoke Test    ░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (after M1.3A)
+M2.0 Simulation Framework   ░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (after M1.4)
 M2.1 → M15                 ░░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued
 ```
 
@@ -105,7 +107,7 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 | **Auth observability** (added) | 10 `AUTH_*` events across both tiers, shared vocabulary |
 | **Auth health** (added) | Both tiers; key-pair match, JWT config, OAuth config, DB |
 
-**First user-visible outcome in the project.** Design-partner onboarding is unblocked once M1.3 provides a deployed environment.
+**First user-visible outcome in the project.** Design-partner onboarding is unblocked once M1.3B provides a deployed environment.
 
 **Findings:**
 - Two toolchain workarounds recorded in the validation report (ESLint flat-config bridge, `@vitejs/plugin-react` peer conflict). Neither is architectural.
@@ -116,17 +118,20 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 
 ## Current Milestone
 
-### 🔄 M1.3 — Infrastructure · **CURRENT** · ~6 ew
+### 🔄 M1.3A — Deployment Foundation · **CURRENT** · ~4 ew
 
 | Order | Task | Complexity | Status |
 |---|---|---|---|
-| 1 | T19 Terraform baseline (VPC, RDS, 2× ElastiCache, Secrets Manager) | L · 3 ew | ⬜ |
-| 2 | T20 ECS + deploy pipeline + rollback validation | L · 3 ew | ⬜ |
+| 1 | T19 Production Docker images (API, worker, frontend) | M · 1.5 ew | ⬜ |
+| 2 | T20 Migration runner + secrets management | M · 1.5 ew | ⬜ |
+| 3 | T21 Production Compose stack + health/readiness wiring | M · 1 ew | ⬜ |
 
-**Critical path:** T19→T20 = 6 ew serial.
+**Critical path:** T19→T20→T21 = 4 ew serial.
 **Simulator required:** ❌ No.
-**Checkpoint:** AC-3 Deployment & Rollback — **rollback must be executed and timed, not merely documented.**
+**Checkpoint:** AC-3A Application Deployability — the stack starts from production images alone, migrations run under the migration identity, and **each tier connects under its own least-privileged role, verified from inside the running containers.**
 **Demo Checklist:** 11 items — see [IMPLEMENTATION_ROADMAP.md §6](IMPLEMENTATION_ROADMAP.md#6-milestone-definitions).
+
+The last checklist item is the one that makes the rest meaningful: the **Security Invariants suite must pass against the composed stack**, not only against a developer database. Credential separation that holds in `docker-compose.yml` and not in the images would be the M1.2 defect repeated one layer up.
 
 <details>
 <summary>M1.2 task detail (delivered)</summary>
@@ -191,8 +196,18 @@ Sequential execution — each begins only when the previous milestone's Demo Che
 
 | Order | Milestone | Effort | Simulator | Gate |
 |---|---|---|---|---|
-| 1 | **M2.0** Provider Simulation Framework | ~17–24 ew | ✅ builds it | AC-4 · identical adapter contract, config-only switching |
-| 2 | M2.1 → M15 | ~175–240 ew | mostly ✅ | Per roadmap |
+| 1 | **M1.3B** Cloud Infrastructure | ~6 ew | ❌ | AC-3B · rollback executed and timed |
+| 2 | **M1.4** Platform Smoke Test | ~1.5 ew | ❌ | AC-3C · every stage proven to fail when broken |
+| 3 | **M2.0** Provider Simulation Framework | ~17–24 ew | ✅ builds it | AC-4 · identical adapter contract, config-only switching |
+| 4 | M2.1 → M15 | ~175–240 ew | mostly ✅ | Per roadmap |
+
+### Why M1.3 was split
+
+M1.3A proves the **application** is deployable; M1.3B proves **AWS** is configured. Run together, a failure gives no signal about which one is wrong — and every application-level fault (a container that will not start, a migration runner racing two replicas, a readiness probe green before the database is reachable) costs minutes locally and an afternoon inside ECS.
+
+### Why M1.4 exists
+
+Verification is currently spread across a backend suite, a frontend suite, a cross-tier contract test, and a checklist a human reads. Each is individually green while the *composition* goes unverified — which is exactly where the M1.2 credential defect lived. One command turns "everything passes" into a claim about the system rather than about its parts.
 
 ### M2.0 — why it precedes every pipeline module
 
@@ -208,16 +223,16 @@ A permanent platform capability, not throwaway tooling — used for local develo
 
 ## Current Sprint
 
-**Sprint:** M1.2 Sprint 1 — not started.
+**Sprint:** M1.3A Sprint 1 — awaiting approval.
 
-**Scope — M1.2 only.** Single stream; no concurrent milestone work.
+**Scope — M1.3A only.** Single stream; no concurrent milestone work.
 
 | Sprint 1 tasks | Rationale |
 |---|---|
-| T12 Next.js scaffold | Zero dependencies; unblocks everything else in M1.2 |
-| T13 Better Auth + OAuth | The critical blocker — until it lands, nobody can log in |
+| T19 Production Docker images | Zero dependencies; everything else in M1.3A builds on it |
+| T20 Migration runner + secrets | Where the migration/runtime credential split becomes executable rather than documentary |
 
-**Note on the M1.2 contract test.** The highest-value single test in this milestone is the one asserting that a token minted by Next.js verifies against the *real* Python verifier in CI. The API side is already complete and adversarially tested (forged `alg:none` and algorithm-confusion tokens both rejected); M1.2 must not diverge from that contract.
+**Note on T20.** The migration runner is the first place the new credential rule is enforced by machinery rather than by convention: migrations run as a discrete step under the migration identity, and no running service holds a credential that could apply one. The Security Invariants suite already asserts the runtime role cannot migrate — T20 makes that arrangement the only way the system starts.
 
 ---
 
@@ -226,8 +241,9 @@ A permanent platform capability, not throwaway tooling — used for local develo
 | Item | Blocked by | Severity | Owner |
 |---|---|---|---|
 | ~~All 13 core intelligence modules~~ | ~~T7/T8 — event bus relay + dispatch~~ | ✅ **CLEARED** | M1.1 |
-| Any human access / any demo | T13/T14 — Better Auth issuer | 🔴 Critical | Unassigned |
-| Any deployed environment | T19/T20 — Terraform + ECS | 🟠 High | Unassigned |
+| ~~Any human access / any demo~~ | ~~T13/T14 — Better Auth issuer~~ | ✅ **CLEARED** | M1.2 |
+| Any deployed environment | T22/T23 — Terraform + ECS (M1.3B) | 🟠 High | Unassigned |
+| Reproducible local production stack | T19–T21 (M1.3A) | 🟠 High | Unassigned |
 | Offline development, deterministic demos, AI eval datasets | M2.0 — simulation framework | 🟠 High | Unassigned |
 | Provider Platform (M2.1) | M2.0 — Provider Port defined there | 🟠 High | Unassigned |
 | Both AI engines | M8 — AI Provider Port + Prompt Registry | 🟡 Medium | Unassigned |
@@ -286,9 +302,12 @@ Small and deliberate. Nothing below is discovered debt.
 | Casbin policy is coarse RBAC | Low | Correct for current needs | When enterprise custom roles are required |
 | No API versioning scheme | Low | Deliberate — speculative with one first-party client | First breaking change |
 
-| Relay `LISTEN/NOTIFY` wake-up not yet wired to the loop | Low | `notify_outbox` exists and polling is the correctness guarantee; the notification only collapses idle latency from ~1s | M1.3 or when latency matters |
+| Relay `LISTEN/NOTIFY` wake-up not yet wired to the loop | Low | `notify_outbox` exists and polling is the correctness guarantee; the notification only collapses idle latency from ~1s | M1.3A or when latency matters |
+| **`@vitejs/plugin-react` removed from frontend devDependencies** | Low | Its Vite version conflicts with `better-auth`'s optional Svelte peer dependencies. M1.2's tests target JWT and key-management logic, which is plain TypeScript and needs no React transform. Keeping the dependency would have meant `--legacy-peer-deps` across the whole install to satisfy a plugin nothing used. | **Scheduled: the first milestone introducing frontend component testing.** React component tests cannot run without it — reinstating it is a prerequisite of that work, not a follow-up to it. Resolve the peer conflict then, when there is a real consumer to validate against. |
 
-**Debt ratio: healthy.** Five of the nine v3 items were repaid in M1.1. One new low-severity item added.
+**Debt ratio: healthy.** Five of the nine v3 items were repaid in M1.1. Two low-severity items now open, both with named repayment points.
+
+**Scheduling rule.** Every item above carries a *repayment milestone*, not "later". Debt without a scheduled milestone is indistinguishable from a decision nobody revisits — the `@vitejs/plugin-react` entry exists precisely so its absence is discovered when component tests are planned rather than when they fail to run.
 
 ---
 
@@ -296,7 +315,17 @@ Small and deliberate. Nothing below is discovered debt.
 
 **None open.**
 
-Three defects found and fixed during M0, each with regression tests proven to fail against the pre-fix state.
+Three defects found and fixed during M0 and one during M1.2 validation, each with regression tests proven to fail against the pre-fix state.
+
+### Open architectural question — raised, awaiting decision
+
+**Platform tables are readable across every workspace.** `outbox_event` and `dead_letter_event` carry a `workspace_id` but have no RLS, and `signora_app` holds `SELECT` on both. Application code issuing an unfiltered query against either sees every workspace's event payloads.
+
+The *absence of RLS* is deliberate — the relay must sweep all workspaces in one pass, which tenant-scoped RLS would prevent by construction. That rationale was recorded in `tests/conftest.py` but not in `11-tenancy.md`, whose stated exception list names only Business Event Engine's taxonomy. The documentation drift is now fixed.
+
+What remains open is narrower: **the relay uses the privileged connection, and the publisher only ever inserts** — so `signora_app` appears to need `INSERT` but not `SELECT`. Revoking `SELECT` would close the cross-tenant read path without affecting the relay. That is a change to the tenancy model's grant surface, so it is raised rather than applied.
+
+Encoded as a tracked deviation in `test_authorization.py::test_every_workspace_owned_table_has_rls_enabled_and_forced`: the two tables are named explicitly, and any *other* table reaching that list fails the build.
 
 **Caveat worth restating:** "no known bugs" across ~2,660 LOC with one module and zero production traffic is a weak signal, not a quality claim.
 
@@ -336,7 +365,7 @@ Three defects found and fixed during M0, each with regression tests proven to fa
 | PROJECT_STATUS.md | ✅ **This document, v3** |
 | API reference | ✅ Generated (OpenAPI) |
 | `20-provider-simulation.md` + ADR | ⬜ **To be authored during M2.0** |
-| Operations runbook | ⬜ **Required by M1.3** (first deployed environment) |
+| Operations runbook | ⬜ **Required by M1.3A** (stack lifecycle), extended in M1.3B (deploy, rollback, restore) |
 | Onboarding guide | ⬜ Needed when team exceeds ~3 |
 
 **Documentation drift: zero.** All internal links resolve. Docs have been updated in the same commit as the code they describe, every time.
@@ -347,15 +376,15 @@ Three defects found and fixed during M0, each with regression tests proven to fa
 
 ## Next Task
 
-### 🎯 M1.2 · T12 — Next.js 15 scaffold
+### 🎯 M1.3A · T19 — Production Docker images
 
-**Why first:** zero dependencies, and every other M1.2 task builds on it.
+**Why first:** zero dependencies, and both remaining M1.3A tasks build on it.
 
-**Then:** T13 (Better Auth + Google/Microsoft OAuth) → T14 (RS256 JWT issuance) → T15 (signing keys) → T16 → T17 → T18.
+**Then:** T20 (migration runner + secrets) → T21 (production Compose stack) → M1.4 · T24 (platform smoke test) → M1.3B · T22 → T23.
 
-**T13/T14 are the critical blocker.** Until they land there is no working login, no demo, and no design-partner onboarding. The API side of the boundary is already built and adversarially tested — M1.2 supplies the issuer half.
+**Note the ordering.** T24 depends on M1.3A, not M1.3B — the smoke command runs against the local production stack, so it becomes a release gate *before* anything reaches AWS rather than after.
 
-**Awaiting:** approval to begin M1.2, and staffing. Every task remains unassigned.
+**Awaiting:** approval to begin M1.3A, and staffing. Every task remains unassigned.
 
 ---
 
@@ -363,6 +392,8 @@ Three defects found and fixed during M0, each with regression tests proven to fa
 
 | Date | Change |
 |---|---|
+| 2026-07-28 | v6 — **M1.2 approved.** Security Invariants suite established: 47 permanent invariants across authentication, authorization, database, and platform, each proven to fail when its guarantee is deliberately removed; wired into CI as a separately-reported job. Migration/runtime credential separation adopted as a permanent engineering rule (CLAUDE.md §8). M1.3 split into M1.3A Deployment Foundation and M1.3B Cloud Infrastructure; M1.4 Platform Smoke Test added; AC-3 split into AC-3A/3B/3C and AC-13 added. `@vitejs/plugin-react` recorded as scheduled technical debt. One architectural question raised for decision: platform-table read scope. |
+| 2026-07-28 | v5 — **M1.2 Authentication Boundary complete.** 7 tasks plus 3 added requirements; 242 backend and 29 frontend tests; Demo Checklist 10/10; AC-2 passed; Architecture Validation Report issued. One defect found during validation: `signora_auth` created but never connected as, with the frontend defaulting to the database owner. |
 | 2026-07-28 | v4 — **M1.1 Platform Runtime complete.** 11 tasks, 82 new tests (198 total), coverage 95.01% CI-gated, Demo Checklist 13/13, AC-1 passed. Dead code from the pagination refactor removed. 06-events.md updated to v3. |
 | 2026-07-28 | v3 — sequential single-stream execution adopted; calendar restated by team size; Demo Checklist added as a completion gate; progressive AI regression assertion model defined; simulator identical-adapter-contract rule recorded |
 | 2026-07-28 | v2 — M1 split into M1.1/M1.2/M1.3; M2.0 Provider Simulation Framework added; per-milestone Demo Scenario, User-Visible Outcome, DoD, Rollback, Operational Readiness introduced; R-14 identified; estimate revised to 225–305 ew |
