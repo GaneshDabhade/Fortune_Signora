@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -)",
+      "Bash(xargs -n1 basename)",
+      "Read(//tmp/**)",
+      "Bash(curl -sSf --max-time 5 https://astral.sh/uv/install.sh -o /tmp/uv_install.sh)",
+      "Bash(echo \"exit:$?\")",
+      "Bash(pip3 --version)",
+      "Bash(python3 -c \"import urllib.request; print\\(urllib.request.urlopen\\('https://pypi.org', timeout=5\\).status\\)\")",
+      "Bash(/usr/bin/curl -sS --max-time 10 -LsSf https://astral.sh/uv/install.sh)",
+      "Bash(sh)",
+      "Bash(git init *)"
+    ]
+  }
+}

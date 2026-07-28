@@ -1,0 +1,43 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      - id: detect-private-key
+
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run --project backend ruff check --fix
+        language: system
+        types: [python]
+        pass_filenames: true
+
+      - id: ruff-format
+        name: ruff format
+        entry: uv run --project backend ruff format
+        language: system
+        types: [python]
+        pass_filenames: true
+
+      # mypy and import-linter analyse the project as a whole, so they run
+      # once against the whole backend rather than per changed file.
+      - id: mypy
+        name: mypy (strict)
+        entry: bash -c 'cd backend && uv run mypy .'
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: import-linter
+        name: import-linter (module boundaries)
+        entry: bash -c 'cd backend && uv run lint-imports'
+        language: system
+        types: [python]
+        pass_filenames: false

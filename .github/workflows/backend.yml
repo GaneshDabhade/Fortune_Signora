@@ -1,0 +1,79 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  quality:
+    name: Lint, types, and module boundaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - name: ruff (lint)
+        run: uv run ruff check .
+      - name: ruff (format)
+        run: uv run ruff format --check .
+      - name: mypy (strict)
+        run: uv run mypy .
+      - name: import-linter (module boundaries)
+        run: uv run lint-imports
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: signora
+          POSTGRES_PASSWORD: signora
+          POSTGRES_DB: signora
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U signora -d signora"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      SIGNORA_DATABASE_URL: postgresql+asyncpg://signora:signora@localhost:5432/signora
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+
+      # The GitHub Actions service container cannot run the
+      # docker-entrypoint-initdb.d script that creates this role locally, so
+      # it is created here. Tests must connect as a non-superuser or RLS is
+      # not enforced and every isolation assertion passes vacuously.
+      - name: Create least-privilege application role
+        run: |
+          PGPASSWORD=signora psql -h localhost -U signora -d signora \
+            -c "CREATE ROLE signora_app LOGIN PASSWORD 'signora_app_local_dev';"
+
+      - name: Apply migrations
+        run: uv run alembic upgrade head
+
+      - name: Verify migrations are reversible
+        run: |
+          uv run alembic downgrade base
+          uv run alembic upgrade head
+
+      - name: Run tests
+        run: uv run pytest -v

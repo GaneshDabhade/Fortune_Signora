@@ -1,0 +1,61 @@
+# Deliberately namespaced "signora-v2" rather than "signora": an earlier
+# incarnation of this project left containers and a PostgreSQL 16 volume
+# under the "signora" project name. Keeping this stack separate means the
+# ratified PostgreSQL 17 stack (ADR-0006) can never adopt or destroy that
+# older state.
+name: signora-v2
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: signora
+      POSTGRES_PASSWORD: signora
+      POSTGRES_DB: signora
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres17_data:/var/lib/postgresql/data
+      # Creates the least-privilege signora_app login role on first init so
+      # local development connects as a non-superuser and RLS actually
+      # applies (see migration 0002).
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U signora -d signora"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: signora
+      MINIO_ROOT_PASSWORD: signora-local-dev
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  # Named explicitly for the PostgreSQL major version so a future major
+  # upgrade is an explicit, deliberate migration rather than a container
+  # that silently fails to start against incompatible data files.
+  postgres17_data:
+  minio_data:

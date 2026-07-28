@@ -1,0 +1,162 @@
+# 11 — Tenancy
+
+> Status: **Living document — Architectural Constitution — RATIFIED**
+> Audience: All engineers, EMs, and technical stakeholders at Signora
+> Revision: **v3** — two implementation-critical gaps closed during the Workspace & Tenancy build: the **non-superuser connection requirement** (without which RLS does nothing at all) and the **workspace-creation bootstrap pattern** (the standard policy is circular for the tenancy root itself). Both were discovered by integration testing against a real PostgreSQL 17 and are now specified below. v2 content otherwise unchanged. See [ADR-0006](adr/0006-data-platform-primary-database-and-multi-tenancy.md).
+
+## Purpose
+
+This document specifies Signora's multi-tenancy model in depth: the Workspace as tenancy root (Principle 8), and how PostgreSQL 17 Row-Level Security (Principle 7) enforces it on the shared single database (Principle 6).
+
+## The Tenancy Root: Workspace
+
+Every piece of tenant-owned data in Signora belongs to exactly one **Workspace**. Every workspace-owned table carries a `workspace_id` column, and every domain event carries `workspace_id` in its envelope (see [06-events.md](06-events.md)).
+
+```mermaid
+erDiagram
+    WORKSPACE ||--o{ ENTITY : "scopes"
+    WORKSPACE ||--o{ OBSERVATION : "scopes"
+    WORKSPACE ||--o{ BUSINESS_EVENT : "scopes"
+    WORKSPACE ||--o{ SIGNAL : "scopes"
+    WORKSPACE ||--o{ BUYING_SCORE : "scopes"
+    WORKSPACE ||--o{ OPPORTUNITY : "scopes"
+    WORKSPACE ||--o{ AI_RESEARCH_ARTIFACT : "scopes"
+    WORKSPACE ||--o{ AI_REASONING_RESULT : "scopes"
+    WORKSPACE ||--o{ RECOMMENDATION : "scopes"
+    WORKSPACE ||--o{ MEMBERSHIP : "has"
+```
+
+**Resolved:** the Business Event taxonomy (business event types and schemas, owned internally by Business Event Engine per [ADR-0025](adr/0025-module-boundary-evolution.md)) is **global reference data, not workspace-scoped**. It is domain knowledge Signora curates across all customers, not tenant data — it lives in tables without `workspace_id` and without RLS, read by every workspace's pipeline but writable only by Business Event Engine's own internal taxonomy-management path (not exposed to workspace-scoped users). This was an open question in v1; it is resolved here.
+
+## Row-Level Security Model
+
+Per Principle 7 and [ADR-0006](adr/0006-data-platform-primary-database-and-multi-tenancy.md):
+
+1. Every workspace-owned table has `workspace_id NOT NULL` and an RLS policy:
+   ```sql
+   CREATE POLICY workspace_isolation ON <table>
+     USING (workspace_id = current_setting('app.workspace_id')::uuid);
+   ```
+2. Every database session (API request or ARQ job) sets the session variable at the start of its unit of work:
+   ```sql
+   SET LOCAL app.workspace_id = '<resolved workspace_id>';
+   ```
+3. `SET LOCAL` scopes the setting to the current transaction, essential given SQLAlchemy's async connection pooling.
+4. RLS is enabled and forced (`FORCE ROW LEVEL SECURITY`) on every workspace-owned table.
+5. PostgreSQL 17's RLS policy planner improvements (over prior major versions) reduce the historical performance tax of RLS-qualified queries on large, indexed tables — a material input into the version choice in [ADR-0006](adr/0006-data-platform-primary-database-and-multi-tenancy.md).
+
+### The Application Must Connect as a Non-Superuser Role
+
+**This is the single most important operational requirement on this page.** PostgreSQL superusers, and any role holding `BYPASSRLS`, ignore Row-Level Security entirely — *including* on tables declared `FORCE ROW LEVEL SECURITY`. An application connecting as a superuser has **no tenant isolation whatsoever**, no matter how correct its policies are.
+
+Accordingly:
+
+- The application connects as **`signora_app`**: a dedicated role that is `NOSUPERUSER`, `NOBYPASSRLS`, and holds only `SELECT, INSERT, UPDATE, DELETE` on the tables it needs (migration `0002`). Least privilege, per [10-security.md](10-security.md).
+- Migrations run under a **separate, privileged identity**. The application role holds only `SELECT` on `alembic_version` and can never alter schema.
+- Adding a table to any module requires granting it to `signora_app` in the same migration that creates it, or the application fails closed with a permission error.
+- The integration suite asserts, session-wide, that its connection cannot bypass RLS (`verify_app_role_is_rls_bound`). Without that guard, every isolation test in the suite would pass vacuously against a superuser connection — which is exactly how this gap was originally found.
+
+### Policy Predicates Must Coerce Empty String to NULL
+
+Use `NULLIF(current_setting('app.workspace_id', true), '')::uuid`, never a bare `current_setting(...)::uuid`.
+
+After a transaction that used `SET LOCAL` commits, the setting reverts to **empty string**, not NULL, on that pooled connection. A bare `''::uuid` cast raises `invalid input syntax for type uuid`, turning a missing-context bug into a confusing runtime error far from its cause. Coercing `''` to NULL makes the comparison evaluate to NULL → false, so the query returns zero rows: the policy fails closed, quietly and correctly.
+
+```mermaid
+sequenceDiagram
+    participant Req as FastAPI Request or ARQ Job
+    participant Sess as SQLAlchemy Async Session (pooled)
+    participant PG as PostgreSQL 17 (RLS-enforced tables)
+
+    Req->>Sess: Resolve workspace_id (Better Auth + Casbin context, or event envelope)
+    Req->>Sess: BEGIN; SET LOCAL app.workspace_id = '...'
+    Req->>Sess: Application queries (RLS auto-applied; explicit workspace_id filter as defense-in-depth)
+    Sess->>PG: Queries executed with RLS policy auto-applied
+    PG-->>Sess: Only rows matching current workspace_id
+    Sess->>Req: COMMIT
+```
+
+## Establishing Workspace Context
+
+Two session variables are set, both transaction-scoped:
+
+- **`app.user_id`** — the authenticated principal. Required to evaluate the `workspace` table's membership-based policies.
+- **`app.workspace_id`** — the workspace being operated on. Required by every workspace-owned table's isolation policy.
+
+1. **Synchronous request path:** FastAPI's dependency-injected auth chain resolves `workspace_id` from the Better Auth-authenticated principal's verified membership (checked against Workspace & Tenancy), not from a request parameter alone. A request parameter may *select* which of a user's workspaces to operate in, but membership must be verified server-side before `SET LOCAL app.workspace_id` is issued. Casbin's policy check is evaluated in the same request-scoped context.
+2. **Asynchronous event path:** every event envelope carries `workspace_id` (see [06-events.md](06-events.md)); an ARQ worker sets `SET LOCAL app.workspace_id` from the event envelope, never re-derives it.
+
+Both are set through `signora_platform.db`'s `tenant_scoped_session` / `user_scoped_session` helpers — module infrastructure code never issues these statements itself. The helpers use `set_config(..., true)` rather than literal `SET LOCAL` because PostgreSQL's `SET` family does not accept bound parameters, and `set_config` does; this avoids interpolating caller-supplied values into SQL text.
+
+## The Workspace-Creation Bootstrap Pattern
+
+The standard workspace-scoped policy is **circular for the `workspace` table itself**: a new workspace row cannot be checked against an `app.workspace_id` that does not exist until that row is created. The `workspace` table therefore uses split, operation-specific policies rather than one blanket policy:
+
+| Operation | Policy | Rationale |
+|---|---|---|
+| `INSERT` | `WITH CHECK (true)` | Any authenticated principal may create a workspace. Authorization for *whether* they may (plan limits, invitation rules) is a Casbin/application concern, not an RLS one. |
+| `SELECT` | Caller must be a member (`app.user_id` ∈ that workspace's memberships) | Prevents reading — or enumerating the existence of — workspaces you do not belong to. |
+| `UPDATE` | Caller must be a member **with role `owner`** | Only owners may modify workspace-level settings. |
+
+Workspace creation therefore proceeds in one transaction, in this order:
+
+1. Open a session with only `app.user_id` set (`user_scoped_session`) — there is no workspace to scope to yet.
+2. Insert the `workspace` row (permitted by the open `INSERT` policy).
+3. **Activate `app.workspace_id` mid-transaction** for the row just created.
+4. Insert the founding `OWNER` membership, which now satisfies the ordinary workspace-scoped policy on `membership`.
+5. Publish `workspace.created` and `workspace.member_added` to the outbox and commit — all atomically.
+
+Step 3 is why the application layer defines a `TenantContext` port: activating workspace scope is a legitimate mid-flow domain need here, not a leaked infrastructure detail.
+
+> Note on read behavior: because `SELECT` on `workspace` requires membership, requesting a workspace you do not belong to surfaces as **"not found"**, never "forbidden". This is deliberate — a distinct "forbidden" response would let a caller enumerate which workspace ids exist. Preserve this property in any new read path.
+
+## Cross-Workspace Operations
+
+Business Event Engine's global taxonomy management (resolved above) is the one built-in, by-design cross-workspace read path — it reads reference data with no RLS, by definition, because that data isn't tenant-owned.
+
+Beyond that, platform admin/support tooling requiring cross-workspace access remains an explicitly tracked open item — see Risk R-06 in [16-architecture-risks.md](16-architecture-risks.md). It must run under a distinct, narrowly-scoped database role with audit logging, and must never be used as a convenience escape hatch for routine application logic.
+
+## Workspace Lifecycle
+
+- **Creation, suspension, and deletion flows**, including PII/data retention on offboarding, remain open — see Risk R-04 in [16-architecture-risks.md](16-architecture-risks.md). These depend on GTM/product decisions (self-serve vs. sales-assisted onboarding) and compliance input outside this Review Board's technical mandate.
+- **Membership** is managed by Workspace & Tenancy in coordination with Better Auth (identity) and Casbin (role/permission evaluation) — see [ADR-0010](adr/0010-identity-and-access.md).
+
+## Design Rationale
+
+Using native PostgreSQL 17 RLS rather than application-only filtering means tenant isolation survives bugs in any individual module's query code — a property that matters more in a modular monolith where many ARQ workers touch tenant data far from the original authenticated request. Resolving the taxonomy-scoping question (global, not per-workspace) removes an ambiguity that would otherwise have let RLS policy design drift inconsistently across the codebase.
+
+## Best Practices
+
+- Never construct a database session without first setting `app.workspace_id` for that unit of work.
+- Always use transaction-scoped settings (`SET LOCAL` / `set_config(..., true)`), never session-scoped ones.
+- Treat `workspace_id` as required, non-nullable on every new workspace-owned table and event from day one.
+- Grant every new table to `signora_app` in the same migration that creates it.
+- Write at least one integration test per new workspace-owned table that issues a **`WHERE`-less query** and asserts only the current workspace's rows come back. That is the assertion that actually proves RLS is doing the work rather than the application's own filtering.
+- Business Event Engine's taxonomy tables are the one deliberate exception to "every table has `workspace_id`" — do not use this as precedent for any other table without an explicit design review.
+
+## Anti-Patterns
+
+- **Connecting the application as a superuser or any `BYPASSRLS` role.** Silently disables every policy on this page.
+- **Pointing an integration test suite at a superuser connection.** Every isolation assertion then passes for the wrong reason — worse than having no tests, because it manufactures false confidence.
+- Trusting a client-supplied `workspace_id` request parameter without verifying membership.
+- Using session-scoped `SET` instead of transaction-scoped `SET LOCAL`, which leaks one tenant's context onto the next request sharing that pooled connection.
+- A bare `current_setting(...)::uuid` in a policy predicate, without `NULLIF(..., '')`.
+- Adding a workspace-owned table without `FORCE ROW LEVEL SECURITY`.
+- Adding `workspace_id` to a genuinely global reference-data table "just to be safe," fragmenting what should be shared, centrally-curated data.
+- Using an admin/cross-workspace bypass role for routine application logic.
+
+## Tradeoffs
+
+| Choice | We gain | We give up |
+|---|---|---|
+| Shared DB + RLS over DB/schema-per-tenant | Simple operations, easy cross-tenant platform analytics, no per-tenant migration fan-out | Coarser resource isolation between noisy-neighbor tenants (mitigated in [12-scalability.md](12-scalability.md)) |
+| Global (non-RLS) taxonomy tables | Single, centrally-curated source of truth for what a "business event" is across all customers | None of Signora's other domain modules follow this pattern — a documented, deliberate, single exception |
+
+## Future Evolution
+
+- If a small number of very large tenants eventually justify dedicated resources, consider tenant-aware read replicas or `workspace_id` partitioning before database-per-tenant — see [12-scalability.md](12-scalability.md).
+- The admin/cross-workspace access model (Risk R-06) and workspace lifecycle/PII policy (Risk R-04) should be formalized before customer-facing support tooling or regulated-industry customers are onboarded at scale.
+
+## Decision Summary
+
+Workspace is Signora's tenancy root on PostgreSQL 17; every table and event is workspace-scoped except Business Event Engine's global taxonomy, which is deliberately shared reference data outside RLS. Transaction-scoped `app.user_id` / `app.workspace_id` settings with `FORCE ROW LEVEL SECURITY` remain the authoritative isolation mechanism across both FastAPI requests and ARQ jobs — **and are only effective because the application connects as the non-superuser, non-`BYPASSRLS` `signora_app` role.** The `workspace` table itself uses split INSERT/SELECT/UPDATE policies to break the bootstrap circularity of the tenancy root, and all policy predicates coerce empty string to NULL so missing context fails closed.
