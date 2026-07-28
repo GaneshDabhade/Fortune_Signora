@@ -274,6 +274,12 @@ Concretely, Claude must:
 
 When a milestone's stated demonstration turns out to require a capability it does not own, that is a **finding to raise**, not a licence to build ahead. The correct resolution is to move the demonstration to the milestone that owns the capability (a Category 1 change, §5c of the roadmap), as was done with *"simulated payloads traverse the production pipeline"* — moved from M2.0 to M2.1, where the consumer actually lives.
 
+### `docs/SESSION_HANDOFF.md` is the continuation point
+
+Updated at every milestone boundary, alongside `PROJECT_STATUS.md`. It captures project position, the permanent architectural contracts, Product Pipeline state, design philosophy, the next milestone's starting context and open questions, and a "Next Session Starting Point" block.
+
+Its purpose is that a session can begin immediately without rereading milestone history. Claude should read it first in a new session, and update it when closing a milestone.
+
 ### `PROJECT_STATUS.md` is authoritative
 
 It is the **executive dashboard**, not a progress log. It must answer, at a glance:
