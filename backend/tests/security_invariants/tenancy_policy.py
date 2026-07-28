@@ -41,6 +41,11 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
     {
         "workspace",
         "membership",
+        # Provider Platform (M2.1). Each carries workspace_id with forced
+        # RLS and the full policy set, created in migration 0007.
+        "provider_sync",
+        "provider_watermark",
+        "raw_provider_record",
     }
 )
 

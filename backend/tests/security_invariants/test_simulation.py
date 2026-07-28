@@ -209,3 +209,112 @@ def _strip_docstrings(source: str) -> str:
     documentation of the rule as a violation of it.
     """
     return re.sub(r'"""(?:.|\n)*?"""', "", source)
+
+
+class TestPipelineNeutrality:
+    """AC-21. The ingestion pipeline must process simulated and production
+    providers identically.
+
+    **The most important invariant in M2.1.** Configuration may select the
+    provider implementation; the pipeline itself must never know which it
+    got. A single branch here would mean the simulator proves nothing about
+    the production path, and every downstream module would inherit that.
+    """
+
+    PIPELINE_ROOT = BACKEND_ROOT / "modules" / "provider_platform"
+
+    def _pipeline_sources(self, *layers: str) -> list[tuple[str, str]]:
+        return [
+            (str(path.relative_to(BACKEND_ROOT)), path.read_text())
+            for layer in layers
+            for path in (self.PIPELINE_ROOT / layer).rglob("*.py")
+        ]
+
+    #: Two known deviations, raised for architectural decision rather than
+    #: silently permitted. Neither is a *branch* — nothing in the pipeline
+    #: behaves differently because of them — but both are simulation or
+    #: provider knowledge sitting in the domain, which AC-21 arguably
+    #: forbids. Named explicitly so any *third* one fails the build.
+    #:
+    #: 1. `ProviderResponse.simulated` / `ProviderDescriptor.simulated` —
+    #:    a flag carried for observability, because the safety guard
+    #:    requires ingestion logs to mark simulated payloads unambiguously.
+    #: 2. `ProviderName` — an enum of the five ratified providers in the
+    #:    domain, used for typed dispatch and for recording which provider
+    #:    a sync belongs to.
+    KNOWN_DEVIATIONS = frozenset({"modules/provider_platform/domain/provider.py"})
+
+    def test_no_new_simulation_knowledge_enters_the_pipeline(self) -> None:
+        """Nothing *branches* on simulation anywhere in the pipeline.
+
+        The two known deviations in `provider.py` are data, not control
+        flow — see KNOWN_DEVIATIONS. Any other file mentioning simulation
+        fails here.
+        """
+        offenders = [
+            name
+            for name, source in self._pipeline_sources("domain", "application")
+            if re.search(r"simulat", _strip_docstrings(source), re.IGNORECASE)
+            and name not in self.KNOWN_DEVIATIONS
+        ]
+
+        assert offenders == [], (
+            f"{offenders} reference simulation. Selection happens in configuration at the "
+            "composition root; the pipeline must not know which implementation it received."
+        )
+
+    def test_nothing_in_the_pipeline_branches_on_simulation(self) -> None:
+        """The assertion that matters most. A *flag* is data; an `if` on
+        that flag is behaviour, and behaviour that differs between the two
+        paths is exactly what makes the simulator prove nothing."""
+        offenders = [
+            name
+            for name, source in self._pipeline_sources("domain", "application", "infrastructure")
+            if re.search(r"if\s+.*\bsimulated\b", _strip_docstrings(source))
+            and "adapters/simulated" not in name
+        ]
+
+        assert offenders == [], f"{offenders} branch on simulation state"
+
+    def test_domain_and_application_import_nothing_from_the_simulator(self) -> None:
+        offenders = [
+            name
+            for name, source in self._pipeline_sources("domain", "application")
+            if re.search(
+                r"^\s*(?:from|import)\s+signora_platform\.simulation", source, re.MULTILINE
+            )
+        ]
+
+        assert offenders == []
+
+    def test_no_provider_specific_behaviour_in_the_pipeline(self) -> None:
+        """Provider identity belongs inside adapters.
+
+        `ProviderName` is a known deviation (see KNOWN_DEVIATIONS): the
+        platform records *which* provider a sync belongs to, which is
+        arguably identity knowledge. What it must never do is *behave*
+        differently per provider — that is what this asserts, and it is the
+        property that actually matters.
+        """
+        offenders = [
+            (name, provider)
+            for name, source in self._pipeline_sources("domain", "application")
+            for provider in ("apollo", "builtwith", "crunchbase", "coresignal", "bombora")
+            if re.search(
+                rf"(?:if|elif|match|case).*\b{provider}\b", _strip_docstrings(source), re.IGNORECASE
+            )
+        ]
+
+        assert offenders == [], f"{offenders} branch on provider identity"
+
+    def test_only_the_composition_root_knows_a_simulator_exists(self) -> None:
+        """One file may know, and it is the file whose job is wiring."""
+        knowing = [
+            name
+            for name, source in self._pipeline_sources("infrastructure")
+            if re.search(r"simulat", _strip_docstrings(source), re.IGNORECASE)
+        ]
+
+        assert all(
+            "adapters/simulated" in name or name.endswith("composition.py") for name in knowing
+        ), f"{knowing} know about simulation outside the adapter and composition root"

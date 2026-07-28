@@ -232,3 +232,14 @@ Keeping PostgreSQL as the transactional source of truth while using the already-
 ## Decision Summary
 
 The Internal Event Bus is a versioned, envelope-standardized, at-least-once, per-entity-ordered event system implemented as a PostgreSQL transactional outbox for durability, relayed via `LISTEN/NOTIFY` into Redis/ARQ for dispatch and worker concurrency — reusing, not duplicating, the platform's general background-processing infrastructure.
+
+### Provider Platform (M2.1)
+
+| Event | v | Payload | Notes |
+|---|---|---|---|
+| `provider.sync.started` | 1 | `sync_id`, `provider`, `capability` | One sync run begins |
+| `provider.record.received` | 1 | `record_id`, `sync_id`, `provider`, `capability`, `external_id` | One raw record landed. **Carries identity, not payload** — putting a provider body in an envelope would make every vendor shape change an event contract change. |
+| `provider.sync.completed` | 1 | `sync_id`, `provider`, `capability`, `records_received`, `pages_fetched` | Watermark advances only on this |
+| `provider.sync.failed` | 1 | `sync_id`, `provider`, `capability`, `failure_kind`, `failure_message` | `failure_kind` ∈ `transient` \| `permanent` \| `contract`. Message is coarse — a message naming exactly which credential was rejected would reach a log aggregator with retention. |
+
+**No event carries simulation state.** A consumer able to distinguish a simulated record from a real one would be a consumer with a reason to behave differently, which is the coupling AC-21 forbids.
