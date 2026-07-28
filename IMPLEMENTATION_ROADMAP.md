@@ -29,12 +29,12 @@ The parallel-workstream design in §9 is **retained for future team scaling** an
 
 Total effort is unchanged by this decision; **calendar time is not**. Sequential execution forfeits the compression that parallelism buys, and the arithmetic is worth seeing rather than discovering later.
 
-| Team size | M1.5 (14.5 ew) | M1.5 + M2.0 | **Remaining to GA (213–291 ew)** |
+| Team size | M2.0 (22–29 ew) | Through M2.2 | **Remaining to GA (204–282 ew)** |
 |---|---|---|---|
-| **1 engineer** | ~18 weeks | ~40–48 weeks | **~5.1–7.0 years** |
-| **2 engineers** | ~9 weeks | ~20–24 weeks | **~2.6–3.5 years** |
-| **3 engineers** | ~6 weeks | ~13–16 weeks | **~1.7–2.3 years** |
-| 6 engineers *(parallel model, for reference)* | ~3 weeks | ~7–8 weeks | ~0.9–1.2 years |
+| **1 engineer** | ~28–36 weeks | ~46–61 weeks | **~4.9–6.8 years** |
+| **2 engineers** | ~14–18 weeks | ~23–31 weeks | **~2.5–3.4 years** |
+| **3 engineers** | ~9–12 weeks | ~15–20 weeks | **~1.6–2.3 years** |
+| 6 engineers *(parallel model, for reference)* | ~5–6 weeks | ~8–10 weeks | ~0.8–1.1 years |
 
 Assumes 80% effective capacity, computed from work *remaining* rather than total. Within a milestone, extra engineers help only up to the **critical path**, which is serial: M1.5's chain (T25→T26→T28→T27→T29) is ~9 ew and cannot compress below that regardless of headcount.
 
@@ -139,14 +139,14 @@ M1 is split into three; M2.0 is inserted before data ingestion. **All other mile
 | **M1.3A** Deployment Foundation | M1 | ~5.5 ew |
 | **M1.4** Platform Smoke Test | *(foundation completion gate)* | ~1.5 ew |
 | **M1.5** Frontend Foundation | M1 | ~14.5 ew |
-| **M2.0** Provider Simulation Framework | *(internal enablement)* | ~17–24 ew |
+| **M2.0** Provider Simulation Framework | *(internal enablement)* | ~22–29 ew |
 | **M2.1 → M14b** pipeline — 17 milestones in the §5b execution order | M2–M13 | ~155–219 ew |
 | **M14.5** Cloud Infrastructure *(deferred from M1.3B)* | *(production readiness)* | ~6 ew |
 | **M15** GA readiness | *(production readiness)* | ~20–27 ew |
 
-**Total to GA: ~262–340 ew.** Recomputed from the milestone table in §6 rather than carried forward — the previous figure understated it, because M15 GA readiness had been folded inside the pipeline band and was double-removed when the band was split. Two changes account for the rest of the movement: M1.5 makes explicit ~14.5 ew of frontend platform work previously buried in M12's estimate, and M12 drops from 28–40 to 24–35 ew because the platform half of it moved to M1.5.
+**Total to GA: ~267–345 ew.** Recomputed from the milestone table in §6 rather than carried forward — the previous figure understated it, because M15 GA readiness had been folded inside the pipeline band and was double-removed when the band was split. Two changes account for the rest of the movement: M1.5 makes explicit ~14.5 ew of frontend platform work previously buried in M12's estimate, and M12 drops from 28–40 to 24–35 ew because the platform half of it moved to M1.5.
 
-~49 ew complete, **~213–291 ew remaining**. See §1 for calendar at various team sizes.
+~63.5 ew complete, **~204–282 ew remaining**. See §1 for calendar at various team sizes.
 
 ### Cloud Infrastructure is deferred, not removed
 
@@ -205,7 +205,7 @@ Milestone IDs are **stable labels, not sequence numbers**. They are deliberately
 |---|---|---|---|
 | — | ✅ M0 · M1.1 · M1.2 · M1.3A · M1.4 | Foundation | complete |
 | 1 | **M1.5** | Frontend Foundation | ~14.5 ew |
-| 2 | **M2.0** | Provider Simulation Framework | ~17–24 ew |
+| 2 | **M2.0** | Provider Simulation Framework | ~22–29 ew |
 | 3 | **M2.1** | Provider Platform | ~8–11 ew |
 | 4 | **M2.2** | Provider Normalization | ~6–9 ew |
 | 5 | **M3A** | Knowledge Graph | ~9–12 ew |
@@ -617,64 +617,113 @@ make smoke
 
 ### 🆕 M2.0 — Provider Simulation Framework
 
-> **Entry gate:** the Simulation Architecture Review ([20-provider-simulation.md](docs/architecture/20-provider-simulation.md)) must be approved before implementation begins.
+> **Architecture ratified** in [20-provider-simulation.md](docs/architecture/20-provider-simulation.md) on 2026-07-28: nine stages, eight permanent principles, five Phase 1 providers, the payload provenance rule, Scenario Manifests, and webhook deferral.
 >
-> **Exit gate — operational verification:** `make smoke` must pass against **freshly built images and a clean Compose stack** before M2.0 is complete. This closes the gap left open at M1.5, when the Docker daemon could not reach the registry and the frontend image was not rebuilt after `--legacy-peer-deps` was removed.
+> **Exit gate — operational verification:** `make smoke` must pass against **freshly built images and a clean Compose stack**, closing the gap left at M1.5 when the Docker daemon could not reach the registry.
 
-**Scope:** Provider Port (first concrete implementation) · simulation framework (datasets, scenario engine, virtual clock) · realistic payload generation for 5 providers · fault/timing/duplicate injection · sync-mode simulation · 10 demo scenarios · deterministic AI-regression foundation.
+**Scope:** Provider Port (first concrete implementation) · simulation framework (dataset store, scenario engine, virtual clock) · five simulated providers · Bombora temporal intent modelling · fault, timing, duplicate and ordering injection · polling/scheduled/incremental/pagination delivery · 13 Scenario Manifests · four safety guards · shared adapter contract suite.
 
-**Effort:** ~17–24 ew · Design in **§8**
+**Effort:** ~22–29 ew · **Tasks:** T34–T44
 
-**Simulator requirement:** ✅ **This milestone builds it.**
+**Estimate revised from ~17–24 ew.** Three approved scope additions account for it, and it is recorded rather than absorbed: **Bombora is a temporal provider**, not a fifth enrichment provider — modelling rising, sustained, decaying, reactivating, noisy, and seasonally-varying intent is a distinct capability (T40, ~3 ew); **13 Scenario Manifests** rather than 10; and manifests now declare the **full expected journey** through every downstream stage, not only payloads.
 
-**Demo scenario:**
-> *"A company, simulated end to end — with the network cable pulled."* Select Scenario 1 (High-Growth SaaS). The simulator emits realistic Apollo, CoreSignal, BuiltWith, and Similarweb payloads through the **same ingestion path production uses**. Show raw payloads landing with full provenance. Re-run the identical scenario: byte-identical results — **deterministic**. Inject a provider timeout, a duplicate delivery, and a delayed update; show each handled correctly. Then flip a single configuration value to switch a provider from simulated to production and show **no code changed**.
+**Simulator requirement:** ✅ This milestone builds it.
 
-**Demo checklist:**
-- [ ] Scenario 1 runs end to end with **network egress blocked**
-- [ ] Raw payloads for all 5 providers land with full provenance
-- [ ] Payload shapes validated against each vendor's documented response format
-- [ ] Same scenario + seed re-run → **byte-identical output** (diff shows nothing)
-- [ ] Re-run on a different machine → still byte-identical
-- [ ] Provider timeout injected → adapter surfaces a transient failure, retries
-- [ ] Duplicate delivery injected → downstream unaffected
-- [ ] Delayed/out-of-order update injected → handled correctly
-- [ ] Full-snapshot and incremental-sync modes both exercised
-- [ ] Simulated webhook delivery exercised
-- [ ] **Config-only switch** between simulated and production adapter demonstrated; `git diff` shows no code change
-- [ ] Ingestion logs unambiguously mark payloads as simulated
-- [ ] **Simulator refuses to start with `environment=production`** (guard demonstrated live)
-- [ ] All 10 scenarios listed and runnable
-- [ ] Timing control demonstrated: instant, real-time, accelerated
+#### Tasks
 
-**User-visible outcome:** **None for customers.** Substantial internally — every subsequent milestone becomes demonstrable, testable, and developable offline.
+| ID | Task | Complexity | Depends on |
+|---|---|---|---|
+| **T34** | **Payload provenance verification** — for each of the five providers, obtain and record a source from the four permitted categories | S · 0.5 ew | — |
+| **T35** | Provider Port definition + **shared adapter contract test suite** | L · 3 ew | — |
+| **T36** | Safety guards: environment refusal, ingestion marking, health visibility, alert | M · 1.5 ew | T35 |
+| **T37** | Dataset Store (immutable, versioned, content-hashed) + Virtual Clock | M · 2 ew | — |
+| **T38** | Scenario Engine + Scenario Manifest schema | L · 3 ew | T37 |
+| **T39** | Payload generators: Apollo, BuiltWith, Crunchbase, CoreSignal | L · 3.5 ew | T34, T35, T38 |
+| **T40** | **Bombora temporal intent generator** — topics, weekly surge, rise/sustain/decay/reactivation, noise, seasonality, competitive overlap, delayed reporting | L · 3 ew | T34, T35, T38 |
+| **T41** | Fault injector — timeout, 5xx, rate limit, malformed, partial, duplicate, out-of-order | M · 2 ew | T39, T40 |
+| **T42** | Delivery mechanism — polling, scheduled sync, incremental sync, pagination, rate limiting, retry, duplicate, ordering | L · 3 ew | T41 |
+| **T43** | 13 Scenario Manifests with M2.0-layer assertions | L · 3 ew | T38, T39, T40, T42 |
+| **T44** | Simulation observability, CI integration, `make smoke` extension | M · 1.5 ew | T43 |
 
-**Definition of Done:**
+**Sequential order:** T34 → T35 → T36 → T37 → T38 → T39 → T40 → T41 → T42 → T43 → T44
+
+Three ordering decisions worth stating:
+
+- **T34 first, and it is a gate.** Provenance is verified *before* a generator is written. Its permitted outcome is "defer this provider" — discovering after building a generator that its shape was guessed means discarding the generator, the golden files, and every scenario assertion built on it.
+- **T35 second.** The Port and its contract suite exist before anything implements them. Writing the suite against the first adapter would shape the contract around the simulator, which is precisely backwards — the contract belongs to production.
+- **T36 third, before any payload exists.** The guard that prevents production activation is built before there is anything to activate. A simulator that works before its guard does is a simulator that can be run somewhere it should not.
+
+**Dependencies outside the milestone:** none. M1.1's event bus, M1.3A's deployment foundation, and M1.5's frontend are all complete. M2.0 blocks every pipeline milestone from M2.1 onward.
+
+#### Acceptance criteria
+
+| ID | Criterion |
+|---|---|
+| **AC-4** | **Simulator Fidelity** — identical adapter contract; configuration-only switching; entry at the Provider layer only; determinism proven; production guard test-enforced |
+| **AC-16** | **Contract Interchangeability** — one contract suite runs against both adapters and asserts **identical normalized output**, not merely identical adapter behaviour |
+| **AC-17** | **Payload Provenance** — every generator records which of the four permitted sources its shape derives from. No generator ships without one. |
+| **AC-18** | **Temporal Intent Fidelity** — Bombora produces trajectories, not snapshots: rising, sustained, falling, decaying, and reactivating intent are each distinguishable downstream, and correlated multi-topic intent produces stronger intelligence than any single topic |
+| **AC-13** | **Security Invariants** extended with the milestone's guarantees, each proven to fail when removed |
+
+#### Demo scenario
+
+> *"Four weeks of buying intent, in ninety seconds, with no vendor account."*
+>
+> Start the stack with `SIGNORA_PROVIDER_MODE=simulated` — **the only configuration change**; show `git grep "if simulated"` returning nothing. Run the *ERP Replacement* scenario on an accelerated clock: Bombora's *Cloud ERP* topic climbs 18 → 42 → 71 → 88 across four simulated weeks while BuiltWith reports the incumbent ERP's removal. Watch payloads arrive at the Provider Port, every ingestion line marked `simulated: true` with its dataset version, scenario, and seed.
+>
+> Then run *Intent Cooling* and show the same pipeline treating a decaying topic differently — the distinction that stops the product recommending outreach to a company that already bought elsewhere.
+>
+> Re-run the first scenario with the same seed and diff the payloads: byte-identical. Change the seed: different, and still valid.
+>
+> Inject a rate limit and a duplicate delivery; watch backoff and the idempotency ledger absorb them. Finally, set `SIGNORA_ENVIRONMENT=production` and watch the simulator refuse to start.
+
+#### Demo checklist
+
+- [ ] Switching to simulated mode is **configuration only**; no `if simulated:` anywhere — asserted structurally
+- [ ] All five providers emit payloads whose shape traces to a recorded provenance source
+- [ ] Bombora produces a **four-week rising trajectory**, not a static score
+- [ ] Correlated multi-topic intent (Security Modernization) is distinguishable from single-topic intent
+- [ ] Intent cooling and reactivation behave differently from a rise
+- [ ] Same dataset + scenario + seed ⇒ **byte-identical payloads**; different seed ⇒ different payloads
+- [ ] Contract suite passes against both simulated and production adapters with identical normalized output
+- [ ] Rate limit, timeout, malformed payload, partial response each handled per production semantics
+- [ ] Duplicate delivery processed exactly once — by the platform, not the simulator
+- [ ] Out-of-order arrival handled; `occurred_at` and ingestion time diverge as they would in a backfill
+- [ ] Pagination and incremental sync exercise their own paths; a delta after a snapshot produces no duplicates
+- [ ] Every ingestion line marks the payload simulated with dataset version, scenario, seed
+- [ ] Simulator **refuses to start** with `environment == production`; refusal logged
+- [ ] All 13 Scenario Manifests pass their M2.0-layer assertions
+- [ ] `make smoke` passes against **freshly built images and a clean stack**
+
+**User-visible outcome:** None directly. The internal outcome is that the entire pipeline becomes buildable, demonstrable, and regression-testable without a vendor account, a contract, or a cent of spend — and that every subsequent milestone inherits a deterministic test substrate rather than building one.
+
+#### Definition of Done
+
 - [ ] Demo Checklist passes in full
-- [ ] **Simulated adapters implement exactly the same Provider Port contract as production adapters** — identical signatures, identical return types, identical error semantics
-- [ ] Adapter selection is **configuration only** — zero `if simulated:` branching in any layer
-- [ ] Production safety guard test-enforced
-- [ ] Datasets versioned; a dataset change is a reviewable diff
-- [ ] Regression dataset structure supports **incremental extension** (see §8 Progressive Assertion)
-- [ ] New architecture document `20-provider-simulation.md` + ADR
-- [ ] AC-4 passed
+- [ ] AC-4, AC-16, AC-17, AC-18, AC-13 all passed
+- [ ] **Every generator records its provenance source**; any provider without one is deferred, not fabricated
+- [ ] Import-linter contract forbidding `signora_platform/simulation/` from importing any module — **proven to fail** on a deliberate violation
+- [ ] Datasets versioned, content-hashed, and immutable; a mutation attempt fails
+- [ ] 13 Scenario Manifests committed with their full expected journey declared, M2.0 layer asserted
+- [ ] `20-provider-simulation.md` updated with as-built detail; accompanying ADR authored
+- [ ] `make smoke` extended to run one scenario end to end, and passing against fresh images
 
-**Rollback strategy:**
-- **Code:** additive platform code. Disabling is a configuration change; no production path depends on it.
-- **Accidental production activation:** mitigated by the environment guard — the single most important control in this milestone. A simulator silently active in production would fabricate customer intelligence, which is a trust failure rather than a bug.
-- **Datasets:** versioned and immutable once published. A bad dataset is superseded by a new version, never edited in place — otherwise historical regression comparisons become meaningless.
-- **Blast radius:** nil in production if the guard holds; total for development and demos if it breaks.
+#### Rollback strategy
 
-**Operational readiness checklist:**
-- [ ] Simulator state (active/inactive, scenario, seed) exposed in non-production health output
-- [ ] Logs unambiguously mark simulated payloads — an engineer must never mistake simulated data for real
-- [ ] Alert: simulator active in any environment where it should not be
-- [ ] Documented procedure: adding a new provider simulation
-- [ ] Documented procedure: authoring a new scenario
-- [ ] Documented procedure: extending a scenario's assertions at a later milestone
-- [ ] Dataset provenance recorded (source, generation date, version)
+- **Application:** the simulator is inert unless `SIGNORA_PROVIDER_MODE=simulated`. Rollback is a configuration change, not a deploy — and the default is off.
+- **Schema:** none. The simulator adds no table; datasets and manifests are files.
+- **Data:** simulated payloads enter the same pipeline as real ones, so a scenario run in a shared environment produces real rows. **Scenario runs are confined to disposable environments**; the safety guard prevents production, and the workspace scoping prevents cross-tenant contamination.
+- **Blast radius:** limited to whichever workspace a scenario targeted. Recovery is deleting that workspace, which is why scenarios target purpose-created ones.
 
----
+#### Operational readiness checklist
+
+- [ ] Runbook: running a scenario, choosing a clock mode, interpreting a failure
+- [ ] Runbook: what to do if simulated data reaches an environment it should not have
+- [ ] Alert: simulator active outside a permitted environment
+- [ ] Health output shows simulator state and active dataset version in non-production
+- [ ] Ingestion logs distinguish simulated from real unambiguously, at a glance
+- [ ] Dataset and scenario versions recorded on every run, for later attribution
+- [ ] Determinism verified in CI, not only locally — a machine-dependent seed is the failure this catches
 
 ### M2.1 — Provider Platform · M2.2 — Provider Normalization
 
@@ -1078,6 +1127,9 @@ All four are test-enforced, not conventions.
 | **AC-9 — AI Evaluation Gate** | M8 | Golden sets exist; regression CI-enforced; evidence-completeness a release gate |
 | **AC-10 — Module Boundary Audit** | Every milestone | import-linter contracts extended and **proven to fail** on a deliberate violation |
 | **AC-14 — Frontend Foundation Integrity** | M1.5 | Every business screen addable without touching shell, routing, auth, or query infrastructure; **no mock business data in the codebase**; component tests in CI |
+| **AC-16 — Contract Interchangeability** | M2.0 | One contract suite runs against both the simulated and production adapter, asserting **identical normalized output** |
+| **AC-17 — Payload Provenance** | M2.0 | Every generator records which of the four permitted sources its shape derives from; no generator ships without one |
+| **AC-18 — Temporal Intent Fidelity** | M2.0 | Bombora produces trajectories, not snapshots; rising, sustained, falling, decaying, and reactivating intent each distinguishable downstream |
 | **AC-15 — Design System Stability** | M1.5 | Shared components consume design tokens rather than hard-coded styling; a theme change requires no component rewrite; a new business page composes entirely from the shared library without modifying the design system |
 | **AC-13 — Security Invariants** | Every milestone | The suite is extended with the milestone's new guarantees, and every added invariant is **proven to fail** when its guarantee is deliberately removed |
 | **AC-11 — Scale Validation** | M15 | RLS, Meilisearch, pgvector load-tested at target scale using simulator-generated volume |

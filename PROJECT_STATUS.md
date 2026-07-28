@@ -3,7 +3,7 @@
 > **Owner:** Technical Program Manager · **Audience:** Everyone
 > **Cadence:** Updated at every milestone boundary and every sprint close. Updating this is part of the [Definition of Done](IMPLEMENTATION_ROADMAP.md#12-definition-of-done-global).
 > **Last updated:** 2026-07-28 · **Reporting period:** M1.2 delivery
-> **Revision:** v12 — **M1.5 approved; both foundations frozen.** Simulation Architecture Review issued for M2.0 approval. **Revision v11 —** M1.5 Frontend Foundation complete. Design system, shared component library, application shell, query layer, session and workspace management, permission-aware routing, feedback primitives, and component testing in CI. **`@vitejs/plugin-react` debt repaid** — `--legacy-peer-deps` removed everywhere. The frontend foundation is now a contract (CLAUDE.md §20c)
+> **Revision:** v13 — **Simulation Architecture Review approved.** Eight principles permanent; five Phase 1 providers ratified (Apollo, BuiltWith, Crunchbase, CoreSignal, **Bombora**); payload provenance rule adopted; Scenario Manifests introduced; webhooks deferred. M2.0 breakdown presented — **awaiting approval**. **Revision v11 —** M1.5 Frontend Foundation complete. Design system, shared component library, application shell, query layer, session and workspace management, permission-aware routing, feedback primitives, and component testing in CI. **`@vitejs/plugin-react` debt repaid** — `--legacy-peer-deps` removed everywhere. The frontend foundation is now a contract (CLAUDE.md §20c)
 
 ---
 
@@ -27,7 +27,7 @@ M2.1 → M15                 ░░░░░░░░░░░░░░░░░
 
 | Dimension | Status |
 |---|---|
-| **Overall completion to GA** | **~19%** by engineering effort (~63.5 of ~262–340 total engineer-weeks; **~199–277 ew remaining**) |
+| **Overall completion to GA** | **~18%** by engineering effort (~63.5 of ~267–345 total engineer-weeks; **~204–282 ew remaining**). *M2.0's estimate rose ~17–24 → ~22–29 ew from approved scope: Bombora as a temporal provider, 13 scenarios not 10, and manifests declaring the full expected journey.* |
 | Architecture & design | **100%** — 19 documents, 27 ADRs, ratified and internally consistent |
 | Core modules | **1 of 14** (7%) |
 | Backend platform | **100% of foundation scope** — 🔒 frozen from M1.3A; 0% of pipeline scope |
@@ -151,15 +151,15 @@ Recorded rather than quietly corrected: a denominator that moves without explana
 
 ### Calendar under sequential execution
 
-Total effort is now **~262–340 ew** (recomputed — see above). Calendar time depends entirely on staffing, and sequential execution forfeits parallel compression:
+Total effort is now **~267–345 ew** (recomputed — see above). Calendar time depends entirely on staffing, and sequential execution forfeits parallel compression:
 
-Based on ~213–291 ew remaining at 80% effective capacity:
+Based on ~204–282 ew remaining at 80% effective capacity:
 
-| Team size | M1.5 (14.5 ew) | M1.5 + M2.0 | **Remaining to GA** |
+| Team size | M2.0 (22–29 ew) | Through M2.2 | **Remaining to GA** |
 |---|---|---|---|
-| **1 engineer** | ~18 weeks | ~40–48 weeks | **~5.1–7.0 years** |
-| **2 engineers** | ~9 weeks | ~20–24 weeks | **~2.6–3.5 years** |
-| **3 engineers** | ~6 weeks | ~13–16 weeks | **~1.7–2.3 years** |
+| **1 engineer** | ~28–36 weeks | ~46–61 weeks | **~4.9–6.8 years** |
+| **2 engineers** | ~14–18 weeks | ~23–31 weeks | **~2.5–3.4 years** |
+| **3 engineers** | ~9–12 weeks | ~15–20 weeks | **~1.6–2.3 years** |
 
 Within a milestone, additional engineers help only up to the **critical path** — M1.5's chain (T25→T26→T28→T27→T29) is ~9 ew of serial work and cannot compress below that at any headcount.
 
@@ -236,31 +236,33 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 
 ## Current Milestone
 
-### ✅ M1.5 — Frontend Foundation · closed 2026-07-28
+### 🔄 M2.0 — Provider Simulation Framework · **CURRENT** · ~22–29 ew
 
-All nine tasks delivered. **96 frontend tests** (29 → 96), ESLint/Prettier/tsc clean, `next build` green.
+**Architecture ratified** ([20-provider-simulation.md](docs/architecture/20-provider-simulation.md)). **Breakdown presented; awaiting approval.** No implementation started.
 
-| Delivered | Evidence |
-|---|---|
-| T25 Design system | Tokens as CSS custom properties; Tailwind wired to them; light + dark |
-| T26 Shared components | Button, Input, Select, Badge, Card, Dialog, EmptyState, Skeleton, Table |
-| T28 API client + TanStack Query | Workspace-prefixed keys, 4xx-never-retry policy, mutations never retried |
-| T27 Application shell | Sidebar, top bar, per-region error boundaries |
-| T29 Session + workspace selector | Server-side session gate; stored workspace id validated against the API's list |
-| T30 Permission-aware routing | Redirects rather than renders-and-hides |
-| T31 Error boundaries, loading, empty, toasts | Correlation id surfaced to the user, not only logged |
-| T32 Global state | Theme (with pre-paint script), active workspace |
-| T33 Component testing + CI | 96 tests; **`@vitejs/plugin-react` debt repaid** |
+| Order | Task | Complexity | Status |
+|---|---|---|---|
+| 1 | **T34 Payload provenance verification** (gate) | S · 0.5 ew | ⬜ |
+| 2 | T35 Provider Port + shared adapter contract suite | L · 3 ew | ⬜ |
+| 3 | T36 Safety guards (4 controls) | M · 1.5 ew | ⬜ |
+| 4 | T37 Dataset Store + Virtual Clock | M · 2 ew | ⬜ |
+| 5 | T38 Scenario Engine + Manifest schema | L · 3 ew | ⬜ |
+| 6 | T39 Generators: Apollo, BuiltWith, Crunchbase, CoreSignal | L · 3.5 ew | ⬜ |
+| 7 | **T40 Bombora temporal intent generator** | L · 3 ew | ⬜ |
+| 8 | T41 Fault injector | M · 2 ew | ⬜ |
+| 9 | T42 Delivery mechanism | L · 3 ew | ⬜ |
+| 10 | T43 13 Scenario Manifests | L · 3 ew | ⬜ |
+| 11 | T44 Observability, CI, smoke extension | M · 1.5 ew | ⬜ |
 
-**AC-14 and AC-15 are enforced structurally, not by review.** 13 guard tests assert no hardcoded palette utility, no hex, no `dark:` variant, every token defined in both themes, no component reading the theme, no fabricated business record, no fixture-named file, no business route. **Each was verified to fail when deliberately violated** — a hardcoded `bg-slate-100`, a `dark:` variant, a mock array, and a premature `companies/page.tsx` each produced the right failure.
+**Three ordering decisions:** T34 is a **gate** whose permitted outcome is "defer this provider" — provenance is verified before a generator is written, because discovering afterwards that a shape was guessed discards the generator, its golden files, and every assertion built on them. T35 precedes every implementation so the contract belongs to production rather than being shaped around the simulator. **T36 comes before any payload exists** — the guard that prevents production activation is built before there is anything to activate.
 
-**The `@vitejs/plugin-react` debt is genuinely repaid, not masked.** Two version conflicts were the actual cause: `@eslint/js` pinned to `^10` against `eslint@^9`, and `@vitejs/plugin-react@5` requiring Vite 6 under a Vitest that pins Vite 5. Fixed at the version level — plugin pinned to v4, `@eslint/js` aligned to `^9`. **`--legacy-peer-deps` is now removed from both CI workflows and the Dockerfile**, and `npm ci` succeeds without it.
+**Checkpoints:** AC-4 Simulator Fidelity · AC-16 Contract Interchangeability · AC-17 Payload Provenance · AC-18 Temporal Intent Fidelity · AC-13 Security Invariants extended.
 
-**No mock business data anywhere.** Every section ships a designed empty state. Settings is the only screen backed by real data, because Workspace & Tenancy is the only shipped module — which makes it the proof that shell, query layer, toasts, and dialog compose against a real API rather than a fixture.
+**Exit gate:** `make smoke` against **freshly built images and a clean Compose stack** — closing the verification gap from M1.5's registry outage.
 
-**One item deferred with a stated reason, not silently:** the caller's workspace role is currently hardcoded to `owner` for *presentation only*. Resolving it properly needs a `GET /workspaces/{id}/me` endpoint that does not exist, and adding one is an API change rather than a frontend decision. Marked `TODO(M2.1)` in `authenticated-shell.tsx` and raised below. **Server-side Casbin enforcement is unaffected** — it never consulted this value.
+**Estimate revised ~17–24 → ~22–29 ew**, recorded rather than absorbed. Three approved scope additions: Bombora is a *temporal* provider rather than a fifth enrichment one (modelling rise, sustain, decay, reactivation, noise, seasonality and competitive overlap is a distinct capability); 13 Scenario Manifests rather than 10; and manifests declare the full expected journey through every downstream stage, not only payloads.
 
-**Not re-verified in this session:** the production image build and `make smoke`. Docker's daemon could not reach the registry from this environment (IPv6 routing; `curl` reaches it, the daemon does not). The frontend Dockerfile changed only by removing `--legacy-peer-deps`, which `npm ci` was confirmed to tolerate on the host — but the image itself was not rebuilt, and that gap is real until it is.
+**Demo Checklist:** 15 items — see [IMPLEMENTATION_ROADMAP.md §6](IMPLEMENTATION_ROADMAP.md#6-milestone-definitions).
 
 ---
 
@@ -270,7 +272,6 @@ Sequential execution — each begins only when the previous milestone's Demo Che
 
 | # | Milestone | Effort | Gate |
 |---|---|---|---|
-| 2 | **M2.0** Provider Simulation Framework | ~17–24 ew | AC-4 · identical adapter contract, config-only switching |
 | 3–4 | M2.1 Provider Platform · M2.2 Provider Normalization | ~14–20 ew | Per roadmap |
 | 5–6 | M3A Knowledge Graph · M3B Observation Engine | ~17–23 ew | AC-6 tenancy under load |
 | 7–10 | M4 Business Events · M5A Signals · M5B Buying Scores · M6 Opportunities | ~29–43 ew | **M6 is the first sellable moment** |
@@ -336,7 +337,7 @@ A permanent platform capability, not throwaway tooling — used for local develo
 
 **Scope — M2.0 only.** Single stream; no concurrent milestone work.
 
-M2.0 is the largest milestone since M0 (~17–24 ew) and the first that builds product capability rather than substrate. Its binding rules are already fixed in [IMPLEMENTATION_ROADMAP.md §8](IMPLEMENTATION_ROADMAP.md#8-provider-simulation-framework--design):
+M2.0 is the largest milestone since M0 (~22–29 ew) and the first that builds product capability rather than substrate. Its binding rules are already fixed in [IMPLEMENTATION_ROADMAP.md §8](IMPLEMENTATION_ROADMAP.md#8-provider-simulation-framework--design):
 
 - **It builds the Provider Port**, as its first concrete implementation — satisfying the YAGNI ruling and validating the port with working code before any vendor adapter is written.
 - **Simulated providers implement exactly the same adapter contract as production ones.** Switching is configuration only; no `if simulated:` branch may exist in any layer.

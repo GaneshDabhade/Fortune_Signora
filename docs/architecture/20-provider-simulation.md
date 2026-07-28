@@ -1,10 +1,10 @@
 # 20 — Provider Simulation Framework
 
-> Status: **Architecture Review — awaiting approval**
+> Status: **RATIFIED** — approved 2026-07-28
 > Audience: All engineers, EMs, and technical stakeholders at Signora
 > Revision: **v1** — the Simulation Architecture Review required before M2.0 implementation begins. Design intent is fixed by [IMPLEMENTATION_ROADMAP.md §8](../../IMPLEMENTATION_ROADMAP.md#8-provider-simulation-framework--design); this document specifies the pipeline that realises it.
 >
-> **No implementation exists.** This is a review artefact. An accompanying ADR is authored on approval.
+> **No implementation exists yet.** The eight principles in *Permanent architectural principles* are now binding; the five Phase 1 providers, the payload provenance rule, Scenario Manifests, and the webhook deferral are ratified. An accompanying ADR is authored alongside implementation.
 
 ## Purpose
 
@@ -15,6 +15,19 @@ Its value rests entirely on one property: **what it produces must be indistingui
 Everything in this document is in service of that property.
 
 ---
+
+## Permanent architectural principles
+
+Eight principles, ratified 2026-07-28. These are permanent — a change to any of them is an RFC, not an implementation decision.
+
+1. **The simulator behaves exactly like a production provider.**
+2. **The simulator has no privileged downstream knowledge.**
+3. **The simulator never bypasses the Provider Port.**
+4. **Payloads are validated exactly as production payloads are.**
+5. **Deduplication remains the platform's responsibility**, never the simulator's.
+6. **Faults surface through production error semantics.**
+7. **Webhooks traverse the real inbound HTTP endpoint** once it exists.
+8. **Shared contract tests are the primary guarantee** that simulated and production adapters remain interchangeable.
 
 ## The governing constraints
 
@@ -274,17 +287,152 @@ Confidence scores are asserted as **calibration ranges, not exact values**. An e
 
 ---
 
-## Open questions for review
+## Phase 1 providers
 
-Three points need a decision before implementation, and are raised rather than assumed.
+Five, chosen to cover different **categories of intelligence** rather than five variations of company enrichment. Each exercises a distinct pathway through the pipeline.
 
-1. **Which five providers are simulated first?** The roadmap fixes the count, not the identities. This determines which vendor formats stage 4 must encode, and a wrong choice means writing a generator for a vendor we do not integrate.
+| Provider | Category | Emits |
+|---|---|---|
+| **Apollo** | Company enrichment | Firmographics, contacts, employee counts, revenue estimates |
+| **BuiltWith** | Technographics | Technology stack, additions, removals, website infrastructure |
+| **Crunchbase** | Capital events | Funding rounds, acquisitions, investors, company lifecycle |
+| **CoreSignal** | Workforce | Hiring activity, workforce growth, organizational change, employee movement |
+| **Bombora** | Behavioural intent | Intent topics, weekly surge scores, intent over time, decay, spikes, competitive overlap |
 
-2. **Where do documented vendor response formats come from?** Encoding a *guessed* shape produces a normalizer that works only against the guess. If public documentation is insufficient for a given vendor, that is a real gap — the honest options are a sandbox account, a recorded real response, or deferring that provider. Guessing is not among them.
+**Bombora is categorically different from the other four** and is treated as such throughout. Apollo, BuiltWith, Crunchbase, and CoreSignal describe *what a company is and what changed*. Bombora describes *how a company is behaving over time* — a time series, not a snapshot. A simulator that emits a static intent score has not simulated intent at all; it has emitted a number.
 
-3. **Does the webhook path exist yet?** Stage 6 requires the real inbound HTTP route including signature verification. If that route is M2.1 rather than M2.0, webhook simulation must move with it — building it against a route that does not exist would mean testing a mock of our own code.
+### Bombora — temporal intent modelling
 
-None of these blocks the architecture; each blocks a specific stage's implementation.
+Intent is only meaningful as a trajectory. The simulator must model:
+
+| Capability | Why it matters downstream |
+|---|---|
+| Intent topics | The unit of intent; multiple topics per company simultaneously |
+| Weekly surge scores | The observable a Business Event is derived from |
+| Rising intent | The pattern that should produce a signal |
+| Falling intent | Must *not* produce the same signal — a decaying topic is not a buying one |
+| Sustained intent | Distinguishable from a single spike |
+| Topic decay | Intent that fades without a purchase |
+| Topic reactivation | A company returning months later; the graph must recognise it as the same company |
+| Noise and false positives | Real intent data is noisy. A pipeline tuned against clean data is tuned wrong. |
+| Delayed reporting | Intent arrives late relative to `occurred_at` — exercises out-of-order handling |
+| Competitive intent overlap | Multiple companies surging on the same topic |
+| Seasonal variation | Distinguishes a genuine surge from an annual pattern |
+
+**Worked example — SaaS ERP evaluation:**
+
+```
+Week 1: Cloud ERP = 18   ← baseline noise
+Week 2: Cloud ERP = 42
+Week 3: Cloud ERP = 71
+Week 4: Cloud ERP = 88   ← sustained rise
+   ↓  Business Event: intent surge detected
+   ↓  Signal: high buying intent
+   ↓  Buying Score contribution
+   ↓  Opportunity
+```
+
+**Worked example — security modernization:** *Identity Management*, *Zero Trust*, and *Endpoint Protection* all rising together. This must produce **stronger downstream intelligence than any single topic alone** — correlated intent across related topics is a materially different claim from one topic surging, and the pipeline is expected to reflect that. A simulator emitting three independent series would not test the correlation.
+
+**Intent datasets evolve through the Virtual Clock. Static snapshots are insufficient** — the whole point of the provider is the shape of the curve, and a snapshot has no shape.
+
+---
+
+## Payload provenance rule
+
+**Simulated payloads must originate from one of four sources:**
+
+1. Official vendor documentation
+2. Vendor sandbox responses
+3. Recorded test-account responses
+4. Sanitized production responses
+
+**If none is available, defer that provider. Never invent a provider payload.**
+
+The reason is not pedantry. A fabricated schema produces a normalizer that works perfectly against the fabrication and fails against the vendor — and the failure surfaces during a paid integration, after the shape has been assumed by every downstream stage. Deferring a provider costs one provider; fabricating one costs the credibility of everything the simulator proves.
+
+**This applies to Bombora exactly as it applies to the other four.** If Bombora's payload format cannot be verified through documentation or a legitimately recorded response, Bombora is deferred — its behavioural importance is not a reason to guess its schema.
+
+Provenance is verified **per provider, before its generator is built** (task T34), and the verified source is recorded against each generator so a future reader knows what the shape was derived from.
+
+---
+
+## Scenario Manifests
+
+Scenarios are **version-controlled manifests**, not code. Each declares the full expected journey through the pipeline:
+
+| Field | Content |
+|---|---|
+| Scenario name | Stable identifier |
+| Participating providers | Which of the five take part |
+| Timeline | Ordered events with logical timestamps |
+| Virtual clock progression | Mode and span |
+| Expected raw payloads | Asserted from M2.0 |
+| Expected normalized entities | Asserted from M2.1/M2.2 |
+| Expected observations | From M3B |
+| Expected business events | From M4 |
+| Expected signals | From M5A |
+| Expected buying scores | From M5B |
+| Expected opportunities | From M6 |
+| Expected AI recommendations | From M11 |
+
+**Later sections are declared now and asserted later.** A manifest written in M2.0 already states what a scenario *should* eventually produce; each milestone activates the next layer of assertions. This is what makes the progressive-assertion model concrete rather than aspirational — the expected outcome is written before the code that produces it, so a milestone cannot quietly redefine success.
+
+**Phase 1 scenario library — 13 scenarios:**
+
+| # | Scenario | Providers | Primary pathway |
+|---|---|---|---|
+| 1 | SaaS Hypergrowth | Apollo, CoreSignal, Crunchbase | Composite growth |
+| 2 | Hiring Surge | CoreSignal | Workforce velocity |
+| 3 | Technology Migration | BuiltWith | Technographic displacement |
+| 4 | Executive Leadership Change | CoreSignal, Apollo | Organizational change |
+| 5 | Funding Round | Crunchbase | Capital event |
+| 6 | Security Modernization | Bombora, BuiltWith | **Correlated multi-topic intent** |
+| 7 | ERP Replacement | Bombora, BuiltWith | Intent → technographic change |
+| 8 | Cloud Migration | BuiltWith, Bombora | Infrastructure shift |
+| 9 | Office Expansion | Apollo, CoreSignal | Geographic expansion |
+| 10 | Competitive Displacement | BuiltWith, CoreSignal, Bombora | Combined evidence |
+| 11 | High Intent Buying Cycle | Bombora | Sustained rise |
+| 12 | Intent Cooling | Bombora | **Decay must not signal** |
+| 13 | Intent Reactivation | Bombora | Return after months |
+
+Scenarios 11–13 exist specifically to prove the pipeline distinguishes *rising*, *falling*, and *returning* intent. A pipeline that treats all three as "intent present" is one that will recommend outreach to a company that already bought elsewhere.
+
+---
+
+## Simulation independence
+
+The simulator produces **provider payloads only**. It must never read:
+
+- the Knowledge Graph
+- Observations
+- Business Events
+- Signals
+- Buying Scores
+- Opportunities
+- AI Recommendations
+
+Everything downstream is **discovered by the platform**. This is enforced structurally — an import-linter contract forbidding `signora_platform/simulation/` from importing any module — because it is the rule whose violation is most tempting and least visible: reading a Signal to decide what payload to emit next would make every scenario pass while proving nothing about the pipeline.
+
+---
+
+## Contract testing — a permanent invariant
+
+**One contract test suite executes against both the simulated and the production adapter, and the normalized output must be identical.**
+
+This is principle 8 and the keystone of the design. It is the only mechanism that catches drift between the two paths, and drift is the single failure mode that would invalidate every other guarantee here — demos, regression, AI evaluation, benchmarking all rest on the simulated path behaving like the real one.
+
+Identical **normalized output**, not merely identical adapter behaviour: the assertion runs past the adapter through Provider Normalization, because a difference that the adapter hides but normalization exposes is exactly the kind that reaches production.
+
+---
+
+## Webhooks — deferred
+
+Webhook simulation is implemented **only after the real inbound webhook endpoint exists**. Building it against a route that does not exist means testing a mock of our own code, which proves nothing about the path a real webhook takes.
+
+Until then, the delivery mechanism (stage 6) exercises: polling · scheduled synchronization · incremental sync · pagination · rate limiting · retry · duplicate delivery · ordering · fault injection.
+
+When webhook support lands, **simulated webhooks traverse the real HTTP endpoint including signature verification** (principle 7). The verification code is otherwise never exercised until a real webhook arrives in production, which is the worst possible place to discover it is wrong.
 
 ---
 
