@@ -148,4 +148,4 @@ class TestConcurrencySafety:
                 await session.execute(text("SELECT version_num FROM alembic_version"))
             ).scalar_one()
 
-        assert version == "0007"
+        assert version == "0008"

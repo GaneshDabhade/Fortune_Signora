@@ -46,6 +46,9 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         "provider_sync",
         "provider_watermark",
         "raw_provider_record",
+        # Provider Normalization (M2.2), migration 0008.
+        "claim",
+        "normalization_outcome",
     }
 )
 
@@ -75,6 +78,19 @@ TENANCY_ROOT: Final = "workspace"
 # required: a table with no delete path is a legitimate design, and
 # demanding a policy would encourage adding one that is never used.
 REQUIRED_POLICY_COMMANDS: Final[frozenset[str]] = frozenset({"SELECT", "INSERT", "UPDATE"})
+
+# Tables whose rows are **immutable by design**. These legitimately have no
+# UPDATE policy and no UPDATE grant — requiring one would mean weakening
+# immutability to satisfy a test, which is exactly backwards.
+#
+# `claim` holds evidence. Evidence is never edited: new information is a new
+# claim. Timeline, the Observation Engine, and AI Reasoning all depend on
+# being able to see what was believed *when*
+# (docs/architecture/20-provider-simulation.md; M2.2 ruling).
+#
+# Adding a table here is a deliberate architectural act. The immutability it
+# claims is separately asserted in test_tenancy_policy.py.
+IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset({"claim"})
 
 # Runtime roles. None may bypass RLS, whatever else they are permitted.
 RUNTIME_ROLES: Final[tuple[str, ...]] = ("signora_app", "signora_auth", "signora_relay")

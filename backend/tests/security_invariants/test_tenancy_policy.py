@@ -14,6 +14,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from tests.security_invariants.tenancy_policy import (
+    IMMUTABLE_TENANT_TABLES,
     PLATFORM_INFRASTRUCTURE_TABLES,
     REQUIRED_POLICY_COMMANDS,
     RUNTIME_ROLES,
@@ -193,7 +194,13 @@ class TestRequiredPolicies:
             covered = commands | (
                 {"SELECT", "INSERT", "UPDATE", "DELETE"} if "ALL" in commands else set()
             )
-            missing = REQUIRED_POLICY_COMMANDS - covered
+            # An immutable table has no update path by design. Demanding a
+            # policy would mean weakening immutability to satisfy a test,
+            # which is exactly backwards.
+            required = REQUIRED_POLICY_COMMANDS - (
+                {"UPDATE"} if table in IMMUTABLE_TENANT_TABLES else set()
+            )
+            missing = required - covered
 
             assert not missing, f"{table} has no policy for: {sorted(missing)}"
 
@@ -309,3 +316,72 @@ class TestPlatformTablesAreUnreachableFromModules:
 
         assert "signora_app" not in readers
         assert "signora_relay" in readers
+
+
+class TestClaimsAreImmutable:
+    """Claims are evidence. Evidence is never edited.
+
+    New information is a **new claim**, never an overwrite. Timeline, the
+    Observation Engine, and AI Reasoning all depend on seeing what was
+    believed *when* — and an invariant guarded only by convention lasts
+    until the first inconvenient deadline.
+
+    Enforced by the database: `signora_app` holds no `UPDATE` on `claim`,
+    so an attempted overwrite fails with a permission error rather than
+    succeeding quietly.
+    """
+
+    async def test_the_application_role_cannot_update_a_claim(
+        self, admin_session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        async with admin_session_factory() as session, session.begin():
+            privileges = set(
+                (
+                    await session.execute(
+                        text(
+                            "SELECT privilege_type FROM information_schema.table_privileges "
+                            "WHERE table_name = 'claim' AND grantee = 'signora_app'"
+                        )
+                    )
+                )
+                .scalars()
+                .all()
+            )
+
+        assert "UPDATE" not in privileges, (
+            "signora_app can UPDATE claim. Claims are immutable — new information is a new "
+            "claim. An update grant makes the invariant a convention rather than a guarantee."
+        )
+        assert {"SELECT", "INSERT"} <= privileges
+
+    async def test_claims_remain_deletable_for_regeneration(
+        self, admin_session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """Deliberately different from mutation. Claims are *derived*:
+        dropping and regenerating them from raw records is the rollback for
+        a broken mapper, and a regenerated claim is a new claim."""
+        async with admin_session_factory() as session, session.begin():
+            can_delete = (
+                await session.execute(
+                    text("SELECT has_table_privilege('signora_app', 'claim', 'DELETE')")
+                )
+            ).scalar_one()
+
+        assert can_delete is True
+
+    async def test_no_update_policy_exists_on_claim(
+        self, admin_session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """Defence in depth: even were the grant restored by mistake, no
+        RLS policy permits an update."""
+        async with admin_session_factory() as session, session.begin():
+            count = (
+                await session.execute(
+                    text(
+                        "SELECT count(*) FROM pg_policies "
+                        "WHERE tablename = 'claim' AND cmd = 'UPDATE'"
+                    )
+                )
+            ).scalar_one()
+
+        assert count == 0
