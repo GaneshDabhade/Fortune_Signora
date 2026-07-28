@@ -139,14 +139,14 @@ M1 is split into three; M2.0 is inserted before data ingestion. **All other mile
 | **M1.3A** Deployment Foundation | M1 | ~5.5 ew |
 | **M1.4** Platform Smoke Test | *(foundation completion gate)* | ~1.5 ew |
 | **M1.5** Frontend Foundation | M1 | ~14.5 ew |
-| **M2.0** Provider Simulation Framework | *(internal enablement)* | ~22–29 ew |
+| **M2.0** ✅ Provider Simulation Framework | *(internal enablement)* | ~16–21 ew |
 | **M2.1 → M14b** pipeline — 17 milestones in the §5b execution order | M2–M13 | ~155–219 ew |
 | **M14.5** Cloud Infrastructure *(deferred from M1.3B)* | *(production readiness)* | ~6 ew |
 | **M15** GA readiness | *(production readiness)* | ~20–27 ew |
 
-**Total to GA: ~267–345 ew.** Recomputed from the milestone table in §6 rather than carried forward — the previous figure understated it, because M15 GA readiness had been folded inside the pipeline band and was double-removed when the band was split. Two changes account for the rest of the movement: M1.5 makes explicit ~14.5 ew of frontend platform work previously buried in M12's estimate, and M12 drops from 28–40 to 24–35 ew because the platform half of it moved to M1.5.
+**Total to GA: ~261–339 ew.** Recomputed from the milestone table in §6 rather than carried forward — the previous figure understated it, because M15 GA readiness had been folded inside the pipeline band and was double-removed when the band was split. Two changes account for the rest of the movement: M1.5 makes explicit ~14.5 ew of frontend platform work previously buried in M12's estimate, and M12 drops from 28–40 to 24–35 ew because the platform half of it moved to M1.5.
 
-~63.5 ew complete, **~204–282 ew remaining**. See §1 for calendar at various team sizes.
+~82 ew complete, **~179–257 ew remaining**. See §1 for calendar at various team sizes.
 
 ### Cloud Infrastructure is deferred, not removed
 
@@ -205,7 +205,7 @@ Milestone IDs are **stable labels, not sequence numbers**. They are deliberately
 |---|---|---|---|
 | — | ✅ M0 · M1.1 · M1.2 · M1.3A · M1.4 | Foundation | complete |
 | 1 | **M1.5** | Frontend Foundation | ~14.5 ew |
-| 2 | **M2.0** | Provider Simulation Framework | ~22–29 ew |
+| 2 | **M2.0** ✅ | Provider Simulation Framework | ~16–21 ew |
 | 3 | **M2.1** | Provider Platform | ~8–11 ew |
 | 4 | **M2.2** | Provider Normalization | ~6–9 ew |
 | 5 | **M3A** | Knowledge Graph | ~9–12 ew |
@@ -615,11 +615,11 @@ make smoke
 
 ---
 
-### 🆕 M2.0 — Provider Simulation Framework
+### ✅ M2.0 — Provider Simulation Framework · **CLOSED** 2026-07-28
 
 > **Architecture ratified** in [20-provider-simulation.md](docs/architecture/20-provider-simulation.md) on 2026-07-28: nine stages, eight permanent principles, five Phase 1 providers, the payload provenance rule, Scenario Manifests, and webhook deferral.
 >
-> **Exit gate — operational verification:** `make smoke` must pass against **freshly built images and a clean Compose stack**, closing the gap left at M1.5 when the Docker daemon could not reach the registry.
+> **Exit gate — ✅ passed 2026-07-28.** `make smoke` green in 133s against freshly built images and a clean Compose stack: 16 stages, 75 security invariants verified against the running system. The M1.5 registry blocker is cleared.
 
 **Scope:** Provider Port (first concrete implementation) · simulation framework (dataset store, scenario engine, virtual clock) · five simulated providers · Bombora temporal intent modelling · fault, timing, duplicate and ordering injection · polling/scheduled/incremental/pagination delivery · 13 Scenario Manifests · four safety guards · shared adapter contract suite.
 

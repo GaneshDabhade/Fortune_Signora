@@ -3,7 +3,7 @@
 > **Owner:** Technical Program Manager · **Audience:** Everyone
 > **Cadence:** Updated at every milestone boundary and every sprint close. Updating this is part of the [Definition of Done](IMPLEMENTATION_ROADMAP.md#12-definition-of-done-global).
 > **Last updated:** 2026-07-28 · **Reporting period:** M1.2 delivery
-> **Revision:** v17 · **Last updated:** 2026-07-28 · **Reporting period:** M2.0 delivery
+> **Revision:** v18 · **Last updated:** 2026-07-28 · **Reporting period:** M2.0 delivery
 > Authoritative record of project state (CLAUDE.md §20d). Updated after every completed milestone, before the next begins.
 
 ---
@@ -12,12 +12,12 @@
 
 | | |
 |---|---|
-| **Where are we now?** | **M2.0 Provider Simulation Framework — 11 of 11 tasks complete**, pending the `make smoke` exit gate. Both foundations (platform, frontend) are frozen. The simulation framework is built and provider-agnostic. |
+| **Where are we now?** | **M2.0 complete and closed.** Exit gate passed: `make smoke` green in 133s against fresh images and a clean stack, 75 invariants verified against the running system. **M2.1 Provider Platform is next** — the first product milestone. Both foundations (platform, frontend) are frozen. The simulation framework is built and provider-agnostic. |
 | **What was completed?** | The full framework, plus **five fixture generators** and the shared contract suite **running green against all five adapters** — the keystone test is live |
 | **What changed architecturally?** | M2.0 scope reduced — the simulator is **infrastructure, not product**. The end-to-end ingestion demonstration **moved to M2.1**, where the consumer lives. Provider Independence became a permanent invariant. |
 | **What is intentionally deferred?** | **Authentic provider payloads** — all five generators are clearly-marked development fixtures pending legitimate artifacts · cloud infrastructure (M14.5) · business UI (M12) · advanced simulator capabilities (indefinitely) |
-| **What's next?** | `make smoke` against fresh images closes M2.0. Then **M2.1 Provider Platform**, which owns the end-to-end pipeline demonstration. |
-| **Are we on track?** | **Yes.** M2.0 is functionally complete; every foundation milestone landed with its acceptance criteria met and zero architectural debt. One tracked item remains: fixtures must be replaced with authentic payloads, which is a one-file change per provider by construction. |
+| **What's next?** | **M2.1 Provider Platform** — owns the mandatory end-to-end demonstration: simulated payloads traversing the real ingestion pipeline with no simulation-specific logic anywhere in it. |
+| **Are we on track?** | **Yes.** Six consecutive milestones closed with acceptance criteria met and zero architectural debt. Enabling work is done — platform, frontend, and simulator are all frozen or complete. **From here, every milestone builds product.** One tracked item: fixtures await authentic payloads, a one-file change per provider by construction. |
 
 ### Approved temporary strategy — development fixtures
 
@@ -100,7 +100,7 @@ The permanent architectural guarantees. A drop here is never a test problem.
 | Tenant Isolation Policy | 12 | ✅ All passing |
 | Database privilege separation | 9 | ✅ All passing |
 | Platform durability | 12 | ✅ All passing |
-| **Total** | **59** | ✅ **59 / 59**, also green against the running production stack |
+| **Total** | **75** | ✅ **75 / 75**, also green against the running production stack |
 
 | Indicator | Current | Target |
 |---|---|---|
@@ -227,50 +227,51 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 
 ## Current Milestone
 
-### 🔄 M2.0 — Provider Simulation Framework · **IN PROGRESS** · 9 of 11 tasks
+### ✅ M2.0 — Provider Simulation Framework · **CLOSED** 2026-07-28
 
 | Field | Value |
 |---|---|
-| **Status** | 🟡 In Progress — framework complete, generators blocked on qualification |
-| **Started** | 2026-07-28 |
-| **Commits** | `44f5637` (T34–T37) · `26a1936` (T38 + scope reduction) · `c671196` (T41, T42, T44) |
-| **Effort** | ~16–21 ew scoped · ~10 ew delivered |
+| **Status** | ✅ **Completed** |
+| **Completion date** | 2026-07-28 |
+| **Final commit** | `6c3921c` (T39/T40/T43) · `c671196` (T41/T42/T44) · `26a1936` (T38) · `44f5637` (T34–T37) |
+| **Exit gate** | ✅ **`make smoke` passed** — 133s, fresh images, clean Compose stack, 16 stages, **75 invariants green against the running system** |
+| **Effort** | ~16–21 ew scoped · delivered within range |
+| **Environment blockers** | **None outstanding.** The M1.5 registry-unreachability blocker is now cleared — the gate ran end to end. |
 
-**Success criteria (revised, approved).** M2.0 is **not** measured by end-to-end ingestion — Provider Platform, normalization, and downstream processing belong to M2.1+. It succeeds on: Provider Port contract · provider-independent framework · Scenario Engine · Virtual Clock · Dataset Store · deterministic execution · fault injection · delivery infrastructure · safety guards · observability · shared contract tests · deterministic replay · Provider Qualification process.
+**Acceptance criteria satisfied**
 
-| Task | Status |
+| AC | Status |
 |---|---|
-| T34 Provider Qualification | ✅ **All five Conditional** |
-| T35 Provider Port + shared contract suite | ✅ |
-| T36 Safety guards (4 controls) | ✅ |
-| T37 Dataset Store + Virtual Clock | ✅ |
-| T38 Scenario Engine | ✅ |
-| T41 Fault injector | ✅ |
-| T42 Delivery mechanism | ✅ |
-| T44 Observability + deterministic replay | ✅ |
-| T39 Generators: Apollo, BuiltWith, Crunchbase, CoreSignal | 🔴 **Blocked** — no payload artifact |
-| T40 Bombora temporal intent generator | 🔴 **Blocked** — no payload artifact |
-| T43 Scenario manifests | 🟡 Structure done; payload assertions blocked |
+| **AC-4** Simulator Fidelity | ✅ Identical contract, config-only switching, Provider-layer entry, determinism proven, production guard test-enforced |
+| **AC-16** Contract Interchangeability | ✅ Shared suite green against all five simulated adapters; the same suite runs against production adapters when they exist |
+| **AC-17** Payload Provenance | ✅ Process ran; outcomes recorded; fixture designation enforced by test |
+| **AC-18/AC-19** Temporal & Intent Fidelity | ✅ Against the fixture — emergence, sustain, decay, reactivation, concurrency, overlap, delayed reporting, noise |
+| **AC-20** Provider Independence | ✅ Asserted four ways, including that no generator imports another |
+| **AC-13** Security Invariants extended | ✅ 59 → 75 |
 
-**Acceptance criteria:** AC-17 Payload Provenance ✅ (process ran, outcomes recorded) · AC-20 Provider Independence ✅ (asserted three ways) · AC-4, AC-16 ⏳ (need an adapter to run the contract suite against) · AC-18, AC-19 ⏳ (Bombora-specific).
+**Scope delivered.** Provider Port and shared contract suite · provider-independent framework · Scenario Engine · Virtual Clock · Dataset Store · deterministic execution and replay · fault injection · delivery infrastructure · four safety guards · observability · Provider Qualification process · five development-fixture generators.
 
-**Scope delivered.** A framework that is deterministic (same seed → identical timeline; different seed → different one, both asserted), provider-agnostic (a scenario runs with a subset of providers, or one, and fails loudly only when none is available), fault-capable (seeded, declared at load, surfaced through production error semantics), and safe (fails closed on any unrecognised environment; an override alerts for as long as it is in force).
+**Architectural decisions.** Provider Independence as a permanent invariant · simulator is infrastructure, not product · strict milestone ownership (CLAUDE.md §20d) · PROJECT_STATUS as the authoritative executive dashboard · development fixtures approved as a temporary strategy with the provenance policy intact.
 
-**Deferred, with reasons.** All five generators — no legitimate payload artifact exists, and the provenance policy correctly forbids inventing one. Advanced simulator capabilities — richer behaviour, more providers, traffic modelling, multi-tenant simulation, benchmarking, load generation — deferred indefinitely as future enhancements.
+**Deferred enhancements** — out of scope until they show measurable value: richer provider behaviour · providers beyond the ratified five · advanced traffic modelling · multi-tenant simulation · complex behavioural modelling · performance benchmarking · large-scale load generation.
 
-**Roadmap changes (both Category 1, recorded):** M2.0 scope reduced ~22–29 → ~16–21 ew; the pipeline demonstration moved to M2.1.
+**Outstanding provider validation.** All five providers remain `Conditional`; every generator is a clearly-designated development fixture. Replacement is a one-file change per provider — procedure in [provider-qualification.md](docs/architecture/provider-qualification.md).
 
-**New architectural decisions:** Provider Independence as permanent invariant (AC-20) · simulator is infrastructure, not product · strict milestone ownership (CLAUDE.md §20d) · PROJECT_STATUS as authoritative executive dashboard.
+**One design question deferred to evidence** (not to be pre-solved): when an authentic Bombora payload arrives, establish whether the provider supplies historical weekly intent **directly**, or whether the platform must **accumulate** it. If the latter, that is an Observation Engine responsibility and a design input for M3B. The current implementation is not to be changed until real evidence requires it.
 
-**Technical debt:** none introduced. None outstanding from M1.5 — `@vitejs/plugin-react` was repaid at the version level.
+**Technical debt.** None introduced. None outstanding.
 
-**Risks and blockers.**
+---
 
-| Item | Severity | Detail |
-|---|---|---|
-| No payload artifact for any provider | 🔴 **Blocking ~6.5 ew** | Needs one saved API response from a free tier. Not a technical problem. |
-| `make smoke` not re-run since M1.5 | 🟡 Open | Docker daemon could not reach the registry. Remains M2.0's exit gate. |
-| Bombora may stay Conditional | 🟡 Accepted | Behavioural-intent pathway untested until it qualifies. Coverage gap, not a design gap. |
+## Next Milestone
+
+### 🔄 M2.1 — Provider Platform · **NEXT** · ~8–11 ew
+
+**The first product milestone.** Everything before it was enabling work; from here every milestone builds the Revenue Intelligence Platform itself.
+
+**Mandatory demonstration it owns:** *simulated provider payloads traverse the same production ingestion pipeline used by real providers* — **with no simulation-specific logic anywhere in the pipeline**. Moved here from M2.0 because this is where the consumer lives.
+
+**Awaiting:** task breakdown and approval, as with every prior milestone.
 
 ---
 
