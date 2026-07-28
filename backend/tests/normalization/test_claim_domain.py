@@ -260,3 +260,54 @@ class TestNormalizationOutcome:
         rejection = Rejection(RejectionReason.UNPARSEABLE_VALUE, "funding_rounds[0].amount_usd")
 
         assert "funding_rounds[0].amount_usd" in rejection.detail
+
+
+class TestValueEncoding:
+    """A stored claim must be readable in a psql session during an
+    incident. An opaque encoding would make the evidence chain unreadable
+    exactly when someone needs to follow it."""
+
+    def test_a_structured_value_encodes_to_readable_json(self) -> None:
+        from modules.provider_normalization.infrastructure.repository import encode_value
+
+        encoded = encode_value(
+            IntentSurgeValue(
+                topic="Cloud ERP",
+                score=71,
+                observed_week=date(2026, 2, 2),
+                trend=TrendDirection.EMERGING,
+            )
+        )
+
+        assert encoded == {
+            "topic": "Cloud ERP",
+            "score": 71,
+            "observed_week": "2026-02-02",
+            "trend": "emerging",
+        }
+
+    def test_enums_encode_to_their_values(self) -> None:
+        from modules.provider_normalization.infrastructure.repository import encode_value
+
+        assert encode_value(RevenueBand.FROM_10M_TO_50M) == "10m_50m"
+
+    def test_scalars_pass_through(self) -> None:
+        from modules.provider_normalization.infrastructure.repository import encode_value
+
+        assert encode_value(120) == 120
+        assert encode_value("software") == "software"
+
+    def test_sequences_encode_elementwise(self) -> None:
+        from modules.provider_normalization.infrastructure.repository import encode_value
+
+        assert encode_value((RevenueBand.OVER_1B, date(2026, 1, 1))) == ["over_1b", "2026-01-01"]
+
+    def test_a_technology_value_encodes_its_dates(self) -> None:
+        from modules.provider_normalization.infrastructure.repository import encode_value
+
+        encoded = encode_value(
+            TechnologyValue(name="CloudERP", category="erp", first_seen=date(2026, 1, 12))
+        )
+
+        assert encoded["first_seen"] == "2026-01-12"
+        assert encoded["last_seen"] is None
