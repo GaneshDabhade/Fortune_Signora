@@ -1,3 +1,142 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * Design tokens (T25).
+ *
+ * Defined as CSS custom properties rather than Tailwind theme literals so
+ * that a theme is a *value* swap at runtime, not a rebuild. A component
+ * referencing `bg-surface` keeps working when the palette changes; one
+ * referencing `bg-slate-50` has to be found and edited. That difference is
+ * the whole of AC-15.
+ *
+ * Channel triplets rather than hex, so Tailwind's `<alpha-value>` works:
+ * `bg-accent/10` composes without a second token for the faded variant.
+ */
+@layer base {
+  :root {
+    /* Surfaces, back to front. */
+    --color-canvas: 248 250 252;
+    --color-surface: 255 255 255;
+    --color-surface-raised: 255 255 255;
+    --color-surface-sunken: 241 245 249;
+
+    /* Text, by decreasing emphasis. Named for role, never for lightness —
+     * "muted" still means muted after dark mode inverts the value. */
+    --color-content: 15 23 42;
+    --color-content-muted: 71 85 105;
+    --color-content-subtle: 148 163 184;
+    --color-content-inverted: 248 250 252;
+
+    --color-border: 226 232 240;
+    --color-border-strong: 203 213 225;
+
+    /* One accent. A second would need a stated reason: two accents means
+     * every future component asks which, and the answer drifts. */
+    --color-accent: 37 99 235;
+    --color-accent-hover: 29 78 216;
+    --color-accent-contrast: 255 255 255;
+    --color-accent-subtle: 239 246 255;
+
+    /* Status. Each carries a subtle pair so a badge never has to guess. */
+    --color-success: 22 163 74;
+    --color-success-subtle: 240 253 244;
+    --color-warning: 202 138 4;
+    --color-warning-subtle: 254 252 232;
+    --color-danger: 220 38 38;
+    --color-danger-hover: 185 28 28;
+    --color-danger-subtle: 254 242 242;
+    --color-info: 2 132 199;
+    --color-info-subtle: 240 249 255;
+
+    --color-focus: 37 99 235;
+    /* Modal scrim. A token because the backdrop must darken relative to
+     * the *theme*, not to a fixed slate. */
+    --color-backdrop: 15 23 42;
+
+    --radius-sm: 0.25rem;
+    --radius: 0.5rem;
+    --radius-lg: 0.75rem;
+
+    --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.05);
+    --shadow: 0 1px 3px 0 rgb(15 23 42 / 0.1), 0 1px 2px -1px rgb(15 23 42 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(15 23 42 / 0.1), 0 4px 6px -4px rgb(15 23 42 / 0.1);
+
+    /* Layout constants the shell depends on — here rather than in the
+     * shell, so the sidebar width is one edit and not three. */
+    --sidebar-width: 15rem;
+    --topbar-height: 3.5rem;
+  }
+
+  /*
+   * Dark theme: the same token names, different values. No component
+   * changes and no `dark:` variants through the tree, which is what makes
+   * "theme changes do not require component rewrites" true by
+   * construction rather than by discipline.
+   */
+  :root[data-theme='dark'] {
+    --color-canvas: 2 6 23;
+    --color-surface: 15 23 42;
+    --color-surface-raised: 30 41 59;
+    --color-surface-sunken: 2 6 23;
+
+    --color-content: 248 250 252;
+    --color-content-muted: 148 163 184;
+    --color-content-subtle: 100 116 139;
+    --color-content-inverted: 15 23 42;
+
+    --color-border: 30 41 59;
+    --color-border-strong: 51 65 85;
+
+    --color-accent: 59 130 246;
+    --color-accent-hover: 96 165 250;
+    --color-accent-contrast: 15 23 42;
+    --color-accent-subtle: 30 41 59;
+
+    --color-success: 74 222 128;
+    --color-success-subtle: 5 46 22;
+    --color-warning: 250 204 21;
+    --color-warning-subtle: 66 32 6;
+    --color-danger: 248 113 113;
+    --color-danger-hover: 252 165 165;
+    --color-danger-subtle: 69 10 10;
+    --color-info: 56 189 248;
+    --color-info-subtle: 8 47 73;
+
+    --color-focus: 96 165 250;
+    --color-backdrop: 0 0 0;
+
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.5), 0 1px 2px -1px rgb(0 0 0 / 0.5);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6), 0 4px 6px -4px rgb(0 0 0 / 0.6);
+  }
+
+  * {
+    border-color: rgb(var(--color-border));
+  }
+
+  body {
+    background-color: rgb(var(--color-canvas));
+    color: rgb(var(--color-content));
+  }
+
+  /* Visible focus, once, globally. Every component inherits it rather than
+   * restating a ring — and no component can quietly omit one. */
+  :focus-visible {
+    outline: 2px solid rgb(var(--color-focus));
+    outline-offset: 2px;
+  }
+
+  /* Motion preference respected globally rather than per animation, where
+   * it is reliably forgotten. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

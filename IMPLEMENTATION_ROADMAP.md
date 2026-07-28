@@ -259,6 +259,16 @@ No new bounded context may be introduced without an RFC. Three names raised prev
 
 ---
 
+### The Frontend Foundation becomes a contract
+
+On M1.5 completion the frontend foundation is treated like the platform foundation. Business milestones **consume** the Design System, Shared Components, Application Shell, Routing, Authentication, and Query Infrastructure — they do not modify them, except under an approved architectural change.
+
+Same reasoning as the platform freeze: a substrate's value comes from being stable. A page that reshapes a shared component to suit itself has made that component slightly wrong for every other page, and the cost is paid by whoever writes the next one. Adding a *new* component to the library, or a new route, is a use of the foundation rather than a change to it.
+
+AC-15 is what makes this enforceable rather than aspirational: if components consume tokens, a theme change never needs to touch them, and a business page never has a reason to.
+
+---
+
 ## 5c. Roadmap Change Policy
 
 The implementation roadmap is **frozen**. Changes fall into exactly three categories.
@@ -591,6 +601,7 @@ make smoke
 - [ ] `@vitejs/plugin-react` reinstated and component tests running (PROJECT_STATUS technical debt register)
 - [ ] Frontend coverage gate established in CI
 - [ ] AC-14 passed
+- [ ] AC-15 passed
 
 **Rollback strategy:** Frontend-only; no schema change, no event contract change. Rollback is the previous image tag. Blast radius is the web tier alone — the API and workers are unaffected.
 
@@ -1061,6 +1072,7 @@ All four are test-enforced, not conventions.
 | **AC-9 — AI Evaluation Gate** | M8 | Golden sets exist; regression CI-enforced; evidence-completeness a release gate |
 | **AC-10 — Module Boundary Audit** | Every milestone | import-linter contracts extended and **proven to fail** on a deliberate violation |
 | **AC-14 — Frontend Foundation Integrity** | M1.5 | Every business screen addable without touching shell, routing, auth, or query infrastructure; **no mock business data in the codebase**; component tests in CI |
+| **AC-15 — Design System Stability** | M1.5 | Shared components consume design tokens rather than hard-coded styling; a theme change requires no component rewrite; a new business page composes entirely from the shared library without modifying the design system |
 | **AC-13 — Security Invariants** | Every milestone | The suite is extended with the milestone's new guarantees, and every added invariant is **proven to fail** when its guarantee is deliberately removed |
 | **AC-11 — Scale Validation** | M15 | RLS, Meilisearch, pgvector load-tested at target scale using simulator-generated volume |
 | **AC-12 — Security & Compliance** | M15 | Least privilege verified; PII policy implemented; SOC 2 evidence collectable |

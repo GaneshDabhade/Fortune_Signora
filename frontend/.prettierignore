@@ -1,0 +1,9 @@
+# Build output and generated files. Formatting them is noise, and .next/
+# is regenerated on every build so any fix is immediately undone.
+.next/
+node_modules/
+next-env.d.ts
+*.tsbuildinfo
+playwright-report/
+test-results/
+package-lock.json

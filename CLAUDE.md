@@ -245,6 +245,20 @@ Claude must not accept a change that violates this contract, **including one tha
 
 ---
 
+## 20c. Frontend Foundation
+
+From M1.5, the frontend foundation is a contract on the same terms as the platform (§20a). Business milestones **consume** the Design System, Shared Components, Application Shell, Routing, Authentication integration, and Query Infrastructure; they do not modify them without an approved architectural change.
+
+Concretely, Claude must:
+
+- **Compose pages from `components/ui`**, never restyle a shared component for one page's benefit. A component bent to suit one caller is slightly wrong for every other, and the cost lands on whoever writes the next page.
+- **Use design tokens, never literal colours.** No Tailwind palette utility (`bg-slate-100`), no hex, no `dark:` variant in a component. A theme change must be a token edit — enforced by `frontend/tests/components/design-tokens.test.tsx` (AC-15).
+- **Add to the library rather than around it.** A genuinely new component belongs in `components/ui` with its tokens and its test; a page-local variant of an existing one does not.
+- **Never introduce mock business data.** Screens without a shipped module behind them ship a designed empty state. Business UI is built against real domain contracts produced by the Provider Simulation Framework (AC-14, enforced by `frontend/tests/components/no-mock-data.test.tsx`).
+- **Keep client-side permission checks presentational.** Casbin on the server is the authorization decision; hiding a control the caller cannot use is a courtesy, never enforcement, and must never be the only check.
+
+---
+
 ## 21. Rules for Claude Code
 
 ### Claude must never
@@ -263,6 +277,7 @@ Claude must not accept a change that violates this contract, **including one tha
 - Modify `signora_platform/` internals after the M1.3A freeze without a security fix, a production defect, or explicit approval (§20a).
 - Read a platform infrastructure table from module code, or restore a read grant on one to `signora_app` (§8).
 - Introduce statefulness, local-disk persistence, or configuration outside `Settings` — the Infrastructure Contract binds every milestone until M14.5 provisions cloud infrastructure (§20b).
+- Modify a shared frontend component, the shell, routing, or query infrastructure to suit one page, or introduce mock business data (§20c).
 
 ### When implementing, Claude must always
 

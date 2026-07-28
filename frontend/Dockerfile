@@ -11,11 +11,8 @@ FROM node:22-bookworm-slim AS deps
 
 WORKDIR /app
 
-# --legacy-peer-deps: better-auth declares optional Svelte peers that
-# conflict with this project's React toolchain. Recorded as scheduled
-# technical debt in PROJECT_STATUS.md rather than left as a mystery flag.
 COPY package.json package-lock.json ./
-RUN npm ci --legacy-peer-deps
+RUN npm ci
 
 # ----------------------------------------------------------------- builder
 FROM node:22-bookworm-slim AS builder

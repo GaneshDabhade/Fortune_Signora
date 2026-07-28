@@ -3,7 +3,7 @@
 > **Owner:** Technical Program Manager · **Audience:** Everyone
 > **Cadence:** Updated at every milestone boundary and every sprint close. Updating this is part of the [Definition of Done](IMPLEMENTATION_ROADMAP.md#12-definition-of-done-global).
 > **Last updated:** 2026-07-28 · **Reporting period:** M1.2 delivery
-> **Revision:** v10 — **Execution sequence corrected to the ratified dependency graph.** Three dependency corrections applied and documented; four combined milestones split; module boundary rulings recorded; roadmap change policy established. M1.5 Frontend Foundation is next. Sequencing and dependency corrections only — the approved architecture is unchanged
+> **Revision:** v11 — **M1.5 Frontend Foundation complete.** Design system, shared component library, application shell, query layer, session and workspace management, permission-aware routing, feedback primitives, and component testing in CI. **`@vitejs/plugin-react` debt repaid** — `--legacy-peer-deps` removed everywhere. The frontend foundation is now a contract (CLAUDE.md §20c)
 
 ---
 
@@ -15,8 +15,8 @@ M1.1 Platform Runtime      █████████████████�
 M1.2 Auth Boundary         ████████████████████ 100%  ✅ Complete
 M1.3A Deployment Foundation ███████████████████ 100%  ✅ Complete · platform FROZEN
 M1.4 Platform Smoke Test    ███████████████████ 100%  ✅ Complete · FOUNDATION CLOSED
-M1.5 Frontend Foundation    ░░░░░░░░░░░░░░░░░░░   0%  🔴 CURRENT — next
-M2.0 Simulation Framework   ░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (after M1.5)
+M1.5 Frontend Foundation    ███████████████████ 100%  ✅ Complete · FE FOUNDATION CONTRACT
+M2.0 Simulation Framework   ░░░░░░░░░░░░░░░░░░░   0%  🔴 CURRENT — next
 M2.1 → M14b Pipeline        ░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (§5b execution order)
 M14.5 Cloud Infrastructure  ░░░░░░░░░░░░░░░░░░░   0%  ⏸ Deferred to Production Readiness
 M15 GA Readiness            ░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued
@@ -27,11 +27,11 @@ M2.1 → M15                 ░░░░░░░░░░░░░░░░░
 
 | Dimension | Status |
 |---|---|
-| **Overall completion to GA** | **~16%** by engineering effort (~49 of ~262–340 total engineer-weeks; **~213–291 ew remaining**) |
+| **Overall completion to GA** | **~19%** by engineering effort (~63.5 of ~262–340 total engineer-weeks; **~199–277 ew remaining**) |
 | Architecture & design | **100%** — 19 documents, 27 ADRs, ratified and internally consistent |
 | Core modules | **1 of 14** (7%) |
 | Backend platform | **100% of foundation scope** — 🔒 frozen from M1.3A; 0% of pipeline scope |
-| Frontend | **~15%** — auth boundary, minimal shell, and API client complete; the frontend *platform* is M1.5 |
+| Frontend | **~45%** — platform complete (design system, components, shell, routing, query layer); business screens are M12 |
 | Infrastructure-as-code | **~35%** — local production stack complete and continuously verified; cloud IaC deferred to M14.5 |
 | Provider simulation | **0%** — newly scoped (M2.0) |
 | AI capability | **Level 0 of 12** ([AI_MATURITY_ROADMAP.md](AI_MATURITY_ROADMAP.md)) |
@@ -52,6 +52,7 @@ Ratified 2026-07-28. These are **foundation capabilities, not work in progress**
 | Tenant Isolation Policy | M1.3A | Every table classified; tenant tables carry forced RLS, required policies, and a non-null identifier |
 | Platform Infrastructure Policy | M1.3A | Infrastructure tables owned by platform services; the application publishes and cannot read |
 | Platform Freeze | M1.3A | `signora_platform/` changes only for a security fix, production defect, or approved change |
+| **Frontend Foundation** | **M1.5** | Design system, components, shell, routing, auth integration, and query layer are consumed by business milestones, not modified (CLAUDE.md §20c) |
 
 **One change since the freeze:** the relay's transient-failure handling (M1.4), under the production-defect exemption.
 
@@ -114,6 +115,7 @@ The permanent architectural guarantees. A drop here is never a test problem.
 |---|---|---|
 | Invariants proven to fail when their guarantee is removed | **59 of 59** | 100% — an unverified invariant may assert nothing |
 | Invariants verified against a deployed stack | **59** (M1.3A local production) | Every milestone from M1.3A |
+| Frontend guard tests (AC-14 / AC-15) | **13**, all proven to fail when violated | Every design-system change |
 | Invariants weakened or removed to make a change pass | **0** | 0, permanently |
 | Milestones adding invariants | 2 of 2 since introduction | Every milestone (AC-13) |
 | Tables unclassified under the Tenant Isolation Policy | **0** | 0 — build fails otherwise |
@@ -234,33 +236,31 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 
 ## Current Milestone
 
-### 🔄 M1.5 — Frontend Foundation · **CURRENT** · ~14.5 ew
+### ✅ M1.5 — Frontend Foundation · closed 2026-07-28
 
-**Awaiting approval.** Task breakdown below; no implementation started.
+All nine tasks delivered. **96 frontend tests** (29 → 96), ESLint/Prettier/tsc clean, `next build` green.
 
-| Order | Task | Complexity | Status |
-|---|---|---|---|
-| 1 | T25 Design system: tokens, theme, dark mode, Tailwind config | M · 1.5 ew | ⬜ |
-| 2 | T26 Shared UI component library | L · 2.5 ew | ⬜ |
-| 3 | T28 TanStack Query + typed API client wiring | M · 1.5 ew | ⬜ |
-| 4 | T27 Application shell: layout, navigation, responsive frame | M · 1.5 ew | ⬜ |
-| 5 | T29 Session management, auth integration, workspace selector | M · 2 ew | ⬜ |
-| 6 | T30 Permission-aware routing | M · 1.5 ew | ⬜ |
-| 7 | T31 Error boundaries, loading states, empty states, toasts | M · 1.5 ew | ⬜ |
-| 8 | T32 Global state management | S · 1 ew | ⬜ |
-| 9 | T33 Frontend testing foundation + component tests in CI | M · 1.5 ew | ⬜ |
+| Delivered | Evidence |
+|---|---|
+| T25 Design system | Tokens as CSS custom properties; Tailwind wired to them; light + dark |
+| T26 Shared components | Button, Input, Select, Badge, Card, Dialog, EmptyState, Skeleton, Table |
+| T28 API client + TanStack Query | Workspace-prefixed keys, 4xx-never-retry policy, mutations never retried |
+| T27 Application shell | Sidebar, top bar, per-region error boundaries |
+| T29 Session + workspace selector | Server-side session gate; stored workspace id validated against the API's list |
+| T30 Permission-aware routing | Redirects rather than renders-and-hides |
+| T31 Error boundaries, loading, empty, toasts | Correlation id surfaced to the user, not only logged |
+| T32 Global state | Theme (with pre-paint script), active workspace |
+| T33 Component testing + CI | 96 tests; **`@vitejs/plugin-react` debt repaid** |
 
-**Ordering rationale:** the design system before components, because a component built before its tokens hardcodes them. T28 before T27 so the shell is wired to real data from its first render rather than retrofitted. T33 last, when there are components worth testing.
+**AC-14 and AC-15 are enforced structurally, not by review.** 13 guard tests assert no hardcoded palette utility, no hex, no `dark:` variant, every token defined in both themes, no component reading the theme, no fabricated business record, no fixture-named file, no business route. **Each was verified to fail when deliberately violated** — a hardcoded `bg-slate-100`, a `dark:` variant, a mock array, and a premature `companies/page.tsx` each produced the right failure.
 
-**Critical path:** ~14.5 ew serial. T28 and T33 are the only tasks that parallelise cleanly at higher headcount.
+**The `@vitejs/plugin-react` debt is genuinely repaid, not masked.** Two version conflicts were the actual cause: `@eslint/js` pinned to `^10` against `eslint@^9`, and `@vitejs/plugin-react@5` requiring Vite 6 under a Vitest that pins Vite 5. Fixed at the version level — plugin pinned to v4, `@eslint/js` aligned to `^9`. **`--legacy-peer-deps` is now removed from both CI workflows and the Dockerfile**, and `npm ci` succeeds without it.
 
-**Checkpoint:** AC-14 Frontend Foundation Integrity — every business screen addable without touching shell, routing, auth, or query infrastructure; **no mock business data in the codebase**; component tests in CI.
+**No mock business data anywhere.** Every section ships a designed empty state. Settings is the only screen backed by real data, because Workspace & Tenancy is the only shipped module — which makes it the proof that shell, query layer, toasts, and dialog compose against a real API rather than a fixture.
 
-**Explicitly out of scope:** dashboard, companies, opportunities, timeline, signals, AI chat, recommendations, analytics — **and any mock business data.** Where a screen would show domain content it ships a designed empty state, which every screen needs permanently anyway.
+**One item deferred with a stated reason, not silently:** the caller's workspace role is currently hardcoded to `owner` for *presentation only*. Resolving it properly needs a `GET /workspaces/{id}/me` endpoint that does not exist, and adding one is an API change rather than a frontend decision. Marked `TODO(M2.1)` in `authenticated-shell.tsx` and raised below. **Server-side Casbin enforcement is unaffected** — it never consulted this value.
 
-**T33 repays scheduled debt.** `@vitejs/plugin-react` was dropped in M1.2 with its repayment scheduled for "the first milestone introducing frontend component testing". This is that milestone, and it is a *prerequisite* of T33 rather than a follow-up to it.
-
-**Demo Checklist:** 15 items — see [IMPLEMENTATION_ROADMAP.md §6](IMPLEMENTATION_ROADMAP.md#6-milestone-definitions).
+**Not re-verified in this session:** the production image build and `make smoke`. Docker's daemon could not reach the registry from this environment (IPv6 routing; `curl` reaches it, the daemon does not). The frontend Dockerfile changed only by removing `--legacy-peer-deps`, which `npm ci` was confirmed to tolerate on the host — but the image itself was not rebuilt, and that gap is real until it is.
 
 ---
 
@@ -332,21 +332,7 @@ A permanent platform capability, not throwaway tooling — used for local develo
 
 ## Current Sprint
 
-**Sprint:** M1.5 Sprint 1 — **awaiting approval.**
-
-**Scope — M1.5 only.** Single stream; no concurrent milestone work.
-
-| Sprint 1 tasks | Rationale |
-|---|---|
-| T25 Design system | Zero dependencies; a component built before its tokens hardcodes them |
-| T26 Shared UI components | The long pole (2.5 ew) and what every later screen is assembled from |
-
-**The constraint that shapes this milestone:** no mock business data, anywhere. It is the one rule that keeps M1.5 a platform milestone rather than a half-built product — and the reason its output is designed empty states instead of populated screens.
-
----
-
-<details>
-<summary>M2.0 detail (queued, after M1.5)</summary>
+**Sprint:** M2.0 Sprint 1 — **awaiting approval.**
 
 **Scope — M2.0 only.** Single stream; no concurrent milestone work.
 
@@ -357,8 +343,6 @@ M2.0 is the largest milestone since M0 (~17–24 ew) and the first that builds p
 - **The simulator must never activate in production** — it would fabricate customer intelligence. Guarded by environment check, ingestion logging, health-endpoint visibility, and an alert, all test-enforced.
 
 **What the foundation now guarantees it.** `make smoke` runs before this milestone starts and after every change in it, so a regression in the substrate is attributable to the change that caused it rather than discovered weeks later.
-
-</details>
 
 ---
 
@@ -429,7 +413,7 @@ Small and deliberate. Nothing below is discovered debt.
 | No API versioning scheme | Low | Deliberate — speculative with one first-party client | First breaking change |
 
 | Relay `LISTEN/NOTIFY` wake-up not yet wired to the loop | Low | `notify_outbox` exists and polling is the correctness guarantee; the notification only collapses idle latency from ~1s | M1.3A or when latency matters |
-| **`@vitejs/plugin-react` removed from frontend devDependencies** | Low | Its Vite version conflicts with `better-auth`'s optional Svelte peer dependencies. M1.2's tests target JWT and key-management logic, which is plain TypeScript and needs no React transform. Keeping the dependency would have meant `--legacy-peer-deps` across the whole install to satisfy a plugin nothing used. | **Scheduled: the first milestone introducing frontend component testing.** React component tests cannot run without it — reinstating it is a prerequisite of that work, not a follow-up to it. Resolve the peer conflict then, when there is a real consumer to validate against. |
+| ~~`@vitejs/plugin-react` removed from frontend devDependencies~~ | — | — | ✅ **Repaid in M1.5.** The stated cause was wrong: it was never `better-auth`'s Svelte peers. Two real conflicts — `@eslint/js` pinned to `^10` against `eslint@^9`, and `@vitejs/plugin-react@5` requiring Vite 6 under a Vitest pinning Vite 5. Both fixed at the version level, and **`--legacy-peer-deps` removed from both CI workflows and the Dockerfile**. A misdiagnosed cause is why the flag survived three milestones. |
 
 **Debt ratio: healthy.** Five of the nine v3 items were repaid in M1.1. Two low-severity items now open, both with named repayment points.
 

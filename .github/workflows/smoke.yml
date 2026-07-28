@@ -33,7 +33,7 @@ jobs:
       # run the Security Invariants against the running stack.
       - name: Install frontend dependencies
         working-directory: frontend
-        run: npm ci --legacy-peer-deps
+        run: npm ci
       - name: Install backend
         working-directory: backend
         run: uv sync --locked
