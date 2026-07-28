@@ -11,7 +11,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Literal
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response, status
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
@@ -126,14 +126,26 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         database blip causes orchestrators to restart healthy processes."""
         return HealthResponse(status="ok", environment=resolved_settings.environment)
 
-    @app.get("/ready", response_model=ReadinessResponse, tags=["operations"])
-    async def ready() -> ReadinessResponse:
+    @app.get(
+        "/ready",
+        response_model=ReadinessResponse,
+        tags=["operations"],
+        responses={503: {"model": ReadinessResponse, "description": "Not ready to serve"}},
+    )
+    async def ready(response: Response) -> ReadinessResponse:
         """Readiness probe: the process can serve traffic.
 
         Covers both the database and the authentication subsystem. An API
         that cannot verify a token is not ready, even with a healthy
         database — every authenticated request would 401, which is
         indistinguishable from an outage to a user.
+
+        **Not ready is a 503, not a 200 with bad news in the body.** Every
+        orchestrator that will run this — Docker healthchecks, ECS target
+        groups, Kubernetes readiness probes — routes on the status code and
+        never reads the body. A degraded API returning 200 keeps receiving
+        traffic it cannot serve. The body remains for humans and for
+        debugging; the status code is what the infrastructure acts on.
         """
         engine: AsyncEngine = app.state.engine
         database: Literal["ok", "unavailable"] = "ok"
@@ -145,6 +157,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
         auth_health = check_auth_health(resolved_settings)
         ready_to_serve = database == "ok" and auth_health.status != "unavailable"
+        if not ready_to_serve:
+            response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
 
         return ReadinessResponse(
             status="ready" if ready_to_serve else "degraded",

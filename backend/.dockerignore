@@ -1,0 +1,15 @@
+# Anything not needed to build or run. Every excluded path is one fewer
+# thing that can end up in a layer by accident — .env in particular.
+.venv/
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.env
+.env.*
+!.env.example
+tests/

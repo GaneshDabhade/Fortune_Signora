@@ -40,7 +40,17 @@ def _database_url() -> str:
 
 config = context.config
 
-if config.config_file_name is not None:
+# Alembic's fileConfig replaces the root logger — a console handler at
+# WARNING, in plain text. Run from the Alembic CLI that is exactly right.
+# Run from `apps.migrate.main`, it discards the runner's own INFO lines
+# (including "migrations applied", which is what an operator greps for to
+# confirm the release step succeeded) and splits one release step across two
+# log formats.
+#
+# So the two configurations are made mutually exclusive rather than left to
+# whichever runs last. The runner sets this variable before importing
+# Alembic; nothing else does.
+if config.config_file_name is not None and not os.environ.get("SIGNORA_LOGGING_CONFIGURED"):
     fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata

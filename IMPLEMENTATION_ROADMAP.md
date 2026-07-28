@@ -332,7 +332,7 @@ Also asserted across every restart:
 - [ ] Demo Checklist passes in full
 - [ ] Secrets sourced from environment with a documented local mechanism that shares no values with production
 - [ ] Migration runner documented as a release step, not a service behaviour
-- [ ] `docs/architecture/13-deployment.md` updated with the container topology as built
+- [ ] `ADR-0022` updated with the container topology as built (there is no `13-deployment.md`; 13 is Integrations, and deployment topology is ADR-0022's subject)
 - [ ] Disaster Recovery Validation passes for all four components
 - [ ] **`signora_platform/` declared frozen** (CLAUDE.md §20a) — subsequent milestones change it only for security fixes, production defects, or approved architectural changes
 - [ ] AC-3A passed
@@ -453,7 +453,7 @@ make smoke        # or: uv run smoke
 - [ ] Demo Checklist passes in full
 - [ ] Wired into CI and documented as a release gate
 - [ ] Each stage's failure mode verified by deliberately breaking it
-- [ ] Documented in `docs/architecture/13-deployment.md`
+- [ ] Documented in `ADR-0022`
 
 **Rollback strategy:** Not applicable — the command is additive and ships no runtime change.
 

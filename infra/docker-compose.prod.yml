@@ -1,0 +1,193 @@
+# Production topology, runnable locally.
+#
+# This is not "compose with production-ish settings" — it is the shape the
+# ECS deployment will take, expressed in the smallest thing that can run it:
+# production images, per-tier database identities, migrations as a discrete
+# pre-start step, and readiness gating dependents.
+#
+# The point is to answer every *application*-level deployment question here,
+# where a failure is a two-minute diagnosis, rather than inside ECS where
+# the same failure looks like an infrastructure problem (M1.3A).
+#
+# Secrets: every value below is a local development credential, and the
+# file is committed. Nothing here is shared with any deployed environment,
+# where values come from AWS Secrets Manager (ADR-0022). The images carry
+# no secret at all — that is asserted by the smoke test.
+
+name: signora-prod
+
+x-backend-image: &backend-image
+  build:
+    context: ../backend
+    dockerfile: Dockerfile
+
+# Configuration common to every backend process. Note what is *absent*:
+# SIGNORA_DATABASE_URL. Each service supplies its own, because each connects
+# under its own least-privileged identity, and a shared default would make
+# it far too easy for one to silently inherit another's.
+x-backend-env: &backend-env
+  SIGNORA_ENVIRONMENT: production-local
+  SIGNORA_REDIS_URL: redis://redis:6379/0
+  SIGNORA_LOG_LEVEL: INFO
+  SIGNORA_JWT_ISSUER: http://localhost:3000
+  SIGNORA_JWT_AUDIENCE: signora-api
+  SIGNORA_JWT_PUBLIC_KEY: ${SIGNORA_JWT_PUBLIC_KEY:?set SIGNORA_JWT_PUBLIC_KEY — run "npm run keys:generate" in frontend/}
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: signora
+      POSTGRES_PASSWORD: signora
+      POSTGRES_DB: signora
+    ports:
+      - "5433:5432"
+    volumes:
+      - prod_postgres17_data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U signora -d signora"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7
+    ports:
+      - "6380:6379"
+    # appendonly so a Redis restart does not silently drop the queue. The
+    # outbox is the system of record and would re-relay anything lost, but
+    # losing the queue on every restart would mask that guarantee rather
+    # than exercise it — and the disaster-recovery test needs to observe
+    # which of the two mechanisms actually held.
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - prod_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  # Runs to completion, then exits. Every service that touches the database
+  # waits for it to exit successfully, so no process ever starts against a
+  # half-migrated schema.
+  migrate:
+    <<: *backend-image
+    command: ["python", "-m", "apps.migrate.main"]
+    environment:
+      <<: *backend-env
+      # The only service given the migration credential. It refuses to run
+      # under a runtime identity, so a mistake here fails loudly.
+      SIGNORA_DATABASE_URL: postgresql+asyncpg://signora:signora@postgres:5432/signora
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    <<: *backend-image
+    command:
+      - uvicorn
+      - apps.api.main:create_app
+      - --factory
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+    environment:
+      <<: *backend-env
+      SIGNORA_DATABASE_URL: postgresql+asyncpg://signora_app:signora_app_local_dev@postgres:5432/signora
+    ports:
+      - "8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      # /ready, not /health: this reports whether the process can serve
+      # traffic, which includes its dependencies. /health answers only
+      # "is the process alive", and a container that is alive but cannot
+      # reach the database should not receive requests.
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/ready', timeout=3).status==200 else 1)\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  worker:
+    <<: *backend-image
+    command: ["arq", "apps.worker.main.WorkerSettings"]
+    environment:
+      <<: *backend-env
+      SIGNORA_DATABASE_URL: postgresql+asyncpg://signora_app:signora_app_local_dev@postgres:5432/signora
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    # SIGTERM must reach ARQ so it can finish the job in flight. The default
+    # 10s is too short for a handler that is mid-provider-call; 30s is the
+    # figure ECS will also use.
+    stop_grace_period: 30s
+
+  relay:
+    <<: *backend-image
+    command: ["python", "-m", "apps.worker.relay_main"]
+    environment:
+      <<: *backend-env
+      # The only runtime identity permitted to READ the outbox. The API and
+      # workers publish into it and cannot read it back (migration 0006).
+      SIGNORA_DATABASE_URL: postgresql+asyncpg://signora_app:signora_app_local_dev@postgres:5432/signora
+      SIGNORA_RELAY_DATABASE_URL: postgresql+asyncpg://signora_relay:signora_relay_local_dev@postgres:5432/signora
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    stop_grace_period: 30s
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      SIGNORA_APP_URL: http://localhost:3000
+      SIGNORA_API_URL: http://api:8000
+      # Connects as signora_auth, never the owner: migration 0005 revokes
+      # signora_app from the auth schema, and that isolation only holds if
+      # this tier's credential is equally narrow.
+      SIGNORA_AUTH_DATABASE_URL: postgresql://signora_auth:signora_auth_local_dev@postgres:5432/signora
+      SIGNORA_AUTH_SCHEMA: auth
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-local-prod-stack-secret}
+      SIGNORA_JWT_ISSUER: http://localhost:3000
+      SIGNORA_JWT_AUDIENCE: signora-api
+      # This tier holds the PRIVATE key — it is the Authentication
+      # Authority. The API gets the public half only (ADR-0026).
+      SIGNORA_JWT_PRIVATE_KEY: ${SIGNORA_JWT_PRIVATE_KEY:?set SIGNORA_JWT_PRIVATE_KEY — run "npm run keys:generate" in frontend/}
+      SIGNORA_JWT_PUBLIC_KEY: ${SIGNORA_JWT_PUBLIC_KEY:?set SIGNORA_JWT_PUBLIC_KEY}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID:-}
+      MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET:-}
+    ports:
+      - "3000:3000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:3000/api/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+
+volumes:
+  # Separate from the development stack's volumes. A production-shaped run
+  # must never adopt or destroy development data, and vice versa.
+  prod_postgres17_data:
+  prod_redis_data:

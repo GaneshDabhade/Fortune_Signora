@@ -157,9 +157,12 @@ class WorkerSettings:
     # chance to dead-letter with full context.
     max_tries = MAX_ATTEMPTS + 1
 
-    @staticmethod
-    def redis_settings() -> RedisSettings:
-        return RedisSettings.from_dsn(str(get_settings().redis_url))
+    # A plain attribute, not a staticmethod: ARQ reads `redis_settings` as
+    # a value and immediately dereferences `.host`, so a callable here fails
+    # at worker startup with `'staticmethod' object has no attribute 'host'`.
+    # Evaluating at class-definition time is consistent with `_pool` above,
+    # which already resolves at import.
+    redis_settings = RedisSettings.from_dsn(str(get_settings().redis_url))
 
 
 __all__ = ["POOLS", "WorkerSettings", "dispatch_event"]

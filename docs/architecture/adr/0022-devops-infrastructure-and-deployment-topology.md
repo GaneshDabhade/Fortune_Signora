@@ -41,3 +41,57 @@ Single-cloud-provider dependency (AWS) — acceptable given no multi-cloud requi
 - `infra/` holds Docker Compose (local) and Terraform/IaC (AWS) definitions — infrastructure is code-reviewed like application code.
 - CI (GitHub Actions) runs Ruff, MyPy, ESLint, Prettier, import-linter, Pytest, Vitest, and Playwright ([ADR-0023](0023-testing-strategy.md), [ADR-0024](0024-code-quality-and-static-analysis.md)) on every PR before merge.
 - All production secrets (provider/AI vendor/integration credentials, database credentials) are sourced from AWS Secrets Manager, never committed or hardcoded, per [10-security.md](../10-security.md).
+
+---
+
+## As Built — Local Production Stack (M1.3A)
+
+The cloud topology below is realised first as a **local production stack**: the same images, the same identities, the same startup ordering, running under Docker Compose (`infra/docker-compose.prod.yml`). This is not a development convenience — it is where every *application*-level deployment question is answered before AWS is introduced, so that a failure in M1.3B has exactly one remaining suspect.
+
+### Images
+
+| Image | Base | User | Contents |
+|---|---|---|---|
+| backend | `python:3.13-slim` | uid 1000, non-root | Virtualenv + source. One image, three entry points (API, worker, relay, migration runner) — they share every dependency and differ only in command. |
+| frontend | `node:22-slim` | `node` (uid 1000) | Next.js standalone output only — no build toolchain, no dev dependencies. |
+
+Both are multi-stage: the builder holds the compiler and package manager, the runtime holds neither. **No secret is baked into either image, and none can be** — every value arrives from the environment at start, so the image is byte-identical across environments and what differs is only what is handed to it.
+
+### Startup ordering
+
+```
+postgres ──┐
+           ├──► migrate (runs to completion) ──► api ──► frontend
+redis ─────┘                                 ├──► worker
+                                             └──► relay
+```
+
+`migrate` is a **discrete step that exits**, and every database-touching service waits on `service_completed_successfully`. No process ever starts against a half-migrated schema, and no running service holds the ability to apply a migration.
+
+### Identities in the running stack
+
+Each process connects under its own least-privileged role — verified from inside the containers, not assumed from configuration:
+
+| Process | Role |
+|---|---|
+| `migrate` | owner (`signora`) — the only service given the migration credential |
+| `api`, `worker` | `signora_app` |
+| `relay` | `signora_relay` (for the outbox) |
+| `frontend` | `signora_auth` |
+
+### Migration runner
+
+`apps/migrate/main.py` provides two guarantees `alembic upgrade head` does not:
+
+- **Concurrency safety.** A session-scoped PostgreSQL advisory lock serialises parallel invocations. Deployments start replicas simultaneously and a rollback may start a new task while an old one is draining; two Alembic processes on one database produce partially applied migrations and a version table that agrees with neither. Verified with four simultaneous runners against an empty schema: one proceeded, three waited, the schema reached head exactly once.
+- **Identity enforcement.** It refuses to run under a runtime role, exiting non-zero with a message naming the fix. A mistake in a task definition fails at the migration step rather than silently granting the application role DDL.
+
+### Health and readiness
+
+- `/health` — liveness. Does not touch the database, so a database blip never causes an orchestrator to restart a healthy process.
+- `/ready` — readiness, covering database *and* authentication. **Returns 503 when not ready**, not 200 with bad news in the body: every orchestrator that will run this routes on the status code and never reads the body, so a degraded API answering 200 keeps receiving traffic it cannot serve.
+- Frontend `/api/health` — Better Auth connectivity, signing-key pair match, JWT configuration, OAuth configuration.
+
+### Disaster recovery
+
+`infra/disaster-recovery.sh` restarts PostgreSQL, Redis, the API, workers, and the relay in turn, asserting before and after each that nothing is lost: unrelayed outbox rows, dead letters, the idempotency ledger, acknowledged writes and their events, authentication state, tenant isolation, and per-entity event ordering. Redis is treated as transport rather than a system of record — anything lost from the queue is still in the outbox and is re-relayed, which the restart proves rather than assumes.

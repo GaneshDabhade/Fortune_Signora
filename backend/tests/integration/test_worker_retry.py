@@ -156,3 +156,37 @@ async def test_envelope_survives_json_round_trip_through_the_queue(
 
 async def _no_sleep(_seconds: float) -> None:
     return None
+
+
+class TestWorkerSettingsAreConsumableByArq:
+    """ARQ reads `WorkerSettings` attributes directly and dereferences them
+    without calling anything.
+
+    Every other test in this file exercises `dispatch_event` in isolation,
+    which never touches `WorkerSettings` — so a worker that cannot start at
+    all passed the entire suite. It was caught by running the container,
+    which is the argument for M1.3A existing before M1.3B.
+    """
+
+    def test_redis_settings_is_a_value_not_a_callable(self) -> None:
+        from arq.connections import RedisSettings
+
+        from apps.worker.main import WorkerSettings
+
+        settings = WorkerSettings.redis_settings
+
+        assert isinstance(settings, RedisSettings), (
+            "ARQ dereferences redis_settings.host at startup; a callable here "
+            "fails with \"'staticmethod' object has no attribute 'host'\""
+        )
+        assert isinstance(settings.host, str)
+
+    def test_every_attribute_arq_requires_is_present_and_usable(self) -> None:
+        from apps.worker.main import WorkerSettings
+
+        assert callable(WorkerSettings.on_startup)
+        assert callable(WorkerSettings.on_shutdown)
+        assert len(WorkerSettings.functions) >= 1
+        assert isinstance(WorkerSettings.queue_name, str)
+        assert isinstance(WorkerSettings.max_jobs, int)
+        assert isinstance(WorkerSettings.max_tries, int)

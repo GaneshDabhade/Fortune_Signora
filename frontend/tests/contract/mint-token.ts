@@ -6,7 +6,12 @@
  * claim set: a hand-written token here would pass while production drifted,
  * which is precisely the failure this test exists to catch.
  *
- * Usage: tsx tests/contract/mint-token.ts <privateKeyPem> <issuer> <audience>
+ * Usage: tsx tests/contract/mint-token.ts <privateKeyPem> <issuer> <audience> [userId]
+ *
+ * `userId` defaults to a fixed subject so the contract test is
+ * deterministic. Pass one to mint a token for a *different* user — which is
+ * what proves workspace isolation rather than assuming it.
+ *
  * Emits the token on stdout.
  */
 
@@ -14,7 +19,7 @@ import { issueAccessToken } from '../../lib/auth/jwt';
 import { loadPrivateKey } from '../../lib/auth/keys';
 
 async function main(): Promise<void> {
-  const [privatePem, issuer, audience] = process.argv.slice(2);
+  const [privatePem, issuer, audience, userId] = process.argv.slice(2);
 
   if (!privatePem || !issuer || !audience) {
     process.stderr.write('usage: mint-token.ts <privateKeyPem> <issuer> <audience>\n');
@@ -23,7 +28,7 @@ async function main(): Promise<void> {
 
   const token = await issueAccessToken(
     {
-      userId: '3f6c8a1e-0000-4000-8000-000000000001',
+      userId: userId ?? '3f6c8a1e-0000-4000-8000-000000000001',
       sessionId: 'sess_contract_test',
       email: 'contract@signora.test',
       emailVerified: true,

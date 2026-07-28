@@ -23,6 +23,20 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+# The worker entry point resolves its ARQ configuration at import — ARQ
+# reads `WorkerSettings.redis_settings` as a value and dereferences it
+# immediately, so it cannot be deferred behind a callable. Importing
+# `apps.worker.main` therefore requires a complete Settings, exactly as the
+# running worker does.
+#
+# Placeholders only, and only if the environment has not already supplied
+# real ones. Tests that care about JWT behaviour build their own Settings
+# with an ephemeral key pair; these exist so importing the module does not
+# fail on configuration it will never use.
+os.environ.setdefault("SIGNORA_JWT_PUBLIC_KEY", "test-placeholder-not-a-key")
+os.environ.setdefault("SIGNORA_JWT_ISSUER", "https://auth.signora.test")
+os.environ.setdefault("SIGNORA_JWT_AUDIENCE", "signora-api-test")
+
 DEFAULT_APP_DATABASE_URL = (
     "postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5432/signora"
 )
@@ -83,6 +97,30 @@ def admin_session_factory(admin_engine: AsyncEngine) -> async_sessionmaker[Async
     explicit.
     """
     return async_sessionmaker(admin_engine, expire_on_commit=False)
+
+
+@pytest.fixture(scope="session", autouse=True)
+async def require_explicit_consent_to_truncate() -> None:
+    """Refuse to run against a database that has not opted in to being wiped.
+
+    ``clean_database`` truncates every table after each test. That is
+    correct for a test database and catastrophic for any other — and the
+    M1.3A/M1.3B checklists both call for running the Security Invariants
+    against a *deployed* stack, which points this suite at real data.
+
+    Found the hard way: running the invariants against the local production
+    stack emptied it mid-way through the disaster-recovery script, so the
+    ordering and reconciliation checks that followed passed against empty
+    tables. A destructive default plus an innocent-looking invocation is a
+    bad combination; opting in explicitly costs one environment variable.
+    """
+    if os.environ.get("SIGNORA_ALLOW_DESTRUCTIVE_TESTS") != "1":
+        raise RuntimeError(
+            "This suite TRUNCATES every table after each test. Set "
+            "SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 to confirm the target database "
+            "is disposable. Never set it against a database holding data you "
+            "want to keep."
+        )
 
 
 @pytest.fixture(autouse=True)

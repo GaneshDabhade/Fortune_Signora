@@ -35,3 +35,4 @@ blob-report/
 .coverage
 coverage.xml
 htmlcov/
+.env.prod-local

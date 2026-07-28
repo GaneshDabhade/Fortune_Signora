@@ -70,7 +70,10 @@ async def test_ready_reports_degraded_when_database_is_unreachable() -> None:
             response = await client.get("/ready")
 
     body = response.json()
-    assert response.status_code == 200
+    # 503, not 200. Orchestrators route on the status code and never read
+    # the body, so a degraded API answering 200 keeps receiving traffic it
+    # cannot serve.
+    assert response.status_code == 503
     assert body["status"] == "degraded"
     assert body["database"] == "unavailable"
 

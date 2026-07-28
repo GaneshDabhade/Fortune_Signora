@@ -53,6 +53,9 @@ jobs:
           --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       SIGNORA_DATABASE_URL: postgresql+asyncpg://signora:signora@localhost:5432/signora
+      # The suite truncates every table between tests. Explicit opt-in, so
+      # pointing it at a database that matters fails instead of wiping it.
+      SIGNORA_ALLOW_DESTRUCTIVE_TESTS: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

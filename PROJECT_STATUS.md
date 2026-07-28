@@ -3,7 +3,7 @@
 > **Owner:** Technical Program Manager · **Audience:** Everyone
 > **Cadence:** Updated at every milestone boundary and every sprint close. Updating this is part of the [Definition of Done](IMPLEMENTATION_ROADMAP.md#12-definition-of-done-global).
 > **Last updated:** 2026-07-28 · **Reporting period:** M1.2 delivery
-> **Revision:** v6 — **M1.2 complete and approved.** Security Invariants suite established (47 invariants); M1.3 split into M1.3A/M1.3B; M1.4 Platform Smoke Test added
+> **Revision:** v7 — **M1.3A Deployment Foundation complete.** Production images, migration runner, production stack, and Disaster Recovery Validation all green. **`signora_platform/` is now frozen** (CLAUDE.md §20a)
 
 ---
 
@@ -13,8 +13,8 @@
 M0  Foundation             ████████████████████ 100%  ✅ Complete
 M1.1 Platform Runtime      ████████████████████ 100%  ✅ Complete
 M1.2 Auth Boundary         ████████████████████ 100%  ✅ Complete
-M1.3A Deployment Foundation ░░░░░░░░░░░░░░░░░░░   0%  🔴 CURRENT — next
-M1.3B Cloud Infrastructure  ░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (after M1.3A)
+M1.3A Deployment Foundation ███████████████████ 100%  ✅ Complete · platform FROZEN
+M1.3B Cloud Infrastructure  ░░░░░░░░░░░░░░░░░░░   0%  🔴 CURRENT — next
 M1.4 Platform Smoke Test    ░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (after M1.3A)
 M2.0 Simulation Framework   ░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (after M1.4)
 M2.1 → M15                 ░░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued
@@ -24,12 +24,12 @@ M2.1 → M15                 ░░░░░░░░░░░░░░░░░
 
 | Dimension | Status |
 |---|---|
-| **Overall completion to GA** | **~16%** by engineering effort (~42 of ~239–319 total engineer-weeks; ~198–278 ew remaining) |
+| **Overall completion to GA** | **~18%** by engineering effort (~47.5 of ~239–319 total engineer-weeks; ~192–272 ew remaining) |
 | Architecture & design | **100%** — 19 documents, 27 ADRs, ratified and internally consistent |
 | Core modules | **1 of 14** (7%) |
-| Backend platform | ~85% of foundation scope; 0% of pipeline scope |
+| Backend platform | **100% of foundation scope** — 🔒 frozen from M1.3A; 0% of pipeline scope |
 | Frontend | **~25%** — auth boundary, shell, and API client complete |
-| Infrastructure-as-code | **0%** — local Docker Compose only |
+| Infrastructure-as-code | **~35%** — production images, migration runner, and production stack complete; no cloud IaC yet |
 | Provider simulation | **0%** — newly scoped (M2.0) |
 | AI capability | **Level 0 of 12** ([AI_MATURITY_ROADMAP.md](AI_MATURITY_ROADMAP.md)) |
 
@@ -46,10 +46,10 @@ How much the agreed architecture is churning. Sustained instability means the de
 | Indicator | Current | Target |
 |---|---|---|
 | ADRs superseded or reversed since ratification | **0 of 27** | 0 — reversal means the decision was made too early |
-| Documents amended for *drift* (code disagreed with docs) | **2** (11-tenancy, 18-authentication) | Trending to 0 |
+| Documents amended for *drift* (code disagreed with docs) | **3** (11-tenancy ×2, 18-authentication) | Trending to 0 |
 | Documents amended for *new decisions* | 3 | Healthy — this is the process working |
 | Unplanned architectural changes mid-milestone | **0** | 0 — these belong to the RFC process |
-| `signora_platform/` freeze status | 🔓 **Unfrozen until M1.3A** | 🔒 Frozen from M1.3A (CLAUDE.md §20a) |
+| `signora_platform/` freeze status | 🔒 **Frozen** since M1.3A | Changes require security fix, production defect, or approval |
 
 **Reading:** stable. No ratified decision has been reversed. Both drift amendments were found by writing tests that asserted the documented behaviour, not by a production incident.
 
@@ -59,13 +59,14 @@ Whether the substrate the 13 pipeline modules will be built on is sound.
 
 | Indicator | Current | Target |
 |---|---|---|
-| Backend tests | **289 passing**, 0 skipped, 0 xfail | 0 skipped — a skipped test is an untested claim |
-| Coverage | **95.84%** (CI gate 95%) | ≥95% |
-| mypy strict | Clean, 108 files | Clean |
+| Backend tests | **310 passing**, 0 skipped, 0 xfail | 0 skipped — a skipped test is an untested claim |
+| Coverage | **95.65%** (CI gate 95%) | ≥95% |
+| mypy strict | Clean, 113 files | Clean |
 | Migrations reversible | **7 of 7** revisions | 100% |
+| Disaster recovery validated | **4 of 4** components restart-safe | All |
 | Platform modules with a failure-path test | 12 of 12 | 100% |
 | Open production defects | **0** | 0 |
-| Defects found by tests vs. by use | **5 of 5 by tests** | All — a defect found in use is a missing test |
+| Defects found by tests vs. by use | **8 of 11 by tests**; 3 by running the stack | Falling ratio is expected — M1.3A's whole purpose is to surface what tests cannot |
 
 **Reading:** sound. The metric worth watching is the last one: every defect so far was found by a test written to look for it, four of them by deliberately breaking a guarantee to check the test bites.
 
@@ -80,11 +81,12 @@ The permanent architectural guarantees. A drop here is never a test problem.
 | Tenant Isolation Policy | 12 | ✅ All passing |
 | Database privilege separation | 9 | ✅ All passing |
 | Platform durability | 12 | ✅ All passing |
-| **Total** | **59** | ✅ **59 / 59** |
+| **Total** | **59** | ✅ **59 / 59**, also green against the running production stack |
 
 | Indicator | Current | Target |
 |---|---|---|
 | Invariants proven to fail when their guarantee is removed | **59 of 59** | 100% — an unverified invariant may assert nothing |
+| Invariants verified against a deployed stack | **59** (M1.3A local production) | Every milestone from M1.3A |
 | Invariants weakened or removed to make a change pass | **0** | 0, permanently |
 | Milestones adding invariants | 2 of 2 since introduction | Every milestone (AC-13) |
 | Tables unclassified under the Tenant Isolation Policy | **0** | 0 — build fails otherwise |
@@ -193,75 +195,29 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 
 ## Current Milestone
 
-### 🔄 M1.3A — Deployment Foundation · **CURRENT** · ~4 ew
+### ✅ M1.3A — Deployment Foundation · closed 2026-07-28
 
-| Order | Task | Complexity | Status |
-|---|---|---|---|
-| 1 | T19 Production Docker images (API, worker, frontend) | M · 1.5 ew | ⬜ |
-| 2 | T20 Migration runner + secrets management | M · 1.5 ew | ⬜ |
-| 3 | T21 Production Compose stack + health/readiness wiring | M · 1 ew | ⬜ |
+All four tasks delivered. The stack runs from production images alone, each tier under its own least-privileged identity, with Disaster Recovery Validation green.
 
-**Critical path:** T19→T20→T21 = 4 ew serial.
-**Simulator required:** ❌ No.
-**Checkpoint:** AC-3A Application Deployability — the stack starts from production images alone, migrations run under the migration identity, and **each tier connects under its own least-privileged role, verified from inside the running containers.**
-**Demo Checklist:** 11 items — see [IMPLEMENTATION_ROADMAP.md §6](IMPLEMENTATION_ROADMAP.md#6-milestone-definitions).
+| Delivered | Evidence |
+|---|---|
+| Production images (T19) | Multi-stage, non-root, no build toolchain, **no secret-bearing layer** |
+| Migration runner + secrets (T20) | Advisory-locked; refuses runtime identities; 4 concurrent runners verified |
+| Production Compose stack (T21) | 6 services healthy; migrations gate every dependent via `service_completed_successfully` |
+| Disaster Recovery Validation (T21b) | Postgres, Redis, API, workers, relay each restarted — nothing lost |
 
-The last checklist item is the one that makes the rest meaningful: the **Security Invariants suite must pass against the composed stack**, not only against a developer database. Credential separation that holds in `docker-compose.yml` and not in the images would be the M1.2 defect repeated one layer up.
+**Verified inside the running containers, not inferred from configuration:** `api`/`worker` → `signora_app`, `relay` → `signora_relay`, `frontend` → `signora_auth`, `migrate` → owner. All processes uid 1000.
 
-<details>
-<summary>M1.2 task detail (delivered)</summary>
+**Full demo flow against the live stack:** token minted by the real frontend path → workspace created via the real API (201) → both events relayed → a *different* user gets `404` and an empty list.
 
-### M1.2 — Authentication Boundary · ~11.5 ew · ✅
+**Four defects found, all by running the stack rather than by tests:**
 
-First milestone with a **user-visible outcome** — design-partner onboarding can begin at close.
+1. **`WorkerSettings.redis_settings` was a `staticmethod`.** ARQ reads it as a value and dereferences `.host`, so **the worker could never start** — while the entire test suite passed, because every test exercised `dispatch_event` directly and none ever touched `WorkerSettings`. This is the single clearest argument for M1.3A existing before M1.3B: in ECS this presents as a task that will not stabilise.
+2. **`/ready` always returned 200**, with the status in the body. Orchestrators route on the status code, so a degraded API would have kept receiving traffic it could not serve. Now 503.
+3. **Alembic's `fileConfig` silenced the migration runner's own logging**, so the "migrations applied" line an operator greps for never printed. The two logging configurations are now mutually exclusive.
+4. **The test suite truncates every table and could be pointed at any database.** Running the invariants against the production stack emptied it mid-script — so the ordering and reconciliation checks that followed passed against empty tables. Fixed twice over: the destructive assertions now run *before* the suite, and the suite refuses to run without `SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1`. This mattered beyond the local script: both M1.3A and M1.3B checklists call for running the invariants against a *deployed* stack.
 
-| Order | Task | Complexity | Status |
-|---|---|---|---|
-| 1 | T12 Next.js 15 scaffold + tooling | M · 1.5 ew | ⬜ |
-| 2 | T13 Better Auth + Google/Microsoft OAuth 🔴 | L · 3 ew | ⬜ |
-| 3 | T14 RS256 JWT issuance per ADR-0026 🔴 | M · 1.5 ew | ⬜ |
-| 4 | T15 Signing-key management | S–M · 1 ew | ⬜ |
-| 5 | T16 Typed API client | M · 1.5 ew | ⬜ |
-| 6 | T17 Frontend shell | M · 2 ew | ⬜ |
-| 7 | T18 E2E auth journey | M · 1 ew | ⬜ |
-
-**Critical path:** T12→T13→T14→T15→T18 ≈ 8 ew serial.
-**Simulator required:** ❌ No.
-**Checkpoint:** AC-2 Auth Boundary Integrity.
-**Demo Checklist:** 10 items — see [IMPLEMENTATION_ROADMAP.md §6](IMPLEMENTATION_ROADMAP.md#6-milestone-definitions).
-
-<details>
-<summary>M1.1 task detail (delivered)</summary>
-
-### M1.1 — Platform Runtime · ~15.5 ew · ✅
-
-Sole active milestone. M1.2 does not begin until M1.1's **Demo Checklist passes**.
-
-| Order | Task | Complexity | Status |
-|---|---|---|---|
-| 1 | T1 Coverage measurement + CI gate | XS · 0.25 ew | ⬜ |
-| 2 | T2 Redis service in CI | XS · 0.25 ew | ⬜ |
-| 3 | T6 Event bus schema (DLQ + idempotency ledger) | S–M · 1 ew | ⬜ |
-| 4 | T3 Structured logging | M · 1.5 ew | ⬜ |
-| 5 | T7 Outbox relay 🔴 | L · 3 ew | ⬜ |
-| 6 | T8 Dispatch + platform-owned idempotency 🔴 | L · 3 ew | ⬜ |
-| 7 | T9 ARQ worker fleet + per-stage pools | M · 1.5 ew | ⬜ |
-| 8 | T10 Retry + dead-lettering | M · 1.5 ew | ⬜ |
-| 9 | T4 OpenTelemetry tracing | M · 2 ew | ⬜ |
-| 10 | T5 Sentry error tracking | S · 0.5 ew | ⬜ |
-| 11 | T11 Pipeline observability metrics | S–M · 1 ew | ⬜ |
-
-**Sequencing rationale:** cheap unblocking work first (T1, T2, T6); logging (T3) *before* the relay so the relay is debuggable as it is built rather than after; then the critical chain T7→T8→T9→T10; then remaining observability, which benefits from having real cross-process traffic to instrument.
-
-**Critical path:** T6→T7→T8→T9→T10 ≈ **10 ew of serial work** — not compressible by adding engineers.
-
-**Simulator required:** ❌ No — verified with a test-only consumer. The simulator enters at the Provider layer, which does not exist yet.
-
-**Checkpoint:** AC-1 Event Bus Contract.
-
-**Demo Checklist:** 13/13 passed, encoded as executable assertions in `tests/integration/test_m1_1_demo_checklist.py` — a checklist that is only ever read is a checklist that eventually lies.
-
-</details>
+**🔒 `signora_platform/` is frozen** as of this milestone (CLAUDE.md §20a).
 
 ---
 
@@ -298,16 +254,16 @@ A permanent platform capability, not throwaway tooling — used for local develo
 
 ## Current Sprint
 
-**Sprint:** M1.3A Sprint 1 — awaiting approval.
+**Sprint:** M1.3B Sprint 1 — awaiting approval.
 
-**Scope — M1.3A only.** Single stream; no concurrent milestone work.
+**Scope — M1.3B only.** Single stream; no concurrent milestone work.
 
 | Sprint 1 tasks | Rationale |
 |---|---|
-| T19 Production Docker images | Zero dependencies; everything else in M1.3A builds on it |
-| T20 Migration runner + secrets | Where the migration/runtime credential split becomes executable rather than documentary |
+| T22 Terraform baseline | VPC, RDS 17, 2× ElastiCache, Secrets Manager. Zero dependencies within M1.3B. |
+| T23 ECS + pipeline + rollback | The gate: rollback executed and timed, not documented |
 
-**Note on T20.** The migration runner is the first place the new credential rule is enforced by machinery rather than by convention: migrations run as a discrete step under the migration identity, and no running service holds a credential that could apply one. The Security Invariants suite already asserts the runtime role cannot migrate — T20 makes that arrangement the only way the system starts.
+**What M1.3A bought this milestone.** Every application-level deployment question is already answered: the images start, the migration runner is concurrency-safe and identity-enforced, readiness reports correctly to an orchestrator, and every component survives a restart. If something fails in M1.3B, AWS configuration is the only remaining suspect — which is the entire reason the split was worth making.
 
 ---
 
@@ -451,15 +407,15 @@ Encoded as a tracked deviation in `test_authorization.py::test_every_workspace_o
 
 ## Next Task
 
-### 🎯 M1.3A · T19 — Production Docker images
+### 🎯 M1.3B · T22 — Terraform baseline
 
-**Why first:** zero dependencies, and both remaining M1.3A tasks build on it.
+**Why first:** T23 cannot deploy to infrastructure that does not exist.
 
-**Then:** T20 (migration runner + secrets) → T21 (production Compose stack) → M1.4 · T24 (platform smoke test) → M1.3B · T22 → T23.
+**Then:** T23 (ECS + deploy pipeline + rollback validation) → M1.4 · T24 (platform smoke test).
 
-**Note the ordering.** T24 depends on M1.3A, not M1.3B — the smoke command runs against the local production stack, so it becomes a release gate *before* anything reaches AWS rather than after.
+**Alternative worth considering:** M1.4 · T24 is now unblocked — it depends on M1.3A, which is complete. Building the smoke command *before* M1.3B would mean the cloud deployment has a single-command verification available from its first deploy rather than after it. It is 1.5 ew against M1.3B's 6.
 
-**Awaiting:** approval to begin M1.3A, and staffing. Every task remains unassigned.
+**Awaiting:** approval, and a decision on that ordering. Every task remains unassigned.
 
 ---
 
@@ -467,6 +423,7 @@ Encoded as a tracked deviation in `test_authorization.py::test_every_workspace_o
 
 | Date | Change |
 |---|---|
+| 2026-07-28 | v7 — **M1.3A Deployment Foundation complete.** Production images (multi-stage, non-root, no secrets), concurrency-safe migration runner refusing runtime identities, 6-service production Compose stack, and Disaster Recovery Validation across Postgres/Redis/API/workers. Four defects found by running the stack rather than by tests — most seriously a worker that could never start while the whole suite passed. `signora_platform/` frozen. ADR-0022 updated with as-built topology. 310 tests, coverage 95.65%. |
 | 2026-07-28 | v6 — **M1.2 approved.** Security Invariants suite established: 47 permanent invariants across authentication, authorization, database, and platform, each proven to fail when its guarantee is deliberately removed; wired into CI as a separately-reported job. Migration/runtime credential separation adopted as a permanent engineering rule (CLAUDE.md §8). M1.3 split into M1.3A Deployment Foundation and M1.3B Cloud Infrastructure; M1.4 Platform Smoke Test added; AC-3 split into AC-3A/3B/3C and AC-13 added. `@vitejs/plugin-react` recorded as scheduled technical debt. One architectural question raised for decision: platform-table read scope. |
 | 2026-07-28 | v5 — **M1.2 Authentication Boundary complete.** 7 tasks plus 3 added requirements; 242 backend and 29 frontend tests; Demo Checklist 10/10; AC-2 passed; Architecture Validation Report issued. One defect found during validation: `signora_auth` created but never connected as, with the frontend defaulting to the database owner. |
 | 2026-07-28 | v4 — **M1.1 Platform Runtime complete.** 11 tasks, 82 new tests (198 total), coverage 95.01% CI-gated, Demo Checklist 13/13, AC-1 passed. Dead code from the pagination refactor removed. 06-events.md updated to v3. |

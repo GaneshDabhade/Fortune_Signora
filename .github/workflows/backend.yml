@@ -61,6 +61,9 @@ jobs:
     env:
       SIGNORA_DATABASE_URL: postgresql+asyncpg://signora:signora@localhost:5432/signora
       SIGNORA_REDIS_URL: redis://localhost:6379/0
+      # The suite truncates every table between tests. Explicit opt-in, so
+      # pointing it at a database that matters fails instead of wiping it.
+      SIGNORA_ALLOW_DESTRUCTIVE_TESTS: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
