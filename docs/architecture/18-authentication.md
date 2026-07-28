@@ -1,0 +1,178 @@
+# 18 — Authentication
+
+> Status: **Living document — Architectural Constitution — RATIFIED**
+> Audience: All engineers, EMs, and technical stakeholders at Signora
+> New in **v3**. Specifies the decision recorded in [ADR-0026](adr/0026-jwt-boundary-architecture.md).
+
+## Purpose
+
+This document specifies how a caller's identity is established at Signora's API boundary: the division of responsibility between Next.js and FastAPI, the JWT contract between them, the per-request authentication pipeline, and the rules engineers must follow when writing protected endpoints.
+
+It covers **authentication** — *who is this caller* — only. Authorization (*what may they do*) is Casbin's concern, specified in [10-security.md](10-security.md). Tenant isolation mechanics are in [11-tenancy.md](11-tenancy.md). The error contract is in [19-api-conventions.md](19-api-conventions.md).
+
+## The Division of Responsibility
+
+```mermaid
+flowchart LR
+    subgraph Next["Next.js — Authentication Authority"]
+        BA[Better Auth]
+        OAuth[Google / Microsoft OAuth]
+        Sess[Session lifecycle]
+        Mint[Token issuance and refresh]
+        BA --- OAuth
+        BA --- Sess
+        BA --- Mint
+    end
+
+    subgraph API["FastAPI — Verification Only"]
+        Verify[Verify signature and claims]
+        Ctx[Build principal + workspace context]
+        RLS[Set PostgreSQL RLS context]
+        Casbin[Casbin authorization]
+        Verify --> Ctx --> RLS --> Casbin
+    end
+
+    Next -->|"RS256 JWT (Bearer)"| API
+    Next -.->|"private key (never leaves)"| Next
+    API -.->|"public key only"| API
+```
+
+**Next.js owns** user authentication, OAuth flows with Google and Microsoft, session management, token issuance, and token refresh.
+
+**FastAPI owns** signature verification, claim validation, principal construction, workspace-context resolution, RLS establishment, and Casbin delegation — and nothing else related to identity.
+
+### Hard prohibitions on the Python tier
+
+These are absolute. A pull request violating any of them should be rejected outright.
+
+- **Never store passwords or any credential material.**
+- **Never implement an OAuth flow**, callback handler, or authorization-code exchange.
+- **Never authenticate a user directly** — no login endpoint, no credential comparison.
+- **Never mint or sign a token.** The API is configured with a public key only and is cryptographically incapable of issuing a token it would accept. Do not add a private key to its configuration for any reason, including tests — test tokens are signed with an ephemeral key pair generated inside the test itself.
+
+## The JWT Contract
+
+### Signing and verification
+
+- **Algorithm: `RS256`**, asymmetric. Next.js signs with the private key; FastAPI verifies with the public key.
+- **Allowed algorithms are pinned to exactly `["RS256"]`.** This is a security control, not configuration hygiene. An unpinned verifier is vulnerable to the `alg: none` forgery and to algorithm confusion, where a token is re-signed with HS256 using the RSA *public* key — which is not secret — as the HMAC secret.
+- **Clock skew leeway: 60 seconds**, applied to `exp` and `nbf`. Deliberately small: a generous leeway silently extends the life of expired tokens.
+- **Access-token TTL: 15 minutes.** Refresh is entirely Next.js's responsibility; FastAPI has no refresh endpoint and no concept of one.
+
+### Claims
+
+```json
+{
+  "iss": "https://auth.signora.example",
+  "aud": "signora-api",
+  "sub": "3f6c…",
+  "sid": "sess_9a2f…",
+  "email": "rep@customer.example",
+  "email_verified": true,
+  "active_workspace_id": "8b0f…",
+  "iat": 1750000000,
+  "exp": 1750000900,
+  "jti": "tok_4c71…"
+}
+```
+
+| Claim | Required | Meaning and use |
+|---|---|---|
+| `iss` | yes | Issuer. Rejected unless it matches configuration exactly. |
+| `aud` | yes | Audience. Prevents a token minted for another service being replayed against this API. |
+| `sub` | yes | Better Auth user id. Becomes `app.user_id` in the RLS session context. |
+| `sid` | yes | Better Auth session id. Supports session-level revocation and correlates API activity to a sign-in. |
+| `email` | yes | Authenticated email address. |
+| `email_verified` | yes | Verification status of that address. |
+| `active_workspace_id` | no | Workspace the user has selected. Absent or null immediately after sign-in. **A routing hint, never a grant** — see below. |
+| `iat` / `exp` | yes | Issued-at and expiry. |
+| `jti` | yes | Unique token id, for future replay detection and revocation. |
+
+### What the token deliberately omits
+
+**No permissions, capabilities, or authorization decisions.** Casbin is the single source of authorization truth, evaluated per request against policy held in Signora's own version control. Embedding permissions would fork authorization across two systems and delay every policy change until tokens expire.
+
+**No workspace membership list.** Only the single `active_workspace_id` is carried, because a list would be unbounded in size (a user may belong to many workspaces), would grow staler the longer it is, and — decisively — could never be authoritative anyway, since [11-tenancy.md](11-tenancy.md) already requires server-side membership verification before RLS context is established.
+
+### `active_workspace_id` is a hint, not a grant
+
+The API re-verifies membership against Workspace & Tenancy on **every** request before setting `app.workspace_id`. A token carrying a workspace the user does not belong to — whether stale, mistaken, or forged — fails that check and the request is rejected. Treat the claim as a default selection the caller may also override with an explicit path parameter; either way it is verified, never trusted.
+
+## The Per-Request Pipeline
+
+Implemented once as a composable FastAPI dependency chain in `signora_platform/api/dependencies.py`. **Never re-implement any stage inside a route handler.**
+
+```mermaid
+flowchart TD
+    A[Bearer token on request] --> B[1. Verify signature<br/>RS256, pinned]
+    B --> C[2. Validate claims<br/>iss, aud, exp, nbf]
+    C --> D[3. Build AuthenticatedPrincipal<br/>user_id, session_id, email]
+    D --> E[4. Resolve active workspace<br/>path parameter or claim]
+    E --> F[5. Verify membership<br/>server-side, authoritative]
+    F --> G[6. Set RLS context<br/>app.user_id, app.workspace_id]
+    G --> H[7. Casbin check<br/>sub, workspace, object, action]
+    H --> I[8. Business logic]
+
+    B -- bad signature --> U[401]
+    C -- bad issuer/audience/expired --> U
+    D -- malformed claims --> U
+    F -- not a member --> N[404]
+    H -- denied --> P[403]
+```
+
+### Status codes, and why
+
+| Failure | Status | Reasoning |
+|---|---|---|
+| Missing, malformed, or unverifiable token | `401` | The caller is unauthenticated. |
+| Valid token, but not a member of the workspace | `404` | Deliberately indistinguishable from "no such workspace." A `403` here would confirm the workspace exists, letting a caller enumerate workspace ids. Preserves the non-enumerability property in [11-tenancy.md](11-tenancy.md). |
+| Member, but Casbin denies the action | `403` | Membership is already established, so the caller demonstrably knows the workspace exists. The only new information is that their role is insufficient — which is not sensitive. |
+
+That `404`-versus-`403` distinction is easy to "fix" into an inconsistency during review. It is intentional.
+
+## Writing a Protected Endpoint
+
+Depend on the shared context dependency; never parse a token, read a header, or set RLS context by hand.
+
+- Endpoints scoped to a workspace take the workspace-scoped context dependency, which yields a verified principal, a verified workspace, an RLS-scoped session, and a Casbin enforcer already bound to that subject and workspace.
+- Endpoints that are authenticated but not workspace-scoped (for example, "list the workspaces I belong to") take the principal-only dependency. These run with `app.user_id` set and no `app.workspace_id`, so workspace-owned tables are correctly invisible.
+- Unauthenticated endpoints are limited to operational probes (`/health`, `/ready`) and OpenAPI. Adding any other unauthenticated route requires explicit review.
+
+## Local Development and Testing
+
+- Tests generate an **ephemeral RSA key pair in-process**, sign tokens with the private half, and configure the verifier with the public half. No key material is committed, and no fixture private key exists to leak.
+- Because the API cannot mint tokens, there is no "dev mode" that skips verification. A test needing an authenticated caller mints a token exactly as Next.js would, which keeps the test path and the production path identical.
+
+## Best Practices
+
+- Treat the dependency chain as the only entry point to identity. If a handler needs something the principal does not carry, extend the principal — do not read the token again.
+- Keep the allowed-algorithm list pinned and explicit.
+- Log `user_id`, `session_id`, and `workspace_id` alongside `correlation_id` (see [07-data-flow.md](07-data-flow.md)), and never log the token itself.
+- Prefer an explicit workspace path parameter over the `active_workspace_id` claim for workspace-scoped resources; it makes the scope of a request legible from its URL alone.
+
+## Anti-Patterns
+
+- Parsing or trusting a JWT anywhere outside `signora_platform/auth/`.
+- Trusting `active_workspace_id` without server-side membership verification.
+- Returning `403` where the table above requires `404`, reintroducing workspace enumeration.
+- Adding a private signing key, a login route, or a refresh route to the Python tier.
+- A "skip auth in development" flag. It diverges the test path from production and inevitably reaches production.
+- Widening the clock-skew leeway to resolve intermittent expiry failures — fix host time synchronisation instead.
+
+## Tradeoffs
+
+| Choice | We gain | We give up |
+|---|---|---|
+| JWT boundary over shared session store | No coupling to Better Auth's internal schema; upgrades cannot silently break the backend | An explicit contract to maintain between two codebases |
+| Asymmetric RS256 over shared-secret HS256 | The API cannot forge tokens even if fully compromised | Key distribution and rotation must be managed |
+| Stateless verification over per-request session lookup | Sub-millisecond, locally deterministic; API availability decoupled from the frontend | Revocation is not immediate — bounded by the 15-minute TTL |
+
+## Future Evolution
+
+- **JWKS-based key rotation** with a cached key set, replacing the current configured-public-key approach in which rotation requires a deploy.
+- **Revocation list** keyed on `jti` or `sid`, should the 15-minute residual window prove unacceptable. Both claims are carried today specifically so this can be added without a contract change.
+- **Enterprise SSO/SCIM**, which remains a Better Auth-side concern and does not alter this boundary.
+
+## Decision Summary
+
+Better Auth in Next.js is Signora's sole Authentication Authority, issuing short-lived RS256 JWTs. FastAPI verifies signature and claims with a public key it cannot sign with, builds a principal, re-verifies workspace membership server-side, establishes PostgreSQL RLS context, and delegates the authorization decision to Casbin. The Python tier never stores credentials, never implements OAuth, and never authenticates a user directly.

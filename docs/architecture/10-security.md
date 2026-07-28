@@ -2,7 +2,7 @@
 
 > Status: **Living document — Architectural Constitution — RATIFIED**
 > Audience: All engineers, EMs, and technical stakeholders at Signora
-> Revision: **v2** — identity/authorization vendor and secrets management decisions ratified. See [ADR-0010](adr/0010-identity-and-access.md).
+> Revision: **v3** — the API identity boundary is now specified: Better Auth (Next.js) issues RS256 JWTs, FastAPI verifies them and never authenticates users. See [ADR-0026](adr/0026-jwt-boundary-architecture.md) and [18-authentication.md](18-authentication.md). v2 content otherwise unchanged.
 
 ## Purpose
 
@@ -21,13 +21,13 @@ flowchart TB
 
     subgraph Trusted["Trusted Boundary — Signora"]
         API[FastAPI API Layer]
-        BetterAuth[Better Auth]
+        BetterAuth[JWT verification<br/>public key only]
         Casbin[Casbin]
         Modules[Core Modules]
         DB[(PostgreSQL 17, RLS-enforced)]
     end
 
-    User -->|HTTPS + Better Auth session| API
+    User -->|HTTPS + RS256 JWT Bearer| API
     API --> BetterAuth
     BetterAuth --> Casbin
     Casbin --> Modules
@@ -39,8 +39,9 @@ flowchart TB
 
 ## Identity & Access
 
-- **Authentication** is **Better Auth**, per [ADR-0010](adr/0010-identity-and-access.md). Signora never stores raw credentials; Better Auth manages credential storage, session issuance, and OAuth flows for Google and Microsoft.
-- **Authorization** is **Casbin**, evaluated in the request path after Better Auth establishes identity. Casbin policy is workspace-scoped: every permission check is evaluated with `workspace_id` as part of the policy request, never globally.
+- **Authentication** is **Better Auth running in Next.js**, per [ADR-0010](adr/0010-identity-and-access.md) and [ADR-0026](adr/0026-jwt-boundary-architecture.md). Signora's Python tier never stores raw credentials; Better Auth manages credential storage, session issuance, and OAuth flows for Google and Microsoft.
+- **The FastAPI tier never authenticates users.** It verifies a short-lived RS256 JWT issued by Next.js, using a **public key only** — it is cryptographically incapable of minting a token it would accept. It must never be configured with a private signing key, must never implement an OAuth flow, and must never expose a login or refresh route. Full specification: [18-authentication.md](18-authentication.md).
+- **Authorization** is **Casbin**, evaluated in the request path after the JWT is verified and workspace membership confirmed. Casbin policy is workspace-scoped: every permission check is evaluated with `workspace_id` as part of the policy request, never globally.
 - **OAuth identity providers**: Google and Microsoft are supported for sign-in, distinct from the OAuth connections used for Gmail/Microsoft 365 email and Google/Outlook Calendar integrations (see [13-integrations.md](13-integrations.md)), which are separate, scoped, per-integration OAuth grants — a sign-in OAuth token must never be reused as an integration access token.
 - **Service-to-service / worker identity**: ARQ workers act with a system-level identity when processing pipeline events, scoped to a single `workspace_id` per unit of work derived from the event envelope, never a broad cross-workspace credential.
 
@@ -53,6 +54,7 @@ Enforced in layers, per Principle 7:
 3. **Application-level `workspace_id` filtering** as defense-in-depth on every query, via SQLAlchemy query construction conventions enforced in code review (see [15-project-structure.md](15-project-structure.md)).
 4. **Event payloads always carry `workspace_id`** (see [06-events.md](06-events.md)), so async processing via ARQ cannot cross tenant boundaries.
 5. **Casbin policy evaluation is workspace-scoped**, so authorization decisions themselves cannot leak across workspace boundaries even if a request somehow carried an inconsistent context.
+6. **Workspace membership is re-verified server-side on every request**, from the database, before RLS context is set. The `active_workspace_id` JWT claim is a routing hint and is never trusted on its own ([18-authentication.md](18-authentication.md)).
 
 ## Data Protection
 
@@ -87,6 +89,8 @@ Layering tenant isolation reflects that Signora's async, event-driven pipeline c
 - Treat all AI vendor output as untrusted content requiring validation.
 - Route every outbound call to a provider, AI vendor, or integration through its respective abstraction layer.
 - Never reuse a sign-in OAuth token as an integration access token, or vice versa.
+- Pin JWT verification to exactly `["RS256"]`. An unpinned verifier is vulnerable to `alg: none` forgery and to algorithm confusion using the public key as an HMAC secret.
+- Return `404`, not `403`, when a caller is not a member of the workspace they name — a `403` confirms the workspace exists and enables enumeration.
 
 ## Anti-Patterns
 
@@ -95,12 +99,16 @@ Layering tenant isolation reflects that Signora's async, event-driven pipeline c
 - An ARQ job processing an event without re-establishing RLS session context.
 - Including unclassified workspace data in AI prompts without regard to the pending data-classification policy (Risk R-05).
 - Storing provider/AI vendor/integration credentials outside AWS Secrets Manager.
+- Adding a private signing key, a login endpoint, or a token-refresh endpoint to the Python tier.
+- Trusting the `active_workspace_id` claim without server-side membership verification.
+- A "skip authentication in development" flag — it diverges the test path from production and reaches production eventually.
 
 ## Tradeoffs
 
 | Choice | We gain | We give up |
 |---|---|---|
 | Better Auth + Casbin (unbundled) | Independent swap-ability, policy-as-code under our own version control, no vendor lock-in on authorization logic | Slightly more integration work than a single bundled AuthN+AuthZ vendor (justified, see [ADR-0010](adr/0010-identity-and-access.md)) |
+| JWT boundary, asymmetric signing | Credential handling entirely outside the Python tier; API cannot forge tokens even if fully compromised; verification is local and stateless | Revocation is not immediate — bounded by the 15-minute token TTL ([ADR-0026](adr/0026-jwt-boundary-architecture.md)) |
 | AWS Secrets Manager | Native AWS integration, IAM-scoped access, audit trail | AWS lock-in for secrets specifically (acceptable given AWS is already the ratified cloud provider — [ADR-0022](adr/0022-devops-infrastructure-and-deployment-topology.md)) |
 
 ## Future Evolution
@@ -111,4 +119,4 @@ Layering tenant isolation reflects that Signora's async, event-driven pipeline c
 
 ## Decision Summary
 
-Signora's security model rests on Better Auth for authentication, Casbin for workspace-scoped authorization, OAuth via Google/Microsoft for sign-in, AWS Secrets Manager for credential storage, defense-in-depth PostgreSQL RLS tenant isolation, TLS-everywhere data protection, and abstraction-layer-enforced boundaries for all external provider, AI, and integration traffic. PII policy and AI prompt data-classification remain explicitly tracked open risks (R-04, R-05), not silent gaps.
+Signora's security model rests on Better Auth (in Next.js) for authentication behind an RS256 JWT boundary that the FastAPI tier can only verify and never mint, Casbin for workspace-scoped authorization, OAuth via Google/Microsoft for sign-in, AWS Secrets Manager for credential storage, defense-in-depth PostgreSQL RLS tenant isolation, TLS-everywhere data protection, and abstraction-layer-enforced boundaries for all external provider, AI, and integration traffic. PII policy and AI prompt data-classification remain explicitly tracked open risks (R-04, R-05), not silent gaps.

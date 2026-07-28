@@ -1,6 +1,10 @@
 # ADR-0010: Identity & Access — Better Auth + Casbin + OAuth (Google, Microsoft)
 
-**Status:** Accepted
+**Status:** Accepted — amended by [ADR-0026](0026-jwt-boundary-architecture.md)
+
+> **Amendment notice.** This ADR described Better Auth as "framework-native," which holds for the Next.js frontend but not for the FastAPI backend — Better Auth is a TypeScript library with no Python SDK, and this ADR did not specify how the Python tier establishes a principal. That gap blocked the Workspace & Tenancy HTTP layer and was tracked as Risk R-13.
+>
+> It is resolved by [ADR-0026](0026-jwt-boundary-architecture.md): **Better Auth in Next.js is the sole Authentication Authority and issues short-lived RS256 JWTs; FastAPI only verifies them.** The vendor decision and all reasoning below stand unchanged — only the integration mechanism is now specified.
 
 ## Context
 
@@ -44,3 +48,4 @@ Better Auth and Casbin are each accessed through `backend/platform/bought_infra_
 - Every authorization check evaluates a Casbin policy tuple that includes `workspace_id` — never a global permission check ([10-security.md](../10-security.md)).
 - Workspace & Tenancy is confirmed as a ratified module in [04-modules.md](../04-modules.md), no longer `[INFERRED]`.
 - Sign-in OAuth tokens (Google/Microsoft via Better Auth) are never reused as integration OAuth tokens (Gmail/M365/Google Calendar/Outlook Calendar via the Integration Abstraction Layer, [13-integrations.md](../13-integrations.md)) — these are separate grants with separate scopes and separate storage.
+- **Better Auth runs in Next.js only.** The FastAPI tier never stores passwords, never implements an OAuth flow, and never mints tokens — it verifies them. See [ADR-0026](0026-jwt-boundary-architecture.md) and [18-authentication.md](../18-authentication.md).

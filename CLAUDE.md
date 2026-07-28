@@ -69,6 +69,9 @@ Claude must:
 - API contracts (request/response shapes, error shapes, versioning approach) must be applied consistently across modules. Do not invent a new response envelope or error shape per module.
 - The API is REST, built with FastAPI, documented via auto-generated OpenAPI, with every request/response shape a Pydantic v2 model (`docs/architecture/adr/0002-web-framework-and-api-style.md`, `docs/architecture/adr/0004-data-validation-and-serialization.md`). Do not hand-write API documentation that duplicates what OpenAPI generation already produces, and do not introduce a second API paradigm (GraphQL, gRPC) without an RFC and a new ADR.
 - Authorization for every endpoint is a Casbin policy check wired as a FastAPI dependency, evaluated before the request reaches application-layer code, and always includes `workspace_id` in the policy tuple (`docs/architecture/adr/0010-identity-and-access.md`).
+- Every endpoint follows the conventions in `docs/architecture/19-api-conventions.md`: the single error envelope with a stable `code` and `correlation_id`, cursor-based pagination for all collections, and purpose-built response schemas — never a domain entity or SQLAlchemy model returned directly.
+- Domain and application layers never raise `HTTPException` or know HTTP status codes. Domain exceptions are mapped centrally in `signora_platform/api/`.
+- A caller who is not a member of the workspace they name gets `404`, never `403`. This is a security property (it prevents workspace enumeration), not an inconsistency to tidy up.
 
 ## 8. Database Standards
 
@@ -121,6 +124,10 @@ Claude must:
 ## 13. Security Standards
 
 - Authentication (Better Auth) and authorization (Casbin) are bought/adopted, not built (`docs/architecture/09-build-vs-buy.md`, `docs/architecture/adr/0010-identity-and-access.md`); Claude must never implement a bespoke auth mechanism, even a small or "temporary" one.
+- **Better Auth runs in Next.js and is the sole Authentication Authority. The Python tier only ever *verifies* RS256 JWTs** (`docs/architecture/adr/0026-jwt-boundary-architecture.md`, `docs/architecture/18-authentication.md`). Claude must never add to the Python tier: a private signing key, a login or token-refresh route, an OAuth flow, password storage, or any code that authenticates a user directly. JWT parsing lives only in `signora_platform/auth/`.
+- JWT verification pins allowed algorithms to exactly `["RS256"]`. Never widen this, and never accept an unpinned `algorithms` argument — it reopens `alg: none` and algorithm-confusion attacks.
+- The `active_workspace_id` claim is a routing hint, never a grant. Membership is re-verified server-side against Workspace & Tenancy before RLS context is set, on every request.
+- Never add a "skip auth in development" flag.
 - Tenant isolation is layered and mandatory: RLS as the authoritative control, module-owned tables, application-level `workspace_id` filtering, and workspace-scoped event payloads — all four, always, per `docs/architecture/10-security.md` and `docs/architecture/11-tenancy.md`.
 - No credentials, API keys, or secrets are ever hardcoded or committed. They are sourced from AWS Secrets Manager (`docs/architecture/adr/0022-devops-infrastructure-and-deployment-topology.md`); local development uses an equivalent `.env`-based mechanism that never shares values with production and is never committed.
 - A sign-in OAuth token (Google/Microsoft, via Better Auth) must never be reused as an integration OAuth token (e.g., Gmail, Google Calendar) or vice versa — these are separate grants with separate scopes and separate storage.

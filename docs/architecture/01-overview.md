@@ -79,6 +79,8 @@ This document does **not** define architecture principles (see [02-principles.md
 | 15 | [Project Structure](15-project-structure.md) | How is the codebase physically organized? |
 | 16 | [Architecture Risks](16-architecture-risks.md) | What could go wrong, and who owns fixing it? |
 | 17 | [Future Recommendations](17-future-recommendations.md) | What should we build next, and when? |
+| 18 | [Authentication](18-authentication.md) | How is a caller's identity established at the API boundary? |
+| 19 | [API Conventions](19-api-conventions.md) | What shape do requests, responses, and errors take? |
 | — | [Architecture Decision Records](adr/README.md) | Why was each technology/vendor/module-boundary decision made? |
 
 ## Who This Documentation Is For

@@ -23,7 +23,8 @@ flowchart TB
         SalesUser[Sales User]
         Providers[(Data Providers:<br/>Apollo, CoreSignal, BuiltWith,<br/>Similarweb, NeverBounce)]
         AIVendors[(AI Vendors:<br/>Claude, OpenAI, Gemini)]
-        BoughtInfra[(Bought Infra:<br/>Better Auth, Casbin, Stripe,<br/>Novu, Meilisearch, Sentry,<br/>PostHog, Flagsmith, S3)]
+        BoughtInfra[(Bought Infra:<br/>Casbin, Stripe, Novu,<br/>Meilisearch, Sentry,<br/>PostHog, Flagsmith, S3)]
+        NextAuth[(Next.js + Better Auth:<br/>Authentication Authority)]
     end
 
     subgraph Signora["Signora — Modular Monolith (single deployable, Python/FastAPI)"]
@@ -50,7 +51,9 @@ flowchart TB
 
     DB[(PostgreSQL 17<br/>single database, RLS-enforced)]
 
-    SalesUser -->|HTTPS| API
+    SalesUser -->|sign in| NextAuth
+    NextAuth -->|RS256 JWT| API
+    SalesUser -->|HTTPS + Bearer JWT| API
     API --> Core
     Core <--> Bus
     Bus <--> Workers
@@ -66,7 +69,7 @@ flowchart TB
 
 Signora deploys as a **small number of runtime processes on AWS ECS**, not one process per module and not one process per external caller ([ADR-0022](adr/0022-devops-infrastructure-and-deployment-topology.md)):
 
-1. **API process(es)** — a FastAPI ASGI app (`backend/apps/api`), stateless, horizontally scalable behind Traefik, serves synchronous requests from the frontend/API consumers. Handles request-scoped concerns (Better Auth session verification, Casbin authorization, workspace resolution, RLS session context) and delegates to module application services.
+1. **API process(es)** — a FastAPI ASGI app (`backend/apps/api`), stateless, horizontally scalable behind Traefik, serves synchronous requests from the frontend/API consumers. Handles request-scoped concerns (RS256 JWT verification, Casbin authorization, workspace membership verification, RLS session context) and delegates to module application services. It holds no sessions and performs no authentication — see [18-authentication.md](18-authentication.md).
 2. **ARQ worker process(es)** — (`backend/apps/worker`), stateless, horizontally scalable, consuming Redis-backed queues fed by the Postgres outbox relay, driving the asynchronous pipeline (Provider Platform → ... → Recommendation Engine). Workers are partitioned into per-stage pools from day one (see [12-scalability.md](12-scalability.md)).
 3. **PostgreSQL 17 (RDS)** — the single system of record for all modules, including the durable event/outbox store.
 4. **Redis (ElastiCache)** — two logically and physically separate clusters: one as the ARQ job-queue broker, one as the short-TTL read-through cache (see [ADR-0007](adr/0007-caching-layer.md)).

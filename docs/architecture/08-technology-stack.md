@@ -44,10 +44,12 @@ This document is the single, authoritative list of Signora's technology stack. E
 
 | Layer | Decision | ADR |
 |---|---|---|
-| Authentication | Better Auth | [ADR-0010](adr/0010-identity-and-access.md) |
-| Authorization | Casbin | [ADR-0010](adr/0010-identity-and-access.md) |
-| OAuth identity providers | Google, Microsoft | [ADR-0010](adr/0010-identity-and-access.md) |
-| Session management | Better Auth | [ADR-0010](adr/0010-identity-and-access.md) |
+| Authentication authority | Better Auth, running in Next.js | [ADR-0010](adr/0010-identity-and-access.md), [ADR-0026](adr/0026-jwt-boundary-architecture.md) |
+| API identity boundary | RS256 JWT issued by Next.js, verified by FastAPI | [ADR-0026](adr/0026-jwt-boundary-architecture.md) |
+| JWT verification library | PyJWT (with `cryptography` for RS256) | [ADR-0026](adr/0026-jwt-boundary-architecture.md) |
+| Authorization | Casbin (in-process, FastAPI) | [ADR-0010](adr/0010-identity-and-access.md) |
+| OAuth identity providers | Google, Microsoft (via Better Auth, Next.js only) | [ADR-0010](adr/0010-identity-and-access.md) |
+| Session management | Better Auth (Next.js). FastAPI is stateless and holds no sessions. | [ADR-0026](adr/0026-jwt-boundary-architecture.md) |
 
 ## Background Processing & Event Bus
 

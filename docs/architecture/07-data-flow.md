@@ -96,7 +96,7 @@ sequenceDiagram
     autonumber
     participant User as Sales User
     participant API as FastAPI API Layer
-    participant Auth as Better Auth
+    participant Auth as JWT Verifier (public key)
     participant Authz as Casbin
     participant WS as Workspace & Tenancy
     participant RI as Revenue Intelligence Platform
@@ -104,13 +104,14 @@ sequenceDiagram
     participant Cache as Redis (cache)
     participant DB as PostgreSQL (RLS-scoped)
 
-    User->>API: GET /workspaces/{id}/intelligence
-    API->>Auth: Verify session/token
-    Auth-->>API: Authenticated principal
-    API->>Authz: Evaluate permission (Casbin policy)
+    User->>API: GET /workspaces/{id}/intelligence (Bearer JWT)
+    API->>Auth: Verify RS256 signature + iss/aud/exp
+    Auth-->>API: Authenticated principal (sub, sid, email)
+    API->>WS: Verify membership server-side (authoritative)
+    WS-->>API: Membership + role
+    API->>API: Set RLS context (app.user_id, app.workspace_id)
+    API->>Authz: Evaluate permission (Casbin, workspace-scoped)
     Authz-->>API: Allow
-    API->>WS: Resolve workspace context
-    WS-->>API: workspace_id + RLS session context
     API->>RI: Request workspace intelligence view
     RI->>Cache: Check cached composed view (short TTL)
     alt cache hit

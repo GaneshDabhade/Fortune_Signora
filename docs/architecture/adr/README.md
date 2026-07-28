@@ -48,6 +48,7 @@ Every ADR follows this structure:
 | [0023](0023-testing-strategy.md) | Testing Strategy |
 | [0024](0024-code-quality-and-static-analysis.md) | Code Quality & Static Analysis Tooling |
 | [0025](0025-module-boundary-evolution.md) | Module Boundary Evolution — Provider Platform, Business Event Engine, Buying Score Engine, AI Research/Reasoning split |
+| [0026](0026-jwt-boundary-architecture.md) | JWT Boundary Architecture — authentication in Next.js, verification in FastAPI (amends 0010) |
 
 ## How to Propose a New ADR
 

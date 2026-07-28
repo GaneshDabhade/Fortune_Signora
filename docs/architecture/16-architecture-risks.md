@@ -151,7 +151,7 @@ Several ratified choices (Better Auth, Meilisearch, ARQ, Novu, Flagsmith) are sm
 
 ### R-13 — Better Auth Is TypeScript-Native; The Backend Is Python
 
-**Category:** Implementation / Blocking · **Severity:** High · **Likelihood:** Certain (already encountered) · **Status:** Open — blocks the Workspace & Tenancy HTTP layer
+**Category:** Implementation / Blocking · **Severity:** High · **Likelihood:** Certain (already encountered) · **Status:** ✅ **RESOLVED** — see [ADR-0026](adr/0026-jwt-boundary-architecture.md)
 
 [ADR-0010](adr/0010-identity-and-access.md) ratifies Better Auth for authentication, describing it as "framework-native." That framing holds for the Next.js frontend ([ADR-0021](adr/0021-frontend-application-stack.md)) but not for the FastAPI backend ([ADR-0002](adr/0002-web-framework-and-api-style.md)): Better Auth is a TypeScript library with no official Python SDK. The ADR did not resolve how a Python API verifies sessions Better Auth issues.
 
@@ -163,9 +163,12 @@ Several ratified choices (Better Auth, Meilisearch, ARQ, Novu, Flagsmith) are sm
 2. **Shared session store** — Better Auth writes sessions to PostgreSQL or Redis; FastAPI reads them directly. Simple, but couples the backend to Better Auth's session schema, which is an internal detail of a third-party library and may change across versions.
 3. **Reconsider the vendor for the API tier** — revisit the bundled alternatives ADR-0010 rejected (Clerk/WorkOS/Auth0), which ship first-class Python SDKs. Highest cost; would require superseding ADR-0010 and reopening its "policy ownership over turnkey speed" reasoning.
 
-**Recommendation:** Option 1. It preserves ADR-0010's decision and its rationale, keeps credential handling out of the Python tier entirely, and is a well-understood integration pattern. Options 2 and 3 should not be adopted without an ADR superseding or amending ADR-0010.
+**Resolution:** Option 1 was approved and ratified as [ADR-0026](adr/0026-jwt-boundary-architecture.md). Better Auth in Next.js remains the sole Authentication Authority and issues short-lived RS256 JWTs; FastAPI verifies signature and claims with a public key only, re-verifies workspace membership server-side, establishes RLS context, and delegates authorization to Casbin. Specified in full in [18-authentication.md](18-authentication.md). ADR-0010's vendor decision stands unamended in substance.
 
-**Mitigation:** Resolve before building any authenticated route. Owner: TBD.
+**Residual risks carried forward from this resolution**, tracked here rather than closed silently:
+
+- *Key rotation requires a deploy.* JWKS-based rotation is the documented follow-up ([18-authentication.md](18-authentication.md), Future Evolution).
+- *Revocation is not immediate*, bounded by the 15-minute access-token TTL. `sid` and `jti` are carried in the token specifically so a revocation list can be added later without a contract change.
 
 ---
 
