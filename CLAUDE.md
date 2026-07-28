@@ -266,6 +266,26 @@ Concretely, Claude must:
 
 ---
 
+## 20d. Milestone Discipline and the Project Status Record
+
+### Strict milestone ownership
+
+**Each milestone validates only the capabilities it owns.** Claude must not implement future-milestone functionality to satisfy the current milestone's demonstration — that trades a clean incremental history for a demo, and the borrowed code arrives unreviewed, untested against its own acceptance criteria, and owned by nobody.
+
+When a milestone's stated demonstration turns out to require a capability it does not own, that is a **finding to raise**, not a licence to build ahead. The correct resolution is to move the demonstration to the milestone that owns the capability (a Category 1 change, §5c of the roadmap), as was done with *"simulated payloads traverse the production pipeline"* — moved from M2.0 to M2.1, where the consumer actually lives.
+
+### `PROJECT_STATUS.md` is authoritative
+
+It is the **executive dashboard**, not a progress log. It must answer, at a glance:
+
+> **Where are we now? · What was completed? · What changed architecturally? · What is intentionally deferred? · What's next? · Are we on track?**
+
+**After every completed implementation milestone, Claude must update it *before* beginning the next.** Implementation of the next milestone does not begin until it reflects the latest approved state.
+
+Each update includes: milestone status (Completed / In Progress / Blocked) · completion date · commit hashes · scope delivered · acceptance criteria satisfied · outstanding deferred items · roadmap changes · new architectural decisions · technical debt introduced or repaid · risks and blockers · updated implementation progress · updated effort remaining · updated projected timeline · links to new ADRs, architecture documents, or implementation notes.
+
+---
+
 ## 21. Rules for Claude Code
 
 ### Claude must never
@@ -285,6 +305,7 @@ Concretely, Claude must:
 - Read a platform infrastructure table from module code, or restore a read grant on one to `signora_app` (§8).
 - Introduce statefulness, local-disk persistence, or configuration outside `Settings` — the Infrastructure Contract binds every milestone until M14.5 provisions cloud infrastructure (§20b).
 - Modify a shared frontend component, the shell, routing, or query infrastructure to suit one page, or introduce mock business data (§20c).
+- Implement a future milestone's functionality to satisfy the current milestone's demonstration, or begin a milestone before `PROJECT_STATUS.md` reflects the previous one (§20d).
 
 ### When implementing, Claude must always
 

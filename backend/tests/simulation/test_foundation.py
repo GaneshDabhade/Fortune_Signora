@@ -210,3 +210,64 @@ class TestPacedClockModes:
         elapsed = time.monotonic() - started
         assert elapsed < 1.0
         assert clock.now == clock.epoch + timedelta(seconds=10), "logical time advanced fully"
+
+
+class TestSimulationObservability:
+    """Marking is a safety control as much as an observability one: if
+    simulated data reaches somewhere it should not, the logs must say so
+    immediately, not after someone reconstructs the run."""
+
+    def test_every_log_line_marks_the_run_as_simulated(self) -> None:
+        from signora_platform.simulation import ReplayRecord
+
+        fields = ReplayRecord(
+            scenario="baseline",
+            seed=42,
+            manifest_version="1",
+            generator_version="0.1.0",
+            clock_mode="instant",
+            dataset_version="baseline@1",
+        ).as_log_fields()
+
+        assert fields["simulated"] == "true"
+
+    def test_the_replay_record_carries_all_five_required_values(self) -> None:
+        """Without generator version in particular, a change in downstream
+        output could come from a model, prompt, dataset, or payload-shape
+        change — and separating them afterwards is impossible."""
+        from signora_platform.simulation import ReplayRecord
+
+        fields = ReplayRecord(
+            scenario="erp-replacement",
+            seed=7,
+            manifest_version="2",
+            generator_version="0.3.1",
+            clock_mode="accelerated",
+            dataset_version="baseline@1",
+        ).as_log_fields()
+
+        for required in (
+            "sim_scenario",
+            "sim_seed",
+            "sim_manifest_version",
+            "sim_generator_version",
+            "sim_clock_mode",
+            "sim_dataset_version",
+        ):
+            assert required in fields
+
+    def test_payload_emission_is_logged_with_its_event_reference(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        import logging
+
+        from signora_platform.simulation import ReplayRecord, log_payload_emitted
+
+        record = ReplayRecord("baseline", 1, "1", "0.1.0", "instant", "baseline@1")
+
+        with caplog.at_level(logging.INFO, logger="signora_platform.simulation.observability"):
+            log_payload_emitted(record, provider="apollo", event_ref="apollo#0")
+
+        emitted = caplog.records[0]
+        assert emitted.simulated == "true"  # type: ignore[attr-defined]
+        assert emitted.sim_event_ref == "apollo#0"  # type: ignore[attr-defined]

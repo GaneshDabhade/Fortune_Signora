@@ -625,7 +625,9 @@ make smoke
 
 **Effort:** ~16–21 ew · **Tasks:** T34–T44
 
-**Primary objective:** the platform consumes simulated provider payloads **through the same production pipeline used by real providers**. Success is not measured by the number of simulated providers.
+**Success is not measured by end-to-end ingestion.** Provider Platform, ingestion, normalization, and downstream processing belong to M2.1 and later. M2.0 succeeds when it demonstrates: Provider Port contract · provider-independent framework · Scenario Engine · Virtual Clock · Dataset Store · deterministic execution · fault injection · delivery infrastructure · safety guards · observability · shared contract tests · deterministic replay · Provider Qualification process.
+
+**The framework must be capable of supplying payloads to the Provider Port. Actual consumption is out of scope** — the consumer does not exist yet, and building it here would be doing M2.1's work under an M2.0 label.
 
 **Estimate revised ~22–29 → ~16–21 ew** (Category 1, recorded per §5c). The simulator is **infrastructure, not product**: where its sophistication competes with the core intelligence platform, the core product wins. Reductions: advanced traffic modelling, multi-tenant simulation, complex behavioural modelling, performance benchmarking, and large-scale load generation are **deferred as future enhancements** ([20-provider-simulation.md](docs/architecture/20-provider-simulation.md#scope-discipline--the-simulator-is-infrastructure-not-product)); the fault injector and delivery mechanism ship at the minimum needed to exercise the pipeline's real failure and sync paths; scenario manifests reduce from 13 to **the subset each qualified provider can actually populate**.
 
@@ -734,6 +736,20 @@ Three ordering decisions worth stating:
 - [ ] Determinism verified in CI, not only locally — a machine-dependent seed is the failure this catches
 
 ### M2.1 — Provider Platform · M2.2 — Provider Normalization
+
+> **Mandatory demonstration, moved here from M2.0 (Category 1):**
+>
+> **"Simulated provider payloads traverse the same production ingestion pipeline used by real providers."**
+>
+> ```
+> Scenario → Simulator → Provider Port → Provider Platform → Normalization
+>   → Knowledge Graph → Observation Engine → Business Events → Signals
+>   → Buying Scores → Opportunity Engine → AI Reasoning → Recommendations
+> ```
+>
+> **With no simulation-specific logic anywhere in the pipeline.** The demonstration deepens as downstream milestones land — M2.1 proves it as far as normalization, and each subsequent milestone extends the chain — but the *first* link, simulated payload entering the real ingestion path, is M2.1's acceptance criterion and is owned here.
+>
+> It sits with M2.1 because that is where the consumer lives. A demonstration owned by a milestone that cannot perform it is a demonstration nobody performs.
 
 **Scope:** Provider Platform (registry, credentials, quotas, scheduling, health, circuit breaking) · real vendor adapters · Provider Normalization.
 
