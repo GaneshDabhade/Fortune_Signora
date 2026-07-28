@@ -231,7 +231,7 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 |---|---|
 | **Status** | 🟡 In Progress — framework complete, generators blocked on qualification |
 | **Started** | 2026-07-28 |
-| **Commits** | `44f5637` (T34–T37) · `26a1936` (T38 + scope reduction) · `4cd2e8b` (T41, T42, T44) |
+| **Commits** | `44f5637` (T34–T37) · `26a1936` (T38 + scope reduction) · `c671196` (T41, T42, T44) |
 | **Effort** | ~16–21 ew scoped · ~10 ew delivered |
 
 **Success criteria (revised, approved).** M2.0 is **not** measured by end-to-end ingestion — Provider Platform, normalization, and downstream processing belong to M2.1+. It succeeds on: Provider Port contract · provider-independent framework · Scenario Engine · Virtual Clock · Dataset Store · deterministic execution · fault injection · delivery infrastructure · safety guards · observability · shared contract tests · deterministic replay · Provider Qualification process.
