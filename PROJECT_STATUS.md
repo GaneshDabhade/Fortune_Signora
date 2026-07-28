@@ -1,6 +1,6 @@
 # PROJECT_STATUS.md
 
-> **Revision:** v20 · **Last updated:** 2026-07-28 · **Reporting period:** M2.0 closed
+> **Revision:** v21 · **Last updated:** 2026-07-28 · **Reporting period:** M2.0 closed
 > **Owner:** Technical Program Manager · **Audience:** Everyone
 > Authoritative record of project state (CLAUDE.md §20d). Updated after every completed milestone, **before the next begins**.
 >
@@ -30,10 +30,10 @@ The product's competitive advantage is the quality of that reasoning and the evi
 
 | | |
 |---|---|
-| **Overall completion** | **~27%** by engineering effort (~92 of ~261–339 ew) |
-| **Effort remaining** | **~169–247 ew** |
-| **Milestones completed** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · **M2.1** |
-| **Current milestone** | **M2.2 — Provider Normalization** |
+| **Overall completion** | **~30%** by engineering effort (~100 of ~261–339 ew) |
+| **Effort remaining** | **~161–239 ew** |
+| **Milestones completed** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · **M2.2** |
+| **Current milestone** | **M3A — Knowledge Graph** |
 | **Projected to GA** | ~1.6–2.3 years at 3 engineers · ~2.5–3.4 at 2 · ~4.9–6.8 at 1 (80% capacity) |
 
 ## 4 · Roadmap Snapshot
@@ -50,8 +50,8 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | — | M1.5 | Frontend foundation | ✅ Complete |
 | — | M2.0 | Provider Simulation Framework | ✅ Complete |
 | — | M2.1 | Provider Platform | ✅ Complete |
-| 1 | **M2.2** | **Provider Normalization** | 🔴 **Next** |
-| 3 | M3A | Knowledge Graph | ⏳ Queued |
+| — | M2.2 | Provider Normalization | ✅ Complete |
+| 1 | **M3A** | **Knowledge Graph** | 🔴 **Next** |
 | 4 | M3B | Observation Engine | ⏳ Queued |
 | 5 | M4 | Business Event Engine | ⏳ Queued |
 | 6 | M5A | Signal Engine | ⏳ Queued |
@@ -90,8 +90,8 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | Module | Status | Milestone | Purpose | Consumes | Produces |
 |---|---|---|---|---|---|
 | **Provider Platform** | ✅ Complete | M2.1 | Runs syncs against provider adapters: pages responses, stores raw records, tracks watermarks, classifies failures. Knows nothing of any specific provider. | Provider Port implementations | Raw provider records, and the events announcing them |
-| **Provider Normalization** | 🔄 **Next** | M2.2 | Validates and translates each vendor's shape into Signora's own vocabulary. The only place a vendor's format is understood. | Raw provider records | Normalized entities in canonical form |
-| **Knowledge Graph** | ⏳ Queued | M3A | Maintains the canonical representation of companies, people, technologies, relationships, and their historical state. Resolves the same company arriving from five providers into one entity. | Normalized provider records | Canonical entities every downstream module reasons over |
+| **Provider Normalization** | ✅ Complete | M2.2 | Validates and translates each vendor's shape into Signora's own vocabulary. The only place a vendor's format is understood. | Raw provider records | Normalized entities in canonical form |
+| **Knowledge Graph** | 🔄 **Next** | M3A | Maintains the canonical representation of companies, people, technologies, relationships, and their historical state. Resolves the same company arriving from five providers into one entity. | Normalized provider records | Canonical entities every downstream module reasons over |
 | **Observation Engine** | ⏳ Queued | M3B | Records what *changed* about an entity and when — the atomic unit of evidence the whole pipeline traces back to. | Knowledge Graph entities | Observations, each timestamped and attributed to its source |
 | **Business Event Engine** | ⏳ Queued | M4 | Converts observations into meaningful business events: funding rounds, hiring surges, executive changes, technology migrations. | Observations | Business Events, typed against a curated global taxonomy |
 | **Signal Engine** | ⏳ Queued | M5A | Detects commercially meaningful sales signals from business events — the difference between "something happened" and "something worth acting on happened". | Business Events | Signals |
@@ -165,7 +165,7 @@ flowchart TD
 
 ## 7 · Current Focus
 
-**M2.2 Provider Normalization** — translating each vendor's shape into Signora's own vocabulary, the only place a vendor format is understood. It follows M2.1, which implemented the module that *consumes* the Provider Port: scheduling provider syncs, paging through responses, translating adapter failures into retries and dead letters, and publishing raw provider records into the pipeline as domain events. It owns the mandatory demonstration that **simulated provider payloads traverse the same production ingestion pipeline used by real providers, with no simulation-specific logic anywhere in that pipeline** — the proof that the simulator's entire design premise holds.
+**M3A Knowledge Graph** — resolving claims from five providers into canonical entities, and the first module that must *decide* rather than preserve. It follows M2.2, which established the claim as the unit of evidence: scheduling provider syncs, paging through responses, translating adapter failures into retries and dead letters, and publishing raw provider records into the pipeline as domain events. It owns the mandatory demonstration that **simulated provider payloads traverse the same production ingestion pipeline used by real providers, with no simulation-specific logic anywhere in that pipeline** — the proof that the simulator's entire design premise holds.
 
 ## 8 · Biggest Remaining Milestones
 
@@ -175,28 +175,29 @@ Knowledge Graph · Observation Engine · Business Events · Signals · Buying Sc
 
 | Indicator | Value | Target |
 |---|---|---|
-| **Backend tests** | **508 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Backend tests** | **564 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Frontend tests** | **101 passing**, 0 failing, 0 skipped | 0 skipped |
-| **Backend coverage** | **95.84%** | ≥95% (CI-gated) |
-| **Security invariants** | **80 / 80**, each proven to fail when its guarantee is removed | 100% verified |
+| **Backend coverage** | **95.12%** | ≥95% (CI-gated) |
+| **Security invariants** | **83 / 83**, each proven to fail when its guarantee is removed | 100% verified |
 | **import-linter contracts** | **4 kept, 0 broken** | 0 broken |
 | **Architecture drift** | **0** — no ratified ADR reversed; 3 documents amended for drift, all found by test | Trending to 0 |
 | **Open production bugs** | **0** | 0 |
 | **Technical debt** | **0 outstanding** | — |
-| **`make smoke`** | ✅ Passing (52s warm; 17 stages incl. ingestion) | Required per milestone |
+| **`make smoke`** | ✅ Passing (52s warm; 17 stages incl. ingestion + normalization) | Required per milestone |
 
 ### Test suite composition
 
 | Area | Tests | Notes |
 |---|---|---|
-| Security invariants | 80 | Permanent architectural guarantees; run as their own CI job |
+| Security invariants | 83 | Permanent architectural guarantees; run as their own CI job |
 | Simulation framework | 130 | Clock, dataset, scenario, faults, delivery, generators |
 | Provider contract suite | 45 | **One suite, five adapters** — the keystone interchangeability test |
 | Workspace & Tenancy | ~70 | RLS isolation, API, persistence |
 | Platform (event bus, auth, observability) | ~130 | Outbox, relay, dispatch, idempotency, DLQ, JWT |
 | Integration & demo checklists | ~42 | Cross-tier contract, migration runner, milestone gates |
 | Provider Platform (ingestion, sync task, domain) | 16 | The M2.1 demonstration |
-| **Backend total** | **508** | Coverage 95.84%, mypy strict over 154 files |
+| Provider Normalization (vocabulary, claims, mappers, pipeline) | 56 | Claims — the unit of evidence |
+| **Backend total** | **564** | Coverage 95.12%, mypy strict over 175 files |
 | Frontend components & foundation | 101 | Includes 13 AC-14/AC-15 guard tests |
 
 ---
