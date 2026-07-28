@@ -22,3 +22,8 @@ node_modules/
 # IDE
 .vscode/
 .idea/
+
+# Coverage artifacts
+.coverage
+coverage.xml
+htmlcov/

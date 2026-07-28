@@ -2,8 +2,8 @@
 
 > **Owner:** Technical Program Manager · **Audience:** Everyone
 > **Cadence:** Updated at every milestone boundary and every sprint close. Updating this is part of the [Definition of Done](IMPLEMENTATION_ROADMAP.md#12-definition-of-done-global).
-> **Last updated:** 2026-07-28 · **Reporting period:** M0 close → M1.1 planning
-> **Revision:** v3 — sequential single-stream execution adopted; Demo Checklist added as a completion gate; progressive AI regression model defined
+> **Last updated:** 2026-07-28 · **Reporting period:** M1.1 delivery
+> **Revision:** v4 — **M1.1 Platform Runtime complete.** Demo Checklist passed (13/13); AC-1 Event Bus Contract passed
 
 ---
 
@@ -11,8 +11,8 @@
 
 ```
 M0  Foundation             ████████████████████ 100%  ✅ Complete
-M1.1 Platform Runtime      ░░░░░░░░░░░░░░░░░░░░   0%  🔴 CURRENT — approved, not started
-M1.2 Auth Boundary         ░░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (after M1.1)
+M1.1 Platform Runtime      ████████████████████ 100%  ✅ Complete
+M1.2 Auth Boundary         ░░░░░░░░░░░░░░░░░░░░   0%  🔴 CURRENT — next
 M1.3 Infrastructure        ░░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (after M1.2)
 M2.0 Simulation Framework  ░░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (after M1.3)
 M2.1 → M15                 ░░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued
@@ -22,10 +22,10 @@ M2.1 → M15                 ░░░░░░░░░░░░░░░░░
 
 | Dimension | Status |
 |---|---|
-| **Overall completion to GA** | **~5%** by engineering effort (~14 of ~239–319 total engineer-weeks; ~225–305 ew remaining) |
+| **Overall completion to GA** | **~11%** by engineering effort (~30 of ~239–319 total engineer-weeks; ~210–290 ew remaining) |
 | Architecture & design | **100%** — 19 documents, 27 ADRs, ratified and internally consistent |
 | Core modules | **1 of 14** (7%) |
-| Backend platform | ~55% of foundation scope; 0% of pipeline scope |
+| Backend platform | ~85% of foundation scope; 0% of pipeline scope |
 | Frontend | **0%** — not started |
 | Infrastructure-as-code | **0%** — local Docker Compose only |
 | Provider simulation | **0%** — newly scoped (M2.0) |
@@ -70,11 +70,52 @@ Assumes 80% effective capacity. Within a milestone, additional engineers help on
 
 **Three defects found by testing, not review:** superuser RLS bypass · membership policy that delegated enforcement to application code · `platform` shadowing a stdlib module. All fixed, documented, and covered by regression tests proven to fail against the pre-fix state.
 
+### ✅ M1.1 — Platform Runtime · closed 2026-07-28
+
+All 11 tasks delivered. **Demo Checklist: 13/13 passed. AC-1 passed.**
+
+| Delivered | Evidence |
+|---|---|
+| Coverage measurement + CI gate (T1, T2) | 95.01% measured, gate at 95%, Redis service in CI |
+| Structured JSON logging with redaction (T3) | 23 tests; JWT/bearer/secret redaction proven |
+| Event bus dispatch schema (T6) | Migration 0004: `processed_event`, `dead_letter_event`, relay columns |
+| Outbox relay (T7) | 12 integration tests; concurrent-relay safety via `SKIP LOCKED` |
+| Dispatch + platform-owned idempotency (T8) | 14 integration tests; exactly-once proven under concurrency |
+| ARQ worker fleet, 7 pools (T9) | Per-stage pools; `ai_research` at concurrency 2 / 1800s timeout |
+| Retry + dead-lettering (T10) | Capped exponential backoff; DLQ replay retains history |
+| OpenTelemetry, Sentry, metrics (T4, T5, T11) | Trace context survives the relay hop; 8 pipeline metrics |
+
+**Findings during delivery:**
+- **Dead code removed.** The pagination refactor left `list_for_workspace` (no caller at all) and `list_for_user` (test-only caller) behind. Both deleted rather than covered with tests.
+- **Coverage exclusion is narrow and justified.** Only `apps/worker/relay_main.py` (an `asyncio.run` entry point) is omitted. The *logic* inside the worker — `dispatch_event`'s retry and dead-letter policy, pool resolution — is tested directly.
+
 ---
 
 ## Current Milestone
 
-### 🔄 M1.1 — Platform Runtime · **CURRENT** · ~15.5 ew
+### 🔄 M1.2 — Authentication Boundary · **CURRENT** · ~11.5 ew
+
+First milestone with a **user-visible outcome** — design-partner onboarding can begin at close.
+
+| Order | Task | Complexity | Status |
+|---|---|---|---|
+| 1 | T12 Next.js 15 scaffold + tooling | M · 1.5 ew | ⬜ |
+| 2 | T13 Better Auth + Google/Microsoft OAuth 🔴 | L · 3 ew | ⬜ |
+| 3 | T14 RS256 JWT issuance per ADR-0026 🔴 | M · 1.5 ew | ⬜ |
+| 4 | T15 Signing-key management | S–M · 1 ew | ⬜ |
+| 5 | T16 Typed API client | M · 1.5 ew | ⬜ |
+| 6 | T17 Frontend shell | M · 2 ew | ⬜ |
+| 7 | T18 E2E auth journey | M · 1 ew | ⬜ |
+
+**Critical path:** T12→T13→T14→T15→T18 ≈ 8 ew serial.
+**Simulator required:** ❌ No.
+**Checkpoint:** AC-2 Auth Boundary Integrity.
+**Demo Checklist:** 10 items — see [IMPLEMENTATION_ROADMAP.md §6](IMPLEMENTATION_ROADMAP.md#6-milestone-definitions).
+
+<details>
+<summary>M1.1 task detail (delivered)</summary>
+
+### M1.1 — Platform Runtime · ~15.5 ew · ✅
 
 Sole active milestone. M1.2 does not begin until M1.1's **Demo Checklist passes**.
 
@@ -100,7 +141,9 @@ Sole active milestone. M1.2 does not begin until M1.1's **Demo Checklist passes*
 
 **Checkpoint:** AC-1 Event Bus Contract.
 
-**Demo Checklist:** 13 items — see [IMPLEMENTATION_ROADMAP.md §6](IMPLEMENTATION_ROADMAP.md#6-milestone-definitions). Highlights: duplicate delivery invokes a handler exactly once · two concurrent relays never double-enqueue · Redis stopped mid-run loses zero events · one `correlation_id` traced across all three processes.
+**Demo Checklist:** 13/13 passed, encoded as executable assertions in `tests/integration/test_m1_1_demo_checklist.py` — a checklist that is only ever read is a checklist that eventually lies.
+
+</details>
 
 ---
 
@@ -110,10 +153,9 @@ Sequential execution — each begins only when the previous milestone's Demo Che
 
 | Order | Milestone | Effort | Simulator | Gate |
 |---|---|---|---|---|
-| 1 | **M1.2** Authentication Boundary | ~11.5 ew | ❌ | AC-2 · first **user-visible outcome**; design-partner onboarding can begin |
-| 2 | **M1.3** Infrastructure | ~6 ew | ❌ | AC-3 · rollback executed and timed |
-| 3 | **M2.0** Provider Simulation Framework | ~17–24 ew | ✅ builds it | AC-4 · identical adapter contract, config-only switching |
-| 4 | M2.1 → M15 | ~175–240 ew | mostly ✅ | Per roadmap |
+| 1 | **M1.3** Infrastructure | ~6 ew | ❌ | AC-3 · rollback executed and timed |
+| 2 | **M2.0** Provider Simulation Framework | ~17–24 ew | ✅ builds it | AC-4 · identical adapter contract, config-only switching |
+| 3 | M2.1 → M15 | ~175–240 ew | mostly ✅ | Per roadmap |
 
 ### M2.0 — why it precedes every pipeline module
 
@@ -129,19 +171,16 @@ A permanent platform capability, not throwaway tooling — used for local develo
 
 ## Current Sprint
 
-**Sprint:** Not started. M1.1 Sprint 1 pending kickoff and staffing.
+**Sprint:** M1.2 Sprint 1 — not started.
 
-**Scope — M1.1 only.** Single stream; no concurrent milestone work.
+**Scope — M1.2 only.** Single stream; no concurrent milestone work.
 
 | Sprint 1 tasks | Rationale |
 |---|---|
-| T1, T2, T6 | Zero-dependency, small, unblock everything downstream |
-| T3 | Instrument before the relay's complexity arrives |
-| T7 (start) | Begin the critical chain that unblocks all 13 pipeline modules |
+| T12 Next.js scaffold | Zero dependencies; unblocks everything else in M1.2 |
+| T13 Better Auth + OAuth | The critical blocker — until it lands, nobody can log in |
 
-**Explicitly deferred under single-stream execution:**
-- **M1.2 / M1.3 work** — queued, not parallel
-- **Knowledge Graph spike** — would displace critical-path work. Should run the moment a second engineer is available, since it retires the roadmap's largest estimation variance.
+**Note on the M1.2 contract test.** The highest-value single test in this milestone is the one asserting that a token minted by Next.js verifies against the *real* Python verifier in CI. The API side is already complete and adversarially tested (forged `alg:none` and algorithm-confusion tokens both rejected); M1.2 must not diverge from that contract.
 
 ---
 
@@ -149,7 +188,7 @@ A permanent platform capability, not throwaway tooling — used for local develo
 
 | Item | Blocked by | Severity | Owner |
 |---|---|---|---|
-| All 13 core intelligence modules | T7/T8 — event bus relay + dispatch | 🔴 Critical | Unassigned |
+| ~~All 13 core intelligence modules~~ | ~~T7/T8 — event bus relay + dispatch~~ | ✅ **CLEARED** | M1.1 |
 | Any human access / any demo | T13/T14 — Better Auth issuer | 🔴 Critical | Unassigned |
 | Any deployed environment | T19/T20 — Terraform + ECS | 🟠 High | Unassigned |
 | Offline development, deterministic demos, AI eval datasets | M2.0 — simulation framework | 🟠 High | Unassigned |
@@ -158,7 +197,7 @@ A permanent platform capability, not throwaway tooling — used for local develo
 | Trustworthy AI output | M8 — Evaluation Harness (R-10) | 🟠 High | Unassigned |
 | PII/retention implementation | **Legal/Compliance policy input** (R-04, R-05) | 🟡 Medium | **Escalated — not an engineering blocker** |
 
-**Under sequential execution these are not worked simultaneously.** The event bus relay (M1.1) is cleared first; the Better Auth issuer (M1.2) follows. That is a deliberate throughput choice, but it means **there is no working login until M1.2 completes** — roughly 21–41 weeks out at 1–2 engineers. Design-partner onboarding cannot begin before then.
+**One of the two dominant blockers is now cleared.** The event bus relay shipped in M1.1, unblocking all 13 pipeline modules. The remaining blocker is the Better Auth issuer: **there is still no working login**, so design-partner onboarding cannot begin until M1.2 closes.
 
 **Staffing remains the meta-blocker** — every item above is unassigned, and headcount is the single largest determinant of the GA date (see Calendar above).
 
@@ -200,17 +239,19 @@ Small and deliberate. Nothing below is discovered debt.
 
 | Item | Impact | Rationale | Repay by |
 |---|---|---|---|
-| Test coverage unmeasured (`pytest-cov` absent) | Medium | Oversight, not a decision | **M1.1 / T1** |
-| Event bus relay unimplemented | 🔴 Critical | Deliberate: dispatch with zero consumers is untestable | **M1.1 / T7–T8** |
-| `apps/worker` is an empty stub | High | Same deferral | **M1.1 / T9** |
-| No structured logging | Medium | Deferred with observability | **M1.1 / T3** |
-| No CI Redis service | Medium | Not needed until relay tests exist | **M1.1 / T2** |
+| ~~Test coverage unmeasured~~ | — | — | ✅ **Repaid in M1.1** — 95.01%, CI-gated |
+| ~~Event bus relay unimplemented~~ | — | — | ✅ **Repaid in M1.1** |
+| ~~`apps/worker` empty stub~~ | — | — | ✅ **Repaid in M1.1** — 7 pools |
+| ~~No structured logging~~ | — | — | ✅ **Repaid in M1.1** |
+| ~~No CI Redis service~~ | — | — | ✅ **Repaid in M1.1** |
 | JWT key rotation requires a deploy | Medium | JWKS adds a cache, fetch path, and failure mode not yet justified | Post-GA |
 | Token revocation not immediate (15-min TTL) | Medium | Standard JWT tradeoff; `sid`/`jti` carried so a revocation list needs no contract change | Post-GA if the window proves unacceptable |
 | Casbin policy is coarse RBAC | Low | Correct for current needs | When enterprise custom roles are required |
 | No API versioning scheme | Low | Deliberate — speculative with one first-party client | First breaking change |
 
-**Debt ratio: healthy.** Six of nine items are scheduled for repayment in the next milestone.
+| Relay `LISTEN/NOTIFY` wake-up not yet wired to the loop | Low | `notify_outbox` exists and polling is the correctness guarantee; the notification only collapses idle latency from ~1s | M1.3 or when latency matters |
+
+**Debt ratio: healthy.** Five of the nine v3 items were repaid in M1.1. One new low-severity item added.
 
 ---
 
@@ -228,16 +269,17 @@ Three defects found and fixed during M0, each with regression tests proven to fa
 
 | Metric | Value |
 |---|---|
-| Total tests | **116 passing**, 0 failing, 0 skipped |
-| Unit tests | 79 |
-| Integration tests | 37 (real PostgreSQL 17 as least-privilege role) |
-| Test LOC | ~2,058 (~77% of production LOC) |
-| **Line coverage** | ⚠️ **Not measured** — resolved by T1 |
-| Type coverage | ✅ mypy `strict`, 71 files, zero errors |
+| Total tests | **198 passing**, 0 failing, 0 skipped |
+| Unit tests | 129 |
+| Integration tests | 69 (real PostgreSQL 17 + real Redis) |
+| **Line coverage** | ✅ **95.01%**, CI-gated at 95% |
+| Type coverage | ✅ mypy `strict`, 97 files, zero errors |
 | Boundary enforcement | ✅ 3 import-linter contracts, verified to fail on deliberate violation |
 | Migration reversibility | ✅ Verified across all 4 revisions |
 
 **Test quality signals:** the `alg:none` and algorithm-confusion tests initially passed for the wrong reason (PyJWT refuses to mint those tokens) and were rewritten with hand-forged tokens. RLS regression tests were verified to fail against pre-fix policies before being trusted.
+
+**M1.1 addition:** the Demo Checklist is itself a test file (`tests/integration/test_m1_1_demo_checklist.py`) — 11 tests covering all 13 items, run against real PostgreSQL and Redis. Milestone completion is verified by CI rather than by someone ticking boxes.
 
 **Coming in M2.0:** the scenario library becomes a growing end-to-end regression suite, with each milestone extending its assertions.
 
@@ -268,15 +310,15 @@ Three defects found and fixed during M0, each with regression tests proven to fa
 
 ## Next Task
 
-### 🎯 M1.1 · T1 — Coverage measurement + CI gate
+### 🎯 M1.2 · T12 — Next.js 15 scaffold
 
-**Why first:** 0.25 ew, zero dependencies, and it closes a measurement gap before more code lands. Every subsequent task's coverage contribution becomes visible from the outset rather than being reconstructed later.
+**Why first:** zero dependencies, and every other M1.2 task builds on it.
 
-**Then, in order:** T2 (Redis in CI) → T6 (event bus schema) → T3 (structured logging) → **T7 (outbox relay)**.
+**Then:** T13 (Better Auth + Google/Microsoft OAuth) → T14 (RS256 JWT issuance) → T15 (signing keys) → T16 → T17 → T18.
 
-**T7 is the milestone's centre of gravity** — it unblocks all 13 core intelligence modules. Everything before it is deliberately cheap and fast so the critical chain starts with measurement, CI, schema, and logging already in place.
+**T13/T14 are the critical blocker.** Until they land there is no working login, no demo, and no design-partner onboarding. The API side of the boundary is already built and adversarially tested — M1.2 supplies the issuer half.
 
-**Awaiting:** approval to begin implementation, and staffing assignment. Every task is unassigned, which is the practical blocker ahead of all technical ones.
+**Awaiting:** approval to begin M1.2, and staffing. Every task remains unassigned.
 
 ---
 
@@ -284,6 +326,7 @@ Three defects found and fixed during M0, each with regression tests proven to fa
 
 | Date | Change |
 |---|---|
+| 2026-07-28 | v4 — **M1.1 Platform Runtime complete.** 11 tasks, 82 new tests (198 total), coverage 95.01% CI-gated, Demo Checklist 13/13, AC-1 passed. Dead code from the pagination refactor removed. 06-events.md updated to v3. |
 | 2026-07-28 | v3 — sequential single-stream execution adopted; calendar restated by team size; Demo Checklist added as a completion gate; progressive AI regression assertion model defined; simulator identical-adapter-contract rule recorded |
 | 2026-07-28 | v2 — M1 split into M1.1/M1.2/M1.3; M2.0 Provider Simulation Framework added; per-milestone Demo Scenario, User-Visible Outcome, DoD, Rollback, Operational Readiness introduced; R-14 identified; estimate revised to 225–305 ew |
 | 2026-07-28 | v1 — Initialized. M0 closed. Roadmap documents created. |

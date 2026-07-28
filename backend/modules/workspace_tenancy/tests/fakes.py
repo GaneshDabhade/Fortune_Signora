@@ -49,12 +49,6 @@ class FakeMembershipRepository:
             None,
         )
 
-    async def list_for_workspace(self, workspace_id: UUID) -> list[Membership]:
-        return [m for m in self.memberships if m.workspace_id == workspace_id]
-
-    async def list_for_user(self, user_id: UUID) -> list[Membership]:
-        return [m for m in self.memberships if m.user_id == user_id]
-
     async def list_page_for_workspace(
         self, workspace_id: UUID, *, limit: int, after: CursorPosition | None
     ) -> list[Membership]:

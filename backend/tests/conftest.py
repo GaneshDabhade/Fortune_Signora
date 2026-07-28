@@ -70,8 +70,28 @@ def session_factory(app_engine: AsyncEngine) -> async_sessionmaker[AsyncSession]
     return async_sessionmaker(app_engine, expire_on_commit=False)
 
 
+@pytest.fixture
+def admin_session_factory(admin_engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
+    """Session factory for platform infrastructure that legitimately spans
+    workspaces — the outbox relay and dead-letter handling.
+
+    These operate on system tables (``outbox_event``, ``processed_event``,
+    ``dead_letter_event``) which carry no RLS by design: the relay must
+    sweep every workspace's events, which tenant scoping would prevent.
+    Using the app-role factory here would work today but would silently
+    break the moment those tables gained RLS, so the distinction is made
+    explicit.
+    """
+    return async_sessionmaker(admin_engine, expire_on_commit=False)
+
+
 @pytest.fixture(autouse=True)
 async def clean_database(admin_engine: AsyncEngine) -> AsyncIterator[None]:
     yield
     async with admin_engine.begin() as conn:
-        await conn.execute(text("TRUNCATE membership, workspace, outbox_event CASCADE"))
+        await conn.execute(
+            text(
+                "TRUNCATE membership, workspace, outbox_event, "
+                "processed_event, dead_letter_event CASCADE"
+            )
+        )

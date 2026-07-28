@@ -24,6 +24,10 @@ from modules.workspace_tenancy.infrastructure.models import (  # noqa: F401
     WorkspaceModel,
 )
 from signora_platform.db.base import Base
+from signora_platform.event_bus.models import (  # noqa: F401
+    DeadLetterEventModel,
+    ProcessedEventModel,
+)
 from signora_platform.event_bus.outbox_model import OutboxEventModel  # noqa: F401
 
 

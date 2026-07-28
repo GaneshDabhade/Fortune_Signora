@@ -2,7 +2,7 @@
 
 > Status: **Living document — Architectural Constitution**
 > Audience: All engineers, EMs, and technical stakeholders at Signora
-> Revision: **v2** — updated event catalog for the thirteen-module map ([04-modules.md](04-modules.md)) and the ratified transport decision. See [ADR-0011](adr/0011-background-processing-and-event-bus-transport.md).
+> Revision: **v3** — documents the dispatch layer as built in M1.1: relay semantics, the `processed_event` idempotency ledger, the `dead_letter_event` table, and the decision that **idempotency is platform-owned**. v2 catalog unchanged.
 
 ## Purpose
 
@@ -111,10 +111,28 @@ sequenceDiagram
 
 ## Delivery Semantics
 
-- **At-least-once delivery.** Consumers MUST be idempotent, keyed on `event_id`.
+- **At-least-once delivery.** A handler can legitimately be invoked more than once for the same event.
+- **Idempotency is owned by the platform, not by modules.** See below — this is a change from v2's framing, which implied each consumer would implement its own deduplication.
 - **Per-entity ordering, not global ordering.**
-- **Retry with backoff and dead-lettering**, implemented as ARQ's native retry policy plus a dedicated dead-letter queue for jobs that exhaust retries.
+- **Retry with exponential backoff, capped, then dead-lettering** after `MAX_ATTEMPTS` (5).
 - **Durability first.** An event is not "published" until durably committed in PostgreSQL.
+
+### Platform-owned idempotency
+
+Requiring each of thirteen modules to implement deduplication correctly would mean thirteen chances to get it subtly wrong, and a bug would surface as duplicated domain state rather than as an obvious error. The bus owns it instead.
+
+The dispatcher writes `(consumer_name, event_id)` into **`processed_event`** *in the same transaction as the handler's own work*. That transactional coupling is the whole point:
+
+- If the ledger were written in a **separate, earlier** transaction, a crash in between would permanently skip a handler that never ran.
+- If it were written in a **separate, later** transaction, a crash would re-run a handler that had already completed.
+
+Sharing one transaction makes "handled" and "recorded as handled" atomically the same fact. The claim uses `INSERT … ON CONFLICT DO NOTHING` rather than SELECT-then-INSERT, which would race between concurrent workers.
+
+The key is `(consumer_name, event_id)`, not `event_id` alone: several consumers subscribe to the same event and each must process it exactly once independently.
+
+> **Consumer names are a permanent contract.** Renaming one resets its idempotency ledger, and every historical event would be re-processed on replay.
+
+**Modules must not implement their own idempotency mechanism.** This is a per-module acceptance criterion in [IMPLEMENTATION_ROADMAP.md](../../IMPLEMENTATION_ROADMAP.md).
 
 ## Transport: Postgres Outbox + Redis/ARQ Dispatch
 
@@ -127,14 +145,50 @@ The v1 architecture proposed a pure Postgres-polling outbox. The Architecture Re
 
 ```mermaid
 flowchart LR
-    Domain[Module Domain Logic] -->|same transaction| Outbox[(Outbox Table<br/>PostgreSQL)]
-    Outbox -->|LISTEN/NOTIFY| Relay[Outbox Relay Process]
-    Relay -->|enqueue job| Redis[(Redis)]
+    Domain[Module Domain Logic] -->|same transaction| Outbox[(outbox_event<br/>PostgreSQL)]
+    Outbox -->|poll + LISTEN/NOTIFY| Relay[Outbox Relay Process]
+    Relay -->|enqueue per subscriber| Redis[(Redis<br/>one queue per pool)]
     Redis --> ARQWorker[ARQ Worker Pool]
-    ARQWorker --> Handler1[Consumer Module Handler]
-    ARQWorker --> Handler2[Consumer Module Handler]
-    ARQWorker -->|on repeated failure| DLQ[(Dead Letter Queue<br/>Redis + Postgres audit table)]
+    ARQWorker --> Dispatcher[Event Dispatcher]
+    Dispatcher -->|claim in handler txn| Processed[(processed_event<br/>idempotency ledger)]
+    Dispatcher --> Handler[Consumer Module Handler]
+    Dispatcher -->|after MAX_ATTEMPTS| DLQ[(dead_letter_event)]
 ```
+
+### Dispatch tables
+
+Three platform-owned tables. **None carries Row-Level Security**: all are system infrastructure — never queried on behalf of an end user, never exposed through an API, and swept across every workspace by the relay, which RLS scoping would prevent. `workspace_id` is stored as event data, not as a scope key.
+
+| Table | Purpose |
+|---|---|
+| `outbox_event` | Durable source of truth. Written in the domain transaction; `relayed_at`, `relay_attempts`, and `relay_failed_at` track hand-off. |
+| `processed_event` | Idempotency ledger, keyed `(consumer_name, event_id)`. |
+| `dead_letter_event` | Events whose handler exhausted retries. Retains the **full envelope** rather than referencing `outbox_event`, because the outbox may eventually be pruned while a dead letter must remain independently replayable. Marked `replayed_at` rather than deleted, so the record of what failed — and that it was addressed — survives. |
+
+### Relay semantics
+
+The relay claims unrelayed rows with `FOR UPDATE SKIP LOCKED`, publishes to one queue per subscribed consumer's pool, then marks `relayed_at`.
+
+**Ordering is deliberate: enqueue first, mark second.** If rows were marked relayed before enqueueing, a crash in between would lose the event permanently. Marking after means the worst case is a duplicate, which the idempotency ledger absorbs. **Prefer duplicates over loss** is the rule the relay is built on.
+
+- **Concurrency.** `SKIP LOCKED` lets relay instances partition the backlog rather than duplicating it, so the relay scales horizontally.
+- **Wake-up.** Polls on a timer *and* listens on `NOTIFY signora_outbox`. Polling is the guarantee (notifications are not durable); the notification only collapses idle latency. Either alone is insufficient.
+- **Failure isolation.** A row that fails to enqueue records `relay_attempts`/`relay_failed_at` and is skipped for a backoff window, so one persistently failing event cannot consume every batch.
+- **No subscribers is not an error.** An event nobody consumes is relayed and marked done — publishing before anyone consumes is how the pipeline is built incrementally.
+
+### Worker pools
+
+Consumers are assigned to pools partitioned by **cost and latency profile**, not by module — see [12-scalability.md](12-scalability.md). Each pool is one Redis queue and one independently-scalable worker deployment, selected by `SIGNORA_WORKER_POOL`.
+
+| Pool | Concurrency | Timeout | For |
+|---|---|---|---|
+| `ingestion` | 20 | 300s | Provider Platform, Provider Normalization |
+| `graph` | 10 | 600s | Knowledge Graph, Observation Engine |
+| `intelligence` | 10 | 300s | Business Event, Signal, Buying Score, Opportunity |
+| `ai_reasoning` | 4 | 180s | AI Reasoning Engine |
+| `ai_research` | 2 | 1800s | AI Research Engine — agentic, minutes not seconds |
+| `read_model` | 20 | 120s | Timeline, Revenue Intelligence Platform |
+| `default` | 10 | 300s | Unassigned consumers |
 
 **Why not skip the outbox and publish directly to Redis?** Redis alone cannot participate in the same ACID transaction as the domain write, reintroducing the dual-write problem (state committed but event lost, or event published but state rolled back) that the outbox pattern exists to eliminate. The outbox keeps PostgreSQL as the single durable source of truth for "did this event definitely happen"; Redis/ARQ is purely a dispatch and worker-concurrency mechanism layered on top, and is disposable/rebuildable from the outbox if ever lost.
 

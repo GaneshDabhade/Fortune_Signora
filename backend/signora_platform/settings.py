@@ -34,6 +34,17 @@ class Settings(BaseSettings):
     jwt_issuer: str
     jwt_audience: str
 
+    # --- Observability (ADR-0018) ---
+    #
+    # All optional: absent configuration disables the exporter rather than
+    # failing startup. A missing telemetry endpoint must never prevent the
+    # service from serving traffic.
+    service_name: str = "signora"
+    log_level: str = "INFO"
+    otlp_endpoint: str | None = None
+    sentry_dsn: str | None = None
+    release_version: str = "dev"
+
 
 @lru_cache
 def get_settings() -> Settings:

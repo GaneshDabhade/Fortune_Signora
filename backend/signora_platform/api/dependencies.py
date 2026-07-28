@@ -30,6 +30,7 @@ from signora_platform.auth import (
 )
 from signora_platform.authorization import Authorizer
 from signora_platform.db import tenant_scoped_session, user_scoped_session
+from signora_platform.observability import logging_context
 
 
 class MembershipVerifier(Protocol):
@@ -108,12 +109,14 @@ async def get_user_context(
     which is exactly what "list the workspaces I belong to" needs.
     """
     deps = _dependencies_of(request)
-    async with user_scoped_session(deps.session_factory, user_id=principal.user_id) as session:
-        yield UserContext(
-            principal=principal,
-            session=session,
-            correlation_id=correlation_id_of(request),
-        )
+    correlation_id = correlation_id_of(request)
+    with logging_context(correlation_id=correlation_id, user_id=principal.user_id):
+        async with user_scoped_session(deps.session_factory, user_id=principal.user_id) as session:
+            yield UserContext(
+                principal=principal,
+                session=session,
+                correlation_id=correlation_id,
+            )
 
 
 async def get_workspace_context(
@@ -127,23 +130,27 @@ async def get_workspace_context(
     Membership is read from the database on every request.
     """
     deps = _dependencies_of(request)
-    async with tenant_scoped_session(
-        deps.session_factory, workspace_id=workspace_id, user_id=principal.user_id
-    ) as session:
-        role = await deps.membership_verifier_factory(session).resolve_role(
-            workspace_id, principal.user_id
-        )
-        if role is None:
-            raise WorkspaceAccessDeniedError(workspace_id)
+    correlation_id = correlation_id_of(request)
+    with logging_context(
+        correlation_id=correlation_id, user_id=principal.user_id, workspace_id=workspace_id
+    ):
+        async with tenant_scoped_session(
+            deps.session_factory, workspace_id=workspace_id, user_id=principal.user_id
+        ) as session:
+            role = await deps.membership_verifier_factory(session).resolve_role(
+                workspace_id, principal.user_id
+            )
+            if role is None:
+                raise WorkspaceAccessDeniedError(workspace_id)
 
-        yield WorkspaceContext(
-            principal=principal,
-            workspace_id=workspace_id,
-            role=role,
-            session=session,
-            correlation_id=correlation_id_of(request),
-            authorizer=deps.authorizer,
-        )
+            yield WorkspaceContext(
+                principal=principal,
+                workspace_id=workspace_id,
+                role=role,
+                session=session,
+                correlation_id=correlation_id,
+                authorizer=deps.authorizer,
+            )
 
 
 CurrentUser = Annotated[UserContext, Depends(get_user_context)]

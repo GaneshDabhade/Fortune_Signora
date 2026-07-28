@@ -115,16 +115,6 @@ class SqlAlchemyMembershipRepository(SqlAlchemyRepository):
         model = (await self._session.execute(stmt)).scalar_one_or_none()
         return _membership_to_domain(model) if model is not None else None
 
-    async def list_for_workspace(self, workspace_id: UUID) -> list[Membership]:
-        stmt = select(MembershipModel).where(MembershipModel.workspace_id == workspace_id)
-        models = (await self._session.execute(stmt)).scalars().all()
-        return [_membership_to_domain(model) for model in models]
-
-    async def list_for_user(self, user_id: UUID) -> list[Membership]:
-        stmt = select(MembershipModel).where(MembershipModel.user_id == user_id)
-        models = (await self._session.execute(stmt)).scalars().all()
-        return [_membership_to_domain(model) for model in models]
-
     async def list_page_for_workspace(
         self, workspace_id: UUID, *, limit: int, after: CursorPosition | None
     ) -> list[Membership]:

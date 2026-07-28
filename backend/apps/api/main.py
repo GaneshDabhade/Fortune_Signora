@@ -31,6 +31,13 @@ from signora_platform.api import (
 from signora_platform.auth import JwtVerifier
 from signora_platform.authorization import CasbinAuthorizer
 from signora_platform.db import create_engine, create_session_factory
+from signora_platform.observability import (
+    configure_error_tracking,
+    configure_logging,
+    configure_tracing,
+    instrument_fastapi,
+    instrument_sqlalchemy,
+)
 from signora_platform.pagination import InvalidCursorError
 from signora_platform.settings import Settings, get_settings
 
@@ -71,9 +78,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app without depending on process environment."""
     resolved_settings = settings or get_settings()
 
+    # Observability is configured before anything else so that failures
+    # during the rest of startup are themselves logged and reported.
+    configure_logging(level=resolved_settings.log_level)
+    configure_tracing(resolved_settings)
+    configure_error_tracking(resolved_settings)
+
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         engine = create_engine(resolved_settings)
+        instrument_sqlalchemy(engine)
         app.state.engine = engine
         app.state.api_dependencies = ApiDependencies(
             jwt_verifier=JwtVerifier(
@@ -99,6 +113,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         lifespan=lifespan,
     )
 
+    instrument_fastapi(app)
     register_exception_handlers(app, domain_errors=_error_mappings())
     app.include_router(workspace_tenancy_router)
 

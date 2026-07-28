@@ -16,6 +16,12 @@ dependencies = [
     "casbin>=1.36",
     "pyjwt>=2.10",
     "cryptography>=44.0",
+    "opentelemetry-api>=1.29",
+    "opentelemetry-sdk>=1.29",
+    "opentelemetry-exporter-otlp-proto-http>=1.29",
+    "opentelemetry-instrumentation-fastapi>=0.50b0",
+    "opentelemetry-instrumentation-sqlalchemy>=0.50b0",
+    "sentry-sdk>=2.19",
 ]
 
 [dependency-groups]
@@ -25,6 +31,7 @@ dev = [
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
     "pytest-mock>=3.14",
+    "pytest-cov>=6.0",
     "httpx>=0.27",
     "pre-commit>=4.0",
     "import-linter>=2.1",
@@ -131,3 +138,36 @@ name = "signora_platform must not depend on any module"
 type = "forbidden"
 source_modules = ["signora_platform"]
 forbidden_modules = ["modules"]
+
+[tool.coverage.run]
+source = ["modules", "signora_platform", "apps"]
+branch = true
+omit = [
+    # Test support code is exercised by the tests themselves; measuring it
+    # inflates the number without saying anything about production code.
+    "*/tests/*",
+    "migrations/*",
+    # Process lifecycle glue: the ARQ WorkerSettings class, startup/shutdown
+    # hooks, and the asyncio.run entry point. These are verified by running
+    # the processes, not by unit tests — asserting that a framework's
+    # entry-point contract was satisfied would test the mock, not the system.
+    # The *logic* inside these modules (dispatch_event's retry and
+    # dead-letter policy, pool resolution) IS tested; only the wiring is
+    # excluded. See tests/integration/test_worker_retry.py and
+    # apps/tests/test_worker_pools.py.
+    "apps/worker/relay_main.py",
+]
+
+[tool.coverage.report]
+# Baseline is set to the current measured value and ratcheted upward as
+# coverage improves. It never moves down without an explicit, reviewed
+# decision — a falling baseline is how coverage gates quietly stop working.
+fail_under = 95
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "\\.\\.\\.$",
+]

@@ -43,7 +43,21 @@ class OutboxEventModel(Base):
     payload: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    # Set by the future relay process once the event has been handed off for
-    # dispatch. NULL means "not yet relayed" — the query the relay will poll
-    # (or be woken up via LISTEN/NOTIFY to re-check) once it exists.
+
+    # Set by the relay once the event has been handed off to Redis for
+    # dispatch. NULL means "not yet relayed" — the predicate the relay's
+    # partial index is built on.
     relayed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    relay_attempts: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+    """Incremented each time the relay fails to enqueue this event.
+
+    Distinct from a *consumer's* retry count: this counts failures of the
+    outbox → Redis hand-off, not failures of the handler. A row with a high
+    value here means Redis or the relay is unhealthy, which is a different
+    diagnosis and a different fix than a poison event.
+    """
+
+    relay_failed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    """Timestamp of the most recent relay failure, used to back off before
+    retrying rather than spinning on a persistently failing row."""

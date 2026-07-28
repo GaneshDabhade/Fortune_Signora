@@ -155,4 +155,6 @@ async def test_same_user_may_belong_to_multiple_workspaces(
             correlation_id=uuid4(),
         )
 
-    assert len(await memberships.list_for_user(user_id)) == 2
+    for workspace in (first, second):
+        members = await memberships.list_page_for_workspace(workspace.id, limit=10, after=None)
+        assert [m.user_id for m in members] == [user_id]
