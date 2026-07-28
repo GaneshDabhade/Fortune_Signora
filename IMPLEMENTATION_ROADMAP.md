@@ -16,7 +16,7 @@
 **Implementation proceeds as one prioritized stream.** The roadmap's dependency graph governs *order*; it does not imply concurrency. Optimising for minimal context switching is the ruling constraint, not maximal parallelism.
 
 ```
-M1.1 Platform Runtime → M1.2 Authentication Boundary → M1.3A Deployment Foundation → M1.3B Cloud Infrastructure → M1.4 Platform Smoke Test
+M1.1 Platform Runtime → M1.2 Authentication Boundary → M1.3A Deployment Foundation → M1.4 Platform Smoke Test
      → M2.0 Provider Simulation Framework → M2.1 → M3 → … → M15
 ```
 
@@ -113,7 +113,7 @@ Two findings drive the M1 structure:
 | Event bus relay + worker fleet + DLQ | 🔴 Blocks all 13 modules | M1.1 |
 | Observability (OTel, Sentry, structured logging) | 🟠 Blocks operability | M1.1 |
 | Better Auth issuer (Next.js) | 🔴 Blocks all human access | M1.2 |
-| Terraform / AWS IaC | Blocks any deploy | M1.3B |
+| Terraform / AWS IaC | Blocks any *remote* deploy — deliberately deferred; the local production stack covers development and demos | M14.5 |
 | **Provider Simulation Framework** | 🟠 Blocks offline dev, deterministic demos, AI regression | **M2.0** |
 | Provider Abstraction Layer | Built *with* the simulator (its first implementation) | M2.0 |
 | AI Provider Abstraction Layer + Prompt Registry | Blocks both AI engines | M8 |
@@ -134,14 +134,49 @@ M1 is split into three; M2.0 is inserted before data ingestion. **All other mile
 | **M1.1** Platform Runtime | M1 | ~15.5 ew |
 | **M1.2** Authentication Boundary | M1 | ~11.5 ew |
 | **M1.3A** Deployment Foundation | M1 | ~5.5 ew |
-| **M1.3B** Cloud Infrastructure | M1 | ~6 ew |
-| **M1.4** Platform Smoke Test | *(release gate)* | ~1.5 ew |
+| **M1.4** Platform Smoke Test | *(foundation completion gate)* | ~1.5 ew |
 | **M2.0** Provider Simulation Framework | *(internal enablement)* | ~17–24 ew |
 | M2.1 Provider Platform & Normalization | M2 | ~14–20 ew |
 | M3 Knowledge Graph & Observation Engine | M3 | ~17–23 ew |
 | M4–M15 | M4–M13 | ~160–220 ew |
+| **M14.5** Cloud Infrastructure *(deferred from M1.3B)* | *(production readiness)* | ~6 ew |
 
-**Total to GA: ~232–312 ew.** See §1 for calendar at various team sizes.
+**Total to GA: ~232–312 ew** — unchanged. See §1 for calendar at various team sizes.
+
+### Cloud Infrastructure is deferred, not removed
+
+**M1.3B has moved to M14.5, immediately before GA readiness.** This is a sequencing change and nothing else: the target production architecture is unchanged, the scope is unchanged, and the milestone is not redesigned. [ADR-0022](docs/architecture/adr/0022-devops-infrastructure-and-deployment-topology.md) remains the ratified deployment topology.
+
+What moved: Terraform, ECS, RDS provisioning, ElastiCache provisioning, Secrets Manager integration, the cloud deployment pipeline, cloud rollback validation, production monitoring dashboards, and Auto Scaling.
+
+**Why the order changed.** M1.3A already produced a running production stack — production images, per-tier identities, a concurrency-safe migration runner, and validated restart behaviour. Cloud infrastructure adds *reachability*, not capability: it does not make a single pipeline module work, and until the pipeline exists there is nothing to reach. Building it now would mean carrying and maintaining a deployed environment through roughly 200 engineer-weeks of work that does not need one.
+
+**What this costs, stated plainly.** No externally reachable environment until M14.5. Design partners cannot use the product remotely before then; a demo is a local stack or a screen share. That is a real cost and it is being accepted deliberately, not overlooked.
+
+**What protects the decision from becoming expensive:** the Infrastructure Contract in §5a. Deferring cloud infrastructure is only cheap if the code stays deployable the entire time — the failure mode of "we'll add ops later" is discovering at M14.5 that stateful services, file-system state, and hardcoded configuration have accumulated for two years. Every requirement in that contract is already satisfied today and is enforced from here on, so M14.5 provisions infrastructure for an application that is already ready for it.
+
+---
+
+## 5a. Infrastructure Contract
+
+**Binding on every milestone from M1.3A to GA.** Cloud infrastructure is deferred; cloud *readiness* is not. Every module must remain deployable to the architecture in [ADR-0022](docs/architecture/adr/0022-devops-infrastructure-and-deployment-topology.md) at all times, so that M14.5 provisions infrastructure for an application already ready for it rather than beginning a migration.
+
+Each requirement below is already satisfied. The contract's purpose is that it stays that way through ~200 ew of pipeline work, when no deployed environment exists to notice a violation.
+
+| Requirement | What it means | How it is enforced |
+|---|---|---|
+| **Stateless services** | No process holds state another process needs. No in-memory session, no local cache used as a system of record, no sticky routing. Scaling to *n* replicas changes throughput only. | Disaster Recovery Validation restarts every component; anything stateful loses data and fails. Extended each milestone. |
+| **Environment-based configuration** | Every value read through `Settings`. No module calls `os.environ`, no configuration file ships in an image. | `signora_platform/settings.py` is the sole reader; import-linter keeps modules off it. |
+| **Twelve-Factor compliance** | Config in the environment, backing services attached by URL, processes disposable, dev/prod parity, logs to stdout as a stream, admin tasks as one-off processes. | The migration runner is a discrete one-off process, not a service behaviour. Logs go to stdout. The local production stack *is* the parity check. |
+| **Storage abstraction** | Nothing writes to the local filesystem expecting persistence. Object storage is reached through a port, never a path. | MinIO locally, S3 in production, one adapter — the same substitution ADR-0022 assumes. |
+| **Health endpoints** | Liveness that does not touch dependencies, so a database blip never restarts a healthy process. | `/health`; asserted against an unreachable database. |
+| **Readiness endpoints** | Dependency-aware, and **503 when not ready** — orchestrators route on the status code and never read the body. | `/ready` and the frontend's `/api/health`; both wired to container healthchecks. |
+| **Structured logging** | Fielded JSON to stdout, every line carrying `workspace_id` and `correlation_id`. No file handlers, no rotation, no free-text concatenation. | `signora_platform/observability`; structural secret redaction on top. |
+| **OpenTelemetry** | Every new asynchronous flow traceable end to end before it is considered complete. | Configured; absent exporter disables rather than fails. Required of each new flow by §12. |
+| **Secret injection via configuration** | No secret in an image, a repository, or a default. Values arrive at start. | Image inspection asserts no secret-bearing layer; `.dockerignore` excludes `.env`. |
+| **Production Docker images** | Multi-stage, non-root, no build toolchain in the runtime layer, immutable tags. | Both images; asserted by the smoke test. |
+
+**Claude must not accept a change that violates this contract**, including one that would be "fixed during M14.5". A violation is cheap to prevent and expensive to unwind after it has been built on. If a module appears to require statefulness, local disk, or configuration outside `Settings`, that is a finding to raise — not a temporary exception to take.
 
 ---
 
@@ -289,7 +324,7 @@ Every milestone specifies: Scope · Simulator Requirement · Demo Scenario · **
 
 **Simulator requirement:** ❌ Not required.
 
-**Why this comes first:** the application platform and the cloud platform fail for entirely different reasons, and debugging both at once means never knowing which one is broken. A container that will not start, a migration runner that races two API replicas, a readiness probe that reports healthy before the database is reachable — each of these is a two-minute diagnosis locally and an afternoon inside ECS. M1.3A proves the application is deployable; M1.3B proves AWS is configured. Neither answer is trustworthy if both are being asked simultaneously.
+**Why this comes first:** the application platform and the cloud platform fail for entirely different reasons, and debugging both at once means never knowing which one is broken. A container that will not start, a migration runner that races two API replicas, a readiness probe that reports healthy before the database is reachable — each of these is a two-minute diagnosis locally and an afternoon inside ECS. M1.3A proves the application is deployable; M14.5 proves AWS is configured. Neither answer is trustworthy if both are being asked simultaneously.
 
 **Demo scenario:**
 > *"docker compose up, and it's production."* From a clean checkout with no local Python or Node toolchain, bring up the full stack — Postgres, Redis, migration runner, API, worker pools, frontend — using production images. Migrations run once as a discrete pre-start step under the **migration identity**; the API then starts under `signora_app` and the frontend under `signora_auth`. Sign in, create a workspace, watch an event traverse the outbox relay into a worker. Then stop the database and watch readiness turn red while liveness stays green.
@@ -324,7 +359,7 @@ Also asserted across every restart:
 - **Event ordering per entity is preserved** — the relay claims in `event_id` order within a workspace using `FOR UPDATE SKIP LOCKED`; a restart must not reorder events for a given aggregate. Cross-entity ordering is explicitly *not* guaranteed and is asserted not to be relied upon.
 - **No silent data loss** — event counts are reconciled across the restart boundary: published = relayed + pending, always.
 
-**Why this belongs to M1.3A rather than M1.3B:** these are properties of the *application*, not of AWS. A worker that loses in-flight jobs on SIGTERM loses them identically on ECS, but there the restart is slower, the logs are further away, and the failure looks like an infrastructure problem. Proving resilience locally means that when something does break in M1.3B, infrastructure is the only remaining suspect.
+**Why this belongs to M1.3A rather than M1.3B:** these are properties of the *application*, not of AWS. A worker that loses in-flight jobs on SIGTERM loses them identically on ECS, but there the restart is slower, the logs are further away, and the failure looks like an infrastructure problem. Proving resilience locally means that when something does break in M14.5, infrastructure is the only remaining suspect — and in the meantime the platform smoke test keeps that proof current.
 
 **User-visible outcome:** None directly. The internal outcome is that "it works on my machine" stops being a meaningful distinction — the thing that runs locally is the thing that will run in production.
 
@@ -350,116 +385,73 @@ Also asserted across every restart:
 
 ---
 
-### 🔄 M1.3B — Cloud Infrastructure
+### 🆕 M1.4 — Platform Smoke Test · **the platform foundation completion gate**
 
-**Scope:** Terraform (VPC, RDS PostgreSQL 17, two ElastiCache clusters, Secrets Manager) · ECS services · ALB with TLS · deployment pipeline · staging · automated migrations · rollback validation.
-
-**Effort:** ~6 ew · **Critical path:** T22→T23 = 6 ew serial · **Tasks:** T22–T23
-
-**Simulator requirement:** ❌ Not required.
-
-**Entry condition:** M1.3A complete. Every question this milestone asks is about AWS configuration, because the application-level questions were answered locally.
-
-**Demo scenario:**
-> *"Ship it and un-ship it."* Merge to `main`; the pipeline runs migrations as a privileged pre-deploy task, deploys API and workers, and passes health/readiness. Then deliberately deploy a broken build, watch readiness fail, and **roll back using the documented procedure — timed.** Show `signora_app` connecting as a non-superuser in the deployed environment, and secrets resolving from Secrets Manager with none present in the image.
-
-**Demo checklist:**
-- [ ] `terraform plan` clean and idempotent on a second run
-- [ ] Staging provisioned end to end from code
-- [ ] Pipeline deploys API + at least one worker pool
-- [ ] Migration task runs pre-deploy under the **migration identity**, never from a service
-- [ ] `/health` and `/ready` green post-deploy
-- [ ] Application connects as `signora_app`, frontend as `signora_auth` — verified in the deployed environment
-- [ ] Two separate ElastiCache clusters confirmed (queue vs. cache)
-- [ ] Secrets resolve from Secrets Manager; image inspection shows none embedded
-- [ ] TLS terminated; HTTP redirects to HTTPS
-- [ ] **Broken build deployed, rollback executed and timed (<10 min)**
-- [ ] RDS backup restore performed once into a scratch instance
-- [ ] Security Invariants suite passes against the deployed staging environment
-
-**User-visible outcome:** None directly — but this is what makes M1.2's login reachable by anyone outside a developer's laptop.
-
-**Definition of Done:**
-- [ ] Demo Checklist passes in full
-- [ ] All secrets from AWS Secrets Manager
-- [ ] **Expand-then-contract migration rule enforced** — no deploy ships a destructive schema change alongside the code depending on it
-- [ ] `ADR-0022` updated with as-built topology
-- [ ] AC-3B passed
-
-**Rollback strategy:**
-- **Application:** ECS retains the previous task definition; rollback is a revision revert. Target **under 10 minutes, verified**.
-- **Migrations:** all reversible (CI-enforced). Expand-then-contract keeps application rollback safe without a database restore.
-- **Infrastructure:** Terraform state versioned; `plan` reviewed before every apply.
-- **Blast radius:** total. This is where rollback discipline stops being theoretical.
-
-**Operational readiness checklist:**
-- [ ] Runbook: deploy · rollback · emergency stop
-- [ ] Runbook: database restore, tested
-- [ ] Alert: ECS service unhealthy / task flapping
-- [ ] Alert: RDS CPU, connections, storage headroom
-- [ ] Alert: ElastiCache memory and eviction (both clusters)
-- [ ] Pipeline requires green CI to proceed
-- [ ] On-call rotation and escalation defined
-- [ ] Staging is a faithful shape of production
-
----
-
-### 🆕 M1.4 — Platform Smoke Test
-
-**Scope:** A single command that verifies the complete runtime platform and demo flow in one execution, wired into CI and release validation.
+**Scope:** One command that verifies the complete local production stack — startup, authentication, JWT verification, Casbin authorization, PostgreSQL RLS, Redis, event bus, relay, workers, Security Invariants, demo flow, health, and readiness — wired into CI and required before every milestone and every release.
 
 **Effort:** ~1.5 ew · **Tasks:** T24
 
-**Simulator requirement:** ❌ Not required — but M2.0 extends this command rather than replacing it.
+**Simulator requirement:** ❌ Not required — M2.0 extends this command rather than replacing it.
 
-**Why this exists as its own milestone:** verification of the whole platform is currently spread across a backend suite, a frontend suite, a cross-tier contract test, and a Demo Checklist that a human reads. Each is individually green while the *composition* goes unverified — which is precisely where the M1.2 credential defect lived. One command that exercises the real stack end to end turns "everything passes" into a claim about the system rather than about its parts.
+**Why this closes the foundation.** Verification is currently spread across a backend suite, a frontend suite, a cross-tier contract test, a disaster-recovery script, and a checklist a human reads. Each is individually green while the *composition* goes unverified — which is exactly where M1.2's credential defect and all four of M1.3A's defects lived. Every one of those was invisible to a passing test suite and obvious within seconds of running the real stack.
+
+With cloud infrastructure deferred to M14.5, this command also becomes the standing proof that the Infrastructure Contract (§5a) still holds. It is the only thing that will notice, across ~200 ew of pipeline work, that the application has stopped being deployable.
 
 **The command:**
 
 ```
-make smoke        # or: uv run smoke
+make smoke
 ```
 
-**What it verifies, in order:**
+**Stages, in order. Each fails fast and names itself:**
 
-| Stage | Assertion |
-|---|---|
-| 1. Stack up | Production images start; every container reaches healthy |
-| 2. Migrations | Applied under the migration identity; schema at `head` |
-| 3. Identities | API is `signora_app`, frontend is `signora_auth`, neither is the owner |
-| 4. Security invariants | The full suite passes **against the running stack** |
-| 5. Auth | Sign in; a token is minted by the frontend and accepted by the API |
-| 6. Demo flow | Create a workspace; a second user cannot see it (404, not 403) |
-| 7. Event pipeline | The resulting event traverses outbox → relay → worker and is processed exactly once |
-| 8. Observability | One `correlation_id` is traceable across API, relay, and worker logs |
-| 9. Failure paths | Stop the database: readiness red, liveness green; restart: recovery without intervention |
-| 10. Teardown | Stack down; no orphaned volumes or containers |
+| # | Stage | Verifies |
+|---|---|---|
+| 1 | **Build** | Both production images build from a clean checkout with no local toolchain |
+| 2 | **Startup** | Every container reaches healthy; the stack comes up from one command |
+| 3 | **Migrations** | Applied under the migration identity as a discrete step; schema at `head`; runner refuses a runtime identity |
+| 4 | **Identities** | API/worker are `signora_app`, relay is `signora_relay`, frontend is `signora_auth`, none is the owner — read from inside the containers |
+| 5 | **Image hygiene** | No secret-bearing layer, no build toolchain, no `.env`, non-root |
+| 6 | **Health** | `/health` green with the database stopped — liveness must not depend on dependencies |
+| 7 | **Readiness** | `/ready` **503s** when a dependency is down and returns to 200 on recovery, without intervention |
+| 8 | **Authentication** | A token minted by the real frontend issuance path is accepted by the real API |
+| 9 | **JWT verification** | `alg:none`, algorithm confusion, a foreign key, a wrong audience, and an expired token are each rejected against the live API |
+| 10 | **Authorization** | Casbin decides: a member may read and may not mutate; policy is evaluated before application code |
+| 11 | **RLS / tenant isolation** | A second user gets `404` (never `403`) and an empty list; an unfiltered query returns one workspace |
+| 12 | **Redis + event bus** | Events published in the causing transaction reach the queue |
+| 13 | **Relay** | Every published event is relayed; per-entity ordering preserved; published = relayed + pending |
+| 14 | **Workers** | The event is consumed exactly once; a redelivery does not double-process |
+| 15 | **Security Invariants** | The full suite passes against the running stack — **last, because it truncates** |
+| 16 | **Teardown** | Stack down; no orphaned containers or volumes |
 
 **Demo scenario:**
-> *"One command, one answer."* Run `make smoke` on a clean machine. It builds, starts, migrates, verifies, exercises, breaks, recovers, and tears down — exiting non-zero on the first failed guarantee with a message naming which one.
+> *"One command, one answer."* Run `make smoke` on a clean machine. It builds, starts, migrates, verifies every layer, exercises the demo flow, breaks a dependency and watches recovery, runs the invariants, and tears down — exiting non-zero on the first failed guarantee with a message naming which one.
 
 **Demo checklist:**
-- [ ] Single command, no prerequisites beyond Docker
-- [ ] Runs green from a clean checkout
+- [ ] Single command; no prerequisite beyond Docker and Node
+- [ ] Green from a clean checkout
 - [ ] Exits non-zero and names the failed stage on any failure
+- [ ] **Every stage proven to fail when deliberately broken** — an unverified stage may assert nothing
 - [ ] Runs in CI on every merge to `main`
-- [ ] Runs as a release gate before any deploy to staging or production
+- [ ] Documented as required before every milestone and every release
 - [ ] Completes in under 10 minutes — beyond that it stops being run
-- [ ] Deliberately breaking any one stage produces a clear, specific failure
+- [ ] Destructive stages cannot run against a database that has not opted in
 
-**User-visible outcome:** None. The outcome is that "is the platform working?" has one answer instead of five partial ones.
+**User-visible outcome:** None. The outcome is that "is the platform working?" has one answer instead of six partial ones.
 
 **Definition of Done:**
 - [ ] Demo Checklist passes in full
 - [ ] Wired into CI and documented as a release gate
 - [ ] Each stage's failure mode verified by deliberately breaking it
-- [ ] Documented in `ADR-0022`
+- [ ] `ADR-0022` documents the command
+- [ ] AC-3C passed
 
-**Rollback strategy:** Not applicable — the command is additive and ships no runtime change.
+**Rollback strategy:** Not applicable — additive, ships no runtime change.
 
 **Operational readiness checklist:**
 - [ ] Runbook: interpreting each stage's failure
-- [ ] Command is the documented first step of incident triage
+- [ ] Documented as the first step of incident triage
+- [ ] Extended by every subsequent milestone (AC-13)
 
 ---
 
@@ -588,7 +580,71 @@ Full Demo Checklist, Definition of Done, rollback, and readiness sections are au
 | **M12** | Revenue Intelligence Platform + full frontend | 28–40 ew | ✅ Required | Composed views |
 | **M13** | CRM / comms / calendar integrations | 18–26 ew | ⚠️ Partial | — |
 | **M14** | Billing, notifications, analytics, flags | 5–7 ew | ❌ Not required | — |
+| **M14.5** | **Cloud Infrastructure** *(deferred from M1.3B — see below)* | 6 ew | ❌ Not required | — |
 | **M15** | GA readiness: load testing, SOC 2, PII, spend governance | 20–27 ew | ✅ Load testing at volume | — |
+
+---
+
+### ⏸ M14.5 — Cloud Infrastructure · *deferred from M1.3B*
+
+> **Sequencing change only.** Scope, technology, and topology are exactly as ratified in [ADR-0022](docs/architecture/adr/0022-devops-infrastructure-and-deployment-topology.md) and as originally planned for M1.3B. Nothing here has been removed or redesigned — only its position in the order. Runs immediately before M15 GA readiness, which depends on a deployed environment for load testing at volume.
+>
+> Until this milestone, the application stays deployable by the Infrastructure Contract (§5a) rather than by a deployed environment proving it.
+
+**Scope:** Terraform (VPC, RDS PostgreSQL 17, two ElastiCache clusters, Secrets Manager) · ECS services · ALB with TLS · deployment pipeline · staging · automated migrations · rollback validation.
+
+**Effort:** ~6 ew · **Critical path:** T22→T23 = 6 ew serial · **Tasks:** T22–T23 (numbering retained from M1.3B)
+
+**Simulator requirement:** ❌ Not required.
+
+**Entry condition:** M14 complete, and M1.3A's local production stack still green. Every question this milestone asks is about AWS configuration, because the application-level questions were answered at M1.3A — roughly 200 ew earlier, and kept answered since by §5a and the platform smoke test.
+
+**Demo scenario:**
+> *"Ship it and un-ship it."* Merge to `main`; the pipeline runs migrations as a privileged pre-deploy task, deploys API and workers, and passes health/readiness. Then deliberately deploy a broken build, watch readiness fail, and **roll back using the documented procedure — timed.** Show `signora_app` connecting as a non-superuser in the deployed environment, and secrets resolving from Secrets Manager with none present in the image.
+
+**Demo checklist:**
+- [ ] `terraform plan` clean and idempotent on a second run
+- [ ] Staging provisioned end to end from code
+- [ ] Pipeline deploys API + at least one worker pool
+- [ ] Migration task runs pre-deploy under the **migration identity**, never from a service
+- [ ] `/health` and `/ready` green post-deploy
+- [ ] Application connects as `signora_app`, frontend as `signora_auth` — verified in the deployed environment
+- [ ] Two separate ElastiCache clusters confirmed (queue vs. cache)
+- [ ] Secrets resolve from Secrets Manager; image inspection shows none embedded
+- [ ] TLS terminated; HTTP redirects to HTTPS
+- [ ] **Broken build deployed, rollback executed and timed (<10 min)**
+- [ ] RDS backup restore performed once into a scratch instance
+- [ ] Security Invariants suite passes against the deployed staging environment — against a **disposable** database, never one holding data (the suite truncates; it requires `SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1`)
+- [ ] `make smoke` passes against the deployed environment
+- [ ] Production monitoring dashboards live
+- [ ] Auto Scaling configured and a scale event observed
+
+**User-visible outcome:** None directly — but this is what makes M1.2's login reachable by anyone outside a developer's laptop.
+
+**Definition of Done:**
+- [ ] Demo Checklist passes in full
+- [ ] All secrets from AWS Secrets Manager
+- [ ] **Expand-then-contract migration rule enforced** — no deploy ships a destructive schema change alongside the code depending on it
+- [ ] `ADR-0022` updated with as-built topology
+- [ ] AC-3B passed
+
+**Rollback strategy:**
+- **Application:** ECS retains the previous task definition; rollback is a revision revert. Target **under 10 minutes, verified**.
+- **Migrations:** all reversible (CI-enforced). Expand-then-contract keeps application rollback safe without a database restore.
+- **Infrastructure:** Terraform state versioned; `plan` reviewed before every apply.
+- **Blast radius:** total. This is where rollback discipline stops being theoretical.
+
+**Operational readiness checklist:**
+- [ ] Runbook: deploy · rollback · emergency stop
+- [ ] Runbook: database restore, tested
+- [ ] Alert: ECS service unhealthy / task flapping
+- [ ] Alert: RDS CPU, connections, storage headroom
+- [ ] Alert: ElastiCache memory and eviction (both clusters)
+- [ ] Pipeline requires green CI to proceed
+- [ ] On-call rotation and escalation defined
+- [ ] Staging is a faithful shape of production
+
+---
 
 ---
 
@@ -639,14 +695,14 @@ Rationale: cheap unblocking work first (T1, T2, T6); logging (T3) before the rel
 
 **Sequential order:** T19 → T20 → T21 → T21b
 
-### M1.3B — Cloud Infrastructure
+### M14.5 — Cloud Infrastructure *(deferred from M1.3B)*
 
 | ID | Task | Complexity | Depends on |
 |---|---|---|---|
 | T22 | Terraform baseline (VPC, RDS, 2× ElastiCache, Secrets Manager) | L · 3 ew | T21 |
-| T23 | ECS + deploy pipeline + rollback validation | L · 3 ew | T22, T9 |
+| T23 | ECS + deploy pipeline + rollback validation + dashboards + Auto Scaling | L · 3 ew | T22, T9 |
 
-**Sequential order:** T22 → T23
+**Sequential order:** T22 → T23. Task IDs retained so the deferral is traceable rather than looking like new work.
 
 ### M1.4 — Platform Smoke Test
 
@@ -800,10 +856,10 @@ All four are test-enforced, not conventions.
 | **A — Pipeline** | M2.1 → M11 (critical path) | 2–3 eng | From M2.0 completion |
 | **B — AI Platform** | M8, then M9/M10 support | 1–2 eng | From M4 |
 | **C — Product Surface** | M1.2, then M7/M12 frontend | 1–2 eng + design | Continuous |
-| **D — Platform & Ops** | M1.1, M1.3A, M1.3B, M1.4, M15 | 1 eng | Continuous |
+| **D — Platform & Ops** | M1.1, M1.3A, M1.4, M14.5, M15 | 1 eng | Continuous |
 | **E — Simulation** | M2.0, then scenario extension per milestone | 1 eng, then ~0.5 | M2.0 onward |
 
-**When staffing allows:** M1.1, M1.2, and M1.3A/B have no interdependencies except T23←T9 and T22←T21, so they parallelise almost perfectly — the fastest available compression of the M1 phase.
+**When staffing allows:** M1.1, M1.2, and M1.3A have no interdependencies, so they parallelise almost perfectly — the fastest available compression of the M1 phase.
 
 **Stream E never ends.** Each milestone extends the scenario library with its own assertions (~0.5 ew per milestone). This is what keeps the library current rather than rotting into stale fixtures.
 
@@ -816,7 +872,7 @@ All four are test-enforced, not conventions.
 | **AC-1 — Event Bus Contract** | M1.1 | At-least-once delivery; platform-owned idempotency; DLQ; `correlation_id` traced end-to-end |
 | **AC-2 — Auth Boundary Integrity** | M1.2 | No private key in Python tier; claims match contract exactly; contract test green |
 | **AC-3A — Application Deployability** | M1.3A | Stack starts from production images alone; migrations run under the migration identity; each tier connects under its own least-privileged role; readiness distinguishes liveness from dependency failure; **restarting any component loses no queued events, pending work, tenant isolation, or per-entity ordering** |
-| **AC-3B — Deployment & Rollback** | M1.3B | Rollback executed and timed; expand-then-contract migrations; non-superuser connection in a deployed environment |
+| **AC-3B — Deployment & Rollback** | M14.5 | Rollback executed and timed; expand-then-contract migrations; non-superuser connection in a deployed environment |
 | **AC-3C — Platform Verification** | M1.4 | One command verifies the whole platform; every stage proven to fail loudly when deliberately broken |
 | **AC-4 — Simulator Fidelity** | M2.0 | Identical adapter contract; config-only switching; enters only at Provider layer; determinism proven; production guard test-enforced |
 | **AC-5 — Provider Abstraction Integrity** | M2.1 | Provider Port unchanged from M2.0; no vendor SDK type outside an adapter |
@@ -861,7 +917,7 @@ A milestone is done when **every** statement holds:
 5. **Observable** — every async flow traceable via `correlation_id`, emitting latency/throughput/error metrics.
 6. **Secure** — tenant isolation proven by test; no secrets in code; least privilege verified.
 7. **Documented** — architecture documents updated in the same change; new ADR for any new technology or vendor.
-8. **Deployable** — starts from a production image under its own least-privileged identity (from M1.3A), and runs in a deployed environment (from M1.3B).
+8. **Deployable** — starts from a production image under its own least-privileged identity, satisfies the Infrastructure Contract (§5a) at all times, and runs in a deployed environment from M14.5.
 9. **Demonstrable** — the Demo Scenario runs successfully, **using simulated provider data wherever live integrations are unavailable**.
 10. **Reversible** — rollback strategy documented and, for infrastructure milestones, executed at least once.
 11. **Operationally ready** — readiness checklist complete: runbooks, alerts, dashboards.
@@ -890,6 +946,6 @@ Single stream. **M1.1 only** — M1.2 does not begin until M1.1's Demo Checklist
 | 10 | **T5** Sentry | Small; completes observability |
 | 11 | **T11** Pipeline metrics | Needs T4 and the full relay chain in place |
 
-**Then:** M1.1 Demo Checklist → M1.2 → M1.3A → M1.3B → M1.4 → M2.0.
+**Then:** M1.1 Demo Checklist → M1.2 → M1.3A → M1.4 → M2.0. Cloud infrastructure (M14.5) is deferred to Production Readiness.
 
 **Deferred until staffing allows:** the Knowledge Graph spike. Under single-stream execution it would displace critical-path work; it should run as soon as a second engineer is available, since it retires the roadmap's largest estimation variance.

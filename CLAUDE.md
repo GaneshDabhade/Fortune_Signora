@@ -233,6 +233,18 @@ What it does prohibit: reshaping a platform interface because one module would f
 
 ---
 
+## 20b. Infrastructure Contract
+
+Cloud infrastructure is deferred to M14.5; cloud *readiness* is not. Every change must keep the application deployable to the topology in `docs/architecture/adr/0022-devops-infrastructure-and-deployment-topology.md`, so that M14.5 provisions infrastructure for an application already ready for it rather than beginning a migration.
+
+Claude must preserve, in every milestone: **stateless services** (no process holds state another needs; scaling to *n* replicas changes throughput only) · **environment-based configuration** (every value through `Settings`; no module calls `os.environ`) · **Twelve-Factor compliance** (backing services attached by URL, processes disposable, admin tasks as one-off processes, logs to stdout) · **storage abstraction** (nothing writes to local disk expecting persistence; object storage through a port) · **health endpoints** (liveness that touches no dependency) · **readiness endpoints** (dependency-aware, 503 when not ready) · **structured logging** (fielded JSON to stdout with `workspace_id` and `correlation_id`) · **OpenTelemetry** (every new async flow traceable before it is complete) · **secret injection via configuration** (no secret in an image, repository, or default) · **production Docker images** (multi-stage, non-root, no build toolchain in the runtime layer).
+
+Claude must not accept a change that violates this contract, **including one that would be "fixed during M14.5"**. A violation is cheap to prevent and expensive to unwind once built upon. If a module appears to require statefulness, local disk, or configuration outside `Settings`, raise it — do not take a temporary exception.
+
+`make smoke` is what enforces this. Run it before considering any milestone complete.
+
+---
+
 ## 21. Rules for Claude Code
 
 ### Claude must never
@@ -250,6 +262,7 @@ What it does prohibit: reshaping a platform interface because one module would f
 - Change database schema without updating the corresponding architecture documentation in the same change.
 - Modify `signora_platform/` internals after the M1.3A freeze without a security fix, a production defect, or explicit approval (§20a).
 - Read a platform infrastructure table from module code, or restore a read grant on one to `signora_app` (§8).
+- Introduce statefulness, local-disk persistence, or configuration outside `Settings` — the Infrastructure Contract binds every milestone until M14.5 provisions cloud infrastructure (§20b).
 
 ### When implementing, Claude must always
 

@@ -6,6 +6,7 @@ inferred from ``relay_once``.
 """
 
 import asyncio
+import contextlib
 from datetime import UTC, datetime
 from uuid import uuid4
 
@@ -20,6 +21,7 @@ from signora_platform.event_bus import (
     OutboxRelay,
     SubscriptionRegistry,
 )
+from signora_platform.event_bus.relay import MAX_RELAY_BACKOFF_SECONDS
 
 pytestmark = pytest.mark.integration
 
@@ -134,3 +136,77 @@ async def test_cancellation_is_clean_and_loses_nothing(
             )
         ).scalar_one()
     assert half_relayed == 0
+
+
+class TestRelaySurvivesTransientFailure:
+    """The relay must outlive its dependencies.
+
+    Every error reaching ``run_forever`` is a lost connection, a DNS failure
+    during a database failover, or a Redis blip — transient, and guaranteed
+    to happen in a deployed environment. Letting one propagate stops the
+    relay permanently, which silently halts the whole event pipeline: events
+    accumulate in the outbox, nothing consumes them, and there is no error
+    after the first.
+
+    Found in M1.4 by stopping PostgreSQL and starting it again. The
+    disaster-recovery script had missed it because ``compose restart``
+    preserves the container's DNS entry, so the relay never had to resolve a
+    name that was briefly gone.
+    """
+
+    async def test_a_failing_cycle_does_not_stop_the_relay(
+        self, admin_session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        relay = OutboxRelay(
+            session_factory=admin_session_factory,
+            queue_publisher=InMemoryQueuePublisher(),
+            registry=SubscriptionRegistry(),
+        )
+        calls = 0
+
+        async def failing_then_working() -> int:
+            nonlocal calls
+            calls += 1
+            if calls <= 3:
+                raise ConnectionError("database went away")
+            return 0
+
+        relay.relay_once = failing_then_working  # type: ignore[method-assign]
+
+        task = asyncio.create_task(relay.run_forever(poll_interval_seconds=0.01))
+        await asyncio.sleep(1.5)
+        still_running = not task.done()
+        task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await task
+
+        assert still_running, "the relay stopped after a transient failure"
+        assert calls > 3, "the relay never retried past the failing cycles"
+
+    async def test_shutdown_is_still_immediate(
+        self, admin_session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """Retrying must not swallow cancellation — a relay that ignores
+        SIGTERM blocks every deployment until it is killed."""
+        relay = OutboxRelay(
+            session_factory=admin_session_factory,
+            queue_publisher=InMemoryQueuePublisher(),
+            registry=SubscriptionRegistry(),
+        )
+
+        async def always_failing() -> int:
+            raise ConnectionError("database went away")
+
+        relay.relay_once = always_failing  # type: ignore[method-assign]
+
+        task = asyncio.create_task(relay.run_forever(poll_interval_seconds=0.01))
+        await asyncio.sleep(0.3)
+        task.cancel()
+
+        with pytest.raises(asyncio.CancelledError):
+            await asyncio.wait_for(task, timeout=2)
+
+    async def test_backoff_is_capped(self) -> None:
+        """Uncapped backoff would eventually make recovery indistinguishable
+        from the relay having died."""
+        assert MAX_RELAY_BACKOFF_SECONDS <= 60

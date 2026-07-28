@@ -115,6 +115,7 @@ services:
       timeout: 5s
       retries: 12
       start_period: 10s
+    restart: unless-stopped
 
   worker:
     <<: *backend-image
@@ -131,6 +132,11 @@ services:
     # 10s is too short for a handler that is mid-provider-call; 30s is the
     # figure ECS will also use.
     stop_grace_period: 30s
+    # Mirrors what ECS does with a failed task. Defence in depth only — the
+    # relay and workers are expected to survive transient dependency loss on
+    # their own, and a restart policy that papers over a crash-on-blip would
+    # hide exactly the defect M1.4 found.
+    restart: unless-stopped
 
   relay:
     <<: *backend-image
@@ -147,6 +153,7 @@ services:
       redis:
         condition: service_healthy
     stop_grace_period: 30s
+    restart: unless-stopped
 
   frontend:
     build:

@@ -3,7 +3,7 @@
 > **Owner:** Technical Program Manager · **Audience:** Everyone
 > **Cadence:** Updated at every milestone boundary and every sprint close. Updating this is part of the [Definition of Done](IMPLEMENTATION_ROADMAP.md#12-definition-of-done-global).
 > **Last updated:** 2026-07-28 · **Reporting period:** M1.2 delivery
-> **Revision:** v7 — **M1.3A Deployment Foundation complete.** Production images, migration runner, production stack, and Disaster Recovery Validation all green. **`signora_platform/` is now frozen** (CLAUDE.md §20a)
+> **Revision:** v8 — **M1.4 Platform Smoke Test complete: the platform foundation is closed.** `make smoke` verifies the whole stack in one command. **Cloud infrastructure deferred to M14.5** (sequencing only — see the Infrastructure Contract)
 
 ---
 
@@ -14,9 +14,9 @@ M0  Foundation             █████████████████�
 M1.1 Platform Runtime      ████████████████████ 100%  ✅ Complete
 M1.2 Auth Boundary         ████████████████████ 100%  ✅ Complete
 M1.3A Deployment Foundation ███████████████████ 100%  ✅ Complete · platform FROZEN
-M1.3B Cloud Infrastructure  ░░░░░░░░░░░░░░░░░░░   0%  🔴 CURRENT — next
-M1.4 Platform Smoke Test    ░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (after M1.3A)
-M2.0 Simulation Framework   ░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (after M1.4)
+M1.4 Platform Smoke Test    ███████████████████ 100%  ✅ Complete · FOUNDATION CLOSED
+M2.0 Simulation Framework   ░░░░░░░░░░░░░░░░░░░   0%  🔴 CURRENT — next
+M14.5 Cloud Infrastructure  ░░░░░░░░░░░░░░░░░░░   0%  ⏸ Deferred to Production Readiness
 M2.1 → M15                 ░░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued
 ```
 
@@ -24,12 +24,12 @@ M2.1 → M15                 ░░░░░░░░░░░░░░░░░
 
 | Dimension | Status |
 |---|---|
-| **Overall completion to GA** | **~18%** by engineering effort (~47.5 of ~239–319 total engineer-weeks; ~192–272 ew remaining) |
+| **Overall completion to GA** | **~19%** by engineering effort (~49 of ~239–319 total engineer-weeks; ~190–270 ew remaining) |
 | Architecture & design | **100%** — 19 documents, 27 ADRs, ratified and internally consistent |
 | Core modules | **1 of 14** (7%) |
 | Backend platform | **100% of foundation scope** — 🔒 frozen from M1.3A; 0% of pipeline scope |
 | Frontend | **~25%** — auth boundary, shell, and API client complete |
-| Infrastructure-as-code | **~35%** — production images, migration runner, and production stack complete; no cloud IaC yet |
+| Infrastructure-as-code | **~35%** — local production stack complete and continuously verified; cloud IaC deferred to M14.5 |
 | Provider simulation | **0%** — newly scoped (M2.0) |
 | AI capability | **Level 0 of 12** ([AI_MATURITY_ROADMAP.md](AI_MATURITY_ROADMAP.md)) |
 
@@ -49,7 +49,8 @@ How much the agreed architecture is churning. Sustained instability means the de
 | Documents amended for *drift* (code disagreed with docs) | **3** (11-tenancy ×2, 18-authentication) | Trending to 0 |
 | Documents amended for *new decisions* | 3 | Healthy — this is the process working |
 | Unplanned architectural changes mid-milestone | **0** | 0 — these belong to the RFC process |
-| `signora_platform/` freeze status | 🔒 **Frozen** since M1.3A | Changes require security fix, production defect, or approval |
+| `signora_platform/` freeze status | 🔒 **Frozen** since M1.3A · **1 change**, under the production-defect exemption | Changes require security fix, production defect, or approval |
+| Infrastructure Contract | ✅ **10 of 10** requirements satisfied | All, continuously — verified by `make smoke` |
 
 **Reading:** stable. No ratified decision has been reversed. Both drift amendments were found by writing tests that asserted the documented behaviour, not by a production incident.
 
@@ -59,14 +60,16 @@ Whether the substrate the 13 pipeline modules will be built on is sound.
 
 | Indicator | Current | Target |
 |---|---|---|
-| Backend tests | **310 passing**, 0 skipped, 0 xfail | 0 skipped — a skipped test is an untested claim |
-| Coverage | **95.65%** (CI gate 95%) | ≥95% |
+| Backend tests | **313 passing**, 0 skipped, 0 xfail | 0 skipped — a skipped test is an untested claim |
+| Coverage | **95.63%** (CI gate 95%) | ≥95% |
 | mypy strict | Clean, 113 files | Clean |
 | Migrations reversible | **7 of 7** revisions | 100% |
 | Disaster recovery validated | **4 of 4** components restart-safe | All |
+| Platform smoke stages | **16**, all proven to fail when broken | Every stage verified |
+| Whole-stack verification | **`make smoke`**, ~46s, in CI | One command, every merge |
 | Platform modules with a failure-path test | 12 of 12 | 100% |
 | Open production defects | **0** | 0 |
-| Defects found by tests vs. by use | **8 of 11 by tests**; 3 by running the stack | Falling ratio is expected — M1.3A's whole purpose is to surface what tests cannot |
+| Defects found by tests vs. by use | **8 of 13 by tests**; 5 by running the stack | Falling ratio is expected and is why `make smoke` now exists |
 
 **Reading:** sound. The metric worth watching is the last one: every defect so far was found by a test written to look for it, four of them by deliberately breaking a guarantee to check the test bites.
 
@@ -195,29 +198,29 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 
 ## Current Milestone
 
-### ✅ M1.3A — Deployment Foundation · closed 2026-07-28
+### ✅ M1.4 — Platform Smoke Test · closed 2026-07-28 · **the platform foundation is closed**
 
-All four tasks delivered. The stack runs from production images alone, each tier under its own least-privileged identity, with Disaster Recovery Validation green.
+`make smoke` — 16 stages, ~46 seconds warm, in CI on every merge and pull request.
 
-| Delivered | Evidence |
-|---|---|
-| Production images (T19) | Multi-stage, non-root, no build toolchain, **no secret-bearing layer** |
-| Migration runner + secrets (T20) | Advisory-locked; refuses runtime identities; 4 concurrent runners verified |
-| Production Compose stack (T21) | 6 services healthy; migrations gate every dependent via `service_completed_successfully` |
-| Disaster Recovery Validation (T21b) | Postgres, Redis, API, workers, relay each restarted — nothing lost |
+```
+Build · Startup · Migrations · Identities · Image hygiene · Health · Readiness ·
+Authentication · JWT verification · Authorization · RLS · Event bus · Relay ·
+Workers · Security Invariants · Teardown
+```
 
-**Verified inside the running containers, not inferred from configuration:** `api`/`worker` → `signora_app`, `relay` → `signora_relay`, `frontend` → `signora_auth`, `migrate` → owner. All processes uid 1000.
+**Every stage was verified to fail when its guarantee was deliberately removed** — `/ready` returning 200 with the database down, a relay that dies on a transient error, an unpinned JWT algorithm, the API connecting as the owner, a secret baked into an image. A stage that has never failed may be asserting nothing.
 
-**Full demo flow against the live stack:** token minted by the real frontend path → workspace created via the real API (201) → both events relayed → a *different* user gets `404` and an empty list.
+The Security Invariants run **last**, deliberately: the suite truncates every table, so anything asserted after it would be asserted against an empty database.
 
-**Four defects found, all by running the stack rather than by tests:**
+**Two defects found, both by the smoke test itself:**
 
-1. **`WorkerSettings.redis_settings` was a `staticmethod`.** ARQ reads it as a value and dereferences `.host`, so **the worker could never start** — while the entire test suite passed, because every test exercised `dispatch_event` directly and none ever touched `WorkerSettings`. This is the single clearest argument for M1.3A existing before M1.3B: in ECS this presents as a task that will not stabilise.
-2. **`/ready` always returned 200**, with the status in the body. Orchestrators route on the status code, so a degraded API would have kept receiving traffic it could not serve. Now 503.
-3. **Alembic's `fileConfig` silenced the migration runner's own logging**, so the "migrations applied" line an operator greps for never printed. The two logging configurations are now mutually exclusive.
-4. **The test suite truncates every table and could be pointed at any database.** Running the invariants against the production stack emptied it mid-script — so the ordering and reconciliation checks that followed passed against empty tables. Fixed twice over: the destructive assertions now run *before* the suite, and the suite refuses to run without `SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1`. This mattered beyond the local script: both M1.3A and M1.3B checklists call for running the invariants against a *deployed* stack.
+1. **The relay died permanently on a transient database failure.** Stopping and starting PostgreSQL produced a DNS resolution failure inside `run_forever`; the exception propagated and the loop exited. Events kept accumulating in the outbox with nothing consuming them and **no error after the first** — a silent, total halt of the event pipeline.
 
-**🔒 `signora_platform/` is frozen** as of this milestone (CLAUDE.md §20a).
+   The Disaster Recovery script had missed this: `compose restart` preserves the container's DNS entry, so the relay reconnected without ever having to resolve a name that was briefly gone. `stop`/`start` removes it, which is the harsher and more realistic failure. Fixed with capped-backoff retry that re-raises `CancelledError` so shutdown stays immediate; three regression tests added.
+
+   This is the **first and only change to `signora_platform/` since the freeze**, taken under the production-defect exemption (CLAUDE.md §20a). A relay that stops on a blip and loses no data but delivers nothing is squarely "demonstrably wrong".
+
+2. **Two bugs in the smoke script itself**, both of which would have made it lie. `... | grep -q X` exits on first match, SIGPIPEs `docker compose logs`, and under `set -o pipefail` becomes a pipeline failure — so the migration-identity check passed or failed on buffering timing. And matching `error` as a substring flagged `{"logger":"...observability.errors","message":"error tracking disabled"}`, an INFO line reporting correct behaviour. Both now match structured fields.
 
 ---
 
@@ -227,10 +230,22 @@ Sequential execution — each begins only when the previous milestone's Demo Che
 
 | Order | Milestone | Effort | Simulator | Gate |
 |---|---|---|---|---|
-| 1 | **M1.3B** Cloud Infrastructure | ~6 ew | ❌ | AC-3B · rollback executed and timed |
-| 2 | **M1.4** Platform Smoke Test | ~1.5 ew | ❌ | AC-3C · every stage proven to fail when broken |
-| 3 | **M2.0** Provider Simulation Framework | ~17–24 ew | ✅ builds it | AC-4 · identical adapter contract, config-only switching |
-| 4 | M2.1 → M15 | ~175–240 ew | mostly ✅ | Per roadmap |
+| 1 | **M2.0** Provider Simulation Framework | ~17–24 ew | ✅ builds it | AC-4 · identical adapter contract, config-only switching |
+| 2 | M2.1 → M14 | ~175–240 ew | mostly ✅ | Per roadmap |
+| 3 | **M14.5** Cloud Infrastructure *(deferred from M1.3B)* | ~6 ew | ❌ | AC-3B · rollback executed and timed |
+| 4 | M15 GA readiness | ~20–27 ew | ✅ load at volume | Per roadmap |
+
+### Cloud infrastructure is deferred, not removed
+
+**M1.3B has moved to M14.5, immediately before GA readiness.** Sequencing only: the target production architecture is unchanged, the scope is unchanged, and nothing is redesigned. [ADR-0022](docs/architecture/adr/0022-devops-infrastructure-and-deployment-topology.md) remains ratified.
+
+Deferred: Terraform, ECS, RDS and ElastiCache provisioning, Secrets Manager integration, the cloud deployment pipeline, cloud rollback validation, production monitoring dashboards, Auto Scaling.
+
+**Why.** M1.3A already produced a running production stack. Cloud infrastructure adds *reachability*, not capability — it makes no pipeline module work, and until the pipeline exists there is nothing to reach. Building it now means carrying a deployed environment through ~200 ew that does not need one.
+
+**What it costs, plainly.** No externally reachable environment until M14.5. Design partners cannot use the product remotely before then; a demo is a local stack or a screen share. Accepted deliberately.
+
+**What keeps it cheap:** the [Infrastructure Contract](IMPLEMENTATION_ROADMAP.md#5a-infrastructure-contract) — ten requirements, all satisfied today, enforced every milestone. The failure mode of "we'll add ops later" is discovering at M14.5 that stateful services and hardcoded configuration accumulated for two years. `make smoke` is what will notice.
 
 ### Why M1.3 was split
 
@@ -254,16 +269,17 @@ A permanent platform capability, not throwaway tooling — used for local develo
 
 ## Current Sprint
 
-**Sprint:** M1.3B Sprint 1 — awaiting approval.
+**Sprint:** M2.0 Sprint 1 — **awaiting approval.**
 
-**Scope — M1.3B only.** Single stream; no concurrent milestone work.
+**Scope — M2.0 only.** Single stream; no concurrent milestone work.
 
-| Sprint 1 tasks | Rationale |
-|---|---|
-| T22 Terraform baseline | VPC, RDS 17, 2× ElastiCache, Secrets Manager. Zero dependencies within M1.3B. |
-| T23 ECS + pipeline + rollback | The gate: rollback executed and timed, not documented |
+M2.0 is the largest milestone since M0 (~17–24 ew) and the first that builds product capability rather than substrate. Its binding rules are already fixed in [IMPLEMENTATION_ROADMAP.md §8](IMPLEMENTATION_ROADMAP.md#8-provider-simulation-framework--design):
 
-**What M1.3A bought this milestone.** Every application-level deployment question is already answered: the images start, the migration runner is concurrency-safe and identity-enforced, readiness reports correctly to an orchestrator, and every component survives a restart. If something fails in M1.3B, AWS configuration is the only remaining suspect — which is the entire reason the split was worth making.
+- **It builds the Provider Port**, as its first concrete implementation — satisfying the YAGNI ruling and validating the port with working code before any vendor adapter is written.
+- **Simulated providers implement exactly the same adapter contract as production ones.** Switching is configuration only; no `if simulated:` branch may exist in any layer.
+- **The simulator must never activate in production** — it would fabricate customer intelligence. Guarded by environment check, ingestion logging, health-endpoint visibility, and an alert, all test-enforced.
+
+**What the foundation now guarantees it.** `make smoke` runs before this milestone starts and after every change in it, so a regression in the substrate is attributable to the change that caused it rather than discovered weeks later.
 
 ---
 
@@ -407,15 +423,13 @@ Encoded as a tracked deviation in `test_authorization.py::test_every_workspace_o
 
 ## Next Task
 
-### 🎯 M1.3B · T22 — Terraform baseline
+### 🎯 M2.0 — Provider Simulation Framework
 
-**Why first:** T23 cannot deploy to infrastructure that does not exist.
+**The platform foundation is closed.** M0, M1.1, M1.2, M1.3A, and M1.4 are complete; `signora_platform/` is frozen; `make smoke` verifies the whole stack in one command. Everything from here builds *on* the substrate rather than adding to it.
 
-**Then:** T23 (ECS + deploy pipeline + rollback validation) → M1.4 · T24 (platform smoke test).
+M2.0 precedes every pipeline module because it is what makes them testable: a permanent platform capability used for local development, integration and E2E testing, demos, AI evaluation, regression testing, performance benchmarking, and customer onboarding — not throwaway tooling.
 
-**Alternative worth considering:** M1.4 · T24 is now unblocked — it depends on M1.3A, which is complete. Building the smoke command *before* M1.3B would mean the cloud deployment has a single-command verification available from its first deploy rather than after it. It is 1.5 ew against M1.3B's 6.
-
-**Awaiting:** approval, and a decision on that ordering. Every task remains unassigned.
+**Awaiting approval before beginning.** Task breakdown will be presented first, as with every prior milestone.
 
 ---
 
@@ -423,6 +437,7 @@ Encoded as a tracked deviation in `test_authorization.py::test_every_workspace_o
 
 | Date | Change |
 |---|---|
+| 2026-07-28 | v8 — **M1.4 Platform Smoke Test complete; platform foundation closed.** `make smoke`: 16 stages, ~46s, in CI, every stage proven to fail when deliberately broken. Two defects found by it — a relay that died permanently on a transient database failure (first and only post-freeze platform change, under the production-defect exemption), and two bugs in the smoke script itself that would have made it lie. **Cloud infrastructure deferred from M1.3B to M14.5** — sequencing only, nothing removed or redesigned — with a ten-point Infrastructure Contract (roadmap §5a) binding every milestone until then. 313 tests, coverage 95.63%. |
 | 2026-07-28 | v7 — **M1.3A Deployment Foundation complete.** Production images (multi-stage, non-root, no secrets), concurrency-safe migration runner refusing runtime identities, 6-service production Compose stack, and Disaster Recovery Validation across Postgres/Redis/API/workers. Four defects found by running the stack rather than by tests — most seriously a worker that could never start while the whole suite passed. `signora_platform/` frozen. ADR-0022 updated with as-built topology. 310 tests, coverage 95.65%. |
 | 2026-07-28 | v6 — **M1.2 approved.** Security Invariants suite established: 47 permanent invariants across authentication, authorization, database, and platform, each proven to fail when its guarantee is deliberately removed; wired into CI as a separately-reported job. Migration/runtime credential separation adopted as a permanent engineering rule (CLAUDE.md §8). M1.3 split into M1.3A Deployment Foundation and M1.3B Cloud Infrastructure; M1.4 Platform Smoke Test added; AC-3 split into AC-3A/3B/3C and AC-13 added. `@vitejs/plugin-react` recorded as scheduled technical debt. One architectural question raised for decision: platform-table read scope. |
 | 2026-07-28 | v5 — **M1.2 Authentication Boundary complete.** 7 tasks plus 3 added requirements; 242 backend and 29 frontend tests; Demo Checklist 10/10; AC-2 passed; Architecture Validation Report issued. One defect found during validation: `signora_auth` created but never connected as, with the frontend defaulting to the database owner. |

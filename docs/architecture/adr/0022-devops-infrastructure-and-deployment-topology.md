@@ -95,3 +95,16 @@ Each process connects under its own least-privileged role — verified from insi
 ### Disaster recovery
 
 `infra/disaster-recovery.sh` restarts PostgreSQL, Redis, the API, workers, and the relay in turn, asserting before and after each that nothing is lost: unrelayed outbox rows, dead letters, the idempotency ledger, acknowledged writes and their events, authentication state, tenant isolation, and per-entity event ordering. Redis is treated as transport rather than a system of record — anything lost from the queue is still in the outbox and is re-relayed, which the restart proves rather than assumes.
+
+### Platform Smoke Test (M1.4)
+
+`make smoke` verifies the whole stack in one command: build → startup → migrations → identities → image hygiene → health → readiness → authentication → JWT verification → authorization → RLS → event bus → relay → workers → Security Invariants → teardown. Sixteen stages, each failing fast and naming itself; ~45 seconds warm.
+
+**Required before every milestone and every release, and the first step of incident triage.** It runs in CI on every merge to `main` and on pull requests.
+
+Two design points:
+
+- **The Security Invariants run last.** The suite truncates every table between tests, so anything asserted after it would be asserted against an empty database — which is how the disaster-recovery script's ordering checks originally passed vacuously.
+- **Every stage was verified to fail when its guarantee was deliberately removed** — a 200 from `/ready` with the database down, a relay that dies on a transient error, an unpinned JWT algorithm, the API connecting as the owner, a secret baked into an image. A stage that has never failed may be asserting nothing.
+
+With cloud infrastructure deferred to M14.5, this command is also the standing proof that the Infrastructure Contract still holds. Across the pipeline milestones it is the only thing that will notice the application has stopped being deployable.

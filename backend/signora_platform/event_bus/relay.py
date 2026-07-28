@@ -45,6 +45,12 @@ is slow."""
 
 DEFAULT_BATCH_SIZE: Final = 100
 DEFAULT_POLL_INTERVAL_SECONDS: Final = 1.0
+MAX_RELAY_BACKOFF_SECONDS: Final = 30
+"""Ceiling on the retry delay after a failed relay *cycle* (a lost database
+connection, a DNS failure during failover, a Redis blip). Capped because an
+uncapped backoff would eventually make recovery indistinguishable from the
+relay having died — the thing this backoff exists to prevent."""
+
 RELAY_FAILURE_BACKOFF_SECONDS: Final = 30
 """How long a row that failed to enqueue is skipped before being retried.
 Without this the relay would spin on a persistently failing row, starving
@@ -191,10 +197,52 @@ class OutboxRelay:
         let the backlog grow faster than it drains.
         """
         logger.info("outbox relay started", extra={"batch_size": self._batch_size})
+        consecutive_failures = 0
         try:
             while True:
-                while await self.relay_once() > 0:
-                    pass
+                try:
+                    while await self.relay_once() > 0:
+                        pass
+                except asyncio.CancelledError:
+                    raise
+                except Exception as exc:
+                    # The relay must outlive its dependencies. Every error
+                    # reaching here is a lost connection, a DNS failure
+                    # during a database failover, or a Redis blip — all
+                    # transient, all guaranteed to happen in a deployed
+                    # environment. Letting one propagate stops the relay
+                    # permanently, which silently halts the entire event
+                    # pipeline: events keep accumulating in the outbox and
+                    # nothing consumes them, with no error after the first.
+                    #
+                    # Found in M1.4 by stopping PostgreSQL and starting it
+                    # again. The disaster-recovery script had missed it
+                    # because `compose restart` keeps the container's DNS
+                    # entry, so the relay reconnected without ever having to
+                    # resolve a name that was briefly gone.
+                    consecutive_failures += 1
+                    backoff = min(
+                        poll_interval_seconds * 2 ** min(consecutive_failures, 5),
+                        MAX_RELAY_BACKOFF_SECONDS,
+                    )
+                    logger.warning(
+                        "outbox relay cycle failed; retrying",
+                        extra={
+                            "error": type(exc).__name__,
+                            "consecutive_failures": consecutive_failures,
+                            "retry_in_seconds": backoff,
+                        },
+                    )
+                    await asyncio.sleep(backoff)
+                    continue
+
+                if consecutive_failures:
+                    logger.info(
+                        "outbox relay recovered",
+                        extra={"after_failures": consecutive_failures},
+                    )
+                    consecutive_failures = 0
+
                 await asyncio.sleep(poll_interval_seconds)
         except asyncio.CancelledError:
             logger.info("outbox relay stopped")

@@ -1,0 +1,44 @@
+# Platform Smoke Test — the platform foundation completion gate (M1.4).
+#
+# Required before every milestone and every release. Runs on merge to main
+# and on pull requests, because the defects it catches (a worker that cannot
+# start, a readiness probe that never reports failure, a relay that dies on
+# a database blip) are all invisible to a fully passing test suite.
+name: Platform Smoke Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    name: make smoke
+    runs-on: ubuntu-latest
+    # The command builds both images from scratch; 25 minutes leaves room on
+    # a cold cache without letting a hang consume a full hour.
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      # Needed to mint a token through the real frontend issuance path and to
+      # run the Security Invariants against the running stack.
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci --legacy-peer-deps
+      - name: Install backend
+        working-directory: backend
+        run: uv sync --locked
+      - name: Platform smoke test
+        run: make smoke
+      - name: Stack logs on failure
+        if: failure()
+        run: docker compose --env-file infra/.env.prod-local -f infra/docker-compose.prod.yml logs --tail 200
