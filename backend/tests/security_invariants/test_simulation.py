@@ -230,32 +230,35 @@ class TestPipelineNeutrality:
             for path in (self.PIPELINE_ROOT / layer).rglob("*.py")
         ]
 
-    #: Two known deviations, raised for architectural decision rather than
-    #: silently permitted. Neither is a *branch* — nothing in the pipeline
-    #: behaves differently because of them — but both are simulation or
-    #: provider knowledge sitting in the domain, which AC-21 arguably
-    #: forbids. Named explicitly so any *third* one fails the build.
+    #: **AC-21 is behavioural, not informational** (ratified 2026-07-28).
+    #: Metadata may exist; behaviour must remain provider-neutral. The
+    #: Provider Platform may carry data required for observability,
+    #: traceability, and type safety provided no business behaviour
+    #: changes, no branching occurs, no simulation-specific execution path
+    #: exists, and provider identity stays metadata rather than logic.
     #:
-    #: 1. `ProviderResponse.simulated` / `ProviderDescriptor.simulated` —
-    #:    a flag carried for observability, because the safety guard
-    #:    requires ingestion logs to mark simulated payloads unambiguously.
-    #: 2. `ProviderName` — an enum of the five ratified providers in the
-    #:    domain, used for typed dispatch and for recording which provider
-    #:    a sync belongs to.
-    KNOWN_DEVIATIONS = frozenset({"modules/provider_platform/domain/provider.py"})
+    #: Approved metadata, confined to one file:
+    #: 1. `ProviderResponse.simulated` — observability; the safety guard
+    #:    requires ingestion logs to mark simulated payloads.
+    #: 2. `ProviderDescriptor.simulated` — logging, diagnostics, safety.
+    #: 3. `ProviderName` — typed metadata for dispatch and sync records.
+    #:
+    #: Named explicitly so a *fourth* piece of such knowledge, or any
+    #: instance outside this file, fails the build.
+    APPROVED_METADATA = frozenset({"modules/provider_platform/domain/provider.py"})
 
     def test_no_new_simulation_knowledge_enters_the_pipeline(self) -> None:
         """Nothing *branches* on simulation anywhere in the pipeline.
 
-        The two known deviations in `provider.py` are data, not control
-        flow — see KNOWN_DEVIATIONS. Any other file mentioning simulation
-        fails here.
+        The approved metadata in `provider.py` is data, not control flow —
+        see APPROVED_METADATA. Any other file mentioning simulation fails
+        here.
         """
         offenders = [
             name
             for name, source in self._pipeline_sources("domain", "application")
             if re.search(r"simulat", _strip_docstrings(source), re.IGNORECASE)
-            and name not in self.KNOWN_DEVIATIONS
+            and name not in self.APPROVED_METADATA
         ]
 
         assert offenders == [], (
@@ -290,7 +293,7 @@ class TestPipelineNeutrality:
     def test_no_provider_specific_behaviour_in_the_pipeline(self) -> None:
         """Provider identity belongs inside adapters.
 
-        `ProviderName` is a known deviation (see KNOWN_DEVIATIONS): the
+        `ProviderName` is approved typed metadata (see APPROVED_METADATA): the
         platform records *which* provider a sync belongs to, which is
         arguably identity knowledge. What it must never do is *behave*
         differently per provider — that is what this asserts, and it is the

@@ -1,6 +1,6 @@
 # PROJECT_STATUS.md
 
-> **Revision:** v19 · **Last updated:** 2026-07-28 · **Reporting period:** M2.0 closed
+> **Revision:** v20 · **Last updated:** 2026-07-28 · **Reporting period:** M2.0 closed
 > **Owner:** Technical Program Manager · **Audience:** Everyone
 > Authoritative record of project state (CLAUDE.md §20d). Updated after every completed milestone, **before the next begins**.
 >
@@ -30,10 +30,10 @@ The product's competitive advantage is the quality of that reasoning and the evi
 
 | | |
 |---|---|
-| **Overall completion** | **~23%** by engineering effort (~82 of ~261–339 ew) |
-| **Effort remaining** | **~179–257 ew** |
-| **Milestones completed** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · **M2.0** |
-| **Current milestone** | **M2.1 — Provider Platform** |
+| **Overall completion** | **~27%** by engineering effort (~92 of ~261–339 ew) |
+| **Effort remaining** | **~169–247 ew** |
+| **Milestones completed** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · **M2.1** |
+| **Current milestone** | **M2.2 — Provider Normalization** |
 | **Projected to GA** | ~1.6–2.3 years at 3 engineers · ~2.5–3.4 at 2 · ~4.9–6.8 at 1 (80% capacity) |
 
 ## 4 · Roadmap Snapshot
@@ -49,8 +49,8 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | — | M1.4 | Platform smoke test | ✅ Complete |
 | — | M1.5 | Frontend foundation | ✅ Complete |
 | — | M2.0 | Provider Simulation Framework | ✅ Complete |
-| 1 | **M2.1** | **Provider Platform** | 🔴 **Next** |
-| 2 | M2.2 | Provider Normalization | ⏳ Queued |
+| — | M2.1 | Provider Platform | ✅ Complete |
+| 1 | **M2.2** | **Provider Normalization** | 🔴 **Next** |
 | 3 | M3A | Knowledge Graph | ⏳ Queued |
 | 4 | M3B | Observation Engine | ⏳ Queued |
 | 5 | M4 | Business Event Engine | ⏳ Queued |
@@ -70,7 +70,88 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | 19 | M15 | GA readiness — load, SOC 2, PII, spend | ⏳ Queued |
 | — | 🎯 | **General Availability** | |
 
-## 5 · Completed Foundations
+## 5 · Platform Module Map
+
+*What Signora is composed of. The roadmap answers **when**; this answers **what**.*
+
+### Foundations — the substrate everything else is built on
+
+| Module | Status | Milestone | Purpose | Consumes | Produces |
+|---|---|---|---|---|---|
+| **Workspace & Tenancy** | ✅ Complete | M0 | The tenancy root. Owns workspaces, memberships, and the RLS boundary every other module inherits. | User identity from the auth tier | Workspaces, memberships, and the `workspace_id` scope all data carries |
+| **Authentication** | ✅ Complete | M1.2 | Better Auth in Next.js is the sole authentication authority; the Python tier only verifies RS256 JWTs and can never mint one. | OAuth sign-in (Google, Microsoft) | Verified principals, and the workspace hint every request re-verifies |
+| **Platform Runtime** | ✅ Complete | M1.1 | The event spine: transactional outbox, relay, dispatch, platform-owned idempotency, retry, dead-lettering, worker pools. | Domain events from any module | At-least-once delivery to subscribed consumers, exactly-once effect |
+| **Deployment Foundation** | ✅ Complete | M1.3A | Production images, per-tier database identities, a concurrency-safe migration runner, and a restart-safe stack. | Source and configuration | A running system that survives any component restart |
+| **Frontend Foundation** | ✅ Complete | M1.5 | The frontend platform: design system, component library, shell, routing, session, query layer. No business screens. | API responses, session | The surface business screens plug into from M12 |
+| **Provider Simulation Framework** | ✅ Complete | M2.0 | Produces realistic provider payloads without a provider, for development, testing, CI, demos, and deterministic AI regression. | Datasets and scenario manifests | Provider payloads, delivered through the Provider Port like any real provider |
+
+### Product pipeline — raw data becomes commercial meaning
+
+| Module | Status | Milestone | Purpose | Consumes | Produces |
+|---|---|---|---|---|---|
+| **Provider Platform** | ✅ Complete | M2.1 | Runs syncs against provider adapters: pages responses, stores raw records, tracks watermarks, classifies failures. Knows nothing of any specific provider. | Provider Port implementations | Raw provider records, and the events announcing them |
+| **Provider Normalization** | 🔄 **Next** | M2.2 | Validates and translates each vendor's shape into Signora's own vocabulary. The only place a vendor's format is understood. | Raw provider records | Normalized entities in canonical form |
+| **Knowledge Graph** | ⏳ Queued | M3A | Maintains the canonical representation of companies, people, technologies, relationships, and their historical state. Resolves the same company arriving from five providers into one entity. | Normalized provider records | Canonical entities every downstream module reasons over |
+| **Observation Engine** | ⏳ Queued | M3B | Records what *changed* about an entity and when — the atomic unit of evidence the whole pipeline traces back to. | Knowledge Graph entities | Observations, each timestamped and attributed to its source |
+| **Business Event Engine** | ⏳ Queued | M4 | Converts observations into meaningful business events: funding rounds, hiring surges, executive changes, technology migrations. | Observations | Business Events, typed against a curated global taxonomy |
+| **Signal Engine** | ⏳ Queued | M5A | Detects commercially meaningful sales signals from business events — the difference between "something happened" and "something worth acting on happened". | Business Events | Signals |
+| **Buying Score Engine** | ⏳ Queued | M5B | Combines multiple signals into a continuously updated buying propensity score per account. | Signals | Buying Scores |
+| **Opportunity Engine** | ⏳ Queued | M6 | Decides whether an account should become an actionable sales opportunity. **The first sellable moment.** | Buying Scores | Qualified Opportunities |
+| **Timeline** | ⏳ Queued | M7 | The account narrative — every observation, event, signal, and score in chronological order, so a seller can read the story rather than the data. | Observations, Business Events, Signals, Buying Scores, Opportunities, Recommendations | The chronological account view |
+| **Revenue Intelligence Platform** | ⏳ Queued | M12 | The composed product surface: the business screens sellers actually use, assembled from every module above. | Opportunities, Timeline, Recommendations, AI Reasoning | The customer-facing application |
+
+### AI — explaining and acting on what the pipeline found
+
+| Module | Status | Milestone | Purpose | Consumes | Produces |
+|---|---|---|---|---|---|
+| **AI Platform** | ⏳ Queued | M8 | The vendor abstraction layer, Prompt Registry, and evaluation harness. Every model call in Signora goes through it; no module ever touches a vendor SDK. | Prompt templates, model configuration | A vendor-neutral inference surface, versioned prompts, and measurable output quality |
+| **AI Reasoning Engine** | ⏳ Queued | M9 | Explains **why** an opportunity exists, reasoning over the evidence collected throughout the pipeline. Structured, single-call, bounded latency. | Knowledge Graph, Observations, Business Events, Signals, Buying Scores, Timeline | A reasoning graph — the explanation, with its evidence chain intact |
+| **AI Research Engine** | ⏳ Queued | M10 | Agentic, multi-step research that enriches an account beyond what providers supply. Distinct from Reasoning: different latency, cost, and failure profile. | Knowledge Graph entities, external sources | Research artifacts, attributed and versioned |
+| **Recommendation Engine** | ⏳ Queued | M11 | Generates prioritized recommendations and next-best-actions for revenue teams. | Reasoning output, research artifacts | Recommendations shown to users |
+
+### Platform services — everything needed to run it as a business
+
+| Module | Status | Milestone | Purpose | Consumes | Produces |
+|---|---|---|---|---|---|
+| **Integrations** | ⏳ Queued | M13 | Two-way sync with the systems sellers already live in: CRM, email, calendar. | Recommendations, Opportunities; inbound CRM and comms data | Writes into customer systems; inbound activity data |
+| **Notifications** | ⏳ Queued | M14a | Delivers what matters to the right person at the right time, in the channel they use. | Signals, Opportunities, Recommendations | Alerts and digests |
+| **Billing** | ⏳ Queued | M14b | Subscription, usage metering, plan enforcement, analytics, feature flags. | Usage and workspace state | Invoices, entitlements, product analytics |
+| **Cloud Infrastructure** | ⏳ Deferred | M14.5 | Terraform, ECS, RDS, ElastiCache, Secrets Manager, deployment pipeline, monitoring, rollback automation. Deliberately deferred — see §4. | Production images | A deployed, monitored, externally reachable environment |
+| **GA Readiness** | ⏳ Queued | M15 | Load testing at volume, SOC 2 evidence, PII policy, AI spend governance. | The whole system | A system that can be sold to an enterprise |
+
+### The big picture
+
+```mermaid
+flowchart TD
+    P["Providers<br/><i>real or simulated — the pipeline cannot tell</i>"] --> PP[Provider Platform]
+    PP -->|raw records| PN[Provider Normalization]
+    PN -->|normalized entities| KG[Knowledge Graph]
+    KG -->|canonical entities| OE[Observation Engine]
+    OE -->|observations| BEE[Business Event Engine]
+    BEE -->|business events| SE[Signal Engine]
+    SE -->|signals| BSE[Buying Score Engine]
+    BSE -->|buying scores| OP[Opportunity Engine]
+    OP -->|qualified opportunities| TL[Timeline]
+
+    AIP[AI Platform] -.->|vendor-neutral inference| AIR
+    AIP -.-> ARE
+    TL --> AIR[AI Reasoning Engine]
+    KG --> ARE[AI Research Engine]
+    AIR -->|reasoning graph| RE[Recommendation Engine]
+    ARE -->|research artifacts| RE
+    RE -->|recommendations| RIP[Revenue Intelligence Platform · UI]
+    TL --> RIP
+    OP --> RIP
+
+    RIP --> INT[Integrations · CRM, comms, calendar]
+    RE --> NOT[Notifications]
+```
+
+**Read it as one sentence:** raw provider data becomes canonical entities, entities produce observations, observations become business events, events become signals, signals become scores, scores become opportunities, opportunities get explained, and explanations become recommendations a seller can act on — with every step traceable back to the observation that caused it.
+
+**That traceability is the product.** Any system can produce a score; Signora's claim is that it can show you the evidence.
+
+## 6 · Completed Foundations
 
 - ✅ **Secure multi-tenant platform** — PostgreSQL RLS, forced and self-sufficient; per-tier database identities
 - ✅ **Authentication** — Better Auth issues RS256 JWTs, FastAPI only verifies; the API cannot mint a token it accepts
@@ -82,39 +163,40 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 
 **Both foundations are frozen.** `signora_platform/` and the frontend foundation are consumed by later milestones, not modified — except for a production defect, accessibility issue, security issue, or approved architectural change.
 
-## 6 · Current Focus
+## 7 · Current Focus
 
-**M2.1 Provider Platform** — the first milestone that builds product rather than substrate. It implements the module that *consumes* the Provider Port: scheduling provider syncs, paging through responses, translating adapter failures into retries and dead letters, and publishing raw provider records into the pipeline as domain events. It owns the mandatory demonstration that **simulated provider payloads traverse the same production ingestion pipeline used by real providers, with no simulation-specific logic anywhere in that pipeline** — the proof that the simulator's entire design premise holds.
+**M2.2 Provider Normalization** — translating each vendor's shape into Signora's own vocabulary, the only place a vendor format is understood. It follows M2.1, which implemented the module that *consumes* the Provider Port: scheduling provider syncs, paging through responses, translating adapter failures into retries and dead letters, and publishing raw provider records into the pipeline as domain events. It owns the mandatory demonstration that **simulated provider payloads traverse the same production ingestion pipeline used by real providers, with no simulation-specific logic anywhere in that pipeline** — the proof that the simulator's entire design premise holds.
 
-## 7 · Biggest Remaining Milestones
+## 8 · Biggest Remaining Milestones
 
 Knowledge Graph · Observation Engine · Business Events · Signals · Buying Scores · **Opportunities (first sellable moment)** · AI Platform · AI Reasoning · AI Research · Recommendations · Timeline · Revenue Intelligence Platform · Integrations · Cloud Infrastructure · GA
 
-## 8 · Current Health
+## 9 · Current Health
 
 | Indicator | Value | Target |
 |---|---|---|
-| **Backend tests** | **492 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Backend tests** | **508 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Frontend tests** | **101 passing**, 0 failing, 0 skipped | 0 skipped |
-| **Backend coverage** | **95.26%** | ≥95% (CI-gated) |
-| **Security invariants** | **75 / 75**, each proven to fail when its guarantee is removed | 100% verified |
+| **Backend coverage** | **95.84%** | ≥95% (CI-gated) |
+| **Security invariants** | **80 / 80**, each proven to fail when its guarantee is removed | 100% verified |
 | **import-linter contracts** | **4 kept, 0 broken** | 0 broken |
 | **Architecture drift** | **0** — no ratified ADR reversed; 3 documents amended for drift, all found by test | Trending to 0 |
 | **Open production bugs** | **0** | 0 |
 | **Technical debt** | **0 outstanding** | — |
-| **`make smoke`** | ✅ Passing (133s, fresh images) | Required per milestone |
+| **`make smoke`** | ✅ Passing (52s warm; 17 stages incl. ingestion) | Required per milestone |
 
 ### Test suite composition
 
 | Area | Tests | Notes |
 |---|---|---|
-| Security invariants | 75 | Permanent architectural guarantees; run as their own CI job |
+| Security invariants | 80 | Permanent architectural guarantees; run as their own CI job |
 | Simulation framework | 130 | Clock, dataset, scenario, faults, delivery, generators |
 | Provider contract suite | 45 | **One suite, five adapters** — the keystone interchangeability test |
 | Workspace & Tenancy | ~70 | RLS isolation, API, persistence |
 | Platform (event bus, auth, observability) | ~130 | Outbox, relay, dispatch, idempotency, DLQ, JWT |
 | Integration & demo checklists | ~42 | Cross-tier contract, migration runner, milestone gates |
-| **Backend total** | **492** | Coverage 95.26%, mypy strict over 145 files |
+| Provider Platform (ingestion, sync task, domain) | 16 | The M2.1 demonstration |
+| **Backend total** | **508** | Coverage 95.84%, mypy strict over 154 files |
 | Frontend components & foundation | 101 | Includes 13 AC-14/AC-15 guard tests |
 
 ---

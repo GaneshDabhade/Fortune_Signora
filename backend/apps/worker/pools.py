@@ -117,3 +117,19 @@ def resolve_pool(name: str | None = None) -> WorkerPool:
     if resolved not in POOLS:
         raise UnknownPoolError(resolved)
     return POOLS[resolved]
+
+
+# Provider syncs get their own pool (M2.1). They are I/O-bound, slow, and
+# rate-limited by third parties — sharing a pool with fast internal work
+# would let one throttled provider starve everything behind it.
+PROVIDER_SYNC_POOL = WorkerPool(
+    name="provider_sync",
+    max_jobs=4,
+    job_timeout_seconds=600,
+    description=(
+        "Provider syncs. I/O-bound, slow, and rate-limited by third parties — "
+        "sharing a pool with fast internal work would let one throttled provider "
+        "starve everything queued behind it."
+    ),
+)
+POOLS[PROVIDER_SYNC_POOL.name] = PROVIDER_SYNC_POOL

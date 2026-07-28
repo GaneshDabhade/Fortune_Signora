@@ -316,6 +316,26 @@ if grep -qE '"level":"(ERROR|CRITICAL)"|Traceback \(most recent call last\)' <<<
 fi
 pass "relay running without error (survived the database restart in stage 6)"
 
+# ================================================== 14b. Provider ingestion
+
+stage "14b. Provider ingestion"
+
+# The M2.1 demonstration, run against the live stack: a Provider Port
+# implementation is consumed by the real Provider Platform, through the
+# real pipeline, landing in the real table — with no simulation-specific
+# logic anywhere in that path.
+if (cd ../backend && \
+    SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 \
+    SIGNORA_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    SIGNORA_TEST_APP_DATABASE_URL="postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5433/signora" \
+    SIGNORA_TEST_ADMIN_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    uv run pytest tests/integration/test_provider_ingestion.py -q >/tmp/smoke_ingestion.log 2>&1); then
+  pass "$(grep -oE '[0-9]+ passed' /tmp/smoke_ingestion.log | tail -1) against the running stack"
+else
+  tail -20 /tmp/smoke_ingestion.log
+  fail "provider ingestion failed against the running stack"
+fi
+
 # ================================================= 15. Security Invariants
 
 stage "15. Security Invariants"
@@ -350,4 +370,4 @@ trap - EXIT
 
 printf '\n\033[32m\033[1mPLATFORM SMOKE TEST PASSED\033[0m  (%ds)\n' "$((SECONDS - STARTED_AT))"
 printf 'Build · startup · migrations · identities · image hygiene · health · readiness ·\n'
-printf 'auth · JWT · authorization · RLS · event bus · relay · workers · invariants · teardown\n\n'
+printf 'auth · JWT · authorization · RLS · event bus · relay · workers · ingestion · invariants · teardown\n\n'
