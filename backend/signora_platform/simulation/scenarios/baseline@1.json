@@ -1,0 +1,40 @@
+{
+  "_comment": "Minimal scenario proving the engine's contracts. Provider names are declarations of WHO should emit, not payload shapes - no provenance is implied or required until a generator renders them.",
+  "dataset": "baseline",
+  "dataset_version": 1,
+  "steps": [
+    {
+      "provider": "apollo",
+      "subject": "acme-corp",
+      "offset_days": 0,
+      "facts": {
+        "employees": 120
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "acme-corp",
+      "offset_days": 14,
+      "facts": {
+        "open_roles": 18
+      }
+    },
+    {
+      "provider": "bombora",
+      "subject": "acme-corp",
+      "offset_days": 7,
+      "facts": {
+        "topic": "Cloud ERP",
+        "surge": 42
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "globex",
+      "offset_days": 3,
+      "facts": {
+        "employees": 60
+      }
+    }
+  ]
+}

@@ -20,6 +20,14 @@ from signora_platform.simulation.safety import (
     evaluate,
     is_permitted,
 )
+from signora_platform.simulation.scenario import (
+    Scenario,
+    ScenarioError,
+    ScenarioEvent,
+    ScenarioStep,
+    build_timeline,
+)
+from signora_platform.simulation.scenario import load as load_scenario
 
 __all__ = [
     "PERMITTED_ENVIRONMENTS",
@@ -33,5 +41,11 @@ __all__ = [
     "enforce",
     "evaluate",
     "is_permitted",
+    "Scenario",
+    "ScenarioError",
+    "ScenarioEvent",
+    "ScenarioStep",
+    "build_timeline",
     "load",
+    "load_scenario",
 ]

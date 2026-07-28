@@ -6,6 +6,35 @@
 >
 > **No implementation exists yet.** The eight principles in *Permanent architectural principles* are now binding; the five Phase 1 providers, the payload provenance rule, Scenario Manifests, and the webhook deferral are ratified. An accompanying ADR is authored alongside implementation.
 
+## Scope discipline — the simulator is infrastructure, not product
+
+**Ratified 2026-07-28.** The framework exists to enable local development, automated testing, end-to-end testing, demonstrations, CI/CD, and regression testing. **It is not intended to become a provider emulation platform.**
+
+Where improving the simulator and improving the core intelligence platform compete, **the core product wins**. The simulator stays only as sophisticated as required to:
+
+- produce realistic provider payloads
+- exercise the complete ingestion pipeline
+- support deterministic testing
+- support customer demonstrations
+
+Nothing beyond that is expected during the current roadmap.
+
+### Explicitly out of scope for M2.0
+
+Deferred as future enhancements, introduced later only if they show measurable value:
+
+| Deferred | Why it can wait |
+|---|---|
+| Richer provider behaviour | A payload realistic enough to exercise normalization is realistic enough |
+| Additional providers beyond the ratified five | Five already cover every intelligence category |
+| Advanced traffic modelling | No performance question is being asked yet |
+| Multi-tenant simulation | One workspace exercises every tenancy path RLS enforces |
+| Complex behavioural modelling | Beyond what a scenario needs to produce a signal |
+| Performance benchmarking | Requires a pipeline to benchmark; that is M6 at the earliest |
+| Large-scale load generation | Same |
+
+**The success of M2.0 is not measured by the number of simulated providers.** It is measured by whether the platform can consume simulated provider payloads **through the same production pipeline used by real providers**. That is the primary objective; everything else in this document is in service of it.
+
 ## Purpose
 
 The Provider Simulation Framework produces **realistic provider payloads without a provider**. It is the first concrete implementation of the Provider Port, and a permanent platform capability serving eight ongoing purposes — local development, integration testing, end-to-end testing, product demonstrations, AI evaluation, regression testing, performance benchmarking, and customer onboarding demos.

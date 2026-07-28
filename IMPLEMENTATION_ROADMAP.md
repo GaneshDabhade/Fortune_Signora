@@ -623,9 +623,13 @@ make smoke
 
 **Scope:** Provider Port (first concrete implementation) · simulation framework (dataset store, scenario engine, virtual clock) · five simulated providers · Bombora temporal intent modelling · fault, timing, duplicate and ordering injection · polling/scheduled/incremental/pagination delivery · 13 Scenario Manifests · four safety guards · shared adapter contract suite.
 
-**Effort:** ~22–29 ew · **Tasks:** T34–T44
+**Effort:** ~16–21 ew · **Tasks:** T34–T44
 
-**Estimate revised from ~17–24 ew.** Three approved scope additions account for it, and it is recorded rather than absorbed: **Bombora is a temporal provider**, not a fifth enrichment provider — modelling rising, sustained, decaying, reactivating, noisy, and seasonally-varying intent is a distinct capability (T40, ~3 ew); **13 Scenario Manifests** rather than 10; and manifests now declare the **full expected journey** through every downstream stage, not only payloads.
+**Primary objective:** the platform consumes simulated provider payloads **through the same production pipeline used by real providers**. Success is not measured by the number of simulated providers.
+
+**Estimate revised ~22–29 → ~16–21 ew** (Category 1, recorded per §5c). The simulator is **infrastructure, not product**: where its sophistication competes with the core intelligence platform, the core product wins. Reductions: advanced traffic modelling, multi-tenant simulation, complex behavioural modelling, performance benchmarking, and large-scale load generation are **deferred as future enhancements** ([20-provider-simulation.md](docs/architecture/20-provider-simulation.md#scope-discipline--the-simulator-is-infrastructure-not-product)); the fault injector and delivery mechanism ship at the minimum needed to exercise the pipeline's real failure and sync paths; scenario manifests reduce from 13 to **the subset each qualified provider can actually populate**.
+
+**Qualification is not a gate on the framework.** No effort is spent trying to qualify every provider before the framework exists — it is provider-agnostic, and generators land incrementally as legitimate artifacts arrive, **with no architectural change**.
 
 **Simulator requirement:** ✅ This milestone builds it.
 

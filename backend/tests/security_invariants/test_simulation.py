@@ -117,14 +117,19 @@ class TestDeterminism:
         assert offenders == [], f"{offenders} read the wall clock; use the VirtualClock"
 
     def test_simulation_never_uses_unseeded_randomness(self) -> None:
-        """`random.random()` without a seeded Random instance makes a
-        scenario pass and fail at random, and nobody trusts the suite
-        afterwards."""
+        """A module-level `random.random()` makes a scenario pass and fail
+        at random, and nobody trusts the suite afterwards. A seeded
+        `random.Random(seed)` instance is the correct form and is
+        deliberately permitted."""
         offenders = [
             name
             for name, source in simulation_sources()
             if re.search(
-                r"^\s*import random\b|\brandom\.(?:random|choice|randint|shuffle)\(",
+                # Module-level calls only. `random.Random(seed)` is the
+                # correct usage — banning the import would ban the seeded
+                # generator along with the unseeded functions, which is the
+                # opposite of the intent.
+                r"\brandom\.(?:random|choice|randint|shuffle|uniform|sample)\(",
                 _strip_docstrings(source),
                 re.MULTILINE,
             )
