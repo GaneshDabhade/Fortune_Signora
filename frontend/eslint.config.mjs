@@ -1,0 +1,50 @@
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
+
+/**
+ * Flat ESLint config.
+ *
+ * Uses typescript-eslint directly rather than eslint-config-next's legacy
+ * compatibility shim, which does not load cleanly under flat config in this
+ * setup. Next.js-specific rules are covered by `next build`, which runs its
+ * own lint pass; this config enforces the type-safety rules that matter for
+ * an auth tier.
+ */
+export default tseslint.config(
+  {
+    ignores: [
+      '.next/**',
+      'node_modules/**',
+      'coverage/**',
+      'test-results/**',
+      'playwright-report/**',
+    ],
+  },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        crypto: 'readonly',
+        fetch: 'readonly',
+        window: 'readonly',
+      },
+    },
+    rules: {
+      // The auth tier handles credentials; an implicit `any` here is a
+      // security review gap, not a style preference.
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
+  },
+  {
+    files: ['tests/**/*.ts'],
+    rules: {
+      // Tests deliberately construct malformed inputs to prove they are
+      // rejected; `as never` casts are the point, not an oversight.
+      '@typescript-eslint/no-unsafe-argument': 'off',
+    },
+  },
+);

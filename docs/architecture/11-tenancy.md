@@ -56,6 +56,20 @@ Accordingly:
 - Adding a table to any module requires granting it to `signora_app` in the same migration that creates it, or the application fails closed with a permission error.
 - The integration suite asserts, session-wide, that its connection cannot bypass RLS (`verify_app_role_is_rls_bound`). Without that guard, every isolation test in the suite would pass vacuously against a superuser connection — which is exactly how this gap was originally found.
 
+### Every Tier Connects Under Its Own Role
+
+The rule above applies to *every* process holding a connection string, not only the API. A single tier connecting as the owner reopens the gap for the whole database.
+
+| Role | Used by | Privileges |
+|---|---|---|
+| owner (`signora`) | Migrations only, as a release step | Full |
+| `signora_app` | FastAPI API, ARQ workers | DML on application tables; `NOBYPASSRLS`; **no access to `auth`** |
+| `signora_auth` | Next.js / Better Auth | Owns the `auth` schema; `NOBYPASSRLS`; no grant on application tables |
+
+`signora_app` and `signora_auth` are mutually exclusive by construction: migration `0005` revokes `signora_app` from the `auth` schema, and `signora_auth` is never granted anything in `public`. A compromise of either tier reaches only that tier's data.
+
+**Verify the relationship, not just each side.** Both roles were individually correct while the frontend still connected as the owner, which made the revoke inert — the isolation existed in the migration and nowhere else (M1.2 Finding 3). A privilege check that passes for one role in isolation proves very little; assert what each role *cannot* reach.
+
 ### RLS Must Be Self-Sufficient: Use `SECURITY DEFINER` Predicates
 
 **A policy that queries another RLS-protected table is silently filtered by that table's own policy.** This is the subtlest failure mode in this document, because it fails *closed* — it looks like missing data, not like a security bug, and only appears in the session shapes where the referenced table's context is absent.

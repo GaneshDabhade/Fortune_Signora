@@ -2,8 +2,8 @@
 
 > **Owner:** Technical Program Manager · **Audience:** Everyone
 > **Cadence:** Updated at every milestone boundary and every sprint close. Updating this is part of the [Definition of Done](IMPLEMENTATION_ROADMAP.md#12-definition-of-done-global).
-> **Last updated:** 2026-07-28 · **Reporting period:** M1.1 delivery
-> **Revision:** v4 — **M1.1 Platform Runtime complete.** Demo Checklist passed (13/13); AC-1 Event Bus Contract passed
+> **Last updated:** 2026-07-28 · **Reporting period:** M1.2 delivery
+> **Revision:** v5 — **M1.2 Authentication Boundary complete.** Demo Checklist 10/10; AC-2 passed; Architecture Validation Report issued
 
 ---
 
@@ -12,8 +12,8 @@
 ```
 M0  Foundation             ████████████████████ 100%  ✅ Complete
 M1.1 Platform Runtime      ████████████████████ 100%  ✅ Complete
-M1.2 Auth Boundary         ░░░░░░░░░░░░░░░░░░░░   0%  🔴 CURRENT — next
-M1.3 Infrastructure        ░░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (after M1.2)
+M1.2 Auth Boundary         ████████████████████ 100%  ✅ Complete
+M1.3 Infrastructure        ░░░░░░░░░░░░░░░░░░░░   0%  🔴 CURRENT — next
 M2.0 Simulation Framework  ░░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (after M1.3)
 M2.1 → M15                 ░░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued
 ```
@@ -22,11 +22,11 @@ M2.1 → M15                 ░░░░░░░░░░░░░░░░░
 
 | Dimension | Status |
 |---|---|
-| **Overall completion to GA** | **~11%** by engineering effort (~30 of ~239–319 total engineer-weeks; ~210–290 ew remaining) |
+| **Overall completion to GA** | **~16%** by engineering effort (~42 of ~239–319 total engineer-weeks; ~198–278 ew remaining) |
 | Architecture & design | **100%** — 19 documents, 27 ADRs, ratified and internally consistent |
 | Core modules | **1 of 14** (7%) |
 | Backend platform | ~85% of foundation scope; 0% of pipeline scope |
-| Frontend | **0%** — not started |
+| Frontend | **~25%** — auth boundary, shell, and API client complete |
 | Infrastructure-as-code | **0%** — local Docker Compose only |
 | Provider simulation | **0%** — newly scoped (M2.0) |
 | AI capability | **Level 0 of 12** ([AI_MATURITY_ROADMAP.md](AI_MATURITY_ROADMAP.md)) |
@@ -89,11 +89,49 @@ All 11 tasks delivered. **Demo Checklist: 13/13 passed. AC-1 passed.**
 - **Dead code removed.** The pagination refactor left `list_for_workspace` (no caller at all) and `list_for_user` (test-only caller) behind. Both deleted rather than covered with tests.
 - **Coverage exclusion is narrow and justified.** Only `apps/worker/relay_main.py` (an `asyncio.run` entry point) is omitted. The *logic* inside the worker — `dispatch_event`'s retry and dead-letter policy, pool resolution — is tested directly.
 
+### ✅ M1.2 — Authentication Boundary · closed 2026-07-28
+
+All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 passed.** [Architecture Validation Report](docs/architecture/ARCHITECTURE_VALIDATION_M1_2.md) issued: all seven confirmations hold.
+
+| Delivered | Evidence |
+|---|---|
+| Next.js 15 scaffold, tooling, CI (T12) | ESLint, Prettier, tsc, Vitest, Playwright all green |
+| Signing-key management (T15, done before T14 per approval) | Pair-match validation; 10 unit tests |
+| Better Auth + Google/Microsoft OAuth (T13) | `auth` schema (migration 0005), password auth disabled |
+| RS256 JWT issuance (T14) | **Cross-tier contract test: a real frontend-minted token verifies with the real Python verifier** |
+| Typed API client (T16) | Token refresh, standard error envelope |
+| Frontend shell (T17) | Sign-in, workspace create/list, sign-out |
+| E2E auth journey (T18) | Playwright; skips cleanly without OAuth credentials |
+| **Auth observability** (added) | 10 `AUTH_*` events across both tiers, shared vocabulary |
+| **Auth health** (added) | Both tiers; key-pair match, JWT config, OAuth config, DB |
+
+**First user-visible outcome in the project.** Design-partner onboarding is unblocked once M1.3 provides a deployed environment.
+
+**Findings:**
+- Two toolchain workarounds recorded in the validation report (ESLint flat-config bridge, `@vitejs/plugin-react` peer conflict). Neither is architectural.
+- A skip condition in the contract test initially hid it — the frontend path was resolved one directory too shallow, so it silently skipped rather than running. Caught by running verbosely; a test that skips when it should run is worse than one that fails.
+- **One defect found during validation and fixed:** `signora_auth` was created by migration 0005 but never connected as — the frontend defaulted to the database *owner*, which bypasses RLS on every application table and defeated the schema isolation the migration exists to create. Both tiers' permissions were individually correct; nothing asserted the relationship between them. Fixed and verified against a live database.
+
 ---
 
 ## Current Milestone
 
-### 🔄 M1.2 — Authentication Boundary · **CURRENT** · ~11.5 ew
+### 🔄 M1.3 — Infrastructure · **CURRENT** · ~6 ew
+
+| Order | Task | Complexity | Status |
+|---|---|---|---|
+| 1 | T19 Terraform baseline (VPC, RDS, 2× ElastiCache, Secrets Manager) | L · 3 ew | ⬜ |
+| 2 | T20 ECS + deploy pipeline + rollback validation | L · 3 ew | ⬜ |
+
+**Critical path:** T19→T20 = 6 ew serial.
+**Simulator required:** ❌ No.
+**Checkpoint:** AC-3 Deployment & Rollback — **rollback must be executed and timed, not merely documented.**
+**Demo Checklist:** 11 items — see [IMPLEMENTATION_ROADMAP.md §6](IMPLEMENTATION_ROADMAP.md#6-milestone-definitions).
+
+<details>
+<summary>M1.2 task detail (delivered)</summary>
+
+### M1.2 — Authentication Boundary · ~11.5 ew · ✅
 
 First milestone with a **user-visible outcome** — design-partner onboarding can begin at close.
 
@@ -153,9 +191,8 @@ Sequential execution — each begins only when the previous milestone's Demo Che
 
 | Order | Milestone | Effort | Simulator | Gate |
 |---|---|---|---|---|
-| 1 | **M1.3** Infrastructure | ~6 ew | ❌ | AC-3 · rollback executed and timed |
-| 2 | **M2.0** Provider Simulation Framework | ~17–24 ew | ✅ builds it | AC-4 · identical adapter contract, config-only switching |
-| 3 | M2.1 → M15 | ~175–240 ew | mostly ✅ | Per roadmap |
+| 1 | **M2.0** Provider Simulation Framework | ~17–24 ew | ✅ builds it | AC-4 · identical adapter contract, config-only switching |
+| 2 | M2.1 → M15 | ~175–240 ew | mostly ✅ | Per roadmap |
 
 ### M2.0 — why it precedes every pipeline module
 

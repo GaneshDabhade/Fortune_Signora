@@ -2,7 +2,7 @@
 
 > Status: **Living document — Architectural Constitution — RATIFIED**
 > Audience: All engineers, EMs, and technical stakeholders at Signora
-> New in **v3**. Specifies the decision recorded in [ADR-0026](adr/0026-jwt-boundary-architecture.md).
+> Revision: **v2** — records the issuer-side configuration as built in M1.2, plus the authentication event vocabulary and health checks. The contract in v1 is unchanged and is now verified by a cross-tier test in CI.
 
 ## Purpose
 
@@ -138,9 +138,79 @@ Depend on the shared context dependency; never parse a token, read a header, or 
 - Endpoints that are authenticated but not workspace-scoped (for example, "list the workspaces I belong to") take the principal-only dependency. These run with `app.user_id` set and no `app.workspace_id`, so workspace-owned tables are correctly invisible.
 - Unauthenticated endpoints are limited to operational probes (`/health`, `/ready`) and OpenAPI. Adding any other unauthenticated route requires explicit review.
 
+## As Built (M1.2)
+
+### Issuer side — Next.js
+
+| Concern | Location |
+|---|---|
+| Better Auth instance, OAuth providers | `frontend/lib/auth/server.ts` |
+| Signing-key loading and pair validation | `frontend/lib/auth/keys.ts` |
+| Token minting | `frontend/lib/auth/jwt.ts` |
+| Session → token exchange | `frontend/app/api/token/route.ts` |
+| Better Auth routes (sign-in, callback, sign-out) | `frontend/app/api/auth/[...all]/route.ts` |
+| Auth subsystem health | `frontend/lib/auth/health.ts`, `frontend/app/api/health/route.ts` |
+
+Password authentication is **disabled** (`emailAndPassword.enabled: false`). Sign-in is OAuth-only, so no credential is stored in either tier.
+
+Better Auth's tables live in a dedicated **`auth` schema** (migration `0005`), owned by a `signora_auth` role. `signora_app` is explicitly revoked from that schema — the API tier could not read authentication data even if code attempted to.
+
+### Verification side — FastAPI
+
+| Concern | Location |
+|---|---|
+| Signature and claim verification | `signora_platform/auth/jwt_verifier.py` |
+| Principal construction | `signora_platform/auth/principal.py` |
+| Configuration health | `signora_platform/auth/health.py` |
+| Auth events | `signora_platform/auth/events.py` |
+
+### Cross-tier contract test
+
+`backend/tests/integration/test_jwt_cross_tier_contract.py` mints a token with the **real** frontend issuance path and verifies it with the **real** Python verifier. Neither side's claim set is restated in the test, so drift on either side fails CI.
+
+This is the only check that proves the two tiers agree; every other test verifies one tier's understanding of the boundary in isolation.
+
+## Authentication Events
+
+Both tiers emit structured events sharing one vocabulary, so the two log streams are queryable as one rather than needing manual correlation.
+
+| Event | Emitted by | Meaning |
+|---|---|---|
+| `AUTH_LOGIN_SUCCESS` | Frontend | Sign-in completed |
+| `AUTH_LOGIN_FAILURE` | Frontend | Sign-in failed |
+| `AUTH_OAUTH_CALLBACK` | Frontend | OAuth provider callback received |
+| `AUTH_TOKEN_ISSUED` | Frontend | Access token minted from a session |
+| `AUTH_TOKEN_REFRESH` | Frontend | Token refreshed |
+| `AUTH_LOGOUT` | Frontend | Session ended |
+| `AUTH_TOKEN_ACCEPTED` | API | Token verified successfully |
+| `AUTH_TOKEN_REJECTED` | Both | Token missing, malformed, expired, or unverifiable |
+| `AUTH_WORKSPACE_SWITCH` | Both | Caller operating on a workspace other than the token's hint |
+| `AUTH_WORKSPACE_ACCESS_DENIED` | API | Caller is not a member of the named workspace |
+
+**Rules, enforced structurally rather than by convention:**
+
+- **Never log a token or PII.** A user id is an opaque UUID and is safe; an email address is not. The frontend's event context is a closed type that drops email- and token-shaped keys at emit time; the backend emitter accepts only a fixed set of fields. The logging formatter redacts on top of both.
+- **`jti` is permitted** — it is an opaque identifier, not a credential, and is what makes a token traceable to a future revocation decision.
+- **`outcome` is derived from the event name, never passed in**, so a failure cannot be recorded as a success by a mistaken argument.
+- **Failure reasons stay coarse.** A reason naming exactly which claim failed would help an attacker converge on a forgeable token.
+
+## Authentication Health
+
+Both tiers expose readiness covering the auth subsystem.
+
+**Frontend — `GET /api/health`:** Better Auth database connectivity and `auth` schema presence · signing-key availability **and pair-match** · JWT issuer/audience configuration · OAuth provider configuration.
+
+**API — `GET /ready`:** public-key validity · JWT issuer/audience configuration · algorithm pinning · **rejection of a private key supplied as the public key**.
+
+Two design points:
+
+- **The key-pair-match check is the one that earns its place.** Both keys can load cleanly, every token mints, and every request 401s with no obvious cause. A sign-then-verify round trip at startup turns that into a clear configuration error.
+- **`degraded` and `unavailable` are distinguished deliberately.** No OAuth provider configured is `degraded`: the process is healthy and restarting it would not help, but no human can sign in and an operator needs to know. A missing signing key is `unavailable` — the tier genuinely cannot function.
+
 ## Local Development and Testing
 
 - Tests generate an **ephemeral RSA key pair in-process**, sign tokens with the private half, and configure the verifier with the public half. No key material is committed, and no fixture private key exists to leak.
+- `npm run keys:generate` produces a local development pair, printed to stdout rather than written to disk so key material never lands in a file by accident. It emits the private key for `frontend/.env.local` and the public key for both tiers — making the asymmetry visible at the point of use.
 - Because the API cannot mint tokens, there is no "dev mode" that skips verification. A test needing an authenticated caller mints a token exactly as Next.js would, which keeps the test path and the production path identical.
 
 ## Best Practices

@@ -246,3 +246,81 @@ class TestSessionContextHygiene:
             leaked = (await session.execute(text("SELECT count(*) FROM membership"))).scalar_one()
 
         assert leaked == 0
+
+
+class TestTierRoleSeparation:
+    """The two tiers must hold genuinely disjoint credentials.
+
+    Every other test in this module verifies what ``signora_app`` can see.
+    None of them would notice if a *different* process — the Next.js auth
+    tier — connected as the database owner, which bypasses RLS entirely and
+    would make every isolation guarantee above meaningless for that process.
+
+    That is exactly what happened in M1.2: migration 0005 revoked
+    ``signora_app`` from the ``auth`` schema while the frontend's default
+    connection string was the owner role. Both roles were individually
+    correct; nothing asserted the relationship between them.
+    """
+
+    async def test_app_role_cannot_reach_the_auth_schema(
+        self, admin_session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """Authentication data must be unreachable from the API tier by
+        permission, not by the absence of code that reads it."""
+        async with admin_session_factory() as session, session.begin():
+            can_use = (
+                await session.execute(
+                    text("SELECT has_schema_privilege('signora_app', 'auth', 'USAGE')")
+                )
+            ).scalar_one()
+
+        assert can_use is False, "signora_app must have no access to the auth schema"
+
+    async def test_auth_role_cannot_reach_application_tables(
+        self, admin_session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """The converse: a compromise of the auth tier must not yield
+        workspace data."""
+        async with admin_session_factory() as session, session.begin():
+            reachable = (
+                (
+                    await session.execute(
+                        text(
+                            # pg_class rather than information_schema.tables: the
+                            # latter is a view over objects the querying role can
+                            # resolve, which is not the question being asked.
+                            """
+                        SELECT c.relname FROM pg_class c
+                        JOIN pg_namespace n ON n.oid = c.relnamespace
+                        WHERE n.nspname = 'public' AND c.relkind = 'r'
+                          AND has_table_privilege('signora_auth', c.oid, 'SELECT')
+                        ORDER BY c.relname
+                        """
+                        )
+                    )
+                )
+                .scalars()
+                .all()
+            )
+
+        assert list(reachable) == [], f"signora_auth can read application tables: {reachable}"
+
+    async def test_neither_tier_role_can_bypass_rls(
+        self, admin_session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """A role with BYPASSRLS or SUPERUSER ignores every policy in this
+        file, including on FORCE ROW LEVEL SECURITY tables."""
+        async with admin_session_factory() as session, session.begin():
+            rows = (
+                await session.execute(
+                    text(
+                        "SELECT rolname, rolsuper, rolbypassrls FROM pg_roles "
+                        "WHERE rolname IN ('signora_app', 'signora_auth') ORDER BY rolname"
+                    )
+                )
+            ).all()
+
+        assert len(rows) == 2, f"expected both tier roles to exist, found {rows}"
+        for rolname, is_super, bypasses in rows:
+            assert not is_super, f"{rolname} is a superuser and ignores RLS"
+            assert not bypasses, f"{rolname} holds BYPASSRLS and ignores RLS"

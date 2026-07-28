@@ -6,6 +6,7 @@ domain logic, PostgreSQL — against a real database, as the least-privilege
 ``signora_app`` role.
 """
 
+import logging
 from collections.abc import AsyncIterator
 from datetime import timedelta
 from typing import Any
@@ -15,6 +16,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from apps.api.main import create_app
+from signora_platform.observability import JsonFormatter
 from signora_platform.settings import Settings
 from signora_platform.tests.keys import (
     TEST_AUDIENCE,
@@ -310,3 +312,69 @@ async def test_openapi_documents_the_authenticated_routes(client: AsyncClient) -
 
     assert "/workspaces" in schema["paths"]
     assert "/workspaces/{workspace_id}/members" in schema["paths"]
+
+
+class TestAuthenticationObservability:
+    """AUTH_* events must be emitted for the states the API can observe, and
+    must never carry a token or PII."""
+
+    async def test_rejected_token_emits_a_failure_event(
+        self, client: AsyncClient, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        with caplog.at_level(logging.WARNING, logger="signora.auth"):
+            await client.get("/workspaces", headers={"Authorization": "Bearer garbage"})
+
+        events = [r for r in caplog.records if getattr(r, "auth_event", None)]
+        assert any(getattr(e, "auth_event", None) == "AUTH_TOKEN_REJECTED" for e in events)
+        assert all(getattr(e, "outcome", None) == "failure" for e in events)
+
+    async def test_missing_credentials_emits_a_rejection_event(
+        self, client: AsyncClient, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        with caplog.at_level(logging.WARNING, logger="signora.auth"):
+            await client.get("/workspaces")
+
+        assert any(
+            getattr(r, "auth_event", None) == "AUTH_TOKEN_REJECTED"
+            and getattr(r, "auth_reason", None) == "missing_credentials"
+            for r in caplog.records
+        )
+
+    async def test_non_member_access_emits_workspace_access_denied(
+        self, client: AsyncClient, key_pair: KeyPair, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        owner, outsider = uuid4(), uuid4()
+        workspace = await _create_workspace(client, key_pair, owner)
+
+        with caplog.at_level(logging.WARNING, logger="signora.auth"):
+            await client.get(f"/workspaces/{workspace['id']}", headers=_auth(key_pair, outsider))
+
+        assert any(
+            getattr(r, "auth_event", None) == "AUTH_WORKSPACE_ACCESS_DENIED" for r in caplog.records
+        )
+
+    async def test_accessing_a_workspace_not_in_the_token_emits_a_switch(
+        self, client: AsyncClient, key_pair: KeyPair, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """A request naming a workspace other than the token's hint is how a
+        user moves between tenants — worth recording."""
+        owner = uuid4()
+        workspace = await _create_workspace(client, key_pair, owner)
+
+        with caplog.at_level(logging.INFO, logger="signora.auth"):
+            await client.get(f"/workspaces/{workspace['id']}", headers=_auth(key_pair, owner))
+
+        assert any(
+            getattr(r, "auth_event", None) == "AUTH_WORKSPACE_SWITCH" for r in caplog.records
+        )
+
+    async def test_auth_events_never_carry_a_token(
+        self, client: AsyncClient, key_pair: KeyPair, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        token = mint_token(key_pair, user_id=uuid4())
+
+        with caplog.at_level(logging.INFO, logger="signora.auth"):
+            await client.get("/workspaces", headers={"Authorization": f"Bearer {token}"})
+
+        rendered = " ".join(JsonFormatter().format(r) for r in caplog.records)
+        assert token not in rendered

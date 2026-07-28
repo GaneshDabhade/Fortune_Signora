@@ -25,8 +25,11 @@ from signora_platform.api.context import UserContext, WorkspaceContext
 from signora_platform.api.errors import correlation_id_of
 from signora_platform.auth import (
     AuthenticatedPrincipal,
+    AuthenticationError,
+    AuthEvent,
     JwtVerifier,
     MissingCredentialsError,
+    emit_auth_event,
 )
 from signora_platform.authorization import Authorizer
 from signora_platform.db import tenant_scoped_session, user_scoped_session
@@ -91,8 +94,24 @@ async def get_principal(
     """Stages 1-3: verify the token's signature and claims, and build the
     authenticated principal."""
     if credentials is None:
+        emit_auth_event(AuthEvent.TOKEN_REJECTED, reason="missing_credentials")
         raise MissingCredentialsError()
-    return _dependencies_of(request).jwt_verifier.verify(credentials.credentials)
+
+    try:
+        principal = _dependencies_of(request).jwt_verifier.verify(credentials.credentials)
+    except AuthenticationError as exc:
+        # Coarse reason only — naming the failing claim would help an
+        # attacker converge on a forgeable token.
+        emit_auth_event(AuthEvent.TOKEN_REJECTED, reason=type(exc).__name__)
+        raise
+
+    emit_auth_event(
+        AuthEvent.TOKEN_ACCEPTED,
+        user_id=principal.user_id,
+        session_id=principal.session_id,
+        token_id=principal.token_id,
+    )
+    return principal
 
 
 CurrentPrincipal = Annotated[AuthenticatedPrincipal, Depends(get_principal)]
@@ -141,7 +160,23 @@ async def get_workspace_context(
                 workspace_id, principal.user_id
             )
             if role is None:
+                emit_auth_event(
+                    AuthEvent.WORKSPACE_ACCESS_DENIED,
+                    user_id=principal.user_id,
+                    workspace_id=workspace_id,
+                    reason="not_a_member",
+                )
                 raise WorkspaceAccessDeniedError(workspace_id)
+
+            # A request naming a workspace other than the token's hint is a
+            # workspace switch — worth recording, since it is how a user
+            # moves between tenants.
+            if principal.active_workspace_id != workspace_id:
+                emit_auth_event(
+                    AuthEvent.WORKSPACE_SWITCH,
+                    user_id=principal.user_id,
+                    workspace_id=workspace_id,
+                )
 
             yield WorkspaceContext(
                 principal=principal,

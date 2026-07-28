@@ -1,0 +1,100 @@
+/**
+ * Typed client for the Signora API.
+ *
+ * Attaches the Bearer token, refreshes once on 401, and surfaces the API's
+ * standard error envelope (19-api-conventions.md) as a typed error rather
+ * than letting callers parse it themselves.
+ */
+
+import { loadAuthConfig } from '@/lib/auth/config';
+
+export interface ApiErrorBody {
+  code: string;
+  message: string;
+  details?: { field: string; message: string }[];
+  correlation_id: string;
+}
+
+export class ApiError extends Error {
+  readonly status: number;
+  readonly code: string;
+  readonly correlationId: string;
+  readonly details?: { field: string; message: string }[];
+
+  constructor(status: number, body: ApiErrorBody) {
+    super(body.message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.code = body.code;
+    this.correlationId = body.correlation_id;
+    this.details = body.details;
+  }
+}
+
+/** Fetches an access token from our own server-side route. The private
+ * signing key stays on the server; the browser only ever sees the token. */
+async function fetchAccessToken(workspaceId?: string): Promise<string> {
+  const url = workspaceId ? `/api/token?workspace_id=${workspaceId}` : '/api/token';
+  const response = await fetch(url, { method: 'POST' });
+
+  if (!response.ok) {
+    throw new ApiError(response.status, {
+      code: 'unauthenticated',
+      message: 'Could not obtain an access token.',
+      correlation_id: '',
+    });
+  }
+
+  const body = (await response.json()) as { access_token: string };
+  return body.access_token;
+}
+
+export interface RequestOptions {
+  method?: string;
+  body?: unknown;
+  workspaceId?: string;
+  /** Internal: prevents infinite retry if a refreshed token also 401s. */
+  _retried?: boolean;
+}
+
+export async function apiRequest<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
+  const { method = 'GET', body, workspaceId } = options;
+  const baseUrl =
+    typeof window === 'undefined' ? loadAuthConfig().apiBaseUrl : '/api/proxy';
+
+  const token = await fetchAccessToken(workspaceId);
+  const response = await fetch(`${baseUrl}${path}`, {
+    method,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(body ? { 'Content-Type': 'application/json' } : {}),
+    },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  });
+
+  if (response.status === 401 && !options._retried) {
+    // A single retry with a fresh token. Retrying more would mask a real
+    // configuration problem as intermittent slowness.
+    return apiRequest<T>(path, { ...options, _retried: true });
+  }
+
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as {
+      error: ApiErrorBody;
+    } | null;
+    throw new ApiError(
+      response.status,
+      payload?.error ?? {
+        code: 'unknown_error',
+        message: response.statusText,
+        correlation_id: '',
+      },
+    );
+  }
+
+  if (response.status === 204) return undefined as T;
+  return (await response.json()) as T;
+}

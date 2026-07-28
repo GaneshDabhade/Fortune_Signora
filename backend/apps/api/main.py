@@ -28,7 +28,7 @@ from signora_platform.api import (
     WorkspaceAccessDeniedError,
     register_exception_handlers,
 )
-from signora_platform.auth import JwtVerifier
+from signora_platform.auth import JwtVerifier, check_auth_health
 from signora_platform.authorization import CasbinAuthorizer
 from signora_platform.db import create_engine, create_session_factory
 from signora_platform.observability import (
@@ -50,6 +50,8 @@ class HealthResponse(BaseModel):
 class ReadinessResponse(BaseModel):
     status: Literal["ready", "degraded"]
     database: Literal["ok", "unavailable"]
+    authentication: Literal["ok", "degraded", "unavailable"]
+    authentication_detail: str | None = None
 
 
 def _membership_verifier(session: AsyncSession) -> MembershipVerifier:
@@ -126,14 +128,29 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/ready", response_model=ReadinessResponse, tags=["operations"])
     async def ready() -> ReadinessResponse:
-        """Readiness probe: the process can serve traffic, which requires a
-        reachable database."""
+        """Readiness probe: the process can serve traffic.
+
+        Covers both the database and the authentication subsystem. An API
+        that cannot verify a token is not ready, even with a healthy
+        database — every authenticated request would 401, which is
+        indistinguishable from an outage to a user.
+        """
         engine: AsyncEngine = app.state.engine
+        database: Literal["ok", "unavailable"] = "ok"
         try:
             async with engine.connect() as conn:
                 await conn.execute(text("SELECT 1"))
         except Exception:
-            return ReadinessResponse(status="degraded", database="unavailable")
-        return ReadinessResponse(status="ready", database="ok")
+            database = "unavailable"
+
+        auth_health = check_auth_health(resolved_settings)
+        ready_to_serve = database == "ok" and auth_health.status != "unavailable"
+
+        return ReadinessResponse(
+            status="ready" if ready_to_serve else "degraded",
+            database=database,
+            authentication=auth_health.status,
+            authentication_detail=auth_health.detail,
+        )
 
     return app

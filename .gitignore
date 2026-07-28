@@ -15,6 +15,14 @@ __pycache__/
 # Node / frontend
 node_modules/
 .next/
+*.tsbuildinfo
+next-env.d.ts
+
+# Playwright artifacts
+test-results/
+playwright-report/
+blob-report/
+.playwright/
 
 # OS
 .DS_Store
