@@ -247,7 +247,14 @@ Claude must not accept a change that violates this contract, **including one tha
 
 ## 20c. Frontend Foundation
 
-From M1.5, the frontend foundation is a contract on the same terms as the platform (§20a). Business milestones **consume** the Design System, Shared Components, Application Shell, Routing, Authentication integration, and Query Infrastructure; they do not modify them without an approved architectural change.
+From M1.5, the frontend foundation is **frozen** on the same terms as the platform (§20a). Business milestones **consume** the Design System, Shared Components, Application Shell, Query Layer, Authentication integration, and Routing; they do not modify them.
+
+Changes are permitted only for:
+
+- a **production defect** — the foundation is demonstrably wrong;
+- an **accessibility issue** — a missing label, an unreachable control, a lost focus state. These are defects, not enhancements, and never wait for a business milestone to justify them;
+- a **security issue**;
+- an **explicitly approved architectural change** (RFC).
 
 Concretely, Claude must:
 

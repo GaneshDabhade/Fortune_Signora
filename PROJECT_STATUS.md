@@ -3,7 +3,7 @@
 > **Owner:** Technical Program Manager · **Audience:** Everyone
 > **Cadence:** Updated at every milestone boundary and every sprint close. Updating this is part of the [Definition of Done](IMPLEMENTATION_ROADMAP.md#12-definition-of-done-global).
 > **Last updated:** 2026-07-28 · **Reporting period:** M1.2 delivery
-> **Revision:** v11 — **M1.5 Frontend Foundation complete.** Design system, shared component library, application shell, query layer, session and workspace management, permission-aware routing, feedback primitives, and component testing in CI. **`@vitejs/plugin-react` debt repaid** — `--legacy-peer-deps` removed everywhere. The frontend foundation is now a contract (CLAUDE.md §20c)
+> **Revision:** v12 — **M1.5 approved; both foundations frozen.** Simulation Architecture Review issued for M2.0 approval. **Revision v11 —** M1.5 Frontend Foundation complete. Design system, shared component library, application shell, query layer, session and workspace management, permission-aware routing, feedback primitives, and component testing in CI. **`@vitejs/plugin-react` debt repaid** — `--legacy-peer-deps` removed everywhere. The frontend foundation is now a contract (CLAUDE.md §20c)
 
 ---
 
@@ -52,7 +52,7 @@ Ratified 2026-07-28. These are **foundation capabilities, not work in progress**
 | Tenant Isolation Policy | M1.3A | Every table classified; tenant tables carry forced RLS, required policies, and a non-null identifier |
 | Platform Infrastructure Policy | M1.3A | Infrastructure tables owned by platform services; the application publishes and cannot read |
 | Platform Freeze | M1.3A | `signora_platform/` changes only for a security fix, production defect, or approved change |
-| **Frontend Foundation** | **M1.5** | Design system, components, shell, routing, auth integration, and query layer are consumed by business milestones, not modified (CLAUDE.md §20c) |
+| **Frontend Foundation** | **M1.5** | 🔒 Frozen. Design system, components, shell, query layer, auth integration, and routing are consumed, not modified — except for a production defect, **accessibility issue**, security issue, or approved change (CLAUDE.md §20c) |
 
 **One change since the freeze:** the relay's transient-failure handling (M1.4), under the production-defect exemption.
 
@@ -409,6 +409,7 @@ Small and deliberate. Nothing below is discovered debt.
 | ~~No CI Redis service~~ | — | — | ✅ **Repaid in M1.1** |
 | JWT key rotation requires a deploy | Medium | JWKS adds a cache, fetch path, and failure mode not yet justified | Post-GA |
 | Token revocation not immediate (15-min TTL) | Medium | Standard JWT tradeoff; `sid`/`jti` carried so a revocation list needs no contract change | Post-GA if the window proves unacceptable |
+| Workspace role hardcoded to `owner` in the frontend shell | Low | **Approved to remain.** Presentation only; server-side Casbin never consulted it. Adding `GET /workspaces/{id}/me` solely to satisfy frontend presentation would be an API shaped by a UI need rather than a domain one. | When the workspace domain naturally evolves — not before |
 | Casbin policy is coarse RBAC | Low | Correct for current needs | When enterprise custom roles are required |
 | No API versioning scheme | Low | Deliberate — speculative with one first-party client | First breaking change |
 

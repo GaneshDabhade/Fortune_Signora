@@ -261,7 +261,9 @@ No new bounded context may be introduced without an RFC. Three names raised prev
 
 ### The Frontend Foundation becomes a contract
 
-On M1.5 completion the frontend foundation is treated like the platform foundation. Business milestones **consume** the Design System, Shared Components, Application Shell, Routing, Authentication, and Query Infrastructure — they do not modify them, except under an approved architectural change.
+On M1.5 completion the frontend foundation is **frozen**, on the same terms as the platform. Business milestones **consume** the Design System, Shared Components, Application Shell, Query Layer, Authentication, and Routing — they do not modify them, except for a production defect, an **accessibility issue**, a security issue, or an approved architectural change.
+
+Accessibility is named explicitly alongside the other three because it is the one most easily deferred: a missing label or an unreachable control is a defect, and treating it as an enhancement is how it stays broken until someone who depends on it cannot use the product.
 
 Same reasoning as the platform freeze: a substrate's value comes from being stable. A page that reshapes a shared component to suit itself has made that component slightly wrong for every other page, and the cost is paid by whoever writes the next one. Adding a *new* component to the library, or a new route, is a use of the foundation rather than a change to it.
 
@@ -615,6 +617,10 @@ make smoke
 
 ### 🆕 M2.0 — Provider Simulation Framework
 
+> **Entry gate:** the Simulation Architecture Review ([20-provider-simulation.md](docs/architecture/20-provider-simulation.md)) must be approved before implementation begins.
+>
+> **Exit gate — operational verification:** `make smoke` must pass against **freshly built images and a clean Compose stack** before M2.0 is complete. This closes the gap left open at M1.5, when the Docker daemon could not reach the registry and the frontend image was not rebuilt after `--legacy-peer-deps` was removed.
+
 **Scope:** Provider Port (first concrete implementation) · simulation framework (datasets, scenario engine, virtual clock) · realistic payload generation for 5 providers · fault/timing/duplicate injection · sync-mode simulation · 10 demo scenarios · deterministic AI-regression foundation.
 
 **Effort:** ~17–24 ew · Design in **§8**
@@ -906,7 +912,7 @@ Rationale: the design system before components, because a component built before
 
 ## 8. Provider Simulation Framework — Design
 
-> Full specification authored as `docs/architecture/20-provider-simulation.md` with an accompanying ADR during M2.0. This section fixes design intent.
+> Design intent fixed here; the **Simulation Architecture Review** in [20-provider-simulation.md](docs/architecture/20-provider-simulation.md) specifies the nine-stage pipeline that realises it and is the entry gate for M2.0. An accompanying ADR is authored on approval.
 
 ### Status: permanent platform capability
 
