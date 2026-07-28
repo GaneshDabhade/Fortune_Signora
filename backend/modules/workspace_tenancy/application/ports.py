@@ -10,11 +10,26 @@ from typing import Any, Protocol
 from uuid import UUID
 
 from modules.workspace_tenancy.domain.entities import Membership, Workspace
+from signora_platform.pagination import CursorPosition
 
 
 class WorkspaceRepository(Protocol):
     async def add(self, workspace: Workspace) -> None: ...
     async def get(self, workspace_id: UUID) -> Workspace | None: ...
+
+    async def list_visible(self, *, limit: int, after: CursorPosition | None) -> list[Workspace]:
+        """Workspaces the *current session's user* may see, newest first.
+
+        There is no ``user_id`` parameter because there is no ``user_id``
+        column to filter on: the ``workspace`` table's RLS policy already
+        restricts visibility to workspaces the caller is a member of, using
+        ``app.user_id``. Passing a user id would imply the caller could ask
+        about someone else, which they cannot.
+
+        Returns up to ``limit`` rows; callers over-fetch by one to determine
+        ``has_more`` (see ``signora_platform.api.pagination``).
+        """
+        ...
 
 
 class MembershipRepository(Protocol):
@@ -22,6 +37,10 @@ class MembershipRepository(Protocol):
     async def get(self, workspace_id: UUID, user_id: UUID) -> Membership | None: ...
     async def list_for_workspace(self, workspace_id: UUID) -> list[Membership]: ...
     async def list_for_user(self, user_id: UUID) -> list[Membership]: ...
+
+    async def list_page_for_workspace(
+        self, workspace_id: UUID, *, limit: int, after: CursorPosition | None
+    ) -> list[Membership]: ...
 
 
 class TenantContext(Protocol):

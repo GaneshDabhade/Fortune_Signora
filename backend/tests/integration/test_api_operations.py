@@ -7,6 +7,7 @@ from httpx import ASGITransport, AsyncClient
 
 from apps.api.main import create_app
 from signora_platform.settings import Settings
+from signora_platform.tests.keys import TEST_AUDIENCE, TEST_ISSUER, generate_key_pair
 
 pytestmark = pytest.mark.integration
 
@@ -16,8 +17,19 @@ ADMIN_URL = os.environ.get(
 )
 
 
+# Operational probes are unauthenticated, but Settings still requires JWT
+# configuration — the app must not be constructible without it.
+_KEY_PAIR = generate_key_pair()
+
+
 def _settings(database_url: str) -> Settings:
-    return Settings(environment="test", database_url=database_url)
+    return Settings(
+        environment="test",
+        database_url=database_url,
+        jwt_public_key=_KEY_PAIR.public_pem,
+        jwt_issuer=TEST_ISSUER,
+        jwt_audience=TEST_AUDIENCE,
+    )
 
 
 async def test_health_reports_ok_without_touching_the_database() -> None:

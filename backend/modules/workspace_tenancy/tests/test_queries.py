@@ -65,10 +65,13 @@ class TestListWorkspaceMembers:
             workspace_repository=workspaces, membership_repository=memberships
         )
 
-        result = await use_case.execute(ListWorkspaceMembersInput(workspace_id=target.id))
+        result = await use_case.execute(
+            ListWorkspaceMembersInput(workspace_id=target.id, limit=50, after=None)
+        )
 
-        assert len(result) == 2
-        assert all(m.workspace_id == target.id for m in result)
+        assert len(result.members) == 2
+        assert all(m.workspace_id == target.id for m in result.members)
+        assert result.has_more is False
 
     async def test_returns_empty_list_for_workspace_without_members(
         self, workspaces: FakeWorkspaceRepository, memberships: FakeMembershipRepository
@@ -79,7 +82,12 @@ class TestListWorkspaceMembers:
             workspace_repository=workspaces, membership_repository=memberships
         )
 
-        assert await use_case.execute(ListWorkspaceMembersInput(workspace_id=workspace.id)) == []
+        result = await use_case.execute(
+            ListWorkspaceMembersInput(workspace_id=workspace.id, limit=50, after=None)
+        )
+
+        assert result.members == []
+        assert result.has_more is False
 
     async def test_raises_for_unknown_workspace(
         self, workspaces: FakeWorkspaceRepository, memberships: FakeMembershipRepository
@@ -89,4 +97,6 @@ class TestListWorkspaceMembers:
         )
 
         with pytest.raises(WorkspaceNotFoundError):
-            await use_case.execute(ListWorkspaceMembersInput(workspace_id=uuid4()))
+            await use_case.execute(
+                ListWorkspaceMembersInput(workspace_id=uuid4(), limit=50, after=None)
+            )

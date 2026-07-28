@@ -1,4 +1,5 @@
 from signora_platform.db.base import AuditMixin, Base, TimestampMixin, WorkspaceScopedMixin
+from signora_platform.db.repository import SqlAlchemyRepository
 from signora_platform.db.session import (
     create_engine,
     create_session_factory,
@@ -10,6 +11,7 @@ from signora_platform.db.session import (
 __all__ = [
     "AuditMixin",
     "Base",
+    "SqlAlchemyRepository",
     "TimestampMixin",
     "WorkspaceScopedMixin",
     "create_engine",

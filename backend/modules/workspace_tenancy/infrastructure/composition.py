@@ -13,6 +13,7 @@ from modules.workspace_tenancy.application.use_cases import (
     AddMemberUseCase,
     CreateWorkspaceUseCase,
     GetWorkspaceUseCase,
+    ListUserWorkspacesUseCase,
     ListWorkspaceMembersUseCase,
 )
 from modules.workspace_tenancy.infrastructure.adapters import (
@@ -33,6 +34,7 @@ class WorkspaceTenancyUseCases:
     add_member: AddMemberUseCase
     get_workspace: GetWorkspaceUseCase
     list_workspace_members: ListWorkspaceMembersUseCase
+    list_user_workspaces: ListUserWorkspacesUseCase
 
 
 def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
@@ -58,6 +60,7 @@ def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
             workspace_repository=workspace_repository,
             membership_repository=membership_repository,
         ),
+        list_user_workspaces=ListUserWorkspacesUseCase(workspace_repository=workspace_repository),
     )
 
 

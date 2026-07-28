@@ -10,6 +10,7 @@ from typing import Any
 from uuid import UUID
 
 from modules.workspace_tenancy.domain.entities import Membership, Workspace
+from signora_platform.pagination import CursorPosition
 
 
 class FakeWorkspaceRepository:
@@ -21,6 +22,14 @@ class FakeWorkspaceRepository:
 
     async def get(self, workspace_id: UUID) -> Workspace | None:
         return self.workspaces.get(workspace_id)
+
+    async def list_visible(self, *, limit: int, after: CursorPosition | None) -> list[Workspace]:
+        """Mirrors the newest-first keyset ordering the real repository gets
+        from SQL, so pagination behaviour is exercised without a database."""
+        ordered = sorted(self.workspaces.values(), key=lambda w: (w.created_at, w.id), reverse=True)
+        if after is not None:
+            ordered = [w for w in ordered if (w.created_at, w.id) < (after.created_at, after.id)]
+        return ordered[:limit]
 
 
 class FakeMembershipRepository:
@@ -45,6 +54,18 @@ class FakeMembershipRepository:
 
     async def list_for_user(self, user_id: UUID) -> list[Membership]:
         return [m for m in self.memberships if m.user_id == user_id]
+
+    async def list_page_for_workspace(
+        self, workspace_id: UUID, *, limit: int, after: CursorPosition | None
+    ) -> list[Membership]:
+        ordered = sorted(
+            (m for m in self.memberships if m.workspace_id == workspace_id),
+            key=lambda m: (m.created_at, m.id),
+            reverse=True,
+        )
+        if after is not None:
+            ordered = [m for m in ordered if (m.created_at, m.id) < (after.created_at, after.id)]
+        return ordered[:limit]
 
 
 class FakeTenantContext:

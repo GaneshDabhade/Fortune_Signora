@@ -23,6 +23,17 @@ class Settings(BaseSettings):
 
     redis_url: RedisDsn = RedisDsn("redis://localhost:6379/0")
 
+    # --- JWT boundary (ADR-0026) ---
+    #
+    # The PUBLIC half of the Better Auth signing key, PEM-encoded. This tier
+    # verifies tokens and must never be able to mint one, so a private key is
+    # never configured here — not in production, not locally, not in tests
+    # (tests generate an ephemeral key pair in-process instead).
+    # See docs/architecture/18-authentication.md.
+    jwt_public_key: str
+    jwt_issuer: str
+    jwt_audience: str
+
 
 @lru_cache
 def get_settings() -> Settings:

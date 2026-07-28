@@ -53,9 +53,11 @@ class TestCreateWorkspace:
             workspace = await use_cases.get_workspace.execute(
                 GetWorkspaceInput(workspace_id=workspace_id)
             )
-            members = await use_cases.list_workspace_members.execute(
-                ListWorkspaceMembersInput(workspace_id=workspace_id)
-            )
+            members = (
+                await use_cases.list_workspace_members.execute(
+                    ListWorkspaceMembersInput(workspace_id=workspace_id, limit=50, after=None)
+                )
+            ).members
 
         assert workspace.name == "Acme Revenue"
         assert len(members) == 1
@@ -158,9 +160,11 @@ class TestCreateWorkspace:
         async with tenant_scoped_session(
             session_factory, workspace_id=workspace_id, user_id=user_id
         ) as session:
-            members = await build_use_cases(session).list_workspace_members.execute(
-                ListWorkspaceMembersInput(workspace_id=workspace_id)
-            )
+            members = (
+                await build_use_cases(session).list_workspace_members.execute(
+                    ListWorkspaceMembersInput(workspace_id=workspace_id, limit=50, after=None)
+                )
+            ).members
             outbox_count = (
                 await session.execute(text("SELECT count(*) FROM outbox_event"))
             ).scalar_one()
@@ -195,9 +199,11 @@ class TestAddMember:
         async with tenant_scoped_session(
             session_factory, workspace_id=workspace_id, user_id=owner
         ) as session:
-            members = await build_use_cases(session).list_workspace_members.execute(
-                ListWorkspaceMembersInput(workspace_id=workspace_id)
-            )
+            members = (
+                await build_use_cases(session).list_workspace_members.execute(
+                    ListWorkspaceMembersInput(workspace_id=workspace_id, limit=50, after=None)
+                )
+            ).members
 
         assert {m.user_id for m in members} == {owner, new_member}
 

@@ -7,11 +7,12 @@ between domain entities and ORM models in both directions.
 
 from uuid import UUID
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import Select, literal, select, tuple_
 
 from modules.workspace_tenancy.domain.entities import Membership, Workspace
 from modules.workspace_tenancy.infrastructure.models import MembershipModel, WorkspaceModel
+from signora_platform.db import SqlAlchemyRepository
+from signora_platform.pagination import CursorPosition
 
 
 def _workspace_to_domain(model: WorkspaceModel) -> Workspace:
@@ -38,12 +39,36 @@ def _membership_to_domain(model: MembershipModel) -> Membership:
     )
 
 
-class SqlAlchemyWorkspaceRepository:
-    def __init__(self, session: AsyncSession) -> None:
-        self._session = session
+def _apply_keyset[M: MembershipModel | WorkspaceModel](
+    statement: Select[tuple[M]],
+    model: type[M],
+    after: CursorPosition | None,
+) -> Select[tuple[M]]:
+    """Apply newest-first keyset ordering and a strict "after" bound.
 
+    The bound is a SQL row-value comparison — ``(created_at, id) < (…)`` —
+    rather than two chained column comparisons. That is what makes the page
+    boundary exact when rows share a timestamp: comparing on ``created_at``
+    alone would drop or repeat rows at the seam, and an ``OR``-based
+    rewrite is both harder to read and worse for the planner.
+
+    ``tuple_()`` is required here; a plain Python tuple comparison would
+    compare the column objects themselves, not emit SQL.
+    """
+    statement = statement.order_by(model.created_at.desc(), model.id.desc())
+    if after is not None:
+        # literal() binds the cursor values as parameters rather than
+        # inlining them, so the comparison is both typed and injection-safe.
+        statement = statement.where(
+            tuple_(model.created_at, model.id)
+            < tuple_(literal(after.created_at), literal(after.id))
+        )
+    return statement
+
+
+class SqlAlchemyWorkspaceRepository(SqlAlchemyRepository):
     async def add(self, workspace: Workspace) -> None:
-        self._session.add(
+        await self._add(
             WorkspaceModel(
                 id=workspace.id,
                 name=workspace.name,
@@ -53,23 +78,23 @@ class SqlAlchemyWorkspaceRepository:
                 updated_by=workspace.updated_by,
             )
         )
-        # Flush (not commit) so a subsequent query in the same transaction —
-        # e.g. the membership FK check — sees this row; the transaction as a
-        # whole is committed by whoever opened the session (composition
-        # root), never by the repository.
-        await self._session.flush()
 
     async def get(self, workspace_id: UUID) -> Workspace | None:
         model = await self._session.get(WorkspaceModel, workspace_id)
         return _workspace_to_domain(model) if model is not None else None
 
+    async def list_visible(self, *, limit: int, after: CursorPosition | None) -> list[Workspace]:
+        """No user filter appears here by design: the workspace table's RLS
+        policy already restricts rows to workspaces the session's
+        ``app.user_id`` is a member of (11-tenancy.md)."""
+        statement = _apply_keyset(select(WorkspaceModel), WorkspaceModel, after).limit(limit)
+        models = (await self._session.execute(statement)).scalars().all()
+        return [_workspace_to_domain(model) for model in models]
 
-class SqlAlchemyMembershipRepository:
-    def __init__(self, session: AsyncSession) -> None:
-        self._session = session
 
+class SqlAlchemyMembershipRepository(SqlAlchemyRepository):
     async def add(self, membership: Membership) -> None:
-        self._session.add(
+        await self._add(
             MembershipModel(
                 id=membership.id,
                 workspace_id=membership.workspace_id,
@@ -81,7 +106,6 @@ class SqlAlchemyMembershipRepository:
                 updated_by=membership.updated_by,
             )
         )
-        await self._session.flush()
 
     async def get(self, workspace_id: UUID, user_id: UUID) -> Membership | None:
         stmt = select(MembershipModel).where(
@@ -99,6 +123,17 @@ class SqlAlchemyMembershipRepository:
     async def list_for_user(self, user_id: UUID) -> list[Membership]:
         stmt = select(MembershipModel).where(MembershipModel.user_id == user_id)
         models = (await self._session.execute(stmt)).scalars().all()
+        return [_membership_to_domain(model) for model in models]
+
+    async def list_page_for_workspace(
+        self, workspace_id: UUID, *, limit: int, after: CursorPosition | None
+    ) -> list[Membership]:
+        statement = _apply_keyset(
+            select(MembershipModel).where(MembershipModel.workspace_id == workspace_id),
+            MembershipModel,
+            after,
+        ).limit(limit)
+        models = (await self._session.execute(statement)).scalars().all()
         return [_membership_to_domain(model) for model in models]
 
 

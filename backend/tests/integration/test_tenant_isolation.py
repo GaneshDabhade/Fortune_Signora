@@ -61,7 +61,7 @@ class TestMembershipIsolation:
         ) as session:
             with pytest.raises(WorkspaceNotFoundError):
                 await build_use_cases(session).list_workspace_members.execute(
-                    ListWorkspaceMembersInput(workspace_id=workspace_a)
+                    ListWorkspaceMembersInput(workspace_id=workspace_a, limit=50, after=None)
                 )
 
     async def test_raw_unfiltered_query_still_returns_only_current_workspace(
@@ -162,6 +162,66 @@ class TestWorkspaceVisibility:
         assert exists is True
         assert membership is not None
         assert membership.role == "owner"
+
+
+class TestRlsIsSelfSufficient:
+    """RLS must enforce isolation on its own, without relying on the
+    application having scoped the session correctly. Regression tests for
+    the defects fixed in migration 0003.
+    """
+
+    async def test_member_sees_their_workspaces_without_workspace_context(
+        self, session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """The user-scoped case: authenticated, no workspace selected.
+
+        Before migration 0003 this returned nothing — the workspace policy's
+        membership subquery was itself filtered by the membership table's own
+        RLS, which needs a workspace context that does not exist here.
+        """
+        user_id = uuid4()
+        workspace_id = await _create_workspace(session_factory, name="Mine", user_id=user_id)
+
+        async with user_scoped_session(session_factory, user_id=user_id) as session:
+            visible = (await session.execute(text("SELECT id FROM workspace"))).scalars().all()
+
+        assert visible == [workspace_id]
+
+    async def test_membership_is_invisible_to_a_non_member_even_with_workspace_context_set(
+        self, session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """The decisive isolation test.
+
+        Simulates an application bug — or an attacker who reached the
+        database layer — setting workspace context for a workspace the user
+        does not belong to. Before migration 0003 the membership policy
+        checked only ``workspace_id = app.workspace_id``, so this leaked the
+        whole member list. Now membership itself is the predicate.
+        """
+        owner, outsider = uuid4(), uuid4()
+        workspace_id = await _create_workspace(session_factory, name="Private", user_id=owner)
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=outsider
+        ) as session:
+            leaked = (await session.execute(text("SELECT count(*) FROM membership"))).scalar_one()
+
+        assert leaked == 0
+
+    async def test_member_still_sees_their_own_workspaces_members(
+        self, session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """The positive counterpart — isolation must not be so aggressive
+        that legitimate access breaks."""
+        owner = uuid4()
+        workspace_id = await _create_workspace(session_factory, name="Mine", user_id=owner)
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=owner
+        ) as session:
+            visible = (await session.execute(text("SELECT count(*) FROM membership"))).scalar_one()
+
+        assert visible == 1
 
 
 class TestSessionContextHygiene:

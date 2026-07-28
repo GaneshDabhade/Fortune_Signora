@@ -11,6 +11,7 @@ in this file references them by name) so their tables are registered on
 """
 
 import asyncio
+import os
 from logging.config import fileConfig
 
 from alembic import context
@@ -24,7 +25,14 @@ from modules.workspace_tenancy.infrastructure.models import (  # noqa: F401
 )
 from signora_platform.db.base import Base
 from signora_platform.event_bus.outbox_model import OutboxEventModel  # noqa: F401
-from signora_platform.settings import get_settings
+
+
+def _database_url() -> str:
+    url = os.environ.get("SIGNORA_DATABASE_URL")
+    if not url:
+        raise RuntimeError("SIGNORA_DATABASE_URL must be set to run migrations.")
+    return url
+
 
 config = context.config
 
@@ -36,7 +44,7 @@ target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:
     context.configure(
-        url=str(get_settings().database_url),
+        url=_database_url(),
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -53,7 +61,7 @@ def _do_run_migrations(connection: Connection) -> None:
 
 async def run_migrations_online() -> None:
     configuration = config.get_section(config.config_ini_section) or {}
-    configuration["sqlalchemy.url"] = str(get_settings().database_url)
+    configuration["sqlalchemy.url"] = _database_url()
     connectable = async_engine_from_config(
         configuration, prefix="sqlalchemy.", poolclass=pool.NullPool
     )

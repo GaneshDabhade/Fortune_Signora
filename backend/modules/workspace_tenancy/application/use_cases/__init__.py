@@ -11,8 +11,14 @@ from modules.workspace_tenancy.application.use_cases.get_workspace import (
     GetWorkspaceInput,
     GetWorkspaceUseCase,
 )
+from modules.workspace_tenancy.application.use_cases.list_user_workspaces import (
+    ListUserWorkspacesInput,
+    ListUserWorkspacesResult,
+    ListUserWorkspacesUseCase,
+)
 from modules.workspace_tenancy.application.use_cases.list_workspace_members import (
     ListWorkspaceMembersInput,
+    ListWorkspaceMembersResult,
     ListWorkspaceMembersUseCase,
 )
 
@@ -24,6 +30,10 @@ __all__ = [
     "CreateWorkspaceUseCase",
     "GetWorkspaceInput",
     "GetWorkspaceUseCase",
+    "ListUserWorkspacesInput",
+    "ListUserWorkspacesResult",
+    "ListUserWorkspacesUseCase",
     "ListWorkspaceMembersInput",
+    "ListWorkspaceMembersResult",
     "ListWorkspaceMembersUseCase",
 ]

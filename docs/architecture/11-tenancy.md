@@ -2,7 +2,7 @@
 
 > Status: **Living document — Architectural Constitution — RATIFIED**
 > Audience: All engineers, EMs, and technical stakeholders at Signora
-> Revision: **v3** — two implementation-critical gaps closed during the Workspace & Tenancy build: the **non-superuser connection requirement** (without which RLS does nothing at all) and the **workspace-creation bootstrap pattern** (the standard policy is circular for the tenancy root itself). Both were discovered by integration testing against a real PostgreSQL 17 and are now specified below. v2 content otherwise unchanged. See [ADR-0006](adr/0006-data-platform-primary-database-and-multi-tenancy.md).
+> Revision: **v4** — adds the **self-sufficient RLS** requirement and the `SECURITY DEFINER` membership predicates (migration 0003), after integration testing showed policies that referenced another RLS-protected table were being silently filtered to nothing. v3 closed two earlier gaps during the Workspace & Tenancy build: the **non-superuser connection requirement** (without which RLS does nothing at all) and the **workspace-creation bootstrap pattern** (the standard policy is circular for the tenancy root itself). Both were discovered by integration testing against a real PostgreSQL 17 and are now specified below. v2 content otherwise unchanged. See [ADR-0006](adr/0006-data-platform-primary-database-and-multi-tenancy.md).
 
 ## Purpose
 
@@ -55,6 +55,36 @@ Accordingly:
 - Migrations run under a **separate, privileged identity**. The application role holds only `SELECT` on `alembic_version` and can never alter schema.
 - Adding a table to any module requires granting it to `signora_app` in the same migration that creates it, or the application fails closed with a permission error.
 - The integration suite asserts, session-wide, that its connection cannot bypass RLS (`verify_app_role_is_rls_bound`). Without that guard, every isolation test in the suite would pass vacuously against a superuser connection — which is exactly how this gap was originally found.
+
+### RLS Must Be Self-Sufficient: Use `SECURITY DEFINER` Predicates
+
+**A policy that queries another RLS-protected table is silently filtered by that table's own policy.** This is the subtlest failure mode in this document, because it fails *closed* — it looks like missing data, not like a security bug, and only appears in the session shapes where the referenced table's context is absent.
+
+Signora hit this concretely: `workspace_select` decided visibility with a subquery over `membership`, but `membership`'s policy keys on `app.workspace_id`. In a **user-scoped session** — authenticated, no workspace selected, which is exactly the state "list the workspaces I belong to" runs in — that variable is unset, the subquery matched nothing, and members could see none of their own workspaces.
+
+The same investigation exposed a second, more serious problem. `membership`'s policy granted reads on the sole basis of `workspace_id = app.workspace_id`, and **never required the caller to actually be a member**. The only thing preventing a session from reading another tenant's member list was that application code verifies membership before setting the variable — which makes the application, not the database, the real enforcement point. That is precisely the inversion this document exists to prevent.
+
+Both are fixed by `SECURITY DEFINER` helper functions that answer "is the current user a member (or owner) of this workspace?" while bypassing RLS on `membership` itself — the standard PostgreSQL escape from this recursion:
+
+```sql
+CREATE FUNCTION app_is_workspace_member(target_workspace uuid) RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path = pg_catalog, public   -- not optional; see below
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM membership
+    WHERE workspace_id = target_workspace AND user_id = app_current_user_id()
+  )
+$$;
+```
+
+Rules for these functions:
+
+- **Keep them minimal**: read-only, single-purpose, returning a boolean. A `SECURITY DEFINER` function runs with its owner's privileges, so its body is trusted code and must stay small enough to audit at a glance.
+- **Always pin `search_path`.** Without it, a caller able to create objects in an earlier schema on the path could shadow `membership` and change what the function returns.
+- **Grant `EXECUTE` to the application role**, and to nothing else.
+
+Read policies are now membership-based rather than context-based, so isolation holds regardless of whether the application scoped the session correctly. Write policies remain context-based, because the founding membership of a new workspace is written by a user who is not yet a member — the bootstrap case below.
 
 ### Policy Predicates Must Coerce Empty String to NULL
 
@@ -131,7 +161,9 @@ Using native PostgreSQL 17 RLS rather than application-only filtering means tena
 - Always use transaction-scoped settings (`SET LOCAL` / `set_config(..., true)`), never session-scoped ones.
 - Treat `workspace_id` as required, non-nullable on every new workspace-owned table and event from day one.
 - Grant every new table to `signora_app` in the same migration that creates it.
-- Write at least one integration test per new workspace-owned table that issues a **`WHERE`-less query** and asserts only the current workspace's rows come back. That is the assertion that actually proves RLS is doing the work rather than the application's own filtering.
+- Write at least one integration test per new workspace-owned table that issues a **`WHERE`-less query** and asserts only the current workspace's rows come back.
+- Test both session shapes: **user-scoped** (no workspace selected) and **workspace-scoped**. A policy can be correct in one and broken in the other, which is exactly how the migration-0003 defect went unnoticed.
+- Prove a regression test bites before trusting it: roll the fixing migration back, confirm the test fails, roll forward. A test that has never been seen to fail is not known to work. That is the assertion that actually proves RLS is doing the work rather than the application's own filtering.
 - Business Event Engine's taxonomy tables are the one deliberate exception to "every table has `workspace_id`" — do not use this as precedent for any other table without an explicit design review.
 
 ## Anti-Patterns
@@ -141,6 +173,9 @@ Using native PostgreSQL 17 RLS rather than application-only filtering means tena
 - Trusting a client-supplied `workspace_id` request parameter without verifying membership.
 - Using session-scoped `SET` instead of transaction-scoped `SET LOCAL`, which leaks one tenant's context onto the next request sharing that pooled connection.
 - A bare `current_setting(...)::uuid` in a policy predicate, without `NULLIF(..., '')`.
+- **A policy that subqueries another RLS-protected table directly.** Use a `SECURITY DEFINER` predicate instead, or the subquery will be silently filtered by that table's own policy.
+- A read policy whose only condition is `workspace_id = current_setting('app.workspace_id')`. That checks which workspace the session *claims* to be operating in, not whether the caller belongs to it — it delegates enforcement back to application code.
+- A `SECURITY DEFINER` function without a pinned `search_path`, or one that does more than answer a single boolean question.
 - Adding a workspace-owned table without `FORCE ROW LEVEL SECURITY`.
 - Adding `workspace_id` to a genuinely global reference-data table "just to be safe," fragmenting what should be shared, centrally-curated data.
 - Using an admin/cross-workspace bypass role for routine application logic.
@@ -159,4 +194,4 @@ Using native PostgreSQL 17 RLS rather than application-only filtering means tena
 
 ## Decision Summary
 
-Workspace is Signora's tenancy root on PostgreSQL 17; every table and event is workspace-scoped except Business Event Engine's global taxonomy, which is deliberately shared reference data outside RLS. Transaction-scoped `app.user_id` / `app.workspace_id` settings with `FORCE ROW LEVEL SECURITY` remain the authoritative isolation mechanism across both FastAPI requests and ARQ jobs — **and are only effective because the application connects as the non-superuser, non-`BYPASSRLS` `signora_app` role.** The `workspace` table itself uses split INSERT/SELECT/UPDATE policies to break the bootstrap circularity of the tenancy root, and all policy predicates coerce empty string to NULL so missing context fails closed.
+Workspace is Signora's tenancy root on PostgreSQL 17; every table and event is workspace-scoped except Business Event Engine's global taxonomy, which is deliberately shared reference data outside RLS. Transaction-scoped `app.user_id` / `app.workspace_id` settings with `FORCE ROW LEVEL SECURITY` remain the authoritative isolation mechanism across both FastAPI requests and ARQ jobs — **and are only effective because the application connects as the non-superuser, non-`BYPASSRLS` `signora_app` role.** Membership predicates are evaluated through `SECURITY DEFINER` functions so that policies never depend on another RLS-protected table, and so that read isolation is enforced by the database rather than by application discipline. The `workspace` table itself uses split INSERT/SELECT/UPDATE policies to break the bootstrap circularity of the tenancy root, and all policy predicates coerce empty string to NULL so missing context fails closed.
