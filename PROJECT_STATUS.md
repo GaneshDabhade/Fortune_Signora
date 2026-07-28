@@ -1,31 +1,127 @@
 # PROJECT_STATUS.md
 
+> **Revision:** v19 · **Last updated:** 2026-07-28 · **Reporting period:** M2.0 closed
 > **Owner:** Technical Program Manager · **Audience:** Everyone
-> **Cadence:** Updated at every milestone boundary and every sprint close. Updating this is part of the [Definition of Done](IMPLEMENTATION_ROADMAP.md#12-definition-of-done-global).
-> **Last updated:** 2026-07-28 · **Reporting period:** M1.2 delivery
-> **Revision:** v18 · **Last updated:** 2026-07-28 · **Reporting period:** M2.0 delivery
-> Authoritative record of project state (CLAUDE.md §20d). Updated after every completed milestone, before the next begins.
+> Authoritative record of project state (CLAUDE.md §20d). Updated after every completed milestone, **before the next begins**.
+>
+> **This document has two halves.** The Executive Summary below is the entry point — read it to understand where the project stands. Everything after it is the detailed engineering record: milestone history, architectural decisions, rationale, risks, and debt. Nothing has been summarised away.
 
 ---
 
-## At a glance
+# Executive Summary
+
+## 1 · What is Signora?
+
+**Signora is an AI-powered Revenue Intelligence Platform.** It ingests signals about companies from third-party data providers — firmographics, technology stacks, funding events, hiring activity, behavioural buying intent — and reasons over them to surface *which accounts are worth a seller's attention right now, and why*.
+
+The product's competitive advantage is the quality of that reasoning and the evidence chain behind it: every recommendation traces back to the observations that produced it. It is built as a modular monolith on a single PostgreSQL database with row-level tenant isolation, designed so any module could be extracted into its own service without changing its domain logic.
+
+## 2 · Current Phase
+
+| Phase | Status |
+|---|---|
+| **Platform Foundations** | ✅ **Complete** — runtime, auth, deployment, smoke verification, frontend |
+| **Enablement** | ✅ **Complete** — Provider Simulation Framework |
+| **Product Development** | 🔄 **Starting now** — M2.1 Provider Platform is the first product milestone |
+| **AI Platform** | ⏳ Queued — M8 onward |
+| **Production Readiness** | ⏳ Queued — cloud infrastructure, then GA |
+
+## 3 · Overall Progress
 
 | | |
 |---|---|
-| **Where are we now?** | **M2.0 complete and closed.** Exit gate passed: `make smoke` green in 133s against fresh images and a clean stack, 75 invariants verified against the running system. **M2.1 Provider Platform is next** — the first product milestone. Both foundations (platform, frontend) are frozen. The simulation framework is built and provider-agnostic. |
-| **What was completed?** | The full framework, plus **five fixture generators** and the shared contract suite **running green against all five adapters** — the keystone test is live |
-| **What changed architecturally?** | M2.0 scope reduced — the simulator is **infrastructure, not product**. The end-to-end ingestion demonstration **moved to M2.1**, where the consumer lives. Provider Independence became a permanent invariant. |
-| **What is intentionally deferred?** | **Authentic provider payloads** — all five generators are clearly-marked development fixtures pending legitimate artifacts · cloud infrastructure (M14.5) · business UI (M12) · advanced simulator capabilities (indefinitely) |
-| **What's next?** | **M2.1 Provider Platform** — owns the mandatory end-to-end demonstration: simulated payloads traversing the real ingestion pipeline with no simulation-specific logic anywhere in it. |
-| **Are we on track?** | **Yes.** Six consecutive milestones closed with acceptance criteria met and zero architectural debt. Enabling work is done — platform, frontend, and simulator are all frozen or complete. **From here, every milestone builds product.** One tracked item: fixtures await authentic payloads, a one-file change per provider by construction. |
+| **Overall completion** | **~23%** by engineering effort (~82 of ~261–339 ew) |
+| **Effort remaining** | **~179–257 ew** |
+| **Milestones completed** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · **M2.0** |
+| **Current milestone** | **M2.1 — Provider Platform** |
+| **Projected to GA** | ~1.6–2.3 years at 3 engineers · ~2.5–3.4 at 2 · ~4.9–6.8 at 1 (80% capacity) |
 
-### Approved temporary strategy — development fixtures
+## 4 · Roadmap Snapshot
 
-All five providers remain **`Conditional`**. Each now has a **development fixture** generator: a representative structure covering the kind of information that provider exposes, built to unblock architecture validation.
+Execution order is authoritative; milestone IDs are stable labels and deliberately **not** renumbered ([§5b](IMPLEMENTATION_ROADMAP.md#5b-execution-sequence)).
 
-**The provenance policy is unchanged and enforced by test.** Every generator declares itself a fixture; every payload body carries a `_fixture` field naming itself as not authentic; ingestion logs record provenance. A generator falsely claiming authenticity fails the suite — verified by making one claim it.
+| # | Milestone | Purpose | Status |
+|---|---|---|---|
+| — | M0 | Secure multi-tenant foundation | ✅ Complete |
+| — | M1.1 | Platform runtime — event bus, workers | ✅ Complete |
+| — | M1.2 | Authentication boundary | ✅ Complete |
+| — | M1.3A | Deployment foundation | ✅ Complete |
+| — | M1.4 | Platform smoke test | ✅ Complete |
+| — | M1.5 | Frontend foundation | ✅ Complete |
+| — | M2.0 | Provider Simulation Framework | ✅ Complete |
+| 1 | **M2.1** | **Provider Platform** | 🔴 **Next** |
+| 2 | M2.2 | Provider Normalization | ⏳ Queued |
+| 3 | M3A | Knowledge Graph | ⏳ Queued |
+| 4 | M3B | Observation Engine | ⏳ Queued |
+| 5 | M4 | Business Event Engine | ⏳ Queued |
+| 6 | M5A | Signal Engine | ⏳ Queued |
+| 7 | M5B | Buying Score Engine | ⏳ Queued |
+| 8 | M6 | Opportunity Engine — **first sellable moment** | ⏳ Queued |
+| 9 | M8 | AI Platform — abstraction, prompts, eval harness | ⏳ Queued |
+| 10 | M9 | AI Reasoning Engine | ⏳ Queued |
+| 11 | M10 | AI Research Engine | ⏳ Queued |
+| 12 | M11 | Recommendation Engine | ⏳ Queued |
+| 13 | M7 | Timeline | ⏳ Queued |
+| 14 | M12 | Revenue Intelligence Platform + business UI | ⏳ Queued |
+| 15 | M13 | Integrations — CRM, comms, calendar | ⏳ Queued |
+| 16 | M14a | Notifications | ⏳ Queued |
+| 17 | M14b | Billing, analytics, feature flags | ⏳ Queued |
+| 18 | M14.5 | Cloud Infrastructure *(deferred from M1.3B)* | ⏳ Queued |
+| 19 | M15 | GA readiness — load, SOC 2, PII, spend | ⏳ Queued |
+| — | 🎯 | **General Availability** | |
 
-**Replacement is a one-file change per provider**, by construction: a generator owns only the shape it emits and the mapping into it. Procedure in [provider-qualification.md](docs/architecture/provider-qualification.md).
+## 5 · Completed Foundations
+
+- ✅ **Secure multi-tenant platform** — PostgreSQL RLS, forced and self-sufficient; per-tier database identities
+- ✅ **Authentication** — Better Auth issues RS256 JWTs, FastAPI only verifies; the API cannot mint a token it accepts
+- ✅ **Event bus** — transactional outbox, relay, platform-owned idempotency, retry, dead-lettering
+- ✅ **Deployment foundation** — production images, concurrency-safe migration runner, restart-safe stack
+- ✅ **Smoke verification** — `make smoke`, 16 stages, one command, in CI
+- ✅ **Frontend foundation** — design system, component library, shell, routing, query layer
+- ✅ **Provider Simulation Framework** — Provider Port, shared contract suite, deterministic replay, fault injection
+
+**Both foundations are frozen.** `signora_platform/` and the frontend foundation are consumed by later milestones, not modified — except for a production defect, accessibility issue, security issue, or approved architectural change.
+
+## 6 · Current Focus
+
+**M2.1 Provider Platform** — the first milestone that builds product rather than substrate. It implements the module that *consumes* the Provider Port: scheduling provider syncs, paging through responses, translating adapter failures into retries and dead letters, and publishing raw provider records into the pipeline as domain events. It owns the mandatory demonstration that **simulated provider payloads traverse the same production ingestion pipeline used by real providers, with no simulation-specific logic anywhere in that pipeline** — the proof that the simulator's entire design premise holds.
+
+## 7 · Biggest Remaining Milestones
+
+Knowledge Graph · Observation Engine · Business Events · Signals · Buying Scores · **Opportunities (first sellable moment)** · AI Platform · AI Reasoning · AI Research · Recommendations · Timeline · Revenue Intelligence Platform · Integrations · Cloud Infrastructure · GA
+
+## 8 · Current Health
+
+| Indicator | Value | Target |
+|---|---|---|
+| **Backend tests** | **492 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Frontend tests** | **101 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Backend coverage** | **95.26%** | ≥95% (CI-gated) |
+| **Security invariants** | **75 / 75**, each proven to fail when its guarantee is removed | 100% verified |
+| **import-linter contracts** | **4 kept, 0 broken** | 0 broken |
+| **Architecture drift** | **0** — no ratified ADR reversed; 3 documents amended for drift, all found by test | Trending to 0 |
+| **Open production bugs** | **0** | 0 |
+| **Technical debt** | **0 outstanding** | — |
+| **`make smoke`** | ✅ Passing (133s, fresh images) | Required per milestone |
+
+### Test suite composition
+
+| Area | Tests | Notes |
+|---|---|---|
+| Security invariants | 75 | Permanent architectural guarantees; run as their own CI job |
+| Simulation framework | 130 | Clock, dataset, scenario, faults, delivery, generators |
+| Provider contract suite | 45 | **One suite, five adapters** — the keystone interchangeability test |
+| Workspace & Tenancy | ~70 | RLS isolation, API, persistence |
+| Platform (event bus, auth, observability) | ~130 | Outbox, relay, dispatch, idempotency, DLQ, JWT |
+| Integration & demo checklists | ~42 | Cross-tier contract, migration runner, milestone gates |
+| **Backend total** | **492** | Coverage 95.26%, mypy strict over 145 files |
+| Frontend components & foundation | 101 | Includes 13 AC-14/AC-15 guard tests |
+
+---
+
+# Engineering Record
+
+*Everything below is the detailed record: milestone history, architectural decisions, rationale, risks, and debt. Preserved in full.*
 
 ---
 
