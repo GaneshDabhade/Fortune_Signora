@@ -16,8 +16,11 @@
 **Implementation proceeds as one prioritized stream.** The roadmap's dependency graph governs *order*; it does not imply concurrency. Optimising for minimal context switching is the ruling constraint, not maximal parallelism.
 
 ```
-M1.1 Platform Runtime → M1.2 Authentication Boundary → M1.3A Deployment Foundation → M1.4 Platform Smoke Test → M1.5 Frontend Foundation
-     → M2.0 Provider Simulation Framework → M2.1 → M3 → … → M15
+M1.1 Platform Runtime → M1.2 Authentication Boundary → M1.3A Deployment Foundation
+     → M1.4 Platform Smoke Test → M1.5 Frontend Foundation
+     → M2.0 Provider Simulation Framework
+     → pipeline, in the §5b execution order
+     → M14.5 Cloud Infrastructure → M15 GA readiness → General Availability
 ```
 
 The parallel-workstream design in §9 is **retained for future team scaling** and should be re-read the moment staffing increases. It is not the current operating assumption.
@@ -26,14 +29,14 @@ The parallel-workstream design in §9 is **retained for future team scaling** an
 
 Total effort is unchanged by this decision; **calendar time is not**. Sequential execution forfeits the compression that parallelism buys, and the arithmetic is worth seeing rather than discovering later.
 
-| Team size | M1 (33 ew) | M1 + M2.0 | **To GA (225–305 ew)** |
+| Team size | M1.5 (14.5 ew) | M1.5 + M2.0 | **Remaining to GA (213–291 ew)** |
 |---|---|---|---|
-| **1 engineer** | ~41 weeks | ~62–71 weeks | **~5.4–7.3 years** |
-| **2 engineers** | ~21 weeks | ~31–36 weeks | **~2.7–3.7 years** |
-| **3 engineers** | ~14 weeks | ~21–24 weeks | **~1.8–2.4 years** |
-| 6 engineers *(parallel model, for reference)* | ~7 weeks | ~10–12 weeks | ~0.9–1.2 years |
+| **1 engineer** | ~18 weeks | ~40–48 weeks | **~5.1–7.0 years** |
+| **2 engineers** | ~9 weeks | ~20–24 weeks | **~2.6–3.5 years** |
+| **3 engineers** | ~6 weeks | ~13–16 weeks | **~1.7–2.3 years** |
+| 6 engineers *(parallel model, for reference)* | ~3 weeks | ~7–8 weeks | ~0.9–1.2 years |
 
-Assumes 80% effective capacity. Note that within a milestone, extra engineers help only up to the **critical path**, which is serial work: M1.1's chain (T6→T7→T8→T9→T10) is ~10 ew and cannot be compressed below that regardless of headcount.
+Assumes 80% effective capacity, computed from work *remaining* rather than total. Within a milestone, extra engineers help only up to the **critical path**, which is serial: M1.5's chain (T25→T26→T28→T27→T29) is ~9 ew and cannot compress below that regardless of headcount.
 
 **This is not an argument against the decision.** For a small team, context switching genuinely destroys more throughput than parallelism recovers, and the v2 parallel plan assumed staffing that does not exist. The decision is sound; the timeline consequence simply needs to be owned explicitly at planning time rather than surfaced as a slip later.
 
@@ -137,12 +140,13 @@ M1 is split into three; M2.0 is inserted before data ingestion. **All other mile
 | **M1.4** Platform Smoke Test | *(foundation completion gate)* | ~1.5 ew |
 | **M1.5** Frontend Foundation | M1 | ~14.5 ew |
 | **M2.0** Provider Simulation Framework | *(internal enablement)* | ~17–24 ew |
-| M2.1 Provider Platform & Normalization | M2 | ~14–20 ew |
-| M3 Knowledge Graph & Observation Engine | M3 | ~17–23 ew |
-| M4–M15 | M4–M13 | ~160–220 ew |
+| **M2.1 → M14b** pipeline — 17 milestones in the §5b execution order | M2–M13 | ~155–219 ew |
 | **M14.5** Cloud Infrastructure *(deferred from M1.3B)* | *(production readiness)* | ~6 ew |
+| **M15** GA readiness | *(production readiness)* | ~20–27 ew |
 
-**Total to GA: ~246–326 ew** (M1.5 adds ~14.5 ew of frontend platform work previously absorbed inside M12). See §1 for calendar at various team sizes.
+**Total to GA: ~262–340 ew.** Recomputed from the milestone table in §6 rather than carried forward — the previous figure understated it, because M15 GA readiness had been folded inside the pipeline band and was double-removed when the band was split. Two changes account for the rest of the movement: M1.5 makes explicit ~14.5 ew of frontend platform work previously buried in M12's estimate, and M12 drops from 28–40 to 24–35 ew because the platform half of it moved to M1.5.
+
+~49 ew complete, **~213–291 ew remaining**. See §1 for calendar at various team sizes.
 
 ### Cloud Infrastructure is deferred, not removed
 
@@ -181,59 +185,91 @@ Each requirement below is already satisfied. The contract's purpose is that it s
 
 ---
 
-## 5b. Updated Implementation Order
+## 5b. Execution Sequence
 
-Approved 2026-07-28. **Sequencing only** — no module, technology, or contract changes.
+Approved 2026-07-28. **Sequencing and dependency corrections only** — no module, technology, or contract changes.
 
 ### Phase 1 — Foundation ✅ complete
 
 `M1.1 Platform Runtime` → `M1.2 Authentication Boundary` → `M1.3A Deployment Foundation` → `M1.4 Platform Smoke Test`
 
-The platform is architecturally stable. `signora_platform/` is frozen (CLAUDE.md §20a); the Platform Runtime, Authentication Boundary, Deployment Foundation, Platform Smoke Test, Security Invariants, Tenant Isolation Policy, Platform Infrastructure Policy, and Platform Freeze are **platform contracts** — foundation capabilities, not work in progress.
+The platform is architecturally stable. `signora_platform/` is frozen (CLAUDE.md §20a). Eight **permanent platform contracts** are established: Platform Runtime, Authentication Boundary, Deployment Foundation, Platform Smoke Test, Security Invariants, Tenant Isolation Policy, Platform Infrastructure Policy, Platform Freeze.
 
-### Phase 2 — Enablement
+**Workspace & Tenancy is complete** (M0) and is not in the active order below. It remains documented as foundational work in [04-modules.md](docs/architecture/04-modules.md) and §3.
 
-`M1.5 Frontend Foundation` → `M2.0 Provider Simulation Framework`
+### The authoritative order
 
-Neither builds a business feature. Together they are what makes every later milestone cheap: a frontend platform business screens plug into, and realistic domain data for them to render.
+Milestone IDs are **stable labels, not sequence numbers**. They are deliberately not renumbered: [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md), [AI_MATURITY_ROADMAP.md](AI_MATURITY_ROADMAP.md), the ADRs, and every acceptance criterion reference them, and a renumbering cascade would break traceability for no gain. **This table is the execution order.**
 
-### Phase 3 — Pipeline
+| # | Milestone | Module / scope | Effort |
+|---|---|---|---|
+| — | ✅ M0 · M1.1 · M1.2 · M1.3A · M1.4 | Foundation | complete |
+| 1 | **M1.5** | Frontend Foundation | ~14.5 ew |
+| 2 | **M2.0** | Provider Simulation Framework | ~17–24 ew |
+| 3 | **M2.1** | Provider Platform | ~8–11 ew |
+| 4 | **M2.2** | Provider Normalization | ~6–9 ew |
+| 5 | **M3A** | Knowledge Graph | ~9–12 ew |
+| 6 | **M3B** | Observation Engine | ~8–11 ew |
+| 7 | **M4** | Business Event Engine | ~10–14 ew |
+| 8 | **M5A** | Signal Engine | ~8–13 ew |
+| 9 | **M5B** | Buying Score Engine | ~6–9 ew |
+| 10 | **M6** | Opportunity Engine | ~5–7 ew |
+| 11 | **M8** | AI Platform (abstraction layer · Prompt Registry · eval harness) | ~15–20 ew |
+| 12 | **M9** | AI Reasoning Engine | ~8–12 ew |
+| 13 | **M10** | AI Research Engine | ~12–16 ew |
+| 14 | **M11** | Recommendation Engine | ~6–8 ew |
+| 15 | **M7** | Timeline | ~6–8 ew |
+| 16 | **M12** | Revenue Intelligence Platform + business screens | ~24–35 ew |
+| 17 | **M13** | Integrations (CRM · comms · calendar) | ~18–26 ew |
+| 18 | **M14a** | Notifications | ~3–4 ew |
+| 19 | **M14b** | Billing, analytics, feature flags | ~3–4 ew |
+| 20 | **M14.5** | **Cloud Infrastructure** *(deferred from M1.3B)* | ~6 ew |
+| 21 | **M15** | GA readiness: load testing, SOC 2, PII, spend governance | ~20–27 ew |
+| — | 🎯 | **General Availability** | |
 
-Follows the ratified dependency graph in [04-modules.md](docs/architecture/04-modules.md) and [05-module-dependencies.md](docs/architecture/05-module-dependencies.md), which fixes the order regardless of preference:
+Four milestones are **split** rather than renumbered, following the M1.3A/M1.3B precedent: M2.1 into Provider Platform and Provider Normalization, M3 into Knowledge Graph and Observation Engine, M5 into Signal Engine and Buying Score Engine, M14 into Notifications and Billing. The approved chain treats each as a distinct step, and each has its own bounded context, so splitting is more honest than a combined milestone whose halves ship weeks apart.
 
-```
-Provider Platform → Provider Normalization → Knowledge Graph → Observation Engine
-  → Business Event Engine → Signal Engine → Buying Score Engine → Opportunity Engine
-  → AI Platform (abstraction layer + Prompt Registry + eval harness)
-  → AI Reasoning Engine → AI Research Engine → Recommendation Engine → Timeline
-  → Revenue Intelligence Platform → Integrations → Billing & workflow
-```
+### Dependency corrections applied
 
-### Phase 4 — Production Readiness
+Three corrections were required for the chain to match the ratified graph. Each is recorded here under Change Policy category 2 (§5c), with its rationale.
 
-`M14.5 Cloud Infrastructure` *(deferred)* → `M15 GA readiness` → **General Availability**
+| # | Correction | Rationale |
+|---|---|---|
+| 1 | **AI Reasoning Engine reinstated** at position 12, between the AI Platform and AI Research Engine. | It is a ratified module ([04-modules.md](docs/architecture/04-modules.md)) and load-bearing: the graph is `AI Reasoning → Recommendation Engine`, and [05-module-dependencies.md:65](docs/architecture/05-module-dependencies.md) lists it among Revenue Intelligence Platform's dependencies. Omitted from the approved chain, it would never be built, and both Recommendation Engine and RIP would have a missing input. It is deliberately distinct from AI Research Engine — different latency, cost, and failure profiles (CLAUDE.md §10). |
+| 2 | **Timeline moved before Revenue Intelligence Platform** (positions 15 and 16). | The approved chain has `Revenue Intelligence Platform → Timeline`. That is an inversion: [05-module-dependencies.md:76](docs/architecture/05-module-dependencies.md) records *"Revenue Intelligence Platform → Timeline: synchronous query when composing a workspace intelligence view."* RIP consumes Timeline, so Timeline must precede it. Corrected under the instruction not to preserve dependency inversions. |
+| 3 | **Integrations (M13) reinstated** at position 17. | Absent from the approved chain but a ratified scope with its own architecture document ([13-integrations.md](docs/architecture/13-integrations.md)) and product milestone (PRODUCT_ROADMAP M12, Workflow Integration). Dropping it silently would remove committed customer-facing capability. Placed after RIP, which is where the existing roadmap had it. |
 
-### Business UI is deferred to after M2.0
+**None of these is an architectural change.** No module, contract, or technology is added, removed, or substituted; each correction restores a ratified dependency the chain had inverted or omitted.
 
-No company, opportunity, signal, timeline, AI-recommendation, or analytics screen is built before the Provider Simulation Framework exists. **Business screens consume real domain models, never temporary mocked JSON.**
+### Business UI is deferred until M2.0
+
+No company, opportunity, signal, timeline, AI-recommendation, or analytics screen is built before the Provider Simulation Framework exists. **Business UI is built against real domain contracts, never temporary mocked JSON.**
 
 A page built against hand-written JSON encodes a shape the domain does not have. The mock becomes the contract; the real model arrives; the page is rewritten — twice the work, and the first version silently teaches everyone the wrong model. M1.5 ships designed empty states instead, which every screen needs permanently anyway.
 
-### Dependency verification
+### Module boundary rulings
 
-Three findings from checking the approved order against the ratified graph. **None is a disagreement with the intent — all three are places where the order as written could not be built.**
+No new bounded context may be introduced without an RFC. Three names raised previously are resolved as follows:
 
-| # | Finding | Resolution applied |
+| Name | Ruling |
+|---|---|
+| **Company Domain** | Part of **Knowledge Graph**. Company entities are Knowledge Graph aggregates; no separate context. |
+| **Activities** | Part of **Timeline**, unless explicitly separated by a later architectural decision. |
+| **Assignments** | **Unassigned.** No owning context until an architectural decision introduces one. Nothing is scheduled. |
+
+---
+
+## 5c. Roadmap Change Policy
+
+The implementation roadmap is **frozen**. Changes fall into exactly three categories.
+
+| Category | Allowed | Requires |
 |---|---|---|
-| 1 | **Observation Engine before Knowledge Graph.** The graph is `KG → OE`: Observation Engine consumes the Knowledge Graph's entities. Building it first leaves it with nothing to observe. | Graph order retained: Knowledge Graph, then Observation Engine. |
-| 2 | **Signal Engine before Business Events.** The graph is `BEE → SE`: signals are derived *from* business events. This also inverts [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md), whose M4 is Business Events and M5 is Signals. | Graph order retained: Business Event Engine, then Signal Engine. |
-| 3 | **Five ratified modules absent from the list**, three of them load-bearing: **Provider Normalization** (`PP → PN → KG`), **Buying Score Engine** (`SE → BSE → OP`), **AI Research Engine** (`OP → ARE`), plus the **AI Platform** milestone and **Revenue Intelligence Platform**. AI Reasoning Engine cannot precede the AI Platform — CLAUDE.md §10 requires all vendor access through the AI Provider Abstraction Layer and all prompts through the Prompt Registry, both of which the AI Platform milestone builds. | All five retained in graph position. |
+| **1. Sequencing** | ✅ Yes | Reorder milestones without changing architecture. Record the change and its reason. |
+| **2. Dependency correction** | ✅ Yes | Must document the correction *and* its rationale, as in §5b. A correction restores the ratified graph; it never redefines it. |
+| **3. Architectural change** | ⚠️ Approval only | RFC · architecture review · explicit approval. No new module, bounded context, or architectural responsibility without it. |
 
-Both inversions also contradict PRODUCT_ROADMAP's own ordering, which is why they read as transcription slips rather than intent. **Raised rather than silently reconciled** — if either is deliberate, it is a change to the dependency graph and belongs to the RFC process in [01-overview.md](docs/architecture/01-overview.md), not to a sequencing decision.
-
-**Three names in the approved order are not ratified modules:** *Company Domain*, *Activities*, and *Assignments*. Nothing has been created for them. The nearest ratified homes are Knowledge Graph (company entities) and Timeline (activities); assignments have no current owner. Introducing any of them is a new bounded context and needs an RFC — flagged here rather than guessed at.
-
-**Workspace & Tenancy appears in the order but is already complete** (M0, shipped). No work is scheduled for it.
+Claude must classify any proposed roadmap change into one of these three before making it, and must refuse to make a category-3 change inside an implementation session — that belongs to the RFC process in [01-overview.md](docs/architecture/01-overview.md).
 
 ---
 
@@ -623,7 +659,7 @@ make smoke
 
 ---
 
-### M2.1 — Provider Platform & Normalization
+### M2.1 — Provider Platform · M2.2 — Provider Normalization
 
 **Scope:** Provider Platform (registry, credentials, quotas, scheduling, health, circuit breaking) · real vendor adapters · Provider Normalization.
 
@@ -650,7 +686,7 @@ make smoke
 
 ---
 
-### M3 — Knowledge Graph & Observation Engine
+### M3A — Knowledge Graph · M3B — Observation Engine
 
 **Effort:** ~17–23 ew · **Simulator requirement:** ✅ Required — entity-resolution evaluation needs labelled, deterministic datasets.
 
@@ -674,25 +710,35 @@ make smoke
 
 ---
 
-### M4–M15
+### Pipeline milestones — M2.1 through M15
 
-Full Demo Checklist, Definition of Done, rollback, and readiness sections are authored **at each milestone's planning boundary**, when the preceding milestone's learnings are available. Planning distant milestones in near-milestone detail produces false precision. Scope, effort, and simulator requirements are fixed now:
+Full Demo Checklist, Definition of Done, rollback, and readiness sections are authored **at each milestone's planning boundary**, when the preceding milestone's learnings are available. Planning distant milestones in near-milestone detail produces false precision. Scope, effort, and simulator requirements are fixed now.
 
-| Milestone | Scope | Effort | Simulator | Scenario assertions added |
-|---|---|---|---|---|
-| **M4** | Business Event Engine | 10–14 ew | ✅ Required | Business Events |
-| **M5** | Signal Engine + Buying Score Engine | 14–22 ew | ✅ Required | Signals, Buying Scores |
-| **M6** | Opportunity Engine | 5–7 ew | ✅ Required | Opportunities |
-| **M7** | Timeline | 6–8 ew | ✅ Required | Timeline entries |
-| **M8** | AI Platform + Prompt Registry + **Eval Harness** | 15–20 ew | ✅ **Critical** | Golden sets seeded from scenarios |
-| **M9** | AI Reasoning Engine | 8–12 ew | ✅ Critical | Reasoning output, **confidence scores** |
-| **M10** | AI Research Engine | 12–16 ew | ✅ Critical | Research artifacts |
-| **M11** | Recommendation Engine | 6–8 ew | ✅ Required | **Recommendations** |
-| **M12** | Revenue Intelligence Platform + business screens | 24–35 ew | ✅ Required | Composed views |
-| **M13** | CRM / comms / calendar integrations | 18–26 ew | ⚠️ Partial | — |
-| **M14** | Billing, notifications, analytics, flags | 5–7 ew | ❌ Not required | — |
-| **M14.5** | **Cloud Infrastructure** *(deferred from M1.3B — see below)* | 6 ew | ❌ Not required | — |
-| **M15** | GA readiness: load testing, SOC 2, PII, spend governance | 20–27 ew | ✅ Load testing at volume | — |
+**Listed in execution order** (§5b), which is what governs. IDs are stable labels and are deliberately non-monotonic here — see §5b for why they are not renumbered.
+
+| # | ID | Scope | Effort | Simulator | Scenario assertions added |
+|---|---|---|---|---|---|
+| 3 | **M2.1** | Provider Platform | 8–11 ew | ✅ Required | Provider sync runs |
+| 4 | **M2.2** | Provider Normalization | 6–9 ew | ✅ Required | Normalized records |
+| 5 | **M3A** | Knowledge Graph | 9–12 ew | ✅ Required | Entities, relationships |
+| 6 | **M3B** | Observation Engine | 8–11 ew | ✅ Required | Observations |
+| 7 | **M4** | Business Event Engine | 10–14 ew | ✅ Required | Business Events |
+| 8 | **M5A** | Signal Engine | 8–13 ew | ✅ Required | Signals |
+| 9 | **M5B** | Buying Score Engine | 6–9 ew | ✅ Required | Buying Scores |
+| 10 | **M6** | Opportunity Engine | 5–7 ew | ✅ Required | Opportunities |
+| 11 | **M8** | AI Platform + Prompt Registry + **Eval Harness** | 15–20 ew | ✅ **Critical** | Golden sets seeded from scenarios |
+| 12 | **M9** | AI Reasoning Engine | 8–12 ew | ✅ Critical | Reasoning output, **confidence scores** |
+| 13 | **M10** | AI Research Engine | 12–16 ew | ✅ Critical | Research artifacts |
+| 14 | **M11** | Recommendation Engine | 6–8 ew | ✅ Required | **Recommendations** |
+| 15 | **M7** | Timeline | 6–8 ew | ✅ Required | Timeline entries |
+| 16 | **M12** | Revenue Intelligence Platform + business screens | 24–35 ew | ✅ Required | Composed views |
+| 17 | **M13** | Integrations (CRM · comms · calendar) | 18–26 ew | ⚠️ Partial | — |
+| 18 | **M14a** | Notifications | 3–4 ew | ❌ Not required | — |
+| 19 | **M14b** | Billing, analytics, feature flags | 3–4 ew | ❌ Not required | — |
+| 20 | **M14.5** | **Cloud Infrastructure** *(deferred from M1.3B — see below)* | 6 ew | ❌ Not required | — |
+| 21 | **M15** | GA readiness: load testing, SOC 2, PII, spend governance | 20–27 ew | ✅ Load testing at volume | — |
+
+**Business screens land in M12**, not earlier: every one is built against real domain contracts produced by M2.0 onward.
 
 ---
 
@@ -823,7 +869,7 @@ Rationale: cheap unblocking work first (T1, T2, T6); logging (T3) before the rel
 |---|---|---|---|
 | T24 | Single-command platform verification, wired into CI | M · 1.5 ew | T21 |
 
-**Depends on M1.3A, not M1.3B:** the command must run against the local production stack, so it is available as a gate *before* cloud deployment rather than after.
+**Depends on M1.3A, not on cloud infrastructure:** the command runs against the local production stack, so it gates every milestone from here rather than waiting on M14.5.
 
 ### M1.5 — Frontend Foundation
 
@@ -986,7 +1032,7 @@ All four are test-enforced, not conventions.
 
 | Stream | Scope | Staffing | Runs |
 |---|---|---|---|
-| **A — Pipeline** | M2.1 → M11 (critical path) | 2–3 eng | From M2.0 completion |
+| **A — Pipeline** | M2.1 → M11 (critical path, §5b order) | 2–3 eng | From M2.0 completion |
 | **B — AI Platform** | M8, then M9/M10 support | 1–2 eng | From M4 |
 | **C — Product Surface** | M1.2, then M7/M12 frontend | 1–2 eng + design | Continuous |
 | **D — Platform & Ops** | M1.1, M1.3A, M1.4, M14.5, M15 | 1 eng | Continuous |
@@ -1080,6 +1126,6 @@ Single stream. **M1.1 only** — M1.2 does not begin until M1.1's Demo Checklist
 | 10 | **T5** Sentry | Small; completes observability |
 | 11 | **T11** Pipeline metrics | Needs T4 and the full relay chain in place |
 
-**Then:** M1.1 Demo Checklist → M1.2 → M1.3A → M1.4 → **M1.5** → M2.0. Cloud infrastructure (M14.5) is deferred to Production Readiness.
+**Then:** M1.1 Demo Checklist → M1.2 → M1.3A → M1.4 → **M1.5** → M2.0 → the pipeline in §5b execution order. Cloud infrastructure (M14.5) sits immediately before M15 GA readiness.
 
 **Deferred until staffing allows:** the Knowledge Graph spike. Under single-stream execution it would displace critical-path work; it should run as soon as a second engineer is available, since it retires the roadmap's largest estimation variance.

@@ -3,7 +3,7 @@
 > **Owner:** Technical Program Manager · **Audience:** Everyone
 > **Cadence:** Updated at every milestone boundary and every sprint close. Updating this is part of the [Definition of Done](IMPLEMENTATION_ROADMAP.md#12-definition-of-done-global).
 > **Last updated:** 2026-07-28 · **Reporting period:** M1.2 delivery
-> **Revision:** v9 — **Platform Foundation approved and closed.** Eight platform contracts ratified. **M1.5 Frontend Foundation inserted** before M2.0; business UI deferred until real provider data exists; cloud infrastructure at M14.5. Sequencing only — the approved architecture is unchanged
+> **Revision:** v10 — **Execution sequence corrected to the ratified dependency graph.** Three dependency corrections applied and documented; four combined milestones split; module boundary rulings recorded; roadmap change policy established. M1.5 Frontend Foundation is next. Sequencing and dependency corrections only — the approved architecture is unchanged
 
 ---
 
@@ -17,7 +17,9 @@ M1.3A Deployment Foundation █████████████████�
 M1.4 Platform Smoke Test    ███████████████████ 100%  ✅ Complete · FOUNDATION CLOSED
 M1.5 Frontend Foundation    ░░░░░░░░░░░░░░░░░░░   0%  🔴 CURRENT — next
 M2.0 Simulation Framework   ░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (after M1.5)
+M2.1 → M14b Pipeline        ░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (§5b execution order)
 M14.5 Cloud Infrastructure  ░░░░░░░░░░░░░░░░░░░   0%  ⏸ Deferred to Production Readiness
+M15 GA Readiness            ░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued
 M2.1 → M15                 ░░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued
 ```
 
@@ -25,7 +27,7 @@ M2.1 → M15                 ░░░░░░░░░░░░░░░░░
 
 | Dimension | Status |
 |---|---|
-| **Overall completion to GA** | **~18%** by engineering effort (~49 of ~246–326 total engineer-weeks; ~197–277 ew remaining). *The percentage fell without work being lost: M1.5 makes explicit ~14.5 ew of frontend platform work previously buried inside M12's estimate.* |
+| **Overall completion to GA** | **~16%** by engineering effort (~49 of ~262–340 total engineer-weeks; **~213–291 ew remaining**) |
 | Architecture & design | **100%** — 19 documents, 27 ADRs, ratified and internally consistent |
 | Core modules | **1 of 14** (7%) |
 | Backend platform | **100% of foundation scope** — 🔒 frozen from M1.3A; 0% of pipeline scope |
@@ -67,6 +69,8 @@ How much the agreed architecture is churning. Sustained instability means the de
 |---|---|---|
 | ADRs superseded or reversed since ratification | **0 of 27** | 0 — reversal means the decision was made too early |
 | Documents amended for *drift* (code disagreed with docs) | **3** (11-tenancy ×2, 18-authentication) | Trending to 0 |
+| Dependency inversions caught before implementation | **5** (3 in v9, 2 more in v10) | All — an inversion caught in planning costs a paragraph; caught in code it costs a milestone |
+| Roadmap status | 🔒 **Frozen** — changes are sequencing, dependency correction, or RFC (§5c) | Category 3 requires approval |
 | Documents amended for *new decisions* | 3 | Healthy — this is the process working |
 | Unplanned architectural changes mid-milestone | **0** | 0 — these belong to the RFC process |
 | `signora_platform/` freeze status | 🔒 **Frozen** since M1.3A · **1 change**, under the production-defect exemption | Changes require security fix, production defect, or approval |
@@ -133,17 +137,29 @@ Whether the modular monolith is staying modular. These are the violations that a
 
 ---
 
+### On the completion percentage
+
+It has moved from ~19% (v8) to ~16% without a single engineer-week of work being lost or repeated. Three causes, all bookkeeping:
+
+- **M1.5 makes explicit** ~14.5 ew of frontend platform work that was previously buried inside M12's estimate. M12 correspondingly drops from 28–40 to 24–35 ew.
+- **M15 GA readiness was double-removed.** It had been folded inside the old `M4–M15` band; when that band was split into a pipeline row plus a separate M15 row, the pipeline figure was carried forward unchanged rather than reduced. The total was understated by roughly 16 ew as a result.
+- **The total is now recomputed from the milestone table**, not carried forward. It is checked against the table each revision.
+
+Recorded rather than quietly corrected: a denominator that moves without explanation is how estimates lose credibility.
+
 ### Calendar under sequential execution
 
-Total effort is unchanged at **~225–305 ew**. Calendar time depends entirely on staffing, and sequential execution forfeits parallel compression:
+Total effort is now **~262–340 ew** (recomputed — see above). Calendar time depends entirely on staffing, and sequential execution forfeits parallel compression:
 
-| Team size | M1 (33 ew) | M1 + M2.0 | **To GA** |
+Based on ~213–291 ew remaining at 80% effective capacity:
+
+| Team size | M1.5 (14.5 ew) | M1.5 + M2.0 | **Remaining to GA** |
 |---|---|---|---|
-| **1 engineer** | ~41 weeks | ~62–71 weeks | **~5.4–7.3 years** |
-| **2 engineers** | ~21 weeks | ~31–36 weeks | **~2.7–3.7 years** |
-| **3 engineers** | ~14 weeks | ~21–24 weeks | **~1.8–2.4 years** |
+| **1 engineer** | ~18 weeks | ~40–48 weeks | **~5.1–7.0 years** |
+| **2 engineers** | ~9 weeks | ~20–24 weeks | **~2.6–3.5 years** |
+| **3 engineers** | ~6 weeks | ~13–16 weeks | **~1.7–2.3 years** |
 
-Assumes 80% effective capacity. Within a milestone, additional engineers help only up to the **critical path** — M1.1's chain (T6→T7→T8→T9→T10) is ~10 ew of serial work and cannot compress below that at any headcount.
+Within a milestone, additional engineers help only up to the **critical path** — M1.5's chain (T25→T26→T28→T27→T29) is ~9 ew of serial work and cannot compress below that at any headcount.
 
 **This is not an argument against the decision.** For a small team, context switching destroys more throughput than parallelism recovers. But the timeline consequence is owned here, at planning time, rather than surfaced later as a slip.
 
@@ -207,7 +223,7 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 | **Auth observability** (added) | 10 `AUTH_*` events across both tiers, shared vocabulary |
 | **Auth health** (added) | Both tiers; key-pair match, JWT config, OAuth config, DB |
 
-**First user-visible outcome in the project.** Design-partner onboarding is unblocked once M1.3B provides a deployed environment.
+**First user-visible outcome in the project.** Design-partner onboarding is unblocked once M14.5 provides a deployed environment.
 
 **Findings:**
 - Two toolchain workarounds recorded in the validation report (ESLint flat-config bridge, `@vitejs/plugin-react` peer conflict). Neither is architectural.
@@ -252,10 +268,33 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 
 Sequential execution — each begins only when the previous milestone's Demo Checklist passes.
 
-| Order | Milestone | Effort | Simulator | Gate |
-|---|---|---|---|---|
-| 1 | **M2.0** Provider Simulation Framework | ~17–24 ew | ✅ builds it | AC-4 · identical adapter contract, config-only switching |
-| 2 | M2.1 → M14 (pipeline + business UI) | ~175–240 ew | mostly ✅ | Per roadmap |
+| # | Milestone | Effort | Gate |
+|---|---|---|---|
+| 2 | **M2.0** Provider Simulation Framework | ~17–24 ew | AC-4 · identical adapter contract, config-only switching |
+| 3–4 | M2.1 Provider Platform · M2.2 Provider Normalization | ~14–20 ew | Per roadmap |
+| 5–6 | M3A Knowledge Graph · M3B Observation Engine | ~17–23 ew | AC-6 tenancy under load |
+| 7–10 | M4 Business Events · M5A Signals · M5B Buying Scores · M6 Opportunities | ~29–43 ew | **M6 is the first sellable moment** |
+| 11–14 | M8 AI Platform · M9 AI Reasoning · M10 AI Research · M11 Recommendations | ~41–56 ew | AC-8, AC-9 |
+| 15–16 | M7 Timeline · M12 Revenue Intelligence Platform + business screens | ~30–43 ew | Business UI lands here |
+| 17–19 | M13 Integrations · M14a Notifications · M14b Billing | ~24–34 ew | Per roadmap |
+| 20 | **M14.5** Cloud Infrastructure *(deferred from M1.3B)* | ~6 ew | AC-3B · rollback executed and timed |
+| 21 | M15 GA readiness | ~20–27 ew | AC-11, AC-12 |
+
+**Full order and rationale:** [IMPLEMENTATION_ROADMAP.md §5b](IMPLEMENTATION_ROADMAP.md#5b-execution-sequence). Milestone IDs are stable labels, not sequence numbers — they are deliberately non-monotonic so that PRODUCT_ROADMAP, AI_MATURITY_ROADMAP, and every ADR cross-reference stays valid.
+
+### Dependency corrections applied
+
+| Correction | Why |
+|---|---|
+| **AI Reasoning Engine reinstated** (position 12) | Ratified module, and load-bearing: `AI Reasoning → Recommendation Engine`, and RIP lists it as a dependency. Omitted, it would never be built and two downstream modules would lose an input. |
+| **Timeline moved before Revenue Intelligence Platform** (15 before 16) | `05-module-dependencies.md:76` records *"Revenue Intelligence Platform → Timeline: synchronous query"*. RIP consumes Timeline, so Timeline must precede it. |
+| **Integrations (M13) reinstated** (position 17) | Ratified scope with its own architecture document and product milestone. Dropping it silently would remove committed customer-facing capability. |
+
+None adds, removes, or substitutes a module, contract, or technology — each restores a ratified dependency.
+
+### Module boundary rulings
+
+**Company Domain** → part of Knowledge Graph. **Activities** → part of Timeline unless later separated. **Assignments** → unassigned; no owning context, nothing scheduled. **Workspace & Tenancy** → complete at M0, removed from the active order, retained as documented foundational work.
 | 3 | **M14.5** Cloud Infrastructure *(deferred from M1.3B)* | ~6 ew | ❌ | AC-3B · rollback executed and timed |
 | 4 | M15 GA readiness | ~20–27 ew | ✅ load at volume | Per roadmap |
 
@@ -273,7 +312,7 @@ Deferred: Terraform, ECS, RDS and ElastiCache provisioning, Secrets Manager inte
 
 ### Why M1.3 was split
 
-M1.3A proves the **application** is deployable; M1.3B proves **AWS** is configured. Run together, a failure gives no signal about which one is wrong — and every application-level fault (a container that will not start, a migration runner racing two replicas, a readiness probe green before the database is reachable) costs minutes locally and an afternoon inside ECS.
+M1.3A proves the **application** is deployable; M14.5 proves **AWS** is configured. Run together, a failure gives no signal about which one is wrong — and every application-level fault (a container that will not start, a migration runner racing two replicas, a readiness probe green before the database is reachable) costs minutes locally and an afternoon inside ECS.
 
 ### Why M1.4 exists
 
@@ -329,7 +368,7 @@ M2.0 is the largest milestone since M0 (~17–24 ew) and the first that builds p
 |---|---|---|---|
 | ~~All 13 core intelligence modules~~ | ~~T7/T8 — event bus relay + dispatch~~ | ✅ **CLEARED** | M1.1 |
 | ~~Any human access / any demo~~ | ~~T13/T14 — Better Auth issuer~~ | ✅ **CLEARED** | M1.2 |
-| Any deployed environment | T22/T23 — Terraform + ECS (M1.3B) | 🟠 High | Unassigned |
+| Any *remote* environment | T22/T23 — Terraform + ECS (**M14.5, deliberately deferred**) | 🟡 Accepted | Unassigned |
 | Reproducible local production stack | T19–T21 (M1.3A) | 🟠 High | Unassigned |
 | Offline development, deterministic demos, AI eval datasets | M2.0 — simulation framework | 🟠 High | Unassigned |
 | Provider Platform (M2.1) | M2.0 — Provider Port defined there | 🟠 High | Unassigned |
@@ -452,7 +491,7 @@ Encoded as a tracked deviation in `test_authorization.py::test_every_workspace_o
 | PROJECT_STATUS.md | ✅ **This document, v3** |
 | API reference | ✅ Generated (OpenAPI) |
 | `20-provider-simulation.md` + ADR | ⬜ **To be authored during M2.0** |
-| Operations runbook | ⬜ **Required by M1.3A** (stack lifecycle), extended in M1.3B (deploy, rollback, restore) |
+| Operations runbook | ⬜ **Required by M1.3A** (stack lifecycle), extended in M14.5 (deploy, rollback, restore) |
 | Onboarding guide | ⬜ Needed when team exceeds ~3 |
 
 **Documentation drift: zero.** All internal links resolve. Docs have been updated in the same commit as the code they describe, every time.
