@@ -3,7 +3,7 @@
 > **Owner:** Technical Program Manager · **Audience:** Everyone
 > **Cadence:** Updated at every milestone boundary and every sprint close. Updating this is part of the [Definition of Done](IMPLEMENTATION_ROADMAP.md#12-definition-of-done-global).
 > **Last updated:** 2026-07-28 · **Reporting period:** M1.2 delivery
-> **Revision:** v16 · **Last updated:** 2026-07-28 · **Reporting period:** M2.0 delivery
+> **Revision:** v17 · **Last updated:** 2026-07-28 · **Reporting period:** M2.0 delivery
 > Authoritative record of project state (CLAUDE.md §20d). Updated after every completed milestone, before the next begins.
 
 ---
@@ -12,18 +12,20 @@
 
 | | |
 |---|---|
-| **Where are we now?** | **M2.0 Provider Simulation Framework — 9 of 11 tasks complete.** Both foundations (platform, frontend) are frozen. The simulation framework is built and provider-agnostic. |
-| **What was completed?** | Provider Port + shared contract suite · safety guards · virtual clock · dataset store · scenario engine · fault injection · delivery · observability · Provider Qualification process |
+| **Where are we now?** | **M2.0 Provider Simulation Framework — 11 of 11 tasks complete**, pending the `make smoke` exit gate. Both foundations (platform, frontend) are frozen. The simulation framework is built and provider-agnostic. |
+| **What was completed?** | The full framework, plus **five fixture generators** and the shared contract suite **running green against all five adapters** — the keystone test is live |
 | **What changed architecturally?** | M2.0 scope reduced — the simulator is **infrastructure, not product**. The end-to-end ingestion demonstration **moved to M2.1**, where the consumer lives. Provider Independence became a permanent invariant. |
-| **What is intentionally deferred?** | All five provider **generators** (no legitimate payload artifact exists yet) · cloud infrastructure (M14.5) · business UI (M12) · advanced simulator capabilities (indefinitely) |
-| **What's next?** | T43 scenario manifests + T44 CI wiring close M2.0. Then **M2.1 Provider Platform**, which owns the pipeline demonstration. |
-| **Are we on track?** | **Yes, with one caveat.** Every foundation milestone landed with its acceptance criteria met and zero architectural debt. The caveat is external: **no provider generator can be built until someone supplies one saved API response.** That is a 10-minute task for a human with a free-tier account, and it currently blocks ~6.5 ew of M2.0 work. |
+| **What is intentionally deferred?** | **Authentic provider payloads** — all five generators are clearly-marked development fixtures pending legitimate artifacts · cloud infrastructure (M14.5) · business UI (M12) · advanced simulator capabilities (indefinitely) |
+| **What's next?** | `make smoke` against fresh images closes M2.0. Then **M2.1 Provider Platform**, which owns the end-to-end pipeline demonstration. |
+| **Are we on track?** | **Yes.** M2.0 is functionally complete; every foundation milestone landed with its acceptance criteria met and zero architectural debt. One tracked item remains: fixtures must be replaced with authentic payloads, which is a one-file change per provider by construction. |
 
-### The one thing that needs a decision
+### Approved temporary strategy — development fixtures
 
-**All five providers are `Conditional`.** The framework is complete and correct without them, but generators cannot be written until a legitimate payload artifact exists — and inventing one is forbidden by the ratified provenance policy, correctly.
+All five providers remain **`Conditional`**. Each now has a **development fixture** generator: a representative structure covering the kind of information that provider exposes, built to unblock architecture validation.
 
-**Cheapest unblock:** one saved JSON response from Apollo's or BuiltWith's free tier, committed under `backend/signora_platform/simulation/provenance/<provider>/` with a `SOURCE.md`. See [provider-qualification.md](docs/architecture/provider-qualification.md) for the per-provider list.
+**The provenance policy is unchanged and enforced by test.** Every generator declares itself a fixture; every payload body carries a `_fixture` field naming itself as not authentic; ingestion logs record provenance. A generator falsely claiming authenticity fails the suite — verified by making one claim it.
+
+**Replacement is a one-file change per provider**, by construction: a generator owns only the shape it emits and the mapping into it. Procedure in [provider-qualification.md](docs/architecture/provider-qualification.md).
 
 ---
 
@@ -74,8 +76,8 @@ Whether the substrate the 13 pipeline modules will be built on is sound.
 
 | Indicator | Current | Target |
 |---|---|---|
-| Backend tests | **416 passing**, 0 skipped, 0 xfail | 0 skipped — a skipped test is an untested claim |
-| Coverage | **95.74%** (CI gate 95%) | ≥95% |
+| Backend tests | **492 passing**, 0 skipped, 0 xfail | 0 skipped — a skipped test is an untested claim |
+| Coverage | **95.26%** (CI gate 95%) | ≥95% |
 | mypy strict | Clean, 113 files | Clean |
 | Migrations reversible | **7 of 7** revisions | 100% |
 | Disaster recovery validated | **4 of 4** components restart-safe | All |

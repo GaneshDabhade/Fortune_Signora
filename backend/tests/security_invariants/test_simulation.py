@@ -19,9 +19,25 @@ SIMULATION_ROOT = BACKEND_ROOT / "signora_platform" / "simulation"
 
 
 def simulation_sources() -> list[tuple[str, str]]:
+    """The simulation framework, excluding generators.
+
+    A generator naming its own provider is the entire point of a
+    generator. What must name no provider is the framework *core* — the
+    clock, dataset store, scenario engine, fault injector, delivery, and
+    safety guards — because that is what makes each generator
+    independently removable (principle 9 / AC-20).
+    """
     return [
         (str(path.relative_to(BACKEND_ROOT)), path.read_text())
         for path in SIMULATION_ROOT.rglob("*.py")
+        if "generators" not in path.parts
+    ]
+
+
+def generator_sources() -> list[tuple[str, str]]:
+    return [
+        (str(path.relative_to(BACKEND_ROOT)), path.read_text())
+        for path in (SIMULATION_ROOT / "generators").rglob("*.py")
     ]
 
 
@@ -160,6 +176,21 @@ class TestProviderIndependence:
             "Removing any one generator must leave the framework and every other "
             "provider working."
         )
+
+    def test_no_generator_depends_on_another_generator(self) -> None:
+        """Scenarios compose providers; providers never depend on each
+        other. A generator importing another would make removing the
+        second break the first — exactly the coupling AC-20 forbids."""
+        offenders = [
+            name
+            for name, source in generator_sources()
+            if name.rsplit("/", 1)[-1] not in {"__init__.py", "base.py"}
+            and re.search(
+                r"^from signora_platform\.simulation\.generators\.(?!base)", source, re.MULTILINE
+            )
+        ]
+
+        assert offenders == [], f"{offenders} import another generator"
 
     def test_the_framework_functions_with_no_generators_at_all(self) -> None:
         """The current state, and it must remain valid: all five providers

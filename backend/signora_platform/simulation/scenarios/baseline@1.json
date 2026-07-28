@@ -24,8 +24,14 @@
       "subject": "acme-corp",
       "offset_days": 7,
       "facts": {
-        "topic": "Cloud ERP",
-        "surge": 42
+        "intent_topics": [
+          {
+            "topic": "Cloud ERP",
+            "direction": "emerging",
+            "weeks": 4,
+            "peak": 88
+          }
+        ]
       }
     },
     {
@@ -34,6 +40,47 @@
       "offset_days": 3,
       "facts": {
         "employees": 60
+      }
+    },
+    {
+      "provider": "builtwith",
+      "subject": "acme-corp",
+      "offset_days": 10,
+      "facts": {
+        "technologies": [
+          {
+            "name": "LegacyERP",
+            "category": "erp",
+            "first_detected": "2021-03-01",
+            "last_detected": "2026-01-05",
+            "is_live": false
+          },
+          {
+            "name": "CloudERP",
+            "category": "erp",
+            "first_detected": "2026-01-12",
+            "last_detected": "2026-01-19",
+            "is_live": true
+          }
+        ]
+      }
+    },
+    {
+      "provider": "crunchbase",
+      "subject": "globex",
+      "offset_days": 21,
+      "facts": {
+        "stage": "series_b",
+        "funding_rounds": [
+          {
+            "type": "series_b",
+            "amount_usd": 24000000,
+            "announced_on": "2026-01-22",
+            "investors": [
+              "Example Ventures"
+            ]
+          }
+        ]
       }
     }
   ]

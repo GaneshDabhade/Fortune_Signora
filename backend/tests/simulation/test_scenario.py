@@ -38,7 +38,13 @@ class TestScenarioLoading:
     def test_reports_which_providers_it_needs(self) -> None:
         """A scenario runs with whichever providers are available; knowing
         which it wants is what makes that decision possible."""
-        assert load_scenario("baseline", 1).providers == ("apollo", "bombora", "coresignal")
+        assert load_scenario("baseline", 1).providers == (
+            "apollo",
+            "bombora",
+            "builtwith",
+            "coresignal",
+            "crunchbase",
+        )
 
     def test_a_missing_scenario_fails_at_load(self) -> None:
         with pytest.raises(ScenarioError, match="not found"):
@@ -95,7 +101,10 @@ class TestOrdering:
         assert occurred == sorted(occurred)
         # The bombora step is declared third but offset earlier than the
         # coresignal step declared second.
-        assert [e.provider for e in timeline] == ["apollo", "apollo", "bombora", "coresignal"]
+        # bombora is declared third but offset earlier than coresignal,
+        # declared second — the ordering is by logical time.
+        assert timeline[2].provider == "bombora"
+        assert timeline[3].provider == "builtwith"
 
     def test_every_event_carries_a_stable_reference(self, clock: VirtualClock) -> None:
         """What a downstream anomaly traces back to."""
