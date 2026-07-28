@@ -133,7 +133,7 @@ M1 is split into three; M2.0 is inserted before data ingestion. **All other mile
 | M0 ✅ | M0 | — |
 | **M1.1** Platform Runtime | M1 | ~15.5 ew |
 | **M1.2** Authentication Boundary | M1 | ~11.5 ew |
-| **M1.3A** Deployment Foundation | M1 | ~4 ew |
+| **M1.3A** Deployment Foundation | M1 | ~5.5 ew |
 | **M1.3B** Cloud Infrastructure | M1 | ~6 ew |
 | **M1.4** Platform Smoke Test | *(release gate)* | ~1.5 ew |
 | **M2.0** Provider Simulation Framework | *(internal enablement)* | ~17–24 ew |
@@ -141,7 +141,7 @@ M1 is split into three; M2.0 is inserted before data ingestion. **All other mile
 | M3 Knowledge Graph & Observation Engine | M3 | ~17–23 ew |
 | M4–M15 | M4–M13 | ~160–220 ew |
 
-**Total to GA: ~230–310 ew.** See §1 for calendar at various team sizes.
+**Total to GA: ~232–312 ew.** See §1 for calendar at various team sizes.
 
 ---
 
@@ -285,7 +285,7 @@ Every milestone specifies: Scope · Simulator Requirement · Demo Scenario · **
 
 **Scope:** Production Docker images (API, worker) · production Docker Compose stack · health checks · readiness checks · secrets management · migration runner · local production deployment.
 
-**Effort:** ~4 ew · **Critical path:** T19→T20→T21 = 4 ew serial · **Tasks:** T19–T21
+**Effort:** ~5.5 ew · **Critical path:** T19→T20→T21→T21b = 5.5 ew serial · **Tasks:** T19–T21b
 
 **Simulator requirement:** ❌ Not required.
 
@@ -307,6 +307,25 @@ Every milestone specifies: Scope · Simulator Requirement · Demo Scenario · **
 - [ ] Stack comes up from `docker compose up` alone, with no manual step
 - [ ] Security Invariants suite passes **against the composed stack**, not only against a developer database
 
+**Disaster Recovery Validation (T21b):**
+
+Restarting any component must lose nothing. Each row is a deliberate restart with assertions taken before and after — not an inference from the design.
+
+| Restarted | Must survive |
+|---|---|
+| **PostgreSQL** | Unrelayed outbox rows; dead letters; the idempotency ledger. On reconnect the relay resumes from where it stopped, with no event relayed twice and none skipped. |
+| **Redis** | Queued-but-unprocessed events. Redis is a *transport*, not the system of record — anything lost from the queue is still in the outbox and is re-relayed. This is the property the outbox exists to provide, and the restart is what proves it rather than assuming it. |
+| **API** | Nothing in flight is acknowledged-then-lost: a request that returned 201 has its state and its events committed together. Authentication survives because sessions live in Better Auth's tables and tokens are stateless — no user is signed out by an API restart. |
+| **Workers** | In-flight jobs. A worker killed mid-handler must not leave a consumed idempotency claim, so the redelivered event is processed exactly once on retry rather than dropped as a duplicate. |
+
+Also asserted across every restart:
+
+- **Tenant isolation holds** — the Security Invariants suite is re-run after each restart, not only at start. A pooled connection carrying stale `SET LOCAL` state, or a role that reconnected with different attributes, would show up here and nowhere else.
+- **Event ordering per entity is preserved** — the relay claims in `event_id` order within a workspace using `FOR UPDATE SKIP LOCKED`; a restart must not reorder events for a given aggregate. Cross-entity ordering is explicitly *not* guaranteed and is asserted not to be relied upon.
+- **No silent data loss** — event counts are reconciled across the restart boundary: published = relayed + pending, always.
+
+**Why this belongs to M1.3A rather than M1.3B:** these are properties of the *application*, not of AWS. A worker that loses in-flight jobs on SIGTERM loses them identically on ECS, but there the restart is slower, the logs are further away, and the failure looks like an infrastructure problem. Proving resilience locally means that when something does break in M1.3B, infrastructure is the only remaining suspect.
+
 **User-visible outcome:** None directly. The internal outcome is that "it works on my machine" stops being a meaningful distinction — the thing that runs locally is the thing that will run in production.
 
 **Definition of Done:**
@@ -314,6 +333,8 @@ Every milestone specifies: Scope · Simulator Requirement · Demo Scenario · **
 - [ ] Secrets sourced from environment with a documented local mechanism that shares no values with production
 - [ ] Migration runner documented as a release step, not a service behaviour
 - [ ] `docs/architecture/13-deployment.md` updated with the container topology as built
+- [ ] Disaster Recovery Validation passes for all four components
+- [ ] **`signora_platform/` declared frozen** (CLAUDE.md §20a) — subsequent milestones change it only for security fixes, production defects, or approved architectural changes
 - [ ] AC-3A passed
 
 **Rollback strategy:**
@@ -614,8 +635,9 @@ Rationale: cheap unblocking work first (T1, T2, T6); logging (T3) before the rel
 | T19 | Production Docker images (API, worker, frontend) | M · 1.5 ew | — |
 | T20 | Migration runner + secrets management | M · 1.5 ew | T19 |
 | T21 | Production Compose stack + health/readiness wiring | M · 1 ew | T19, T20 |
+| T21b | Disaster Recovery Validation (restart Postgres, Redis, API, workers) | M · 1.5 ew | T21 |
 
-**Sequential order:** T19 → T20 → T21
+**Sequential order:** T19 → T20 → T21 → T21b
 
 ### M1.3B — Cloud Infrastructure
 
@@ -793,7 +815,7 @@ All four are test-enforced, not conventions.
 |---|---|---|
 | **AC-1 — Event Bus Contract** | M1.1 | At-least-once delivery; platform-owned idempotency; DLQ; `correlation_id` traced end-to-end |
 | **AC-2 — Auth Boundary Integrity** | M1.2 | No private key in Python tier; claims match contract exactly; contract test green |
-| **AC-3A — Application Deployability** | M1.3A | Stack starts from production images alone; migrations run under the migration identity; each tier connects under its own least-privileged role; readiness distinguishes liveness from dependency failure |
+| **AC-3A — Application Deployability** | M1.3A | Stack starts from production images alone; migrations run under the migration identity; each tier connects under its own least-privileged role; readiness distinguishes liveness from dependency failure; **restarting any component loses no queued events, pending work, tenant isolation, or per-entity ordering** |
 | **AC-3B — Deployment & Rollback** | M1.3B | Rollback executed and timed; expand-then-contract migrations; non-superuser connection in a deployed environment |
 | **AC-3C — Platform Verification** | M1.4 | One command verifies the whole platform; every stage proven to fail loudly when deliberately broken |
 | **AC-4 — Simulator Fidelity** | M2.0 | Identical adapter contract; config-only switching; enters only at Provider layer; determinism proven; production guard test-enforced |

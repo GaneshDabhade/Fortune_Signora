@@ -80,7 +80,8 @@ jobs:
         run: |
           PGPASSWORD=signora psql -h localhost -U signora -d signora \
             -c "CREATE ROLE signora_app LOGIN PASSWORD 'signora_app_local_dev';" \
-            -c "CREATE ROLE signora_auth LOGIN PASSWORD 'signora_auth_local_dev';"
+            -c "CREATE ROLE signora_auth LOGIN PASSWORD 'signora_auth_local_dev';" \
+            -c "CREATE ROLE signora_relay LOGIN PASSWORD 'signora_relay_local_dev';"
 
       - name: Apply migrations
         run: uv run alembic upgrade head

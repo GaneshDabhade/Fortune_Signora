@@ -18,7 +18,7 @@ from typing import Any
 from arq import create_pool
 from arq.connections import RedisSettings
 
-from signora_platform.db import create_engine, create_session_factory
+from signora_platform.db import create_relay_engine, create_session_factory
 from signora_platform.event_bus import ArqQueuePublisher, OutboxRelay, registry
 from signora_platform.observability import (
     configure_error_tracking,
@@ -40,7 +40,16 @@ async def run() -> None:
     configure_error_tracking(settings)
     metrics = configure_metrics(settings)
 
-    engine = create_engine(settings)
+    if settings.relay_database_url is None:
+        # Not fatal — a single-role local setup is legitimate — but never
+        # silent: running the relay as the application role restores the
+        # cross-workspace read path migration 0006 closed.
+        logger.warning(
+            "relay running under the application identity",
+            extra={"reason": "SIGNORA_RELAY_DATABASE_URL not configured"},
+        )
+
+    engine = create_relay_engine(settings)
     instrument_sqlalchemy(engine)
     session_factory = create_session_factory(engine)
     redis = await create_pool(RedisSettings.from_dsn(str(settings.redis_url)))

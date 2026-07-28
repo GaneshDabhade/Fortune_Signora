@@ -33,6 +33,81 @@ M2.1 → M15                 ░░░░░░░░░░░░░░░░░
 | Provider simulation | **0%** — newly scoped (M2.0) |
 | AI capability | **Level 0 of 12** ([AI_MATURITY_ROADMAP.md](AI_MATURITY_ROADMAP.md)) |
 
+---
+
+## Platform Health Metrics
+
+Permanent indicators, reported every milestone. Each is machine-checked — none is a judgement call — so a number moving is evidence rather than opinion.
+
+### Architecture Stability
+
+How much the agreed architecture is churning. Sustained instability means the design is being discovered during implementation rather than before it.
+
+| Indicator | Current | Target |
+|---|---|---|
+| ADRs superseded or reversed since ratification | **0 of 27** | 0 — reversal means the decision was made too early |
+| Documents amended for *drift* (code disagreed with docs) | **2** (11-tenancy, 18-authentication) | Trending to 0 |
+| Documents amended for *new decisions* | 3 | Healthy — this is the process working |
+| Unplanned architectural changes mid-milestone | **0** | 0 — these belong to the RFC process |
+| `signora_platform/` freeze status | 🔓 **Unfrozen until M1.3A** | 🔒 Frozen from M1.3A (CLAUDE.md §20a) |
+
+**Reading:** stable. No ratified decision has been reversed. Both drift amendments were found by writing tests that asserted the documented behaviour, not by a production incident.
+
+### Foundation Health
+
+Whether the substrate the 13 pipeline modules will be built on is sound.
+
+| Indicator | Current | Target |
+|---|---|---|
+| Backend tests | **289 passing**, 0 skipped, 0 xfail | 0 skipped — a skipped test is an untested claim |
+| Coverage | **95.84%** (CI gate 95%) | ≥95% |
+| mypy strict | Clean, 108 files | Clean |
+| Migrations reversible | **7 of 7** revisions | 100% |
+| Platform modules with a failure-path test | 12 of 12 | 100% |
+| Open production defects | **0** | 0 |
+| Defects found by tests vs. by use | **5 of 5 by tests** | All — a defect found in use is a missing test |
+
+**Reading:** sound. The metric worth watching is the last one: every defect so far was found by a test written to look for it, four of them by deliberately breaking a guarantee to check the test bites.
+
+### Security Invariant Status
+
+The permanent architectural guarantees. A drop here is never a test problem.
+
+| Category | Invariants | Status |
+|---|---|---|
+| Authentication | 15 | ✅ All passing |
+| Authorization | 11 | ✅ All passing |
+| Tenant Isolation Policy | 12 | ✅ All passing |
+| Database privilege separation | 9 | ✅ All passing |
+| Platform durability | 12 | ✅ All passing |
+| **Total** | **59** | ✅ **59 / 59** |
+
+| Indicator | Current | Target |
+|---|---|---|
+| Invariants proven to fail when their guarantee is removed | **59 of 59** | 100% — an unverified invariant may assert nothing |
+| Invariants weakened or removed to make a change pass | **0** | 0, permanently |
+| Milestones adding invariants | 2 of 2 since introduction | Every milestone (AC-13) |
+| Tables unclassified under the Tenant Isolation Policy | **0** | 0 — build fails otherwise |
+
+**Reading:** healthy, with one caveat worth keeping visible. Writing this suite surfaced two of my own tests asserting nothing — a backoff cap compared against itself, and a marker hook that silently marked the whole suite. Both were caught only by deliberately breaking the guarantee. **The "proven to fail" column is the one that matters; the count alone would have looked identical while two tests were inert.**
+
+### Cross-Module Boundary Violations
+
+Whether the modular monolith is staying modular. These are the violations that are cheap now and structural later.
+
+| Indicator | Current | Target |
+|---|---|---|
+| import-linter contracts | **3 kept, 0 broken** | 0 broken |
+| Contracts proven to fail on a deliberate violation | 3 of 3 | 100% |
+| Cross-module imports bypassing `public/` | **0** | 0 |
+| Direct cross-module database access | **0** | 0 |
+| Modules reading platform infrastructure tables | **0** (enforced by grant, not convention) | 0 |
+| Synchronous cross-module calls | **0** — all inter-module communication is events | Exceptions require approval |
+
+**Reading:** clean, but the sample is small — one module cannot violate a boundary with itself. This metric only becomes meaningful from M2.1, when a second module exists. The contracts are in place *before* they can be broken, which is the point.
+
+---
+
 ### Calendar under sequential execution
 
 Total effort is unchanged at **~225–305 ew**. Calendar time depends entirely on staffing, and sequential execution forfeits parallel compression:

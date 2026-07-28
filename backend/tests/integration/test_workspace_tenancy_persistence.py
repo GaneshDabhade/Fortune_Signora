@@ -65,12 +65,19 @@ class TestCreateWorkspace:
         assert members[0].role is WorkspaceRole.OWNER
 
     async def test_writes_both_events_to_the_outbox(
-        self, session_factory: async_sessionmaker[AsyncSession]
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
     ) -> None:
+        """The outbox is read under the privileged identity, never the
+        application's: the application publishes events and is forbidden from
+        reading them back (migration 0006). A test that read them as
+        ``signora_app`` would be asserting a capability the architecture
+        deliberately removed."""
         user_id = uuid4()
         workspace_id = await _create_workspace(session_factory, name="Acme", user_id=user_id)
 
-        async with session_factory() as session:
+        async with admin_session_factory() as session:
             rows = (
                 await session.execute(
                     text(
@@ -87,11 +94,13 @@ class TestCreateWorkspace:
         assert all(row.relayed_at is None for row in rows)
 
     async def test_all_events_from_one_operation_share_a_correlation_id(
-        self, session_factory: async_sessionmaker[AsyncSession]
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
     ) -> None:
         await _create_workspace(session_factory, name="Acme", user_id=uuid4())
 
-        async with session_factory() as session:
+        async with admin_session_factory() as session:
             correlation_ids = (
                 (await session.execute(text("SELECT DISTINCT correlation_id FROM outbox_event")))
                 .scalars()
@@ -101,11 +110,13 @@ class TestCreateWorkspace:
         assert len(correlation_ids) == 1
 
     async def test_member_added_is_caused_by_workspace_created(
-        self, session_factory: async_sessionmaker[AsyncSession]
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
     ) -> None:
         await _create_workspace(session_factory, name="Acme", user_id=uuid4())
 
-        async with session_factory() as session:
+        async with admin_session_factory() as session:
             created_id = (
                 await session.execute(
                     text("SELECT event_id FROM outbox_event WHERE event_type='workspace.created'")
@@ -123,7 +134,9 @@ class TestCreateWorkspace:
         assert member_causation == created_id
 
     async def test_failed_operation_writes_neither_state_nor_events(
-        self, session_factory: async_sessionmaker[AsyncSession]
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
     ) -> None:
         """The outbox insert and the domain write share one transaction, so a
         failure after publishing must roll back both — this is the guarantee
@@ -165,6 +178,8 @@ class TestCreateWorkspace:
                     ListWorkspaceMembersInput(workspace_id=workspace_id, limit=50, after=None)
                 )
             ).members
+
+        async with admin_session_factory() as session:
             outbox_count = (
                 await session.execute(text("SELECT count(*) FROM outbox_event"))
             ).scalar_one()

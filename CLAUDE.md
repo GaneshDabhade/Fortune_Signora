@@ -80,6 +80,8 @@ Claude must:
 - Every unit of work (request or event handler) must establish `SET LOCAL app.workspace_id` from a verified source before executing any query against workspace-owned tables. `SET` (not scoped to the transaction) must never be used for this.
 - Even with RLS in place, queries must still explicitly filter by `workspace_id` as defense-in-depth — RLS is the authoritative control, not the only one.
 - A module owns its own tables. No other module's code may write to them directly, and ideally no other module's database role can either.
+- **Platform infrastructure tables are owned exclusively by platform services.** `outbox_event`, `processed_event`, `dead_letter_event`, `alembic_version`, and any future internal scheduler tables are not module data. A business module must never query one — not to check whether an event was relayed, not to inspect a dead letter, not for debugging. These tables span every workspace and deliberately carry no RLS, so the grant is the only thing separating tenants there: the application role publishes (`INSERT`) and cannot read, and only the relay identity (`signora_relay`) consumes. Claude must never restore a read grant to `signora_app` to make code work, and never add module code that reads an infrastructure table (`docs/architecture/11-tenancy.md`, migration `0006`).
+- **Every new table is classified before it ships.** Add it to `TENANT_OWNED_TABLES` or `PLATFORM_INFRASTRUCTURE_TABLES` in `backend/tests/security_invariants/tenancy_policy.py`, in the same change that creates it. Tenant-owned tables must satisfy the full Tenant Isolation Policy: a non-nullable tenant identifier, RLS enabled **and forced**, policies covering `SELECT`/`INSERT`/`UPDATE` separately, no runtime role able to bypass RLS, and a regression test proving enforcement rather than asserting configuration. Classification is never inferred from the presence of a `workspace_id` column — a table that simply forgot the column would be exempted by omission, which is exactly how tenancy gaps reach production.
 - Any schema change must be accompanied by a corresponding update to the relevant architecture documentation in the same change — undocumented schema drift is treated as a bug, per Claude Rules (§21).
 - Migrations are additive and reversible by default; destructive migrations (drops, non-backward-compatible column changes) require explicit confirmation before being applied, consistent with the general caution this project applies to hard-to-reverse actions.
 - **Migration credentials and runtime credentials are separate identities, always.** This is a permanent engineering rule, not a deployment preference:
@@ -211,6 +213,26 @@ Claude must actively recognize and avoid:
 - Trusting client-supplied workspace identifiers without server-side membership verification.
 - Logging without `workspace_id`/`correlation_id`, making a pipeline run untraceable.
 
+## 20a. Platform Freeze
+
+**On completion of M1.3A, `signora_platform/` is architecturally frozen.**
+
+The platform is the substrate all thirteen pipeline modules are built on: the event bus, tenancy primitives, authentication verification, authorization, observability, pagination, and settings. Once it is proven deployable, its value comes from being *stable* — a module written against it in M7 must behave the same as one written in M2.
+
+After the freeze, Claude must not modify `signora_platform/` internals except for:
+
+- **Security fixes** — a tenancy, authentication, authorization, or secrets defect. Fix it, and add a Security Invariant proving it stays fixed.
+- **Production defects** — the platform is demonstrably wrong or losing data. A module finding the platform inconvenient is not a defect.
+- **Explicitly approved architectural changes** — raised through the RFC process in `docs/architecture/01-overview.md` and approved before implementation, never decided inside a coding session.
+
+What the freeze does **not** prohibit: adding a new subscription, registering a new event type, adding a worker pool, or extending the Security Invariants suite. Those are uses of the platform, not changes to it.
+
+What it does prohibit: reshaping a platform interface because one module would find a different shape convenient, adding a parameter for a single caller, or "small" refactors of platform internals bundled into a module's milestone. If a module cannot be built without changing the platform, that is a finding to raise — it usually means either the module or the platform is modelled wrongly, and both answers belong to the architecture, not to the module's implementation.
+
+**A frozen platform is not a finished one.** It is one where change requires a stated reason.
+
+---
+
 ## 21. Rules for Claude Code
 
 ### Claude must never
@@ -226,6 +248,8 @@ Claude must actively recognize and avoid:
 - Mix infrastructure concerns with business logic inside a domain or application layer.
 - Introduce new frameworks or major dependencies without explicit approval.
 - Change database schema without updating the corresponding architecture documentation in the same change.
+- Modify `signora_platform/` internals after the M1.3A freeze without a security fix, a production defect, or explicit approval (§20a).
+- Read a platform infrastructure table from module code, or restore a read grant on one to `signora_app` (§8).
 
 ### When implementing, Claude must always
 

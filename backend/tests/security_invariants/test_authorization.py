@@ -194,51 +194,8 @@ class TestRowLevelSecurity:
 
         assert visible == 0
 
-    async def test_every_workspace_owned_table_has_rls_enabled_and_forced(
-        self, admin_session_factory: async_sessionmaker[AsyncSession]
-    ) -> None:
-        """Catches the realistic future regression: a module adds a table
-        with a ``workspace_id`` column and forgets its policy. Nothing else
-        in the suite would notice until that module's data leaked.
-
-        ``FORCE`` matters separately from ``ENABLE``: without it, the table's
-        owner is exempt from its own policies.
-        """
-        async with admin_session_factory() as session, session.begin():
-            rows = (
-                await session.execute(
-                    text(
-                        """
-                        SELECT c.relname, c.relrowsecurity, c.relforcerowsecurity
-                        FROM pg_class c
-                        JOIN pg_namespace n ON n.oid = c.relnamespace
-                        JOIN information_schema.columns col
-                          ON col.table_schema = n.nspname
-                         AND col.table_name = c.relname
-                         AND col.column_name = 'workspace_id'
-                        WHERE n.nspname = 'public' AND c.relkind = 'r'
-                        ORDER BY c.relname
-                        """
-                    )
-                )
-            ).all()
-
-        unprotected = [name for name, enabled, forced in rows if not (enabled and forced)]
-
-        assert unprotected == PLATFORM_TABLES_WITHOUT_RLS, (
-            f"table(s) with workspace_id but no forced RLS: {unprotected}. "
-            "Add the policy in the same migration that creates the table "
-            "(docs/architecture/11-tenancy.md), or extend the documented "
-            "exception list if this is deliberate."
-        )
-
-
-# The outbox relay and dead-letter handling must sweep every workspace's
-# rows in one pass, which tenant-scoped RLS would prevent by construction.
-# These are platform-owned tables, not module-owned data
-# (docs/architecture/11-tenancy.md, "Platform Tables Are Not Workspace-Owned").
-#
-# The exception is narrow and deliberately spelled out here rather than
-# inferred: any *other* table reaching this list is a bug, and the test above
-# fails until it is either given a policy or added with a stated reason.
-PLATFORM_TABLES_WITHOUT_RLS = ["dead_letter_event", "outbox_event"]
+    # The structural "does every tenant table have forced RLS" check moved
+    # to test_tenancy_policy.py, where it is one clause of the full Tenant
+    # Isolation Policy rather than a lone assertion. This file keeps the
+    # behavioural proof that isolation actually holds; that file proves the
+    # configuration is present on every table it should be.

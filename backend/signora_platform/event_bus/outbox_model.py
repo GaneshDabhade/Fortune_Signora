@@ -49,7 +49,16 @@ class OutboxEventModel(Base):
     # partial index is built on.
     relayed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    relay_attempts: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+    # `default` alongside `server_default` is deliberate. With only a
+    # server default, SQLAlchemy fetches the generated value back with
+    # `INSERT ... RETURNING`, which requires SELECT on the table — and the
+    # application role has INSERT only, because it publishes events but must
+    # never read the outbox (migration 0006). Supplying the value from
+    # Python keeps the insert a plain INSERT. The server default remains for
+    # rows written outside the ORM.
+    relay_attempts: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
     """Incremented each time the relay fails to enqueue this event.
 
     Distinct from a *consumer's* retry count: this counts failures of the

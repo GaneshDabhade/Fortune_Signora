@@ -21,6 +21,19 @@ class Settings(BaseSettings):
     database_pool_size: int = 10
     database_pool_max_overflow: int = 5
 
+    # The outbox relay connects under its own identity (`signora_relay`),
+    # which is the only runtime role permitted to READ platform
+    # infrastructure tables. The application role may publish into the
+    # outbox but never read it back — those tables span every workspace and
+    # deliberately carry no RLS (migration 0006,
+    # docs/architecture/11-tenancy.md).
+    #
+    # Optional so that a single-role local setup still starts; the relay
+    # falls back to `database_url` and logs that it is doing so. In a
+    # deployed environment it is always set, and the Security Invariants
+    # assert the two roles are distinct.
+    relay_database_url: PostgresDsn | None = None
+
     redis_url: RedisDsn = RedisDsn("redis://localhost:6379/0")
 
     # --- JWT boundary (ADR-0026) ---

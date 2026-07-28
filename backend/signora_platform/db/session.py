@@ -41,6 +41,27 @@ def create_engine(settings: Settings) -> AsyncEngine:
     )
 
 
+def create_relay_engine(settings: Settings) -> AsyncEngine:
+    """Engine for the outbox relay, under the `signora_relay` identity.
+
+    The relay is the only runtime process permitted to read platform
+    infrastructure tables, which span every workspace. Falling back to
+    `database_url` keeps a single-role local setup working, but the caller
+    is expected to say so out loud — silently running the relay as the
+    application role would reinstate exactly the cross-workspace read path
+    migration 0006 closed.
+    """
+    url = settings.relay_database_url or settings.database_url
+    return create_async_engine(
+        str(url),
+        # The relay is a single lightweight process running one batch loop;
+        # it does not need the API's pool.
+        pool_size=2,
+        max_overflow=1,
+        pool_pre_ping=True,
+    )
+
+
 def create_session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
     return async_sessionmaker(engine, expire_on_commit=False)
 

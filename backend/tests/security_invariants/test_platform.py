@@ -69,7 +69,9 @@ def _dispatcher(
 
 class TestEventDurability:
     async def test_an_event_is_committed_atomically_with_the_state_change(
-        self, session_factory: async_sessionmaker[AsyncSession]
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
     ) -> None:
         """The transactional outbox exists so an event cannot describe a
         write that never landed, and a write cannot land unannounced. If the
@@ -87,7 +89,9 @@ class TestEventDurability:
                 )
                 raise RuntimeError("caller fails after the domain write")
 
-        async with session_factory() as session, session.begin():
+        # Read under the privileged identity: the application publishes into
+        # the outbox and is forbidden from reading it back (migration 0006).
+        async with admin_session_factory() as session, session.begin():
             outbox_rows = (
                 await session.execute(text("SELECT count(*) FROM outbox_event"))
             ).scalar_one()

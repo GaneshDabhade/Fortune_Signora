@@ -56,6 +56,24 @@ Accordingly:
 - Adding a table to any module requires granting it to `signora_app` in the same migration that creates it, or the application fails closed with a permission error.
 - The integration suite asserts, session-wide, that its connection cannot bypass RLS (`verify_app_role_is_rls_bound`). Without that guard, every isolation test in the suite would pass vacuously against a superuser connection — which is exactly how this gap was originally found.
 
+### Platform Infrastructure Tables
+
+Not every table holds tenant data. `outbox_event`, `processed_event`, `dead_letter_event`, and `alembic_version` are **platform infrastructure**: owned by platform services, spanning every workspace by design. The relay cannot sweep the outbox one tenant at a time, so tenant-scoped RLS on these tables would prevent them from doing their job.
+
+**Their isolation is by privilege, not by policy** (migration `0006`):
+
+| Role | `outbox_event` | `dead_letter_event` | `processed_event` |
+|---|---|---|---|
+| `signora_app` (API, workers) | `INSERT` | `INSERT` | `SELECT`, `INSERT` |
+| `signora_relay` (outbox relay) | `SELECT`, `UPDATE` | full | `SELECT`, `INSERT` |
+
+**The application publishes; only the relay consumes.** Business modules must never query an infrastructure table. Before migration `0006` the application role held full DML on all of them, which meant an unfiltered `SELECT * FROM outbox_event` in any module returned every workspace's event payloads — RLS was absent by design, and the grant was the only thing that could have stopped it.
+
+Two consequences worth knowing:
+
+- **`processed_event` keeps `SELECT` for `signora_app`.** The idempotency claim is `INSERT ... ON CONFLICT DO NOTHING`, and PostgreSQL requires `SELECT` on the table to evaluate the conflict target — verified empirically, not assumed. The ledger holds only `(consumer_name, event_id)`, no payload, so it is not a cross-tenant read path.
+- **ORM models on these tables must not rely on server-side defaults.** SQLAlchemy fetches them back with `INSERT ... RETURNING`, which requires `SELECT`. `OutboxEventModel.relay_attempts` therefore carries a Python-side `default` alongside its `server_default`.
+
 ### Every Tier Connects Under Its Own Role
 
 The rule above applies to *every* process holding a connection string, not only the API. A single tier connecting as the owner reopens the gap for the whole database.
@@ -63,8 +81,11 @@ The rule above applies to *every* process holding a connection string, not only 
 | Role | Used by | Privileges |
 |---|---|---|
 | owner (`signora`) | Migrations only, as a release step | Full |
-| `signora_app` | FastAPI API, ARQ workers | DML on application tables; `NOBYPASSRLS`; **no access to `auth`** |
+| `signora_app` | FastAPI API, ARQ workers | DML on tenant tables; publish-only on infrastructure tables; `NOBYPASSRLS`; **no access to `auth`** |
 | `signora_auth` | Next.js / Better Auth | Owns the `auth` schema; `NOBYPASSRLS`; no grant on application tables |
+| `signora_relay` | Outbox relay (`SIGNORA_RELAY_DATABASE_URL`) | Read/write on infrastructure tables; `NOBYPASSRLS`; **no grant on any tenant table** |
+
+`signora_relay` is privileged with respect to *platform* tables and powerless with respect to *tenant* ones. It reads events across all workspaces because that is its function; it still cannot read a workspace's rows.
 
 `signora_app` and `signora_auth` are mutually exclusive by construction: migration `0005` revokes `signora_app` from the `auth` schema, and `signora_auth` is never granted anything in `public`. A compromise of either tier reaches only that tier's data.
 
@@ -174,7 +195,8 @@ Using native PostgreSQL 17 RLS rather than application-only filtering means tena
 - Never construct a database session without first setting `app.workspace_id` for that unit of work.
 - Always use transaction-scoped settings (`SET LOCAL` / `set_config(..., true)`), never session-scoped ones.
 - Treat `workspace_id` as required, non-nullable on every new workspace-owned table and event from day one.
-- Grant every new table to `signora_app` in the same migration that creates it.
+- Grant every new tenant table to `signora_app` in the same migration that creates it.
+- Declare every new table in `backend/tests/security_invariants/tenancy_policy.py` as either tenant-owned or platform infrastructure. A table in neither list fails the build — classification is never inferred, because a table that simply forgot its `workspace_id` would otherwise be exempted by omission rather than caught.
 - Write at least one integration test per new workspace-owned table that issues a **`WHERE`-less query** and asserts only the current workspace's rows come back.
 - Test both session shapes: **user-scoped** (no workspace selected) and **workspace-scoped**. A policy can be correct in one and broken in the other, which is exactly how the migration-0003 defect went unnoticed.
 - Prove a regression test bites before trusting it: roll the fixing migration back, confirm the test fails, roll forward. A test that has never been seen to fail is not known to work. That is the assertion that actually proves RLS is doing the work rather than the application's own filtering.
