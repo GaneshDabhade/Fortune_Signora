@@ -3,7 +3,7 @@
 > **Owner:** Technical Program Manager · **Audience:** Everyone
 > **Cadence:** Updated at every milestone boundary and every sprint close. Updating this is part of the [Definition of Done](IMPLEMENTATION_ROADMAP.md#12-definition-of-done-global).
 > **Last updated:** 2026-07-28 · **Reporting period:** M1.2 delivery
-> **Revision:** v8 — **M1.4 Platform Smoke Test complete: the platform foundation is closed.** `make smoke` verifies the whole stack in one command. **Cloud infrastructure deferred to M14.5** (sequencing only — see the Infrastructure Contract)
+> **Revision:** v9 — **Platform Foundation approved and closed.** Eight platform contracts ratified. **M1.5 Frontend Foundation inserted** before M2.0; business UI deferred until real provider data exists; cloud infrastructure at M14.5. Sequencing only — the approved architecture is unchanged
 
 ---
 
@@ -15,7 +15,8 @@ M1.1 Platform Runtime      █████████████████�
 M1.2 Auth Boundary         ████████████████████ 100%  ✅ Complete
 M1.3A Deployment Foundation ███████████████████ 100%  ✅ Complete · platform FROZEN
 M1.4 Platform Smoke Test    ███████████████████ 100%  ✅ Complete · FOUNDATION CLOSED
-M2.0 Simulation Framework   ░░░░░░░░░░░░░░░░░░░   0%  🔴 CURRENT — next
+M1.5 Frontend Foundation    ░░░░░░░░░░░░░░░░░░░   0%  🔴 CURRENT — next
+M2.0 Simulation Framework   ░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (after M1.5)
 M14.5 Cloud Infrastructure  ░░░░░░░░░░░░░░░░░░░   0%  ⏸ Deferred to Production Readiness
 M2.1 → M15                 ░░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued
 ```
@@ -24,14 +25,33 @@ M2.1 → M15                 ░░░░░░░░░░░░░░░░░
 
 | Dimension | Status |
 |---|---|
-| **Overall completion to GA** | **~19%** by engineering effort (~49 of ~239–319 total engineer-weeks; ~190–270 ew remaining) |
+| **Overall completion to GA** | **~18%** by engineering effort (~49 of ~246–326 total engineer-weeks; ~197–277 ew remaining). *The percentage fell without work being lost: M1.5 makes explicit ~14.5 ew of frontend platform work previously buried inside M12's estimate.* |
 | Architecture & design | **100%** — 19 documents, 27 ADRs, ratified and internally consistent |
 | Core modules | **1 of 14** (7%) |
 | Backend platform | **100% of foundation scope** — 🔒 frozen from M1.3A; 0% of pipeline scope |
-| Frontend | **~25%** — auth boundary, shell, and API client complete |
+| Frontend | **~15%** — auth boundary, minimal shell, and API client complete; the frontend *platform* is M1.5 |
 | Infrastructure-as-code | **~35%** — local production stack complete and continuously verified; cloud IaC deferred to M14.5 |
 | Provider simulation | **0%** — newly scoped (M2.0) |
 | AI capability | **Level 0 of 12** ([AI_MATURITY_ROADMAP.md](AI_MATURITY_ROADMAP.md)) |
+
+---
+
+## Platform Contracts
+
+Ratified 2026-07-28. These are **foundation capabilities, not work in progress** — the substrate every later milestone is built on.
+
+| Contract | Established | What it guarantees |
+|---|---|---|
+| Platform Runtime | M1.1 | Outbox relay, dispatch, platform-owned idempotency, retry, dead-lettering, worker pools |
+| Authentication Boundary | M1.2 | Better Auth issues, FastAPI only verifies; the API cannot mint a token it accepts (ADR-0026) |
+| Deployment Foundation | M1.3A | Production images, per-tier identities, concurrency-safe migration runner, restart-safe stack |
+| Platform Smoke Test | M1.4 | One command verifies the whole platform; required before every milestone and release |
+| Security Invariants | M1.2–M1.4 | 59 permanent architectural guarantees, each proven to fail when its guarantee is removed |
+| Tenant Isolation Policy | M1.3A | Every table classified; tenant tables carry forced RLS, required policies, and a non-null identifier |
+| Platform Infrastructure Policy | M1.3A | Infrastructure tables owned by platform services; the application publishes and cannot read |
+| Platform Freeze | M1.3A | `signora_platform/` changes only for a security fix, production defect, or approved change |
+
+**One change since the freeze:** the relay's transient-failure handling (M1.4), under the production-defect exemption.
 
 ---
 
@@ -198,29 +218,33 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 
 ## Current Milestone
 
-### ✅ M1.4 — Platform Smoke Test · closed 2026-07-28 · **the platform foundation is closed**
+### 🔄 M1.5 — Frontend Foundation · **CURRENT** · ~14.5 ew
 
-`make smoke` — 16 stages, ~46 seconds warm, in CI on every merge and pull request.
+**Awaiting approval.** Task breakdown below; no implementation started.
 
-```
-Build · Startup · Migrations · Identities · Image hygiene · Health · Readiness ·
-Authentication · JWT verification · Authorization · RLS · Event bus · Relay ·
-Workers · Security Invariants · Teardown
-```
+| Order | Task | Complexity | Status |
+|---|---|---|---|
+| 1 | T25 Design system: tokens, theme, dark mode, Tailwind config | M · 1.5 ew | ⬜ |
+| 2 | T26 Shared UI component library | L · 2.5 ew | ⬜ |
+| 3 | T28 TanStack Query + typed API client wiring | M · 1.5 ew | ⬜ |
+| 4 | T27 Application shell: layout, navigation, responsive frame | M · 1.5 ew | ⬜ |
+| 5 | T29 Session management, auth integration, workspace selector | M · 2 ew | ⬜ |
+| 6 | T30 Permission-aware routing | M · 1.5 ew | ⬜ |
+| 7 | T31 Error boundaries, loading states, empty states, toasts | M · 1.5 ew | ⬜ |
+| 8 | T32 Global state management | S · 1 ew | ⬜ |
+| 9 | T33 Frontend testing foundation + component tests in CI | M · 1.5 ew | ⬜ |
 
-**Every stage was verified to fail when its guarantee was deliberately removed** — `/ready` returning 200 with the database down, a relay that dies on a transient error, an unpinned JWT algorithm, the API connecting as the owner, a secret baked into an image. A stage that has never failed may be asserting nothing.
+**Ordering rationale:** the design system before components, because a component built before its tokens hardcodes them. T28 before T27 so the shell is wired to real data from its first render rather than retrofitted. T33 last, when there are components worth testing.
 
-The Security Invariants run **last**, deliberately: the suite truncates every table, so anything asserted after it would be asserted against an empty database.
+**Critical path:** ~14.5 ew serial. T28 and T33 are the only tasks that parallelise cleanly at higher headcount.
 
-**Two defects found, both by the smoke test itself:**
+**Checkpoint:** AC-14 Frontend Foundation Integrity — every business screen addable without touching shell, routing, auth, or query infrastructure; **no mock business data in the codebase**; component tests in CI.
 
-1. **The relay died permanently on a transient database failure.** Stopping and starting PostgreSQL produced a DNS resolution failure inside `run_forever`; the exception propagated and the loop exited. Events kept accumulating in the outbox with nothing consuming them and **no error after the first** — a silent, total halt of the event pipeline.
+**Explicitly out of scope:** dashboard, companies, opportunities, timeline, signals, AI chat, recommendations, analytics — **and any mock business data.** Where a screen would show domain content it ships a designed empty state, which every screen needs permanently anyway.
 
-   The Disaster Recovery script had missed this: `compose restart` preserves the container's DNS entry, so the relay reconnected without ever having to resolve a name that was briefly gone. `stop`/`start` removes it, which is the harsher and more realistic failure. Fixed with capped-backoff retry that re-raises `CancelledError` so shutdown stays immediate; three regression tests added.
+**T33 repays scheduled debt.** `@vitejs/plugin-react` was dropped in M1.2 with its repayment scheduled for "the first milestone introducing frontend component testing". This is that milestone, and it is a *prerequisite* of T33 rather than a follow-up to it.
 
-   This is the **first and only change to `signora_platform/` since the freeze**, taken under the production-defect exemption (CLAUDE.md §20a). A relay that stops on a blip and loses no data but delivers nothing is squarely "demonstrably wrong".
-
-2. **Two bugs in the smoke script itself**, both of which would have made it lie. `... | grep -q X` exits on first match, SIGPIPEs `docker compose logs`, and under `set -o pipefail` becomes a pipeline failure — so the migration-identity check passed or failed on buffering timing. And matching `error` as a substring flagged `{"logger":"...observability.errors","message":"error tracking disabled"}`, an INFO line reporting correct behaviour. Both now match structured fields.
+**Demo Checklist:** 15 items — see [IMPLEMENTATION_ROADMAP.md §6](IMPLEMENTATION_ROADMAP.md#6-milestone-definitions).
 
 ---
 
@@ -231,7 +255,7 @@ Sequential execution — each begins only when the previous milestone's Demo Che
 | Order | Milestone | Effort | Simulator | Gate |
 |---|---|---|---|---|
 | 1 | **M2.0** Provider Simulation Framework | ~17–24 ew | ✅ builds it | AC-4 · identical adapter contract, config-only switching |
-| 2 | M2.1 → M14 | ~175–240 ew | mostly ✅ | Per roadmap |
+| 2 | M2.1 → M14 (pipeline + business UI) | ~175–240 ew | mostly ✅ | Per roadmap |
 | 3 | **M14.5** Cloud Infrastructure *(deferred from M1.3B)* | ~6 ew | ❌ | AC-3B · rollback executed and timed |
 | 4 | M15 GA readiness | ~20–27 ew | ✅ load at volume | Per roadmap |
 
@@ -269,7 +293,21 @@ A permanent platform capability, not throwaway tooling — used for local develo
 
 ## Current Sprint
 
-**Sprint:** M2.0 Sprint 1 — **awaiting approval.**
+**Sprint:** M1.5 Sprint 1 — **awaiting approval.**
+
+**Scope — M1.5 only.** Single stream; no concurrent milestone work.
+
+| Sprint 1 tasks | Rationale |
+|---|---|
+| T25 Design system | Zero dependencies; a component built before its tokens hardcodes them |
+| T26 Shared UI components | The long pole (2.5 ew) and what every later screen is assembled from |
+
+**The constraint that shapes this milestone:** no mock business data, anywhere. It is the one rule that keeps M1.5 a platform milestone rather than a half-built product — and the reason its output is designed empty states instead of populated screens.
+
+---
+
+<details>
+<summary>M2.0 detail (queued, after M1.5)</summary>
 
 **Scope — M2.0 only.** Single stream; no concurrent milestone work.
 
@@ -280,6 +318,8 @@ M2.0 is the largest milestone since M0 (~17–24 ew) and the first that builds p
 - **The simulator must never activate in production** — it would fabricate customer intelligence. Guarded by environment check, ingestion logging, health-endpoint visibility, and an alert, all test-enforced.
 
 **What the foundation now guarantees it.** `make smoke` runs before this milestone starts and after every change in it, so a regression in the substrate is attributable to the change that caused it rather than discovered weeks later.
+
+</details>
 
 ---
 
@@ -423,13 +463,15 @@ Encoded as a tracked deviation in `test_authorization.py::test_every_workspace_o
 
 ## Next Task
 
-### 🎯 M2.0 — Provider Simulation Framework
+### 🎯 M1.5 · T25 — Design system
 
-**The platform foundation is closed.** M0, M1.1, M1.2, M1.3A, and M1.4 are complete; `signora_platform/` is frozen; `make smoke` verifies the whole stack in one command. Everything from here builds *on* the substrate rather than adding to it.
+**Why first:** zero dependencies, and every component in T26 is built from its tokens. A component library started before its design tokens hardcodes colours, spacing, and type scale into fifty files.
 
-M2.0 precedes every pipeline module because it is what makes them testable: a permanent platform capability used for local development, integration and E2E testing, demos, AI evaluation, regression testing, performance benchmarking, and customer onboarding — not throwaway tooling.
+**Then:** T26 → T28 → T27 → T29 → T30 → T31 → T32 → T33.
 
-**Awaiting approval before beginning.** Task breakdown will be presented first, as with every prior milestone.
+**Then M2.0** Provider Simulation Framework, after which business screens become buildable against real domain models.
+
+**Awaiting:** approval of the M1.5 task breakdown, and a decision on the three dependency findings in [IMPLEMENTATION_ROADMAP.md §5b](IMPLEMENTATION_ROADMAP.md#5b-updated-implementation-order). Every task remains unassigned.
 
 ---
 
@@ -437,6 +479,7 @@ M2.0 precedes every pipeline module because it is what makes them testable: a pe
 
 | Date | Change |
 |---|---|
+| 2026-07-28 | v9 — **Platform Foundation approved and closed.** Eight platform contracts ratified (Platform Runtime, Authentication Boundary, Deployment Foundation, Platform Smoke Test, Security Invariants, Tenant Isolation Policy, Platform Infrastructure Policy, Platform Freeze). **M1.5 Frontend Foundation inserted** after M1.4 — frontend platform only, no business screens, no mock data. Business UI deferred until M2.0 produces real domain data. Cloud infrastructure confirmed at M14.5 with all task IDs and ADR references intact. Three dependency findings raised against the approved order (two graph inversions, five omitted modules, three unratified module names) — flagged, not silently reconciled. Sequencing only; the approved architecture is unchanged. |
 | 2026-07-28 | v8 — **M1.4 Platform Smoke Test complete; platform foundation closed.** `make smoke`: 16 stages, ~46s, in CI, every stage proven to fail when deliberately broken. Two defects found by it — a relay that died permanently on a transient database failure (first and only post-freeze platform change, under the production-defect exemption), and two bugs in the smoke script itself that would have made it lie. **Cloud infrastructure deferred from M1.3B to M14.5** — sequencing only, nothing removed or redesigned — with a ten-point Infrastructure Contract (roadmap §5a) binding every milestone until then. 313 tests, coverage 95.63%. |
 | 2026-07-28 | v7 — **M1.3A Deployment Foundation complete.** Production images (multi-stage, non-root, no secrets), concurrency-safe migration runner refusing runtime identities, 6-service production Compose stack, and Disaster Recovery Validation across Postgres/Redis/API/workers. Four defects found by running the stack rather than by tests — most seriously a worker that could never start while the whole suite passed. `signora_platform/` frozen. ADR-0022 updated with as-built topology. 310 tests, coverage 95.65%. |
 | 2026-07-28 | v6 — **M1.2 approved.** Security Invariants suite established: 47 permanent invariants across authentication, authorization, database, and platform, each proven to fail when its guarantee is deliberately removed; wired into CI as a separately-reported job. Migration/runtime credential separation adopted as a permanent engineering rule (CLAUDE.md §8). M1.3 split into M1.3A Deployment Foundation and M1.3B Cloud Infrastructure; M1.4 Platform Smoke Test added; AC-3 split into AC-3A/3B/3C and AC-13 added. `@vitejs/plugin-react` recorded as scheduled technical debt. One architectural question raised for decision: platform-table read scope. |

@@ -22,6 +22,15 @@ The first genuinely sellable moment is **M6**. That is a fact about the architec
 
 ---
 
+> **Implementation sequencing note (2026-07-28).** Two enablement milestones now precede product work: **M1.5 Frontend Foundation** (the frontend platform — shell, design system, routing, session, query layer; no business screens) and **M2.0 Provider Simulation Framework**. Neither appears below, because neither delivers customer-visible value on its own.
+>
+> **Product milestone order is unchanged.** Two consequences worth knowing:
+>
+> - **Business screens are deferred until realistic provider data exists.** Company, opportunity, signal, timeline, AI-recommendation, and analytics pages are built against real domain models, never mocked JSON — so they arrive from M2 onward rather than being sketched earlier.
+> - **Cloud infrastructure is deferred to Production Readiness**, immediately before GA. Until then there is no externally reachable environment: a demo is a local stack or a screen share. This is a deliberate, accepted cost — see [IMPLEMENTATION_ROADMAP.md §5b](IMPLEMENTATION_ROADMAP.md#5b-updated-implementation-order).
+>
+> M0's *first sellable moment* (M6, Qualified Opportunities) and every milestone's customer promise are unaffected.
+
 ## Milestone Map
 
 | Milestone | Phase | Label | Headline |

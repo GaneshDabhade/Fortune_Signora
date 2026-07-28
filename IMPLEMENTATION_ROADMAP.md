@@ -16,7 +16,7 @@
 **Implementation proceeds as one prioritized stream.** The roadmap's dependency graph governs *order*; it does not imply concurrency. Optimising for minimal context switching is the ruling constraint, not maximal parallelism.
 
 ```
-M1.1 Platform Runtime → M1.2 Authentication Boundary → M1.3A Deployment Foundation → M1.4 Platform Smoke Test
+M1.1 Platform Runtime → M1.2 Authentication Boundary → M1.3A Deployment Foundation → M1.4 Platform Smoke Test → M1.5 Frontend Foundation
      → M2.0 Provider Simulation Framework → M2.1 → M3 → … → M15
 ```
 
@@ -135,13 +135,14 @@ M1 is split into three; M2.0 is inserted before data ingestion. **All other mile
 | **M1.2** Authentication Boundary | M1 | ~11.5 ew |
 | **M1.3A** Deployment Foundation | M1 | ~5.5 ew |
 | **M1.4** Platform Smoke Test | *(foundation completion gate)* | ~1.5 ew |
+| **M1.5** Frontend Foundation | M1 | ~14.5 ew |
 | **M2.0** Provider Simulation Framework | *(internal enablement)* | ~17–24 ew |
 | M2.1 Provider Platform & Normalization | M2 | ~14–20 ew |
 | M3 Knowledge Graph & Observation Engine | M3 | ~17–23 ew |
 | M4–M15 | M4–M13 | ~160–220 ew |
 | **M14.5** Cloud Infrastructure *(deferred from M1.3B)* | *(production readiness)* | ~6 ew |
 
-**Total to GA: ~232–312 ew** — unchanged. See §1 for calendar at various team sizes.
+**Total to GA: ~246–326 ew** (M1.5 adds ~14.5 ew of frontend platform work previously absorbed inside M12). See §1 for calendar at various team sizes.
 
 ### Cloud Infrastructure is deferred, not removed
 
@@ -177,6 +178,62 @@ Each requirement below is already satisfied. The contract's purpose is that it s
 | **Production Docker images** | Multi-stage, non-root, no build toolchain in the runtime layer, immutable tags. | Both images; asserted by the smoke test. |
 
 **Claude must not accept a change that violates this contract**, including one that would be "fixed during M14.5". A violation is cheap to prevent and expensive to unwind after it has been built on. If a module appears to require statefulness, local disk, or configuration outside `Settings`, that is a finding to raise — not a temporary exception to take.
+
+---
+
+## 5b. Updated Implementation Order
+
+Approved 2026-07-28. **Sequencing only** — no module, technology, or contract changes.
+
+### Phase 1 — Foundation ✅ complete
+
+`M1.1 Platform Runtime` → `M1.2 Authentication Boundary` → `M1.3A Deployment Foundation` → `M1.4 Platform Smoke Test`
+
+The platform is architecturally stable. `signora_platform/` is frozen (CLAUDE.md §20a); the Platform Runtime, Authentication Boundary, Deployment Foundation, Platform Smoke Test, Security Invariants, Tenant Isolation Policy, Platform Infrastructure Policy, and Platform Freeze are **platform contracts** — foundation capabilities, not work in progress.
+
+### Phase 2 — Enablement
+
+`M1.5 Frontend Foundation` → `M2.0 Provider Simulation Framework`
+
+Neither builds a business feature. Together they are what makes every later milestone cheap: a frontend platform business screens plug into, and realistic domain data for them to render.
+
+### Phase 3 — Pipeline
+
+Follows the ratified dependency graph in [04-modules.md](docs/architecture/04-modules.md) and [05-module-dependencies.md](docs/architecture/05-module-dependencies.md), which fixes the order regardless of preference:
+
+```
+Provider Platform → Provider Normalization → Knowledge Graph → Observation Engine
+  → Business Event Engine → Signal Engine → Buying Score Engine → Opportunity Engine
+  → AI Platform (abstraction layer + Prompt Registry + eval harness)
+  → AI Reasoning Engine → AI Research Engine → Recommendation Engine → Timeline
+  → Revenue Intelligence Platform → Integrations → Billing & workflow
+```
+
+### Phase 4 — Production Readiness
+
+`M14.5 Cloud Infrastructure` *(deferred)* → `M15 GA readiness` → **General Availability**
+
+### Business UI is deferred to after M2.0
+
+No company, opportunity, signal, timeline, AI-recommendation, or analytics screen is built before the Provider Simulation Framework exists. **Business screens consume real domain models, never temporary mocked JSON.**
+
+A page built against hand-written JSON encodes a shape the domain does not have. The mock becomes the contract; the real model arrives; the page is rewritten — twice the work, and the first version silently teaches everyone the wrong model. M1.5 ships designed empty states instead, which every screen needs permanently anyway.
+
+### Dependency verification
+
+Three findings from checking the approved order against the ratified graph. **None is a disagreement with the intent — all three are places where the order as written could not be built.**
+
+| # | Finding | Resolution applied |
+|---|---|---|
+| 1 | **Observation Engine before Knowledge Graph.** The graph is `KG → OE`: Observation Engine consumes the Knowledge Graph's entities. Building it first leaves it with nothing to observe. | Graph order retained: Knowledge Graph, then Observation Engine. |
+| 2 | **Signal Engine before Business Events.** The graph is `BEE → SE`: signals are derived *from* business events. This also inverts [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md), whose M4 is Business Events and M5 is Signals. | Graph order retained: Business Event Engine, then Signal Engine. |
+| 3 | **Five ratified modules absent from the list**, three of them load-bearing: **Provider Normalization** (`PP → PN → KG`), **Buying Score Engine** (`SE → BSE → OP`), **AI Research Engine** (`OP → ARE`), plus the **AI Platform** milestone and **Revenue Intelligence Platform**. AI Reasoning Engine cannot precede the AI Platform — CLAUDE.md §10 requires all vendor access through the AI Provider Abstraction Layer and all prompts through the Prompt Registry, both of which the AI Platform milestone builds. | All five retained in graph position. |
+
+Both inversions also contradict PRODUCT_ROADMAP's own ordering, which is why they read as transcription slips rather than intent. **Raised rather than silently reconciled** — if either is deliberate, it is a change to the dependency graph and belongs to the RFC process in [01-overview.md](docs/architecture/01-overview.md), not to a sequencing decision.
+
+**Three names in the approved order are not ratified modules:** *Company Domain*, *Activities*, and *Assignments*. Nothing has been created for them. The nearest ratified homes are Knowledge Graph (company entities) and Timeline (activities); assignments have no current owner. Introducing any of them is a new bounded context and needs an RFC — flagged here rather than guessed at.
+
+**Workspace & Tenancy appears in the order but is already complete** (M0, shipped). No work is scheduled for it.
 
 ---
 
@@ -455,6 +512,60 @@ make smoke
 
 ---
 
+### 🆕 M1.5 — Frontend Foundation
+
+**Scope:** The frontend *platform*, not business features. Next.js application shell · layout system · navigation · authentication integration · workspace selector · design system · shared UI components · theme · routing · API client · TanStack Query · error boundaries · loading states · empty states · toast notifications · permission-aware routing · global state management · session management.
+
+**Effort:** ~14.5 ew · **Tasks:** T25–T33
+
+**Simulator requirement:** ❌ Not required — and that is the point. This milestone must be buildable with no business data at all.
+
+**Explicitly out of scope.** No dashboard, companies page, opportunities page, timeline, signals, AI chat, recommendations, or analytics. **No mock business data.** Where a screen would show domain content, it shows an empty state — a real one, designed and shipped, not a placeholder to be replaced.
+
+**Why business screens wait for M2.0.** A page built against hand-written JSON encodes a shape the domain does not have. The mock becomes the contract, the real model arrives, and the page is rewritten — twice the work, and the first version silently teaches everyone the wrong model. Business screens are built once, against real domain models produced by the Provider Simulation Framework.
+
+**Why empty states are a deliverable, not a placeholder.** Every screen in this product will spend its first minutes empty for every new customer, and some will stay empty for accounts with no signal. An empty state designed at the end is an apology; designed now, it is the onboarding path.
+
+**Demo scenario:**
+> *"The application exists, and it has nothing to show you."* Sign in with Google. Land on a shell with working navigation, a workspace selector listing real workspaces from the real API, and a theme toggle that persists. Every section renders its empty state. Create a second workspace and switch to it — the whole shell re-scopes. Kill the API and watch error boundaries catch it and offer a retry rather than a white screen. Navigate to a route the caller's role does not permit and be redirected, not shown a forbidden page. Sign out.
+
+**Demo checklist:**
+- [ ] Sign in → shell → sign out, end to end against the real API
+- [ ] Workspace selector lists real workspaces and switching re-scopes every query
+- [ ] Design system: tokens, theme, dark mode, all documented in one place
+- [ ] Shared components render in isolation with no application context
+- [ ] TanStack Query: caching, invalidation on workspace switch, refetch on reconnect
+- [ ] Token refresh happens transparently — a 15-minute session never interrupts a user
+- [ ] Error boundary catches a thrown render error and offers retry, never a white screen
+- [ ] A failed API call surfaces the error envelope's `correlation_id` to the user, so a support conversation can find the request
+- [ ] Loading states on every async boundary; no layout shift on resolve
+- [ ] Empty states on every section, designed rather than "No data"
+- [ ] Toasts for success, error, and in-flight actions
+- [ ] Permission-aware routing: a non-permitted route redirects, never renders-then-hides
+- [ ] Component tests running in CI — **repays the `@vitejs/plugin-react` debt**
+- [ ] `make smoke` still passes
+- [ ] **No mock business data anywhere in the codebase** — asserted, not assumed
+
+**User-visible outcome:** A real, signed-in application with working navigation and an honest empty state everywhere. Not demonstrable to a customer as *product*, but it is the first thing that looks and behaves like software rather than an API.
+
+**Definition of Done:**
+- [ ] Demo Checklist passes in full
+- [ ] Every subsequent business screen can be added without touching shell, routing, auth, or query infrastructure
+- [ ] Design system documented; no component invented ad hoc in a page
+- [ ] `@vitejs/plugin-react` reinstated and component tests running (PROJECT_STATUS technical debt register)
+- [ ] Frontend coverage gate established in CI
+- [ ] AC-14 passed
+
+**Rollback strategy:** Frontend-only; no schema change, no event contract change. Rollback is the previous image tag. Blast radius is the web tier alone — the API and workers are unaffected.
+
+**Operational readiness checklist:**
+- [ ] Frontend errors reach Sentry with `correlation_id` attached
+- [ ] Client-side route and query failures are observable, not silent
+- [ ] Bundle size measured and a budget recorded, before it is a problem
+- [ ] Frontend health endpoint still covers auth, keys, and OAuth configuration
+
+---
+
 ### 🆕 M2.0 — Provider Simulation Framework
 
 **Scope:** Provider Port (first concrete implementation) · simulation framework (datasets, scenario engine, virtual clock) · realistic payload generation for 5 providers · fault/timing/duplicate injection · sync-mode simulation · 10 demo scenarios · deterministic AI-regression foundation.
@@ -577,7 +688,7 @@ Full Demo Checklist, Definition of Done, rollback, and readiness sections are au
 | **M9** | AI Reasoning Engine | 8–12 ew | ✅ Critical | Reasoning output, **confidence scores** |
 | **M10** | AI Research Engine | 12–16 ew | ✅ Critical | Research artifacts |
 | **M11** | Recommendation Engine | 6–8 ew | ✅ Required | **Recommendations** |
-| **M12** | Revenue Intelligence Platform + full frontend | 28–40 ew | ✅ Required | Composed views |
+| **M12** | Revenue Intelligence Platform + business screens | 24–35 ew | ✅ Required | Composed views |
 | **M13** | CRM / comms / calendar integrations | 18–26 ew | ⚠️ Partial | — |
 | **M14** | Billing, notifications, analytics, flags | 5–7 ew | ❌ Not required | — |
 | **M14.5** | **Cloud Infrastructure** *(deferred from M1.3B — see below)* | 6 ew | ❌ Not required | — |
@@ -591,9 +702,11 @@ Full Demo Checklist, Definition of Done, rollback, and readiness sections are au
 >
 > Until this milestone, the application stays deployable by the Infrastructure Contract (§5a) rather than by a deployed environment proving it.
 
-**Scope:** Terraform (VPC, RDS PostgreSQL 17, two ElastiCache clusters, Secrets Manager) · ECS services · ALB with TLS · deployment pipeline · staging · automated migrations · rollback validation.
+**Scope — retained in full, technology for technology:** **Terraform** (VPC, **RDS** PostgreSQL 17, two **ElastiCache** clusters, **Secrets Manager**) · **ECS** services · ALB with TLS · **GitHub deployment pipeline** · staging · automated migrations · **rollback automation** and validation · **cloud monitoring dashboards** · Auto Scaling.
 
-**Effort:** ~6 ew · **Critical path:** T22→T23 = 6 ew serial · **Tasks:** T22–T23 (numbering retained from M1.3B)
+No technology is substituted and nothing is dropped. If any of these needs to change, that is a new ADR, not a consequence of the deferral.
+
+**Effort:** ~6 ew · **Critical path:** T22→T23 = 6 ew serial · **Tasks:** T22–T23 (**IDs retained from M1.3B so the deferral stays traceable**)
 
 **Simulator requirement:** ❌ Not required.
 
@@ -711,6 +824,26 @@ Rationale: cheap unblocking work first (T1, T2, T6); logging (T3) before the rel
 | T24 | Single-command platform verification, wired into CI | M · 1.5 ew | T21 |
 
 **Depends on M1.3A, not M1.3B:** the command must run against the local production stack, so it is available as a gate *before* cloud deployment rather than after.
+
+### M1.5 — Frontend Foundation
+
+| ID | Task | Complexity | Depends on |
+|---|---|---|---|
+| T25 | Design system: tokens, theme, dark mode, Tailwind configuration | M · 1.5 ew | — |
+| T26 | Shared UI component library (button, input, select, dialog, table, badge, skeleton, empty state) | L · 2.5 ew | T25 |
+| T27 | Application shell: layout, navigation, responsive frame | M · 1.5 ew | T26 |
+| T28 | TanStack Query integration + typed API client wiring | M · 1.5 ew | — |
+| T29 | Session management, auth integration, workspace selector | M · 2 ew | T27, T28 |
+| T30 | Permission-aware routing | M · 1.5 ew | T29 |
+| T31 | Error boundaries, loading states, empty states, toasts | M · 1.5 ew | T26, T28 |
+| T32 | Global state management (theme, active workspace, UI preferences) | S · 1 ew | T29 |
+| T33 | Frontend testing foundation + component tests in CI | M · 1.5 ew | T26 |
+
+**Sequential order:** T25 → T26 → T28 → T27 → T29 → T30 → T31 → T32 → T33
+
+Rationale: the design system before components, because a component built before its tokens hardcodes them. T28 before T27 so the shell is wired to real data from its first render rather than retrofitted. T33 last, when there are components worth testing — and it is the scheduled repayment point for the `@vitejs/plugin-react` debt, which is a *prerequisite* of component testing rather than a follow-up to it.
+
+**Critical path:** ~14.5 ew serial. The design system (T25→T26) is the long pole; T28 and T33 are the only tasks that parallelise cleanly if a second engineer is available.
 
 ---
 
@@ -881,6 +1014,7 @@ All four are test-enforced, not conventions.
 | **AC-8 — AI Abstraction & Safety** | M9 | No vendor SDK in domain/application; output validated before trust; prompt versions recorded |
 | **AC-9 — AI Evaluation Gate** | M8 | Golden sets exist; regression CI-enforced; evidence-completeness a release gate |
 | **AC-10 — Module Boundary Audit** | Every milestone | import-linter contracts extended and **proven to fail** on a deliberate violation |
+| **AC-14 — Frontend Foundation Integrity** | M1.5 | Every business screen addable without touching shell, routing, auth, or query infrastructure; **no mock business data in the codebase**; component tests in CI |
 | **AC-13 — Security Invariants** | Every milestone | The suite is extended with the milestone's new guarantees, and every added invariant is **proven to fail** when its guarantee is deliberately removed |
 | **AC-11 — Scale Validation** | M15 | RLS, Meilisearch, pgvector load-tested at target scale using simulator-generated volume |
 | **AC-12 — Security & Compliance** | M15 | Least privilege verified; PII policy implemented; SOC 2 evidence collectable |
@@ -946,6 +1080,6 @@ Single stream. **M1.1 only** — M1.2 does not begin until M1.1's Demo Checklist
 | 10 | **T5** Sentry | Small; completes observability |
 | 11 | **T11** Pipeline metrics | Needs T4 and the full relay chain in place |
 
-**Then:** M1.1 Demo Checklist → M1.2 → M1.3A → M1.4 → M2.0. Cloud infrastructure (M14.5) is deferred to Production Readiness.
+**Then:** M1.1 Demo Checklist → M1.2 → M1.3A → M1.4 → **M1.5** → M2.0. Cloud infrastructure (M14.5) is deferred to Production Readiness.
 
 **Deferred until staffing allows:** the Knowledge Graph spike. Under single-stream execution it would displace critical-path work; it should run as soon as a second engineer is available, since it retires the roadmap's largest estimation variance.
