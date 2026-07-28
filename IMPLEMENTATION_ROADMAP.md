@@ -2,92 +2,109 @@
 
 > **Owner:** CTO / Principal Architect · **Audience:** Engineering, TPM, Exec
 > **Status:** Living document — revised at each milestone boundary
-> **Revision:** **v2** — M1 split into M1.1/M1.2/M1.3; Provider Simulation Framework added as milestone M2.0; every milestone now carries Demo Scenario, User-Visible Outcome, Definition of Done, Rollback Strategy, Operational Readiness Checklist, and Simulator Requirement.
+> **Revision:** **v3** — sequential single-stream execution model adopted; Demo Checklist added to every milestone; Provider Simulation Framework strengthened with the identical-adapter-contract rule; progressive AI regression assertion model defined.
 > **Source of truth:** [`docs/architecture/`](docs/architecture/) (19 documents, 27 ADRs), [`CLAUDE.md`](CLAUDE.md), [`PRODUCT_DIFFERENTIATORS.md`](PRODUCT_DIFFERENTIATORS.md)
 >
 > This roadmap sequences *what gets built and in what order*. It does not introduce architecture — every module, boundary, and technology named here is already ratified. Where this document and the architecture set disagree, the architecture set wins and this document is the bug.
 
 ---
 
-## 1. Current Implementation Audit
+## 1. Execution Model
 
-Audit performed against the ratified thirteen-module map in [04-modules.md](docs/architecture/04-modules.md) plus the Workspace & Tenancy foundation.
+### Sequential single-stream execution
 
-### Measured state
+**Implementation proceeds as one prioritized stream.** The roadmap's dependency graph governs *order*; it does not imply concurrency. Optimising for minimal context switching is the ruling constraint, not maximal parallelism.
 
-| Dimension | Value |
-|---|---|
-| Architecture documents | 19 + 27 ADRs — **complete and internally consistent** (651 cross-links verified) |
-| Core modules implemented | **1 of 14** (Workspace & Tenancy) |
-| Production code | ~2,660 LOC (`signora_platform` 1,288 · `modules` 1,250 · `apps` 124) |
-| Migration code | 581 LOC across 4 revisions, verified reversible |
-| Tests | **116 passing** (79 unit, 37 integration) · ~2,058 LOC |
-| Test coverage | **Not measured** — `pytest-cov` is not installed |
-| Type checking | mypy `strict` clean across 71 files |
-| Boundary enforcement | 3 import-linter contracts, verified to fail on deliberate violation |
-| Frontend | **Not started** |
-| Infrastructure-as-code | **Not started** (Docker Compose for local only) |
+```
+M1.1 Platform Runtime → M1.2 Authentication Boundary → M1.3 Infrastructure
+     → M2.0 Provider Simulation Framework → M2.1 → M3 → … → M15
+```
 
-### Honest characterisation
+The parallel-workstream design in §9 is **retained for future team scaling** and should be re-read the moment staffing increases. It is not the current operating assumption.
 
-**The foundation is disproportionately strong relative to the surface area built.** Tenancy, authentication, authorization, the error contract, pagination, and the transactional outbox are production-grade and adversarially tested. That is the correct order — these are the things that are ruinous to retrofit — but **~95% of the product's differentiating capability is still ahead**.
+### Calendar consequence — stated plainly
 
-Two audit findings drive the M1 structure:
+Total effort is unchanged by this decision; **calendar time is not**. Sequential execution forfeits the compression that parallelism buys, and the arithmetic is worth seeing rather than discovering later.
 
-1. **There is no working end-to-end authentication path.** The API verifies tokens correctly and is well tested, but nothing mints them except the test suite. Until the Next.js issuer exists, no human can authenticate. → **M1.2**
-2. **The event bus is half-built, and that half is the blocking half.** The outbox (durability) is complete; the relay (dispatch) is not. Every pipeline module is an event consumer, so all 13 are blocked on it. → **M1.1**
+| Team size | M1 (33 ew) | M1 + M2.0 | **To GA (225–305 ew)** |
+|---|---|---|---|
+| **1 engineer** | ~41 weeks | ~62–71 weeks | **~5.4–7.3 years** |
+| **2 engineers** | ~21 weeks | ~31–36 weeks | **~2.7–3.7 years** |
+| **3 engineers** | ~14 weeks | ~21–24 weeks | **~1.8–2.4 years** |
+| 6 engineers *(parallel model, for reference)* | ~7 weeks | ~10–12 weeks | ~0.9–1.2 years |
+
+Assumes 80% effective capacity. Note that within a milestone, extra engineers help only up to the **critical path**, which is serial work: M1.1's chain (T6→T7→T8→T9→T10) is ~10 ew and cannot be compressed below that regardless of headcount.
+
+**This is not an argument against the decision.** For a small team, context switching genuinely destroys more throughput than parallelism recovers, and the v2 parallel plan assumed staffing that does not exist. The decision is sound; the timeline consequence simply needs to be owned explicitly at planning time rather than surfaced as a slip later.
+
+**Recommendation:** if the GA horizon matters commercially, the highest-leverage lever is **the second and third engineer** — moving from 1 to 3 roughly triples throughput. Beyond ~3, the pipeline's serial dependency chain limits further gains until modules can be worked concurrently.
 
 ---
 
-## 2. Existing Completed Modules
+## 2. Current Implementation Audit
+
+Audit performed against the ratified thirteen-module map in [04-modules.md](docs/architecture/04-modules.md).
+
+| Dimension | Value |
+|---|---|
+| Architecture documents | 19 + 27 ADRs — complete and internally consistent (651 cross-links verified) |
+| Core modules implemented | **1 of 14** (Workspace & Tenancy) |
+| Production code | ~2,660 LOC (`signora_platform` 1,288 · `modules` 1,250 · `apps` 124) |
+| Migration code | 581 LOC, 4 revisions, verified reversible |
+| Tests | **116 passing** (79 unit, 37 integration) · ~2,058 LOC |
+| Test coverage | **Not measured** — `pytest-cov` not installed |
+| Type checking | mypy `strict` clean across 71 files |
+| Boundary enforcement | 3 import-linter contracts, verified to fail on deliberate violation |
+| Frontend | **Not started** |
+| Infrastructure-as-code | **Not started** |
+
+**Honest characterisation.** The foundation is disproportionately strong relative to surface area built — tenancy, auth, authorization, error contract, and transactional outbox are production-grade and adversarially tested. That is the correct order, since these are ruinous to retrofit. But **~95% of differentiating capability is still ahead.**
+
+Two findings drive the M1 structure:
+
+1. **No working end-to-end authentication path.** The API verifies tokens correctly; nothing mints them except the test suite. → **M1.2**
+2. **The event bus is half-built, and that half is the blocking half.** The outbox (durability) is complete; the relay (dispatch) is not. All 13 pipeline modules are consumers. → **M1.1**
+
+---
+
+## 3. Existing Completed Modules
 
 ### Workspace & Tenancy — ✅ Complete
-
-All five Clean Architecture layers, `public/` contract exported, 5 use cases, 4 REST endpoints.
 
 | Layer | Contents |
 |---|---|
 | `domain/` | Workspace, Membership aggregates · WorkspaceRole · domain events · exceptions |
 | `application/` | 4 ports (Protocols) · 5 use cases |
 | `infrastructure/` | SQLAlchemy models & repositories · outbox adapter · tenant-context adapter · query service · composition root |
-| `interface/` | FastAPI router · request/response schemas · error mappings |
+| `interface/` | FastAPI router · schemas · error mappings |
 | `public/` | Event payload contracts · `WorkspaceQueryPort` |
 
 ### Platform (`signora_platform/`)
 
-| Component | Status | Notes |
-|---|---|---|
-| `db/` | ✅ | Base, audit/tenancy mixins, async sessions, RLS helpers, base repository |
-| `event_bus/` | ⚠️ **Partial** | Envelope, outbox model, `EventPublisher` — **relay/dispatch missing** |
-| `auth/` | ✅ | RS256 verifier (pinned algorithms), principal, errors |
-| `authorization/` | ✅ | Casbin model + policy + enforcer |
-| `api/` | ✅ | Error envelope, exception handlers, DI chain, cursor-page envelope |
-| `pagination.py` | ✅ | Transport-neutral keyset primitives |
-| `settings.py` | ✅ | Typed, env-sourced |
+| Component | Status |
+|---|---|
+| `db/` | ✅ Base, mixins, async sessions, RLS helpers, base repository |
+| `event_bus/` | ⚠️ **Partial** — envelope, outbox model, publisher; **relay/dispatch missing** |
+| `auth/` | ✅ RS256 verifier (pinned algorithms), principal, errors |
+| `authorization/` | ✅ Casbin model, policy, enforcer |
+| `api/` | ✅ Error envelope, handlers, DI chain, cursor-page envelope |
+| `pagination.py` · `settings.py` | ✅ |
 
 ---
 
-## 3. Missing Components
+## 4. Missing Components
 
 ### Core intelligence modules — 13 of 13 outstanding
 
-Pipeline order is a **hard dependency chain**, not a preference.
-
-| # | Module | Complexity |
-|---|---|---|
-| 1 | Provider Platform | High |
-| 2 | Provider Normalization | Medium-High |
-| 3 | Knowledge Graph | **Very High** — entity resolution |
-| 4 | Observation Engine | Medium |
-| 5 | Business Event Engine | High |
-| 6 | Signal Engine | High |
-| 7 | Buying Score Engine | Medium-High |
-| 8 | Opportunity Engine | Medium |
-| 9 | AI Research Engine | **Very High** — agentic |
-| 10 | AI Reasoning Engine | High |
-| 11 | Recommendation Engine | Medium |
-| 12 | Timeline | Medium |
-| 13 | Revenue Intelligence Platform | Medium-High |
+| # | Module | Complexity | # | Module | Complexity |
+|---|---|---|---|---|---|
+| 1 | Provider Platform | High | 8 | Opportunity Engine | Medium |
+| 2 | Provider Normalization | Medium-High | 9 | AI Research Engine | **Very High** |
+| 3 | Knowledge Graph | **Very High** | 10 | AI Reasoning Engine | High |
+| 4 | Observation Engine | Medium | 11 | Recommendation Engine | Medium |
+| 5 | Business Event Engine | High | 12 | Timeline | Medium |
+| 6 | Signal Engine | High | 13 | Revenue Intelligence Platform | Medium-High |
+| 7 | Buying Score Engine | Medium-High | | | |
 
 ### Platform components outstanding
 
@@ -96,114 +113,117 @@ Pipeline order is a **hard dependency chain**, not a preference.
 | Event bus relay + worker fleet + DLQ | 🔴 Blocks all 13 modules | M1.1 |
 | Observability (OTel, Sentry, structured logging) | 🟠 Blocks operability | M1.1 |
 | Better Auth issuer (Next.js) | 🔴 Blocks all human access | M1.2 |
-| Frontend application | Blocks all demos | M1.2 → M5 |
 | Terraform / AWS IaC | Blocks any deploy | M1.3 |
-| **Provider Simulation Framework** | 🟠 Blocks offline dev, deterministic demos, AI eval | **M2.0** |
+| **Provider Simulation Framework** | 🟠 Blocks offline dev, deterministic demos, AI regression | **M2.0** |
 | Provider Abstraction Layer | Built *with* the simulator (its first implementation) | M2.0 |
 | AI Provider Abstraction Layer + Prompt Registry | Blocks both AI engines | M8 |
 | AI Evaluation Harness | Blocks trustworthy AI | M8 |
-| Integration Abstraction Layer | Blocks CRM/comms | M14 |
-| Bought-infra adapters | Varies | M14–M15 |
+| Integration Abstraction Layer | Blocks CRM/comms | M13 |
 
-**Deferred by ruling (YAGNI):** Provider, AI, and Integration ports are **not** built speculatively. Each is built alongside its first concrete implementation — Provider Port in M2.0 (simulator), AI Provider Port in M8, Integration Port in M14. This follows `CLAUDE.md` §6: no abstractions for hypothetical future needs.
+**Deferred by ruling (YAGNI):** no port is built speculatively. Provider Port in M2.0, AI Provider Port in M8, Integration Port in M13 — each with its first concrete implementation, per `CLAUDE.md` §6.
 
 ---
 
-## 4. Milestone Structure
+## 5. Milestone Structure
 
-### Numbering
+M1 is split into three; M2.0 is inserted before data ingestion. **All other milestone numbers are unchanged**, so [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md) and [AI_MATURITY_ROADMAP.md](AI_MATURITY_ROADMAP.md) remain valid.
 
-M1 has been split into three milestones; M2.0 is a new dedicated milestone inserted before data ingestion. **All other milestone numbers are unchanged**, so [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md) and [AI_MATURITY_ROADMAP.md](AI_MATURITY_ROADMAP.md) remain valid.
-
-| Implementation milestone | Product milestone | Phase |
+| Implementation milestone | Product milestone | Effort |
 |---|---|---|
-| M0 ✅ | M0 | 0 |
-| **M1.1** Platform Runtime | M1 | 1 |
-| **M1.2** Authentication Boundary | M1 | 1 |
-| **M1.3** Infrastructure | M1 | 1 |
-| **M2.0** Provider Simulation Framework | *(new — internal enablement)* | 1→2 |
-| M2.1 Provider Platform & Normalization | M2 | 2 |
-| M3 Knowledge Graph & Observation Engine | M3 | 2 |
-| M4–M15 | M4–M13 | 3–6 |
+| M0 ✅ | M0 | — |
+| **M1.1** Platform Runtime | M1 | ~15.5 ew |
+| **M1.2** Authentication Boundary | M1 | ~11.5 ew |
+| **M1.3** Infrastructure | M1 | ~6 ew |
+| **M2.0** Provider Simulation Framework | *(internal enablement)* | ~17–24 ew |
+| M2.1 Provider Platform & Normalization | M2 | ~14–20 ew |
+| M3 Knowledge Graph & Observation Engine | M3 | ~17–23 ew |
+| M4–M15 | M4–M13 | ~160–220 ew |
 
-### Effort summary
-
-| Milestone | Effort | Calendar @ 6 eng | Parallel with |
-|---|---|---|---|
-| M1.1 Platform Runtime | ~15.5 ew | ~3 wks | M1.2, M1.3 |
-| M1.2 Authentication Boundary | ~11.5 ew | ~2.5 wks | M1.1, M1.3 |
-| M1.3 Infrastructure | ~6 ew | ~1.5 wks | M1.1, M1.2 |
-| **M2.0 Provider Simulation Framework** | **~17–24 ew** | ~4–5 wks | Partially with M1.3 |
-| M2.1 → M15 | ~175–240 ew | — | See §8 |
-
-**Total to GA: ~225–305 ew ≈ 11–16 months** at 6 engineers / 80% capacity.
-
-That is an increase over v1's 190–266 ew. The simulator is the cause, and it is a deliberate, justified investment — see §7 for what it returns.
+**Total to GA: ~225–305 ew.** See §1 for calendar at various team sizes.
 
 ---
 
-## 5. Milestone Definitions
+## 6. Milestone Definitions
 
-Every milestone below specifies: Scope · Simulator Requirement · Demo Scenario · User-Visible Outcome · Definition of Done · Rollback Strategy · Operational Readiness Checklist.
+Every milestone specifies: Scope · Simulator Requirement · Demo Scenario · **Demo Checklist** · User-Visible Outcome · Definition of Done · Rollback Strategy · Operational Readiness Checklist.
+
+**A milestone is not complete until its Demo Checklist passes.**
 
 ---
 
-### ✅ M0 — Secure Multi-Tenant Foundation · **COMPLETE**
+### ✅ M0 — Secure Multi-Tenant Foundation · COMPLETE
 
-**Scope:** Architecture set, Workspace & Tenancy module, platform foundation, RLS tenancy, JWT verification, Casbin, CI.
+**Scope:** Architecture set, Workspace & Tenancy, platform foundation, RLS tenancy, JWT verification, Casbin, CI.
 
-**Simulator requirement:** ❌ None — no provider data involved.
+**Simulator requirement:** ❌ None.
 
-**Demo scenario:** Internal only. Run the RLS regression suite against pre-fix policies (fails) and post-fix (passes), demonstrating isolation is proven rather than asserted.
+**Demo scenario:** Internal. Run the RLS regression suite against pre-fix policies (fails) and post-fix (passes) — isolation proven, not asserted.
 
-**User-visible outcome:** None. Foundation only.
+**Demo checklist:**
+- [x] Full test suite green (116 tests)
+- [x] RLS regression tests fail against pre-fix policies, pass after
+- [x] import-linter fails on a deliberate boundary violation
+- [x] Migrations reverse and re-apply cleanly
 
-**Definition of Done:** ✅ Met — 116 tests, mypy strict clean, 3 boundary contracts held, migrations reversible.
+**User-visible outcome:** None.
 
-**Rollback strategy:** N/A (no deployed environment existed).
+**Definition of Done:** ✅ Met.
+
+**Rollback strategy:** N/A — no deployed environment existed.
 
 **Operational readiness:** N/A.
 
 ---
 
-### 🔄 M1.1 — Platform Runtime
+### 🔄 M1.1 — Platform Runtime · **NEXT**
 
 **Scope:** Redis in CI · structured logging · OpenTelemetry · Sentry · event bus schema (DLQ + idempotency ledger) · outbox relay · subscription/dispatch · ARQ worker fleet · retry & DLQ · pipeline metrics · coverage gate.
 
-**Effort:** ~15.5 ew · **Tasks:** T1–T11 (see §6)
+**Effort:** ~15.5 ew · **Critical path:** T6→T7→T8→T9→T10 ≈ 10 ew serial · **Tasks:** T1–T11 (§7)
 
-**Simulator requirement:** ❌ **Not required.** Verified with a test-only consumer in the integration suite. The simulator enters at the Provider layer, which does not exist yet — using it here would be building the wrong thing first.
+**Simulator requirement:** ❌ **Not required.** Verified with a test-only consumer. The simulator enters at the Provider layer, which does not exist yet.
 
 **Demo scenario:**
-> *"Watch an event travel the platform."* Create a workspace through the existing API. Show the `outbox_event` row committed in the same transaction. Show the relay claiming it, marking `relayed_at`, and enqueueing to Redis. Show an ARQ worker consuming it. Then show the same event delivered twice and the handler running **exactly once**. Finally, force a handler failure and watch it retry with backoff, then land in `dead_letter_event` without blocking the queue — and replay it successfully. Throughout, follow one `correlation_id` across all three processes in a single trace.
+> *"Watch an event travel the platform."* Create a workspace through the existing API. Show the `outbox_event` row committed in the same transaction as the domain write. Show the relay claiming it, marking `relayed_at`, and enqueueing to Redis. Show an ARQ worker consuming it. Deliver the same event twice — the handler runs **exactly once**. Force a handler failure: watch it retry with backoff, land in `dead_letter_event` without blocking the queue, then replay successfully. Throughout, follow one `correlation_id` across all three processes in a single trace.
 
-**User-visible outcome:** **None.** This is pure infrastructure. Do not demo to customers.
+**Demo checklist:**
+- [ ] Workspace created via API; `outbox_event` row visible, committed atomically with the domain write
+- [ ] Relay claims the row and sets `relayed_at` exactly once
+- [ ] Message appears on the expected Redis queue
+- [ ] ARQ worker consumes and acknowledges it
+- [ ] **Duplicate delivery → handler invoked exactly once** (`processed_event` shown)
+- [ ] Handler failure retries with visible exponential backoff
+- [ ] Exhausted retries land in `dead_letter_event`; the queue keeps draining
+- [ ] DLQ replay succeeds
+- [ ] Two relay instances run concurrently; **no event double-enqueued**
+- [ ] Redis stopped mid-run → events remain unrelayed, then drain on recovery, **zero loss**
+- [ ] One `correlation_id` traced across API → relay → worker in a single OpenTelemetry trace
+- [ ] Log lines show `workspace_id` + `correlation_id`; grep confirms **no token or secret** present
+- [ ] Coverage report produced; CI gate demonstrated failing below baseline
+
+**User-visible outcome:** **None.** Pure infrastructure. Do not demo to customers.
 
 **Definition of Done:**
-- [ ] Event published → relayed → consumed, proven under concurrency (two relay instances never double-enqueue)
-- [ ] Idempotency platform-owned: duplicate delivery invokes a handler exactly once, via `processed_event`
-- [ ] Retry with exponential backoff; bounded attempts; DLQ capture; replay works
-- [ ] Redis outage leaves events unrelayed and recoverable — **zero loss**
-- [ ] `correlation_id` traced across API → relay → worker in one OpenTelemetry trace
-- [ ] Every log line carries `workspace_id` and `correlation_id`; no token or secret ever logged (test-enforced)
-- [ ] Worker pools independently runnable and scalable; graceful shutdown drains in-flight work
+- [ ] Demo Checklist passes in full
+- [ ] Idempotency is platform-owned via `processed_event`; no module implements its own
 - [ ] RLS context established from the event envelope before any handler touches the database
+- [ ] Worker pools independently runnable; graceful shutdown drains in-flight work
 - [ ] Metrics emitted: queue depth, dispatch latency, retry rate, DLQ rate, outbox lag
-- [ ] Coverage measured with a CI baseline gate
-- [ ] `06-events.md` updated with relay semantics, the two new tables, and the platform-owned idempotency decision
+- [ ] `06-events.md` updated: relay semantics, both new tables, platform-owned idempotency decision
+- [ ] AC-1 passed
 
 **Rollback strategy:**
-- **Code:** relay and workers deploy as separate ECS services (M1.3). Rolling back = scaling the relay to zero. Events accumulate unrelayed in the outbox and drain on redeploy — **no data loss**, because the outbox is the durable source of truth.
-- **Schema:** migration 0004 is reversible. `dead_letter_event` and `processed_event` are additive; dropping them loses only dispatch bookkeeping, not domain state.
+- **Code:** relay and workers are separate services. Rollback = scale relay to zero; events accumulate in the outbox and drain on redeploy. **No data loss** — the outbox is the durable source of truth.
+- **Schema:** migration 0004 reversible. `dead_letter_event` and `processed_event` are additive; dropping them loses dispatch bookkeeping only, never domain state.
 - **Blast radius:** nil for the existing API — no current endpoint depends on dispatch.
 
 **Operational readiness checklist:**
-- [ ] Runbook: how to inspect the outbox backlog, drain a queue, replay from DLQ
-- [ ] Alert: DLQ write rate > 0 (any dead letter is worth a human look at this stage)
-- [ ] Alert: outbox lag (oldest unrelayed event age) exceeds threshold
+- [ ] Runbook: inspect outbox backlog · drain a queue · replay from DLQ
+- [ ] Alert: DLQ write rate > 0
+- [ ] Alert: outbox lag (oldest unrelayed event age) over threshold
 - [ ] Alert: relay process down
 - [ ] Dashboard: per-pool queue depth, dispatch latency, error rate
-- [ ] Documented worker pool scaling procedure
+- [ ] Worker pool scaling procedure documented
 - [ ] Redis failure mode tested and documented
 
 ---
@@ -212,160 +232,205 @@ Every milestone below specifies: Scope · Simulator Requirement · Demo Scenario
 
 **Scope:** Next.js 15 scaffold · Better Auth · Google & Microsoft OAuth · RS256 JWT issuance · signing key management · typed API client · frontend shell · E2E auth journey.
 
-**Effort:** ~11.5 ew · **Tasks:** T12–T18
+**Effort:** ~11.5 ew · **Critical path:** T12→T13→T14→T15→T18 ≈ 8 ew serial · **Tasks:** T12–T18
 
-**Simulator requirement:** ❌ **Not required.** No provider data involved.
+**Simulator requirement:** ❌ Not required.
 
 **Demo scenario:**
-> *"First real login."* A human opens Signora, signs in with Google, lands in the app, creates the workspace "Acme Revenue", and sees it listed. A second human signs in with Microsoft, creates their own workspace, and **provably cannot see the first user's** — shown live, not asserted. Then show the JWT itself: RS256, correct claims, 15-minute expiry, and the backend rejecting a token signed by any other key.
+> *"First real login."* A human opens Signora, signs in with Google, creates the workspace "Acme Revenue", and sees it listed. A second human signs in with Microsoft, creates their own workspace, and **provably cannot see the first user's** — shown live. Then inspect the JWT: RS256, correct claims, 15-minute expiry. Finally, present a token signed by a different key and watch the backend reject it.
 
-**User-visible outcome:** ✅ **First real user-visible functionality.** Users can sign in and manage workspaces. Design-partner onboarding can begin here.
+**Demo checklist:**
+- [ ] Google sign-in completes; user lands authenticated
+- [ ] Microsoft sign-in completes
+- [ ] Workspace created through the UI against the real API
+- [ ] Workspace list, switch, and sign-out all work
+- [ ] Second user **cannot see** the first user's workspace (404, not 403)
+- [ ] JWT decoded live: RS256, all required claims, 15-min expiry
+- [ ] Token from a foreign signing key → **401**
+- [ ] Expired token → `token_expired`, client refreshes and retries successfully
+- [ ] **Private key demonstrably absent from backend configuration**
+- [ ] E2E Playwright journey green in CI, including the isolation negative case
+
+**User-visible outcome:** ✅ **First real user-visible functionality.** Design-partner onboarding can begin at close.
 
 **Definition of Done:**
-- [ ] Google and Microsoft OAuth sign-in work end to end
-- [ ] JWT claims match [18-authentication.md](docs/architecture/18-authentication.md) §JWT Contract **exactly**
-- [ ] **Contract test:** a token minted by Next.js verifies against the real Python verifier, in CI
-- [ ] Private signing key present only in the Next.js tier; **test asserts it is unreachable from Python**
-- [ ] Token refresh works; expired tokens produce `token_expired`, prompting refresh
-- [ ] Better Auth tables live in a dedicated `auth` schema in the existing PostgreSQL instance
-- [ ] Frontend: sign in, create workspace, list, switch, sign out — against the real API
-- [ ] E2E Playwright journey passes in CI, **including the tenant-isolation negative case**
+- [ ] Demo Checklist passes in full
+- [ ] JWT claims match [18-authentication.md](docs/architecture/18-authentication.md) §JWT Contract exactly
+- [ ] **Contract test in CI:** a token minted by Next.js verifies against the real Python verifier
+- [ ] Better Auth tables in a dedicated `auth` schema in the existing PostgreSQL instance
 - [ ] Frontend CI enforces ESLint, Prettier, TypeScript, Vitest
 - [ ] `18-authentication.md` updated with issuer-side configuration as built
+- [ ] AC-2 passed
 
 **Rollback strategy:**
-- **Frontend:** versioned static deploy; roll back by repointing to the previous build. No backend coordination needed.
-- **Auth schema:** isolated in the `auth` schema, so a rollback cannot affect application tables.
-- **Key rotation failure:** documented procedure to revert to the prior key pair; because both tiers read keys from configuration, this is a config rollback, not a code deploy.
-- **Blast radius:** total for user access, nil for data — the API tier is unchanged by this milestone.
+- **Frontend:** versioned static deploy; roll back by repointing to the previous build. No backend coordination.
+- **Auth schema:** isolated in `auth`, so rollback cannot touch application tables.
+- **Key rotation failure:** documented revert to the prior key pair — a configuration rollback, not a code deploy, since both tiers read keys from configuration.
+- **Blast radius:** total for user access, nil for data.
 
 **Operational readiness checklist:**
-- [ ] Runbook: signing-key rotation procedure, tested at least once
-- [ ] Runbook: OAuth provider misconfiguration diagnosis
-- [ ] Alert: authentication failure rate spike (misconfiguration or attack)
+- [ ] Runbook: signing-key rotation, **executed at least once**
+- [ ] Runbook: OAuth misconfiguration diagnosis
+- [ ] Alert: authentication failure rate spike
 - [ ] Alert: token verification failure rate at the API
-- [ ] OAuth client secrets in AWS Secrets Manager, never in code
-- [ ] Session/token TTLs documented and agreed
-- [ ] Frontend error tracking (Sentry) wired with source maps
+- [ ] OAuth client secrets in AWS Secrets Manager
+- [ ] Session and token TTLs documented and agreed
+- [ ] Frontend Sentry wired with source maps
 
 ---
 
 ### 🔄 M1.3 — Infrastructure
 
-**Scope:** Terraform (VPC, RDS PostgreSQL 17, two ElastiCache clusters, Secrets Manager) · ECS services for API and workers · Traefik/ALB with TLS · deployment pipeline · staging environment · automated migrations · rollback validation.
+**Scope:** Terraform (VPC, RDS PostgreSQL 17, two ElastiCache clusters, Secrets Manager) · ECS services · Traefik/ALB with TLS · deployment pipeline · staging · automated migrations · rollback validation.
 
-**Effort:** ~6 ew · **Tasks:** T19–T20
+**Effort:** ~6 ew · **Critical path:** T19→T20 = 6 ew serial · **Tasks:** T19–T20
 
-**Simulator requirement:** ❌ **Not required.**
+**Simulator requirement:** ❌ Not required.
 
 **Demo scenario:**
-> *"Ship it and un-ship it."* Merge to `main`; watch the pipeline run migrations as a privileged pre-deploy task, deploy API and worker services, and pass health/readiness checks. Then deliberately deploy a broken build, watch it fail readiness, and **roll back to the previous version with the documented procedure** — timed. Show `signora_app` connecting as a non-superuser, and secrets resolving from Secrets Manager with none present in the image.
+> *"Ship it and un-ship it."* Merge to `main`; the pipeline runs migrations as a privileged pre-deploy task, deploys API and workers, and passes health/readiness. Then deliberately deploy a broken build, watch readiness fail, and **roll back using the documented procedure — timed.** Show `signora_app` connecting as a non-superuser, and secrets resolving from Secrets Manager with none present in the image.
 
-**User-visible outcome:** **None directly** — but this is what makes M1.2's login reachable by anyone outside a developer's laptop.
+**Demo checklist:**
+- [ ] `terraform plan` clean and idempotent on a second run
+- [ ] Staging provisioned end to end from code
+- [ ] Pipeline deploys API + at least one worker pool
+- [ ] Migration task runs pre-deploy under the **privileged** identity
+- [ ] `/health` and `/ready` green post-deploy
+- [ ] Application connects as `signora_app` — verified in the deployed environment
+- [ ] Two separate ElastiCache clusters confirmed (queue vs. cache)
+- [ ] `docker history` / image inspection shows **no embedded secrets**
+- [ ] TLS terminated; HTTP redirects to HTTPS
+- [ ] **Broken build deployed, rollback executed and timed (<10 min)**
+- [ ] RDS backup restore performed once into a scratch instance
+
+**User-visible outcome:** None directly — but this is what makes M1.2's login reachable by anyone outside a developer's laptop.
 
 **Definition of Done:**
-- [ ] Staging provisioned entirely from Terraform; `plan` clean and idempotent
-- [ ] API + at least one worker pool running in staging
-- [ ] Migrations run automatically pre-deploy under the **privileged** identity, never the app role
-- [ ] Application connects as `signora_app` (non-superuser, `NOBYPASSRLS`) — verified in the deployed environment, not just locally
-- [ ] Two separate ElastiCache clusters (queue vs. cache), per [ADR-0007](docs/architecture/adr/0007-caching-layer.md)
-- [ ] All secrets from AWS Secrets Manager; **no secret in any image or repository**
-- [ ] TLS terminated; HTTP redirects to HTTPS
-- [ ] **Rollback executed and timed at least once**, not merely documented
-- [ ] RDS automated backups enabled; restore tested once
+- [ ] Demo Checklist passes in full
+- [ ] All secrets from AWS Secrets Manager
+- [ ] **Expand-then-contract migration rule adopted and documented** — no deploy ships a destructive schema change alongside the code depending on it
 - [ ] `ADR-0022` updated with as-built topology
+- [ ] AC-3 passed
 
 **Rollback strategy:**
-- **Application:** ECS keeps the previous task definition; rollback is a revision revert. Target: **under 10 minutes, verified.**
-- **Migrations:** every migration reversible (already CI-enforced). **Standing rule: expand-then-contract.** A deploy never ships a destructive schema change in the same release as the code depending on it — this is what keeps application rollback safe without a database restore.
+- **Application:** ECS retains the previous task definition; rollback is a revision revert. Target **under 10 minutes, verified**.
+- **Migrations:** all reversible (CI-enforced). Expand-then-contract keeps application rollback safe without a database restore.
 - **Infrastructure:** Terraform state versioned; `plan` reviewed before every apply.
-- **Blast radius:** total. This milestone is where rollback discipline stops being theoretical.
+- **Blast radius:** total. This is where rollback discipline stops being theoretical.
 
 **Operational readiness checklist:**
-- [ ] Runbook: deploy, rollback, emergency stop
-- [ ] Runbook: database restore from backup, tested
+- [ ] Runbook: deploy · rollback · emergency stop
+- [ ] Runbook: database restore, tested
 - [ ] Alert: ECS service unhealthy / task flapping
 - [ ] Alert: RDS CPU, connections, storage headroom
-- [ ] Alert: ElastiCache memory and eviction rate (both clusters)
-- [ ] Deployment pipeline requires green CI to proceed
+- [ ] Alert: ElastiCache memory and eviction (both clusters)
+- [ ] Pipeline requires green CI to proceed
 - [ ] On-call rotation and escalation defined
-- [ ] Staging is a faithful shape of production (smaller, not different)
+- [ ] Staging is a faithful shape of production
 
 ---
 
 ### 🆕 M2.0 — Provider Simulation Framework
 
-**Scope:** Provider Port (first concrete implementation) · simulation framework (datasets, scenario engine, virtual clock) · realistic payload generation for 5 providers · fault/timing/duplicate injection · sync-mode simulation · 10 demo scenarios · deterministic AI-evaluation support.
+**Scope:** Provider Port (first concrete implementation) · simulation framework (datasets, scenario engine, virtual clock) · realistic payload generation for 5 providers · fault/timing/duplicate injection · sync-mode simulation · 10 demo scenarios · deterministic AI-regression foundation.
 
-**Effort:** ~17–24 ew · Detailed design in **§7**
+**Effort:** ~17–24 ew · Design in **§8**
 
 **Simulator requirement:** ✅ **This milestone builds it.**
 
 **Demo scenario:**
-> *"A company, simulated end to end."* Select Scenario 1 (High-Growth SaaS). The simulator emits realistic Apollo, CoreSignal, BuiltWith, and Similarweb payloads — byte-identical in shape to what the real vendors return — through the **same ingestion path production will use**. Show raw payloads landing with full provenance. Then re-run the identical scenario and show byte-identical results: **deterministic**. Then inject a provider timeout, a duplicate delivery, and a delayed update, and show the pipeline handling each correctly. All with zero external network calls — **pull the network cable and run it again**.
+> *"A company, simulated end to end — with the network cable pulled."* Select Scenario 1 (High-Growth SaaS). The simulator emits realistic Apollo, CoreSignal, BuiltWith, and Similarweb payloads through the **same ingestion path production uses**. Show raw payloads landing with full provenance. Re-run the identical scenario: byte-identical results — **deterministic**. Inject a provider timeout, a duplicate delivery, and a delayed update; show each handled correctly. Then flip a single configuration value to switch a provider from simulated to production and show **no code changed**.
 
-**User-visible outcome:** **None for customers.** Substantial internally: every subsequent milestone becomes demonstrable, testable, and developable offline.
+**Demo checklist:**
+- [ ] Scenario 1 runs end to end with **network egress blocked**
+- [ ] Raw payloads for all 5 providers land with full provenance
+- [ ] Payload shapes validated against each vendor's documented response format
+- [ ] Same scenario + seed re-run → **byte-identical output** (diff shows nothing)
+- [ ] Re-run on a different machine → still byte-identical
+- [ ] Provider timeout injected → adapter surfaces a transient failure, retries
+- [ ] Duplicate delivery injected → downstream unaffected
+- [ ] Delayed/out-of-order update injected → handled correctly
+- [ ] Full-snapshot and incremental-sync modes both exercised
+- [ ] Simulated webhook delivery exercised
+- [ ] **Config-only switch** between simulated and production adapter demonstrated; `git diff` shows no code change
+- [ ] Ingestion logs unambiguously mark payloads as simulated
+- [ ] **Simulator refuses to start with `environment=production`** (guard demonstrated live)
+- [ ] All 10 scenarios listed and runnable
+- [ ] Timing control demonstrated: instant, real-time, accelerated
+
+**User-visible outcome:** **None for customers.** Substantial internally — every subsequent milestone becomes demonstrable, testable, and developable offline.
 
 **Definition of Done:**
-- [ ] Provider Port defined **and validated by a working implementation** (the simulator), not designed speculatively
-- [ ] Simulated adapters for Apollo, CoreSignal, BuiltWith, Similarweb, NeverBounce, producing payloads matching each vendor's documented response shape
-- [ ] Adapter selection is **configuration only** — zero `if simulated:` branching anywhere in domain or application code
-- [ ] **Production safety guard:** the simulator refuses to activate when `environment == "production"` unless an explicit, logged override is set. Test-enforced.
-- [ ] All 10 demo scenarios authored and runnable
-- [ ] **Determinism proven:** identical scenario + seed → byte-identical payloads across runs and machines
-- [ ] Fault injection: timeout, 5xx, rate-limit, malformed payload, partial response
-- [ ] Timing control: instant, real-time, and accelerated replay
-- [ ] Duplicate-event and delayed-update simulation
-- [ ] Sync modes: full snapshot, incremental, webhook delivery
-- [ ] Entire pipeline runnable with **no network access** — verified in CI with egress blocked
+- [ ] Demo Checklist passes in full
+- [ ] **Simulated adapters implement exactly the same Provider Port contract as production adapters** — identical signatures, identical return types, identical error semantics
+- [ ] Adapter selection is **configuration only** — zero `if simulated:` branching in any layer
+- [ ] Production safety guard test-enforced
 - [ ] Datasets versioned; a dataset change is a reviewable diff
-- [ ] New architecture document `20-provider-simulation.md` + ADR recording the framework decision
+- [ ] Regression dataset structure supports **incremental extension** (see §8 Progressive Assertion)
+- [ ] New architecture document `20-provider-simulation.md` + ADR
+- [ ] AC-4 passed
 
 **Rollback strategy:**
-- **Code:** the simulator is additive platform code. Disabling it is a configuration change; no production path depends on it.
-- **Risk of accidental production use:** mitigated by the environment guard above, which is the single most important control in this milestone. A simulator silently active in production would fabricate customer data — this is treated as a P0-class hazard and tested accordingly.
-- **Datasets:** versioned and immutable once published; a bad dataset is reverted, not edited in place.
+- **Code:** additive platform code. Disabling is a configuration change; no production path depends on it.
+- **Accidental production activation:** mitigated by the environment guard — the single most important control in this milestone. A simulator silently active in production would fabricate customer intelligence, which is a trust failure rather than a bug.
+- **Datasets:** versioned and immutable once published. A bad dataset is superseded by a new version, never edited in place — otherwise historical regression comparisons become meaningless.
 - **Blast radius:** nil in production if the guard holds; total for development and demos if it breaks.
 
 **Operational readiness checklist:**
-- [ ] Simulator status (active/inactive, scenario, seed) visible in `/health` output for non-production environments
-- [ ] Logs unambiguously mark simulated payloads at ingestion — **an engineer must never mistake simulated data for real**
+- [ ] Simulator state (active/inactive, scenario, seed) exposed in non-production health output
+- [ ] Logs unambiguously mark simulated payloads — an engineer must never mistake simulated data for real
 - [ ] Alert: simulator active in any environment where it should not be
-- [ ] Documented procedure for adding a new provider simulation
-- [ ] Documented procedure for authoring a new scenario
+- [ ] Documented procedure: adding a new provider simulation
+- [ ] Documented procedure: authoring a new scenario
+- [ ] Documented procedure: extending a scenario's assertions at a later milestone
 - [ ] Dataset provenance recorded (source, generation date, version)
 
 ---
 
 ### M2.1 — Provider Platform & Normalization
 
-**Scope:** Provider Platform (registry, credentials, quotas, scheduling, health, circuit breaking) · real vendor adapters · Provider Normalization (mapping, provenance, dedup).
+**Scope:** Provider Platform (registry, credentials, quotas, scheduling, health, circuit breaking) · real vendor adapters · Provider Normalization.
 
-**Effort:** ~14–20 ew
+**Effort:** ~14–20 ew · **Simulator requirement:** ✅ Required — CI and integration tests run entirely simulated; real vendor calls only in a manually-triggered contract suite.
 
-**Simulator requirement:** ✅ **Required.** Integration tests and CI run entirely against simulated providers. Real vendor calls are exercised only in a dedicated, manually-triggered contract-test suite — never in the standard CI path.
+**Demo scenario:** Add a target account list. Watch ingestion populate raw records with provenance across five providers, the same company enriched by three simultaneously, conflicting values recorded rather than silently resolved. Deterministic version simulated; live version against one real provider.
 
-**Demo scenario:** Add a target account list. Watch ingestion populate raw records with full provenance across five providers. Show the same company enriched by three providers simultaneously with conflicting values recorded rather than silently resolved. Run against simulated providers for the deterministic version; against one real provider for the live version.
+**Demo checklist:**
+- [ ] Full ingestion run against simulated providers, deterministic
+- [ ] Same run against **one real provider**, proving the adapter contract holds for both
+- [ ] Provider quota/rate-limit compliance observed under load
+- [ ] Circuit breaker trips on a simulated provider outage and recovers
+- [ ] Conflicting values across providers recorded, not silently resolved
+- [ ] Per-provider cost tracked and visible
+- [ ] Scenario assertions extended to **normalized entities** (§8)
 
-**User-visible outcome:** Minimal — an ingestion status view. Signora is "watching" accounts but showing nothing yet.
+**User-visible outcome:** Minimal — an ingestion status view.
 
-**Definition of Done:** Provider Port unchanged from M2.0 (proof the abstraction was right) · 5 real adapters behind it · quota/rate-limit compliance · circuit breaking verified against a simulated outage · 100% provenance coverage · per-provider cost tracked · adding a 6th provider requires zero domain changes.
+**Definition of Done:** Provider Port **unchanged from M2.0** (proof the abstraction was right) · 5 real adapters · 100% provenance coverage · adding a 6th provider requires zero domain changes · AC-5 passed.
 
 **Rollback strategy:** Per-provider feature flags — a misbehaving adapter is disabled without a deploy. Ingestion is idempotent, so replay after rollback is safe.
 
-**Operational readiness:** Alerts on provider health, quota exhaustion, cost anomaly, ingestion failure rate · runbook for provider credential rotation and vendor outage.
+**Operational readiness:** Alerts on provider health, quota exhaustion, cost anomaly, ingestion failure rate · runbook for credential rotation and vendor outage.
 
 ---
 
 ### M3 — Knowledge Graph & Observation Engine
 
-**Effort:** ~17–23 ew · **Simulator requirement:** ✅ Required — entity-resolution evaluation needs labelled, deterministic datasets, which the simulator supplies.
+**Effort:** ~17–23 ew · **Simulator requirement:** ✅ Required — entity-resolution evaluation needs labelled, deterministic datasets.
 
-**Demo scenario:** Show "Acme Corp", "Acme Corporation Inc.", and a differently-named legal entity resolving into one record, with merge history explaining why. Simulator scenario 10 (ICP match) provides the labelled ground truth.
+**Demo scenario:** "Acme Corp", "Acme Corporation Inc.", and a differently-named legal entity resolve into one record, with merge history explaining why. Scenario 10 supplies labelled ground truth.
 
-**User-visible outcome:** One canonical company record per entity — visible in a basic entity view.
+**Demo checklist:**
+- [ ] Three variant records resolve to one canonical entity
+- [ ] Merge history shows the reasoning
+- [ ] An incorrect merge is reversed successfully
+- [ ] Precision >95%, recall >90% reported against the labelled set
+- [ ] Observations recorded with unbroken provenance to source payloads
+- [ ] Scenario assertions extended to **observations and resolved entities** (§8)
 
-**Definition of Done:** Labelled evaluation set (≥1,000 pairs) · precision >95%, recall >90% · duplicate rate <2% · merges auditable and reversible · embeddings workspace-scoped and RLS-enforced.
+**User-visible outcome:** One canonical company record per entity, visible in a basic entity view.
+
+**Definition of Done:** Labelled evaluation set (≥1,000 pairs) · duplicate rate <2% · merges auditable and reversible · embeddings workspace-scoped and RLS-enforced · AC-6 passed.
 
 **Rollback strategy:** Merges reversible by design; a bad resolution model is reverted and entities re-resolved from observations, which are immutable.
 
@@ -373,30 +438,28 @@ Every milestone below specifies: Scope · Simulator Requirement · Demo Scenario
 
 ---
 
-### M4–M15 — Remaining Milestones
+### M4–M15
 
-Detailed Definition of Done, rollback, and readiness sections are authored **at each milestone's planning boundary**, when the preceding milestone's learnings are available. Planning distant milestones in the same detail as near ones produces false precision. Scope and simulator requirements are fixed now:
+Full Demo Checklist, Definition of Done, rollback, and readiness sections are authored **at each milestone's planning boundary**, when the preceding milestone's learnings are available. Planning distant milestones in near-milestone detail produces false precision. Scope, effort, and simulator requirements are fixed now:
 
-| Milestone | Scope | Effort | Simulator | Demo enabled by |
+| Milestone | Scope | Effort | Simulator | Scenario assertions added |
 |---|---|---|---|---|
-| **M4** | Business Event Engine | 10–14 ew | ✅ Required | Scenarios 2, 4, 5, 8 |
-| **M5** | Signal Engine + Buying Score Engine | 14–22 ew | ✅ Required | Scenarios 1, 6, 7 |
-| **M6** | Opportunity Engine | 5–7 ew | ✅ Required | Scenario 10 |
-| **M7** | Timeline | 6–8 ew | ✅ Required | All scenarios |
-| **M8** | AI Platform + Prompt Registry + **Eval Harness** | 15–20 ew | ✅ **Critical** — golden sets come from simulated datasets | All scenarios |
-| **M9** | AI Reasoning Engine | 8–12 ew | ✅ Critical | Scenarios 1, 5, 9 |
-| **M10** | AI Research Engine | 12–16 ew | ✅ Critical | Scenarios 3, 9 |
-| **M11** | Recommendation Engine | 6–8 ew | ✅ Required | All scenarios |
-| **M12** | Revenue Intelligence Platform + full frontend | 28–40 ew | ✅ Required | All scenarios |
-| **M13** | CRM / comms / calendar integrations | 18–26 ew | ⚠️ Partial — CRM sandboxes for outbound | — |
+| **M4** | Business Event Engine | 10–14 ew | ✅ Required | Business Events |
+| **M5** | Signal Engine + Buying Score Engine | 14–22 ew | ✅ Required | Signals, Buying Scores |
+| **M6** | Opportunity Engine | 5–7 ew | ✅ Required | Opportunities |
+| **M7** | Timeline | 6–8 ew | ✅ Required | Timeline entries |
+| **M8** | AI Platform + Prompt Registry + **Eval Harness** | 15–20 ew | ✅ **Critical** | Golden sets seeded from scenarios |
+| **M9** | AI Reasoning Engine | 8–12 ew | ✅ Critical | Reasoning output, **confidence scores** |
+| **M10** | AI Research Engine | 12–16 ew | ✅ Critical | Research artifacts |
+| **M11** | Recommendation Engine | 6–8 ew | ✅ Required | **Recommendations** |
+| **M12** | Revenue Intelligence Platform + full frontend | 28–40 ew | ✅ Required | Composed views |
+| **M13** | CRM / comms / calendar integrations | 18–26 ew | ⚠️ Partial | — |
 | **M14** | Billing, notifications, analytics, flags | 5–7 ew | ❌ Not required | — |
-| **M15** | GA readiness: load testing, SOC 2, PII, spend governance | 20–27 ew | ✅ Load testing uses simulator at volume | — |
+| **M15** | GA readiness: load testing, SOC 2, PII, spend governance | 20–27 ew | ✅ Load testing at volume | — |
 
 ---
 
-## 6. M1 Task Breakdown
-
-Approved task set. Full per-task detail (purpose, dependencies, files, DB/API impact, tests, docs, complexity, acceptance) was presented and approved separately; summarised here for tracking.
+## 7. M1 Task Breakdown
 
 ### M1.1 — Platform Runtime
 
@@ -414,6 +477,10 @@ Approved task set. Full per-task detail (purpose, dependencies, files, DB/API im
 | T10 | Retry policy + dead-lettering | M · 1.5 ew | T8, T9 |
 | T11 | Pipeline observability metrics | S–M · 1 ew | T4, T7–T10 |
 
+**Sequential order:** T1 → T2 → T6 → T3 → T7 → T8 → T9 → T10 → T4 → T5 → T11
+
+Rationale: cheap unblocking work first (T1, T2, T6); logging (T3) before the relay so the relay is debuggable as it is built; then the critical chain; then remaining observability, which benefits from having real traffic to instrument.
+
 ### M1.2 — Authentication Boundary
 
 | ID | Task | Complexity | Depends on |
@@ -422,35 +489,58 @@ Approved task set. Full per-task detail (purpose, dependencies, files, DB/API im
 | T13 | Better Auth + Google/Microsoft OAuth 🔴 | L · 3 ew | T12 |
 | T14 | RS256 JWT issuance per ADR-0026 🔴 | M · 1.5 ew | T13 |
 | T15 | Signing-key management | S–M · 1 ew | T14 |
-| T16 | Typed API client (generated from OpenAPI) | M · 1.5 ew | T12 |
+| T16 | Typed API client | M · 1.5 ew | T12 |
 | T17 | Frontend shell | M · 2 ew | T13, T16 |
-| T18 | E2E auth journey (Playwright) | M · 1 ew | T15, T17 |
+| T18 | E2E auth journey | M · 1 ew | T15, T17 |
+
+**Sequential order:** T12 → T13 → T14 → T15 → T16 → T17 → T18
 
 ### M1.3 — Infrastructure
 
 | ID | Task | Complexity | Depends on |
 |---|---|---|---|
-| T19 | Terraform baseline (VPC, RDS, 2× ElastiCache, Secrets Manager) | L · 3 ew | — |
-| T20 | ECS services + deploy pipeline + rollback validation | L · 3 ew | T19, T9 |
+| T19 | Terraform baseline | L · 3 ew | — |
+| T20 | ECS + deploy pipeline + rollback validation | L · 3 ew | T19, T9 |
+
+**Sequential order:** T19 → T20
 
 ---
 
-## 7. Provider Simulation Framework — Design
+## 8. Provider Simulation Framework — Design
 
-> Full specification will be authored as `docs/architecture/20-provider-simulation.md` with an accompanying ADR during M2.0. This section fixes the design intent.
+> Full specification authored as `docs/architecture/20-provider-simulation.md` with an accompanying ADR during M2.0. This section fixes design intent.
 
-### Why this is platform, not tooling
+### Status: permanent platform capability
 
-The simulator is a **permanent platform capability**, held to production standards: reviewed, typed, tested, boundary-enforced. It is not scaffolding to be deleted later. Four capabilities depend on it permanently:
+The simulator is **not development-only tooling**. It is held to production standards — reviewed, typed, tested, boundary-enforced — and serves eight ongoing purposes:
 
-1. **Offline development** — the full pipeline runs with no external network.
-2. **Deterministic demos** — a demo that depends on a live vendor is a demo that fails in front of a customer.
-3. **Repeatable integration tests** — CI must never depend on third-party availability, rate limits, or cost.
-4. **AI evaluation** — golden sets require identical inputs producing comparable outputs over time. Without determinism, AI quality cannot be measured, and [17-future-recommendations.md](docs/architecture/17-future-recommendations.md) names the eval harness the single highest-leverage AI investment.
+| Purpose | Why it needs the simulator |
+|---|---|
+| **Local development** | Full pipeline runs offline, with no vendor account or cost |
+| **Integration testing** | CI must never depend on third-party availability, rate limits, or spend |
+| **End-to-end testing** | Deterministic full-pipeline runs |
+| **Product demonstrations** | A demo depending on a live vendor is a demo that fails in front of a customer |
+| **AI evaluation** | Identical inputs → comparable outputs across model and prompt versions |
+| **Regression testing** | Scenarios become the pipeline's end-to-end regression suite |
+| **Performance benchmarking** | Reproducible load at controlled volume and rate |
+| **Customer onboarding demos** | A prospect sees a realistic account journey without their data being ingested first |
+
+### The identical-contract rule
+
+**Every simulated provider implements exactly the same adapter contract as a production provider** — identical method signatures, identical return types, identical error semantics, identical retry and rate-limit behaviour surface.
+
+Consequences, all binding:
+
+- Switching between simulated and production providers is **configuration only**
+- **No `if simulated:` branching** may exist in any layer — domain, application, infrastructure, or interface
+- The ingestion pipeline is **byte-identical** in both modes
+- A simulated adapter that cannot satisfy the real contract is a defect in the *contract*, not a licence to special-case the simulator
+
+This rule is what makes the simulator trustworthy for demos and regression: if the simulated path diverged from production, everything it proved would be worthless.
 
 ### Architectural placement
 
-**The simulator enters at the Provider layer and nowhere else.** It produces raw provider payloads identical in shape to real vendor responses, then the standard pipeline runs untouched:
+**The simulator enters at the Provider layer and nowhere else.**
 
 ```
 Simulated Provider Adapter  ─┐
@@ -465,129 +555,105 @@ Real Provider Adapter       ─┘                          ↓
                                       AI Research / AI Reasoning → Recommendations
 ```
 
-**No stage after Provider may be entered directly.** Injecting a synthetic observation or a pre-built signal would test a path production never takes and produce demos that prove nothing.
+**No stage after Provider may be entered directly.** Injecting a synthetic observation or a pre-built signal would exercise a path production never takes and produce demos that prove nothing.
 
-### Placement in the codebase
+### Codebase placement
 
 | Component | Location | Rationale |
 |---|---|---|
 | Simulation framework (datasets, scenario engine, clock, fault injection) | `signora_platform/simulation/` | Shared technical infrastructure; no module dependency — satisfies the `signora_platform` → `modules` prohibition |
-| Simulated provider adapters | `modules/provider_platform/infrastructure/adapters/simulated/` | Adapters belong with other adapters; `modules` → `platform` is the allowed direction |
+| Simulated provider adapters | `modules/provider_platform/infrastructure/adapters/simulated/` | Adapters belong with adapters; `modules` → `platform` is the allowed direction |
 | Scenario & dataset definitions | `signora_platform/simulation/datasets/`, `scenarios/` | Versioned, reviewable, diffable |
 
-**The simulator is the first implementation of the Provider Port.** This is deliberate: it satisfies the YAGNI ruling (the port is built with a concrete implementation, not speculatively) *and* validates the port design with working code before any vendor adapter is written or any vendor contract signed.
+**The simulator is the first implementation of the Provider Port** — satisfying the YAGNI ruling and validating the port with working code before any vendor adapter is written or contract signed.
 
 ### Capabilities
 
 | Capability | Detail |
 |---|---|
 | Load predefined datasets | Versioned company/people/technographic/traffic fixtures with stable identifiers |
-| Generate realistic payloads | Per-vendor response shapes matching each vendor's documented format |
-| Replay historical events | Ordered event timelines replayed against a virtual clock |
-| Control event timing | Instant · real-time · accelerated (e.g. 30 simulated days per minute) |
+| Generate realistic payloads | Per-vendor response shapes matching documented formats |
+| Replay historical events | Ordered timelines against a virtual clock |
+| Control event timing | Instant · real-time · accelerated |
 | Simulate provider failures | Timeout · 5xx · rate limit · malformed payload · partial response |
-| Simulate delayed updates | Late-arriving data, out-of-order relative to `occurred_at` |
+| Simulate delayed updates | Late-arriving, out-of-order relative to `occurred_at` |
 | Simulate duplicate events | Same payload delivered N times — exercises idempotency for real |
-| Simulate webhook deliveries | Inbound webhook path, including replayed and out-of-order deliveries |
+| Simulate webhook deliveries | Inbound webhook path, including replayed and out-of-order |
 | Simulate incremental syncs | Delta-only payloads since a watermark |
 | Simulate full snapshots | Complete re-sync, exercising dedup and merge |
 
 ### Determinism contract
 
-Given the same **dataset version + scenario + seed**, the simulator produces byte-identical payloads on every run and every machine. All randomness is seeded; no wall-clock or ambient state leaks into generation. This is what makes AI evaluation over time meaningful rather than anecdotal, and it is an explicit acceptance criterion, not an aspiration.
+Given the same **dataset version + scenario + seed**, the simulator produces byte-identical payloads on every run and every machine. All randomness is seeded; no wall-clock or ambient state leaks into generation. This is an acceptance criterion, not an aspiration — without it, AI regression over time is anecdote rather than measurement.
 
 ### Demo scenario library
 
-Ten scenarios, each a realistic multi-provider event timeline with expected downstream outcomes:
-
 | # | Scenario | Primary signal exercised |
 |---|---|---|
-| 1 | High-growth SaaS company | Composite growth across headcount, traffic, funding |
+| 1 | High-growth SaaS company | Composite growth: headcount, traffic, funding |
 | 2 | Hiring surge | Job-posting velocity in a specific function |
-| 3 | Technology migration | Technographic change — displacement of an incumbent tool |
+| 3 | Technology migration | Technographic change — incumbent displacement |
 | 4 | Executive change | Leadership hire in a buying-relevant role |
 | 5 | Funding announcement | Capital event, budget-availability inference |
 | 6 | Website traffic spike | Engagement inflection |
 | 7 | Buying intent increase | Multi-source intent correlation |
 | 8 | New office expansion | Geographic expansion |
-| 9 | Competitor displacement | Technographic + hiring + content signals combined |
+| 9 | Competitor displacement | Technographic + hiring + content combined |
 | 10 | Company becomes an ideal ICP match | Firmographic drift into ICP over time |
 
-**Scenario assertions accumulate as the pipeline is built.** In M2.0 a scenario asserts on raw payloads and normalized records only. As each downstream module ships, that scenario's assertions extend — observations in M3, business events in M4, signals and scores in M5, opportunities in M6, reasoning in M9, recommendations in M11. By M11 each scenario is a full end-to-end regression test. This is a feature of the design, not a limitation: the scenario library becomes the pipeline's regression suite.
+### Progressive assertion — the AI regression foundation
 
-### AI evaluation support
+**Scenario assertions extend at each milestone; regression datasets are never recreated.** A scenario authored in M2.0 accumulates assertion layers as the pipeline is built, so by M11 each of the ten scenarios is a full end-to-end regression test.
 
-- Deterministic inputs → reproducible AI inputs → comparable outputs across model and prompt versions
-- Expected-outcome fixtures per scenario, forming the seed of the golden sets for M8's eval harness
-- Model/prompt version recorded against each evaluation run, so quality change is attributable
-- **Estimated saving:** because M8's eval harness inherits datasets and expected outcomes from here, its cost drops from 6–8 ew to roughly 4–6 ew. Part of M2.0's investment is repaid directly.
+| Milestone | Assertion layer added | Cumulative depth |
+|---|---|---|
+| **M2.0** | Raw provider payloads | Payloads |
+| **M2.1** | Normalized entities | + Normalization |
+| **M3** | Observations, resolved graph entities | + Substrate |
+| **M4** | Business Events | + Interpretation |
+| **M5** | Signals, Buying Scores | + Scoring |
+| **M6** | Opportunities | + Qualification |
+| **M9** | AI reasoning output, **confidence scores** | + Reasoning |
+| **M11** | Recommendations | **Full pipeline** |
+
+**Rules governing this evolution:**
+
+1. **Extend, never recreate.** A dataset is versioned and added to. Regenerating a dataset invalidates every historical comparison built on it, which defeats the purpose of regression testing.
+2. **Assertions are additive.** Adding an M4 assertion must not require rewriting M2.0's payload assertions.
+3. **Dataset versions are immutable once published.** A correction ships as a new version, with the change reviewable as a diff.
+4. **Every AI evaluation run records dataset version, model version, and prompt version** — so a quality change is attributable to exactly one of them.
+5. **Confidence scores are asserted as ranges, not exact values.** Asserting an exact float would make the suite brittle against justified model changes; asserting calibration bands catches real regressions without punishing improvement.
+
+**Estimated saving:** M8's evaluation harness inherits these datasets and expected outcomes, dropping from 6–8 ew to ~4–6 ew. Part of M2.0's cost is repaid directly.
 
 ### Safety
 
-**The single most important control in this milestone:** the simulator must never activate in production. A simulator silently active against customer workspaces would fabricate intelligence — a P0-class trust failure.
+**The highest-risk control in this milestone.** A simulator active in production would fabricate customer intelligence — a trust failure, not a bug.
 
-- Environment guard: refuses to activate when `environment == "production"` absent an explicit, logged override
+- Environment guard: refuses activation when `environment == "production"` absent an explicit, logged override
 - Ingestion logs unambiguously mark simulated payloads
 - Simulator state exposed in non-production health output
-- Alert if the simulator is active anywhere it should not be
-- All four controls are test-enforced, not conventions
+- Alert if active anywhere it should not be
+
+All four are test-enforced, not conventions.
 
 ---
 
-## 8. Dependencies
+## 9. Parallel Workstreams — *retained for future scaling*
 
-```mermaid
-flowchart TD
-    M0[M0 Foundation ✅] --> M11[M1.1 Platform Runtime 🔴]
-    M0 --> M12[M1.2 Auth Boundary 🔴]
-    M0 --> M13[M1.3 Infrastructure]
-    M11 --> M13
-    M11 --> M20[M2.0 Simulation Framework]
-    M12 --> M20
-    M20 --> M21[M2.1 Provider Platform + Normalization]
-    M21 --> M3[M3 Knowledge Graph + Observation]
-    M3 --> M4[M4 Business Event Engine]
-    M4 --> M5[M5 Signal + Buying Score]
-    M5 --> M6[M6 Opportunity Engine]
-    M6 --> M7[M7 Timeline]
-    M8[M8 AI Platform + Eval Harness] --> M9[M9 AI Reasoning]
-    M6 --> M9
-    M6 --> M10[M10 AI Research]
-    M8 --> M10
-    M20 -.golden datasets.-> M8
-    M9 --> M11R[M11 Recommendations]
-    M7 --> M12R[M12 Revenue Intelligence + Frontend]
-    M11R --> M12R
-    M12R --> M13I[M13 Integrations]
-    M12R --> M15[M15 GA Readiness]
-```
-
-**Hard dependencies:**
-1. **M1.1 → everything** — the relay unblocks all 13 modules
-2. **M1.2 → any human access** — no login, no demo
-3. **M2.0 → M2.1** — the Provider Port is defined by the simulator and reused by real adapters
-4. **M2.0 → M8** — golden datasets for AI evaluation
-5. **Pipeline order M2.1 → M11 is a strict DAG**
-
-**Notable soft dependency:** M8 (AI Platform + Eval Harness) can begin as early as M4 in a parallel stream, provided M2.0 has landed. It must complete before M9.
-
----
-
-## 9. Parallel Workstreams
+> **Not the current operating model.** §1 governs: implementation proceeds as a single prioritized stream. This section is preserved for the moment staffing increases, and should be re-read then.
 
 | Stream | Scope | Staffing | Runs |
 |---|---|---|---|
-| **A — Pipeline** 🔴 | M2.1 → M11 (critical path) | 2–3 eng | From M2.0 completion |
-| **B — AI Platform** | M8, then M9/M10 support | 1–2 eng | From M4, ahead of Stream A's arrival |
-| **C — Product Surface** | M1.2, then M7/M12 frontend | 1–2 eng + design | Continuous from day one |
+| **A — Pipeline** | M2.1 → M11 (critical path) | 2–3 eng | From M2.0 completion |
+| **B — AI Platform** | M8, then M9/M10 support | 1–2 eng | From M4 |
+| **C — Product Surface** | M1.2, then M7/M12 frontend | 1–2 eng + design | Continuous |
 | **D — Platform & Ops** | M1.1, M1.3, M15 | 1 eng | Continuous |
-| **E — Simulation** | M2.0, then scenario extension per milestone | 1 eng | M2.0, then ~0.5 eng ongoing |
+| **E — Simulation** | M2.0, then scenario extension per milestone | 1 eng, then ~0.5 | M2.0 onward |
 
-**M1 phase (immediate):** M1.1, M1.2, M1.3 run **fully in parallel** — separate codebases, near-zero contention. Longest path ≈ 11 ew ≈ 3 weeks.
+**When staffing allows:** M1.1, M1.2, and M1.3 have no interdependencies except T20←T9, so they parallelise almost perfectly — the fastest available compression of the M1 phase.
 
-**Stream E does not end at M2.0.** Each subsequent milestone extends the scenario library with its own assertions — budget ~0.5 ew per milestone for that, which is why the scenario library stays current rather than rotting.
-
-**Sequencing rule:** Stream B must reach "eval harness complete" before Stream A reaches M9. If B slips, A slows rather than shipping AI engines without evaluation.
+**Stream E never ends.** Each milestone extends the scenario library with its own assertions (~0.5 ew per milestone). This is what keeps the library current rather than rotting into stale fixtures.
 
 ---
 
@@ -595,16 +661,16 @@ flowchart TD
 
 | Checkpoint | When | Verifies |
 |---|---|---|
-| **AC-1 — Event Bus Contract** | M1.1 close | At-least-once delivery; platform-owned idempotency; DLQ; `correlation_id` traced end-to-end ([06-events.md](docs/architecture/06-events.md)) |
-| **AC-2 — Auth Boundary Integrity** | M1.2 close | No private key in Python tier; claims match contract exactly; contract test green ([18-authentication.md](docs/architecture/18-authentication.md)) |
-| **AC-3 — Deployment & Rollback** | M1.3 close | Rollback executed and timed; migrations expand-then-contract; app connects as non-superuser in a deployed environment |
-| **AC-4 — Simulator Fidelity** | M2.0 close | Simulator enters only at Provider layer; adapter selection is config-only; determinism proven; production guard test-enforced |
-| **AC-5 — Provider Abstraction Integrity** | M2.1 close | Provider Port unchanged from M2.0; no vendor SDK type outside an adapter ([13-integrations.md](docs/architecture/13-integrations.md)) |
-| **AC-6 — Tenancy Under Load** | M3 close | Every new table: `workspace_id`, forced RLS, `SECURITY DEFINER` predicates, `WHERE`-less query test, both session shapes ([11-tenancy.md](docs/architecture/11-tenancy.md)) |
-| **AC-7 — Evidence Chain Integrity** | M6 close | Every signal/score/opportunity traces to source observations |
-| **AC-8 — AI Abstraction & Safety** | M9 mid | No vendor SDK in domain/application; output validated before trust; prompt versions recorded |
-| **AC-9 — AI Evaluation Gate** | M8 close | Golden sets exist; regression testing CI-enforced; evidence-completeness is a release gate |
-| **AC-10 — Module Boundary Audit** | Every milestone | import-linter contracts extended and **proven to fail** on deliberate violation |
+| **AC-1 — Event Bus Contract** | M1.1 | At-least-once delivery; platform-owned idempotency; DLQ; `correlation_id` traced end-to-end |
+| **AC-2 — Auth Boundary Integrity** | M1.2 | No private key in Python tier; claims match contract exactly; contract test green |
+| **AC-3 — Deployment & Rollback** | M1.3 | Rollback executed and timed; expand-then-contract migrations; non-superuser connection in a deployed environment |
+| **AC-4 — Simulator Fidelity** | M2.0 | Identical adapter contract; config-only switching; enters only at Provider layer; determinism proven; production guard test-enforced |
+| **AC-5 — Provider Abstraction Integrity** | M2.1 | Provider Port unchanged from M2.0; no vendor SDK type outside an adapter |
+| **AC-6 — Tenancy Under Load** | M3 | Every new table: `workspace_id`, forced RLS, `SECURITY DEFINER` predicates, `WHERE`-less query test, both session shapes |
+| **AC-7 — Evidence Chain Integrity** | M6 | Every signal/score/opportunity traces to source observations |
+| **AC-8 — AI Abstraction & Safety** | M9 | No vendor SDK in domain/application; output validated before trust; prompt versions recorded |
+| **AC-9 — AI Evaluation Gate** | M8 | Golden sets exist; regression CI-enforced; evidence-completeness a release gate |
+| **AC-10 — Module Boundary Audit** | Every milestone | import-linter contracts extended and **proven to fail** on a deliberate violation |
 | **AC-11 — Scale Validation** | M15 | RLS, Meilisearch, pgvector load-tested at target scale using simulator-generated volume |
 | **AC-12 — Security & Compliance** | M15 | Least privilege verified; PII policy implemented; SOC 2 evidence collectable |
 
@@ -612,21 +678,19 @@ flowchart TD
 
 ## 11. Acceptance Criteria (per module)
 
-Unchanged from v1 — all must hold:
-
 - [ ] Five Clean Architecture layers, correctly directed
 - [ ] `public/` contract exported; no module imports past it
 - [ ] import-linter contract added **and demonstrated to fail** on a deliberate violation
 - [ ] Every workspace-owned table: `workspace_id`, `created_at`, `updated_at`, `created_by`, `updated_by`, forced RLS, granted to `signora_app`, **in the same migration**
 - [ ] Integration test with a `WHERE`-less query asserting only current-workspace rows return
-- [ ] Both session shapes tested (user-scoped, workspace-scoped)
+- [ ] Both session shapes tested
 - [ ] Published events match [06-events.md](docs/architecture/06-events.md); **idempotency is platform-provided — modules must not implement their own**
 - [ ] Domain errors mapped centrally; no `HTTPException` in domain/application
 - [ ] Endpoints follow [19-api-conventions.md](docs/architecture/19-api-conventions.md)
 - [ ] mypy `strict` clean; ruff clean
 - [ ] Unit tests use fakes; integration tests use real PostgreSQL as `signora_app`
 - [ ] Failure paths tested
-- [ ] **Simulator scenario extended** with this module's assertions (from M2.0 onward)
+- [ ] **Scenario assertions extended** with this module's layer (from M2.0 onward)
 - [ ] Architecture docs updated in the same PR
 
 ---
@@ -636,34 +700,41 @@ Unchanged from v1 — all must hold:
 A milestone is done when **every** statement holds:
 
 1. **Functionally complete** — all acceptance criteria met.
-2. **Architecturally verified** — the milestone's checkpoint has formally passed.
-3. **Tested** — unit, integration, failure paths; suite green; coverage measured and not regressed.
-4. **Observable** — every async flow traceable via `correlation_id`, emitting latency/throughput/error metrics.
-5. **Secure** — tenant isolation proven by test; no secrets in code; least privilege verified.
-6. **Documented** — architecture documents updated in the same change; new ADR for any new technology or vendor.
-7. **Deployable** — runs in a deployed environment (from M1.3 onward).
-8. **Demonstrable** — the milestone's Demo Scenario runs successfully, **using simulated provider data wherever live integrations are unavailable**.
-9. **Reversible** — rollback strategy documented and, for infrastructure milestones, executed at least once.
-10. **Operationally ready** — readiness checklist complete: runbooks, alerts, dashboards.
-11. **No shortcuts** — no TODOs in application code, no placeholders, no mocks, no dead code, no skipped tests.
-12. **Risk register current** — [16-architecture-risks.md](docs/architecture/16-architecture-risks.md) updated.
-13. **Status updated** — [PROJECT_STATUS.md](PROJECT_STATUS.md) reflects reality.
+2. **Demo Checklist passed** — every item verified live. **A milestone is not complete until its Demo Checklist passes.**
+3. **Architecturally verified** — the milestone's checkpoint has formally passed.
+4. **Tested** — unit, integration, failure paths; suite green; coverage measured and not regressed.
+5. **Observable** — every async flow traceable via `correlation_id`, emitting latency/throughput/error metrics.
+6. **Secure** — tenant isolation proven by test; no secrets in code; least privilege verified.
+7. **Documented** — architecture documents updated in the same change; new ADR for any new technology or vendor.
+8. **Deployable** — runs in a deployed environment (from M1.3 onward).
+9. **Demonstrable** — the Demo Scenario runs successfully, **using simulated provider data wherever live integrations are unavailable**.
+10. **Reversible** — rollback strategy documented and, for infrastructure milestones, executed at least once.
+11. **Operationally ready** — readiness checklist complete: runbooks, alerts, dashboards.
+12. **Regression-extended** — scenario assertions extended for this milestone's pipeline layer (from M2.0 onward).
+13. **No shortcuts** — no TODOs in application code, no placeholders, no mocks, no dead code, no skipped tests.
+14. **Risk register current** — [16-architecture-risks.md](docs/architecture/16-architecture-risks.md) updated.
+15. **Status updated** — [PROJECT_STATUS.md](PROJECT_STATUS.md) reflects reality.
 
 ---
 
-## 13. Recommended Immediate Sequence
+## 13. Immediate Sequence
 
-M1.1, M1.2, and M1.3 start **simultaneously** — they contend for nothing.
+Single stream. **M1.1 only** — M1.2 does not begin until M1.1's Demo Checklist passes.
 
-| Order | Work | Stream | Why |
-|---|---|---|---|
-| 1 | T1, T2, T6 (coverage, CI Redis, event schema) | D | Zero dependencies; unblock everything else same-day |
-| 1 | T12 (Next.js scaffold) | C | Zero dependencies, different codebase |
-| 1 | T19 (Terraform baseline) | E | Zero dependencies |
-| 2 | T3 → T4/T5 (observability) | D | Instrument before the pipeline's complexity arrives |
-| 2 | T7 → T8 → T9 → T10 (relay chain) 🔴 | D | The critical path |
-| 2 | T13 → T14 → T15 (Better Auth → JWT → keys) 🔴 | C | The other critical path |
-| 3 | T11, T16–T18, T20 | All | Convergence and verification |
-| 4 | **Knowledge Graph spike (timeboxed, 2 weeks)** | A | Retire the roadmap's largest estimation risk while re-planning is cheap |
+| Order | Task | Why here |
+|---|---|---|
+| 1 | **T1** Coverage + CI gate | 0.25 ew; closes a measurement gap before more code lands |
+| 2 | **T2** Redis in CI | 0.25 ew; required before any relay integration test can run |
+| 3 | **T6** Event bus schema | Unblocks T7 and T8; small, self-contained |
+| 4 | **T3** Structured logging | Before the relay, so the relay is debuggable *as it is built* rather than after |
+| 5 | **T7** Outbox relay 🔴 | Start of the critical chain; unblocks all 13 modules |
+| 6 | **T8** Dispatch + platform idempotency 🔴 | The contract 13 modules will program against — worth getting right once |
+| 7 | **T9** ARQ worker fleet | Makes dispatch runnable |
+| 8 | **T10** Retry + DLQ | Completes delivery guarantees |
+| 9 | **T4** OpenTelemetry | Now there is real cross-process traffic to trace |
+| 10 | **T5** Sentry | Small; completes observability |
+| 11 | **T11** Pipeline metrics | Needs T4 and the full relay chain in place |
 
-**After M1 closes: M2.0 (Provider Simulation Framework) before any pipeline module.** Building Provider Platform first would mean developing and testing it against live vendors — the exact dependency the simulator exists to eliminate.
+**Then:** M1.1 Demo Checklist → M1.2 → M1.3 → M2.0.
+
+**Deferred until staffing allows:** the Knowledge Graph spike. Under single-stream execution it would displace critical-path work; it should run as soon as a second engineer is available, since it retires the roadmap's largest estimation variance.

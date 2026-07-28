@@ -2,8 +2,8 @@
 
 > **Owner:** Technical Program Manager · **Audience:** Everyone
 > **Cadence:** Updated at every milestone boundary and every sprint close. Updating this is part of the [Definition of Done](IMPLEMENTATION_ROADMAP.md#12-definition-of-done-global).
-> **Last updated:** 2026-07-28 · **Reporting period:** M0 close → M1 planning
-> **Revision:** v2 — milestone structure revised (M1 split into M1.1/M1.2/M1.3; M2.0 Provider Simulation Framework added)
+> **Last updated:** 2026-07-28 · **Reporting period:** M0 close → M1.1 planning
+> **Revision:** v3 — sequential single-stream execution adopted; Demo Checklist added as a completion gate; progressive AI regression model defined
 
 ---
 
@@ -11,16 +11,18 @@
 
 ```
 M0  Foundation             ████████████████████ 100%  ✅ Complete
-M1.1 Platform Runtime      ░░░░░░░░░░░░░░░░░░░░   0%  🔴 Approved, not started
-M1.2 Auth Boundary         ░░░░░░░░░░░░░░░░░░░░   0%  🔴 Approved, not started
-M1.3 Infrastructure        ░░░░░░░░░░░░░░░░░░░░   0%  🟠 Approved, not started
-M2.0 Simulation Framework  ░░░░░░░░░░░░░░░░░░░░   0%  🆕 Approved, not started
-M2.1 → M15                 ░░░░░░░░░░░░░░░░░░░░   0%
+M1.1 Platform Runtime      ░░░░░░░░░░░░░░░░░░░░   0%  🔴 CURRENT — approved, not started
+M1.2 Auth Boundary         ░░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (after M1.1)
+M1.3 Infrastructure        ░░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (after M1.2)
+M2.0 Simulation Framework  ░░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued (after M1.3)
+M2.1 → M15                 ░░░░░░░░░░░░░░░░░░░░   0%  ⏸ Queued
 ```
+
+**Execution model: sequential single stream.** One milestone at a time, in the order above. Parallel workstreams are documented in [IMPLEMENTATION_ROADMAP.md §9](IMPLEMENTATION_ROADMAP.md#9-parallel-workstreams--retained-for-future-scaling) for future scaling but are **not** the current operating assumption.
 
 | Dimension | Status |
 |---|---|
-| **Overall completion to GA** | **~5%** by engineering effort (~14 of ~239–319 total engineer-weeks) |
+| **Overall completion to GA** | **~5%** by engineering effort (~14 of ~239–319 total engineer-weeks; ~225–305 ew remaining) |
 | Architecture & design | **100%** — 19 documents, 27 ADRs, ratified and internally consistent |
 | Core modules | **1 of 14** (7%) |
 | Backend platform | ~55% of foundation scope; 0% of pipeline scope |
@@ -29,9 +31,23 @@ M2.1 → M15                 ░░░░░░░░░░░░░░░░░
 | Provider simulation | **0%** — newly scoped (M2.0) |
 | AI capability | **Level 0 of 12** ([AI_MATURITY_ROADMAP.md](AI_MATURITY_ROADMAP.md)) |
 
-**Estimate revised upward.** v1 projected 190–266 ew to GA; v2 projects **225–305 ew (~11–16 months** at 6 engineers / 80% capacity). The increase is the Provider Simulation Framework (~17–24 ew), a deliberate investment that is partially repaid — M8's AI evaluation harness inherits its datasets and drops from 6–8 ew to ~4–6 ew.
+### Calendar under sequential execution
 
-**Honest read:** progress percentage will look flat through M1 and M2.0 and then accelerate. That is a property of building a runtime spine and a test substrate before features, not a sign of slow execution.
+Total effort is unchanged at **~225–305 ew**. Calendar time depends entirely on staffing, and sequential execution forfeits parallel compression:
+
+| Team size | M1 (33 ew) | M1 + M2.0 | **To GA** |
+|---|---|---|---|
+| **1 engineer** | ~41 weeks | ~62–71 weeks | **~5.4–7.3 years** |
+| **2 engineers** | ~21 weeks | ~31–36 weeks | **~2.7–3.7 years** |
+| **3 engineers** | ~14 weeks | ~21–24 weeks | **~1.8–2.4 years** |
+
+Assumes 80% effective capacity. Within a milestone, additional engineers help only up to the **critical path** — M1.1's chain (T6→T7→T8→T9→T10) is ~10 ew of serial work and cannot compress below that at any headcount.
+
+**This is not an argument against the decision.** For a small team, context switching destroys more throughput than parallelism recovers. But the timeline consequence is owned here, at planning time, rather than surfaced later as a slip.
+
+**Highest-leverage lever if the GA horizon matters commercially:** the second and third engineer. Moving 1 → 3 roughly triples throughput. Beyond ~3, the pipeline's serial dependency chain limits further gains.
+
+**Honest read:** progress will look flat through M1 and M2.0, then accelerate. That is a property of building a runtime spine and a test substrate before features, not slow execution.
 
 ---
 
@@ -58,85 +74,74 @@ M2.1 → M15                 ░░░░░░░░░░░░░░░░░
 
 ## Current Milestone
 
-### 🔄 M1 — Runtime Spine · **APPROVED, NOT STARTED**
+### 🔄 M1.1 — Platform Runtime · **CURRENT** · ~15.5 ew
 
-Now three parallel milestones. All approved 2026-07-28.
+Sole active milestone. M1.2 does not begin until M1.1's **Demo Checklist passes**.
 
-#### M1.1 — Platform Runtime · ~15.5 ew
+| Order | Task | Complexity | Status |
+|---|---|---|---|
+| 1 | T1 Coverage measurement + CI gate | XS · 0.25 ew | ⬜ |
+| 2 | T2 Redis service in CI | XS · 0.25 ew | ⬜ |
+| 3 | T6 Event bus schema (DLQ + idempotency ledger) | S–M · 1 ew | ⬜ |
+| 4 | T3 Structured logging | M · 1.5 ew | ⬜ |
+| 5 | T7 Outbox relay 🔴 | L · 3 ew | ⬜ |
+| 6 | T8 Dispatch + platform-owned idempotency 🔴 | L · 3 ew | ⬜ |
+| 7 | T9 ARQ worker fleet + per-stage pools | M · 1.5 ew | ⬜ |
+| 8 | T10 Retry + dead-lettering | M · 1.5 ew | ⬜ |
+| 9 | T4 OpenTelemetry tracing | M · 2 ew | ⬜ |
+| 10 | T5 Sentry error tracking | S · 0.5 ew | ⬜ |
+| 11 | T11 Pipeline observability metrics | S–M · 1 ew | ⬜ |
 
-| Task | Complexity | Status |
-|---|---|---|
-| T1 Coverage measurement + CI gate | XS · 0.25 ew | ⬜ |
-| T2 Redis service in CI | XS · 0.25 ew | ⬜ |
-| T3 Structured logging | M · 1.5 ew | ⬜ |
-| T4 OpenTelemetry tracing | M · 2 ew | ⬜ |
-| T5 Sentry error tracking | S · 0.5 ew | ⬜ |
-| T6 Event bus schema (DLQ + idempotency ledger) | S–M · 1 ew | ⬜ |
-| T7 Outbox relay 🔴 | L · 3 ew | ⬜ |
-| T8 Dispatch + platform-owned idempotency 🔴 | L · 3 ew | ⬜ |
-| T9 ARQ worker fleet + per-stage pools | M · 1.5 ew | ⬜ |
-| T10 Retry + dead-lettering | M · 1.5 ew | ⬜ |
-| T11 Pipeline observability metrics | S–M · 1 ew | ⬜ |
+**Sequencing rationale:** cheap unblocking work first (T1, T2, T6); logging (T3) *before* the relay so the relay is debuggable as it is built rather than after; then the critical chain T7→T8→T9→T10; then remaining observability, which benefits from having real cross-process traffic to instrument.
 
-**Simulator required:** ❌ No — verified with a test-only consumer.
+**Critical path:** T6→T7→T8→T9→T10 ≈ **10 ew of serial work** — not compressible by adding engineers.
+
+**Simulator required:** ❌ No — verified with a test-only consumer. The simulator enters at the Provider layer, which does not exist yet.
+
 **Checkpoint:** AC-1 Event Bus Contract.
 
-#### M1.2 — Authentication Boundary · ~11.5 ew
-
-| Task | Complexity | Status |
-|---|---|---|
-| T12 Next.js 15 scaffold + tooling | M · 1.5 ew | ⬜ |
-| T13 Better Auth + Google/Microsoft OAuth 🔴 | L · 3 ew | ⬜ |
-| T14 RS256 JWT issuance per ADR-0026 🔴 | M · 1.5 ew | ⬜ |
-| T15 Signing-key management | S–M · 1 ew | ⬜ |
-| T16 Typed API client | M · 1.5 ew | ⬜ |
-| T17 Frontend shell | M · 2 ew | ⬜ |
-| T18 E2E auth journey | M · 1 ew | ⬜ |
-
-**Simulator required:** ❌ No.
-**Checkpoint:** AC-2 Auth Boundary Integrity.
-**Note:** first milestone with **user-visible outcome** — design-partner onboarding can begin at close.
-
-#### M1.3 — Infrastructure · ~6 ew
-
-| Task | Complexity | Status |
-|---|---|---|
-| T19 Terraform baseline | L · 3 ew | ⬜ |
-| T20 ECS + deploy pipeline + rollback validation | L · 3 ew | ⬜ |
-
-**Simulator required:** ❌ No.
-**Checkpoint:** AC-3 Deployment & Rollback.
+**Demo Checklist:** 13 items — see [IMPLEMENTATION_ROADMAP.md §6](IMPLEMENTATION_ROADMAP.md#6-milestone-definitions). Highlights: duplicate delivery invokes a handler exactly once · two concurrent relays never double-enqueue · Redis stopped mid-run loses zero events · one `correlation_id` traced across all three processes.
 
 ---
 
-## Next Milestone After M1
+## Queued Milestones
 
-### 🆕 M2.0 — Provider Simulation Framework · ~17–24 ew · **APPROVED**
+Sequential execution — each begins only when the previous milestone's Demo Checklist passes.
 
-A permanent platform capability, not throwaway tooling. Enters the system at the Provider layer only; produces payloads byte-identical in shape to real vendor responses; runs the standard pipeline untouched.
+| Order | Milestone | Effort | Simulator | Gate |
+|---|---|---|---|---|
+| 1 | **M1.2** Authentication Boundary | ~11.5 ew | ❌ | AC-2 · first **user-visible outcome**; design-partner onboarding can begin |
+| 2 | **M1.3** Infrastructure | ~6 ew | ❌ | AC-3 · rollback executed and timed |
+| 3 | **M2.0** Provider Simulation Framework | ~17–24 ew | ✅ builds it | AC-4 · identical adapter contract, config-only switching |
+| 4 | M2.1 → M15 | ~175–240 ew | mostly ✅ | Per roadmap |
 
-**Also builds the Provider Port** — as its first concrete implementation. This satisfies the YAGNI ruling (no speculative ports) *and* validates the port with working code before any vendor adapter is written.
+### M2.0 — why it precedes every pipeline module
 
-**Checkpoint:** AC-4 Simulator Fidelity.
+A permanent platform capability, not throwaway tooling — used for local development, integration testing, E2E testing, demos, AI evaluation, regression testing, performance benchmarking, and customer onboarding demos.
 
-**Highest-risk control in the milestone:** the simulator must never activate in production. A simulator silently running against customer workspaces would fabricate intelligence — treated as a P0-class hazard, guarded by an environment check, unambiguous ingestion logging, health-endpoint visibility, and an alert, all test-enforced.
+**It also builds the Provider Port**, as its first concrete implementation. That satisfies the YAGNI ruling and validates the port with working code before any vendor adapter is written or contract signed.
+
+**Binding rule:** simulated providers implement *exactly* the same adapter contract as production providers. Switching is configuration only; no `if simulated:` branching may exist in any layer; the ingestion pipeline is byte-identical in both modes.
+
+**Highest-risk control:** the simulator must never activate in production — it would fabricate customer intelligence. Guarded by an environment check, unambiguous ingestion logging, health-endpoint visibility, and an alert, all test-enforced.
 
 ---
 
 ## Current Sprint
 
-**Sprint:** Not yet started. M1 Sprint 1 pending kickoff and staffing.
+**Sprint:** Not started. M1.1 Sprint 1 pending kickoff and staffing.
 
-**Sprint 1 scope** — all three M1 milestones start simultaneously; they contend for nothing.
+**Scope — M1.1 only.** Single stream; no concurrent milestone work.
 
-| Stream | Sprint 1 tasks | Rationale |
-|---|---|---|
-| **D — Platform** | T1, T2, T6, then T3 and T7 | Zero-dependency items first; then instrument before complexity arrives; then start the critical path |
-| **C — Frontend** | T12, then T13 | Different codebase — fully parallel, no contention |
-| **E — Infra** | T19 | Zero dependencies |
-| **A — Pipeline** | Knowledge Graph spike (timeboxed, 2 weeks) | Retire the roadmap's largest estimation risk while re-planning is still cheap |
+| Sprint 1 tasks | Rationale |
+|---|---|
+| T1, T2, T6 | Zero-dependency, small, unblock everything downstream |
+| T3 | Instrument before the relay's complexity arrives |
+| T7 (start) | Begin the critical chain that unblocks all 13 pipeline modules |
 
-**Explicitly not in Sprint 1:** any pipeline module (blocked on T7/T8), and any provider adapter (blocked on M2.0).
+**Explicitly deferred under single-stream execution:**
+- **M1.2 / M1.3 work** — queued, not parallel
+- **Knowledge Graph spike** — would displace critical-path work. Should run the moment a second engineer is available, since it retires the roadmap's largest estimation variance.
 
 ---
 
@@ -153,9 +158,9 @@ A permanent platform capability, not throwaway tooling. Enters the system at the
 | Trustworthy AI output | M8 — Evaluation Harness (R-10) | 🟠 High | Unassigned |
 | PII/retention implementation | **Legal/Compliance policy input** (R-04, R-05) | 🟡 Medium | **Escalated — not an engineering blocker** |
 
-**Two blockers dominate**, and they sit in different codebases so they can be worked simultaneously: the event bus relay and the Better Auth issuer.
+**Under sequential execution these are not worked simultaneously.** The event bus relay (M1.1) is cleared first; the Better Auth issuer (M1.2) follows. That is a deliberate throughput choice, but it means **there is no working login until M1.2 completes** — roughly 21–41 weeks out at 1–2 engineers. Design-partner onboarding cannot begin before then.
 
-**Staffing remains the meta-blocker** — every item above is unassigned.
+**Staffing remains the meta-blocker** — every item above is unassigned, and headcount is the single largest determinant of the GA date (see Calendar above).
 
 ---
 
@@ -246,10 +251,10 @@ Three defects found and fixed during M0, each with regression tests proven to fa
 | ADRs (27) | ✅ Complete |
 | [CLAUDE.md](CLAUDE.md) | ✅ Complete |
 | [PRODUCT_DIFFERENTIATORS.md](PRODUCT_DIFFERENTIATORS.md) | ✅ Complete |
-| [IMPLEMENTATION_ROADMAP.md](IMPLEMENTATION_ROADMAP.md) | ✅ **Updated to v2** |
+| [IMPLEMENTATION_ROADMAP.md](IMPLEMENTATION_ROADMAP.md) | ✅ **Updated to v3** |
 | [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md) | ✅ Valid — milestone numbers M2+ unchanged |
 | [AI_MATURITY_ROADMAP.md](AI_MATURITY_ROADMAP.md) | ✅ Valid — levels unchanged |
-| PROJECT_STATUS.md | ✅ **This document, v2** |
+| PROJECT_STATUS.md | ✅ **This document, v3** |
 | API reference | ✅ Generated (OpenAPI) |
 | `20-provider-simulation.md` + ADR | ⬜ **To be authored during M2.0** |
 | Operations runbook | ⬜ **Required by M1.3** (first deployed environment) |
@@ -263,19 +268,15 @@ Three defects found and fixed during M0, each with regression tests proven to fa
 
 ## Next Task
 
-### 🎯 M1 Sprint 1 — three streams start simultaneously
+### 🎯 M1.1 · T1 — Coverage measurement + CI gate
 
-**Stream D — Platform (highest leverage):** T1 (coverage), T2 (CI Redis), T6 (event bus schema) — all zero-dependency, same-day starts. Then T3 (logging) and T7 (relay).
+**Why first:** 0.25 ew, zero dependencies, and it closes a measurement gap before more code lands. Every subsequent task's coverage contribution becomes visible from the outset rather than being reconstructed later.
 
-**Why T7 leads the critical path:** it unblocks all 13 core intelligence modules. No other available task has comparable leverage.
+**Then, in order:** T2 (Redis in CI) → T6 (event bus schema) → T3 (structured logging) → **T7 (outbox relay)**.
 
-**Stream C — Frontend:** T12 (Next.js scaffold) then T13 (Better Auth). Different codebase; zero contention with Stream D. Until this lands, **nobody can log in** and no demo is possible.
+**T7 is the milestone's centre of gravity** — it unblocks all 13 core intelligence modules. Everything before it is deliberately cheap and fast so the critical chain starts with measurement, CI, schema, and logging already in place.
 
-**Stream E — Infra:** T19 (Terraform baseline), zero dependencies.
-
-**Stream A — De-risking:** timeboxed 2-week Knowledge Graph spike. Retires the roadmap's largest estimation variance while re-planning is still cheap.
-
-**Awaiting:** staffing assignment. Every task is currently unassigned, which is the practical blocker ahead of all technical ones.
+**Awaiting:** approval to begin implementation, and staffing assignment. Every task is unassigned, which is the practical blocker ahead of all technical ones.
 
 ---
 
@@ -283,5 +284,6 @@ Three defects found and fixed during M0, each with regression tests proven to fa
 
 | Date | Change |
 |---|---|
+| 2026-07-28 | v3 — sequential single-stream execution adopted; calendar restated by team size; Demo Checklist added as a completion gate; progressive AI regression assertion model defined; simulator identical-adapter-contract rule recorded |
 | 2026-07-28 | v2 — M1 split into M1.1/M1.2/M1.3; M2.0 Provider Simulation Framework added; per-milestone Demo Scenario, User-Visible Outcome, DoD, Rollback, Operational Readiness introduced; R-14 identified; estimate revised to 225–305 ew |
 | 2026-07-28 | v1 — Initialized. M0 closed. Roadmap documents created. |
