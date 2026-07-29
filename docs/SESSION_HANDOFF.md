@@ -13,7 +13,7 @@
 | | |
 |---|---|
 | **Last completed** | **M2.2 Provider Normalization** — closed 2026-07-28 |
-| **Next** | **M3A Knowledge Graph** — *breakdown not yet prepared* |
+| **Next** | **M3A Knowledge Graph** — [architecture proposal](architecture/22-knowledge-graph.md) written, **awaiting review** |
 | **Phase** | Product Pipeline. Foundations and enablement are complete and frozen. |
 | **Overall completion** | **~30%** by engineering effort (~100 of ~261–339 ew) |
 | **Remaining** | ~161–239 ew · ~1.6–2.3 years at 3 engineers, ~4.9–6.8 at 1 |
@@ -207,10 +207,10 @@ Recorded in [IMPLEMENTATION_ROADMAP.md](../IMPLEMENTATION_ROADMAP.md).
 > **Health:** 564 backend + 101 frontend tests passing · coverage 95.12% · 83 invariants · 4 contracts · smoke green
 >
 > **Requires approval before implementation:**
-> 1. The **M3A implementation breakdown** — not yet prepared. Tasks, dependencies, acceptance criteria, domain model, event contracts, demo scenario, DoD, rollback, operational readiness.
-> 2. The **five architectural questions in §5** — particularly *where conflicting evidence gets resolved*, which determines whether disagreement survives into AI reasoning or dies at the graph.
+> 1. The **M3A architecture proposal** — [22-knowledge-graph.md](architecture/22-knowledge-graph.md). Complete: domain model, four evaluated alternatives, recommendation, entity and relationship models, resolution strategy, evidence attachment, storage, events, API, T59–T66, AC-25–AC-29, demo, DoD, rollback, operational readiness, risks.
+> 2. **Three questions inside it**: is the identity/truth split right · should `AMBIGUOUS` block downstream · is deferring person entities acceptable.
 >
-> **Start by:** thinking about the entity-resolution domain model. M3A is the first intelligence module and the first that must make explainable, revisable decisions — it deserves design time before code, and the questions above are the ones to settle first.
+> **The proposal's core recommendation:** *the graph decides identity; the graph never decides truth.* Identity is irreducible — only the graph can answer it. Attribute conflict is not, and every downstream module has more context to weigh it. If that split is wrong, the design is wrong at its root and should be rejected before implementation.
 >
 > **Do not:** reimplement anything in §2 · introduce mock business data · add a canonical attribute without an RFC · modify `signora_platform/` or the frontend foundation without a qualifying reason.
 
