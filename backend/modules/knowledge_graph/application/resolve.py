@@ -24,6 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from modules.knowledge_graph.application.ports import GraphRepository
 from modules.knowledge_graph.domain.events import (
     EntityCreated,
+    EntityEvidenceAttached,
     EntityIdentityBound,
     EntityResolutionAmbiguous,
 )
@@ -162,8 +163,18 @@ class ResolveEntity:
         if previous is not None:
             if previous.state is state and previous.entity_id == decision.entity_id:
                 # Re-resolution reached the same answer. Nothing changed, so
-                # nothing is written — a re-sync must not manufacture a
+                # no decision is written — a re-sync must not manufacture a
                 # supersession chain of identical decisions.
+                #
+                # **The evidence is still new, and must still be announced.**
+                # This is precisely the path that made a distinct
+                # `entity.evidence_attached` necessary: a consumer watching
+                # for identity changes would never see a nightly re-sync's
+                # claims, which is most of the evidence the pipeline ever
+                # receives.
+                await self._publish_evidence(
+                    previous, request, claims, now, correlation_id, causation_id
+                )
                 return ResolveEntityResult(
                     binding=previous, claims=claims, decision=None, entity_created=False
                 )
@@ -201,6 +212,7 @@ class ResolveEntity:
         await self._repository.add_binding(binding)
 
         await self._publish(decision, binding, now, correlation_id, causation_id, entity_created)
+        await self._publish_evidence(binding, request, claims, now, correlation_id, causation_id)
 
         logger.info(
             "identity resolved",
@@ -217,6 +229,43 @@ class ResolveEntity:
 
         return ResolveEntityResult(
             binding=binding, claims=claims, decision=decision, entity_created=entity_created
+        )
+
+    async def _publish_evidence(
+        self,
+        binding: IdentityBinding,
+        request: ResolveEntityInput,
+        claims: tuple[ClaimView, ...],
+        now: datetime,
+        correlation_id: UUID,
+        causation_id: UUID | None,
+    ) -> None:
+        """Announce that this evidence now belongs to this entity.
+
+        Published only for a usable binding. Evidence attached to an
+        ambiguous identity would be evidence about a company that may be one
+        of several, and a consumer must not silently treat it as attributed.
+        """
+        if not binding.is_usable or binding.entity_id is None:
+            return
+
+        await self._publisher.publish(
+            [
+                EntityEvidenceAttached(  # type: ignore[list-item]
+                    event_id=uuid4(),
+                    workspace_id=request.workspace_id,
+                    occurred_at=now,
+                    entity_id=binding.entity_id,
+                    provider=request.provider,
+                    provider_external_id=request.provider_external_id,
+                    raw_record_id=request.raw_record_id,
+                    claim_ids=tuple(claim.id for claim in claims),
+                    causation_id=causation_id,
+                )
+            ],
+            session=self._session,
+            producer_module=PRODUCER_MODULE,
+            correlation_id=correlation_id,
         )
 
     async def _publish(

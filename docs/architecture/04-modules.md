@@ -164,17 +164,23 @@ Each module below follows the template: Purpose, Owns, Does Not Own, Core Concep
 
 ### Observation Engine
 
-**Purpose:** Records atomic, timestamped, provenance-tracked **observations** — discrete facts observed about an entity — forming the immutable factual substrate the rest of the pipeline builds on.
+**Purpose:** Answers *"what changed?"* — detects structural change in what a provider asserts about an entity, forming the immutable factual substrate the rest of the pipeline builds on.
 
-**Owns:** The Observation aggregate, observation provenance and timestamps, observation deduplication.
+**Owns:** The Observation aggregate, the state/occurrence classification of every canonical attribute, deterministic observation identity and deduplication, observation provenance and timing, and refinement by supersession when evidence arrives late.
 
-**Does Not Own:** Interpretation of what an observation means in business terms (Business Event Engine), the entity graph itself (Knowledge Graph).
+**Does Not Own:** **Whether a change matters** — materiality is the Business Event Engine's, answered against a curated taxonomy. Also not: business interpretation (Business Event Engine), or the entity graph itself (Knowledge Graph).
 
-**Core Concepts:** Observation, Fact, Provenance, Observed-At Timestamp.
+**Core Concepts:** Observation, Observation Kind (`VALUE_CHANGED` / `OCCURRENCE_OBSERVED`), Direction, Magnitude, Attribute Semantics (state vs occurrence), Occurrence Key, Refinement.
 
-**Key Published Events:** `observation.recorded`.
+**Key Published Events:** `observation.recorded`, `observation.superseded`.
 
-**Key Consumed Events:** `entity.created`, `entity.updated`, `entity.merged`.
+**Key Consumed Events:** `entity.evidence_attached`.
+
+**Read port offered to other modules:** `ObservationQueries` → `Observation`, `ObservationEvidence` (`public/`).
+
+> **The permanent layering principle (ratified 2026-07-29):** *the Observation Engine detects change; it does not determine business significance.* A threshold here would be a constant nobody can justify; the Business Event Engine owns a versioned, reviewable taxonomy where such a rule belongs. See [21-intelligence-pipeline.md](21-intelligence-pipeline.md) and [23-observation-engine.md](23-observation-engine.md).
+>
+> Two further invariants shape the module. **Change is only ever computed within one provider's series** — two providers reporting different values is *disagreement*, and merging their series would manufacture movement that never happened. And the **first value of an attribute establishes a baseline and produces no observation**: nothing changed, Signora merely learned, and emitting one would flood every consumer on an onboarding sync.
 
 ---
 

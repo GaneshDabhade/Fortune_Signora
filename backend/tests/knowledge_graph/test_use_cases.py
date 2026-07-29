@@ -87,7 +87,11 @@ class TestResolveEntity:
         assert result is not None
         assert result.entity_created is True
         assert result.binding.state is IdentityState.IDENTIFIED
-        assert publisher.types() == ["entity.created", "entity.identity_bound"]
+        assert publisher.types() == [
+            "entity.created",
+            "entity.identity_bound",
+            "entity.evidence_attached",
+        ]
 
     async def test_a_second_provider_on_the_same_domain_binds_rather_than_creates(self) -> None:
         repository = FakeGraphRepository()
@@ -108,7 +112,7 @@ class TestResolveEntity:
         assert result is not None
         assert result.entity_created is False
         assert result.binding.entity_id == entity.id
-        assert publisher.types() == ["entity.identity_bound"]
+        assert publisher.types() == ["entity.identity_bound", "entity.evidence_attached"]
 
     async def test_two_candidates_produce_ambiguity_and_merge_nothing(self) -> None:
         """The property the whole module is shaped around. A wrong merge is
@@ -146,7 +150,12 @@ class TestResolveEntity:
         assert result is not None
         assert result.decision is None, "an unchanged answer must not be recorded as a decision"
         assert len(repository.decisions) == decisions_after_first
-        assert publisher.events == []
+        # The identity did not change, but the evidence is still new — and
+        # announcing it is the whole reason `entity.evidence_attached`
+        # exists. A consumer watching only for identity changes would never
+        # see a nightly re-sync's claims, which is most of the evidence the
+        # pipeline ever receives.
+        assert publisher.types() == ["entity.evidence_attached"]
 
     async def test_a_resolved_ambiguity_supersedes_the_decision_that_recorded_it(self) -> None:
         """The supersession path M3A actually has.
@@ -188,7 +197,7 @@ class TestResolveEntity:
         assert result.binding.entity_id == keeper.id
         assert result.decision.supersedes == first_decision.id
         assert first_decision in repository.decisions, "history must not be rewritten"
-        assert publisher.types() == ["entity.identity_bound"]
+        assert publisher.types() == ["entity.identity_bound", "entity.evidence_attached"]
 
     async def test_the_binding_records_the_strength_of_the_rule_that_decided(self) -> None:
         repository = FakeGraphRepository()

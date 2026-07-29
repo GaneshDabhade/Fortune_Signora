@@ -2,7 +2,7 @@
 
 > Status: **Living document — Architectural Constitution**
 > Audience: All engineers, EMs, and technical stakeholders at Signora
-> Revision: **v4** — adds the Provider Normalization (M2.2) and Knowledge Graph (M3A) catalogs, and replaces the v2 placeholders `provider.record.normalized`, `entity.updated`, and `entity.merged` with the events the evidence-first model actually produces. v3 notes follow.
+> Revision: **v5** — adds the Observation Engine (M3B) catalog and `entity.evidence_attached`. v4 added the Provider Normalization (M2.2) and Knowledge Graph (M3A) catalogs, and replaces the v2 placeholders `provider.record.normalized`, `entity.updated`, and `entity.merged` with the events the evidence-first model actually produces. v3 notes follow.
 > Previous revision: **v3** — documents the dispatch layer as built in M1.1: relay semantics, the `processed_event` idempotency ledger, the `dead_letter_event` table, and the decision that **idempotency is platform-owned**. v2 catalog unchanged.
 
 ## Purpose
@@ -59,7 +59,8 @@ Events are listed in pipeline order. Payload fields below are illustrative and i
 | `entity.identity_bound` | Knowledge Graph | Observation Engine | `entity_id`, `provider`, `rule`, `strength`, `decision_id` |
 | `entity.resolution_ambiguous` | Knowledge Graph | (operational work queue) | `candidate_entity_ids`, `decision_id` |
 | `relationship.established` / `relationship.ended` | Knowledge Graph | Observation Engine | `relationship_id`, `kind`, `source_entity_id`, `target_entity_id` |
-| `observation.recorded` | Observation Engine | Business Event Engine, Timeline | `observation_id`, `entity_id`, `observed_at`, `fact`, `provenance` |
+| `observation.recorded` | Observation Engine | Business Event Engine, Timeline | `observation_id`, `entity_id`, `provider`, `attribute`, `kind`, `direction`, `observed_at` — see the M3B section below |
+| `observation.superseded` | Observation Engine | Business Event Engine, Timeline | `observation_id`, `supersedes`, `entity_id`, `attribute` |
 | `business_event_type.published` | Business Event Engine (internal taxonomy change) | Business Event Engine (self; versioning notification) | `event_type_id`, `schema_version`, `definition` |
 | `business_event.detected` | Business Event Engine | Signal Engine, Timeline | `business_event_id`, `event_type_id`, `entity_id`, `source_observation_ids` |
 | `signal.generated` | Signal Engine | Buying Score Engine, Timeline | `signal_id`, `entity_id`, `source_event_ids`, `score` |
@@ -92,8 +93,8 @@ sequenceDiagram
 
     PP->>PN: provider.record.received
     PN->>KG: claim.recorded
-    KG->>OE: entity.created / identity_bound / relationship.*
-    OE->>BEE: observation.recorded
+    KG->>OE: entity.evidence_attached
+    OE->>BEE: observation.recorded / superseded
     OE-->>TL: observation.recorded
     BEE->>SE: business_event.detected
     BEE-->>TL: business_event.detected
@@ -263,6 +264,7 @@ One event per raw record rather than one per claim: the claims from a record are
 | `entity.created` | 1 | `entity_id`, `kind`, `decision_id` | A provider identity matched nothing existing |
 | `entity.identity_bound` | 1 | `entity_id`, `provider`, `provider_external_id`, `rule`, `strength`, `decision_id` | A provider identity resolved to an entity. `strength` travels as the **string category** it is, never a number |
 | `entity.resolution_ambiguous` | 1 | `provider`, `provider_external_id`, `candidate_entity_ids`, `decision_id` | Two candidates matched; **nothing merged** |
+| `entity.evidence_attached` | 1 | `entity_id`, `provider`, `provider_external_id`, `raw_record_id`, `claim_ids` | Claims were attributed to an entity. Published on **every** batch, including one that changed no identity |
 | `relationship.established` | 1 | `relationship_id`, `kind`, `source_entity_id`, `target_entity_id`, `valid_from` | An edge began |
 | `relationship.ended` | 1 | `relationship_id`, `kind`, `source_entity_id`, `target_entity_id`, `valid_to` | An edge closed. The row survives — `valid_to` is set, never deleted |
 
@@ -270,4 +272,19 @@ One event per raw record rather than one per claim: the claims from a record are
 
 `entity.resolution_ambiguous` is a **first-class event, not a log line** — it is a work queue and an operational signal that a provider's identity data has degraded.
 
+**Why `entity.evidence_attached` exists separately.** A re-resolution that reaches the same answer writes no decision, so a nightly re-sync produces new claims and *no* identity event. A consumer subscribed to `entity.identity_bound` would therefore never see most of the evidence the pipeline ever receives. Attributing evidence to identity is the graph's own responsibility, so announcing it is the natural output of it — and it keeps the ratified Knowledge Graph → Observation Engine edge intact rather than adding a Provider Normalization → Observation Engine one. Published only for an `IDENTIFIED` binding: evidence attached to an ambiguous identity is evidence about a company that may be one of several.
+
 > **Deferred:** `entity.superseded` appears in the M3A design but nothing publishes it yet. Correcting a *wrong merge* is an operator action whose interface belongs with the business UI (M12); an event with no producer would be a contract nobody is keeping.
+
+### Observation Engine (M3B)
+
+| Event | v | Payload | Notes |
+|---|---|---|---|
+| `observation.recorded` | 1 | `observation_id`, `entity_id`, `provider`, `attribute`, `kind`, `direction`, `observed_at` | Something changed, **according to one provider** |
+| `observation.superseded` | 1 | `observation_id`, `supersedes`, `entity_id`, `attribute` | A late-arriving claim refined an earlier observation |
+
+**Neither event carries the observed values.** A consumer reads them through `observation_engine.public.ObservationQueries`, so adding a canonical attribute is never an event-contract change.
+
+**`observation.recorded` is not a claim that the change matters.** `kind` and `direction` are structural readings; the Business Event Engine applies its curated taxonomy to decide whether this is a hiring surge or a rounding error (the layering principle in [21-intelligence-pipeline.md](21-intelligence-pipeline.md)).
+
+`observation.superseded` is a first-class event rather than a log line: a consumer that already acted on the coarser observation needs to know it was refined, or it will double-count the change. `occurred_at` is when Signora learned; **`observed_at` is when the provider says it was true**, and Timeline must order on the latter or a backfill renders as a wall of activity on its ingestion day.

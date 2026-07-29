@@ -54,6 +54,8 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         "identity_binding",
         "resolution_decision",
         "relationship",
+        # Observation Engine (M3B), migration 0010.
+        "observation",
     }
 )
 
@@ -98,9 +100,16 @@ REQUIRED_POLICY_COMMANDS: Final[frozenset[str]] = frozenset({"SELECT", "INSERT",
 # new decision naming the one it supersedes — which is also why its
 # supersession pointer points backwards (migration 0009; M3A ruling).
 #
+# `observation` records what changed. A late-arriving claim makes an earlier
+# observation *less precise*, never false, so the finer observations name the
+# coarser one they refine and it stays readable as what was believed then
+# (migration 0010; M3B ruling).
+#
 # Adding a table here is a deliberate architectural act. The immutability it
 # claims is separately asserted in test_tenancy_policy.py.
-IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset({"claim", "resolution_decision"})
+IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
+    {"claim", "resolution_decision", "observation"}
+)
 
 # Runtime roles. None may bypass RLS, whatever else they are permitted.
 RUNTIME_ROLES: Final[tuple[str, ...]] = ("signora_app", "signora_auth", "signora_relay")

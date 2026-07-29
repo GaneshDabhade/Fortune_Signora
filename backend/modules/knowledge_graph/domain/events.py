@@ -97,6 +97,46 @@ class EntityResolutionAmbiguous:
 
 
 @dataclass(frozen=True, slots=True)
+class EntityEvidenceAttached:
+    """Claims were attributed to an entity.
+
+    Published on **every** batch of evidence, including one that changed no
+    identity. That is the point: a nightly re-sync produces new claims and
+    no resolution decision, so a consumer subscribed to `identity_bound`
+    would never see the evidence it exists to read.
+
+    It carries claim *identity*, never claim bodies — a consumer reads them
+    through the graph's own query surface, so a vocabulary addition is never
+    an event-contract change.
+
+    Published only when the identity is `IDENTIFIED`. Evidence attached to
+    an ambiguous identity would be evidence about a company that may be one
+    of several, and downstream must not silently treat it as attributed.
+    """
+
+    event_id: UUID
+    workspace_id: UUID
+    occurred_at: datetime
+    entity_id: UUID
+    provider: str
+    provider_external_id: str
+    raw_record_id: UUID
+    claim_ids: tuple[UUID, ...]
+    causation_id: UUID | None = None
+    event_type: str = "entity.evidence_attached"
+    event_version: int = EVENT_VERSION
+
+    def to_payload(self) -> dict[str, Any]:
+        return {
+            "entity_id": str(self.entity_id),
+            "provider": self.provider,
+            "provider_external_id": self.provider_external_id,
+            "raw_record_id": str(self.raw_record_id),
+            "claim_ids": [str(i) for i in self.claim_ids],
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class RelationshipEstablished:
     event_id: UUID
     workspace_id: UUID

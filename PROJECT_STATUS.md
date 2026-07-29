@@ -1,6 +1,6 @@
 # PROJECT_STATUS.md
 
-> **Revision:** v22 · **Last updated:** 2026-07-29 · **Reporting period:** M3A closed
+> **Revision:** v23 · **Last updated:** 2026-07-29 · **Reporting period:** M3B closed
 > **Owner:** Technical Program Manager · **Audience:** Everyone
 > Authoritative record of project state (CLAUDE.md §20d). Updated after every completed milestone, **before the next begins**.
 >
@@ -22,7 +22,7 @@ The product's competitive advantage is the quality of that reasoning and the evi
 |---|---|
 | **Platform Foundations** | ✅ **Complete** — runtime, auth, deployment, smoke verification, frontend |
 | **Enablement** | ✅ **Complete** — Provider Simulation Framework |
-| **Product Development** | 🔄 **In progress** — three pipeline stages built: Provider Platform, Provider Normalization, Knowledge Graph |
+| **Product Development** | 🔄 **In progress** — four pipeline stages built: Provider Platform, Provider Normalization, Knowledge Graph, Observation Engine |
 | **AI Platform** | ⏳ Queued — M8 onward |
 | **Production Readiness** | ⏳ Queued — cloud infrastructure, then GA |
 
@@ -30,10 +30,10 @@ The product's competitive advantage is the quality of that reasoning and the evi
 
 | | |
 |---|---|
-| **Overall completion** | **~34%** by engineering effort (~110 of ~261–339 ew) |
-| **Effort remaining** | **~151–229 ew** |
-| **Milestones completed** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · **M3A** |
-| **Current milestone** | **M3B — Observation Engine** (next) |
+| **Overall completion** | **~37%** by engineering effort (~119 of ~261–339 ew) |
+| **Effort remaining** | **~142–220 ew** |
+| **Milestones completed** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · **M3B** |
+| **Current milestone** | **M4 — Business Event Engine** (next) |
 | **Projected to GA** | ~1.6–2.3 years at 3 engineers · ~2.5–3.4 at 2 · ~4.9–6.8 at 1 (80% capacity) |
 
 ## 4 · Roadmap Snapshot
@@ -52,8 +52,8 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | — | M2.1 | Provider Platform | ✅ Complete |
 | — | M2.2 | Provider Normalization | ✅ Complete |
 | — | M3A | Knowledge Graph | ✅ Complete |
-| 1 | **M3B** | **Observation Engine** | 🔴 **Next** |
-| 5 | M4 | Business Event Engine | ⏳ Queued |
+| — | M3B | Observation Engine | ✅ Complete |
+| 1 | **M4** | **Business Event Engine** | 🔴 **Next** |
 | 6 | M5A | Signal Engine | ⏳ Queued |
 | 7 | M5B | Buying Score Engine | ⏳ Queued |
 | 8 | M6 | Opportunity Engine — **first sellable moment** | ⏳ Queued |
@@ -92,8 +92,8 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | **Provider Platform** | ✅ Complete | M2.1 | Runs syncs against provider adapters: pages responses, stores raw records, tracks watermarks, classifies failures. Knows nothing of any specific provider. | Provider Port implementations | Raw provider records, and the events announcing them |
 | **Provider Normalization** | ✅ Complete | M2.2 | Translates each vendor's shape into Signora's own vocabulary as **claims** — evidence, not resolved records. The only place a vendor's format is understood. | Raw provider records | Immutable claims, each with full provenance |
 | **Knowledge Graph** | ✅ Complete | M3A | Resolves *which company* a provider is talking about, deterministically and explainably, and derives relationships between entities. **Resolves identity, never truth.** | Claims | Entities, identity bindings, resolution decisions, relationships, and claim sets |
-| **Observation Engine** | 🔄 **Next** | M3B | Records what *changed* about an entity and when — the atomic unit of evidence the whole pipeline traces back to. | Knowledge Graph entities | Observations, each timestamped and attributed to its source |
-| **Business Event Engine** | ⏳ Queued | M4 | Converts observations into meaningful business events: funding rounds, hiring surges, executive changes, technology migrations. | Observations | Business Events, typed against a curated global taxonomy |
+| **Observation Engine** | ✅ Complete | M3B | Detects **structural change** in what a provider asserts — and refuses to judge whether it matters. Re-assertion and provider disagreement are never change. | Evidence attached to entities | Observations, each attributed to the provider that asserted it |
+| **Business Event Engine** | 🔄 **Next** | M4 | Converts observations into meaningful business events: funding rounds, hiring surges, executive changes, technology migrations. | Observations | Business Events, typed against a curated global taxonomy |
 | **Signal Engine** | ⏳ Queued | M5A | Detects commercially meaningful sales signals from business events — the difference between "something happened" and "something worth acting on happened". | Business Events | Signals |
 | **Buying Score Engine** | ⏳ Queued | M5B | Combines multiple signals into a continuously updated buying propensity score per account. | Signals | Buying Scores |
 | **Opportunity Engine** | ⏳ Queued | M6 | Decides whether an account should become an actionable sales opportunity. **The first sellable moment.** | Buying Scores | Qualified Opportunities |
@@ -165,11 +165,11 @@ flowchart TD
 
 ## 7 · Current Focus
 
-**M3B Observation Engine** — recording what *changed* about an entity and when. It follows M3A, which resolved identity: the pipeline now knows *who* a provider is talking about, so change detection finally has something stable to attach to.
+**M4 Business Event Engine** — converting observations into meaningful business events against a curated, versioned taxonomy. It is the first module that decides **what matters**, and M3B was deliberately shaped to leave that decision to it.
 
-M3A is also why the graph stores no collapsed current value. Change is only visible across a series, and a collapsed value has no series — the Observation Engine would have had to diff successive collapses, losing which provider drove the change. That decision was made in M3A specifically so this milestone would be buildable.
+That split is now a permanent architectural principle: *claims preserve evidence · the Knowledge Graph resolves identity · the Observation Engine detects change · the Business Event Engine determines business meaning · the Signal Engine determines commercial meaning.* M4 inherits magnitude, direction, duration, and provider attribution, and owns the threshold that turns them into a hiring surge — where it can be versioned, reviewed, and cited in an explanation.
 
-Now that three pipeline stages exist, **[21-intelligence-pipeline.md](docs/architecture/21-intelligence-pipeline.md)** is the primary architectural reference for how information moves through Signora — the document to read first.
+**[21-intelligence-pipeline.md](docs/architecture/21-intelligence-pipeline.md)** is the primary architectural reference for how information moves through Signora — the document to read first, kept current with what is actually built.
 
 ## 8 · Biggest Remaining Milestones
 
@@ -179,21 +179,21 @@ Knowledge Graph · Observation Engine · Business Events · Signals · Buying Sc
 
 | Indicator | Value | Target |
 |---|---|---|
-| **Backend tests** | **650 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Backend tests** | **729 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Frontend tests** | **101 passing**, 0 failing, 0 skipped | 0 skipped |
-| **Backend coverage** | **95.54%** | ≥95% (CI-gated) |
-| **Security invariants** | **99 / 99**, each proven to fail when its guarantee is removed | 100% verified |
-| **import-linter contracts** | **7 kept, 0 broken** | 0 broken |
-| **Architecture drift** | **0** — no ratified ADR reversed; 6 documents amended for drift, all found by test or by implementation | Trending to 0 |
+| **Backend coverage** | **95.10%** | ≥95% (CI-gated) |
+| **Security invariants** | **124 / 124**, each proven to fail when its guarantee is removed | 100% verified |
+| **import-linter contracts** | **9 kept, 0 broken** | 0 broken |
+| **Architecture drift** | **0** — no ratified ADR reversed; 8 documents amended for drift, all found by test or by implementation | Trending to 0 |
 | **Open production bugs** | **0** | 0 |
 | **Technical debt** | **0 outstanding** · **2 platform findings raised** (see M3A record) | — |
-| **`make smoke`** | ✅ Passing (69s; 18 stages incl. ingestion, normalization, identity resolution) | Required per milestone |
+| **`make smoke`** | ✅ Passing (69s; 19 stages incl. ingestion, normalization, identity resolution, change detection) | Required per milestone |
 
 ### Test suite composition
 
 | Area | Tests | Notes |
 |---|---|---|
-| Security invariants | 99 | Permanent architectural guarantees; run as their own CI job |
+| Security invariants | 124 | Permanent architectural guarantees; run as their own CI job |
 | Simulation framework | 130 | Clock, dataset, scenario, faults, delivery, generators |
 | Provider contract suite | 45 | **One suite, five adapters** — the keystone interchangeability test |
 | Workspace & Tenancy | ~70 | RLS isolation, API, persistence |
@@ -202,7 +202,8 @@ Knowledge Graph · Observation Engine · Business Events · Signals · Buying Sc
 | Provider Platform (ingestion, sync task, domain) | 16 | The M2.1 demonstration |
 | Provider Normalization (vocabulary, claims, mappers, pipeline) | 56 | Claims — the unit of evidence |
 | Knowledge Graph (resolution, use cases, pipeline) | 70 | Identity — the first decision Signora makes |
-| **Backend total** | **650** | Coverage 95.54%, mypy strict over 205 files |
+| Observation Engine (derivation, use case, pipeline) | 54 | Change — and, mostly, what is *not* change |
+| **Backend total** | **729** | Coverage 95.10%, mypy strict over 227 files |
 | Frontend components & foundation | 101 | Includes 13 AC-14/AC-15 guard tests |
 
 ---
@@ -413,81 +414,74 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 
 ## Current Milestone
 
-### ✅ M3A — Knowledge Graph · **CLOSED** 2026-07-29
+### ✅ M3B — Observation Engine · **CLOSED** 2026-07-29
 
 | Field | Value |
 |---|---|
 | **Status** | ✅ **Completed** |
 | **Completion date** | 2026-07-29 |
-| **Commits** | `9981d72` (proposal) · `b2efb2e` (approved refinements) · `ae1c0be` (T59/T60 domain and rule engine) · this change (T61–T66) |
-| **Exit gate** | ✅ **`make smoke` passed** — 69s, fresh images, clean Compose stack, **18 stages**, 99 invariants green against the running system |
-| **Effort** | ~9–12 ew scoped · delivered within range |
+| **Commits** | `719ca64` (proposal) · this change (T67–T74) |
+| **Exit gate** | ✅ **`make smoke` passed** — 69s, fresh images, clean Compose stack, **19 stages**, 124 invariants green against the running system |
+| **Effort** | ~8–11 ew scoped · delivered within range |
 
-**The milestone in one line.** The first module that must *decide* — and the one where the platform's evidence-first philosophy was actually tested, because it is easy to preserve evidence when you never have to conclude anything.
+**The milestone in one line.** The first module whose main job is **subtraction** — in a polling pipeline the overwhelming majority of claims re-assert what was already known, so deciding what is *not* an observation is most of the work.
 
-**The permanent invariant it establishes:**
+**The permanent principle it establishes:**
 
-> **The Knowledge Graph resolves identity. The Knowledge Graph does not resolve truth.** *(Ratified 2026-07-28. Changing it requires an RFC.)*
-
-Identity is irreducible — only this module is positioned to answer whether Apollo's `acme-corp` and BuiltWith's `acme.example` are one company. Attribute conflict is not: it is carried forward intact, because every downstream module has more context to weigh it. So `entity` has **no attribute columns at all**, and the graph offers *claim sets* rather than resolved values.
+> **Claims preserve evidence · the Knowledge Graph resolves identity · the Observation Engine detects change · the Business Event Engine determines business meaning · the Signal Engine determines commercial meaning.**
+>
+> *Each stage answers one question and refuses the next one.* A stage that answers the next stage's question puts a rule where it cannot be reviewed — a threshold buried in derivation code is not a rule anyone can argue with, version, or cite in an explanation.
 
 **Acceptance criteria satisfied**
 
 | AC | Status |
 |---|---|
-| **AC-25** Explainable resolution | ✅ Every binding traces to a decision naming its rule **and the value that matched** — `domain=acme.example`, not "a domain rule fired" |
-| **AC-26** Revisable without evidence loss | ✅ Corrections supersede; `resolution_decision` is immutable with no `UPDATE` grant; claims underneath untouched |
-| **AC-27** Deterministic resolution | ✅ Two workspaces, identical evidence, different processing order, same graph structure |
-| **AC-28** Evidence preserved, not collapsed | ✅ Asserted structurally — `entity` carries only identity columns, enforced by a Security Invariant |
-| **AC-29** Bias against over-merge | ✅ Two matching candidates produce `AMBIGUOUS` and merge nothing — enforced by a **database CHECK constraint**, not by the code path that writes the row |
-| **AC-6** Tenancy | ✅ Four tables, forced RLS, full policy sets in migration 0009, all registered in `tenancy_policy.py` |
-| **AC-1** Event contract | ✅ Five events cataloged in `06-events.md`, idempotent, correlation-traced |
-| **AC-13** Security Invariants extended | ✅ 83 → 99, each proven to fail when its guarantee is removed |
+| **AC-30** Re-assertion is never an observation | ✅ Asserted through the real pipeline: a first sync produces zero transitions; re-running it produces zero new observations |
+| **AC-31** Disagreement is never change | ✅ Two providers reporting different values produce nothing — series are per-provider, and the signature cannot express a cross-provider one |
+| **AC-32** Unbroken provenance | ✅ Every observation cites ≥1 claim, enforced by a **database CHECK constraint**; zero orphans asserted by join; every observation belongs to a resolved entity |
+| **AC-33** Deterministic and replayable | ✅ The table is truncated and rebuilt from claims, reproducing the current set identically |
+| **AC-34** Late arrival refines, never rewrites | ✅ The coarser observation stays readable; the two finer ones name it; `observation.superseded` is published |
+| **AC-6** Tenancy | ✅ `observation` with forced RLS and full policies in migration 0010, registered in `tenancy_policy.py` and `IMMUTABLE_TENANT_TABLES` |
+| **AC-1** Event contract | ✅ Two events cataloged in `06-events.md`, idempotent, correlation-traced |
+| **AC-13** Security Invariants extended | ✅ 99 → 124, each proven to fail when its guarantee is removed |
 
-**Scope delivered.** Identity domain (`Entity`, `IdentityBinding`, `IdentityState`, `ResolutionDecision`, `ResolutionReason`, `MatchStrength`, `Relationship`) · deterministic rule engine · migration 0009 with four workspace-owned tables · `ResolveEntity` use case · relationship derivation from technographic claims · `ClaimSet` query surface and module `public/` API · `claim.recorded` event contract and subscription · demonstration, smoke stage 14c, and 16 new Security Invariants.
+**Scope delivered.** Observation domain (`Observation`, `ObservationKind`, `ObservationDirection`, deterministic identity) · attribute semantics and occurrence keys · pure derivation engine with refinement on late arrival · migration 0010 · `RecordObservations` use case and repository · `entity.evidence_attached` in the Knowledge Graph · read port and module `public/` API · two event contracts · demonstration, smoke stage 14d, and 25 new Security Invariants.
 
 **Architectural decisions.**
 
-- **`MatchStrength` is a semantic category and can never become a number.** Ratified as a permanent invariant. The type itself closes both doors — `int()`, `float()`, and every ordering operator raise `TypeError` — so a future engineer cannot convert it into probabilistic scoring by accident. A decision is made by exactly one rule, so there is nothing to combine.
-- **Supersession on an immutable table must point backwards.** A forward `superseded_by` would require writing to the older row, which needs the `UPDATE` grant immutability withholds. Corrected from the approved design; `supersedes` names the predecessor instead.
-- **Technology entities are keyed by canonical name**, since technology has no provider identity. Honest limitation: "SAP" and "SAP ERP" become two entities — deterministic, and under-merging, which is the direction this module is biased in.
-- **A technology seen only as *removed* is recorded as an already-closed edge.** The claim carries `first_seen`/`last_seen`, so the interval is known; discarding it would lose exactly the history a competitive-displacement signal reads.
-- **Re-resolution reaching the same answer writes nothing.** A decision records a *change*; one per re-sync would bury the corrections that matter.
-- **Read ports replace cross-module table access.** `RawRecordReader` and `ClaimReader` on `public/`, with frozen views instead of ORM instances, injected by the composition root.
+- **The engine detects change, never significance.** No threshold exists in the module, and a Security Invariant reads the derivation and use case as **syntax trees** to assert that magnitude is never compared against a constant — so the prose explaining that there is no threshold cannot be mistaken for one.
+- **Change is computed within one provider's series, never across providers.** Apollo reporting 120 on Monday and CoreSignal 145 on Tuesday is disagreement; merging would manufacture growth that never happened. The `derive` signature takes a single `provider`, so the bug is not expressible.
+- **The first value establishes a baseline and produces no observation.** Onboarding 5,000 companies would otherwise emit ~30,000 messages saying only "we have started tracking this", which `entity.created` already says once per company.
+- **The vocabulary contains two kinds of claim**, and the module's shape follows: state attributes yield transitions, occurrence attributes yield deduplicated first sightings. `HEADCOUNT_CHANGE` is an occurrence because CoreSignal reports a delta directly — a transition would double-count against `EMPLOYEE_COUNT`.
+- **Observation identity is derived from the observed facts, not allocated and not keyed on claim ids.** Claim ids are minted when a mapper runs, so a claim-keyed identity would duplicate the entire table after a mapper fix. Deduplication is a primary-key conflict rather than a code path.
+- **Late arrival refines by append-only supersession**, with the pointer backwards — the same shape immutability forced on `resolution_decision`.
 
-**Two boundary violations found and fixed in shipped code.** Adding per-module-pair import-linter contracts immediately caught both, and neither was visible at runtime:
+**Approved architectural additions.** `entity.evidence_attached` published by the Knowledge Graph on *every* batch of evidence — necessary because a re-resolution reaching the same answer writes no decision, so a nightly re-sync would otherwise be invisible to any consumer watching identity. This keeps the ratified Knowledge Graph → Observation Engine edge intact rather than adding a Provider Normalization → Observation Engine one. The **canonical vocabulary is now formally a platform-wide contract**, documented in `05-module-dependencies.md`.
 
-| Violation | Fix |
+**Two defects found by running rather than by tests.**
+
+| Defect | Found by |
 |---|---|
-| Provider Normalization's handler imported Provider Platform's SQLAlchemy model directly (M2.2) | `RawRecordReader` port on `provider_platform/public/`, injected |
-| Provider Platform's *application* layer imported its own `infrastructure/` (M2.1) | `SyncRepository` Protocol in `application/ports.py` |
+| `previous_value` wrote JSON `null` instead of SQL `NULL`, so the constraint distinguishing an occurrence from a change never saw the absence it tests for | The constraint rejecting a legitimate write — the constraint doing its job |
+| A demonstration used an unpinned `LIMIT 1` over a scenario carrying two companies, attaching the new claim to the wrong one about half the time | `make smoke` against a fresh stack. It passed locally and on a reused stack; only a clean run surfaced it |
 
-**Two platform findings raised, not worked around.** `signora_platform/` is frozen (CLAUDE.md §20a), so both were surfaced rather than fixed inside a coding session:
+The second is worth recording twice: an earlier attempt to fix it was applied with a text substitution that **silently matched nothing**, and the test kept passing locally while the fix was absent. Verified edits, not pattern substitutions, over source.
 
-| Finding | Effect today |
-|---|---|
-| **`EventHandler` receives no session.** A handler must do its work in the same transaction as the dispatcher's idempotency claim, but the registry's signature is `(envelope) -> None`. Opening its own session would break exactly-once. | **No module handler is registered in the live registry.** The pipeline is exercised end to end through its real handlers in the integration suite and in `make smoke`, but the deployed worker consumes nothing. Closing this needs a platform interface decision — an RFC, not a coding session. |
-| **`PublishableEvent` cannot be satisfied by a frozen dataclass.** The Protocol declares settable members; every domain event is immutable, as the architecture requires. | Cosmetic but spreading — three modules now carry a `# type: ignore` at their publish site. |
+**Deferred, with reasons.** Materiality thresholds — M4's curated taxonomy, where a rule can be versioned and argued about. Cross-provider consensus observations — no consumer has asked; if M4 or M5A demonstrates it needs one, that is the evidence. Trend and velocity derivation — interpretation over a series, the Signal Engine's job. Relationship observations — would double-count technographic claims already observed as occurrences. Person-level observations — no person identity exists to attach them to.
 
-**One correction to the approved demonstration, recorded rather than quietly adjusted.** The M3A proposal claimed all five providers would resolve to one entity. That was wrong: `SAME_PROVIDER_ID` matches only *within* one provider, and Crunchbase and CoreSignal fixtures carry no domain. Three providers resolve together; two stay separate — which is the **correct** behaviour, since binding them would mean treating one provider's private key as another's. The follow-up is a **fixture enrichment** (real Crunchbase and CoreSignal payloads carry a website), scheduled rather than done here, because editing M2.0's fixtures mid-M3A would blur what the demonstration proves.
-
-**Deferred, with reasons.** Person entities — claims carry role changes but no person *identifier*, so there is no identity to resolve. Fuzzy/probabilistic matching — a hidden heuristic; ambiguity volume will be the evidence if it is ever justified. Resolved-value projections — no consumer has asked for one. Manual merge/unmerge UI — the domain supports it; the interface belongs with the business UI at M12. `entity.superseded` — its only producer would be that UI, and an event with no producer is a contract nobody is keeping.
+**Scheduled simulation work.** The baseline scenario reports each subject once per provider, so it contains occurrences but **no movement**: every negative assertion runs through the real pipeline, while the positive case is constructed explicitly. A scenario with genuine multi-week movement, plus the fixture enrichment M3A identified, is M2.0 work — recorded rather than done here, because editing another milestone's fixtures mid-milestone would blur what the demonstrations prove.
 
 **Technical debt.** None introduced. None outstanding.
-
-**New architecture documents.** [21-intelligence-pipeline.md](docs/architecture/21-intelligence-pipeline.md) — *The Intelligence Pipeline*, the flagship reference describing how a fact travels from raw provider payload to recommendation, and what each stage is forbidden from doing. M3A was its trigger, as planned.
 
 ---
 
 ## Next Milestone
 
-### 🔄 M3B — Observation Engine · **NEXT**
+### 🔄 M4 — Business Event Engine · **NEXT** · ~10–14 ew
 
-Records what *changed* about an entity and when — the atomic unit of evidence the rest of the pipeline traces back to.
+Converts observations into meaningful business events — funding rounds, hiring surges, executive changes, technology migrations — typed against a curated global taxonomy.
 
-**Why it follows M3A.** Change is only visible across a series, and the graph deliberately stores no collapsed current value. That decision was made in M3A specifically so this milestone would be buildable without diffing successive collapses and losing which provider drove the change.
-
-**One design question already deferred to it** (from M2.0, not to be pre-solved): when an authentic Bombora payload arrives, establish whether the provider supplies historical weekly intent **directly** or whether the platform must **accumulate** it. If the latter, that is an Observation Engine responsibility.
+**The first module that decides what matters.** M3B was deliberately shaped to leave that decision here: it supplies magnitude, direction, duration, and provider attribution, and M4 owns the threshold that turns them into a hiring surge. Placing the rule in a versioned taxonomy rather than in derivation code is what lets a seller asking *"why was I told this?"* get an answer with a reviewable rule in the middle, rather than one that bottoms out in a constant.
 
 **Awaiting:** architecture proposal and approval, as with every prior milestone.
 
@@ -731,6 +725,7 @@ Encoded as a tracked deviation in `test_authorization.py::test_every_workspace_o
 
 | Date | Change |
 |---|---|
+| 2026-07-29 | v23 — **M3B Observation Engine complete.** Permanent layering principle ratified: *claims preserve evidence · the graph resolves identity · the Observation Engine detects change · the Business Event Engine determines business meaning · the Signal Engine determines commercial meaning.* Change is computed **within one provider's series** — cross-provider comparison rejected as the central error, since disagreement merged into a series manufactures growth that never happened. First values establish a baseline and produce no observation. Observation identity is derived from observed facts, so deduplication is a primary-key conflict and a mapper fix cannot duplicate the table. Late arrival refines by append-only supersession. `entity.evidence_attached` approved and added to the Knowledge Graph; the canonical vocabulary formally recognised as a platform-wide contract. A Security Invariant reads derivation as a **syntax tree** to prove no threshold has crept in. Two defects found by running rather than by tests, one of them by `make smoke` against a fresh stack. 729 tests, coverage 95.10%, 124 invariants, 9 contracts, `make smoke` green over 19 stages. |
 | 2026-07-29 | v22 — **M3A Knowledge Graph complete.** The first module that must *decide*. Permanent invariant ratified: *the Knowledge Graph resolves identity, not truth* — `entity` carries no attribute columns, and `ClaimSet` returns every contributing claim rather than a chosen value. `MatchStrength` ratified as a semantic category that can never become a number, with the type itself refusing numeric conversion and ordering. Ambiguity merges nothing, enforced by a database CHECK constraint. Migration 0009: four workspace-owned tables, forced RLS, `resolution_decision` immutable. Per-module-pair import-linter contracts added, immediately catching **two real boundary violations in shipped code** (M2.1 and M2.2), both fixed with read ports. **Two platform findings raised, not worked around** — `EventHandler` receives no session, so no module handler is registered in the live registry; and `PublishableEvent` cannot be satisfied by a frozen dataclass. One correction to the approved demonstration recorded honestly: three of five providers resolve together, not five, because the other two supply no matchable identity. 650 tests, coverage 95.54%, 99 invariants, 7 contracts, `make smoke` green over 18 stages. **[21-intelligence-pipeline.md](docs/architecture/21-intelligence-pipeline.md) authored.** |
 | 2026-07-28 | v9 — **Platform Foundation approved and closed.** Eight platform contracts ratified (Platform Runtime, Authentication Boundary, Deployment Foundation, Platform Smoke Test, Security Invariants, Tenant Isolation Policy, Platform Infrastructure Policy, Platform Freeze). **M1.5 Frontend Foundation inserted** after M1.4 — frontend platform only, no business screens, no mock data. Business UI deferred until M2.0 produces real domain data. Cloud infrastructure confirmed at M14.5 with all task IDs and ADR references intact. Three dependency findings raised against the approved order (two graph inversions, five omitted modules, three unratified module names) — flagged, not silently reconciled. Sequencing only; the approved architecture is unchanged. |
 | 2026-07-28 | v8 — **M1.4 Platform Smoke Test complete; platform foundation closed.** `make smoke`: 16 stages, ~46s, in CI, every stage proven to fail when deliberately broken. Two defects found by it — a relay that died permanently on a transient database failure (first and only post-freeze platform change, under the production-defect exemption), and two bugs in the smoke script itself that would have made it lie. **Cloud infrastructure deferred from M1.3B to M14.5** — sequencing only, nothing removed or redesigned — with a ten-point Infrastructure Contract (roadmap §5a) binding every milestone until then. 313 tests, coverage 95.63%. |

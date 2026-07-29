@@ -361,6 +361,27 @@ else
   fail "identity resolution failed against the running stack"
 fi
 
+# ================================================ 14d. Observation Engine
+
+stage "14d. Change detection"
+
+# The M3B demonstration. The assertion that matters most is the negative
+# one: running the same sync twice produces zero new observations. A
+# change-detection engine that fires on a no-op sync is worse than none,
+# because every downstream stage would react to noise it cannot tell from
+# signal.
+if (cd ../backend && \
+    SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 \
+    SIGNORA_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    SIGNORA_TEST_APP_DATABASE_URL="postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5433/signora" \
+    SIGNORA_TEST_ADMIN_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    uv run pytest tests/observation_engine -q >/tmp/smoke_observation.log 2>&1); then
+  pass "$(grep -oE '[0-9]+ passed' /tmp/smoke_observation.log | tail -1) against the running stack"
+else
+  tail -20 /tmp/smoke_observation.log
+  fail "change detection failed against the running stack"
+fi
+
 # ================================================= 15. Security Invariants
 
 stage "15. Security Invariants"
@@ -396,4 +417,4 @@ trap - EXIT
 printf '\n\033[32m\033[1mPLATFORM SMOKE TEST PASSED\033[0m  (%ds)\n' "$((SECONDS - STARTED_AT))"
 printf 'Build · startup · migrations · identities · image hygiene · health · readiness ·\n'
 printf 'auth · JWT · authorization · RLS · event bus · relay · workers · ingestion ·\n'
-printf 'normalization · identity resolution · invariants · teardown\n\n'
+printf 'normalization · identity resolution · change detection · invariants · teardown\n\n'

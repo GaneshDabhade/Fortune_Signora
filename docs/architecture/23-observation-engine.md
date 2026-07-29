@@ -1,8 +1,8 @@
 # 23 — Observation Engine
 
-> Status: **PROPOSAL — awaiting review** · 2026-07-29
+> Status: **IMPLEMENTED** — M3B, 2026-07-29
 > Audience: All engineers, EMs, and technical stakeholders at Signora
-> Revision: **v1** — the M3B architecture proposal. **No implementation exists.**
+> Revision: **v2** — the design as built. All four review questions were answered before implementation; the outcomes and two departures are recorded in *[As built](#as-built-decisions-taken-and-what-changed)*.
 >
 > Prerequisite reading: [21-intelligence-pipeline.md](21-intelligence-pipeline.md), [22-knowledge-graph.md](22-knowledge-graph.md), and the claim vocabulary in `modules/provider_normalization/domain/vocabulary.py`.
 
@@ -308,6 +308,19 @@ The rule this places on every later module: **never aggregate observations in a 
 
 ---
 
+## Definition of Done — M3B
+
+- [x] Demonstration passes; AC-30 through AC-34, AC-6, AC-1, AC-13 all satisfied
+- [x] Migration 0010 with forced RLS and full policies in the same revision; `observation` registered in `tenancy_policy.py` and in `IMMUTABLE_TENANT_TABLES`
+- [x] Security Invariants extended 99 → 124, each addition **proven to fail** when its guarantee is removed
+- [x] `04-modules.md`, `05-module-dependencies.md`, `06-events.md`, and `21-intelligence-pipeline.md` updated in the same change
+- [x] `make smoke` extended with stage 14d, change detection
+- [x] PROJECT_STATUS and SESSION_HANDOFF updated at the boundary
+
+The two platform findings raised in M3A remain open and are **not** worked around here: `EventHandler` receives no session, and `PublishableEvent` cannot be satisfied by a frozen dataclass. Both are queued as RFCs for the platform milestone.
+
+---
+
 ## Task breakdown — T67–T74 · ~8–11 ew
 
 | ID | Task | Complexity | Depends on |
@@ -405,9 +418,36 @@ T71 late, because it is the one task touching another module and should land onl
 
 ---
 
-## Questions for review
+## As built: decisions taken, and what changed
 
-1. **Is Meaning A the right scope?** Everything rests on the Observation Engine detecting *change* and leaving *materiality* to M4. If the intent is that this module also filters for importance, the design is wrong at its root and better corrected now.
-2. **Should the first value produce a `VALUE_ESTABLISHED` observation?** The proposal says no, for initial-load reasons. The counter-argument — that learning something *is* a change in knowledge — is genuine.
-3. **Approve `entity.evidence_attached` in the Knowledge Graph (Option 1)?** It touches a closed milestone's module. The alternative is a new dependency-graph edge requiring an RFC.
-4. **Approve recognising `provider_normalization/public` as a shared vocabulary contract?** Already true as of M3A; recording it makes it a decision rather than a precedent.
+### The four review questions, answered
+
+| Question | Outcome |
+|---|---|
+| **Is Meaning A the right scope?** | **Approved, and elevated to a permanent architectural principle**: *claims preserve evidence · the Knowledge Graph resolves identity · the Observation Engine detects change · the Business Event Engine determines business meaning · the Signal Engine determines commercial meaning.* Recorded in [21-intelligence-pipeline.md](21-intelligence-pipeline.md). |
+| **Should the first value produce an observation?** | **No.** The first assertion establishes knowledge; it does not represent change. If "knowledge established" is ever needed it becomes a separate domain concept rather than an expansion of this module. |
+| **`entity.evidence_attached` in the Knowledge Graph?** | **Approved.** The Knowledge Graph remains the Observation Engine's only upstream dependency; the alternative Provider Normalization → Observation Engine edge was explicitly rejected. |
+| **Recognise the canonical vocabulary as a shared contract?** | **Approved** and documented as a platform-wide architectural contract in [05-module-dependencies.md](05-module-dependencies.md). |
+
+### The observation model, refined
+
+Every observation explicitly carries **previous value, current value, direction, magnitude, provider, observation timestamp, and originating entity** — so downstream reasons directly over observations rather than reconstructing transitions from claim history, which would mean every consumer reimplementing this module and diverging from it.
+
+Two shapes were evaluated against that requirement, and the one built is deliberately not uniform:
+
+- **`previous_value` is null exactly when the observation is an occurrence**, and that absence is meaningful rather than missing — there is genuinely nothing a funding round moved *from*. Forcing a placeholder would be a value nobody observed. The database enforces the pairing (`ck_observation_shape_matches_kind`), so no write path can produce a half-formed observation.
+- **`magnitude` exists only for counts.** Subtracting two industries is meaningless, and inventing a distance between them would be exactly the manufactured number this platform refuses. `direction` is always present: `INCREASED`/`DECREASED` where the vocabulary orders the values, `CHANGED` where it does not, `OCCURRED` for an occurrence.
+
+Revenue bands get a direction because the vocabulary orders them **by definition** — `under_1m` to `over_1b` — which is a structural reading rather than a heuristic. A test asserts that order explicitly, so reordering the enum fails the build instead of silently inverting every revenue direction in the platform.
+
+### Two departures from the proposal
+
+**1. Occurrence keys are read from a single function, and one of them surprised the design.** `TECHNOLOGY_DETECTED` is keyed on the technology name *alone*, not on the detection window: a vendor re-reporting the same technology with a later `last_detected` is the same detection, not a new one. Keying on the window would have produced a new observation on every sync — the exact re-assertion flood the module exists to prevent.
+
+**2. `previous_value` needed `none_as_null=True`.** Without it SQLAlchemy writes JSON `null` into a JSONB column rather than SQL `NULL`, and the constraint distinguishing an occurrence from a change never sees the absence it tests for. Found by the constraint rejecting a legitimate write, which is the constraint doing its job.
+
+### What the baseline scenario can and cannot demonstrate
+
+The scenario reports each subject once per provider, so it contains **occurrences but no movement**. Every negative assertion is therefore exercised by the real pipeline — first sync observes nothing, a repeated sync observes nothing new — while the positive case (a second, differing assertion by the same provider produces exactly one transition) is constructed explicitly in the demonstration.
+
+That split is recorded rather than papered over: a scenario with genuine multi-week movement is **scheduled M2.0 work**, alongside the fixture enrichment M3A identified. Both are simulation artifacts, and editing them mid-milestone would blur what these demonstrations prove.

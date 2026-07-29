@@ -27,6 +27,12 @@ from modules.knowledge_graph.infrastructure.composition import (
     build_resolve_entity,
 )
 from modules.knowledge_graph.interface.handlers import resolve_recorded_claims
+from modules.observation_engine.application.queries import ObservationQueries
+from modules.observation_engine.infrastructure.composition import (
+    build_queries as build_observation_queries,
+)
+from modules.observation_engine.infrastructure.composition import build_record_observations
+from modules.observation_engine.interface.handlers import observe_attached_evidence
 from modules.provider_normalization.infrastructure.claim_reader import SqlClaimReader
 from modules.provider_normalization.interface.handlers import normalize_received_record
 from modules.provider_platform.infrastructure.models import RawProviderRecordModel
@@ -146,3 +152,32 @@ async def resolve_all(
 
 def queries(session: AsyncSession, workspace_id: UUID) -> GraphQueries:
     return build_queries(session, claims=SqlClaimReader(session, workspace_id=workspace_id))
+
+
+async def observe_all(
+    factory: async_sessionmaker[AsyncSession],
+    admin_factory: async_sessionmaker[AsyncSession],
+    workspace_id: UUID,
+    user_id: UUID,
+) -> int:
+    """Record observations for every `entity.evidence_attached` event."""
+    envelopes = [
+        envelope
+        for envelope in await _published(admin_factory, "entity.evidence_attached")
+        if envelope.workspace_id == workspace_id
+    ]
+
+    async with tenant_scoped_session(
+        factory, workspace_id=workspace_id, user_id=user_id
+    ) as session:
+        graph = queries(session, workspace_id)
+        record = build_record_observations(
+            session, graph=graph, publisher=PostgresOutboxEventPublisher()
+        )
+        for envelope in envelopes:
+            await observe_attached_evidence(envelope, record=record)
+    return len(envelopes)
+
+
+def observations(session: AsyncSession, workspace_id: UUID) -> ObservationQueries:
+    return build_observation_queries(session, graph=queries(session, workspace_id))

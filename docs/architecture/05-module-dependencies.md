@@ -98,13 +98,25 @@ The mechanism is a **read port on the owning module's `public/`**: a `Protocol` 
 |---|---|---|
 | `RawRecordReader` → `RawRecordView` | Provider Platform | Provider Normalization |
 | `ClaimReader` → `ClaimView`, `SubjectRef` | Provider Normalization | Knowledge Graph |
-| `GraphQueries` → `ClaimSet`, `EntityEvidence` | Knowledge Graph | (M3B onward) |
+| `GraphQueries` → `ClaimSet`, `EntityEvidence` | Knowledge Graph | Observation Engine |
+| `ObservationQueries` → `Observation`, `ObservationEvidence` | Observation Engine | (M4 onward) |
 
 Three properties make this a boundary rather than a naming convention:
 
 - **A frozen view, never an ORM instance.** An ORM object carries a session, lazy loaders, and a write path — handing one across a boundary hands over the ability to mutate another module's table by accident.
 - **The consumer imports the Protocol, never the implementation.** Wiring the concrete reader is the composition root's job, so a module never learns that its neighbour is backed by SQL.
 - **Read ports expose evidence, never resolutions.** `ClaimReader` deliberately has no `current_value(subject, attribute)`. Offering one would put truth resolution behind an innocuous call, and every consumer would use it instead of looking at the evidence.
+
+### The canonical vocabulary is a platform-wide contract
+
+`provider_normalization/public` — the canonical attributes, their value types, and the frozen claim views — is **the common language every downstream intelligence module speaks**, not Provider Normalization's private vocabulary. It was introduced there because that is where translation happens; it is consumed everywhere because reasoning happens everywhere.
+
+*Ratified 2026-07-29.* Every downstream pipeline module may depend on it directly. The alternative — each module defining its own copy — is forbidden outright by the DDD rules: *never introduce a second definition of a concept a module already owns*, and a vocabulary duplicated across four modules diverges within a year.
+
+The permission is narrow and worth stating precisely:
+
+- **A vocabulary dependency, not a data-access one.** Reading claim *data* still goes through the owning module's read port, or through the Knowledge Graph's `ClaimSet` for modules downstream of resolution.
+- **Extending it still requires an RFC.** Adding a canonical attribute is an architectural act; consuming one is routine engineering. That asymmetry is what lets provider integrations churn while the platform's language stays stable.
 
 > **Events carry identity; ports carry payload.** `claim.recorded` names the record and its subject and stops. Embedding claim bodies in the envelope would make every vocabulary addition an event-contract change.
 

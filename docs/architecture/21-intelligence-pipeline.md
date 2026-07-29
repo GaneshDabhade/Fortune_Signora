@@ -2,7 +2,7 @@
 
 > Status: **Living document — the primary architectural reference for how Signora thinks**
 > Audience: Engineers, architects, prospective hires, customers, and investors
-> Revision: **v1** — authored at the close of M3A, the milestone in which the pipeline first turned evidence into knowledge.
+> Revision: **v2** — updated at the close of M3B. This document tracks the **implemented** architecture, not future intent; stages are marked built only once they run against a real database in `make smoke`.
 >
 > Prerequisite reading: none. This is the document to read first.
 
@@ -36,6 +36,14 @@ flowchart TD
 Nine stages. Each one adds business understanding. **None of them destroys what came before.**
 
 ---
+
+## The layering principle
+
+> **Each stage answers one question, and refuses the next one.**
+>
+> Claims **preserve evidence** · the Knowledge Graph **resolves identity** · the Observation Engine **detects change** · the Business Event Engine **determines business meaning** · the Signal Engine **determines commercial meaning**.
+>
+> *Permanent architectural principle, ratified 2026-07-29.* A stage that answers the next stage's question puts a rule where it cannot be reviewed — a threshold buried in derivation code is not a rule anyone can argue with, and cannot be versioned, tested against a taxonomy, or cited in an explanation.
 
 ## The governing principle
 
@@ -122,17 +130,28 @@ They are not equally bad, so the graph is deliberately biased against merging. W
 
 ---
 
-## Stage 4 — Observation *(planned — M3B)*
+## Stage 4 — Observation
 
-**What it is.** *This changed.* Acme's headcount went from 120 to 145 between January and March, according to CoreSignal.
+**What it is.** *This changed.* Acme's headcount went from 120 to 145 between January and March, **according to CoreSignal**.
 
-**Adds:** change over time. A claim is a point; an observation is a difference between points, attributed to the source that reported it.
+**Adds:** change over time. A claim is a point; an observation is a difference between points, attributed to the source that reported it. It carries the previous value, the current value, the direction, the magnitude, the provider, the window, and the entity — so no downstream module ever has to reconstruct a transition from claim history, which would mean every consumer reimplementing this stage and diverging from it.
 
-**Refuses:** meaning. An observation says a number moved. It does not say growth, momentum, or opportunity.
+**Refuses:** meaning, and — just as importantly — **significance**.
+
+> **The Observation Engine detects change. It does not determine whether the change matters.** Whether a headcount move of five is noise or a signal depends on commercial context: it is noise at Acme and a signal at a 12-person startup. A threshold here would be a constant nobody can justify that four modules trust within a year. The Business Event Engine owns a curated, versioned taxonomy where such a rule can be stated, reviewed, and changed.
+
+**Two things are never observations**, and the restraint is most of the work:
+
+- **Re-assertion.** A nightly sync repeating the same headcount for six weeks produces nothing. In a polling pipeline this is the dominant case by an enormous margin, and an engine that fires on it is worse than no engine.
+- **Disagreement.** Apollo reporting 120 on Monday and CoreSignal 145 on Tuesday is not growth of 25 in a day. Change is computed **within one provider's series**, never across them — merging them would manufacture movement that never happened, and correcting for it would mean deciding which provider is authoritative, which is truth resolution.
+
+The **first value of an attribute establishes a baseline and produces no observation.** Nothing changed; Signora merely learned. Emitting one would mean an onboarding sync of five thousand companies flooding every consumer with tens of thousands of messages that all say the same empty thing — and `entity.created` already says it, once, per company.
 
 **Why it is separate from the graph.** This is precisely why the graph must not store a collapsed current value. Change is only visible across a *series*, and a collapsed value has no series — the Observation Engine would have to diff successive collapses, losing which provider drove the change.
 
-**Owned by:** Observation Engine · **Publishes:** `observation.recorded` *(also consumed by Timeline)*
+**Late arrival refines rather than rewrites.** A claim landing out of order does not make an earlier observation false; it makes it *less precise*. The finer observations name the coarser one they replace, which stays readable as what was believed then, and downstream sees a correction it can react to instead of a value quietly changing underneath it.
+
+**Owned by:** Observation Engine · **Table:** `observation` (immutable) · **Publishes:** `observation.recorded`, `observation.superseded` · **Read port:** `ObservationQueries`
 
 ---
 
@@ -140,9 +159,9 @@ They are not equally bad, so the graph is deliberately biased against merging. W
 
 **What it is.** *This means something.* Sustained headcount growth in engineering. A funding round closed. A competitor's technology removed.
 
-**Adds:** business vocabulary, from a versioned, reviewable taxonomy. This is the first stage that interprets, and it is deliberately placed after identity and after change detection — by here, the pipeline knows *who* and *what moved*, so interpretation has something solid to stand on.
+**Adds:** business vocabulary, from a versioned, reviewable taxonomy — and **materiality**. This is the first stage that interprets, and it is deliberately placed after identity and after change detection: by here the pipeline knows *who* and *what moved*, so interpretation has something solid to stand on. The threshold that decides a headcount move of five is noise lives here, where it can be argued about, versioned, and cited in an explanation.
 
-**Refuses:** judgement of importance. A business event says what happened in business terms, not whether anyone should care.
+**Refuses:** judgement of commercial priority. A business event says what happened in business terms, not whether anyone should act.
 
 **Owned by:** Business Event Engine · **Publishes:** `business_event.detected`
 
@@ -258,7 +277,7 @@ These hold at every stage, without exception, and are asserted by a permanent Se
 
 **Platform infrastructure tables are not module data.** `outbox_event`, `processed_event`, and `dead_letter_event` span every workspace by design and deliberately carry no RLS — so the *grant* is the only thing separating tenants there. The application role can publish and cannot read; only the relay identity consumes. No business module may query one, for any reason, including debugging.
 
-**Immutable things are immutable at the database.** `claim` and `resolution_decision` carry no `UPDATE` grant. An attempted overwrite fails with a permission error rather than succeeding quietly.
+**Immutable things are immutable at the database.** `claim`, `resolution_decision`, and `observation` carry no `UPDATE` grant. An attempted overwrite fails with a permission error rather than succeeding quietly. Where a later fact must correct an earlier one, the correction is a **new row naming its predecessor** — supersession pointing backwards, because a forward pointer would need the grant immutability withholds.
 
 **Modules reach each other only through `public/`.** Enforced by import-linter in CI, per module pair. A cross-module import of an ORM model compiles and runs perfectly well — which is exactly why the rule needs a machine behind it.
 
@@ -271,7 +290,7 @@ These hold at every stage, without exception, and are asserted by a permanent Se
 | Raw Provider Record | Provider Platform | **Built** — M2.1 |
 | Claim | Provider Normalization | **Built** — M2.2 |
 | Knowledge Graph | Knowledge Graph | **Built** — M3A |
-| Observation | Observation Engine | Planned — M3B |
+| Observation | Observation Engine | **Built** — M3B |
 | Business Event | Business Event Engine | Planned — M4 |
 | Signal | Signal Engine | Planned — M5 |
 | Buying Score | Buying Score Engine | Planned — M5B |
@@ -279,7 +298,7 @@ These hold at every stage, without exception, and are asserted by a permanent Se
 | AI Research / AI Reasoning | AI Research Engine, AI Reasoning Engine | Planned — M8/M9 |
 | Recommendation | Recommendation Engine | Planned — M10 |
 
-The first three stages are built and exercised end to end against a real database on every run of `make smoke`. Provider payloads currently come from the **Provider Simulation Framework** — deterministic, seeded, replayable — through the same Provider Port a production vendor adapter will implement. Nothing downstream of that port can tell the difference, and that neutrality is asserted rather than assumed.
+The first four stages are built and exercised end to end against a real database on every run of `make smoke`. Provider payloads currently come from the **Provider Simulation Framework** — deterministic, seeded, replayable — through the same Provider Port a production vendor adapter will implement. Nothing downstream of that port can tell the difference, and that neutrality is asserted rather than assumed.
 
 Those payloads are presently **development fixtures**, marked as such and carried through to every claim's `payload_provenance`. They are not represented as authentic vendor payloads, and a conclusion built on one can be found when authentic payloads arrive.
 
@@ -293,7 +312,7 @@ If Signora is doing this right, all of these are answerable at any point in the 
 2. **Do the sources agree?** If not, show both, with who said what and when.
 3. **Why is this company one company?** Name the rule and the matched value.
 4. **What if that was wrong?** Correct it with a new decision; the old one remains readable and the claims underneath are untouched.
-5. **What happened between January and March?** Answerable from the series, not reconstructed from a current value.
+5. **What happened between January and March?** Answerable from the series, not reconstructed from a current value — and answerable *per source*, so "CoreSignal shows growth; Apollo has not reported since January" is expressible.
 6. **Rebuild everything from the claims.** Same graph, same structure, regardless of processing order.
 7. **Could tenant A's data ever reach tenant B?** Four independent controls say no, and a permanent test suite proves each of them still bites.
 
