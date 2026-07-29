@@ -56,6 +56,8 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         "relationship",
         # Observation Engine (M3B), migration 0010.
         "observation",
+        # Business Event Engine (M4), migration 0011.
+        "business_event",
     }
 )
 
@@ -105,10 +107,16 @@ REQUIRED_POLICY_COMMANDS: Final[frozenset[str]] = frozenset({"SELECT", "INSERT",
 # coarser one they refine and it stays readable as what was believed then
 # (migration 0010; M3B ruling).
 #
+# `business_event` is durable business history. A phenomenon that extends
+# or a conclusion that is corrected produces a new event naming the one it
+# replaces — future intelligence modules are expected to reason over
+# complete historical sequences, which requires the sequence to exist
+# (migration 0011; M4 ruling).
+#
 # Adding a table here is a deliberate architectural act. The immutability it
 # claims is separately asserted in test_tenancy_policy.py.
 IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
-    {"claim", "resolution_decision", "observation"}
+    {"claim", "resolution_decision", "observation", "business_event"}
 )
 
 # Runtime roles. None may bypass RLS, whatever else they are permitted.

@@ -1,0 +1,127 @@
+{
+  "_comment": "Signora's business event taxonomy — a product asset, not an implementation detail. Every type must pass one test: if a CRO opened Signora today, would they immediately understand what it means? No provider terminology, no implementation terminology, no engineering terminology. Types describe what happened in the customer's business, never how Signora discovered it. Reviewed like code; a change here is a release. Parameters declared here are the ONLY place a business threshold may live.",
+  "version": 1,
+  "types": [
+    {
+      "key": "funding_round_closed",
+      "domain": "capital",
+      "title": "Funding round closed",
+      "description": "The company raised a new round of investment.",
+      "why_it_matters": "New capital usually precedes new spending, new hiring, and new initiatives.",
+      "evidence_attributes": ["funding_round"],
+      "parameters": {
+        "minimum_amount": 1000000
+      }
+    },
+    {
+      "key": "acquisition_announced",
+      "domain": "capital",
+      "title": "Acquisition announced",
+      "description": "The company announced an acquisition.",
+      "why_it_matters": "Acquisitions consolidate systems and budgets, and often force decisions that were being deferred.",
+      "evidence_attributes": ["acquisition"],
+      "parameters": {}
+    },
+    {
+      "key": "technology_adopted",
+      "domain": "technology",
+      "title": "Technology adopted",
+      "description": "The company started using a technology it was not using before.",
+      "why_it_matters": "A newly adopted system reveals direction, and often a gap next to it.",
+      "evidence_attributes": ["technology_detected"],
+      "parameters": {}
+    },
+    {
+      "key": "technology_retired",
+      "domain": "technology",
+      "title": "Technology retired",
+      "description": "The company stopped using a technology it previously ran.",
+      "why_it_matters": "Something replaced it. That replacement decision is either recent or imminent.",
+      "evidence_attributes": ["technology_removed"],
+      "parameters": {}
+    },
+    {
+      "key": "leadership_appointed",
+      "domain": "leadership",
+      "title": "Leadership appointed",
+      "description": "A senior leader joined the company or was promoted into a senior role.",
+      "why_it_matters": "New leaders re-examine what they inherited, and are unusually willing to change it.",
+      "evidence_attributes": ["role_change"],
+      "parameters": {
+        "qualifying_seniorities": ["executive", "vp", "director"]
+      }
+    },
+    {
+      "key": "leadership_departed",
+      "domain": "leadership",
+      "title": "Leadership departed",
+      "description": "A senior leader left the company.",
+      "why_it_matters": "Departures stall decisions their owner was driving, and reopen ones already made.",
+      "evidence_attributes": ["role_change"],
+      "parameters": {
+        "qualifying_seniorities": ["executive", "vp", "director"]
+      }
+    },
+    {
+      "key": "hiring_surge",
+      "domain": "workforce",
+      "title": "Hiring surge",
+      "description": "The company grew its headcount or open roles sharply over a short period.",
+      "why_it_matters": "Sustained hiring is the most reliable outward sign of a company investing ahead of growth.",
+      "evidence_attributes": ["employee_count", "open_roles"],
+      "parameters": {
+        "window_days": 120,
+        "minimum_growth_ratio": 0.15,
+        "minimum_absolute_growth": 10
+      }
+    },
+    {
+      "key": "headcount_decline",
+      "domain": "workforce",
+      "title": "Headcount decline",
+      "description": "The company reduced its headcount over a short period.",
+      "why_it_matters": "Contraction changes budget authority and priorities, usually before it is announced.",
+      "evidence_attributes": ["employee_count"],
+      "parameters": {
+        "window_days": 120,
+        "minimum_decline_ratio": 0.1,
+        "minimum_absolute_decline": 10
+      }
+    },
+    {
+      "key": "revenue_growth",
+      "domain": "growth",
+      "title": "Revenue growth",
+      "description": "The company moved into a higher revenue range.",
+      "why_it_matters": "Crossing a revenue threshold changes what a company can buy and who signs for it.",
+      "evidence_attributes": ["revenue_band"],
+      "parameters": {
+        "minimum_ranges_moved": 1
+      }
+    },
+    {
+      "key": "revenue_contraction",
+      "domain": "growth",
+      "title": "Revenue contraction",
+      "description": "The company moved into a lower revenue range.",
+      "why_it_matters": "A company moving down market re-scopes its spending, often quickly.",
+      "evidence_attributes": ["revenue_band"],
+      "parameters": {
+        "minimum_ranges_moved": 1
+      }
+    },
+    {
+      "key": "buying_intent_surge",
+      "domain": "demand",
+      "title": "Buying intent surge",
+      "description": "People at the company are researching a topic far more than usual.",
+      "why_it_matters": "Research precedes purchase. A sustained rise means an evaluation is already under way.",
+      "evidence_attributes": ["intent_topic_surge"],
+      "parameters": {
+        "window_days": 120,
+        "minimum_score": 60,
+        "minimum_weeks": 3
+      }
+    }
+  ]
+}

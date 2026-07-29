@@ -2,7 +2,7 @@
 
 > Status: **Living document — Architectural Constitution**
 > Audience: All engineers, EMs, and technical stakeholders at Signora
-> Revision: **v5** — adds the Observation Engine (M3B) catalog and `entity.evidence_attached`. v4 added the Provider Normalization (M2.2) and Knowledge Graph (M3A) catalogs, and replaces the v2 placeholders `provider.record.normalized`, `entity.updated`, and `entity.merged` with the events the evidence-first model actually produces. v3 notes follow.
+> Revision: **v6** — adds the Business Event Engine (M4) catalog and removes `business_event_type.published`, which assumed a runtime-mutable taxonomy. v5 added the Observation Engine (M3B) catalog and `entity.evidence_attached`. v4 added the Provider Normalization (M2.2) and Knowledge Graph (M3A) catalogs, and replaces the v2 placeholders `provider.record.normalized`, `entity.updated`, and `entity.merged` with the events the evidence-first model actually produces. v3 notes follow.
 > Previous revision: **v3** — documents the dispatch layer as built in M1.1: relay semantics, the `processed_event` idempotency ledger, the `dead_letter_event` table, and the decision that **idempotency is platform-owned**. v2 catalog unchanged.
 
 ## Purpose
@@ -61,8 +61,8 @@ Events are listed in pipeline order. Payload fields below are illustrative and i
 | `relationship.established` / `relationship.ended` | Knowledge Graph | Observation Engine | `relationship_id`, `kind`, `source_entity_id`, `target_entity_id` |
 | `observation.recorded` | Observation Engine | Business Event Engine, Timeline | `observation_id`, `entity_id`, `provider`, `attribute`, `kind`, `direction`, `observed_at` — see the M3B section below |
 | `observation.superseded` | Observation Engine | Business Event Engine, Timeline | `observation_id`, `supersedes`, `entity_id`, `attribute` |
-| `business_event_type.published` | Business Event Engine (internal taxonomy change) | Business Event Engine (self; versioning notification) | `event_type_id`, `schema_version`, `definition` |
-| `business_event.detected` | Business Event Engine | Signal Engine, Timeline | `business_event_id`, `event_type_id`, `entity_id`, `source_observation_ids` |
+| `business_event.detected` | Business Event Engine | Signal Engine, Timeline | `business_event_id`, `entity_id`, `type_key`, `domain`, `occurred_at`, `taxonomy_version` — see the M4 section below |
+| `business_event.superseded` | Business Event Engine | Signal Engine, Timeline | `business_event_id`, `supersedes`, `entity_id`, `type_key` |
 | `signal.generated` | Signal Engine | Buying Score Engine, Timeline | `signal_id`, `entity_id`, `source_event_ids`, `score` |
 | `signal.scored` | Signal Engine | Buying Score Engine, Timeline | `signal_id`, `score`, `scoring_model_version` |
 | `buying_score.updated` | Buying Score Engine | Opportunity Engine, Timeline | `entity_id`, `score`, `trend`, `source_signal_ids`, `model_version` |
@@ -96,7 +96,7 @@ sequenceDiagram
     KG->>OE: entity.evidence_attached
     OE->>BEE: observation.recorded / superseded
     OE-->>TL: observation.recorded
-    BEE->>SE: business_event.detected
+    BEE->>SE: business_event.detected / superseded
     BEE-->>TL: business_event.detected
     SE->>BSE: signal.generated / signal.scored
     SE-->>TL: signal.generated
@@ -288,3 +288,20 @@ One event per raw record rather than one per claim: the claims from a record are
 **`observation.recorded` is not a claim that the change matters.** `kind` and `direction` are structural readings; the Business Event Engine applies its curated taxonomy to decide whether this is a hiring surge or a rounding error (the layering principle in [21-intelligence-pipeline.md](21-intelligence-pipeline.md)).
 
 `observation.superseded` is a first-class event rather than a log line: a consumer that already acted on the coarser observation needs to know it was refined, or it will double-count the change. `occurred_at` is when Signora learned; **`observed_at` is when the provider says it was true**, and Timeline must order on the latter or a backfill renders as a wall of activity on its ingestion day.
+
+### Business Event Engine (M4)
+
+| Event | v | Payload | Notes |
+|---|---|---|---|
+| `business_event.detected` | 1 | `business_event_id`, `entity_id`, `type_key`, `domain`, `occurred_at`, `window_start`, `window_end`, `taxonomy_version`, `payload_version` | Something business-relevant happened |
+| `business_event.superseded` | 1 | `business_event_id`, `supersedes`, `entity_id`, `type_key` | A phenomenon extended, or a conclusion was corrected |
+
+**Neither event carries `facts` or the evidence list.** A consumer reads them through `business_event_engine.public.BusinessEventQueries`, so adding a fact to a type is never an event-contract change.
+
+**Two version numbers travel together, deliberately.** `taxonomy_version` is the *meaning* — the parameters and conditions in force when this was detected. `payload_version` is the *wire shape*. Conflating them means tuning a threshold breaks a consumer contract, so nobody ever tunes a threshold; keeping them apart lets the taxonomy evolve while the contract stays stable for a year.
+
+**`business_event.detected` is not a claim that anyone should act.** How important the account is, whether Sales should engage, and how likely a purchase is belong to the Signal Engine and everything after it (the layering principle in [21-intelligence-pipeline.md](21-intelligence-pipeline.md)).
+
+`business_event.superseded` is first-class rather than a log line: a consumer that already acted on the earlier, smaller view of a phenomenon needs to know, or it will count the same thing twice.
+
+> **Removed:** `business_event_type.published` from the v2 catalog. It assumed a runtime-mutable taxonomy that notified the system when it changed. The taxonomy is a versioned repository artifact — **the deployment is the notification** — so the event had no producer, and an event with no producer is a contract nobody is keeping.

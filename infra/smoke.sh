@@ -382,6 +382,25 @@ else
   fail "change detection failed against the running stack"
 fi
 
+# ============================================== 14e. Business Event Engine
+
+stage "14e. Business event detection"
+
+# The M4 demonstration. Observations become typed business events written
+# in language a CRO would recognise — and every threshold that decided
+# them lives in the versioned taxonomy rather than in a rule.
+if (cd ../backend && \
+    SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 \
+    SIGNORA_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    SIGNORA_TEST_APP_DATABASE_URL="postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5433/signora" \
+    SIGNORA_TEST_ADMIN_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    uv run pytest tests/business_event_engine -q >/tmp/smoke_business.log 2>&1); then
+  pass "$(grep -oE '[0-9]+ passed' /tmp/smoke_business.log | tail -1) against the running stack"
+else
+  tail -20 /tmp/smoke_business.log
+  fail "business event detection failed against the running stack"
+fi
+
 # ================================================= 15. Security Invariants
 
 stage "15. Security Invariants"
@@ -417,4 +436,5 @@ trap - EXIT
 printf '\n\033[32m\033[1mPLATFORM SMOKE TEST PASSED\033[0m  (%ds)\n' "$((SECONDS - STARTED_AT))"
 printf 'Build · startup · migrations · identities · image hygiene · health · readiness ·\n'
 printf 'auth · JWT · authorization · RLS · event bus · relay · workers · ingestion ·\n'
-printf 'normalization · identity resolution · change detection · invariants · teardown\n\n'
+printf 'normalization · identity resolution · change detection · business events ·\n'
+printf 'invariants · teardown\n\n'

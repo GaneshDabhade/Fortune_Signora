@@ -20,6 +20,14 @@ from uuid import UUID, uuid4
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from modules.business_event_engine.application.queries import BusinessEventQueries
+from modules.business_event_engine.infrastructure.composition import (
+    build_detect_business_events,
+)
+from modules.business_event_engine.infrastructure.composition import (
+    build_queries as build_business_event_queries,
+)
+from modules.business_event_engine.interface.handlers import detect_from_observation
 from modules.knowledge_graph.application.queries import GraphQueries
 from modules.knowledge_graph.infrastructure.composition import (
     build_derive_relationships,
@@ -181,3 +189,33 @@ async def observe_all(
 
 def observations(session: AsyncSession, workspace_id: UUID) -> ObservationQueries:
     return build_observation_queries(session, graph=queries(session, workspace_id))
+
+
+async def detect_all(
+    factory: async_sessionmaker[AsyncSession],
+    admin_factory: async_sessionmaker[AsyncSession],
+    workspace_id: UUID,
+    user_id: UUID,
+) -> int:
+    """Detect business events for every `observation.recorded` event."""
+    envelopes = [
+        envelope
+        for envelope in await _published(admin_factory, "observation.recorded")
+        if envelope.workspace_id == workspace_id
+    ]
+
+    async with tenant_scoped_session(
+        factory, workspace_id=workspace_id, user_id=user_id
+    ) as session:
+        detect = build_detect_business_events(
+            session,
+            observations=observations(session, workspace_id),
+            publisher=PostgresOutboxEventPublisher(),
+        )
+        for envelope in envelopes:
+            await detect_from_observation(envelope, detect=detect)
+    return len(envelopes)
+
+
+def business_events(session: AsyncSession, workspace_id: UUID) -> BusinessEventQueries:
+    return build_business_event_queries(session, observations=observations(session, workspace_id))

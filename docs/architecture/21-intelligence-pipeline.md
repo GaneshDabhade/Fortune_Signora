@@ -2,7 +2,7 @@
 
 > Status: **Living document — the primary architectural reference for how Signora thinks**
 > Audience: Engineers, architects, prospective hires, customers, and investors
-> Revision: **v2** — updated at the close of M3B. This document tracks the **implemented** architecture, not future intent; stages are marked built only once they run against a real database in `make smoke`.
+> Revision: **v3** — updated at the close of M4. This document tracks the **implemented** architecture, not future intent; stages are marked built only once they run against a real database in `make smoke`.
 >
 > Prerequisite reading: none. This is the document to read first.
 
@@ -42,6 +42,8 @@ Nine stages. Each one adds business understanding. **None of them destroys what 
 > **Each stage answers one question, and refuses the next one.**
 >
 > Claims **preserve evidence** · the Knowledge Graph **resolves identity** · the Observation Engine **detects change** · the Business Event Engine **determines business meaning** · the Signal Engine **determines commercial meaning**.
+>
+> Read as questions: *what was asserted?* · *who is it about?* · *what changed?* · *why is that business-relevant?* · *should we act on it?*
 >
 > *Permanent architectural principle, ratified 2026-07-29.* A stage that answers the next stage's question puts a rule where it cannot be reviewed — a threshold buried in derivation code is not a rule anyone can argue with, and cannot be versioned, tested against a taxonomy, or cited in an explanation.
 
@@ -155,15 +157,39 @@ The **first value of an attribute establishes a baseline and produces no observa
 
 ---
 
-## Stage 5 — Business Event *(planned — M4)*
+## Stage 5 — Business Event
 
-**What it is.** *This means something.* Sustained headcount growth in engineering. A funding round closed. A competitor's technology removed.
+**What it is.** *This means something.* **"Acme is in a hiring surge: grew headcount 40% over 90 days."** Not a measurement — a sentence a CRO would recognise.
 
-**Adds:** business vocabulary, from a versioned, reviewable taxonomy — and **materiality**. This is the first stage that interprets, and it is deliberately placed after identity and after change detection: by here the pipeline knows *who* and *what moved*, so interpretation has something solid to stand on. The threshold that decides a headcount move of five is noise lives here, where it can be argued about, versioned, and cited in an explanation.
+**Adds:** business vocabulary and **materiality**. This is the first stage that interprets, deliberately placed after identity and after change detection: by here the pipeline knows *who* and *what moved*, so interpretation has something solid to stand on.
 
-**Refuses:** judgement of commercial priority. A business event says what happened in business terms, not whether anyone should act.
+**Refuses:** commercial judgement. A business event says what happened in business terms, never how important the account is, whether Sales should engage, what priority this deserves, or how likely a purchase is. It carries **no priority, score, urgency, or rank** — asserted structurally.
 
-**Owned by:** Business Event Engine · **Publishes:** `business_event.detected`
+### The taxonomy is a product asset
+
+The set of business event types is **Signora's business language** — the vocabulary the product, analytics, AI reasoning, recommendations, customer interfaces, documentation, and future integrations all speak. Every type passes one test:
+
+> *If a CRO opened Signora today, would they immediately understand what this event means?*
+
+That rules out provider terminology, implementation terminology, and engineering terminology. A type describes **what happened in the customer's business**, never how Signora discovered it — which is why its domains are `capital`, `technology`, `leadership`, `workforce`, `growth`, `demand`, and not the claim vocabulary's `firmographic` or `technographic`. Those describe where data came from; these describe what happened.
+
+Types are split by direction wherever the two directions mean opposite things commercially: `LEADERSHIP_APPOINTED` and `LEADERSHIP_DEPARTED`, `REVENUE_GROWTH` and `REVENUE_CONTRACTION`, `HIRING_SURGE` and `HEADCOUNT_DECLINE`. A consumer that has to read a field to know whether the news is good has been handed the wrong vocabulary.
+
+### Taxonomy defines language; rules define derivation
+
+**The taxonomy is data** — a versioned artifact reviewed like code, holding the types, their meanings, and **every materiality threshold**. **The rules are code** — the correlation logic that decides whether a type's conditions are met.
+
+The split is the useful part. Parameters change often, need review by people who are not engineers, and must be recorded against every event. Correlation logic needs a type checker. Expressing correlation as configuration would mean inventing a DSL — a programming language with no debugger and no test framework — and burying a threshold in code puts it where a seller asking *"why was I told this?"* gets an answer that bottoms out in a constant.
+
+**Meaning evolves slowly; derivation may evolve fast.** A better hiring-surge rule must not change what a hiring surge *is*.
+
+> **Enforced structurally, not by convention.** A Security Invariant parses every rule module as a syntax tree and fails on any numeric literal in a comparison other than `0` or `1` — those two are structural (*nothing* and *something*); anything else is a claim about the world somebody must be able to argue with. A second test reconciles declared parameters against read ones, in both directions.
+
+### Agreement is evidence, not truth
+
+This is the pipeline's **first cross-provider reasoning**, and it is deliberately narrow. Each provider's series is evaluated **alone**, so no rule ever combines two providers' values into a synthetic truth. Two providers independently reaching the same conclusion produce **one** event that records both — a set of corroborating providers, never a coefficient. Turning agreement into confidence is the Signal Engine's decision, with its own reviewable rule.
+
+**Owned by:** Business Event Engine · **Table:** `business_event` (immutable) · **Publishes:** `business_event.detected`, `business_event.superseded` · **Read port:** `BusinessEventQueries`
 
 ---
 
@@ -277,7 +303,7 @@ These hold at every stage, without exception, and are asserted by a permanent Se
 
 **Platform infrastructure tables are not module data.** `outbox_event`, `processed_event`, and `dead_letter_event` span every workspace by design and deliberately carry no RLS — so the *grant* is the only thing separating tenants there. The application role can publish and cannot read; only the relay identity consumes. No business module may query one, for any reason, including debugging.
 
-**Immutable things are immutable at the database.** `claim`, `resolution_decision`, and `observation` carry no `UPDATE` grant. An attempted overwrite fails with a permission error rather than succeeding quietly. Where a later fact must correct an earlier one, the correction is a **new row naming its predecessor** — supersession pointing backwards, because a forward pointer would need the grant immutability withholds.
+**Immutable things are immutable at the database.** `claim`, `resolution_decision`, `observation`, and `business_event` carry no `UPDATE` grant. An attempted overwrite fails with a permission error rather than succeeding quietly. Where a later fact must correct an earlier one, the correction is a **new row naming its predecessor** — supersession pointing backwards, because a forward pointer would need the grant immutability withholds.
 
 **Modules reach each other only through `public/`.** Enforced by import-linter in CI, per module pair. A cross-module import of an ORM model compiles and runs perfectly well — which is exactly why the rule needs a machine behind it.
 
@@ -291,14 +317,14 @@ These hold at every stage, without exception, and are asserted by a permanent Se
 | Claim | Provider Normalization | **Built** — M2.2 |
 | Knowledge Graph | Knowledge Graph | **Built** — M3A |
 | Observation | Observation Engine | **Built** — M3B |
-| Business Event | Business Event Engine | Planned — M4 |
+| Business Event | Business Event Engine | **Built** — M4 |
 | Signal | Signal Engine | Planned — M5 |
 | Buying Score | Buying Score Engine | Planned — M5B |
 | Opportunity | Opportunity Engine | Planned — M6 |
 | AI Research / AI Reasoning | AI Research Engine, AI Reasoning Engine | Planned — M8/M9 |
 | Recommendation | Recommendation Engine | Planned — M10 |
 
-The first four stages are built and exercised end to end against a real database on every run of `make smoke`. Provider payloads currently come from the **Provider Simulation Framework** — deterministic, seeded, replayable — through the same Provider Port a production vendor adapter will implement. Nothing downstream of that port can tell the difference, and that neutrality is asserted rather than assumed.
+The first five stages are built and exercised end to end against a real database on every run of `make smoke`. Provider payloads currently come from the **Provider Simulation Framework** — deterministic, seeded, replayable — through the same Provider Port a production vendor adapter will implement. Nothing downstream of that port can tell the difference, and that neutrality is asserted rather than assumed.
 
 Those payloads are presently **development fixtures**, marked as such and carried through to every claim's `payload_provenance`. They are not represented as authentic vendor payloads, and a conclusion built on one can be found when authentic payloads arrive.
 

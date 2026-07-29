@@ -85,7 +85,7 @@ This document does **not** define architecture principles (see [02-principles.md
 | **21** | **[The Intelligence Pipeline](21-intelligence-pipeline.md)** | **How does a fact become a recommendation, and what is each stage forbidden from doing?** |
 | 22 | [Knowledge Graph](22-knowledge-graph.md) | How is identity resolved, explained, and revised — without resolving truth? |
 | 23 | [Observation Engine](23-observation-engine.md) | What counts as a change worth recording, and what is merely re-assertion? |
-| 24 | [Business Event Engine](24-business-event-engine.md) | Why is a change business-relevant, and where does the threshold that decides it live? *(proposal)* |
+| 24 | [Business Event Engine](24-business-event-engine.md) | Why is a change business-relevant, and where does the threshold that decides it live? |
 | — | [Architecture Decision Records](adr/README.md) | Why was each technology/vendor/module-boundary decision made? |
 
 ## Who This Documentation Is For

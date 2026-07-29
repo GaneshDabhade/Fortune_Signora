@@ -188,15 +188,23 @@ Each module below follows the template: Purpose, Owns, Does Not Own, Core Concep
 
 **Purpose:** Owns both the **taxonomy** of business event types (Funding Round, Executive Change, Hiring Surge, Product Launch, Expansion, M&A, etc.) and the **detection/classification** runtime that correlates observations into instances of those types. Consolidated from the v1 Event Engine / Business Events split — see [ADR-0025](adr/0025-module-boundary-evolution.md).
 
-**Owns:** Business event type definitions and schemas, taxonomy versioning, detection/correlation logic, event lifecycle (detected/confirmed/superseded).
+**Owns:** The business event taxonomy — **a product asset, and Signora's business language** — its versioning, the detection rules, and the event lifecycle (detected / superseded).
 
-**Does Not Own:** Scoring/aggregation of events into signals (Signal Engine).
+**Does Not Own:** **Commercial judgement of any kind.** Not how important an account is, whether Sales should engage, what priority something deserves, how likely a purchase is, or what to recommend. Those belong to the Signal Engine and everything after it. Also not: scoring or aggregation into signals (Signal Engine).
 
-**Core Concepts:** Business Event Type, Business Event (instance), Taxonomy Version, Detection, Correlation.
+**Core Concepts:** Business Event Type, Business Event, Taxonomy Version, Payload Version, Detection Rule, Parameters, Corroborating Providers, Supersession.
 
-**Key Published Events:** `business_event.detected`, `business_event_type.published`.
+**Key Published Events:** `business_event.detected`, `business_event.superseded`.
 
-**Key Consumed Events:** `observation.recorded`.
+**Key Consumed Events:** `observation.recorded`, `observation.superseded`.
+
+**Read port offered to other modules:** `BusinessEventQueries` → `BusinessEvent`, `BusinessEventEvidence`, `Taxonomy` (`public/`).
+
+> **The permanent layering principle (ratified 2026-07-29):** *the Business Event Engine answers "why is this business-relevant?" — never "should we engage this account?"* A business event carries no priority, score, urgency, or rank, asserted structurally. See [21-intelligence-pipeline.md](21-intelligence-pipeline.md) and [24-business-event-engine.md](24-business-event-engine.md).
+>
+> **Taxonomy defines language; rules define derivation.** The taxonomy is *data* — a versioned artifact reviewed like code, holding every materiality threshold — and the rules are *code*. Meaning evolves slowly; derivation may evolve fast, and a better rule must not change what a hiring surge *is*. A Security Invariant parses each rule module as a syntax tree and fails on any business constant, so the split is machine-enforced rather than conventional.
+>
+> Every type passes one test: *if a CRO opened Signora today, would they immediately understand what this event means?* No provider terminology, no implementation terminology — which is why its domains are `capital`, `leadership`, and `demand` rather than the claim vocabulary's `firmographic` or `technographic`. The v2 event `business_event_type.published` was removed rather than implemented: a repository artifact has no runtime publication to announce.
 
 ---
 

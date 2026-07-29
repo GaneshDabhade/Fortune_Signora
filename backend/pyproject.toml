@@ -111,6 +111,7 @@ containers = [
     "modules.provider_normalization",
     "modules.knowledge_graph",
     "modules.observation_engine",
+    "modules.business_event_engine",
 ]
 layers = [
     "(interface)",
@@ -173,6 +174,24 @@ forbidden_modules = [
     "modules.provider_platform",
 ]
 
+[[tool.importlinter.contracts]]
+name = "business_event_engine reaches upstream modules only through public/"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = ["modules.business_event_engine"]
+forbidden_modules = [
+    "modules.observation_engine.domain",
+    "modules.observation_engine.application",
+    "modules.observation_engine.infrastructure",
+    "modules.observation_engine.interface",
+    "modules.knowledge_graph",
+    "modules.provider_normalization.domain",
+    "modules.provider_normalization.application",
+    "modules.provider_normalization.infrastructure",
+    "modules.provider_normalization.interface",
+    "modules.provider_platform",
+]
+
 # The graph is acyclic (05-module-dependencies.md). An upstream module that
 # imports a downstream one has inverted the pipeline, and no amount of
 # indirection makes that safe to extract later.
@@ -184,13 +203,20 @@ forbidden_modules = [
     "modules.provider_normalization",
     "modules.knowledge_graph",
     "modules.observation_engine",
+    "modules.business_event_engine",
 ]
 
 [[tool.importlinter.contracts]]
 name = "knowledge_graph depends on no downstream module"
 type = "forbidden"
 source_modules = ["modules.knowledge_graph"]
-forbidden_modules = ["modules.observation_engine"]
+forbidden_modules = ["modules.observation_engine", "modules.business_event_engine"]
+
+[[tool.importlinter.contracts]]
+name = "observation_engine depends on no downstream module"
+type = "forbidden"
+source_modules = ["modules.observation_engine"]
+forbidden_modules = ["modules.business_event_engine"]
 
 [[tool.importlinter.contracts]]
 name = "workspace_tenancy: domain has no infrastructure/framework dependencies"

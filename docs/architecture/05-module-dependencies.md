@@ -99,7 +99,8 @@ The mechanism is a **read port on the owning module's `public/`**: a `Protocol` 
 | `RawRecordReader` → `RawRecordView` | Provider Platform | Provider Normalization |
 | `ClaimReader` → `ClaimView`, `SubjectRef` | Provider Normalization | Knowledge Graph |
 | `GraphQueries` → `ClaimSet`, `EntityEvidence` | Knowledge Graph | Observation Engine |
-| `ObservationQueries` → `Observation`, `ObservationEvidence` | Observation Engine | (M4 onward) |
+| `ObservationQueries` → `Observation`, `ObservationEvidence` | Observation Engine | Business Event Engine |
+| `BusinessEventQueries` → `BusinessEvent`, `Taxonomy` | Business Event Engine | (M5A onward) |
 
 Three properties make this a boundary rather than a naming convention:
 

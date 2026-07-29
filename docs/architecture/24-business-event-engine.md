@@ -1,8 +1,8 @@
 # 24 — Business Event Engine
 
-> Status: **PROPOSAL — awaiting review** · 2026-07-29
+> Status: **IMPLEMENTED** — M4, 2026-07-29
 > Audience: All engineers, EMs, and technical stakeholders at Signora
-> Revision: **v1** — the M4 architecture proposal. **No implementation exists.**
+> Revision: **v2** — the design as built. All five review questions were answered before implementation; the outcomes and what the CRO test changed are recorded in *[As built](#as-built-what-the-cro-test-changed)*.
 >
 > Prerequisite reading: [21-intelligence-pipeline.md](21-intelligence-pipeline.md), [23-observation-engine.md](23-observation-engine.md).
 
@@ -397,10 +397,57 @@ Taxonomy first, because every later task reads it; point rules before window rul
 
 ---
 
-## Questions for review
+## As built: what the CRO test changed
 
-1. **Is the taxonomy/rules split right, and is a repository artifact the right home for the taxonomy?** The trade — a deploy to tune a threshold — is the one thing worth pushing back on.
-2. **Approve cross-provider correlation as described?** The rule evaluates each provider's series alone; the event counts which agreed. It is the first cross-provider reasoning in the pipeline, and it is deliberately narrow.
-3. **Approve supersession chains for extending phenomena**, accepting the volume, rather than emitting once per closed window?
-4. **Approve dropping `business_event_type.published`** from the event catalog, since a repository-artifact taxonomy has no runtime publication to announce?
-5. **Are nine types the right v1?** Each is derivable from the current claim vocabulary without inventing meaning; `TECHNOLOGY_MIGRATION` is the notable, deliberate omission.
+All five review questions were approved. The taxonomy/rules split, the repository artifact, cross-provider correlation, supersession chains, and the removal of `business_event_type.published` are as proposed.
+
+One instruction changed the taxonomy before a line of it was written:
+
+> *If a CRO opened Signora today, would they immediately understand what this event means?*
+
+Applied honestly, that test broke three of the proposed nine types — and names are the hardest thing to change later, so it was worth applying before implementation rather than after.
+
+| Proposed | Shipped | Why |
+|---|---|---|
+| `EXECUTIVE_CHANGE` | `LEADERSHIP_APPOINTED` · `LEADERSHIP_DEPARTED` | A leader joining and a leader leaving mean **opposite** things commercially. A consumer that has to read a field to know whether the news is good has been handed the wrong vocabulary. |
+| `REVENUE_BAND_SHIFT` | `REVENUE_GROWTH` · `REVENUE_CONTRACTION` | "Revenue band" is *our* word — chosen because vendors report ranges. A CRO says a company grew. Split for the same directional reason. |
+| `INTENT_SURGE` | `BUYING_INTENT_SURGE` | "Intent" alone is closer to vendor vocabulary than to how a revenue team speaks. |
+
+**Eleven types, six business domains.** `capital` · `technology` · `leadership` · `workforce` · `growth` · `demand` — deliberately not the claim vocabulary's `firmographic` / `technographic` / `behavioural`, which describe where data came from rather than what happened. Asserted by an invariant: no business domain may name a data-model term.
+
+The same test reaches the summaries. Every one is rendered by its rule from the facts it computed, and an invariant asserts no provider name or implementation word survives into one. *"Revenue grew from $10M–$50M to $50M–$250M"*, never *"revenue_band 10m_50m → 50m_250m"*.
+
+Each type also carries a `why_it_matters` sentence, written for a customer. It exists so the taxonomy cannot grow a type nobody can justify: if the sentence is hard to write, the type probably should not exist.
+
+### The structural enforcement, as built
+
+| Guard | What it catches |
+|---|---|
+| Rule modules parsed as syntax trees | Any numeric literal in a comparison other than `0` or `1`. Adding `if len(window) < 3` fails the build. |
+| Parameter reconciliation | A declared parameter no rule reads — a threshold reviewers believe is in force when it is not. |
+| One rule per type, at construction | A declared type with no rule, or a rule with no declaration. Fails when the engine is built, not on first detection. |
+| Column-name invariant on `business_event` | Any `priority`, `score`, `urgency`, `rank`, `importance`, `likelihood`, `propensity`, or `confidence` column. |
+| Data-model terms in business domains | `technographic` reaching a CRO. |
+
+### One honest limitation in the demonstration
+
+The baseline scenario's intent ramp peaks at 88 but clears the taxonomy's elevated threshold for only **two** weeks — short of the three a sustained surge requires. **No `BUYING_INTENT_SURGE` is detected, and the demonstration asserts that it is not.**
+
+Lowering `minimum_score` or `minimum_weeks` would have made the demonstration richer and would have been fitting a business judgement to a fixture. The parameters stay defensible; the *scenario* is what needs extending, and that is scheduled M2.0 work alongside the multi-week movement scenario M3B identified.
+
+### Deferred within the module
+
+`_replacements` and `citing_observations` are implemented and exercised, but **re-evaluation triggered by `observation.superseded` is wired at the contract level only**: the handler subscribes to `observation.recorded`, and the repository can find events citing a refined observation. Closing the loop is small and belongs with the first real late-arrival scenario rather than ahead of it.
+
+---
+
+## Definition of Done — M4
+
+- [x] Demonstration passes; AC-35 through AC-41, AC-6, AC-1, AC-13 satisfied
+- [x] Migration 0011 with forced RLS and full policies in the same revision; `business_event` registered in `tenancy_policy.py` and in `IMMUTABLE_TENANT_TABLES`
+- [x] Security Invariants extended 124 → 154, each addition **proven to fail** when its guarantee is removed
+- [x] `04-modules.md`, `05-module-dependencies.md`, `06-events.md`, and `21-intelligence-pipeline.md` updated in the same change
+- [x] `make smoke` extended with stage 14e, business event detection
+- [x] PROJECT_STATUS and SESSION_HANDOFF updated at the boundary
+
+The two platform findings from M3A remain open and are **not** worked around: `EventHandler` receives no session, and `PublishableEvent` cannot be satisfied by a frozen dataclass. Both are queued as RFCs for the platform milestone.
