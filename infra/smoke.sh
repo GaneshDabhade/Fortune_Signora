@@ -440,6 +440,27 @@ else
   fail "commercial attention failed against the running stack"
 fi
 
+# ================================================ 14h. Opportunity Engine
+
+stage "14h. Commercial commitment"
+
+# The M6 demonstration, and the pipeline's first workflow stage. Everything
+# before it derives; this records that a human committed. The assertions
+# that matter: only TRACKING is machine-authored, nothing closes an
+# opportunity automatically, and regenerating derived intelligence leaves
+# workflow untouched.
+if (cd ../backend && \
+    SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 \
+    SIGNORA_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    SIGNORA_TEST_APP_DATABASE_URL="postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5433/signora" \
+    SIGNORA_TEST_ADMIN_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    uv run pytest tests/opportunity_engine -q >/tmp/smoke_opportunity.log 2>&1); then
+  pass "$(grep -oE '[0-9]+ passed' /tmp/smoke_opportunity.log | tail -1) against the running stack"
+else
+  tail -20 /tmp/smoke_opportunity.log
+  fail "commercial commitment failed against the running stack"
+fi
+
 # ================================================= 15. Security Invariants
 
 stage "15. Security Invariants"
@@ -476,4 +497,4 @@ printf '\n\033[32m\033[1mPLATFORM SMOKE TEST PASSED\033[0m  (%ds)\n' "$((SECONDS
 printf 'Build · startup · migrations · identities · image hygiene · health · readiness ·\n'
 printf 'auth · JWT · authorization · RLS · event bus · relay · workers · ingestion ·\n'
 printf 'normalization · identity resolution · change detection · business events ·\n'
-printf 'signals · buying scores · invariants · teardown\n\n'
+printf 'signals · buying scores · opportunities · invariants · teardown\n\n'

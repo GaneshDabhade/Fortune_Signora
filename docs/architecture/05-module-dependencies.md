@@ -70,7 +70,7 @@ All modules implicitly depend on **Workspace & Tenancy** for tenant scoping (see
 
 Per Principle 3, event-driven is the default. Approved synchronous dependencies:
 
-- Any module → Workspace & Tenancy: resolve/validate workspace context (read-only).
+- Any module → Workspace & Tenancy: resolve/validate workspace context (read-only). **Since M6 this includes membership verification on opportunity assignment** — a `user_id` supplied by a caller is a claim about who should hold the work, and an unverified one would hand an account to somebody outside the workspace.
 - AI Reasoning Engine → AI Research Engine's stored artifact: synchronous read of an already-completed research artifact when composing a reasoning request, if available at request time (falls back to reasoning without it if not yet complete — AI Research Engine is not a blocking dependency of the pipeline).
 - Business Event Engine → its own taxonomy (internal, no longer cross-module per the v1→v2 consolidation — see [ADR-0025](adr/0025-module-boundary-evolution.md)).
 - Revenue Intelligence Platform → Timeline: synchronous query when composing a workspace intelligence view.
@@ -102,7 +102,8 @@ The mechanism is a **read port on the owning module's `public/`**: a `Protocol` 
 | `ObservationQueries` → `Observation`, `ObservationEvidence` | Observation Engine | Business Event Engine |
 | `BusinessEventQueries` → `BusinessEvent`, `Taxonomy` | Business Event Engine | Signal Engine |
 | `SignalQueries` → `Signal`, `SignalExplanation`, `SignalCatalog` | Signal Engine | Buying Score Engine |
-| `BuyingScoreQueries` → `BuyingScore`, `ContributionLedger`, `BuyingScoreExplanation` | Buying Score Engine | (M6 onward) |
+| `BuyingScoreQueries` → `BuyingScore`, `ContributionLedger`, `BuyingScoreExplanation` | Buying Score Engine | Opportunity Engine |
+| `OpportunityQueries` → `Opportunity`, `OpportunityState`, `OpportunityExplanation` | Opportunity Engine | (M7 onward) |
 
 Three properties make this a boundary rather than a naming convention:
 

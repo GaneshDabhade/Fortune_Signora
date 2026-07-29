@@ -1,0 +1,7 @@
+{
+  "_comment": "Signora's default opportunity policy — at what point an account becomes worth tracking. Shipped in the repository because the shape of the policy is Signora's design; a customer authors their own version in the database because 'when do we start tracking' is a commercial judgement about their own business. Deliberately separate from the scoring model: folding the two together would mean tuning a threshold mints a new scoring-model version, which changes the recorded explanation of every historical buying score for a reason unrelated to scoring. Contested accounts qualify by default — a fought-over account is exactly what a seller should look at, and the Buying Score Engine already scores it high rather than averaging it away. Reviewed like code; a change here is a release.",
+  "version": 1,
+  "minimum_score": 40,
+  "contested_qualifies": true,
+  "automatic_creation": true
+}

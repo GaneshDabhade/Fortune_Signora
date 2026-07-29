@@ -51,6 +51,21 @@ from modules.observation_engine.infrastructure.composition import (
 )
 from modules.observation_engine.infrastructure.composition import build_record_observations
 from modules.observation_engine.interface.handlers import observe_attached_evidence
+from modules.opportunity_engine.application.queries import OpportunityQueries
+from modules.opportunity_engine.domain.policy import (
+    OpportunityPolicy,
+    WorkspaceOpportunityPolicy,
+)
+from modules.opportunity_engine.infrastructure.composition import (
+    build_policies as build_opportunity_policies,
+)
+from modules.opportunity_engine.infrastructure.composition import (
+    build_qualify_opportunity,
+)
+from modules.opportunity_engine.infrastructure.composition import (
+    build_queries as build_opportunity_queries,
+)
+from modules.opportunity_engine.interface.handlers import qualify_from_buying_score
 from modules.provider_normalization.infrastructure.claim_reader import SqlClaimReader
 from modules.provider_normalization.interface.handlers import normalize_received_record
 from modules.provider_platform.infrastructure.models import RawProviderRecordModel
@@ -337,3 +352,75 @@ async def sweep_stale(
         )
         result = await sweep.execute(workspace_id)
     return result.examined, result.rescored
+
+
+async def set_opportunity_policy(
+    factory: async_sessionmaker[AsyncSession],
+    workspace_id: UUID,
+    user_id: UUID,
+    *,
+    minimum_score: int,
+    contested_qualifies: bool = True,
+    automatic_creation: bool = True,
+) -> None:
+    """Author a workspace's own qualification threshold.
+
+    The demonstration uses this rather than lowering Signora's shipped
+    default, which is a product judgement and must not be tuned to make a
+    scenario pass. It also exercises the layer that matters: *when do we
+    start tracking* belongs to the customer.
+    """
+    async with tenant_scoped_session(
+        factory, workspace_id=workspace_id, user_id=user_id
+    ) as session:
+        await build_opportunity_policies(session).save(
+            WorkspaceOpportunityPolicy(
+                id=uuid4(),
+                workspace_id=workspace_id,
+                version=1,
+                policy=OpportunityPolicy(
+                    version=1,
+                    minimum_score=minimum_score,
+                    contested_qualifies=contested_qualifies,
+                    automatic_creation=automatic_creation,
+                ),
+                created_at=datetime.now(UTC),
+                created_by=user_id,
+            )
+        )
+
+
+async def qualify_all(
+    factory: async_sessionmaker[AsyncSession],
+    admin_factory: async_sessionmaker[AsyncSession],
+    workspace_id: UUID,
+    user_id: UUID,
+) -> int:
+    """Consider every scored account for tracking.
+
+    **The only automatic path into workflow**, and it can do exactly one
+    thing: open an opportunity at `TRACKING`, which commits nobody. There is
+    deliberately no stage in this harness that closes or progresses one —
+    those require a person, and the absence of the code is the enforcement.
+    """
+    envelopes = [
+        envelope
+        for envelope in await _published(admin_factory, "buying_score.updated")
+        if envelope.workspace_id == workspace_id
+    ]
+
+    async with tenant_scoped_session(
+        factory, workspace_id=workspace_id, user_id=user_id
+    ) as session:
+        qualify = build_qualify_opportunity(
+            session,
+            scores=buying_scores(session, workspace_id),
+            publisher=PostgresOutboxEventPublisher(),
+        )
+        for envelope in envelopes:
+            await qualify_from_buying_score(envelope, qualify=qualify)
+    return len(envelopes)
+
+
+def opportunities(session: AsyncSession, workspace_id: UUID) -> OpportunityQueries:
+    return build_opportunity_queries(session, scores=buying_scores(session, workspace_id))

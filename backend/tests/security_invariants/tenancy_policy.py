@@ -67,6 +67,13 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # weighting, which cannot be regenerated from anything.
         "buying_score",
         "workspace_scoring_model",
+        # Opportunity Engine (M6), migration 0014. The platform's **first
+        # workflow tables**: not derived intelligence and not configuration,
+        # but the accumulated record of work a human performed. A pipeline
+        # rebuild regenerates intelligence and must not touch these.
+        "opportunity",
+        "opportunity_state",
+        "workspace_opportunity_policy",
     }
 )
 
@@ -140,6 +147,9 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         "signal_profile",
         "buying_score",
         "workspace_scoring_model",
+        "opportunity",
+        "opportunity_state",
+        "workspace_opportunity_policy",
     }
 )
 

@@ -22,7 +22,7 @@ The product's competitive advantage is the quality of that reasoning and the evi
 |---|---|
 | **Platform Foundations** | ✅ **Complete** — runtime, auth, deployment, smoke verification, frontend |
 | **Enablement** | ✅ **Complete** — Provider Simulation Framework |
-| **Product Development** | 🔄 **In progress** — seven pipeline stages built, through the Buying Score Engine. Signora now turns customer-specific commercial hypotheses into one explainable, challengeable number per account. |
+| **Product Development** | 🔄 **In progress** — **eight pipeline stages built, through the Opportunity Engine.** Signora now turns provider payloads into tracked accounts a seller commits to — and the first sellable moment has been reached. |
 | **AI Platform** | ⏳ Queued — M8 onward |
 | **Production Readiness** | ⏳ Queued — cloud infrastructure, then GA |
 
@@ -30,11 +30,11 @@ The product's competitive advantage is the quality of that reasoning and the evi
 
 | | |
 |---|---|
-| **Overall completion** | **~48%** by engineering effort (~152 of ~261–339 ew) |
-| **Effort remaining** | **~109–187 ew** |
-| **Milestones completed** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · M4 · M5A · **M5B** |
-| **Current milestone** | **M6 — Opportunity Engine** (next) — the first sellable moment |
-| **Projected to GA** | ~1.5–2.2 years at 3 engineers · ~2.3–3.2 at 2 · ~4.5–6.5 at 1 (80% capacity) |
+| **Overall completion** | **~52%** by engineering effort (~162 of ~261–339 ew) |
+| **Effort remaining** | **~99–177 ew** |
+| **Milestones completed** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · M4 · M5A · M5B · **M6** |
+| **Current milestone** | **M8 — AI Platform** (next) |
+| **Projected to GA** | ~1.4–2.0 years at 3 engineers · ~2.1–3.0 at 2 · ~4.1–6.1 at 1 (80% capacity) |
 
 ## 4 · Roadmap Snapshot
 
@@ -56,8 +56,8 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | — | M4 | Business Event Engine | ✅ Complete |
 | — | M5A | Signal Engine | ✅ Complete |
 | — | M5B | Buying Score Engine | ✅ Complete |
-| 1 | **M6** | **Opportunity Engine — first sellable moment** | 🔴 **Next** |
-| 9 | M8 | AI Platform — abstraction, prompts, eval harness | ⏳ Queued |
+| — | M6 | Opportunity Engine — **first sellable moment** | ✅ Complete |
+| 1 | **M8** | **AI Platform — abstraction, prompts, eval harness** | 🔴 **Next** |
 | 10 | M9 | AI Reasoning Engine | ⏳ Queued |
 | 11 | M10 | AI Research Engine | ⏳ Queued |
 | 12 | M11 | Recommendation Engine | ⏳ Queued |
@@ -181,21 +181,21 @@ Knowledge Graph · Observation Engine · Business Events · Signals · Buying Sc
 
 | Indicator | Value | Target |
 |---|---|---|
-| **Backend tests** | **1011 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Backend tests** | **1089 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Frontend tests** | **101 passing**, 0 failing, 0 skipped | 0 skipped |
-| **Backend coverage** | **95.20%** | ≥95% (CI-gated) |
-| **Security invariants** | **223 / 223**, each proven to fail when its guarantee is removed | 100% verified |
-| **import-linter contracts** | **15 kept, 0 broken** | 0 broken |
-| **Architecture drift** | **0** — no ratified ADR reversed; 13 documents amended for drift, all found by test or by implementation | Trending to 0 |
+| **Backend coverage** | **95.27%** | ≥95% (CI-gated) |
+| **Security invariants** | **261 / 261**, each proven to fail when its guarantee is removed | 100% verified |
+| **import-linter contracts** | **17 kept, 0 broken** | 0 broken |
+| **Architecture drift** | **0** — no ratified ADR reversed; 14 documents amended for drift, all found by test or by implementation | Trending to 0 |
 | **Open production bugs** | **0** | 0 |
 | **Technical debt** | **0 outstanding** · **2 platform findings raised** (see M3A record) | — |
-| **`make smoke`** | ✅ Passing (87s; 22 stages, the full pipeline through buying scores) | Required per milestone |
+| **`make smoke`** | ✅ Passing (95s; **23 stages**, the full pipeline through opportunities) | Required per milestone |
 
 ### Test suite composition
 
 | Area | Tests | Notes |
 |---|---|---|
-| Security invariants | 223 | Permanent architectural guarantees; run as their own CI job |
+| Security invariants | 261 | Permanent architectural guarantees; run as their own CI job |
 | Simulation framework | 130 | Clock, dataset, scenario, faults, delivery, generators |
 | Provider contract suite | 45 | **One suite, five adapters** — the keystone interchangeability test |
 | Workspace & Tenancy | ~70 | RLS isolation, API, persistence |
@@ -208,7 +208,8 @@ Knowledge Graph · Observation Engine · Business Events · Signals · Buying Sc
 | Business Event Engine (rules, taxonomy, detection, pipeline) | 63 | Business meaning — in language a CRO recognises |
 | Signal Engine (catalog, profile, strategies, pipeline) | 52 | Commercial meaning — the first customer-specific layer |
 | Buying Score Engine (ledger, scoring, score, use case, pipeline) | 68 | Commercial attention — the first intentional reduction |
-| **Backend total** | **1011** | Coverage 95.20%, mypy strict over 307 files |
+| Opportunity Engine (domain, policy, use cases, pipeline) | 40 | Commercial commitment — the first workflow module |
+| **Backend total** | **1089** | Coverage 95.27%, mypy strict over 330 files |
 | Frontend components & foundation | 101 | Includes 13 AC-14/AC-15 guard tests |
 
 ---
@@ -421,6 +422,43 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 
 ## Current Milestone
 
+### ✅ M6 — Opportunity Engine · **CLOSED** 2026-07-29
+
+| Field | Value |
+|---|---|
+| **Status** | ✅ **Completed** |
+| **Completion date** | 2026-07-29 |
+| **Commits** | `c638d1c` (proposal) · `8034cfb` (ratification + binding milestone DoD) · this change (T102–T110) |
+| **`HEAD` at close** | *(this commit)* |
+| **Exit gate** | ✅ **`make smoke` passed** — 95s, fresh images, clean Compose stack, **23 stages**, 261 invariants green against the running system |
+| **Effort** | ~8–12 ew scoped · delivered within range |
+
+**The milestone in one line.** Signora's **first workflow module** — and the first sellable moment: the point where derived intelligence becomes something a person commits to.
+
+**The permanent principle it establishes:**
+
+> **Intelligence suggests. Humans commit.**
+>
+> A buying score may **create** an opportunity. **Only a human may progress one beyond the machine-authored boundary.** Commercial intelligence informs workflow; it never owns it.
+
+**The distinction the milestone turned on.** Every module before M6 *derives*: delete its table, re-run the pipeline, and the same rows return byte for byte. An opportunity records that a human committed, and nothing reproduces that. That introduces **workflow state** as a third category of platform data, and with it an operational contract: until now *"rebuild the pipeline"* was universally safe; it is now safe **for derived intelligence only** — asserted by test rather than remembered.
+
+**The lifecycle question, answered explicitly.** An opportunity **always outlives** the score that created it. A score is a reading with a stated expiry; an opportunity is a commitment. Nothing happening at a company is not evidence that a deal is dead. Cooling evidence is surfaced (`CURRENT`/`COOLING`/`STALE`, derived at read time, never stored) and **never acted upon** — creation is automatic, closure never is.
+
+**Scope delivered.** `opportunity_policy@1` artifact · `Opportunity` (written once) and `OpportunityState` (append-only, complete state per row) · five stages with `TRACKING` the only machine-authored one · migration 0014 (three tables, forced RLS, no `UPDATE` grant) · customer-authored qualification policy with artifact fallback · `QualifyOpportunity` and `TransitionOpportunity` · membership verified server-side on every assignment · derived `evidence_state` · `OpportunityQueries` · `opportunity.created` and `opportunity.stage_changed` · smoke stage 14h.
+
+**Acceptance criteria satisfied.** AC-58 through AC-65, plus tenancy, event-contract, and Security Invariant criteria. **29 new Security Invariants**, each proven to fail when its guarantee was removed.
+
+**Architectural decisions recorded.** Workflow required **no exception to immutability** — no `UPDATE` grant on any of the three tables, and no `delete` on the repository either (derived tables offer deletion so regeneration can be their rollback; workflow has no regeneration). The machine/human boundary is enforced **three ways**: the type system, the domain, and a database CHECK. Reopening is a transition with `CLOSED_WON` terminal; `DISMISSED` stays distinct from `CLOSED_LOST` because one is feedback about Signora and the other a sales outcome.
+
+**Two departures from the approved proposal**, recorded in [27-opportunity-engine.md](docs/architecture/27-opportunity-engine.md): the state log records **complete state rather than deltas** (a delta row can contradict the row before it; a state row cannot) · the citation is protected by **`ON DELETE RESTRICT`** (immutability governs updates and says nothing about deletes, and derived tables deliberately keep `DELETE`).
+
+**Technical debt introduced.** None.
+
+**Known limitation.** The simulated scenario produces a modest buying score, and Signora's shipped threshold correctly declines it. The demonstration has the *workspace* author its own threshold rather than lowering a product default to make a demo pass — both behaviours are asserted. **No product default was tuned.**
+
+---
+
 ### ✅ M5B — Buying Score Engine · **CLOSED** 2026-07-29
 
 | Field | Value |
@@ -511,16 +549,15 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 
 ## Next Milestone
 
-### 🔄 M6 — Opportunity Engine · **NEXT** — the first sellable moment
+### 🔄 M8 — AI Platform · **NEXT**
 
-Converts a sufficiently strong buying score into a qualified, actionable **opportunity**, and manages its lifecycle.
+The AI Provider Abstraction Layer, the Internal Prompt Registry, and an evaluation harness — everything the reasoning and research modules will be built on.
 
-**Why it follows M5B.** The Buying Score Engine answers *how much attention* and stops. Whether an account is **worth acting on** is a different question, and it is the first one whose answer a customer would pay for.
+**Why it follows M6.** Opportunities are the first artifact expensive enough to justify agentic research and model reasoning. M8 builds the substrate; M9 and M10 use it.
 
-**Two things recorded for M6 during M5B:**
+**Recorded for later, not for M8:**
 
-- **Account fit / ICP belongs here, not in M5B.** Fit is true whether or not anything happened; attention is a response to what happened. Folding a static property into a dynamic score means a well-fitting but inert account permanently outranks a poorly-fitting one that just raised a round, and no consumer could tell which reason produced the number. M6 asks *"is this worth acting on?"* with score as one input and fit as another.
-- **The qualification threshold is M6's to declare, in data.** M5B deliberately publishes no notion of "high enough".
+- **Account fit / ICP** was deferred out of M5A, M5B and M6. It needs **resolved entity attribute values**, which the Knowledge Graph deliberately does not provide — so it needs a *resolution policy*, a first-class architectural decision with its own principles. It deserves its own milestone rather than being smuggled into one that is about something else.
 
 **Awaiting:** architecture proposal and approval, as with every prior milestone.
 

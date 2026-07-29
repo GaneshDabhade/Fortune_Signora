@@ -276,6 +276,8 @@ Each module below follows the template: Purpose, Owns, Does Not Own, Core Concep
 
 **Key Consumed Events:** `buying_score.updated`.
 
+**Tables:** `opportunity`, `opportunity_state`, `workspace_opportunity_policy` — all immutable (migration 0014). **Read port:** `OpportunityQueries`.
+
 ---
 
 ### AI Research Engine

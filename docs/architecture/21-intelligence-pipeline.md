@@ -37,6 +37,8 @@ Nine stages. Each one adds business understanding.
 
 **Stages 1–6 destroy nothing.** Stage 7 is the first that deliberately reduces — and everything it reduces stays recoverable through the contribution ledger, which is what makes the reduction safe rather than lossy.
 
+**Stages 1–7 all *derive*.** Delete their tables, re-run the pipeline, and the same rows come back byte for byte. **Stage 8 is the first that does not**: an opportunity records that a human committed, and nothing reproduces that.
+
 ---
 
 ## The layering principle
@@ -309,7 +311,7 @@ A workspace tunes weights, multipliers, bands, and the ceiling. It may never inv
 
 ---
 
-## Stage 8 — Opportunity *(planned — M6)*
+## Stage 8 — Opportunity
 
 **What it is.** *This is worth a person's time.* The threshold crossing where analysis becomes work.
 
@@ -331,7 +333,31 @@ This introduces **workflow state** as a third category of platform data, beside 
 
 **History is never rewritten.** Workflow state is an append-only log in which each row is the complete state; the latest state is derived from it rather than stored beside it, so the audit trail and the status cannot disagree.
 
-**Owned by:** Opportunity Engine · **Publishes:** `opportunity.created`, `opportunity.stage_changed`
+**Refuses:** what to do about it. *What should Sales do*, *which message*, and *why the account scored this way* belong to the Recommendation Engine, AI Reasoning, and the ledger one stage up.
+
+### The third category of data
+
+| Category | Rebuildable? | Losing it means |
+|---|---|---|
+| **Derived intelligence** — claims through buying scores | **Yes** — regeneration is the rollback for a bad mapper or rule | a re-run |
+| **Customer configuration** — profiles, scoring models, policies | No, but declarative | a customer re-enters their preferences |
+| **Workflow state** — opportunities and their history | No, and accumulated | **a seller's pipeline disappears** |
+
+**The operational contract:** a pipeline rebuild regenerates the first and touches neither of the others. Until M6, *"rebuild the pipeline"* was universally safe; it is now safe **for derived intelligence**, and the difference is asserted by test rather than remembered.
+
+> A payoff of the identity discipline: because every upstream id is *derived* from evidence, a rebuild reproduces byte-identical buying score ids — so **not one opportunity's citation is orphaned by it**. Nothing was designed for that; it falls out of the rule.
+
+### An opportunity outlives the score that created it
+
+A score is a reading with a stated expiry; an opportunity is a commitment. **The score is the reason it was opened, never the reason it stays open** — a seller mid-deal must not watch it vanish because no provider payload arrived for six weeks. Nothing happening at a company is not evidence a deal is dead.
+
+Cooling evidence is therefore surfaced (`CURRENT` / `COOLING` / `STALE`, derived at read time and never stored) and never acted upon. **Creation is automatic; closure never is** — a suggestion costs a glance to dismiss, while closing something a human is working on destroys their work.
+
+### History is never rewritten
+
+Workflow state is an append-only log in which each row is the **complete** state, not a delta. The current state is derived from it rather than kept beside it, so the status and the audit trail cannot disagree — and no `UPDATE` grant exists on any of the three tables. `TRACKING` is the only stage Signora may author, enforced in the type system, the domain, and a database CHECK.
+
+**Owned by:** Opportunity Engine · **Tables:** `opportunity`, `opportunity_state`, `workspace_opportunity_policy` (all immutable) · **Publishes:** `opportunity.created`, `opportunity.stage_changed`
 
 ---
 

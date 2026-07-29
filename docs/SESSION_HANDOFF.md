@@ -1,4 +1,4 @@
-# Session Handoff — end of M5B
+# Session Handoff — end of M6
 
 > **Purpose:** start the next engineering session immediately, without reconstructing context.
 > **Authoritative continuation point.** Updated at every milestone boundary.
@@ -12,28 +12,28 @@
 
 | | |
 |---|---|
-| **Last completed** | **M5B Buying Score Engine** — closed 2026-07-29 |
-| **Next** | **M6 Opportunity Engine** — the first sellable moment. Architecture proposal not yet written. |
-| **Phase** | Product Pipeline. Foundations and enablement are complete and frozen. Seven pipeline stages built. |
-| **Overall completion** | **~48%** by engineering effort (~152 of ~261–339 ew) |
-| **Remaining** | ~109–187 ew · ~1.1–1.7 years at 3 engineers, ~3.4–5.0 at 1 |
-| **Completed milestones** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · M4 · M5A · M5B |
+| **Last completed** | **M6 Opportunity Engine** — closed 2026-07-29. *The first sellable moment.* |
+| **Next** | **M8 AI Platform** — abstraction layer, prompt registry, eval harness. Architecture proposal not yet written. |
+| **Phase** | Product Pipeline. Foundations and enablement are complete and frozen. **Eight pipeline stages built.** |
+| **Overall completion** | **~52%** by engineering effort (~162 of ~261–339 ew) |
+| **Remaining** | ~99–177 ew · ~1.0–1.6 years at 3 engineers, ~3.1–4.7 at 1 |
+| **Completed milestones** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · M4 · M5A · M5B · M6 |
 | **Branch** | `main` |
 
-**Recent commits:** M5B close (this change) · `8c6333b` M5B ratification + decay reversal · `bc78021` M5B proposal · `9022fd9` two M5A defects fixed · `0d032e6` M5A closed
+**Recent commits:** M6 close (this change) · `8034cfb` M6 ratification + binding milestone DoD · `c638d1c` M6 proposal · `ed7f9e9` M5B closed · `8c6333b` M5B decay reversal
 
 ### Health
 
 | Indicator | Value |
 |---|---|
-| Backend tests | **1011 passing**, 0 failing, 0 skipped |
+| Backend tests | **1089 passing**, 0 failing, 0 skipped |
 | Frontend tests | **101 passing** |
-| Backend coverage | **95.20%** (CI gate 95%) |
-| Security invariants | **223 / 223**, each proven to fail when its guarantee is removed |
-| import-linter contracts | **15 kept, 0 broken** |
-| `make smoke` | ✅ 22 stages, 87s |
-| Migrations | 0000–0013, all reversible |
-| mypy strict | Clean, 307 files |
+| Backend coverage | **95.27%** (CI gate 95%) |
+| Security invariants | **261 / 261**, each proven to fail when its guarantee is removed |
+| import-linter contracts | **17 kept, 0 broken** |
+| `make smoke` | ✅ **23 stages**, 95s |
+| Migrations | 0000–0014, all reversible |
+| mypy strict | Clean, 330 files |
 | Open production bugs | **0** |
 | Technical debt | **0 outstanding** · **2 platform findings raised** (§5) |
 
@@ -63,7 +63,7 @@ Permanent contracts. Each is enforced by automated test, not convention. **Chang
 | **Tenant Isolation Policy** | Every table declared tenant-owned or platform infrastructure — **classification is never inferred**. Tenant tables carry a non-null identifier, RLS enabled **and forced**, and policies covering SELECT/INSERT/UPDATE separately. A table in neither list fails the build. |
 | **Migration / runtime credential separation** | Runtime services never execute under migration or owner credentials. Each tier holds its own least-privileged role: `signora_app` (API, workers), `signora_auth` (frontend), `signora_relay` (outbox), owner (migrations only). |
 | **Platform Infrastructure Policy** | `outbox_event`, `processed_event`, `dead_letter_event`, `alembic_version` are owned by platform services. The application **publishes and cannot read**; only the relay consumes. Isolation is by grant, since these tables span workspaces and have no RLS. |
-| **Immutable tenant tables** | `claim`, `resolution_decision`, `observation`, `business_event`, `signal`, `signal_profile`, `buying_score`, and `workspace_scoring_model` are immutable. `signora_app` holds **no `UPDATE` grant** on any of them — an attempted overwrite fails with a permission error. `DELETE` remains, because all are derived and regeneration is the rollback for a broken mapper or rule. |
+| **Immutable tenant tables** | `claim`, `resolution_decision`, `observation`, `business_event`, `signal`, `signal_profile`, `buying_score`, `workspace_scoring_model`, `opportunity`, `opportunity_state`, and `workspace_opportunity_policy` are immutable. **Workflow required no exception** — M6 added three tables and none of them needed the grant. `signora_app` holds **no `UPDATE` grant** on any of them — an attempted overwrite fails with a permission error. `DELETE` remains, because all are derived and regeneration is the rollback for a broken mapper or rule. |
 | **Shared vocabulary** | `provider_normalization/public` — the canonical attributes, their value types, and the frozen claim views — is a **platform-wide contract** every downstream pipeline module may depend on (ratified 2026-07-29). A vocabulary dependency, not a data-access one: claim *data* still travels through read ports. Extending it still requires an RFC. |
 | **Module boundaries, enforced** | Since M3A, import-linter carries a contract per module pair: no module may import another's `domain/`, `application/`, `infrastructure/`, or `interface/`, and upstream modules cannot import downstream ones. Data crosses via a **read port on `public/`** — a Protocol plus frozen views, never an ORM instance. |
 
@@ -150,6 +150,21 @@ Permanent contracts. Each is enforced by automated test, not convention. **Chang
 | **Posture is Signora's; weights are the customer's** | A workspace tunes weights, multipliers, bands, and the ceiling. It may never invert what a signal type *means* — there is no `posture` field in the overrides and no column in the table. |
 | **No signals, no score** | An account nothing has been observed about gets **no reading**, not a zero. A zero is a statement, and Signora has not made one. |
 
+### Commercial commitment
+
+| Contract | What it guarantees |
+|---|---|
+| **Intelligence suggests; humans commit** | A buying score may **create** an opportunity; **only a human may progress one beyond the machine-authored boundary.** `TRACKING` is the sole machine-authored stage, enforced **three ways** — the type system (`next_state` demands an `actor_id` with no default), the domain, and a database CHECK. Ratified 2026-07-29. |
+| **Three categories of platform data** | **Derived intelligence** (rebuildable, machine-authored) · **customer configuration** (declarative, irreplaceable) · **workflow state** (accumulated, irreplaceable). They must never blur. |
+| **A rebuild regenerates intelligence only** | Until M6 *"rebuild the pipeline"* was universally safe. It is now safe **for derived intelligence**; `opportunity`, `opportunity_state`, `workspace_opportunity_policy`, `signal_profile`, and `workspace_scoring_model` are never rebuilt. Asserted by test, not remembered. |
+| **Opportunities outlive their score** | The score is why it was *opened*, never why it stays open. Nothing happening at a company is not evidence a deal is dead. Cooling evidence is **surfaced, never acted upon** — creation is automatic, closure never is. |
+| **Workflow stores no derived intelligence** | No current score, no signals, no recomputed judgement. An opportunity cites the score that caused it and reads everything else live; `evidence_state` is derived at read time and never stored. |
+| **History is never rewritten** | Append-only state, each row the *complete* workflow state rather than a delta — so the status **is** the audit log and the two cannot disagree. No `UPDATE` grant, and no `delete` on the repository either: derived tables offer deletion because regeneration is their rollback, and workflow has none. |
+| **The citation cannot be orphaned** | `ON DELETE RESTRICT` on the originating score. Immutability governs *updates* and says nothing about deletes — and because every upstream id is derived from evidence, a rebuild reproduces identical score ids, so regeneration does not sever it either. |
+| **Every state names its actor and reason** | *"Someone changed it"* is not an explanation. Workflow explains itself as thoroughly as intelligence does. |
+| **Dismissal is distinct from a lost deal** | One is feedback about Signora's judgement, the other a sales outcome. Collapsing them would destroy the only signal the platform gets about its own qualification quality. |
+| **Four ownership layers** | Signal catalog (Signora) · signal profile · scoring model · **opportunity policy** (all customer). Each module owns its own customer-authored policy, versioned alongside its output — which is also what keeps any of them extractable. |
+
 ---
 
 ## 3 · Product Pipeline state
@@ -168,8 +183,8 @@ Business Event        ✅ M4     what it means, in language a CRO recognises
 Signal                ✅ M5A    why it might matter to *this* customer
         ↓  ───────────── the first intentional reduction ─────────────
 Buying Score          ✅ M5B    how much attention it deserves, explainably
-        ↓
-Opportunity           🔄 M6     ← NEXT · ★ first sellable moment
+        ↓  ────── intelligence suggests · humans commit ──────
+Opportunity           ✅ M6     ★ what Sales actively tracks — first sellable moment
         ↓
 Timeline              ⏳ M7     the account narrative
         ↓
@@ -178,9 +193,9 @@ AI Reasoning          ⏳ M9     why, with evidence
 Recommendation        ⏳ M11    what to do next
 ```
 
-**Seven links exist and are verified against the live stack** (smoke stages 14b–14g). A simulated provider payload enters through the Provider Port, is stored raw, becomes canonical claims, is resolved to an entity whose decision explains itself, any change in what a provider asserts becomes an observation attributed to that provider, and a material change becomes a typed business event a CRO could read — *"Started using CloudERP"*, *"Raised 24M USD in a series b round"* — and, for a workspace that says it cares, that event becomes a commercial hypothesis with its own two-part explanation — which, finally, becomes one number per account whose every point can be traced back through the ledger to the vendor payload that started it. No simulation-specific logic exists anywhere in that path.
+**Eight links exist and are verified against the live stack** (smoke stages 14b–14h). A simulated provider payload enters through the Provider Port, is stored raw, becomes canonical claims, is resolved to an entity whose decision explains itself, any change in what a provider asserts becomes an observation attributed to that provider, and a material change becomes a typed business event a CRO could read — *"Started using CloudERP"*, *"Raised 24M USD in a series b round"* — and, for a workspace that says it cares, that event becomes a commercial hypothesis with its own two-part explanation — which becomes one number per account whose every point can be traced back through the ledger to the vendor payload that started it — and, finally, an account a seller commits to tracking, whose commitment survives the number that suggested it. No simulation-specific logic exists anywhere in that path.
 
-Everything from M6 onward is unbuilt. See **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** for what each remaining stage adds and what it is forbidden from doing.
+Everything from M8 onward is unbuilt. See **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** for what each remaining stage adds and what it is forbidden from doing.
 
 ---
 
@@ -202,38 +217,37 @@ The principles that got the project here, in the order they matter:
 
 ---
 
-## 5 · M6 starting context
+## 5 · M8 starting context
 
-### What M6 inherits
+### What M8 inherits
 
-**Input:** one explainable number per account. Through `modules.buying_score_engine.public`:
+**Input:** tracked accounts a human has committed to. Through `modules.opportunity_engine.public`:
 
-- `BuyingScoreQueries.current(workspace_id, entity_id)` — the reading no later score replaces. It may be past its `valid_until`; the score says so itself
-- `BuyingScoreQueries.explanation(workspace_id, score_id)` — the score, its ledger, one `SignalExplanation` per contributing signal, and the dissent when contested
-- `BuyingScoreQueries.history(...)` · `.scoring_model(...)` · `.artifact()`
+- `OpportunityQueries.tracked(workspace_id, entity_id)` — the open opportunity, its current state, the live score, and a derived `evidence_state`
+- `OpportunityQueries.explanation(...)` — the opportunity, its complete state history, and the `BuyingScoreExplanation` for the originating score, which already carries the ledger and one `SignalExplanation` per contributing signal
+- `OpportunityQueries.history(...)` · `.for_entity(...)` · `.policy(...)` · `.artifact()`
 
-Each score carries `value` (0–100), `trend`, `delta`, `contested`, `dissenting_signal_ids`, `ledger`, `computed_at`, `valid_until`, `basis_at`, `trigger`, and its versions. Subscribe to `buying_score.updated`.
+Subscribe to `opportunity.created` and `opportunity.stage_changed`.
 
-**The chain is walkable from here without a join:** score → `SignalExplanation` → business events → observations → knowledge → claims → raw provider records. `BuyingScoreQueries` deliberately exposes **no account representation** — compose that from the Knowledge Graph, which owns it.
+**The whole chain is walkable from one call:** opportunity → buying score → contribution ledger → signals → business events → observations → knowledge → claims → raw provider records. Nothing downstream needs to re-derive any of it.
 
-**Already exists and should be assumed:** event bus with platform-owned idempotency · forced RLS · `make smoke`, extensible with a stage (14b–14h) · the Tenant Isolation Policy — **register every new table in `tenancy_policy.py` or the build fails**.
+**Already exists and should be assumed:** event bus with platform-owned idempotency · forced RLS · `make smoke`, extensible with a stage (14b–14i) · the Tenant Isolation Policy — **register every new table in `tenancy_policy.py` or the build fails**.
 
 ### The central challenge
 
-**M6 is the first module whose output a customer would pay for.** Everything before it describes; an opportunity *commits*.
+**M8 is a substrate milestone, not a pipeline stage.** It builds the AI Provider Abstraction Layer, the Internal Prompt Registry, and an evaluation harness — the things M9 (Reasoning) and M10 (Research) are built on. Nothing about it answers a business question, and it should not try to.
 
-Two things were deliberately left for it:
+Two contracts already ratified constrain it:
 
-1. **The qualification threshold.** M5B publishes no notion of "high enough" — deliberately, because that is a judgement about whether to *act*, which is M6's question. Expect it to be declared in data, versioned, and per-workspace, following the ownership criterion.
-2. **Account fit / ICP.** Deferred out of both M5A and M5B, with a stated home: fit is true whether or not anything happened, while attention is a response to what happened. Folding a static property into a dynamic score means a well-fitting but inert account permanently outranks a poorly-fitting one that just raised a round, and no consumer could tell which reason produced the number. M6 asks *"is this worth acting on?"* with score as one input and fit as another.
+1. **All vendor access goes through the abstraction layer** (`14-ai-architecture.md`, ADR-0012). No domain or application code ever touches a model SDK.
+2. **AI output is untrusted until validated** against an expected Pydantic v2 structure, and must never trigger a privileged or irreversible action without validation and, where the architecture calls for it, human confirmation. **After M6 that has a sharper meaning:** the only irreversible thing in the platform is workflow, and *intelligence suggests, humans commit* now governs AI exactly as it governs scoring.
 
 ### Architectural questions worth raising before coding
 
-1. **Is an opportunity immutable with a supersession chain, or a lifecycle aggregate with mutable state?** Every derived table so far is immutable — but an opportunity has *stages*, and stage transitions are the first genuinely stateful thing in the pipeline. This is the milestone's biggest modelling decision and it should not be settled inside an implementation session.
-2. **What closes an opportunity, and can Signora close one by itself?** A score falling below the threshold is not obviously the same event as a human marking it lost.
-3. **Does a contested score qualify differently from a confident one?** M5B hands over `contested` precisely so M6 need not rediscover it — but what M6 *does* with it is unsettled.
-4. **Where does account fit live, and is it customer-authored?** By the ownership criterion, almost certainly the customer's — which would make it the third customer-authored table.
-5. **Does M6 need entity attributes?** Fit likely requires them, and the Knowledge Graph deliberately holds no resolved values. Resolving a value for fit scoring may be the first legitimate need for a resolution policy — **that is an architectural decision, not an implementation detail.**
+1. **Where do prompt versions live, and who owns them?** The ownership criterion has decided this four times. Prompts are Signora's language, which suggests a repository artifact — but a prompt is closer to code than to a taxonomy, and that may be the point.
+2. **What does the evaluation harness assert?** A model's output is not deterministic, and every guarantee in this platform so far has been. This is the first module where "proven to fail when the guarantee is removed" needs a different shape.
+3. **Is context assembly a module concern or a platform one?** Prompt context must be scoped strictly to one workspace — a hard tenancy boundary — and getting it wrong is a cross-tenant data leak rather than a bug.
+4. **Does the abstraction layer expose cost and latency?** Both are scaling triggers in `12-scalability.md`, and both are vendor-specific in a way the port must normalise without leaking.
 
 ### Two platform findings, open — RFCs queued
 
@@ -241,36 +255,37 @@ Both concern `signora_platform/`, which is frozen (CLAUDE.md §20a). **Neither i
 
 | Finding | Effect | Resolution path |
 |---|---|---|
-| **`EventHandler` receives no session.** A handler must work in the *same transaction* as the dispatcher's idempotency claim, but the registry's signature is `(envelope) -> None`. | **No module handler is registered in the live registry.** The pipeline is exercised end to end through its real handlers in the integration suite and `make smoke`, but the deployed worker consumes nothing. **M5B adds a second consequence:** the staleness sweep has no scheduler, for the same reason. | RFC: **EventHandler transaction participation.** |
-| **`PublishableEvent` cannot be satisfied by a frozen dataclass.** | Seven modules now carry a `# type: ignore` at their publish site. | RFC: **PublishableEvent immutability compatibility.** |
+| **`EventHandler` receives no session.** A handler must work in the *same transaction* as the dispatcher's idempotency claim, but the registry's signature is `(envelope) -> None`. | **No module handler is registered in the live registry.** The pipeline is exercised end to end through its real handlers in the integration suite and `make smoke`, but the deployed worker consumes nothing. Also leaves M5B's staleness sweep unscheduled. | RFC: **EventHandler transaction participation.** |
+| **`PublishableEvent` cannot be satisfied by a frozen dataclass.** | Eight modules now carry a `# type: ignore` at their publish site. | RFC: **PublishableEvent immutability compatibility.** |
 
 ### Known limits — and which are debt
 
-The distinction matters: a **known limitation** is a deliberate scope boundary that behaves correctly; **architectural debt** is something that will have to be undone.
+A **known limitation** is a deliberate scope boundary that behaves correctly; **architectural debt** is something that will have to be undone.
 
 | Item | Kind | Note |
 |---|---|---|
 | No worker registration; no sweep scheduler | **Debt** — platform, RFC queued | The deployed worker consumes nothing. Product milestones must not route around it. |
-| Seven `# type: ignore` at publish sites | **Debt** — platform, RFC queued | Small, contained, and identical in every module. |
-| Signal relevance is denormalized at generation | **Known limitation** | A workspace downgrading a type from primary to supporting sees the change in newly generated signals, not existing ones. *Ignoring* a type takes effect immediately, because the live-set filter is profile-driven. Deliberate in M5A: a signal stays self-describing after the profile changes. |
-| Contested multi-signal path exercised through historical replay | **Known limitation** | The scenario's shorter-lived hypotheses have aged out at wall-clock now. Fixed by the scheduled M2.0 simulation work, not by code. |
+| Eight `# type: ignore` at publish sites | **Debt** — platform, RFC queued | Small, contained, identical in every module. |
+| One-open-opportunity-per-account is application-enforced | **Known limitation** | "Open" means *the latest state row is not terminal*, which no index can express. A derived `generation` plus a unique index converts the concurrent case into a conflict; the residual is checked in the transaction. Denormalising openness would restore the `UPDATE` grant to buy a constraint. |
+| Signal relevance is denormalized at generation | **Known limitation** | A workspace downgrading a type from primary to supporting sees the change in newly generated signals, not existing ones. *Ignoring* a type takes effect immediately. Deliberate in M5A. |
+| Demonstrations use a workspace-authored threshold and historical replay | **Known limitation** | The scenario's evidence is thin and short-lived; rather than tune product defaults to make demos pass, the demonstrations configure a workspace and ask as of a moment derived from the evidence. Fixed by the scheduled M2.0 simulation work, not by code. |
 | Provider fixtures are `Conditional` | **Known limitation** | Clearly marked; payload provenance contract holds. |
-| AC-40 (M4) partial | **Known limitation** | Re-evaluation on `observation.superseded` wired at contract level; `citing_observations` and replacement logic exist and are exercised. |
+| AC-40 (M4) partial | **Known limitation** | Re-evaluation on `observation.superseded` wired at contract level. |
 
 ### Carried forward
 
-- **Scheduled simulation work (M2.0), four items.** A scenario with genuine multi-week movement · fixture enrichment so Crunchbase and CoreSignal carry a domain · an intent trajectory sustaining above the elevated threshold for enough weeks · **evidence recent enough that several hypotheses are concurrently live**, so the contested, multi-signal scoring path is exercised at wall-clock now rather than through replay.
+- **Scheduled simulation work (M2.0), four items.** A scenario with genuine multi-week movement · fixture enrichment so Crunchbase and CoreSignal carry a domain · an intent trajectory sustaining above the elevated threshold for enough weeks · **evidence recent and rich enough that several hypotheses are concurrently live and buying scores clear the shipped qualification threshold**, so the contested scoring path and out-of-box qualification are both exercised at wall-clock now.
 
 ### Deferred, and to stay deferred
 
-- **Commercial verdicts upstream of M5B** — no score, priority, or likelihood in the Signal Engine, guarded by a column-name invariant.
-- **Prediction anywhere** — a buying score is not a probability, and no column, field, or event payload may imply it is. Guarded by invariant.
-- **Thresholds in rule, strategy, or scoring code** — guarded by syntax-tree invariants in M4, M5A, and M5B.
-- **Per-workspace signal or business event *types*, and per-workspace posture** — configuration is relevance and weights; the vocabularies and their meanings stay global.
-- **Cross-account ranking or percentile scoring** — a ranking is a different artifact from a score; building it before a consumer exists is a contract nobody keeps.
-- **Learned weights** — same sequencing as inferred relevance: explicit configuration first, inference later *proposing* changes a human accepts.
-- **Score-derived alerting** — *"notify me above 80"* is a product feature over the score, not part of it.
-- **Inferred relevance** · **runtime-editable taxonomy / catalog / model** (trigger: a non-engineer must tune without a release, realistically M12) · **`signal_profile.updated`** · **fuzzy identity matching** · **resolved-value projections** · **person entities** · **manual merge UI (M12)** · **authentic provider payloads** · **cloud infrastructure (M14.5)** · **business UI (M12)**.
+- **Account fit / ICP** — deferred out of M5A, M5B **and M6**. It needs resolved entity attribute values, which the Knowledge Graph deliberately does not provide, so it needs a **resolution policy** — a first-class architectural decision deserving its own milestone. *Do not solve it opportunistically inside a milestone about something else.*
+- **Automatic closure of anything a human is working on** — no argument survives the creation/closure asymmetry.
+- **Prediction anywhere** — a buying score is not a probability; no column, field, or event payload may imply otherwise. Guarded by invariant.
+- **Commercial verdicts upstream of M5B** · **thresholds in rule, strategy, scoring, or qualification code** — guarded by syntax-tree invariants in M4, M5A, M5B and M6.
+- **Per-workspace vocabulary types, postures, or stages** — configuration is relevance, weights and thresholds; the vocabularies and their meanings stay global. Per-workspace stages are a CRM concern, trigger M13.
+- **Opportunity value, forecast, close date, notes, tasks, activities** — CRM features. M13 integrates with the system that owns them rather than rebuilding it.
+- **Multiple concurrent opportunities per account** — real multi-product selling has them; the trigger is M13, where the external system's model becomes the constraint.
+- **Cross-account ranking** · **learned weights or thresholds** · **score-derived alerting** · **inferred relevance** · **runtime-editable artifacts** (trigger: a non-engineer must tune without a release, realistically M12) · **fuzzy identity matching** · **person entities** · **manual merge UI (M12)** · **authentic provider payloads** · **cloud infrastructure (M14.5)** · **business UI (M12)**.
 
 ---
 
@@ -284,6 +299,7 @@ The distinction matters: a **known limitation** is a deliberate scope boundary t
 | [24-business-event-engine.md](architecture/24-business-event-engine.md) | The M4 design, marked **as built**. Contains the taxonomy/rules reasoning and what the CRO test changed before implementation. |
 | [25-signal-engine.md](architecture/25-signal-engine.md) | The M5A design, marked **as built**. Contains the global-vs-workspace analysis and the ownership criterion for where configuration lives — the reasoning to reuse whenever a similar question arises. |
 | [26-buying-score-engine.md](architecture/26-buying-score-engine.md) | The M5B design, marked **as built**. Contains the reduction analysis (*what is reduced · what stays recoverable · what must never be discarded*), the four-way decay evaluation and the reversal it produced, and three recorded departures. **Read the decay section before proposing any time-dependent artifact** — it generalises. |
+| [27-opportunity-engine.md](architecture/27-opportunity-engine.md) | The M6 design, marked **as built**. Contains the intelligence-versus-workflow analysis, the three evaluated state models and why supersession was rejected, and the explicit answer to whether workflow outlives the intelligence that created it. **Read it before adding anything a human authors.** |
 | [06-events.md](architecture/06-events.md) | The event catalog. `claim.recorded` and the five Knowledge Graph events are current as of M3A. |
 | [05-module-dependencies.md](architecture/05-module-dependencies.md) | The dependency graph, and the read-port pattern for reading another module's data. |
 | [04-modules.md](architecture/04-modules.md) | Module ownership and vocabulary. Provider Normalization and Knowledge Graph entries reflect what was actually built, not the v2 placeholders. |
@@ -292,22 +308,24 @@ The distinction matters: a **known limitation** is a deliberate scope boundary t
 
 ## 7 · Next session starting point
 
-> **Completed:** M5B Buying Score Engine · **Next:** M6 Opportunity Engine
+> **Completed:** M6 Opportunity Engine · **Next:** M8 AI Platform
 > **Branch:** `main` · everything committed and pushed, tree clean
-> **Health:** 1011 backend + 101 frontend tests passing · coverage 95.20% · 223 invariants · 15 contracts · smoke green over 22 stages
+> **Health:** 1089 backend + 101 frontend tests passing · coverage 95.27% · 261 invariants · 17 contracts · smoke green over 23 stages
 >
 > **First actions:**
 > 1. Read [21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md) — the shortest path to full context, and it tracks what is *built* rather than intended.
 > 2. Verify the tree is clean and `make smoke` is green.
-> 3. Prepare the **M6 architecture proposal** before any implementation, following the established pattern: domain model, evaluated alternatives with a recommendation, storage, events, module API, task breakdown, acceptance criteria, demonstration, DoD, rollback, operational readiness, risks. **Wait for approval.**
+> 3. Prepare the **M8 architecture proposal** before any implementation, following the established pattern: domain model, evaluated alternatives with a recommendation, storage, events, module API, task breakdown, acceptance criteria, demonstration, DoD, rollback, operational readiness, risks. **Wait for approval.**
 >
-> **Settle these inside the proposal, not during implementation:** immutable opportunity versus stateful lifecycle aggregate — *the biggest modelling decision in the milestone* · what closes an opportunity, and whether Signora may close one itself · how a contested score qualifies · where account fit lives and who owns it · whether fit requires resolved entity attributes, which would be the first legitimate need for a resolution policy.
+> **Settle these inside the proposal, not during implementation:** where prompt versions live and who owns them · what an evaluation harness can assert when output is not deterministic — *the first guarantee in this platform that cannot take the usual shape* · whether context assembly is a module or platform concern, given that getting its workspace scoping wrong is a cross-tenant leak rather than a bug · whether the abstraction layer exposes cost and latency.
 >
 > **Raise, do not work around:** the two platform findings in §5 are **RFC work items**. Product milestones consume platform capabilities; they do not redesign them.
 >
-> **The habit worth keeping.** Three times now, implementation has exposed something the approved proposal got wrong — a forward supersession pointer incompatible with immutability, a `valid_until` promise a continuous decay curve could not keep, a cross-tenant query forced RLS cannot serve. Each was **stopped and re-decided rather than coded around**, and each produced a better architecture than the proposal. Expect a fourth. When implementation and design disagree, the design is the thing to fix.
+> **The habit worth keeping.** Four times now, implementation has exposed something the approved proposal got wrong — a forward supersession pointer incompatible with immutability, a `valid_until` promise a continuous decay curve could not keep, a cross-tenant query forced RLS cannot serve, and a delta-based state log that could contradict itself. Each was **stopped and re-decided rather than coded around**, and each produced a better architecture. Expect a fifth. When implementation and design disagree, the design is the thing to fix.
 >
-> **Do not:** reimplement anything in §2 · introduce mock business data · add a canonical attribute, business event type, or signal type without review · store a resolved attribute value in the Knowledge Graph · turn `MatchStrength` or `Relevance` into a number · put a materiality threshold in the Observation Engine · put a business threshold in rule, strategy, or scoring code rather than in an artifact · put commercial judgement in the Business Event Engine · put a commercial verdict in the Signal Engine · let a buying score net opposing readings, carry account attributes, or imply a probability · let a workspace invent a vocabulary type or invert a posture · modify `signora_platform/` or the frontend foundation without a qualifying reason.
+> **The milestone is not done until it is pushed.** CLAUDE.md §19 now binds this: implementation · quality gates · architecture docs · handoff · status · commit · **push** · clean tree. A milestone finished locally but unpushed, or whose dashboard describes the previous one, would have the next session resume from a lie.
+>
+> **Do not:** reimplement anything in §2 · introduce mock business data · add a canonical attribute, business event type, signal type, posture, or opportunity stage without review · store a resolved attribute value in the Knowledge Graph · turn `MatchStrength` or `Relevance` into a number · put a threshold in rule, strategy, scoring or qualification code rather than in an artifact · put commercial judgement in the Business Event Engine · put a commercial verdict in the Signal Engine · let a buying score net opposing readings, carry account attributes, or imply a probability · **let anything but a human progress an opportunity, or cache derived intelligence in a workflow row** · rebuild workflow tables with the derived pipeline · modify `signora_platform/` or the frontend foundation without a qualifying reason.
 
 ---
 
@@ -315,6 +333,7 @@ The distinction matters: a **known limitation** is a deliberate scope boundary t
 
 | Date | Change |
 |---|---|
+| 2026-07-29 | v7 — updated at the M6 boundary. Adds the **Commercial commitment** contract block (intelligence suggests, humans commit · three data categories · a rebuild regenerates intelligence only · opportunities outlive their score · workflow stores no intelligence · history never rewritten · the citation cannot be orphaned · every state names its actor and reason · dismissal distinct from a lost deal · four ownership layers). Rewrites §5 for M8, records the eighth `# type: ignore` and the application-enforced open-per-account rule, and notes that CLAUDE.md §19 now binds a **Milestone Definition of Done** ending in a pushed, clean tree. |
 | 2026-07-29 | v6 — updated at the M5B boundary. Adds the **Commercial attention** contract block (prioritization never resolution · opposing readings never net · a score is a projection · the ledger is the score · the business event is the unit of contribution · step decay · evidence-derived staleness · three ownership layers · posture is Signora's · no signals, no score). Adds a **known limits** table distinguishing *limitation* from *debt*. Rewrites §5 for M6, records the sweep-scheduler consequence of the `EventHandler` finding, and keeps both platform findings as **queued RFCs**. |
 | 2026-07-29 | v5 — updated at the M5A boundary. Adds the **Commercial meaning** contract block (the global/subjective boundary · ownership decides where configuration lives · the vocabulary stays global · no commercial verdict · contradiction preserved · composites enrich · hypotheses phrased as possibilities · two replay modes · customer-authored data is different). Rewrites §5 for M5B, keeps the two platform findings as **queued RFCs**, and records a fourth item of scheduled M2.0 simulation work. |
 | 2026-07-29 | v4 — updated at the M4 boundary. Adds the **Business meaning** contract block (business relevance never commercial judgement · taxonomy is data, rules are code · no threshold in code · agreement is evidence · the taxonomy as a product asset · two versions never conflated). Rewrites §5 for M5A, keeps the two platform findings as **queued RFCs**, and records three items of scheduled M2.0 simulation work. |

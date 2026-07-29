@@ -27,7 +27,11 @@ from modules.buying_score_engine.application.queries import (
     BuyingScoreExplanation,
     BuyingScoreQueries,
 )
-from modules.buying_score_engine.domain.ledger import Contribution, ContributionLedger
+from modules.buying_score_engine.domain.ledger import (
+    MAX_SCORE,
+    Contribution,
+    ContributionLedger,
+)
 from modules.buying_score_engine.domain.score import BuyingScore, ScoreTrigger, Trend
 from modules.buying_score_engine.domain.scoring_model import (
     AgeBand,
@@ -43,6 +47,7 @@ from modules.buying_score_engine.domain.workspace_model import (
 
 __all__ = [
     "DEFAULT_MODEL_VERSION",
+    "MAX_SCORE",
     "AgeBand",
     "BuyingScore",
     "BuyingScoreExplanation",

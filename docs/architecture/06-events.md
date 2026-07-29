@@ -66,8 +66,8 @@ Events are listed in pipeline order. Payload fields below are illustrative and i
 | `signal.generated` | Signal Engine | Buying Score Engine, Timeline | `signal_id`, `entity_id`, `signal_type`, `relevance`, `relevant_until`, `catalog_version`, `profile_version` — see the M5A section below |
 | `signal.superseded` | Signal Engine | Buying Score Engine, Timeline | `signal_id`, `supersedes`, `entity_id`, `signal_type` |
 | `buying_score.updated` | Buying Score Engine | Opportunity Engine, Timeline | `score_id`, `entity_id`, `score`, `trend`, `delta`, `contested`, `source_signal_ids`, `dissenting_signal_ids`, `trigger`, `valid_until`, `model_version` — see the M5B section below |
-| `opportunity.created` | Opportunity Engine | AI Research Engine, AI Reasoning Engine, Timeline, Revenue Intelligence Platform | `opportunity_id`, `entity_id`, `source_buying_score`, `stage` |
-| `opportunity.stage_changed` | Opportunity Engine | AI Reasoning Engine, Timeline, Revenue Intelligence Platform | `opportunity_id`, `previous_stage`, `new_stage` |
+| `opportunity.created` | Opportunity Engine | AI Research Engine, AI Reasoning Engine, Timeline, Revenue Intelligence Platform | `opportunity_id`, `entity_id`, `originating_buying_score_id`, `score_at_creation`, `contested_at_creation`, `qualification`, `stage`, `policy_version` — see the M6 section below |
+| `opportunity.stage_changed` | Opportunity Engine | AI Reasoning Engine, Timeline, Revenue Intelligence Platform | `opportunity_id`, `entity_id`, `previous_stage`, `new_stage`, `owner_id`, `actor_id`, `reason`, `sequence` |
 | `ai_research.completed` | AI Research Engine | AI Reasoning Engine (optional/non-blocking, see [05-module-dependencies.md](05-module-dependencies.md)) | `research_id`, `opportunity_id`, `artifact_ref`, `model_provenance` |
 | `ai_reasoning.completed` | AI Reasoning Engine | Recommendation Engine, Revenue Intelligence Platform | `reasoning_id`, `opportunity_id`, `model_provenance`, `result_ref` |
 | `recommendation.created` | Recommendation Engine | Timeline, Revenue Intelligence Platform | `recommendation_id`, `opportunity_id`, `action`, `priority` |
@@ -336,5 +336,22 @@ One event per raw record rather than one per claim: the claims from a record are
 **`trigger`** records why the reading exists: a signal arrived, a signal was superseded, configuration changed, or **evidence aged**. The last one is the reason the module has a sweep at all — shelf-life expiry publishes no event of its own, and a number that moved for an unexplainable reason is a number nobody trusts.
 
 > **One addition to the v2 catalog**, made before the event had any implementation: `contested`, `dissenting_signal_ids`, `delta`, `trigger`, `valid_until`, and `score_id`. The v2 shape (`entity_id`, `score`, `trend`, `source_signal_ids`, `model_version`) survived design review unchanged and is still present — a good sign for the boundary.
+
+### Opportunity Engine (M6)
+
+| Event | v | Payload | Notes |
+|---|---|---|---|
+| `opportunity.created` | 1 | `opportunity_id`, `entity_id`, `originating_buying_score_id`, `score_at_creation`, `contested_at_creation`, `qualification`, `stage`, `policy_version`, `payload_version` | An account crossed the threshold for tracking |
+| `opportunity.stage_changed` | 1 | `opportunity_id`, `entity_id`, `previous_stage`, `new_stage`, `owner_id`, `actor_id`, `reason`, `sequence`, `payload_version` | **A human** moved it |
+
+**The first events that announce a decision rather than a derivation.** Everything upstream announces what Signora concluded from evidence; `opportunity.stage_changed` announces what a person did — which is why it carries `actor_id` and `reason`, and why neither is ever absent.
+
+**`opportunity.created` is a suggestion, not a commitment.** `stage` is always `tracking`, the only stage Signora may author. *Intelligence suggests; humans commit* (ratified 2026-07-29).
+
+`originating_buying_score_id` is the first link of the chain outward. Because buying scores are **immutable**, it resolves forever — the citation does not break when the score is later superseded, and a full pipeline rebuild reproduces byte-identical score ids, so it is not orphaned by regeneration either.
+
+`contested_at_creation` travels so no consumer rediscovers it by querying signals, which would put scoring logic in the wrong module. `qualification` records whether Signora suggested it or a human opened it directly.
+
+> **Additions to the v2 catalog**, made before either event had an implementation: `originating_buying_score_id` (replacing the vaguer `source_buying_score`), `score_at_creation`, `contested_at_creation`, `qualification`, `policy_version` on creation; and `entity_id`, `owner_id`, `actor_id`, `reason`, `sequence` on the stage change. **`opportunity.closed` was considered and not added** — `stage_changed` already carries it, and an event whose information is fully contained in another is a contract nobody keeps.
 
 > **Removed:** `business_event_type.published` from the v2 catalog. It assumed a runtime-mutable taxonomy that notified the system when it changed. The taxonomy is a versioned repository artifact — **the deployment is the notification** — so the event had no producer, and an event with no producer is a contract nobody is keeping.

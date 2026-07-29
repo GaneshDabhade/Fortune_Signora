@@ -1,7 +1,7 @@
 # 27 — Opportunity Engine
 
-> Status: **Proposal — direction approved and core principles ratified 2026-07-29; four questions open. Not implemented.**
-> Milestone: **M6** · Module: Opportunity Engine · Position: pipeline stage 8
+> Status: **Implemented — M6 closed 2026-07-29. This document is marked *as built*; departures from the approved proposal are recorded at the end.**
+> Milestone: **M6** · Module: Opportunity Engine · Position: pipeline stage 8 · Migration **0014**
 > Audience: engineers, architects, product
 > Prepared: 2026-07-29, after reviewing the implemented M5B rather than its proposal.
 
@@ -353,7 +353,36 @@ Implementation satisfying AC-58 through AC-65 plus tenancy, event-contract, and 
 
 ---
 
-## Approval status
+## As built: decisions taken, and two departures
+
+Every ruling of 2026-07-29 shipped as approved: **intelligence suggests, humans commit**; workflow state as a third data category with its rebuild contract; the immutable aggregate plus append-only state log; opportunities outliving their score with no automatic closure; the five stages with `DISMISSED` distinct; reopening as a transition with `CLOSED_WON` terminal; `workspace_opportunity_policy` as a separate customer-authored artifact; contested scores qualifying by default; and account fit deferred.
+
+**The machine/human boundary is enforced three ways** — the type system (`next_state` demands an `actor_id` with no default), the domain (`OpportunityState` refuses a non-`TRACKING` stage without one), and a database CHECK. Three layers, because a boundary this important should not depend on one of them being reached.
+
+**Workflow required no exception to immutability.** `signora_app` holds no `UPDATE` grant on any of the three tables, exactly as for every table since 0008 — and the repository offers no `delete` either, which is the stronger statement: derived tables offer deletion precisely so regeneration can be their rollback, and workflow has no regeneration to roll back to.
+
+### Departure 1 — the state log records complete state, not transitions
+
+The proposal described `opportunity_transition` with `from_stage`/`to_stage`. It shipped as **`opportunity_state`**, where each row is the whole workflow state — stage, owner, actor, reason.
+
+The reason emerged while writing it: a delta row can describe a transition whose starting point disagrees with the row before it, and nothing prevents that. A state row cannot be internally inconsistent, reading the current state is one row rather than a fold, and adding a future workflow field needs no discriminator. The append-only property and the audit trail are unchanged; only the shape of the row is different.
+
+### Departure 2 — the citation is protected by `ON DELETE RESTRICT`
+
+The proposal said the citation was safe because scores are immutable. That is true of *updates* and says nothing about deletes — and derived tables deliberately keep `DELETE`, because regeneration is their rollback.
+
+So a buying score cited by an opportunity cannot be deleted at all: `RESTRICT`, guarded by a Security Invariant. **Workflow is the thing here that cannot be regenerated**, so it wins the tie against a rebuild that would otherwise sever it from its reason.
+
+### What the demonstration shows, including one honest limit
+
+A qualifying score opens a suggestion nobody owns; re-running qualification opens nothing new; a human engages, assigns to a verified member, and closes with a reason; assignment to a non-member is refused; reopening keeps one opportunity and one history; an expiring score moves no stage while `evidence_state` reads `STALE`; the originating score still explains itself in full; and **regenerating the derived pipeline leaves every opportunity, state row, and policy untouched with its citation intact.**
+
+**The limit:** the simulated scenario produces a modest buying score, and Signora's shipped threshold correctly declines to suggest tracking on it. Lowering the product default to make a demonstration succeed would be tuning the fixture to fit the story, so the demonstration has the **workspace author its own threshold** — which exercises the ownership layer this milestone added, and is what a real customer would do. Both behaviours are asserted: the default declines, the configured workspace qualifies. **No product default was tuned to make a demonstration pass.**
+
+### Verified at close
+
+**1089 backend tests** passing · **95.27%** coverage · **261 Security Invariants**, of which the 29 new ones were each proven to fail when their guarantee was removed (the actor requirement deleted, `MACHINE_AUTHORED` widened, `actor_id` given a default, an automatic-closure surface added, qualification made to write a terminal stage, `CLOSED_WON` made reopenable, a business constant introduced, the membership check removed, the contested default flipped, and at the database: five constraints dropped, the `UPDATE` grant restored, `FORCE` RLS removed, a current-score column added, and the citation FK switched to `CASCADE`) · **17 import-linter contracts** kept · mypy strict clean over 330 files · `make smoke` green across **23 stages**.
+## Approval record
 
 ### Ratified 2026-07-29
 
@@ -371,13 +400,13 @@ Implementation satisfying AC-58 through AC-65 plus tenancy, event-contract, and 
 |---|---|
 | **Auto-dismissal of never-engaged suggestions** | **Left out of v1.** It is configuration for a need nobody has demonstrated, which CLAUDE.md §6 forbids outright. The recorded trigger: a workspace accumulating `TRACKING` opportunities nobody ever engages. Adding it later changes one policy field and no part of the model. |
 
-### Still open — implementation waits on these
+### Resolved 2026-07-29 — all as proposed
 
-| | Question | My recommendation |
+| | Question | Ruling |
 |---|---|---|
-| **A** | **The stage set** — `TRACKING` · `ENGAGED` · `CLOSED_WON` · `CLOSED_LOST` · `DISMISSED`, with `DISMISSED` distinct from `CLOSED_LOST` because one is feedback about Signora's judgement and the other is a sales outcome. `TRACKING` is the only machine-authored stage. | Adopt as proposed. |
-| **B** | **Reopening** — a transition back to `TRACKING`/`ENGAGED` rather than a new opportunity, preserving one history in one place; **`CLOSED_WON` terminal**, since the next deal at that account is genuinely a new opportunity. | Adopt as proposed. |
-| **C** | **The fourth ownership layer** — `workspace_opportunity_policy` as a separate customer-authored artifact rather than folded into the scoring model, on the same reasoning that kept the scoring model out of the signal profile. | Separate. |
-| **D** | **Contested scores qualify by default** — a fought-over account is exactly what a seller should look at — with the policy able to require confidence, and the opportunity recording that it was qualified from a contested score. | Adopt as proposed. |
+| **A** | **The stage set** | `TRACKING` · `ENGAGED` · `CLOSED_WON` · `CLOSED_LOST` · `DISMISSED`. `DISMISSED` stays distinct from `CLOSED_LOST` — one is feedback about Signora's judgement, the other a sales outcome — and `TRACKING` is the only machine-authored stage. |
+| **B** | **Reopening** | A transition back to `TRACKING`/`ENGAGED`, preserving one history and one stable id. **`CLOSED_WON` is terminal**; the next deal at that account is a new opportunity. |
+| **C** | **The fourth ownership layer** | `workspace_opportunity_policy` is a **separate** customer-authored artifact. Folding it into the scoring model would make a threshold change churn the recorded explanation of every historical buying score. |
+| **D** | **Contested scores** | **Qualify by default.** A fought-over account is exactly what a seller should look at; the policy may require confidence, and the opportunity records that it was qualified from a contested score. |
 
-Implementation begins once **A–D** are settled. Nothing is coded before then.
+**Every question is settled. Implementation proceeds.**
