@@ -28,10 +28,10 @@
 |---|---|
 | Backend tests | **1089 passing**, 0 failing, 0 skipped |
 | Frontend tests | **101 passing** |
-| Backend coverage | **95.27%** (CI gate 95%) |
+| Backend coverage | **95.25%** (local gate 95%) |
 | Security invariants | **261 / 261**, each proven to fail when its guarantee is removed |
 | import-linter contracts | **17 kept, 0 broken** |
-| `make smoke` | ✅ **23 stages**, 95s |
+| `make smoke` | ✅ **21 stages**, 84s — includes the cross-tier JWT contract (15b) since 2026-07-29 |
 | Migrations | 0000–0014, all reversible |
 | mypy strict | Clean, 330 files |
 | Open production bugs | **0** |
@@ -53,6 +53,7 @@ Permanent contracts. Each is enforced by automated test, not convention. **Chang
 | **Authentication Boundary** | M1.2 | Better Auth in Next.js is the sole authentication authority. The Python tier **only verifies** RS256 JWTs and is cryptographically incapable of minting one. Algorithms pinned to exactly `["RS256"]`. |
 | **Deployment Foundation** | M1.3A | Production images, per-tier database identities, concurrency-safe migration runner, restart-safe stack. `/ready` returns **503** when not ready — orchestrators route on the code, not the body. |
 | **Platform Smoke Test** | M1.4 | One command verifies the whole platform. Required before every milestone and release. |
+| **Local-First verification** | 2026-07-29 | Every gate runs locally ([ADR-0027](architecture/adr/0027-local-first-development.md), CLAUDE.md §20c-2). GitHub is version control, backup, and future collaboration only; Actions are disabled and the three workflows are retained at `workflow_dispatch`. **A `git push` stores the repository and triggers nothing.** CI returns only when the architecture, Intelligence Pipeline, Workflow Pipeline and AI Platform have all stabilised **and** it is explicitly requested. |
 | **Platform Freeze** | M1.3A | `signora_platform/` changes only for a security fix, production defect, or approved change. **One change since:** the relay's transient-failure handling. |
 | **Frontend Foundation** | M1.5 | Design system, components, shell, routing, query layer — consumed, not modified. Exceptions: production defect, **accessibility issue**, security issue, approved change. |
 
@@ -310,7 +311,7 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 
 > **Completed:** M6 Opportunity Engine · **Next:** M8 AI Platform
 > **Branch:** `main` · everything committed and pushed, tree clean
-> **Health:** 1089 backend + 101 frontend tests passing · coverage 95.27% · 261 invariants · 17 contracts · smoke green over 23 stages
+> **Health:** 1089 backend + 101 frontend tests passing · coverage 95.25% · 261 invariants · 17 contracts · smoke green over 21 stages
 >
 > **First actions:**
 > 1. Read [21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md) — the shortest path to full context, and it tracks what is *built* rather than intended.
@@ -333,6 +334,7 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 
 | Date | Change |
 |---|---|
+| 2026-07-29 | v7.1 — **Local-First Development** adopted before M8 implementation ([ADR-0027](architecture/adr/0027-local-first-development.md), CLAUDE.md §20c-2 and the new *repository tells the truth* principle in §2). Actions disabled; three workflows retained at `workflow_dispatch`. The cross-tier JWT contract test moved into `make smoke` (stage 15b) and now **fails when skipped**. Corrected two pre-existing drifts: smoke has **21 stages, not 23**, and coverage measures **95.25%**. |
 | 2026-07-29 | v7 — updated at the M6 boundary. Adds the **Commercial commitment** contract block (intelligence suggests, humans commit · three data categories · a rebuild regenerates intelligence only · opportunities outlive their score · workflow stores no intelligence · history never rewritten · the citation cannot be orphaned · every state names its actor and reason · dismissal distinct from a lost deal · four ownership layers). Rewrites §5 for M8, records the eighth `# type: ignore` and the application-enforced open-per-account rule, and notes that CLAUDE.md §19 now binds a **Milestone Definition of Done** ending in a pushed, clean tree. |
 | 2026-07-29 | v6 — updated at the M5B boundary. Adds the **Commercial attention** contract block (prioritization never resolution · opposing readings never net · a score is a projection · the ledger is the score · the business event is the unit of contribution · step decay · evidence-derived staleness · three ownership layers · posture is Signora's · no signals, no score). Adds a **known limits** table distinguishing *limitation* from *debt*. Rewrites §5 for M6, records the sweep-scheduler consequence of the `EventHandler` finding, and keeps both platform findings as **queued RFCs**. |
 | 2026-07-29 | v5 — updated at the M5A boundary. Adds the **Commercial meaning** contract block (the global/subjective boundary · ownership decides where configuration lives · the vocabulary stays global · no commercial verdict · contradiction preserved · composites enrich · hypotheses phrased as possibilities · two replay modes · customer-authored data is different). Rewrites §5 for M5B, keeps the two platform findings as **queued RFCs**, and records a fourth item of scheduled M2.0 simulation work. |

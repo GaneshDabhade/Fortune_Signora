@@ -1,6 +1,6 @@
 # ADR-0022: DevOps, Infrastructure & Deployment Topology
 
-**Status:** Accepted
+**Status:** Accepted · **Operating mechanism amended by [ADR-0027](0027-local-first-development.md) (2026-07-29):** GitHub Actions remains the ratified CI/CD platform *for when CI returns*, but **no CI is operating today** — all verification is local. The production topology below is unaffected and remains the target M14.5 provisions against.
 
 ## Context
 

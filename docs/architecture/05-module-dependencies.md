@@ -129,7 +129,7 @@ The permission is narrow and worth stating precisely:
 ## Enforcement
 
 - **Code review** against this document.
-- **Import-linter** (Python) enforces module boundary rules in CI — see [ADR-0002](adr/0002-web-framework-and-api-style.md) and [15-project-structure.md](15-project-structure.md) for the concrete contract configuration. Since M3A the contracts are explicit per module pair: each module is forbidden from importing another's `domain/`, `application/`, `infrastructure/`, or `interface/`, and upstream modules are forbidden from importing downstream ones at all. A cross-module import of an ORM model compiles and runs perfectly well, which is exactly why the rule needs a machine behind it — the violation is invisible until the modules need to move apart.
+- **Import-linter** (Python) enforces module boundary rules in the local gate ([ADR-0027](adr/0027-local-first-development.md)) — see [ADR-0002](adr/0002-web-framework-and-api-style.md) and [15-project-structure.md](15-project-structure.md) for the concrete contract configuration. Since M3A the contracts are explicit per module pair: each module is forbidden from importing another's `domain/`, `application/`, `infrastructure/`, or `interface/`, and upstream modules are forbidden from importing downstream ones at all. A cross-module import of an ORM model compiles and runs perfectly well, which is exactly why the rule needs a machine behind it — the violation is invisible until the modules need to move apart.
 - **Database roles per module**: each module's tables are owned by a dedicated PostgreSQL role with `GRANT` restricted to that module's application code path, providing a second line of defense beyond RLS (see [11-tenancy.md](11-tenancy.md)).
 
 ## Adding a New Dependency

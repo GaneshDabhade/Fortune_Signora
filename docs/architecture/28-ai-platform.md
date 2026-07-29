@@ -50,7 +50,7 @@ This was almost certainly the right call and nobody wrote it down. It matters he
 
 > *"Would remove per-token vendor cost and vendor dependency entirely, but self-hosting competitive-quality models … adds significant infrastructure/ops burden and … still trails frontier hosted models."*
 
-**Ollama is that rejected alternative**, and Bedrock is not in the decision at all. The brief's direction is sound — the *reason* for rejection was production self-hosting, and using Ollama strictly for local development is a different decision that the ADR never evaluated — but a ratified ADR is not amended by a session. **M8 requires ADR-0027** (*Local model runtime for development; Bedrock as a production vendor*), superseding the relevant clauses of ADR-0012, with [08-technology-stack.md](08-technology-stack.md) updated in the same change. Written as part of this milestone, not assumed by it.
+**Ollama is that rejected alternative**, and Bedrock is not in the decision at all. The brief's direction is sound — the *reason* for rejection was production self-hosting, and using Ollama strictly for local development is a different decision that the ADR never evaluated — but a ratified ADR is not amended by a session. **M8 requires ADR-0028** (*Local model runtime for development; Bedrock as a production vendor*), superseding the relevant clauses of ADR-0012, with [08-technology-stack.md](08-technology-stack.md) updated in the same change. Written as part of this milestone, not assumed by it.
 
 ### What M8 inherits and can rely on
 
@@ -412,7 +412,7 @@ So the test separating the two is mechanical rather than a matter of taste: **do
 
 | | Task |
 |---|---|
-| **T111** | **ADR-0027 — Model runtime by environment.** States the split directly: **development → Ollama** (prompt engineering, UI work, smoke, evaluation, offline demos, regression) · **production → hosted commercial models**, ADR-0012's ratified vendors. Records why ADR-0012's rejection of open-weight self-hosting still stands *for production* and does not bear on a local development runtime, so the architectural record reads consistently rather than looking reversed. Supersedes the relevant ADR-0012 clauses; 08-technology-stack.md gains a **runtime-by-environment** row in the same change. |
+| **T111** | **ADR-0028 — Model runtime by environment.** States the split directly: **development → Ollama** (prompt engineering, UI work, smoke, evaluation, offline demos, regression) · **production → hosted commercial models**, ADR-0012's ratified vendors. Records why ADR-0012's rejection of open-weight self-hosting still stands *for production* and does not bear on a local development runtime, so the architectural record reads consistently rather than looking reversed. Supersedes the relevant ADR-0012 clauses; 08-technology-stack.md gains a **runtime-by-environment** row in the same change. |
 | **T112** | Module scaffold, `ai_platform` graph node, import-linter contracts per module pair, 15-project-structure.md corrected (both drifts) |
 | **T113** | `domain/provider.py` — port, failure taxonomy, registry, descriptor |
 | **T114** | `domain/evidence.py` — evidence set, refusal of mixed workspaces, digest |
@@ -491,7 +491,7 @@ Per CLAUDE.md §19, binding.
 
 **Implementation** — T111–T121 (T121 subject to the scope ruling).
 **Quality** — all tests passing · coverage gate · `make smoke` green · import-linter green · MyPy strict clean · Security Invariants extended and each mutation-proven · **`make eval` green on the golden set**.
-**Architecture** — ADR-0027 written · 14-ai-architecture.md marked as built · 08-technology-stack.md, 04-modules.md, 05-module-dependencies.md, 15-project-structure.md (both drifts), 21-intelligence-pipeline.md, 16-architecture-risks.md (R-10) updated · `docs/SESSION_HANDOFF.md` and `PROJECT_STATUS.md` updated and verified against the repository.
+**Architecture** — ADR-0028 written · 14-ai-architecture.md marked as built · 08-technology-stack.md, 04-modules.md, 05-module-dependencies.md, 15-project-structure.md (both drifts), 21-intelligence-pipeline.md, 16-architecture-risks.md (R-10) updated · `docs/SESSION_HANDOFF.md` and `PROJECT_STATUS.md` updated and verified against the repository.
 **Repository** — committed, **pushed to `origin/main`**, working tree clean.
 
 ---
@@ -508,7 +508,7 @@ Per CLAUDE.md §19, binding.
 | **Two tiers** | Deterministic correctness in production and the build; probabilistic quality in the harness. **Never mixed** — a failing evaluation must never make deterministic tests flaky. |
 | **LLM-as-judge** | **Rejected as a release gate.** Human-reviewed golden datasets and deterministic validation instead. |
 | **Scope** | **Option B**, under the strict restatement-only rule and its stop condition. |
-| **Ollama** | Permitted for development, recorded in **ADR-0027** rather than silently contradicting ADR-0012. |
+| **Ollama** | Permitted for development, recorded in **ADR-0028** rather than silently contradicting ADR-0012. |
 | **Frozen packages** | Confirmed: experimental AI infrastructure does not accumulate in a frozen platform package. |
 
 ### Recommended 2026-07-29, awaiting confirmation

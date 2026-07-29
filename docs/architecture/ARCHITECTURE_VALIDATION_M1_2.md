@@ -6,7 +6,9 @@
 > **Verdict:** ✅ **PASS** — all seven required confirmations hold, evidenced mechanically
 > **One defect found and fixed during validation** (Finding 3): the `auth` schema's isolation was defeated by the frontend connecting as the database owner.
 
-Every claim below is backed by an automated check that runs in CI, not by inspection. Where a claim could only be verified by reading code, that is stated explicitly rather than presented as proof.
+> **Note added 2026-07-29.** This is a dated record of what was true at M1.2 and is deliberately **not** rewritten. Where it says a check *runs in CI*, that check now runs locally — CI was disabled project-wide by [ADR-0027](adr/0027-local-first-development.md). Every check named below still exists and still binds; only where it executes has changed.
+
+Every claim below is backed by an automated check that runs mechanically, not by inspection. Where a claim could only be verified by reading code, that is stated explicitly rather than presented as proof.
 
 ---
 

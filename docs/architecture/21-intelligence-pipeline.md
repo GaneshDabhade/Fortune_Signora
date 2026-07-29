@@ -439,7 +439,7 @@ These hold at every stage, without exception, and are asserted by a permanent Se
 
 **Immutable things are immutable at the database.** `claim`, `resolution_decision`, `observation`, `business_event`, `signal`, and `signal_profile` carry no `UPDATE` grant. An attempted overwrite fails with a permission error rather than succeeding quietly. Where a later fact must correct an earlier one, the correction is a **new row naming its predecessor** — supersession pointing backwards, because a forward pointer would need the grant immutability withholds.
 
-**Modules reach each other only through `public/`.** Enforced by import-linter in CI, per module pair. A cross-module import of an ORM model compiles and runs perfectly well — which is exactly why the rule needs a machine behind it.
+**Modules reach each other only through `public/`.** Enforced by import-linter in the local gate, per module pair. A cross-module import of an ORM model compiles and runs perfectly well — which is exactly why the rule needs a machine behind it.
 
 ---
 

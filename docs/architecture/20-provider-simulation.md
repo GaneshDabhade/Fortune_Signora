@@ -8,7 +8,7 @@
 
 ## Scope discipline — the simulator is infrastructure, not product
 
-**Ratified 2026-07-28.** The framework exists to enable local development, automated testing, end-to-end testing, demonstrations, CI/CD, and regression testing. **It is not intended to become a provider emulation platform.**
+**Ratified 2026-07-28.** The framework exists to enable local development, automated testing, end-to-end testing, demonstrations, and regression testing. **It is not intended to become a provider emulation platform.**
 
 Where improving the simulator and improving the core intelligence platform compete, **the core product wins**. The simulator stays only as sophisticated as required to:
 

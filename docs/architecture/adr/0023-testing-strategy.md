@@ -1,6 +1,6 @@
 # ADR-0023: Testing Strategy
 
-**Status:** Accepted
+**Status:** Accepted · **Operating mechanism amended by [ADR-0027](0027-local-first-development.md) (2026-07-29):** the suite and the gate stand unchanged; **the gate runs locally**, not in CI.
 
 ## Context
 

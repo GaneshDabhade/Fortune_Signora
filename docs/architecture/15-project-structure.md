@@ -2,11 +2,11 @@
 
 > Status: **Living document — Architectural Constitution — RATIFIED**
 > Audience: All engineers, EMs, and technical stakeholders at Signora
-> Revision: **v3** — the platform layer directory is `signora_platform/`, not `platform/`, which collides with a Python standard library module (rationale below). Adds the concrete import-linter contract shape now that it is running in CI. v2 layout otherwise unchanged.
+> Revision: **v3** — the platform layer directory is `signora_platform/`, not `platform/`, which collides with a Python standard library module (rationale below). Adds the concrete import-linter contract shape now that it is running. v2 layout otherwise unchanged.
 
 ## Purpose
 
-This document defines how the Signora codebase is physically organized on disk, so the logical architecture in [04-modules.md](04-modules.md) and [05-module-dependencies.md](05-module-dependencies.md) is visible and mechanically enforceable from the folder structure and CI tooling.
+This document defines how the Signora codebase is physically organized on disk, so the logical architecture in [04-modules.md](04-modules.md) and [05-module-dependencies.md](05-module-dependencies.md) is visible and mechanically enforceable from the folder structure and local tooling.
 
 ## Top-Level Repository Layout
 
@@ -50,7 +50,7 @@ signora/
 │   ├── lib/                       # API client (TanStack Query), utilities
 │   └── tests/                     # Vitest + Playwright
 ├── infra/                         # Docker Compose, Terraform/IaC for AWS (ADR-0022)
-└── .github/workflows/              # GitHub Actions CI/CD
+└── .github/workflows/              # retained, manual-dispatch only (ADR-0027)
 ```
 
 ### Why `signora_platform/` and not `platform/`
@@ -92,7 +92,7 @@ flowchart TB
     Public -.re-exports only.-> Domain
 ```
 
-**`public/` is the physical, CI-enforced boundary.** Other modules may import only from `backend/modules/<name>/public/`. This is enforced by **import-linter**, configured under `[tool.importlinter]` in `backend/pyproject.toml` and run in GitHub Actions on every PR (see [ADR-0022](adr/0022-devops-infrastructure-and-deployment-topology.md)), not by convention alone.
+**`public/` is the physical, machine-enforced boundary.** Other modules may import only from `backend/modules/<name>/public/`. This is enforced by **import-linter**, configured under `[tool.importlinter]` in `backend/pyproject.toml` and run locally as part of every milestone gate (see [ADR-0027](adr/0027-local-first-development.md)), not by convention alone.
 
 Three contracts are enforced today:
 
@@ -110,7 +110,7 @@ Verify the contracts actually bite rather than passing vacuously: add a delibera
 - **AI Provider Port** (Principle 10): base Protocol in `backend/signora_platform/ai_provider_abstraction/`, implemented per-vendor inside both `ai_research_engine/infrastructure/adapters/` and `ai_reasoning_engine/infrastructure/adapters/` (each module wires its own routing config against the shared adapters).
 - **Integration Port** (Principle 11): base Protocol in `backend/signora_platform/integration_abstraction/`, implemented per-vendor by the consuming module (e.g., `revenue_intelligence_platform/infrastructure/adapters/{salesforce,hubspot,pipedrive,zoho}.py`).
 
-`signora_platform/` contains only technical shared infrastructure — never business/domain logic. A CI contract (`signora_platform must not depend on any module`) enforces that dependencies point from `modules/` into it and never the reverse.
+`signora_platform/` contains only technical shared infrastructure — never business/domain logic. An import-linter contract (`signora_platform must not depend on any module`) enforces that dependencies point from `modules/` into it and never the reverse.
 
 ## Migrations
 
@@ -126,15 +126,15 @@ Alembic migrations live in `backend/migrations/`, one linear history for the sin
 
 ## Code Quality Enforcement
 
-- **Ruff** (lint + format) and **MyPy** (strict mode) run in `pre-commit` and CI for `backend/`.
-- **ESLint** and **Prettier** run in CI for `frontend/`.
-- **import-linter** runs in CI to enforce the module-boundary contract described above.
+- **Ruff** (lint + format) and **MyPy** (strict mode) run locally for `backend/`.
+- **ESLint** and **Prettier** run locally for `frontend/`.
+- **import-linter** runs locally to enforce the module-boundary contract described above.
 
 See [ADR-0024](adr/0024-code-quality-and-static-analysis.md) for the exact tool configuration.
 
 ## Design Rationale
 
-Making the module boundary a literal folder boundary — and, critically, a CI-enforced one via import-linter — turns [05-module-dependencies.md](05-module-dependencies.md) from a policy document into something that fails a pull request automatically when violated. Python's Protocol-based structural typing is what makes "ports defined by the domain, implemented by infrastructure" idiomatic in this stack without requiring an abstract-base-class hierarchy — see [ADR-0001](adr/0001-backend-language-and-runtime.md).
+Making the module boundary a literal folder boundary — and, critically, a machine-enforced one via import-linter — turns [05-module-dependencies.md](05-module-dependencies.md) from a policy document into something that fails the build automatically when violated. Python's Protocol-based structural typing is what makes "ports defined by the domain, implemented by infrastructure" idiomatic in this stack without requiring an abstract-base-class hierarchy — see [ADR-0001](adr/0001-backend-language-and-runtime.md).
 
 ## Best Practices
 
@@ -154,7 +154,7 @@ Making the module boundary a literal folder boundary — and, critically, a CI-e
 | Choice | We gain | We give up |
 |---|---|---|
 | Uniform per-module Clean Architecture layout | Predictable navigation, mechanically enforceable boundaries | Some boilerplate for very small modules (acceptable) |
-| import-linter as a CI gate | Boundary violations fail PRs automatically, not just in review | Contract file must be kept up to date as modules are added (a small, worthwhile maintenance cost) |
+| import-linter as a binding gate | Boundary violations fail the build automatically, not just in review | Contract file must be kept up to date as modules are added (a small, worthwhile maintenance cost) |
 
 ## Future Evolution
 
@@ -163,4 +163,4 @@ Making the module boundary a literal folder boundary — and, critically, a CI-e
 
 ## Decision Summary
 
-Signora's codebase mirrors its logical architecture exactly: `backend/modules/<name>/` per module (Clean Architecture layers, Python Protocols as ports, `public/` as the sole CI-enforced cross-module import surface), `backend/platform/` for shared technical infrastructure, `backend/apps/{api,worker}` as the two runtime entry points, and a separate `frontend/` Next.js application — with import-linter, Ruff, MyPy, ESLint, and Prettier all running in CI as the mechanical enforcement of this document.
+Signora's codebase mirrors its logical architecture exactly: `backend/modules/<name>/` per module (Clean Architecture layers, Python Protocols as ports, `public/` as the sole machine-enforced cross-module import surface), `backend/platform/` for shared technical infrastructure, `backend/apps/{api,worker}` as the two runtime entry points, and a separate `frontend/` Next.js application — with import-linter, Ruff, MyPy, ESLint, and Prettier all running locally as the mechanical enforcement of this document.

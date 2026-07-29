@@ -20,6 +20,7 @@ Before writing any code in a session, Claude must know which module it is workin
 - Minimalism is a discipline, not an accident: implement what the task requires, at the scope the task requires, and no more.
 - Consistency across the codebase is worth more than local optimization. A module that looks like every other module is more valuable than a module that is 10% cleverer.
 - When a decision is genuinely architectural — not just an implementation detail — it does not belong to a single coding session. It belongs to the RFC process described in `docs/architecture/01-overview.md`.
+- **The repository itself should always tell the truth.** Everything committed here — code, configuration, documentation, status, workflow files — is read by someone who was not in the conversation that produced it, and they have no way to check it against anything but itself. A workflow that looks live but is disabled, a dashboard describing the previous milestone, a document asserting a gate that no longer runs, a config file implying enforcement that was never installed: each is a defect of the same kind, and each is more damaging than the absent version, because it is trusted. This cuts both ways — **a record of what was true then must not be rewritten to match now.** Correct a claim about the present; date a record of the past. Falsifying history to make the repository look consistent is the same failure wearing the opposite coat.
 
 ## 3. Architecture Principles
 
@@ -282,6 +283,30 @@ Concretely, Claude must:
 
 ---
 
+## 20c-2. Local-First Development
+
+**Binding from 2026-07-29. Permanent until explicitly reversed by the product owner.** See `docs/architecture/adr/0027-local-first-development.md`.
+
+Signora is in an architecture-first phase, and the most valuable thing being built is the architecture, not the delivery pipeline. Every milestone is already verified on the developer's machine. Re-running the same verification remotely adds no confidence — it consumes time, minutes, and attention, and it makes a `git push` mean something other than *"store the repository safely."*
+
+**GitHub exists for exactly three things:** version control · remote backup · future collaboration.
+
+**GitHub is not** the build system, the test system, the release system, the deployment system, a scheduler, or a place where evaluation runs.
+
+> **A `git push` performs one action: it stores the repository remotely. Nothing else may happen as a result of it.**
+
+Claude must **never** create or re-enable: GitHub Actions · GitLab CI · Jenkins · CircleCI · Azure Pipelines · Buildkite · release automation · Docker or package or container publishing · scheduled workflows · automatic deployment, tagging, releases, or documentation publishing · cloud testing · remote smoke tests, integration tests, or evaluations.
+
+**Existing workflow files are retained and must not be improved, expanded, modernised, optimised, or deleted.** They exist as correct definitions to re-activate from. Their only permitted trigger is `workflow_dispatch`; adding `push:`, `pull_request:`, or `schedule:` to any of them is prohibited.
+
+**Every quality gate is local, and all of them still bind:** `pytest` with the coverage gate · `make smoke` · `mypy --strict` · `lint-imports` · the Security Invariants suite · migration reversibility. A gate moving from CI to local does not make it optional — it makes the local run the only run, and therefore the one that decides.
+
+CI/CD returns only when **all five** hold: the architecture has stabilised · the Intelligence Pipeline has stabilised · the Workflow Pipeline has stabilised · the AI Platform has stabilised · **the product owner explicitly requests it.** Until then the correct quantity of CI is **zero** — not a smaller amount, and not a better version.
+
+The ordering this expresses, which applies beyond CI: **architecture first · implementation second · automation third · deployment last.** Every piece of automation introduced today is maintenance tomorrow. Automate for demonstrated need, never anticipated need.
+
+---
+
 ## 20d. Milestone Discipline and the Project Status Record
 
 ### Strict milestone ownership
@@ -330,6 +355,8 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 - Introduce statefulness, local-disk persistence, or configuration outside `Settings` — the Infrastructure Contract binds every milestone until M14.5 provisions cloud infrastructure (§20b).
 - Modify a shared frontend component, the shell, routing, or query infrastructure to suit one page, or introduce mock business data (§20c).
 - Implement a future milestone's functionality to satisfy the current milestone's demonstration, or begin a milestone before `PROJECT_STATUS.md` reflects the previous one (§20d).
+- Create, re-enable, or extend any CI/CD, publishing, scheduling, or remote-execution automation, or add a `push:`/`pull_request:`/`schedule:` trigger to a retained workflow (§20c-2).
+- Leave the repository asserting something that is not true of it — a live-looking disabled workflow, a gate that no longer runs, a dashboard describing the previous milestone (§2). Equally: rewrite a dated record of what was true then to match what is true now.
 
 ### When implementing, Claude must always
 

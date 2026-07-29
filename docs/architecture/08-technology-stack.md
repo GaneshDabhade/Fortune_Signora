@@ -137,7 +137,7 @@ This document is the single, authoritative list of Signora's technology stack. E
 | Layer | Decision | ADR |
 |---|---|---|
 | Local development / containers | Docker, Docker Compose | [ADR-0022](adr/0022-devops-infrastructure-and-deployment-topology.md) |
-| CI/CD | GitHub Actions | [ADR-0022](adr/0022-devops-infrastructure-and-deployment-topology.md) |
+| CI/CD | GitHub Actions — **ratified but not operating**; all verification is local | [ADR-0022](adr/0022-devops-infrastructure-and-deployment-topology.md), [ADR-0027](adr/0027-local-first-development.md) |
 | Edge routing / reverse proxy | Traefik | [ADR-0022](adr/0022-devops-infrastructure-and-deployment-topology.md) |
 | Cloud provider | AWS | [ADR-0022](adr/0022-devops-infrastructure-and-deployment-topology.md) |
 | Compute (production) | ECS | [ADR-0022](adr/0022-devops-infrastructure-and-deployment-topology.md) |

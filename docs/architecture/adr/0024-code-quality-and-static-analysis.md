@@ -1,6 +1,6 @@
 # ADR-0024: Code Quality & Static Analysis Tooling
 
-**Status:** Accepted
+**Status:** Accepted · **Operating mechanism amended by [ADR-0027](0027-local-first-development.md) (2026-07-29):** Ruff, MyPy strict, ESLint, Prettier and import-linter remain binding and non-bypassable; **they are enforced locally**, not in CI.
 
 ## Context
 

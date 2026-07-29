@@ -1,15 +1,29 @@
+# ⚠️  INTENTIONALLY DISABLED — Local-First Development Policy.
+#
+# Signora is in its architecture-first phase. Every check below already runs
+# locally and is what actually closes a milestone (CLAUDE.md §20e, ADR-0027).
+# Re-running the same verification remotely after a push adds no confidence —
+# it consumes minutes and attention, and it makes a `git push` mean something
+# other than "store the repository safely".
+#
+# This file is RETAINED, not deleted: the job definitions are correct and are
+# what CI will be re-activated from once the architecture, the Intelligence
+# Pipeline, the Workflow Pipeline and the AI Platform have stabilised and CI
+# is explicitly requested. Until then the only trigger is manual dispatch.
+#
+# Do not add `push:`, `pull_request:`, or `schedule:` triggers here.
+
 # Platform Smoke Test — the platform foundation completion gate (M1.4).
 #
-# Required before every milestone and every release. Runs on merge to main
-# and on pull requests, because the defects it catches (a worker that cannot
-# start, a readiness probe that never reports failure, a relay that dies on
-# a database blip) are all invisible to a fully passing test suite.
+# Required before every milestone and every release — run **locally**, as
+# `make smoke`. The defects it catches (a worker that cannot start, a
+# readiness probe that never reports failure, a relay that dies on a database
+# blip) are all invisible to a fully passing test suite, which is why it is a
+# gate at all; running it locally is what makes it one today.
 name: Platform Smoke Test
 
 on:
-  push:
-    branches: [main]
-  pull_request:
+  # Manual only. See the policy note above.
   workflow_dispatch:
 
 jobs:

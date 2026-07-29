@@ -1,9 +1,22 @@
+# ⚠️  INTENTIONALLY DISABLED — Local-First Development Policy.
+#
+# Signora is in its architecture-first phase. Every check below already runs
+# locally and is what actually closes a milestone (CLAUDE.md §20e, ADR-0027).
+# Re-running the same verification remotely after a push adds no confidence —
+# it consumes minutes and attention, and it makes a `git push` mean something
+# other than "store the repository safely".
+#
+# This file is RETAINED, not deleted: the job definitions are correct and are
+# what CI will be re-activated from once the architecture, the Intelligence
+# Pipeline, the Workflow Pipeline and the AI Platform have stabilised and CI
+# is explicitly requested. Until then the only trigger is manual dispatch.
+#
+# Do not add `push:`, `pull_request:`, or `schedule:` triggers here.
 name: Frontend CI
 
 on:
-  push:
-    branches: [main]
-  pull_request:
+  # Manual only. See the policy note above.
+  workflow_dispatch:
 
 concurrency:
   group: frontend-${{ github.ref }}

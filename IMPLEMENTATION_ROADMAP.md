@@ -994,7 +994,7 @@ The simulator is **not development-only tooling**. It is held to production stan
 | Purpose | Why it needs the simulator |
 |---|---|
 | **Local development** | Full pipeline runs offline, with no vendor account or cost |
-| **Integration testing** | CI must never depend on third-party availability, rate limits, or spend |
+| **Integration testing** | Verification must never depend on third-party availability, rate limits, or spend |
 | **End-to-end testing** | Deterministic full-pipeline runs |
 | **Product demonstrations** | A demo depending on a live vendor is a demo that fails in front of a customer |
 | **AI evaluation** | Identical inputs → comparable outputs across model and prompt versions |
@@ -1148,7 +1148,7 @@ All four are test-enforced, not conventions.
 | **AC-6 — Tenancy Under Load** | M3 | Every new table: `workspace_id`, forced RLS, `SECURITY DEFINER` predicates, `WHERE`-less query test, both session shapes |
 | **AC-7 — Evidence Chain Integrity** | M6 | Every signal/score/opportunity traces to source observations |
 | **AC-8 — AI Abstraction & Safety** | M9 | No vendor SDK in domain/application; output validated before trust; prompt versions recorded |
-| **AC-9 — AI Evaluation Gate** | M8 | Golden sets exist; regression CI-enforced; evidence-completeness a release gate |
+| **AC-9 — AI Evaluation Gate** | M8 | Golden sets exist; regression enforced locally before release; evidence-completeness a release gate |
 | **AC-10 — Module Boundary Audit** | Every milestone | import-linter contracts extended and **proven to fail** on a deliberate violation |
 | **AC-14 — Frontend Foundation Integrity** | M1.5 | Every business screen addable without touching shell, routing, auth, or query infrastructure; **no mock business data in the codebase**; component tests in CI |
 | **AC-19 — Intent Fidelity** | M2.0 | Bombora reproduces emergence, sustain, decay, reactivation, concurrency, competitive overlap, delayed reporting, and noise from payload generation alone, never inspecting downstream state (if qualified) |

@@ -2,7 +2,7 @@
 
 > Status: **Living document — Architectural Constitution — RATIFIED**
 > Audience: All engineers, EMs, and technical stakeholders at Signora
-> Revision: **v2** — records the issuer-side configuration as built in M1.2, plus the authentication event vocabulary and health checks. The contract in v1 is unchanged and is now verified by a cross-tier test in CI.
+> Revision: **v2** — records the issuer-side configuration as built in M1.2, plus the authentication event vocabulary and health checks. The contract in v1 is unchanged and is now verified by a cross-tier test, run in the suite and asserted by `make smoke` stage 9b.
 
 ## Purpose
 
@@ -166,7 +166,7 @@ Better Auth's tables live in a dedicated **`auth` schema** (migration `0005`), o
 
 ### Cross-tier contract test
 
-`backend/tests/integration/test_jwt_cross_tier_contract.py` mints a token with the **real** frontend issuance path and verifies it with the **real** Python verifier. Neither side's claim set is restated in the test, so drift on either side fails CI.
+`backend/tests/integration/test_jwt_cross_tier_contract.py` mints a token with the **real** frontend issuance path and verifies it with the **real** Python verifier. Neither side's claim set is restated in the test, so drift on either side fails the local gate. `make smoke` stage 9b runs it and **fails if it is skipped** — the skip path is what a missing frontend install would otherwise hide ([ADR-0027](adr/0027-local-first-development.md)).
 
 This is the only check that proves the two tiers agree; every other test verifies one tier's understanding of the boundary in isolation.
 

@@ -481,6 +481,33 @@ else
   fail "Security Invariants failed against the running stack"
 fi
 
+# =========================================== 15b. Cross-tier JWT contract
+
+stage "15b. Cross-tier JWT contract"
+
+# The only check that the two tiers agree on the claim set, rather than each
+# agreeing with itself. It lives in the normal suite but **skips silently**
+# when the frontend's dependencies are absent, and CI was what used to
+# guarantee they were present (ADR-0027). Here a skip is a failure: the stage
+# exists to turn "quietly did not run" into "did not pass".
+#
+# In the destructive tail with the invariants, for the same reason they are
+# here: this suite truncates every table between tests, so anything asserted
+# after it would be asserted against an empty database.
+if (cd ../backend && \
+    SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 \
+    SIGNORA_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    uv run pytest tests/integration/test_jwt_cross_tier_contract.py \
+      -q >/tmp/smoke_jwt_contract.log 2>&1); then
+  grep -qE '[0-9]+ passed' /tmp/smoke_jwt_contract.log \
+    || { tail -5 /tmp/smoke_jwt_contract.log; \
+         fail "cross-tier contract test did not run (skipped) — run 'npm ci' in frontend/"; }
+  pass "token minted by the real frontend path verifies with the real Python verifier"
+else
+  tail -15 /tmp/smoke_jwt_contract.log
+  fail "cross-tier JWT contract broken — the two tiers disagree on the claim set"
+fi
+
 # ============================================================= 16. Teardown
 
 stage "16. Teardown"

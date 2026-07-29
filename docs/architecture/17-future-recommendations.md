@@ -16,7 +16,7 @@ Each recommendation states: what to do, why it matters, what triggers it (if evi
 
 These are prerequisites, not optional polish, given the risks in [16-architecture-risks.md](16-architecture-risks.md).
 
-1. **Build the AI evaluation harness (resolves R-10).** Golden test sets for both AI Research Engine and AI Reasoning Engine, human-review sampling, and regression testing wired into CI for prompt template changes. This is the single highest-leverage investment available for the product's core differentiator — see [14-ai-architecture.md](14-ai-architecture.md).
+1. **Build the AI evaluation harness (resolves R-10).** Golden test sets for both AI Research Engine and AI Reasoning Engine, human-review sampling, and regression testing run locally on prompt template changes ([ADR-0027](adr/0027-local-first-development.md)). This is the single highest-leverage investment available for the product's core differentiator — see [14-ai-architecture.md](14-ai-architecture.md).
 2. **Define AI spend governance (resolves R-01).** Per-workspace and platform-wide budget ceilings and alerting before AI Research Engine is enabled broadly.
 3. **Load-test RLS, Meilisearch, and pgvector at target scale (resolves R-03, R-08).** Synthetic data generation to millions-of-companies scale, validating or revising the partitioning plan in [12-scalability.md](12-scalability.md) before it's discovered in production.
 4. **Set up connection pooling (RDS Proxy) and per-stage ARQ worker pools before scaling worker concurrency**, per [12-scalability.md](12-scalability.md) — sequencing this before load arrives, not after.

@@ -83,7 +83,7 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | **Platform Runtime** | ✅ Complete | M1.1 | The event spine: transactional outbox, relay, dispatch, platform-owned idempotency, retry, dead-lettering, worker pools. | Domain events from any module | At-least-once delivery to subscribed consumers, exactly-once effect |
 | **Deployment Foundation** | ✅ Complete | M1.3A | Production images, per-tier database identities, a concurrency-safe migration runner, and a restart-safe stack. | Source and configuration | A running system that survives any component restart |
 | **Frontend Foundation** | ✅ Complete | M1.5 | The frontend platform: design system, component library, shell, routing, session, query layer. No business screens. | API responses, session | The surface business screens plug into from M12 |
-| **Provider Simulation Framework** | ✅ Complete | M2.0 | Produces realistic provider payloads without a provider, for development, testing, CI, demos, and deterministic AI regression. | Datasets and scenario manifests | Provider payloads, delivered through the Provider Port like any real provider |
+| **Provider Simulation Framework** | ✅ Complete | M2.0 | Produces realistic provider payloads without a provider, for development, testing, demos, and deterministic AI regression. | Datasets and scenario manifests | Provider payloads, delivered through the Provider Port like any real provider |
 
 ### Product pipeline — raw data becomes commercial meaning
 
@@ -157,9 +157,11 @@ flowchart TD
 - ✅ **Authentication** — Better Auth issues RS256 JWTs, FastAPI only verifies; the API cannot mint a token it accepts
 - ✅ **Event bus** — transactional outbox, relay, platform-owned idempotency, retry, dead-lettering
 - ✅ **Deployment foundation** — production images, concurrency-safe migration runner, restart-safe stack
-- ✅ **Smoke verification** — `make smoke`, one command, in CI. Established at M1.4 with 16 stages; **now 21**, each intelligence milestone adding its own demonstration against the live stack.
+- ✅ **Smoke verification** — `make smoke`, one command, run locally. Established at M1.4 with 16 stages; **now 21**, each intelligence milestone adding its own demonstration against the live stack.
 - ✅ **Frontend foundation** — design system, component library, shell, routing, query layer
 - ✅ **Provider Simulation Framework** — Provider Port, shared contract suite, deterministic replay, fault injection
+
+- ✅ **Local-First verification** — every gate runs on the developer's machine ([ADR-0027](docs/architecture/adr/0027-local-first-development.md), 2026-07-29). GitHub is version control, remote backup, and future collaboration — **nothing else**. Actions are disabled at repository level and all three workflows are retained at `workflow_dispatch` only, so a `git push` stores the repository and triggers nothing.
 
 **Both foundations are frozen.** `signora_platform/` and the frontend foundation are consumed by later milestones, not modified — except for a production defect, accessibility issue, security issue, or approved architectural change.
 
@@ -183,19 +185,19 @@ Knowledge Graph · Observation Engine · Business Events · Signals · Buying Sc
 |---|---|---|
 | **Backend tests** | **1089 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Frontend tests** | **101 passing**, 0 failing, 0 skipped | 0 skipped |
-| **Backend coverage** | **95.27%** | ≥95% (CI-gated) |
+| **Backend coverage** | **95.25%** | ≥95% (local gate) |
 | **Security invariants** | **261 / 261**, each proven to fail when its guarantee is removed | 100% verified |
 | **import-linter contracts** | **17 kept, 0 broken** | 0 broken |
 | **Architecture drift** | **0** — no ratified ADR reversed; 14 documents amended for drift, all found by test or by implementation | Trending to 0 |
 | **Open production bugs** | **0** | 0 |
 | **Technical debt** | **0 outstanding** · **2 platform findings raised** (see M3A record) | — |
-| **`make smoke`** | ✅ Passing (95s; **23 stages**, the full pipeline through opportunities) | Required per milestone |
+| **`make smoke`** | ✅ Passing (84s; **21 stages**, the full pipeline through opportunities) | Required per milestone |
 
 ### Test suite composition
 
 | Area | Tests | Notes |
 |---|---|---|
-| Security invariants | 261 | Permanent architectural guarantees; run as their own CI job |
+| Security invariants | 261 | Permanent architectural guarantees; run as their own reported step |
 | Simulation framework | 130 | Clock, dataset, scenario, faults, delivery, generators |
 | Provider contract suite | 45 | **One suite, five adapters** — the keystone interchangeability test |
 | Workspace & Tenancy | ~70 | RLS isolation, API, persistence |
@@ -209,7 +211,7 @@ Knowledge Graph · Observation Engine · Business Events · Signals · Buying Sc
 | Signal Engine (catalog, profile, strategies, pipeline) | 52 | Commercial meaning — the first customer-specific layer |
 | Buying Score Engine (ledger, scoring, score, use case, pipeline) | 68 | Commercial attention — the first intentional reduction |
 | Opportunity Engine (domain, policy, use cases, pipeline) | 40 | Commercial commitment — the first workflow module |
-| **Backend total** | **1089** | Coverage 95.27%, mypy strict over 330 files |
+| **Backend total** | **1089** | Coverage 95.25%, mypy strict over 330 files |
 | Frontend components & foundation | 101 | Includes 13 AC-14/AC-15 guard tests |
 
 ---
@@ -268,12 +270,12 @@ Whether the substrate the 13 pipeline modules will be built on is sound.
 | Indicator | Current | Target |
 |---|---|---|
 | Backend tests | **492 passing**, 0 skipped, 0 xfail | 0 skipped — a skipped test is an untested claim |
-| Coverage | **95.26%** (CI gate 95%) | ≥95% |
+| Coverage | **95.26%** (local gate 95%) | ≥95% |
 | mypy strict | Clean, 113 files | Clean |
 | Migrations reversible | **7 of 7** revisions | 100% |
 | Disaster recovery validated | **4 of 4** components restart-safe | All |
 | Platform smoke stages | **16**, all proven to fail when broken | Every stage verified |
-| Whole-stack verification | **`make smoke`**, ~46s, in CI | One command, every merge |
+| Whole-stack verification | **`make smoke`**, ~46s, local | One command, every milestone |
 | Platform modules with a failure-path test | 12 of 12 | 100% |
 | Open production defects | **0** | 0 |
 | Defects found by tests vs. by use | **8 of 13 by tests**; 5 by running the stack | Falling ratio is expected and is why `make smoke` now exists |
@@ -430,7 +432,7 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 | **Completion date** | 2026-07-29 |
 | **Commits** | `c638d1c` (proposal) · `8034cfb` (ratification + binding milestone DoD) · `6cec891` (T102–T110) |
 | **`HEAD` at close** | `6cec891` |
-| **Exit gate** | ✅ **`make smoke` passed** — 95s, fresh images, clean Compose stack, **23 stages**, 261 invariants green against the running system |
+| **Exit gate** | ✅ **`make smoke` passed** — 95s, fresh images, clean Compose stack, **20 stages**, 261 invariants green against the running system |
 | **Effort** | ~8–12 ew scoped · delivered within range |
 
 **The milestone in one line.** Signora's **first workflow module** — and the first sellable moment: the point where derived intelligence becomes something a person commits to.
@@ -809,6 +811,7 @@ Encoded as a tracked deviation in `test_authorization.py::test_every_workspace_o
 | 2026-07-29 | v23 — **M3B Observation Engine complete.** Permanent layering principle ratified: *claims preserve evidence · the graph resolves identity · the Observation Engine detects change · the Business Event Engine determines business meaning · the Signal Engine determines commercial meaning.* Change is computed **within one provider's series** — cross-provider comparison rejected as the central error, since disagreement merged into a series manufactures growth that never happened. First values establish a baseline and produce no observation. Observation identity is derived from observed facts, so deduplication is a primary-key conflict and a mapper fix cannot duplicate the table. Late arrival refines by append-only supersession. `entity.evidence_attached` approved and added to the Knowledge Graph; the canonical vocabulary formally recognised as a platform-wide contract. A Security Invariant reads derivation as a **syntax tree** to prove no threshold has crept in. Two defects found by running rather than by tests, one of them by `make smoke` against a fresh stack. 729 tests, coverage 95.10%, 124 invariants, 9 contracts, `make smoke` green over 19 stages. |
 | 2026-07-29 | v22 — **M3A Knowledge Graph complete.** The first module that must *decide*. Permanent invariant ratified: *the Knowledge Graph resolves identity, not truth* — `entity` carries no attribute columns, and `ClaimSet` returns every contributing claim rather than a chosen value. `MatchStrength` ratified as a semantic category that can never become a number, with the type itself refusing numeric conversion and ordering. Ambiguity merges nothing, enforced by a database CHECK constraint. Migration 0009: four workspace-owned tables, forced RLS, `resolution_decision` immutable. Per-module-pair import-linter contracts added, immediately catching **two real boundary violations in shipped code** (M2.1 and M2.2), both fixed with read ports. **Two platform findings raised, not worked around** — `EventHandler` receives no session, so no module handler is registered in the live registry; and `PublishableEvent` cannot be satisfied by a frozen dataclass. One correction to the approved demonstration recorded honestly: three of five providers resolve together, not five, because the other two supply no matchable identity. 650 tests, coverage 95.54%, 99 invariants, 7 contracts, `make smoke` green over 18 stages. **[21-intelligence-pipeline.md](docs/architecture/21-intelligence-pipeline.md) authored.** |
 | 2026-07-28 | v9 — **Platform Foundation approved and closed.** Eight platform contracts ratified (Platform Runtime, Authentication Boundary, Deployment Foundation, Platform Smoke Test, Security Invariants, Tenant Isolation Policy, Platform Infrastructure Policy, Platform Freeze). **M1.5 Frontend Foundation inserted** after M1.4 — frontend platform only, no business screens, no mock data. Business UI deferred until M2.0 produces real domain data. Cloud infrastructure confirmed at M14.5 with all task IDs and ADR references intact. Three dependency findings raised against the approved order (two graph inversions, five omitted modules, three unratified module names) — flagged, not silently reconciled. Sequencing only; the approved architecture is unchanged. |
+| 2026-07-29 | v13 — **Local-First Development adopted ([ADR-0027](docs/architecture/adr/0027-local-first-development.md), CLAUDE.md §20c-2).** GitHub Actions disabled at repository level; all three workflows retained with `workflow_dispatch` as their only trigger and every job definition preserved. **A `git push` now stores the repository and triggers nothing.** The cross-tier JWT contract test gained a local home as `make smoke` stage 15b, which **fails if it is skipped** — the gap CI was silently covering. Documentation asserting CI as the current authority corrected to *local*; dated records of what was true at earlier milestones deliberately left intact. Two pre-existing drifts found while verifying: `make smoke` had **21 stages, not 23**, and measured coverage is **95.25%**. Re-verified locally: 1089 passed, 0 skipped · coverage 95.25% · 261 invariants · 17 contracts · mypy strict clean over 330 files · smoke green, 21 stages, 84s. |
 | 2026-07-28 | v8 — **M1.4 Platform Smoke Test complete; platform foundation closed.** `make smoke`: 16 stages, ~46s, in CI, every stage proven to fail when deliberately broken. Two defects found by it — a relay that died permanently on a transient database failure (first and only post-freeze platform change, under the production-defect exemption), and two bugs in the smoke script itself that would have made it lie. **Cloud infrastructure deferred from M1.3B to M14.5** — sequencing only, nothing removed or redesigned — with a ten-point Infrastructure Contract (roadmap §5a) binding every milestone until then. 313 tests, coverage 95.63%. |
 | 2026-07-28 | v7 — **M1.3A Deployment Foundation complete.** Production images (multi-stage, non-root, no secrets), concurrency-safe migration runner refusing runtime identities, 6-service production Compose stack, and Disaster Recovery Validation across Postgres/Redis/API/workers. Four defects found by running the stack rather than by tests — most seriously a worker that could never start while the whole suite passed. `signora_platform/` frozen. ADR-0022 updated with as-built topology. 310 tests, coverage 95.65%. |
 | 2026-07-28 | v6 — **M1.2 approved.** Security Invariants suite established: 47 permanent invariants across authentication, authorization, database, and platform, each proven to fail when its guarantee is deliberately removed; wired into CI as a separately-reported job. Migration/runtime credential separation adopted as a permanent engineering rule (CLAUDE.md §8). M1.3 split into M1.3A Deployment Foundation and M1.3B Cloud Infrastructure; M1.4 Platform Smoke Test added; AC-3 split into AC-3A/3B/3C and AC-13 added. `@vitejs/plugin-react` recorded as scheduled technical debt. One architectural question raised for decision: platform-table read scope. |

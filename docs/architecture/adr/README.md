@@ -49,6 +49,7 @@ Every ADR follows this structure:
 | [0024](0024-code-quality-and-static-analysis.md) | Code Quality & Static Analysis Tooling |
 | [0025](0025-module-boundary-evolution.md) | Module Boundary Evolution — Provider Platform, Business Event Engine, Buying Score Engine, AI Research/Reasoning split |
 | [0026](0026-jwt-boundary-architecture.md) | JWT Boundary Architecture — authentication in Next.js, verification in FastAPI (amends 0010) |
+| [0027](0027-local-first-development.md) | Local-First Development — all verification is local; GitHub is version control and backup only (amends the operating mechanism of 0022, 0023, 0024) |
 
 ## How to Propose a New ADR
 

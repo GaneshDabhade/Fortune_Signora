@@ -236,12 +236,12 @@ This document follows the architecture ([04-modules.md](docs/architecture/04-mod
 - Confidence/uncertainty as first-class output fields — the model must be able to say "thin evidence"
 - Model, model version, and prompt version recorded on every result
 
-**Evaluation:** **The evaluation harness ships before this engine.** Golden test sets, human-review sampling, CI-enforced regression testing on prompt change, evidence-completeness as a release gate.
+**Evaluation:** **The evaluation harness ships before this engine.** Golden test sets, human-review sampling, locally-enforced regression testing on prompt change, evidence-completeness as a release gate.
 
 **Customer value:** "I know why this account matters and I can defend it in the room."
 
 **Graduation criteria:**
-- [ ] **Evaluation harness operational and CI-wired before the engine ships** (resolves R-10)
+- [ ] **Evaluation harness operational and wired into the local gate before the engine ships** (resolves R-10)
 - [ ] Golden set ≥200 cases with human-adjudicated quality ratings
 - [ ] **Factual accuracy >90%**; zero fabricated evidence citations tolerated
 - [ ] **Evidence-completeness 100%** — a reasoning result with a broken chain never reaches a user

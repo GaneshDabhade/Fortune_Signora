@@ -2,7 +2,19 @@
 #
 # `make smoke` is the platform foundation completion gate (M1.4): one
 # command that verifies the entire local production stack. It is required
-# before every milestone and every release, and runs in CI on merge to main.
+# before every milestone and every release.
+#
+# All verification is local (CLAUDE.md §20c-2, ADR-0027). The full milestone
+# gate is:
+#
+#   make smoke                               whole stack, production images
+#   make test                                suite + coverage gate
+#   cd backend && uv run mypy .              strict types
+#   cd backend && uv run lint-imports        module boundaries
+#   cd backend && uv run pytest -m security_invariant
+#
+# There is no remote gate. A green local run is the decision, not a preview
+# of one.
 
 .PHONY: smoke smoke-keep dr up down test
 
