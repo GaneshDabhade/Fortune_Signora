@@ -87,6 +87,7 @@ This document does **not** define architecture principles (see [02-principles.md
 | 23 | [Observation Engine](23-observation-engine.md) | What counts as a change worth recording, and what is merely re-assertion? |
 | 24 | [Business Event Engine](24-business-event-engine.md) | Why is a change business-relevant, and where does the threshold that decides it live? |
 | 25 | [Signal Engine](25-signal-engine.md) | Why might a business event matter to *this* customer, and what belongs to the platform vs the workspace? |
+| 26 | [Buying Score Engine](26-buying-score-engine.md) | How much commercial attention does an account deserve, and how is intelligence reduced to a number without being replaced by it? *(proposal)* |
 | — | [Architecture Decision Records](adr/README.md) | Why was each technology/vendor/module-boundary decision made? |
 
 ## Who This Documentation Is For
