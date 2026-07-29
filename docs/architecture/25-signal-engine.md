@@ -1,8 +1,8 @@
 # 25 — Signal Engine
 
-> Status: **PROPOSAL — awaiting review** · 2026-07-29
+> Status: **IMPLEMENTED** — M5A, 2026-07-29
 > Audience: All engineers, EMs, and technical stakeholders at Signora
-> Revision: **v1** — the M5A architecture proposal. **No implementation exists.**
+> Revision: **v2** — the design as built. All six review questions were approved; the outcomes and one refinement are recorded in *[As built](#as-built-decisions-taken-and-one-refinement)*.
 >
 > Prerequisite reading: [21-intelligence-pipeline.md](21-intelligence-pipeline.md), [24-business-event-engine.md](24-business-event-engine.md).
 
@@ -449,11 +449,53 @@ catalog()                                                          -> SignalCata
 
 ---
 
-## Questions for review
+## As built: decisions taken, and one refinement
 
-1. **Is the global-catalog / per-workspace-profile split right?** Everything rests on it. In particular: is *"a workspace can never invent a signal type"* the right constraint, given it trades flexibility for cross-customer reasoning?
-2. **Approve the profile living in versioned database rows** while the business event taxonomy stays a repository artifact — on the grounds that ownership, not convenience, decides?
-3. **Approve composite signals in v1** (Option C), accepting the overlap with atomic ones and the deduplication requirement it places on M5B?
-4. **Approve removing `signal.scored`** and dropping `score` from `signal.generated`, since the Signal Engine produces no scores?
-5. **Are nine catalog types the right v1**, and does each pass the CRO test as a *hypothesis* — phrased as a possibility rather than a fact?
-6. **Is `relevant_until` the right shape for shelf life** — a derived date on the signal — rather than leaving recency entirely to M5B?
+All six review questions were approved as proposed. The global catalog with a per-workspace relevance profile, the profile in versioned database rows on ownership grounds, composite signals, the removal of `signal.scored`, nine catalog types, and `relevant_until` as a derived date all ship as designed.
+
+Two instructions sharpened the design before implementation:
+
+### "Composite signals must enrich rather than replace"
+
+The proposal said constituent signals would *both stand* and that the overlap would be visible through shared business event ids. The refinement asks for more: **every constituent must remain independently visible and explainable**, and the composite must add context without collapsing history.
+
+So a composite now **names its constituents** — `constituent_signal_ids` — giving a navigable hierarchy rather than merely a detectable overlap:
+
+> `MODERNIZATION_UNDERWAY` cites the technology adopted *and* retired, and names the `DISPLACEMENT_OPPORTUNITY` signal it enriches. Both are stored, both are queryable, and the composite adds a reading on top of one that stands on its own.
+
+Asserted directly: a composite never suppresses the hypothesis it builds on.
+
+### "Detection strategy" rather than "how signals are detected"
+
+Adopted, and it turned out to be more than terminology. `SignalTypeDefinition.detection_strategy` declares **what kind of evidence supports a hypothesis** — one contributing event, or several distinct types within a window. The mechanics live in `domain/rules.py`. The catalog now states domain semantics only, so an improved implementation never changes what a signal *means* — the same separation the business event taxonomy makes, and the reason meaning can evolve slowly while derivation evolves fast.
+
+### The structural enforcement, as built
+
+| Guard | What it catches |
+|---|---|
+| Column-name invariant on `signal` | Any `score`, `priority`, `likelihood`, `propensity`, `rank`, `weight`, or `confidence` column |
+| Detection strategies parsed as syntax trees | Any numeric literal in a comparison other than `0` or `1` — a window or contributor count hidden in code |
+| `ProfileEntry.signal_type` typed as `SignalType` | A workspace-invented type, unrepresentable rather than discouraged |
+| Hedging-language invariant on every hypothesis | A type stating its hypothesis as a **fact**, which would mean it had drifted into the Business Event Engine's territory |
+| `ck_signal_relevance_is_held` | A stored signal of a type the workspace marked `IGNORED` |
+| `uq_signal_profile_current` | Two live interpretations for one workspace, which would make every signal generated during the overlap unexplainable |
+| `signal_profile.created_by NOT NULL` | An unattributed configuration change — a commercial decision with no author |
+
+### What the demonstration shows, including one honest limit
+
+Two workspaces receive byte-identical business events. One reads a `DISPLACEMENT_OPPORTUNITY` and a `MODERNIZATION_UNDERWAY`; the other, having marked both `IGNORED`, reads neither — and the business events underneath are provably identical. That is the milestone's central claim, exercised through the real pipeline.
+
+**The scenario's hypotheses are also all past their shelf life, and the demonstration asserts it.** The baseline evidence is months old and every catalog type declares a window shorter than that, so the signals were formed, remain readable, and are no longer *live*. That is the lifecycle working rather than a gap — but it does mean the live-set behaviour is exercised by the negative case only. A scenario with recent evidence is scheduled M2.0 work, alongside the three items M3B and M4 already recorded.
+
+---
+
+## Definition of Done — M5A
+
+- [x] Demonstration passes; AC-42 through AC-49, AC-6, AC-1, AC-13 satisfied
+- [x] Migration 0012 with forced RLS and full policies in the same revision; both tables registered in `tenancy_policy.py` and in `IMMUTABLE_TENANT_TABLES`
+- [x] Security Invariants extended 154 → 186, each addition **proven to fail** when its guarantee is removed
+- [x] `04-modules.md`, `05-module-dependencies.md`, `06-events.md`, and `21-intelligence-pipeline.md` updated in the same change
+- [x] `make smoke` extended with stage 14f, commercial interpretation
+- [x] PROJECT_STATUS and SESSION_HANDOFF updated at the boundary
+
+The two platform findings from M3A remain open and are **not** worked around: `EventHandler` receives no session, and `PublishableEvent` cannot be satisfied by a frozen dataclass. Both are queued as RFCs for the platform milestone.

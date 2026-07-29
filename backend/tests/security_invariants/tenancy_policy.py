@@ -58,6 +58,10 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         "observation",
         # Business Event Engine (M4), migration 0011.
         "business_event",
+        # Signal Engine (M5A), migration 0012. `signal_profile` is the first
+        # **customer-authored** table in the platform — not derived data.
+        "signal",
+        "signal_profile",
     }
 )
 
@@ -113,10 +117,23 @@ REQUIRED_POLICY_COMMANDS: Final[frozenset[str]] = frozenset({"SELECT", "INSERT",
 # complete historical sequences, which requires the sequence to exist
 # (migration 0011; M4 ruling).
 #
+# `signal` holds commercial hypotheses; a hypothesis that gains evidence
+# becomes a new signal naming the one it replaces. `signal_profile` is
+# customer-authored configuration: an edit in place would make every
+# historical signal unexplainable, because the reason it exists would have
+# changed underneath it (migration 0012; M5A ruling).
+#
 # Adding a table here is a deliberate architectural act. The immutability it
 # claims is separately asserted in test_tenancy_policy.py.
 IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
-    {"claim", "resolution_decision", "observation", "business_event"}
+    {
+        "claim",
+        "resolution_decision",
+        "observation",
+        "business_event",
+        "signal",
+        "signal_profile",
+    }
 )
 
 # Runtime roles. None may bypass RLS, whatever else they are permitted.

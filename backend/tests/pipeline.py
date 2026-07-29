@@ -45,6 +45,12 @@ from modules.provider_normalization.infrastructure.claim_reader import SqlClaimR
 from modules.provider_normalization.interface.handlers import normalize_received_record
 from modules.provider_platform.infrastructure.models import RawProviderRecordModel
 from modules.provider_platform.infrastructure.record_reader import SqlRawRecordReader
+from modules.signal_engine.application.queries import SignalQueries
+from modules.signal_engine.infrastructure.composition import build_generate_signals
+from modules.signal_engine.infrastructure.composition import (
+    build_queries as build_signal_queries,
+)
+from modules.signal_engine.interface.handlers import generate_from_business_event
 from signora_platform.db import tenant_scoped_session
 from signora_platform.event_bus import (
     EventEnvelope,
@@ -219,3 +225,33 @@ async def detect_all(
 
 def business_events(session: AsyncSession, workspace_id: UUID) -> BusinessEventQueries:
     return build_business_event_queries(session, observations=observations(session, workspace_id))
+
+
+async def signal_all(
+    factory: async_sessionmaker[AsyncSession],
+    admin_factory: async_sessionmaker[AsyncSession],
+    workspace_id: UUID,
+    user_id: UUID,
+) -> int:
+    """Form hypotheses for every `business_event.detected` event."""
+    envelopes = [
+        envelope
+        for envelope in await _published(admin_factory, "business_event.detected")
+        if envelope.workspace_id == workspace_id
+    ]
+
+    async with tenant_scoped_session(
+        factory, workspace_id=workspace_id, user_id=user_id
+    ) as session:
+        generate = build_generate_signals(
+            session,
+            business_events=business_events(session, workspace_id),
+            publisher=PostgresOutboxEventPublisher(),
+        )
+        for envelope in envelopes:
+            await generate_from_business_event(envelope, generate=generate)
+    return len(envelopes)
+
+
+def signals(session: AsyncSession, workspace_id: UUID) -> SignalQueries:
+    return build_signal_queries(session, business_events=business_events(session, workspace_id))

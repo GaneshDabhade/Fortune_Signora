@@ -401,6 +401,25 @@ else
   fail "business event detection failed against the running stack"
 fi
 
+# ===================================================== 14f. Signal Engine
+
+stage "14f. Commercial interpretation"
+
+# The M5A demonstration, and the first stage that is not globally true.
+# Two workspaces read byte-identical business events differently, each
+# explains itself in two halves, and each can be challenged independently.
+if (cd ../backend && \
+    SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 \
+    SIGNORA_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    SIGNORA_TEST_APP_DATABASE_URL="postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5433/signora" \
+    SIGNORA_TEST_ADMIN_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    uv run pytest tests/signal_engine -q >/tmp/smoke_signal.log 2>&1); then
+  pass "$(grep -oE '[0-9]+ passed' /tmp/smoke_signal.log | tail -1) against the running stack"
+else
+  tail -20 /tmp/smoke_signal.log
+  fail "commercial interpretation failed against the running stack"
+fi
+
 # ================================================= 15. Security Invariants
 
 stage "15. Security Invariants"
@@ -437,4 +456,4 @@ printf '\n\033[32m\033[1mPLATFORM SMOKE TEST PASSED\033[0m  (%ds)\n' "$((SECONDS
 printf 'Build · startup · migrations · identities · image hygiene · health · readiness ·\n'
 printf 'auth · JWT · authorization · RLS · event bus · relay · workers · ingestion ·\n'
 printf 'normalization · identity resolution · change detection · business events ·\n'
-printf 'invariants · teardown\n\n'
+printf 'signals · invariants · teardown\n\n'

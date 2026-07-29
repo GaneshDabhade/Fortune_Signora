@@ -210,17 +210,25 @@ Each module below follows the template: Purpose, Owns, Does Not Own, Core Concep
 
 ### Signal Engine
 
-**Purpose:** Aggregates, correlates, and scores one or more business events (with Knowledge Graph context) into **signals** — individual, weighted indicators of buying intent.
+**Purpose:** Answers *"why might this matter to **this** customer?"* — turns globally-true business events into **commercial hypotheses** held by one workspace.
 
-**Owns:** Signal scoring models/rules, signal aggregation windows, signal decay/expiry, signal-to-event traceability.
+**Owns:** The signal catalog (Signora's vocabulary of commercial hypotheses), detection strategies, the per-workspace **signal profile** and its versioning, signal shelf life, and signal-to-business-event traceability.
 
-**Does Not Own:** Business event detection (Business Event Engine), composite account-level scoring (Buying Score Engine).
+**Does Not Own:** **Any commercial verdict.** Not how likely a purchase is, which account to prioritise, what to recommend, or what to do — those belong to the Buying Score, Opportunity, and Recommendation Engines. Also not: business event detection (Business Event Engine).
 
-**Core Concepts:** Signal, Score, Aggregation Window, Signal Strength.
+**Core Concepts:** Signal, Signal Type, Hypothesis, Detection Strategy, Relevance, Signal Profile, Shelf Life, Constituent.
 
-**Key Published Events:** `signal.generated`, `signal.scored`.
+**Key Published Events:** `signal.generated`, `signal.superseded`.
 
-**Key Consumed Events:** `business_event.detected`.
+**Key Consumed Events:** `business_event.detected`, `business_event.superseded`.
+
+**Read port offered to other modules:** `SignalQueries` → `Signal`, `SignalExplanation`, `SignalCatalog` (`public/`).
+
+> **The permanent principle (ratified 2026-07-29):** *business events describe objective business phenomena; signals describe customer-specific commercial hypotheses.* Signals are the **first subjective layer** in the pipeline. Everything above the Signal Engine is globally true; everything below remains traceable back to globally true information. A signal carries no score, priority, likelihood, or rank, asserted structurally. See [21-intelligence-pipeline.md](21-intelligence-pipeline.md) and [25-signal-engine.md](25-signal-engine.md).
+>
+> **Ownership decides where configuration lives.** The signal *catalog* belongs to Signora and ships as a versioned repository artifact; the signal *profile* belongs to the customer and lives in versioned, immutable rows — they cannot be asked to wait for a release to say what matters to them. **A workspace can never invent a signal type**; it configures relevance over the global catalog, which is what keeps AI reasoning, benchmarking, analytics, and support able to speak about signals across customers.
+>
+> The v2 events `signal.scored` and the `score` field on `signal.generated` were **removed rather than implemented**: the Signal Engine produces no scores.
 
 ---
 

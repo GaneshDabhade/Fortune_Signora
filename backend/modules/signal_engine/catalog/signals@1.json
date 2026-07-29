@@ -1,0 +1,114 @@
+{
+  "_comment": "Signora's signal catalog — the global vocabulary of commercial hypotheses. Belongs to Signora, not to any customer: a workspace configures which of these matter to it and how centrally, and can never invent a type. That constraint is what makes AI reasoning, benchmarking, analytics, documentation, and support able to speak about signals across customers at all. Every hypothesis is phrased as a possibility, never a fact — a signal proposes a commercial reading, it does not assert one. Reviewed like code; a change here is a release.",
+  "version": 1,
+  "types": [
+    {
+      "key": "expansion_opportunity",
+      "title": "Expansion opportunity",
+      "hypothesis": "Sustained investment across several fronts suggests the company is adding capacity, and may be open to tools that support growth.",
+      "why_it_matters": "Companies investing ahead of growth buy differently from companies holding steady — they are budgeting for capability they do not yet have.",
+      "detection_strategy": "composite",
+      "contributing_event_types": ["hiring_surge", "revenue_growth", "funding_round_closed"],
+      "minimum_contributors": 2,
+      "window_days": 180,
+      "relevance_window_days": 180,
+      "default_relevance": "primary"
+    },
+    {
+      "key": "budget_unlocked",
+      "title": "Budget unlocked",
+      "hypothesis": "New capital may free spending that was previously deferred.",
+      "why_it_matters": "Funding changes what a company can approve, and often how quickly.",
+      "detection_strategy": "single_event",
+      "contributing_event_types": ["funding_round_closed"],
+      "minimum_contributors": 1,
+      "window_days": 180,
+      "relevance_window_days": 270,
+      "default_relevance": "supporting"
+    },
+    {
+      "key": "displacement_opportunity",
+      "title": "Displacement opportunity",
+      "hypothesis": "A retired system suggests a replacement decision that is recent, or imminent.",
+      "why_it_matters": "The window in which a replacement is chosen is short, and it closes quietly.",
+      "detection_strategy": "single_event",
+      "contributing_event_types": ["technology_retired"],
+      "minimum_contributors": 1,
+      "window_days": 180,
+      "relevance_window_days": 180,
+      "default_relevance": "primary"
+    },
+    {
+      "key": "modernization_underway",
+      "title": "Modernization underway",
+      "hypothesis": "Adopting and retiring systems together suggests a stack is being replaced rather than extended.",
+      "why_it_matters": "A company mid-migration is already spending on change, and already comparing options.",
+      "detection_strategy": "composite",
+      "contributing_event_types": ["technology_adopted", "technology_retired"],
+      "minimum_contributors": 2,
+      "window_days": 180,
+      "relevance_window_days": 180,
+      "default_relevance": "supporting"
+    },
+    {
+      "key": "new_decision_maker",
+      "title": "New decision maker",
+      "hypothesis": "A newly appointed leader may re-examine what they inherited.",
+      "why_it_matters": "New leaders are unusually willing to change arrangements they did not choose.",
+      "detection_strategy": "single_event",
+      "contributing_event_types": ["leadership_appointed"],
+      "minimum_contributors": 1,
+      "window_days": 180,
+      "relevance_window_days": 180,
+      "default_relevance": "supporting"
+    },
+    {
+      "key": "decision_maker_departed",
+      "title": "Decision maker departed",
+      "hypothesis": "A departure may stall decisions that leader was driving, or reopen ones already made.",
+      "why_it_matters": "Both directions matter: an opportunity can be lost, and a closed decision can reopen.",
+      "detection_strategy": "single_event",
+      "contributing_event_types": ["leadership_departed"],
+      "minimum_contributors": 1,
+      "window_days": 180,
+      "relevance_window_days": 120,
+      "default_relevance": "contextual"
+    },
+    {
+      "key": "active_evaluation",
+      "title": "Active evaluation",
+      "hypothesis": "Sustained research on a topic suggests an evaluation may already be under way.",
+      "why_it_matters": "Arriving during an evaluation is a different conversation from starting one.",
+      "detection_strategy": "single_event",
+      "contributing_event_types": ["buying_intent_surge"],
+      "minimum_contributors": 1,
+      "window_days": 120,
+      "relevance_window_days": 90,
+      "default_relevance": "primary"
+    },
+    {
+      "key": "consolidation_underway",
+      "title": "Consolidation underway",
+      "hypothesis": "An acquisition may force systems and budgets to be consolidated.",
+      "why_it_matters": "Consolidation forces decisions that were being deferred, in both directions.",
+      "detection_strategy": "single_event",
+      "contributing_event_types": ["acquisition_announced"],
+      "minimum_contributors": 1,
+      "window_days": 180,
+      "relevance_window_days": 270,
+      "default_relevance": "supporting"
+    },
+    {
+      "key": "contraction_risk",
+      "title": "Contraction risk",
+      "hypothesis": "A company reducing headcount or revenue may be re-scoping what it spends and who approves it.",
+      "why_it_matters": "Contraction changes budget authority before it is announced — and it can mean either risk or an efficiency conversation.",
+      "detection_strategy": "single_event",
+      "contributing_event_types": ["headcount_decline", "revenue_contraction"],
+      "minimum_contributors": 1,
+      "window_days": 180,
+      "relevance_window_days": 180,
+      "default_relevance": "contextual"
+    }
+  ]
+}

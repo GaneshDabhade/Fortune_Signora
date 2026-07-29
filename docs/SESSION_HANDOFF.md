@@ -1,4 +1,4 @@
-# Session Handoff — end of M4
+# Session Handoff — end of M5A
 
 > **Purpose:** start the next engineering session immediately, without reconstructing context.
 > **Authoritative continuation point.** Updated at every milestone boundary.
@@ -12,28 +12,28 @@
 
 | | |
 |---|---|
-| **Last completed** | **M4 Business Event Engine** — closed 2026-07-29 |
-| **Next** | **M5A Signal Engine** — architecture proposal not yet written |
-| **Phase** | Product Pipeline. Foundations and enablement are complete and frozen. Five pipeline stages built. |
-| **Overall completion** | **~41%** by engineering effort (~131 of ~261–339 ew) |
-| **Remaining** | ~130–208 ew · ~1.3–1.9 years at 3 engineers, ~4.0–5.7 at 1 |
-| **Completed milestones** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · M4 |
+| **Last completed** | **M5A Signal Engine** — closed 2026-07-29 |
+| **Next** | **M5B Buying Score Engine** — architecture proposal not yet written |
+| **Phase** | Product Pipeline. Foundations and enablement are complete and frozen. Six pipeline stages built. |
+| **Overall completion** | **~45%** by engineering effort (~142 of ~261–339 ew) |
+| **Remaining** | ~119–197 ew · ~1.2–1.8 years at 3 engineers, ~3.7–5.3 at 1 |
+| **Completed milestones** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · M4 · M5A |
 | **Branch** | `main` |
 
-**Recent commits:** M4 close (this change) · `2718272` M4 proposal · `e73c120` M3B closed · `719ca64` M3B proposal · `817c672` M3A closed
+**Recent commits:** M5A close (this change) · `cde2218` M5A proposal · `026a2fa` M4 closed · `2718272` M4 proposal · `e73c120` M3B closed
 
 ### Health
 
 | Indicator | Value |
 |---|---|
-| Backend tests | **822 passing**, 0 failing, 0 skipped |
+| Backend tests | **905 passing**, 0 failing, 0 skipped |
 | Frontend tests | **101 passing** |
-| Backend coverage | **95.39%** (CI gate 95%) |
-| Security invariants | **154 / 154**, each proven to fail when its guarantee is removed |
-| import-linter contracts | **11 kept, 0 broken** |
-| `make smoke` | ✅ 20 stages, 71s |
-| Migrations | 0000–0011, all reversible |
-| mypy strict | Clean, 254 files |
+| Backend coverage | **95.50%** (CI gate 95%) |
+| Security invariants | **186 / 186**, each proven to fail when its guarantee is removed |
+| import-linter contracts | **13 kept, 0 broken** |
+| `make smoke` | ✅ 21 stages, 76s |
+| Migrations | 0000–0012, all reversible |
+| mypy strict | Clean, 278 files |
 | Open production bugs | **0** |
 | Technical debt | **0 outstanding** · **2 platform findings raised** (§5) |
 
@@ -63,7 +63,7 @@ Permanent contracts. Each is enforced by automated test, not convention. **Chang
 | **Tenant Isolation Policy** | Every table declared tenant-owned or platform infrastructure — **classification is never inferred**. Tenant tables carry a non-null identifier, RLS enabled **and forced**, and policies covering SELECT/INSERT/UPDATE separately. A table in neither list fails the build. |
 | **Migration / runtime credential separation** | Runtime services never execute under migration or owner credentials. Each tier holds its own least-privileged role: `signora_app` (API, workers), `signora_auth` (frontend), `signora_relay` (outbox), owner (migrations only). |
 | **Platform Infrastructure Policy** | `outbox_event`, `processed_event`, `dead_letter_event`, `alembic_version` are owned by platform services. The application **publishes and cannot read**; only the relay consumes. Isolation is by grant, since these tables span workspaces and have no RLS. |
-| **Immutable tenant tables** | `claim`, `resolution_decision`, `observation`, and `business_event` are immutable. `signora_app` holds **no `UPDATE` grant** on any of them — an attempted overwrite fails with a permission error. `DELETE` remains, because all are derived and regeneration is the rollback for a broken mapper or rule. |
+| **Immutable tenant tables** | `claim`, `resolution_decision`, `observation`, `business_event`, `signal`, and `signal_profile` are immutable. `signora_app` holds **no `UPDATE` grant** on any of them — an attempted overwrite fails with a permission error. `DELETE` remains, because all are derived and regeneration is the rollback for a broken mapper or rule. |
 | **Shared vocabulary** | `provider_normalization/public` — the canonical attributes, their value types, and the frozen claim views — is a **platform-wide contract** every downstream pipeline module may depend on (ratified 2026-07-29). A vocabulary dependency, not a data-access one: claim *data* still travels through read ports. Extending it still requires an RFC. |
 | **Module boundaries, enforced** | Since M3A, import-linter carries a contract per module pair: no module may import another's `domain/`, `application/`, `infrastructure/`, or `interface/`, and upstream modules cannot import downstream ones. Data crosses via a **read port on `public/`** — a Protocol plus frozen views, never an ORM instance. |
 
@@ -119,6 +119,20 @@ Permanent contracts. Each is enforced by automated test, not convention. **Chang
 | **Agreement is evidence, not truth** | Each provider's series is evaluated alone, so no rule combines two providers' values. Two providers reaching one conclusion produce **one** event recording both — a set, never a coefficient. This is the pipeline's only cross-provider reasoning, and it is deliberately narrow. |
 | **The taxonomy is a product asset** | Every type passes the CRO test: *would they immediately understand what this means?* No provider, implementation, or engineering terminology — asserted by invariant, including that business domains never name a data-model term. |
 | **Two versions, never conflated** | `taxonomy_version` is meaning; `payload_version` is wire shape. Conflating them means tuning a threshold breaks a consumer contract, so nobody ever tunes a threshold. |
+
+### Commercial meaning
+
+| Contract | What it guarantees |
+|---|---|
+| **The global/subjective boundary** | *Business events describe objective business phenomena; signals describe customer-specific commercial hypotheses.* Signals are the **first subjective layer**. Everything above the Signal Engine is globally true; everything below stays traceable back to globally true information. Ratified 2026-07-29. |
+| **Ownership decides where configuration lives** | Not technology. Signora's language — the business event taxonomy and the signal catalog — ships as versioned repository artifacts. The customer's commercial position — the signal profile — lives in versioned, immutable, attributed rows. Apply this criterion whenever a similar question arises. |
+| **The signal vocabulary stays global** | A workspace configures *relevance* and **can never invent a type** — structurally unrepresentable, since `ProfileEntry.signal_type` is typed as `SignalType`. This is what makes AI prompting, benchmarking, analytics, documentation, and support work across customers. |
+| **No commercial verdict in the Signal Engine** | No score, priority, likelihood, or rank. Relevance is a category with no numeric meaning; the module contains no numbers beyond windows and counts. |
+| **Contradiction is preserved** | Opposing hypotheses coexist for one account and are never reconciled — the claim-disagreement principle one layer up. |
+| **Composites enrich, never replace** | Constituent signals are generated and stored independently; the composite **names** them and adds context on top of history rather than collapsing it. |
+| **Hypotheses are phrased as possibilities** | *may*, *might*, *suggests* — asserted by invariant. A type stating its hypothesis as fact has drifted into the Business Event Engine's territory. |
+| **Two replay modes, never conflated** | Historical (reproduce what we told them) and current (what would we say now). Both first-class. |
+| **Customer-authored data is different** | `signal_profile` cannot be regenerated from anything. Signals are derived and rebuildable; profiles need the operational rigour of customer-owned data. |
 | **Downstream references business events directly** | Signals, Buying Scores, Opportunities, and AI explanations reference **business event types**, not re-derived meaning from observations. A module that reconstructs *"this looks like a hiring surge"* from raw observations has forked the vocabulary, and two definitions of one concept diverge within a year. Ratified 2026-07-29. |
 
 ---
@@ -135,10 +149,10 @@ Knowledge Graph       ✅ M3A    identity resolution, relationships, claim sets
 Observation           ✅ M3B    what changed, according to whom
         ↓
 Business Event        ✅ M4     what it means, in language a CRO recognises
+        ↓  ─────────── the global / customer-specific boundary ───────────
+Signal                ✅ M5A    why it might matter to *this* customer
         ↓
-Signal                🔄 M5A    ← NEXT: commercially meaningful — to us
-        ↓
-Buying Score          ⏳ M5B    continuous propensity
+Buying Score          🔄 M5B    ← NEXT: how much it matters, overall
         ↓
 Opportunity           ⏳ M6     ★ first sellable moment
         ↓
@@ -149,9 +163,9 @@ AI Reasoning          ⏳ M9     why, with evidence
 Recommendation        ⏳ M11    what to do next
 ```
 
-**Five links exist and are verified against the live stack** (smoke stages 14b–14e). A simulated provider payload enters through the Provider Port, is stored raw, becomes canonical claims, is resolved to an entity whose decision explains itself, any change in what a provider asserts becomes an observation attributed to that provider, and a material change becomes a typed business event a CRO could read — *"Started using CloudERP"*, *"Raised 24M USD in a series b round"* — with no simulation-specific logic anywhere in that path.
+**Six links exist and are verified against the live stack** (smoke stages 14b–14f). A simulated provider payload enters through the Provider Port, is stored raw, becomes canonical claims, is resolved to an entity whose decision explains itself, any change in what a provider asserts becomes an observation attributed to that provider, and a material change becomes a typed business event a CRO could read — *"Started using CloudERP"*, *"Raised 24M USD in a series b round"* — and, for a workspace that says it cares, that event becomes a commercial hypothesis with its own two-part explanation. No simulation-specific logic exists anywhere in that path.
 
-Everything from M5A onward is unbuilt. See **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** for what each remaining stage adds and what it is forbidden from doing.
+Everything from M5B onward is unbuilt. See **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** for what each remaining stage adds and what it is forbidden from doing.
 
 ---
 
@@ -173,70 +187,67 @@ The principles that got the project here, in the order they matter:
 
 ---
 
-## 5 · M5A starting context
+## 5 · M5B starting context
 
-### What M5A inherits
+### What M5B inherits
 
-**Input:** typed business events in Signora's business language. Through `modules.business_event_engine.public`:
+**Input:** commercial hypotheses, already interpreted for this workspace. Through `modules.signal_engine.public`:
 
-- `BusinessEventQueries.business_events(workspace_id, entity_id, type_key=None, since=None)`
-- `BusinessEventQueries.business_event_evidence(workspace_id, event_id)` → the event plus the observations behind it
-- `BusinessEventQueries.history(workspace_id, event_id)` → the supersession chain, oldest first
-- `BusinessEventQueries.taxonomy()` → the eleven types, their meanings, and their `why_it_matters` sentences
+- `SignalQueries.signals(workspace_id, entity_id, signal_type=None, live_only=True)` — `live_only` applies all three ways a hypothesis stops being current: superseded, past its shelf life, or of a type the workspace no longer holds
+- `SignalQueries.explanation(workspace_id, signal_id)` — the signal, its definition, the profile entry that made it relevant, the business events behind it, and the constituents it enriches
+- `SignalQueries.history(...)` · `SignalQueries.profile(...)` · `SignalQueries.catalog()`
 
-Each event carries `summary` (a sentence a CRO reads), `facts` (what the rule computed), `corroborating_providers`, `occurred_at` and its window, and `taxonomy_version`. Subscribe to `business_event.detected`; also handle `business_event.superseded`, or an extended phenomenon will be counted twice.
+Each signal carries `relevance` (a category), `occurred_at`, `relevant_until`, `rationale`, `contributing_event_ids`, `contributing_event_types`, `constituent_signal_ids`, and both versions. Subscribe to `signal.generated`; also handle `signal.superseded`, or a strengthened hypothesis will be counted twice.
 
-**Also available:** `knowledge_graph.public.GraphQueries` for entity context — relationships (`USES_TECHNOLOGY`, with `as_of`), claim sets, resolution history — which is what makes *"they run a competitor's stack"* expressible.
+**Also available:** `BusinessEventQueries` for the facts underneath, and `GraphQueries` for entity context.
 
-**Already exists and should be assumed:** event bus with platform-owned idempotency · forced RLS with `SECURITY DEFINER` predicates · `make smoke`, extensible with a stage (14b–14e) · the Tenant Isolation Policy — **register every new table in `tenancy_policy.py` or the build fails**.
-
-**Expected output:** signals — weighted indicators of buying intent — consumed by the Buying Score Engine and Timeline.
+**Already exists and should be assumed:** event bus with platform-owned idempotency · forced RLS · `make smoke`, extensible with a stage (14b–14f) · the Tenant Isolation Policy — **register every new table in `tenancy_policy.py` or the build fails**.
 
 ### The central challenge
 
-**M5A is the first module permitted to answer "should we engage?"**
+**M5B is the first module permitted to answer "how much does this matter?"**
 
-Every module so far has refused it. M4 states what happened in business terms and stops; whether *"Acme is in a hiring surge"* is worth a seller's attention depends on who is selling, what they sell, and to whom — none of which any earlier module knows.
+M5A contains no scores at all, by design. Three things it deliberately left on the table are M5B's to pick up, and each is a stated, reviewable rule rather than an implementation detail:
 
-Two things M4 deliberately left on the table are M5A's to pick up:
+1. **Weighting relevance categories.** `PRIMARY`/`SUPPORTING`/`CONTEXTUAL` is an ordinal the Signal Engine refuses to turn into a number. M5B must, and where that mapping lives is the same ownership question M5A answered — probably the customer's, alongside the profile.
+2. **Resolving contradiction.** A `CONTRACTION_RISK` and an `EXPANSION_OPPORTUNITY` can be live for one account. Every module so far has preserved that; **M5B is the first that must produce a single number anyway.** How it does so is the most consequential decision in the milestone.
+3. **Applying decay.** A signal declares `relevant_until`; how much a hypothesis is worth *within* that window, as it ages, is propensity.
 
-- **Weighting corroboration.** M4 records *which* providers independently reached a conclusion. Turning that into confidence is a commercial rule.
-- **Combining evidence across types.** A hiring surge plus buying intent on your category plus a competitor's technology is a different proposition from any one alone. That correlation is the module's whole value.
+**One requirement recorded during M5A:** deduplicate on contributing **business events**, not on signals. A composite and its constituent rest on the same grounds read two ways, and counting both would double-count the evidence.
 
 ### Architectural questions worth raising before coding
 
-1. **Is a signal per business event, or per correlation of several?** The interesting ones are correlations, and that changes identity, supersession, and volume all at once.
-2. **Where does workspace-specific configuration live?** Unlike a business event, a signal is inherently *relative to the seller*. The taxonomy is global; signal weighting probably is not — and that is the first genuinely per-workspace configuration in the platform.
-3. **Is scoring a rule or a model?** Deterministic rules have carried the pipeline this far. A learned model is defensible here but changes explainability fundamentally — and explainability is the product.
-4. **How does a signal decay?** A hiring surge from eight months ago is weaker evidence than last week's. Decay is a rule that must be stated, not implied.
-5. **What happens when a business event is superseded?** A signal built on the smaller view has to react. The precedent across four modules says supersede rather than mutate.
-6. **Is a signal immutable?** `claim`, `resolution_decision`, `observation`, and `business_event` all are. Confirm that still holds when a signal's weight changes because its configuration changed.
+1. **Where does the weighting configuration live?** Following the ownership criterion, probably with the customer — which would make it the second customer-authored table, and raise whether it belongs *in* the signal profile or beside it.
+2. **How is contradiction resolved, and is the resolution explainable?** A number that silently nets an expansion signal against a contraction one is unexplainable. Whatever the rule, a customer must be able to see it.
+3. **Is a score a stored artifact or a projection?** It changes continuously as signals expire — a stored score is stale the moment the clock moves, and a projection cannot publish `buying_score.updated`.
+4. **What does trend mean, and over what window?** The v2 catalog gives `buying_score.updated` a `trend`. Deriving it needs score history, which is a design decision about storing scores at all.
+5. **Is a score immutable?** The precedent across six tables says yes, with append-only history. Confirm it survives a configuration change and continuous decay.
+6. **Does M5B need entity context, or only signals?** Account fit — *"does this look like our customers?"* — was deferred out of M5A. If it belongs anywhere it is here or M6, and it should be settled deliberately.
 
 ### Two platform findings, open — RFCs queued
 
-Both concern `signora_platform/`, which is frozen (CLAUDE.md §20a). **Neither is to be worked around inside a product milestone.** Product milestones consume platform capabilities; they do not redesign them.
+Both concern `signora_platform/`, which is frozen (CLAUDE.md §20a). **Neither is to be worked around inside a product milestone.**
 
 | Finding | Effect | Resolution path |
 |---|---|---|
-| **`EventHandler` receives no session.** A handler must do its work in the *same transaction* as the dispatcher's idempotency claim, but the registry's signature is `(envelope) -> None`. | **No module handler is registered in the live registry.** The pipeline is exercised end to end through its real handlers in the integration suite and in `make smoke`, but the deployed worker consumes nothing. | RFC: **EventHandler transaction participation.** |
-| **`PublishableEvent` cannot be satisfied by a frozen dataclass.** The Protocol declares settable members; every domain event is immutable, as the architecture requires. | Five modules now carry a `# type: ignore` at their publish site. | RFC: **PublishableEvent immutability compatibility.** |
+| **`EventHandler` receives no session.** A handler must work in the *same transaction* as the dispatcher's idempotency claim, but the registry's signature is `(envelope) -> None`. | **No module handler is registered in the live registry.** The pipeline is exercised end to end through its real handlers in the integration suite and `make smoke`, but the deployed worker consumes nothing. | RFC: **EventHandler transaction participation.** |
+| **`PublishableEvent` cannot be satisfied by a frozen dataclass.** | Six modules now carry a `# type: ignore` at their publish site. | RFC: **PublishableEvent immutability compatibility.** |
 
-### Carried forward from M4
+### Carried forward
 
-- **AC-40 is partial.** Re-evaluation triggered by `observation.superseded` is wired at the contract level only — `citing_observations` and the replacement logic exist and are exercised. Closing the loop belongs with the first real late-arrival scenario.
-- **Scheduled simulation work (M2.0), now three items.** A scenario with genuine multi-week movement · fixture enrichment so Crunchbase and CoreSignal carry a domain · an intent trajectory that sustains above the elevated threshold for enough weeks to produce a `BUYING_INTENT_SURGE`. All three are simulation artifacts, deliberately not edited mid-milestone.
+- **AC-40 (M4) is partial.** Re-evaluation triggered by `observation.superseded` is wired at contract level only; `citing_observations` and the replacement logic exist and are exercised.
+- **Scheduled simulation work (M2.0), now four items.** A scenario with genuine multi-week movement · fixture enrichment so Crunchbase and CoreSignal carry a domain · an intent trajectory sustaining above the elevated threshold for enough weeks · **evidence recent enough that signals are still within their shelf life**, so the live-set path is exercised positively rather than only by its absence.
 
 ### Deferred, and to stay deferred
 
-- **Commercial judgement upstream of M5A** — no priority, score, or urgency in the Business Event Engine, guarded by a column-name invariant.
-- **Thresholds in rule code** — guarded by a syntax-tree invariant over every rule module.
-- **Materiality inside the Observation Engine** — guarded the same way.
-- **Runtime-editable taxonomy** — trigger recorded: when a non-engineer must tune a threshold without a release, realistically M12.
-- **Per-workspace taxonomy overrides** — a large change touching identity, replay, and review at once. No customer has asked.
-- **`TECHNOLOGY_MIGRATION`** — a correlation between two *business events*, not between observations. A candidate for M5A rather than M4.
-- **Cross-provider consensus observations** — no consumer has asked; if M5A demonstrates it needs one, that is the evidence.
-- **Confidence scoring anywhere before M5A** — `MatchStrength` is not this and must never become it.
-- **Fuzzy / probabilistic identity matching** · **resolved-value projections** · **person entities** · **manual merge UI (M12)** · **authentic provider payloads** · **cloud infrastructure (M14.5)** · **business UI (M12)**.
+- **Commercial verdicts upstream of M5B** — no score, priority, or likelihood in the Signal Engine, guarded by a column-name invariant.
+- **Thresholds in rule or strategy code** — guarded by syntax-tree invariants in both M4 and M5A.
+- **Per-workspace signal or business event *types*** — configuration is relevance only; the vocabularies stay global.
+- **Inferred relevance** — a good idea with no behaviour to learn from yet. The sequencing is explicit profiles first, with inference later *proposing* changes a human accepts.
+- **ICP / account-fit filtering** — deferred out of M5A; settle its home in M5B or M6.
+- **Runtime-editable taxonomy / catalog** — trigger recorded: when a non-engineer must tune without a release, realistically M12.
+- **`signal_profile.updated`** — M5B may want it; adding it before a consumer exists would be a contract nobody keeps.
+- **Confidence scoring before M5B** · **fuzzy identity matching** · **resolved-value projections** · **person entities** · **manual merge UI (M12)** · **authentic provider payloads** · **cloud infrastructure (M14.5)** · **business UI (M12)**.
 
 ---
 
@@ -248,6 +259,7 @@ Both concern `signora_platform/`, which is frozen (CLAUDE.md §20a). **Neither i
 | [22-knowledge-graph.md](architecture/22-knowledge-graph.md) | The M3A design, marked **as built**, including four departures from the approved proposal and why each was forced. |
 | [23-observation-engine.md](architecture/23-observation-engine.md) | The M3B design, marked **as built**. Contains the four evaluated architectures and why cross-provider observation series were rejected — the single most important rejection in the module. |
 | [24-business-event-engine.md](architecture/24-business-event-engine.md) | The M4 design, marked **as built**. Contains the taxonomy/rules reasoning and what the CRO test changed before implementation. |
+| [25-signal-engine.md](architecture/25-signal-engine.md) | The M5A design, marked **as built**. Contains the global-vs-workspace analysis and the ownership criterion for where configuration lives — the reasoning to reuse whenever a similar question arises. |
 | [06-events.md](architecture/06-events.md) | The event catalog. `claim.recorded` and the five Knowledge Graph events are current as of M3A. |
 | [05-module-dependencies.md](architecture/05-module-dependencies.md) | The dependency graph, and the read-port pattern for reading another module's data. |
 | [04-modules.md](architecture/04-modules.md) | Module ownership and vocabulary. Provider Normalization and Knowledge Graph entries reflect what was actually built, not the v2 placeholders. |
@@ -256,20 +268,20 @@ Both concern `signora_platform/`, which is frozen (CLAUDE.md §20a). **Neither i
 
 ## 7 · Next session starting point
 
-> **Completed:** M4 Business Event Engine · **Next:** M5A Signal Engine
-> **Branch:** `main` · everything committed, tree clean
-> **Health:** 822 backend + 101 frontend tests passing · coverage 95.39% · 154 invariants · 11 contracts · smoke green over 20 stages
+> **Completed:** M5A Signal Engine · **Next:** M5B Buying Score Engine
+> **Branch:** `main` · everything committed and pushed, tree clean
+> **Health:** 905 backend + 101 frontend tests passing · coverage 95.50% · 186 invariants · 13 contracts · smoke green over 21 stages
 >
 > **First actions:**
 > 1. Read [21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md) — it is the shortest path to full context, and it tracks what is *built* rather than intended.
 > 2. Verify the tree is clean and `make smoke` is green.
-> 3. Prepare the **M5A architecture proposal** before any implementation, following the M3A/M3B/M4 pattern: domain model, evaluated alternatives with a recommendation, storage, events, module API, task breakdown, acceptance criteria, demonstration, DoD, rollback, operational readiness, risks. **Wait for approval.**
+> 3. Prepare the **M5B architecture proposal** before any implementation, following the established pattern: domain model, evaluated alternatives with a recommendation, storage, events, module API, task breakdown, acceptance criteria, demonstration, DoD, rollback, operational readiness, risks. **Wait for approval.**
 >
-> **Settle these inside the proposal, not during implementation:** signal per event or per correlation · where per-workspace configuration lives · scoring as rule or model · decay · reaction to a superseded business event · immutability under a configuration change.
+> **Settle these inside the proposal, not during implementation:** where weighting configuration lives · how contradiction is resolved *explainably* · stored score vs projection · what trend means · immutability under continuous decay · whether account fit belongs here.
 >
 > **Raise, do not work around:** the two platform findings in §5 are **RFC work items**, not obstacles to route around inside a product milestone. Product milestones consume platform capabilities; they do not redesign them.
 >
-> **Do not:** reimplement anything in §2 · introduce mock business data · add a canonical attribute or a business event type without review · store a resolved attribute value in the Knowledge Graph · turn `MatchStrength` into a number · put a materiality threshold in the Observation Engine · put a business threshold in rule code rather than the taxonomy · put commercial judgement in the Business Event Engine · modify `signora_platform/` or the frontend foundation without a qualifying reason.
+> **Do not:** reimplement anything in §2 · introduce mock business data · add a canonical attribute, business event type, or signal type without review · store a resolved attribute value in the Knowledge Graph · turn `MatchStrength` or `Relevance` into a number · put a materiality threshold in the Observation Engine · put a business threshold in rule or strategy code rather than in the taxonomy or catalog · put commercial judgement in the Business Event Engine · put a commercial verdict in the Signal Engine · let a workspace invent a vocabulary type · modify `signora_platform/` or the frontend foundation without a qualifying reason.
 
 ---
 
@@ -277,6 +289,7 @@ Both concern `signora_platform/`, which is frozen (CLAUDE.md §20a). **Neither i
 
 | Date | Change |
 |---|---|
+| 2026-07-29 | v5 — updated at the M5A boundary. Adds the **Commercial meaning** contract block (the global/subjective boundary · ownership decides where configuration lives · the vocabulary stays global · no commercial verdict · contradiction preserved · composites enrich · hypotheses phrased as possibilities · two replay modes · customer-authored data is different). Rewrites §5 for M5B, keeps the two platform findings as **queued RFCs**, and records a fourth item of scheduled M2.0 simulation work. |
 | 2026-07-29 | v4 — updated at the M4 boundary. Adds the **Business meaning** contract block (business relevance never commercial judgement · taxonomy is data, rules are code · no threshold in code · agreement is evidence · the taxonomy as a product asset · two versions never conflated). Rewrites §5 for M5A, keeps the two platform findings as **queued RFCs**, and records three items of scheduled M2.0 simulation work. |
 | 2026-07-29 | v3 — updated at the M3B boundary. Adds the **Change** contract block (the layering principle, change-never-significance, per-provider series only, restraint, derived identity, refinement) and the shared-vocabulary contract. Rewrites §5 for M4, records the two platform findings as **queued RFCs** rather than obstacles, and lists the scheduled M2.0 simulation work. |
 | 2026-07-29 | v2 — updated at the M3A boundary. Adds the **Knowledge** contract block (identity-never-truth, deterministic resolution, `MatchStrength` is never a number, ambiguity merges nothing, decisions explain themselves) and the module-boundary enforcement contract. Rewrites §5 for M3B, records **two open platform findings** and one scheduled fixture follow-up, and points §6 at [21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md) as the document to read first. |

@@ -2,7 +2,7 @@
 
 > Status: **Living document — Architectural Constitution**
 > Audience: All engineers, EMs, and technical stakeholders at Signora
-> Revision: **v6** — adds the Business Event Engine (M4) catalog and removes `business_event_type.published`, which assumed a runtime-mutable taxonomy. v5 added the Observation Engine (M3B) catalog and `entity.evidence_attached`. v4 added the Provider Normalization (M2.2) and Knowledge Graph (M3A) catalogs, and replaces the v2 placeholders `provider.record.normalized`, `entity.updated`, and `entity.merged` with the events the evidence-first model actually produces. v3 notes follow.
+> Revision: **v7** — adds the Signal Engine (M5A) catalog, removes `signal.scored`, and drops `score` from `signal.generated`: the Signal Engine produces no scores. v6 added the Business Event Engine (M4) catalog and removed `business_event_type.published`, which assumed a runtime-mutable taxonomy. v5 added the Observation Engine (M3B) catalog and `entity.evidence_attached`. v4 added the Provider Normalization (M2.2) and Knowledge Graph (M3A) catalogs, and replaces the v2 placeholders `provider.record.normalized`, `entity.updated`, and `entity.merged` with the events the evidence-first model actually produces. v3 notes follow.
 > Previous revision: **v3** — documents the dispatch layer as built in M1.1: relay semantics, the `processed_event` idempotency ledger, the `dead_letter_event` table, and the decision that **idempotency is platform-owned**. v2 catalog unchanged.
 
 ## Purpose
@@ -63,8 +63,8 @@ Events are listed in pipeline order. Payload fields below are illustrative and i
 | `observation.superseded` | Observation Engine | Business Event Engine, Timeline | `observation_id`, `supersedes`, `entity_id`, `attribute` |
 | `business_event.detected` | Business Event Engine | Signal Engine, Timeline | `business_event_id`, `entity_id`, `type_key`, `domain`, `occurred_at`, `taxonomy_version` — see the M4 section below |
 | `business_event.superseded` | Business Event Engine | Signal Engine, Timeline | `business_event_id`, `supersedes`, `entity_id`, `type_key` |
-| `signal.generated` | Signal Engine | Buying Score Engine, Timeline | `signal_id`, `entity_id`, `source_event_ids`, `score` |
-| `signal.scored` | Signal Engine | Buying Score Engine, Timeline | `signal_id`, `score`, `scoring_model_version` |
+| `signal.generated` | Signal Engine | Buying Score Engine, Timeline | `signal_id`, `entity_id`, `signal_type`, `relevance`, `relevant_until`, `catalog_version`, `profile_version` — see the M5A section below |
+| `signal.superseded` | Signal Engine | Buying Score Engine, Timeline | `signal_id`, `supersedes`, `entity_id`, `signal_type` |
 | `buying_score.updated` | Buying Score Engine | Opportunity Engine, Timeline | `entity_id`, `score`, `trend`, `source_signal_ids`, `model_version` |
 | `opportunity.created` | Opportunity Engine | AI Research Engine, AI Reasoning Engine, Timeline, Revenue Intelligence Platform | `opportunity_id`, `entity_id`, `source_buying_score`, `stage` |
 | `opportunity.stage_changed` | Opportunity Engine | AI Reasoning Engine, Timeline, Revenue Intelligence Platform | `opportunity_id`, `previous_stage`, `new_stage` |
@@ -98,7 +98,7 @@ sequenceDiagram
     OE-->>TL: observation.recorded
     BEE->>SE: business_event.detected / superseded
     BEE-->>TL: business_event.detected
-    SE->>BSE: signal.generated / signal.scored
+    SE->>BSE: signal.generated / superseded
     SE-->>TL: signal.generated
     BSE->>OP: buying_score.updated
     BSE-->>TL: buying_score.updated
@@ -303,5 +303,20 @@ One event per raw record rather than one per claim: the claims from a record are
 **`business_event.detected` is not a claim that anyone should act.** How important the account is, whether Sales should engage, and how likely a purchase is belong to the Signal Engine and everything after it (the layering principle in [21-intelligence-pipeline.md](21-intelligence-pipeline.md)).
 
 `business_event.superseded` is first-class rather than a log line: a consumer that already acted on the earlier, smaller view of a phenomenon needs to know, or it will count the same thing twice.
+
+### Signal Engine (M5A)
+
+| Event | v | Payload | Notes |
+|---|---|---|---|
+| `signal.generated` | 1 | `signal_id`, `entity_id`, `signal_type`, `relevance`, `occurred_at`, `relevant_until`, `catalog_version`, `profile_version`, `payload_version` | A commercial hypothesis is supported **for this workspace** |
+| `signal.superseded` | 1 | `signal_id`, `supersedes`, `entity_id`, `signal_type` | A hypothesis gained evidence, or a conclusion was corrected |
+
+**These are the first events in the pipeline that are not globally true.** Everything upstream describes what happened; a signal describes what it might mean *to one customer* — which is why both versions travel with it. `catalog_version` is Signora's vocabulary; `profile_version` is the customer's interpretation, and a historical signal missing either is unexplainable.
+
+`relevance` travels as the **string category** it is — `primary`, `supporting`, `contextual` — so no consumer can read it as a weight. Mapping categories to weights is the Buying Score Engine's decision, in its own configuration.
+
+**`signal.generated` is not a claim that anyone should act.** How likely a purchase is, which account to prioritise, and what to recommend belong downstream.
+
+> **Two corrections to the v2 catalog.** `signal.generated` has **lost its `score`**, and **`signal.scored` is removed entirely**. The Signal Engine produces no scores at all: propensity belongs to the Buying Score Engine, which already publishes `buying_score.updated`. An event whose only possible producer lives in another module is a contract nobody is keeping — the same reasoning that removed `business_event_type.published`.
 
 > **Removed:** `business_event_type.published` from the v2 catalog. It assumed a runtime-mutable taxonomy that notified the system when it changed. The taxonomy is a versioned repository artifact — **the deployment is the notification** — so the event had no producer, and an event with no producer is a contract nobody is keeping.

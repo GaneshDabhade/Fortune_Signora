@@ -2,7 +2,7 @@
 
 > Status: **Living document — the primary architectural reference for how Signora thinks**
 > Audience: Engineers, architects, prospective hires, customers, and investors
-> Revision: **v3** — updated at the close of M4. This document tracks the **implemented** architecture, not future intent; stages are marked built only once they run against a real database in `make smoke`.
+> Revision: **v4** — updated at the close of M5A. This document tracks the **implemented** architecture, not future intent; stages are marked built only once they run against a real database in `make smoke`.
 >
 > Prerequisite reading: none. This is the document to read first.
 
@@ -43,7 +43,9 @@ Nine stages. Each one adds business understanding. **None of them destroys what 
 >
 > Claims **preserve evidence** · the Knowledge Graph **resolves identity** · the Observation Engine **detects change** · the Business Event Engine **determines business meaning** · the Signal Engine **determines commercial meaning**.
 >
-> Read as questions: *what was asserted?* · *who is it about?* · *what changed?* · *why is that business-relevant?* · *should we act on it?*
+> Read as questions: *what was asserted?* · *who is it about?* · *what changed?* · *why is that business-relevant?* · *why might that matter to **this** customer?* · *should we act on it?*
+>
+> The line falls between the fourth and fifth: **everything up to and including business events is globally true; everything from signals onward is customer-specific but still traceable back to globally true information.**
 >
 > *Permanent architectural principle, ratified 2026-07-29.* A stage that answers the next stage's question puts a rule where it cannot be reviewed — a threshold buried in derivation code is not a rule anyone can argue with, and cannot be versioned, tested against a taxonomy, or cited in an explanation.
 
@@ -199,15 +201,55 @@ A module that reconstructs *"this looks like a hiring surge"* from raw observati
 
 ---
 
-## Stage 6 — Signal *(planned — M5)*
+## Stage 6 — Signal
 
-**What it is.** *This matters, and here is the shape of why.* One or more business events, correlated with graph context, into a weighted indicator of buying intent.
+**What it is.** *Why this might matter **to you**.* **"Acme's retired ERP is a displacement opening — your profile treats technology retirement as a primary indicator."**
 
-**Adds:** relevance. A funding round matters more for a company already showing intent on your category than for one that is not — and knowing that requires both the events and the graph.
+**This is the first thing in Signora that is not globally true.** A claim, an entity, an observation, a business event — all are true whoever is reading them. *"Acme is in a hiring surge"* is a fact; *"Acme's hiring surge is an expansion opening for us"* is a claim about **one workspace's** commercial position, false for a company selling something else and unknowable from the evidence alone.
 
-**Refuses:** the overall verdict. A signal is one indicator among several.
+> **Business events describe objective business phenomena. Signals describe customer-specific commercial hypotheses.** *(Permanent principle, ratified 2026-07-29.)* Signals are therefore the **first subjective layer** in the pipeline — and that subjectivity stays explicit, explainable, and constrained. Everything above the Signal Engine remains globally true; everything below remains traceable back to globally true information.
 
-**Owned by:** Signal Engine · **Publishes:** `signal.generated`, `signal.scored`
+**Adds:** commercial relevance, and only that.
+
+**Refuses:** the verdict. Not how likely a purchase is, which account to prioritise, what to recommend, or what to do. A signal carries **no score, priority, likelihood, or rank** — asserted structurally.
+
+### Signals are hypotheses, not facts
+
+A signal **proposes**; it does not assert. Four properties keep that honest:
+
+- **It asserts nothing of its own.** Every fact in a signal is a citation to the business events that carry it.
+- **Contradiction is preserved, never resolved.** A `CONTRACTION_RISK` and an `EXPANSION_OPPORTUNITY` can be live for one account at once. The Signal Engine must not pick — the claim-disagreement principle one layer up, because collapsing the two destroys what a seller most needs to see.
+- **A hypothesis has a shelf life.** `relevant_until` is a derived date, not a weight: a hiring surge from eight months ago is weaker grounds than last week's.
+- **It explains itself in two halves** — *"because your profile treats technology retirement as a primary indicator"* and *"based on: Acme stopped using LegacyERP"*. A customer can challenge either independently, and being challengeable is what makes it trustworthy.
+
+### What belongs to Signora, and what belongs to a customer
+
+| | Owner | Home |
+|---|---|---|
+| **Signal catalog** — the types and what each hypothesis means | Signora | Versioned repository artifact |
+| **Detection strategies** — single-event or composite | Signora | Code |
+| **Signal profile** — which types matter here, and how centrally | **The customer** | Versioned rows, per workspace |
+
+**Ownership decides where configuration lives, not technology.** The business event taxonomy is a repository artifact and the signal profile is a database table for a principled reason: a customer cannot be asked to wait for a Signora release to say that hiring surges matter to them, and Signora's vocabulary cannot be edited at runtime by anyone.
+
+> **A workspace can never invent a signal type.** It configures *relevance* over a global catalog. This is what makes AI Reasoning promptable about `EXPANSION_OPPORTUNITY`, benchmarks comparable across customers, and support answerable without first learning a customer's private dialect.
+
+Relevance is a **category** — `PRIMARY`, `SUPPORTING`, `CONTEXTUAL`, `IGNORED` — never a number, so the module contains no scores at all. The Buying Score Engine maps categories to weights in *its* configuration, which is where propensity belongs.
+
+### Composites enrich; they never replace
+
+A composite hypothesis rests on several **distinct** contributing event types within a window — three hiring surges are one phenomenon reported repeatedly, not three independent grounds. Its constituents remain **independently visible and independently explainable**, and the composite names them. It adds context on top of history rather than collapsing it.
+
+### Replay has two modes, and they answer different questions
+
+| Mode | Uses | Answers |
+|---|---|---|
+| **Historical** | the profile version in force at the time | *"Reproduce what we told them."* |
+| **Current** | the current profile | *"What would we say now, given the same history?"* |
+
+Both are first-class. The second is what lets a customer preview a configuration change against their own history before adopting it.
+
+**Owned by:** Signal Engine · **Tables:** `signal`, `signal_profile` (both immutable) · **Publishes:** `signal.generated`, `signal.superseded` · **Read port:** `SignalQueries`
 
 ---
 
@@ -309,7 +351,7 @@ These hold at every stage, without exception, and are asserted by a permanent Se
 
 **Platform infrastructure tables are not module data.** `outbox_event`, `processed_event`, and `dead_letter_event` span every workspace by design and deliberately carry no RLS — so the *grant* is the only thing separating tenants there. The application role can publish and cannot read; only the relay identity consumes. No business module may query one, for any reason, including debugging.
 
-**Immutable things are immutable at the database.** `claim`, `resolution_decision`, `observation`, and `business_event` carry no `UPDATE` grant. An attempted overwrite fails with a permission error rather than succeeding quietly. Where a later fact must correct an earlier one, the correction is a **new row naming its predecessor** — supersession pointing backwards, because a forward pointer would need the grant immutability withholds.
+**Immutable things are immutable at the database.** `claim`, `resolution_decision`, `observation`, `business_event`, `signal`, and `signal_profile` carry no `UPDATE` grant. An attempted overwrite fails with a permission error rather than succeeding quietly. Where a later fact must correct an earlier one, the correction is a **new row naming its predecessor** — supersession pointing backwards, because a forward pointer would need the grant immutability withholds.
 
 **Modules reach each other only through `public/`.** Enforced by import-linter in CI, per module pair. A cross-module import of an ORM model compiles and runs perfectly well — which is exactly why the rule needs a machine behind it.
 
@@ -324,13 +366,13 @@ These hold at every stage, without exception, and are asserted by a permanent Se
 | Knowledge Graph | Knowledge Graph | **Built** — M3A |
 | Observation | Observation Engine | **Built** — M3B |
 | Business Event | Business Event Engine | **Built** — M4 |
-| Signal | Signal Engine | Planned — M5 |
+| Signal | Signal Engine | **Built** — M5A |
 | Buying Score | Buying Score Engine | Planned — M5B |
 | Opportunity | Opportunity Engine | Planned — M6 |
 | AI Research / AI Reasoning | AI Research Engine, AI Reasoning Engine | Planned — M8/M9 |
 | Recommendation | Recommendation Engine | Planned — M10 |
 
-The first five stages are built and exercised end to end against a real database on every run of `make smoke`. Provider payloads currently come from the **Provider Simulation Framework** — deterministic, seeded, replayable — through the same Provider Port a production vendor adapter will implement. Nothing downstream of that port can tell the difference, and that neutrality is asserted rather than assumed.
+The first six stages are built and exercised end to end against a real database on every run of `make smoke`. Provider payloads currently come from the **Provider Simulation Framework** — deterministic, seeded, replayable — through the same Provider Port a production vendor adapter will implement. Nothing downstream of that port can tell the difference, and that neutrality is asserted rather than assumed.
 
 Those payloads are presently **development fixtures**, marked as such and carried through to every claim's `payload_provenance`. They are not represented as authentic vendor payloads, and a conclusion built on one can be found when authentic payloads arrive.
 

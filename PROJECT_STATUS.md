@@ -1,6 +1,6 @@
 # PROJECT_STATUS.md
 
-> **Revision:** v24 · **Last updated:** 2026-07-29 · **Reporting period:** M4 closed
+> **Revision:** v25 · **Last updated:** 2026-07-29 · **Reporting period:** M5A closed
 > **Owner:** Technical Program Manager · **Audience:** Everyone
 > Authoritative record of project state (CLAUDE.md §20d). Updated after every completed milestone, **before the next begins**.
 >
@@ -22,7 +22,7 @@ The product's competitive advantage is the quality of that reasoning and the evi
 |---|---|
 | **Platform Foundations** | ✅ **Complete** — runtime, auth, deployment, smoke verification, frontend |
 | **Enablement** | ✅ **Complete** — Provider Simulation Framework |
-| **Product Development** | 🔄 **In progress** — five pipeline stages built, through the Business Event Engine. Signora now produces sentences a CRO would recognise. |
+| **Product Development** | 🔄 **In progress** — six pipeline stages built, through the Signal Engine. Signora now produces customer-specific commercial intelligence. |
 | **AI Platform** | ⏳ Queued — M8 onward |
 | **Production Readiness** | ⏳ Queued — cloud infrastructure, then GA |
 
@@ -30,10 +30,10 @@ The product's competitive advantage is the quality of that reasoning and the evi
 
 | | |
 |---|---|
-| **Overall completion** | **~41%** by engineering effort (~131 of ~261–339 ew) |
-| **Effort remaining** | **~130–208 ew** |
-| **Milestones completed** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · **M4** |
-| **Current milestone** | **M5A — Signal Engine** (next) |
+| **Overall completion** | **~45%** by engineering effort (~142 of ~261–339 ew) |
+| **Effort remaining** | **~119–197 ew** |
+| **Milestones completed** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · M4 · **M5A** |
+| **Current milestone** | **M5B — Buying Score Engine** (next) |
 | **Projected to GA** | ~1.6–2.3 years at 3 engineers · ~2.5–3.4 at 2 · ~4.9–6.8 at 1 (80% capacity) |
 
 ## 4 · Roadmap Snapshot
@@ -54,8 +54,8 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | — | M3A | Knowledge Graph | ✅ Complete |
 | — | M3B | Observation Engine | ✅ Complete |
 | — | M4 | Business Event Engine | ✅ Complete |
-| 1 | **M5A** | **Signal Engine** | 🔴 **Next** |
-| 7 | M5B | Buying Score Engine | ⏳ Queued |
+| — | M5A | Signal Engine | ✅ Complete |
+| 1 | **M5B** | **Buying Score Engine** | 🔴 **Next** |
 | 8 | M6 | Opportunity Engine — **first sellable moment** | ⏳ Queued |
 | 9 | M8 | AI Platform — abstraction, prompts, eval harness | ⏳ Queued |
 | 10 | M9 | AI Reasoning Engine | ⏳ Queued |
@@ -94,8 +94,8 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | **Knowledge Graph** | ✅ Complete | M3A | Resolves *which company* a provider is talking about, deterministically and explainably, and derives relationships between entities. **Resolves identity, never truth.** | Claims | Entities, identity bindings, resolution decisions, relationships, and claim sets |
 | **Observation Engine** | ✅ Complete | M3B | Detects **structural change** in what a provider asserts — and refuses to judge whether it matters. Re-assertion and provider disagreement are never change. | Evidence attached to entities | Observations, each attributed to the provider that asserted it |
 | **Business Event Engine** | ✅ Complete | M4 | Answers **"why is this business-relevant?"** — turns observations into typed business events in language a CRO recognises. Owns the taxonomy, Signora's business language; refuses all commercial judgement. | Observations | Business Events, typed against a versioned taxonomy |
-| **Signal Engine** | 🔄 **Next** | M5A | Detects commercially meaningful sales signals from business events — the difference between "something happened" and "something worth acting on happened". | Business Events | Signals |
-| **Buying Score Engine** | ⏳ Queued | M5B | Combines multiple signals into a continuously updated buying propensity score per account. | Signals | Buying Scores |
+| **Signal Engine** | ✅ Complete | M5A | Answers **"why might this matter to *this* customer?"** — the first customer-specific layer. Owns the global signal catalog and the per-workspace relevance profile. Refuses all commercial verdicts. | Business Events | Signals — commercial hypotheses, held per workspace |
+| **Buying Score Engine** | 🔄 **Next** | M5B | Combines multiple signals into a continuously updated buying propensity score per account. | Signals | Buying Scores |
 | **Opportunity Engine** | ⏳ Queued | M6 | Decides whether an account should become an actionable sales opportunity. **The first sellable moment.** | Buying Scores | Qualified Opportunities |
 | **Timeline** | ⏳ Queued | M7 | The account narrative — every observation, event, signal, and score in chronological order, so a seller can read the story rather than the data. | Observations, Business Events, Signals, Buying Scores, Opportunities, Recommendations | The chronological account view |
 | **Revenue Intelligence Platform** | ⏳ Queued | M12 | The composed product surface: the business screens sellers actually use, assembled from every module above. | Opportunities, Timeline, Recommendations, AI Reasoning | The customer-facing application |
@@ -165,11 +165,11 @@ flowchart TD
 
 ## 7 · Current Focus
 
-**M5A Signal Engine** — deciding which business events are commercially meaningful *to us*. It is the first module permitted to answer **"should we engage?"**, and M4 was deliberately shaped to leave that to it.
+**M5B Buying Score Engine** — aggregating signals into a continuously updated buying propensity per account. It is the first module permitted to answer **"how much does this matter?"**, and M5A was deliberately shaped to leave that to it: the Signal Engine contains no scores at all.
 
-The layering principle now reads end to end: *claims preserve evidence · the Knowledge Graph resolves identity · the Observation Engine detects change · the Business Event Engine determines business meaning · the Signal Engine determines commercial meaning.* M5A inherits typed business events with their evidence, their corroborating providers, and the taxonomy version that produced them — and owns the judgement that turns *"Acme is in a hiring surge"* into *"this account is worth your attention now."*
+The layering principle now runs the length of the built pipeline: *claims preserve evidence · the Knowledge Graph resolves identity · the Observation Engine detects change · the Business Event Engine determines business meaning · the Signal Engine determines commercial meaning.* **The line between globally-true and customer-specific falls between the last two** — everything up to business events is true whoever reads it; signals are true for one workspace and still traceable back.
 
-It also inherits the one thing M4 deliberately did not do: **turn provider agreement into confidence.** M4 records which providers independently reached a conclusion; weighting that is a commercial rule, and it belongs where it can be reviewed.
+M5B inherits three things M5A deliberately left on the table: **weighting relevance categories** into a number, **resolving contradictory hypotheses** with a stated rule, and **applying decay** to `relevant_until`. It also inherits one requirement recorded during M5A: it must deduplicate on contributing *business events* rather than on signals, because a composite and its constituent rest on the same grounds read two ways.
 
 **[21-intelligence-pipeline.md](docs/architecture/21-intelligence-pipeline.md)** is the primary architectural reference for how information moves through Signora — the document to read first, kept current with what is actually built.
 
@@ -181,21 +181,21 @@ Knowledge Graph · Observation Engine · Business Events · Signals · Buying Sc
 
 | Indicator | Value | Target |
 |---|---|---|
-| **Backend tests** | **822 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Backend tests** | **905 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Frontend tests** | **101 passing**, 0 failing, 0 skipped | 0 skipped |
-| **Backend coverage** | **95.39%** | ≥95% (CI-gated) |
-| **Security invariants** | **154 / 154**, each proven to fail when its guarantee is removed | 100% verified |
-| **import-linter contracts** | **11 kept, 0 broken** | 0 broken |
-| **Architecture drift** | **0** — no ratified ADR reversed; 10 documents amended for drift, all found by test or by implementation | Trending to 0 |
+| **Backend coverage** | **95.50%** | ≥95% (CI-gated) |
+| **Security invariants** | **186 / 186**, each proven to fail when its guarantee is removed | 100% verified |
+| **import-linter contracts** | **13 kept, 0 broken** | 0 broken |
+| **Architecture drift** | **0** — no ratified ADR reversed; 12 documents amended for drift, all found by test or by implementation | Trending to 0 |
 | **Open production bugs** | **0** | 0 |
 | **Technical debt** | **0 outstanding** · **2 platform findings raised** (see M3A record) | — |
-| **`make smoke`** | ✅ Passing (71s; 20 stages, the full pipeline through business events) | Required per milestone |
+| **`make smoke`** | ✅ Passing (76s; 21 stages, the full pipeline through signals) | Required per milestone |
 
 ### Test suite composition
 
 | Area | Tests | Notes |
 |---|---|---|
-| Security invariants | 154 | Permanent architectural guarantees; run as their own CI job |
+| Security invariants | 186 | Permanent architectural guarantees; run as their own CI job |
 | Simulation framework | 130 | Clock, dataset, scenario, faults, delivery, generators |
 | Provider contract suite | 45 | **One suite, five adapters** — the keystone interchangeability test |
 | Workspace & Tenancy | ~70 | RLS isolation, API, persistence |
@@ -206,7 +206,8 @@ Knowledge Graph · Observation Engine · Business Events · Signals · Buying Sc
 | Knowledge Graph (resolution, use cases, pipeline) | 70 | Identity — the first decision Signora makes |
 | Observation Engine (derivation, use case, pipeline) | 54 | Change — and, mostly, what is *not* change |
 | Business Event Engine (rules, taxonomy, detection, pipeline) | 63 | Business meaning — in language a CRO recognises |
-| **Backend total** | **822** | Coverage 95.39%, mypy strict over 254 files |
+| Signal Engine (catalog, profile, strategies, pipeline) | 51 | Commercial meaning — the first customer-specific layer |
+| **Backend total** | **905** | Coverage 95.50%, mypy strict over 278 files |
 | Frontend components & foundation | 101 | Includes 13 AC-14/AC-15 guard tests |
 
 ---
@@ -417,67 +418,53 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 
 ## Current Milestone
 
-### ✅ M4 — Business Event Engine · **CLOSED** 2026-07-29
+### ✅ M5A — Signal Engine · **CLOSED** 2026-07-29
 
 | Field | Value |
 |---|---|
 | **Status** | ✅ **Completed** |
 | **Completion date** | 2026-07-29 |
-| **Commits** | `2718272` (proposal) · this change (T75–T83) |
-| **Exit gate** | ✅ **`make smoke` passed** — 71s, fresh images, clean Compose stack, **20 stages**, 154 invariants green against the running system |
-| **Effort** | ~10–14 ew scoped · delivered within range |
+| **Commits** | `cde2218` (proposal) · this change (T84–T92) |
+| **Exit gate** | ✅ **`make smoke` passed** — 76s, fresh images, clean Compose stack, **21 stages**, 186 invariants green against the running system |
+| **Effort** | ~8–13 ew scoped · delivered within range |
 
-**The milestone in one line.** The first module whose output a human would recognise as intelligence — *"Acme is in a hiring surge: grew headcount 40% over 90 days"* rather than *"employee_count moved 100 → 140 per CoreSignal"* — and the first whose correctness is a **product judgement rather than a structural one**.
+**The milestone in one line.** The first module in Signora that produces something **true for only one customer** — and the point at which the platform stops describing the world and starts interpreting it commercially.
 
-**The permanent boundary it establishes:**
+**The permanent principle it establishes:**
 
-> **The Business Event Engine answers "why is this business-relevant?" It does not answer "should we engage this account?"**
+> **Business events describe objective business phenomena. Signals describe customer-specific commercial hypotheses.**
 >
-> How important the account is, what priority this deserves, how likely a purchase is, and what to recommend belong to the Signal Engine and everything after it. A business event carries **no priority, score, urgency, or rank** — enforced by a column-name invariant, not by convention.
+> Signals are therefore the **first subjective layer** in the intelligence pipeline. Everything above the Signal Engine remains globally true; everything below remains traceable back to globally true information. That subjectivity stays explicit, explainable, and constrained.
 
 **Acceptance criteria satisfied**
 
 | AC | Status |
 |---|---|
-| **AC-35** No threshold lives in code | ✅ Rule modules parsed as **syntax trees**; any numeric literal in a comparison other than `0` or `1` fails the build |
-| **AC-36** No commercial judgement | ✅ Column-name invariant over `business_event`; no priority, score, urgency, rank, importance, likelihood, propensity, or confidence |
-| **AC-37** Citation, not subsumption | ✅ Two database CHECK constraints — every event cites ≥1 observation and names ≥1 provider; zero orphans asserted by join |
-| **AC-38** Deterministic and replayable | ✅ The table is truncated and rebuilt from observations, reproducing the current set identically |
-| **AC-39** Durable business history | ✅ Immutable; extension supersedes with a backward pointer; the full chain stays readable via `history()` |
-| **AC-40** A refined observation re-evaluates its events | ⚠️ **Partial** — see below |
-| **AC-41** One rule per type, every parameter used | ✅ Reconciled in both directions; validated at engine construction, not at first detection |
-| **AC-6** Tenancy | ✅ `business_event` with forced RLS and full policies in migration 0011, registered and immutable |
-| **AC-1** Event contract | ✅ Two events cataloged; `business_event_type.published` **removed** from the v2 catalog |
-| **AC-13** Security Invariants extended | ✅ 124 → 154, each proven to fail when its guarantee is removed |
+| **AC-42** Customer-specific interpretation | ✅ Two workspaces, byte-identical business events, different signals — asserted through the real pipeline |
+| **AC-43** No commercial scoring | ✅ Column-name invariant on `signal`; relevance is a category with no numeric meaning; no number in the module beyond windows and counts |
+| **AC-44** Contradiction preserved | ✅ Opposing hypotheses coexist for one entity; nothing suppressed or reconciled |
+| **AC-45** Two-part explainability | ✅ Every signal names both its evidence and the profile entry that made it relevant, in one call |
+| **AC-46** Unbroken chain | ✅ Signal → business events → observations → entity → claims → raw records; zero orphans at every hop |
+| **AC-47** Configuration is auditable | ✅ Profiles immutable, versioned, attributed; one current profile per workspace enforced by a partial unique index |
+| **AC-48** Replay is explicit | ✅ Historical and current modes both work and are never conflated |
+| **AC-49** The vocabulary stays global | ✅ A workspace-invented type is **unrepresentable** — `ProfileEntry.signal_type` is typed as `SignalType` |
+| **AC-6** · **AC-1** · **AC-13** | ✅ Tenancy · event contract · invariants extended 154 → 186 |
 
-**Scope delivered.** The taxonomy artifact, schema, and startup validation · domain and deterministic identity · rule port and registry · eight point rules · three window rules · migration 0011 · `DetectBusinessEvents` with agreement counting and supersession · read port and module `public/` API · two event contracts · demonstration, smoke stage 14e, and 30 new Security Invariants.
+**Scope delivered.** Signal catalog artifact, schema, and startup validation · domain and deterministic identity · profile model with versioning, supersession, and catalog-default fallback · two detection strategies · migration 0012 · `GenerateSignals` with relevance resolution and supersession · read port with four-question explanations · two event contracts · demonstration, smoke stage 14f, and 32 new Security Invariants.
 
 **Architectural decisions.**
 
-- **Taxonomy is data; rules are code.** The taxonomy — types, meanings, and *every* materiality threshold — is a versioned repository artifact reviewed like code. Correlation logic is Python. Everything-as-code hides the threshold; everything-as-data means inventing a DSL, which is a programming language with no type checker and a parser we would own forever.
-- **The split is machine-enforced.** Rule modules are parsed as syntax trees. `0` and `1` are permitted as structural quantities; every other number is a claim about the world that must be declared where it can be argued with.
-- **Agreement is evidence, never truth.** Each provider's series is evaluated alone, so no rule combines two providers' values. Two providers reaching the same conclusion produce **one** event recording both — a set, never a coefficient. This is the pipeline's first cross-provider reasoning, and it is deliberately narrow.
-- **Two version numbers, deliberately separate.** `taxonomy_version` is meaning; `payload_version` is wire shape. Conflating them means tuning a threshold breaks a consumer contract, so nobody ever tunes a threshold.
-- **`business_event_type.published` removed rather than implemented.** It assumed a runtime-mutable taxonomy; a repository artifact has no runtime publication to announce, and an event with no producer is a contract nobody is keeping.
+- **Global catalog, per-workspace relevance profile.** A workspace configures relevance over Signora's vocabulary and **can never invent a signal type** — the constraint that keeps AI prompting, benchmarking, analytics, and support able to speak about signals across customers.
+- **Ownership decides where configuration lives, not technology.** The catalog is Signora's and ships as a repository artifact; the profile is the customer's and lives in versioned rows. A customer cannot be asked to wait for a release to say what matters to them.
+- **Profiles are immutable and versioned.** An edited profile would make every historical signal unexplainable — *"why was I told this?"* would have no answer, because the reason changed underneath it.
+- **Relevance is a category, never a number**, so the module contains no scores at all. This forced two corrections to the v2 event catalog: `signal.generated` **lost its `score`**, and **`signal.scored` was removed** — its only possible producer is a scoring model in M5B.
+- **Composites enrich rather than replace.** Constituent signals are generated and stored in their own right, and the composite **names them**. Refined during review from "both stand" to a navigable hierarchy.
+- **Catalog entries declare a detection *strategy*, not a procedure.** Adopted during review, and it proved to be more than terminology: the catalog now holds domain semantics only, so an improved implementation never changes what a signal *means*.
+- **Replay has two first-class modes** — historical (reproduce what we told them) and current (what would we say now). Never conflated, and the second is what will let a customer preview a configuration change against their own history.
 
-**The CRO test changed the taxonomy before implementation.** *"If a CRO opened Signora today, would they immediately understand what this event means?"* — applied honestly, it broke three of the nine proposed types, and names are the hardest thing to change later:
+**Signal profiles are the first genuinely customer-authored data in the platform.** Unlike every other table, `signal_profile` cannot be regenerated from anything — it is a statement a customer makes about their own commercial position. Signals are derived and rebuildable; profiles are not, and they need backup and restore treatment derived tables do not. Asserted directly: a signal rebuild leaves the profile intact.
 
-| Proposed | Shipped | Why |
-|---|---|---|
-| `EXECUTIVE_CHANGE` | `LEADERSHIP_APPOINTED` · `LEADERSHIP_DEPARTED` | A leader joining and leaving mean opposite things commercially |
-| `REVENUE_BAND_SHIFT` | `REVENUE_GROWTH` · `REVENUE_CONTRACTION` | "Revenue band" is *our* word, chosen because vendors report ranges |
-| `INTENT_SURGE` | `BUYING_INTENT_SURGE` | "Intent" alone is closer to vendor vocabulary than to how a revenue team speaks |
-
-**Eleven types across six business domains** — `capital`, `technology`, `leadership`, `workforce`, `growth`, `demand` — deliberately not the claim vocabulary's `firmographic` / `technographic` / `behavioural`, which describe where data came from rather than what happened. Asserted by invariant.
-
-**Two limitations recorded rather than engineered around.**
-
-| | |
-|---|---|
-| **The demonstration detects no buying-intent surge, and asserts that it does not.** The baseline scenario's intent ramp peaks at 88 but clears the elevated threshold for only two weeks, short of the three a sustained surge requires. Lowering the parameter would have been fitting a business judgement to a fixture. The scenario is what needs extending — scheduled M2.0 work. |
-| **AC-40 is partial.** `citing_observations` and the replacement logic are implemented and exercised, but re-evaluation triggered by `observation.superseded` is wired at the contract level only. Closing the loop is small and belongs with the first real late-arrival scenario rather than ahead of it. |
-
-**Two defects found during implementation.** A frozen `Observation` holding a mapping is not hashable, so merging agreeing detections by object failed against real data while passing against integer-valued fixtures. And the taxonomy's `_comment` preamble was rejected by `extra="forbid"` — declared as a field rather than tolerated, because forbidding extras is the point of that model: a typo'd key must fail a deployment rather than silently disable a type.
+**One honest limit in the demonstration.** The baseline scenario's evidence is months old and every catalog type declares a shorter shelf life, so its hypotheses are formed, remain readable, and are **no longer live** — asserted explicitly. That is the lifecycle working, but it means the live-set behaviour is exercised by the negative case only. A scenario with recent evidence is now the fourth item of scheduled M2.0 simulation work.
 
 **Technical debt.** None introduced. None outstanding.
 
@@ -485,11 +472,13 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 
 ## Next Milestone
 
-### 🔄 M5A — Signal Engine · **NEXT** · ~8–13 ew
+### 🔄 M5B — Buying Score Engine · **NEXT** · ~6–9 ew
 
-Decides which business events are commercially meaningful **to us** — the first module permitted to answer *"should we engage?"*
+Aggregates signals into a continuously updated buying propensity per account — the first module permitted to answer *"how much does this matter?"*
 
-**Why it follows M4.** M4 was shaped to leave that judgement here. It hands over typed business events with their evidence, the providers that corroborated them, and the taxonomy version that produced them, and stops. It also deliberately did **not** turn provider agreement into confidence: weighting agreement is a commercial rule, and it belongs where it can be reviewed.
+**Why it follows M5A.** The Signal Engine contains no scores by design. M5B inherits three things it deliberately left on the table: **weighting relevance categories** into a number, **resolving contradictory hypotheses** with a stated and reviewable rule, and **applying decay** to a signal's declared shelf life.
+
+**One requirement recorded during M5A:** M5B must deduplicate on contributing *business events*, not on signals. A composite and its constituent rest on the same grounds read two ways, and counting both would double-count the evidence.
 
 **Awaiting:** architecture proposal and approval, as with every prior milestone.
 
@@ -733,6 +722,7 @@ Encoded as a tracked deviation in `test_authorization.py::test_every_workspace_o
 
 | Date | Change |
 |---|---|
+| 2026-07-29 | v25 — **M5A Signal Engine complete.** The first module producing something true for only one customer. Permanent principle ratified: *business events describe objective business phenomena; signals describe customer-specific commercial hypotheses* — signals are the first subjective layer, everything above stays globally true, everything below stays traceable back. **Ownership, not technology, decides where configuration lives:** the signal catalog is Signora's and ships as a repository artifact; the profile is the customer's and lives in immutable, versioned, attributed rows. **A workspace can never invent a signal type** — unrepresentable, not merely discouraged. Relevance is a category with no numeric meaning, so the module holds no scores at all, forcing two catalog corrections: `signal.generated` loses its `score` and `signal.scored` is removed. Composites **enrich rather than replace** — constituents are stored independently and named by the composite. Catalog entries declare a detection *strategy*, keeping domain semantics separate from mechanics. Replay has two first-class modes, historical and current, never conflated. `signal_profile` is the first customer-authored table in the platform and cannot be regenerated from anything. 905 tests, coverage 95.50%, 186 invariants, 13 contracts, `make smoke` green over 21 stages. |
 | 2026-07-29 | v24 — **M4 Business Event Engine complete.** The first module whose output reads as intelligence, and the first whose correctness is a product judgement. Permanent boundary: *answers "why is this business-relevant?", never "should we engage?"* — no priority, score, urgency, or rank, enforced by a column-name invariant. **Taxonomy is data; rules are code**, and the split is machine-enforced: rule modules are parsed as **syntax trees** and any numeric literal in a comparison other than 0 or 1 fails the build, with parameter declarations reconciled in both directions. Agreement is evidence, never truth — each provider's series is evaluated alone and two providers reaching one conclusion produce one event recording both. Taxonomy and payload versions kept separate so tuning a threshold never breaks a consumer contract. `business_event_type.published` removed: a repository artifact has no runtime publication to announce. **The CRO test changed three of nine proposed type names before implementation** — `EXECUTIVE_CHANGE` and `REVENUE_BAND_SHIFT` split by direction, `INTENT_SURGE` renamed — leaving eleven types across six business domains. Two limitations recorded rather than engineered around: the baseline scenario produces no intent surge under defensible thresholds, and AC-40 re-evaluation is wired at contract level only. 822 tests, coverage 95.39%, 154 invariants, 11 contracts, `make smoke` green over 20 stages. |
 | 2026-07-29 | v23 — **M3B Observation Engine complete.** Permanent layering principle ratified: *claims preserve evidence · the graph resolves identity · the Observation Engine detects change · the Business Event Engine determines business meaning · the Signal Engine determines commercial meaning.* Change is computed **within one provider's series** — cross-provider comparison rejected as the central error, since disagreement merged into a series manufactures growth that never happened. First values establish a baseline and produce no observation. Observation identity is derived from observed facts, so deduplication is a primary-key conflict and a mapper fix cannot duplicate the table. Late arrival refines by append-only supersession. `entity.evidence_attached` approved and added to the Knowledge Graph; the canonical vocabulary formally recognised as a platform-wide contract. A Security Invariant reads derivation as a **syntax tree** to prove no threshold has crept in. Two defects found by running rather than by tests, one of them by `make smoke` against a fresh stack. 729 tests, coverage 95.10%, 124 invariants, 9 contracts, `make smoke` green over 19 stages. |
 | 2026-07-29 | v22 — **M3A Knowledge Graph complete.** The first module that must *decide*. Permanent invariant ratified: *the Knowledge Graph resolves identity, not truth* — `entity` carries no attribute columns, and `ClaimSet` returns every contributing claim rather than a chosen value. `MatchStrength` ratified as a semantic category that can never become a number, with the type itself refusing numeric conversion and ordering. Ambiguity merges nothing, enforced by a database CHECK constraint. Migration 0009: four workspace-owned tables, forced RLS, `resolution_decision` immutable. Per-module-pair import-linter contracts added, immediately catching **two real boundary violations in shipped code** (M2.1 and M2.2), both fixed with read ports. **Two platform findings raised, not worked around** — `EventHandler` receives no session, so no module handler is registered in the live registry; and `PublishableEvent` cannot be satisfied by a frozen dataclass. One correction to the approved demonstration recorded honestly: three of five providers resolve together, not five, because the other two supply no matchable identity. 650 tests, coverage 95.54%, 99 invariants, 7 contracts, `make smoke` green over 18 stages. **[21-intelligence-pipeline.md](docs/architecture/21-intelligence-pipeline.md) authored.** |
