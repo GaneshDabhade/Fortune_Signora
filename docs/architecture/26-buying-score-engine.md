@@ -1,6 +1,6 @@
 # 26 — Buying Score Engine
 
-> Status: **Proposal — awaiting approval. Not implemented.**
+> Status: **Proposal — core principles ratified 2026-07-29; six questions open. Not implemented.**
 > Milestone: **M5B** · Module: Buying Score Engine · Position: pipeline stage 7
 > Audience: engineers, architects, product
 > Prepared: 2026-07-29, after reviewing the implemented M5A rather than the M5A proposal.
@@ -60,8 +60,11 @@ You asked whether those are the same thing. **They are not, and the distinction 
 
 **Prioritizing** means ordering attention *while the contradiction stands*. It says *"whatever is happening at Acme, it warrants your attention today more than the other two hundred accounts do — and be aware it is contested."*
 
-> **Recommendation: the Buying Score Engine prioritizes. It never resolves.**
-> *Proposed permanent architectural principle.*
+> **The Buying Score Engine prioritizes. It never resolves.**
+>
+> ***Permanent architectural principle — ratified 2026-07-29.***
+>
+> A buying score may **summarize** intelligence. It must **never replace** it.
 
 This has a sharp, testable consequence that rules out the most obvious implementation:
 
@@ -134,23 +137,78 @@ The tension recorded at the M5A boundary is real: a score changes continuously a
 *Sound but incomplete.* Every input arrives as an event — except one. **Shelf-life expiry produces no event.** A signal simply stops being live when the clock passes `relevant_until`, and nothing publishes that. Scores would drift permanently upward, every account decaying into a false hot state.
 
 **C — Stored immutable snapshot + evidence-derived staleness sweep — recommended.**
-B, plus each score carries **`valid_until` = the earliest `relevant_until` among its contributions** — the first moment at which its own arithmetic provably changes. A periodic worker re-scores exactly those entities whose `valid_until` has passed.
+B, plus each score carries **`valid_until` = the next moment at which its own arithmetic provably changes** — the earliest band transition or expiry across its contributions (see [Decay](#decay-how-much-is-a-hypothesis-worth-as-it-ages), which is what makes this boundary exact rather than approximate). A periodic worker re-scores exactly those entities whose `valid_until` has passed.
 
 The sweep is deterministic rather than a polling heuristic: it does not guess an interval, it reads a boundary the evidence itself declared. An entity is re-scored when, and only when, something it depends on has demonstrably aged out — and the resulting score explains itself as *"re-scored because evidence aged out"* rather than as an unexplained overnight drop.
 
-> **A score is a reading with a stated expiry, not a live gauge.** `computed_at` and `valid_until` are both on the record, and a consumer reading a score past its `valid_until` can tell.
+> **A score is a reading with a stated expiry, not a live gauge.** `computed_at` and `valid_until` are both on the record; the number is **exactly correct** between them, and a consumer reading a score past its `valid_until` can tell.
 
 **Recompute triggers:** `signal.generated` · `signal.superseded` · scoring-model version change · signal-profile version change · staleness sweep.
 
+> **This option and the decay strategy are one decision, not two.** A stored snapshot with a stated expiry is only honest if the value is constant across that interval — which rules out continuous decay, and is the finding that reversed the decay recommendation below.
+
 ### Decay: how much is a hypothesis worth as it ages?
 
-| Option | Assessment |
-|---|---|
-| **None** — full weight until `relevant_until`, then gone | A cliff. An account drops fourteen points overnight for no business reason a customer can name. |
-| **Exponential half-life** | Introduces a per-type constant with no business meaning. *"Why 0.87?"* has no honest answer, and the AST invariants inherited from M4/M5A forbid exactly this kind of undeclared constant in rule code. |
-| **Linear from `occurred_at` to `relevant_until`** — **recommended** | Full weight the day it happened, zero at the shelf life the catalog already declares, straight line between. Explainable in one sentence, and **introduces no new constant whatsoever** — it is computed entirely from two fields M5A already publishes. |
+*Evaluated in full at your instruction, on explainability, reproducibility, and operational simplicity. **The evaluation reversed the recommendation made in the first draft of this document.** The reasoning is recorded here rather than quietly corrected.*
 
-The catalog's `relevance_window_days` is already a reviewed, per-type, product-owned declaration of how long a hypothesis stays current. Linear decay reuses that judgement instead of inventing a second one beside it.
+Let a contribution have weight `w`, with `t0 = occurred_at` and `t1 = relevant_until` from the signal. Decay is an `age_factor ∈ [0,1]` multiplying `w`.
+
+#### The axis the first draft missed
+
+A stored score is a **snapshot with a stated expiry**. That design promises something specific:
+
+> Between `computed_at` and `valid_until`, the stored number is *correct* — not merely recent.
+
+**A continuous decay function breaks that promise at every instant.** If `age_factor` changes smoothly with the clock, the stored score is wrong the moment after it is written, and the error grows silently until the next sweep. A customer who checks the ledger arithmetic at 3pm against the score on their dashboard finds a mismatch, and both are "right."
+
+So the real question is not which curve is most faithful to how commercial interest fades. It is **which decay strategy lets a stored score tell the truth**, given that continuous recomputation was already rejected under storage.
+
+#### The four strategies
+
+**A — No decay.** `age_factor = 1` until `t1`, then the signal is not live at all.
+
+- *Explainability:* perfect locally, poor temporally. The score drops overnight with **no business reason a customer can name** — "nothing happened, that's precisely why."
+- *Reproducibility:* perfect. The ledger stores `1.0`.
+- *Operational simplicity:* **best.** The score is exactly correct until `valid_until`.
+- *Cost:* no gradation at all. A three-day-old funding round and an eighty-nine-day-old one count identically, and recency is the single strongest input in prospecting. Commercially wrong.
+
+**B — Step, in bands declared as fractions of the type's own window — recommended.**
+`FRESH` (first third, ×1.0) · `RECENT` (second third, ×0.6) · `AGEING` (final third, ×0.3).
+
+- *Explainability:* **best.** The ledger entry reads *"funding round · primary · **recent** (×0.6)"*. A band is a word a CRO already uses, and the multiplier is a rule they can argue with — *"we count evidence past a month at 60%"* is a sentence a customer can disagree with. Linear's `×0.7213` is arithmetically honest and semantically mute.
+- *Reproducibility:* **best.** Decimal multipliers, no floating point, no clock dependence *within* a band. Given AC-51 demands the stored value reproduce **exactly**, avoiding float accumulation in a stored ledger is worth real money.
+- *Operational simplicity:* **the deciding property.** Transitions are knowable in advance, so `valid_until` becomes *the next moment anything changes* — `min(next band transition, earliest expiry)` — and the stored score is **exactly correct** for that whole interval. The `valid_until` sweep works unmodified and now states something true.
+- *Cost:* three small cliffs instead of one large one — but **each has a name**. A score that moves because evidence crossed from *Recent* to *Ageing* has a reason in the ledger. A no-decay cliff has none.
+
+**C — Linear** from `t0` to `t1`. *(The first draft's recommendation.)*
+
+- *Explainability:* good as a sentence, weak as a ledger entry. A customer reading `×0.7213` learns nothing they can act on or contest.
+- *Reproducibility:* exact only with a moment supplied, and float-valued.
+- *Operational simplicity:* **worst.** Continuous divergence between the stored score and the "true" score, permanently and silently. `valid_until` bounds only when a contribution *disappears*, not when the number *changes* — so the elegance I claimed for `valid_until` was, under linear decay, a promise the model could not keep.
+- *Why the first draft preferred it:* it introduces no new constant. That remains true and is a genuine virtue — but fractional band boundaries keep it, and the trade purchased mathematical tidiness at the cost of the very explainability this module exists to protect.
+
+**D — Exponential** half-life per type.
+
+- *Explainability:* **worst.** *"Why 0.87?"* has no honest answer. This is exactly the undeclared magic constant the M4 and M5A syntax-tree invariants exist to forbid.
+- *Reproducibility:* float-valued and never reaching zero, so it needs a cutoff constant on top of the half-life constant.
+- *Operational simplicity:* linear's continuous-divergence problem, plus a second unexplainable number.
+
+#### Summary and recommendation
+
+| | Explainability | Reproducibility | Operational simplicity | Stored score honest? |
+|---|---|---|---|---|
+| No decay | Poor temporally | Perfect | Best | **Yes** |
+| **Step — recommended** | **Best** | **Best** | **Good** | **Yes** |
+| Linear | Moderate | Float-valued | Worst | **No** |
+| Exponential | Worst | Float-valued + cutoff | Worst | **No** |
+
+> **Recommendation: step decay, in bands expressed as fractions of the type's own relevance window.**
+>
+> **Step decay is the only strategy that also gives gradation and lets a stored score be exactly correct.** Continuous functions force a choice between continuous recomputation (rejected under storage) and permanent silent drift.
+
+Boundaries are fractions of `relevance_window_days`, so they scale per type automatically — the catalog's existing per-type judgement about how long a hypothesis stays current is reused rather than duplicated, which was linear's best property and is kept. The whole platform's decay is then **five declared numbers** — three multipliers and two fractions — living in the scoring model artifact, versioned and reviewable, never in code.
+
+Because *"how fast evidence goes stale for us"* is a commercial judgement, a customer may override the multipliers and boundaries in their own scoring model, on the same terms as weights.
 
 ### Weighting: where does the scoring model live?
 
@@ -219,9 +277,9 @@ It belongs where *"is this worth acting on?"* is asked, with the score as one in
 | `delta` | signed integer against the previous reading; `0` for a first score |
 | `contested` | at least one expansionary **and** one contractionary live contribution |
 | `dissenting_signal_ids` | named, never merely counted — empty unless `contested` |
-| `contributions` | the ledger — see below |
+| `ledger` | the `ContributionLedger` — see below. **The score's explanation, not a field beside it.** |
 | `computed_at` | when Signora computed it |
-| `valid_until` | earliest `relevant_until` among contributions — when the arithmetic provably changes |
+| `valid_until` | the next band transition or expiry across contributions — derived by the ledger |
 | `basis_at` | the derived moment the ledger's composition last changed (identity input) |
 | `trigger` | `SIGNAL_GENERATED` · `SIGNAL_SUPERSEDED` · `MODEL_CHANGED` · `PROFILE_CHANGED` · `EVIDENCE_AGED` |
 | `scoring_model_version`, `profile_version`, `catalog_version`, `payload_version` | |
@@ -229,11 +287,31 @@ It belongs where *"is this worth acting on?"* is asked, with the score as one in
 
 **No account attributes. No name, domain, industry, size, or anything else copied from the Knowledge Graph.**
 
-### `Contribution` — one ledger entry
+### `ContributionLedger` — a first-class domain object
 
-`business_event_id` · `signal_id` · `signal_type` · `posture` · `relevance` · `base_weight` · `relevance_multiplier` · `age_factor` · `contribution` · `counted` · `reason`
+*Ratified as first-class at your instruction. It is **the explanation of the score**, not an implementation detail of computing one — without it the score is opaque, and an opaque score is precisely the artifact this module must not produce.*
 
-Every number that went into the arithmetic is present, so the total is checkable by hand. `reason` carries the sentence a customer reads — *"funding round, primary relevance, 12 days old"* — rendered from the same fields the auditor checks, so the explanation and the arithmetic cannot diverge. This is the two-halves discipline M5A established, applied one layer up.
+Modelling it as a bare `list[Contribution]` would be the anemic-model smell §4 forbids: the behaviour that gives the ledger meaning would drain into a service, and each caller would re-derive it slightly differently. The ledger therefore **owns the questions only it can answer**:
+
+| Behaviour | Answers |
+|---|---|
+| `total()` | the raw sum before normalization |
+| `reproduce() -> int` | the score, recomputed from stored entries alone — no clock, no configuration (AC-51) |
+| `is_contested` | at least one expansionary **and** one contractionary counted contribution |
+| `dissent()` | the opposing signals, **named** |
+| `valid_until(from)` | the next moment the arithmetic changes — earliest band transition or expiry |
+| `counted_events()` | the distinct business events counted exactly once (AC-53) |
+| `posture_summary()` | attention by posture, never summed into the scalar |
+
+Two invariants live on the object, checked at construction: **no business event counted twice**, and **`reproduce()` equals the score it belongs to**. A ledger that does not reproduce its own score is not a discrepancy to reconcile later — it is a corrupt explanation, and it must fail loudly at the moment it is built.
+
+The ledger is also the **reversal mechanism**: every reduction the score performs is undone by reading it. That is what makes the reduction safe rather than lossy.
+
+#### `Contribution` — one entry
+
+`business_event_id` · `signal_id` · `signal_type` · `posture` · `relevance` · `base_weight` · `relevance_multiplier` · `age_band` · `age_factor` · `contribution` · `counted` · `reason`
+
+Every number that went into the arithmetic is present, so the total is checkable by hand. `age_band` carries the word (`FRESH`/`RECENT`/`AGEING`) beside the multiplier, because a band is what a customer can argue with and a decimal is not. `reason` carries the sentence they read — *"funding round · primary · recent (×0.6)"* — rendered from the same fields the auditor checks, so the explanation and the arithmetic cannot diverge. This is the two-halves discipline M5A established, applied one layer up.
 
 ### Identity
 
@@ -292,7 +370,7 @@ The second is what lets a customer preview a weighting change against their own 
 | **T94** | Domain: `BuyingScore`, `Contribution`, `Posture`, `Trend`, derived identity | M · 1.5 ew | T93 |
 | **T95** | Migration 0013 — `buying_score`, `scoring_model`, forced RLS, immutable | M · 1.5 ew | T94 |
 | **T96** | Customer scoring model: versioning, supersession, artifact fallback | M · 1 ew | T95 |
-| **T97** | Scoring: event-unit attribution, linear decay, normalization, ledger | L · 2 ew | T94 |
+| **T97** | `ContributionLedger` as a domain object: event-unit attribution, band decay, normalization, reproduction and no-double-count invariants | L · 2 ew | T94 |
 | **T98** | Contradiction detection, `contested`, dissent capture | S · 0.5 ew | T97 |
 | **T99** | `ComputeBuyingScore` use case, supersession, trend, triggers, events | L · 2 ew | T96, T98 |
 | **T100** | Staleness sweep worker driven by `valid_until` | M · 1 ew | T99 |
@@ -313,8 +391,8 @@ The second is what lets a customer preview a weighting change against their own 
 | **AC-52** | **The chain is unbroken** — score → signals → business events → observations → knowledge → claims → raw provider records, zero orphans at every hop |
 | **AC-53** | **No double counting** — no business event contributes twice to one score; overlapping signals appear with a zero contribution and a stated reason, never absent |
 | **AC-54** | **The score is never canonical** — `buying_score` carries no account attributes, asserted structurally; the read port exposes no account representation |
-| **AC-55** | **Decay is declared, not hidden** — ageing follows the catalog's own relevance window; no undeclared constant in scoring code, asserted by syntax-tree invariant |
-| **AC-56** | **Staleness is evidence-derived** — a score expires at the earliest `relevant_until` among its contributions, and the sweep re-scores exactly those entities |
+| **AC-55** | **Decay is declared, not hidden** — bands are fractions of the catalog's own relevance window, declared in the model artifact; no undeclared constant in scoring code, asserted by syntax-tree invariant; every contribution names its band |
+| **AC-56** | **A stored score is exactly correct until it expires** — recomputing at any moment between `computed_at` and `valid_until` yields the stored value unchanged; the sweep re-scores exactly those entities whose boundary has passed |
 | **AC-57** | **Configuration is auditable and replayable** — every scoring model version is immutable and attributed; every score names the versions that produced it; both replay modes work and are never conflated |
 | **AC-6** · **AC-1** · **AC-13** | Tenancy · event contract · Security Invariants extended, **each proven to fail** when its guarantee is removed |
 
@@ -364,12 +442,28 @@ Implementation satisfying AC-50 through AC-57 plus tenancy, event-contract, and 
 
 ---
 
-## Open questions for approval
+## Approval status
 
-1. **Prioritization over resolution** — do you ratify *"the Buying Score Engine prioritizes competing hypotheses; it never resolves them"* as a permanent principle, with the no-netting rule that follows from it?
-2. **Contested as a first-class property** — approve `contested` and named dissent on the score, and its addition to the `buying_score.updated` payload?
-3. **The third ownership layer** — approve `scoring_model` as a **separate** customer-authored artifact rather than folded into `signal_profile`?
-4. **Posture is Signora's, weights are the customer's** — approve that a workspace may tune weights but may never invert what a signal type means commercially?
-5. **The score as an expiring reading** — approve stored immutable snapshots with an evidence-derived `valid_until` and a staleness sweep, rather than a live projection?
-6. **Scale** — approve 0–100 with the ceiling declared in the model artifact?
-7. **Account fit deferred to M6** — approve, and record it there?
+### Ratified 2026-07-29
+
+| | |
+|---|---|
+| **1 · Prioritization over resolution** | **Ratified as a permanent architectural principle**, with the no-netting rule that follows from it. |
+| **2 · Contradiction preserved** | Approved. Opposing hypotheses never cancel mathematically; the ledger preserves competing interpretations. |
+| **3 · The ledger is first-class** | Approved. Modelled as a domain object with behaviour — *it is the explanation of the score*. |
+| **4 · Reduction framing** | Approved. Every design decision is evaluated against *reduced / recoverable / never discarded*. |
+| **5 · Non-canonical, structurally** | Approved. A score remains a projection over signals, never an alternative representation of account state. |
+| **6 · Decay** | **Evaluated as directed; recommendation reversed to step decay.** Awaiting confirmation of the reversal. |
+
+### Still open — implementation waits on these
+
+| | Question | My recommendation |
+|---|---|---|
+| **A** | **The reversal itself** — linear → **step decay** in bands that are fractions of the type's own relevance window. The deciding argument is that a continuous function makes a stored score permanently and silently wrong, while a discrete one makes `valid_until` state something true. | Adopt step. |
+| **B** | **The third ownership layer** — `scoring_model` as a **separate** customer-authored artifact, not folded into `signal_profile`, so tuning a score never churns the audit trail of every historical signal. | Separate. |
+| **C** | **Posture is Signora's, weights are the customer's** — a workspace tunes weights, multipliers, and band boundaries, but may never invert what a signal type means commercially. | Approve. |
+| **D** | **Scale** — integer 0–100, ceiling declared in the model artifact rather than in code. | Approve. |
+| **E** | **`contested` on the `buying_score.updated` payload** — an addition to a ratified-but-unimplemented contract, so not a breaking change. | Add it. |
+| **F** | **Account fit / ICP deferred to M6** and recorded there rather than left homeless again. | Defer. |
+
+Implementation begins once **A–F** are settled. Nothing is coded before then.

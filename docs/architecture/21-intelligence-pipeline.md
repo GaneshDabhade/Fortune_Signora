@@ -259,9 +259,21 @@ Both are first-class. The second is what lets a customer preview a configuration
 
 **Adds:** aggregation across signals, and **trajectory**. A company at 71 on the way up and one at 71 on the way down warrant opposite actions, and a consumer given only today's number cannot tell them apart. This is the same reason Bombora intent is stored as one claim per observed week rather than a flattened current value: the trajectory is product value, not implementation detail.
 
-**Refuses:** the decision to act. A score is an input to that decision.
+**Refuses:** the decision to act. A score is an input to that decision. It also refuses to decide *which* competing hypothesis is true.
 
-**Owned by:** Buying Score Engine · **Publishes:** `buying_score.updated`
+### The first intentional reduction
+
+Every stage before this one **adds** information and destroys none. Stage 7 turns many live hypotheses into one number — which is both its product value and the pipeline's first real opportunity to lose something it cannot recover.
+
+> **The Buying Score Engine prioritizes. It never resolves.**
+>
+> *Permanent architectural principle, ratified 2026-07-29.*
+>
+> A buying score may **summarize** intelligence; it must **never replace** it. Opposing hypotheses therefore never cancel arithmetically — netting would score a contested account like an inert one, and those are the two most different accounts in the book. Attention is unsigned; a `contested` account is marked, with its dissenting signals named.
+
+Every reduction is reversible through the **contribution ledger** stored with each score: one entry per contributing business event, naming the signal that carried it and every number that went into the arithmetic. The ledger is the score's explanation, not an implementation detail — the score reproduces from it exactly, and each entry walks to a raw provider record.
+
+**Owned by:** Buying Score Engine · **Publishes:** `buying_score.updated` · **Design:** [26-buying-score-engine.md](26-buying-score-engine.md)
 
 ---
 

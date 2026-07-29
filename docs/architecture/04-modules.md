@@ -240,7 +240,11 @@ Each module below follows the template: Purpose, Owns, Does Not Own, Core Concep
 
 **Does Not Own:** **Any action.** Not recommending, not assigning, not qualifying an opportunity (Opportunity Engine), not explaining reasoning (AI Reasoning), not customer messaging (Recommendation Engine). Also not: forming the hypotheses themselves (Signal Engine).
 
-**Core Concepts:** Buying Score, Score Trend, Decay Model, Weighting Model.
+**Core Concepts:** Buying Score, Contribution Ledger, Score Trend, Decay Model, Scoring Model.
+
+> **The permanent principle (ratified 2026-07-29):** ***the Buying Score Engine prioritizes; it never resolves.*** Deciding which of two contradictory hypotheses is true needs evidence this module does not have and judgement belonging to AI Reasoning and to humans. It orders attention *while the contradiction stands*, and marks it. **Opposing hypotheses therefore never cancel arithmetically** — netting would score a contested account like an inert one.
+>
+> **This is the pipeline's first intentional reduction.** A buying score may *summarize* intelligence; it must **never replace** it. Every reduction is reversible through the **Contribution Ledger** — a first-class domain object, one entry per contributing business event, from which the score reproduces exactly and every entry walks back to a raw provider record. See [26-buying-score-engine.md](26-buying-score-engine.md).
 
 **Key Published Events:** `buying_score.updated`.
 
