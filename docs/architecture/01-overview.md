@@ -84,6 +84,7 @@ This document does **not** define architecture principles (see [02-principles.md
 | 20 | [Provider Simulation](20-provider-simulation.md) | How are provider payloads produced without a provider, deterministically? |
 | **21** | **[The Intelligence Pipeline](21-intelligence-pipeline.md)** | **How does a fact become a recommendation, and what is each stage forbidden from doing?** |
 | 22 | [Knowledge Graph](22-knowledge-graph.md) | How is identity resolved, explained, and revised — without resolving truth? |
+| 23 | [Observation Engine](23-observation-engine.md) | What counts as a change worth recording, and what is merely re-assertion? *(proposal)* |
 | — | [Architecture Decision Records](adr/README.md) | Why was each technology/vendor/module-boundary decision made? |
 
 ## Who This Documentation Is For
