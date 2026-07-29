@@ -88,10 +88,30 @@ AI Research Engine sits in the graph between Opportunity Engine and AI Reasoning
 - Circular dependencies of any kind, sync or async.
 - A downstream module publishing an event an upstream module subscribes to synchronously as a hidden feedback loop — new forward-flowing events are the only permitted mechanism (see `recommendation.status_changed` feeding Signal Engine in [07-data-flow.md](07-data-flow.md)).
 
+## Reading another module's data
+
+A module frequently needs data another module owns — Provider Normalization needs the raw record's payload; the Knowledge Graph needs the claims. Neither may reach for the table, the ORM model, or the use case that produced it.
+
+The mechanism is a **read port on the owning module's `public/`**: a `Protocol` plus frozen view objects, implemented in that module's `infrastructure/` and injected by the composition root. Concretely, as of M3A:
+
+| Port | Owner | Consumer |
+|---|---|---|
+| `RawRecordReader` → `RawRecordView` | Provider Platform | Provider Normalization |
+| `ClaimReader` → `ClaimView`, `SubjectRef` | Provider Normalization | Knowledge Graph |
+| `GraphQueries` → `ClaimSet`, `EntityEvidence` | Knowledge Graph | (M3B onward) |
+
+Three properties make this a boundary rather than a naming convention:
+
+- **A frozen view, never an ORM instance.** An ORM object carries a session, lazy loaders, and a write path — handing one across a boundary hands over the ability to mutate another module's table by accident.
+- **The consumer imports the Protocol, never the implementation.** Wiring the concrete reader is the composition root's job, so a module never learns that its neighbour is backed by SQL.
+- **Read ports expose evidence, never resolutions.** `ClaimReader` deliberately has no `current_value(subject, attribute)`. Offering one would put truth resolution behind an innocuous call, and every consumer would use it instead of looking at the evidence.
+
+> **Events carry identity; ports carry payload.** `claim.recorded` names the record and its subject and stops. Embedding claim bodies in the envelope would make every vocabulary addition an event-contract change.
+
 ## Enforcement
 
 - **Code review** against this document.
-- **Import-linter** (Python) enforces module boundary rules in CI — see [ADR-0002](adr/0002-web-framework-and-api-style.md) and [15-project-structure.md](15-project-structure.md) for the concrete contract configuration.
+- **Import-linter** (Python) enforces module boundary rules in CI — see [ADR-0002](adr/0002-web-framework-and-api-style.md) and [15-project-structure.md](15-project-structure.md) for the concrete contract configuration. Since M3A the contracts are explicit per module pair: each module is forbidden from importing another's `domain/`, `application/`, `infrastructure/`, or `interface/`, and upstream modules are forbidden from importing downstream ones at all. A cross-module import of an ORM model compiles and runs perfectly well, which is exactly why the rule needs a machine behind it — the violation is invisible until the modules need to move apart.
 - **Database roles per module**: each module's tables are owned by a dedicated PostgreSQL role with `GRANT` restricted to that module's application code path, providing a second line of defense beyond RLS (see [11-tenancy.md](11-tenancy.md)).
 
 ## Adding a New Dependency

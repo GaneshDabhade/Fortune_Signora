@@ -1,8 +1,8 @@
 # 22 — Knowledge Graph
 
-> Status: **APPROVED** — 2026-07-28, with refinements incorporated below
+> Status: **IMPLEMENTED** — M3A, 2026-07-29
 > Audience: All engineers, EMs, and technical stakeholders at Signora
-> Revision: **v1** — the M3A architecture proposal. **No implementation exists.**
+> Revision: **v2** — the design as built. Four departures from the v1 proposal are recorded in *[As built](#as-built-what-changed-during-implementation)*; everything else stands as approved.
 >
 > Prerequisite reading: [11-tenancy.md](11-tenancy.md), and the Claim model in `modules/provider_normalization/domain/claim.py`.
 
@@ -88,9 +88,12 @@ This is the answer to *"is Apollo's `acme-corp` the same as BuiltWith's `acme.ex
 **Why a binding exists.** Immutable, superseded rather than edited — the same pattern as claims, for the same reason.
 
 ```
-ResolutionDecision(id, workspace_id, rule, matched_on, candidate_entity_ids,
-                   outcome, evidence_claim_ids, superseded_by, decided_at)
+ResolutionDecision(id, workspace_id, provider, provider_external_id, outcome,
+                   reasons, entity_id, candidate_entity_ids,
+                   evidence_claim_ids, decided_at, supersedes)
 ```
+
+**The supersession pointer points backwards, and immutability forces that.** A forward `superseded_by` would have to be written onto the *older* row, which needs an `UPDATE` grant this table deliberately does not have. A correction is therefore a new row naming its predecessor, and the current decision is the one no other decision names.
 
 ### `IdentityState` — explicit, not inferred
 
@@ -117,6 +120,10 @@ So strength is **declared once per rule**, denormalized onto the decision at dec
 | `MODERATE` | `LEGAL_NAME_AND_COUNTRY` | Two unrelated "Acme Ltd" in one country is a real scenario. |
 
 **Never computed. Never combined. Never probabilistic.** It is named `MatchStrength` rather than `confidence` deliberately: "confidence" invites probabilistic thinking, and this is a statement about how strong a match was, not a belief about the world.
+
+> **Permanent invariant, ratified 2026-07-29.** `MatchStrength` is a semantic category. It must never become a numeric score, never participate in a weighted calculation, and never become the basis of heuristic identity resolution. The two doors into that drift are numeric conversion and ordering comparison, so **the type itself closes both**: `int()`, `float()`, and every ordering operator raise `TypeError`. A future engineer cannot convert it into probabilistic scoring by accident. Asserted structurally in the Security Invariants suite, including that no graph table carries a column named like a score, weight, confidence, probability, or rank.
+
+A decision is made by **exactly one rule** — the engine stops at the first rule that matches anything — so every reason on it shares one strength and there is nothing to combine. `ResolutionDecision.strength` states that as an invariant and raises if it is ever violated, rather than quietly reducing with `min`/`max`: a reduction would be the seam through which "two moderate matches make a strong one" eventually arrives.
 
 If a rule's declared strength is later revised, that is a **new decision superseding the old** — the mechanism already exists.
 
@@ -293,32 +300,66 @@ Domain before schema so the table follows the model. T60 after T61 because the r
 
 ---
 
-## Demonstration scenario
+## Demonstration scenario — as built
 
-> *"Five providers, one company, and the disagreement survives."*
+> *"Five providers, one company where the evidence allows it, and the disagreement survives."*
 >
-> Run the ERP Replacement scenario. Apollo, BuiltWith, CoreSignal, Crunchbase, and Bombora each report on Acme under different identifiers. The graph resolves all five to **one entity** — and `resolution_history` shows exactly why each bound: `EXACT_DOMAIN` on `acme.example` for three, `SAME_PROVIDER_ID` for the rest.
+> Run the baseline scenario through all five providers. **Apollo, BuiltWith, and Bombora resolve to one entity** — each states `acme.example`, and `resolution_history` shows exactly why: `EXACT_DOMAIN` on `acme.example`, with the matched value recorded, not merely the rule.
 >
-> Apollo says 120 employees; CoreSignal says 145. `claim_set(acme, EMPLOYEE_COUNT)` returns **both**, with providers and timestamps, and `agrees = False`. Nothing was picked. Nothing was lost.
+> **Crunchbase and CoreSignal stay separate, and that is the correct answer.** Neither fixture payload carries a domain, and their only shared token with Apollo is the subject key — which is the *simulator's* naming, not a cross-provider identifier. Binding on it would mean treating one provider's private key as another's, which in production is precisely the over-merge this module exists to refuse. An under-merge is a visible duplicate; an over-merge silently mixes two customers' intelligence.
 >
-> BuiltWith reports the legacy ERP removed: the `USES_TECHNOLOGY` relationship gains a `valid_to` rather than disappearing, and `relationships(as_of=<January>)` still shows it live.
+> `claim_set(acme, EMPLOYEE_COUNT)` returns **every** contributing claim with its provider, timestamp, and provenance. Nothing was picked. Nothing was lost.
 >
-> Then introduce a second company sharing a legal name in a different country. The graph records `AMBIGUOUS`, merges nothing, and emits the event.
+> BuiltWith reports the legacy ERP retired: the `USES_TECHNOLOGY` edge carries a `valid_to` rather than disappearing, and `relationships(as_of=<before it ended>)` still shows it live.
 >
-> Finally, shuffle the claim processing order and rebuild: byte-identical graph.
+> Two workspaces receive identical evidence in different processing orders and produce the same graph *structure* — the same provider identities grouped together. Entity identifiers differ because they are allocated, not derived, so the comparison is structural rather than byte-level.
+
+> **Correction to the v1 proposal.** v1 claimed all five providers would resolve to one entity, "`SAME_PROVIDER_ID` for the rest". That was wrong: `SAME_PROVIDER_ID` matches only *within* one provider, and no other rule can fire without a shared domain or a name-plus-country. The rules behaved correctly; the demonstration overstated what deterministic matching can do with the fixtures as they stand.
+>
+> The follow-up that would widen it is a **fixture enrichment**, not a rule change: real Crunchbase and CoreSignal payloads carry a website, and the development fixtures do not. Adding one to those generators is M2.0 work and would let cross-provider resolution be demonstrated at full breadth without weakening any rule. Recorded as scheduled work rather than done here, because editing another milestone's fixtures mid-M3A would blur what this demonstration proves.
 
 ---
 
-## Definition of Done
+## As built: what changed during implementation
 
-- [ ] Demonstration passes; AC-25 through AC-29, AC-6, AC-1 all passed
-- [ ] Migration 0009 with RLS in the same revision; tables registered in `tenancy_policy.py`
-- [ ] `resolution_decision` added to `IMMUTABLE_TENANT_TABLES`, with the no-`UPDATE` grant asserted
-- [ ] Security Invariants extended; each addition **proven to fail** when its guarantee is removed
-- [ ] `04-modules.md` and `06-events.md` updated in the same change
-- [ ] `make smoke` extended with a resolution stage, green against fresh images
-- [ ] PROJECT_STATUS and SESSION_HANDOFF updated at the boundary
-- [ ] **"The Intelligence Pipeline"** (`21-intelligence-pipeline.md`) authored — this milestone is its trigger
+Four departures from the approved v1 design, each forced by a property of the design itself rather than chosen.
+
+**1. `ResolutionDecision.superseded_by` became `supersedes`.** v1 specified a forward pointer on an immutable table. Those are incompatible: writing `superseded_by` onto the older row requires the `UPDATE` grant that immutability withholds. The pointer now points backwards. `IdentityBinding` and `Relationship` keep forward `superseded_by` — they are not immutable and hold an `UPDATE` grant.
+
+**2. Technology entities are keyed by canonical name.** Technology has no provider identity: vendors report a *name*, not an identifier. The graph assigns technologies a `canonical:technology:<normalized name>` namespace, so two providers reporting "SAP ERP" reach one entity. The honest limitation: "SAP" and "SAP ERP" become two entities. That is deterministic and it under-merges — the direction this module is biased in. A technology catalog that reconciles vendor naming is real work, and guessing at it here would silently merge two different products.
+
+**3. A technology seen only as *removed* is recorded as an already-closed edge.** A vendor reporting current state only tells Signora that LegacyERP was retired without ever having said it was running. v1 implied such a claim would find no edge to close and be dropped. But the claim carries `first_seen` and `last_seen`, so the interval is known — and discarding it would lose exactly the history a competitive-displacement signal reads. The edge is written with both `valid_from` and `valid_to` set.
+
+**4. Re-resolution that reaches the same answer writes nothing.** A decision records a *change* of identity. Writing one per re-sync would bury the corrections that matter under thousands that say nothing, and would inflate the supersession-rate metric into noise.
+
+Two properties worth stating explicitly, both consequences of the approved rules rather than changes to them:
+
+- **A bound identity does not drift.** `SAME_PROVIDER_ID` is `CERTAIN` and matches an identity's own binding on every later pass, so a binding never moves to another entity on its own. Correcting a *wrong merge* is an operator action, whose interface is deferred to M12.
+- **An ambiguous identity is reconsidered every time.** It binds to nothing, so it is re-evaluated on each new record and becomes identified once the duplicate candidate is gone. This is the supersession path M3A actually exercises.
+
+**`entity.superseded` is deferred.** It appears in the v1 event model, but nothing publishes it: the only producer would be the operator merge action deferred to M12. An event with no producer is a contract nobody is keeping.
+
+---
+
+## Definition of Done — M3A
+
+- [x] Demonstration passes; AC-25 through AC-29, AC-6, AC-1 all satisfied
+- [x] Migration 0009 with forced RLS and full policies in the same revision; four tables registered in `tenancy_policy.py`
+- [x] `resolution_decision` added to `IMMUTABLE_TENANT_TABLES`, with the no-`UPDATE` grant asserted
+- [x] Security Invariants extended; each addition **proven to fail** when its guarantee is removed
+- [x] `04-modules.md`, `05-module-dependencies.md`, and `06-events.md` updated in the same change
+- [x] `make smoke` extended with stage 14c, identity resolution
+- [x] PROJECT_STATUS and SESSION_HANDOFF updated at the boundary
+- [x] **"The Intelligence Pipeline"** ([21-intelligence-pipeline.md](21-intelligence-pipeline.md)) authored — this milestone was its trigger
+
+### Open findings raised, not silently worked around
+
+Both concern `signora_platform/`, which is frozen (CLAUDE.md §20a). Neither was fixed inside this milestone.
+
+| Finding | Effect today | What it would take |
+|---|---|---|
+| **`EventHandler` receives no session.** The registry's handler signature is `(envelope) -> None`, but a handler must do its work in the *same transaction* as the dispatcher's idempotency claim. A handler that opened its own session would break the exactly-once guarantee the platform is built on. | No module handler is registered in the live registry. The pipeline is exercised end-to-end through its real handlers in the integration suite and in `make smoke`, but the deployed worker consumes nothing. | A platform interface change (pass the session, or expose it via a context variable) — an RFC decision, not a coding-session one. |
+| **`PublishableEvent` cannot be satisfied by a frozen dataclass.** The Protocol declares settable attributes; every domain event in the codebase is immutable, as the architecture requires. Each publish site therefore carries a `# type: ignore`. | Cosmetic but spreading — three modules now carry the suppression. | Declaring the Protocol's members read-only. Widens what satisfies it; breaks nothing. |
 
 ---
 

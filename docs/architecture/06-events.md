@@ -2,7 +2,8 @@
 
 > Status: **Living document — Architectural Constitution**
 > Audience: All engineers, EMs, and technical stakeholders at Signora
-> Revision: **v3** — documents the dispatch layer as built in M1.1: relay semantics, the `processed_event` idempotency ledger, the `dead_letter_event` table, and the decision that **idempotency is platform-owned**. v2 catalog unchanged.
+> Revision: **v4** — adds the Provider Normalization (M2.2) and Knowledge Graph (M3A) catalogs, and replaces the v2 placeholders `provider.record.normalized`, `entity.updated`, and `entity.merged` with the events the evidence-first model actually produces. v3 notes follow.
+> Previous revision: **v3** — documents the dispatch layer as built in M1.1: relay semantics, the `processed_event` idempotency ledger, the `dead_letter_event` table, and the decision that **idempotency is platform-owned**. v2 catalog unchanged.
 
 ## Purpose
 
@@ -53,10 +54,11 @@ Events are listed in pipeline order. Payload fields below are illustrative and i
 | `workspace.member_added` | Workspace & Tenancy | (informational) | `workspace_id`, `user_id`, `role` |
 | `provider.payload.received` | Provider Platform | Provider Normalization | `provider`, `entity_type`, `raw_payload_ref`, `received_at` |
 | `provider.health_changed` | Provider Platform | (operational; feeds monitoring, not domain modules) | `provider`, `status`, `reason` |
-| `provider.record.normalized` | Provider Normalization | Knowledge Graph | `provider`, `entity_type`, `normalized_record`, `provenance` |
-| `entity.created` | Knowledge Graph | Observation Engine | `entity_id`, `entity_type`, `attributes` |
-| `entity.updated` | Knowledge Graph | Observation Engine | `entity_id`, `changed_fields`, `previous_values` |
-| `entity.merged` | Knowledge Graph | Observation Engine | `surviving_entity_id`, `merged_entity_ids` |
+| `claim.recorded` | Provider Normalization | Knowledge Graph | `raw_record_id`, `provider`, `subject_external_id`, `claim_count` — see the M2.2 section below; this supersedes the v2 placeholder `provider.record.normalized`, which would have carried a normalized *record* rather than the claims the evidence model actually produces |
+| `entity.created` | Knowledge Graph | Observation Engine | `entity_id`, `kind`, `decision_id` — **no attributes**, see the M3A section below |
+| `entity.identity_bound` | Knowledge Graph | Observation Engine | `entity_id`, `provider`, `rule`, `strength`, `decision_id` |
+| `entity.resolution_ambiguous` | Knowledge Graph | (operational work queue) | `candidate_entity_ids`, `decision_id` |
+| `relationship.established` / `relationship.ended` | Knowledge Graph | Observation Engine | `relationship_id`, `kind`, `source_entity_id`, `target_entity_id` |
 | `observation.recorded` | Observation Engine | Business Event Engine, Timeline | `observation_id`, `entity_id`, `observed_at`, `fact`, `provenance` |
 | `business_event_type.published` | Business Event Engine (internal taxonomy change) | Business Event Engine (self; versioning notification) | `event_type_id`, `schema_version`, `definition` |
 | `business_event.detected` | Business Event Engine | Signal Engine, Timeline | `business_event_id`, `event_type_id`, `entity_id`, `source_observation_ids` |
@@ -88,9 +90,9 @@ sequenceDiagram
     participant TL as Timeline
     participant RI as Revenue Intelligence Platform
 
-    PP->>PN: provider.payload.received
-    PN->>KG: provider.record.normalized
-    KG->>OE: entity.created / updated / merged
+    PP->>PN: provider.record.received
+    PN->>KG: claim.recorded
+    KG->>OE: entity.created / identity_bound / relationship.*
     OE->>BEE: observation.recorded
     OE-->>TL: observation.recorded
     BEE->>SE: business_event.detected
@@ -243,3 +245,29 @@ The Internal Event Bus is a versioned, envelope-standardized, at-least-once, per
 | `provider.sync.failed` | 1 | `sync_id`, `provider`, `capability`, `failure_kind`, `failure_message` | `failure_kind` ∈ `transient` \| `permanent` \| `contract`. Message is coarse — a message naming exactly which credential was rejected would reach a log aggregator with retention. |
 
 **No event carries simulation state.** A consumer able to distinguish a simulated record from a real one would be a consumer with a reason to behave differently, which is the coupling AC-21 forbids.
+
+### Provider Normalization (M2.2)
+
+| Event | v | Payload | Notes |
+|---|---|---|---|
+| `claim.recorded` | 1 | `raw_record_id`, `provider`, `subject_external_id`, `claim_count`, `mapper_version` | Evidence was produced from one raw record. **Carries identity and counts, not claims.** Embedding claim bodies would make every vocabulary addition an event contract change; a consumer reads them through `provider_normalization.public.ClaimReader`. |
+
+`subject_external_id` is the **claims'** subject, not the raw record's external id. A mapper legitimately identifies a subject differently from the way the sync addressed it — BuiltWith keys on the domain while the record was fetched by name — and a consumer must resolve the identity the evidence is filed under.
+
+One event per raw record rather than one per claim: the claims from a record are a single unit of evidence about a single subject, and resolving identity once per record rather than once per attribute is the difference between one decision and fifteen identical ones. A record that produced no claims publishes nothing.
+
+### Knowledge Graph (M3A)
+
+| Event | v | Payload | Notes |
+|---|---|---|---|
+| `entity.created` | 1 | `entity_id`, `kind`, `decision_id` | A provider identity matched nothing existing |
+| `entity.identity_bound` | 1 | `entity_id`, `provider`, `provider_external_id`, `rule`, `strength`, `decision_id` | A provider identity resolved to an entity. `strength` travels as the **string category** it is, never a number |
+| `entity.resolution_ambiguous` | 1 | `provider`, `provider_external_id`, `candidate_entity_ids`, `decision_id` | Two candidates matched; **nothing merged** |
+| `relationship.established` | 1 | `relationship_id`, `kind`, `source_entity_id`, `target_entity_id`, `valid_from` | An edge began |
+| `relationship.ended` | 1 | `relationship_id`, `kind`, `source_entity_id`, `target_entity_id`, `valid_to` | An edge closed. The row survives — `valid_to` is set, never deleted |
+
+**No Knowledge Graph event carries an attribute value.** The graph resolves identity, not truth (ratified 2026-07-28); an event announcing *"Acme has 120 employees"* would be the collapse the module exists to avoid. Every event names its `decision_id`, so any downstream conclusion traces back to the rule and the matched value that justified it.
+
+`entity.resolution_ambiguous` is a **first-class event, not a log line** — it is a work queue and an operational signal that a provider's identity data has degraded.
+
+> **Deferred:** `entity.superseded` appears in the M3A design but nothing publishes it yet. Correcting a *wrong merge* is an operator action whose interface belongs with the business UI (M12); an event with no producer would be a contract nobody is keeping.

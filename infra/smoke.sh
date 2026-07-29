@@ -337,6 +337,30 @@ else
   fail "provider ingestion failed against the running stack"
 fi
 
+# ================================================== 14c. Knowledge Graph
+
+stage "14c. Identity resolution"
+
+# The M3A demonstration. Claims from five providers are resolved into
+# entities: those sharing a domain reach one entity, one that offers no
+# matchable identity stays separate rather than being merged on a
+# coincidence, a retired technology's edge is closed rather than deleted,
+# and disagreeing claims remain individually retrievable.
+#
+# The last of those is the point of the whole architecture: the graph adds
+# knowledge without destroying evidence.
+if (cd ../backend && \
+    SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 \
+    SIGNORA_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    SIGNORA_TEST_APP_DATABASE_URL="postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5433/signora" \
+    SIGNORA_TEST_ADMIN_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    uv run pytest tests/knowledge_graph -q >/tmp/smoke_graph.log 2>&1); then
+  pass "$(grep -oE '[0-9]+ passed' /tmp/smoke_graph.log | tail -1) against the running stack"
+else
+  tail -20 /tmp/smoke_graph.log
+  fail "identity resolution failed against the running stack"
+fi
+
 # ================================================= 15. Security Invariants
 
 stage "15. Security Invariants"
@@ -371,4 +395,5 @@ trap - EXIT
 
 printf '\n\033[32m\033[1mPLATFORM SMOKE TEST PASSED\033[0m  (%ds)\n' "$((SECONDS - STARTED_AT))"
 printf 'Build · startup · migrations · identities · image hygiene · health · readiness ·\n'
-printf 'auth · JWT · authorization · RLS · event bus · relay · workers · ingestion · normalization · invariants · teardown\n\n'
+printf 'auth · JWT · authorization · RLS · event bus · relay · workers · ingestion ·\n'
+printf 'normalization · identity resolution · invariants · teardown\n\n'

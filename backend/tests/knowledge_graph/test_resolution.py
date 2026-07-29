@@ -12,6 +12,7 @@ customers' intelligence and looks perfectly clean while doing it.
 from __future__ import annotations
 
 import random
+from dataclasses import replace
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
@@ -22,6 +23,7 @@ from modules.knowledge_graph.domain.identity import (
     IdentityState,
     MatchStrength,
     ResolutionOutcome,
+    ResolutionReason,
     ResolutionRule,
 )
 from modules.knowledge_graph.domain.resolution import (
@@ -211,10 +213,10 @@ class TestMatchStrength:
         """Two unrelated 'Acme Ltd' in one country is a real scenario."""
         assert RULE_STRENGTH[ResolutionRule.LEGAL_NAME_AND_COUNTRY] is MatchStrength.MODERATE
 
-    def test_strength_is_the_weakest_reason_not_a_combination(self) -> None:
-        """Two moderate matches do not make a strong one. Treating them as
-        if they did would be the probabilistic scoring this model exists
-        to avoid."""
+    def test_strength_is_the_deciding_rule_not_a_combination(self) -> None:
+        """One rule decides, so there is exactly one strength. Two moderate
+        matches do not make a strong one; treating them as if they did
+        would be the probabilistic scoring this model exists to avoid."""
         decision, _ = resolve(
             _input(),
             (_candidate(uuid4(), provider="apollo", provider_external_id="acme-corp"),),
@@ -229,6 +231,61 @@ class TestMatchStrength:
         decision, _ = resolve(_input(), (), workspace_id=WORKSPACE, now=NOW)
 
         assert decision.strength is None
+
+    def test_mixing_strengths_on_one_decision_is_refused(self) -> None:
+        """The guard exists for a future edit, not for today's engine.
+
+        If someone later lets a decision carry reasons from two rules, the
+        question "how strong is this?" acquires an answer that has to be
+        computed — and the first computed answer is where the heuristic
+        gets in. It fails loudly instead.
+        """
+        decision, _ = resolve(_input(), (), workspace_id=WORKSPACE, now=NOW)
+        mixed = replace(
+            decision,
+            reasons=(
+                ResolutionReason(ResolutionRule.EXACT_DOMAIN, "domain", "acme.example"),
+                ResolutionReason(
+                    ResolutionRule.LEGAL_NAME_AND_COUNTRY, "legal_name_and_country", "acme|US"
+                ),
+            ),
+        )
+
+        with pytest.raises(ValueError, match="one rule"):
+            _ = mixed.strength
+
+
+class TestStrengthIsNotANumber:
+    """**Permanent invariant.** `MatchStrength` is a semantic category. It
+    must never become a numeric score, participate in a weighted
+    calculation, or underpin heuristic resolution.
+
+    Ordering and numeric conversion are the two doors into that drift, so
+    both are closed by the type itself rather than by review.
+    """
+
+    def test_no_strength_converts_to_a_number(self) -> None:
+        for strength in MatchStrength:
+            with pytest.raises(TypeError, match="not a score"):
+                int(strength)
+            with pytest.raises(TypeError, match="not a score"):
+                float(strength)
+
+    def test_strengths_do_not_order(self) -> None:
+        with pytest.raises(TypeError, match="does not order"):
+            _ = MatchStrength.CERTAIN < MatchStrength.MODERATE
+        with pytest.raises(TypeError, match="does not order"):
+            _ = MatchStrength.MODERATE >= MatchStrength.STRONG
+
+    def test_strengths_still_compare_for_equality(self) -> None:
+        """Closing the ordering door must not close the useful one."""
+        for strength in MatchStrength:
+            assert strength == MatchStrength(strength.value)
+        assert len({s for s in MatchStrength}) == len(MatchStrength)
+
+    def test_declared_values_are_words_not_numbers(self) -> None:
+        for strength in MatchStrength:
+            assert not strength.value.replace(".", "").isdigit()
 
 
 class TestDeterminism:

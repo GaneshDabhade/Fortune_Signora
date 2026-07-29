@@ -124,31 +124,41 @@ Each module below follows the template: Purpose, Owns, Does Not Own, Core Concep
 
 **Purpose:** Transforms raw payloads handed off by Provider Platform into Signora's canonical, provider-agnostic data shape.
 
-**Owns:** Normalization rules and mappings per provider/entity type, deduplication of raw payloads, provenance tracking (which provider supplied which field, when, at what confidence).
+**Owns:** The canonical claim vocabulary, per-provider mappers, and provenance — which provider asserted which attribute, when, from which raw record, under which mapper version.
 
-**Does Not Own:** Provider credential/quota/scheduling concerns (Provider Platform), entity resolution/merging across providers (Knowledge Graph).
+**Does Not Own:** Provider credential/quota/scheduling concerns (Provider Platform), entity resolution/merging across providers (Knowledge Graph), and — deliberately — **any judgement of which claim is true**.
 
-**Core Concepts:** Raw Payload, Normalized Record, Provenance, Field-Level Confidence.
+**Core Concepts:** Claim, Subject Hint, Claim Source, Canonical Attribute, Normalization Outcome, Rejection.
 
-**Key Published Events:** `provider.record.normalized`.
+**Key Published Events:** `claim.recorded`.
 
-**Key Consumed Events:** `provider.payload.received`.
+**Key Consumed Events:** `provider.record.received`.
+
+**Read port offered to other modules:** `ClaimReader` → `ClaimView`, `SubjectRef` (`public/claims.py`).
+
+> **As built (M2.2): normalization produces *claims*, not normalized records, and carries no confidence field.** A claim says *this provider asserted this attribute had this value, as of this time, and here is the raw record it came from* — nothing more. The v2 framing above ("normalized record", "field-level confidence") was written before the evidence model was ratified: a single normalized record per subject collapses provider disagreement at the earliest possible moment, and a confidence estimated here would be a number invented with no evidence behind it, propagating into buying scores as though it meant something. Claims are **immutable**, enforced by the absent `UPDATE` grant on `claim`.
 
 ---
 
 ### Knowledge Graph
 
-**Purpose:** Maintains the canonical, deduplicated graph of entities (companies, people) and relationships that every downstream module reasons about.
+**Purpose:** Answers *"which company is this provider talking about?"* — the deduplicated graph of entities and relationships every downstream module reasons about.
 
-**Owns:** Entity identity and resolution/merge logic, entity relationships, the canonical graph schema, entity versioning/history, embedding references for semantic entity/relationship search (via pgvector — see [ADR-0012](adr/0012-ai-platform-architecture.md)).
+**Owns:** Entity identity, deterministic resolution rules, identity bindings and their state, resolution decisions and their history, relationships between entities, and the claim-set query surface. Embedding references for semantic entity/relationship search (via pgvector — [ADR-0012](adr/0012-ai-platform-architecture.md)) remain planned, not built.
 
-**Does Not Own:** The atomic factual history of *changes* to entities over time (Observation Engine), business interpretation of what a change means (Business Event Engine).
+**Does Not Own:** **The truth of any attribute.** Also not: the atomic factual history of *changes* over time (Observation Engine), or business interpretation of what a change means (Business Event Engine).
 
-**Core Concepts:** Entity (Company, Person), Relationship, Entity Resolution, Merge.
+**Core Concepts:** Entity, Identity Binding, Identity State (`IDENTIFIED` / `AMBIGUOUS` / `UNRESOLVED`), Resolution Decision, Resolution Reason, Match Strength, Relationship, Claim Set.
 
-**Key Published Events:** `entity.created`, `entity.updated`, `entity.merged`.
+**Key Published Events:** `entity.created`, `entity.identity_bound`, `entity.resolution_ambiguous`, `relationship.established`, `relationship.ended`.
 
-**Key Consumed Events:** `provider.record.normalized`.
+**Key Consumed Events:** `claim.recorded`.
+
+**Read port offered to other modules:** `GraphQueries` → `ClaimSet`, `EntityEvidence` (`public/`).
+
+> **The permanent invariant (ratified 2026-07-28):** *The Knowledge Graph resolves identity. The Knowledge Graph does not resolve truth.* Identity is irreducible — only this module is positioned to answer it. Attribute conflict is not: it is carried forward intact, because every downstream module has more context to weigh it than the graph does. `entity` therefore has **no attribute columns**, and `ClaimSet` returns every contributing claim rather than a chosen value. Changing this requires an RFC. See [22-knowledge-graph.md](22-knowledge-graph.md).
+>
+> The v2 events `entity.updated` and `entity.merged` were removed rather than implemented. An entity with no attributes cannot be "updated"; and a merge is a *resolution decision*, recorded as one, which is what makes it explainable and revisable. Corrections supersede rather than mutate — `resolution_decision` is immutable, with no `UPDATE` grant.
 
 ---
 

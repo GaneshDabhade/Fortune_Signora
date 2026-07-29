@@ -81,11 +81,15 @@ This document does **not** define architecture principles (see [02-principles.md
 | 17 | [Future Recommendations](17-future-recommendations.md) | What should we build next, and when? |
 | 18 | [Authentication](18-authentication.md) | How is a caller's identity established at the API boundary? |
 | 19 | [API Conventions](19-api-conventions.md) | What shape do requests, responses, and errors take? |
+| 20 | [Provider Simulation](20-provider-simulation.md) | How are provider payloads produced without a provider, deterministically? |
+| **21** | **[The Intelligence Pipeline](21-intelligence-pipeline.md)** | **How does a fact become a recommendation, and what is each stage forbidden from doing?** |
+| 22 | [Knowledge Graph](22-knowledge-graph.md) | How is identity resolved, explained, and revised — without resolving truth? |
 | — | [Architecture Decision Records](adr/README.md) | Why was each technology/vendor/module-boundary decision made? |
 
 ## Who This Documentation Is For
 
-- **New engineers** ramping onto Signora — read 01 → 04 in order before writing code.
+- **Anyone new to the system, technical or not** — start with **21, The Intelligence Pipeline**. It is the shortest path to understanding what Signora does and why it is built this way.
+- **New engineers** ramping onto Signora — read 21, then 01 → 04 in order before writing code.
 - **Feature engineers** working inside a single module — read 01, 02, 04 (your module's section), 06, and the relevant sections of 07.
 - **Engineers proposing a new module, integration, or provider** — read 02, 04, 05, 09, and 13 before proposing anything.
 - **Engineering leadership and staff engineers** — this entire package is the reference for architecture reviews and RFC evaluation.

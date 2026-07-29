@@ -21,6 +21,7 @@ from modules.provider_platform.domain.provider import (
     ProviderTransientError,
     ReplayContext,
 )
+from modules.provider_platform.public.records import RawRecordReader, RawRecordView
 
 __all__ = [
     "ProviderAdapter",
@@ -37,5 +38,7 @@ __all__ = [
     "ProviderRequest",
     "ProviderResponse",
     "ProviderTransientError",
+    "RawRecordReader",
+    "RawRecordView",
     "ReplayContext",
 ]

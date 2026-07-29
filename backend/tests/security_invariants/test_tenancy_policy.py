@@ -318,21 +318,26 @@ class TestPlatformTablesAreUnreachableFromModules:
         assert "signora_relay" in readers
 
 
-class TestClaimsAreImmutable:
-    """Claims are evidence. Evidence is never edited.
+class TestImmutableTablesAreImmutable:
+    """Some tables hold history, and history is never edited.
 
-    New information is a **new claim**, never an overwrite. Timeline, the
-    Observation Engine, and AI Reasoning all depend on seeing what was
-    believed *when* — and an invariant guarded only by convention lasts
-    until the first inconvenient deadline.
+    `claim` holds evidence; `resolution_decision` holds the reasoning that
+    turned evidence into knowledge. New information is a **new row**, never
+    an overwrite — Timeline, the Observation Engine, and AI Reasoning all
+    depend on seeing what was believed *when*, and an invariant guarded only
+    by convention lasts until the first inconvenient deadline.
 
-    Enforced by the database: `signora_app` holds no `UPDATE` on `claim`,
-    so an attempted overwrite fails with a permission error rather than
-    succeeding quietly.
+    Enforced by the database: `signora_app` holds no `UPDATE` on any of
+    them, so an attempted overwrite fails with a permission error rather
+    than succeeding quietly.
+
+    Driven by `IMMUTABLE_TENANT_TABLES` rather than naming tables inline, so
+    that declaring a table immutable and *proving* it cannot drift apart.
     """
 
-    async def test_the_application_role_cannot_update_a_claim(
-        self, admin_session_factory: async_sessionmaker[AsyncSession]
+    @pytest.mark.parametrize("table", sorted(IMMUTABLE_TENANT_TABLES))
+    async def test_the_application_role_cannot_update_it(
+        self, admin_session_factory: async_sessionmaker[AsyncSession], table: str
     ) -> None:
         async with admin_session_factory() as session, session.begin():
             privileges = set(
@@ -340,8 +345,9 @@ class TestClaimsAreImmutable:
                     await session.execute(
                         text(
                             "SELECT privilege_type FROM information_schema.table_privileges "
-                            "WHERE table_name = 'claim' AND grantee = 'signora_app'"
-                        )
+                            "WHERE table_name = :table AND grantee = 'signora_app'"
+                        ),
+                        {"table": table},
                     )
                 )
                 .scalars()
@@ -349,28 +355,32 @@ class TestClaimsAreImmutable:
             )
 
         assert "UPDATE" not in privileges, (
-            "signora_app can UPDATE claim. Claims are immutable — new information is a new "
-            "claim. An update grant makes the invariant a convention rather than a guarantee."
+            f"signora_app can UPDATE {table}, which is declared immutable. New information is a "
+            "new row. An update grant makes the invariant a convention rather than a guarantee."
         )
         assert {"SELECT", "INSERT"} <= privileges
 
-    async def test_claims_remain_deletable_for_regeneration(
-        self, admin_session_factory: async_sessionmaker[AsyncSession]
+    @pytest.mark.parametrize("table", sorted(IMMUTABLE_TENANT_TABLES))
+    async def test_it_remains_deletable_for_regeneration(
+        self, admin_session_factory: async_sessionmaker[AsyncSession], table: str
     ) -> None:
-        """Deliberately different from mutation. Claims are *derived*:
-        dropping and regenerating them from raw records is the rollback for
-        a broken mapper, and a regenerated claim is a new claim."""
+        """Deliberately different from mutation. Both tables hold *derived*
+        data: dropping and regenerating them is the rollback for a broken
+        mapper or a bad resolution rule, and a regenerated row is a new row
+        rather than an edited one."""
         async with admin_session_factory() as session, session.begin():
             can_delete = (
                 await session.execute(
-                    text("SELECT has_table_privilege('signora_app', 'claim', 'DELETE')")
+                    text("SELECT has_table_privilege('signora_app', :table, 'DELETE')"),
+                    {"table": table},
                 )
             ).scalar_one()
 
         assert can_delete is True
 
-    async def test_no_update_policy_exists_on_claim(
-        self, admin_session_factory: async_sessionmaker[AsyncSession]
+    @pytest.mark.parametrize("table", sorted(IMMUTABLE_TENANT_TABLES))
+    async def test_no_update_policy_exists_on_it(
+        self, admin_session_factory: async_sessionmaker[AsyncSession], table: str
     ) -> None:
         """Defence in depth: even were the grant restored by mistake, no
         RLS policy permits an update."""
@@ -379,8 +389,9 @@ class TestClaimsAreImmutable:
                 await session.execute(
                     text(
                         "SELECT count(*) FROM pg_policies "
-                        "WHERE tablename = 'claim' AND cmd = 'UPDATE'"
-                    )
+                        "WHERE tablename = :table AND cmd = 'UPDATE'"
+                    ),
+                    {"table": table},
                 )
             ).scalar_one()
 

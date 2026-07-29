@@ -1,10 +1,10 @@
-# Session Handoff — end of M2.2
+# Session Handoff — end of M3A
 
 > **Purpose:** start the next engineering session immediately, without reconstructing context.
 > **Authoritative continuation point.** Updated at every milestone boundary.
-> **As of:** 2026-07-28 · commit `b704422` · branch `main`
+> **As of:** 2026-07-29 · branch `main`
 >
-> Read this first. Then [PROJECT_STATUS.md](../PROJECT_STATUS.md) §1–9 for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
+> Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) §1–9 for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
 ---
 
@@ -12,30 +12,30 @@
 
 | | |
 |---|---|
-| **Last completed** | **M2.2 Provider Normalization** — closed 2026-07-28 |
-| **Next** | **M3A Knowledge Graph** — [architecture proposal](architecture/22-knowledge-graph.md) written, **awaiting review** |
-| **Phase** | Product Pipeline. Foundations and enablement are complete and frozen. |
-| **Overall completion** | **~30%** by engineering effort (~100 of ~261–339 ew) |
-| **Remaining** | ~161–239 ew · ~1.6–2.3 years at 3 engineers, ~4.9–6.8 at 1 |
-| **Completed milestones** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 |
-| **Branch / commit** | `main` @ `b704422` |
+| **Last completed** | **M3A Knowledge Graph** — closed 2026-07-29 |
+| **Next** | **M3B Observation Engine** — architecture proposal not yet written |
+| **Phase** | Product Pipeline. Foundations and enablement are complete and frozen. Three pipeline stages built. |
+| **Overall completion** | **~34%** by engineering effort (~110 of ~261–339 ew) |
+| **Remaining** | ~151–229 ew · ~1.5–2.2 years at 3 engineers, ~4.7–6.5 at 1 |
+| **Completed milestones** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A |
+| **Branch** | `main` |
 
-**Recent commits:** `b704422` status · `b939c41` M2.2 closed · `6f2b195` mappers · `62ddb45` claim domain · `6708e15` M2.1 complete · `984b1ce` M2.0 closed
+**Recent commits:** M3A close (this change) · `ae1c0be` identity domain and rule engine · `b2efb2e` M3A approved · `9981d72` M3A proposal · `f11c19c` handoff created · `b704422` M2.2 status
 
 ### Health
 
 | Indicator | Value |
 |---|---|
-| Backend tests | **564 passing**, 0 failing, 0 skipped |
+| Backend tests | **650 passing**, 0 failing, 0 skipped |
 | Frontend tests | **101 passing** |
-| Backend coverage | **95.12%** (CI gate 95%) |
-| Security invariants | **83 / 83**, each proven to fail when its guarantee is removed |
-| import-linter contracts | **4 kept, 0 broken** |
-| `make smoke` | ✅ 17 stages, 52s warm |
-| Migrations | 0000–0008, all reversible |
-| mypy strict | Clean, 175 files |
+| Backend coverage | **95.54%** (CI gate 95%) |
+| Security invariants | **99 / 99**, each proven to fail when its guarantee is removed |
+| import-linter contracts | **7 kept, 0 broken** |
+| `make smoke` | ✅ 18 stages, 69s |
+| Migrations | 0000–0009, all reversible |
+| mypy strict | Clean, 205 files |
 | Open production bugs | **0** |
-| Technical debt | **0 outstanding** |
+| Technical debt | **0 outstanding** · **2 platform findings raised** (§5) |
 
 **Local prerequisites:** Docker · `uv` on `PATH` (`~/.local/bin`) · Postgres and Redis via `infra/docker-compose.yml`. Tests need `SIGNORA_DATABASE_URL` (migration identity) and `SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1` — the suite truncates every table, and the flag is a deliberate guard.
 
@@ -63,7 +63,8 @@ Permanent contracts. Each is enforced by automated test, not convention. **Chang
 | **Tenant Isolation Policy** | Every table declared tenant-owned or platform infrastructure — **classification is never inferred**. Tenant tables carry a non-null identifier, RLS enabled **and forced**, and policies covering SELECT/INSERT/UPDATE separately. A table in neither list fails the build. |
 | **Migration / runtime credential separation** | Runtime services never execute under migration or owner credentials. Each tier holds its own least-privileged role: `signora_app` (API, workers), `signora_auth` (frontend), `signora_relay` (outbox), owner (migrations only). |
 | **Platform Infrastructure Policy** | `outbox_event`, `processed_event`, `dead_letter_event`, `alembic_version` are owned by platform services. The application **publishes and cannot read**; only the relay consumes. Isolation is by grant, since these tables span workspaces and have no RLS. |
-| **Immutable tenant tables** | `claim` is immutable. `signora_app` holds **no `UPDATE` grant** — an attempted overwrite fails with a permission error. `DELETE` remains, because claims are derived and regeneration is the rollback for a broken mapper. |
+| **Immutable tenant tables** | `claim` and `resolution_decision` are immutable. `signora_app` holds **no `UPDATE` grant** on either — an attempted overwrite fails with a permission error. `DELETE` remains, because both are derived and regeneration is the rollback for a broken mapper or rule. |
+| **Module boundaries, enforced** | Since M3A, import-linter carries a contract per module pair: no module may import another's `domain/`, `application/`, `infrastructure/`, or `interface/`, and upstream modules cannot import downstream ones. Data crosses via a **read port on `public/`** — a Protocol plus frozen views, never an ORM instance. |
 
 ### Provider layer
 
@@ -86,6 +87,16 @@ Permanent contracts. Each is enforced by automated test, not convention. **Chang
 | **Evidence chain** | Every claim carries provider, raw record id, `observed_at`, mapper version, and payload provenance. Zero orphans, asserted by join. **The chain begins at normalization and must never be weakened.** |
 | **Fail loudly** | Unknown, missing, and unparseable are distinct rejection reasons, each naming its field path. A vendor shape change surfaces as a rising rejection rate, diagnosable without reading source. |
 
+### Knowledge
+
+| Contract | What it guarantees |
+|---|---|
+| **Identity, never truth** | **The Knowledge Graph resolves identity. The Knowledge Graph does not resolve truth.** `entity` has **no attribute columns** — asserted structurally. `ClaimSet` returns every contributing claim rather than a chosen value. Ratified 2026-07-28; changing it requires an RFC. |
+| **Deterministic resolution** | Three rules in precedence order — provider's own key, exact domain, legal name plus country. No fuzzy matching, no similarity thresholds, no probabilistic scoring. The same claims in any order produce the same graph. |
+| **`MatchStrength` is never a number** | A semantic category describing the *rule*, never a score. It must never participate in a weighted calculation or underpin heuristic resolution. **The type itself refuses** numeric conversion and ordering — `int()`, `float()`, `<`, `>` all raise. Ratified 2026-07-29. |
+| **Ambiguity merges nothing** | Two matching candidates produce an `AMBIGUOUS` decision naming both and **merge nothing** — enforced by a database CHECK constraint, not by the code path that writes the row. An under-merge is a visible duplicate; an over-merge silently mixes two customers' intelligence. |
+| **Decisions explain themselves** | Every binding traces to a decision naming its rule **and the value that matched**. Corrections supersede rather than mutate; on an immutable table the pointer necessarily points **backwards** (`supersedes`), because a forward one would require an `UPDATE` grant. |
+
 ---
 
 ## 3 · Product Pipeline state
@@ -95,9 +106,9 @@ Raw Provider Record   ✅ M2.1   Provider Platform — syncs, watermarks, raw st
         ↓
 Claim                 ✅ M2.2   Provider Normalization — canonical evidence
         ↓
-Knowledge Graph       🔄 M3A    ← NEXT: resolved entities
+Knowledge Graph       ✅ M3A    identity resolution, relationships, claim sets
         ↓
-Observation           ⏳ M3B    what changed, and when
+Observation           🔄 M3B    ← NEXT: what changed, and when
         ↓
 Business Event        ⏳ M4     funding, hiring surge, migration, exec change
         ↓
@@ -114,9 +125,9 @@ AI Reasoning          ⏳ M9     why, with evidence
 Recommendation        ⏳ M11    what to do next
 ```
 
-**Two links exist and are verified against the live stack.** A simulated provider payload enters through the Provider Port, is stored raw, and becomes canonical claims — with no simulation-specific logic anywhere in that path.
+**Three links exist and are verified against the live stack** (smoke stages 14b and 14c). A simulated provider payload enters through the Provider Port, is stored raw, becomes canonical claims, and is resolved to an entity whose decision explains itself — with no simulation-specific logic anywhere in that path.
 
-Everything from M3A onward is unbuilt.
+Everything from M3B onward is unbuilt. See **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** for what each remaining stage adds and what it is forbidden from doing.
 
 ---
 
@@ -138,81 +149,99 @@ The principles that got the project here, in the order they matter:
 
 ---
 
-## 5 · M3A starting context
+## 5 · M3B starting context
 
-### What M3A inherits
+### What M3B inherits
 
-**Input:** `Claim` rows — immutable, workspace-scoped, each carrying a `SubjectHint` (`provider_external_id`, optional `domain`, optional `legal_name`), a typed attribute and value, `observed_at`, and full source provenance. Claims arrive via the `claim.recorded` path from Provider Normalization.
+**Input:** entities with resolved identity, plus the claims behind them. Concretely:
+
+- `GraphQueries.claim_set(workspace_id, entity_id, attribute)` → every contributing claim with provider, value, `observed_at`, and provenance, plus a computed `agrees`
+- `GraphQueries.entity_evidence(workspace_id, entity_id)` → the entity, its provider identities, and all their claims
+- `GraphQueries.relationships(workspace_id, entity_id, kind=None, as_of=None)` → edges, with **`as_of` already in the API** as the seam for historical replay
+- `GraphQueries.resolution_history(workspace_id, entity_id)` → why the entity is what it is
+
+**Consume these through `modules.knowledge_graph.public`.** Nothing else. The import-linter contracts will fail the build on a deeper reach.
 
 **Already exists and should be assumed:**
 - Event bus with platform-owned idempotency — do not reimplement
 - RLS, forced, with `SECURITY DEFINER` predicates — new tables inherit the pattern
-- `make smoke`, extensible with a stage
+- `make smoke`, extensible with a stage (14b ingestion+normalization, 14c identity resolution)
 - The Tenant Isolation Policy — **register every new table in `tenancy_policy.py` or the build fails**
 - Five fixture providers producing claims for a working scenario
-- Deterministic replay: scenario, seed, manifest version, generator version, clock
 
-**Expected output:** canonical entities — companies, people, technologies, and their relationships — with historical state, consumed by the Observation Engine.
+**Expected output:** observations — *this changed, by this much, between these times, according to this provider* — consumed by the Business Event Engine and Timeline.
 
 ### The central challenge
 
-**M3A is the first module that must decide rather than preserve.**
+**M3B is where time becomes first-class.**
 
-Everything through M2.2 deliberately deferred judgement. Entity resolution cannot: Apollo's `acme-corp` and BuiltWith's `acme.example` either are the same company or are not, and something must choose.
+M3A deliberately stores no collapsed current value, precisely so this milestone can see a *series*. A claim is a point; an observation is a difference between points, attributed to the source that reported it. The graph grouped the points by identity — that is all it did, and all it should have done.
 
-That makes three properties non-negotiable, and they are in tension:
+The question this milestone has to answer carefully: **what counts as a change?** Apollo saying 120 and CoreSignal saying 145 is *disagreement*, not change. Apollo saying 120 in January and 145 in March is change. Distinguishing them is the whole job, and getting it wrong in either direction produces either phantom growth signals or missed ones.
 
-- **Explainable.** *Why* did these resolve together? A resolution nobody can explain is a resolution nobody can trust.
-- **Revisable.** A wrong merge must be undoable **without destroying the claims underneath**. Claims are immutable; the *resolution* must not be.
-- **Deterministic.** The same claims must resolve the same way on every run, or regression testing is meaningless.
+### Architectural questions worth raising before coding
 
-### Architectural questions already identified
+1. **Is an observation per-provider or cross-provider?** A per-provider series never confuses disagreement with change but produces several parallel series per attribute. A cross-provider one is what a seller intuitively wants and is exactly where phantom changes come from.
+2. **What is the unit — attribute, entity, or claim-pair?** This determines whether "headcount grew" and "a technology was removed" are the same kind of thing.
+3. **Are observations derived on read or stored?** Stored is explainable and cheap to read but must be invalidated when late-arriving claims land — and late arrival is normal, not exceptional (Bombora reports week 3 in week 5).
+4. **How is a late-arriving claim handled?** It changes history. Does it produce a new observation, revise one, or supersede one? The immutability precedent points one way; confirm rather than assume.
+5. **Does the Bombora weekly-intent series belong here?** Deferred from M2.0 and still open — see below.
 
-Raise and settle these **before** writing code:
+### Two platform findings, open
 
-1. **Is resolution a projection or a stored decision?** A projection recomputed from claims is always current and trivially revisable, but expensive and hard to explain at a point in time. A stored decision is explainable and stable but must be invalidated when claims arrive.
-2. **What does "revisable" mean concretely?** If a merge was wrong, is the correction a new resolution superseding the old, or a mutation? **Given the immutability precedent, the former is very likely right** — and worth confirming before it is assumed.
-3. **Where does conflicting evidence get resolved?** M2.2 deliberately preserved disagreement. Two providers reporting different headcounts: does the graph pick one, expose both, or defer to the Observation Engine? *This is the single most consequential M3A decision* — it determines whether disagreement survives into reasoning or dies here.
-4. **Does the graph store attribute values, or only identity?** A graph holding both entities and their current attribute values duplicates claim data and must stay in sync. One holding only identity plus edges keeps claims authoritative but pushes work downstream.
-5. **What is a person?** Claims carry role changes and contacts but no strong person identity. Whether people are first-class entities in M3A or deferred materially changes its scope.
+Both concern `signora_platform/`, which is frozen (CLAUDE.md §20a). Neither was fixed inside M3A. **The first is the one that matters.**
+
+| Finding | Effect | Resolution path |
+|---|---|---|
+| **`EventHandler` receives no session.** The registry's signature is `(envelope) -> None`, but a handler must do its work in the *same transaction* as the dispatcher's idempotency claim — a handler opening its own session would break exactly-once, which is the guarantee the whole bus is built on. | **No module handler is registered in the live registry.** The pipeline is exercised end to end through its real handlers in the integration suite and in `make smoke`, but the deployed worker consumes nothing. M3B will hit this the moment it needs a subscription. | A platform interface change — pass the session, or expose it via a context variable. **An RFC decision, not a coding-session one.** |
+| **`PublishableEvent` cannot be satisfied by a frozen dataclass.** The Protocol declares settable members; every domain event is immutable, as the architecture requires. | Three modules now carry a `# type: ignore` at their publish site. Cosmetic, but spreading. | Declare the Protocol's members read-only. Widens what satisfies it; breaks nothing. |
+
+### One scheduled follow-up
+
+**Fixture enrichment (M2.0 work).** Crunchbase and CoreSignal development fixtures carry no domain, so those two providers cannot resolve to the same entity as Apollo/BuiltWith/Bombora. The rules are correct — the fixtures are impoverished. Real payloads from both vendors carry a website. Adding one to those generators would let cross-provider resolution be demonstrated at full breadth **without weakening any rule**.
 
 ### Deferred, and to stay deferred
 
-- **Confidence scoring** — belongs to modules with enough context to justify it
-- **Authentic provider payloads** — all five remain `Conditional`; fixtures are clearly marked and replacement is a one-file change per provider
-- **Bombora's history question** — when an authentic payload arrives, establish whether the provider supplies weekly history *directly* or the platform must *accumulate* it. If the latter, that is an **Observation Engine** responsibility and a design input for M3B. Do not redesign until real evidence requires it.
-- **Cloud infrastructure** — M14.5, immediately before GA
-- **Business UI** — M12, against real domain contracts
+- **Confidence scoring** — belongs to modules with enough context to justify it. `MatchStrength` is not this and must never become it.
+- **Fuzzy / probabilistic identity matching** — a hidden heuristic. `entity.resolution_ambiguous` volume is the evidence that would justify it; speculation is not.
+- **Resolved-value projections in the graph** — no consumer has asked for one. If M3B or M5B demonstrates it needs one, *that* is the evidence, and the rule it should use will be knowable by then.
+- **Person entities** — claims carry role changes but no person *identifier*. There is no identity to resolve; adding people now means inventing one.
+- **Manual merge/unmerge UI** — the domain supports it via supersession. The interface belongs with the business UI at M12, and `entity.superseded` waits for it.
+- **Authentic provider payloads** — all five remain `Conditional`; replacement is a one-file change per provider.
+- **Bombora's history question** — when an authentic payload arrives, establish whether the provider supplies weekly history *directly* or the platform must *accumulate* it. If the latter, that is an **Observation Engine** responsibility. Do not redesign until real evidence requires it.
+- **Cloud infrastructure** — M14.5, immediately before GA.
+- **Business UI** — M12, against real domain contracts.
 
 ---
 
-## 6 · Future documentation
+## 6 · Key documents
 
-**"The Intelligence Pipeline"** — `docs/architecture/21-intelligence-pipeline.md`
-
-**Authored after M3A.** Deliberately deferred so it documents working software rather than projections.
-
-Explains how information evolves through the platform: each module's responsibility, inputs, outputs, why each boundary exists, how business value increases at every stage, and how explainability is preserved from raw payload to recommendation — with the canonical pipeline diagram.
-
-**Audience:** engineers, architects, future hires, customers, investors. It must explain both *how* the platform works and *why this architecture differentiates Signora* from conventional Revenue Intelligence products.
-
-Recorded in [IMPLEMENTATION_ROADMAP.md](../IMPLEMENTATION_ROADMAP.md).
+| Document | What it is for |
+|---|---|
+| **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** | **Read first.** The flagship reference: how a fact travels from raw provider payload to recommendation, what each stage adds, and what each stage is forbidden from doing. Written for engineers, architects, future hires, customers, and investors. Authored at the M3A boundary, as planned — after three stages existed, so it documents working software rather than projections. |
+| [22-knowledge-graph.md](architecture/22-knowledge-graph.md) | The M3A design, marked **as built**, including four departures from the approved proposal and why each was forced. |
+| [06-events.md](architecture/06-events.md) | The event catalog. `claim.recorded` and the five Knowledge Graph events are current as of M3A. |
+| [05-module-dependencies.md](architecture/05-module-dependencies.md) | The dependency graph, and the read-port pattern for reading another module's data. |
+| [04-modules.md](architecture/04-modules.md) | Module ownership and vocabulary. Provider Normalization and Knowledge Graph entries reflect what was actually built, not the v2 placeholders. |
 
 ---
 
 ## 7 · Next session starting point
 
-> **Completed:** M2.2 Provider Normalization · **Next:** M3A Knowledge Graph
-> **Branch:** `main` @ `b704422` · everything committed and pushed, tree clean
-> **Health:** 564 backend + 101 frontend tests passing · coverage 95.12% · 83 invariants · 4 contracts · smoke green
+> **Completed:** M3A Knowledge Graph · **Next:** M3B Observation Engine
+> **Branch:** `main` · everything committed, tree clean
+> **Health:** 650 backend + 101 frontend tests passing · coverage 95.54% · 99 invariants · 7 contracts · smoke green over 18 stages
 >
-> **Requires approval before implementation:**
-> 1. The **M3A architecture proposal** — [22-knowledge-graph.md](architecture/22-knowledge-graph.md). Complete: domain model, four evaluated alternatives, recommendation, entity and relationship models, resolution strategy, evidence attachment, storage, events, API, T59–T66, AC-25–AC-29, demo, DoD, rollback, operational readiness, risks.
-> 2. **Three questions inside it**: is the identity/truth split right · should `AMBIGUOUS` block downstream · is deferring person entities acceptable.
+> **First actions:**
+> 1. Read [21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md) — it is the shortest path to full context.
+> 2. Verify the tree is clean and `make smoke` is green.
+> 3. Prepare the **M3B architecture proposal** before any implementation, following the M3A pattern: domain model, evaluated alternatives with a recommendation, storage, events, module API, task breakdown, acceptance criteria, demonstration, DoD, rollback, operational readiness, risks. **Wait for approval.**
 >
-> **The proposal's core recommendation:** *the graph decides identity; the graph never decides truth.* Identity is irreducible — only the graph can answer it. Attribute conflict is not, and every downstream module has more context to weigh it. If that split is wrong, the design is wrong at its root and should be rejected before implementation.
+> **Settle these inside the proposal, not during implementation:** per-provider vs cross-provider observations · the unit of change · derived-on-read vs stored · how a late-arriving claim revises history.
 >
-> **Do not:** reimplement anything in §2 · introduce mock business data · add a canonical attribute without an RFC · modify `signora_platform/` or the frontend foundation without a qualifying reason.
+> **Raise, do not work around:** the `EventHandler` session finding (§5) will block live subscriptions the moment M3B needs one. It is an RFC decision.
+>
+> **Do not:** reimplement anything in §2 · introduce mock business data · add a canonical attribute without an RFC · store a resolved attribute value in the Knowledge Graph · turn `MatchStrength` into a number · modify `signora_platform/` or the frontend foundation without a qualifying reason.
 
 ---
 
@@ -220,4 +249,5 @@ Recorded in [IMPLEMENTATION_ROADMAP.md](../IMPLEMENTATION_ROADMAP.md).
 
 | Date | Change |
 |---|---|
+| 2026-07-29 | v2 — updated at the M3A boundary. Adds the **Knowledge** contract block (identity-never-truth, deterministic resolution, `MatchStrength` is never a number, ambiguity merges nothing, decisions explain themselves) and the module-boundary enforcement contract. Rewrites §5 for M3B, records **two open platform findings** and one scheduled fixture follow-up, and points §6 at [21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md) as the document to read first. |
 | 2026-07-28 | v1 — created at the M2.2 boundary. Establishes the handoff document as the authoritative continuation point. |

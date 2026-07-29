@@ -18,6 +18,7 @@ from uuid import UUID, uuid4
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from modules.provider_platform.application.ports import SyncRepository
 from modules.provider_platform.domain.events import (
     ProviderRecordReceived,
     ProviderSyncCompleted,
@@ -38,7 +39,6 @@ from modules.provider_platform.domain.sync import (
     RawProviderRecord,
     SyncFailureKind,
 )
-from modules.provider_platform.infrastructure.repository import ProviderSyncRepository
 from signora_platform.event_bus import EventPublisher
 from signora_platform.observability import get_logger
 
@@ -71,7 +71,7 @@ class RunProviderSync:
         self,
         *,
         adapter: ProviderAdapter,
-        repository: ProviderSyncRepository,
+        repository: SyncRepository,
         publisher: EventPublisher,
         session: AsyncSession,
     ) -> None:

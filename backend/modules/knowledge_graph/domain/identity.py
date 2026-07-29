@@ -65,11 +65,47 @@ class MatchStrength(StrEnum):
     function of the rule adds no information beyond the rule itself, and a
     field that *looks* computed attracts pressure to make it "smarter" —
     which is exactly how a hidden heuristic is born.
+
+    **Permanent invariant (ratified 2026-07-29): a semantic category, never
+    a number.** It must never become a numeric score, never participate in a
+    weighted calculation, and never become the basis of heuristic identity
+    resolution. The two doors into that drift are numeric conversion and
+    ordering comparison, so both are closed below rather than left to
+    review. Asserted structurally in the Security Invariants suite.
     """
 
     CERTAIN = "certain"
     STRONG = "strong"
     MODERATE = "moderate"
+
+    def __int__(self) -> int:
+        raise TypeError(_NOT_A_NUMBER)
+
+    def __float__(self) -> float:
+        raise TypeError(_NOT_A_NUMBER)
+
+    def __lt__(self, other: object) -> bool:
+        raise TypeError(_NOT_ORDERED)
+
+    def __le__(self, other: object) -> bool:
+        raise TypeError(_NOT_ORDERED)
+
+    def __gt__(self, other: object) -> bool:
+        raise TypeError(_NOT_ORDERED)
+
+    def __ge__(self, other: object) -> bool:
+        raise TypeError(_NOT_ORDERED)
+
+
+_NOT_A_NUMBER: Final = (
+    "MatchStrength is a semantic category, not a score. Converting it to a number is "
+    "the first step of a weighted heuristic, which identity resolution must not have."
+)
+
+_NOT_ORDERED: Final = (
+    "MatchStrength does not order. Comparing two strengths implies they can be ranked and "
+    "combined; they cannot. Compare for equality, or select by RULE_PRECEDENCE."
+)
 
 
 class ResolutionRule(StrEnum):
@@ -174,23 +210,48 @@ class ResolutionDecision:
     candidate_entity_ids: tuple[UUID, ...]
     evidence_claim_ids: tuple[UUID, ...]
     decided_at: datetime
-    superseded_by: UUID | None = None
+
+    #: The decision this one corrects, if any. **Points backwards, and that
+    #: is forced by immutability**: a forward `superseded_by` would have to
+    #: be written onto the older row, which needs an `UPDATE` grant this
+    #: table deliberately does not have. A correction is therefore a new
+    #: row naming its predecessor, and the current decision is the one no
+    #: other decision names.
+    supersedes: UUID | None = None
 
     @property
     def strength(self) -> MatchStrength | None:
-        """The strongest match supporting this decision.
+        """The strength of the rule that decided this — not an aggregate.
 
-        The *maximum* rather than a combination: two moderate matches do
-        not make a strong one, and treating them as if they did would be
-        the probabilistic scoring this model exists to avoid.
+        A decision is made by exactly one rule (the engine stops at the
+        first rule that matches anything), so every reason on it shares one
+        strength and there is nothing to combine. Stated as an invariant
+        rather than quietly reduced with `min`/`max`, because a reduction
+        would be the seam through which "two moderate matches make a strong
+        one" eventually arrives.
         """
         if not self.reasons:
             return None
-        order = list(MatchStrength)
-        return min((r.strength for r in self.reasons), key=order.index)
+        strengths = {reason.strength for reason in self.reasons}
+        if len(strengths) > 1:
+            raise ValueError(
+                f"decision {self.id} mixes match strengths {sorted(s.value for s in strengths)}. "
+                "A decision is made by one rule; combining strengths is the probabilistic "
+                "scoring this model exists to avoid."
+            )
+        return strengths.pop()
 
-    def superseded(self, by: UUID) -> ResolutionDecision:
-        return replace(self, superseded_by=by)
+    def correcting(self, previous_decision_id: UUID) -> ResolutionDecision:
+        return replace(self, supersedes=previous_decision_id)
+
+    def resolved_to(self, entity_id: UUID) -> ResolutionDecision:
+        """Attach the entity a CREATED decision produced.
+
+        The rule engine cannot know it — it is pure and allocates nothing —
+        so the entity is created by the use case and named here, before the
+        decision is ever persisted.
+        """
+        return replace(self, entity_id=entity_id, candidate_entity_ids=(entity_id,))
 
     def explain(self) -> str:
         """Human-readable, for audit output and operator diagnosis."""
@@ -226,6 +287,16 @@ class IdentityBinding:
     entity_id: UUID | None
     decision_id: UUID
     created_at: datetime
+
+    #: The identity hints this binding was made from — what the provider
+    #: said, carried forward so resolving a later identity compares against
+    #: stored values rather than re-reading another module's claims. These
+    #: are *hints*, scoped to one provider identity and never merged across
+    #: providers; they are not the entity's attributes, which remain claims.
+    domain: str | None = None
+    legal_name: str | None = None
+    country: str | None = None
+
     superseded_by: UUID | None = None
 
     @property

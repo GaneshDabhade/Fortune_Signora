@@ -49,6 +49,11 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # Provider Normalization (M2.2), migration 0008.
         "claim",
         "normalization_outcome",
+        # Knowledge Graph (M3A), migration 0009.
+        "entity",
+        "identity_binding",
+        "resolution_decision",
+        "relationship",
     }
 )
 
@@ -88,9 +93,14 @@ REQUIRED_POLICY_COMMANDS: Final[frozenset[str]] = frozenset({"SELECT", "INSERT",
 # being able to see what was believed *when*
 # (docs/architecture/20-provider-simulation.md; M2.2 ruling).
 #
+# `resolution_decision` holds knowledge's history. A decision that can be
+# edited is a decision whose history cannot be trusted, so a correction is a
+# new decision naming the one it supersedes — which is also why its
+# supersession pointer points backwards (migration 0009; M3A ruling).
+#
 # Adding a table here is a deliberate architectural act. The immutability it
 # claims is separately asserted in test_tenancy_policy.py.
-IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset({"claim"})
+IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset({"claim", "resolution_decision"})
 
 # Runtime roles. None may bypass RLS, whatever else they are permitted.
 RUNTIME_ROLES: Final[tuple[str, ...]] = ("signora_app", "signora_auth", "signora_relay")

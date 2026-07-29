@@ -105,7 +105,12 @@ include_external_packages = true
 [[tool.importlinter.contracts]]
 name = "modules: Clean Architecture layering"
 type = "layers"
-containers = ["modules.workspace_tenancy"]
+containers = [
+    "modules.workspace_tenancy",
+    "modules.provider_platform",
+    "modules.provider_normalization",
+    "modules.knowledge_graph",
+]
 layers = [
     "(interface)",
     "infrastructure",
@@ -113,6 +118,51 @@ layers = [
     "application",
     "domain",
 ]
+
+# The dependency graph in 05-module-dependencies.md, enforced rather than
+# reviewed. A module may reach another module only through its `public/`
+# contract — never its domain, application, infrastructure, or interface
+# layers. Cross-module imports of an ORM model or a use case compile and
+# run perfectly well, which is exactly why the rule needs a machine behind
+# it: the violation is invisible until the modules need to move apart.
+# `allow_indirect_imports` keeps these contracts about *direct* reaches.
+# Importing a module's `public/` inevitably pulls its `domain/` behind it —
+# that is what a public contract re-exporting its own vocabulary looks
+# like, and flagging it would make the rule unusable rather than strict.
+[[tool.importlinter.contracts]]
+name = "provider_normalization reaches provider_platform only through public/"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = ["modules.provider_normalization"]
+forbidden_modules = [
+    "modules.provider_platform.domain",
+    "modules.provider_platform.application",
+    "modules.provider_platform.infrastructure",
+    "modules.provider_platform.interface",
+    "modules.knowledge_graph",
+]
+
+[[tool.importlinter.contracts]]
+name = "knowledge_graph reaches upstream modules only through public/"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = ["modules.knowledge_graph"]
+forbidden_modules = [
+    "modules.provider_normalization.domain",
+    "modules.provider_normalization.application",
+    "modules.provider_normalization.infrastructure",
+    "modules.provider_normalization.interface",
+    "modules.provider_platform",
+]
+
+# The graph is acyclic (05-module-dependencies.md). An upstream module that
+# imports a downstream one has inverted the pipeline, and no amount of
+# indirection makes that safe to extract later.
+[[tool.importlinter.contracts]]
+name = "provider_platform depends on no downstream module"
+type = "forbidden"
+source_modules = ["modules.provider_platform"]
+forbidden_modules = ["modules.provider_normalization", "modules.knowledge_graph"]
 
 [[tool.importlinter.contracts]]
 name = "workspace_tenancy: domain has no infrastructure/framework dependencies"

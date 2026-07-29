@@ -14,7 +14,6 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from modules.provider_normalization.interface.handlers import normalize_received_record
 from modules.provider_platform.application.run_sync import RunProviderSyncInput
 from modules.provider_platform.domain.provider import ProviderCapability
 from modules.provider_platform.infrastructure.composition import build_run_sync
@@ -23,6 +22,7 @@ from modules.workspace_tenancy.infrastructure.composition import build_use_cases
 from signora_platform.db import tenant_scoped_session, user_scoped_session
 from signora_platform.event_bus import PostgresOutboxEventPublisher
 from tests.integration.test_provider_ingestion import _adapter
+from tests.pipeline import normalize_all
 
 pytestmark = pytest.mark.integration
 
@@ -58,32 +58,7 @@ async def _ingest(factory: async_sessionmaker[AsyncSession]) -> tuple[UUID, UUID
 async def _normalize_all(
     factory: async_sessionmaker[AsyncSession], workspace_id: UUID, user_id: UUID
 ) -> int:
-    from datetime import UTC, datetime
-
-    from signora_platform.event_bus import EventEnvelope
-
-    async with tenant_scoped_session(
-        factory, workspace_id=workspace_id, user_id=user_id
-    ) as session:
-        record_ids = (
-            (await session.execute(text("SELECT id FROM raw_provider_record"))).scalars().all()
-        )
-        for record_id in record_ids:
-            await normalize_received_record(
-                EventEnvelope(
-                    event_id=uuid4(),
-                    event_type="provider.record.received",
-                    event_version=1,
-                    workspace_id=workspace_id,
-                    occurred_at=datetime.now(UTC),
-                    producer_module="provider_platform",
-                    correlation_id=uuid4(),
-                    causation_id=None,
-                    payload={"record_id": str(record_id)},
-                ),
-                session=session,
-            )
-    return len(record_ids)
+    return await normalize_all(factory, workspace_id, user_id)
 
 
 class TestPipelineDemonstration:
