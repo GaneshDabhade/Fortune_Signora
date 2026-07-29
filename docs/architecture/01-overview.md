@@ -89,6 +89,7 @@ This document does **not** define architecture principles (see [02-principles.md
 | 25 | [Signal Engine](25-signal-engine.md) | Why might a business event matter to *this* customer, and what belongs to the platform vs the workspace? |
 | 26 | [Buying Score Engine](26-buying-score-engine.md) | How much commercial attention does an account deserve, and how is intelligence reduced to a number without being replaced by it? |
 | 27 | [Opportunity Engine](27-opportunity-engine.md) | What should Sales actively track, and how does workflow state stay separate from derived intelligence? |
+| 28 | [AI Platform](28-ai-platform.md) | How does Signora talk to a model, and how does it know the answer is grounded? *(proposed — M8)* |
 | — | [Architecture Decision Records](adr/README.md) | Why was each technology/vendor/module-boundary decision made? |
 
 ## Who This Documentation Is For
