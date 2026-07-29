@@ -19,10 +19,15 @@ from modules.signal_engine.domain.catalog import (
     SignalType,
     SignalTypeDefinition,
 )
-from modules.signal_engine.domain.profile import ProfileEntry, SignalProfile
+from modules.signal_engine.domain.profile import (
+    DEFAULT_PROFILE_VERSION,
+    ProfileEntry,
+    SignalProfile,
+)
 from modules.signal_engine.domain.signal import Signal
 
 __all__ = [
+    "DEFAULT_PROFILE_VERSION",
     "DetectionStrategy",
     "ProfileEntry",
     "Relevance",

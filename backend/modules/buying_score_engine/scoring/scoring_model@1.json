@@ -1,0 +1,78 @@
+{
+  "_comment": "Signora's default scoring model — how much commercial attention each hypothesis earns. Shipped in the repository because the *shape* of the model is Signora's design; a customer authors their own version in the database because the *values* are a commercial judgement. Every number here is an integer, and every product is integer arithmetic: a buying score must reproduce from its own ledger exactly, and floating point cannot promise that. Posture is not configurable — whether CONTRACTION_RISK reads as contractionary is a fact about the English language, not a preference, and a workspace inverting it would make `contested` meaningless across the platform. Reviewed like code; a change here is a release.",
+  "version": 1,
+  "ceiling": 120,
+  "steady_delta": 2,
+  "age_bands": [
+    {
+      "key": "fresh",
+      "through_percent": 33,
+      "multiplier_percent": 100,
+      "label": "fresh"
+    },
+    {
+      "key": "recent",
+      "through_percent": 67,
+      "multiplier_percent": 60,
+      "label": "recent"
+    },
+    {
+      "key": "ageing",
+      "through_percent": 100,
+      "multiplier_percent": 30,
+      "label": "ageing"
+    }
+  ],
+  "relevance_multipliers": {
+    "primary": 100,
+    "supporting": 60,
+    "contextual": 30
+  },
+  "types": [
+    {
+      "key": "active_evaluation",
+      "posture": "expansionary",
+      "base_weight": 40
+    },
+    {
+      "key": "budget_unlocked",
+      "posture": "expansionary",
+      "base_weight": 35
+    },
+    {
+      "key": "expansion_opportunity",
+      "posture": "expansionary",
+      "base_weight": 30
+    },
+    {
+      "key": "displacement_opportunity",
+      "posture": "expansionary",
+      "base_weight": 30
+    },
+    {
+      "key": "contraction_risk",
+      "posture": "contractionary",
+      "base_weight": 25
+    },
+    {
+      "key": "modernization_underway",
+      "posture": "expansionary",
+      "base_weight": 20
+    },
+    {
+      "key": "consolidation_underway",
+      "posture": "neutral",
+      "base_weight": 20
+    },
+    {
+      "key": "new_decision_maker",
+      "posture": "neutral",
+      "base_weight": 20
+    },
+    {
+      "key": "decision_maker_departed",
+      "posture": "contractionary",
+      "base_weight": 15
+    }
+  ]
+}

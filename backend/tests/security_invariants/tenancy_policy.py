@@ -62,6 +62,11 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # **customer-authored** table in the platform — not derived data.
         "signal",
         "signal_profile",
+        # Buying Score Engine (M5B), migration 0013. `workspace_scoring_model`
+        # is the **second** customer-authored table — a workspace's own
+        # weighting, which cannot be regenerated from anything.
+        "buying_score",
+        "workspace_scoring_model",
     }
 )
 
@@ -133,6 +138,8 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         "business_event",
         "signal",
         "signal_profile",
+        "buying_score",
+        "workspace_scoring_model",
     }
 )
 

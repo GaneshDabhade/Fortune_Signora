@@ -8,8 +8,11 @@ Python.
 """
 
 import asyncio
+from pathlib import Path
 
 import pytest
+from alembic.config import Config
+from alembic.script import ScriptDirectory
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
@@ -24,6 +27,11 @@ from signora_platform.settings import Settings
 from tests.conftest import DEFAULT_ADMIN_DATABASE_URL, DEFAULT_APP_DATABASE_URL
 
 pytestmark = pytest.mark.integration
+
+
+def _head_revision() -> str:
+    config = Config(str(Path(__file__).resolve().parents[2] / "alembic.ini"))
+    return ScriptDirectory.from_config(config).get_current_head() or ""
 
 
 def _settings(database_url: str) -> Settings:
@@ -148,4 +156,8 @@ class TestConcurrencySafety:
                 await session.execute(text("SELECT version_num FROM alembic_version"))
             ).scalar_one()
 
-        assert version == "0012"
+        # Read from the script directory rather than pinned to a number.
+        # The property under test is that the runner reaches head, not which
+        # revision head currently is — pinning it made every new migration
+        # fail a test about concurrency.
+        assert version == _head_revision()

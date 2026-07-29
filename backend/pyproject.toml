@@ -113,6 +113,7 @@ containers = [
     "modules.observation_engine",
     "modules.business_event_engine",
     "modules.signal_engine",
+    "modules.buying_score_engine",
 ]
 layers = [
     "(interface)",
@@ -212,6 +213,29 @@ forbidden_modules = [
     "modules.provider_platform",
 ]
 
+[[tool.importlinter.contracts]]
+name = "buying_score_engine reaches upstream modules only through public/"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = ["modules.buying_score_engine"]
+forbidden_modules = [
+    "modules.signal_engine.domain",
+    "modules.signal_engine.application",
+    "modules.signal_engine.infrastructure",
+    "modules.signal_engine.interface",
+    # M5B weighs hypotheses; it does not form them. Reaching past the
+    # Signal Engine to business events would let a weighting rule quietly
+    # become a detection rule, in the module least equipped to review it.
+    "modules.business_event_engine",
+    "modules.observation_engine",
+    "modules.knowledge_graph",
+    "modules.provider_normalization.domain",
+    "modules.provider_normalization.application",
+    "modules.provider_normalization.infrastructure",
+    "modules.provider_normalization.interface",
+    "modules.provider_platform",
+]
+
 # The graph is acyclic (05-module-dependencies.md). An upstream module that
 # imports a downstream one has inverted the pipeline, and no amount of
 # indirection makes that safe to extract later.
@@ -224,6 +248,7 @@ forbidden_modules = [
     "modules.knowledge_graph",
     "modules.observation_engine",
     "modules.business_event_engine",
+    "modules.buying_score_engine",
 ]
 
 [[tool.importlinter.contracts]]
@@ -234,19 +259,26 @@ forbidden_modules = [
     "modules.observation_engine",
     "modules.business_event_engine",
     "modules.signal_engine",
+    "modules.buying_score_engine",
 ]
 
 [[tool.importlinter.contracts]]
 name = "observation_engine depends on no downstream module"
 type = "forbidden"
 source_modules = ["modules.observation_engine"]
-forbidden_modules = ["modules.business_event_engine", "modules.signal_engine"]
+forbidden_modules = ["modules.business_event_engine", "modules.signal_engine", "modules.buying_score_engine"]
 
 [[tool.importlinter.contracts]]
 name = "business_event_engine depends on no downstream module"
 type = "forbidden"
 source_modules = ["modules.business_event_engine"]
-forbidden_modules = ["modules.signal_engine"]
+forbidden_modules = ["modules.signal_engine", "modules.buying_score_engine"]
+
+[[tool.importlinter.contracts]]
+name = "signal_engine depends on no downstream module"
+type = "forbidden"
+source_modules = ["modules.signal_engine"]
+forbidden_modules = ["modules.buying_score_engine"]
 
 [[tool.importlinter.contracts]]
 name = "workspace_tenancy: domain has no infrastructure/framework dependencies"

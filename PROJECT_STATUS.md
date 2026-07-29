@@ -22,7 +22,7 @@ The product's competitive advantage is the quality of that reasoning and the evi
 |---|---|
 | **Platform Foundations** | ✅ **Complete** — runtime, auth, deployment, smoke verification, frontend |
 | **Enablement** | ✅ **Complete** — Provider Simulation Framework |
-| **Product Development** | 🔄 **In progress** — six pipeline stages built, through the Signal Engine. Signora now produces customer-specific commercial intelligence. |
+| **Product Development** | 🔄 **In progress** — seven pipeline stages built, through the Buying Score Engine. Signora now turns customer-specific commercial hypotheses into one explainable, challengeable number per account. |
 | **AI Platform** | ⏳ Queued — M8 onward |
 | **Production Readiness** | ⏳ Queued — cloud infrastructure, then GA |
 
@@ -30,11 +30,11 @@ The product's competitive advantage is the quality of that reasoning and the evi
 
 | | |
 |---|---|
-| **Overall completion** | **~45%** by engineering effort (~142 of ~261–339 ew) |
-| **Effort remaining** | **~119–197 ew** |
-| **Milestones completed** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · M4 · **M5A** |
-| **Current milestone** | **M5B — Buying Score Engine** (next) |
-| **Projected to GA** | ~1.6–2.3 years at 3 engineers · ~2.5–3.4 at 2 · ~4.9–6.8 at 1 (80% capacity) |
+| **Overall completion** | **~48%** by engineering effort (~152 of ~261–339 ew) |
+| **Effort remaining** | **~109–187 ew** |
+| **Milestones completed** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · M4 · M5A · **M5B** |
+| **Current milestone** | **M6 — Opportunity Engine** (next) — the first sellable moment |
+| **Projected to GA** | ~1.5–2.2 years at 3 engineers · ~2.3–3.2 at 2 · ~4.5–6.5 at 1 (80% capacity) |
 
 ## 4 · Roadmap Snapshot
 
@@ -55,8 +55,8 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | — | M3B | Observation Engine | ✅ Complete |
 | — | M4 | Business Event Engine | ✅ Complete |
 | — | M5A | Signal Engine | ✅ Complete |
-| 1 | **M5B** | **Buying Score Engine** | 🔴 **Next** |
-| 8 | M6 | Opportunity Engine — **first sellable moment** | ⏳ Queued |
+| — | M5B | Buying Score Engine | ✅ Complete |
+| 1 | **M6** | **Opportunity Engine — first sellable moment** | 🔴 **Next** |
 | 9 | M8 | AI Platform — abstraction, prompts, eval harness | ⏳ Queued |
 | 10 | M9 | AI Reasoning Engine | ⏳ Queued |
 | 11 | M10 | AI Research Engine | ⏳ Queued |
@@ -181,21 +181,21 @@ Knowledge Graph · Observation Engine · Business Events · Signals · Buying Sc
 
 | Indicator | Value | Target |
 |---|---|---|
-| **Backend tests** | **905 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Backend tests** | **1011 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Frontend tests** | **101 passing**, 0 failing, 0 skipped | 0 skipped |
-| **Backend coverage** | **95.50%** | ≥95% (CI-gated) |
-| **Security invariants** | **186 / 186**, each proven to fail when its guarantee is removed | 100% verified |
-| **import-linter contracts** | **13 kept, 0 broken** | 0 broken |
-| **Architecture drift** | **0** — no ratified ADR reversed; 12 documents amended for drift, all found by test or by implementation | Trending to 0 |
+| **Backend coverage** | **95.20%** | ≥95% (CI-gated) |
+| **Security invariants** | **223 / 223**, each proven to fail when its guarantee is removed | 100% verified |
+| **import-linter contracts** | **15 kept, 0 broken** | 0 broken |
+| **Architecture drift** | **0** — no ratified ADR reversed; 13 documents amended for drift, all found by test or by implementation | Trending to 0 |
 | **Open production bugs** | **0** | 0 |
 | **Technical debt** | **0 outstanding** · **2 platform findings raised** (see M3A record) | — |
-| **`make smoke`** | ✅ Passing (76s; 21 stages, the full pipeline through signals) | Required per milestone |
+| **`make smoke`** | ✅ Passing (87s; 22 stages, the full pipeline through buying scores) | Required per milestone |
 
 ### Test suite composition
 
 | Area | Tests | Notes |
 |---|---|---|
-| Security invariants | 186 | Permanent architectural guarantees; run as their own CI job |
+| Security invariants | 223 | Permanent architectural guarantees; run as their own CI job |
 | Simulation framework | 130 | Clock, dataset, scenario, faults, delivery, generators |
 | Provider contract suite | 45 | **One suite, five adapters** — the keystone interchangeability test |
 | Workspace & Tenancy | ~70 | RLS isolation, API, persistence |
@@ -206,8 +206,9 @@ Knowledge Graph · Observation Engine · Business Events · Signals · Buying Sc
 | Knowledge Graph (resolution, use cases, pipeline) | 70 | Identity — the first decision Signora makes |
 | Observation Engine (derivation, use case, pipeline) | 54 | Change — and, mostly, what is *not* change |
 | Business Event Engine (rules, taxonomy, detection, pipeline) | 63 | Business meaning — in language a CRO recognises |
-| Signal Engine (catalog, profile, strategies, pipeline) | 51 | Commercial meaning — the first customer-specific layer |
-| **Backend total** | **905** | Coverage 95.50%, mypy strict over 278 files |
+| Signal Engine (catalog, profile, strategies, pipeline) | 52 | Commercial meaning — the first customer-specific layer |
+| Buying Score Engine (ledger, scoring, score, use case, pipeline) | 68 | Commercial attention — the first intentional reduction |
+| **Backend total** | **1011** | Coverage 95.20%, mypy strict over 307 files |
 | Frontend components & foundation | 101 | Includes 13 AC-14/AC-15 guard tests |
 
 ---
@@ -420,6 +421,42 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 
 ## Current Milestone
 
+### ✅ M5B — Buying Score Engine · **CLOSED** 2026-07-29
+
+| Field | Value |
+|---|---|
+| **Status** | ✅ **Completed** |
+| **Completion date** | 2026-07-29 |
+| **Commits** | `bc78021` (proposal) · `8c6333b` (ratification + decay reversal) · this change (T93–T101) |
+| **Exit gate** | ✅ **`make smoke` passed** — 87s, fresh images, clean Compose stack, **22 stages**, 223 invariants green against the running system |
+| **Effort** | ~8–12 ew scoped · delivered within range |
+
+**The milestone in one line.** The pipeline's **first intentional reduction** — many live commercial hypotheses become one number per account, and everything the number discards stays recoverable through the ledger that produced it.
+
+**The permanent principle it establishes:**
+
+> **Buying scores prioritize commercial attention. They do not predict purchasing behaviour. They do not estimate probability. They do not resolve contradiction. They summarize *explainable* commercial attention.**
+>
+> A buying score may **summarize** intelligence; it must **never replace** it.
+
+**The decision the milestone turned on.** *Prioritizing* is not *resolving*. Deciding which of two contradictory hypotheses is true needs evidence this module does not have and judgement belonging to AI Reasoning and to humans; ordering attention while the contradiction stands needs neither. That rules out the obvious implementation: **opposing hypotheses never cancel arithmetically**, because netting would score a fought-over account like an inert one — under the shipped model, 4 versus 45.
+
+**Scope delivered.** `scoring_model@1` artifact (posture, weights, relevance multipliers, age bands, ceiling) · `ContributionLedger` as a first-class domain object with reproduction and no-double-count invariants checked at construction · `BuyingScore` projected from its ledger, immutable, with derived identity · migration 0013 (`buying_score`, `workspace_scoring_model`, forced RLS, no `UPDATE` grant) · customer-authored scoring models with artifact fallback · event-unit attribution · step decay · contradiction detection with named dissent · `ComputeBuyingScore` · the evidence-derived staleness sweep · `BuyingScoreQueries` · `buying_score.updated` · smoke stage 14g.
+
+**Acceptance criteria satisfied.** AC-50 through AC-57, plus tenancy, event-contract, and Security Invariant criteria. **16 new Security Invariants**, each proven to fail when its guarantee was removed.
+
+**Architectural decisions recorded.** Step decay over linear, exponential and none — *the decisive argument was semantic consistency, not accuracy*: a stored score promises to be exactly correct until `valid_until`, and only a discrete curve can keep that promise without continuous recomputation, which the platform has rejected. Also: the third ownership layer (`workspace_scoring_model` beside `signal_profile`, never inside it), posture as Signora's and weights as the customer's, the business event as the unit of contribution, and account fit deferred to M6.
+
+**Three departures from the approved proposal**, each recorded in [26-buying-score-engine.md](docs/architecture/26-buying-score-engine.md): the sweep is workspace-scoped rather than cross-tenant (a cross-workspace query cannot be served under forced RLS without a role that bypasses it, and no such role may exist) · the score records `model_artifact_version` + `scoring_model_version` rather than four version numbers · the Signal Engine is reached through a `SignalReader` port rather than concretely.
+
+**Technical debt introduced.** None. One unrelated defect repaid: `test_migration_runner.py` pinned the head revision to `"0012"`, so a test about *concurrency* failed on every new migration; it now reads head from the Alembic script directory.
+
+**Carried forward.** The scheduled M2.0 simulation work — evidence recent enough that several hypotheses are concurrently live — is now the gating item for exercising the contested, multi-signal path at wall-clock now rather than through historical replay. **No fixture was tuned to make the demonstration look better.**
+
+**M5B required no change to M5A and no new edge in the dependency graph** — the strongest available evidence that the Signal Engine boundary was drawn in the right place.
+
+---
+
 ### ✅ M5A — Signal Engine · **CLOSED** 2026-07-29
 
 | Field | Value |
@@ -474,13 +511,16 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 
 ## Next Milestone
 
-### 🔄 M5B — Buying Score Engine · **NEXT** · ~6–9 ew
+### 🔄 M6 — Opportunity Engine · **NEXT** — the first sellable moment
 
-Aggregates signals into a continuously updated buying propensity per account — the first module permitted to answer *"how much does this matter?"*
+Converts a sufficiently strong buying score into a qualified, actionable **opportunity**, and manages its lifecycle.
 
-**Why it follows M5A.** The Signal Engine contains no scores by design. M5B inherits three things it deliberately left on the table: **weighting relevance categories** into a number, **resolving contradictory hypotheses** with a stated and reviewable rule, and **applying decay** to a signal's declared shelf life.
+**Why it follows M5B.** The Buying Score Engine answers *how much attention* and stops. Whether an account is **worth acting on** is a different question, and it is the first one whose answer a customer would pay for.
 
-**One requirement recorded during M5A:** M5B must deduplicate on contributing *business events*, not on signals. A composite and its constituent rest on the same grounds read two ways, and counting both would double-count the evidence.
+**Two things recorded for M6 during M5B:**
+
+- **Account fit / ICP belongs here, not in M5B.** Fit is true whether or not anything happened; attention is a response to what happened. Folding a static property into a dynamic score means a well-fitting but inert account permanently outranks a poorly-fitting one that just raised a round, and no consumer could tell which reason produced the number. M6 asks *"is this worth acting on?"* with score as one input and fit as another.
+- **The qualification threshold is M6's to declare, in data.** M5B deliberately publishes no notion of "high enough".
 
 **Awaiting:** architecture proposal and approval, as with every prior milestone.
 

@@ -33,7 +33,9 @@ flowchart TD
     AI --> R[Recommendation<br/><i>what to do</i>]
 ```
 
-Nine stages. Each one adds business understanding. **None of them destroys what came before.**
+Nine stages. Each one adds business understanding.
+
+**Stages 1–6 destroy nothing.** Stage 7 is the first that deliberately reduces — and everything it reduces stays recoverable through the contribution ledger, which is what makes the reduction safe rather than lossy.
 
 ---
 
@@ -253,7 +255,7 @@ Both are first-class. The second is what lets a customer preview a configuration
 
 ---
 
-## Stage 7 — Buying Score *(planned — M5B)*
+## Stage 7 — Buying Score
 
 **What it is.** *How much it matters, right now, with a direction.*
 
@@ -273,7 +275,37 @@ Every stage before this one **adds** information and destroys none. Stage 7 turn
 
 Every reduction is reversible through the **contribution ledger** stored with each score: one entry per contributing business event, naming the signal that carried it and every number that went into the arithmetic. The ledger is the score's explanation, not an implementation detail — the score reproduces from it exactly, and each entry walks to a raw provider record.
 
-**Owned by:** Buying Score Engine · **Publishes:** `buying_score.updated` · **Design:** [26-buying-score-engine.md](26-buying-score-engine.md)
+### The reduction, and what survives it
+
+| Reduced | Recoverable from the ledger | Never discarded |
+|---|---|---|
+| How many hypotheses · which types · their posture · their age · their evidence · the interpretation that held them · that two readings disagree | All of it — one entry per contributing business event, naming the signal that carried it and every number that produced it | The identity of every contributing signal · **the fact of contradiction** · the versions in force · superseded readings |
+
+**A score may lose detail. It may never lose the ability to point at the detail it lost.**
+
+### Step decay, because a stored score must be honest
+
+A score is a **reading with a stated expiry**: between `computed_at` and `valid_until` the number is *exactly correct*, not merely recent. Any decay changing continuously with wall-clock time breaks that promise the instant after the score is written — unless scores are recomputed continuously, which this architecture rejects.
+
+So ageing is discrete: bands expressed as **fractions of each signal type's own relevance window**, reusing the catalog's existing judgement rather than inventing a second one beside it. The ledger records the band's *word* — `fresh`, `recent`, `ageing` — beside its percentage, because a customer can argue with *"we count ageing evidence at 30%"* and cannot argue with a decimal.
+
+Shelf-life expiry is the one input that arrives **without an event**, so a sweep re-reads accounts whose `valid_until` has passed. It reads a boundary the evidence itself declared rather than polling on an interval somebody guessed.
+
+### The unit of contribution is the business event
+
+Not the signal. A composite hypothesis and the constituent it enriches rest on the same grounds read two ways, so an event is attributed to the highest-weighted signal citing it and the others stay in the ledger with a zero contribution and a stated reason. Double counting is **structurally impossible** rather than deduplicated afterwards, and nothing is silently dropped — a zero with a reason is information; an absent row is a mystery.
+
+### Three layers of ownership
+
+| Layer | Owner | Answers |
+|---|---|---|
+| Signal catalog | **Signora** | *What hypotheses exist, and what do they mean?* |
+| Signal profile | **Customer** | *Which do we care about?* |
+| **Scoring model** | **Customer** | *How much attention does each earn?* |
+
+A workspace tunes weights, multipliers, bands, and the ceiling. It may never invert **posture** — whether `CONTRACTION_RISK` reads as contractionary is a fact about the language, and a workspace flipping it would make `contested` incomparable across every customer.
+
+**Owned by:** Buying Score Engine · **Tables:** `buying_score`, `workspace_scoring_model` (both immutable) · **Publishes:** `buying_score.updated` · **Read port:** `BuyingScoreQueries` · **Design:** [26-buying-score-engine.md](26-buying-score-engine.md)
 
 ---
 

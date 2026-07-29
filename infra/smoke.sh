@@ -420,6 +420,26 @@ else
   fail "commercial interpretation failed against the running stack"
 fi
 
+# =============================================== 14g. Buying Score Engine
+
+stage "14g. Commercial attention"
+
+# The M5B demonstration, and the pipeline's first intentional reduction.
+# Many live hypotheses become one number — which must reproduce from its own
+# ledger exactly, count each business event once, prioritise contradiction
+# without netting it, and walk back to a raw provider payload.
+if (cd ../backend && \
+    SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 \
+    SIGNORA_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    SIGNORA_TEST_APP_DATABASE_URL="postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5433/signora" \
+    SIGNORA_TEST_ADMIN_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    uv run pytest tests/buying_score_engine -q >/tmp/smoke_score.log 2>&1); then
+  pass "$(grep -oE '[0-9]+ passed' /tmp/smoke_score.log | tail -1) against the running stack"
+else
+  tail -20 /tmp/smoke_score.log
+  fail "commercial attention failed against the running stack"
+fi
+
 # ================================================= 15. Security Invariants
 
 stage "15. Security Invariants"
@@ -456,4 +476,4 @@ printf '\n\033[32m\033[1mPLATFORM SMOKE TEST PASSED\033[0m  (%ds)\n' "$((SECONDS
 printf 'Build · startup · migrations · identities · image hygiene · health · readiness ·\n'
 printf 'auth · JWT · authorization · RLS · event bus · relay · workers · ingestion ·\n'
 printf 'normalization · identity resolution · change detection · business events ·\n'
-printf 'signals · invariants · teardown\n\n'
+printf 'signals · buying scores · invariants · teardown\n\n'

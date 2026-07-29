@@ -65,7 +65,7 @@ Events are listed in pipeline order. Payload fields below are illustrative and i
 | `business_event.superseded` | Business Event Engine | Signal Engine, Timeline | `business_event_id`, `supersedes`, `entity_id`, `type_key` |
 | `signal.generated` | Signal Engine | Buying Score Engine, Timeline | `signal_id`, `entity_id`, `signal_type`, `relevance`, `relevant_until`, `catalog_version`, `profile_version` — see the M5A section below |
 | `signal.superseded` | Signal Engine | Buying Score Engine, Timeline | `signal_id`, `supersedes`, `entity_id`, `signal_type` |
-| `buying_score.updated` | Buying Score Engine | Opportunity Engine, Timeline | `entity_id`, `score`, `trend`, `source_signal_ids`, `model_version` |
+| `buying_score.updated` | Buying Score Engine | Opportunity Engine, Timeline | `score_id`, `entity_id`, `score`, `trend`, `delta`, `contested`, `source_signal_ids`, `dissenting_signal_ids`, `trigger`, `valid_until`, `model_version` — see the M5B section below |
 | `opportunity.created` | Opportunity Engine | AI Research Engine, AI Reasoning Engine, Timeline, Revenue Intelligence Platform | `opportunity_id`, `entity_id`, `source_buying_score`, `stage` |
 | `opportunity.stage_changed` | Opportunity Engine | AI Reasoning Engine, Timeline, Revenue Intelligence Platform | `opportunity_id`, `previous_stage`, `new_stage` |
 | `ai_research.completed` | AI Research Engine | AI Reasoning Engine (optional/non-blocking, see [05-module-dependencies.md](05-module-dependencies.md)) | `research_id`, `opportunity_id`, `artifact_ref`, `model_provenance` |
@@ -318,5 +318,23 @@ One event per raw record rather than one per claim: the claims from a record are
 **`signal.generated` is not a claim that anyone should act.** How likely a purchase is, which account to prioritise, and what to recommend belong downstream.
 
 > **Two corrections to the v2 catalog.** `signal.generated` has **lost its `score`**, and **`signal.scored` is removed entirely**. The Signal Engine produces no scores at all: propensity belongs to the Buying Score Engine, which already publishes `buying_score.updated`. An event whose only possible producer lives in another module is a contract nobody is keeping — the same reasoning that removed `business_event_type.published`.
+
+### Buying Score Engine (M5B)
+
+| Event | v | Payload | Notes |
+|---|---|---|---|
+| `buying_score.updated` | 1 | `score_id`, `entity_id`, `score`, `trend`, `delta`, `contested`, `source_signal_ids`, `dissenting_signal_ids`, `trigger`, `valid_until`, `model_version`, `payload_version` | An account's commercial attention has been re-read |
+
+**The first event in the pipeline carrying a number.** M5A ratified relevance as a category with no numeric meaning; this is where the first one is made. It is **not a probability and not a prediction** — an ordering of commercial attention, normalized against a ceiling the scoring model declares — and the payload deliberately carries no field implying otherwise.
+
+**`contested` travels with the score**, added to the v2 shape. A consumer that cannot tell a fought-over account from a quiet one will reconstruct the distinction by querying signals itself, which puts scoring logic in Opportunity Engine. `dissenting_signal_ids` **names** the outweighed reading rather than counting it, because a consumer told only *"contested"* learns that something disagrees while being denied the means to look.
+
+**`valid_until` states how long the published number is exactly correct**, not merely recent — and a consumer holding it past that moment knows it is reading a stale reading. This is what makes step decay a contract rather than an implementation detail: a continuously-decaying score could not honour it.
+
+`source_signal_ids` carries **identity only**. The contribution ledger holds the arithmetic, and embedding it here would make every weighting change an event-contract change — *events carry identity; ports carry payload.*
+
+**`trigger`** records why the reading exists: a signal arrived, a signal was superseded, configuration changed, or **evidence aged**. The last one is the reason the module has a sweep at all — shelf-life expiry publishes no event of its own, and a number that moved for an unexplainable reason is a number nobody trusts.
+
+> **One addition to the v2 catalog**, made before the event had any implementation: `contested`, `dissenting_signal_ids`, `delta`, `trigger`, `valid_until`, and `score_id`. The v2 shape (`entity_id`, `score`, `trend`, `source_signal_ids`, `model_version`) survived design review unchanged and is still present — a good sign for the boundary.
 
 > **Removed:** `business_event_type.published` from the v2 catalog. It assumed a runtime-mutable taxonomy that notified the system when it changed. The taxonomy is a versioned repository artifact — **the deployment is the notification** — so the event had no producer, and an event with no producer is a contract nobody is keeping.

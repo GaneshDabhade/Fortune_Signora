@@ -1,7 +1,7 @@
 # 26 — Buying Score Engine
 
-> Status: **Proposal — core principles ratified 2026-07-29; six questions open. Not implemented.**
-> Milestone: **M5B** · Module: Buying Score Engine · Position: pipeline stage 7
+> Status: **Implemented — M5B closed 2026-07-29. This document is marked *as built*; departures from the approved proposal are recorded at the end.**
+> Milestone: **M5B** · Module: Buying Score Engine · Position: pipeline stage 7 · Migration **0013**
 > Audience: engineers, architects, product
 > Prepared: 2026-07-29, after reviewing the implemented M5A rather than the M5A proposal.
 
@@ -74,15 +74,17 @@ This has a sharp, testable consequence that rules out the most obvious implement
 
 So: every live signal contributes **attention**, and attention is unsigned. The commercial *posture* of each contribution (expansionary, contractionary, neutral) is preserved per-contribution in the ledger and summarized on the score as `contested`, with the dissenting signals named. The scalar answers *how much*; the ledger answers *of what kind*; the resolution is left to the modules that can actually perform it.
 
-A worked comparison, same weights, three accounts:
+A worked comparison under the **shipped** model (`scoring_model@1`, ceiling 120), each hypothesis primary and fresh:
 
-| Account | Live signals | Netting model | Recommended model |
-|---|---|---|---|
-| Acme | expansion (strong), contraction (strong) | **2** — looks dead | **68 · contested** — look now |
-| Globex | nothing | **0** | **0** |
-| Initech | expansion (strong) | **30** | **34** |
+| Account | Live signals | Points | If netted | **As built** |
+|---|---|---|---|---|
+| Acme | expansion (30) **and** contraction (25) | 55 | `30 − 25 = 5` → **4** | **45 · contested** |
+| Globex | nothing | 0 | **0** | **no reading at all** |
+| Initech | expansion (30) | 30 | **25** | **25** |
 
-The netting model gives Acme and Globex nearly the same answer. That is the failure this module exists to avoid.
+Netting puts Acme within four points of an account where nothing is happening. Those are the two most different accounts in the book, and the number would make them nearly identical.
+
+Note also what Globex gets: **not a zero, but no reading**. A zero is a statement, and Signora has not made one.
 
 ---
 
@@ -442,28 +444,42 @@ Implementation satisfying AC-50 through AC-57 plus tenancy, event-contract, and 
 
 ---
 
-## Approval status
+## As built: decisions taken, and three departures
 
-### Ratified 2026-07-29
+Every principle approved on 2026-07-29 shipped as ratified: **prioritization over resolution**, the no-netting rule, the contribution ledger as a first-class domain object, `contested` with named dissent, the third ownership layer, posture as Signora's, 0–100 with a declared ceiling, and account fit deferred to M6.
 
-| | |
-|---|---|
-| **1 · Prioritization over resolution** | **Ratified as a permanent architectural principle**, with the no-netting rule that follows from it. |
-| **2 · Contradiction preserved** | Approved. Opposing hypotheses never cancel mathematically; the ledger preserves competing interpretations. |
-| **3 · The ledger is first-class** | Approved. Modelled as a domain object with behaviour — *it is the explanation of the score*. |
-| **4 · Reduction framing** | Approved. Every design decision is evaluated against *reduced / recoverable / never discarded*. |
-| **5 · Non-canonical, structurally** | Approved. A score remains a projection over signals, never an alternative representation of account state. |
-| **6 · Decay** | **Evaluated as directed; recommendation reversed to step decay.** Awaiting confirmation of the reversal. |
+**Step decay shipped as recommended after the reversal.** Bands are fractions of each type's own relevance window — `fresh` (first third, ×100%), `recent` (×60%), `ageing` (×30%) — so the platform's entire decay is five declared numbers in `scoring/scoring_model@1.json`, and no per-type constant exists anywhere.
 
-### Still open — implementation waits on these
+### Departure 1 — the sweep is workspace-scoped, not cross-tenant
 
-| | Question | My recommendation |
-|---|---|---|
-| **A** | **The reversal itself** — linear → **step decay** in bands that are fractions of the type's own relevance window. The deciding argument is that a continuous function makes a stored score permanently and silently wrong, while a discrete one makes `valid_until` state something true. | Adopt step. |
-| **B** | **The third ownership layer** — `scoring_model` as a **separate** customer-authored artifact, not folded into `signal_profile`, so tuning a score never churns the audit trail of every historical signal. | Separate. |
-| **C** | **Posture is Signora's, weights are the customer's** — a workspace tunes weights, multipliers, and band boundaries, but may never invert what a signal type means commercially. | Approve. |
-| **D** | **Scale** — integer 0–100, ceiling declared in the model artifact rather than in code. | Approve. |
-| **E** | **`contested` on the `buying_score.updated` payload** — an addition to a ratified-but-unimplemented contract, so not a breaking change. | Add it. |
-| **F** | **Account fit / ICP deferred to M6** and recorded there rather than left homeless again. | Defer. |
+The proposal described a sweep spanning every workspace, "because ageing is not a workspace-scoped event and no request is in flight to scope it."
 
-Implementation begins once **A–F** are settled. Nothing is coded before then.
+**That cannot be built.** A cross-workspace query cannot be served under `FORCE ROW LEVEL SECURITY` without a role that bypasses RLS, and no such role may exist — introducing one to make a background job convenient would void the tenancy model for every table it touches.
+
+`stale()` therefore takes a `workspace_id` and `SweepStaleScores.execute(workspace_id)` sweeps one tenant inside an already-scoped session. Choosing *which* workspaces to sweep is the scheduler's job. Guarded by a Security Invariant so the convenient version cannot come back.
+
+### Departure 2 — the score records two version numbers, not four
+
+The proposal put `scoring_model_version`, `profile_version`, `catalog_version`, and `payload_version` on the score. `catalog_version` was dropped: it is recorded on every signal the ledger names, and a second copy on the score could only ever disagree with it.
+
+In its place, `model_artifact_version` — Signora's shipped weights — sits beside `scoring_model_version`, the workspace's tuning. *"Our weights v1, their tuning v3"* explains a number that neither does alone.
+
+### Departure 3 — the Signal Engine is reached through a port, not concretely
+
+The proposal had the use case take `SignalQueries` directly. It takes a `SignalReader` `Protocol` instead, declaring the four members it depends on. The trigger was mundane — a test double could not satisfy a concrete class — but the conclusion was not: **if a fake cannot stand in for a dependency, the dependency was never really a boundary.** The concrete `SignalQueries` satisfies it structurally and nothing changed at the composition root.
+
+### One clarification, not a departure
+
+`ContributionLedger.value()` **is** the `reproduce()` the proposal named. Two methods computing one number would eventually compute two, so there is one — and `BuyingScore.__post_init__` refuses any score whose value disagrees with it.
+
+### What the demonstration shows, including one honest limit
+
+Against the simulated scenario, a real score is produced with its full ledger, every entry walks back to a raw provider record, the composite and its constituent share evidence that is counted exactly once, and the sweep re-reads the account as evidence ages — the number falls, `trend` reads `FALLING`, the trigger reads `EVIDENCE_AGED`, and the previous reading survives intact and still explainable.
+
+**The limit:** the scenario's shorter-lived hypotheses have passed their shelf life at wall-clock now, so the rich multi-signal demonstration asks its question *as of* a moment derived from the evidence itself rather than from the clock. That is historical replay — a first-class mode, not a workaround — but it means the live, contested, multi-hypothesis path is exercised through replay rather than through today's date. The scheduled M2.0 simulation work (evidence recent enough that several signals are concurrently live) remains the fix, and is carried forward rather than papered over. **No fixture was tuned to make a demonstration look better.**
+
+### Verified at close
+
+**1011 backend tests** passing · **95.20%** coverage · **223 Security Invariants**, of which the 16 new ones were each proven to fail when their guarantee was removed (guards deleted, constraints dropped, the `UPDATE` grant restored, `FORCE` RLS removed, an account column added, posture made overridable, a business constant introduced into scoring code, float division introduced into the ledger) · **15 import-linter contracts** kept · mypy strict clean over 307 files · `make smoke` green across 22 stages.
+
+One unrelated defect was fixed in passing: `tests/integration/test_migration_runner.py` pinned the head revision to `"0012"`, so a test about *concurrency* failed on every new migration. It now reads head from the Alembic script directory.

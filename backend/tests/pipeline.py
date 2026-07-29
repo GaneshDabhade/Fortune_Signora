@@ -28,6 +28,16 @@ from modules.business_event_engine.infrastructure.composition import (
     build_queries as build_business_event_queries,
 )
 from modules.business_event_engine.interface.handlers import detect_from_observation
+from modules.buying_score_engine.application.queries import BuyingScoreQueries
+from modules.buying_score_engine.application.sweep import SweepStaleScores
+from modules.buying_score_engine.infrastructure.composition import (
+    build_compute_buying_score,
+)
+from modules.buying_score_engine.infrastructure.composition import (
+    build_queries as build_buying_score_queries,
+)
+from modules.buying_score_engine.infrastructure.repository import SqlBuyingScoreRepository
+from modules.buying_score_engine.interface.handlers import compute_from_signal
 from modules.knowledge_graph.application.queries import GraphQueries
 from modules.knowledge_graph.infrastructure.composition import (
     build_derive_relationships,
@@ -255,3 +265,75 @@ async def signal_all(
 
 def signals(session: AsyncSession, workspace_id: UUID) -> SignalQueries:
     return build_signal_queries(session, business_events=business_events(session, workspace_id))
+
+
+async def score_all(
+    factory: async_sessionmaker[AsyncSession],
+    admin_factory: async_sessionmaker[AsyncSession],
+    workspace_id: UUID,
+    user_id: UUID,
+    *,
+    moment: datetime | None = None,
+) -> int:
+    """Read commercial attention for every signal event.
+
+    Both `signal.generated` and `signal.superseded` are consumed: a
+    strengthened hypothesis arrives as both, and a consumer handling only
+    the first would keep weighing the reading that was replaced.
+    """
+    envelopes = [
+        envelope
+        for event_type in ("signal.generated", "signal.superseded")
+        for envelope in await _published(admin_factory, event_type)
+        if envelope.workspace_id == workspace_id
+    ]
+
+    async with tenant_scoped_session(
+        factory, workspace_id=workspace_id, user_id=user_id
+    ) as session:
+        compute = build_compute_buying_score(
+            session,
+            signals=signals(session, workspace_id),
+            publisher=PostgresOutboxEventPublisher(),
+            clock=None if moment is None else (lambda: moment),
+        )
+        for envelope in envelopes:
+            await compute_from_signal(envelope, compute=compute)
+    return len(envelopes)
+
+
+def buying_scores(session: AsyncSession, workspace_id: UUID) -> BuyingScoreQueries:
+    return build_buying_score_queries(session, signals=signals(session, workspace_id))
+
+
+async def sweep_stale(
+    factory: async_sessionmaker[AsyncSession],
+    workspace_id: UUID,
+    user_id: UUID,
+    *,
+    moment: datetime | None = None,
+) -> tuple[int, int]:
+    """Re-score whatever has passed the moment its own arithmetic changes.
+
+    Shelf-life expiry is the one input to the Buying Score Engine that
+    arrives without an event, so this is the stage that keeps scores honest
+    as evidence ages rather than letting every account decay into a false
+    hot state.
+    """
+    async with tenant_scoped_session(
+        factory, workspace_id=workspace_id, user_id=user_id
+    ) as session:
+        compute = build_compute_buying_score(
+            session,
+            signals=signals(session, workspace_id),
+            publisher=PostgresOutboxEventPublisher(),
+            clock=None if moment is None else (lambda: moment),
+        )
+
+        sweep = SweepStaleScores(
+            repository=SqlBuyingScoreRepository(session),
+            compute=compute,
+            **({} if moment is None else {"clock": (lambda: moment)}),
+        )
+        result = await sweep.execute(workspace_id)
+    return result.examined, result.rescored

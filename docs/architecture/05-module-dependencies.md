@@ -101,13 +101,16 @@ The mechanism is a **read port on the owning module's `public/`**: a `Protocol` 
 | `GraphQueries` → `ClaimSet`, `EntityEvidence` | Knowledge Graph | Observation Engine |
 | `ObservationQueries` → `Observation`, `ObservationEvidence` | Observation Engine | Business Event Engine |
 | `BusinessEventQueries` → `BusinessEvent`, `Taxonomy` | Business Event Engine | Signal Engine |
-| `SignalQueries` → `Signal`, `SignalExplanation`, `SignalCatalog` | Signal Engine | (M5B onward) |
+| `SignalQueries` → `Signal`, `SignalExplanation`, `SignalCatalog` | Signal Engine | Buying Score Engine |
+| `BuyingScoreQueries` → `BuyingScore`, `ContributionLedger`, `BuyingScoreExplanation` | Buying Score Engine | (M6 onward) |
 
 Three properties make this a boundary rather than a naming convention:
 
 - **A frozen view, never an ORM instance.** An ORM object carries a session, lazy loaders, and a write path — handing one across a boundary hands over the ability to mutate another module's table by accident.
 - **The consumer imports the Protocol, never the implementation.** Wiring the concrete reader is the composition root's job, so a module never learns that its neighbour is backed by SQL.
-- **Read ports expose evidence, never resolutions.** `ClaimReader` deliberately has no `current_value(subject, attribute)`. Offering one would put truth resolution behind an innocuous call, and every consumer would use it instead of looking at the evidence.
+- **Read ports expose evidence, never resolutions.** `ClaimReader` deliberately has no `current_value(subject, attribute)`. Offering one would put truth resolution behind an innocuous call, and every consumer would use it instead of looking at the evidence. For the same reason `BuyingScoreQueries` exposes no account representation — a read port that also served account state would become the place consumers get accounts from, and the score would have quietly replaced the intelligence it summarizes.
+
+> **M5B required no new edge.** The Buying Score Engine reads signals and nothing else: the chain outward to business events, observations, claims and raw records is reachable through `SignalExplanation`, which the Signal Engine already returns. A direct Buying Score → Business Event edge was considered and rejected — reaching past the Signal Engine would let a weighting rule quietly become a detection rule, in the module least equipped to review it. That the module fits the existing graph unchanged is the strongest available evidence the M5A boundary was drawn in the right place.
 
 ### The canonical vocabulary is a platform-wide contract
 
