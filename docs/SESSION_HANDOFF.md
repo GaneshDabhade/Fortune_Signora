@@ -20,7 +20,7 @@
 | **Completed milestones** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · M4 · M5A · M5B · M6 |
 | **Branch** | `main` |
 
-**Recent commits:** M6 close (this change) · `8034cfb` M6 ratification + binding milestone DoD · `c638d1c` M6 proposal · `ed7f9e9` M5B closed · `8c6333b` M5B decay reversal
+**Recent commits:** `6cec891` M6 closed · `8034cfb` M6 ratification + binding milestone DoD · `c638d1c` M6 proposal · `ed7f9e9` M5B closed · `8c6333b` M5B decay reversal
 
 ### Health
 

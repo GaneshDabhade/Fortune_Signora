@@ -428,8 +428,8 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 |---|---|
 | **Status** | ✅ **Completed** |
 | **Completion date** | 2026-07-29 |
-| **Commits** | `c638d1c` (proposal) · `8034cfb` (ratification + binding milestone DoD) · this change (T102–T110) |
-| **`HEAD` at close** | *(this commit)* |
+| **Commits** | `c638d1c` (proposal) · `8034cfb` (ratification + binding milestone DoD) · `6cec891` (T102–T110) |
+| **`HEAD` at close** | `6cec891` |
 | **Exit gate** | ✅ **`make smoke` passed** — 95s, fresh images, clean Compose stack, **23 stages**, 261 invariants green against the running system |
 | **Effort** | ~8–12 ew scoped · delivered within range |
 
