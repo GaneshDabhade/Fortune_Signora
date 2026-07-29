@@ -1,32 +1,36 @@
 # 28 — AI Platform
 
-> Status: **PROPOSED — awaiting approval.** Milestone **M8**.
+> Status: **APPROVED IN DIRECTION — 2026-07-29.** Milestone **M8**. Not yet implemented.
 > Audience: engineers, architects, and anyone who has to trust what Signora says.
 > Anchors: [14-ai-architecture.md](14-ai-architecture.md) · [ADR-0012](adr/0012-ai-platform-architecture.md) · [04-modules.md](04-modules.md) · [21-intelligence-pipeline.md](21-intelligence-pipeline.md) · [16-architecture-risks.md](16-architecture-risks.md) R-01, R-05, R-10
 >
-> This document proposes the AI Platform. It is not yet built. Sections marked **RULING REQUIRED** are decisions that belong to the product owner, not to a coding session.
+> This document proposes the AI Platform. It is not yet built.
 
 ---
 
-## One correction to the brief, first
+## The question this module answers
 
-The brief states that the AI Platform answers exactly one question:
+**Ratified 2026-07-29.** The AI Platform answers exactly one question:
 
-> *"What reasoning should be presented to the user?"*
+> **"How does Signora communicate with a model, and how does it know the answer is grounded?"**
 
-**That is the AI Reasoning Engine's question, not the AI Platform's.** [04-modules.md](04-modules.md) §AI Reasoning Engine already owns it — *"reason over an opportunity, its buying score, signals, Knowledge Graph context … producing structured explanations, prioritization, and analysis"* — and that module is M9. If M8 answers it, the roadmap has two names for one module, and the substrate that M9 and M10 are supposed to stand on gets built as a by-product of a feature.
+It does not answer *what* to say. It answers *what may be said at all*, and it is the machinery that makes every later answer checkable.
 
-The AI Platform's own question, in the same one-sentence form every other module has:
+### The correction that produced it
 
-> **"How does Signora talk to a model, and how does it know the answer is grounded?"**
+The original brief gave the AI Platform the question *"What reasoning should be presented to the user?"* **That is the AI Reasoning Engine's question** — [04-modules.md](04-modules.md) §AI Reasoning Engine already owns it, *"reason over an opportunity, its buying score, signals, Knowledge Graph context … producing structured explanations, prioritization, and analysis"* — and that module is M9. Had M8 answered it, the roadmap would have had two names for one module and the substrate M9 and M10 stand on would have been built as a by-product of a feature.
 
-It does not answer *what* to say. It answers *what may be said at all*, and it is the machinery that makes every later answer checkable. Everything else in the brief — provider abstraction, Ollama, versioned prompts, an evaluation harness — is exactly that substrate, so only the framing sentence needs correcting, not the scope.
+Accepted 2026-07-29. Everything else in the brief — provider abstraction, Ollama, versioned prompts, an evaluation harness — was already exactly that substrate, so only the framing sentence changed, not the scope.
 
-The rest of the brief's direction is adopted as written, including the new permanent principle, which this proposal takes as its central design constraint rather than as prose:
+### The permanent principle
 
+**Ratified 2026-07-29.** Alongside *identity never truth*, *change never significance*, *prioritizes never resolves*, and *intelligence suggests, humans commit*:
+
+> **Grounding.** The AI Platform never constrains what a model writes. It constrains **what the model is permitted to reference.** The deterministic intelligence pipeline defines the universe of facts, and the AI Platform treats that universe as **closed**. Every statement must be supported by citations · every citation must resolve · every numeric value appearing in generated text must exist in cited evidence.
+>
 > **It may generate language. It must never generate facts.**
 
-Most of this document is about making that sentence a schema rule instead of an aspiration.
+Most of this document is about making that a schema rule instead of an aspiration.
 
 ---
 
@@ -196,9 +200,9 @@ And explicitly: **`temperature=0` is not determinism.** Batching, hardware, and 
 
 ---
 
-## Where the AI Platform lives — three options
+## Where the AI Platform lives
 
-**RULING REQUIRED.** This decision adds a node to the dependency graph and therefore is not a coding-session decision ([05-module-dependencies.md](05-module-dependencies.md), CLAUDE.md §5).
+**Recommendation, requested 2026-07-29: `modules/ai_platform/`** — with two conditions that matter more than the directory, stated after the comparison. Adding the node is a dependency-graph change ([05-module-dependencies.md](05-module-dependencies.md), CLAUDE.md §5).
 
 | | Option A — `signora_platform/ai/` | Option B — `modules/ai_platform/` **(recommended)** | Option C — build it inside M9 |
 |---|---|---|---|
@@ -215,7 +219,35 @@ And explicitly: **`temperature=0` is not determinism.** Batching, hardware, and 
 3. **Implementation already ruled on the analogous question** and put the Provider Port in the module. Consistency with the built system beats consistency with a sentence nobody has run.
 4. **`ai_platform` is a real bounded context**, not a bag of utilities. It owns prompt versions, inference records, evaluation runs, and the evidence-set contract; it has a vocabulary; and `provider_platform` is the same shape of module and has held up for four milestones.
 
-Graph changes required: one new node, `AI Platform`, with `AI Reasoning Engine → AI Platform` and `AI Research Engine → AI Platform` recorded now and consumed in M9/M10 — plus whatever edge M8's own consumer needs (see the scope question below).
+Graph changes required: one new node, `AI Platform`, with `AI Reasoning Engine → AI Platform` and `AI Research Engine → AI Platform` recorded now and consumed in M9/M10.
+
+### Condition 1 — the substrate never depends on the pipeline
+
+A directory alone does not answer *"what best supports future evolution"*, because the real hazard is not where `ai_platform` sits but **what it ends up knowing**.
+
+Shipping grounded narration gives `ai_platform` a reason to read `opportunity_engine.public`. Left alone, that makes one module simultaneously the substrate M9 and M10 stand on **and** a participant in the pipeline they consume. Legal, acyclic, and a slow structural problem: every future capability adds another pipeline dependency to the thing that was supposed to be vendor plumbing, and by M11 the substrate cannot be extracted or reasoned about independently.
+
+**So it does not read the pipeline at all.** The narration use case depends on an `ExplanationSource` Protocol declared in `ai_platform/application/ports.py`; an adapter in `infrastructure/` satisfies it by reading `opportunity_engine.public`, wired at the composition root.
+
+This is not a new pattern — it is the M5B `SignalReader` finding applied deliberately rather than discovered under duress:
+
+> *If a fake cannot stand in for a dependency, the dependency was never really a boundary.*
+
+The result: `domain/` and `application/` know nothing about opportunities, buying scores, or any pipeline concept. `ai_platform` stays extractable (Principle 5), testable with fakes alone, and — the point — **still pure substrate on the day M9 arrives**, whatever M8 shipped on top of it.
+
+### Condition 2 — freeze after M10, not after M8
+
+`signora_platform/` was frozen at M1.3A *after* it was proven deployable. The same criterion applies here, and the trigger is specific:
+
+> **`ai_platform` freezes on the same terms as the platform (§20a) once M9 *and* M10 have both consumed it.**
+
+Not M8, which would freeze guesses. Not M9 alone either — a port that has only served a structured single-call workload has never been asked for tool use, streaming, or resumability, and freezing it before M10 would guarantee an immediate exception. Two consumers with genuinely different shapes is the evidence that the abstraction is real rather than a description of its first caller.
+
+Until then `ai_platform` is ordinary module code, changed with ordinary review.
+
+### On the name
+
+`ai_platform` sits beside `provider_platform`, which has held for four milestones, and the `signora_platform/` collision is a naming discomfort rather than a structural one — `provider_platform` already lives with it. `ai_gateway` was considered and rejected: a gateway implies routing and nothing else, and this module owns prompts, grounding, and evaluation, which are not gateway concerns.
 
 ---
 
@@ -341,20 +373,28 @@ M8 consumes nothing directly either; it is called, not triggered. This also mean
 
 ---
 
-## The scope question this milestone cannot decide for itself
+## Scope — grounded narration, under a strict rule
 
-**RULING REQUIRED.** This is the most consequential open question in the proposal, and it touches CLAUDE.md §20d (strict milestone ownership) directly.
+**Ratified 2026-07-29: Option B**, bounded by a rule stated more strictly than the proposal asked for:
+
+> **M8 may only generate language that restates deterministic intelligence already present in its input. It must never introduce a proposition absent from that input.** Reasoning, inference, prioritization and recommendation remain the responsibilities of later modules.
+>
+> **Stop condition.** If implementation reveals that this boundary cannot be maintained cleanly, implementation halts and the architectural issue is presented before proceeding.
+
+That stop condition is the reason the ruling is safe to take. Four times now, implementation has exposed something an approved proposal got wrong — a forward supersession pointer incompatible with immutability, a `valid_until` promise continuous decay could not keep, a cross-tenant query forced RLS cannot serve, and a delta-based state log that could contradict itself. The risk here is the same shape: a narration that is *useful* may turn out to require one small inferential step, and the moment it does, M8 has become M9 quietly. The rule above makes that a **halt**, not a judgement call made at speed.
+
+The reasoning that produced the ruling follows.
 
 The problem: the YAGNI ruling in [IMPLEMENTATION_ROADMAP.md](../../IMPLEMENTATION_ROADMAP.md) says *"no port is built speculatively … AI Provider Port in M8, with its first concrete implementation."* But a port with adapters and no caller is exactly a speculative port, and an evaluation harness whose only prompt is a test fixture measures the harness rather than the product.
 
-| | **A — substrate only** | **B — substrate + grounded narration (recommended)** | **C — merge M8 into M9** |
+| | **A — substrate only** | **B — substrate + grounded narration (ratified)** | **C — merge M8 into M9** |
 |---|---|---|---|
 | Ships | Port, Ollama + Claude adapters, prompt registry, harness | The above, plus one prompt and one use case | Substrate plus full reasoning |
 | Harness evaluates | A fixture prompt | A shipped prompt on real pipeline output | Real reasoning |
 | §20d risk | None | **Real — see below** | Removes the boundary by merging it |
 | Cost | Grounding is unproven end to end until M9 | One capability, provably not reasoning | One very large milestone; the harness ships under feature pressure |
 
-**Recommendation: B, drawn narrowly**, and the boundary that makes it defensible is the brief's own principle:
+**B, drawn narrowly**, and the boundary that makes it defensible is the ratified principle itself:
 
 > *It may generate language. It must never generate facts.*
 
@@ -364,7 +404,7 @@ M9 does the opposite: it produces propositions that were *not* in its input. Tha
 
 So the test separating the two is mechanical rather than a matter of taste: **does the output contain a proposition absent from the input?** For M8, never — asserted by AC-68. For M9, always.
 
-**The honest counter-argument**, which the ruling should weigh: a seller reading M8's paragraph will experience it as *"the AI explained my opportunity"*, and M9 is the module that owns explaining opportunities. If that lands as M8 borrowing M9's demonstration, Option A is the correct call and the harness runs on a fixture prompt until M9 arrives. **That judgement is the product owner's.** The proposal recommends B and will implement A without complaint.
+**The counter-argument, recorded because it does not go away with the ruling:** a seller reading M8's paragraph will experience it as *"the AI explained my opportunity"*, and M9 is the module that owns explaining opportunities. The ruling accepts that experiential overlap because the *architectural* boundary is mechanical and testable. It is also precisely why the stop condition exists: the first time a narration needs a proposition its input does not contain, the boundary has moved and the correct response is to halt rather than to widen it.
 
 ---
 
@@ -372,7 +412,7 @@ So the test separating the two is mechanical rather than a matter of taste: **do
 
 | | Task |
 |---|---|
-| **T111** | ADR-0027: local model runtime for development, Bedrock as a production vendor; supersede the relevant ADR-0012 clauses; update 08-technology-stack.md |
+| **T111** | **ADR-0027 — Model runtime by environment.** States the split directly: **development → Ollama** (prompt engineering, UI work, smoke, evaluation, offline demos, regression) · **production → hosted commercial models**, ADR-0012's ratified vendors. Records why ADR-0012's rejection of open-weight self-hosting still stands *for production* and does not bear on a local development runtime, so the architectural record reads consistently rather than looking reversed. Supersedes the relevant ADR-0012 clauses; 08-technology-stack.md gains a **runtime-by-environment** row in the same change. |
 | **T112** | Module scaffold, `ai_platform` graph node, import-linter contracts per module pair, 15-project-structure.md corrected (both drifts) |
 | **T113** | `domain/provider.py` — port, failure taxonomy, registry, descriptor |
 | **T114** | `domain/evidence.py` — evidence set, refusal of mixed workspaces, digest |
@@ -456,18 +496,27 @@ Per CLAUDE.md §19, binding.
 
 ---
 
-## Open questions requiring a ruling
+## Approval record
+
+### Ratified 2026-07-29
+
+| | Decision |
+|---|---|
+| **Module responsibility** | *"How does Signora communicate with a model, and how does it know the answer is grounded?"* — the original wording overlapped M9 and was corrected. |
+| **Grounding** | Elevated to a **permanent architectural principle**. The platform constrains what may be *referenced*, never what may be written; the fact universe is **closed**; every statement cited, every citation resolving, every number present in cited evidence. |
+| **Rebuildability** | *Facts remain rebuildable. Language is recorded. Meaning is deterministic. Expression may vary.* The M6 rebuild contract is preserved rather than excepted. |
+| **Two tiers** | Deterministic correctness in production and the build; probabilistic quality in the harness. **Never mixed** — a failing evaluation must never make deterministic tests flaky. |
+| **LLM-as-judge** | **Rejected as a release gate.** Human-reviewed golden datasets and deterministic validation instead. |
+| **Scope** | **Option B**, under the strict restatement-only rule and its stop condition. |
+| **Ollama** | Permitted for development, recorded in **ADR-0027** rather than silently contradicting ADR-0012. |
+| **Frozen packages** | Confirmed: experimental AI infrastructure does not accumulate in a frozen platform package. |
+
+### Recommended 2026-07-29, awaiting confirmation
 
 | # | Question | Recommendation |
 |---|---|---|
-| 1 | **Does M8 ship a capability, or substrate only?** §20d is live either way. | **Option B** — substrate plus grounded narration, drawn at *"generates language, never propositions"*. Option A implemented without complaint if the boundary reads as M9's. |
-| 2 | **`modules/ai_platform/` or `signora_platform/ai/`?** Adds a graph node. | **`modules/ai_platform/`** — the platform holds no business logic, prompts are business logic, and freezing precedes proving. |
-| 3 | **Which production adapter ships in M8?** | **Claude**, as ADR-0012's default. One local plus one production vendor proves the port. |
-| 4 | **Is `ai.narration_completed` wanted at all**, or does M8 stay event-silent? | **Event-silent** unless Option B ships, then exactly one event. |
-| 5 | **Is the grounding contract accepted as a permanent architectural invariant?** | **Yes, and it should be elevated** — *the day Signora permits ungrounded generation is the day "rebuild the pipeline" stops being safe.* |
+| 1 | **Module location** *(requested)* | **`modules/ai_platform/`**, under two conditions that matter more than the directory: the substrate **never depends on the pipeline** (narration reaches `opportunity_engine.public` through an `ExplanationSource` Protocol satisfied in `infrastructure/`, the M5B `SignalReader` pattern), and it **freezes after M10, not after M8** — two consumers of genuinely different shape are the evidence an abstraction is real. |
+| 2 | **Production adapter for M8** | **Claude**, ADR-0012's default. One local plus one hosted vendor proves the port; the rest arrive with callers. |
+| 3 | **Events** | **One** — `ai.narration_completed`, cataloged in the same change. M8 consumes none and is therefore unaffected by the open `EventHandler` platform finding. |
 
----
-
-## Approval record
-
-*Awaiting review. Nothing in this document has been implemented.*
+*Nothing in this document has been implemented.*
