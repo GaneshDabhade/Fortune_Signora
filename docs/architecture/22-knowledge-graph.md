@@ -1,6 +1,6 @@
 # 22 — Knowledge Graph
 
-> Status: **Architecture proposal — awaiting review**
+> Status: **APPROVED** — 2026-07-28, with refinements incorporated below
 > Audience: All engineers, EMs, and technical stakeholders at Signora
 > Revision: **v1** — the M3A architecture proposal. **No implementation exists.**
 >
@@ -44,9 +44,11 @@ Apollo reports 120 employees. CoreSignal reports 145. Both claims are true state
 
 *Rejected for M3A, and worth stating why carefully.* It is defensible — fast reads, explainable, recomputable. But it puts a collapsed value in the schema before any module has asked for one, and a stored value becomes the de facto truth: within a year, consumers read the projection and nobody reads the claims. That is Option A arriving by the back door. **If a downstream module later demonstrates it needs a resolved value, adding this projection is straightforward and by then we will know the rule it should use.** Building it now means inventing the rule with no consumer to validate it.
 
-### The recommendation
+### The recommendation — **now a permanent invariant**
 
-> **The graph decides identity. The graph never decides truth.**
+> **The Knowledge Graph resolves identity. The Knowledge Graph does not resolve truth.**
+>
+> Ratified 2026-07-28. Identity and truth are different problems. Identity belongs to the graph; truth belongs to downstream modules that possess additional context. **Changing this requires an RFC.**
 
 Identity is irreducible — the graph is the only module positioned to answer it. Attribute conflict is *not* irreducible: it can be carried forward intact, and every downstream module has more context to weigh it than the graph does.
 
@@ -90,7 +92,43 @@ ResolutionDecision(id, workspace_id, rule, matched_on, candidate_entity_ids,
                    outcome, evidence_claim_ids, superseded_by, decided_at)
 ```
 
-`outcome ∈ {BOUND, CREATED, AMBIGUOUS}`. `matched_on` records the actual matched value (`domain=acme.example`), so an engineer reading the decision months later sees *what* matched, not just that something did.
+### `IdentityState` — explicit, not inferred
+
+A binding carries its resolution state rather than downstream inferring it from decision history:
+
+| State | Meaning | What downstream should do |
+|---|---|---|
+| `IDENTIFIED` | Bound to exactly one entity by a matching rule | Use it |
+| `AMBIGUOUS` | Two or more candidates matched; **nothing merged** | Proceed, but the entity may be one of several — a score built on it is provisional |
+| `UNRESOLVED` | No rule matched and no entity created yet | Ignore until resolved |
+
+Making this explicit means each downstream module *decides* how to treat each state, rather than silently treating everything as identified. That decision becomes reviewable.
+
+### `MatchStrength` — a property of the rule, not of the decision
+
+Rules genuinely differ in reliability, and downstream should be able to weigh that. But a computed confidence *number* per decision is the trap avoided in M2.2: if it is a pure function of the rule, it adds no information, and the moment the field exists there is constant pressure to make it "smarter" by combining rules or weighting providers. That is how a hidden heuristic is born.
+
+So strength is **declared once per rule**, denormalized onto the decision at decision time so the audit record is self-describing:
+
+| Strength | Rule | Why |
+|---|---|---|
+| `CERTAIN` | `SAME_PROVIDER_ID` | The provider's own key. It cannot be wrong about its own identifiers. |
+| `STRONG` | `EXACT_DOMAIN` | Very reliable, not certain — subsidiaries and agencies share domains. |
+| `MODERATE` | `LEGAL_NAME_AND_COUNTRY` | Two unrelated "Acme Ltd" in one country is a real scenario. |
+
+**Never computed. Never combined. Never probabilistic.** It is named `MatchStrength` rather than `confidence` deliberately: "confidence" invites probabilistic thinking, and this is a statement about how strong a match was, not a belief about the world.
+
+If a rule's declared strength is later revised, that is a **new decision superseding the old** — the mechanism already exists.
+
+### `ResolutionReason` — what actually matched
+
+`outcome ∈ {BOUND, CREATED, AMBIGUOUS}`. Each decision carries one or more reasons, each naming the rule, the field, and the **actual value** that matched:
+
+```
+ResolutionReason(rule=EXACT_DOMAIN, field="domain", value="acme.example", strength=STRONG)
+```
+
+An engineer or an auditor reading this months later sees *what* matched, not just that something did. Future explainability depends entirely on these surviving.
 
 This is what makes the module's decisions **explainable, revisable, and auditable**:
 
