@@ -189,6 +189,12 @@ The split is the useful part. Parameters change often, need review by people who
 
 This is the pipeline's **first cross-provider reasoning**, and it is deliberately narrow. Each provider's series is evaluated **alone**, so no rule ever combines two providers' values into a synthetic truth. Two providers independently reaching the same conclusion produce **one** event that records both — a set of corroborating providers, never a coefficient. Turning agreement into confidence is the Signal Engine's decision, with its own reviewable rule.
 
+### One vocabulary, referenced rather than re-derived
+
+Business events are where the pipeline's language becomes the *product's* language. Everything downstream — signals, buying scores, opportunities, AI explanations, the customer interface, the documentation — **references business event types directly** rather than re-deriving meaning from observations.
+
+A module that reconstructs *"this looks like a hiring surge"* from raw observations has forked the vocabulary, and two definitions of one concept diverge within a year. Referencing the type keeps one definition, one threshold, and one sentence a customer reads.
+
 **Owned by:** Business Event Engine · **Table:** `business_event` (immutable) · **Publishes:** `business_event.detected`, `business_event.superseded` · **Read port:** `BusinessEventQueries`
 
 ---
