@@ -234,19 +234,23 @@ Each module below follows the template: Purpose, Owns, Does Not Own, Core Concep
 
 ### Buying Score Engine
 
-**Purpose:** Aggregates all of an entity's active signals, weighted and time-decayed, into a single composite **Buying Score** — Signora's account-level propensity-to-buy metric — used by Opportunity Engine as its primary qualification input.
+**Purpose:** Answers *"how much commercial attention should this account receive?"* — aggregates an entity's live signals, weighted and time-decayed, into a single account-level propensity.
 
-**Owns:** The Buying Score aggregate, cross-signal weighting/decay models, score history and trend, score-to-signal traceability.
+**Owns:** The Buying Score aggregate, the weighting of relevance categories, the decay model, score history and trend, and score-to-signal traceability.
 
-**Does Not Own:** Individual signal scoring (Signal Engine), the decision to qualify an opportunity from a score (Opportunity Engine).
+**Does Not Own:** **Any action.** Not recommending, not assigning, not qualifying an opportunity (Opportunity Engine), not explaining reasoning (AI Reasoning), not customer messaging (Recommendation Engine). Also not: forming the hypotheses themselves (Signal Engine).
 
 **Core Concepts:** Buying Score, Score Trend, Decay Model, Weighting Model.
 
 **Key Published Events:** `buying_score.updated`.
 
-**Key Consumed Events:** `signal.generated`, `signal.scored`.
+**Key Consumed Events:** `signal.generated`, `signal.superseded`.
 
-> Design note: Separating Buying Score Engine from Signal Engine keeps "is this one signal strong" (a per-event judgment) distinct from "is this account, in aggregate, worth pursuing right now" (a portfolio-level, time-aware judgment). This mirrors how experienced sales-intelligence practitioners actually reason, and gives each concern its own model lifecycle and evaluation criteria.
+> **The Signal Engine performs no scoring**, so there is no "individual signal scoring" for this module to be distinguished from. M5A ratified relevance as a *category* with no numeric meaning; **M5B is the first module in the pipeline permitted to produce a number.** The v2 event `signal.scored` was removed rather than implemented — see [06-events.md](06-events.md).
+>
+> **One requirement inherited from M5A:** deduplicate on contributing **business events**, not on signals. A composite signal and the constituent it enriches rest on the same grounds read two ways, and counting both would double-count the evidence.
+
+> Design note: separating the two keeps *"why might this matter to this customer?"* — a per-hypothesis reading, held without a number — distinct from *"how much attention does this account deserve right now?"*, a portfolio-level, time-aware judgement. This mirrors how experienced practitioners reason, and gives each concern its own lifecycle and evaluation criteria. **The v2 framing of this note said the Signal Engine judged "is this one signal strong"; M5A ratified the opposite**, and the note is corrected here rather than left to mislead.
 
 ---
 

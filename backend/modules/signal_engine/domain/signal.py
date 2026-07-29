@@ -125,15 +125,24 @@ class Signal:
     def is_composite(self) -> bool:
         return len(self.contributing_event_types) > 1 or bool(self.constituent_signal_ids)
 
-    def is_live_at(self, moment: datetime) -> bool:
-        """Whether this reading is still current.
+    def is_within_shelf_life(self, moment: datetime) -> bool:
+        """Whether this reading has outlived the window its type declares.
 
-        A hypothesis stops being current in three ways: it is superseded by
-        a better-evidenced one, its shelf life expires, or the workspace
-        stops holding it. This covers the first two; the third is a profile
-        question the query layer resolves.
+        **This is one of the three ways a hypothesis stops being current,
+        and the only one a single signal can answer.** The other two are
+        not knowable from here:
+
+        * *Superseded* — `supersedes` points **backwards**, at the signal
+          this one replaces. Whether anything replaced *this* one is a fact
+          about other rows, so a lone signal cannot report it.
+        * *No longer held* — whether the workspace still holds this type is
+          a fact about the current profile.
+
+        `SignalQueries.signals(live_only=True)` composes all three. A method
+        here that appeared to answer them all would be believed, and it
+        would be wrong.
         """
-        return self.supersedes is None or moment <= self.relevant_until
+        return moment <= self.relevant_until
 
     def enriched_by(self, constituents: tuple[UUID, ...]) -> Signal:
         return replace(self, constituent_signal_ids=constituents)

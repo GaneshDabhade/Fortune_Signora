@@ -157,7 +157,7 @@ flowchart TD
 - ✅ **Authentication** — Better Auth issues RS256 JWTs, FastAPI only verifies; the API cannot mint a token it accepts
 - ✅ **Event bus** — transactional outbox, relay, platform-owned idempotency, retry, dead-lettering
 - ✅ **Deployment foundation** — production images, concurrency-safe migration runner, restart-safe stack
-- ✅ **Smoke verification** — `make smoke`, 16 stages, one command, in CI
+- ✅ **Smoke verification** — `make smoke`, one command, in CI. Established at M1.4 with 16 stages; **now 21**, each intelligence milestone adding its own demonstration against the live stack.
 - ✅ **Frontend foundation** — design system, component library, shell, routing, query layer
 - ✅ **Provider Simulation Framework** — Provider Port, shared contract suite, deterministic replay, fault injection
 
@@ -228,7 +228,7 @@ Ratified 2026-07-28. These are **foundation capabilities, not work in progress**
 | Authentication Boundary | M1.2 | Better Auth issues, FastAPI only verifies; the API cannot mint a token it accepts (ADR-0026) |
 | Deployment Foundation | M1.3A | Production images, per-tier identities, concurrency-safe migration runner, restart-safe stack |
 | Platform Smoke Test | M1.4 | One command verifies the whole platform; required before every milestone and release |
-| Security Invariants | M1.2–M1.4 | 59 permanent architectural guarantees, each proven to fail when its guarantee is removed |
+| Security Invariants | M1.2–M1.4 | A permanent suite of architectural guarantees, each proven to fail when its guarantee is removed. Established at 59; **now 186**, every intelligence milestone adding the guarantees its own boundaries rest on |
 | Tenant Isolation Policy | M1.3A | Every table classified; tenant tables carry forced RLS, required policies, and a non-null identifier |
 | Platform Infrastructure Policy | M1.3A | Infrastructure tables owned by platform services; the application publishes and cannot read |
 | Platform Freeze | M1.3A | `signora_platform/` changes only for a security fix, production defect, or approved change |
@@ -335,13 +335,15 @@ Recorded rather than quietly corrected: a denominator that moves without explana
 
 Total effort is now **~267–345 ew** (recomputed — see above). Calendar time depends entirely on staffing, and sequential execution forfeits parallel compression:
 
-Based on ~204–282 ew remaining at 80% effective capacity:
+**Recomputed at the M5A boundary** against ~119–197 ew remaining, at 80% effective capacity. The earlier columns are kept as the record of what was projected then, so the trend is visible rather than overwritten:
 
-| Team size | M2.0 (22–29 ew) | Through M2.2 | **Remaining to GA** |
-|---|---|---|---|
-| **1 engineer** | ~28–36 weeks | ~46–61 weeks | **~4.9–6.8 years** |
-| **2 engineers** | ~14–18 weeks | ~23–31 weeks | **~2.5–3.4 years** |
-| **3 engineers** | ~9–12 weeks | ~15–20 weeks | **~1.6–2.3 years** |
+| Team size | Projected at M2.0 (remaining to GA) | **Remaining to GA, as of M5A** |
+|---|---|---|
+| **1 engineer** | ~4.9–6.8 years | **~3.7–5.3 years** |
+| **2 engineers** | ~2.5–3.4 years | **~1.8–2.7 years** |
+| **3 engineers** | ~1.6–2.3 years | **~1.2–1.8 years** |
+
+Six milestones of pipeline work have closed since the first projection, and the remaining band has narrowed accordingly. The estimate is recomputed from the milestone table each revision rather than carried forward.
 
 Within a milestone, additional engineers help only up to the **critical path** — M1.5's chain (T25→T26→T28→T27→T29) is ~9 ew of serial work and cannot compress below that at any headcount.
 
@@ -685,18 +687,21 @@ Encoded as a tracked deviation in `test_authorization.py::test_every_workspace_o
 
 | Document | Status |
 |---|---|
-| Architecture (19 docs) | ✅ Complete, ratified, consistent |
+| Architecture (25 numbered docs) | ✅ Complete, ratified, consistent |
 | ADRs (27) | ✅ Complete |
+| **[21-intelligence-pipeline.md](docs/architecture/21-intelligence-pipeline.md)** | ✅ **v4** — the canonical explanation of the platform. Tracks the *implemented* architecture; a stage is marked built only once it runs against a real database in `make smoke` |
+| [22-knowledge-graph.md](docs/architecture/22-knowledge-graph.md) · [23-observation-engine.md](docs/architecture/23-observation-engine.md) · [24-business-event-engine.md](docs/architecture/24-business-event-engine.md) · [25-signal-engine.md](docs/architecture/25-signal-engine.md) | ✅ Each marked **as built**, with the departures from its approved proposal recorded |
+| [20-provider-simulation.md](docs/architecture/20-provider-simulation.md) + [provider-qualification.md](docs/architecture/provider-qualification.md) | ✅ Authored during M2.0 |
 | [CLAUDE.md](CLAUDE.md) | ✅ Complete |
 | [PRODUCT_DIFFERENTIATORS.md](PRODUCT_DIFFERENTIATORS.md) | ✅ Complete |
-| [IMPLEMENTATION_ROADMAP.md](IMPLEMENTATION_ROADMAP.md) | ✅ **Updated to v3** |
+| [IMPLEMENTATION_ROADMAP.md](IMPLEMENTATION_ROADMAP.md) | ✅ **v3** |
 | [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md) | ✅ Valid — milestone numbers M2+ unchanged |
 | [AI_MATURITY_ROADMAP.md](AI_MATURITY_ROADMAP.md) | ✅ Valid — levels unchanged |
-| PROJECT_STATUS.md | ✅ **This document, v3** |
+| [docs/SESSION_HANDOFF.md](docs/SESSION_HANDOFF.md) | ✅ **v6** — the engineering handoff; read before any architectural decision |
+| PROJECT_STATUS.md | ✅ **This document, v25** |
 | API reference | ✅ Generated (OpenAPI) |
-| `20-provider-simulation.md` + ADR | ⬜ **To be authored during M2.0** |
 | Operations runbook | ⬜ **Required by M1.3A** (stack lifecycle), extended in M14.5 (deploy, rollback, restore) |
-| Onboarding guide | ⬜ Needed when team exceeds ~3 |
+| Onboarding guide | ⬜ Superseded in practice by [SESSION_HANDOFF](docs/SESSION_HANDOFF.md) + [21-intelligence-pipeline](docs/architecture/21-intelligence-pipeline.md); revisit when the team exceeds ~3 |
 
 **Documentation drift: zero.** All internal links resolve. Docs have been updated in the same commit as the code they describe, every time.
 

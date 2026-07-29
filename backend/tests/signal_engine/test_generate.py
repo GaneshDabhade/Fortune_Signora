@@ -550,7 +550,53 @@ class TestTheReadSurface:
 
         assert live == ()
 
+    def test_a_signal_answers_only_the_shelf_life_question_itself(self) -> None:
+        """`supersedes` points **backwards**, at the signal this one
+        replaces — so whether anything replaced *this* one is a fact about
+        other rows, and a lone signal cannot report it.
+
+        The earlier `is_live_at` conflated the two and returned True for any
+        signal that replaced nothing, skipping the shelf-life check
+        entirely. It was unused, which is the only reason it never bit.
+        """
+        from modules.signal_engine.domain.signal import relevant_until
+
+        superseding = _signal_replacing_something()
+
+        assert superseding.is_within_shelf_life(superseding.occurred_at) is True
+        assert superseding.is_within_shelf_life(superseding.relevant_until) is True
+        assert (
+            superseding.is_within_shelf_life(relevant_until(superseding.relevant_until, 1)) is False
+        ), "shelf life must be checked whether or not this signal replaces another"
+
     async def test_the_catalog_is_reachable_through_the_read_surface(self) -> None:
         queries = await self._queries(FakeSignalRepository(), [])
 
         assert len(queries.catalog().types) == len(SignalType)
+
+
+def _signal_replacing_something() -> Signal:
+    """A signal that supersedes an earlier one — the case the old method
+    got wrong in the opposite direction."""
+    event_ids = (uuid4(),)
+    return Signal(
+        id=signal_id(
+            workspace_id=WORKSPACE,
+            entity_id=ENTITY,
+            signal_type=SignalType.BUDGET_UNLOCKED,
+            contributing_event_ids=event_ids,
+        ),
+        workspace_id=WORKSPACE,
+        entity_id=ENTITY,
+        signal_type=SignalType.BUDGET_UNLOCKED,
+        relevance=Relevance.SUPPORTING,
+        occurred_at=START,
+        window_start=START,
+        window_end=START,
+        generated_at=NOW,
+        relevant_until=START + timedelta(days=30),
+        rationale="Because.",
+        contributing_event_ids=event_ids,
+        contributing_event_types=(BusinessEventType.FUNDING_ROUND_CLOSED,),
+        supersedes=uuid4(),
+    )
