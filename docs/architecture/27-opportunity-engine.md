@@ -1,6 +1,6 @@
 # 27 — Opportunity Engine
 
-> Status: **Proposal — awaiting approval. Not implemented.**
+> Status: **Proposal — direction approved and core principles ratified 2026-07-29; four questions open. Not implemented.**
 > Milestone: **M6** · Module: Opportunity Engine · Position: pipeline stage 8
 > Audience: engineers, architects, product
 > Prepared: 2026-07-29, after reviewing the implemented M5B rather than its proposal.
@@ -19,9 +19,15 @@ An opportunity records that **a human committed to something**. A seller took it
 
 That is the defining challenge, and it is not really about state machines:
 
-> **Derived intelligence and workflow state are different kinds of data, and the platform must never let them blur.**
+> ## **Intelligence suggests. Humans commit.**
 >
-> Intelligence is **rebuildable, immutable, and machine-authored**. Workflow is **accumulated, human-authored, and irreplaceable**. The moment workflow starts caching intelligence — or intelligence starts depending on workflow — a pipeline rebuild becomes a data-loss incident, and today it is a routine operation.
+> ***Permanent architectural principle — ratified 2026-07-29.***
+>
+> Derived intelligence and workflow state are different kinds of data, and the platform must never let them blur. Intelligence is **rebuildable, immutable, and machine-authored**. Workflow is **accumulated, human-authored, and irreplaceable**.
+>
+> A buying score may **create** an opportunity. **Only a human may progress one beyond the machine-authored boundary.** Intelligence informs workflow; it never owns it.
+>
+> The moment workflow starts caching intelligence — or intelligence starts deciding workflow — a pipeline rebuild becomes a data-loss incident, and today it is a routine operation.
 
 ---
 
@@ -347,14 +353,31 @@ Implementation satisfying AC-58 through AC-65 plus tenancy, event-contract, and 
 
 ---
 
-## Open questions for approval
+## Approval status
 
-1. **Intelligence versus workflow as a permanent principle** — do you ratify *"derived intelligence is rebuildable and machine-authored; workflow state is accumulated and irreplaceable; neither may store the other"*, with the rebuild contract that follows?
-2. **The state model** — approve the immutable aggregate plus append-only state log (option C), accepting a join for "current stage" in exchange for stable identity and no `UPDATE` grant?
-3. **Opportunities outlive their score** — approve, with `evidence_state` derived at read time and **no automatic closure**?
-4. **The stage set** — approve `TRACKING` / `ENGAGED` / `CLOSED_WON` / `CLOSED_LOST` / `DISMISSED`, with `DISMISSED` distinct as feedback about Signora's own judgement?
-5. **Reopening** — approve reopening as a transition, with `CLOSED_WON` terminal?
-6. **The fourth ownership layer** — approve `workspace_opportunity_policy` as a separate customer-authored artifact?
-7. **Contested scores qualify by default** — approve, with the policy able to require confidence?
-8. **Account fit separated from M6** — approve deferring it until a resolution policy exists, rather than inventing one inside this milestone?
-9. **Auto-dismissal of never-engaged suggestions** — offer it as an opt-in policy field, or leave it out of v1 entirely?
+### Ratified 2026-07-29
+
+| | |
+|---|---|
+| **1 · Intelligence suggests; humans commit** | **Ratified as a permanent architectural principle.** A buying score may *create* an opportunity; only a human may progress one beyond the machine-authored boundary. |
+| **2 · Workflow state as a third data category** | Approved. Derived intelligence · customer configuration · workflow state, kept explicitly distinct, with the rebuild contract that follows. |
+| **3 · The append-only state log** | **Strongly approved.** Prefer immutable history over mutable state wherever practical: the latest state may be derived; **history must never be rewritten.** |
+| **4 · Opportunities outlive their score** | Approved. Buying scores explain *why* an opportunity was created; they do not control whether it remains active. |
+| **5 · Account fit removed from M6** | Approved. *"Do not solve unresolved architectural problems opportunistically."* It needs an entity resolution policy, and that deserves its own milestone. |
+
+### Resolved without asking
+
+| Question | Resolution |
+|---|---|
+| **Auto-dismissal of never-engaged suggestions** | **Left out of v1.** It is configuration for a need nobody has demonstrated, which CLAUDE.md §6 forbids outright. The recorded trigger: a workspace accumulating `TRACKING` opportunities nobody ever engages. Adding it later changes one policy field and no part of the model. |
+
+### Still open — implementation waits on these
+
+| | Question | My recommendation |
+|---|---|---|
+| **A** | **The stage set** — `TRACKING` · `ENGAGED` · `CLOSED_WON` · `CLOSED_LOST` · `DISMISSED`, with `DISMISSED` distinct from `CLOSED_LOST` because one is feedback about Signora's judgement and the other is a sales outcome. `TRACKING` is the only machine-authored stage. | Adopt as proposed. |
+| **B** | **Reopening** — a transition back to `TRACKING`/`ENGAGED` rather than a new opportunity, preserving one history in one place; **`CLOSED_WON` terminal**, since the next deal at that account is genuinely a new opportunity. | Adopt as proposed. |
+| **C** | **The fourth ownership layer** — `workspace_opportunity_policy` as a separate customer-authored artifact rather than folded into the scoring model, on the same reasoning that kept the scoring model out of the signal profile. | Separate. |
+| **D** | **Contested scores qualify by default** — a fought-over account is exactly what a seller should look at — with the policy able to require confidence, and the opportunity recording that it was qualified from a contested score. | Adopt as proposed. |
+
+Implementation begins once **A–D** are settled. Nothing is coded before then.

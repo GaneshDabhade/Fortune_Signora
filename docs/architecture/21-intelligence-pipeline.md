@@ -315,6 +315,22 @@ A workspace tunes weights, multipliers, bands, and the ceiling. It may never inv
 
 **Adds:** commitment and lifecycle. An opportunity has a stage, an owner, and a history. It is the first artifact a human is expected to act on, and the first with a cost attached: everything downstream of it — agentic research, model reasoning — is expensive, so this is where the pipeline stops doing things to everything and starts doing things to a chosen few.
 
+### The first workflow stage
+
+Stages 1–7 all **derive**: delete any of their tables, re-run the pipeline, and the same rows come back byte for byte, because every identity is derived from the evidence beneath it. Stage 8 records something nothing reproduces — that a human committed.
+
+> **Intelligence suggests. Humans commit.**
+>
+> *Permanent architectural principle, ratified 2026-07-29.*
+>
+> A buying score may **create** an opportunity. **Only a human may progress one beyond the machine-authored boundary.** Commercial intelligence informs workflow; it never owns it.
+
+This introduces **workflow state** as a third category of platform data, beside derived intelligence and customer configuration. The three must never blur — the moment workflow caches intelligence, or intelligence decides workflow, a pipeline rebuild stops being a routine operation and becomes a data-loss incident.
+
+**An opportunity outlives the score that created it.** The score is the reason it was *opened*, never the reason it stays open: a seller mid-deal must not watch it vanish because no provider payload arrived for six weeks. Cooling evidence is surfaced, never acted upon.
+
+**History is never rewritten.** Workflow state is an append-only log in which each row is the complete state; the latest state is derived from it rather than stored beside it, so the audit trail and the status cannot disagree.
+
 **Owned by:** Opportunity Engine · **Publishes:** `opportunity.created`, `opportunity.stage_changed`
 
 ---

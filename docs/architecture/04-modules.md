@@ -266,7 +266,11 @@ Each module below follows the template: Purpose, Owns, Does Not Own, Core Concep
 
 **Does Not Own:** Buying score computation (Buying Score Engine), AI-generated research or reasoning about an opportunity (AI Research Engine, AI Reasoning Engine), recommended next actions (Recommendation Engine).
 
-**Core Concepts:** Opportunity, Qualification, Stage.
+**Core Concepts:** Opportunity, Opportunity State, Qualification, Stage.
+
+> **The permanent principle (ratified 2026-07-29):** ***intelligence suggests; humans commit.*** The Opportunity Engine is Signora's **first workflow module**. Every module before it derives information from evidence and can be regenerated from it; this one records human commitment, which nothing reproduces. A buying score may **create** an opportunity — only a human may progress one beyond the machine-authored boundary.
+>
+> This introduces **workflow state** as a third category of platform data, alongside derived intelligence and customer configuration. The categories must never blur: a pipeline rebuild regenerates intelligence and touches neither of the others. See [27-opportunity-engine.md](27-opportunity-engine.md).
 
 **Key Published Events:** `opportunity.created`, `opportunity.stage_changed`.
 

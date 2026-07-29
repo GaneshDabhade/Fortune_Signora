@@ -196,6 +196,22 @@ A task is done only when all of the following are true:
 - The change has been reviewed against the checklist in §18.
 - Nothing was left half-implemented, commented out, or gated behind an unused flag "for later."
 
+### Milestone Definition of Done
+
+*Binding from M6 onward.* A **milestone** is complete only when every one of the following has been satisfied. Not most of them, and not "everything but the push."
+
+**Implementation** — code complete.
+
+**Quality** — all tests passing · coverage gate passing · `make smoke` green · import-linter green · MyPy strict clean.
+
+**Architecture** — every affected `docs/architecture/` document updated · `21-intelligence-pipeline.md` updated if the pipeline changed · `docs/SESSION_HANDOFF.md` updated · `PROJECT_STATUS.md` updated.
+
+**Repository** — changes committed with meaningful messages · **pushed to `origin/main`** · working tree clean.
+
+> **The repository must always represent the complete and authoritative project state.** A milestone that is finished locally but unpushed, or whose dashboard still describes the previous one, is not finished — the next session would resume from a lie.
+
+**Announcing completion is the last step, not the first.** Claude must not report a milestone complete until every item above is verified, and must state plainly which are outstanding if any are.
+
 ## 20. Anti-Patterns
 
 Claude must actively recognize and avoid:
@@ -288,7 +304,9 @@ It is the **executive dashboard**, not a progress log. It must answer, at a glan
 
 **After every completed implementation milestone, Claude must update it *before* beginning the next.** Implementation of the next milestone does not begin until it reflects the latest approved state.
 
-Each update includes: milestone status (Completed / In Progress / Blocked) · completion date · commit hashes · scope delivered · acceptance criteria satisfied · outstanding deferred items · roadmap changes · new architectural decisions · technical debt introduced or repaid · risks and blockers · updated implementation progress · updated effort remaining · updated projected timeline · links to new ADRs, architecture documents, or implementation notes.
+Each update includes: milestone status (Completed / In Progress / Blocked) · completion date · commit hashes · **current `HEAD`** · scope delivered · acceptance criteria satisfied · **tests, coverage, Security Invariants, and import-linter contracts** · outstanding architectural work · outstanding deferred items · **known limitations, distinguished from architectural debt** · roadmap changes · new architectural decisions · technical debt introduced or repaid · risks and blockers · updated implementation progress · updated effort remaining · updated projected timeline · links to new ADRs, architecture documents, or implementation notes.
+
+**It must describe the implementation, never the proposal.** Before announcing a milestone complete, Claude verifies each figure against the repository — the test count from a run, the coverage from the gate, `HEAD` from git — rather than carrying forward what was planned. The documentation update is committed *with* the milestone and pushed with it, not after.
 
 ---
 
