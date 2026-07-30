@@ -19,7 +19,7 @@ module's infrastructure.
 from __future__ import annotations
 
 import httpx
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from modules.ai_platform.application.infer import Infer, InferencePolicy
 from modules.ai_platform.application.narrate import Narrate
@@ -79,15 +79,23 @@ def build_provider_registry(
 
 
 def build_infer(
-    session: AsyncSession,
+    recording_sessions: async_sessionmaker[AsyncSession],
     *,
     providers: AIProviderRegistry,
     policy: InferencePolicy | None = None,
 ) -> Infer:
+    """Wire the only path to a model.
+
+    A **session factory**, not a session: operational history commits on its
+    own transaction so a rolled-back unit of work cannot discard the record of
+    a failed call (ADR-0029). That the recorder opens its own session is an
+    implementation detail of `SqlInferenceRecorder` — `Infer` sees only the
+    `InferenceRecorder` port and knows nothing about transactions.
+    """
     return Infer(
         providers=providers,
         prompts=load_prompt_registry(),
-        recorder=SqlInferenceRecorder(session),
+        recorder=SqlInferenceRecorder(recording_sessions),
         policy=policy or InferencePolicy(),
     )
 
@@ -95,13 +103,21 @@ def build_infer(
 def build_narrate(
     session: AsyncSession,
     *,
+    recording_sessions: async_sessionmaker[AsyncSession],
     providers: AIProviderRegistry,
     source: ExplanationSource,
     publisher: EventPublisher,
     policy: InferencePolicy | None = None,
 ) -> Narrate:
+    """Two persistence lifetimes, deliberately.
+
+    The narration and its event share the caller's `session`, so a rolled-back
+    unit of work leaves nothing behind — a narration nobody committed was
+    never shown to anyone. The inference record does not: the call happened
+    whatever became of the transaction that asked for it (ADR-0029).
+    """
     return Narrate(
-        infer=build_infer(session, providers=providers, policy=policy),
+        infer=build_infer(recording_sessions, providers=providers, policy=policy),
         source=source,
         repository=SqlNarrationRepository(session),
         publisher=publisher,

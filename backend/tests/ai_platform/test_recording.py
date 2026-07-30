@@ -64,10 +64,10 @@ def a_record(
 async def _write(
     factory: async_sessionmaker[AsyncSession], workspace_id: UUID, record: InferenceRecord
 ) -> None:
-    async with tenant_scoped_session(
-        factory, workspace_id=workspace_id, user_id=uuid4()
-    ) as session:
-        await SqlInferenceRecorder(session).record(record)
+    """The recorder opens its own session (ADR-0029), so there is no caller
+    transaction here to join — which is the behaviour, not a shortcut."""
+    del workspace_id
+    await SqlInferenceRecorder(factory).record(record)
 
 
 async def _rows(
@@ -78,6 +78,45 @@ async def _rows(
     ) as session:
         result = await session.execute(select(AIInferenceModel))
         return list(result.scalars())
+
+
+async def _raw_insert(
+    factory: async_sessionmaker[AsyncSession],
+    *,
+    outcome: str = "ok",
+    vendor: str = "'ollama'",
+    served_model: str = "'llama3.1:8b'",
+    detail: str = "NULL",
+) -> None:
+    """Insert straight into the table, bypassing the recorder.
+
+    The constraints below are database guarantees, so they are asserted at the
+    database. Routing them through `SqlInferenceRecorder` would prove nothing:
+    it deliberately swallows its own write failures (ADR-0029), so such a test
+    would pass whether the constraint existed or not.
+    """
+    workspace_id = uuid4()
+    async with tenant_scoped_session(
+        factory, workspace_id=workspace_id, user_id=uuid4()
+    ) as session:
+        await session.execute(
+            text(
+                f"""
+                INSERT INTO ai_inference (
+                  id, workspace_id, correlation_id, prompt_name, prompt_version,
+                  prompt_fingerprint, requested_model, served_model, vendor,
+                  evidence_digest, evidence_refs, outcome, input_tokens, output_tokens,
+                  latency_ms, retries, detail, created_by, updated_by
+                ) VALUES (
+                  gen_random_uuid(), :ws, gen_random_uuid(), 'p', 1,
+                  'f', 'm', {served_model}, {vendor},
+                  'd', ARRAY['a:1'], '{outcome}', 0, 0,
+                  0, 0, {detail}, :ws, :ws
+                )
+                """
+            ),
+            {"ws": workspace_id},
+        )
 
 
 class TestEveryOutcomeSurvives:
@@ -159,31 +198,25 @@ class TestTheRowRefusesToMisreportItself:
     async def test_a_success_cannot_come_from_nobody(
         self, session_factory: async_sessionmaker[AsyncSession]
     ) -> None:
-        workspace_id = uuid4()
+        """Asserted against the database directly rather than through the
+        recorder, because the recorder now swallows its own write failures by
+        design (ADR-0029) — so a test routed through it would pass whether the
+        constraint existed or not."""
         with pytest.raises(IntegrityError, match="ck_ai_inference_success_names_its_source"):
-            await _write(
-                session_factory,
-                workspace_id,
-                a_record(workspace_id, vendor=None, served_model=None),
-            )
+            await _raw_insert(session_factory, vendor="NULL", served_model="NULL")
 
     async def test_a_failure_must_state_a_reason(
         self, session_factory: async_sessionmaker[AsyncSession]
     ) -> None:
         """An incident with no first line. The converse matters too: a
-        successful row carrying a reason means something was swallowed."""
-        workspace_id = uuid4()
+        successful row carrying a reason means something was hidden."""
         with pytest.raises(IntegrityError, match="ck_ai_inference_failure_states_a_reason"):
-            await _write(
+            await _raw_insert(
                 session_factory,
-                workspace_id,
-                a_record(
-                    workspace_id,
-                    outcome=InferenceOutcome.UNGROUNDED,
-                    served_model=None,
-                    vendor=None,
-                    detail=None,
-                ),
+                outcome="ungrounded",
+                vendor="NULL",
+                served_model="NULL",
+                detail="NULL",
             )
 
     async def test_the_constraint_still_matches_the_outcome_it_names(self) -> None:
@@ -232,12 +265,46 @@ class TestTheRecordIsWorkspaceOwned:
         assert len(await _rows(session_factory, mine)) == 1
         assert len(await _rows(session_factory, theirs)) == 1
 
-    async def test_a_row_cannot_be_written_into_another_workspace(
+    async def test_the_recorder_scopes_to_the_records_own_workspace(
         self, session_factory: async_sessionmaker[AsyncSession]
     ) -> None:
+        """Stronger than the check it replaced (ADR-0029).
+
+        The recorder opens its own session and scopes it from
+        ``record.workspace_id`` — taken from the verified evidence set, never
+        from anything a client supplied. So a row landing in the wrong
+        workspace is not *refused*, it is **unrepresentable**: there is no
+        ambient caller context for it to disagree with.
+        """
         mine, theirs = uuid4(), uuid4()
-        with pytest.raises(DBAPIError, match="row-level security"):
-            await _write(session_factory, mine, a_record(theirs))
+        await _write(session_factory, mine, a_record(theirs))
+
+        assert await _rows(session_factory, mine) == []
+        assert len(await _rows(session_factory, theirs)) == 1
+
+    async def test_rls_still_refuses_a_foreign_write_at_the_database(
+        self, session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """The guarantee underneath, asserted where it lives. The recorder can
+        no longer attempt a foreign write, so this proves the table would
+        refuse one arriving by any other path."""
+        mine, theirs = uuid4(), uuid4()
+        async with tenant_scoped_session(
+            session_factory, workspace_id=mine, user_id=uuid4()
+        ) as session:
+            with pytest.raises(DBAPIError, match="row-level security"):
+                await session.execute(
+                    text(
+                        "INSERT INTO ai_inference (id, workspace_id, correlation_id, "
+                        "prompt_name, prompt_version, prompt_fingerprint, requested_model, "
+                        "served_model, vendor, evidence_digest, evidence_refs, outcome, "
+                        "input_tokens, output_tokens, latency_ms, retries, detail, "
+                        "created_by, updated_by) VALUES (gen_random_uuid(), :theirs, "
+                        "gen_random_uuid(), 'p', 1, 'f', 'm', 'm', 'ollama', 'd', "
+                        "ARRAY['a:1'], 'ok', 0, 0, 0, 0, NULL, :theirs, :theirs)"
+                    ),
+                    {"theirs": theirs},
+                )
 
 
 class TestTheRecordIsImmutable:
@@ -255,3 +322,77 @@ class TestTheRecordIsImmutable:
         ) as session:
             with pytest.raises(DBAPIError, match="permission denied"):
                 await session.execute(text("UPDATE ai_inference SET outcome = 'ok'"))
+
+
+class TestOperationalPersistenceFailureIsNeverInvisible:
+    """The alarm on the alarm (ADR-0029).
+
+    Business success and operational persistence are intentionally decoupled:
+    a narration produced correctly must not be discarded because a log row
+    could not be written. But a swallowed write is a row that silently never
+    existed, and enough of them make the ungrounded rate optimistic for a
+    *second* time by a *second* mechanism — which is the exact failure this
+    whole ADR exists to remove.
+
+    So the swallow is loud: an ERROR line naming what was lost, and a counter
+    an alert can bind to.
+    """
+
+    async def test_a_write_failure_does_not_fail_the_caller(
+        self, session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        recorder = SqlInferenceRecorder(_broken(), metrics=_CountingMetrics())
+        await recorder.record(a_record(uuid4()))
+
+    async def test_a_write_failure_is_counted(
+        self, session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        metrics = _CountingMetrics()
+        await SqlInferenceRecorder(_broken(), metrics=metrics).record(a_record(uuid4()))
+
+        assert metrics.failures == 1, (
+            "a lost inference record must reach operational monitoring — otherwise the "
+            "platform's self-measurement degrades silently"
+        )
+
+    async def test_a_write_failure_says_what_was_lost(
+        self, session_factory: async_sessionmaker[AsyncSession], caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """An engineer reading the alert must be able to identify the call
+        without the row that would have identified it."""
+        record = a_record(uuid4(), outcome=InferenceOutcome.UNGROUNDED, detail="made it up")
+        with caplog.at_level("ERROR"):
+            await SqlInferenceRecorder(_broken(), metrics=_CountingMetrics()).record(record)
+
+        (logged,) = [r for r in caplog.records if "operational history lost" in r.message]
+        assert logged.correlation_id == str(record.correlation_id)  # type: ignore[attr-defined]
+        assert logged.outcome == "ungrounded"  # type: ignore[attr-defined]
+
+    async def test_a_healthy_write_counts_no_failure(
+        self, session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """The positive control. A counter incremented unconditionally would
+        satisfy every test above and alert on nothing."""
+        metrics = _CountingMetrics()
+        await SqlInferenceRecorder(session_factory, metrics=metrics).record(a_record(uuid4()))
+
+        assert metrics.failures == 0
+
+
+class _CountingMetrics:
+    def __init__(self) -> None:
+        self.failures = 0
+
+    def recording_failed(self) -> None:
+        self.failures += 1
+
+
+def _broken() -> async_sessionmaker[AsyncSession]:
+    """A session factory pointed at nothing. Fails on connect, which is the
+    realistic shape of the outage this guards — the database being unreachable
+    is exactly when the recorder is busiest and least able to write."""
+    from sqlalchemy.ext.asyncio import create_async_engine
+
+    return async_sessionmaker(
+        create_async_engine("postgresql+asyncpg://nobody:nobody@127.0.0.1:1/nothing")
+    )

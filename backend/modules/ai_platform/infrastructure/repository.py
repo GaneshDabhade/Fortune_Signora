@@ -5,6 +5,11 @@ supplies one: the questions this table exists to answer — the ungrounded
 rate, the retry trend — have no caller until the evaluation harness, and a
 query method built before its consumer is a guess about the question.
 
+``SqlInferenceRecorder`` writes on **its own transaction** (ADR-0029);
+``SqlNarrationRepository`` writes on the caller's. That asymmetry is the
+point: a narration nobody committed was never shown to anyone, while a model
+call that happened, happened.
+
 There is no update method and no delete method. Immutability is enforced at
 the database by the absent ``UPDATE`` grant (migration 0015); the absent
 delete is the weaker of the two statements here, since a workspace must
@@ -16,13 +21,18 @@ from __future__ import annotations
 from uuid import UUID
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from modules.ai_platform.domain.grounding import GroundedStatement
 from modules.ai_platform.domain.narration import MaterializedNarration, NarrationSubject
 from modules.ai_platform.domain.provider import AIVendor
 from modules.ai_platform.domain.record import InferenceRecord
+from modules.ai_platform.infrastructure.metrics import RecordingMetrics, RecordingReporter
 from modules.ai_platform.infrastructure.models import AIInferenceModel, AINarrationModel
+from signora_platform.db import tenant_scoped_session
+from signora_platform.observability import get_logger
+
+logger = get_logger(__name__)
 
 #: Machine-authored, like every derived row in the platform. An inference is
 #: something Signora did, not something a person asked for by name.
@@ -50,13 +60,75 @@ def _fit(detail: str | None) -> str | None:
 
 
 class SqlInferenceRecorder:
-    """Writes one row per model call, whatever the outcome."""
+    """Writes one row per model call, whatever the outcome.
 
-    def __init__(self, session: AsyncSession) -> None:
-        self._session = session
+    **On its own transaction** (ADR-0029, ratified 2026-07-30). Operational
+    history answers *"what happened?"*; business data answers *"what became
+    true?"* Those are different categories of truth, and operational history
+    takes the lifetime of the **operation**, not of the enclosing business
+    transaction. Sharing the caller's session meant a grounding failure that
+    propagated rolled the failure record back with it — so the ungrounded
+    rate read 0% forever, and read it confidently.
+
+    The independent session is an **implementation detail and stays one**.
+    `Infer` depends on the `InferenceRecorder` port and knows nothing about
+    transactions; nothing above this class can tell how the row is committed.
+
+    A row therefore means *"this call was made and this is how it ended"*,
+    deliberately independent of whether the business transaction that
+    requested it survived. Tokens were spent and a vendor was called, and
+    those facts do not un-happen because a later step failed.
+    """
+
+    def __init__(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        *,
+        metrics: RecordingReporter | None = None,
+    ) -> None:
+        self._session_factory = session_factory
+        self._metrics = metrics or RecordingMetrics()
 
     async def record(self, record: InferenceRecord) -> None:
-        self._session.add(
+        """Persist the record, and **never** fail the caller if it cannot.
+
+        Business success and operational persistence are intentionally
+        decoupled: a narration that was produced correctly must not be thrown
+        away because a log row could not be written. But **operational
+        persistence failure must never become invisible** — losing the record
+        silently would mean the ungrounded rate reads optimistically for the
+        second time, by a different mechanism.
+
+        So the exception is swallowed *loudly*: an ERROR line carrying enough
+        to identify what was lost, and a counter an alert can bind to. This is
+        the one place in the module where an exception is deliberately not
+        propagated, and the reason is stated rather than assumed.
+        """
+        try:
+            async with tenant_scoped_session(
+                self._session_factory,
+                # From the record, which took it from the verified evidence
+                # set — never from anything a client supplied.
+                workspace_id=record.workspace_id,
+                user_id=SYSTEM_USER_ID,
+            ) as session:
+                await self._write(session, record)
+        except Exception as exc:  # noqa: BLE001 -- see the docstring
+            self._metrics.recording_failed()
+            logger.error(
+                "operational history lost: the inference record could not be persisted",
+                extra={
+                    "workspace_id": str(record.workspace_id),
+                    "correlation_id": str(record.correlation_id),
+                    "inference_id": str(record.id),
+                    "outcome": record.outcome.value,
+                    "prompt": f"{record.prompt_name}@{record.prompt_version}",
+                    "error": str(exc),
+                },
+            )
+
+    async def _write(self, session: AsyncSession, record: InferenceRecord) -> None:
+        session.add(
             AIInferenceModel(
                 id=record.id,
                 workspace_id=record.workspace_id,
@@ -81,7 +153,7 @@ class SqlInferenceRecorder:
                 updated_by=SYSTEM_USER_ID,
             )
         )
-        await self._session.flush()
+        await session.flush()
 
 
 def _to_narration(row: AINarrationModel) -> MaterializedNarration:

@@ -254,3 +254,87 @@ class TestTheReleaseRuleHasExactlyOneException:
             "Infer.execute no longer refuses a prompt that has not earned its model. "
             "That check is the release rule at the point of use (ADR-0028)."
         )
+
+
+class TestOperationalHistoryOutlivesTheWorkItDescribes:
+    """A failed inference's record survives the rollback that discards
+    everything else (ADR-0029).
+
+    **This guarantee was believed and untrue for a day**, which is the entire
+    reason it is an invariant rather than a unit test. `Infer` wrote a row on
+    every outcome — provably, with passing tests — while `tenant_scoped_session`
+    rolled every failure record back. The ungrounded rate would have read 0%
+    forever, confidently, and nothing in the suite would have said otherwise.
+
+    Structural rather than behavioural, like everything else in this file: it
+    reads the source, needs no database, and fails the moment the recorder
+    starts sharing a caller's transaction again.
+    """
+
+    RECORDER = AI_PLATFORM_ROOT / "infrastructure" / "repository.py"
+
+    def test_the_recorder_takes_a_session_factory_not_a_session(self) -> None:
+        """A recorder handed a session has the caller's transaction, and
+        therefore the caller's rollback."""
+        tree = ast.parse(self.RECORDER.read_text())
+        recorder = next(
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ClassDef) and node.name == "SqlInferenceRecorder"
+        )
+        init = next(
+            node
+            for node in recorder.body
+            if isinstance(node, ast.FunctionDef) and node.name == "__init__"
+        )
+        annotations = {
+            argument.arg: ast.unparse(argument.annotation)
+            for argument in init.args.args
+            if argument.annotation is not None
+        }
+
+        assert "async_sessionmaker" in annotations.get("session_factory", ""), (
+            "SqlInferenceRecorder must own a session factory. Taking an AsyncSession joins "
+            "the caller's transaction, so a grounding failure that propagates rolls the "
+            "failure record back — and the ungrounded rate reads 0% forever (ADR-0029)."
+        )
+
+    def test_the_narration_repository_still_shares_the_callers_transaction(self) -> None:
+        """The positive control, and the asymmetry that makes the rule mean
+        something. A narration nobody committed was never shown to anyone, so
+        it *should* roll back. If both took a factory, the distinction between
+        operational history and business data would have been lost rather than
+        drawn."""
+        tree = ast.parse(self.RECORDER.read_text())
+        repository = next(
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ClassDef) and node.name == "SqlNarrationRepository"
+        )
+        init = next(
+            node
+            for node in repository.body
+            if isinstance(node, ast.FunctionDef) and node.name == "__init__"
+        )
+        annotations = {
+            argument.arg: ast.unparse(argument.annotation)
+            for argument in init.args.args
+            if argument.annotation is not None
+        }
+
+        assert annotations.get("session") == "AsyncSession", (
+            "SqlNarrationRepository must write on the caller's transaction. A narration "
+            "that outlived a rolled-back unit of work would be an artifact no customer "
+            "was ever shown (ADR-0029)."
+        )
+
+    def test_a_lost_record_is_reported_rather_than_swallowed(self) -> None:
+        """The recorder deliberately does not fail its caller when it cannot
+        write. That is only acceptable while the loss is loud — an ERROR line
+        and a counter. A bare `except` that did neither would restore the
+        silent-optimism failure by a different route."""
+        source = self.RECORDER.read_text()
+
+        assert "self._metrics.recording_failed()" in source
+        assert "logger.error(" in source
+        assert "operational history lost" in source

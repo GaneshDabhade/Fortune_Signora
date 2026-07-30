@@ -1,6 +1,6 @@
 # ADR-0029 — Operational history must survive a rolled-back unit of work
 
-> Status: **PROPOSED — 2026-07-30.** Awaiting ratification. **No code has been written against this ADR.**
+> Status: **ACCEPTED — 2026-07-30.** Option A implemented in the change that ratified it.
 > Deciders: Product Owner · Architecture Review Board
 > Supersedes: nothing. Amends: nothing.
 > Anchors: [28-ai-platform.md](../28-ai-platform.md) (T119, T121) · [06-events.md](../06-events.md) · [11-tenancy.md](../11-tenancy.md) · [16-architecture-risks.md](../16-architecture-risks.md) R-01, R-10 · CLAUDE.md §20a
@@ -72,16 +72,16 @@ A savepoint or a `dblink`/`pg_background`-style autonomous write that commits in
 
 **Against.** It makes recording the *caller's* responsibility, so a caller that forgets simply produces no history — and "every outcome is recorded" stops being a guarantee `Infer` can make and becomes a convention thirteen modules must remember. That is precisely the shape of guarantee this codebase converts *into* enforcement rather than out of it. **Recommended for rejection.**
 
-## Recommendation
+## Decision
 
-**Option A**, with two qualifications drawn from the objections above:
+**Option A**, ratified 2026-07-30, with two qualifications drawn from the objections above:
 
 1. **The recorder owns a session factory, not a session**, injected at the composition root — so the AI Platform's infrastructure decides when to open a connection and no caller is involved.
 2. **The commit semantics are stated in the record, not left to a reader.** A row means *"this call was made and this is how it ended"*, which is deliberately independent of whether the business transaction that requested it survived. That is the honest meaning: tokens were spent and a vendor was called, and those facts do not un-happen because a later step failed.
 
 Option B and Option D are recommended for **explicit rejection** — B because savepoints cannot do what it claims, D because it converts a guarantee into a convention. Option C is recommended for rejection on the same ground as B, plus duplicate truth.
 
-## Consequences if ratified
+## Consequences
 
 **Positive.** AC-69 becomes true in production, not only in the domain. R-10's metric becomes trustworthy. The `ai_inference` table finally has the lifetime its category implies, and `ai_narration` — which *should* roll back with its business transaction, because a narration nobody committed was never shown to anyone — keeps the lifetime *its* category implies. The distinction between the two becomes visible in the code rather than accidental.
 
@@ -91,6 +91,19 @@ Option B and Option D are recommended for **explicit rejection** — B because s
 
 **Not in scope.** `ai_narration` keeps the caller's transaction. Business events keep the outbox. Nothing about tenancy, ordering, or the platform freeze changes.
 
-## Status of this document
+## Additional requirement, added at ratification
 
-**Proposed, not decided.** No code has been written against it, and none should be until it is ratified — the finding was raised deliberately rather than fixed inside the milestone that found it, and this ADR exists so the decision is explicit rather than emerging from an implementation. The behaviour as it stands today is asserted by an integration test in `tests/ai_platform/test_narration.py`, with the desired behaviour written into its failure message, so the day this is implemented is the day that test notices.
+**A failed operational write must itself be observable.** The recorder does not fail its caller when it cannot persist — business success and operational persistence are intentionally decoupled, and a narration produced correctly must not be discarded because a log row could not be saved. But a swallowed write is a row that silently never existed, and enough of them make the ungrounded rate optimistic for a **second** time by a **second** mechanism, which is precisely the failure this ADR exists to remove.
+
+So the swallow is loud: an ERROR line naming the workspace, correlation id, inference id, outcome and prompt, plus `signora.ai.recording_failures` — a module-owned counter an alert binds to. **A non-zero value means the platform's self-measurement is incomplete, and every figure read from `ai_inference` during that window understates reality.**
+
+This is the one place in the module where an exception is deliberately not propagated, and §15's rule against swallowing is satisfied rather than excepted: the failure is raised *to monitoring* instead of to the caller.
+
+## As built
+
+- `SqlInferenceRecorder` takes an `async_sessionmaker`, opens a `tenant_scoped_session` scoped from `record.workspace_id`, writes and commits. `Infer` is unchanged and still sees only the `InferenceRecorder` port — **the independent session never becomes visible above the adapter.**
+- The workspace comes from the record, which took it from the verified evidence set, never from anything a client supplied. A cross-workspace write is therefore not *refused* but **unrepresentable**: there is no ambient caller context to disagree with.
+- `SqlNarrationRepository` still takes the caller's `AsyncSession`. **The asymmetry is the decision made visible in code.**
+- A Security Invariant asserts both halves and that the loss is reported, with a positive control on the narration side. Four mutations bite: the recorder rejoining the caller's transaction, the failure swallowed silently, the workspace taken from somewhere other than the record, and the narration repository escaping its transaction too.
+
+Grants, policies and RLS are untouched: this ADR changed **when** a row commits, never who may write or read it.

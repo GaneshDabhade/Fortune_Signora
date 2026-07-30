@@ -451,20 +451,14 @@ class TestTheWholeChainAgainstTheRealPipeline:
     ) -> None:
         """**The milestone's real demonstration.** The guard is deterministic
         even though the thing it guards is not: a figure appearing in no cited
-        fact fails the call and the artifact is never written.
+        fact fails the call, the artifact is never written, **and the failure
+        survives the rollback that discards everything else.**
 
-        **Finding, recorded here rather than worked around.** The
-        `ai_inference` row that `Infer` writes for the failure does *not*
-        survive: `tenant_scoped_session` wraps `session.begin()`, so the
-        raised error rolls the unit of work back and takes the operational
-        record with it. AC-69 therefore holds in the domain — `Infer` records
-        every outcome — and **does not hold in production**, which is the
-        half that matters for measuring the ungrounded rate (R-10).
-
-        Fixing it means deciding how operational history escapes a business
-        transaction, which is an architectural question and not one a coding
-        session settles. The test asserts what is true today so the gap is
-        visible rather than assumed closed.
+        The two lifetimes in one assertion (ADR-0029). The narration rolls
+        back with the unit of work, because a narration nobody committed was
+        never shown to anyone. The inference record does not, because the call
+        happened — and the rows that would otherwise vanish are exactly the
+        rows the ungrounded rate is computed from.
         """
         workspace_id, user_id, entity_id, _ = await _tracked(
             session_factory, admin_session_factory, "northwind"
@@ -488,16 +482,14 @@ class TestTheWholeChainAgainstTheRealPipeline:
             narrations = (
                 await session.execute(text("SELECT count(*) FROM ai_narration"))
             ).scalar_one()
-            inferences = (
-                await session.execute(text("SELECT count(*) FROM ai_inference"))
+            outcome = (
+                await session.execute(text("SELECT outcome FROM ai_inference"))
             ).scalar_one()
 
         assert narrations == 0, "an ungrounded output must never reach a customer-visible table"
-        assert inferences == 0, (
-            "KNOWN GAP, not the desired behaviour: the failure record was rolled back with the "
-            "unit of work. When operational history is made to survive a rollback, this "
-            "assertion becomes `== 1` with outcome 'ungrounded' — and this test is where that "
-            "change will be noticed."
+        assert outcome == "ungrounded", (
+            "the failure record must outlive the transaction that failed — otherwise the "
+            "ungrounded rate reads 0% forever, and reads it confidently (ADR-0029)"
         )
 
 
@@ -547,6 +539,10 @@ async def _narrate_live(
     ) as session:
         narrate = build_narrate(
             session,
+            # The same factory, so the recorder opens a *second* connection —
+            # which is the whole point: its transaction is independent of the
+            # one this block will roll back if narration fails (ADR-0029).
+            recording_sessions=factory,
             providers=providers,
             source=OpportunityExplanationSource(opportunities(session, workspace_id)),
             publisher=PostgresOutboxEventPublisher(),
