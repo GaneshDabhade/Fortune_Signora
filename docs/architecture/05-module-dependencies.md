@@ -65,7 +65,7 @@ This graph is, by design, **acyclic**. No module depends on a module downstream 
 | Opportunity Engine | Buying Score Engine |
 | AI Platform | *(none from domain/application)* · Opportunity Engine `public/` **from `infrastructure/` only**, behind a Protocol |
 | AI Research Engine | Opportunity Engine, AI Platform |
-| AI Reasoning Engine | Opportunity Engine, AI Research Engine, AI Platform |
+| AI Reasoning Engine | Opportunity Engine, Signal Engine, AI Research Engine, AI Platform |
 | Recommendation Engine | AI Reasoning Engine |
 | Timeline | Observation Engine, Business Event Engine, Signal Engine, Buying Score Engine, Opportunity Engine, Recommendation Engine |
 | Revenue Intelligence Platform | Opportunity Engine, AI Reasoning Engine, Recommendation Engine, Timeline (sync query) |
@@ -85,6 +85,7 @@ This is the M5B `SignalReader` finding applied deliberately rather than discover
 Per Principle 3, event-driven is the default. Approved synchronous dependencies:
 
 - Any module → Workspace & Tenancy: resolve/validate workspace context (read-only). **Since M6 this includes membership verification on opportunity assignment** — a `user_id` supplied by a caller is a claim about who should hold the work, and an unverified one would hand an account to somebody outside the workspace.
+- AI Reasoning Engine → Signal Engine's published catalog: synchronous read of signal-type definitions when composing a Decision Package. **Added 2026-07-30 (T122).** A signal type's *limitations* and *suggested validation* — what a conclusion does not imply, and how a human independently checks it — are properties of the type, authored once by a domain expert and versioned like the business event taxonomy (ADR-0030, Decision 5). The alternative, a parallel catalog inside AI Reasoning keyed by `SignalType`, would put a type's limitations somewhere other than where the type is defined. Read-only, no new storage, and the definitions already reach M9 transitively through `SignalExplanation`; this edge makes the *catalog itself* readable rather than only the definitions attached to signals that fired.
 - AI Reasoning Engine → AI Research Engine's stored artifact: synchronous read of an already-completed research artifact when composing a reasoning request, if available at request time (falls back to reasoning without it if not yet complete — AI Research Engine is not a blocking dependency of the pipeline).
 - Business Event Engine → its own taxonomy (internal, no longer cross-module per the v1→v2 consolidation — see [ADR-0025](adr/0025-module-boundary-evolution.md)).
 - Revenue Intelligence Platform → Timeline: synchronous query when composing a workspace intelligence view.

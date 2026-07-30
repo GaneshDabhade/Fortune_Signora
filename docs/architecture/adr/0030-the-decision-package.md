@@ -144,6 +144,10 @@ Same for validation: *how a human disproves a displacement signal* is a property
 
 **Proposed:** both live in the signal catalog as reviewed repository artifacts, exactly as the business event taxonomy, the scoring model and the opportunity policy already do — *taxonomy is data; rules are code*, the M4 split. The Decision Package **composes** them by signal type; the model never writes them.
 
+> **Confirmed at T122:** `SignalTypeDefinition` carries `key`, `title`, `hypothesis`, `why_it_matters`, `detection_strategy`, `contributing_event_types`, `minimum_contributors`, `window_days` and `relevance_window_days` — and **no limitations or validation fields**. T126 therefore adds two fields to **`signal_engine`'s** artifact, not to M9's.
+>
+> That is a cross-module change and is raised rather than assumed. It is also the right owner: what `DISPLACEMENT_OPPORTUNITY` does not imply is a property of the signal type, and the signal type is defined in exactly one place. The alternative — a parallel catalog in M9 keyed by `SignalType` — would put a type's limitations somewhere other than where the type is defined, which is duplicate truth by construction.
+
 This is strictly better on every axis the product owner named: identical across accounts (so benchmarks compare), reviewable by a domain expert rather than a prompt engineer, free at inference time, and impossible to hallucinate.
 
 ## Decision 6 — Suggested Next Action does not belong to M9
@@ -170,11 +174,25 @@ It is also the field most likely to cause harm. A wrong explanation costs credib
 
 A model listing alternatives it *"discarded"* is confabulating: it did not enumerate and reject them: it generated plausible alternatives after the fact. Storing that as an audit record of a decision process would be storing a fiction.
 
-**But there is a real, deterministic competing-hypothesis set already.** The Signal Engine evaluates a global catalog against business events; for any set of events, some signal types were supported and others were **evaluated and not supported**. That is a genuine record of alternatives considered and rejected, by rules, with reasons — and `Contribution.counted` and `Contribution.reason` already carry exactly this shape for scoring.
+**A deterministic competing-hypothesis set is the right source. It does not currently exist.**
 
-**Proposed:** `alternative_readings` records signal types the same evidence was evaluated against and did not support, with the rule's own reason. Deterministic, honest, invaluable for debugging and evaluation as the product owner intends — and *more* useful than a model's guesses, because it reflects what the system actually considered.
+> **Corrected 2026-07-30 by implementation evidence (T122), before any code was written against it.**
+>
+> This ADR asserted that *"the Signal Engine already records types evaluated and not supported, with the rule's reason."* **That is false.** `rules.ground()` returns an empty tuple when a hypothesis is unsupported and the fact is discarded — nothing persists it, and no query exposes it. The `Contribution.counted` / `Contribution.reason` pair cited as precedent is a different thing entirely: it records a *signal that exists* contributing zero to a score, not a *type that never produced a signal*.
+>
+> The claim was wrong when ratified. It is corrected here rather than quietly built around, because an ADR asserting a capability the code does not have is exactly the defect §2 forbids — and the next engineer would have gone looking for it.
 
-Not shown to end users in M9. Recorded on the artifact.
+**Three options, and this needs a ruling before T126:**
+
+| | Approach | Assessment |
+|---|---|---|
+| **A** | Signal Engine **records** non-support when it evaluates | Honest, but writes a row per (entity, type) evaluation on every run — a large table describing mostly nothing, and new storage for a debugging aid |
+| **B** *(recommended)* | Signal Engine **answers on demand** through a new `public/` query: which types this entity's events were evaluated against and did not support | No new storage, computed from evidence the module already holds using the rules it already owns. M9 consumes it through the public contract and never re-implements a rule it does not own |
+| **C** | Defer `alternative_readings` to a later milestone | Loses a genuinely useful debugging and evaluation input, but costs nothing and blocks nothing |
+
+**B is a cross-module change** — a new read-only method on `signal_engine`'s published surface — and therefore belongs to the product owner rather than to a coding session (CLAUDE.md §5). It is a small change and a correct one: the Signal Engine owns the signal-type vocabulary and the rules that evaluate it, so it is the least powerful author capable of answering the question correctly.
+
+Not shown to end users in M9 under any option. Recorded on the artifact.
 
 ## Decision 8 — Support and Reasoning Robustness stay separate, and only one is per-artifact
 

@@ -27,8 +27,8 @@ signora/
 │   │   ├── buying_score_engine/
 │   │   ├── opportunity_engine/
 │   │   ├── ai_platform/           # AI Provider Port, prompts, grounding, evaluation (28-ai-platform.md)
+│   │   ├── ai_reasoning_engine/  # Decision Packages — the first module that concludes (29-ai-reasoning-engine.md)
 │   │   ├── ai_research_engine/
-│   │   ├── ai_reasoning_engine/
 │   │   ├── recommendation_engine/
 │   │   ├── timeline/
 │   │   └── revenue_intelligence_platform/

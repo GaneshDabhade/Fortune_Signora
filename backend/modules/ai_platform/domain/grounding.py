@@ -65,7 +65,7 @@ _NUMBER = re.compile(r"\d[\d,]*(?:\.\d+)?")
 
 
 class ViolationKind(StrEnum):
-    """Why an output failed. Four distinct causes, kept distinct."""
+    """Why an output failed. Five distinct causes, kept distinct."""
 
     MALFORMED_CITATION = "malformed_citation"
     """A citation is not a reference at all — it does not parse."""
