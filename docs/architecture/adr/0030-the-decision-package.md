@@ -67,7 +67,7 @@ Each part is assigned to the authority that can actually be held to it. Fifteen 
 | 3 | Supporting Evidence | **Derived** | The citations *are* the evidence; nothing to author |
 | 4 | Reasoning Chain | **Model**, grounded — *and renamed* | See Decision 2 |
 | 5 | Contradicting Evidence | **Derived** | Already computed upstream. See Decision 3 |
-| 6 | Support | **Derived** | Ruling 1, accepted and unchanged |
+| 6 | Support | **Derived** | Ruling 1. **Introduces no new threshold** — see the T124 note |
 | 7 | Assumptions | **Derived** from provenance | See Decision 4 |
 | 8 | Limitations | **Repository artifact** | See Decision 5 |
 | 9 | Suggested Validation | **Repository artifact** | See Decision 5 |
@@ -242,6 +242,27 @@ When implementation finds a field that naturally belongs elsewhere, **move the o
 That is a historical record, not a synchronised copy, and the codebase already draws the line in exactly this place: `ContributionLedger.ceiling` is carried on the ledger *"so the ledger reproduces its score with no reference to current configuration — a historical score explained through today's ceiling would be a different number wearing the same label."* Same reasoning, same resolution.
 
 **The rule, stated so the exception cannot spread:** the catalog is authoritative for **new** packages; the package is authoritative for **what was shown**. They answer different questions, so they are not two representations of one truth.
+
+---
+
+### T124 — Support introduces no threshold at all
+
+Built, and the design came out simpler than the ADR anticipated. The level is **two yes/no questions**, both already derived elsewhere:
+
+- **Is it corroborated?** — two or more *distinct providers*. A definition, not a tuned value: one provider repeating itself across ten events is one source.
+- **Is it current?** — `EvidenceState.CURRENT`, reused from the Opportunity Engine rather than redefined.
+
+`CORROBORATED` when both hold, `QUALIFIED` when one does, `LIMITED` when neither. `SupportLevel` refuses `int()`, `float()` and ordering, exactly as `MatchStrength` does — and for the same reason: a category that can become a number gets averaged across accounts within a year.
+
+**Two things deliberately do not affect the level, and both exclusions carry the milestone's principles forward.**
+
+*Contention does not lower Support.* **The Buying Score Engine prioritizes; it never resolves** — a fought-over account warrants more attention, not average attention, which is why opposing hypotheses never cancel arithmetically in the ledger. Netting a contradiction into a weaker level would resolve, one stage later, precisely what six stages preserved. It is carried, named, and shown.
+
+*Event count does not affect it either.* **How many events is enough is a threshold nobody can justify**, and a magic number nobody can justify will be trusted by four modules within a year. Corroboration answers the same question definitionally. The count is still shown to the customer; it simply decides nothing.
+
+The consequence is worth stating plainly: **Support adds no new number to the system.** Both of its inputs already existed, so a customer disputing a support level is disputing facts they can already see rather than a weighting they cannot.
+
+`SupportBasis.explain()` renders the reasons from the same fields the level reads, so the explanation cannot drift from the value it explains — a stored sentence would be a second representation of one fact.
 
 ---
 
