@@ -159,11 +159,25 @@ The one change M9 makes outside itself is a one-line docstring correction in `gr
 | **T127** | `application/reason.py` — the use case. Context assembly, one inference through `ai_platform`, package composition |
 | **T128** | `prompts/reasoning@1` + golden dataset + rubric extension (premise breadth · dissent acknowledgement · action abstinence · *n*-sample robustness) · `make eval` run and release |
 | **T129** | Migration `0017` — `ai_reasoning`, forced RLS, no `UPDATE` grant, `tenancy_policy.py` registration |
-| **T130** | `ai_reasoning.completed` cataloged with its producer · composition root · one smoke stage |
+| **T130** | SQLAlchemy model + repository · `ReasoningContext` adapter · `ai_reasoning.completed` cataloged with its producer · composition root · one smoke stage |
 
 Ordering follows M8's lesson: **the deterministic fields are built before the model-authored ones**, so the package is demonstrably valuable before a single inference happens — and so a failure to reach a model degrades the package rather than emptying it.
 
 ---
+
+## Evaluation runs against a configured provider, not a fixed one
+
+**Ruled 2026-07-30, after T129.** The benchmark is unchanged by which provider executes it; only the provider changes. A local workstation gives developer feedback, and **the release that counts is earned against the hosted production model.**
+
+**The capability already exists in the AI Platform and needs no architectural extension** — verified rather than assumed:
+
+- `build_provider_registry(settings, client)` already registers Ollama *and* Anthropic, the latter whenever `anthropic_api_key` is present.
+- `AIProviderRegistry.for_model(model)` resolves by **model**; no caller can name a vendor.
+- Both evaluation entry points already accept `--model`.
+
+**The only gap is that the entry points bypass that function**, hand-registering `OllamaAdapter` directly. Routing them through it makes `--model claude-sonnet-4-5` work as configuration alone. Neither vendor is special-cased, and adding OpenAI or Gemini later is an adapter registration rather than a change here.
+
+**One wrinkle, to be solved rather than ignored at T130:** the pre-flight reachability probe hits `/api/tags`, which is Ollama-specific, and a hosted run must not be gated on a local runtime being up. Either make the probe conditional on the resolved adapter, move it behind the port, or drop it — a hosted transport failure already surfaces as UNMEASURABLE, which is the correct answer.
 
 ## T128 — halted, with two findings
 

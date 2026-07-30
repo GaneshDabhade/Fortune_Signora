@@ -13,8 +13,9 @@
 | | |
 |---|---|
 | **Last completed** | **M6 Opportunity Engine** — closed 2026-07-29. *The first sellable moment.* |
-| **Last completed** | **M8 AI Platform** — T111–T121, closed 2026-07-30. Evaluated against a real model; `explanation_narration@1` released for `llama3.1:8b`. |
-| **Next** | **M9 AI Reasoning Engine** — the first module that produces propositions its input did not contain. |
+| **Last completed** | **M8 AI Platform** — T111–T121 + ADR-0029, closed 2026-07-30. `explanation_narration@1` released for `llama3.1:8b`. |
+| **In progress** | **M9 AI Reasoning Engine** — **T122–T129 complete; T130 is the last task.** Architecture ratified in [29-ai-reasoning-engine.md](architecture/29-ai-reasoning-engine.md) and [ADR-0030](architecture/adr/0030-the-decision-package.md). |
+| **Head at handoff** | `5371e50` |
 | **Phase** | Product Pipeline. Foundations and enablement are complete and frozen. **Eight pipeline stages built, plus the AI substrate.** |
 | **Overall completion** | **~52%** by engineering effort (~162 of ~261–339 ew) |
 | **Remaining** | ~99–177 ew · ~1.0–1.6 years at 3 engineers, ~3.1–4.7 at 1 |
@@ -312,32 +313,60 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 
 ## 7 · Next session starting point
 
-> **Completed:** M8 AI Platform (T111–T121) · **Next:** M9 AI Reasoning Engine
+> **In progress:** M9 — **T122–T129 done, T130 next and last** · **Completed:** M8
 > **Branch:** `main` · everything committed and pushed, tree clean
-> **Health:** 1417 backend + 101 frontend tests passing · coverage 95.35% (gate 95%) · 277 invariants · 22 contracts · smoke green (stage 14i added) · `make eval` green against `llama3.1:8b`
->
-> **First actions:**
-> 1. Read [21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md) — the shortest path to full context, and it tracks what is *built* rather than intended.
-> 2. Verify the tree is clean and `make smoke` is green.
-> 3. **Begin M9 at T122.** The architecture is **ratified and closed**: read [29-ai-reasoning-engine.md](architecture/29-ai-reasoning-engine.md) and then [ADR-0030](architecture/adr/0030-the-decision-package.md), which is binding on what M9 produces. Do **not** re-open either — five rulings and nine decisions are settled.
->
-> **The one principle that governs every M9 task:** *if the system already knows something deterministically, never ask a model to invent it again.* The Decision Package has fifteen parts and the model authors **three**. Before adding any model-authored field, ask whether the platform already owns the fact — `BuyingScore.trigger` answers *why now*, `dissenting_signal_ids` answers *what contradicts this*, `EvidenceState` answers *how fresh*. Deriving is not the cheaper option; it is the correct one, because a derived fact can be defended and a generated one can only be believed.
->
-> **M9 consumes the AI Platform and must not redefine it** — when implementation appears to require changing M8, stop and ask whether it is genuinely an M8 issue or M9 expanding its scope.
->
-> **`make eval` needs a model runtime, and this machine's is rootless.** Ollama lives in `~/.local/bin/ollama` (no `sudo` on this workstation); start it with `~/.local/bin/ollama serve` before running `make eval`. It is not a service and does not survive a reboot. Everything else — the suite, the invariants, `make smoke` — is offline and needs nothing.
->
-> **One open harness limitation:** the golden set's two cases are structurally identical, so `sample_size` is 2 and the variety is 1. Growing it belongs to M2.0's scenario assets, not to M8 — the harness reports the truth and must not compensate for a thin sample. *(The retry-reporting gap found on the first real run is closed: `RunLog` surfaces retries per case, in the aggregate, and in the durable manifest record.)*
->
-> **Already settled, do not re-open:** prompts are repository artifacts, immutable once released (content-hash enforced) · the evaluation harness asserts **deterministic correctness** on every call and **probabilistic quality** only in `make eval`, never mixed · context assembly is split — the container is infrastructure that *refuses* an invalid set, the contents are the caller's domain choice · the port reports **usage, never money**. The two binding principles are **grounding** and **statelessness**; the **stop condition** halts implementation if M8 needs a proposition its input does not contain.
->
-> **Raise, do not work around:** the two platform findings in §5 are **RFC work items**. Product milestones consume platform capabilities; they do not redesign them.
->
-> **The habit worth keeping.** Four times now, implementation has exposed something the approved proposal got wrong — a forward supersession pointer incompatible with immutability, a `valid_until` promise a continuous decay curve could not keep, a cross-tenant query forced RLS cannot serve, and a delta-based state log that could contradict itself. Each was **stopped and re-decided rather than coded around**, and each produced a better architecture. Expect a fifth. When implementation and design disagree, the design is the thing to fix.
->
-> **The milestone is not done until it is pushed.** CLAUDE.md §19 now binds this: implementation · quality gates · architecture docs · handoff · status · commit · **push** · clean tree. A milestone finished locally but unpushed, or whose dashboard describes the previous one, would have the next session resume from a lie.
->
-> **Do not:** reimplement anything in §2 · introduce mock business data · add a canonical attribute, business event type, signal type, posture, or opportunity stage without review · store a resolved attribute value in the Knowledge Graph · turn `MatchStrength` or `Relevance` into a number · put a threshold in rule, strategy, scoring or qualification code rather than in an artifact · put commercial judgement in the Business Event Engine · put a commercial verdict in the Signal Engine · let a buying score net opposing readings, carry account attributes, or imply a probability · **let anything but a human progress an opportunity, or cache derived intelligence in a workflow row** · rebuild workflow tables with the derived pipeline · modify `signora_platform/` or the frontend foundation without a qualifying reason.
+> **Health:** 1529 backend + 101 frontend tests · coverage 95.42% · 291 invariants · 25 contracts · smoke green · `HEAD` `5371e50`
+
+### T130 — the remaining work
+
+The last task in M9, and the one that makes the pipeline runnable end to end:
+
+1. **SQLAlchemy model + repository** for `ai_reasoning` (migration `0017` is applied and reversible). Mirror `ai_narration`'s: no update, no delete, `latest_for` derived by recency.
+2. **The `ReasoningContext` adapter** — `infrastructure/context.py`, satisfying `ReasoningContextSource`. This is the one file that speaks the pipeline's vocabulary. It reads `opportunity_engine.public` for the explanation chain, composes `SupportBasis` (providers from `BusinessEvent.corroborating_providers`, `EvidenceState`, `contested`/`dissenting_signal_ids`), `TemporalExplanation` (`trigger`, `basis_at`, `delta`, `trend`, `valid_until`, `supersedes`), the catalog's `limitations`/`suggested_validation` for the signal types present, and `SignalQueries.unsupported_types()` for alternative readings.
+3. **Composition root** — `infrastructure/composition.py`. See the provider finding below before writing it.
+4. **`ai_reasoning.completed` cataloged** in [06-events.md](architecture/06-events.md), in the same change. The payload is already fixed in `domain/events.py`; §5 of ADR-0030 records why the v2 placeholders `model_provenance`/`result_ref` were replaced.
+5. **One smoke stage** (14j), following 14i's shape: **it must not call a model.** `make eval` is the only command that does.
+6. `PROJECT_STATUS.md` at the M9 boundary.
+
+### Evaluation states — three, and they are distinct
+
+| | Meaning |
+|---|---|
+| **READY** | The prompt earned release: grounding and schema failures zero, coverage above floor |
+| **REFUSED** | It executed correctly and failed the quality gate. **Evidence, not failure** |
+| **UNMEASURABLE** | The benchmark could not execute faithfully. No verdict is produced — the harness abandons the run rather than averaging over surviving cases |
+
+`reasoning@1` is **authored and unreleased**. Its one evaluation attempt returned **UNMEASURABLE**: six consecutive calls timed out at exactly the 60 s policy limit on this workstation. Narration completes in 43–52 s on the same hardware and model; `ReasonedOutput`'s schema is 1307 bytes against narration's 866 and nested, and Ollama's grammar-constrained decoding is materially slower for it.
+
+**Nothing was tuned in response** — not the prompt, schema, model or timeout. Ruled 2026-07-30: `reasoning@1` earns its release against the **hosted production model**, and a local workstation may legitimately report UNMEASURABLE.
+
+### Provider-neutral evaluation — the capability already exists
+
+Verified at T129, and worth knowing before writing T130's composition root:
+
+- `build_provider_registry(settings, client)` in `ai_platform/infrastructure/composition.py` **already registers Ollama and Anthropic**, the latter whenever `anthropic_api_key` is present.
+- `AIProviderRegistry.for_model(model)` resolves by **model**, never by vendor. No caller can name a vendor.
+- Both eval entry points already take `--model`.
+
+**The only gap is that both entry points bypass `build_provider_registry()`** and hand-register `OllamaAdapter` directly. Routing them through it makes `--model claude-sonnet-4-5` work with no architectural change — configuration only, exactly as intended.
+
+**One wrinkle to solve rather than ignore:** the pre-flight reachability check hits `/api/tags`, which is Ollama-specific. A hosted run must not be gated on a local runtime being up. Options: make the check conditional on the resolved adapter, move it behind the port, or drop it and let a transport failure surface as UNMEASURABLE — which it already would, correctly.
+
+### Settled during M9 — do not re-open
+
+- **Deterministic Explainability.** The model authors **3 of 15** Decision Package parts. Before adding any model-authored field, ask whether the platform already owns the fact.
+- **`answers()` is the acceptance criterion**, executable: eleven customer questions, every row populated, asserted.
+- **Support introduces no threshold.** Two yes/no questions, both already derived. Contention never lowers it; event count never enters it.
+- **Temporal answers are composed, never derived** — and need no snapshot, because `buying_score` is immutable.
+- **Catalog content is snapshotted; immutable history is referenced.**
+- **`reason.py` stays thin**, enforced by a test that forbids `if support`, `if contested`, `if trend`, `len(events)`.
+- **Exactly one inference per package.**
+- **`ai_reasoning_engine.evaluation` is the single narrow exemption** to the through-`public` contract — a composition root is where infrastructure is wired. One module deep.
+- **`limitations` in the catalog are engineering-authored pending domain review.**
+
+### The habit that produced M9
+
+Four guards were written and removed for being unreachable, two mutations survived and exposed genuine gaps, and one ratified ADR claim turned out to be factually wrong about the repository. **Every one improved the architecture.** A surviving mutation is architectural feedback until proven otherwise; a guard that cannot fail is documentation pretending to be code; and when a document and the repository disagree, the repository wins.
 
 ---
 
@@ -345,6 +374,7 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 
 | Date | Change |
 |---|---|
+| 2026-07-30 | v11 — **M9 T122–T129 complete; T130 is the last task.** Records the three evaluation states (READY / REFUSED / UNMEASURABLE), `reasoning@1` authored and unreleased after an UNMEASURABLE local run, the ruling that release is earned against the hosted production model, and the T129 finding that **provider-neutral evaluation already exists** — `build_provider_registry` registers both vendors and `for_model` resolves without naming one, so only the eval entry points' hand-rolled registration needs routing through it. §7 rewritten for T130 with the full remaining work and the settled decisions that must not be re-opened. |
 | 2026-07-30 | v10 — **ADR-0029 ratified and implemented; M8 architecturally closed with no findings outstanding.** Operational history commits on its own transaction — AC-69 now holds in production, not only in the domain. `ai_narration` keeps the caller's transaction, deliberately. A failed operational write is observable rather than silent. §7 now points at M9. |
 | 2026-07-30 | v9 — **M8 complete.** T121 composes the validated platform: migration `0016` (`ai_narration`), the narration use case, `ai.narration_completed`, the composition root, and smoke stage 14i. Records the **fifth data category** — the materialized AI artifact — and the ruling that it is a historical fact rather than current truth, therefore immutable. §1 and §7 rewritten for M9. Superseded by v10. |
 | 2026-07-30 | v8 — **M8 T111–T120 built; the evaluation harness run against a real model.** `explanation_narration@1` passed against `llama3.1:8b` (2 cases, 0 grounding failures, 0 schema failures, coverage 1.000) and is released for that model and refused for every other — the first objective AI-quality signal in the project. Records the rootless Ollama install this workstation needs, the two open harness gaps (retries not surfaced in the report; two structurally identical golden cases), and the observed cost (29.4 s cold load, 43–52 s per case, first call retried at the 60 s policy timeout). §1 and §7 rewritten: this file had been telling the next session to begin at T111, ten tasks after implementation actually started. |
