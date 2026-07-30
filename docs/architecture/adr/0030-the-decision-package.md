@@ -63,7 +63,7 @@ Each part is assigned to the authority that can actually be held to it. Fifteen 
 | # | Part | Authored by | Why |
 |---|---|---|---|
 | 1 | Executive Summary | **Model**, grounded | Compression is a language task |
-| 2 | Proposition | **Model**, grounded | The conclusion is the reasoning |
+| 2 | Proposition | **Model**, grounded | The conclusion is the reasoning. **Refused below `MINIMUM_PREMISES` distinct facts** — enforced by the type, not the rubric (T123) |
 | 3 | Supporting Evidence | **Derived** | The citations *are* the evidence; nothing to author |
 | 4 | Reasoning Chain | **Model**, grounded — *and renamed* | See Decision 2 |
 | 5 | Contradicting Evidence | **Derived** | Already computed upstream. See Decision 3 |
@@ -146,7 +146,7 @@ Same for validation: *how a human disproves a displacement signal* is a property
 
 > **Confirmed at T122:** `SignalTypeDefinition` carries `key`, `title`, `hypothesis`, `why_it_matters`, `detection_strategy`, `contributing_event_types`, `minimum_contributors`, `window_days` and `relevance_window_days` — and **no limitations or validation fields**. T126 therefore adds two fields to **`signal_engine`'s** artifact, not to M9's.
 >
-> That is a cross-module change and is raised rather than assumed. It is also the right owner: what `DISPLACEMENT_OPPORTUNITY` does not imply is a property of the signal type, and the signal type is defined in exactly one place. The alternative — a parallel catalog in M9 keyed by `SignalType` — would put a type's limitations somewhere other than where the type is defined, which is duplicate truth by construction.
+> **Ruled 2026-07-30:** the two fields move onto `SignalTypeDefinition`. They are properties of the signal **type**, not of an individual reasoning result, so keeping them beside the definition gives them one owner, one version history, one review process and one source of truth. **The Decision Package references them.** The alternative — a parallel catalog in M9 keyed by `SignalType` — would put a type's limitations somewhere other than where the type is defined, which is duplicate truth by construction.
 
 This is strictly better on every axis the product owner named: identical across accounts (so benchmarks compare), reviewable by a domain expert rather than a prompt engineer, free at inference time, and impossible to hallucinate.
 
@@ -190,7 +190,7 @@ A model listing alternatives it *"discarded"* is confabulating: it did not enume
 | **B** *(recommended)* | Signal Engine **answers on demand** through a new `public/` query: which types this entity's events were evaluated against and did not support | No new storage, computed from evidence the module already holds using the rules it already owns. M9 consumes it through the public contract and never re-implements a rule it does not own |
 | **C** | Defer `alternative_readings` to a later milestone | Loses a genuinely useful debugging and evaluation input, but costs nothing and blocks nothing |
 
-**B is a cross-module change** — a new read-only method on `signal_engine`'s published surface — and therefore belongs to the product owner rather than to a coding session (CLAUDE.md §5). It is a small change and a correct one: the Signal Engine owns the signal-type vocabulary and the rules that evaluate it, so it is the least powerful author capable of answering the question correctly.
+**Ruled 2026-07-30: Option B.** A read-only query on `signal_engine`'s published surface. The Signal Engine already owns the evidence, the rules and the evaluation, so it is the least powerful author capable of answering *which types were evaluated and not supported* correctly. **No additional persistence, no duplicate truth, no parallel representation** — rejected hypotheses stay derived.
 
 Not shown to end users in M9 under any option. Recorded on the artifact.
 
@@ -224,6 +224,24 @@ Routing these through a language model would **replace a fact with a guess** —
 **Proposed:** these four are derived and rendered, never generated. The model may *narrate* them — that is grounded restatement, which is M8's proven capability — but the answers come from the pipeline.
 
 This is the clearest case of the reframing making the system simpler: the most trust-critical questions turn out to be the ones we can already answer exactly.
+
+---
+
+## The Decision Package is an orchestration artifact
+
+**Recorded 2026-07-30, after both T122 rulings.** A pattern has appeared twice and is worth naming before it appears a third time: **implementation keeps moving fields out of M9 and back to their natural owners.** Limitations belong to the signal type. Alternative readings belong to the module that owns the rules. Support is computed from a score the Buying Score Engine already published. Why-now is `BuyingScore.trigger`.
+
+That is architectural progress, not scope reduction. The direction it sets:
+
+> **The Decision Package composes correctly-owned information. It does not own that information itself.**
+
+When implementation finds a field that naturally belongs elsewhere, **move the ownership rather than copying the value into M9.**
+
+**With one deliberate exception, which is not a contradiction.** A materialized artifact records *what a customer was actually shown*. If the package held only a reference — signal type plus catalog version — then editing the catalog would silently change what a historical package appears to have said, which is precisely what immutability forbids. So the composed text is **snapshotted onto the artifact at creation**, alongside the version it came from.
+
+That is a historical record, not a synchronised copy, and the codebase already draws the line in exactly this place: `ContributionLedger.ceiling` is carried on the ledger *"so the ledger reproduces its score with no reference to current configuration — a historical score explained through today's ceiling would be a different number wearing the same label."* Same reasoning, same resolution.
+
+**The rule, stated so the exception cannot spread:** the catalog is authoritative for **new** packages; the package is authoritative for **what was shown**. They answer different questions, so they are not two representations of one truth.
 
 ---
 

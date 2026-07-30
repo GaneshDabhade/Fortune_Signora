@@ -107,7 +107,7 @@ This is testable in the same mechanical way M8's was: the output type has no fie
 Deterministic measures proposed, all computable without a judge:
 
 - **Grounding and schema failures — zero.** Unchanged. Definitions, not thresholds.
-- **Premise breadth** — a conclusion citing one fact is an observation wearing a conclusion's clothes.
+- ~~**Premise breadth**~~ — **removed from the rubric at T123 and moved into the type.** `ReasonedOutput` refuses a conclusion resting on fewer than `MINIMUM_PREMISES` distinct facts, so it is enforced on every call in production rather than counted on a golden set before release. A constraint that can be made unrepresentable should not also be a thing an evaluation measures; the ladder asked for the demotion and the rubric got shorter.
 - **Dissent acknowledgement** — on a contested account, at least one dissenting signal cited. Directly enforces the Buying Score Engine's principle at its consumer.
 - **Action abstinence** — no conclusion contains an imperative. Crude, and it makes Ruling 2 measurable rather than aspirational.
 
