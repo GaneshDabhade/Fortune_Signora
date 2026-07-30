@@ -1,0 +1,12 @@
+{
+  "_comment": "The AI Reasoning Engine's prompt registry. **Owned here, not by the AI Platform** — a module owns its own artifacts, and the AI Platform's registry holds the AI Platform's own prompts (CLAUDE.md §2). `load_prompt_registry(directory)` is already per-directory, so no platform change was needed. `fingerprint` is the SHA-256 of name, version and text; the loader refuses to start if the file disagrees with it. A released version is never edited in place. `evaluations` is append-only and outside the fingerprint. A prompt is usable only with the exact (model, dataset) pairs it has passed (ADR-0028).",
+  "prompts": [
+    {
+      "name": "reasoning",
+      "version": 1,
+      "owner": "AI Reasoning Engine",
+      "fingerprint": "9bc8514705525197a846ef05388e9f10215925f6cb1dff2ce5f02e387322a5ab",
+      "evaluations": []
+    }
+  ]
+}

@@ -165,6 +165,42 @@ Ordering follows M8's lesson: **the deterministic fields are built before the mo
 
 ---
 
+## T128 — halted, with two findings
+
+**`reasoning@1` is written and its manifest ships. It has not been evaluated, and it is therefore not released.** Two things stopped the run, and both are raised rather than worked around.
+
+### Finding 1 — the evaluation entry point breaks M9's own boundary contract
+
+An M9 evaluation run cannot use M8's `make eval`: `ai_platform/evaluation/__main__.py` hardcodes `output_type=Narration`, and importing `ReasonedOutput` there would break *"no upstream module depends on the AI Reasoning Engine"*. So M9 needs its own entry point — which is right, and which the machinery already supports, since `load_prompt_registry(directory)` is per-directory and each module owns its own prompts.
+
+**But an M9 entry point breaks the other contract.** *"`ai_reasoning_engine` reaches other modules only through `public/`"* forbids `ai_platform.infrastructure` and `ai_platform.evaluation` — and an evaluation entry point needs `AISettings`, `OllamaAdapter`, `load_prompt_registry`, `Harness`, `load_dataset` and `record`, none of which is exported through `public/`.
+
+It was written, it broke the contract, and **it was reverted rather than committed**. A ruling is needed:
+
+| | Approach | Assessment |
+|---|---|---|
+| **A** *(recommended)* | Exempt `modules.ai_reasoning_engine.evaluation` from the through-`public` contract | A composition root is *by definition* where infrastructure is wired — M8's own contracts carve out `infrastructure/` for exactly this reason. Narrow, and the exemption is visible in the contract itself |
+| **B** | Export the harness surface through `ai_platform.public` | Cleaner in principle, but publishes a large surface whose only consumer is a developer command, and freezes it before M10 has used it |
+| **C** | One shared entry point that resolves output types from a registry | Indirection to route around a boundary, and the registry becomes a place every module must remember to register in |
+
+### Finding 2 — the benchmark does not execute on this workstation
+
+Six consecutive `/api/generate` calls returned 500 after **exactly 60 seconds** — `InferencePolicy.timeout_seconds`, not a cold-start artifact. Narration completed in 43–52 s on the same hardware and the same model.
+
+The likely cause is the output schema: `ReasonedOutput` is **1307 bytes against narration's 866**, and nested rather than flat. Ollama constrains output by grammar, and a nested schema is materially slower to decode.
+
+**This is neither `EARNED` nor `REFUSED`. It is unmeasurable**, and the harness said so — it abandoned the run rather than averaging over the cases that survived. That refusal working on its first real encounter with a genuinely broken run is the most useful thing this task produced.
+
+**Nothing was tuned in response.** The pinned model is part of the benchmark, the timeout is a policy the whole platform shares, and the schema is the shape the Decision Package requires. Each is a decision for the product owner, not a knob to turn until a number appears. Options, for a ruling:
+
+- **Raise `InferencePolicy.timeout_seconds`** — but it is platform-wide and was chosen for production, not for a 4 GiB workstation GPU.
+- **Evaluate against a hosted model** — production runs hosted models anyway, and `reasoning@1` must eventually earn a release against one regardless.
+- **Accept that M9's benchmark is not locally executable** and record it, as ADR-0028 already anticipates for a development runtime.
+
+**`reasoning@1` remains a draft, and the release rule refuses it.** That is the system working.
+
+---
+
 ## Approval record
 
 ### Ratified 2026-07-30
