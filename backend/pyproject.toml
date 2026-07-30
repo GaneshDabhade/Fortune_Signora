@@ -118,6 +118,11 @@ containers = [
     "modules.ai_platform",
 ]
 layers = [
+    # Optional and topmost. `evaluation/` exists only in the AI Platform: it
+    # is the harness, it consumes every layer beneath it, and nothing may
+    # consume it — a module whose own code depended on how it is measured
+    # would be measuring itself.
+    "(evaluation)",
     "(interface)",
     "infrastructure",
     "public",
@@ -429,6 +434,27 @@ forbidden_modules = ["modules.buying_score_engine", "modules.opportunity_engine"
 # module reaching *into* it would mean a stage asking a model to help decide
 # its own output, which is the inversion every layering rule in this
 # repository exists to prevent.
+[[tool.importlinter.contracts]]
+# The harness reads recorded expectations, never the pipeline that produced
+# them. Seeding a golden dataset needs the pipeline; *evaluating* against one
+# must not — otherwise a change upstream moves a prompt's score without the
+# prompt, the model or the criteria changing, and the number stops meaning
+# anything.
+name = "ai_platform: the evaluation harness never reaches the pipeline"
+type = "forbidden"
+source_modules = ["modules.ai_platform.evaluation"]
+forbidden_modules = [
+    "modules.provider_platform",
+    "modules.provider_normalization",
+    "modules.knowledge_graph",
+    "modules.observation_engine",
+    "modules.business_event_engine",
+    "modules.signal_engine",
+    "modules.buying_score_engine",
+    "modules.opportunity_engine",
+    "modules.workspace_tenancy",
+]
+
 [[tool.importlinter.contracts]]
 name = "no business module depends on the AI Platform"
 type = "forbidden"

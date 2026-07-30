@@ -83,9 +83,13 @@ def a_prompt(*, released_for: str | None = MODEL) -> PromptVersion:
             Evaluation(
                 model=released_for,
                 dataset="baseline",
+                dataset_version=1,
+                rubric_version=1,
                 evaluated_on=date(2026, 7, 30),
                 sample_size=20,
                 grounding_failures=0,
+                schema_failures=0,
+                coverage=1.0,
             ),
         )
         if released_for

@@ -137,6 +137,10 @@ No golden test sets, human-review sampling process, or regression testing exists
 
 **Mitigation:** This is the single highest-leverage AI-quality investment available and should be built early — see [17-future-recommendations.md](17-future-recommendations.md). Owner: TBD.
 
+**Partially mitigated 2026-07-30 (M8, T120).** The methodology now exists and is enforceable: a versioned golden dataset seeded from the M2.0 baseline scenario, a published rubric with no hidden weighting, and a release rule that is *derived* from measurements rather than declared — a prompt is usable exactly where an evaluation of it passed, and nothing anywhere can mark one released ([28-ai-platform.md](28-ai-platform.md)).
+
+**Still open, and specifically so:** the harness has **not been run**. No model runtime is installed on the development machine, so `make eval` correctly refuses rather than substituting a fake, and `explanation_narration@1` remains a draft with no passing evaluation. Until a run happens there is still no objective quality signal — the apparatus to produce one is what changed, not the signal itself.
+
 ---
 
 ### R-11 — Vendor Concentration on Less-Mainstream Infrastructure Choices

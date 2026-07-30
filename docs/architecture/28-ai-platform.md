@@ -1,6 +1,6 @@
 # 28 — AI Platform
 
-> Status: **RATIFIED — 2026-07-29.** Milestone **M8**, in progress. **T111–T119 complete**; T120–T121 outstanding.
+> Status: **RATIFIED — 2026-07-29.** Milestone **M8**, in progress. **T111–T120 complete**; T121 outstanding. **`make eval` has not yet been run against a model** — see the T120 notes.
 > Audience: engineers, architects, and anyone who has to trust what Signora says.
 > Anchors: [14-ai-architecture.md](14-ai-architecture.md) · [ADR-0012](adr/0012-ai-platform-architecture.md) · [04-modules.md](04-modules.md) · [21-intelligence-pipeline.md](21-intelligence-pipeline.md) · [16-architecture-risks.md](16-architecture-risks.md) R-01, R-05, R-10
 >
@@ -482,7 +482,7 @@ So the test separating the two is mechanical rather than a matter of taste: **do
 | **T117** | Ollama adapter · Claude adapter · **one shared contract suite run against both** |
 | **T118** | `application/infer.py` — the only path to a model; retry/timeout policy; usage recording |
 | **T119** | Migration `0015`: `ai_inference`, forced RLS, no `UPDATE` grant, `tenancy_policy.py` registration |
-| **T120** | `evaluation/` — harness, rubric, golden datasets seeded from M2.0 scenarios, `make eval` |
+| **T120** | `evaluation/` — harness, rubric, golden datasets seeded from M2.0 scenarios, `make eval` ✅ *(built; not yet run — no model runtime installed)* |
 | **T121** | *(Option B only)* `explanation_narration@1`, the narration use case, its table and event, one smoke stage |
 
 ---
@@ -598,7 +598,11 @@ Per CLAUDE.md §19, binding.
 
 **T119 ✅** — migration `0015`, `infrastructure/models.py`, `infrastructure/repository.py`: the `ai_inference` table with forced RLS, no `UPDATE` grant, and registration in `tenancy_policy.py`. **14 tests**, twelve mutation-proven guarantees. Two defects in T118 found and fixed; see below.
 
-**T120–T121 outstanding.** No evaluation harness, no `make eval`, no released prompt, no narration use case, no composition root, no `ai.narration_completed` in [06-events.md](06-events.md).
+**T120 ✅** — `evaluation/` (dataset · rubric · report · harness · release · `__main__`), `infrastructure/explanation.py`, `infrastructure/settings.py`, the golden dataset seeded from the M2.0 baseline scenario, and `make eval`. **46 tests**, twelve mutation-proven guarantees, 22 import-linter contracts. One structural exception introduced and invariant-enforced; see below.
+
+**T120 is complete but has not been *run*.** No Ollama runtime exists on the development machine, so `make eval` refuses — correctly, loudly, and by design. `explanation_narration@1` therefore remains a draft and M8's Definition-of-Done item *"`make eval` green on the golden set"* is **outstanding**, blocked on installing a model runtime rather than on code.
+
+**T121 outstanding.** No narration use case, no composition root, no `ai.narration_completed` in [06-events.md](06-events.md), no smoke stage.
 
 `interface/` is deliberately absent: M8 has no HTTP surface, the layering contract marks the layer optional, and a directory created for a caller that does not exist is the speculative structure CLAUDE.md §6 forbids.
 
@@ -808,4 +812,63 @@ Documentation drift found in files this change touched, corrected rather than le
 
 ---
 
-*T111–T119 built. T120 onward not started.*
+### T120 — the harness, and the circularity it had to resolve
+
+**The release rule blocks the evaluation that earns it.** A prompt may be used only with a model it has passed evaluation against; evaluating it requires calling it. Both cannot come first.
+
+Resolved **structurally rather than with a flag**. `Infer.execute` enforces the rule and is the only path a request may take; `Infer.measure` runs the identical lifecycle without it, and **a Security Invariant asserts it is called from `evaluation/` and nowhere else**, with a positive control asserting `execute` still enforces the rule. A boolean `skip_release_check` would have been smaller and would eventually have been passed `True` by a request path at three in the morning; an exception that a test can locate by name cannot spread quietly. Both mutations bite.
+
+Everything else about the two paths is identical, deliberately: a harness measuring a different code path from the one production runs measures the wrong thing.
+
+#### Golden datasets are recorded, not generated
+
+The dataset is produced **once** from the M2.0 baseline scenario by running the real pipeline (`tests/ai_platform/seed_golden_dataset.py`), then checked in, reviewed, and versioned. **Seeding needs the pipeline; evaluating does not** — an import-linter contract forbids `evaluation/` from importing any business module, so a change upstream cannot move a prompt's score without the prompt, the model or the criteria changing.
+
+Hand-authoring the cases was rejected: it would mean inventing business data and then measuring a model's fidelity to an invention, with the evidence shaped by what is convenient to narrate. Every fact in the shipped set traces to a simulated provider payload and the id the pipeline minted for it.
+
+`fingerprint` covers `cases` and nothing else, so a reformat is not a revision and an edited expectation fails to load. Revising a case is a version bump, and every result records `dataset_version`.
+
+#### The rubric measures; the domain judges
+
+Three deterministic measures, **no weighting between them and no combined score**: grounding failures (must be zero), schema failures (must be zero, counted separately because a model that cannot hold a structure and a model that invents facts are different problems), and coverage of load-bearing facts. A weighted total would let strong coverage compensate for a grounding failure, and grounding failures are not compensable.
+
+The criteria live in `Evaluation.passed`, in the domain, beside the release rule that consumes them. `rubric.criteria()` *renders* them by reading `MINIMUM_COVERAGE` rather than restating it — a test asserts that function contains no number of its own, because a literal there would be a second representation of a release rule.
+
+`MINIMUM_COVERAGE = 0.66` is the one judgement in the criteria, and it is stated with its reasoning: not 1.0, because a narrative that must mention every load-bearing fact is a list rather than a summary and the harness would be measuring length; not lower, because below two thirds the strongest contribution to a score can go unmentioned while the run still passes.
+
+**Coverage is measured from citations, not prose.** A narrative mentioning a figure without citing its fact is making an uncited claim, which grounding already refuses — so the citation is the only evidence of coverage that means anything.
+
+#### A run that did not complete produces no record
+
+A transport failure **abandons** the run rather than lowering its score. A vendor being down says nothing about a prompt, and a partial average recorded as a result would grant a release on the cases that happened to succeed. `EvaluationAbandonedError` is the absence of a measurement, deliberately distinct from a failing one.
+
+Failing runs *are* recorded. A manifest holding only passes shows a prompt with a clean history and no sign it was measured and found wanting — and the next engineer repeats the work.
+
+#### Configuration, as ruled
+
+`AISettings` lives in `modules/ai_platform/infrastructure/`, owned by the module whose behaviour it governs, constructed only at the composition root (`evaluation/__main__.py` for a harness run). `signora_platform/settings.py` was not touched. There is deliberately **no fallback from a hosted vendor to Ollama**: a production service that could quietly reach a local runtime when its vendor was unreachable would serve customers from a model nothing evaluated.
+
+#### Blocked: no model runtime exists on this machine
+
+`ollama` is not installed, nothing is listening on `11434`, and no Compose service or `.env` entry provides one. So the harness is complete and **has never run**.
+
+`make eval` handles this the only acceptable way: it **fails, naming what is missing, and never substitutes a fake**. That refusal is the single most important behaviour in the harness and is mutation-proven — a scripted adapter never invents a quantity unless told to, so a run against one would prove the grounding checker works and nothing whatsoever about the model, while producing a measurement that could earn a release.
+
+Consequences, stated plainly rather than worked around:
+
+- `explanation_narration@1` remains a **draft**, and the release rule still refuses it. That is the system working.
+- M8's Definition-of-Done item *"`make eval` green on the golden set"* is **outstanding**.
+- AC-74 (grounding pass rate 100% on the golden set) is **unmeasured**.
+
+Installing Ollama and pulling `llama3.1:8b` is the whole of what remains for those three.
+
+#### Known limitations of the shipped golden set
+
+Recorded rather than smoothed over:
+
+- **Two cases, one shape.** The M2.0 baseline scenario produces structurally identical opportunities for `northwind` and `contoso`, so the sample size is 2 and the *variety* is 1. Broadening it means more scenarios, which is M2.0's asset to grow — not something to fabricate here.
+- **`opened_on` moves with the calendar.** It comes from `opportunity.created_at`, which the pipeline sets to wall-clock now, so re-seeding on a later day changes the fingerprint without any expectation having changed. The file is checked in and regenerated deliberately, so this surfaces as a reviewable diff rather than as drift — but it does mean "regenerate to confirm nothing changed" is not available. Fixing it belongs to M6's clock, not to the harness.
+
+---
+
+*T111–T120 built. T121 not started. `make eval` has not been run — no model runtime is installed.*

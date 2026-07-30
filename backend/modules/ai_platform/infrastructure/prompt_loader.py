@@ -36,9 +36,13 @@ class _EvaluationRecord(BaseModel):
 
     model: str
     dataset: str
+    dataset_version: int
+    rubric_version: int
     evaluated_on: date
     sample_size: int
     grounding_failures: int
+    schema_failures: int
+    coverage: float
 
 
 class _PromptRecord(BaseModel):
@@ -97,9 +101,13 @@ def _load(record: _PromptRecord, directory: Path) -> PromptVersion:
             Evaluation(
                 model=e.model,
                 dataset=e.dataset,
+                dataset_version=e.dataset_version,
+                rubric_version=e.rubric_version,
                 evaluated_on=e.evaluated_on,
                 sample_size=e.sample_size,
                 grounding_failures=e.grounding_failures,
+                schema_failures=e.schema_failures,
+                coverage=e.coverage,
             )
             for e in record.evaluations
         ),

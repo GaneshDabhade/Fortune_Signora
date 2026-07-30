@@ -203,3 +203,54 @@ class TestTheBoundaryContractsStayRegistered:
             "containers. The contract does not auto-discover modules, by design — so a "
             "module absent from this list is silently unenforced."
         )
+
+
+class TestTheReleaseRuleHasExactlyOneException:
+    """``Infer.measure`` skips the release rule. Only the harness may call it.
+
+    The rule and the act that satisfies it cannot both come first: a prompt
+    is usable with a model once it has passed evaluation against it, and
+    evaluating it requires calling it. So the exception exists — named,
+    narrow, and confined here rather than expressed as a
+    ``skip_release_check`` argument that a request path would eventually be
+    given.
+
+    This is what makes it a guarantee rather than a comment. Without it, the
+    method is one convenient import away from becoming the way a prompt gets
+    used before it has earned anything, and the release rule would still
+    *look* enforced.
+    """
+
+    ALLOWED = "evaluation"
+
+    def test_only_the_harness_calls_measure(self) -> None:
+        offences: list[str] = []
+        for path in AI_PLATFORM_ROOT.rglob("*.py"):
+            relative = path.relative_to(AI_PLATFORM_ROOT)
+            if relative.parts[0] == self.ALLOWED or path.name == "infer.py":
+                continue
+            for node in ast.walk(ast.parse(path.read_text())):
+                if (
+                    isinstance(node, ast.Attribute)
+                    and node.attr == "measure"
+                    and isinstance(node.ctx, ast.Load)
+                ):
+                    offences.append(f"{path.relative_to(BACKEND_ROOT)}:{node.lineno}")
+
+        assert not offences, (
+            "Infer.measure bypasses the release rule and exists so that evaluation can "
+            "produce the evidence a release is granted on. A caller outside evaluation/ "
+            "using it is a prompt reaching a model it has not earned, while every test "
+            "asserting the release rule still passes.\n  " + "\n  ".join(offences)
+        )
+
+    def test_the_request_path_still_enforces_the_rule(self) -> None:
+        """The positive control. A refactor that removed the check from
+        ``execute`` would satisfy the test above while deleting the rule."""
+        source = (AI_PLATFORM_ROOT / "application" / "infer.py").read_text()
+        execute = source.split("async def execute", 1)[1].split("async def measure", 1)[0]
+
+        assert "require_model" in execute, (
+            "Infer.execute no longer refuses a prompt that has not earned its model. "
+            "That check is the release rule at the point of use (ADR-0028)."
+        )

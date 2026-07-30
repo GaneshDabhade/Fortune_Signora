@@ -1,0 +1,117 @@
+{
+  "_comment": "Golden dataset for prompt evaluation (28-ai-platform.md, T120). Each case is a closed evidence set recorded from a real pipeline run over the M2.0 baseline scenario — not hand-written, so every fact traces back to a simulated provider payload and the id the pipeline minted for it. `load_bearing` names the facts a narrative must cite to be useful; coverage is measured against them. `fingerprint` is the SHA-256 of `cases`: editing an expectation without bumping `version` fails to load, because a result recorded against version 1 must remain re-measurable against version 1. Regenerate with `python -m tests.ai_platform.seed_golden_dataset`, review the diff, and bump the version if any case changed.",
+  "name": "explanation_narration",
+  "version": 1,
+  "fingerprint": "2cce0492a6bc9507fac887d2b29a2fbb918a16186073c12a04d3ddab187fedae",
+  "seeded_from": "signora_platform/simulation/scenarios/baseline@1.json (M2.0)",
+  "cases": [
+    {
+      "name": "northwind",
+      "workspace_id": "3a3c9638-a6bd-40ed-a83d-a5e82b891bc5",
+      "facts": [
+        {
+          "kind": "buying_score",
+          "id": "44c0cf0b-fe43-5ad1-97cc-c6a847062efc",
+          "summary": "The buying score that opened this opportunity was 35 out of 120, steady.",
+          "attributes": {
+            "ceiling": "120",
+            "contested": "false",
+            "delta": "0",
+            "value": "35"
+          }
+        },
+        {
+          "kind": "opportunity",
+          "id": "fe8b335e-a4ae-4673-bbfc-c8d9b70bab50",
+          "summary": "An opportunity was opened for this account, qualified as automatic.",
+          "attributes": {
+            "contested_at_creation": "false",
+            "opened_on": "2026-07-30",
+            "score_at_creation": "35"
+          }
+        },
+        {
+          "kind": "signal_contribution",
+          "id": "346ae5cb-0147-52d8-8c81-55f43f0e45a2",
+          "summary": "Adopting and retiring systems together suggests a stack is being replaced rather than extended. Your profile treats this as a supporting indicator. Based on: Stopped using LegacyERP; Started using CloudERP.",
+          "attributes": {
+            "contribution": "12",
+            "observed_on": "2026-01-11",
+            "relevance": "supporting",
+            "signal_type": "modernization_underway"
+          }
+        },
+        {
+          "kind": "signal_contribution",
+          "id": "b43c3072-0b25-5d8b-bf06-b999c8d07772",
+          "summary": "A retired system suggests a replacement decision that is recent, or imminent. Your profile treats this as a primary indicator. Based on: Stopped using LegacyERP.",
+          "attributes": {
+            "contribution": "30",
+            "observed_on": "2026-01-11",
+            "relevance": "primary",
+            "signal_type": "displacement_opportunity"
+          }
+        }
+      ],
+      "load_bearing": [
+        "buying_score:44c0cf0b-fe43-5ad1-97cc-c6a847062efc",
+        "signal_contribution:346ae5cb-0147-52d8-8c81-55f43f0e45a2",
+        "signal_contribution:b43c3072-0b25-5d8b-bf06-b999c8d07772"
+      ]
+    },
+    {
+      "name": "contoso",
+      "workspace_id": "8a94915f-1259-4323-81e4-71fbf756941d",
+      "facts": [
+        {
+          "kind": "buying_score",
+          "id": "bad5cb32-2dc3-5a3a-a35c-aa2555a10a7c",
+          "summary": "The buying score that opened this opportunity was 35 out of 120, steady.",
+          "attributes": {
+            "ceiling": "120",
+            "contested": "false",
+            "delta": "0",
+            "value": "35"
+          }
+        },
+        {
+          "kind": "opportunity",
+          "id": "c4b397d4-9d15-4e17-85d0-df4e43b93772",
+          "summary": "An opportunity was opened for this account, qualified as automatic.",
+          "attributes": {
+            "contested_at_creation": "false",
+            "opened_on": "2026-07-30",
+            "score_at_creation": "35"
+          }
+        },
+        {
+          "kind": "signal_contribution",
+          "id": "3f40f486-98e5-5ff7-812d-feca5aa54af7",
+          "summary": "Adopting and retiring systems together suggests a stack is being replaced rather than extended. Your profile treats this as a supporting indicator. Based on: Started using CloudERP; Stopped using LegacyERP.",
+          "attributes": {
+            "contribution": "12",
+            "observed_on": "2026-01-11",
+            "relevance": "supporting",
+            "signal_type": "modernization_underway"
+          }
+        },
+        {
+          "kind": "signal_contribution",
+          "id": "a2529736-8be1-5bf0-8372-77fd82819729",
+          "summary": "A retired system suggests a replacement decision that is recent, or imminent. Your profile treats this as a primary indicator. Based on: Stopped using LegacyERP.",
+          "attributes": {
+            "contribution": "30",
+            "observed_on": "2026-01-11",
+            "relevance": "primary",
+            "signal_type": "displacement_opportunity"
+          }
+        }
+      ],
+      "load_bearing": [
+        "buying_score:bad5cb32-2dc3-5a3a-a35c-aa2555a10a7c",
+        "signal_contribution:3f40f486-98e5-5ff7-812d-feca5aa54af7",
+        "signal_contribution:a2529736-8be1-5bf0-8372-77fd82819729"
+      ]
+    }
+  ]
+}

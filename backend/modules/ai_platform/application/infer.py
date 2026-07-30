@@ -155,10 +155,39 @@ class Infer:
     async def execute[T: GroundedOutput](
         self, request: InferenceInput, output_type: type[T]
     ) -> InferenceOutput[T]:
-        # ---- resolve prompt: refuses a model this prompt has not earned
+        """Obtain grounded output. **The only path a request path may take.**
+
+        Refuses a prompt that has not earned this model, before anything is
+        rendered or sent.
+        """
         prompt = self._prompts.get(request.prompt_name, request.prompt_version)
         prompt.require_model(request.model)
+        return await self._run(request, output_type, prompt)
 
+    async def measure[T: GroundedOutput](
+        self, request: InferenceInput, output_type: type[T]
+    ) -> InferenceOutput[T]:
+        """The same call, without the release rule. **Evaluation only.**
+
+        The release rule and the act that satisfies it cannot both come first:
+        a prompt is usable with a model once it has passed evaluation against
+        it, and evaluating it requires calling it. So the exception is named,
+        narrow, and *structural* rather than a flag — a boolean argument
+        called `skip_release_check` would eventually be passed `True` by a
+        request path at three in the morning.
+
+        **Enforced, not documented:** a Security Invariant asserts this method
+        is called from `evaluation/` and nowhere else. Everything else about
+        the lifecycle is identical, deliberately — a harness measuring a
+        different code path from the one production runs measures the wrong
+        thing.
+        """
+        prompt = self._prompts.get(request.prompt_name, request.prompt_version)
+        return await self._run(request, output_type, prompt)
+
+    async def _run[T: GroundedOutput](
+        self, request: InferenceInput, output_type: type[T], prompt: PromptVersion
+    ) -> InferenceOutput[T]:
         # ---- render: evidence becomes text, deterministically
         text = render(prompt, request.evidence)
 

@@ -39,6 +39,7 @@ from __future__ import annotations
 import hashlib
 from dataclasses import dataclass
 from datetime import date
+from typing import Final
 
 from modules.ai_platform.domain.errors import AIPlatformError
 
@@ -64,6 +65,22 @@ class PromptNotReleasableError(PromptError):
     """A prompt was requested for a pairing it has not earned."""
 
 
+#: The proportion of a case's **load-bearing** facts a narrative must
+#: mention to count as useful.
+#:
+#: This is the one number in the release criteria that is a judgement rather
+#: than a definition, so it is stated here, once, with its reasoning, rather
+#: than appearing as a literal inside the harness. An output can cite
+#: perfectly and still say nothing: grounding bounds what a narrative *may*
+#: claim and says nothing about whether it claimed anything worth reading.
+#:
+#: Not 1.0, because a narrative that must mention every load-bearing fact is
+#: a list rather than a summary, and the harness would then be measuring
+#: length. Not lower, because below two thirds the strongest contribution to
+#: a score can go unmentioned while the run still passes.
+MINIMUM_COVERAGE: Final = 0.66
+
+
 @dataclass(frozen=True, slots=True, order=True)
 class Evaluation:
     """One measurement of one prompt against one model and dataset.
@@ -73,10 +90,22 @@ class Evaluation:
     history correctly instead of leaving a stratum of rows judged by a rule
     nobody remembers — the same reasoning that keeps money off
     ``InferenceUsage``.
+
+    **Release is earned here or nowhere.** Nothing in the system can mark a
+    prompt released; a prompt is usable exactly where a measurement of this
+    shape satisfies the criteria below.
     """
 
     model: str
     dataset: str
+    #: Which revision of the golden set produced these numbers. A dataset is
+    #: an engineering asset that changes under review, and a result that
+    #: cannot name the expectations it was measured against is not evidence
+    #: of anything (AC-73).
+    dataset_version: int
+    #: Which published criteria were applied. Recorded so a rubric change is
+    #: legible as a rubric change rather than as a quality movement.
+    rubric_version: int
     evaluated_on: date
     #: How many outputs were checked. A perfect run over one sample is not
     #: evidence, and recording the denominator is what lets a reader tell.
@@ -84,18 +113,45 @@ class Evaluation:
     #: Grounding is deterministic, so the only acceptable number is zero.
     #: Not a tuned threshold — a definition (28-ai-platform.md).
     grounding_failures: int
+    #: Output that did not parse as the declared structure. Also zero: a
+    #: model that cannot hold a schema is not usable behind this prompt, and
+    #: a retry rate that hides it is a cost signal, not a pass.
+    schema_failures: int
+    #: Mean proportion of load-bearing facts mentioned, across the run.
+    coverage: float
 
     def __post_init__(self) -> None:
         if not self.model.strip() or not self.dataset.strip():
             raise PromptError("an evaluation must name both a model and a dataset.")
+        if self.dataset_version < 1 or self.rubric_version < 1:
+            raise PromptError(
+                "an evaluation must name the dataset revision and rubric it applied; "
+                "versions start at 1."
+            )
         if self.sample_size <= 0:
             raise PromptError(f"an evaluation over {self.sample_size} samples measured nothing.")
-        if self.grounding_failures < 0:
-            raise PromptError("grounding failures cannot be negative.")
+        if self.grounding_failures < 0 or self.schema_failures < 0:
+            raise PromptError("failure counts cannot be negative.")
+        if not 0.0 <= self.coverage <= 1.0:
+            raise PromptError(
+                f"coverage of {self.coverage} is not a proportion. It is the share of "
+                "load-bearing facts mentioned, so it lies between 0 and 1."
+            )
 
     @property
     def passed(self) -> bool:
-        return self.grounding_failures == 0
+        """The release criteria, in one place and stated positively.
+
+        Two of the three are definitions rather than thresholds: grounding
+        and schema validity are deterministic, so any failure is a defect
+        and no number of samples excuses one. The third is the judgement,
+        and it lives on ``MINIMUM_COVERAGE`` where it can be read.
+        """
+        return (
+            self.grounding_failures == 0
+            and self.schema_failures == 0
+            and self.coverage >= MINIMUM_COVERAGE
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -126,7 +182,7 @@ class PromptVersion:
                 f"prompt {self.reference} has no owner. An artifact that changes model "
                 "behaviour without changing code needs someone who reviews changes to it."
             )
-        seen = [(e.model, e.dataset, e.evaluated_on) for e in self.evaluations]
+        seen = [(e.model, e.dataset, e.dataset_version, e.evaluated_on) for e in self.evaluations]
         if len(seen) != len(set(seen)):
             raise PromptError(
                 f"prompt {self.reference} records the same evaluation twice. Evaluations "

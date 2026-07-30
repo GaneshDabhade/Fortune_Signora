@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: smoke smoke-keep dr up down test
+.PHONY: smoke smoke-keep dr up down test eval
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
 # The executable bit is filesystem state, not repository state, and it does
@@ -48,3 +48,18 @@ down:
 ## Backend suite. Truncates its target database — hence the explicit opt-in.
 test:
 	@cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run pytest --cov
+
+## Prompt evaluation against a real model. Deliberately NOT part of `make test`.
+#
+# The only command in this repository that requires a model. Everything else —
+# the suite, the Security Invariants, the smoke test — is offline and
+# deterministic by design, and folding a probabilistic run into the test gate
+# is how a project ends up with a flaky suite people learn to re-run until it
+# passes (28-ai-platform.md, "the two-tier guarantee").
+#
+# Needs Ollama for development runs (ADR-0028). It fails rather than skipping
+# when none is reachable: a harness that fell back to a fake would measure the
+# fake. Add `--record` to append the measurement to the prompt manifest, which
+# is the only way a prompt earns its release.
+eval:
+	@cd backend && uv run python -m modules.ai_platform.evaluation $(ARGS)
