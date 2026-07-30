@@ -1,6 +1,6 @@
 # 28 — AI Platform
 
-> Status: **RATIFIED — 2026-07-29.** Milestone **M8**, in progress. **T111 · T112 · T113 complete**; T114–T121 outstanding.
+> Status: **RATIFIED — 2026-07-29.** Milestone **M8**, in progress. **T111–T114 complete**; T115–T121 outstanding.
 > Audience: engineers, architects, and anyone who has to trust what Signora says.
 > Anchors: [14-ai-architecture.md](14-ai-architecture.md) · [ADR-0012](adr/0012-ai-platform-architecture.md) · [04-modules.md](04-modules.md) · [21-intelligence-pipeline.md](21-intelligence-pipeline.md) · [16-architecture-risks.md](16-architecture-risks.md) R-01, R-05, R-10
 >
@@ -584,7 +584,9 @@ Per CLAUDE.md §19, binding.
 
 **T113 ✅** — `domain/provider.py` and `domain/usage.py`: the port, a semantic failure taxonomy, the descriptor, and the registry, published through `public/`. **26 tests**, six mutation-proven guarantees. Two departures, recorded below.
 
-**T114–T121 outstanding.** No evidence set, no grounding checks, no prompts, no adapters, no `infer.py`, no migration `0015`, no `ai.narration_completed` in [06-events.md](06-events.md), no evaluation harness.
+**T114 ✅** — `domain/evidence.py`: the closed evidence set, its builder, typed values, the citation ref, and a stable digest. **44 tests**, ten mutation-proven guarantees. One departure and one defect found by mutation, recorded below.
+
+**T115–T121 outstanding.** No evidence set, no grounding checks, no prompts, no adapters, no `infer.py`, no migration `0015`, no `ai.narration_completed` in [06-events.md](06-events.md), no evaluation harness.
 
 `interface/` is deliberately absent: M8 has no HTTP surface, the layering contract marks the layer optional, and a directory created for a caller that does not exist is the speculative structure CLAUDE.md §6 forbids.
 
@@ -626,4 +628,24 @@ An adapter that cannot constrain output to a schema, and two adapters claiming t
 
 ---
 
-*T111–T113 built. T114 onward not started.*
+### Departure 3 — insertion order is discarded, not preserved
+
+The proposal said facts were held in a tuple and said nothing about order, which in practice would have meant *insertion order*. They are held in **canonical order** (by kind, then id) instead, and the digest is computed over that.
+
+Order is not information about evidence. Letting insertion order survive would make the rendered prompt — and therefore the model's output — depend on how the caller happened to loop, which is a hidden input, and statelessness exists precisely to forbid those. A narrative needing chronology sorts on a fact's own timestamp, explicitly.
+
+`assembled_at` is excluded from the digest for the same reason in reverse: it records *when* evidence was gathered, not what it contains, and including it would give identical evidence a new identity on every assembly — so replay comparison would never match.
+
+### Defect found by mutation — the canonical form did not encode type
+
+Values were canonicalised with `str()`, and the mutation that should have proved the `bool` branch load-bearing **passed**. The comment justifying that branch was simply wrong.
+
+Investigating it surfaced a real defect: without a type tag, `True` and the string `"true"` produced identical canonical forms, as did `1` and `"1"`, and a `date` and its own ISO text. **Two different facts would have digested identically**, and a digest that cannot distinguish them cannot answer *did these two inferences see the same evidence?* — which is the only question it exists to answer.
+
+Values are now tagged with their type (`b:` `i:` `n:` `t:` `d:` `s:`), with `bool` tested before `int` and `datetime` before `date` since each is a subclass of the other. Eight cross-type pairs are asserted distinct, and the tag each type receives is pinned directly — because reversing a subclass check mislabels a value without colliding, and a canonical form nobody can read back is one nobody can debug.
+
+**This is the value of insisting a mutation actually bites.** A passing mutation is not a formality to wave through; here it was the only thing pointing at a live collision.
+
+---
+
+*T111–T114 built. T115 onward not started.*
