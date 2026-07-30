@@ -13,14 +13,14 @@
 | | |
 |---|---|
 | **Last completed** | **M6 Opportunity Engine** — closed 2026-07-29. *The first sellable moment.* |
-| **Next** | **M8 AI Platform** — abstraction layer, prompt registry, eval harness. Architecture proposal not yet written. |
+| **Next** | **M8 AI Platform** — abstraction layer, prompt registry, eval harness. **Proposal complete and [RATIFIED](architecture/28-ai-platform.md) 2026-07-29.** Implementation begins at **T111**. |
 | **Phase** | Product Pipeline. Foundations and enablement are complete and frozen. **Eight pipeline stages built.** |
 | **Overall completion** | **~52%** by engineering effort (~162 of ~261–339 ew) |
 | **Remaining** | ~99–177 ew · ~1.0–1.6 years at 3 engineers, ~3.1–4.7 at 1 |
 | **Completed milestones** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · M4 · M5A · M5B · M6 |
 | **Branch** | `main` |
 
-**Recent commits:** `6cec891` M6 closed · `8034cfb` M6 ratification + binding milestone DoD · `c638d1c` M6 proposal · `ed7f9e9` M5B closed · `8c6333b` M5B decay reversal
+**Recent commits:** `09b596f` repository-architecture proposal (documentation + business scenarios, **awaiting ruling**) · `2f22037` Local-First adopted · `4baccb9` grounding ratified · `e2e442b` M8 proposal · `6cec891` M6 closed
 
 ### Health
 
@@ -28,10 +28,10 @@
 |---|---|
 | Backend tests | **1089 passing**, 0 failing, 0 skipped |
 | Frontend tests | **101 passing** |
-| Backend coverage | **95.25%** (local gate 95%) |
+| Backend coverage | gate **≥95%** · currently **~95.3%** |
 | Security invariants | **261 / 261**, each proven to fail when its guarantee is removed |
 | import-linter contracts | **17 kept, 0 broken** |
-| `make smoke` | ✅ **21 stages**, 84s — includes the cross-tier JWT contract (15b) since 2026-07-29 |
+| `make smoke` | ✅ **21 stages**, 40 checks, 84–203s — includes the cross-tier JWT contract (15b) since 2026-07-29 |
 | Migrations | 0000–0014, all reversible |
 | mypy strict | Clean, 330 files |
 | Open production bugs | **0** |
@@ -243,12 +243,14 @@ Two contracts already ratified constrain it:
 1. **All vendor access goes through the abstraction layer** (`14-ai-architecture.md`, ADR-0012). No domain or application code ever touches a model SDK.
 2. **AI output is untrusted until validated** against an expected Pydantic v2 structure, and must never trigger a privileged or irreversible action without validation and, where the architecture calls for it, human confirmation. **After M6 that has a sharper meaning:** the only irreversible thing in the platform is workflow, and *intelligence suggests, humans commit* now governs AI exactly as it governs scoring.
 
-### Architectural questions worth raising before coding
+### The four open questions, now answered
 
-1. **Where do prompt versions live, and who owns them?** The ownership criterion has decided this four times. Prompts are Signora's language, which suggests a repository artifact — but a prompt is closer to code than to a taxonomy, and that may be the point.
-2. **What does the evaluation harness assert?** A model's output is not deterministic, and every guarantee in this platform so far has been. This is the first module where "proven to fail when the guarantee is removed" needs a different shape.
-3. **Is context assembly a module concern or a platform one?** Prompt context must be scoped strictly to one workspace — a hard tenancy boundary — and getting it wrong is a cross-tenant data leak rather than a bug.
-4. **Does the abstraction layer expose cost and latency?** Both are scaling triggers in `12-scalability.md`, and both are vendor-specific in a way the port must normalise without leaking.
+All four were settled inside the proposal. Recorded here so they are not re-opened.
+
+1. **Where do prompt versions live?** Repository artifacts beside the taxonomy, scoring model and policy — the ownership criterion's fifth application. **Immutable once released**, enforced by content hash: editing a shipped version fails the build, because it would silently invalidate every result claiming that version.
+2. **What can the harness assert?** Two different things that were being conflated. **Deterministic correctness** — schema, grounding, citation, quantities, workspace — verified on every call against recorded fixtures, mutation-proven, **never calling a model**. **Probabilistic quality** — golden sets, `make eval`, outside the test gate. A Security Invariant needing a GPU is not a guarantee.
+3. **Module or platform concern?** Split by whether it contains judgement: the **container** is infrastructure that *refuses* a mixed-workspace set, the **contents** are the caller's domain choice. Generalises — when a concern is part tenancy and part domain, the tenancy half is a type that refuses and the domain half is a caller that chooses.
+4. **Cost and latency?** Usage yes, money no. Tokens, latency, retries are facts about what happened; a price is true for a week. Pricing is applied outside the port at reporting time.
 
 ### Two platform findings, open — RFCs queued
 
@@ -311,14 +313,14 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 
 > **Completed:** M6 Opportunity Engine · **Next:** M8 AI Platform
 > **Branch:** `main` · everything committed and pushed, tree clean
-> **Health:** 1089 backend + 101 frontend tests passing · coverage 95.25% · 261 invariants · 17 contracts · smoke green over 21 stages
+> **Health:** 1089 backend + 101 frontend tests passing · coverage ~95.3% (gate 95%) · 261 invariants · 17 contracts · smoke green over 21 stages, 40 checks
 >
 > **First actions:**
 > 1. Read [21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md) — the shortest path to full context, and it tracks what is *built* rather than intended.
 > 2. Verify the tree is clean and `make smoke` is green.
-> 3. Prepare the **M8 architecture proposal** before any implementation, following the established pattern: domain model, evaluated alternatives with a recommendation, storage, events, module API, task breakdown, acceptance criteria, demonstration, DoD, rollback, operational readiness, risks. **Wait for approval.**
+> 3. **Do not write an M8 proposal — it exists and is ratified.** Read [28-ai-platform.md](architecture/28-ai-platform.md), then begin **T111** (ADR-0028, model runtime by environment). The task breakdown is T111–T121 in that document.
 >
-> **Settle these inside the proposal, not during implementation:** where prompt versions live and who owns them · what an evaluation harness can assert when output is not deterministic — *the first guarantee in this platform that cannot take the usual shape* · whether context assembly is a module or platform concern, given that getting its workspace scoping wrong is a cross-tenant leak rather than a bug · whether the abstraction layer exposes cost and latency.
+> **Already settled, do not re-open:** prompts are repository artifacts, immutable once released (content-hash enforced) · the evaluation harness asserts **deterministic correctness** on every call and **probabilistic quality** only in `make eval`, never mixed · context assembly is split — the container is infrastructure that *refuses* an invalid set, the contents are the caller's domain choice · the port reports **usage, never money**. The two binding principles are **grounding** and **statelessness**; the **stop condition** halts implementation if M8 needs a proposition its input does not contain.
 >
 > **Raise, do not work around:** the two platform findings in §5 are **RFC work items**. Product milestones consume platform capabilities; they do not redesign them.
 >
@@ -334,6 +336,7 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 
 | Date | Change |
 |---|---|
+| 2026-07-30 | v7.2 — **Pre-flight synchronization before T111.** Records **statelessness** as the AI Platform's second permanent principle — ratified in review but, until now, present only in conversation. Promotes [28-ai-platform.md](architecture/28-ai-platform.md) to **RATIFIED** and folds the confirmed decisions (module location, dependency direction, freeze-after-M10, Claude-only production adapter, one event, the binding stop condition) into its approval record. §1, §5 and §7 corrected: this file previously told the next session to *write* a proposal that already existed. `make smoke` and `make dr` now invoke through `bash` rather than the executable bit, which commit `0309193` had dropped. Coverage is quoted as **~95.3%** — the earlier "correction" to 95.25% was chasing ±0.02pp run-to-run noise, not fixing an error. |
 | 2026-07-29 | v7.1 — **Local-First Development** adopted before M8 implementation ([ADR-0027](architecture/adr/0027-local-first-development.md), CLAUDE.md §20c-2 and the new *repository tells the truth* principle in §2). Actions disabled; three workflows retained at `workflow_dispatch`. The cross-tier JWT contract test moved into `make smoke` (stage 15b) and now **fails when skipped**. Corrected two pre-existing drifts: smoke has **21 stages, not 23**, and coverage measures **95.25%**. |
 | 2026-07-29 | v7 — updated at the M6 boundary. Adds the **Commercial commitment** contract block (intelligence suggests, humans commit · three data categories · a rebuild regenerates intelligence only · opportunities outlive their score · workflow stores no intelligence · history never rewritten · the citation cannot be orphaned · every state names its actor and reason · dismissal distinct from a lost deal · four ownership layers). Rewrites §5 for M8, records the eighth `# type: ignore` and the application-enforced open-per-account rule, and notes that CLAUDE.md §19 now binds a **Milestone Definition of Done** ending in a pushed, clean tree. |
 | 2026-07-29 | v6 — updated at the M5B boundary. Adds the **Commercial attention** contract block (prioritization never resolution · opposing readings never net · a score is a projection · the ledger is the score · the business event is the unit of contribution · step decay · evidence-derived staleness · three ownership layers · posture is Signora's · no signals, no score). Adds a **known limits** table distinguishing *limitation* from *debt*. Rewrites §5 for M6, records the sweep-scheduler consequence of the `EventHandler` finding, and keeps both platform findings as **queued RFCs**. |

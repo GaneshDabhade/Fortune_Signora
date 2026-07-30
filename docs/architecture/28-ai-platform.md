@@ -1,10 +1,10 @@
 # 28 — AI Platform
 
-> Status: **APPROVED IN DIRECTION — 2026-07-29.** Milestone **M8**. Not yet implemented.
+> Status: **RATIFIED — 2026-07-29.** Milestone **M8**. Implementation begins at T111; no code written yet.
 > Audience: engineers, architects, and anyone who has to trust what Signora says.
 > Anchors: [14-ai-architecture.md](14-ai-architecture.md) · [ADR-0012](adr/0012-ai-platform-architecture.md) · [04-modules.md](04-modules.md) · [21-intelligence-pipeline.md](21-intelligence-pipeline.md) · [16-architecture-risks.md](16-architecture-risks.md) R-01, R-05, R-10
 >
-> This document proposes the AI Platform. It is not yet built.
+> This document is the ratified design of the AI Platform. It is not yet built.
 
 ---
 
@@ -22,7 +22,7 @@ The original brief gave the AI Platform the question *"What reasoning should be 
 
 Accepted 2026-07-29. Everything else in the brief — provider abstraction, Ollama, versioned prompts, an evaluation harness — was already exactly that substrate, so only the framing sentence changed, not the scope.
 
-### The permanent principle
+### Two permanent principles
 
 **Ratified 2026-07-29.** Alongside *identity never truth*, *change never significance*, *prioritizes never resolves*, and *intelligence suggests, humans commit*:
 
@@ -30,7 +30,13 @@ Accepted 2026-07-29. Everything else in the brief — provider abstraction, Olla
 >
 > **It may generate language. It must never generate facts.**
 
-Most of this document is about making that a schema rule instead of an aspiration.
+> **Statelessness.** Every AI invocation depends on exactly three inputs — **prompt · grounded evidence · configuration** — and produces one output: a **grounded structured response**.
+>
+> **No hidden memory. No cached reasoning. No implicit conversation state.**
+>
+> If conversational memory is ever wanted, it is a **separate capability with its own name and its own architecture**, never an emergent property of the substrate.
+
+Most of this document is about making the first a schema rule instead of an aspiration. The section below states what the second forbids.
 
 ---
 
@@ -197,6 +203,40 @@ Reported per `(prompt_version, model, dataset_version)`:
 Every inference records prompt name and version, model id and vendor, sampling parameters, the evidence-set digest, and the full ref list — so any result can be *re-attempted* under identical conditions even though it cannot be *re-derived*.
 
 And explicitly: **`temperature=0` is not determinism.** Batching, hardware, and silent vendor-side model updates all move the output. No part of this design may claim reproducibility on the strength of a sampling parameter.
+
+---
+
+## Statelessness — and what it forbids
+
+**Ratified 2026-07-29.** Grounding says what the model may *refer to*. Statelessness says what the platform may *remember*: nothing.
+
+> `infer(prompt_version, evidence_set, config) -> GroundedResponse`
+>
+> Two invocations with identical inputs are **indistinguishable in everything except the wording of the output.** No third input exists, hidden or otherwise.
+
+This is a constraint on the substrate, not an implementation preference, and it is worth stating plainly *why*: a stateful inference layer makes every guarantee in this document conditional on invocation history. A grounded response is only checkable against a **known** evidence set — and if the platform silently carried facts forward from a previous call, the set the validator checks against would not be the set the model saw. **Statelessness is what makes grounding verifiable at all**, rather than a second property bolted alongside it.
+
+### The consequences, concretely
+
+**`application/infer.py`** — takes everything it needs as arguments and holds nothing between calls. No memoisation of responses, no accumulated context, no "last evidence set", no conversation buffer. The use case may be constructed once per process or once per request with identical behaviour, and a test asserts that: the same call twice produces the same recorded inputs, and the second call's outcome does not depend on the first having happened.
+
+**Provider adapters** — hold connection-level resources only (an HTTP client, a base URL, credentials from `Settings`). **Never** a vendor conversation handle, a thread id, a server-side session, or a response cache. Vendor APIs that offer stateful conversations are used in their stateless form; the adapter's job is to translate a complete request, and a vendor feature that requires remembering the last one does not cross the port. `InferenceRequest` carries the entire request.
+
+**The provider registry** — populated once at the composition root from configuration, then read-only. It maps a name to an adapter and nothing else: no per-workspace state, no usage accumulators, no adaptive routing that learns from previous calls. Routing is configuration, per ADR-0012.
+
+**Request lifecycle** — a workspace's evidence never outlives its invocation. Nothing is retained after the response is validated and the inference row is written, which is also the cleanest possible answer to cross-tenant leakage through a cache: there is no cache to leak from. This is the same reasoning that made a mixed-workspace `EvidenceSet` unrepresentable rather than merely forbidden.
+
+**Replayability** — with no hidden input, the *inputs* to any recorded inference are exactly reconstructable from `prompt_version` + `evidence_refs`, which is precisely the claim made under *reproducibility, honestly framed* below. **That claim is only true because of this principle.** A stateful platform could not honour it: re-issuing the same recorded inputs would not re-create the same conditions.
+
+**Horizontal scaling** — falls out for free, and is required by the Infrastructure Contract (CLAUDE.md §20b): no process holds state another needs, so scaling to *n* replicas changes throughput only. Worth noting the ordering — statelessness was adopted for verifiability, and deployability is the side effect, not the motive.
+
+### Why this matters for Business Capability Verification
+
+The scenario layer proposed for after M8 is an executable specification: a complete customer workflow, run start to finish, asserted in the customer's vocabulary. Such a suite is only trustworthy if a scenario's outcome depends solely on what the scenario itself set up.
+
+A stateful AI Platform would break that at the root — a scenario could pass because an earlier scenario warmed something, and fail when run alone or reordered. That failure is close to undiagnosable, and the usual resolution is that somebody deletes the scenario.
+
+**Because the platform is stateless, an AI step inside a scenario is a pure function of the evidence that scenario constructed.** Scenarios stay independent, order-free, and individually runnable. The narration step remains non-deterministic in its *wording* — which is exactly why a scenario asserts grounding and citation rather than prose — but it is fully determined in its *inputs*, and that is what a specification needs.
 
 ---
 
@@ -510,13 +550,13 @@ Per CLAUDE.md §19, binding.
 | **Scope** | **Option B**, under the strict restatement-only rule and its stop condition. |
 | **Ollama** | Permitted for development, recorded in **ADR-0028** rather than silently contradicting ADR-0012. |
 | **Frozen packages** | Confirmed: experimental AI infrastructure does not accumulate in a frozen platform package. |
+| **Statelessness** | Elevated to a **permanent architectural principle**. Every invocation depends only on prompt · grounded evidence · configuration, and produces a grounded structured response. No hidden memory, no cached reasoning, no implicit conversation state. Conversational memory, if ever wanted, is a separate capability. |
+| **Module location** | **`modules/ai_platform/`**, under two conditions that matter more than the directory. The substrate **never depends on the pipeline** — narration reaches `opportunity_engine.public` through an `ExplanationSource` Protocol satisfied in `infrastructure/` (the M5B `SignalReader` pattern), so `domain/` and `application/` know nothing of opportunities or scores. And it **freezes after M10, not after M8**: one consumer proves nothing; two of genuinely different shape begin to validate an abstraction. |
+| **Dependency direction** | The AI Platform never depends directly on the Opportunity Engine, Buying Score Engine, Signal Engine or Business Event Engine. It consumes **stable ports**; business modules supply adapters. The platform stays unaware of where the information originated. |
+| **Production adapter** | **Claude** only, alongside Ollama for development. Gemini, OpenAI, Azure and Bedrock adapters wait for real callers — the abstraction exists to make additions easy, never to justify speculative ones. |
+| **Events** | **One** — `ai.narration_completed`, cataloged in the same change. M8 consumes none, and is therefore unaffected by the open `EventHandler` platform finding. |
+| **Stop condition** | **Binding.** If implementation requires a proposition that does not already exist within deterministic intelligence, implementation **stops** and the architectural issue is presented. Reasoning is not quietly moved into M8. |
 
-### Recommended 2026-07-29, awaiting confirmation
+### Implementation status
 
-| # | Question | Recommendation |
-|---|---|---|
-| 1 | **Module location** *(requested)* | **`modules/ai_platform/`**, under two conditions that matter more than the directory: the substrate **never depends on the pipeline** (narration reaches `opportunity_engine.public` through an `ExplanationSource` Protocol satisfied in `infrastructure/`, the M5B `SignalReader` pattern), and it **freezes after M10, not after M8** — two consumers of genuinely different shape are the evidence an abstraction is real. |
-| 2 | **Production adapter for M8** | **Claude**, ADR-0012's default. One local plus one hosted vendor proves the port; the rest arrive with callers. |
-| 3 | **Events** | **One** — `ai.narration_completed`, cataloged in the same change. M8 consumes none and is therefore unaffected by the open `EventHandler` platform finding. |
-
-*Nothing in this document has been implemented.*
+Ratified and ready. **T111–T121 not started.** No `modules/ai_platform/` package, no migration `0015`, no `ai_platform` node in `04-modules.md` / `05-module-dependencies.md`, no `ai.narration_completed` in `06-events.md`, and `15-project-structure.md` still records the pre-ratification location for the AI Provider Port — all of which T112 and T119 land, in the same changes that create the code they describe.

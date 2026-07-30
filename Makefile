@@ -18,17 +18,26 @@
 
 .PHONY: smoke smoke-keep dr up down test
 
+# These are invoked as `bash <script>` rather than `./<script>` deliberately.
+# The executable bit is filesystem state, not repository state, and it does
+# not survive every checkout: a Windows or WSL mount, a zip export, or a
+# `git config core.fileMode false` clone all drop it. Commit 0309193 dropped
+# it from both scripts, which would have made the milestone gate fail with
+# "Permission denied" on a fresh clone — and under ADR-0027 this is the only
+# gate there is. Invoking through bash removes the failure mode entirely and
+# behaves identically on Linux, macOS, and WSL.
+
 ## Verify the whole platform end to end, then tear down.
 smoke:
-	@./infra/smoke.sh
+	@bash ./infra/smoke.sh
 
 ## Same, but leave the stack running for inspection after a failure.
 smoke-keep:
-	@SMOKE_KEEP_STACK=1 ./infra/smoke.sh
+	@SMOKE_KEEP_STACK=1 bash ./infra/smoke.sh
 
 ## Disaster Recovery Validation against an already-running production stack.
 dr:
-	@./infra/disaster-recovery.sh
+	@bash ./infra/disaster-recovery.sh
 
 ## Bring the local production stack up / down.
 up:
