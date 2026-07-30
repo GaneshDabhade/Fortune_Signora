@@ -1,6 +1,7 @@
 # 29 — AI Reasoning Engine
 
 > Status: **PROPOSED — 2026-07-30.** Milestone **M9**, not started. **No code has been written against this document.**
+> **Superseded in part by [ADR-0030](adr/0030-the-decision-package.md)** (proposed 2026-07-30): the product owner reframed the success criterion from *"can the model produce a conclusion?"* to *"will a customer trust it enough to act on it?"*, which replaces this document's `ReasonedConclusion` with a **Decision Package**. Rulings 1, 2, 4 and 5 below survive; Ruling 3's rubric is extended there. Read ADR-0030 first.
 > Audience: engineers, architects, and anyone who has to defend what Signora concluded.
 > Anchors: [28-ai-platform.md](28-ai-platform.md) · [04-modules.md](04-modules.md) §AI Reasoning Engine · [05-module-dependencies.md](05-module-dependencies.md) · [21-intelligence-pipeline.md](21-intelligence-pipeline.md) Stage 9 · [ADR-0012](adr/0012-ai-platform-architecture.md) · [ADR-0028](adr/0028-model-runtime-by-environment.md)
 
