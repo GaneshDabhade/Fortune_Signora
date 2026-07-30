@@ -95,6 +95,7 @@ def _as_json(evaluation: Evaluation) -> dict[str, object]:
         "grounding_failures": evaluation.grounding_failures,
         "schema_failures": evaluation.schema_failures,
         "coverage": evaluation.coverage,
+        "retries": evaluation.retries,
     }
 
 

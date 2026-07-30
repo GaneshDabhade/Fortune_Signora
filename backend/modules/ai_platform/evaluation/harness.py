@@ -43,6 +43,7 @@ from modules.ai_platform.domain.record import InferenceOutcome
 from modules.ai_platform.evaluation.dataset import GoldenCase, GoldenDataset
 from modules.ai_platform.evaluation.report import CaseResult, EvaluationReport
 from modules.ai_platform.evaluation.rubric import RUBRIC_VERSION, coverage
+from modules.ai_platform.evaluation.run_log import RunLog
 
 
 class EvaluationAbandonedError(AIPlatformError):
@@ -62,10 +63,15 @@ class Harness:
         *,
         infer: Infer,
         prompts: PromptRegistry,
+        run_log: RunLog,
         today: Callable[[], date] = date.today,
     ) -> None:
         self._infer = infer
         self._prompts = prompts
+        # The same object `infer` writes its records to. The harness reads it
+        # back so a run can report its own retries without anyone consulting
+        # the vendor's server log.
+        self._run_log = run_log
         # Injected so a report's date is a fact about the run rather than
         # about when the test happened to execute.
         self._today = today
@@ -123,6 +129,7 @@ class Harness:
         model: str,
         output_type: type[T],
     ) -> CaseResult:
+        correlation_id = UUID(hex=case.evidence.digest[:32])
         request = InferenceInput(
             prompt_name=prompt_name,
             prompt_version=prompt_version,
@@ -133,7 +140,7 @@ class Harness:
             # diffed row by row. An evaluation is exactly where "which of the
             # twelve calls was that?" must not be answered by reading
             # timestamps.
-            correlation_id=UUID(hex=case.evidence.digest[:32]),
+            correlation_id=correlation_id,
         )
 
         try:
@@ -142,19 +149,44 @@ class Harness:
             # and invariant-enforced rather than a flag.
             result = await self._infer.measure(request, output_type)
         except UngroundedOutputError as exc:
-            return CaseResult(case.name, InferenceOutcome.UNGROUNDED, 0.0, str(exc))
+            return self._failed(case, InferenceOutcome.UNGROUNDED, exc, correlation_id)
         except SchemaViolationError as exc:
-            return CaseResult(case.name, InferenceOutcome.SCHEMA_INVALID, 0.0, str(exc))
+            return self._failed(case, InferenceOutcome.SCHEMA_INVALID, exc, correlation_id)
         except AIProviderError as exc:
             outcome = (
                 InferenceOutcome.TRANSIENT
                 if isinstance(exc, AITransientError)
                 else InferenceOutcome.PERMANENT
             )
-            return CaseResult(case.name, outcome, 0.0, str(exc))
+            return self._failed(case, outcome, exc, correlation_id)
 
         return CaseResult(
-            case.name,
-            InferenceOutcome.OK,
-            coverage(result.output, case.load_bearing),
+            case=case.name,
+            outcome=InferenceOutcome.OK,
+            coverage=coverage(result.output, case.load_bearing),
+            # From the record rather than from a counter here: `Infer` owns
+            # the retry policy, so `Infer`'s record is the authority on how
+            # many times it acted.
+            retries=result.record.usage.retries,
+        )
+
+    def _failed(
+        self,
+        case: GoldenCase,
+        outcome: InferenceOutcome,
+        error: Exception,
+        correlation_id: UUID,
+    ) -> CaseResult:
+        """A failed case reports its retries too.
+
+        Especially a failed one: a case that failed after three attempts and
+        one that failed on the first are different operational facts, and the
+        distinction is invisible in the failure message.
+        """
+        return CaseResult(
+            case=case.name,
+            outcome=outcome,
+            coverage=0.0,
+            retries=self._run_log.retries_for(correlation_id),
+            detail=str(error),
         )

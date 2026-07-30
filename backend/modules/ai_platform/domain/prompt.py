@@ -119,6 +119,14 @@ class Evaluation:
     schema_failures: int
     #: Mean proportion of load-bearing facts mentioned, across the run.
     coverage: float
+    #: Retries the run needed to complete. Recorded, and deliberately **not
+    #: part of the release criteria** below: retrying is what the platform is
+    #: supposed to do about a transient failure, and penalising a prompt for
+    #: its provider's bad afternoon would make the criteria measure the wrong
+    #: thing. It is a cost and reliability signal (R-01), durable here so a
+    #: run that needed retries stays distinguishable from a clean one after
+    #: the terminal that printed it is closed.
+    retries: int = 0
 
     def __post_init__(self) -> None:
         if not self.model.strip() or not self.dataset.strip():
@@ -132,6 +140,8 @@ class Evaluation:
             raise PromptError(f"an evaluation over {self.sample_size} samples measured nothing.")
         if self.grounding_failures < 0 or self.schema_failures < 0:
             raise PromptError("failure counts cannot be negative.")
+        if self.retries < 0:
+            raise PromptError("a run cannot have retried a negative number of times.")
         if not 0.0 <= self.coverage <= 1.0:
             raise PromptError(
                 f"coverage of {self.coverage} is not a proportion. It is the share of "
@@ -146,6 +156,9 @@ class Evaluation:
         and schema validity are deterministic, so any failure is a defect
         and no number of samples excuses one. The third is the judgement,
         and it lives on ``MINIMUM_COVERAGE`` where it can be read.
+
+        ``retries`` is deliberately absent. It describes what the *provider*
+        did, not what the prompt did.
         """
         return (
             self.grounding_failures == 0

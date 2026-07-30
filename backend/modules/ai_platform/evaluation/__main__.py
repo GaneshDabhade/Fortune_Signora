@@ -28,10 +28,10 @@ from modules.ai_platform.application.infer import Infer, InferencePolicy
 from modules.ai_platform.domain.errors import AIPlatformError
 from modules.ai_platform.domain.narration import Narration
 from modules.ai_platform.domain.provider import AIProviderRegistry
-from modules.ai_platform.domain.record import InferenceRecord
 from modules.ai_platform.evaluation.dataset import load_dataset
 from modules.ai_platform.evaluation.harness import Harness
 from modules.ai_platform.evaluation.release import record
+from modules.ai_platform.evaluation.run_log import RunLog
 from modules.ai_platform.infrastructure.adapters.ollama import OllamaAdapter
 from modules.ai_platform.infrastructure.prompt_loader import load_prompt_registry
 from modules.ai_platform.infrastructure.settings import AISettings
@@ -40,23 +40,6 @@ from modules.ai_platform.infrastructure.settings import AISettings
 #: the golden set seeded from the M2.0 baseline scenario.
 DEFAULT_PROMPT = "explanation_narration"
 DEFAULT_DATASET = "explanation_narration"
-
-
-class _StdoutRecorder:
-    """Satisfies ``InferenceRecorder`` without a database.
-
-    An evaluation is not production traffic: it is a measurement of a prompt,
-    run from a developer's terminal, and writing its rows into `ai_inference`
-    would put synthetic calls into the same table the ungrounded *production*
-    rate is read from. The two must stay distinguishable, and the cheapest way
-    to guarantee that is for the harness never to reach the table at all.
-    """
-
-    def __init__(self) -> None:
-        self.written: list[InferenceRecord] = []
-
-    async def record(self, record: InferenceRecord) -> None:
-        self.written.append(record)
 
 
 async def _reachable(client: httpx.AsyncClient, base_url: str) -> bool:
@@ -122,14 +105,19 @@ async def main(argv: list[str] | None = None) -> int:
         providers = AIProviderRegistry()
         providers.register(adapter)
 
+        # One RunLog in two roles: the `InferenceRecorder` port that `Infer`
+        # writes every outcome to, and the record the harness reads back so a
+        # run can report its own retries.
+        run_log = RunLog()
         harness = Harness(
             infer=Infer(
                 providers=providers,
                 prompts=load_prompt_registry(),
-                recorder=_StdoutRecorder(),
+                recorder=run_log,
                 policy=InferencePolicy(),
             ),
             prompts=load_prompt_registry(),
+            run_log=run_log,
         )
 
         try:

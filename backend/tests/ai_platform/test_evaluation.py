@@ -39,9 +39,10 @@ from modules.ai_platform.evaluation.harness import EvaluationAbandonedError, Har
 from modules.ai_platform.evaluation.release import ReleaseError, record
 from modules.ai_platform.evaluation.report import CaseResult, EvaluationReport
 from modules.ai_platform.evaluation.rubric import RUBRIC_VERSION, coverage, criteria
+from modules.ai_platform.evaluation.run_log import RunLog
 from modules.ai_platform.infrastructure.prompt_loader import load_prompt_registry
 from tests.ai_platform.fakes import FakeAdapter
-from tests.ai_platform.test_infer import FakeRecorder, a_prompt
+from tests.ai_platform.test_infer import _script, a_prompt
 
 MODEL = "fake-model"
 TODAY = date(2026, 7, 30)
@@ -280,7 +281,9 @@ class TestTheHarness:
 
     async def test_every_case_is_traceable_and_traceable_identically_across_runs(self) -> None:
         harness, infer = _harness(content=_json([[FUNDING]]))
-        recorder = infer._recorder  # noqa: SLF001 -- asserting what was recorded
+        log = infer._recorder  # noqa: SLF001 -- asserting what was recorded
+        assert isinstance(log, RunLog)
+
         for _ in range(2):
             await harness.evaluate(
                 prompt_name="narration",
@@ -290,11 +293,10 @@ class TestTheHarness:
                 output_type=Narration,
             )
 
-        assert isinstance(recorder, FakeRecorder)
-        first, second = recorder.written
-        assert first.correlation_id == second.correlation_id, (
-            "two runs of the same case must trace under the same id, or they cannot be "
-            "diffed row by row"
+        assert len(log) == 1, (
+            "two runs of the same case must trace under the same id — the log is keyed by "
+            "correlation_id, so a second run of one case overwrites rather than accumulating, "
+            "and the two can be diffed row by row"
         )
 
 
@@ -406,19 +408,39 @@ def _json(citations: list[list[str]], *, text: str = "They raised 24M USD.") -> 
 
 
 def _harness(
-    *, content: str = "", error: Exception | None = None, prompt: Any = None
+    *,
+    content: str = "",
+    error: Exception | None = None,
+    errors: list[Exception] | None = None,
+    prompt: Any = None,
+    policy: InferencePolicy | None = None,
 ) -> tuple[Harness, Infer]:
     adapter = FakeAdapter(models=frozenset({MODEL}), content=content, error=error)
+    if errors is not None:
+        _script(adapter, errors, content)
     providers = AIProviderRegistry()
     providers.register(adapter)
     prompts = PromptRegistry(versions=(prompt or a_prompt(),))
+    # One RunLog in two roles, exactly as the composition root wires it: the
+    # recorder port Infer writes to, and the record the harness reads back.
+    run_log = RunLog()
     infer = Infer(
         providers=providers,
         prompts=prompts,
-        recorder=FakeRecorder(),
-        policy=InferencePolicy(max_attempts=1),
+        recorder=run_log,
+        policy=policy or InferencePolicy(max_attempts=1),
+        sleep=_no_wait,
     )
-    return Harness(infer=infer, prompts=prompts, today=lambda: TODAY), infer
+    return (
+        Harness(infer=infer, prompts=prompts, run_log=run_log, today=lambda: TODAY),
+        infer,
+    )
+
+
+async def _no_wait(seconds: float) -> None:
+    """Backoff is a policy decision verified in test_infer.py; waiting it out
+    here would buy nothing but a slow suite."""
+    return None
 
 
 def _request() -> Any:
@@ -630,3 +652,96 @@ class TestTheEvidenceTranslation:
         dataset = load_dataset("explanation_narration", 1)
         for case in dataset.cases:
             assert not any(ref.startswith(f"{OPPORTUNITY}:") for ref in case.load_bearing)
+
+
+class TestARunReportsItsOwnRetries:
+    """A run that needed retries must be distinguishable from a clean one
+    **without reading the vendor's server log.**
+
+    Added after the first genuine evaluation, where one call hit the 60-second
+    policy timeout and was retried — a fact discoverable only from Ollama's
+    own log, because nothing in Signora's report or its durable record said
+    so. Under *observability is a product capability* that is a defect: the
+    operational history must answer the question without reconstruction.
+
+    Observing `retries == 0` on a clean run proves nothing about the plumbing,
+    which is why every test here forces a retry.
+    """
+
+    async def test_a_retried_case_reports_the_retry(self) -> None:
+        harness, _ = _harness(
+            content=_json([[FUNDING]]),
+            errors=[AITransientError(AIVendor.OLLAMA, "overloaded")],
+            policy=InferencePolicy(max_attempts=3, backoff_seconds=0.0),
+        )
+        report = await harness.evaluate(
+            prompt_name="narration",
+            prompt_version=1,
+            model=MODEL,
+            dataset=_dataset(),
+            output_type=Narration,
+        )
+
+        assert report.results[0].retries == 1
+        assert report.retries == 1
+        assert "retries 1" in report.render()
+
+    async def test_the_retry_reaches_the_durable_record(self) -> None:
+        """The report is printed and lost; the manifest is what survives."""
+        harness, _ = _harness(
+            content=_json([[FUNDING]]),
+            errors=[
+                AITransientError(AIVendor.OLLAMA, "overloaded"),
+                AITransientError(AIVendor.OLLAMA, "still overloaded"),
+            ],
+            policy=InferencePolicy(max_attempts=3, backoff_seconds=0.0),
+        )
+        report = await harness.evaluate(
+            prompt_name="narration",
+            prompt_version=1,
+            model=MODEL,
+            dataset=_dataset(),
+            output_type=Narration,
+        )
+
+        assert report.as_evaluation().retries == 2
+
+    async def test_retries_never_affect_the_release(self) -> None:
+        """Retrying is what the platform is *supposed* to do about a transient
+        failure. Penalising a prompt for its provider's bad afternoon would
+        make the criteria measure the wrong thing."""
+        clean = _evaluation(retries=0)
+        retried = _evaluation(retries=99)
+
+        assert clean.passed is True
+        assert retried.passed is True
+
+    async def test_a_failing_case_reports_its_retries_too(self) -> None:
+        """A case that failed after three attempts and one that failed on the
+        first are different operational facts, and the failure message says
+        nothing about which happened."""
+        harness, _ = _harness(
+            content=_json([[FUNDING]], text="They grew 40%."),
+            errors=[AITransientError(AIVendor.OLLAMA, "overloaded")],
+            policy=InferencePolicy(max_attempts=3, backoff_seconds=0.0),
+        )
+        report = await harness.evaluate(
+            prompt_name="narration",
+            prompt_version=1,
+            model=MODEL,
+            dataset=_dataset(),
+            output_type=Narration,
+        )
+
+        assert report.grounding_failures == 1
+        assert report.results[0].retries == 1, (
+            "the retry count came from the run log rather than the returned record, because a "
+            "grounding failure raises and takes the record with it"
+        )
+
+    async def test_a_case_that_never_reached_a_provider_reports_no_retries(self) -> None:
+        """Zero rather than a crash. A case can fail before any call is made,
+        and a report that broke while describing that failure would replace a
+        usable diagnosis with a stack trace."""
+        log = RunLog()
+        assert log.retries_for(uuid4()) == 0

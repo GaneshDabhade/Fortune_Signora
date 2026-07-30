@@ -499,7 +499,7 @@ So the test separating the two is mechanical rather than a matter of taste: **do
 | **AC-71** | **Nothing branches on vendor** — no business behaviour differs between Ollama and Claude; one contract suite passes against both |
 | **AC-72** | **The port reports usage, never money** — no currency-typed field exists on any inference record or result |
 | **AC-73** | **The harness is separable and reproducible in its inputs** — `make eval` runs outside `make test`; no Security Invariant calls a model; results are recorded per `(prompt_version, model, dataset_version)` |
-| **AC-74** ✅ | **Grounding pass rate is 100% on the golden set**, and coverage of load-bearing facts is reported and above its stated floor — *satisfied 2026-07-30: 2/2 cases, 0 grounding failures, 0 schema failures, coverage 1.000 against a floor of 0.66* |
+| **AC-74** ✅ | **Grounding pass rate is 100% on the golden set**, and coverage of load-bearing facts is reported and above its stated floor — *satisfied 2026-07-30: 2/2 cases, 0 grounding failures, 0 schema failures, 0 retries, coverage 1.000 against a floor of 0.66* |
 | **AC-9** | **The AI evaluation gate** — golden sets exist, regression is enforced locally before release, evidence completeness is a release gate *(inherited from the roadmap; M8 is where it lands)* |
 | **AC-6** · **AC-1** · **AC-13** | Tenancy · event contract · Security Invariants extended, **each proven to fail** when its guarantee is removed |
 
@@ -859,17 +859,20 @@ dataset  explanation_narration@1  2cce0492a6bc
 rubric   v1    run on 2026-07-30
 
 cases
-  ok   northwind                                coverage 1.00
-  ok   contoso                                  coverage 1.00
+  ok   northwind                        coverage 1.00
+  ok   contoso                          coverage 1.00
 
 sample size         2
 grounding failures  0
 schema failures     0
 transport failures  0
+retries             0
 coverage            1.000
 
 release             EARNED
 ```
+
+*(The recorded run, after retry reporting was added. The **first** run — before the `retries` line existed — reported the same result but needed three calls for two cases, because a cold model load pushed the first past the 60-second policy timeout. Both facts are below.)*
 
 `explanation_narration@1` is now **released for `llama3.1:8b` and refused for every other model** — asserted by test, including `claude-sonnet-4-5`. That refusal is the point: a prompt tuned against an 8B local model has not been shown to behave on a frontier hosted one, and production runs on hosted models (ADR-0028). **M8 ships a prompt that production cannot yet use**, and closing that gap is an evaluation run against the production model, not a code change.
 
@@ -879,11 +882,23 @@ release             EARNED
 |---|---|
 | Model cold-load | 29.4 s |
 | Case latency | 42.9 s · 51.7 s |
-| Calls for two cases | **three** — the first timed out |
+| Calls for two cases, cold | **three** — the first timed out |
+| Calls for two cases, warm | two — no timeout, `retries 0` |
 
-**The first call hit the 60-second policy timeout and was retried.** Cold-load plus generation exceeded `InferencePolicy.timeout_seconds`; the retry succeeded, so the case ended `ok` and `transport_failures` is correctly 0. The retry policy worked exactly as designed — and the margin on this hardware is thin: 43–52 s of generation under a 60 s ceiling leaves a cold start no room. On production hosted models this is not expected to bind, so **the timeout is not changed on the strength of one workstation's numbers**; it is recorded as an observation for the M9 latency budget.
+**On the cold run, the first call hit the 60-second policy timeout and was retried.** Cold-load plus generation exceeded `InferencePolicy.timeout_seconds`; the retry succeeded, so the case ended `ok` and `transport_failures` is correctly 0. The retry policy worked exactly as designed — and the margin on this hardware is thin: 43–52 s of generation under a 60 s ceiling leaves a cold start no room. On production hosted models this is not expected to bind, so **the timeout is not changed on the strength of one workstation's numbers**; it is recorded as an observation for the M9 latency budget.
 
-**A gap this run exposed in the harness itself:** the report does not surface retries. One call timing out and being retried is materially different from a clean run, and nothing in the printed output or the recorded `Evaluation` says it happened — it was found by reading the Ollama server log. Under *observability is a product capability* that is a defect, not a nicety. Raised rather than fixed inside the run that found it.
+**A gap this run exposed in the harness itself, and closed before T121.** The report did not surface retries: one call timing out and being retried is materially different from a clean run, and nothing in the printed output or the recorded `Evaluation` said it happened — it was found by reading the Ollama server log. Under *observability is a product capability* that is a defect, not a nicety.
+
+`RunLog` closes it. It is an `InferenceRecorder` — the same port the production recorder satisfies — that keeps its records in memory and lets the harness read back what happened. **One object in two roles**, wired once at the composition root: the port `Infer` writes every outcome to, and the record the harness reads. It replaced `_StdoutRecorder`, which never printed to stdout and whose name was therefore a small lie.
+
+Two details that matter more than the plumbing:
+
+- **Lookup is by `correlation_id`, never by position.** The harness knows the id it sent for each case, so nothing depends on records arriving in submission order — an assumption that holds today and breaks the first time cases are evaluated concurrently.
+- **A failed case reports its retries too**, read from the log rather than from a returned record. `Infer` writes a record on every outcome but *returns* one only on success; a grounding failure raises and takes the returned record with it. Without the log, precisely the failures worth diagnosing would have reported zero.
+
+`retries` is now on `Evaluation` and therefore durable in the manifest — the printed report is lost when the terminal closes. It is **deliberately excluded from `Evaluation.passed`**: retrying is what the platform is *supposed* to do about a transient failure, and penalising a prompt for its provider's bad afternoon would make the release criteria measure the wrong thing. It is a cost and reliability signal (R-01), not a quality one.
+
+**The measurement was re-taken rather than back-filled.** The first run's recorded evaluation predated the field, and defaulting it to `0` would have written a false fact about a run that had one retry. The entry was cleared and `make eval --record` re-run against the same model and dataset. The second run reported **0 retries** — genuinely, on a warm model: two `/api/generate` calls, no timeout, confirmed against the server log. Observing zero proves nothing about the plumbing, which is why all six mutation-proven tests for it force a retry.
 
 #### The runtime is installed rootless, and that is now the documented path
 

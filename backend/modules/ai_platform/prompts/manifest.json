@@ -16,7 +16,8 @@
           "sample_size": 2,
           "grounding_failures": 0,
           "schema_failures": 0,
-          "coverage": 1.0
+          "coverage": 1.0,
+          "retries": 0
         }
       ]
     }

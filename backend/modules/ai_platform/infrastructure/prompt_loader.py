@@ -43,6 +43,7 @@ class _EvaluationRecord(BaseModel):
     grounding_failures: int
     schema_failures: int
     coverage: float
+    retries: int
 
 
 class _PromptRecord(BaseModel):
@@ -108,6 +109,7 @@ def _load(record: _PromptRecord, directory: Path) -> PromptVersion:
                 grounding_failures=e.grounding_failures,
                 schema_failures=e.schema_failures,
                 coverage=e.coverage,
+                retries=e.retries,
             )
             for e in record.evaluations
         ),

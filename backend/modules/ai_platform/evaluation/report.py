@@ -33,6 +33,12 @@ class CaseResult:
     case: str
     outcome: InferenceOutcome
     coverage: float
+    #: How many times this case's call was retried. **Never a quality
+    #: signal** — it is a cost and reliability signal, and it must not
+    #: influence whether the run earns a release. Reported because a run that
+    #: needed retries is operationally different from one that did not, and
+    #: that difference was previously visible only in the vendor's own log.
+    retries: int = 0
     detail: str | None = None
 
     @property
@@ -93,6 +99,19 @@ class EvaluationReport:
     def coverage(self) -> float:
         return sum(r.coverage for r in self.results) / len(self.results)
 
+    @property
+    def retries(self) -> int:
+        """Total retries across the run.
+
+        A rising value is the earliest visible sign of a rate-limit or
+        timeout problem (R-01) — visible here long before it is visible on an
+        invoice. It does **not** affect `Evaluation.passed`: retrying is what
+        the platform is supposed to do about a transient failure, and
+        penalising a prompt for its provider's bad afternoon would make the
+        release criteria measure the wrong thing.
+        """
+        return sum(r.retries for r in self.results)
+
     def as_evaluation(self) -> Evaluation:
         """The durable record this run supports.
 
@@ -110,6 +129,7 @@ class EvaluationReport:
             grounding_failures=self.grounding_failures,
             schema_failures=self.schema_failures,
             coverage=self.coverage,
+            retries=self.retries,
         )
 
     def render(self) -> str:
@@ -131,7 +151,9 @@ class EvaluationReport:
         )
         for result in self.results:
             mark = "ok  " if result.outcome is InferenceOutcome.OK else "FAIL"
-            line = f"  {mark} {result.case:<40} coverage {result.coverage:.2f}"
+            line = f"  {mark} {result.case:<32} coverage {result.coverage:.2f}"
+            if result.retries:
+                line += f"  retries {result.retries}"
             if result.detail:
                 line += f"\n         {result.detail}"
             lines.append(line)
@@ -142,6 +164,7 @@ class EvaluationReport:
                 f"grounding failures  {self.grounding_failures}",
                 f"schema failures     {self.schema_failures}",
                 f"transport failures  {self.transport_failures}",
+                f"retries             {self.retries}",
                 f"coverage            {self.coverage:.3f}",
                 "",
                 f"release             {'EARNED' if evaluation.passed else 'REFUSED'}",
