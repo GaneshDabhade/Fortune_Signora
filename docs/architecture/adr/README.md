@@ -51,6 +51,7 @@ Every ADR follows this structure:
 | [0026](0026-jwt-boundary-architecture.md) | JWT Boundary Architecture — authentication in Next.js, verification in FastAPI (amends 0010) |
 | [0027](0027-local-first-development.md) | Local-First Development — all verification is local; GitHub is version control and backup only (amends the operating mechanism of 0022, 0023, 0024) |
 | [0028](0028-model-runtime-by-environment.md) | Model Runtime by Environment — Ollama for development, hosted commercial models for production (amends 0012) |
+| [0029](0029-operational-history-durability.md) | Operational History Durability — a failed inference's record must survive a rolled-back unit of work · **PROPOSED, awaiting ratification** |
 
 ## How to Propose a New ADR
 

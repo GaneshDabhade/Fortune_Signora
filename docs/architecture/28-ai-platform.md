@@ -1,6 +1,6 @@
 # 28 — AI Platform
 
-> Status: **RATIFIED — 2026-07-29.** Milestone **M8** — **T111–T121 complete.** `make eval` has been run against a real model and `explanation_narration@1` is released for `llama3.1:8b`. **One finding is open and material: a failed inference's operational record does not survive a rolled-back unit of work** — see the T121 notes.
+> Status: **RATIFIED — 2026-07-29.** Milestone **M8** — **COMPLETE, T111–T121.** `make eval` has been run against a real model and `explanation_narration@1` is released for `llama3.1:8b`. **One finding is open and material** — a failed inference's operational record does not survive a rolled-back unit of work; written up as [ADR-0029](adr/0029-operational-history-durability.md), proposed and awaiting ratification.
 > Audience: engineers, architects, and anyone who has to trust what Signora says.
 > Anchors: [14-ai-architecture.md](14-ai-architecture.md) · [ADR-0012](adr/0012-ai-platform-architecture.md) · [04-modules.md](04-modules.md) · [21-intelligence-pipeline.md](21-intelligence-pipeline.md) · [16-architecture-risks.md](16-architecture-risks.md) R-01, R-05, R-10
 >
@@ -932,7 +932,7 @@ Found by writing the demonstration, and material enough to state plainly.
 
 The consequence is precise: **AC-69 holds in the domain and does not hold in production.** A caller that lets the exception propagate — which is the natural and correct thing for a caller to do — loses exactly the rows the ungrounded rate is computed from, so that rate would read 0% forever. It is the same defect T119 fixed twice at a smaller scale (a lost vendor, a lost retry count), reappearing one layer out.
 
-The fix is not obvious and is not a coding-session decision: operational history has to escape a business transaction somehow — a separate session, an autonomous write, or routing the record through the outbox — and each option has consequences for atomicity, ordering and the platform freeze. **Raised rather than worked around.** The integration test asserts today's behaviour explicitly, with the desired behaviour written into its failure message, so the day it is fixed the test is where it is noticed.
+**Raised rather than worked around, and now written up.** [ADR-0029](adr/0029-operational-history-durability.md) states the problem, evaluates four options, and recommends one — a recorder that owns its own session factory. Two of the four are recommended for *explicit* rejection because they appear to solve the problem and do not: a savepoint is inside the transaction that rolls back, and an outbox insert is in it too. The integration test asserts today's behaviour explicitly, with the desired behaviour written into its failure message, so the day it is fixed the test is where it is noticed.
 
 ---
 

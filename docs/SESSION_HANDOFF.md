@@ -319,7 +319,7 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 > **First actions:**
 > 1. Read [21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md) — the shortest path to full context, and it tracks what is *built* rather than intended.
 > 2. Verify the tree is clean and `make smoke` is green.
-> 3. **Settle the open finding before M9 builds on it:** `Infer` writes an `ai_inference` row on every outcome, but `tenant_scoped_session` wraps `session.begin()`, so a grounding failure that propagates rolls the record back. AC-69 holds in the domain and not in production. M9 will produce far more inferences than M8 and inherits the gap. Read the T121 notes in [28-ai-platform.md](architecture/28-ai-platform.md).
+> 3. **Ratify [ADR-0029](architecture/adr/0029-operational-history-durability.md) before M9 builds on it.** `Infer` writes an `ai_inference` row on every outcome, but it shares the caller's transaction — a grounding failure that propagates rolls the record back, so the ungrounded rate reads 0% forever. AC-69 holds in the domain and not in production. The ADR is **proposed, not decided**; four options are evaluated and two are recommended for explicit rejection because they look like solutions and are not. **No code has been written against it.** M9 multiplies inference volume and inherits the gap.
 >
 > **`make eval` needs a model runtime, and this machine's is rootless.** Ollama lives in `~/.local/bin/ollama` (no `sudo` on this workstation); start it with `~/.local/bin/ollama serve` before running `make eval`. It is not a service and does not survive a reboot. Everything else — the suite, the invariants, `make smoke` — is offline and needs nothing.
 >
