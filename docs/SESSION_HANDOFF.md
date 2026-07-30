@@ -319,7 +319,11 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 > **First actions:**
 > 1. Read [21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md) — the shortest path to full context, and it tracks what is *built* rather than intended.
 > 2. Verify the tree is clean and `make smoke` is green.
-> 3. **Begin M9 — the AI Reasoning Engine.** M8 is complete and architecturally closed; [ADR-0029](architecture/adr/0029-operational-history-durability.md) settled the last finding. **M9 consumes the AI Platform and must not redefine it** — when implementation appears to require changing M8, stop and ask whether it is genuinely an M8 issue or M9 expanding its scope.
+> 3. **Begin M9 at T122.** The architecture is **ratified and closed**: read [29-ai-reasoning-engine.md](architecture/29-ai-reasoning-engine.md) and then [ADR-0030](architecture/adr/0030-the-decision-package.md), which is binding on what M9 produces. Do **not** re-open either — five rulings and nine decisions are settled.
+>
+> **The one principle that governs every M9 task:** *if the system already knows something deterministically, never ask a model to invent it again.* The Decision Package has fifteen parts and the model authors **three**. Before adding any model-authored field, ask whether the platform already owns the fact — `BuyingScore.trigger` answers *why now*, `dissenting_signal_ids` answers *what contradicts this*, `EvidenceState` answers *how fresh*. Deriving is not the cheaper option; it is the correct one, because a derived fact can be defended and a generated one can only be believed.
+>
+> **M9 consumes the AI Platform and must not redefine it** — when implementation appears to require changing M8, stop and ask whether it is genuinely an M8 issue or M9 expanding its scope.
 >
 > **`make eval` needs a model runtime, and this machine's is rootless.** Ollama lives in `~/.local/bin/ollama` (no `sudo` on this workstation); start it with `~/.local/bin/ollama serve` before running `make eval`. It is not a service and does not survive a reboot. Everything else — the suite, the invariants, `make smoke` — is offline and needs nothing.
 >

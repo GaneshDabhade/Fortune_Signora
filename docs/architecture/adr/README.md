@@ -52,7 +52,7 @@ Every ADR follows this structure:
 | [0027](0027-local-first-development.md) | Local-First Development — all verification is local; GitHub is version control and backup only (amends the operating mechanism of 0022, 0023, 0024) |
 | [0028](0028-model-runtime-by-environment.md) | Model Runtime by Environment — Ollama for development, hosted commercial models for production (amends 0012) |
 | [0029](0029-operational-history-durability.md) | Operational History Durability — a failed inference's record survives a rolled-back unit of work; operational history has the lifetime of the operation, not the enclosing business transaction |
-| [0030](0030-the-decision-package.md) | The Decision Package — what M9 produces, and who authors each part; most of it is derived rather than generated · **PROPOSED, awaiting ratification** |
+| [0030](0030-the-decision-package.md) | The Decision Package — what M9 produces, and who authors each part. **Deterministic Explainability**: whatever the platform already knows is derived, never regenerated; the model authors three fields of fifteen |
 
 ## How to Propose a New ADR
 

@@ -1,9 +1,23 @@
 # 29 — AI Reasoning Engine
 
-> Status: **PROPOSED — 2026-07-30.** Milestone **M9**, not started. **No code has been written against this document.**
-> **Superseded in part by [ADR-0030](adr/0030-the-decision-package.md)** (proposed 2026-07-30): the product owner reframed the success criterion from *"can the model produce a conclusion?"* to *"will a customer trust it enough to act on it?"*, which replaces this document's `ReasonedConclusion` with a **Decision Package**. Rulings 1, 2, 4 and 5 below survive; Ruling 3's rubric is extended there. Read ADR-0030 first.
+> Status: **RATIFIED — 2026-07-30.** Milestone **M9**, not started. Read with [ADR-0030](adr/0030-the-decision-package.md), which is binding on what M9 produces.
+> **Amended by [ADR-0030](adr/0030-the-decision-package.md)** (accepted 2026-07-30): the product owner reframed the success criterion from *"can the model produce a conclusion?"* to *"will a customer trust it enough to act on it?"*, which replaces this document's `ReasonedConclusion` with a **Decision Package**. Rulings 1, 2, 4 and 5 below survive; Ruling 3's rubric is extended there. Read ADR-0030 first.
 > Audience: engineers, architects, and anyone who has to defend what Signora concluded.
 > Anchors: [28-ai-platform.md](28-ai-platform.md) · [04-modules.md](04-modules.md) §AI Reasoning Engine · [05-module-dependencies.md](05-module-dependencies.md) · [21-intelligence-pipeline.md](21-intelligence-pipeline.md) Stage 9 · [ADR-0012](adr/0012-ai-platform-architecture.md) · [ADR-0028](adr/0028-model-runtime-by-environment.md)
+
+## Customer trust
+
+**The objective of M9 is not to maximize AI-generated explanations.** It is to produce enterprise-grade decision packages that customers can independently inspect, understand, and validate.
+
+Every customer-visible signal should answer the natural questions a customer will ask — *why · why now · why not earlier · what supports this · what challenges it · how fresh is it · what does it assume · what does it not mean · how do I check it* — using **deterministic information wherever possible**. AI is used only where inference is genuinely required.
+
+The distinction matters because of who is reading. A Sales Executive, CRO or RevOps Manager opening Signora will not ask *"what prompt produced this?"* They will ask *"why do you think this, and could you be wrong?"* — and the answer must be evidence they can check, not fluency they are asked to trust.
+
+> **Customers should never be asked to trust the AI. They should be shown enough to reach their own judgement.**
+
+This is why [ADR-0030](adr/0030-the-decision-package.md) partitions the Decision Package by author rather than generating all of it: the fields a customer will lean on hardest are precisely the ones that must be reproducible. See *Design Principle: Deterministic Explainability* there.
+
+---
 
 ## The question this module answers
 
@@ -133,6 +147,36 @@ The one change M9 makes outside itself is a one-line docstring correction in `gr
 
 ---
 
+## Task breakdown — T122–T130 · ~8–12 ew
+
+| | Task |
+|---|---|
+| **T122** | Module scaffold, `ai_reasoning_engine` graph node, import-linter contracts per module pair · the `grounding.py` docstring correction (Finding 2) |
+| **T123** | `domain/decision.py` — the Decision Package: `Proposition`, `StatedReasoning`, `Support`, `NarrationSubject` reuse. Every model-authored field a `GroundedStatement` |
+| **T124** | `domain/support.py` — derived support and its inputs. **No model, no number the platform did not compute** |
+| **T125** | `domain/temporal.py` — why now · why not earlier · what changed · freshness, all derived from `trigger`, `basis_at`, `delta` and `EvidenceState` |
+| **T126** | Signal catalog extension — limitations and suggested validation per signal type, as reviewed repository artifacts with a content hash |
+| **T127** | `application/reason.py` — the use case. Context assembly, one inference through `ai_platform`, package composition |
+| **T128** | `prompts/reasoning@1` + golden dataset + rubric extension (premise breadth · dissent acknowledgement · action abstinence · *n*-sample robustness) · `make eval` run and release |
+| **T129** | Migration `0017` — `ai_reasoning`, forced RLS, no `UPDATE` grant, `tenancy_policy.py` registration |
+| **T130** | `ai_reasoning.completed` cataloged with its producer · composition root · one smoke stage |
+
+Ordering follows M8's lesson: **the deterministic fields are built before the model-authored ones**, so the package is demonstrably valuable before a single inference happens — and so a failure to reach a model degrades the package rather than emptying it.
+
+---
+
 ## Approval record
 
-*Nothing ratified yet. Five rulings requested above; no code will be written until they are settled.*
+### Ratified 2026-07-30
+
+Five rulings settled, all as proposed:
+
+1. **Confidence is derived, never emitted by the model** — and renamed **Support**, since "confidence" invites the numeric reading the decision rejects.
+2. **The replacement stop condition** — M9 may conclude; it must never recommend an action, compose a message, rank accounts against each other, or assert an uncited fact about the world.
+3. **A reasoning-specific rubric** — coverage measures the right thing for restatement and the wrong thing for conclusions.
+4. **`ai_reasoning` is its own materialized-artifact table**, not a discriminator column on `ai_narration`.
+5. **The sharpened event payload**, replacing the v2 placeholders `model_provenance` and `result_ref`.
+
+Plus [ADR-0030](adr/0030-the-decision-package.md): the Decision Package, partitioned by author, under **Deterministic Explainability**.
+
+**No change to `ai_platform`** — no new violation kind, no loosened grounding, no altered release rule, no rewritten harness. If implementation appears to require one, that is the halt, and the question to bring back is *"is this genuinely an M8 defect, or is M9 absorbing another milestone?"*

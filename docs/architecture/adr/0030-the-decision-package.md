@@ -1,6 +1,6 @@
 # ADR-0030 — The Decision Package: what M9 produces, and who authors each part
 
-> Status: **PROPOSED — 2026-07-30.** Awaiting ratification. **No code has been written against this ADR.**
+> Status: **ACCEPTED — 2026-07-30.** Ratified with the partitioning and all nine decisions as written, including the six that modified the original request. **No code has been written against it yet.**
 > Deciders: Product Owner · Architecture Review Board
 > Amends: [29-ai-reasoning-engine.md](../29-ai-reasoning-engine.md) (proposed, not yet ratified)
 > Anchors: [28-ai-platform.md](../28-ai-platform.md) · [04-modules.md](../04-modules.md) · [21-intelligence-pipeline.md](../21-intelligence-pipeline.md) · [26-buying-score-engine.md](../26-buying-score-engine.md) · [27-opportunity-engine.md](../27-opportunity-engine.md)
@@ -15,13 +15,44 @@ The M9 proposal asked *"what should a seller understand that the pipeline did no
 
 So the Decision Package is accepted in principle. This ADR is about **what it must not become**, because as enumerated it is roughly ten fields, most of them prose, and **prose from a model is the one thing in this system that cannot be trusted without a check.** Ten free-text fields is ten times the hallucination surface and ten times the evaluation burden, on a module whose entire purpose is to be trustworthy.
 
+## Design Principle: Deterministic Explainability
+
+**Ratified 2026-07-30. This is the principle the rest of the ADR applies.**
+
+> **The Decision Package exists to make conclusions explainable rather than merely persuasive.**
+>
+> Whenever the platform already owns a fact deterministically, that fact is **derived rather than regenerated** by a language model.
+>
+> Consequently most Decision Package fields are deterministic, with model-authored content limited to the **grounded conclusion and its stated reasoning**.
+
+This minimizes hallucination surface, reduces evaluation burden, improves reproducibility, and — the reason that outranks the others — **allows customers to independently validate Signora's conclusions.**
+
+The general form, recorded in CLAUDE.md §2: *if the system already knows something deterministically, never ask a model to invent it again.* Use AI only where inference is genuinely required; everything else comes from deterministic computation, versioned configuration, or reviewed repository artifacts.
+
+**The four questions that assign every field:**
+
+| If the information… | Then it is… |
+|---|---|
+| already exists elsewhere in the platform | **derived** |
+| is static and domain-expert knowledge | **authored once in the catalog, and versioned** |
+| is operational | **computed** |
+| genuinely requires inference | **model-authored, and grounded** |
+
+Only the last is a model's job: *derive a grounded conclusion, and explain that conclusion in natural language.* Everything else stays deterministic.
+
+**Persuasion is explicitly not the goal.** A fluent, confident, well-written conclusion that a customer cannot check is worse than a plainer one they can — because the first is trusted without grounds and the second is verified. This is the same reasoning that removed the un-cited `summary` from M8's output type: the sentence with the most rhetorical weight must carry the most evidence, not the least.
+
+---
+
 ## The central decision: partition the package by author
 
 The insight that makes the Decision Package tractable — and the one this ADR exists to record:
 
 > **Most of the Decision Package should not come from the model at all.**
 
-Each part is assigned to the authority that can actually be held to it. Three of the ten are model-authored and grounded; five are **derived deterministically** from facts the pipeline already owns and already records; two are **repository artifacts** reviewed like code; one is **not M9's**.
+Each part is assigned to the authority that can actually be held to it. Fifteen parts: **three** are model-authored and grounded, **nine** are derived deterministically from facts the pipeline already owns and already records, **two** are repository artifacts reviewed like code, and **one** is not M9's.
+
+*(The list grew from the ten originally enumerated because the temporal questions — freshness, why now, why not earlier, what changed — turned out to be separable fields rather than parts of a narrative. Every one of the five additions is derived, which is the principle above producing more transparency at no additional model cost.)*
 
 | # | Part | Authored by | Why |
 |---|---|---|---|
@@ -35,8 +66,13 @@ Each part is assigned to the authority that can actually be held to it. Three of
 | 8 | Limitations | **Repository artifact** | See Decision 5 |
 | 9 | Suggested Validation | **Repository artifact** | See Decision 5 |
 | 10 | Suggested Next Action | **Not M9** | See Decision 6 — the one firm disagreement |
+| 11 | Evidence Freshness | **Derived** | `EvidenceState` + per-provider refresh times, already recorded |
+| 12 | Why Now | **Derived** | `BuyingScore.trigger`. See Decision 9 |
+| 13 | Why Not Earlier | **Derived** | `basis_at`, and the superseded score, still readable |
+| 14 | What Changed | **Derived** | `delta` and `trend` against the superseded score |
+| 15 | Alternative Readings | **Derived** | Signal types evaluated and not supported. See Decision 7 |
 
-The consequence is the point: **the model authors three fields, not ten.** Evaluation covers three. Seven are reproducible, explainable, and testable without a model. And the seven derived ones are the fields customers will trust *most*, because they can be recomputed and defended.
+The consequence is the point: **the model authors three fields out of fifteen.** Evaluation covers three. Twelve are reproducible, explainable and testable without a model — and the derived ones are the fields customers will trust *most*, because they can be recomputed and defended rather than believed.
 
 This is the north star applied literally — the richer artifact makes the architecture *smaller*, because most of it turns out to be a projection of facts the pipeline already holds.
 
@@ -167,9 +203,30 @@ This is the clearest case of the reframing making the system simpler: the most t
 
 ---
 
+## Traceability — every customer question to its source
+
+The checklist the Decision Package must satisfy, and where each answer comes from. **Two of the ten involve a model; eight do not.**
+
+| A customer asks | Answered by | Author |
+|---|---|---|
+| What is the conclusion? | Proposition | Model, grounded |
+| Why did Signora reach it? | Stated reasoning | Model, grounded |
+| Which evidence supports it? | Citations on every statement | Derived |
+| Which evidence challenges it? | `contested` · `dissenting_signal_ids` | Derived |
+| How recent is the evidence? | `EvidenceState` · provider refresh times | Derived |
+| Why did this appear now? | `BuyingScore.trigger` | Derived |
+| What changed since last time? | `delta` · `trend` vs the superseded score | Derived |
+| What does it assume? | Provenance chain — providers, profile version, model version | Derived |
+| What are its limitations? | Signal catalog, per signal type | Authored once, versioned |
+| How do I validate it independently? | Signal catalog, per signal type | Authored once, versioned |
+
+**This table is the acceptance criterion for M9's customer-facing value**, and it is testable: a Decision Package that cannot populate a row has a defect, and every derived row can be asserted without calling a model.
+
+---
+
 ## Consequences if ratified
 
-**The artifact.** `ai_reasoning` (migration `0017`) stores the complete package — a materialized AI artifact, immutable, provenance denormalized, superseded by recency. Three model-authored grounded fields, seven derived or composed. The six-month-old explanation is served from the row, never regenerated.
+**The artifact.** `ai_reasoning` (migration `0017`) stores the complete package — a materialized AI artifact, immutable, provenance denormalized, superseded by recency. Three model-authored grounded fields, eleven derived or composed. The six-month-old explanation is served from the row, never regenerated.
 
 **Evaluation covers three fields, not ten.** Grounding and schema at zero, premise breadth, dissent acknowledgement on contested accounts, action abstinence, plus *n*-sample robustness. All deterministic except the last, which is deterministic in aggregate.
 
@@ -181,4 +238,6 @@ This is the clearest case of the reframing making the system simpler: the most t
 
 ## Status
 
-**Proposed.** Nine decisions above, six of which modify what was requested. No code will be written until they are settled.
+**Accepted 2026-07-30**, with the product owner's clarification recorded as the guiding principle above: the concern was never that M9 should generate *more* AI text, but that every customer-visible signal must be **defensible** — answerable with concrete, deterministic facts the platform already owns.
+
+That clarification and the partitioning are the same idea reached from two directions, which is why the ADR needed no structural change to accommodate it.

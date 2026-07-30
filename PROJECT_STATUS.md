@@ -33,7 +33,7 @@ The product's competitive advantage is the quality of that reasoning and the evi
 | **Overall completion** | **~52%** by engineering effort (~162 of ~261–339 ew) |
 | **Effort remaining** | **~99–177 ew** |
 | **Milestones completed** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · M4 · M5A · M5B · **M6** |
-| **Current milestone** | **M9 — AI Reasoning Engine** — next. **M8 is complete and architecturally closed** ([28-ai-platform.md](docs/architecture/28-ai-platform.md), T111–T121 + ADR-0029), with no findings outstanding. |
+| **Current milestone** | **M9 — AI Reasoning Engine** — architecture **ratified** ([29-ai-reasoning-engine.md](docs/architecture/29-ai-reasoning-engine.md), [ADR-0030](docs/architecture/adr/0030-the-decision-package.md)); implementation begins at **T122**. M8 is complete and architecturally closed. |
 | **Current `HEAD`** | `670d166` — retry reporting. This line is written by the commit that follows it, so the live `HEAD` is one ahead; `git rev-parse --short HEAD` is authoritative. |
 | **Verification** | Local only ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate. |
 | **Projected to GA** | ~1.4–2.0 years at 3 engineers · ~2.1–3.0 at 2 · ~4.1–6.1 at 1 (80% capacity) |
