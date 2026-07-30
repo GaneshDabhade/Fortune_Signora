@@ -44,6 +44,13 @@ it, which is what makes vendor neutrality structural rather than a rule
 people remember.
 """
 
+from modules.ai_platform.application.infer import (
+    Infer,
+    InferenceInput,
+    InferenceOutput,
+    InferencePolicy,
+)
+from modules.ai_platform.application.ports import ExplanationSource, InferenceRecorder
 from modules.ai_platform.domain.errors import AIPlatformError
 from modules.ai_platform.domain.evidence import (
     EvidenceError,
@@ -92,6 +99,7 @@ from modules.ai_platform.domain.provider import (
     InferenceResult,
     ModelNotRegisteredError,
 )
+from modules.ai_platform.domain.record import InferenceOutcome, InferenceRecord
 from modules.ai_platform.domain.usage import InferenceUsage, UsageError
 
 __all__ = [
@@ -112,10 +120,18 @@ __all__ = [
     "EvidenceSet",
     "EvidenceSetBuilder",
     "EvidenceValue",
+    "ExplanationSource",
     "GroundedOutput",
     "GroundedStatement",
     "GroundingError",
     "GroundingReport",
+    "Infer",
+    "InferenceInput",
+    "InferenceOutcome",
+    "InferenceOutput",
+    "InferencePolicy",
+    "InferenceRecord",
+    "InferenceRecorder",
     "InferenceRequest",
     "InferenceRequestError",
     "InferenceResult",

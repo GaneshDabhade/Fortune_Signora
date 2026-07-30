@@ -36,6 +36,8 @@ def a_request(**overrides: object) -> InferenceRequest:
         "workspace_id": uuid4(),
         "correlation_id": uuid4(),
         "max_output_tokens": 512,
+        "temperature": 0.0,
+        "timeout_seconds": 30.0,
     }
     kwargs.update(overrides)
     return InferenceRequest(**kwargs)  # type: ignore[arg-type]

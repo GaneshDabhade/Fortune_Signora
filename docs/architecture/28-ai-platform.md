@@ -1,6 +1,6 @@
 # 28 — AI Platform
 
-> Status: **RATIFIED — 2026-07-29.** Milestone **M8**, in progress. **T111–T117 complete**; T118–T121 outstanding.
+> Status: **RATIFIED — 2026-07-29.** Milestone **M8**, in progress. **T111–T118 complete**; T119–T121 outstanding.
 > Audience: engineers, architects, and anyone who has to trust what Signora says.
 > Anchors: [14-ai-architecture.md](14-ai-architecture.md) · [ADR-0012](adr/0012-ai-platform-architecture.md) · [04-modules.md](04-modules.md) · [21-intelligence-pipeline.md](21-intelligence-pipeline.md) · [16-architecture-risks.md](16-architecture-risks.md) R-01, R-05, R-10
 >
@@ -592,7 +592,9 @@ Per CLAUDE.md §19, binding.
 
 **T117 ✅** — the Ollama and Anthropic adapters, a shared transport-to-semantics mapping, and **one contract suite run against both**. **53 tests**, eleven mutation-proven guarantees. Two decisions recorded below.
 
-**T118–T121 outstanding.** No evidence set, no grounding checks, no prompts, no adapters, no `infer.py`, no migration `0015`, no `ai.narration_completed` in [06-events.md](06-events.md), no evaluation harness.
+**T118 ✅** — `application/infer.py`, `application/render.py`, `application/ports.py`, `domain/record.py`: the only path to a model, an explicit seven-stage lifecycle, semantic retry, and a record written on every outcome. **31 tests**, twelve mutation-proven guarantees.
+
+**T119–T121 outstanding.** No evidence set, no grounding checks, no prompts, no adapters, no `infer.py`, no migration `0015`, no `ai.narration_completed` in [06-events.md](06-events.md), no evaluation harness.
 
 `interface/` is deliberately absent: M8 has no HTTP surface, the layering contract marks the layer optional, and a directory created for a caller that does not exist is the speculative structure CLAUDE.md §6 forbids.
 
@@ -730,4 +732,30 @@ The 401/403 branch survived its mutation: those statuses already fall through to
 
 ---
 
-*T111–T117 built. T118 onward not started.*
+### The lifecycle, and what is not in it
+
+    resolve prompt → render → select provider → execute (retry) → parse → ground → record → return
+
+Nothing happens between those stages. `Infer.execute` is the only way to obtain model output, and there is no way at all to obtain *unvalidated* output — the same shape as `BuyingScore.projected_from` being the only constructor of a score.
+
+**Retry is confined to transport.** Transient failures retry with exponential backoff, or with the vendor's stated wait when it gave one. Permanent failures raise on the first attempt. **Schema and grounding failures are never retried** — they are content failures, and quietly re-rolling one would burn tokens while making the ungrounded rate unmeasurable, which is the one number this platform most needs about itself.
+
+**Every outcome is recorded**, including the ones that failed before a model answered. A table holding only successes cannot report a failure rate. A transport failure records zero usage rather than none, because a failed call still happened and a row with no usage is indistinguishable from one never attempted.
+
+### Applying *behaviour exists exactly once* to the request
+
+`InferenceRequest.temperature` and `.timeout_seconds` **lost their defaults** and are now required. Once `InferencePolicy` owns those values, a default on the request would be a second place deciding them — and the two would eventually disagree with nobody noticing, since both are plausible. The policy is now the single source, and it is provider-agnostic, so no adapter's own idea of a timeout can leak upward.
+
+`PromptVersion.require_model` was added alongside `require(model, dataset)`. These answer different questions rather than duplicating one: at **runtime** there is no dataset — the dataset is what an evaluation was *conducted on*, and it belongs to the record supporting a release rather than to the call relying on it.
+
+### Configuration was deliberately not added — a ruling is needed
+
+`Infer` takes its policy, registries and recorder as constructor arguments. `signora_platform/settings.py` is still untouched, and the question raised at T117 is now due:
+
+**No module has ever added a field to `Settings`.** The Infrastructure Contract (§20b) requires every value to arrive through it and forbids `os.environ` in a module; the Platform Freeze (§20a) forbids modifying platform internals without a stated reason. Whether adding a field is *using* the platform or *changing* it has never been decided, and M8 is the first milestone that needs vendor credentials, base URLs and model names.
+
+Three options, with a recommendation, are recorded for the composition step (T121).
+
+---
+
+*T111–T118 built. T119 onward not started.*

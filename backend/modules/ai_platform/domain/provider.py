@@ -191,12 +191,17 @@ class InferenceRequest:
     workspace_id: UUID
     correlation_id: UUID
     max_output_tokens: int
-    #: Sampling temperature. **Not a determinism control.** Batching,
+    #: Sampling temperature. Required, not defaulted: the policy in
+    #: ``application/infer.py`` is the one place either of these is decided,
+    #: and a default here would be a second (CLAUDE.md §2, *behaviour exists
+    #: exactly once*).
+    #:
+    #: **Not a determinism control.** Batching,
     #: hardware, and silent vendor-side model updates all move the output at
     #: any temperature; no part of this design may claim reproducibility on
     #: the strength of this field (ADR-0028, 28-ai-platform.md).
-    temperature: float = 0.0
-    timeout_seconds: float = 60.0
+    temperature: float
+    timeout_seconds: float
 
     def __post_init__(self) -> None:
         if not self.model.strip():

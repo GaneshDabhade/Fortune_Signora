@@ -61,6 +61,8 @@ def a_request(model: str, **overrides: Any) -> InferenceRequest:
         "workspace_id": uuid4(),
         "correlation_id": uuid4(),
         "max_output_tokens": 256,
+        "temperature": 0.0,
+        "timeout_seconds": 30.0,
     }
     kwargs.update(overrides)
     return InferenceRequest(**kwargs)

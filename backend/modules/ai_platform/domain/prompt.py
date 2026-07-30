@@ -161,6 +161,31 @@ class PromptVersion:
     def supports(self, *, model: str, dataset: str) -> bool:
         return any(e.passed and e.model == model and e.dataset == dataset for e in self.evaluations)
 
+    def is_released_for(self, model: str) -> bool:
+        """Released for this model, on any dataset it was evaluated against.
+
+        The **runtime** question. At the point of use there is no dataset —
+        the dataset is what an evaluation was *conducted on*, and it lives in
+        the record supporting the release rather than in the call relying on
+        it.
+        """
+        return any(e.passed and e.model == model for e in self.evaluations)
+
+    def require_model(self, model: str) -> None:
+        """Raise unless this prompt has earned the model.
+
+        ADR-0028's release rule at the point of use: *a prompt may not be
+        used with a model it was never evaluated on.*
+        """
+        if self.is_released_for(model):
+            return
+        earned = sorted({e.model for e in self.evaluations if e.passed})
+        raise PromptNotReleasableError(
+            f"prompt {self.reference} has not passed evaluation for model '{model}'. "
+            f"Passed for: {earned or 'nothing yet'}. A prompt tuned against one model has "
+            "not been shown to behave on another."
+        )
+
     def require(self, *, model: str, dataset: str) -> None:
         """Raise unless this prompt has earned the pairing.
 
