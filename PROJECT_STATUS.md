@@ -34,7 +34,7 @@ The product's competitive advantage is the quality of that reasoning and the evi
 | **Effort remaining** | **~99–177 ew** |
 | **Milestones completed** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · M4 · M5A · M5B · **M6** |
 | **Current milestone** | **M8 — AI Platform** — design [RATIFIED](docs/architecture/28-ai-platform.md) 2026-07-29; implementation begins at **T111** |
-| **Current `HEAD`** | *(recorded by the immediately following commit — a commit cannot contain its own hash)* |
+| **Current `HEAD`** | `d0c805b` — the pre-flight synchronization commit. This line is written by the commit that follows it, so the live `HEAD` is one ahead; `git rev-parse --short HEAD` is authoritative. |
 | **Verification** | Local only ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate. |
 | **Projected to GA** | ~1.4–2.0 years at 3 engineers · ~2.1–3.0 at 2 · ~4.1–6.1 at 1 (80% capacity) |
 
