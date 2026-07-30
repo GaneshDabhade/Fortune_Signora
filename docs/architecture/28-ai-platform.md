@@ -1,6 +1,6 @@
 # 28 — AI Platform
 
-> Status: **RATIFIED — 2026-07-29.** Milestone **M8**, in progress. **T111 · T112 complete**; T113–T121 outstanding.
+> Status: **RATIFIED — 2026-07-29.** Milestone **M8**, in progress. **T111 · T112 · T113 complete**; T114–T121 outstanding.
 > Audience: engineers, architects, and anyone who has to trust what Signora says.
 > Anchors: [14-ai-architecture.md](14-ai-architecture.md) · [ADR-0012](adr/0012-ai-platform-architecture.md) · [04-modules.md](04-modules.md) · [21-intelligence-pipeline.md](21-intelligence-pipeline.md) · [16-architecture-risks.md](16-architecture-risks.md) R-01, R-05, R-10
 >
@@ -582,6 +582,48 @@ Per CLAUDE.md §19, binding.
 
 **T112 ✅** — `modules/ai_platform/` scaffolded (`domain` · `application` · `infrastructure` · `public`); the module added to [04-modules.md](04-modules.md) and to the graph in [05-module-dependencies.md](05-module-dependencies.md); **four import-linter contracts** registered (21 total, from 17); **8 Security Invariants**, each mutation-proven; both [15-project-structure.md](15-project-structure.md) drifts corrected.
 
-**T113–T121 outstanding.** No port, no evidence set, no grounding checks, no prompts, no adapters, no `infer.py`, no migration `0015`, no `ai.narration_completed` in [06-events.md](06-events.md), no evaluation harness. The `public/` surface exports nothing yet — it carries the module's contract as documentation and will export the port at T113.
+**T113 ✅** — `domain/provider.py` and `domain/usage.py`: the port, a semantic failure taxonomy, the descriptor, and the registry, published through `public/`. **26 tests**, six mutation-proven guarantees. Two departures, recorded below.
+
+**T114–T121 outstanding.** No evidence set, no grounding checks, no prompts, no adapters, no `infer.py`, no migration `0015`, no `ai.narration_completed` in [06-events.md](06-events.md), no evaluation harness.
 
 `interface/` is deliberately absent: M8 has no HTTP surface, the layering contract marks the layer optional, and a directory created for a caller that does not exist is the speculative structure CLAUDE.md §6 forbids.
+
+---
+
+## As built: departures, recorded as they arise
+
+### Departure 1 — the registry offers no vendor-keyed lookup
+
+The proposal copied `ProviderRegistry`, which exposes `get(provider)`. The AI Platform's registry deliberately does not: its only routing method is **`for_model(model)`**.
+
+The difference is real rather than stylistic. A data sync genuinely targets a named provider — *fetch Apollo's view of this company* is the request, and Apollo is part of it. An inference targets a **model**, and which vendor serves that model is an operational detail the caller has no business knowing.
+
+This is what turns vendor neutrality from a rule people remember into a property of the type: **business code that cannot name a vendor cannot branch on one.** A test pins the registry's public surface, so adding `get(vendor)` fails the build.
+
+### Departure 2 — the failure taxonomy is split by whether a vendor exists
+
+`ProviderError` takes a vendor unconditionally, because every failure it models is a vendor's. Copying that shape here produced error messages that lie: a request naming no model never reached a vendor, and a model no adapter serves was answered by *nobody*. Both were initially stamped with a placeholder vendor, which would have put a false attribution in the first place an engineer looks during an incident.
+
+The taxonomy is therefore split under one base:
+
+```
+AIPlatformError
+├── InferenceRequestError      caller bug, before a vendor is chosen — no vendor
+├── AIRegistrationError        composition-time misconfiguration — names the adapter
+├── ModelNotRegisteredError    routing: nobody serves this model — no vendor
+└── AIProviderError            a vendor call failed — always names the vendor
+    ├── AITransientError → AIRateLimitedError
+    └── AIPermanentError → AIOutputUnusableError
+```
+
+`AIOutputUnusableError` is deliberately distinct from a grounding failure: this is the *transport* contract breaking (truncated, unparseable), that is the *content* contract breaking (a valid structure making an unsupported claim). Conflating them would hide a systemic vendor problem inside a per-call quality metric.
+
+Found while writing the code rather than while reviewing it — the fifth time implementation has corrected an approved design.
+
+### Registration refuses two misconfigurations outright
+
+An adapter that cannot constrain output to a schema, and two adapters claiming the same model. Both are caught at composition, where a human is present and a stack trace is cheap. The second matters more than it looks: two adapters serving one model makes routing depend on registration order, and provenance would record whichever happened to win.
+
+---
+
+*T111–T113 built. T114 onward not started.*

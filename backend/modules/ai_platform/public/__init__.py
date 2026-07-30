@@ -36,7 +36,47 @@ vendor served a call. Vendor selection is configuration. The platform
 adapts to vendor-specific APIs internally; nothing outside it may branch on
 which vendor answered.
 
-This surface is deliberately empty until T113. The package exists ahead of
-its contents so the module boundary is enforced from the first line of code
-rather than retrofitted around it.
+What is exported is the **port and its vocabulary** — the contract a vendor
+adapter satisfies and a consumer programs against. Note what is not here:
+no vendor client, no model name, no way to ask for a vendor by name. A
+consumer states the *model* it needs and the registry resolves who serves
+it, which is what makes vendor neutrality structural rather than a rule
+people remember.
 """
+
+from modules.ai_platform.domain.provider import (
+    AIPermanentError,
+    AIPlatformError,
+    AIProviderAdapter,
+    AIProviderDescriptor,
+    AIProviderError,
+    AIProviderRegistry,
+    AIRateLimitedError,
+    AIRegistrationError,
+    AITransientError,
+    AIVendor,
+    InferenceRequest,
+    InferenceRequestError,
+    InferenceResult,
+    ModelNotRegisteredError,
+)
+from modules.ai_platform.domain.usage import InferenceUsage, UsageError
+
+__all__ = [
+    "AIPermanentError",
+    "AIPlatformError",
+    "AIProviderAdapter",
+    "AIProviderDescriptor",
+    "AIProviderError",
+    "AIProviderRegistry",
+    "AIRateLimitedError",
+    "AIRegistrationError",
+    "AITransientError",
+    "AIVendor",
+    "InferenceRequest",
+    "InferenceRequestError",
+    "InferenceResult",
+    "InferenceUsage",
+    "ModelNotRegisteredError",
+    "UsageError",
+]
