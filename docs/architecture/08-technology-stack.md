@@ -65,8 +65,11 @@ This document is the single, authoritative list of Signora's technology stack. E
 | Layer | Decision | ADR |
 |---|---|---|
 | AI provider abstraction | Internal AI Provider Abstraction Layer (ports-and-adapters) | [ADR-0012](adr/0012-ai-platform-architecture.md) |
-| Model providers (active) | Anthropic Claude, OpenAI, Google Gemini | [ADR-0012](adr/0012-ai-platform-architecture.md) |
-| Model providers (future) | Azure OpenAI | [ADR-0012](adr/0012-ai-platform-architecture.md) |
+| Model runtime — **development** | **Ollama**, local. Prompt engineering, evaluation harness, smoke, offline demos. **Never a production dependency.** | [ADR-0028](adr/0028-model-runtime-by-environment.md) |
+| Model runtime — **production** | Hosted commercial models only | [ADR-0028](adr/0028-model-runtime-by-environment.md) |
+| Model providers (ratified) | Anthropic Claude, OpenAI, Google Gemini | [ADR-0012](adr/0012-ai-platform-architecture.md) |
+| Model providers (adapters built) | **Claude** + Ollama. The rest arrive with real callers — the abstraction exists to make additions easy, not to justify speculative ones. | [ADR-0028](adr/0028-model-runtime-by-environment.md) |
+| Model providers (future) | Azure OpenAI, Bedrock | [ADR-0012](adr/0012-ai-platform-architecture.md), [ADR-0028](adr/0028-model-runtime-by-environment.md) |
 | Embeddings | OpenAI Embeddings | [ADR-0012](adr/0012-ai-platform-architecture.md) |
 | Vector store | pgvector | [ADR-0012](adr/0012-ai-platform-architecture.md), [ADR-0008](adr/0008-search-and-vector-retrieval.md) |
 | Prompt management | Internal Prompt Registry | [ADR-0012](adr/0012-ai-platform-architecture.md) |

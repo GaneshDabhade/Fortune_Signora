@@ -1,6 +1,6 @@
 # ADR-0012: AI Platform Architecture — Provider Abstraction, Multi-Vendor Models, Embeddings, Prompt Registry
 
-**Status:** Accepted
+**Status:** Accepted · **Amended by [ADR-0028](0028-model-runtime-by-environment.md) (2026-07-30):** the rejection of open-weight self-hosted models below stands **for production**, unchanged. A *local development* model runtime is a different question this ADR never evaluated; ADR-0028 answers it and adopts **Ollama for development only**. Vendor strategy, embeddings, and the prompt registry are untouched.
 
 ## Context
 

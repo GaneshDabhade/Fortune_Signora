@@ -3,6 +3,8 @@
 > Status: **Living document — Architectural Constitution — RATIFIED**
 > Audience: All engineers, EMs, and technical stakeholders at Signora
 > Revision: **v2** — model vendors, embeddings, vector store, and prompt management ratified; AI Reasoning split into AI Research Engine and AI Reasoning Engine. See [ADR-0012](adr/0012-ai-platform-architecture.md), [ADR-0025](adr/0025-module-boundary-evolution.md).
+> **Amendment 2026-07-30 ([ADR-0028](adr/0028-model-runtime-by-environment.md)):** model runtime is now decided **by environment** — **Ollama locally**, hosted commercial models in production. Ollama is never a production dependency. M8 builds **two** adapters, Ollama and Claude; the rest arrive with real callers. The ratified vendor strategy below is unchanged.
+> **Note:** M8's ratified design lives in [28-ai-platform.md](28-ai-platform.md). This document is rewritten *as built* at the M8 milestone boundary; where the two disagree today, 28 is current.
 
 ## Purpose
 
@@ -106,6 +108,7 @@ flowchart LR
 - Both AI modules' application/domain code are tested with a fake AI Provider Abstraction Layer port implementation.
 - Prompt templates in the Internal Prompt Registry are written to be portable across the three active vendors where feasible; vendor-specific capabilities (e.g., a specific tool-calling format) are translated inside that vendor's adapter.
 - Multi-vendor routing (which of Claude/OpenAI/Gemini handles a given research or reasoning task) is configuration, not code, evaluated for cost/latency/quality per task type — see [ADR-0012](adr/0012-ai-platform-architecture.md).
+- **No business behaviour may branch on which vendor served a call** ([ADR-0028](adr/0028-model-runtime-by-environment.md)). Vendor identity is recorded as provenance and never consulted for a decision — the same rule as pipeline neutrality (AC-21) in the provider layer. This is what keeps the local and production runtimes interchangeable in everything except output quality.
 
 ## Evaluation & Quality
 
