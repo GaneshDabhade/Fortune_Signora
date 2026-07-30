@@ -1,0 +1,12 @@
+{
+  "_comment": "The Internal Prompt Registry (ADR-0012, 28-ai-platform.md). Prompts are Signora's language and ship as versioned repository artifacts, reviewed like code — the same ownership criterion that placed the business event taxonomy, the scoring model and the opportunity policy here. `fingerprint` is the SHA-256 of name, version and text: it is the artifact's identity, and the loader refuses to start if the file on disk disagrees with it. A released version is never edited in place, because every result recorded against it was produced by the text this hash names; a change is always a new version. `evaluations` is append-only and deliberately outside the fingerprint — they are observations *about* a prompt, not part of what it is, so measuring one must not change its identity. A prompt is usable only with the exact (model, dataset) pairs it has passed (ADR-0028): explanation_narration@1 has passed none, so it is currently unusable by design, and T120 is what earns it a release.",
+  "prompts": [
+    {
+      "name": "explanation_narration",
+      "version": 1,
+      "owner": "AI Platform",
+      "fingerprint": "be511c4152c898ce466b0e4f632d35d4b68aab8661d6da5e6bd04d3f8f276dbb",
+      "evaluations": []
+    }
+  ]
+}

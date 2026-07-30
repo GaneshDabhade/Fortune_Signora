@@ -68,6 +68,15 @@ from modules.ai_platform.domain.grounding import (
     parse,
     verify,
 )
+from modules.ai_platform.domain.prompt import (
+    Evaluation,
+    PromptError,
+    PromptNotFoundError,
+    PromptNotReleasableError,
+    PromptRegistry,
+    PromptTamperedError,
+    PromptVersion,
+)
 from modules.ai_platform.domain.provider import (
     AIPermanentError,
     AIProviderAdapter,
@@ -96,6 +105,7 @@ __all__ = [
     "AIRegistrationError",
     "AITransientError",
     "AIVendor",
+    "Evaluation",
     "EvidenceError",
     "EvidenceFact",
     "EvidenceRef",
@@ -111,6 +121,12 @@ __all__ = [
     "InferenceResult",
     "InferenceUsage",
     "ModelNotRegisteredError",
+    "PromptError",
+    "PromptNotFoundError",
+    "PromptNotReleasableError",
+    "PromptRegistry",
+    "PromptTamperedError",
+    "PromptVersion",
     "SchemaViolationError",
     "UngroundedOutputError",
     "UsageError",

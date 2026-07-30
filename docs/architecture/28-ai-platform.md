@@ -1,6 +1,6 @@
 # 28 — AI Platform
 
-> Status: **RATIFIED — 2026-07-29.** Milestone **M8**, in progress. **T111–T115 complete**; T116–T121 outstanding.
+> Status: **RATIFIED — 2026-07-29.** Milestone **M8**, in progress. **T111–T116 complete**; T117–T121 outstanding.
 > Audience: engineers, architects, and anyone who has to trust what Signora says.
 > Anchors: [14-ai-architecture.md](14-ai-architecture.md) · [ADR-0012](adr/0012-ai-platform-architecture.md) · [04-modules.md](04-modules.md) · [21-intelligence-pipeline.md](21-intelligence-pipeline.md) · [16-architecture-risks.md](16-architecture-risks.md) R-01, R-05, R-10
 >
@@ -588,7 +588,9 @@ Per CLAUDE.md §19, binding.
 
 **T115 ✅** — `domain/grounding.py` and `domain/errors.py`: the five checks, distinguishable violations, the deterministic report, and a schema derived from the validating type. **35 tests** against a deliberately corrupt corpus, eleven mutation-proven guarantees. One defect found by mutation, recorded below.
 
-**T116–T121 outstanding.** No evidence set, no grounding checks, no prompts, no adapters, no `infer.py`, no migration `0015`, no `ai.narration_completed` in [06-events.md](06-events.md), no evaluation harness.
+**T116 ✅** — `domain/prompt.py`, `infrastructure/prompt_loader.py`, `prompts/manifest.json`, and `explanation_narration@1` as a **draft**. Content-hash identity, the enforceable release rule, append-only evaluations. **34 tests**, ten mutation-proven guarantees. One departure, recorded below.
+
+**T117–T121 outstanding.** No evidence set, no grounding checks, no prompts, no adapters, no `infer.py`, no migration `0015`, no `ai.narration_completed` in [06-events.md](06-events.md), no evaluation harness.
 
 `interface/` is deliberately absent: M8 has no HTTP surface, the layering contract marks the layer optional, and a directory created for a caller that does not exist is the speculative structure CLAUDE.md §6 forbids.
 
@@ -676,4 +678,30 @@ This is the second time in two tasks a surviving mutation exposed a false justif
 
 ---
 
-*T111–T115 built. T116 onward not started.*
+### Departure 6 — release is derived, and two manifest fields were dropped
+
+The ratified manifest carried six fields: version, owner, evaluation history, supported models, supported datasets, release history. Two are gone, and one changed shape.
+
+**`status` does not exist.** A declared status could say *released* while no evaluation supported it — a field that can lie about the thing beside it. `is_released` is **derived**: a prompt is usable exactly where it has an evaluation that passed. Nothing to keep in sync, and nothing to forge.
+
+**`supported_models` and `supported_datasets` do not exist either.** They would be a second statement of what the evaluations already record, and the two would eventually disagree. `supports(model, dataset)` reads the evaluations directly.
+
+**`release_history` was dropped as speculative.** No consumer today; supersession is implicit in the version sequence, and evaluations carry their own dates. It arrives if something needs it.
+
+**`owner` was kept, and is the one field with no code consumer.** It answers *who reviews a change to this*, which is a real question about an artifact that alters model behaviour without altering code. Flagged rather than smuggled.
+
+The **fingerprint covers name, version and text — never evaluations**. They are observations *about* an artifact, not part of it, exactly as an observation is not the thing observed; a fingerprint that moved every time a prompt was measured could not identify anything. This is what makes append-only evaluation and immutable identity coexist.
+
+### What the content-hash lockfile does and does not promise
+
+`PINNED_FINGERPRINTS` in the test suite pins every shipped version, draft included. It does **not** make an in-place edit impossible — nothing in a repository can, since a determined change can edit the file, the manifest, and the test together. It makes one impossible to perform *quietly*: the edit now touches a test literal, which is a deliberate reviewable act rather than a diff nobody reads.
+
+Append-only evaluation is enforced the same way. The loader refuses a duplicate record; truncation across time is a review-and-git property, and is stated as such rather than claimed.
+
+### `explanation_narration@1` ships as a draft, and is unusable
+
+It has passed no evaluation, so the release rule refuses it — asserted by test. That is the system working rather than an omission: **T120 is what earns a prompt its release.** Shipping the artifact now lets the loader, the identity scheme and the release rule be exercised against something real instead of a fixture.
+
+---
+
+*T111–T116 built. T117 onward not started.*
