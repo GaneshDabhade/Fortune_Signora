@@ -29,6 +29,12 @@ This minimizes hallucination surface, reduces evaluation burden, improves reprod
 
 The general form, recorded in CLAUDE.md §2: *if the system already knows something deterministically, never ask a model to invent it again.* Use AI only where inference is genuinely required; everything else comes from deterministic computation, versioned configuration, or reviewed repository artifacts.
 
+**The general rule this follows** (CLAUDE.md §2, ratified 2026-07-30):
+
+> **Every field has the least powerful author capable of producing it correctly.** The database owns timestamps, code owns derived facts, domain experts own static knowledge, AI owns inference. If a less powerful component can produce a field correctly, it owns that field.
+
+Power means *freedom to be wrong in ways nothing can check*. The partition table below is that ladder applied field by field, which is why it reads as a demotion of the model rather than a restriction on it: the model keeps exactly the rung nothing else can reach.
+
 **The four questions that assign every field:**
 
 | If the information… | Then it is… |
