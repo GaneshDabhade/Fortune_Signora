@@ -266,6 +266,23 @@ The consequence is worth stating plainly: **Support adds no new number to the sy
 
 ---
 
+### T127 — the package composed, and two guards removed
+
+Built: `DecisionPackage`, `ReasoningContext`, `ReasoningCompleted`, and `Reason` — the use case, which reads as five steps because every decision was made elsewhere. A test asserts that structurally (`if support`, `if contested`, `if trend`, `len(events)` must not appear in it), because the module that concludes is the one most likely to accumulate rules belonging to a stronger owner.
+
+**`answers()` makes the traceability table executable.** The eleven questions below are returned as a mapping, and a test asserts every row is populated and non-blank. A package that cannot answer one has a defect — and *"nothing contradicts this"* is stated explicitly rather than left as an empty list, because an absent answer reads as an unanswered question.
+
+**Two guards were written and removed in the same task**, both found by tests that could not reach them:
+
+- A contested package was to be refused if it named no dissenting signal. `SupportBasis` already refuses that state, so the repeat could never fire — reaching it required defeating the type system from a test, which is what a guard that cannot fail looks like from the inside.
+- A context was to be refused if its evidence set were empty. `EvidenceSet` already refuses to be built with no facts.
+
+Both are recorded as comments where the checks would have been, so the next reader learns why the obvious guard is absent rather than adding it back.
+
+**The property genuinely worth protecting is different**, and is not structural: *does the conclusion the model wrote actually acknowledge the contradiction?* Citations cannot answer that, so it remains the rubric's dissent-acknowledgement measure at evaluation time — where this ADR placed it.
+
+---
+
 ## Traceability — every customer question to its source
 
 The checklist the Decision Package must satisfy, and where each answer comes from. **Two of the ten involve a model; eight do not.**
