@@ -1,6 +1,6 @@
 # 28 — AI Platform
 
-> Status: **RATIFIED — 2026-07-29.** Milestone **M8**, in progress. **T111–T116 complete**; T117–T121 outstanding.
+> Status: **RATIFIED — 2026-07-29.** Milestone **M8**, in progress. **T111–T117 complete**; T118–T121 outstanding.
 > Audience: engineers, architects, and anyone who has to trust what Signora says.
 > Anchors: [14-ai-architecture.md](14-ai-architecture.md) · [ADR-0012](adr/0012-ai-platform-architecture.md) · [04-modules.md](04-modules.md) · [21-intelligence-pipeline.md](21-intelligence-pipeline.md) · [16-architecture-risks.md](16-architecture-risks.md) R-01, R-05, R-10
 >
@@ -590,7 +590,9 @@ Per CLAUDE.md §19, binding.
 
 **T116 ✅** — `domain/prompt.py`, `infrastructure/prompt_loader.py`, `prompts/manifest.json`, and `explanation_narration@1` as a **draft**. Content-hash identity, the enforceable release rule, append-only evaluations. **34 tests**, ten mutation-proven guarantees. One departure, recorded below.
 
-**T117–T121 outstanding.** No evidence set, no grounding checks, no prompts, no adapters, no `infer.py`, no migration `0015`, no `ai.narration_completed` in [06-events.md](06-events.md), no evaluation harness.
+**T117 ✅** — the Ollama and Anthropic adapters, a shared transport-to-semantics mapping, and **one contract suite run against both**. **53 tests**, eleven mutation-proven guarantees. Two decisions recorded below.
+
+**T118–T121 outstanding.** No evidence set, no grounding checks, no prompts, no adapters, no `infer.py`, no migration `0015`, no `ai.narration_completed` in [06-events.md](06-events.md), no evaluation harness.
 
 `interface/` is deliberately absent: M8 has no HTTP surface, the layering contract marks the layer optional, and a directory created for a caller that does not exist is the speculative structure CLAUDE.md §6 forbids.
 
@@ -704,4 +706,28 @@ It has passed no evaluation, so the release rule refuses it — asserted by test
 
 ---
 
-*T111–T116 built. T117 onward not started.*
+### Decision — both adapters speak HTTP, not a vendor SDK
+
+Neither the `anthropic` nor the `ollama` package is used. Adding either would be a **new dependency requiring approval** (CLAUDE.md §6), and each brings its own retry and timeout behaviour to argue with the platform's. `httpx` is already ratified.
+
+The stronger reason is what it does to the contract suite: with one transport under both adapters, Ollama and Anthropic agreeing means *the adapters* agree — not that two SDKs happen to normalise the same way. The cost is that request and response shapes are written by hand and can drift if a vendor changes its API; the pinned `anthropic-version` header bounds that on the production side. **If the SDKs are preferred, that is an approval to give and this reverses cleanly** — nothing above the adapter would change.
+
+### Decision — no configuration was added, deliberately
+
+Both adapters take their client, base URL, key and model set as constructor arguments. Nothing was added to `signora_platform/settings.py`.
+
+That defers a question worth deciding rather than assuming: **the platform is frozen (§20a), and the Infrastructure Contract (§20b) requires every value to arrive through `Settings`.** No module has ever added a field to it. Whether doing so counts as *using* the platform or *changing* it is a ruling, and it belongs at the composition root — T118 — not smuggled in beside an adapter.
+
+### The suite is the specification, and it caught a fourth dead guard
+
+Every behaviour is stated once and run against both adapters unmodified: structured output reaches the vendor · content is a string whatever the vendor returned · truncation is `AIOutputUnusableError`, never a grounding failure · 5xx and timeouts are transient · 429 carries the vendor's stated wait, or `None` when it gave none · 401 and 403 are permanent · no vendor exception escapes · the adapter holds nothing between calls.
+
+Two further tests assert the two adapters produce *identical* results and classify identical failures identically — vendor neutrality demonstrated rather than described.
+
+The 401/403 branch survived its mutation: those statuses already fall through to permanent, so the branch changes only the **message**. Since a rejected credential is the most common misconfiguration there is, the diagnostic *is* the property — so it is now asserted, and the mutation bites. Fourth instance in four tasks of the same finding.
+
+**Nothing in this suite calls a model.** It proves adapters translate correctly; whether a model reasons well is the harness's question (T120), and conflating them is what the two-tier split exists to prevent.
+
+---
+
+*T111–T117 built. T118 onward not started.*
