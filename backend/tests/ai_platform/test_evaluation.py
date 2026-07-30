@@ -304,13 +304,22 @@ class TestTheHarness:
 
 class TestRecordingTheMeasurement:
     def test_a_run_is_appended_to_the_manifest(self, tmp_path: Path) -> None:
+        """**Appended**, so the assertion is relative rather than absolute.
+
+        Written first as `len(entries) == 1`, which passed only while the
+        shipped manifest held no evaluations — it broke the moment a real run
+        recorded one. Counting from the starting point is what the word
+        *append* actually claims.
+        """
         manifest = _manifest_copy(tmp_path)
+        before = len(json.loads(manifest.read_text())["prompts"][0]["evaluations"])
+
         written = record(_report(), manifest=manifest)
 
         entries = json.loads(manifest.read_text())["prompts"][0]["evaluations"]
-        assert len(entries) == 1
-        assert entries[0]["rubric_version"] == RUBRIC_VERSION
-        assert entries[0]["dataset_version"] == 1
+        assert len(entries) == before + 1
+        assert entries[-1]["rubric_version"] == RUBRIC_VERSION
+        assert entries[-1]["dataset_version"] == 1
         assert written.passed
 
     def test_the_written_manifest_still_loads(self, tmp_path: Path) -> None:
@@ -507,6 +516,29 @@ class TestTheReportIsReadable:
 
 
 class TestTheCommandRefusesToInventAResult:
+    """The absence of a runtime must be *created*, never inherited.
+
+    Corrected 2026-07-30, and the correction matters more than the tests. As
+    first written these called ``main([])`` and relied on the developer's
+    machine having no Ollama — which was true when they were written and
+    stopped being true an hour later. They then failed, having silently been
+    testing the ambient environment rather than the refusal.
+
+    That is the worst possible shape for these two in particular: they assert
+    the guarantee that the harness never substitutes a fake for a model, and
+    a test that quietly changes meaning when a service starts cannot assert
+    anything. The unreachable address is now injected.
+    """
+
+    #: Port 1 on the loopback. Privileged, unbound, and refused immediately —
+    #: an *address*, not a timeout, so the test is fast and cannot pass
+    #: because a connection was merely slow.
+    NOWHERE = "http://127.0.0.1:1"
+
+    @pytest.fixture(autouse=True)
+    def _no_runtime(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("SIGNORA_OLLAMA_BASE_URL", self.NOWHERE)
+
     async def test_it_fails_rather_than_falling_back_to_a_fake(self, capsys: Any) -> None:
         """The single most important behaviour in the harness. A run against a
         scripted adapter would prove the grounding checker works and nothing
@@ -521,7 +553,9 @@ class TestTheCommandRefusesToInventAResult:
         exit_code = await main([])
 
         assert exit_code == 2
-        assert "No model runtime" in capsys.readouterr().err
+        printed = capsys.readouterr().err
+        assert "No model runtime" in printed
+        assert self.NOWHERE in printed, "the refusal must name the address it tried"
 
     async def test_the_refusal_says_how_to_fix_it(self, capsys: Any) -> None:
         """An engineer meeting this message should not have to read the
@@ -532,6 +566,30 @@ class TestTheCommandRefusesToInventAResult:
         printed = capsys.readouterr().err
         assert "ollama pull" in printed
         assert "SIGNORA_OLLAMA_BASE_URL" in printed
+
+    async def test_a_reachable_runtime_is_not_refused(self) -> None:
+        """The positive control, and the reason the two tests above were
+        wrong for an hour: without it, a refusal that fired unconditionally
+        would satisfy both of them."""
+        import httpx
+
+        from modules.ai_platform.evaluation.__main__ import _reachable
+
+        async def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, json={"models": []})
+
+        transport = httpx.MockTransport(handler)
+        async with httpx.AsyncClient(transport=transport) as client:
+            assert await _reachable(client, "http://any-host") is True
+            assert await _reachable(client, self.NOWHERE) is True
+
+    async def test_an_unreachable_runtime_is_detected(self) -> None:
+        import httpx
+
+        from modules.ai_platform.evaluation.__main__ import _reachable
+
+        async with httpx.AsyncClient() as client:
+            assert await _reachable(client, self.NOWHERE) is False
 
 
 class TestTheEvidenceTranslation:

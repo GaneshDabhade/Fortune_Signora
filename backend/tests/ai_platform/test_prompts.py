@@ -78,14 +78,37 @@ class TestTheShippedRegistryIsIntact:
         actual = {v.reference: v.fingerprint for v in load_prompt_registry().versions}
         assert actual == PINNED_FINGERPRINTS
 
-    def test_the_narration_prompt_is_not_yet_usable(self) -> None:
-        """It has passed no evaluation, so the release rule refuses it. Not
-        an oversight — T120 is what earns it a release, and until then the
-        rule working is the system working."""
+    def test_the_narration_prompt_is_usable_only_where_it_was_measured(self) -> None:
+        """Released for `llama3.1:8b` on 2026-07-30 — earned by a real
+        evaluation run, never declared.
+
+        Rewritten at that run. It previously asserted the prompt was *not*
+        usable, which was true while it had passed nothing and stopped being
+        true the moment T120's harness measured it. The durable property is
+        the one asserted now: released exactly where it was measured and
+        refused everywhere else. A prompt tuned against a small local model
+        has not been shown to behave on a frontier hosted one (ADR-0028), and
+        that gap must stay structural rather than remembered.
+        """
         prompt = load_prompt_registry().get("explanation_narration", 1)
-        assert not prompt.is_released
-        with pytest.raises(PromptNotReleasableError, match="nothing yet"):
-            prompt.require(model="llama3.1", dataset="baseline")
+
+        assert prompt.is_released
+        assert prompt.is_released_for("llama3.1:8b")
+        prompt.require_model("llama3.1:8b")
+
+        for unearned in ("claude-sonnet-4-5", "gpt-4o", "llama3.1:70b"):
+            with pytest.raises(PromptNotReleasableError):
+                prompt.require_model(unearned)
+
+    def test_its_release_names_the_dataset_and_rubric_behind_it(self) -> None:
+        """A release nobody can trace to a measurement is a declaration."""
+        prompt = load_prompt_registry().get("explanation_narration", 1)
+        (evaluation,) = [e for e in prompt.evaluations if e.passed]
+
+        assert evaluation.dataset == "explanation_narration"
+        assert evaluation.dataset_version == 1
+        assert evaluation.rubric_version == 1
+        assert evaluation.sample_size > 0
 
     def test_every_manifest_entry_has_a_file_and_every_file_an_entry(self) -> None:
         declared = {

@@ -103,6 +103,12 @@ async def main(argv: list[str] | None = None) -> int:
                 "    curl -fsSL https://ollama.com/install.sh | sh\n"
                 f"    ollama pull {model}\n"
                 "\n"
+                "That installer needs root. Without sudo, extract the release tarball\n"
+                "into ~/.local and run the server as your own user instead — it needs no\n"
+                "privileges and is removed by deleting the directory:\n"
+                "    https://github.com/ollama/ollama/releases  (ollama-linux-amd64.tar.zst)\n"
+                "    ~/.local/bin/ollama serve\n"
+                "\n"
                 "Or point SIGNORA_OLLAMA_BASE_URL at a running one.",
                 file=sys.stderr,
             )

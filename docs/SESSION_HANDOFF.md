@@ -13,14 +13,14 @@
 | | |
 |---|---|
 | **Last completed** | **M6 Opportunity Engine** — closed 2026-07-29. *The first sellable moment.* |
-| **Next** | **M8 AI Platform** — abstraction layer, prompt registry, eval harness. **Proposal complete and [RATIFIED](architecture/28-ai-platform.md) 2026-07-29.** Implementation begins at **T111**. |
-| **Phase** | Product Pipeline. Foundations and enablement are complete and frozen. **Eight pipeline stages built.** |
+| **In progress** | **M8 AI Platform** — [RATIFIED](architecture/28-ai-platform.md) 2026-07-29. **T111–T120 built and pushed; T121 outstanding.** The evaluation harness has been run against a real model, and `explanation_narration@1` is released for `llama3.1:8b`. |
+| **Phase** | Product Pipeline. Foundations and enablement are complete and frozen. **Eight pipeline stages built, plus the AI substrate.** |
 | **Overall completion** | **~52%** by engineering effort (~162 of ~261–339 ew) |
 | **Remaining** | ~99–177 ew · ~1.0–1.6 years at 3 engineers, ~3.1–4.7 at 1 |
 | **Completed milestones** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · M4 · M5A · M5B · M6 |
 | **Branch** | `main` |
 
-**Recent commits:** `09b596f` repository-architecture proposal (documentation + business scenarios, **awaiting ruling**) · `2f22037` Local-First adopted · `4baccb9` grounding ratified · `e2e442b` M8 proposal · `6cec891` M6 closed
+**Recent commits:** `4b3cd91` T120 evaluation harness · `5ba4754` T119 `ai_inference` · `79e7a9a` T118 the only path to a model · `d3ed085` T117 two adapters, one contract · `09b596f` repository-architecture proposal (**still awaiting ruling**)
 
 ### Health
 
@@ -311,14 +311,18 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 
 ## 7 · Next session starting point
 
-> **Completed:** M6 Opportunity Engine · **Next:** M8 AI Platform
+> **In progress:** M8 AI Platform — **T111–T120 done, T121 next** · **Completed:** M6 Opportunity Engine
 > **Branch:** `main` · everything committed and pushed, tree clean
-> **Health:** 1320 backend + 101 frontend tests passing · coverage ~95.3% (gate 95%) · 269 invariants · 21 contracts · smoke green over 21 stages, 40 checks
+> **Health:** 1392 backend + 101 frontend tests passing · coverage 95.36% (gate 95%) · 274 invariants · 22 contracts · smoke green · `make eval` green against `llama3.1:8b`
 >
 > **First actions:**
 > 1. Read [21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md) — the shortest path to full context, and it tracks what is *built* rather than intended.
 > 2. Verify the tree is clean and `make smoke` is green.
-> 3. **Do not write an M8 proposal — it exists and is ratified.** Read [28-ai-platform.md](architecture/28-ai-platform.md), then begin **T111** (ADR-0028, model runtime by environment). The task breakdown is T111–T121 in that document.
+> 3. **Begin T121** — the last task in M8: the narration use case, its table and event (`ai.narration_completed`, to be cataloged in [06-events.md](architecture/06-events.md) in the same change), the composition root, and one smoke stage. Read the *"As built"* section of [28-ai-platform.md](architecture/28-ai-platform.md) first — ten tasks of decisions are recorded there.
+>
+> **`make eval` needs a model runtime, and this machine's is rootless.** Ollama lives in `~/.local/bin/ollama` (no `sudo` on this workstation); start it with `~/.local/bin/ollama serve` before running `make eval`. It is not a service and does not survive a reboot. Everything else — the suite, the invariants, `make smoke` — is offline and needs nothing.
+>
+> **Two open harness gaps, raised and not fixed:** the evaluation report does not surface retries (one call timed out and was retried on the first real run, discoverable only from the Ollama log), and the golden set's two cases are structurally identical, so `sample_size` is 2 and the variety is 1.
 >
 > **Already settled, do not re-open:** prompts are repository artifacts, immutable once released (content-hash enforced) · the evaluation harness asserts **deterministic correctness** on every call and **probabilistic quality** only in `make eval`, never mixed · context assembly is split — the container is infrastructure that *refuses* an invalid set, the contents are the caller's domain choice · the port reports **usage, never money**. The two binding principles are **grounding** and **statelessness**; the **stop condition** halts implementation if M8 needs a proposition its input does not contain.
 >
@@ -336,6 +340,7 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 
 | Date | Change |
 |---|---|
+| 2026-07-30 | v8 — **M8 T111–T120 built; the evaluation harness run against a real model.** `explanation_narration@1` passed against `llama3.1:8b` (2 cases, 0 grounding failures, 0 schema failures, coverage 1.000) and is released for that model and refused for every other — the first objective AI-quality signal in the project. Records the rootless Ollama install this workstation needs, the two open harness gaps (retries not surfaced in the report; two structurally identical golden cases), and the observed cost (29.4 s cold load, 43–52 s per case, first call retried at the 60 s policy timeout). §1 and §7 rewritten: this file had been telling the next session to begin at T111, ten tasks after implementation actually started. |
 | 2026-07-30 | v7.2 — **Pre-flight synchronization before T111.** Records **statelessness** as the AI Platform's second permanent principle — ratified in review but, until now, present only in conversation. Promotes [28-ai-platform.md](architecture/28-ai-platform.md) to **RATIFIED** and folds the confirmed decisions (module location, dependency direction, freeze-after-M10, Claude-only production adapter, one event, the binding stop condition) into its approval record. §1, §5 and §7 corrected: this file previously told the next session to *write* a proposal that already existed. `make smoke` and `make dr` now invoke through `bash` rather than the executable bit, which commit `0309193` had dropped. Coverage is quoted as **~95.3%** — the earlier "correction" to 95.25% was chasing ±0.02pp run-to-run noise, not fixing an error. |
 | 2026-07-29 | v7.1 — **Local-First Development** adopted before M8 implementation ([ADR-0027](architecture/adr/0027-local-first-development.md), CLAUDE.md §20c-2 and the new *repository tells the truth* principle in §2). Actions disabled; three workflows retained at `workflow_dispatch`. The cross-tier JWT contract test moved into `make smoke` (stage 15b) and now **fails when skipped**. Corrected two pre-existing drifts: smoke has **21 stages, not 23**, and coverage measures **95.25%**. |
 | 2026-07-29 | v7 — updated at the M6 boundary. Adds the **Commercial commitment** contract block (intelligence suggests, humans commit · three data categories · a rebuild regenerates intelligence only · opportunities outlive their score · workflow stores no intelligence · history never rewritten · the citation cannot be orphaned · every state names its actor and reason · dismissal distinct from a lost deal · four ownership layers). Rewrites §5 for M8, records the eighth `# type: ignore` and the application-enforced open-per-account rule, and notes that CLAUDE.md §19 now binds a **Milestone Definition of Done** ending in a pushed, clean tree. |

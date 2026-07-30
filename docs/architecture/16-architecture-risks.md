@@ -139,7 +139,9 @@ No golden test sets, human-review sampling process, or regression testing exists
 
 **Partially mitigated 2026-07-30 (M8, T120).** The methodology now exists and is enforceable: a versioned golden dataset seeded from the M2.0 baseline scenario, a published rubric with no hidden weighting, and a release rule that is *derived* from measurements rather than declared — a prompt is usable exactly where an evaluation of it passed, and nothing anywhere can mark one released ([28-ai-platform.md](28-ai-platform.md)).
 
-**Still open, and specifically so:** the harness has **not been run**. No model runtime is installed on the development machine, so `make eval` correctly refuses rather than substituting a fake, and `explanation_narration@1` remains a draft with no passing evaluation. Until a run happens there is still no objective quality signal — the apparatus to produce one is what changed, not the signal itself.
+**First measurement taken 2026-07-30:** `explanation_narration@1` passed against `llama3.1:8b` over `explanation_narration@1` — 2 cases, 0 grounding failures, 0 schema failures, coverage 1.000 — and is now released for that model and refused for every other. There is an objective quality signal for the first time in the project.
+
+**Still open, and specifically so:** the signal covers **one prompt, one model, two structurally identical cases.** Production runs hosted models (ADR-0028), and no hosted model has been evaluated, so the prompt M8 ships is deliberately unusable in production until it is. Regression enforcement also has no history to regress against yet — that begins with the second run. The risk moves from *"no methodology exists"* to *"the methodology exists and has been exercised once"*, which is progress and not closure.
 
 ---
 

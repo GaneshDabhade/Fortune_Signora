@@ -6,7 +6,19 @@
       "version": 1,
       "owner": "AI Platform",
       "fingerprint": "be511c4152c898ce466b0e4f632d35d4b68aab8661d6da5e6bd04d3f8f276dbb",
-      "evaluations": []
+      "evaluations": [
+        {
+          "model": "llama3.1:8b",
+          "dataset": "explanation_narration",
+          "dataset_version": 1,
+          "rubric_version": 1,
+          "evaluated_on": "2026-07-30",
+          "sample_size": 2,
+          "grounding_failures": 0,
+          "schema_failures": 0,
+          "coverage": 1.0
+        }
+      ]
     }
   ]
 }
