@@ -354,4 +354,24 @@ One event per raw record rather than one per claim: the claims from a record are
 
 > **Additions to the v2 catalog**, made before either event had an implementation: `originating_buying_score_id` (replacing the vaguer `source_buying_score`), `score_at_creation`, `contested_at_creation`, `qualification`, `policy_version` on creation; and `entity_id`, `owner_id`, `actor_id`, `reason`, `sequence` on the stage change. **`opportunity.closed` was considered and not added** — `stage_changed` already carries it, and an event whose information is fully contained in another is a contract nobody keeps.
 
+### AI Platform (M8)
+
+| Event | v | Payload | Notes |
+|---|---|---|---|
+| `ai.narration_completed` | 1 | `narration_id`, `subject_kind`, `subject_id`, `prompt_name`, `prompt_version`, `prompt_fingerprint`, `model`, `vendor`, `evidence_digest`, `statement_count`, `inference_id`, `payload_version` | A grounded explanation was produced and stored |
+
+**Exactly one event, and the restraint is the design.** A substrate emitting events nobody consumes is speculative by definition. `ai_reasoning.completed` (M9) and `ai_research.completed` (M10) remain reserved for the modules that will actually produce them.
+
+**It announces language, not a conclusion.** Every statement in the narration restates something the deterministic pipeline had already computed — grounding makes that mechanical rather than aspirational — so a consumer learns that an explanation now exists, never that Signora has decided anything new. This is the boundary between M8 and M9 expressed in the event contract.
+
+**Identity and counts, never the prose.** `statement_count` says how many statements; nothing here says what they are. *Events carry identity; ports carry payload* — the same rule that keeps claim bodies out of `claim.recorded` and the contribution ledger out of `buying_score.updated`. Putting a paragraph of model output in an envelope would make every wording change an event-contract change, and would copy customer-visible text into a queue whose retention nobody has reasoned about.
+
+**The subject is addressed in the AI Platform's own vocabulary** — `subject_kind` plus `subject_id`, the `EvidenceRef` shape — rather than as `entity_id`. The substrate does not name the pipeline's concepts, in its schema or in its contracts.
+
+**`vendor` is provenance and never a decision input.** A consumer branching on it has reintroduced the vendor coupling the whole abstraction exists to prevent (CLAUDE.md §10). `prompt_fingerprint` travels because two narrations claiming version 1 with different fingerprints came from different text, and `inference_id` points at the operational record for anyone who needs tokens, latency or retries.
+
+**No `ai.narration_failed`.** A failed inference is already recorded in `ai_inference` with its outcome and detail; an event whose information is fully contained elsewhere is a contract nobody keeps — the same reasoning that removed `signal.scored` and `opportunity.closed`.
+
+> **Added 2026-07-30**, with its producer, in the change that built it. The M8 proposal reserved exactly this event and stated it would be cataloged in the same change or not at all.
+
 > **Removed:** `business_event_type.published` from the v2 catalog. It assumed a runtime-mutable taxonomy that notified the system when it changed. The taxonomy is a versioned repository artifact — **the deployment is the notification** — so the event had no producer, and an event with no producer is a contract nobody is keeping.

@@ -13,7 +13,8 @@
 | | |
 |---|---|
 | **Last completed** | **M6 Opportunity Engine** — closed 2026-07-29. *The first sellable moment.* |
-| **In progress** | **M8 AI Platform** — [RATIFIED](architecture/28-ai-platform.md) 2026-07-29. **T111–T120 built and pushed; T121 outstanding.** The evaluation harness has been run against a real model, and `explanation_narration@1` is released for `llama3.1:8b`. |
+| **Last completed** | **M8 AI Platform** — T111–T121, closed 2026-07-30. Evaluated against a real model; `explanation_narration@1` released for `llama3.1:8b`. |
+| **Next** | **M9 AI Reasoning Engine** — the first module that produces propositions its input did not contain. |
 | **Phase** | Product Pipeline. Foundations and enablement are complete and frozen. **Eight pipeline stages built, plus the AI substrate.** |
 | **Overall completion** | **~52%** by engineering effort (~162 of ~261–339 ew) |
 | **Remaining** | ~99–177 ew · ~1.0–1.6 years at 3 engineers, ~3.1–4.7 at 1 |
@@ -311,14 +312,14 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 
 ## 7 · Next session starting point
 
-> **In progress:** M8 AI Platform — **T111–T120 done, T121 next** · **Completed:** M6 Opportunity Engine
+> **Completed:** M8 AI Platform (T111–T121) · **Next:** M9 AI Reasoning Engine
 > **Branch:** `main` · everything committed and pushed, tree clean
-> **Health:** 1392 backend + 101 frontend tests passing · coverage 95.36% (gate 95%) · 274 invariants · 22 contracts · smoke green · `make eval` green against `llama3.1:8b`
+> **Health:** 1417 backend + 101 frontend tests passing · coverage 95.35% (gate 95%) · 277 invariants · 22 contracts · smoke green (stage 14i added) · `make eval` green against `llama3.1:8b`
 >
 > **First actions:**
 > 1. Read [21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md) — the shortest path to full context, and it tracks what is *built* rather than intended.
 > 2. Verify the tree is clean and `make smoke` is green.
-> 3. **Begin T121** — the last task in M8: the narration use case, its table and event (`ai.narration_completed`, to be cataloged in [06-events.md](architecture/06-events.md) in the same change), the composition root, and one smoke stage. Read the *"As built"* section of [28-ai-platform.md](architecture/28-ai-platform.md) first — ten tasks of decisions are recorded there.
+> 3. **Settle the open finding before M9 builds on it:** `Infer` writes an `ai_inference` row on every outcome, but `tenant_scoped_session` wraps `session.begin()`, so a grounding failure that propagates rolls the record back. AC-69 holds in the domain and not in production. M9 will produce far more inferences than M8 and inherits the gap. Read the T121 notes in [28-ai-platform.md](architecture/28-ai-platform.md).
 >
 > **`make eval` needs a model runtime, and this machine's is rootless.** Ollama lives in `~/.local/bin/ollama` (no `sudo` on this workstation); start it with `~/.local/bin/ollama serve` before running `make eval`. It is not a service and does not survive a reboot. Everything else — the suite, the invariants, `make smoke` — is offline and needs nothing.
 >
@@ -340,6 +341,7 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 
 | Date | Change |
 |---|---|
+| 2026-07-30 | v9 — **M8 complete.** T121 composes the validated platform: migration `0016` (`ai_narration`), the narration use case, `ai.narration_completed`, the composition root, and smoke stage 14i. Records the **fifth data category** — the materialized AI artifact — and the ruling that it is a historical fact rather than current truth, therefore immutable. §1 and §7 rewritten for M9. **Carries forward one open finding:** operational history does not survive a rolled-back unit of work, so AC-69 holds in the domain and not in production. M9 inherits it and should settle it first. |
 | 2026-07-30 | v8 — **M8 T111–T120 built; the evaluation harness run against a real model.** `explanation_narration@1` passed against `llama3.1:8b` (2 cases, 0 grounding failures, 0 schema failures, coverage 1.000) and is released for that model and refused for every other — the first objective AI-quality signal in the project. Records the rootless Ollama install this workstation needs, the two open harness gaps (retries not surfaced in the report; two structurally identical golden cases), and the observed cost (29.4 s cold load, 43–52 s per case, first call retried at the 60 s policy timeout). §1 and §7 rewritten: this file had been telling the next session to begin at T111, ten tasks after implementation actually started. |
 | 2026-07-30 | v7.2 — **Pre-flight synchronization before T111.** Records **statelessness** as the AI Platform's second permanent principle — ratified in review but, until now, present only in conversation. Promotes [28-ai-platform.md](architecture/28-ai-platform.md) to **RATIFIED** and folds the confirmed decisions (module location, dependency direction, freeze-after-M10, Claude-only production adapter, one event, the binding stop condition) into its approval record. §1, §5 and §7 corrected: this file previously told the next session to *write* a proposal that already existed. `make smoke` and `make dr` now invoke through `bash` rather than the executable bit, which commit `0309193` had dropped. Coverage is quoted as **~95.3%** — the earlier "correction" to 95.25% was chasing ±0.02pp run-to-run noise, not fixing an error. |
 | 2026-07-29 | v7.1 — **Local-First Development** adopted before M8 implementation ([ADR-0027](architecture/adr/0027-local-first-development.md), CLAUDE.md §20c-2 and the new *repository tells the truth* principle in §2). Actions disabled; three workflows retained at `workflow_dispatch`. The cross-tier JWT contract test moved into `make smoke` (stage 15b) and now **fails when skipped**. Corrected two pre-existing drifts: smoke has **21 stages, not 23**, and coverage measures **95.25%**. |

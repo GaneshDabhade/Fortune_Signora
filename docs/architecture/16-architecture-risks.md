@@ -75,6 +75,8 @@ No policy defines which categories of workspace data are permitted to be include
 
 **Impact if unmitigated:** A regulated customer's data could be sent to a third-party AI vendor in a way that violates a contractual or regulatory commitment before anyone notices.
 
+**Scope narrowed 2026-07-30 (M8).** Two decisions bound the exposure without resolving the policy. The **rendered prompt text is not stored** — it is reconstructable from `prompt_version` plus `evidence_refs`, so no untriaged body of provider-sourced text accumulates (`ai_inference`, migration 0015), and failure detail is capped at 1024 characters. Separately, **`ai_narration` stores model output deliberately** (migration 0016) as a *materialized AI artifact*, ratified as its own data category for auditability, user experience and provenance. That is an explicit product-owner decision to persist customer-visible generated text, not an oversight — and it is exactly the category a data-classification policy will need to cover when one exists.
+
 **Mitigation:** Define an explicit data-classification taxonomy and an allowlist/blocklist enforced in AI Research Engine's and AI Reasoning Engine's context-assembly step, before onboarding customers with regulated data categories. Owner: TBD.
 
 ---

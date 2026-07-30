@@ -1,6 +1,6 @@
 """What the AI Platform needs from the world outside it.
 
-Two ports, both narrow, both declared here rather than imported from
+Three ports, all narrow, both declared here rather than imported from
 anywhere: **this layer knows nothing of the pipeline** (28-ai-platform.md).
 An adapter in ``infrastructure/`` satisfies each — which is what keeps the
 substrate extractable, testable with fakes alone, and still pure substrate
@@ -13,6 +13,7 @@ from typing import Protocol
 from uuid import UUID
 
 from modules.ai_platform.domain.evidence import EvidenceSet
+from modules.ai_platform.domain.narration import MaterializedNarration
 from modules.ai_platform.domain.record import InferenceRecord
 
 
@@ -40,3 +41,20 @@ class ExplanationSource(Protocol):
     """
 
     async def evidence_for(self, workspace_id: UUID, entity_id: UUID) -> EvidenceSet | None: ...
+
+
+class NarrationRepository(Protocol):
+    """Stores a materialized narration.
+
+    Offers ``save`` and a read, and deliberately **no update and no delete**.
+    A narration is a historical fact: a better explanation is a new row, and
+    the absent update is enforced at the database by the missing ``UPDATE``
+    grant (migration 0016). The absent delete is the weaker statement — a
+    workspace must stay erasable — it simply is not this port's job.
+    """
+
+    async def save(self, narration: MaterializedNarration) -> None: ...
+
+    async def latest_for(
+        self, workspace_id: UUID, subject_id: UUID
+    ) -> MaterializedNarration | None: ...

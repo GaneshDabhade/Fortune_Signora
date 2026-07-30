@@ -81,6 +81,13 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # address one workspace's facts, and the ungrounded rate is a fact
         # about that workspace's data.
         "ai_inference",
+        # AI Platform (M8), migration 0016. The platform's first **materialized
+        # AI artifact** — a fifth category. Not derived intelligence, not
+        # configuration, not workflow, not operational history: a grounded
+        # explanation deliberately persisted for auditability, user experience
+        # and provenance, and the first row in the platform holding text a
+        # customer reads.
+        "ai_narration",
     }
 )
 
@@ -147,6 +154,13 @@ REQUIRED_POLICY_COMMANDS: Final[frozenset[str]] = frozenset({"SELECT", "INSERT",
 # and the rows worth editing are exactly the embarrassing ones (migration
 # 0015; M8).
 #
+# `ai_narration` is a **historical fact, not current truth** (ratified
+# 2026-07-30). It records what the platform produced at one moment, against
+# one prompt, one model and one evidence set. Prompt evolution produces a new
+# narration; editing one would destroy the only record of what a customer was
+# actually shown, and silently invalidate every evaluation and audit citing it
+# (migration 0016; M8).
+#
 # Adding a table here is a deliberate architectural act. The immutability it
 # claims is separately asserted in test_tenancy_policy.py.
 IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
@@ -163,6 +177,7 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         "opportunity_state",
         "workspace_opportunity_policy",
         "ai_inference",
+        "ai_narration",
     }
 )
 

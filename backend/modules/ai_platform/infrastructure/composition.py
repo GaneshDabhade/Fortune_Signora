@@ -1,0 +1,111 @@
+"""Composition root for the AI Platform.
+
+**The only place that knows a vendor exists.** `AISettings` is constructed
+here, the adapter is built from it, the registry is assembled, and `Infer` is
+wired. Nothing above this file can name a vendor, which is what makes vendor
+neutrality a property of the code rather than a rule people remember.
+
+Configuration is a typed Settings object owned by the module whose behaviour
+it governs (CLAUDE.md §6, ratified 2026-07-30). `AISettings` is the AI
+Platform's; the platform's own lives in `signora_platform/settings.py`; no
+module ever learns where another module's configuration came from.
+
+The HTTP client and the explanation source are **parameters, not
+constructions**: the client's lifetime belongs to the process that owns it,
+and building an `OpportunityQueries` here would mean importing another
+module's infrastructure.
+"""
+
+from __future__ import annotations
+
+import httpx
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from modules.ai_platform.application.infer import Infer, InferencePolicy
+from modules.ai_platform.application.narrate import Narrate
+from modules.ai_platform.application.ports import ExplanationSource
+from modules.ai_platform.domain.provider import AIProviderRegistry
+from modules.ai_platform.infrastructure.adapters.anthropic import AnthropicAdapter
+from modules.ai_platform.infrastructure.adapters.ollama import OllamaAdapter
+from modules.ai_platform.infrastructure.prompt_loader import load_prompt_registry
+from modules.ai_platform.infrastructure.repository import (
+    SqlInferenceRecorder,
+    SqlNarrationRepository,
+)
+from modules.ai_platform.infrastructure.settings import AISettings
+from signora_platform.event_bus import EventPublisher
+
+#: The prompt M8 ships. Named here rather than passed by a caller: which
+#: prompt narrates an account is the module's decision, and a caller free to
+#: choose one could route around the release rule by naming an unevaluated
+#: version.
+NARRATION_PROMPT = "explanation_narration"
+NARRATION_PROMPT_VERSION = 1
+
+
+def build_provider_registry(
+    settings: AISettings, *, client: httpx.AsyncClient
+) -> AIProviderRegistry:
+    """Register every adapter whose configuration is present.
+
+    **An adapter is registered only when its credentials exist.** A missing
+    key therefore produces *"no provider serves this model"* at resolution —
+    a clear composition error — rather than a call that travels to a vendor
+    and fails there with something less legible.
+
+    There is deliberately **no fallback between them.** Development is Ollama
+    and production is hosted (ADR-0028); a deployed service that could quietly
+    reach a local runtime when its vendor was unreachable would serve
+    customers from a model nothing evaluated.
+    """
+    registry = AIProviderRegistry()
+    registry.register(
+        OllamaAdapter(
+            client=client,
+            models=frozenset({settings.ollama_model}),
+            base_url=settings.ollama_base_url,
+        )
+    )
+    if settings.anthropic_api_key:
+        registry.register(
+            AnthropicAdapter(
+                client=client,
+                api_key=settings.anthropic_api_key,
+                models=frozenset({settings.anthropic_model}),
+                base_url=settings.anthropic_base_url,
+            )
+        )
+    return registry
+
+
+def build_infer(
+    session: AsyncSession,
+    *,
+    providers: AIProviderRegistry,
+    policy: InferencePolicy | None = None,
+) -> Infer:
+    return Infer(
+        providers=providers,
+        prompts=load_prompt_registry(),
+        recorder=SqlInferenceRecorder(session),
+        policy=policy or InferencePolicy(),
+    )
+
+
+def build_narrate(
+    session: AsyncSession,
+    *,
+    providers: AIProviderRegistry,
+    source: ExplanationSource,
+    publisher: EventPublisher,
+    policy: InferencePolicy | None = None,
+) -> Narrate:
+    return Narrate(
+        infer=build_infer(session, providers=providers, policy=policy),
+        source=source,
+        repository=SqlNarrationRepository(session),
+        publisher=publisher,
+        session=session,
+        prompt_name=NARRATION_PROMPT,
+        prompt_version=NARRATION_PROMPT_VERSION,
+    )

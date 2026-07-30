@@ -461,6 +461,36 @@ else
   fail "commercial commitment failed against the running stack"
 fi
 
+# ================================================== 14i. AI Platform
+
+stage "14i. Grounded explanation"
+
+# The M8 demonstration, and the first stage that produces language. It
+# deliberately does **not** call a model: `make eval` is the only command in
+# this repository that does, and folding a probabilistic run into the
+# deployment gate is how a smoke test becomes something people re-run until it
+# passes (28-ai-platform.md, "the two-tier guarantee"). Ollama is a
+# development runtime and never a production dependency (ADR-0028), so a stack
+# built from production images must not need one.
+#
+# What it proves is the half that *is* deterministic, and it is the half worth
+# gating on: the composition root wires, evidence assembles from the real
+# pipeline, a grounded narration is stored with complete provenance, the event
+# reaches the outbox — and an invented proposition is refused rather than
+# stored. That last one is the milestone's real demonstration: the guard is
+# deterministic even though the thing it guards is not.
+if (cd ../backend && \
+    SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 \
+    SIGNORA_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    SIGNORA_TEST_APP_DATABASE_URL="postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5433/signora" \
+    SIGNORA_TEST_ADMIN_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    uv run pytest tests/ai_platform -q >/tmp/smoke_ai_platform.log 2>&1); then
+  pass "$(grep -oE '[0-9]+ passed' /tmp/smoke_ai_platform.log | tail -1) against the running stack"
+else
+  tail -20 /tmp/smoke_ai_platform.log
+  fail "grounded explanation failed against the running stack"
+fi
+
 # ================================================= 15. Security Invariants
 
 stage "15. Security Invariants"
@@ -524,4 +554,5 @@ printf '\n\033[32m\033[1mPLATFORM SMOKE TEST PASSED\033[0m  (%ds)\n' "$((SECONDS
 printf 'Build · startup · migrations · identities · image hygiene · health · readiness ·\n'
 printf 'auth · JWT · authorization · RLS · event bus · relay · workers · ingestion ·\n'
 printf 'normalization · identity resolution · change detection · business events ·\n'
-printf 'signals · buying scores · opportunities · invariants · teardown\n\n'
+printf 'signals · buying scores · opportunities · grounded explanation · invariants ·
+teardown\n\n'

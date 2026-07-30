@@ -1,6 +1,6 @@
 # 28 — AI Platform
 
-> Status: **RATIFIED — 2026-07-29.** Milestone **M8**, in progress. **T111–T120 complete**; T121 outstanding. `make eval` has been run against a real model: **`explanation_narration@1` is released for `llama3.1:8b`** — see the T120 notes.
+> Status: **RATIFIED — 2026-07-29.** Milestone **M8** — **T111–T121 complete.** `make eval` has been run against a real model and `explanation_narration@1` is released for `llama3.1:8b`. **One finding is open and material: a failed inference's operational record does not survive a rolled-back unit of work** — see the T121 notes.
 > Audience: engineers, architects, and anyone who has to trust what Signora says.
 > Anchors: [14-ai-architecture.md](14-ai-architecture.md) · [ADR-0012](adr/0012-ai-platform-architecture.md) · [04-modules.md](04-modules.md) · [21-intelligence-pipeline.md](21-intelligence-pipeline.md) · [16-architecture-risks.md](16-architecture-risks.md) R-01, R-05, R-10
 >
@@ -483,7 +483,7 @@ So the test separating the two is mechanical rather than a matter of taste: **do
 | **T118** | `application/infer.py` — the only path to a model; retry/timeout policy; usage recording |
 | **T119** | Migration `0015`: `ai_inference`, forced RLS, no `UPDATE` grant, `tenancy_policy.py` registration |
 | **T120** | `evaluation/` — harness, rubric, golden datasets seeded from M2.0 scenarios, `make eval` ✅ *(built and run; prompt released for `llama3.1:8b`)* |
-| **T121** | *(Option B only)* `explanation_narration@1`, the narration use case, its table and event, one smoke stage |
+| **T121** | *(Option B only)* `explanation_narration@1`, the narration use case, its table and event, one smoke stage ✅ |
 
 ---
 
@@ -602,7 +602,9 @@ Per CLAUDE.md §19, binding.
 
 **T120 has been run.** `make eval` passed against `llama3.1:8b` on 2026-07-30, and `explanation_narration@1` is **released for that model and no other**. The measurement is recorded in `prompts/manifest.json`; AC-74 is satisfied. See *"The first genuine evaluation"* below for the observed output and what it cost.
 
-**T121 outstanding.** No narration use case, no composition root, no `ai.narration_completed` in [06-events.md](06-events.md), no smoke stage.
+**T121 ✅** — migration `0016` (`ai_narration`), `domain/narration.py`, `domain/events.py`, `application/narrate.py`, `infrastructure/composition.py`, `ai.narration_completed` cataloged in [06-events.md](06-events.md), and smoke stage **14i**. **17 tests**, nine mutation-proven guarantees. One material finding recorded below.
+
+**M8 implementation is complete.**
 
 `interface/` is deliberately absent: M8 has no HTTP surface, the layering contract marks the layer optional, and a directory created for a caller that does not exist is the speculative structure CLAUDE.md §6 forbids.
 
@@ -906,6 +908,34 @@ Two details that matter more than the plumbing:
 
 
 
+### T121 — composition, and a finding it exposed
+
+**Nothing new was invented.** Every collaborator existed and was verified in T111–T120; `Narrate` adds sequencing. The stop condition was checked before a line was written and was not triggered: `Narration` is text plus citations, and grounding refuses any statement that cites nothing resolvable — so **a proposition the pipeline did not compute cannot be expressed**, which is why the M8/M9 boundary is mechanical rather than a matter of taste.
+
+**A fifth data category, ratified 2026-07-30: the materialized AI artifact.** Not derived intelligence (rebuildable), not customer configuration (irreplaceable), not workflow state (unreproducible), not operational history (`ai_inference`). It is a grounded explanation deliberately persisted for auditability, user experience and provenance — and the first row in the platform holding text a customer reads.
+
+**Immutable, for a reason specific to the category.** A stored narration records what the platform *actually produced* at that moment. Prompt evolution produces a new narration; editing one would destroy the only record of what a customer was shown and silently invalidate every audit citing it. No `UPDATE` grant, no `UPDATE` policy, and "current" is a query over timestamps rather than a mutable flag that could disagree with the rows.
+
+**Provenance is denormalized on purpose**, so the row answers *which evidence · which prompt · which model · which inference · when* without a join. `inference_id` carries **no foreign key** to `ai_inference`: the two have different lifetimes, and a customer-visible artifact must not become unreadable because the operational row describing it aged out under a retention policy.
+
+**The subject is addressed in the module's own vocabulary** — `subject_kind` + `subject_id`, the `EvidenceRef` shape. An `entity_id` column would have put the pipeline's vocabulary into the substrate's schema, the same mistake `ai_inference` avoids by carrying no foreign key at all.
+
+**The event carries identity and counts, never the prose.** `statement_count` says how many; nothing says what. A paragraph in an envelope makes every wording change an event-contract change, and copies customer-visible text into a queue whose retention nobody has reasoned about.
+
+**Smoke stage 14i does not call a model, deliberately.** `make eval` is the only command in this repository that does; Ollama is never a production dependency (ADR-0028), and a deployment gate needing a GPU is a gate people learn to skip. What 14i proves is the deterministic half, and it is the half worth gating on: composition wires, evidence assembles from the real pipeline, a grounded narration is stored with complete provenance, the event reaches the outbox — and **an invented proposition is refused rather than stored.**
+
+#### Open finding — operational history does not survive a rollback
+
+Found by writing the demonstration, and material enough to state plainly.
+
+`Infer` writes an `ai_inference` row on **every** outcome, which is what AC-69 asks for. But `tenant_scoped_session` wraps `session.begin()`, so when a grounding failure propagates out of the unit of work, the transaction rolls back and **takes the failure record with it**. The row is written and then discarded.
+
+The consequence is precise: **AC-69 holds in the domain and does not hold in production.** A caller that lets the exception propagate — which is the natural and correct thing for a caller to do — loses exactly the rows the ungrounded rate is computed from, so that rate would read 0% forever. It is the same defect T119 fixed twice at a smaller scale (a lost vendor, a lost retry count), reappearing one layer out.
+
+The fix is not obvious and is not a coding-session decision: operational history has to escape a business transaction somehow — a separate session, an autonomous write, or routing the record through the outbox — and each option has consequences for atomicity, ordering and the platform freeze. **Raised rather than worked around.** The integration test asserts today's behaviour explicitly, with the desired behaviour written into its failure message, so the day it is fixed the test is where it is noticed.
+
+---
+
 #### Known limitations of the shipped golden set
 
 Recorded rather than smoothed over:
@@ -915,4 +945,4 @@ Recorded rather than smoothed over:
 
 ---
 
-*T111–T120 built and verified against a real model. T121 not started.*
+*T111–T121 built. Verified against a real model. One open finding: operational history does not survive a rolled-back unit of work.*
