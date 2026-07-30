@@ -1,6 +1,6 @@
 # 28 — AI Platform
 
-> Status: **RATIFIED — 2026-07-29.** Milestone **M8**, in progress. **T111–T114 complete**; T115–T121 outstanding.
+> Status: **RATIFIED — 2026-07-29.** Milestone **M8**, in progress. **T111–T115 complete**; T116–T121 outstanding.
 > Audience: engineers, architects, and anyone who has to trust what Signora says.
 > Anchors: [14-ai-architecture.md](14-ai-architecture.md) · [ADR-0012](adr/0012-ai-platform-architecture.md) · [04-modules.md](04-modules.md) · [21-intelligence-pipeline.md](21-intelligence-pipeline.md) · [16-architecture-risks.md](16-architecture-risks.md) R-01, R-05, R-10
 >
@@ -586,7 +586,9 @@ Per CLAUDE.md §19, binding.
 
 **T114 ✅** — `domain/evidence.py`: the closed evidence set, its builder, typed values, the citation ref, and a stable digest. **44 tests**, ten mutation-proven guarantees. One departure and one defect found by mutation, recorded below.
 
-**T115–T121 outstanding.** No evidence set, no grounding checks, no prompts, no adapters, no `infer.py`, no migration `0015`, no `ai.narration_completed` in [06-events.md](06-events.md), no evaluation harness.
+**T115 ✅** — `domain/grounding.py` and `domain/errors.py`: the five checks, distinguishable violations, the deterministic report, and a schema derived from the validating type. **35 tests** against a deliberately corrupt corpus, eleven mutation-proven guarantees. One defect found by mutation, recorded below.
+
+**T116–T121 outstanding.** No evidence set, no grounding checks, no prompts, no adapters, no `infer.py`, no migration `0015`, no `ai.narration_completed` in [06-events.md](06-events.md), no evaluation harness.
 
 `interface/` is deliberately absent: M8 has no HTTP surface, the layering contract marks the layer optional, and a directory created for a caller that does not exist is the speculative structure CLAUDE.md §6 forbids.
 
@@ -648,4 +650,30 @@ Values are now tagged with their type (`b:` `i:` `n:` `t:` `d:` `s:`), with `boo
 
 ---
 
-*T111–T114 built. T115 onward not started.*
+### Departure 4 — grounding knows nothing about narration
+
+The proposal defined `GroundedNarrative` with a `summary` and `points`, and put it in grounding. Grounding instead defines only **`GroundedStatement`** — text plus citations — and a `GroundedOutput` base that subclasses shape as they like.
+
+Two reasons. The narration wrapper is *language*, and quality 6 of the brief keeps language out of this domain. And M9's reasoning result and M10's research artifact are different shapes carrying the same obligation, so the unit they share is the statement, not the wrapper.
+
+It also closed a hole the proposal had: `summary: str` carried no citations, so the one sentence a reader looks at first would have been the one statement exempt from grounding.
+
+**The requested schema is derived from the validating type** (`output_schema(T)` → `T.model_json_schema()`), so the shape asked for and the shape enforced cannot drift. A hand-written schema would be a second definition of one contract, and within a year the disagreement would look like a model regression.
+
+### Departure 5 — one error root, extracted
+
+`AIPlatformError` declared itself *"the base for everything this module raises"* while `EvidenceError` descended from `ValueError` alone. A caller writing the broad `except` the docstring promised would have missed the module's most serious failure — a cross-workspace evidence set.
+
+The base now lives in `domain/errors.py` and every failure descends from it. A base class that does not actually cover its module is worse than none: the gap surfaces as an unhandled exception in production rather than as a review comment.
+
+### Defect found by mutation — a dead guard, again
+
+`_numbers_in_evidence` skipped boolean attributes, with a comment claiming `True` would otherwise license the figure `1`. **The mutation removing it passed.** `str(True)` is `"True"`, which contains no digits, so the guard could never have done anything.
+
+Removed, and the test that appeared to cover it now says what is actually true: a boolean attribute licenses no figure *because of how it reads*, not because code defends it.
+
+This is the second time in two tasks a surviving mutation exposed a false justification rather than a missing assertion. **A guard nobody can make fail is not protection — it is a claim.** Two other mutations (`ON DELETE`-style quantity scoping, decimal normalisation) also survived first and produced real tests rather than being waved through.
+
+---
+
+*T111–T115 built. T116 onward not started.*

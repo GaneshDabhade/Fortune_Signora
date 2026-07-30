@@ -55,6 +55,8 @@ from datetime import date, datetime
 from decimal import Decimal
 from uuid import UUID
 
+from modules.ai_platform.domain.errors import AIPlatformError
+
 #: What a fact's attribute may hold.
 #:
 #: Deliberately no ``float``: its text form is unstable across platforms,
@@ -66,8 +68,12 @@ from uuid import UUID
 EvidenceValue = str | int | bool | Decimal | datetime | date
 
 
-class EvidenceError(ValueError):
-    """An evidence set was assembled that could not be a closed universe."""
+class EvidenceError(AIPlatformError, ValueError):
+    """An evidence set was assembled that could not be a closed universe.
+
+    Also a ``ValueError``: these are construction failures, and callers
+    reasonably expect a bad argument to surface as one.
+    """
 
 
 class WorkspaceMismatchError(EvidenceError):

@@ -185,7 +185,7 @@ Knowledge Graph · Observation Engine · Business Events · Signals · Buying Sc
 
 | Indicator | Value | Target |
 |---|---|---|
-| **Backend tests** | **1167 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Backend tests** | **1202 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Frontend tests** | **101 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Backend coverage** | **~95.3%** — varies by ±0.02pp between runs, so it is not quoted to two decimals | ≥95% (local gate) |
 | **Security invariants** | **269 / 269**, each proven to fail when its guarantee is removed | 100% verified |
@@ -213,7 +213,7 @@ Knowledge Graph · Observation Engine · Business Events · Signals · Buying Sc
 | Signal Engine (catalog, profile, strategies, pipeline) | 52 | Commercial meaning — the first customer-specific layer |
 | Buying Score Engine (ledger, scoring, score, use case, pipeline) | 68 | Commercial attention — the first intentional reduction |
 | Opportunity Engine (domain, policy, use cases, pipeline) | 40 | Commercial commitment — the first workflow module |
-| **Backend total** | **1167** | Coverage ~95.3%, mypy strict over 343 files |
+| **Backend total** | **1202** | Coverage ~95.4%, mypy strict over 346 files |
 | Frontend components & foundation | 101 | Includes 13 AC-14/AC-15 guard tests |
 
 ---

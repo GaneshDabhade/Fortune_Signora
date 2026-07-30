@@ -42,6 +42,7 @@ from enum import StrEnum
 from typing import Any, Protocol, runtime_checkable
 from uuid import UUID
 
+from modules.ai_platform.domain.errors import AIPlatformError
 from modules.ai_platform.domain.usage import InferenceUsage
 
 
@@ -71,19 +72,13 @@ class AIVendor(StrEnum):
 
 
 # --------------------------------------------------------------- failures
-
-
-class AIPlatformError(Exception):
-    """Base for everything this module raises.
-
-    Split below into failures that **have a vendor** and failures that do
-    not. The distinction is not pedantry: a malformed request never reached
-    a vendor, and stamping one with a vendor name would put a false
-    attribution into the exact place an engineer looks first during an
-    incident. ``ProviderError`` takes a vendor unconditionally because every
-    failure it models is a vendor's; that is not true here, and copying the
-    shape without checking would have made the error messages lie.
-    """
+#
+# Split by what was actually reached. A malformed request never touched a
+# vendor, and stamping one with a vendor name would put a false lead in the
+# exact place an engineer looks first. `ProviderError` takes a vendor
+# unconditionally because every failure it models is a vendor's; that is not
+# true here, and copying the shape without checking would have made the
+# error messages lie.
 
 
 class InferenceRequestError(AIPlatformError, ValueError):

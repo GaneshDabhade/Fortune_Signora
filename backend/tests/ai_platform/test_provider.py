@@ -11,8 +11,8 @@ from uuid import uuid4
 
 import pytest
 
+from modules.ai_platform.domain.errors import AIPlatformError
 from modules.ai_platform.domain.provider import (
-    AIPlatformError,
     AIProviderAdapter,
     AIProviderError,
     AIProviderRegistry,
