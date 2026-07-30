@@ -109,6 +109,29 @@ class SignalTypeDefinition(BaseModel):
     from observations. Two definitions of one concept diverge within a
     year."""
 
+    limitations: tuple[str, ...] = Field(min_length=1)
+    """**What this type does not imply**, written for a customer.
+
+    A property of the *type*, not of any individual account or reasoning
+    result: what `DISPLACEMENT_OPPORTUNITY` fails to prove is identical on
+    Tuesday and Wednesday, and for every workspace. Owned here so it has one
+    owner, one version history and one review process — generating it per
+    reasoning call would pay for it every time and get a subtly different
+    answer every time (ADR-0030, Decision 5).
+
+    Required, not optional. A signal type with no stated limitations is an
+    authoring omission, and the enterprise customers this exists for will ask
+    the question whether or not it has been answered."""
+
+    suggested_validation: tuple[str, ...] = Field(min_length=1)
+    """**How a human independently checks it** — the falsifiability half.
+
+    Deliberately *not* commercial advice. It says what to verify, never what
+    to do about it: recommending is the Recommendation Engine's (M11), and a
+    module that told a seller what to do would make that module a formatting
+    layer. Answering *"how do I know this is true?"* is legitimately this
+    layer's job, because it concerns the conclusion's own soundness."""
+
     minimum_contributors: int = Field(ge=1)
     window_days: int = Field(gt=0)
     relevance_window_days: int = Field(gt=0)

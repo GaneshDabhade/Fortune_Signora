@@ -11,7 +11,11 @@ rank anywhere in this surface: how much something matters is the Buying
 Score Engine's question.
 """
 
-from modules.signal_engine.application.queries import SignalExplanation, SignalQueries
+from modules.signal_engine.application.queries import (
+    SignalExplanation,
+    SignalQueries,
+    UnsupportedReading,
+)
 from modules.signal_engine.domain.catalog import (
     DetectionStrategy,
     Relevance,
@@ -38,4 +42,5 @@ __all__ = [
     "SignalQueries",
     "SignalType",
     "SignalTypeDefinition",
+    "UnsupportedReading",
 ]

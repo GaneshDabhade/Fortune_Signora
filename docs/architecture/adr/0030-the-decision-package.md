@@ -69,14 +69,14 @@ Each part is assigned to the authority that can actually be held to it. Fifteen 
 | 5 | Contradicting Evidence | **Derived** | Already computed upstream. See Decision 3 |
 | 6 | Support | **Derived** | Ruling 1. **Introduces no new threshold** — see the T124 note |
 | 7 | Assumptions | **Derived** from provenance | See Decision 4 |
-| 8 | Limitations | **Repository artifact** | See Decision 5 |
-| 9 | Suggested Validation | **Repository artifact** | See Decision 5 |
+| 8 | Limitations | **Repository artifact** | Built T126: `SignalTypeDefinition.limitations`, required |
+| 9 | Suggested Validation | **Repository artifact** | Built T126: `SignalTypeDefinition.suggested_validation`, required |
 | 10 | Suggested Next Action | **Not M9** | See Decision 6 — the one firm disagreement |
 | 11 | Evidence Freshness | **Derived** | `EvidenceState` + per-provider refresh times, already recorded |
 | 12 | Why Now | **Derived** | `BuyingScore.trigger`. See Decision 9 |
 | 13 | Why Not Earlier | **Derived** | `basis_at`, and the superseded score, still readable |
 | 14 | What Changed | **Derived** | `delta` and `trend` against the superseded score |
-| 15 | Alternative Readings | **Derived** | Signal types evaluated and not supported. See Decision 7 |
+| 15 | Alternative Readings | **Derived** | Built T126: `SignalQueries.unsupported_types()`, no storage |
 
 The consequence is the point: **the model authors three fields out of fifteen.** Evaluation covers three. Twelve are reproducible, explainable and testable without a model — and the derived ones are the fields customers will trust *most*, because they can be recomputed and defended rather than believed.
 

@@ -28,6 +28,7 @@ from modules.signal_engine.domain.profile import (
     default_profile,
     resolve_entry,
 )
+from modules.signal_engine.domain.rules import ground
 from modules.signal_engine.domain.signal import Signal
 
 
@@ -51,6 +52,29 @@ class SignalExplanation:
     #: Signals this one enriches. Never replaced, always independently
     #: readable.
     constituents: tuple[Signal, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class UnsupportedReading:
+    """A hypothesis this evidence was tested against and did not support.
+
+    **Rejected readings are derived, never stored** (ADR-0030, Decision 7,
+    ruled 2026-07-30). Recording every non-result would write a row per
+    (entity, type) on every run — a large table describing mostly nothing —
+    so the question is answered on demand from evidence this module already
+    holds, using the rules it already owns.
+
+    Its value is honesty about what was *considered*. A conclusion is easier
+    to trust when a reader can see the alternatives the system tested and set
+    aside, and easier to debug when they can see the one it never tested.
+    """
+
+    signal_type: SignalType
+    #: Why the rules declined it, in the rules' own terms — never a model's
+    #: account of why it "rejected" anything. A model asked to list
+    #: alternatives it discarded is confabulating: it did not enumerate and
+    #: reject them, it generated plausible ones after the fact.
+    reason: str
 
 
 class SignalQueries:
@@ -152,8 +176,79 @@ class SignalQueries:
     async def stored_profile(self, workspace_id: UUID) -> SignalProfile | None:
         return await self._profiles.current(workspace_id)
 
+    async def unsupported_types(
+        self, workspace_id: UUID, entity_id: UUID, *, now: datetime | None = None
+    ) -> tuple[UnsupportedReading, ...]:
+        """Hypotheses this entity's evidence was tested against and did not
+        support — the *competing readings* a Decision Package reports.
+
+        Driven by `ground()`, the same function that decides whether a signal
+        is generated at all. **No rule is re-implemented here**, and none may
+        be: a second copy of the grounding logic would diverge from the first
+        and the two answers would disagree about the same evidence.
+
+        Types the workspace has switched off are excluded rather than
+        reported as unsupported. *"Your workspace does not track this"* and
+        *"the evidence does not support this"* are different statements, and
+        conflating them would tell a customer their configuration was a
+        finding about their account.
+        """
+        events = await self._business_events.business_events(workspace_id, entity_id)
+        profile = await self._profiles.current(workspace_id)
+        produced = {
+            signal.signal_type
+            for signal in await self.signals(workspace_id, entity_id, live_only=True, now=now)
+        }
+
+        readings: list[UnsupportedReading] = []
+        for definition in self._catalog.types:
+            if definition.key in produced:
+                continue
+            entry = resolve_entry(self._catalog, profile, definition.key)
+            if not entry.is_active:
+                continue
+            if ground(events, definition, entry):
+                continue
+            readings.append(
+                UnsupportedReading(
+                    signal_type=definition.key,
+                    reason=_why_not(events, definition, entry),
+                )
+            )
+        return tuple(sorted(readings, key=lambda r: r.signal_type.value))
+
     def catalog(self) -> SignalCatalog:
         """The global vocabulary. Exposed so the product, analytics,
         documentation, and support all read the same definitions rather than
         re-describing them."""
         return self._catalog
+
+
+def _why_not(
+    events: tuple[BusinessEvent, ...],
+    definition: SignalTypeDefinition,
+    entry: ProfileEntry,
+) -> str:
+    """The rules' own reason, phrased for a reader.
+
+    Two reasons and no others, because `ground()` has exactly two ways to
+    decline: nothing relevant happened, or not enough distinct things
+    happened close enough together. Anything else here would be a third
+    explanation for behaviour that has two.
+    """
+    relevant = [event for event in events if event.type_key in definition.contributing_event_types]
+    if not relevant:
+        kinds = ", ".join(sorted(t.value for t in definition.contributing_event_types))
+        return f"nothing of the kind this reading needs has happened here ({kinds})"
+
+    minimum = (
+        entry.minimum_contributors
+        if entry.minimum_contributors is not None
+        else definition.minimum_contributors
+    )
+    window = entry.window_days if entry.window_days is not None else definition.window_days
+    found = len({event.type_key for event in relevant})
+    return (
+        f"only {found} of the {minimum} distinct kinds of evidence this reading needs occurred "
+        f"within {window} days of each other"
+    )

@@ -1,5 +1,5 @@
 {
-  "_comment": "Signora's signal catalog — the global vocabulary of commercial hypotheses. Belongs to Signora, not to any customer: a workspace configures which of these matter to it and how centrally, and can never invent a type. That constraint is what makes AI reasoning, benchmarking, analytics, documentation, and support able to speak about signals across customers at all. Every hypothesis is phrased as a possibility, never a fact — a signal proposes a commercial reading, it does not assert one. Reviewed like code; a change here is a release.",
+  "_comment": "Signora's signal catalog — the global vocabulary of commercial hypotheses. Belongs to Signora, not to any customer: a workspace configures which of these matter to it and how centrally, and can never invent a type. That constraint is what makes AI reasoning, benchmarking, analytics, documentation, and support able to speak about signals across customers at all. Every hypothesis is phrased as a possibility, never a fact — a signal proposes a commercial reading, it does not assert one. Reviewed like code; a change here is a release. `limitations` and `suggested_validation` were added 2026-07-30 (M9, T126) and are owned here rather than by the AI Reasoning Engine: what a signal type does NOT imply is a property of the type, identical across every account and every day, so generating it per reasoning call would pay for it every time and get a subtly different answer every time (ADR-0030, Decision 5). They are ENGINEERING-AUTHORED PENDING DOMAIN REVIEW — written to be honest rather than authoritative, and a domain expert should revise them; that is exactly why they live in a reviewed, versioned artifact instead of a prompt.",
   "version": 1,
   "types": [
     {
@@ -8,11 +8,24 @@
       "hypothesis": "Sustained investment across several fronts suggests the company is adding capacity, and may be open to tools that support growth.",
       "why_it_matters": "Companies investing ahead of growth buy differently from companies holding steady — they are budgeting for capability they do not yet have.",
       "detection_strategy": "composite",
-      "contributing_event_types": ["hiring_surge", "revenue_growth", "funding_round_closed"],
+      "contributing_event_types": [
+        "hiring_surge",
+        "revenue_growth",
+        "funding_round_closed"
+      ],
       "minimum_contributors": 2,
       "window_days": 180,
       "relevance_window_days": 180,
-      "default_relevance": "primary"
+      "default_relevance": "primary",
+      "limitations": [
+        "Investment ahead of growth says nothing about budget for *your* category — capacity spend is often funded by cutting elsewhere.",
+        "It does not indicate that a purchase decision is underway, only that the company is adding capability.",
+        "Growth in one division does not imply growth in the one you sell to."
+      ],
+      "suggested_validation": [
+        "Check which functions the recent hiring is in, and whether they are the ones that would use your product.",
+        "Ask on a first call which division the investment sits in — the signal cannot tell you."
+      ]
     },
     {
       "key": "budget_unlocked",
@@ -20,11 +33,22 @@
       "hypothesis": "New capital may free spending that was previously deferred.",
       "why_it_matters": "Funding changes what a company can approve, and often how quickly.",
       "detection_strategy": "single_event",
-      "contributing_event_types": ["funding_round_closed"],
+      "contributing_event_types": [
+        "funding_round_closed"
+      ],
       "minimum_contributors": 1,
       "window_days": 180,
       "relevance_window_days": 270,
-      "default_relevance": "supporting"
+      "default_relevance": "supporting",
+      "limitations": [
+        "A funding round is not earmarked for any particular category. Most of it usually funds headcount and runway.",
+        "The round may have closed months before it was announced, so the money may already be committed.",
+        "It says nothing about who controls the spend."
+      ],
+      "suggested_validation": [
+        "Read the round announcement for a stated use of funds.",
+        "Confirm the *close* date rather than the announcement date before treating this as recent."
+      ]
     },
     {
       "key": "displacement_opportunity",
@@ -32,11 +56,22 @@
       "hypothesis": "A retired system suggests a replacement decision that is recent, or imminent.",
       "why_it_matters": "The window in which a replacement is chosen is short, and it closes quietly.",
       "detection_strategy": "single_event",
-      "contributing_event_types": ["technology_retired"],
+      "contributing_event_types": [
+        "technology_retired"
+      ],
       "minimum_contributors": 1,
       "window_days": 180,
       "relevance_window_days": 180,
-      "default_relevance": "primary"
+      "default_relevance": "primary",
+      "limitations": [
+        "A retired system may already have been replaced — retirement is often announced after the decision.",
+        "Retirement can mean consolidation onto an incumbent you also compete with, not an opening.",
+        "It does not identify who owns the replacement decision."
+      ],
+      "suggested_validation": [
+        "Check the careers page for roles naming the replacement stack.",
+        "Search for a competitor's public announcement of the win before assuming the decision is open."
+      ]
     },
     {
       "key": "modernization_underway",
@@ -44,11 +79,23 @@
       "hypothesis": "Adopting and retiring systems together suggests a stack is being replaced rather than extended.",
       "why_it_matters": "A company mid-migration is already spending on change, and already comparing options.",
       "detection_strategy": "composite",
-      "contributing_event_types": ["technology_adopted", "technology_retired"],
+      "contributing_event_types": [
+        "technology_adopted",
+        "technology_retired"
+      ],
       "minimum_contributors": 2,
       "window_days": 180,
       "relevance_window_days": 180,
-      "default_relevance": "supporting"
+      "default_relevance": "supporting",
+      "limitations": [
+        "Adoption and retirement happening together does not mean they concern the same system.",
+        "You may be seeing the end of a migration that was decided long ago, not the beginning of one.",
+        "It does not indicate the programme's scope or budget."
+      ],
+      "suggested_validation": [
+        "Check whether the adopted and retired technologies serve the same function.",
+        "Look for an announced migration timeline; a published end date means the decision is behind you."
+      ]
     },
     {
       "key": "new_decision_maker",
@@ -56,11 +103,22 @@
       "hypothesis": "A newly appointed leader may re-examine what they inherited.",
       "why_it_matters": "New leaders are unusually willing to change arrangements they did not choose.",
       "detection_strategy": "single_event",
-      "contributing_event_types": ["leadership_appointed"],
+      "contributing_event_types": [
+        "leadership_appointed"
+      ],
       "minimum_contributors": 1,
       "window_days": 180,
       "relevance_window_days": 180,
-      "default_relevance": "supporting"
+      "default_relevance": "supporting",
+      "limitations": [
+        "A new appointment carries no mandate to change vendors, and internal promotions usually continue existing commitments.",
+        "The appointee may not control the relevant budget.",
+        "It says nothing about dissatisfaction with an incumbent."
+      ],
+      "suggested_validation": [
+        "Check whether the appointment was internal or external — an outside hire changes more than a promotion.",
+        "Look at the stack they ran at their previous employer."
+      ]
     },
     {
       "key": "decision_maker_departed",
@@ -68,11 +126,22 @@
       "hypothesis": "A departure may stall decisions that leader was driving, or reopen ones already made.",
       "why_it_matters": "Both directions matter: an opportunity can be lost, and a closed decision can reopen.",
       "detection_strategy": "single_event",
-      "contributing_event_types": ["leadership_departed"],
+      "contributing_event_types": [
+        "leadership_departed"
+      ],
       "minimum_contributors": 1,
       "window_days": 180,
       "relevance_window_days": 120,
-      "default_relevance": "contextual"
+      "default_relevance": "contextual",
+      "limitations": [
+        "A departure does not lapse existing contracts, and a successor may already be in place.",
+        "It may be a planned retirement rather than a disruption.",
+        "The vacancy may be filled internally by someone who owned the original decision."
+      ],
+      "suggested_validation": [
+        "Check for an announced successor before treating the seat as open.",
+        "Check whether the departure was announced in advance, which usually means continuity was planned."
+      ]
     },
     {
       "key": "active_evaluation",
@@ -80,11 +149,22 @@
       "hypothesis": "Sustained research on a topic suggests an evaluation may already be under way.",
       "why_it_matters": "Arriving during an evaluation is a different conversation from starting one.",
       "detection_strategy": "single_event",
-      "contributing_event_types": ["buying_intent_surge"],
+      "contributing_event_types": [
+        "buying_intent_surge"
+      ],
       "minimum_contributors": 1,
       "window_days": 120,
       "relevance_window_days": 90,
-      "default_relevance": "primary"
+      "default_relevance": "primary",
+      "limitations": [
+        "Intent data reflects what individuals researched, not an approved project.",
+        "The researcher may hold no budget and may not work in the buying function.",
+        "The topic may be adjacent to your category rather than in it."
+      ],
+      "suggested_validation": [
+        "Confirm which function the research came from before treating it as a buying signal.",
+        "Look for a public RFP or tender, which is a decision rather than an interest."
+      ]
     },
     {
       "key": "consolidation_underway",
@@ -92,11 +172,22 @@
       "hypothesis": "An acquisition may force systems and budgets to be consolidated.",
       "why_it_matters": "Consolidation forces decisions that were being deferred, in both directions.",
       "detection_strategy": "single_event",
-      "contributing_event_types": ["acquisition_announced"],
+      "contributing_event_types": [
+        "acquisition_announced"
+      ],
       "minimum_contributors": 1,
       "window_days": 180,
       "relevance_window_days": 270,
-      "default_relevance": "supporting"
+      "default_relevance": "supporting",
+      "limitations": [
+        "An announced acquisition is not a closed one, and tooling decisions usually wait quarters past close.",
+        "The acquirer's existing stack normally prevails, so this can close a door rather than open one.",
+        "It does not indicate which entity's contracts survive."
+      ],
+      "suggested_validation": [
+        "Check whether the deal has actually closed.",
+        "Find out which side's systems are being retained — that decides whether this is an opening."
+      ]
     },
     {
       "key": "contraction_risk",
@@ -104,11 +195,23 @@
       "hypothesis": "A company reducing headcount or revenue may be re-scoping what it spends and who approves it.",
       "why_it_matters": "Contraction changes budget authority before it is announced — and it can mean either risk or an efficiency conversation.",
       "detection_strategy": "single_event",
-      "contributing_event_types": ["headcount_decline", "revenue_contraction"],
+      "contributing_event_types": [
+        "headcount_decline",
+        "revenue_contraction"
+      ],
       "minimum_contributors": 1,
       "window_days": 180,
       "relevance_window_days": 180,
-      "default_relevance": "contextual"
+      "default_relevance": "contextual",
+      "limitations": [
+        "Contraction does not mean spending stops; cost pressure often accelerates consolidation purchases.",
+        "It may reflect a divestiture rather than decline.",
+        "Company-wide figures can hide a division that is still growing."
+      ],
+      "suggested_validation": [
+        "Check whether the decline is company-wide or confined to one division.",
+        "Look for a divestiture announcement that would explain the figures without indicating distress."
+      ]
     }
   ]
 }

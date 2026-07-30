@@ -193,3 +193,39 @@ def test_a_signal_is_composite_when_it_names_constituents(
     signal = _signal(evidence=(uuid4(),))
 
     assert signal.enriched_by(tuple(constituents)).is_composite is bool(constituents)
+
+
+class TestEveryTypeStatesItsLimitsAndHowToCheckIt:
+    """Added at T126 (ADR-0030, Decision 5).
+
+    A signal type with no stated limitations is an authoring omission, and
+    the enterprise customers these exist for will ask the question whether or
+    not it has been answered. Required by the type; asserted here against the
+    **shipped artifact**, because a `min_length` constraint proves nothing
+    about a catalog nobody filled in.
+    """
+
+    def test_every_type_says_what_it_does_not_imply(self) -> None:
+        for definition in load_catalog().types:
+            assert definition.limitations, f"{definition.key.value} states no limitations"
+            for limitation in definition.limitations:
+                assert limitation.strip(), f"{definition.key.value} has a blank limitation"
+
+    def test_every_type_says_how_a_human_checks_it(self) -> None:
+        for definition in load_catalog().types:
+            assert definition.suggested_validation, (
+                f"{definition.key.value} offers no way to independently validate it"
+            )
+
+    def test_validation_never_tells_a_seller_what_to_do(self) -> None:
+        """It says what to *verify*, never what to do about it. Recommending
+        is the Recommendation Engine's (M11); a module that told a seller what
+        to do would make that module a formatting layer."""
+        forbidden = ("reach out", "call them", "email", "pitch", "offer them", "propose")
+        for definition in load_catalog().types:
+            for step in definition.suggested_validation:
+                lowered = step.lower()
+                assert not any(phrase in lowered for phrase in forbidden), (
+                    f"{definition.key.value} suggests a commercial action rather than a check: "
+                    f"{step!r}"
+                )

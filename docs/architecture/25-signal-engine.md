@@ -489,6 +489,35 @@ Two workspaces receive byte-identical business events. One reads a `DISPLACEMENT
 
 ---
 
+## What a signal type does not imply *(added 2026-07-30, M9 T126)*
+
+Every `SignalTypeDefinition` carries two required fields beyond its detection rules:
+
+- **`limitations`** — what this type does **not** prove. A property of the *type*, identical for every account and every day, so it is authored once and versioned rather than regenerated per reasoning call.
+- **`suggested_validation`** — how a human independently checks or disproves it. Deliberately **not commercial advice**: it says what to verify, never what to do about it. Recommending belongs to the Recommendation Engine (M11), and a test asserts no validation step contains an imperative to contact anyone.
+
+Both are **required** — a signal type with no stated limitations is an authoring omission, and the enterprise customers they exist for will ask the question whether or not it has been answered. Asserted against the shipped artifact, because a `min_length` constraint proves nothing about a catalog nobody filled in.
+
+**Owned here, not by the AI Reasoning Engine** ([ADR-0030](adr/0030-the-decision-package.md), Decision 5). A parallel catalog in M9 keyed by `SignalType` would put a type's limitations somewhere other than where the type is defined. The Decision Package composes them.
+
+> **The shipped text is engineering-authored pending domain review.** It was written to be honest rather than authoritative. That it *can* be revised by a domain expert without touching code, under version control and review, is the entire reason it lives in the catalog rather than in a prompt.
+
+## Alternative readings: hypotheses tested and not supported *(added 2026-07-30, M9 T126)*
+
+`SignalQueries.unsupported_types()` answers which types this entity's evidence was evaluated against and did not support, with the rules' own reason.
+
+**Derived on demand, never stored.** Recording every non-result would write a row per (entity, type) on every run — a large table describing mostly nothing.
+
+**No rule is re-implemented.** It is driven by `ground()`, the same function that decides whether a signal is generated at all; a second copy of that logic would diverge and the two would disagree about one set of evidence. A test asserts the query never branches on `detection_strategy`.
+
+Two exclusions matter:
+
+- **Types the workspace switched off are not reported.** *"Your workspace does not track this"* and *"the evidence does not support this"* are different statements, and conflating them would present a customer's own configuration as a finding about their account.
+- **A live signal is never reported as unsupported**, even once its grounds have aged out of the *grounding* window. The hypothesis is still held, and contradicting the signal on the same screen would be worse than saying nothing. *(This case was found by a surviving mutation: every earlier test ran against an empty signal repository, so the check was untested.)*
+
+> **Correcting the record:** [ADR-0030](adr/0030-the-decision-package.md) originally asserted that the Signal Engine *already* recorded rejected hypotheses. It did not — `ground()` returned an empty tuple and the fact was discarded. T122 found that and the ADR was corrected before anything was built on it.
+
+
 ## Definition of Done — M5A
 
 - [x] Demonstration passes; AC-42 through AC-49, AC-6, AC-1, AC-13 satisfied
