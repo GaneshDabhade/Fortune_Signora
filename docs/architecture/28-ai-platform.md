@@ -1,10 +1,10 @@
 # 28 — AI Platform
 
-> Status: **RATIFIED — 2026-07-29.** Milestone **M8**. Implementation begins at T111; no code written yet.
+> Status: **RATIFIED — 2026-07-29.** Milestone **M8**, in progress. **T111 · T112 complete**; T113–T121 outstanding.
 > Audience: engineers, architects, and anyone who has to trust what Signora says.
 > Anchors: [14-ai-architecture.md](14-ai-architecture.md) · [ADR-0012](adr/0012-ai-platform-architecture.md) · [04-modules.md](04-modules.md) · [21-intelligence-pipeline.md](21-intelligence-pipeline.md) · [16-architecture-risks.md](16-architecture-risks.md) R-01, R-05, R-10
 >
-> This document is the ratified design of the AI Platform. It is not yet built.
+> This document is the ratified design of the AI Platform, being built now. The *Implementation status* block in the approval record tracks what exists.
 
 ---
 
@@ -22,13 +22,15 @@ The original brief gave the AI Platform the question *"What reasoning should be 
 
 Accepted 2026-07-29. Everything else in the brief — provider abstraction, Ollama, versioned prompts, an evaluation harness — was already exactly that substrate, so only the framing sentence changed, not the scope.
 
-### Two permanent principles
+### Three permanent principles
 
-**Ratified 2026-07-29.** Alongside *identity never truth*, *change never significance*, *prioritizes never resolves*, and *intelligence suggests, humans commit*:
+**Grounding and statelessness ratified 2026-07-29; vendor neutrality 2026-07-30.** Alongside *identity never truth*, *change never significance*, *prioritizes never resolves*, and *intelligence suggests, humans commit*:
 
 > **Grounding.** The AI Platform never constrains what a model writes. It constrains **what the model is permitted to reference.** The deterministic intelligence pipeline defines the universe of facts, and the AI Platform treats that universe as **closed**. Every statement must be supported by citations · every citation must resolve · every numeric value appearing in generated text must exist in cited evidence.
 >
 > **It may generate language. It must never generate facts.**
+
+> **Vendor neutrality.** **Business behaviour must never depend on which model vendor served a call.** Vendor selection is configuration, not business logic. The AI Platform adapts to vendor-specific APIs *internally*; the rest of Signora stays vendor-neutral, and behaves identically whether the configured provider is Ollama, Claude, GPT, Gemini, Bedrock, or one that does not exist yet. *(Ratified 2026-07-30; CLAUDE.md §10.)*
 
 > **Statelessness.** Every AI invocation depends on exactly three inputs — **prompt · grounded evidence · configuration** — and produces one output: a **grounded structured response**.
 >
@@ -36,7 +38,7 @@ Accepted 2026-07-29. Everything else in the brief — provider abstraction, Olla
 >
 > If conversational memory is ever wanted, it is a **separate capability with its own name and its own architecture**, never an emergent property of the substrate.
 
-Most of this document is about making the first a schema rule instead of an aspiration. The section below states what the second forbids.
+Most of this document is about making **grounding** a schema rule rather than an aspiration. The *Statelessness* section states what the second forbids, and **vendor neutrality** is enforced the same way pipeline neutrality is in the provider layer — one contract suite across every adapter, and nothing outside the module permitted to branch on which one answered.
 
 ---
 
@@ -303,7 +305,24 @@ modules/ai_platform/prompts/
 
 Matching `taxonomy/business_events@1.json` and `scoring/scoring_model@1.json`, loaded by an `infrastructure/prompt_loader.py`, reviewed like code — because it *is* code, in the specific sense that changing it changes program behaviour without changing any Python.
 
-Two rules go beyond the existing artifact pattern:
+### A prompt is a first-class engineering artifact
+
+*Ratified 2026-07-30.* `manifest.json` carries six fields per prompt, not one:
+
+| Field | Why it is required |
+|---|---|
+| **Version** | Provenance is meaningless without it — every result records which version produced it |
+| **Owner** | A prompt is domain IP and behaves like code; unowned code is unmaintained code |
+| **Evaluation history** | What was measured, when, against which golden dataset |
+| **Supported models** | See the release rule below |
+| **Supported datasets** | An evaluation is only evidence about the data it ran on |
+| **Release history** | When a version became usable, and what superseded it |
+
+> **A prompt is not "released" until it has been evaluated against its supported `(model, dataset)` combinations**, and it may never be used with a pairing absent from that record.
+
+This is the direct consequence of [ADR-0028](adr/0028-model-runtime-by-environment.md): development runs on Ollama, production on hosted models, and a prompt tuned against a small local model has **not** been shown to behave on a frontier one. The manifest is where that gap is stated rather than assumed away.
+
+Two further rules go beyond the existing artifact pattern:
 
 **A released prompt version is immutable, enforced by content hash.** `manifest.json` records the SHA-256 of every released version, and a test fails the build if a released file's hash changes. Editing a prompt in place would silently invalidate every recorded result claiming that version — the same class of defect as mutating a scoring model, and every artifact in this platform is already immutable once shipped. A change is a new version, always.
 
@@ -559,4 +578,10 @@ Per CLAUDE.md §19, binding.
 
 ### Implementation status
 
-Ratified and ready. **T111–T121 not started.** No `modules/ai_platform/` package, no migration `0015`, no `ai_platform` node in `04-modules.md` / `05-module-dependencies.md`, no `ai.narration_completed` in `06-events.md`, and `15-project-structure.md` still records the pre-ratification location for the AI Provider Port — all of which T112 and T119 land, in the same changes that create the code they describe.
+**T111 ✅** — [ADR-0028](adr/0028-model-runtime-by-environment.md) written as a refinement of ADR-0012, not a reversal; [08-technology-stack.md](08-technology-stack.md) records runtime by environment.
+
+**T112 ✅** — `modules/ai_platform/` scaffolded (`domain` · `application` · `infrastructure` · `public`); the module added to [04-modules.md](04-modules.md) and to the graph in [05-module-dependencies.md](05-module-dependencies.md); **four import-linter contracts** registered (21 total, from 17); **8 Security Invariants**, each mutation-proven; both [15-project-structure.md](15-project-structure.md) drifts corrected.
+
+**T113–T121 outstanding.** No port, no evidence set, no grounding checks, no prompts, no adapters, no `infer.py`, no migration `0015`, no `ai.narration_completed` in [06-events.md](06-events.md), no evaluation harness. The `public/` surface exports nothing yet — it carries the module's contract as documentation and will export the port at T113.
+
+`interface/` is deliberately absent: M8 has no HTTP surface, the layering contract marks the layer optional, and a directory created for a caller that does not exist is the speculative structure CLAUDE.md §6 forbids.

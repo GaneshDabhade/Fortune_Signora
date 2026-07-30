@@ -185,11 +185,11 @@ Knowledge Graph · Observation Engine · Business Events · Signals · Buying Sc
 
 | Indicator | Value | Target |
 |---|---|---|
-| **Backend tests** | **1089 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Backend tests** | **1097 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Frontend tests** | **101 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Backend coverage** | **~95.3%** — varies by ±0.02pp between runs, so it is not quoted to two decimals | ≥95% (local gate) |
-| **Security invariants** | **261 / 261**, each proven to fail when its guarantee is removed | 100% verified |
-| **import-linter contracts** | **17 kept, 0 broken** | 0 broken |
+| **Security invariants** | **269 / 269**, each proven to fail when its guarantee is removed | 100% verified |
+| **import-linter contracts** | **21 kept, 0 broken** | 0 broken |
 | **Architecture drift** | **0** — no ratified ADR reversed; 14 documents amended for drift, all found by test or by implementation | Trending to 0 |
 | **Open production bugs** | **0** | 0 |
 | **Technical debt** | **0 outstanding** · **2 platform findings raised** (see M3A record) | — |
@@ -199,7 +199,7 @@ Knowledge Graph · Observation Engine · Business Events · Signals · Buying Sc
 
 | Area | Tests | Notes |
 |---|---|---|
-| Security invariants | 261 | Permanent architectural guarantees; run as their own reported step |
+| Security invariants | 269 | Permanent architectural guarantees; run as their own reported step |
 | Simulation framework | 130 | Clock, dataset, scenario, faults, delivery, generators |
 | Provider contract suite | 45 | **One suite, five adapters** — the keystone interchangeability test |
 | Workspace & Tenancy | ~70 | RLS isolation, API, persistence |
@@ -213,7 +213,7 @@ Knowledge Graph · Observation Engine · Business Events · Signals · Buying Sc
 | Signal Engine (catalog, profile, strategies, pipeline) | 52 | Commercial meaning — the first customer-specific layer |
 | Buying Score Engine (ledger, scoring, score, use case, pipeline) | 68 | Commercial attention — the first intentional reduction |
 | Opportunity Engine (domain, policy, use cases, pipeline) | 40 | Commercial commitment — the first workflow module |
-| **Backend total** | **1089** | Coverage ~95.3%, mypy strict over 330 files |
+| **Backend total** | **1097** | Coverage ~95.3%, mypy strict over 337 files |
 | Frontend components & foundation | 101 | Includes 13 AC-14/AC-15 guard tests |
 
 ---

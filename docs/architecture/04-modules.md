@@ -298,6 +298,26 @@ Each module below follows the template: Purpose, Owns, Does Not Own, Core Concep
 
 ---
 
+### AI Platform
+
+**Purpose:** How Signora communicates with a model, and how it knows the answer is grounded. **Infrastructure, not a pipeline stage** — it answers no question about a customer's accounts. Built in M8 as the substrate AI Reasoning Engine and AI Research Engine are built on. See [28-ai-platform.md](28-ai-platform.md) for the ratified design.
+
+**Owns:** The AI Provider Port and its vendor adapters, the failure taxonomy, the provider registry, the Internal Prompt Registry, the Evidence Set contract, grounding validation, inference provenance and usage recording, and the evaluation harness.
+
+**Does Not Own:** What to reason about (AI Reasoning Engine), what to research (AI Research Engine), what to recommend (Recommendation Engine), or *which* facts belong in a given prompt — the container is this module's; the contents are the caller's.
+
+**Core Concepts:** AI Provider Port, Evidence Set, Evidence Ref, Grounded Response, Prompt Version, Inference Usage.
+
+**Key Published Events:** `ai.narration_completed`.
+
+**Key Consumed Events:** None. It is called, not triggered.
+
+> Design note — three properties define this module and each is machine-enforced. **Grounding:** it never constrains what a model writes, only what the model may *reference*; the fact universe is closed, and an uncited statement, an unresolvable citation, or a number absent from cited evidence fails the call. **Statelessness:** every invocation depends on prompt, grounded evidence and configuration, and nothing else — which is what makes grounding verifiable, since a response can only be checked against a *known* evidence set. **Vendor neutrality:** business behaviour never depends on which vendor served a call.
+>
+> The module deliberately depends on **no business module** from its domain or application layers. It reaches `opportunity_engine.public` only from `infrastructure/`, behind an `ExplanationSource` Protocol the application layer declares — so the substrate stays extractable, testable with fakes alone, and still pure substrate on the day M9 arrives.
+
+---
+
 ### AI Reasoning Engine
 
 **Purpose:** Uses the AI Provider Abstraction Layer to reason over an opportunity, its buying score, signals, Knowledge Graph context, and (when available) AI Research Engine's artifact, producing structured explanations, prioritization, and analysis.

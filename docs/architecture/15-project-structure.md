@@ -26,6 +26,7 @@ signora/
 │   │   ├── signal_engine/
 │   │   ├── buying_score_engine/
 │   │   ├── opportunity_engine/
+│   │   ├── ai_platform/           # AI Provider Port, prompts, grounding, evaluation (28-ai-platform.md)
 │   │   ├── ai_research_engine/
 │   │   ├── ai_reasoning_engine/
 │   │   ├── recommendation_engine/
@@ -34,8 +35,6 @@ signora/
 │   ├── signora_platform/         # NB: not "platform/" — see note below
 │   │   ├── event_bus/            # Internal Event Bus: outbox model, relay, ARQ dispatch (06-events.md)
 │   │   ├── db/                   # SQLAlchemy async engine/session, RLS session-context helper
-│   │   ├── provider_abstraction/ # shared Provider Port + adapter base classes (13-integrations.md)
-│   │   ├── ai_provider_abstraction/ # shared AI Provider Port + adapter base classes (14-ai-architecture.md)
 │   │   ├── integration_abstraction/ # shared Integration Port + adapter base classes
 │   │   └── bought_infra_adapters/   # thin adapters: Better Auth, Casbin, Stripe, Novu, PostHog, Flagsmith, Resend
 │   ├── apps/
@@ -106,11 +105,15 @@ Verify the contracts actually bite rather than passing vacuously: add a delibera
 
 ## Where the Abstraction Layers Live
 
-- **Provider Port** (Principle 9): base Protocol defined in `backend/signora_platform/provider_abstraction/`, implemented per-vendor inside `backend/modules/provider_platform/infrastructure/adapters/{apollo,coresignal,builtwith,similarweb,neverbounce}.py`.
-- **AI Provider Port** (Principle 10): base Protocol in `backend/signora_platform/ai_provider_abstraction/`, implemented per-vendor inside both `ai_research_engine/infrastructure/adapters/` and `ai_reasoning_engine/infrastructure/adapters/` (each module wires its own routing config against the shared adapters).
+- **Provider Port** (Principle 9): Protocol defined in `backend/modules/provider_platform/domain/provider.py`, implemented per-vendor inside `backend/modules/provider_platform/infrastructure/adapters/`.
+- **AI Provider Port** (Principle 10): Protocol defined in `backend/modules/ai_platform/domain/provider.py`, implemented per-vendor inside `backend/modules/ai_platform/infrastructure/adapters/`. Both AI engines consume it through `modules/ai_platform/public/`; neither holds its own adapters.
+
+> **Corrected 2026-07-30.** Both bullets previously placed their port in a `signora_platform/` package. Neither package was ever built. The Provider Port went into the module that owns it at M2.0 and the decision was never written down — which is how the same sentence came to describe the AI Provider Port too, three milestones later, and nearly decided where M8's most important seam lived.
+>
+> The reasoning that settled it, ratified with [28-ai-platform.md](28-ai-platform.md): `signora_platform/` holds **technical** shared infrastructure and never business logic, and prompts are the most business-loaded artifact in the system. Beyond that, `signora_platform/` is frozen (CLAUDE.md §20a) and **freezing precedes proving** — a substrate frozen before its first consumer freezes guesses. `modules/ai_platform/` freezes on the same terms once **M9 and M10 have both consumed it**: one consumer proves nothing, two of genuinely different shape begin to validate an abstraction.
 - **Integration Port** (Principle 11): base Protocol in `backend/signora_platform/integration_abstraction/`, implemented per-vendor by the consuming module (e.g., `revenue_intelligence_platform/infrastructure/adapters/{salesforce,hubspot,pipedrive,zoho}.py`).
 
-`signora_platform/` contains only technical shared infrastructure — never business/domain logic. An import-linter contract (`signora_platform must not depend on any module`) enforces that dependencies point from `modules/` into it and never the reverse.
+`signora_platform/` contains only technical shared infrastructure — never business/domain logic. **A port is not platform infrastructure**: it is the vocabulary of the module that owns it, so it lives in that module's `domain/` and is published through its `public/`. An import-linter contract (`signora_platform must not depend on any module`) enforces that dependencies point from `modules/` into it and never the reverse.
 
 ## Migrations
 

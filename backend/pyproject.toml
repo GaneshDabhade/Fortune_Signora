@@ -115,6 +115,7 @@ containers = [
     "modules.signal_engine",
     "modules.buying_score_engine",
     "modules.opportunity_engine",
+    "modules.ai_platform",
 ]
 layers = [
     "(interface)",
@@ -266,6 +267,107 @@ forbidden_modules = [
     "modules.workspace_tenancy.interface",
 ]
 
+# --------------------------------------------------------------------------
+# AI Platform (M8) — infrastructure, not a pipeline stage.
+#
+# The ratified condition is not "ai_platform must not import business
+# modules". It is sharper, and needs two contracts to say:
+#
+#   domain/ and application/  ->  know NOTHING of the pipeline, at all
+#   infrastructure/           ->  may satisfy a port from another module's
+#                                 public/ contract, and nothing deeper
+#
+# That is the whole reason `ExplanationSource` is a Protocol declared in
+# application/ports.py and satisfied by an adapter in infrastructure/. The
+# substrate stays extractable and fake-testable, and it is still pure
+# substrate on the day M9 arrives, whatever M8 built on top of it
+# (28-ai-platform.md, "the substrate never depends on the pipeline").
+#
+# A single blanket ban would have been simpler and wrong: it would forbid
+# the adapter the design requires, and the usual resolution to that is an
+# exemption, which is how the rule stops meaning anything.
+# --------------------------------------------------------------------------
+[[tool.importlinter.contracts]]
+name = "ai_platform: domain and application know nothing of the pipeline"
+type = "forbidden"
+source_modules = [
+    "modules.ai_platform.domain",
+    "modules.ai_platform.application",
+]
+forbidden_modules = [
+    "modules.provider_platform",
+    "modules.provider_normalization",
+    "modules.knowledge_graph",
+    "modules.observation_engine",
+    "modules.business_event_engine",
+    "modules.signal_engine",
+    "modules.buying_score_engine",
+    "modules.opportunity_engine",
+    "modules.workspace_tenancy",
+]
+
+[[tool.importlinter.contracts]]
+name = "ai_platform infrastructure reaches business modules only through public/"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = ["modules.ai_platform.infrastructure"]
+forbidden_modules = [
+    "modules.opportunity_engine.domain",
+    "modules.opportunity_engine.application",
+    "modules.opportunity_engine.infrastructure",
+    "modules.opportunity_engine.interface",
+    "modules.buying_score_engine.domain",
+    "modules.buying_score_engine.application",
+    "modules.buying_score_engine.infrastructure",
+    "modules.buying_score_engine.interface",
+    "modules.signal_engine.domain",
+    "modules.signal_engine.application",
+    "modules.signal_engine.infrastructure",
+    "modules.signal_engine.interface",
+    "modules.business_event_engine.domain",
+    "modules.business_event_engine.application",
+    "modules.business_event_engine.infrastructure",
+    "modules.business_event_engine.interface",
+    "modules.observation_engine.domain",
+    "modules.observation_engine.application",
+    "modules.observation_engine.infrastructure",
+    "modules.observation_engine.interface",
+    "modules.knowledge_graph.domain",
+    "modules.knowledge_graph.application",
+    "modules.knowledge_graph.infrastructure",
+    "modules.knowledge_graph.interface",
+    "modules.provider_normalization.domain",
+    "modules.provider_normalization.application",
+    "modules.provider_normalization.infrastructure",
+    "modules.provider_normalization.interface",
+    "modules.provider_platform",
+    "modules.workspace_tenancy.domain",
+    "modules.workspace_tenancy.application",
+    "modules.workspace_tenancy.infrastructure",
+    "modules.workspace_tenancy.interface",
+]
+
+# No vendor SDK, no transport, no ORM below the adapter line. This is the
+# structural form of "never call a model vendor's SDK from domain or
+# application code" (CLAUDE.md §10) — the rule exists because a vendor call
+# buried in a use case is invisible until the vendor changes, and by then
+# every caller has grown to depend on its shape.
+[[tool.importlinter.contracts]]
+name = "ai_platform: domain has no infrastructure/framework dependencies"
+type = "forbidden"
+source_modules = ["modules.ai_platform.domain"]
+forbidden_modules = [
+    "sqlalchemy",
+    "fastapi",
+    "httpx",
+    "arq",
+    "signora_platform.db",
+    "signora_platform.event_bus",
+    "signora_platform.api",
+    "signora_platform.auth",
+    "signora_platform.authorization",
+]
+
 # The graph is acyclic (05-module-dependencies.md). An upstream module that
 # imports a downstream one has inverted the pipeline, and no amount of
 # indirection makes that safe to extract later.
@@ -317,6 +419,31 @@ name = "signal_engine depends on no downstream module"
 type = "forbidden"
 source_modules = ["modules.signal_engine"]
 forbidden_modules = ["modules.buying_score_engine", "modules.opportunity_engine"]
+
+# The other direction. Stated once rather than appended to each module's
+# downstream list, because it is a single architectural fact and three of
+# the nine modules have no downstream contract to append it to — a per-module
+# expression would silently exempt them.
+#
+# The AI Platform explains what the pipeline already concluded. A pipeline
+# module reaching *into* it would mean a stage asking a model to help decide
+# its own output, which is the inversion every layering rule in this
+# repository exists to prevent.
+[[tool.importlinter.contracts]]
+name = "no business module depends on the AI Platform"
+type = "forbidden"
+source_modules = [
+    "modules.provider_platform",
+    "modules.provider_normalization",
+    "modules.knowledge_graph",
+    "modules.observation_engine",
+    "modules.business_event_engine",
+    "modules.signal_engine",
+    "modules.buying_score_engine",
+    "modules.opportunity_engine",
+    "modules.workspace_tenancy",
+]
+forbidden_modules = ["modules.ai_platform"]
 
 [[tool.importlinter.contracts]]
 name = "workspace_tenancy: domain has no infrastructure/framework dependencies"

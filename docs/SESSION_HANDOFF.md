@@ -26,14 +26,14 @@
 
 | Indicator | Value |
 |---|---|
-| Backend tests | **1089 passing**, 0 failing, 0 skipped |
+| Backend tests | **1097 passing**, 0 failing, 0 skipped |
 | Frontend tests | **101 passing** |
 | Backend coverage | gate **≥95%** · currently **~95.3%** |
-| Security invariants | **261 / 261**, each proven to fail when its guarantee is removed |
-| import-linter contracts | **17 kept, 0 broken** |
+| Security invariants | **269 / 269**, each proven to fail when its guarantee is removed |
+| import-linter contracts | **21 kept, 0 broken** |
 | `make smoke` | ✅ **21 stages**, 40 checks, 84–203s — includes the cross-tier JWT contract (15b) since 2026-07-29 |
 | Migrations | 0000–0014, all reversible |
-| mypy strict | Clean, 330 files |
+| mypy strict | Clean, 337 files |
 | Open production bugs | **0** |
 | Technical debt | **0 outstanding** · **2 platform findings raised** (§5) |
 
@@ -313,7 +313,7 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 
 > **Completed:** M6 Opportunity Engine · **Next:** M8 AI Platform
 > **Branch:** `main` · everything committed and pushed, tree clean
-> **Health:** 1089 backend + 101 frontend tests passing · coverage ~95.3% (gate 95%) · 261 invariants · 17 contracts · smoke green over 21 stages, 40 checks
+> **Health:** 1097 backend + 101 frontend tests passing · coverage ~95.3% (gate 95%) · 269 invariants · 21 contracts · smoke green over 21 stages, 40 checks
 >
 > **First actions:**
 > 1. Read [21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md) — the shortest path to full context, and it tracks what is *built* rather than intended.

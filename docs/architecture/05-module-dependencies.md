@@ -30,6 +30,11 @@ flowchart LR
     ARE --> AIR
     AIR --> RE[Recommendation Engine]
 
+    AIP["AI Platform<br/>(infrastructure)"]
+    ARE --> AIP
+    AIR --> AIP
+    AIP -.reads via public/ from infrastructure only.-> OP
+
     OE --> TL[Timeline]
     BEE --> TL
     SE --> TL
@@ -58,13 +63,22 @@ This graph is, by design, **acyclic**. No module depends on a module downstream 
 | Signal Engine | Business Event Engine |
 | Buying Score Engine | Signal Engine |
 | Opportunity Engine | Buying Score Engine |
-| AI Research Engine | Opportunity Engine |
-| AI Reasoning Engine | Opportunity Engine, AI Research Engine |
+| AI Platform | *(none from domain/application)* · Opportunity Engine `public/` **from `infrastructure/` only**, behind a Protocol |
+| AI Research Engine | Opportunity Engine, AI Platform |
+| AI Reasoning Engine | Opportunity Engine, AI Research Engine, AI Platform |
 | Recommendation Engine | AI Reasoning Engine |
 | Timeline | Observation Engine, Business Event Engine, Signal Engine, Buying Score Engine, Opportunity Engine, Recommendation Engine |
 | Revenue Intelligence Platform | Opportunity Engine, AI Reasoning Engine, Recommendation Engine, Timeline (sync query) |
 
-All modules implicitly depend on **Workspace & Tenancy** for tenant scoping (see [11-tenancy.md](11-tenancy.md)).
+All modules implicitly depend on **Workspace & Tenancy** for tenant scoping (see [11-tenancy.md](11-tenancy.md)) — **except the AI Platform**, whose domain and application layers depend on no module at all. It receives a workspace-stamped Evidence Set from its caller and refuses one assembled from more than one workspace.
+
+### The AI Platform's edge is deliberately asymmetric
+
+It is the only node in this graph that is **consumed by** downstream modules while depending on none of them from its own domain or application layers. That asymmetry is the point: it is infrastructure, and infrastructure that accumulates pipeline knowledge stops being extractable.
+
+The one reach it makes — `opportunity_engine.public`, to narrate an explanation the pipeline has already computed — happens **only in `infrastructure/`**, satisfying an `ExplanationSource` Protocol declared in `application/ports.py`. Three import-linter contracts hold the line: domain and application may not import a business module *at all*; infrastructure may reach one only through `public/`; and no business module may import the AI Platform. A Security Invariant asserts the contracts themselves are still registered, because a rule deleted from configuration cannot be broken.
+
+This is the M5B `SignalReader` finding applied deliberately rather than discovered under pressure: **if a fake cannot stand in for a dependency, the dependency was never really a boundary.**
 
 ## Synchronous vs. Asynchronous Dependencies
 
