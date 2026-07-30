@@ -88,6 +88,13 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # and provenance, and the first row in the platform holding text a
         # customer reads.
         "ai_narration",
+        # AI Reasoning Engine (M9), migration 0017. The **Decision Package** —
+        # also a materialized AI artifact, and the first row a customer will
+        # read in order to *disagree* with Signora rather than merely to learn
+        # from it. Its own table rather than a discriminator on `ai_narration`:
+        # different shape, different consumers, and a shared table with a
+        # `kind` column would be one representation serving two truths.
+        "ai_reasoning",
     }
 )
 
@@ -154,6 +161,11 @@ REQUIRED_POLICY_COMMANDS: Final[frozenset[str]] = frozenset({"SELECT", "INSERT",
 # and the rows worth editing are exactly the embarrassing ones (migration
 # 0015; M8).
 #
+# `ai_reasoning` is the same category as `ai_narration` and for the same
+# reason: it records the conclusion a customer was actually shown, with the
+# evidence, support and limits that accompanied it. A better conclusion is a
+# new package naming a later score (migration 0017; M9).
+#
 # `ai_narration` is a **historical fact, not current truth** (ratified
 # 2026-07-30). It records what the platform produced at one moment, against
 # one prompt, one model and one evidence set. Prompt evolution produces a new
@@ -178,6 +190,7 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         "workspace_opportunity_policy",
         "ai_inference",
         "ai_narration",
+        "ai_reasoning",
     }
 )
 

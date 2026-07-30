@@ -462,10 +462,28 @@ forbidden_modules = [
 # `opportunity_engine.public`, which already carries the whole chain — so a
 # direct reach into a deeper layer is a module rebuilding a view another
 # module already publishes.
+# **One narrow exception, ruled 2026-07-30 (T128).**
+# `modules.ai_reasoning_engine.evaluation` is a *composition root*, not part
+# of the module's runtime surface: it wires an adapter, a registry and a
+# harness so a developer can run `make eval`. Wiring infrastructure is what a
+# composition root is for, and M8 carves out its own `infrastructure/` layer
+# for exactly this reason.
+#
+# Rejected alternatives, recorded so they are not re-proposed: exporting the
+# harness through `ai_platform.public` would publish a large surface whose
+# only consumer is a developer command and freeze it before M10 has used it;
+# an output-type registry would be indirection introduced solely to route
+# around a boundary.
+#
+# The exemption is deliberately one module deep. Nothing else under
+# `ai_reasoning_engine` may reach past another module's `public/`.
 name = "ai_reasoning_engine reaches other modules only through public/"
 type = "forbidden"
 allow_indirect_imports = true
 source_modules = ["modules.ai_reasoning_engine"]
+ignore_imports = [
+    "modules.ai_reasoning_engine.evaluation.** -> modules.ai_platform.**",
+]
 forbidden_modules = [
     "modules.opportunity_engine.domain",
     "modules.opportunity_engine.application",
