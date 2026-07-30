@@ -364,10 +364,20 @@ class TestImmutableTablesAreImmutable:
     async def test_it_remains_deletable_for_regeneration(
         self, admin_session_factory: async_sessionmaker[AsyncSession], table: str
     ) -> None:
-        """Deliberately different from mutation. Both tables hold *derived*
-        data: dropping and regenerating them is the rollback for a broken
-        mapper or a bad resolution rule, and a regenerated row is a new row
-        rather than an edited one."""
+        """Deliberately different from mutation.
+
+        Erasability is a property of the **tenancy** model, not of what a row
+        means: a workspace that cannot be deleted is a retention problem on
+        every table it owns, immutable or not. For derived tables there is a
+        second reason — dropping and regenerating them is the rollback for a
+        broken mapper or a bad resolution rule, and a regenerated row is a new
+        row rather than an edited one.
+
+        Corrected 2026-07-30: this previously claimed every table here held
+        derived data, which stopped being true at M6 (workflow) and again at
+        M8 (`ai_inference`, an operational record). The assertion was right;
+        the reason given for it was not.
+        """
         async with admin_session_factory() as session, session.begin():
             can_delete = (
                 await session.execute(

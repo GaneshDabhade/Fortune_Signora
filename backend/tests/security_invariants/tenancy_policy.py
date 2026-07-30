@@ -74,6 +74,13 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         "opportunity",
         "opportunity_state",
         "workspace_opportunity_policy",
+        # AI Platform (M8), migration 0015. The platform's first **operational
+        # record**: not intelligence, not configuration, not workflow, but
+        # Signora's account of its own behaviour when it called a model. It is
+        # workspace-owned all the same — the evidence digest and refs it holds
+        # address one workspace's facts, and the ungrounded rate is a fact
+        # about that workspace's data.
+        "ai_inference",
     }
 )
 
@@ -135,6 +142,11 @@ REQUIRED_POLICY_COMMANDS: Final[frozenset[str]] = frozenset({"SELECT", "INSERT",
 # historical signal unexplainable, because the reason it exists would have
 # changed underneath it (migration 0012; M5A ruling).
 #
+# `ai_inference` is Signora's account of its own behaviour. The ungrounded
+# rate read from an editable table would be a number nobody could defend —
+# and the rows worth editing are exactly the embarrassing ones (migration
+# 0015; M8).
+#
 # Adding a table here is a deliberate architectural act. The immutability it
 # claims is separately asserted in test_tenancy_policy.py.
 IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
@@ -150,6 +162,7 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         "opportunity",
         "opportunity_state",
         "workspace_opportunity_policy",
+        "ai_inference",
     }
 )
 

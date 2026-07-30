@@ -351,6 +351,70 @@ class TestEveryOutcomeIsRecorded:
             await infer.execute(an_input(), Narration)
         assert recorder.written[0].usage.total_tokens == 0
 
+    async def test_a_provider_failure_still_names_the_vendor(self) -> None:
+        """Nothing came back, and the vendor is known anyway — every
+        ``AIProviderError`` names the one that raised it.
+
+        Discarding it would leave a rate-limit incident attributable to
+        nobody, which is the same defect as inventing an attribution, in the
+        other direction.
+        """
+        infer, recorder, _, _ = build(
+            error=AIRateLimitedError(AIVendor.OLLAMA, "slow down"),
+            policy=InferencePolicy(max_attempts=1),
+        )
+        with pytest.raises(AITransientError):
+            await infer.execute(an_input(), Narration)
+
+        assert recorder.written[0].vendor is AIVendor.OLLAMA
+        assert recorder.written[0].served_model is None, "nothing served this call"
+
+    async def test_an_exhausted_retry_sequence_records_how_many_it_took(self) -> None:
+        """R-01: a retry storm must be visible in ``retries`` long before it
+        is visible on an invoice — and it is the *failed* rows that prove one
+        happened."""
+        infer, recorder, _, _ = build(
+            error=AITransientError(AIVendor.OLLAMA, "always down"),
+            policy=InferencePolicy(max_attempts=3, backoff_seconds=0.1),
+        )
+        with pytest.raises(AITransientError):
+            await infer.execute(an_input(), Narration)
+
+        assert recorder.written[0].usage.retries == 2
+
+    async def test_a_permanent_failure_after_a_transient_one_records_the_retry(self) -> None:
+        """Failing permanently on the second attempt is a different
+        operational fact from failing on the first."""
+        infer, recorder, _, _ = build(
+            errors=[
+                AITransientError(AIVendor.OLLAMA, "overloaded"),
+                AIPermanentError(AIVendor.OLLAMA, "bad key"),
+            ],
+            policy=InferencePolicy(max_attempts=3, backoff_seconds=0.1),
+        )
+        with pytest.raises(AIPermanentError):
+            await infer.execute(an_input(), Narration)
+
+        assert recorder.written[0].outcome is InferenceOutcome.PERMANENT
+        assert recorder.written[0].usage.retries == 1
+
+    async def test_the_caller_never_sees_the_internal_retry_wrapper(self) -> None:
+        """The count travels out of the retry loop inside a private
+        exception. What the caller catches is still the vendor's failure."""
+        infer, _, _, _ = build(
+            error=AIPermanentError(AIVendor.OLLAMA, "bad key"),
+            policy=InferencePolicy(max_attempts=1),
+        )
+        with pytest.raises(AIPermanentError) as caught:
+            await infer.execute(an_input(), Narration)
+
+        assert "bad key" in str(caught.value)
+        assert caught.value.__suppress_context__, (
+            "without `from None` the wrapper is printed as 'During handling of the above "
+            "exception, another exception occurred' in every traceback a caller sees — an "
+            "internal name in the first place an engineer looks"
+        )
+
 
 class TestInferIsStateless:
     async def test_two_identical_calls_produce_identical_requests(self) -> None:

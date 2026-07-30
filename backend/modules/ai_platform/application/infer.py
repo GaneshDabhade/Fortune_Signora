@@ -56,6 +56,7 @@ from modules.ai_platform.domain.provider import (
     AIProviderRegistry,
     AIRateLimitedError,
     AITransientError,
+    AIVendor,
     InferenceRequest,
     InferenceResult,
 )
@@ -91,6 +92,22 @@ class InferencePolicy:
             raise ValueError("max_attempts must be at least 1; zero attempts calls nothing.")
         if self.timeout_seconds <= 0 or self.backoff_seconds < 0:
             raise ValueError("timeout must be positive and backoff cannot be negative.")
+
+
+class _ProviderCallError(Exception):
+    """Carries the attempt count across the retry boundary. Never escapes.
+
+    The count is known inside the retry loop and needed by the recorder
+    outside it. Without it, a call that failed after three attempts records
+    ``retries = 0`` — so a retry storm is invisible in exactly the rows that
+    prove one happened, which is the opposite of what R-01 asks this table
+    for.
+    """
+
+    def __init__(self, error: AIProviderError, retries: int) -> None:
+        super().__init__(str(error))
+        self.error = error
+        self.retries = retries
 
 
 @dataclass(frozen=True, slots=True)
@@ -161,17 +178,31 @@ class Infer:
 
         # ---- execute, with retry confined to transport failures
         try:
-            result, attempts = await self._call(adapter, call)
-        except AIProviderError as exc:
+            result, retries = await self._call(adapter, call)
+        except _ProviderCallError as failure:
             outcome = (
                 InferenceOutcome.TRANSIENT
-                if isinstance(exc, AITransientError)
+                if isinstance(failure.error, AITransientError)
                 else InferenceOutcome.PERMANENT
             )
-            await self._write(request, prompt, outcome, None, str(exc), _spent(attempts=0))
-            raise
+            await self._write(
+                request,
+                prompt,
+                outcome,
+                # The vendor *is* known here even though nothing came back:
+                # every AIProviderError names the one that raised it. Losing
+                # it would leave a rate-limit incident attributable to
+                # nobody, which is the failure this hierarchy exists to
+                # prevent in the other direction.
+                vendor=failure.error.vendor,
+                # But not what served it. Nothing served it.
+                served_model=None,
+                detail=str(failure.error),
+                usage=_spent(retries=failure.retries),
+            )
+            raise failure.error from None
 
-        usage = _with_retries(result.usage, attempts)
+        usage = _with_retries(result.usage, retries)
 
         # ---- validate structure, then ground. Never retried: both are
         #      content failures, and re-rolling one hides it.
@@ -184,10 +215,26 @@ class Infer:
                 if isinstance(exc, SchemaViolationError)
                 else InferenceOutcome.UNGROUNDED
             )
-            await self._write(request, prompt, outcome, result, str(exc), usage)
+            await self._write(
+                request,
+                prompt,
+                outcome,
+                vendor=result.vendor,
+                served_model=result.model,
+                detail=str(exc),
+                usage=usage,
+            )
             raise
 
-        record = await self._write(request, prompt, InferenceOutcome.OK, result, None, usage)
+        record = await self._write(
+            request,
+            prompt,
+            InferenceOutcome.OK,
+            vendor=result.vendor,
+            served_model=result.model,
+            detail=None,
+            usage=usage,
+        )
         return InferenceOutput(output=output, record=record)
 
     async def _call(
@@ -195,23 +242,28 @@ class Infer:
     ) -> tuple[InferenceResult, int]:
         """Execute, retrying transient failures only.
 
-        A permanent failure is raised on the first attempt: retrying one
-        burns quota to no purpose and turns a configuration mistake into a
-        burst of identical failures at the vendor.
+        Returns the result and **how many retries it took** — a permanent
+        failure raised on the second attempt is a different operational fact
+        from one raised on the first, and both are lost if only the error
+        travels.
+
+        A permanent failure is never retried: retrying one burns quota to no
+        purpose and turns a configuration mistake into a burst of identical
+        failures at the vendor.
         """
-        last: AITransientError | None = None
+        last: tuple[AITransientError, int] | None = None
         for attempt in range(self._policy.max_attempts):
             try:
                 return await adapter.complete(call), attempt
             except AITransientError as exc:
-                last = exc
+                last = (exc, attempt)
                 if attempt + 1 >= self._policy.max_attempts:
                     break
                 await self._sleep(self._delay(exc, attempt))
-            except AIPermanentError:
-                raise
+            except AIPermanentError as exc:
+                raise _ProviderCallError(exc, attempt) from exc
         assert last is not None  # only reachable after a transient failure
-        raise last
+        raise _ProviderCallError(*last)
 
     def _delay(self, error: AITransientError, attempt: int) -> float:
         """The vendor's stated wait if it gave one, else exponential backoff.
@@ -233,10 +285,18 @@ class Infer:
         request: InferenceInput,
         prompt: PromptVersion,
         outcome: InferenceOutcome,
-        result: InferenceResult | None,
+        *,
+        vendor: AIVendor | None,
+        served_model: str | None,
         detail: str | None,
         usage: InferenceUsage,
     ) -> InferenceRecord:
+        """Record what happened. **Called on every outcome.**
+
+        ``vendor`` and ``served_model`` are passed rather than derived from a
+        result, because they are not known together: a failure that reached a
+        vendor names it while nothing served the call.
+        """
         record = InferenceRecord(
             id=uuid4(),
             workspace_id=request.evidence.workspace_id,
@@ -245,8 +305,8 @@ class Infer:
             prompt_version=prompt.version,
             prompt_fingerprint=prompt.fingerprint,
             requested_model=request.model,
-            served_model=result.model if result else None,
-            vendor=result.vendor if result else None,
+            served_model=served_model,
+            vendor=vendor,
             evidence_digest=request.evidence.digest,
             evidence_refs=tuple(sorted(f.ref.token for f in request.evidence)),
             outcome=outcome,
@@ -273,22 +333,24 @@ class Infer:
         return record
 
 
-def _spent(*, attempts: int) -> InferenceUsage:
+def _spent(*, retries: int) -> InferenceUsage:
     """Usage for a call that never produced a response.
 
-    Zeros rather than absence: a failed call still happened, and a row with
-    no usage is indistinguishable from one that was never attempted.
+    Zeros for tokens and latency rather than absence: a failed call still
+    happened, and a row with no usage is indistinguishable from one that was
+    never attempted. ``retries`` is emphatically **not** zeroed — it is the
+    only part of this record that carries information.
     """
-    return InferenceUsage(input_tokens=0, output_tokens=0, latency_ms=0, retries=attempts)
+    return InferenceUsage(input_tokens=0, output_tokens=0, latency_ms=0, retries=retries)
 
 
-def _with_retries(usage: InferenceUsage, attempts: int) -> InferenceUsage:
+def _with_retries(usage: InferenceUsage, retries: int) -> InferenceUsage:
     """Adapters report one call; the retry count belongs to whoever retried."""
     return InferenceUsage(
         input_tokens=usage.input_tokens,
         output_tokens=usage.output_tokens,
         latency_ms=usage.latency_ms,
-        retries=attempts,
+        retries=retries,
     )
 
 

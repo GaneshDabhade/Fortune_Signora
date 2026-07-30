@@ -27,6 +27,8 @@ Signora runs three active AI vendors (Claude, OpenAI, Gemini) across two modules
 
 **Mitigation:** Define per-workspace and platform-wide AI spend budgets and alerting thresholds (via OpenTelemetry cost metrics, see [ADR-0018](adr/0018-monitoring-and-observability.md)) before AI Research Engine is enabled broadly. Owner: TBD.
 
+**Partially mitigated 2026-07-30 (M8, migration `0015`).** Spend is now *measurable*: `ai_inference` records tokens, latency and retry count per workspace on **every** call, failures included — so a retry storm is visible in `retries` long before it reaches an invoice. Governing spend is still open, and deliberately so: it needs a pricing table, a budget owner, and a policy on what happens when a workspace exceeds one, which is a product decision rather than a substrate one. Note also that the record carries **no currency column by design** ([28-ai-platform.md](28-ai-platform.md), AC-72) — pricing is applied at reporting time over stored facts, so a rate change re-prices history correctly.
+
 ---
 
 ### R-02 — Single-Region Deployment vs. Enterprise Data Residency

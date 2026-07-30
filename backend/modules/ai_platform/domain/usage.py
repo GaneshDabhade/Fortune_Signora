@@ -40,9 +40,12 @@ class InferenceUsage:
     #: on a network call is noise, and quoting it would imply a resolution
     #: the measurement does not have.
     latency_ms: int
-    #: Retries *inside the adapter*. A rising value is the earliest visible
-    #: sign of a rate-limit problem — visible here long before it is visible
-    #: on an invoice (R-01).
+    #: How many times the call was retried before this record was written —
+    #: the platform's own retry policy, not an adapter's internal one, since
+    #: no adapter retries. A rising value is the earliest visible sign of a
+    #: rate-limit problem, visible long before it is visible on an invoice
+    #: (R-01), and it is recorded on failed calls precisely so a retry storm
+    #: is legible in the rows that prove one happened.
     retries: int = 0
 
     def __post_init__(self) -> None:

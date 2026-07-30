@@ -1,6 +1,6 @@
 # 28 — AI Platform
 
-> Status: **RATIFIED — 2026-07-29.** Milestone **M8**, in progress. **T111–T118 complete**; T119–T121 outstanding.
+> Status: **RATIFIED — 2026-07-29.** Milestone **M8**, in progress. **T111–T119 complete**; T120–T121 outstanding.
 > Audience: engineers, architects, and anyone who has to trust what Signora says.
 > Anchors: [14-ai-architecture.md](14-ai-architecture.md) · [ADR-0012](adr/0012-ai-platform-architecture.md) · [04-modules.md](04-modules.md) · [21-intelligence-pipeline.md](21-intelligence-pipeline.md) · [16-architecture-risks.md](16-architecture-risks.md) R-01, R-05, R-10
 >
@@ -410,7 +410,9 @@ The invariant that shapes the module: **`application/infer.py` is the only code 
 
 One table. Workspace-owned, forced RLS, immutable, registered in `tenancy_policy.py` in the same change.
 
-**`ai_inference`** — one row per model call: `id`, `workspace_id`, `prompt_name`, `prompt_version`, `model_id`, `vendor`, `evidence_digest`, `evidence_refs`, `outcome` (`ok` · `schema_invalid` · `ungrounded` · `transient` · `permanent`), `input_tokens`, `output_tokens`, `latency_ms`, `retry_count`, `correlation_id`, `created_at`.
+**`ai_inference`** — one row per model call: `id`, `workspace_id`, `correlation_id`, `prompt_name`, `prompt_version`, `prompt_fingerprint`, `requested_model`, `served_model`, `vendor`, `evidence_digest`, `evidence_refs`, `outcome` (`ok` · `schema_invalid` · `ungrounded` · `transient` · `permanent`), `input_tokens`, `output_tokens`, `latency_ms`, `retries`, `detail`, `created_at`.
+
+*(As built, migration `0015`. The proposal listed `model_id` and `retry_count`; the built columns split the first into **requested** and **served** — a tag may resolve to a specific build, and "the model changed underneath us" is otherwise indistinguishable from "the prompt got worse" — and renamed the second to match `InferenceUsage`. `prompt_fingerprint` and `detail` were added; see the T119 notes below.)*
 
 Two decisions worth stating:
 
@@ -594,7 +596,9 @@ Per CLAUDE.md §19, binding.
 
 **T118 ✅** — `application/infer.py`, `application/render.py`, `application/ports.py`, `domain/record.py`: the only path to a model, an explicit seven-stage lifecycle, semantic retry, and a record written on every outcome. **31 tests**, twelve mutation-proven guarantees.
 
-**T119–T121 outstanding.** No evidence set, no grounding checks, no prompts, no adapters, no `infer.py`, no migration `0015`, no `ai.narration_completed` in [06-events.md](06-events.md), no evaluation harness.
+**T119 ✅** — migration `0015`, `infrastructure/models.py`, `infrastructure/repository.py`: the `ai_inference` table with forced RLS, no `UPDATE` grant, and registration in `tenancy_policy.py`. **14 tests**, twelve mutation-proven guarantees. Two defects in T118 found and fixed; see below.
+
+**T120–T121 outstanding.** No evaluation harness, no `make eval`, no released prompt, no narration use case, no composition root, no `ai.narration_completed` in [06-events.md](06-events.md).
 
 `interface/` is deliberately absent: M8 has no HTTP surface, the layering contract marks the layer optional, and a directory created for a caller that does not exist is the speculative structure CLAUDE.md §6 forbids.
 
@@ -748,14 +752,60 @@ Nothing happens between those stages. `Infer.execute` is the only way to obtain 
 
 `PromptVersion.require_model` was added alongside `require(model, dataset)`. These answer different questions rather than duplicating one: at **runtime** there is no dataset — the dataset is what an evaluation was *conducted on*, and it belongs to the record supporting a release rather than to the call relying on it.
 
-### Configuration was deliberately not added — a ruling is needed
+### Configuration — the ruling, and the principle it produced
 
-`Infer` takes its policy, registries and recorder as constructor arguments. `signora_platform/settings.py` is still untouched, and the question raised at T117 is now due:
+**Ratified 2026-07-30.** The question raised at T117 and made due at T118 is answered: **`AISettings` is owned by `modules/ai_platform/infrastructure/`, not added to `signora_platform/settings.py`.**
 
-**No module has ever added a field to `Settings`.** The Infrastructure Contract (§20b) requires every value to arrive through it and forbids `os.environ` in a module; the Platform Freeze (§20a) forbids modifying platform internals without a stated reason. Whether adding a field is *using* the platform or *changing* it has never been decided, and M8 is the first milestone that needs vendor credentials, base URLs and model names.
+The reasoning generalises beyond this module, and was elevated to a permanent principle (CLAUDE.md §2, §6):
 
-Three options, with a recommendation, are recorded for the composition step (T121).
+> **Configuration is always a typed Settings object owned by the module that owns the behaviour.**
+
+The rule was never really *"configuration must go through `Settings`"* — that was one file mistaken for the principle. Platform `Settings` holds the **platform's** configuration; `AISettings` holds the AI Platform's; `ReasoningSettings` will hold M9's. The composition root is the only place independently owned Settings objects meet, and **no module ever learns where another module's configuration came from.**
+
+What the alternative would have cost is the argument: adding `ai_*` fields to the frozen platform grows its public surface for one module, and M9, M10 and M13 would each ask for the same — until the substrate every module imports is the registry of every module's configuration surface. Ownership and configuration have to align, or the platform slowly becomes responsible for everything.
+
+Everything the old rule protected still holds: values are typed and validated, no module reads `os.environ`, and construction happens once, at the composition root (T121).
 
 ---
 
-*T111–T118 built. T119 onward not started.*
+### T119 — the table, and two defects it exposed in T118
+
+`ai_inference` introduces a **fourth kind of data**. Everything before it is derived intelligence (rebuildable), customer configuration (irreplaceable), or workflow state (unreproducible). This is an **operational record**: Signora's account of its own behaviour. Nobody authored it, nothing regenerates it, and it is the only place the ungrounded rate can be read from — which is how R-10 stops being an open risk and becomes a number.
+
+**No foreign key points anywhere.** The substrate does not learn the pipeline's vocabulary at the database any more than it does in `domain/`. A reference to `opportunity` here would have been the quiet way to make the module unextractable whatever the import graph said.
+
+**Three constraints state what a row may claim**, enforced by PostgreSQL rather than by the writer — because the writer is exactly what a future change replaces:
+
+- *A success cannot come from nobody.* `outcome = 'ok'` requires both `vendor` and `served_model`. Output that arrived from nobody is a result nobody can attribute, and an inference nobody can attribute is not evidence of anything (AC-69).
+- *A failure always states a reason, and a success never carries one.* Both halves matter: a failed row with no `detail` is an incident with no first line, and a successful row carrying one means something was swallowed.
+- *Usage is non-negative.* No call consumes a negative amount of anything.
+
+**There is deliberately no `CHECK` enumerating the five outcomes.** `InferenceOutcome` is the authoritative representation; a SQL list of the same five strings would be a synchronised second copy that goes stale silently. One test pins `InferenceOutcome.OK.value == "ok"`, because the two constraints above are written against that literal and would otherwise stop applying rather than fail.
+
+**`detail` is bounded at 1024 characters, and the writer truncates to fit.** The bound is load-bearing rather than decorative: a grounding report quotes short excerpts of the model's own output, and without a ceiling this column is how the untriaged blob of text the design avoids would accumulate anyway. Truncation belongs to the writer because the *most* thoroughly ungrounded output produces the *longest* message — losing that row to a length error would discard exactly the evidence the table exists to keep.
+
+#### Defect 1 — a provider failure recorded no vendor
+
+`_write` derived `vendor` from the response, so a failure that never produced one recorded `vendor = NULL`. But **every `AIProviderError` names the vendor that raised it** — that is the whole point of Departure 2. A rate-limit incident was therefore attributable to nobody, which is the same defect as a false attribution wearing the opposite coat, and it made R-01's stated mitigation unusable: you cannot attribute a retry storm to a vendor the row declines to name.
+
+`vendor` and `served_model` are now passed explicitly rather than derived together, because **they are not known together**: a failure that reached a vendor names it while nothing served the call.
+
+#### Defect 2 — a failed call recorded zero retries
+
+The retry count lived inside the retry loop and only travelled out on success; the failure path passed a hardcoded `0`. So a call that failed after three attempts recorded `retries = 0` — **a retry storm was invisible in exactly the rows that prove one happened.**
+
+The count now travels out inside a private `_ProviderCallError`, which never escapes `execute` (asserted: the caller still catches the vendor's own exception, with the wrapper suppressed from the traceback). A permanent failure raised on the second attempt is a different operational fact from one raised on the first, and both are lost if only the error travels.
+
+Neither defect was caught by T118's twelve mutations, and the reason is worth recording: **every one of them was aimed at the success path or at whether a row was written at all.** Nothing asked whether a failed row was *correct*. The guarantee "failures are recorded as faithfully as successes" was tested as *recorded*, not as *faithfully* — which is a gap in how the mutation was chosen, not in the technique.
+
+#### Three claims corrected while passing through
+
+Documentation drift found in files this change touched, corrected rather than left (CLAUDE.md §12):
+
+- `migrations/env.py` claimed migrations use *"the exact same `get_settings()` configuration the application uses — there is no separate migration-specific database configuration"*. It reads `os.environ` directly, and the configuration is separate **on purpose** (CLAUDE.md §8: a runtime service connected as the owner is exempt from RLS on every table it touches). The claim inverted a security property.
+- The same file required every module's ORM models be imported for autogenerate. Seven modules never were, and nothing broke — migrations here are hand-authored, and autogenerate cannot produce an RLS policy anyway. The rule had no consumer.
+- `test_tenancy_policy.py` justified the `DELETE` grant on immutable tables as *"both tables hold derived data"*. That stopped being true at M6 and again here. Erasability is a property of the **tenancy** model — a workspace that cannot be deleted is a retention problem on every table it owns. The assertion was right; the reason given for it was not.
+
+---
+
+*T111–T119 built. T120 onward not started.*
