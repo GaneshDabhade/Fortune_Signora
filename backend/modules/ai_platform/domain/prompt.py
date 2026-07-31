@@ -37,11 +37,13 @@ configuration.
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date
 from typing import Final
 
 from modules.ai_platform.domain.errors import AIPlatformError
+from modules.ai_platform.domain.rendering import PROMPT_RENDERING_PROTOCOL_VERSION
 
 
 class PromptError(AIPlatformError):
@@ -119,6 +121,11 @@ class Evaluation:
     schema_failures: int
     #: Mean proportion of load-bearing facts mentioned, across the run.
     coverage: float
+    #: Which Prompt Rendering Protocol produced the text the model actually
+    #: read. **Required, with no default**: a default would let a measurement
+    #: whose conditions nobody recorded present itself as valid, which is the
+    #: hidden input this field exists to remove (``domain/rendering.py``).
+    rendering_protocol_version: int
     #: Retries the run needed to complete. Recorded, and deliberately **not
     #: part of the release criteria** below: retrying is what the platform is
     #: supposed to do about a transient failure, and penalising a prompt for
@@ -142,6 +149,12 @@ class Evaluation:
             raise PromptError("failure counts cannot be negative.")
         if self.retries < 0:
             raise PromptError("a run cannot have retried a negative number of times.")
+        if self.rendering_protocol_version < 1:
+            raise PromptError(
+                "an evaluation must name the rendering protocol it was measured under; "
+                "versions start at 1. A measurement that cannot say what the model was "
+                "shown cannot be reproduced."
+            )
         if not 0.0 <= self.coverage <= 1.0:
             raise PromptError(
                 f"coverage of {self.coverage} is not a proportion. It is the share of "
@@ -165,6 +178,30 @@ class Evaluation:
             and self.schema_failures == 0
             and self.coverage >= MINIMUM_COVERAGE
         )
+
+    @property
+    def measured_under_current_protocol(self) -> bool:
+        """Whether this measurement still describes what a model would be shown.
+
+        **Deliberately separate from ``passed``, and the distinction is the
+        whole point.** ``passed`` is a fact about the past and must stay true
+        forever — the run really did satisfy the criteria, under the conditions
+        that existed. This is a fact about the present: whether those conditions
+        are still the ones in force.
+
+        Folding the protocol check into ``passed`` would retroactively describe
+        a clean run as a failing one, which is not what happened and would make
+        the manifest lie about its own history. A release needs both.
+        """
+        return self.rendering_protocol_version == PROMPT_RENDERING_PROTOCOL_VERSION
+
+    @property
+    def earns_release(self) -> bool:
+        """Both halves: the run satisfied the criteria, **and** it was measured
+        under the conditions now in force. Every release derivation reads this
+        rather than ``passed``, so a protocol change withdraws a release by
+        derivation rather than by anyone remembering to."""
+        return self.passed and self.measured_under_current_protocol
 
 
 @dataclass(frozen=True, slots=True)
@@ -195,7 +232,14 @@ class PromptVersion:
                 f"prompt {self.reference} has no owner. An artifact that changes model "
                 "behaviour without changing code needs someone who reviews changes to it."
             )
-        seen = [(e.model, e.dataset, e.dataset_version, e.evaluated_on) for e in self.evaluations]
+        # The rendering protocol is part of what makes two runs the same
+        # measurement. Without it, re-evaluating a prompt on the same model and
+        # dataset the same day a protocol changes would be refused as a repeat —
+        # which is exactly the run a protocol change exists to require.
+        seen = [
+            (e.model, e.dataset, e.dataset_version, e.rendering_protocol_version, e.evaluated_on)
+            for e in self.evaluations
+        ]
         if len(seen) != len(set(seen)):
             raise PromptError(
                 f"prompt {self.reference} records the same evaluation twice. Evaluations "
@@ -222,13 +266,21 @@ class PromptVersion:
 
     @property
     def is_released(self) -> bool:
-        """Released means *usable somewhere*, and it is derived rather than
-        declared — a status field could say "released" while no evaluation
-        supported it."""
-        return any(e.passed for e in self.evaluations)
+        """Released means *usable somewhere, now*, and it is derived rather
+        than declared — a status field could say "released" while no evaluation
+        supported it.
+
+        Two conditions, because a release is a measurement bound to the
+        conditions that produced it: the run passed, **and** it was taken under
+        the rendering protocol this process implements.
+        """
+        return any(e.earns_release for e in self.evaluations)
 
     def supports(self, *, model: str, dataset: str) -> bool:
-        return any(e.passed and e.model == model and e.dataset == dataset for e in self.evaluations)
+        return any(
+            e.earns_release and e.model == model and e.dataset == dataset
+            for e in self.evaluations
+        )
 
     def is_released_for(self, model: str) -> bool:
         """Released for this model, on any dataset it was evaluated against.
@@ -236,9 +288,10 @@ class PromptVersion:
         The **runtime** question. At the point of use there is no dataset —
         the dataset is what an evaluation was *conducted on*, and it lives in
         the record supporting the release rather than in the call relying on
-        it.
+        it. The rendering protocol is not like that: it is a condition of the
+        call itself, so it *is* checked here.
         """
-        return any(e.passed and e.model == model for e in self.evaluations)
+        return any(e.earns_release and e.model == model for e in self.evaluations)
 
     def require_model(self, model: str) -> None:
         """Raise unless this prompt has earned the model.
@@ -248,7 +301,8 @@ class PromptVersion:
         """
         if self.is_released_for(model):
             return
-        earned = sorted({e.model for e in self.evaluations if e.passed})
+        self._refuse_stale_protocol(e for e in self.evaluations if e.model == model)
+        earned = sorted({e.model for e in self.evaluations if e.earns_release})
         raise PromptNotReleasableError(
             f"prompt {self.reference} has not passed evaluation for model '{model}'. "
             f"Passed for: {earned or 'nothing yet'}. A prompt tuned against one model has "
@@ -262,11 +316,38 @@ class PromptVersion:
         """
         if self.supports(model=model, dataset=dataset):
             return
-        earned = sorted(f"{e.model}/{e.dataset}" for e in self.evaluations if e.passed)
+        self._refuse_stale_protocol(
+            e for e in self.evaluations if e.model == model and e.dataset == dataset
+        )
+        earned = sorted(f"{e.model}/{e.dataset}" for e in self.evaluations if e.earns_release)
         raise PromptNotReleasableError(
             f"prompt {self.reference} has not passed evaluation for model '{model}' on "
             f"dataset '{dataset}'. Passed: {earned or 'nothing yet'}. A prompt tuned against "
             "one model has not been shown to behave on another."
+        )
+
+    def _refuse_stale_protocol(self, candidates: Iterable[Evaluation]) -> None:
+        """Raise if the only thing standing between this pairing and a release
+        is that it was measured under a different rendering protocol.
+
+        **A distinct message, because the two failures have opposite remedies.**
+        Told only *"has not passed evaluation for this model"*, an engineer
+        re-authors a prompt that was already correct. The measurement here is
+        not wrong and was not lost — it describes text a model would no longer
+        be shown, and what it needs is re-running, not re-writing.
+        """
+        stale = sorted(
+            {e.rendering_protocol_version for e in candidates if e.passed}
+            - {PROMPT_RENDERING_PROTOCOL_VERSION}
+        )
+        if not stale:
+            return
+        raise PromptNotReleasableError(
+            f"prompt {self.reference} passed for this pairing under rendering protocol "
+            f"{stale}, but this process renders at protocol "
+            f"{PROMPT_RENDERING_PROTOCOL_VERSION}. That measurement is still true and is "
+            "still on record; it no longer describes what the model would be shown. "
+            "Re-evaluate under the current protocol — do not re-author the prompt."
         )
 
 

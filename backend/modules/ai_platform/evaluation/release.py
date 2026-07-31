@@ -95,6 +95,7 @@ def _as_json(evaluation: Evaluation) -> dict[str, object]:
         "grounding_failures": evaluation.grounding_failures,
         "schema_failures": evaluation.schema_failures,
         "coverage": evaluation.coverage,
+        "rendering_protocol_version": evaluation.rendering_protocol_version,
         "retries": evaluation.retries,
     }
 
@@ -110,5 +111,6 @@ def _key(entry: dict[str, object]) -> tuple[object, ...]:
         entry["model"],
         entry["dataset"],
         entry["dataset_version"],
+        entry["rendering_protocol_version"],
         entry["evaluated_on"],
     )

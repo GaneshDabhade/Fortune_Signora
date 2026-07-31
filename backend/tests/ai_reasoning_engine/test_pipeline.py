@@ -36,6 +36,7 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from modules.ai_platform.domain.rendering import PROMPT_RENDERING_PROTOCOL_VERSION
 from modules.ai_platform.public import (
     AIProviderRegistry,
     Evaluation,
@@ -95,6 +96,7 @@ def _released_registry() -> PromptRegistry:
                         grounding_failures=0,
                         schema_failures=0,
                         coverage=1.0,
+                rendering_protocol_version=PROMPT_RENDERING_PROTOCOL_VERSION,
                     ),
                 ),
             ),
@@ -303,11 +305,13 @@ class TestTheReleaseRuleBindsTheRequestPath:
 
         version = load_prompt_registry(PROMPT_DIR).get(REASONING_PROMPT, REASONING_PROMPT_VERSION)
 
-        assert len(version.evaluations) == 1, (
-            "reasoning@1 should record exactly the one run that earned its release. "
-            "Evaluations accumulate; an unexpected count means one was added by hand."
+        passing = [e for e in version.evaluations if e.passed]
+        assert len(passing) == 1, (
+            "reasoning@1 should record exactly one run that *earned* a release. Evaluations "
+            "accumulate — refusals included, since M9.5 Step A — so the count of records is "
+            "not fixed; the count of passes is. More than one here means one was added by hand."
         )
-        earned = version.evaluations[0]
+        earned = passing[0]
         assert earned.model == CERTIFIED_MODEL
         assert earned.dataset == "explanation_narration"
         assert earned.dataset_version == 1

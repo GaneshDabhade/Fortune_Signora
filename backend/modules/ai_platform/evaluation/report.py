@@ -18,6 +18,7 @@ from datetime import date
 
 from modules.ai_platform.domain.prompt import Evaluation
 from modules.ai_platform.domain.record import InferenceOutcome
+from modules.ai_platform.domain.rendering import PROMPT_RENDERING_PROTOCOL_VERSION
 from modules.ai_platform.evaluation.rubric import RUBRIC_VERSION, criteria
 
 
@@ -167,6 +168,10 @@ class EvaluationReport:
             grounding_failures=self.grounding_failures,
             schema_failures=self.schema_failures,
             coverage=self.coverage,
+            # Stamped from the running protocol rather than carried in on the
+            # report: the run rendered through this process's renderer, so this
+            # is the one place that can state it without being told.
+            rendering_protocol_version=PROMPT_RENDERING_PROTOCOL_VERSION,
             retries=self.retries,
         )
 
@@ -177,6 +182,9 @@ class EvaluationReport:
             f"model    {self.model}",
             f"dataset  {self.dataset_name}@{self.dataset_version}  {self.dataset_fingerprint[:12]}",
             f"rubric   v{self.rubric_version}    run on {self.evaluated_on.isoformat()}",
+            # The fourth experimental condition, printed beside the other three
+            # so a reader can see all of them without opening the manifest.
+            f"render   protocol v{PROMPT_RENDERING_PROTOCOL_VERSION}",
             "",
             "criteria",
         ]

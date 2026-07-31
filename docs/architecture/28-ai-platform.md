@@ -712,9 +712,11 @@ The **fingerprint covers name, version and text — never evaluations**. They ar
 
 Append-only evaluation is enforced the same way. The loader refuses a duplicate record; truncation across time is a review-and-git property, and is stated as such rather than claimed.
 
-### `explanation_narration@1` ships as a draft, and is unusable
+### `explanation_narration@1` shipped as a draft, and was unusable *(as at T119)*
 
-It has passed no evaluation, so the release rule refuses it — asserted by test. That is the system working rather than an omission: **T120 is what earns a prompt its release.** Shipping the artifact now lets the loader, the identity scheme and the release rule be exercised against something real instead of a fixture.
+It had passed no evaluation, so the release rule refused it — asserted by test. That was the system working rather than an omission: **T120 is what earns a prompt its release.** Shipping the artifact then let the loader, the identity scheme and the release rule be exercised against something real instead of a fixture.
+
+> **Superseded by T120**, which measured it against `llama3.1:8b` and earned the release it now holds. Left here in the past tense rather than deleted: the sequence is the point, and a record of the past is dated rather than rewritten.
 
 ---
 
@@ -950,3 +952,72 @@ Recorded rather than smoothed over:
 ---
 
 *T111–T121 built. Verified against a real model. One open finding: operational history does not survive a rolled-back unit of work.*
+
+---
+
+## M9.5 — the Prompt Rendering Protocol
+
+> Added 2026-07-31 by [ADR-0031](adr/0031-evidence-citation-protocol.md), Step B. **Behaviour-neutral**: no prompt renders differently, no parser changed, no release moved.
+
+### The fourth experimental condition
+
+A prompt evaluation measures a system with **four** inputs. Until M9.5, three were bound to every measurement and one was not:
+
+| Input | Bound by | Drift detected? |
+|---|---|---|
+| Prompt text | `PromptVersion.fingerprint`, verified on every load | yes — `PromptTamperedError` |
+| Dataset | the dataset's own fingerprint | yes — refuses to load |
+| Model | recorded on the evaluation, enforced by `require_model` | n/a — named explicitly |
+| **Rendered evidence** | **nothing** | **no** |
+
+The gap was not an oversight so much as a blind spot with a plausible cover story. `prompt_fingerprint` *looks* like it covers the prompt — but the template contains `{facts}`, not facts. `evidence_digest` *looks* like it covers the evidence — but it hashes `canonical_form()`, which `evidence.py` documents as *"for hashing only. Not for prompts."* Between them sits `render.py`, covered by neither.
+
+> **Two inferences carrying an identical prompt fingerprint and an identical evidence digest could have been shown different text.** All that was required was for the renderer to change between them.
+
+That is a hidden input, and hidden inputs are architecture defects (CLAUDE.md §2). It is also why ADR-0031's defect survived two milestones: nothing recorded the one thing that would have shown the renderer and the parser disagreeing.
+
+### Where it lives, and why not beside the grammar
+
+The citation *grammar* — `EvidenceRef.token` and `EvidenceRef.parse` — lives in `domain/evidence.py`, and those two have never drifted precisely because they are neighbours. ADR-0031 originally proposed putting the *display* form there too.
+
+**That would have violated a rule `evidence.py` states about itself**: *"Evidence is truth; prompts are language, and the moment a fact knows how it will be phrased, changing the wording becomes a change to the evidence model."* A fact must not learn how it will be presented.
+
+So the protocol is its own concept in `domain/rendering.py`, **depending on** the grammar without living inside it. Language that is a contract is domain language — the same reason `prompt.py` is domain rather than infrastructure. The ADR's intent was right and its address was wrong; the correction is recorded there.
+
+### What the version identifies
+
+A bare integer with no referent would be worse than nothing: nobody could say whether a given change required a bump, so bumping would become discipline — and discipline is exactly what failed. **The version identifies a specification**, stated in the module and pinned by a specimen in `tests/ai_platform/test_rendering_protocol.py`. Changing what a model sees without bumping the version fails that test, the same guarantee `PINNED_FINGERPRINTS` gives prompt text.
+
+Protocol **1** is the form shipped since M8 — bracketed citation, indented attributes — specified as it *is* rather than as it should be, defect included. Naming a defect and correcting it are separate changes, so that the release invalidation in Step C has exactly one cause.
+
+### `passed` and `earns_release` are different questions
+
+`Evaluation.passed` is unchanged and stays a fact about the **past**: the run really did satisfy the criteria, under the conditions that existed. Folding the protocol check into it would retroactively describe a clean run as a failing one — which is not what happened, and would make the manifest lie about its own history.
+
+The protocol check is a fact about the **present**, so it is separate:
+
+- `passed` — the measurement satisfied the criteria.
+- `measured_under_current_protocol` — those conditions are still in force.
+- `earns_release` — both. Every release derivation reads this.
+
+**A protocol change therefore withdraws every stale release by derivation, not by anyone remembering to withdraw them.** Prompt immutability and released history are untouched: the record stays, and stops applying.
+
+The refusal says so in its own words, because the two failures have opposite remedies — told only *"has not passed for this model"*, an engineer re-authors a prompt that was already correct:
+
+> `prompt reasoning@1 passed for this pairing under rendering protocol [1], but this process renders at protocol 2. That measurement is still true and is still on record; it no longer describes what the model would be shown. Re-evaluate under the current protocol — do not re-author the prompt.`
+
+### Two decisions that are not obvious from the diff
+
+**The duplicate-evaluation key includes the protocol.** Without it, re-evaluating a prompt on the same model and dataset the day a protocol changes is refused as a repeat — which is exactly the run a protocol change exists to require, rejected with a message about overwriting history. Both the loader's uniqueness rule and the recorder's key carry it, and each has a test that dies without it.
+
+**The field has no default, anywhere.** A default on `Evaluation` would let a measurement whose conditions nobody recorded present itself as valid; a default in the manifest schema would silently promote every legacy entry into a valid release. The six existing entries were stamped `1` explicitly, because that is the protocol they were genuinely measured under — not because it was the convenient value.
+
+### Deliberately not built
+
+**The protocol version is not written to `ai_inference`.** Enforcement at the point of use already prevents a stale release from running, so a column here would be forensic rather than protective, and it is a migration nobody has needed yet. Recorded as a candidate, not built (CLAUDE.md §6 — no speculative generalisation).
+
+### Verified
+
+Nine mutations, all fatal — including the two that survived the first round: the recorder's duplicate key silently dropping the protocol, and the report stamping a literal `1` instead of reading the constant. The second is the more interesting: at protocol 1 the mutation produces an identical program, so it is invisible to any test that does not move the constant. It is killed by a test that raises the running protocol and asserts the stamp follows — which is the property that makes Step C's bump propagate on its own.
+
+*1751 tests · 29 contracts · mypy strict clean over 448 files · coverage 95.85%.*

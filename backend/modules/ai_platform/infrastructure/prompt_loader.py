@@ -43,6 +43,11 @@ class _EvaluationRecord(BaseModel):
     grounding_failures: int
     schema_failures: int
     coverage: float
+    #: No default, deliberately. A manifest entry that does not say which
+    #: rendering protocol produced it is a measurement whose conditions are
+    #: unknown, and defaulting it to the current protocol would silently
+    #: promote every such entry into a valid release.
+    rendering_protocol_version: int
     retries: int
 
 
@@ -109,6 +114,7 @@ def _load(record: _PromptRecord, directory: Path) -> PromptVersion:
                 grounding_failures=e.grounding_failures,
                 schema_failures=e.schema_failures,
                 coverage=e.coverage,
+                rendering_protocol_version=e.rendering_protocol_version,
                 retries=e.retries,
             )
             for e in record.evaluations

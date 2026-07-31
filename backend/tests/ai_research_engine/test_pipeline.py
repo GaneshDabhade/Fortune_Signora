@@ -16,14 +16,16 @@ neither of those produces a fact anyone may cite.
 from __future__ import annotations
 
 import json
+from datetime import date
 from uuid import UUID, uuid4
 
 import pytest
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from datetime import date
-
+from modules.ai_platform.domain.rendering import PROMPT_RENDERING_PROTOCOL_VERSION
+from modules.ai_platform.infrastructure.prompt_loader import load_prompt_registry
+from modules.ai_platform.infrastructure.repository import SqlInferenceRecorder
 from modules.ai_platform.public import (
     AIProviderDescriptor,
     AIProviderRegistry,
@@ -38,8 +40,6 @@ from modules.ai_platform.public import (
     PromptRegistry,
     PromptVersion,
 )
-from modules.ai_platform.infrastructure.prompt_loader import load_prompt_registry
-from modules.ai_platform.infrastructure.repository import SqlInferenceRecorder
 from modules.ai_research_engine.infrastructure.composition import PROMPT_DIR, build_research
 from modules.ai_research_engine.infrastructure.models import (
     ResearchFindingModel,
@@ -142,6 +142,7 @@ def _version(name: str) -> PromptVersion:
                 grounding_failures=0,
                 schema_failures=0,
                 coverage=1.0,
+                rendering_protocol_version=PROMPT_RENDERING_PROTOCOL_VERSION,
             ),
         ),
     )

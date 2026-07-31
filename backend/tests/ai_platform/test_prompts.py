@@ -22,6 +22,7 @@ from modules.ai_platform.domain.prompt import (
     PromptTamperedError,
     PromptVersion,
 )
+from modules.ai_platform.domain.rendering import PROMPT_RENDERING_PROTOCOL_VERSION
 from modules.ai_platform.infrastructure.prompt_loader import (
     MANIFEST,
     PROMPT_DIR,
@@ -63,6 +64,7 @@ def an_evaluation(**overrides: object) -> Evaluation:
         "grounding_failures": 0,
         "schema_failures": 0,
         "coverage": 1.0,
+        "rendering_protocol_version": PROMPT_RENDERING_PROTOCOL_VERSION,
     }
     kwargs.update(overrides)
     return Evaluation(**kwargs)  # type: ignore[arg-type]

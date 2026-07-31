@@ -17,6 +17,7 @@
           "grounding_failures": 0,
           "schema_failures": 0,
           "coverage": 1.0,
+          "rendering_protocol_version": 1,
           "retries": 0
         }
       ]

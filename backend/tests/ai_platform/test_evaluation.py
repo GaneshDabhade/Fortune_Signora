@@ -28,6 +28,7 @@ from modules.ai_platform.domain.prompt import (
 )
 from modules.ai_platform.domain.provider import AIProviderRegistry, AITransientError, AIVendor
 from modules.ai_platform.domain.record import InferenceOutcome
+from modules.ai_platform.domain.rendering import PROMPT_RENDERING_PROTOCOL_VERSION
 from modules.ai_platform.evaluation.dataset import (
     DatasetError,
     GoldenCase,
@@ -37,6 +38,7 @@ from modules.ai_platform.evaluation.dataset import (
 )
 from modules.ai_platform.evaluation.harness import EvaluationAbandonedError, Harness
 from modules.ai_platform.evaluation.release import ReleaseError, record
+from modules.ai_platform.evaluation import report as report_module
 from modules.ai_platform.evaluation.report import CaseResult, EvaluationReport
 from modules.ai_platform.evaluation.rubric import RUBRIC_VERSION, coverage, criteria
 from modules.ai_platform.evaluation.run_log import RunLog
@@ -360,6 +362,43 @@ class TestRecordingTheMeasurement:
         with pytest.raises(ReleaseError, match="no longer there"):
             record(_report(fingerprint="0" * 64), manifest=manifest)
 
+    def test_the_same_run_under_a_new_rendering_protocol_is_an_addition(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """**Two protocols are two measurements, and the recorder must agree
+        with the loader about that.**
+
+        Re-running the same model and dataset on the same day is precisely what
+        a protocol change requires. If the duplicate key ignored the protocol,
+        the recorder would refuse the one run that proves the change was safe —
+        and it would refuse it with a message about overwriting history.
+        """
+        manifest = _manifest_copy(tmp_path)
+        record(_report(), manifest=manifest)
+
+        monkeypatch.setattr(report_module, "PROMPT_RENDERING_PROTOCOL_VERSION", 2)
+        written = record(_report(), manifest=manifest)
+
+        assert written.rendering_protocol_version == 2
+        entries = json.loads(manifest.read_text())["prompts"][0]["evaluations"]
+        assert [e["rendering_protocol_version"] for e in entries[-2:]] == [1, 2]
+
+    def test_a_recorded_run_stamps_the_running_protocol_rather_than_a_literal(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """**The bump must propagate on its own.**
+
+        If the report hard-coded the number instead of reading the constant,
+        Step C would raise the protocol and every new measurement would still
+        claim the old one — recording, permanently, that it was taken under
+        conditions that no longer existed. Nothing else would notice.
+        """
+        assert _report().as_evaluation().rendering_protocol_version == 1
+
+        monkeypatch.setattr(report_module, "PROMPT_RENDERING_PROTOCOL_VERSION", 7)
+
+        assert _report().as_evaluation().rendering_protocol_version == 7
+
 
 # --------------------------------------------------------------------------
 # helpers
@@ -466,6 +505,7 @@ def _evaluation(**overrides: Any) -> Evaluation:
         "grounding_failures": 0,
         "schema_failures": 0,
         "coverage": 1.0,
+        "rendering_protocol_version": PROMPT_RENDERING_PROTOCOL_VERSION,
     }
     return Evaluation(**{**defaults, **overrides})
 

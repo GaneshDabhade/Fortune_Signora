@@ -43,6 +43,7 @@ from modules.ai_platform.domain.provider import (
     ModelNotRegisteredError,
 )
 from modules.ai_platform.domain.record import InferenceOutcome, InferenceRecord
+from modules.ai_platform.domain.rendering import PROMPT_RENDERING_PROTOCOL_VERSION
 from tests.ai_platform.fakes import FakeAdapter
 
 MODEL = "fake-model"
@@ -90,6 +91,7 @@ def a_prompt(*, released_for: str | None = MODEL) -> PromptVersion:
                 grounding_failures=0,
                 schema_failures=0,
                 coverage=1.0,
+                rendering_protocol_version=PROMPT_RENDERING_PROTOCOL_VERSION,
             ),
         )
         if released_for
