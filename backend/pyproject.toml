@@ -562,6 +562,26 @@ forbidden_modules = [
     "modules.knowledge_graph.infrastructure",
     "modules.ai_platform.domain",
     "modules.ai_platform.application",
+    # **Added at T134, closing a hole this task would have walked into.** M9
+    # forbids this and carries a narrow exemption for its own composition root;
+    # T131 omitted it. Retrieval nearly reused M8's `OpportunityExplanationSource`
+    # and `assemble`, which live here — convenient, and a module reaching into
+    # another's infrastructure to borrow a translation it did not publish.
+    "modules.ai_platform.infrastructure",
+    # Research handles `BuyingScoreExplanation`, `SignalExplanation` and
+    # `BusinessEvent` because they arrive *inside* `OpportunityExplanation`.
+    # That is transitive vocabulary, not a dependency — and these entries keep
+    # it that way, so a future task cannot quietly turn reading a published
+    # type into calling the module that owns it.
+    "modules.buying_score_engine.domain",
+    "modules.buying_score_engine.application",
+    "modules.buying_score_engine.infrastructure",
+    "modules.signal_engine.domain",
+    "modules.signal_engine.application",
+    "modules.signal_engine.infrastructure",
+    "modules.business_event_engine.domain",
+    "modules.business_event_engine.application",
+    "modules.business_event_engine.infrastructure",
 ]
 
 [[tool.importlinter.contracts]]

@@ -42,9 +42,15 @@ from dataclasses import fields
 from pathlib import Path
 
 import pytest
+from modules.ai_platform.infrastructure.explanation import (
+    BUYING_SCORE,
+    CONTRIBUTION,
+    OPPORTUNITY,
+)
 from modules.ai_research_engine.domain import research
 from modules.ai_research_engine.domain.knowledge import EpistemicOrigin
 from modules.ai_research_engine.domain.research import ResearchFinding
+from modules.ai_research_engine.domain.retrieval import RESEARCH_FACT_KINDS
 
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
 PYPROJECT = BACKEND_ROOT / "pyproject.toml"
@@ -169,6 +175,36 @@ class TestResearchStaysInternal:
                     "Research Engine researches what Signora already owns; a network client "
                     "here is external retrieval arriving without the ruling that authorises it."
                 )
+
+
+class TestOneCitationResolvesToOneSentence:
+    """Two modules assemble evidence from the same `OpportunityExplanation`.
+    **Their citation kinds must never intersect.**
+
+    M8's assembler emits `opportunity`, `buying_score` and
+    `signal_contribution`. The AI Research Engine emits what that omits. If a
+    kind appeared in both, one citation token would resolve to two different
+    facts with two different summaries depending on which module assembled the
+    set — and a customer checking a premise would have no way to know which one
+    they were shown.
+
+    Asserted here as well as in the module's own tests, deliberately: rewriting
+    either module's retrieval must not be able to remove the guarantee.
+    """
+
+    def test_research_never_emits_a_kind_the_platform_already_emits(self) -> None:
+        platform = {OPPORTUNITY, BUYING_SCORE, CONTRIBUTION}
+        collisions = RESEARCH_FACT_KINDS & platform
+        assert not collisions, (
+            f"{sorted(collisions)} is emitted by both the AI Platform's assembler and the AI "
+            "Research Engine. One citation would resolve to two different sentences."
+        )
+
+    def test_both_sides_of_the_rule_are_non_empty(self) -> None:
+        """A disjointness assertion is satisfied by either side being empty,
+        which would make it pass while proving nothing."""
+        assert RESEARCH_FACT_KINDS
+        assert {OPPORTUNITY, BUYING_SCORE, CONTRIBUTION}
 
 
 class TestInferredKnowledgeIsUncitable:
