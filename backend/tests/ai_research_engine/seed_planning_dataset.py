@@ -43,6 +43,7 @@ DATASET_DIR = (
 )
 DATASET_NAME = "research_planning"
 DATASET_VERSION = 1
+SYNTHESIS_DATASET = "research_synthesis"
 SEEDED_FROM = "signora_platform/simulation/scenarios/baseline@1.json (M2.0)"
 
 NOTE = (
@@ -59,7 +60,7 @@ NOTE = (
 )
 
 
-async def _build() -> list[dict[str, Any]]:
+async def _build() -> list[tuple[str, Any, Any]]:
     from tests.opportunity_engine.test_opportunity_pipeline import _tracked
 
     app = create_async_engine(DEFAULT_APP_DATABASE_URL)
@@ -68,7 +69,7 @@ async def _build() -> list[dict[str, Any]]:
     admin_factory = async_sessionmaker(admin, expire_on_commit=False)
 
     try:
-        cases: list[dict[str, Any]] = []
+        cases: list[tuple[str, Any, Any]] = []
         for name in ("northwind", "contoso"):
             workspace_id, user_id, entity_id, _ = await _tracked(factory, admin_factory, name)
             async with tenant_scoped_session(
@@ -85,7 +86,7 @@ async def _build() -> list[dict[str, Any]]:
             facts = assemble(explanation)
             if not facts:
                 raise RuntimeError(f"scenario '{name}' produced no research facts.")
-            cases.append(_case(name, str(workspace_id), facts))
+            cases.append((name, workspace_id, facts))
         return cases
     finally:
         await app.dispose()
@@ -123,20 +124,112 @@ def _case(name: str, workspace_id: str, evidence: Any) -> dict[str, Any]:
     }
 
 
-def main() -> None:
-    cases = asyncio.run(_build())
+SYNTHESIS_NOTE = (
+    "Golden dataset for M10 synthesis evaluation. Each case is the set of *findings* a research "
+    "run produces over the M2.0 baseline scenario — the deterministic results a brief is written "
+    "about, addressed by the ids the derivations minted and summarised by the catalog's reviewed "
+    "questions. **Generated without a model**: the planner chooses which comparisons to run, but "
+    "which comparisons *can* run over a given fact set is a derivation question, so every "
+    "derivation whose facts are present is executed. That keeps the dataset reproducible and "
+    "keeps a prompt's score from moving because a planner happened to choose differently. "
+    "`load_bearing` names every finding, since a brief must relate them rather than pick one. "
+    "Regenerate with `python -m tests.ai_research_engine.seed_planning_dataset`."
+)
+
+
+def _synthesis_cases(built: list[tuple[str, Any, Any]]) -> list[dict[str, Any]]:
+    """Findings, derived from the **typed** facts the pipeline produced.
+
+    Deliberately not derived from the planning dataset on disk: that format
+    renders every attribute as a string for the prompt, so a date read back
+    from it is text — and `Recency` refuses text, correctly. Deriving from the
+    live facts keeps a comparison operating on the types it was written for.
+    """
+    from datetime import UTC, datetime
+    from uuid import UUID, uuid4
+
+    from modules.ai_platform.public import EvidenceRef, EvidenceSet, GroundedStatement
+    from modules.ai_research_engine.application.orchestrate import execute
+    from modules.ai_research_engine.domain.derivations import as_evidence
+    from modules.ai_research_engine.domain.plan import CATALOG, PlannedStep, ResearchPlan
+    from modules.ai_research_engine.domain.research import ResearchTask
+
+    now = datetime(2026, 7, 31, tzinfo=UTC)
+    cases: list[dict[str, Any]] = []
+
+    for name, workspace_id, facts in built:
+        evidence = EvidenceSet(workspace_id=workspace_id, facts=facts, assembled_at=now)
+        kinds = {fact.ref.kind for fact in facts}
+        # Every derivation whose facts are present. The planner chooses which
+        # comparisons to run, but which *can* run is a derivation question —
+        # so the dataset stays reproducible and a prompt's score cannot move
+        # because a planner happened to choose differently.
+        steps = tuple(
+            PlannedStep(
+                derivation=derivation,
+                reason=GroundedStatement(
+                    text="Every comparison whose facts are present.",
+                    evidence=tuple(
+                        fact.ref.token for fact in facts if fact.ref.kind in definition.consumes
+                    ),
+                ),
+            )
+            for derivation, definition in CATALOG.items()
+            if definition.consumes & kinds
+        )
+        task = ResearchTask(
+            id=uuid4(),
+            workspace_id=workspace_id,
+            correlation_id=uuid4(),
+            subject=EvidenceRef(kind="entity", id=UUID(int=0)),
+            opportunity_id=uuid4(),
+            requested_at=now,
+        )
+        findings = execute(task, ResearchPlan(steps=steps), evidence, now=now)
+        rendered: list[dict[str, Any]] = [
+            {
+                "kind": fact.ref.kind,
+                "id": str(fact.ref.id),
+                "summary": fact.summary,
+                "attributes": {key: str(value) for key, value in fact.attributes},
+            }
+            for fact in (as_evidence(finding) for finding in findings)
+        ]
+        cases.append(
+            {
+                "name": name,
+                "workspace_id": str(workspace_id),
+                "facts": rendered,
+                "load_bearing": [f"{f['kind']}:{f['id']}" for f in rendered],
+            }
+        )
+    return cases
+
+
+def _write(name: str, version: int, note: str, cases: list[dict[str, Any]]) -> None:
     document = {
-        "_comment": NOTE,
-        "name": DATASET_NAME,
-        "version": DATASET_VERSION,
+        "_comment": note,
+        "name": name,
+        "version": version,
         "fingerprint": fingerprint_of(cases),
         "seeded_from": SEEDED_FROM,
         "cases": cases,
     }
     DATASET_DIR.mkdir(parents=True, exist_ok=True)
-    path = DATASET_DIR / f"{DATASET_NAME}@{DATASET_VERSION}.json"
+    path = DATASET_DIR / f"{name}@{version}.json"
     path.write_text(json.dumps(document, indent=2) + "\n")
     print(f"wrote {path} — {len(cases)} cases")
+
+
+def main() -> None:
+    built = asyncio.run(_build())
+    _write(
+        DATASET_NAME,
+        DATASET_VERSION,
+        NOTE,
+        [_case(name, str(workspace_id), facts) for name, workspace_id, facts in built],
+    )
+    _write(SYNTHESIS_DATASET, 1, SYNTHESIS_NOTE, _synthesis_cases(built))
 
 
 if __name__ == "__main__":

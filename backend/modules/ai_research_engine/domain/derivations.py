@@ -32,6 +32,7 @@ from typing import Final, Protocol
 
 from modules.ai_platform.public import EvidenceFact, EvidenceValue
 from modules.ai_research_engine.domain.plan import CATALOG, DerivationType
+from modules.ai_research_engine.domain.research import ResearchFinding
 from modules.ai_research_engine.domain.retrieval import (
     OBSERVED_ON,
     OCCURRED_ON,
@@ -192,6 +193,28 @@ def validate_complete(derivations: tuple[Derivation, ...] = DERIVATIONS) -> None
 
 
 validate_complete()
+
+
+def as_evidence(finding: ResearchFinding) -> EvidenceFact:
+    """A finding, addressed as evidence a narrator may cite.
+
+    **This is the only bridge from a derivation to a prompt**, and it carries
+    no new information: the summary is the catalog's own reviewed question and
+    the attributes are exactly what the rule computed. Nothing is rephrased,
+    ranked, or explained on the way through — a finding that acquired meaning
+    here would be a second author nobody reviewed.
+
+    **The summary is the question, not an answer.** A narrator is shown *"which
+    conclusions rest on a single provider?"* alongside the counts that answer
+    it, so the words framing the numbers are a domain expert's rather than a
+    model's, and they cannot drift from what was computed.
+    """
+    return EvidenceFact(
+        ref=finding.ref,
+        workspace_id=finding.workspace_id,
+        summary=CATALOG[DerivationType(finding.derivation)].question,
+        attributes=finding.attributes,
+    )
 
 
 def for_type(derivation: DerivationType) -> Derivation:

@@ -44,14 +44,19 @@ from modules.ai_platform.evaluation.run_log import RunLog
 from modules.ai_platform.infrastructure.composition import build_provider_registry
 from modules.ai_platform.infrastructure.prompt_loader import load_prompt_registry
 from modules.ai_platform.infrastructure.settings import AISettings
-from modules.ai_platform.public import AIPlatformError, Infer, InferencePolicy
+from modules.ai_platform.public import AIPlatformError, GroundedOutput, Infer, InferencePolicy
 from modules.ai_research_engine.domain.plan import ResearchPlan
+from modules.ai_research_engine.domain.synthesis import SynthesisedResearch
 
 MODULE_ROOT = Path(__file__).resolve().parent.parent
 PROMPT_DIR = MODULE_ROOT / "prompts"
 DATASET_DIR = MODULE_ROOT / "evaluation" / "datasets"
-PROMPT = "research_planning"
-DATASET = "research_planning"
+#: The two prompts M10 ships. Named as a pair so `--prompt` selects one and its
+#: dataset together — a prompt evaluated against the other's dataset would
+#: measure the dataset's shape rather than the prompt.
+PROMPTS = ("research_planning", "research_synthesis")
+PROMPT = PROMPTS[0]
+DATASET = PROMPTS[0]
 
 
 async def main(argv: list[str] | None = None) -> int:
@@ -64,11 +69,21 @@ async def main(argv: list[str] | None = None) -> int:
         help="the model to evaluate. Defaults to the development runtime's configured "
         "model; pass any model this environment has registered a provider for.",
     )
+    parser.add_argument(
+        "--prompt",
+        default=PROMPTS[0],
+        choices=PROMPTS,
+        help="which of M10's prompts to evaluate. Each is measured against its own dataset.",
+    )
     parser.add_argument("--record", action="store_true")
     args = parser.parse_args(argv)
 
     settings = AISettings()
     model = args.model or settings.ollama_model
+    prompt = args.prompt
+    output_type: type[GroundedOutput] = (
+        ResearchPlan if prompt == PROMPTS[0] else SynthesisedResearch
+    )
 
     async with httpx.AsyncClient() as client:
         providers = build_provider_registry(settings, client=client)
@@ -84,11 +99,11 @@ async def main(argv: list[str] | None = None) -> int:
 
         try:
             report = await harness.evaluate(
-                prompt_name=PROMPT,
+                prompt_name=prompt,
                 prompt_version=args.prompt_version,
                 model=model,
-                dataset=load_dataset(DATASET, args.dataset_version, directory=DATASET_DIR),
-                output_type=ResearchPlan,
+                dataset=load_dataset(prompt, args.dataset_version, directory=DATASET_DIR),
+                output_type=output_type,
             )
         except AIPlatformError as exc:
             print(unmeasurable(model, exc), file=sys.stderr)

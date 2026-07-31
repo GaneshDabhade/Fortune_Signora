@@ -1,0 +1,73 @@
+{
+  "_comment": "Golden dataset for M10 synthesis evaluation. Each case is the set of *findings* a research run produces over the M2.0 baseline scenario \u2014 the deterministic results a brief is written about, addressed by the ids the derivations minted and summarised by the catalog's reviewed questions. **Generated without a model**: the planner chooses which comparisons to run, but which comparisons *can* run over a given fact set is a derivation question, so every derivation whose facts are present is executed. That keeps the dataset reproducible and keeps a prompt's score from moving because a planner happened to choose differently. `load_bearing` names every finding, since a brief must relate them rather than pick one. Regenerate with `python -m tests.ai_research_engine.seed_planning_dataset`.",
+  "name": "research_synthesis",
+  "version": 1,
+  "fingerprint": "889df946a423f88ffe9bf745da709d5ca3fa07f4d3c5afc0a7284aa50f82602b",
+  "seeded_from": "signora_platform/simulation/scenarios/baseline@1.json (M2.0)",
+  "cases": [
+    {
+      "name": "northwind",
+      "workspace_id": "0ded8391-e429-4a11-838a-4f0f4b54135a",
+      "facts": [
+        {
+          "kind": "research_finding",
+          "id": "ae5a85ad-ab4b-5d86-a8cf-46a594479172",
+          "summary": "Which conclusions rest on a single provider, and which are independently agreed?",
+          "attributes": {
+            "conclusions": "2",
+            "distinct_providers": "1",
+            "independently_agreed": "0",
+            "providers": "builtwith",
+            "single_source": "2"
+          }
+        },
+        {
+          "kind": "research_finding",
+          "id": "901de98c-8220-50f1-85ed-c4906614878c",
+          "summary": "How old is the evidence beneath this conclusion, and how far apart does it fall?",
+          "attributes": {
+            "newest_on": "2026-01-11",
+            "oldest_on": "2026-01-11",
+            "span_days": "0"
+          }
+        }
+      ],
+      "load_bearing": [
+        "research_finding:ae5a85ad-ab4b-5d86-a8cf-46a594479172",
+        "research_finding:901de98c-8220-50f1-85ed-c4906614878c"
+      ]
+    },
+    {
+      "name": "contoso",
+      "workspace_id": "2af9417d-a847-4abe-9eac-86e7f2c59fe6",
+      "facts": [
+        {
+          "kind": "research_finding",
+          "id": "209faded-a08b-515f-94a8-5a7fca1f53ea",
+          "summary": "Which conclusions rest on a single provider, and which are independently agreed?",
+          "attributes": {
+            "conclusions": "2",
+            "distinct_providers": "1",
+            "independently_agreed": "0",
+            "providers": "builtwith",
+            "single_source": "2"
+          }
+        },
+        {
+          "kind": "research_finding",
+          "id": "7059d1ab-f440-5f33-a881-b6e58e131887",
+          "summary": "How old is the evidence beneath this conclusion, and how far apart does it fall?",
+          "attributes": {
+            "newest_on": "2026-01-11",
+            "oldest_on": "2026-01-11",
+            "span_days": "0"
+          }
+        }
+      ],
+      "load_bearing": [
+        "research_finding:209faded-a08b-515f-94a8-5a7fca1f53ea",
+        "research_finding:7059d1ab-f440-5f33-a881-b6e58e131887"
+      ]
+    }
+  ]
+}

@@ -521,6 +521,32 @@ else
   fail "defensible conclusion failed against the running stack"
 fi
 
+# ============================================ 14k. AI Research Engine
+
+stage "14k. Researched account"
+
+# The M10 demonstration: a provider payload becomes a research artifact —
+# findings derived, brief written, all of it stored and announced. Like 14i and
+# 14j it deliberately does **not** call a model.
+#
+# What it proves is M10's claim: **every citable thing is deterministic.** The
+# findings are computed from real pipeline rows by pure functions; the model
+# only chooses which comparisons to run and writes the brief, and neither
+# produces a fact anyone may cite. It also gates storage on completion — an
+# unreleased synthesis prompt leaves no task row and no findings, rather than a
+# run that found things and said nothing.
+if (cd ../backend && \
+    SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 \
+    SIGNORA_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    SIGNORA_TEST_APP_DATABASE_URL="postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5433/signora" \
+    SIGNORA_TEST_ADMIN_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    uv run pytest tests/ai_research_engine -q >/tmp/smoke_ai_research.log 2>&1); then
+  pass "$(grep -oE '[0-9]+ passed' /tmp/smoke_ai_research.log | tail -1) against the running stack"
+else
+  tail -20 /tmp/smoke_ai_research.log
+  fail "researched account failed against the running stack"
+fi
+
 # ================================================= 15. Security Invariants
 
 stage "15. Security Invariants"
@@ -585,4 +611,4 @@ printf 'Build · startup · migrations · identities · image hygiene · health 
 printf 'auth · JWT · authorization · RLS · event bus · relay · workers · ingestion ·\n'
 printf 'normalization · identity resolution · change detection · business events ·\n'
 printf 'signals · buying scores · opportunities · grounded explanation ·
-defensible conclusion · invariants · teardown\n\n'
+defensible conclusion · researched account · invariants · teardown\n\n'

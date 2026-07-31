@@ -68,7 +68,7 @@ Events are listed in pipeline order. Payload fields below are illustrative and i
 | `buying_score.updated` | Buying Score Engine | Opportunity Engine, Timeline | `score_id`, `entity_id`, `score`, `trend`, `delta`, `contested`, `source_signal_ids`, `dissenting_signal_ids`, `trigger`, `valid_until`, `model_version` — see the M5B section below |
 | `opportunity.created` | Opportunity Engine | AI Research Engine, AI Reasoning Engine, Timeline, Revenue Intelligence Platform | `opportunity_id`, `entity_id`, `originating_buying_score_id`, `score_at_creation`, `contested_at_creation`, `qualification`, `stage`, `policy_version` — see the M6 section below |
 | `opportunity.stage_changed` | Opportunity Engine | AI Reasoning Engine, Timeline, Revenue Intelligence Platform | `opportunity_id`, `entity_id`, `previous_stage`, `new_stage`, `owner_id`, `actor_id`, `reason`, `sequence` |
-| `ai_research.completed` | AI Research Engine | AI Reasoning Engine (optional/non-blocking, see [05-module-dependencies.md](05-module-dependencies.md)) | `research_id`, `opportunity_id`, `artifact_ref`, `model_provenance` |
+| `ai_research.completed` | AI Research Engine | AI Reasoning Engine (optional/non-blocking, see [05-module-dependencies.md](05-module-dependencies.md)) | `research_id`, `opportunity_id`, `subject_kind`, `subject_id`, `synthesis_id`, `prompt_name`, `prompt_version`, `prompt_fingerprint`, `model`, `vendor`, `evidence_digest`, `finding_count`, `statement_count`, `inference_id`, `payload_version` — see the M10 section below |
 | `ai_reasoning.completed` | AI Reasoning Engine | Recommendation Engine, Revenue Intelligence Platform | `reasoning_id`, `opportunity_id`, `model_provenance`, `result_ref` |
 | `recommendation.created` | Recommendation Engine | Timeline, Revenue Intelligence Platform | `recommendation_id`, `opportunity_id`, `action`, `priority` |
 | `recommendation.status_changed` | Recommendation Engine | Timeline, Revenue Intelligence Platform, Signal Engine (feedback loop) | `recommendation_id`, `previous_status`, `new_status` |
@@ -360,7 +360,7 @@ One event per raw record rather than one per claim: the claims from a record are
 |---|---|---|---|
 | `ai.narration_completed` | 1 | `narration_id`, `subject_kind`, `subject_id`, `prompt_name`, `prompt_version`, `prompt_fingerprint`, `model`, `vendor`, `evidence_digest`, `statement_count`, `inference_id`, `payload_version` | A grounded explanation was produced and stored |
 
-**Exactly one event, and the restraint is the design.** A substrate emitting events nobody consumes is speculative by definition. `ai_research.completed` (M10) remains reserved for the module that will actually produce it; `ai_reasoning.completed` was reserved here and is now cataloged below, under its own producer.
+**Exactly one event, and the restraint is the design.** A substrate emitting events nobody consumes is speculative by definition. `ai_reasoning.completed` was reserved here and is cataloged below, under its own producer; `ai_research.completed` was reserved for M10 and is now cataloged under its own producer too.
 
 **It announces language, not a conclusion.** Every statement in the narration restates something the deterministic pipeline had already computed — grounding makes that mechanical rather than aspirational — so a consumer learns that an explanation now exists, never that Signora has decided anything new. This is the boundary between M8 and M9 expressed in the event contract.
 
@@ -395,3 +395,19 @@ One event per raw record rather than one per claim: the claims from a record are
 > **Added 2026-07-30**, with its producer, in the change that built it (T130). The payload was fixed in `domain/events.py` at T127; §5 of ADR-0030 records why the v2 placeholders `model_provenance` and `result_ref` were replaced by explicit provenance fields.
 
 > **Removed:** `business_event_type.published` from the v2 catalog. It assumed a runtime-mutable taxonomy that notified the system when it changed. The taxonomy is a versioned repository artifact — **the deployment is the notification** — so the event had no producer, and an event with no producer is a contract nobody is keeping.
+
+---
+
+## M10 — AI Research Engine
+
+| Event | v | Payload | Meaning |
+|---|---|---|---|
+| `ai_research.completed` | 1 | `research_id`, `opportunity_id`, `subject_kind`, `subject_id`, `synthesis_id`, `prompt_name`, `prompt_version`, `prompt_fingerprint`, `model`, `vendor`, `evidence_digest`, `finding_count`, `statement_count`, `inference_id`, `payload_version` | A research artifact was produced and stored |
+
+**It means the run finished** — findings derived, brief written, all of it stored. Not that planning completed, and not that some steps executed. The AI Reasoning Engine consumes it opportunistically precisely because it may never arrive, so a consumer treating it as *"work is available"* would read a partial run as a complete one.
+
+**This replaces the v2 placeholders.** The catalog reserved `artifact_ref` and `model_provenance` — the same two shapes M9 found and replaced at T127, and for the same reason: neither is a field, both are *categories* of field, and no consumer can be written against either. `artifact_ref` becomes `synthesis_id` plus the subject it concerns; `model_provenance` becomes the five provenance fields an auditor actually needs.
+
+**Identity and counts, never the prose.** `finding_count` says how many comparisons ran; nothing here says what they found, and `statement_count` says how long the brief is rather than what it claims. *Events carry identity; ports carry payload.*
+
+**`finding_count` is a count, never a quality.** A run with one finding is not worse than one with three — it looked at an account with less to compare.
