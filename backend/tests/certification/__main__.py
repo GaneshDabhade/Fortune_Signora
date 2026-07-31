@@ -79,8 +79,20 @@ def files_checked(output: str) -> str:
     return f"strict, clean over {match.group(1)} files" if match else "no summary line"
 
 
+#: Terminal colour, which `smoke.sh` writes around every stage heading.
+_ANSI = re.compile(r"\x1b\[[0-9;]*m")
+
+
 def stage_count(output: str) -> int:
-    return len(re.findall(r"^\d+[a-z]*\. ", output, re.MULTILINE))
+    """How many stages the smoke gate announced.
+
+    **Strips terminal colour first, and that is not incidental.** `smoke.sh`
+    prints each heading as `\033[1m14b. …\033[0m`, so a pattern anchored to a
+    digit at the start of the line matches nothing at all — which is how the
+    first real certification run recorded `0 stages` beside a passing gate.
+    A parser that under-reports silently is worse than one that raises.
+    """
+    return len(re.findall(r"^\d+[a-z]*\. ", _ANSI.sub("", output), re.MULTILINE))
 
 
 def _run(command: list[str], *, cwd: Path) -> tuple[int, str]:
