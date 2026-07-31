@@ -77,3 +77,34 @@ At fifty accounts, *"New evidence: 3 · Score moved: 12 · Cooling: 5"* may redu
 - **Five triggers get five distinct sentences.** A translation, never a paraphrase: a seller reading *"new evidence arrived"* must be able to find the `signal_generated` behind it. Blurring two into one friendly phrase makes the reason uncheckable.
 - **Absence is rendered as absence.** A stale account shows no score rather than a zero — zero is a reading, and it would rank a stale account as actively uninteresting.
 - **Business vocabulary lives in `components/intelligence/`, not `components/ui`.** A design system that knew what a buying score was would have started learning the pipeline's language. These compose *from* the design system and add the one thing it must not have: an opinion about what a score means.
+
+
+---
+
+## M12.2 — Account Identity
+
+### The finding that shaped it
+
+**An account has no name.** `Entity` is an identity and carries no attribute values, because *"a `name` column here would be truth-resolution in miniature, and it would immediately disagree with the claims underneath it."* A company's name is `LEGAL_NAME`: a claim, from a provider, at a time — and providers can disagree.
+
+So *"do not think entity endpoint, think Account Identity"* was righter than it looked. **Naming an account is a truth-resolution the Knowledge Graph deliberately declined to make**, and the identity layer is where it gets made — once, visibly, and without discarding the disagreement.
+
+### The UX decision this produces
+
+**Disagreement is shown, not resolved away.**
+
+When providers agree, the row shows the name and nothing else — no badge, no adornment, because a marker on every row saying *"everything is fine"* is the noise M12.1 already refused. When they disagree, the row shows the chosen name **and says so quietly**, opening to the provider-by-provider view.
+
+**This is J3 — *"prove it"* — applied to the most ordinary field on the screen.** A competitor's list shows a company name as though it were a fact. Signora's shows it as what it is: the freshest of several claims, with the others one click away. That the mechanism was already sitting in `ClaimSet.agrees()` is the tell that the architecture anticipated this.
+
+**Why it earns its place on the daily surface** — the principle is *reduce uncertainty*, and a name a seller half-recognises is uncertainty. Being told *"two of your providers call this company different things"* removes more doubt than silently picking one.
+
+### Deferred from M12.2
+
+**D7 — provider precedence is a customer policy, not a default.**
+Recency ships as the selection rule: a company that renamed should display its new name, and recency is the only ordering the claim record supports without inventing a provider trust ranking. **A customer who would rather see their CRM's name than the freshest third-party one is expressing a policy** — the same category as the scoring model and the opportunity policy, both of which are versioned, customer-owned artifacts. Encoding a precedence order in code now would put an unreviewed judgement in the substrate.
+*Trigger:* a customer disagreeing with a displayed name. Not before.
+
+**D8 — the identity layer will want a name nobody claimed.**
+Some accounts will have no `LEGAL_NAME` claim at all. The row must then show something, and the honest something is the domain if one is bound, falling back to the identifier. Building a richer fallback chain — trading names, aliases, CRM display names — is speculative until a real dataset shows how often the simple one is insufficient.
+*Trigger:* measuring how many accounts in a real workspace have no name claim.

@@ -54,15 +54,19 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | — | M6 | Opportunity Engine — **first sellable moment** | ✅ Complete | 2026-07-29 |
 | — | M8 | AI Platform — abstraction, prompts, eval harness | ✅ Complete | 2026-07-30 |
 | — | **M9** | **AI Reasoning Engine — Decision Package** | ✅ **Complete** | **2026-07-31** |
-| 1 | **M10** | **AI Research Engine** *(Internal Research)* | 🔵 **In progress — T138 complete** | — |
-| 2 | M11 | Recommendation Engine | ⏳ Queued | — |
-| 3 | M7 | Timeline | ⏳ Queued | — |
-| 4 | M12 | Revenue Intelligence Platform + business UI | ⏳ Queued | — |
-| 7 | M13 | Integrations — CRM, comms, calendar | ⏳ Queued | — |
-| 8 | M14a | Notifications | ⏳ Queued | — |
-| 9 | M14b | Billing, analytics, feature flags | ⏳ Queued | — |
-| 10 | M14.5 | Cloud Infrastructure *(deferred from M1.3B)* | ⏳ Queued | — |
-| 11 | M15 | GA readiness — load, SOC 2, PII, spend governance | ⏳ Queued | — |
+| — | **M10** | **AI Research Engine** *(Internal Research)* | ✅ **Complete** | **2026-07-31** |
+| — | **M9.5** | **Evidence Citation Protocol + Certification** *(ADR-0031/0032, unplanned)* | 🟠 **Open — Step F incomplete** | — |
+| 1 | **M12.1** | **Account attention list — first customer surface** | 🔵 **In progress** | — |
+| 2 | **M12.2** | **Account Identity, then the account brief** | ⏳ Next | — |
+| 3 | M12.3 | Evidence resolution and workflow actions | ⏳ Queued | — |
+| 4 | M12.4 | Research on demand | ⏳ Queued | — |
+| — | M11 | Recommendation Engine | 🟣 **Deferred 2026-07-31** — *not cancelled*; resumes on a product trigger, see §10 | — |
+| 5 | M7 | Timeline | ⏳ Queued | — |
+| 6 | M13 | Integrations — CRM, comms, calendar | ⏳ Queued | — |
+| 7 | M14a | Notifications | ⏳ Queued | — |
+| 8 | M14b | Billing, analytics, feature flags | ⏳ Queued | — |
+| 9 | M14.5 | Cloud Infrastructure *(deferred from M1.3B)* | ⏳ Queued | — |
+| 10 | M15 | GA readiness — load, SOC 2, PII, spend governance | ⏳ Queued | — |
 | — | 🎯 | **General Availability** | | |
 
 **Two foundations are frozen** and consumed rather than modified: `signora_platform/` (§20a) and the frontend foundation (§20c). **`ai_platform/` is frozen as of M10's close (2026-07-31)** — deliberately not after M9, because a port that had only served a single-call workload had never been asked for tool use or resumability ([28-ai-platform.md](docs/architecture/28-ai-platform.md), Condition 2).
@@ -310,6 +314,19 @@ Delivered: the first workspace-wide read path (`attention_list`), `GET /workspac
 **Why.** The attention list currently names each account by a truncated identifier — `6b8efd21` where a company name belongs — because no module in the ratified dependency graph can reach both workflow and entity names. **A seller cannot triage a list of identifiers**, so M12.1's screen is presently demonstrable rather than usable. Resolving names is a *smaller* change than the brief (one Knowledge Graph read endpoint plus a frontend join) and it is what converts M12.1 from a proof into a tool. Shipping it first makes the existing screen useful weeks before the brief would.
 
 Recorded as **D2** in [38-product-design-principles.md](docs/architecture/38-product-design-principles.md).
+
+### M11 — deferred 2026-07-31, and why it is not cancelled
+
+**`Recommendation Engine → AI Reasoning Engine`** is the ratified edge, and **`reasoning@1` has no released model**. M11 would layer a new AI module on a stage that cannot run, to produce recommendations surfacing on a product with one screen.
+
+The product argument stands on its own: a recommendation answers *"what should I do?"*, which only becomes the user's question once they can answer *"which accounts?"* and *"why this one?"* — J1 ships, J2 and J3 do not. **Signora's differentiator is that a human can check every claim, not that it recommends**; shipping recommendations before the evidence surface ships the commodity half first.
+
+**Trigger to resume — product maturity, deliberately not engineering effort:**
+
+1. `reasoning@1` holds a current release, and
+2. a design partner using the account brief asks *"so what do I do?"* — feedback showing the gap has moved from *what is true* to *what to do*.
+
+*"When M12 is finished"* was rejected as a trigger: it would resume M11 on a schedule, and the deferral exists precisely because M11's value depends on a product state rather than a date. Full rationale in [37-product-surface.md](docs/architecture/37-product-surface.md).
 
 ### 🔴 The open blocker, restated
 
