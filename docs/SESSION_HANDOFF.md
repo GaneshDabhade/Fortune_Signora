@@ -319,6 +319,14 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 
 **Read [30-m9-retrospective.md](architecture/30-m9-retrospective.md) first.** It explains how the architecture evolved T122→T130, which assumptions proved false, and what carries into M10 — and it is shorter than re-reading the milestone.
 
+### Open before M10 — a ruling is required
+
+**[31-m10-design-review-evidence.md](architecture/31-m10-design-review-evidence.md) is open and blocks M10's task breakdown.** The question: *may a research artifact become evidence?* Five options analysed (never-evidence · ordinary kind · sourced findings only · read-only channel · hypothesis generator), each against ownership, explainability, auditability, customer trust, determinism, M9 impact, package impact and extensibility. **No option is recommended** — that is the ruling being requested.
+
+It matters because the repository makes the *wrong* answer easy: `EvidenceRef.kind` is an unconstrained string, so `research_finding:uuid` is constructible today with zero platform change, and grounding cannot help — it validates that a citation resolves *inside* the set, never that a fact *in* the set is true.
+
+**A short M9.5 is recommended before M10** — resolve ADR-0031 while it invalidates two prompts rather than three, settle the single-`ollama_model` question, and re-run the model comparison. §7 of the design review carries the evidence.
+
 ### M9 is closed
 
 `reasoning@1` is **RELEASED** for `granite3.3:2b` on dataset `explanation_narration@1`, rubric v1: 2 cases, 0 grounding failures, 0 schema failures, coverage 0.833, recorded after **eight consecutive passing runs**. The benchmark was not changed in any respect — only `SIGNORA_OLLAMA_MODEL`.

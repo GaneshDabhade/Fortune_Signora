@@ -1,374 +1,257 @@
-# PROJECT_STATUS.md
+# Signora — Project Status
 
-> **Revision:** v25 · **Last updated:** 2026-07-29 · **Reporting period:** M5A closed
-> **Owner:** Technical Program Manager · **Audience:** Everyone
-> Authoritative record of project state (CLAUDE.md §20d). Updated after every completed milestone, **before the next begins**.
+> **The canonical entry point for this repository.** If you read one document, read this one.
+> **Last verified against the repository: 2026-07-31**, at `HEAD` `1157cce`. Every figure below was taken from a run, a gate, or `git` — not carried forward from a plan.
 >
-> **This document has two halves.** The Executive Summary below is the entry point — read it to understand where the project stands. Everything after it is the detailed engineering record: milestone history, architectural decisions, rationale, risks, and debt. Nothing has been summarised away.
+> This is an **executive dashboard**, not a progress log. It answers: *where are we · what was completed · what changed architecturally · what is deferred · what's next · are we on track.* Dated history lives in the appendices and is never rewritten to match the present.
 
 ---
 
-# Executive Summary
+## 1 · Repository overview
 
-## 1 · What is Signora?
-
-**Signora is an AI-powered Revenue Intelligence Platform.** It ingests signals about companies from third-party data providers — firmographics, technology stacks, funding events, hiring activity, behavioural buying intent — and reasons over them to surface *which accounts are worth a seller's attention right now, and why*.
-
-The product's competitive advantage is the quality of that reasoning and the evidence chain behind it: every recommendation traces back to the observations that produced it. It is built as a modular monolith on a single PostgreSQL database with row-level tenant isolation, designed so any module could be extracted into its own service without changing its domain logic.
-
-## 2 · Current Phase
-
-| Phase | Status |
-|---|---|
-| **Platform Foundations** | ✅ **Complete** — runtime, auth, deployment, smoke verification, frontend |
-| **Enablement** | ✅ **Complete** — Provider Simulation Framework |
-| **Product Development** | 🔄 **In progress** — **eight pipeline stages built, through the Opportunity Engine.** Signora now turns provider payloads into tracked accounts a seller commits to — and the first sellable moment has been reached. |
-| **AI Reasoning** | ✅ **Complete** — **M9, T122–T130, closed 2026-07-31.** A **Decision Package** is composed, stored and announced end to end: fifteen parts, of which a model authors three. `reasoning@1` **earned its release** against `granite3.3:2b` under an unchanged benchmark. |
-| **AI Platform** | ✅ **Complete** — **M8, T111–T121.** Every model call goes through one validated path, prompts are versioned artifacts, and `explanation_narration@1` has **earned a release by measurement** against `llama3.1:8b`, and a grounded narration is produced, stored and announced end to end. |
-| **Production Readiness** | ⏳ Queued — cloud infrastructure, then GA |
-
-## 3 · Overall Progress
+**Signora** is an AI-powered Revenue Intelligence Platform: a modular monolith (Python 3.13 · FastAPI · PostgreSQL 17 · SQLAlchemy 2.x async) that turns provider payloads into commercial conclusions a seller can act on — and defend.
 
 | | |
 |---|---|
-| **Overall completion** | **~52%** by engineering effort (~162 of ~261–339 ew) |
-| **Effort remaining** | **~99–177 ew** |
-| **Milestones completed** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · M4 · M5A · M5B · M6 · M8 · **M9** |
-| **Current milestone** | **M9 — AI Reasoning Engine — ✅ COMPLETE 2026-07-31.** T122–T130 delivered, `reasoning@1` released against `granite3.3:2b`, retrospective written ([30-m9-retrospective.md](docs/architecture/30-m9-retrospective.md)). **Next: M10 — AI Research Engine.** |
-| **Current `HEAD`** | `4427f99` — M9 T130 and the T128 provider routing. This line is written by the commit that follows it, so the live `HEAD` is one ahead; `git rev-parse --short HEAD` is authoritative. |
-| **Verification** | Local only ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate. |
-| **Projected to GA** | ~1.4–2.0 years at 3 engineers · ~2.1–3.0 at 2 · ~4.1–6.1 at 1 (80% capacity) |
+| **Current phase** | **Product Development** — nine pipeline stages built, through the AI Reasoning Engine |
+| **Last completed milestone** | **M9 — AI Reasoning Engine**, closed 2026-07-31 |
+| **Next milestone** | **M10 — AI Research Engine** *(design review open — see §10)* |
+| **Latest commit** | `1157cce` — *M9 COMPLETE — reasoning@1 released…* |
+| **Branch** | `main`, tree clean, pushed |
+| **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
+| **Overall completion** | **~57%** by engineering effort (~178 of ~261–339 ew) |
+| **Projected to GA** | ~1.3–1.9 years at 3 engineers · ~2.0–2.8 at 2 · ~3.9–5.8 at 1 (80% capacity) |
 
-## 4 · Roadmap Snapshot
+**What works end to end today:** a simulated provider payload is ingested, normalised into claims, resolved into entities, diffed into observations, detected as business events, interpreted as workspace-specific signals, aggregated into a buying score, qualified into an opportunity a human commits to, narrated as a grounded explanation, and reasoned into a **Decision Package** a customer can disagree with — stored immutably, announced on the outbox, with complete provenance.
 
-Execution order is authoritative; milestone IDs are stable labels and deliberately **not** renumbered ([§5b](IMPLEMENTATION_ROADMAP.md#5b-execution-sequence)).
+**What does not exist yet:** any user-visible surface for it. The pipeline runs **nine stages ahead of the UI** (M12). See §10.
 
-| # | Milestone | Purpose | Status |
-|---|---|---|---|
-| — | M0 | Secure multi-tenant foundation | ✅ Complete |
-| — | M1.1 | Platform runtime — event bus, workers | ✅ Complete |
-| — | M1.2 | Authentication boundary | ✅ Complete |
-| — | M1.3A | Deployment foundation | ✅ Complete |
-| — | M1.4 | Platform smoke test | ✅ Complete |
-| — | M1.5 | Frontend foundation | ✅ Complete |
-| — | M2.0 | Provider Simulation Framework | ✅ Complete |
-| — | M2.1 | Provider Platform | ✅ Complete |
-| — | M2.2 | Provider Normalization | ✅ Complete |
-| — | M3A | Knowledge Graph | ✅ Complete |
-| — | M3B | Observation Engine | ✅ Complete |
-| — | M4 | Business Event Engine | ✅ Complete |
-| — | M5A | Signal Engine | ✅ Complete |
-| — | M5B | Buying Score Engine | ✅ Complete |
-| — | M6 | Opportunity Engine — **first sellable moment** | ✅ Complete |
-| 1 | **M8** | **AI Platform — abstraction, prompts, eval harness** | ✅ Complete |
-| 10 | M9 | AI Reasoning Engine | ⏳ Queued |
-| 11 | M10 | AI Research Engine | ⏳ Queued |
-| 12 | M11 | Recommendation Engine | ⏳ Queued |
-| 13 | M7 | Timeline | ⏳ Queued |
-| 14 | M12 | Revenue Intelligence Platform + business UI | ⏳ Queued |
-| 15 | M13 | Integrations — CRM, comms, calendar | ⏳ Queued |
-| 16 | M14a | Notifications | ⏳ Queued |
-| 17 | M14b | Billing, analytics, feature flags | ⏳ Queued |
-| 18 | M14.5 | Cloud Infrastructure *(deferred from M1.3B)* | ⏳ Queued |
-| 19 | M15 | GA readiness — load, SOC 2, PII, spend | ⏳ Queued |
-| — | 🎯 | **General Availability** | |
+---
 
-## 5 · Platform Module Map
+## 2 · Milestone progress
 
-*What Signora is composed of. The roadmap answers **when**; this answers **what**.*
+Execution order is authoritative; milestone IDs are stable labels and deliberately **not** renumbered ([roadmap §5b](IMPLEMENTATION_ROADMAP.md#5b-execution-sequence)).
 
-### Foundations — the substrate everything else is built on
+| # | Milestone | Purpose | Status | Closed |
+|---|---|---|---|---|
+| — | M0 | Secure multi-tenant foundation | ✅ Complete | 2026-07-28 |
+| — | M1.1 | Platform runtime — event bus, workers | ✅ Complete | 2026-07-28 |
+| — | M1.2 | Authentication boundary | ✅ Complete | 2026-07-28 |
+| — | M1.3A | Deployment foundation | ✅ Complete | 2026-07-28 |
+| — | M1.4 | Platform smoke test | ✅ Complete | 2026-07-28 |
+| — | M1.5 | Frontend foundation | ✅ Complete | 2026-07-28 |
+| — | M2.0 | Provider Simulation Framework | ✅ Complete | 2026-07-29 |
+| — | M2.1 | Provider Platform | ✅ Complete | 2026-07-29 |
+| — | M2.2 | Provider Normalization | ✅ Complete | 2026-07-29 |
+| — | M3A | Knowledge Graph | ✅ Complete | 2026-07-29 |
+| — | M3B | Observation Engine | ✅ Complete | 2026-07-29 |
+| — | M4 | Business Event Engine | ✅ Complete | 2026-07-29 |
+| — | M5A | Signal Engine | ✅ Complete | 2026-07-29 |
+| — | M5B | Buying Score Engine | ✅ Complete | 2026-07-29 |
+| — | M6 | Opportunity Engine — **first sellable moment** | ✅ Complete | 2026-07-29 |
+| — | M8 | AI Platform — abstraction, prompts, eval harness | ✅ Complete | 2026-07-30 |
+| — | **M9** | **AI Reasoning Engine — Decision Package** | ✅ **Complete** | **2026-07-31** |
+| 1 | **M10** | **AI Research Engine** | 🔵 **Next — design review open** | — |
+| 2 | M11 | Recommendation Engine | ⏳ Queued | — |
+| 3 | M7 | Timeline | ⏳ Queued | — |
+| 4 | M12 | Revenue Intelligence Platform + business UI | ⏳ Queued | — |
+| 5 | M13 | Integrations — CRM, comms, calendar | ⏳ Queued | — |
+| 6 | M14a | Notifications | ⏳ Queued | — |
+| 7 | M14b | Billing, analytics, feature flags | ⏳ Queued | — |
+| 8 | M14.5 | Cloud Infrastructure *(deferred from M1.3B)* | ⏳ Queued | — |
+| 9 | M15 | GA readiness — load, SOC 2, PII, spend governance | ⏳ Queued | — |
+| — | 🎯 | **General Availability** | | |
 
-| Module | Status | Milestone | Purpose | Consumes | Produces |
-|---|---|---|---|---|---|
-| **Workspace & Tenancy** | ✅ Complete | M0 | The tenancy root. Owns workspaces, memberships, and the RLS boundary every other module inherits. | User identity from the auth tier | Workspaces, memberships, and the `workspace_id` scope all data carries |
-| **Authentication** | ✅ Complete | M1.2 | Better Auth in Next.js is the sole authentication authority; the Python tier only verifies RS256 JWTs and can never mint one. | OAuth sign-in (Google, Microsoft) | Verified principals, and the workspace hint every request re-verifies |
-| **Platform Runtime** | ✅ Complete | M1.1 | The event spine: transactional outbox, relay, dispatch, platform-owned idempotency, retry, dead-lettering, worker pools. | Domain events from any module | At-least-once delivery to subscribed consumers, exactly-once effect |
-| **Deployment Foundation** | ✅ Complete | M1.3A | Production images, per-tier database identities, a concurrency-safe migration runner, and a restart-safe stack. | Source and configuration | A running system that survives any component restart |
-| **Frontend Foundation** | ✅ Complete | M1.5 | The frontend platform: design system, component library, shell, routing, session, query layer. No business screens. | API responses, session | The surface business screens plug into from M12 |
-| **Provider Simulation Framework** | ✅ Complete | M2.0 | Produces realistic provider payloads without a provider, for development, testing, demos, and deterministic AI regression. | Datasets and scenario manifests | Provider payloads, delivered through the Provider Port like any real provider |
+**Two foundations are frozen** and consumed rather than modified: `signora_platform/` (§20a) and the frontend foundation (§20c). **`ai_platform/` freezes after M10** — deliberately not after M9, because a port that has only served a single-call workload has never been asked for tool use or resumability ([28-ai-platform.md](docs/architecture/28-ai-platform.md), Condition 2).
 
-### Product pipeline — raw data becomes commercial meaning
+---
 
-| Module | Status | Milestone | Purpose | Consumes | Produces |
-|---|---|---|---|---|---|
-| **Provider Platform** | ✅ Complete | M2.1 | Runs syncs against provider adapters: pages responses, stores raw records, tracks watermarks, classifies failures. Knows nothing of any specific provider. | Provider Port implementations | Raw provider records, and the events announcing them |
-| **Provider Normalization** | ✅ Complete | M2.2 | Translates each vendor's shape into Signora's own vocabulary as **claims** — evidence, not resolved records. The only place a vendor's format is understood. | Raw provider records | Immutable claims, each with full provenance |
-| **Knowledge Graph** | ✅ Complete | M3A | Resolves *which company* a provider is talking about, deterministically and explainably, and derives relationships between entities. **Resolves identity, never truth.** | Claims | Entities, identity bindings, resolution decisions, relationships, and claim sets |
-| **Observation Engine** | ✅ Complete | M3B | Detects **structural change** in what a provider asserts — and refuses to judge whether it matters. Re-assertion and provider disagreement are never change. | Evidence attached to entities | Observations, each attributed to the provider that asserted it |
-| **Business Event Engine** | ✅ Complete | M4 | Answers **"why is this business-relevant?"** — turns observations into typed business events in language a CRO recognises. Owns the taxonomy, Signora's business language; refuses all commercial judgement. | Observations | Business Events, typed against a versioned taxonomy |
-| **Signal Engine** | ✅ Complete | M5A | Answers **"why might this matter to *this* customer?"** — the first customer-specific layer. Owns the global signal catalog and the per-workspace relevance profile. Refuses all commercial verdicts. | Business Events | Signals — commercial hypotheses, held per workspace |
-| **Buying Score Engine** | 🔄 **Next** | M5B | Combines multiple signals into a continuously updated buying propensity score per account. | Signals | Buying Scores |
-| **Opportunity Engine** | ⏳ Queued | M6 | Decides whether an account should become an actionable sales opportunity. **The first sellable moment.** | Buying Scores | Qualified Opportunities |
-| **Timeline** | ⏳ Queued | M7 | The account narrative — every observation, event, signal, and score in chronological order, so a seller can read the story rather than the data. | Observations, Business Events, Signals, Buying Scores, Opportunities, Recommendations | The chronological account view |
-| **Revenue Intelligence Platform** | ⏳ Queued | M12 | The composed product surface: the business screens sellers actually use, assembled from every module above. | Opportunities, Timeline, Recommendations, AI Reasoning | The customer-facing application |
+## 3 · Task progress
 
-### AI — explaining and acting on what the pipeline found
+### ✅ M9 — complete, T122–T130
 
-| Module | Status | Milestone | Purpose | Consumes | Produces |
-|---|---|---|---|---|---|
-| **AI Platform** | ⏳ Queued | M8 | The vendor abstraction layer, Prompt Registry, and evaluation harness. Every model call in Signora goes through it; no module ever touches a vendor SDK. | Prompt templates, model configuration | A vendor-neutral inference surface, versioned prompts, and measurable output quality |
-| **AI Reasoning Engine** | ⏳ Queued | M9 | Explains **why** an opportunity exists, reasoning over the evidence collected throughout the pipeline. Structured, single-call, bounded latency. | Knowledge Graph, Observations, Business Events, Signals, Buying Scores, Timeline | A reasoning graph — the explanation, with its evidence chain intact |
-| **AI Research Engine** | ⏳ Queued | M10 | Agentic, multi-step research that enriches an account beyond what providers supply. Distinct from Reasoning: different latency, cost, and failure profile. | Knowledge Graph entities, external sources | Research artifacts, attributed and versioned |
-| **Recommendation Engine** | ⏳ Queued | M11 | Generates prioritized recommendations and next-best-actions for revenue teams. | Reasoning output, research artifacts | Recommendations shown to users |
+| Task | Delivered |
+|---|---|
+| T122 | Module scaffold · graph node · four import-linter contracts |
+| T123 | `ReasonedOutput` — the model's three fields, premise breadth as a **type invariant** |
+| T124 | `SupportBasis` / `SupportLevel` — derived support introducing **no new threshold** |
+| T125 | `TemporalExplanation` — why now · why not earlier · what changed · freshness |
+| T126 | Signal catalog extension — `limitations`, `suggested_validation` |
+| T127 | `DecisionPackage` + `Reason` — fifteen parts, `answers()` as executable acceptance |
+| T128 | `reasoning@1` · rubric extension · **release earned** |
+| T129 | Migration `0017` — `ai_reasoning`, forced RLS, no `UPDATE` grant |
+| T130 | Model · repository · context adapter · composition root · event · smoke stage 14j |
 
-### Platform services — everything needed to run it as a business
+### 🔵 Current — M10 design review
 
-| Module | Status | Milestone | Purpose | Consumes | Produces |
-|---|---|---|---|---|---|
-| **Integrations** | ⏳ Queued | M13 | Two-way sync with the systems sellers already live in: CRM, email, calendar. | Recommendations, Opportunities; inbound CRM and comms data | Writes into customer systems; inbound activity data |
-| **Notifications** | ⏳ Queued | M14a | Delivers what matters to the right person at the right time, in the channel they use. | Signals, Opportunities, Recommendations | Alerts and digests |
-| **Billing** | ⏳ Queued | M14b | Subscription, usage metering, plan enforcement, analytics, feature flags. | Usage and workspace state | Invoices, entitlements, product analytics |
-| **Cloud Infrastructure** | ⏳ Deferred | M14.5 | Terraform, ECS, RDS, ElastiCache, Secrets Manager, deployment pipeline, monitoring, rollback automation. Deliberately deferred — see §4. | Production images | A deployed, monitored, externally reachable environment |
-| **GA Readiness** | ⏳ Queued | M15 | Load testing at volume, SOC 2 evidence, PII policy, AI spend governance. | The whole system | A system that can be sold to an enterprise |
+**No implementation task is open.** One architectural question is under review and blocks task breakdown: *may a research artifact become evidence?* See §10 and the M10 design review.
 
-### The big picture
+### ⏳ Next tasks, once the ruling lands
 
-```mermaid
-flowchart TD
-    P["Providers<br/><i>real or simulated — the pipeline cannot tell</i>"] --> PP[Provider Platform]
-    PP -->|raw records| PN[Provider Normalization]
-    PN -->|normalized entities| KG[Knowledge Graph]
-    KG -->|canonical entities| OE[Observation Engine]
-    OE -->|observations| BEE[Business Event Engine]
-    BEE -->|business events| SE[Signal Engine]
-    SE -->|signals| BSE[Buying Score Engine]
-    BSE -->|buying scores| OP[Opportunity Engine]
-    OP -->|qualified opportunities| TL[Timeline]
+Task numbering resumes at **T131**. The sequence depends on the ruling, but the deterministic-first ordering that worked for M8 and M9 applies either way: retrieval infrastructure before generation, storage before orchestration, evaluation last.
 
-    AIP[AI Platform] -.->|vendor-neutral inference| AIR
-    AIP -.-> ARE
-    TL --> AIR[AI Reasoning Engine]
-    KG --> ARE[AI Research Engine]
-    AIR -->|reasoning graph| RE[Recommendation Engine]
-    ARE -->|research artifacts| RE
-    RE -->|recommendations| RIP[Revenue Intelligence Platform · UI]
-    TL --> RIP
-    OP --> RIP
+---
 
-    RIP --> INT[Integrations · CRM, comms, calendar]
-    RE --> NOT[Notifications]
-```
-
-**Read it as one sentence:** raw provider data becomes canonical entities, entities produce observations, observations become business events, events become signals, signals become scores, scores become opportunities, opportunities get explained, and explanations become recommendations a seller can act on — with every step traceable back to the observation that caused it.
-
-**That traceability is the product.** Any system can produce a score; Signora's claim is that it can show you the evidence.
-
-## 6 · Completed Foundations
-
-- ✅ **Secure multi-tenant platform** — PostgreSQL RLS, forced and self-sufficient; per-tier database identities
-- ✅ **Authentication** — Better Auth issues RS256 JWTs, FastAPI only verifies; the API cannot mint a token it accepts
-- ✅ **Event bus** — transactional outbox, relay, platform-owned idempotency, retry, dead-lettering
-- ✅ **Deployment foundation** — production images, concurrency-safe migration runner, restart-safe stack
-- ✅ **Smoke verification** — `make smoke`, one command, run locally. Established at M1.4 with 16 stages; **now 22**, each intelligence milestone adding its own demonstration against the live stack.
-- ✅ **Frontend foundation** — design system, component library, shell, routing, query layer
-- ✅ **Provider Simulation Framework** — Provider Port, shared contract suite, deterministic replay, fault injection
-
-- ✅ **Local-First verification** — every gate runs on the developer's machine ([ADR-0027](docs/architecture/adr/0027-local-first-development.md), 2026-07-29). GitHub is version control, remote backup, and future collaboration — **nothing else**. Actions are disabled at repository level and all three workflows are retained at `workflow_dispatch` only, so a `git push` stores the repository and triggers nothing.
-
-**Both foundations are frozen.** `signora_platform/` and the frontend foundation are consumed by later milestones, not modified — except for a production defect, accessibility issue, security issue, or approved architectural change.
-
-## 7 · Current Focus
-
-**M9 AI Reasoning Engine** — the first module that produces something a customer may **disagree with** rather than merely learn from. Where M8 announces *language* (every statement restating something the pipeline already computed), M9 announces a *conclusion*, and ships the evidence, support, contradiction and limits needed to challenge it.
-
-**The principle it establishes, ratified 2026-07-30:**
-
-> **Every field has the least powerful author capable of producing it correctly.**
->
-> The database owns timestamps. Code owns derived facts. Domain experts own static knowledge. AI owns inference. **Climb only as far as correctness actually requires.**
-
-Applied to the Decision Package, that partitioning leaves **the model authoring three of fifteen parts** — the proposition, the summary and the stated reasoning, each individually grounded. The other twelve are read from immutable pipeline history, derived deterministically, or snapshotted from a reviewed catalog. This is **Deterministic Explainability**, and its practical consequence is that a failure to reach a model *degrades* a package rather than emptying it.
-
-**What is outstanding.** `reasoning@1` is authored and unreleased. The release rule refuses it on the request path — asserted by test — and it will earn release only from a real evaluation against the hosted production model. That run needs `SIGNORA_ANTHROPIC_API_KEY`, which is not configured in this environment. **Nothing was manufactured to close the gap**, and a test fails the suite if an evaluation ever appears in the manifest without a run behind it.
-
-**[21-intelligence-pipeline.md](docs/architecture/21-intelligence-pipeline.md)** is the primary architectural reference for how information moves through Signora — the document to read first, kept current with what is actually built.
-
-## 8 · Biggest Remaining Milestones
-
-Knowledge Graph · Observation Engine · Business Events · Signals · Buying Scores · **Opportunities (first sellable moment)** · AI Platform · AI Reasoning · AI Research · Recommendations · Timeline · Revenue Intelligence Platform · Integrations · Cloud Infrastructure · GA
-
-## 9 · Current Health
+## 4 · Repository health
 
 | Indicator | Value | Target |
 |---|---|---|
 | **Backend tests** | **1564 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Frontend tests** | **101 passing**, 0 failing, 0 skipped | 0 skipped |
-| **Backend coverage** | **~95.8%** — varies by ±0.02pp between runs, so it is not quoted to two decimals | ≥95% (local gate) |
-| **Security invariants** | **295 / 295**, each proven to fail when its guarantee is removed | 100% verified |
+| **Backend coverage** | **95.75%** — varies ±0.02pp between runs | ≥95% (local gate) |
+| **Security Invariants** | **295 / 295**, each proven to fail when its guarantee is removed | 100% verified |
 | **import-linter contracts** | **25 kept, 0 broken** | 0 broken |
-| **Architecture drift** | **0** — no ratified ADR reversed; 14 documents amended for drift, all found by test or by implementation | Trending to 0 |
+| **MyPy** | **strict, clean over 412 files** | clean |
+| **`make smoke`** | ✅ **22 stages**, 101s, fresh images, clean teardown | green per milestone |
+| **Migrations** | `0001`–`0017`, additive and reversible | reversible |
+| **Architecture drift** | **0** — no ratified ADR reversed | trending to 0 |
 | **Open production bugs** | **0** | 0 |
-| **Technical debt** | **0 outstanding** · **2 platform findings raised** (see M3A record) | — |
-| **`make smoke`** | ✅ Passing (**22 stages**, 117s on the last run; 84–203s depending on image-build cache) | Required per milestone |
 
-### Test suite composition
+**Every gate runs locally.** `pytest --cov` · `make smoke` · `mypy --strict` · `lint-imports` · the Security Invariants suite · migration reversibility. A gate moving from CI to local did not make it optional — it made the local run the only run, and therefore the one that decides.
 
-| Area | Tests | Notes |
-|---|---|---|
-| Security invariants | 269 | Permanent architectural guarantees; run as their own reported step |
-| Simulation framework | 130 | Clock, dataset, scenario, faults, delivery, generators |
-| Provider contract suite | 45 | **One suite, five adapters** — the keystone interchangeability test |
-| Workspace & Tenancy | ~70 | RLS isolation, API, persistence |
-| Platform (event bus, auth, observability) | ~130 | Outbox, relay, dispatch, idempotency, DLQ, JWT |
-| Integration & demo checklists | ~42 | Cross-tier contract, migration runner, milestone gates |
-| Provider Platform (ingestion, sync task, domain) | 16 | The M2.1 demonstration |
-| Provider Normalization (vocabulary, claims, mappers, pipeline) | 56 | Claims — the unit of evidence |
-| Knowledge Graph (resolution, use cases, pipeline) | 70 | Identity — the first decision Signora makes |
-| Observation Engine (derivation, use case, pipeline) | 54 | Change — and, mostly, what is *not* change |
-| Business Event Engine (rules, taxonomy, detection, pipeline) | 63 | Business meaning — in language a CRO recognises |
-| Signal Engine (catalog, profile, strategies, pipeline) | 52 | Commercial meaning — the first customer-specific layer |
-| Buying Score Engine (ledger, scoring, score, use case, pipeline) | 68 | Commercial attention — the first intentional reduction |
-| Opportunity Engine (domain, policy, use cases, pipeline) | 40 | Commercial commitment — the first workflow module |
-| **Backend total** | **1320** | Coverage ~95.5%, mypy strict over 361 files |
-| Frontend components & foundation | 101 | Includes 13 AC-14/AC-15 guard tests |
+**Caveat worth restating:** these numbers describe a system with zero production traffic. They are evidence of discipline, not of field reliability.
 
 ---
 
-# Engineering Record
+## 5 · Released AI prompts
 
-*Everything below is the detailed record: milestone history, architectural decisions, rationale, risks, and debt. Preserved in full.*
+A prompt is usable **exactly where a measurement says it is** — per `(model, dataset)`, never in general. Release is *derived* from the recorded evaluation, never declared.
 
----
+| Prompt | v | Owner | Certified model | Dataset | Rubric | Evaluated | n | Coverage | Grounding / schema failures | State |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `explanation_narration` | 1 | AI Platform | `llama3.1:8b` | `explanation_narration@1` | v1 | 2026-07-30 | 2 | 1.000 | 0 / 0 | ✅ **RELEASED** |
+| `reasoning` | 1 | AI Reasoning Engine | `granite3.3:2b` | `explanation_narration@1` | v1 | 2026-07-31 | 2 | 0.833 | 0 / 0 | ✅ **RELEASED** |
 
-## Platform Contracts
+**Three evaluation states, and they are distinct:** **READY** (earned release) · **REFUSED** (executed correctly, failed the gate — *evidence, not failure*) · **UNMEASURABLE** (could not execute faithfully, so no verdict was produced at all).
 
-Ratified 2026-07-28. These are **foundation capabilities, not work in progress** — the substrate every later milestone is built on.
+**`granite3.3:2b` is *currently certified*, not permanently preferred.** It was selected because it is the only model tested that stays entirely resident in 4 GiB of VRAM. Three of the four that did not pass failed on **citation form rather than reasoning** — see [ADR-0031](docs/architecture/adr/0031-evidence-citation-protocol.md), §7. The comparison should be re-run once that is corrected.
 
-| Contract | Established | What it guarantees |
-|---|---|---|
-| Platform Runtime | M1.1 | Outbox relay, dispatch, platform-owned idempotency, retry, dead-lettering, worker pools |
-| Authentication Boundary | M1.2 | Better Auth issues, FastAPI only verifies; the API cannot mint a token it accepts (ADR-0026) |
-| Deployment Foundation | M1.3A | Production images, per-tier identities, concurrency-safe migration runner, restart-safe stack |
-| Platform Smoke Test | M1.4 | One command verifies the whole platform; required before every milestone and release |
-| Security Invariants | M1.2–M1.4 | A permanent suite of architectural guarantees, each proven to fail when its guarantee is removed. Established at 59; **now 186**, every intelligence milestone adding the guarantees its own boundaries rest on |
-| Tenant Isolation Policy | M1.3A | Every table classified; tenant tables carry forced RLS, required policies, and a non-null identifier |
-| Platform Infrastructure Policy | M1.3A | Infrastructure tables owned by platform services; the application publishes and cannot read |
-| Platform Freeze | M1.3A | `signora_platform/` changes only for a security fix, production defect, or approved change |
-| **Frontend Foundation** | **M1.5** | 🔒 Frozen. Design system, components, shell, query layer, auth integration, and routing are consumed, not modified — except for a production defect, **accessibility issue**, security issue, or approved change (CLAUDE.md §20c) |
-
-**One change since the freeze:** the relay's transient-failure handling (M1.4), under the production-defect exemption.
+```bash
+make eval                                       # explanation_narration@1
+SIGNORA_OLLAMA_MODEL=granite3.3:2b make eval-reasoning   # reasoning@1
+```
 
 ---
 
-## Platform Health Metrics
+## 6 · Current AI architecture
 
-Permanent indicators, reported every milestone. Each is machine-checked — none is a judgement call — so a number moving is evidence rather than opinion.
+A dashboard, not a specification. Authoritative detail: [28-ai-platform.md](docs/architecture/28-ai-platform.md) · [29-ai-reasoning-engine.md](docs/architecture/29-ai-reasoning-engine.md) · [ADR-0030](docs/architecture/adr/0030-the-decision-package.md).
 
-### Architecture Stability
-
-How much the agreed architecture is churning. Sustained instability means the design is being discovered during implementation rather than before it.
-
-| Indicator | Current | Target |
+| Component | State | What it guarantees |
 |---|---|---|
-| ADRs superseded or reversed since ratification | **0 of 27** | 0 — reversal means the decision was made too early |
-| Documents amended for *drift* (code disagreed with docs) | **3** (11-tenancy ×2, 18-authentication) | Trending to 0 |
-| Dependency inversions caught before implementation | **5** (3 in v9, 2 more in v10) | All — an inversion caught in planning costs a paragraph; caught in code it costs a milestone |
-| Roadmap status | 🔒 **Frozen** — changes are sequencing, dependency correction, or RFC (§5c) | Category 3 requires approval |
-| Documents amended for *new decisions* | 3 | Healthy — this is the process working |
-| Unplanned architectural changes mid-milestone | **0** | 0 — these belong to the RFC process |
-| `signora_platform/` freeze status | 🔒 **Frozen** since M1.3A · **1 change**, under the production-defect exemption | Changes require security fix, production defect, or approval |
-| Infrastructure Contract | ✅ **10 of 10** requirements satisfied | All, continuously — verified by `make smoke` |
+| **AI Platform** (`modules/ai_platform`) | ✅ Built, **freezes after M10** | The one path to a model. Domain and application know nothing of the pipeline; the single reach into `opportunity_engine.public` happens in `infrastructure/` behind a Protocol |
+| **Provider Registry** | ✅ Built, provider-neutral | Resolves **by model** — `for_model(model)`, with **no vendor-keyed lookup**. Business code that cannot *name* a vendor cannot branch on one. Ollama + Anthropic registered; a new vendor is an adapter registration |
+| **Prompt Registry** | ✅ Built, per-directory | Each module owns its prompts. A version is immutable and fingerprinted; the loader refuses to start if the file disagrees with its fingerprint |
+| **Evaluation** | ✅ Built, offline-refusing | The **only** command requiring a real model. Names no vendor in executable code (enforced by Security Invariant). A run that cannot execute produces **no verdict** rather than a partial average |
+| **Grounding** | ✅ Built, unchanged since M8 | Five `ViolationKind`s. Validates that every citation resolves **inside a closed evidence set** — it does **not** validate that a fact in the set is true |
+| **Decision Package** (M9) | ✅ Built | Fifteen parts; **the model authors three**. Eleven customer questions answered, eight without a model having spoken |
+| **AI Reasoning Engine** | ✅ Built | Structured, single-call. Exactly one inference per package, enforced by test |
+| **AI Research Engine** | ⛔ **Not built** — M10 | Agentic, multi-step, minutes not seconds. Requires embeddings, pgvector, tool use — **none of which exist** |
 
-**Reading:** stable. No ratified decision has been reversed. Both drift amendments were found by writing tests that asserted the documented behaviour, not by a production incident.
+**The organising principle**, ratified 2026-07-30:
 
-### Foundation Health
+> **Every field has the least powerful author capable of producing it correctly.** The database owns timestamps. Code owns derived facts. Domain experts own static knowledge. AI owns inference.
 
-Whether the substrate the 13 pipeline modules will be built on is sound.
-
-| Indicator | Current | Target |
-|---|---|---|
-| Backend tests | **492 passing**, 0 skipped, 0 xfail | 0 skipped — a skipped test is an untested claim |
-| Coverage | **95.26%** (local gate 95%) | ≥95% |
-| mypy strict | Clean, 113 files | Clean |
-| Migrations reversible | **7 of 7** revisions | 100% |
-| Disaster recovery validated | **4 of 4** components restart-safe | All |
-| Platform smoke stages | **16**, all proven to fail when broken | Every stage verified |
-| Whole-stack verification | **`make smoke`**, ~46s, local | One command, every milestone |
-| Platform modules with a failure-path test | 12 of 12 | 100% |
-| Open production defects | **0** | 0 |
-| Defects found by tests vs. by use | **8 of 13 by tests**; 5 by running the stack | Falling ratio is expected and is why `make smoke` now exists |
-
-**Reading:** sound. The metric worth watching is the last one: every defect so far was found by a test written to look for it, four of them by deliberately breaking a guarantee to check the test bites.
-
-### Security Invariant Status
-
-The permanent architectural guarantees. A drop here is never a test problem.
-
-| Category | Invariants | Status |
-|---|---|---|
-| Authentication | 15 | ✅ All passing |
-| Authorization | 11 | ✅ All passing |
-| Tenant Isolation Policy | 12 | ✅ All passing |
-| Database privilege separation | 9 | ✅ All passing |
-| Platform durability | 12 | ✅ All passing |
-| **Total** | **75** | ✅ **75 / 75**, also green against the running production stack |
-
-| Indicator | Current | Target |
-|---|---|---|
-| Invariants proven to fail when their guarantee is removed | **59 of 59** | 100% — an unverified invariant may assert nothing |
-| Invariants verified against a deployed stack | **59** (M1.3A local production) | Every milestone from M1.3A |
-| Frontend guard tests (AC-14 / AC-15) | **13**, all proven to fail when violated | Every design-system change |
-| Invariants weakened or removed to make a change pass | **0** | 0, permanently |
-| Milestones adding invariants | 2 of 2 since introduction | Every milestone (AC-13) |
-| Tables unclassified under the Tenant Isolation Policy | **0** | 0 — build fails otherwise |
-
-**Reading:** healthy, with one caveat worth keeping visible. Writing this suite surfaced two of my own tests asserting nothing — a backoff cap compared against itself, and a marker hook that silently marked the whole suite. Both were caught only by deliberately breaking the guarantee. **The "proven to fail" column is the one that matters; the count alone would have looked identical while two tests were inert.**
-
-### Cross-Module Boundary Violations
-
-Whether the modular monolith is staying modular. These are the violations that are cheap now and structural later.
-
-| Indicator | Current | Target |
-|---|---|---|
-| import-linter contracts | **4 kept, 0 broken** | 0 broken |
-| Contracts proven to fail on a deliberate violation | 4 of 4 | 100% |
-| Cross-module imports bypassing `public/` | **0** | 0 |
-| Direct cross-module database access | **0** | 0 |
-| Modules reading platform infrastructure tables | **0** (enforced by grant, not convention) | 0 |
-| Synchronous cross-module calls | **0** — all inter-module communication is events | Exceptions require approval |
-
-**Reading:** now meaningful. Four modules exist, and as of M3A the contracts are explicit per module pair — each module is forbidden from importing another's `domain/`, `application/`, `infrastructure/`, or `interface/`, and upstream modules cannot import downstream ones at all.
-
-Adding those contracts immediately caught **two real violations in shipped code**, both invisible at runtime: Provider Normalization's handler imported Provider Platform's SQLAlchemy model directly, and Provider Platform's *application* layer imported its own `infrastructure/`. Both are fixed — read ports on `public/`, and a repository Protocol in `application/ports.py`. This is precisely why the rule needed a machine behind it: a cross-module import compiles and runs perfectly well, and stays invisible until the modules need to move apart.
+Its practical consequence: because twelve of fifteen parts need no model, **a failure to reach a model degrades a Decision Package rather than emptying it.**
 
 ---
 
-### On the completion percentage
+## 7 · Active architectural findings
 
-It has moved from ~19% (v8) to ~16% without a single engineer-week of work being lost or repeated. Three causes, all bookkeeping:
+Only open items. Closed findings live in the milestone records (Appendix A) and the change log (Appendix B).
 
-- **M1.5 makes explicit** ~14.5 ew of frontend platform work that was previously buried inside M12's estimate. M12 correspondingly drops from 28–40 to 24–35 ew.
-- **M15 GA readiness was double-removed.** It had been folded inside the old `M4–M15` band; when that band was split into a pipeline row plus a separate M15 row, the pipeline figure was carried forward unchanged rather than reduced. The total was understated by roughly 16 ew as a result.
-- **The total is now recomputed from the milestone table**, not carried forward. It is checked against the table each revision.
+| ID | Finding | Severity | Owner milestone |
+|---|---|---|---|
+| **[ADR-0031](docs/architecture/adr/0031-evidence-citation-protocol.md)** | **The renderer and parser disagree about the citation protocol.** `render.py` emits `[token]`; `EvidenceRef.parse` accepts only `token`; the prompt says *"cite by their exact reference strings"*. Three of five models were REFUSED for **obeying literally**, across two independent model families. Passing since M8 on one model's bracket-stripping habit. **PROPOSED, deliberately unimplemented** — it is an M8 defect, and fixing it invalidates both released prompts | 🔴 **High** | M8 / M9.5 |
+| **F-1** | **One `ollama_model` setting, two certified prompts.** The registry holds a single Ollama model; narration is certified for `llama3.1:8b` and reasoning for `granite3.3:2b`. **No single process configuration serves both request paths.** M10 adds a third prompt | 🟠 Medium | M10 |
+| **F-2** | **The Evidence Set question.** `EvidenceRef.kind` is a free string, so M10 could emit `research_finding:uuid` with zero platform change — making model-authored synthesis indistinguishable from a pipeline-derived fact to every check downstream | 🔴 **High** | M10 — **design review open** |
+| **F-3** | Signal catalog `limitations` / `suggested_validation` are **engineering-authored pending domain review** | 🟠 Medium | Unassigned |
+| **F-4** | `ai_research.completed`'s reserved payload carries `artifact_ref` / `model_provenance` — **the same v2 placeholders M9 found and replaced** at T127 | 🟢 Low | M10 |
+| **F-5** | `PublishableEvent` Protocol vs frozen domain events — requires a `type: ignore` at every publish site | 🟢 Low | Unassigned |
 
-Recorded rather than quietly corrected: a denominator that moves without explanation is how estimates lose credibility.
-
-### Calendar under sequential execution
-
-Total effort is now **~267–345 ew** (recomputed — see above). Calendar time depends entirely on staffing, and sequential execution forfeits parallel compression:
-
-**Recomputed at the M5A boundary** against ~119–197 ew remaining, at 80% effective capacity. The earlier columns are kept as the record of what was projected then, so the trend is visible rather than overwritten:
-
-| Team size | Projected at M2.0 (remaining to GA) | **Remaining to GA, as of M5A** |
-|---|---|---|
-| **1 engineer** | ~4.9–6.8 years | **~3.7–5.3 years** |
-| **2 engineers** | ~2.5–3.4 years | **~1.8–2.7 years** |
-| **3 engineers** | ~1.6–2.3 years | **~1.2–1.8 years** |
-
-Six milestones of pipeline work have closed since the first projection, and the remaining band has narrowed accordingly. The estimate is recomputed from the milestone table each revision rather than carried forward.
-
-Within a milestone, additional engineers help only up to the **critical path** — M1.5's chain (T25→T26→T28→T27→T29) is ~9 ew of serial work and cannot compress below that at any headcount.
-
-**This is not an argument against the decision.** For a small team, context switching destroys more throughput than parallelism recovers. But the timeline consequence is owned here, at planning time, rather than surfaced later as a slip.
-
-**Highest-leverage lever if the GA horizon matters commercially:** the second and third engineer. Moving 1 → 3 roughly triples throughput. Beyond ~3, the pipeline's serial dependency chain limits further gains.
-
-**Honest read:** progress will look flat through M1 and M2.0, then accelerate. That is a property of building a runtime spine and a test substrate before features, not slow execution.
+**Resolved and recorded here because the dashboard previously claimed otherwise:** the cross-workspace read path on `outbox_event` is **closed**. Migration `0006` revokes all from `signora_app` and grants `INSERT` only; the relay identity holds `SELECT`. This document described it as "raised rather than applied" until 2026-07-31 — a claim the repository had already falsified.
 
 ---
 
-## Completed Milestones
+## 8 · Known risks
+
+Full register with mitigations and owners: [16-architecture-risks.md](docs/architecture/16-architecture-risks.md).
+
+### 🔴 High
+
+| ID | Risk | Note |
+|---|---|---|
+| R-01 | **AI vendor cost exposure without budget governance** | M8 made cost *measurable*; nothing governs it. The register says explicitly: define budgets **before AI Research Engine is enabled broadly.** M10 is the caller that makes this real |
+| R-04 | PII classification / retention undefined | **Escalated to Legal.** Long lead time |
+| R-05 | AI prompt data-classification policy undefined | **Escalated to Legal.** M10 widens exposure — research reaches *public* sources |
+| ADR-0031 | Citation protocol inconsistency | §7. Grows more expensive with every prompt released |
+
+### 🟠 Medium
+
+| ID | Risk | Note |
+|---|---|---|
+| R-09 | **AI Research timeout value undefined** | M9 ships no research integration, so nothing has ever measured it |
+| R-10 | AI output quality regression | Substantially mitigated: golden sets, rubrics, `ai_inference`, two evaluated prompts. **Not** closed — no human-rated sample yet |
+| **New** | **Four new capability surfaces at once in M10** — agentic loop, tool use, embeddings, pgvector. M8 flagged tool use as *"carrying its own security surface deserving its own review"* | |
+| **New** | **Fixture-shaped coverage.** Six M9 mutations survived because one seeded scenario cannot vary contested scores, shared events or shared caveats. Every future module inherits that fixture | |
+
+### 🟢 Low
+
+JWT key rotation requires a deploy · token revocation bounded by a 15-min TTL · Casbin policy is coarse RBAC · no API versioning scheme (deliberate, with one first-party client) · `reasoning@1` coverage margin 0.667 against a 0.66 floor — an **observation**, explicitly not a reason to modify the prompt.
+
+---
+
+## 9 · Recent milestone summary — M9
+
+**Full review: [30-m9-retrospective.md](docs/architecture/30-m9-retrospective.md).** Fourteen sections, written for an engineer arriving months later.
+
+**What changed.** M9 is the first module that produces propositions its input did not contain. Everything before it derives, projects or restates; this one **concludes** — and the interesting half was never making a model reason, but *remaining accountable for a conclusion that cannot be checked against a fact.*
+
+**The number that summarises it:** the model authors **3 of the Decision Package's 15 parts**. Support, temporal explanation, alternative readings, limitations and validation steps are all derived, composed or read from a reviewed catalog.
+
+**Ownership moved five times**, always toward the component that already knew the fact — limitations to the signal catalog, rejected hypotheses to derivation rather than storage, the catalog itself to `SignalQueries`.
+
+**Two ADRs:** [ADR-0030](docs/architecture/adr/0030-the-decision-package.md) (accepted) and [ADR-0031](docs/architecture/adr/0031-evidence-citation-protocol.md) (proposed, unimplemented). **No ratified ADR was reversed.**
+
+**T128's assumption was disproved by measurement.** `reasoning@1` was believed to require a hosted model. It required **4 GiB of VRAM**: `llama3.1:8b` needs 5.6 GB and ran 58% on CPU, missing the 60s timeout. A 1.9 GB model resident 100% in GPU passed **eight consecutive times**. On this hardware *stronger → larger → more CPU offload → slower*, so the answer was a **smaller** model. No architectural change was required.
+
+**The defining characteristic**, and the thing most worth carrying forward:
+
+> **The repository improved the architecture by refusing incorrect assumptions** — through import-linter contracts, surviving mutations, unreachable guards, database grants, a layering rule, and four evaluation refusals. **Not one was worked around.** Nine stated assumptions proved false; five guards were removed for being unreachable; eleven mutations were run and six exposed genuine gaps.
+
+---
+
+## 10 · Next milestone — M10, AI Research Engine
+
+| | |
+|---|---|
+| **Objective** | Deep, agentic, open-ended research on a qualified opportunity's entity — synthesising information beyond what any structured signal captures — producing a research artifact M9 consumes as **optional, non-blocking** enrichment |
+| **Expected outcome** | A research artifact with complete provenance · semantic retrieval over the Knowledge Graph and prior artifacts · a resumable multi-step orchestration · `ai_research.completed` cataloged · and — the structural payoff — **the evidence that lets `ai_platform` freeze** |
+| **Scale** | 12–16 ew. The largest AI milestone |
+| **Status** | 🔵 **Design review open. No implementation task is assigned, deliberately.** |
+
+### Open architectural questions
+
+1. **May a research artifact become evidence?** *(F-2, blocking)* Grounding validates that a citation resolves **inside** the evidence set; it cannot validate that a fact *in* the set is true. If model-authored synthesis enters the set, reasoning cites it, grounding passes, and a customer is shown it as evidence they can check — when they would be checking one model's claim against another's. **This determines the architecture of M10 and is under review before any code is written.**
+2. **How does one process serve three certified prompts?** *(F-1)* Let M10's real need shape the answer; do not invent it prematurely.
+3. **Where does cost governance live?** *(R-01)* The register says before research is enabled broadly.
+4. **What is the research timeout?** *(R-09)* Never measured.
+
+### Sequencing question, raised for a ruling
+
+**The pipeline now runs nine stages ahead of any user-visible surface.** The Decision Package is produced, stored and announced — and **no human can see it until M12**. M10 adds the most expensive, slowest, least deterministic capability in the system to a pipeline whose output nobody can yet read. M11 (6–8 ew) and M7 (6–8 ew) are both cheaper and closer to a visible surface.
+
+**The counter-argument is real:** M10 is the only remaining consumer needed to freeze `ai_platform`, and deferring it leaves the substrate every future AI module depends on unfrozen for longer.
+
+**A short M9.5 is recommended before M10** — resolve ADR-0031 while it invalidates *two* prompts rather than three, settle F-1, and re-run the model comparison. See the M10 design review for the full argument.
+
+---
+
+## Appendix A — Milestone records *(historical)*
+
+> Dated records of what was true when written. **Corrected only for factual errors about the past, never rewritten to match the present.** Recent milestones are covered in more depth by [30-m9-retrospective.md](docs/architecture/30-m9-retrospective.md) and [docs/SESSION_HANDOFF.md](docs/SESSION_HANDOFF.md).
+
+### Completed milestones
 
 ### ✅ M0 — Secure Multi-Tenant Foundation · closed 2026-07-28
 
@@ -431,7 +314,7 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 
 ---
 
-## Current Milestone
+### Milestone records — written at each close
 
 ### ✅ M6 — Opportunity Engine · **CLOSED** 2026-07-29
 
@@ -558,7 +441,7 @@ All 7 tasks plus 3 added requirements delivered. **Demo Checklist 10/10. AC-2 pa
 
 ---
 
-## Next Milestone
+### Records: what was 'next' when written
 
 ### ✅ M8 — AI Platform · **COMPLETE**
 
@@ -588,7 +471,7 @@ The AI Provider Abstraction Layer, the Internal Prompt Registry, and an evaluati
 
 ---
 
-## Queued Milestones
+### Records: queue as written
 
 Sequential execution — each begins only when the previous milestone's Demo Checklist passes.
 
@@ -653,179 +536,9 @@ A permanent platform capability, not throwaway tooling — used for local develo
 
 ---
 
-## Current Sprint
-
-**Sprint:** M2.0 Sprint 1 — **awaiting approval.**
-
-**Scope — M2.0 only.** Single stream; no concurrent milestone work.
-
-M2.0 is the largest milestone since M0 (~22–29 ew) and the first that builds product capability rather than substrate. Its binding rules are already fixed in [IMPLEMENTATION_ROADMAP.md §8](IMPLEMENTATION_ROADMAP.md#8-provider-simulation-framework--design):
-
-- **It builds the Provider Port**, as its first concrete implementation — satisfying the YAGNI ruling and validating the port with working code before any vendor adapter is written.
-- **Simulated providers implement exactly the same adapter contract as production ones.** Switching is configuration only; no `if simulated:` branch may exist in any layer.
-- **The simulator must never activate in production** — it would fabricate customer intelligence. Guarded by environment check, ingestion logging, health-endpoint visibility, and an alert, all test-enforced.
-
-**What the foundation now guarantees it.** `make smoke` runs before this milestone starts and after every change in it, so a regression in the substrate is attributable to the change that caused it rather than discovered weeks later.
-
 ---
 
-## Blocked Items
-
-| Item | Blocked by | Severity | Owner |
-|---|---|---|---|
-| ~~All 13 core intelligence modules~~ | ~~T7/T8 — event bus relay + dispatch~~ | ✅ **CLEARED** | M1.1 |
-| ~~Any human access / any demo~~ | ~~T13/T14 — Better Auth issuer~~ | ✅ **CLEARED** | M1.2 |
-| Any *remote* environment | T22/T23 — Terraform + ECS (**M14.5, deliberately deferred**) | 🟡 Accepted | Unassigned |
-| Reproducible local production stack | T19–T21 (M1.3A) | 🟠 High | Unassigned |
-| Offline development, deterministic demos, AI eval datasets | M2.0 — simulation framework | 🟠 High | Unassigned |
-| Provider Platform (M2.1) | M2.0 — Provider Port defined there | 🟠 High | Unassigned |
-| Both AI engines | M8 — AI Provider Port + Prompt Registry | 🟡 Medium | Unassigned |
-| Trustworthy AI output | M8 — Evaluation Harness (R-10) | 🟡 Medium — harness built and run once | Unassigned |
-| PII/retention implementation | **Legal/Compliance policy input** (R-04, R-05) | 🟡 Medium | **Escalated — not an engineering blocker** |
-
-**One of the two dominant blockers is now cleared.** The event bus relay shipped in M1.1, unblocking all 13 pipeline modules. The remaining blocker is the Better Auth issuer: **there is still no working login**, so design-partner onboarding cannot begin until M1.2 closes.
-
-**Staffing remains the meta-blocker** — every item above is unassigned, and headcount is the single largest determinant of the GA date (see Calendar above).
-
----
-
-## Architecture Risks
-
-Full register: [16-architecture-risks.md](docs/architecture/16-architecture-risks.md). **12 open, 1 resolved.**
-
-| ID | Risk | Sev | Status | Addressed by |
-|---|---|---|---|---|
-| R-01 | AI vendor cost exposure without budget governance | 🔴 High | Open | M15 (earlier if AI Research enabled sooner) |
-| R-04 | PII classification / retention / lifecycle undefined | 🔴 High | **Escalated to Legal** | M15 — start policy work now, long lead time |
-| R-05 | AI prompt data-classification policy undefined | 🔴 High | **Escalated to Legal** | M15 |
-| R-10 | No AI evaluation methodology | 🟠 High | **Exercised once** — harness built and run; one prompt, one model, two cases. No hosted model evaluated. | M8 |
-| R-02 | Single-region vs. enterprise data residency | 🟠 Med | Open | Audit now, build later |
-| R-03 | RLS query performance not load-tested at scale | 🟠 Med | Open | M15, using simulator-generated volume |
-| R-06 | Cross-workspace admin/support access undefined | 🟠 Med | Open | Before support tooling |
-| R-08 | Meilisearch/pgvector not validated at scale | 🟠 Med | Open | M15 |
-| R-12 | SOC 2 / enterprise compliance gap | 🟠 Med | Open | M15, parallel with enterprise GTM |
-| R-11 | Vendor concentration on younger projects | 🟡 Low-Med | Accepted, monitored | Quarterly review |
-| R-07 | API/pipeline latency SLOs undefined | 🟡 Low | Open | Set from telemetry post-M1.1 |
-| R-09 | AI Research Engine timeout undefined | 🟡 Low | Open | M10, from telemetry |
-| R-13 | Better Auth is TypeScript-native | — | ✅ Resolved | [ADR-0026](docs/architecture/adr/0026-jwt-boundary-architecture.md) |
-
-### New risk introduced by this revision
-
-| ID | Risk | Sev | Mitigation |
-|---|---|---|---|
-| **R-14** | **Simulator activating in a production environment** would fabricate customer intelligence — a trust failure, not merely a bug | 🔴 High | Environment guard refusing activation in production absent an explicit logged override · ingestion logs mark simulated payloads unambiguously · simulator state in health output · alert on unexpected activation · **all four test-enforced**. To be added to the register during M2.0. |
-
-**Most urgent by lead time, not severity:** R-04 and R-05. They need Legal/Compliance input engineering cannot supply, and formal policy work has a long tail. Starting them at M15 would be starting them late.
-
----
-
-## Technical Debt
-
-Small and deliberate. Nothing below is discovered debt.
-
-| Item | Impact | Rationale | Repay by |
-|---|---|---|---|
-| ~~Test coverage unmeasured~~ | — | — | ✅ **Repaid in M1.1** — 95.01%, CI-gated |
-| ~~Event bus relay unimplemented~~ | — | — | ✅ **Repaid in M1.1** |
-| ~~`apps/worker` empty stub~~ | — | — | ✅ **Repaid in M1.1** — 7 pools |
-| ~~No structured logging~~ | — | — | ✅ **Repaid in M1.1** |
-| ~~No CI Redis service~~ | — | — | ✅ **Repaid in M1.1** |
-| JWT key rotation requires a deploy | Medium | JWKS adds a cache, fetch path, and failure mode not yet justified | Post-GA |
-| Token revocation not immediate (15-min TTL) | Medium | Standard JWT tradeoff; `sid`/`jti` carried so a revocation list needs no contract change | Post-GA if the window proves unacceptable |
-| Workspace role hardcoded to `owner` in the frontend shell | Low | **Approved to remain.** Presentation only; server-side Casbin never consulted it. Adding `GET /workspaces/{id}/me` solely to satisfy frontend presentation would be an API shaped by a UI need rather than a domain one. | When the workspace domain naturally evolves — not before |
-| Casbin policy is coarse RBAC | Low | Correct for current needs | When enterprise custom roles are required |
-| No API versioning scheme | Low | Deliberate — speculative with one first-party client | First breaking change |
-
-| Relay `LISTEN/NOTIFY` wake-up not yet wired to the loop | Low | `notify_outbox` exists and polling is the correctness guarantee; the notification only collapses idle latency from ~1s | M1.3A or when latency matters |
-| ~~`@vitejs/plugin-react` removed from frontend devDependencies~~ | — | — | ✅ **Repaid in M1.5.** The stated cause was wrong: it was never `better-auth`'s Svelte peers. Two real conflicts — `@eslint/js` pinned to `^10` against `eslint@^9`, and `@vitejs/plugin-react@5` requiring Vite 6 under a Vitest pinning Vite 5. Both fixed at the version level, and **`--legacy-peer-deps` removed from both CI workflows and the Dockerfile**. A misdiagnosed cause is why the flag survived three milestones. |
-
-**Debt ratio: healthy.** Five of the nine v3 items were repaid in M1.1. Two low-severity items now open, both with named repayment points.
-
-**Scheduling rule.** Every item above carries a *repayment milestone*, not "later". Debt without a scheduled milestone is indistinguishable from a decision nobody revisits — the `@vitejs/plugin-react` entry exists precisely so its absence is discovered when component tests are planned rather than when they fail to run.
-
----
-
-## Known Bugs
-
-**None open.**
-
-Three defects found and fixed during M0 and one during M1.2 validation, each with regression tests proven to fail against the pre-fix state.
-
-### Open architectural question — raised, awaiting decision
-
-**Platform tables are readable across every workspace.** `outbox_event` and `dead_letter_event` carry a `workspace_id` but have no RLS, and `signora_app` holds `SELECT` on both. Application code issuing an unfiltered query against either sees every workspace's event payloads.
-
-The *absence of RLS* is deliberate — the relay must sweep all workspaces in one pass, which tenant-scoped RLS would prevent by construction. That rationale was recorded in `tests/conftest.py` but not in `11-tenancy.md`, whose stated exception list names only Business Event Engine's taxonomy. The documentation drift is now fixed.
-
-What remains open is narrower: **the relay uses the privileged connection, and the publisher only ever inserts** — so `signora_app` appears to need `INSERT` but not `SELECT`. Revoking `SELECT` would close the cross-tenant read path without affecting the relay. That is a change to the tenancy model's grant surface, so it is raised rather than applied.
-
-Encoded as a tracked deviation in `test_authorization.py::test_every_workspace_owned_table_has_rls_enabled_and_forced`: the two tables are named explicitly, and any *other* table reaching that list fails the build.
-
-**Caveat worth restating:** "no known bugs" across ~2,660 LOC with one module and zero production traffic is a weak signal, not a quality claim.
-
----
-
-## Test Coverage
-
-| Metric | Value |
-|---|---|
-| Total tests | **198 passing**, 0 failing, 0 skipped |
-| Unit tests | 129 |
-| Integration tests | 69 (real PostgreSQL 17 + real Redis) |
-| **Line coverage** | ✅ **95.01%**, CI-gated at 95% |
-| Type coverage | ✅ mypy `strict`, 97 files, zero errors |
-| Boundary enforcement | ✅ 3 import-linter contracts, verified to fail on deliberate violation |
-| Migration reversibility | ✅ Verified across all 4 revisions |
-
-**Test quality signals:** the `alg:none` and algorithm-confusion tests initially passed for the wrong reason (PyJWT refuses to mint those tokens) and were rewritten with hand-forged tokens. RLS regression tests were verified to fail against pre-fix policies before being trusted.
-
-**M1.1 addition:** the Demo Checklist is itself a test file (`tests/integration/test_m1_1_demo_checklist.py`) — 11 tests covering all 13 items, run against real PostgreSQL and Redis. Milestone completion is verified by CI rather than by someone ticking boxes.
-
-**Coming in M2.0:** the scenario library becomes a growing end-to-end regression suite, with each milestone extending its assertions.
-
----
-
-## Documentation Status
-
-| Document | Status |
-|---|---|
-| Architecture (25 numbered docs) | ✅ Complete, ratified, consistent |
-| ADRs (27) | ✅ Complete |
-| **[21-intelligence-pipeline.md](docs/architecture/21-intelligence-pipeline.md)** | ✅ **v4** — the canonical explanation of the platform. Tracks the *implemented* architecture; a stage is marked built only once it runs against a real database in `make smoke` |
-| [22-knowledge-graph.md](docs/architecture/22-knowledge-graph.md) · [23-observation-engine.md](docs/architecture/23-observation-engine.md) · [24-business-event-engine.md](docs/architecture/24-business-event-engine.md) · [25-signal-engine.md](docs/architecture/25-signal-engine.md) | ✅ Each marked **as built**, with the departures from its approved proposal recorded |
-| [20-provider-simulation.md](docs/architecture/20-provider-simulation.md) + [provider-qualification.md](docs/architecture/provider-qualification.md) | ✅ Authored during M2.0 |
-| [CLAUDE.md](CLAUDE.md) | ✅ Complete |
-| [PRODUCT_DIFFERENTIATORS.md](PRODUCT_DIFFERENTIATORS.md) | ✅ Complete |
-| [IMPLEMENTATION_ROADMAP.md](IMPLEMENTATION_ROADMAP.md) | ✅ **v3** |
-| [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md) | ✅ Valid — milestone numbers M2+ unchanged |
-| [AI_MATURITY_ROADMAP.md](AI_MATURITY_ROADMAP.md) | ✅ Valid — levels unchanged |
-| [docs/SESSION_HANDOFF.md](docs/SESSION_HANDOFF.md) | ✅ **v6** — the engineering handoff; read before any architectural decision |
-| PROJECT_STATUS.md | ✅ **This document, v25** |
-| API reference | ✅ Generated (OpenAPI) |
-| Operations runbook | ⬜ **Required by M1.3A** (stack lifecycle), extended in M14.5 (deploy, rollback, restore) |
-| Onboarding guide | ⬜ Superseded in practice by [SESSION_HANDOFF](docs/SESSION_HANDOFF.md) + [21-intelligence-pipeline](docs/architecture/21-intelligence-pipeline.md); revisit when the team exceeds ~3 |
-
-**Documentation drift: zero.** All internal links resolve. Docs have been updated in the same commit as the code they describe, every time.
-
-**Deliberate numbering choice:** M1 was split and M2.0 inserted *without renumbering M2+*, so PRODUCT_ROADMAP.md and AI_MATURITY_ROADMAP.md remain valid without edits. The mapping table is in [IMPLEMENTATION_ROADMAP.md §4](IMPLEMENTATION_ROADMAP.md#4-milestone-structure).
-
----
-
-## Next Task
-
-### 🎯 M1.5 · T25 — Design system
-
-**Why first:** zero dependencies, and every component in T26 is built from its tokens. A component library started before its design tokens hardcodes colours, spacing, and type scale into fifty files.
-
-**Then:** T26 → T28 → T27 → T29 → T30 → T31 → T32 → T33.
-
-**Then M2.0** Provider Simulation Framework, after which business screens become buildable against real domain models.
-
-**Awaiting:** approval of the M1.5 task breakdown, and a decision on the three dependency findings in [IMPLEMENTATION_ROADMAP.md §5b](IMPLEMENTATION_ROADMAP.md#5b-updated-implementation-order). Every task remains unassigned.
-
----
-
-## Change Log
+## Appendix B — Change log
 
 | Date | Change |
 |---|---|
