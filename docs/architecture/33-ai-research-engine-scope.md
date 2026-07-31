@@ -1,7 +1,9 @@
 # 33 — What is the AI Research Engine? A scope analysis before M10 T132
 
-**Status:** Analysis — no recommendation is binding until the product owner rules.
-**Date:** 2026-07-31 · **Repository position:** `29867ab`, M10 T131 complete, no implementation beyond scaffolding.
+**Status:** **RULED — Option A, Internal Research, 2026-07-31.** The analysis below is unchanged from
+what was submitted; the ruling is recorded in §10 and is binding on M10.
+**Date:** 2026-07-31 · **Repository position when written:** `29867ab`, M10 T131 complete, no
+implementation beyond scaffolding.
 
 > **Method.** The roadmap was treated as a hypothesis, not as a settled input. Every claim below is
 > sourced to a file and line in this repository. Where the roadmap and the repository disagree, the
@@ -490,3 +492,50 @@ field. I do not want to write it twice, and I do not want to guess.
 
 **Unchanged and still outstanding:** the M9.5 recommendation (ADR-0031 + F-1 from
 [31](31-m10-design-review-evidence.md)), which this analysis strengthens rather than revises.
+
+---
+
+## 10 · The ruling — 2026-07-31
+
+> **M10 implements Option A: Internal Research.**
+>
+> The objective of the AI Research Engine is **not** to browse the public web. It is to intelligently
+> explore, plan over, retrieve, compare and synthesise knowledge Signora already owns.
+>
+> **The differentiator is not external search. It is intelligent reasoning over Signora's structured
+> knowledge.** This decision is intentional. Future external retrieval may be added later as an
+> extension; it is explicitly outside the scope of M10.
+
+**Binding consequences.** Research Findings are **DERIVED**. Internal retrieval tools only — no
+browser, no public web search, no news or filing retrieval, no external HTTP tool use. No
+disclosure-policy dependency. **No ATTESTED knowledge.**
+
+**Deferred until repository evidence demonstrates they are needed**, with no placeholders and no
+speculative abstractions built against them: external retrieval · browser tools · public web search ·
+embeddings · pgvector · provider re-query · external evidence · ATTESTED findings.
+
+**And a standing instruction that outlives this document:** if implementation produces concrete
+evidence that Option A cannot satisfy M10's stated goals, **stop, document the evidence, and do not
+silently expand scope** to Option B or C.
+
+### What the ruling settled that this analysis could not
+
+**The word DERIVED is load-bearing.** It is a claim about *how content was produced*, and promotion
+does not exist ([34](34-knowledge-contract.md), Rule 8) — so a model's paraphrase of derived facts is
+INFERRED whatever field it sits in. The ruling therefore determines the internal design, not merely
+the scope:
+
+- **The model plans**, choosing which comparison is worth running — attention, which Rule 9 permits.
+- **Deterministic code computes** the finding over cited rows. That is what makes it DERIVED.
+- **The model narrates** the synthesis, which is INFERRED and never citable.
+
+Three layers, three origins, and the least-powerful-author principle expressed as a control flow.
+**A finding consequently has no free-text field** — the same shape `Signal`, `BusinessEvent` and
+`Observation` already have, where prose appears for the first time at M9.
+
+### F-1's resolution follows from the ruling
+
+[14-ai-architecture.md](14-ai-architecture.md) named three tools requiring two dependency edges the
+ratified graph does not grant. **The ruling settles it in the graph's favour**: Knowledge Graph
+retrieval and provider re-query are both deferred, and pgvector with them. That document was
+corrected in the same change as this ruling was recorded.

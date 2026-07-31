@@ -313,22 +313,44 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 
 ## 7 · Next session starting point
 
-> **Completed:** M9 — **T122–T130, closed 2026-07-31** · **Next:** M10 AI Research Engine
+> **Completed:** M9 — **T122–T130, closed 2026-07-31** · **In progress:** M10 AI Research Engine — **T131, T132 complete**
 > **Branch:** `main` · everything committed and pushed, tree clean
-> **Health:** 1564 backend + 101 frontend tests · coverage ~95.8% · 295 invariants · 25 contracts · smoke green over **22 stages**
+> **Health:** 1608 backend + 101 frontend tests · coverage 95.79% · 305 invariants · 29 contracts · smoke green over **22 stages**
 
 **Read [30-m9-retrospective.md](architecture/30-m9-retrospective.md) first.** It explains how the architecture evolved T122→T130, which assumptions proved false, and what carries into M10 — and it is shorter than re-reading the milestone.
 
-### Open before M10 — a ruling is required
+### M10 is under way — the ruling landed 2026-07-31
 
-**Read [32-knowledge-ontology.md](architecture/32-knowledge-ontology.md) then [34-knowledge-contract.md](architecture/34-knowledge-contract.md) first.** The contract states 23 repository-wide invariants that every knowledge object must satisfy, every one discovered already operating rather than invented — including one nobody had written down: **identity is derived from content iff the object is reproducible, otherwise minted**, which is why `uuid5` appears in four modules and `uuid4` in the rest.
- It classifies all 33 knowledge types Signora holds or may hold, and identifies the missing classification axis: the architecture has always classified knowledge by *how long it lives* and *who it is true for*, **never by how it came to be known** — because until M10 everything came to be known the same way. Five questions that were open in the design review are now answered by classification. **One remains, and it is a genuine judgement call:** is an ATTESTED external claim admissible as evidence?
+**Read [33-ai-research-engine-scope.md](architecture/33-ai-research-engine-scope.md) first.** It records
+the ruling and the analysis behind it. Then [34-knowledge-contract.md](architecture/34-knowledge-contract.md)
+for the 23 invariants T132's types implement.
 
-**[31-m10-design-review-evidence.md](architecture/31-m10-design-review-evidence.md) is open and blocks M10's task breakdown.** The question: *may a research artifact become evidence?* Five options analysed (never-evidence · ordinary kind · sourced findings only · read-only channel · hypothesis generator), each against ownership, explainability, auditability, customer trust, determinism, M9 impact, package impact and extensibility. **No option is recommended** — that is the ruling being requested.
+> **M10 implements Internal Research.** The AI Research Engine explores, plans over, retrieves,
+> compares and synthesises knowledge Signora **already owns**. No browser, no public web search, no
+> external HTTP tool use. External retrieval is a future extension, explicitly outside M10.
 
-It matters because the repository makes the *wrong* answer easy: `EvidenceRef.kind` is an unconstrained string, so `research_finding:uuid` is constructible today with zero platform change, and grounding cannot help — it validates that a citation resolves *inside* the set, never that a fact *in* the set is true.
+**Two roadmap assumptions were tested against the repository and both failed.** *"M10 requires
+pgvector"* — there is no corpus: `entity` carries a 32-char enum `kind` and no text, relationships are
+typed edges, and normalization stores attribute/value claims. *"Agentic means external tools"* — every
+tool the architecture names is internal, and `PRODUCT_DIFFERENTIATORS.md` prohibits building a
+collection operation in three places. **Agentic is a control-flow property**, orthogonal to whether the
+actions cross the network boundary.
 
-**A short M9.5 is recommended before M10** — resolve ADR-0031 while it invalidates two prompts rather than three, settle the single-`ollama_model` question, and re-run the model comparison. §7 of the design review carries the evidence.
+**Deferred, each with a trigger, and no placeholders built against any of them:** external retrieval ·
+browser tools · public web search · embeddings · pgvector · provider re-query · external evidence ·
+ATTESTED findings.
+
+**Two questions that previously blocked M10 no longer do.** The ATTESTED ruling is not raised, because
+internal findings are DERIVED; the disclosure question is not raised, because egress stays
+model-vendor-only — identical in kind to what M8 and M9 already ship. Both return with external
+retrieval and not before.
+
+**The standing instruction:** if implementation produces concrete evidence that Internal Research
+cannot satisfy M10's goals, **stop, document the evidence, and do not silently expand scope.**
+
+**A short M9.5 remains recommended** — resolve ADR-0031 while it invalidates two prompts rather than
+three, settle the single-`ollama_model` question, and re-run the model comparison. M10's smaller scope
+does not weaken that argument.
 
 ### M9 is closed
 
@@ -368,6 +390,7 @@ It is an **M8** defect, surfaced by M9 and not fixed inside it. Correcting it ch
 
 | Date | Change |
 |---|---|
+| 2026-07-31 | v14 — **M10 scope ruled: Internal Research**, and T131–T132 delivered. Two roadmap assumptions were tested against the repository and both failed — pgvector has no corpus to retrieve over, and every tool the architecture names is internal. The milestone shrank from ~12–16 ew to ~6–9, *as a consequence of correction rather than of cutting*, and **neither open product question blocks it**. T132 installed the three-way origin/identity split the Knowledge Contract's Rule 1 requires: a task mints (an act), a finding derives `uuid5` from content (a computation), a synthesis mints (a model call). **A finding has no free-text field** — because DERIVED describes how content was produced and promotion does not exist, the model plans which comparison to run and deterministic code computes the answer. **Rule 12 is enforced by absence:** a synthesis has no address, so no consumer can cite model-authored prose even deliberately. Eleven mutations run; two survived and both were real — a self-referential assertion that could not see its own constant change, and the same gap found still open in the Signal Engine. |
 | 2026-07-31 | v13 — **M9 COMPLETE.** `reasoning@1` **released** against `granite3.3:2b` — 2 cases, 0 grounding failures, 0 schema failures, coverage 0.833, recorded after eight consecutive passing runs with **no change to the benchmark, dataset, rubric, schema, timeout or release criteria**. The assumption that M9 required a hosted model was **disproved by measurement**: the constraint was 4 GiB of VRAM, not reasoning capability — `llama3.1:8b` ran 58% on CPU and timed out, while a 1.9 GB model at 100% GPU passed eight times. On this hardware *stronger* means *larger* means *slower*. **[ADR-0031](architecture/adr/0031-evidence-citation-protocol.md) written and deliberately not implemented:** the renderer emits `[token]` while the parser accepts `token`, so three models were REFUSED for following *"cite by their exact reference strings"* literally — an **M8** defect that has been passing on one model's formatting habit since M8. `granite3.3:2b` is recorded as *currently certified*, not permanent. Full [M9 retrospective](architecture/30-m9-retrospective.md) written: nine stated assumptions proved false, five unreachable guards removed, eleven mutations run with six exposing real gaps. |
 | 2026-07-30 | v12 — **M9 T130 complete; M9 implementation finished.** The Decision Package is now produced, stored and announced end to end: `AIReasoningModel`, `SqlDecisionPackageRepository`, the `PipelineReasoningContext` adapter, `build_reason`, `ai_reasoning.completed` cataloged, and **smoke stage 14j** (109 tests, no model call). **T128's architectural half closed:** both evaluation entry points route through `build_provider_registry`, and the Ollama-specific `/api/tags` probe was **removed** — it gated a hosted release run on a local runtime and was never what prevented a fake (composition is). A new Security Invariant enforces that the evaluation framework names no vendor in executable code, with prose exempt and a positive control. `reasoning@1` was run against `claude-sonnet-4-5` and returned **UNMEASURABLE — no adapter serves that model**, because no credential is configured; **no release was manufactured**, and a test now fails if one ever appears unearned. Four T130 findings, all from the repository refusing something: `public/` cannot publish a filesystem prompt loader (layering), `SignalQueries` already owned the catalog (parameter removed), `signora_app` cannot read `outbox_event` (relay identity used), and a redundant deduplication was deleted after a mutation showed it protected nothing. Eleven mutations run; six exposed real gaps and became permanent tests. 1563 tests, coverage 95.75%, 295 invariants, 25 contracts, smoke green over 22 stages. |
 | 2026-07-30 | v11 — **M9 T122–T129 complete; T130 is the last task.** Records the three evaluation states (READY / REFUSED / UNMEASURABLE), `reasoning@1` authored and unreleased after an UNMEASURABLE local run, the ruling that release is earned against the hosted production model, and the T129 finding that **provider-neutral evaluation already exists** — `build_provider_registry` registers both vendors and `for_model` resolves without naming one, so only the eval entry points' hand-rolled registration needs routing through it. §7 rewritten for T130 with the full remaining work and the settled decisions that must not be re-opened. |

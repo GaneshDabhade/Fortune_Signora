@@ -1,7 +1,7 @@
 # Signora — Project Status
 
 > **The canonical entry point for this repository.** If you read one document, read this one.
-> **Last verified against the repository: 2026-07-31**, at `HEAD` `1157cce`. Every figure below was taken from a run, a gate, or `git` — not carried forward from a plan.
+> **Last verified against the repository: 2026-07-31**, at `HEAD` `320a326`. Every figure below was taken from a run, a gate, or `git` — not carried forward from a plan.
 >
 > This is an **executive dashboard**, not a progress log. It answers: *where are we · what was completed · what changed architecturally · what is deferred · what's next · are we on track.* Dated history lives in the appendices and is never rewritten to match the present.
 
@@ -15,8 +15,8 @@
 |---|---|
 | **Current phase** | **Product Development** — nine pipeline stages built, through the AI Reasoning Engine |
 | **Last completed milestone** | **M9 — AI Reasoning Engine**, closed 2026-07-31 |
-| **Next milestone** | **M10 — AI Research Engine** *(design review open — see §10)* |
-| **Latest commit** | `1157cce` — *M9 COMPLETE — reasoning@1 released…* |
+| **Current milestone** | **M10 — AI Research Engine** · **Internal Research** *(ruled 2026-07-31 — see §10)* |
+| **Latest commit** | `320a326` — *M10 scope analysis — the roadmap tested against the repository…* |
 | **Branch** | `main`, tree clean, pushed |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
 | **Overall completion** | **~57%** by engineering effort (~178 of ~261–339 ew) |
@@ -51,7 +51,7 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | — | M6 | Opportunity Engine — **first sellable moment** | ✅ Complete | 2026-07-29 |
 | — | M8 | AI Platform — abstraction, prompts, eval harness | ✅ Complete | 2026-07-30 |
 | — | **M9** | **AI Reasoning Engine — Decision Package** | ✅ **Complete** | **2026-07-31** |
-| 1 | **M10** | **AI Research Engine** | 🔵 **In progress — T131 complete** | — |
+| 1 | **M10** | **AI Research Engine** *(Internal Research)* | 🔵 **In progress — T132 complete** | — |
 | 2 | M11 | Recommendation Engine | ⏳ Queued | — |
 | 3 | M7 | Timeline | ⏳ Queued | — |
 | 4 | M12 | Revenue Intelligence Platform + business UI | ⏳ Queued | — |
@@ -82,13 +82,27 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | T129 | Migration `0017` — `ai_reasoning`, forced RLS, no `UPDATE` grant |
 | T130 | Model · repository · context adapter · composition root · event · smoke stage 14j |
 
-### 🔵 Current — M10 design review
+### 🔵 Current — M10, AI Research Engine · **Internal Research** *(ruled 2026-07-31)*
 
-**No implementation task is open.** One architectural question is under review and blocks task breakdown: *may a research artifact become evidence?* See §10 and the M10 design review.
+| Task | Delivered |
+|---|---|
+| T131 | Module scaffold · graph node · four import-linter contracts (25 → 29) · six invariants |
+| T132 | `EpistemicOrigin` · `ResearchTask` · `ResearchFinding` · `ResearchSynthesis` — three origins, three identity disciplines |
 
-### ⏳ Next tasks, once the ruling lands
+**The scope ruling landed before T132** and narrowed the milestone materially: research explores, compares and synthesises knowledge Signora already owns, and reaches no external source. See [33-ai-research-engine-scope.md](docs/architecture/33-ai-research-engine-scope.md) for the analysis and the ruling it records.
 
-Task numbering resumes at **T131**. The sequence depends on the ruling, but the deterministic-first ordering that worked for M8 and M9 applies either way: retrieval infrastructure before generation, storage before orchestration, evaluation last.
+### ⏳ Next tasks
+
+| Task | Scope |
+|---|---|
+| T133 | Migration — `research_task`, `research_finding`, `research_synthesis`; forced RLS, no `UPDATE` grant, `tenancy_policy.py` registration |
+| T134 | Internal retrieval tools over `opportunity_engine.public` |
+| T135 | The planner — a model choosing which comparison to run, recorded as attention (Rule 9) |
+| T136 | Agentic orchestration · cost budget · timeout (resolves R-09) · resumability |
+| T137 | Prompt `research_synthesis@1` and its evaluation |
+| T138 | `ai_research.completed` · composition root · smoke stage 14k · the **non-blocking contract proven by test** |
+
+**Deterministic-first ordering, unchanged from M8 and M9:** storage before retrieval, retrieval before orchestration, generation and evaluation last. **Embeddings, pgvector, external retrieval and provider re-query are deferred**, each with a stated trigger.
 
 ---
 
@@ -96,13 +110,13 @@ Task numbering resumes at **T131**. The sequence depends on the ruling, but the 
 
 | Indicator | Value | Target |
 |---|---|---|
-| **Backend tests** | **1570 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Backend tests** | **1608 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Frontend tests** | **101 passing**, 0 failing, 0 skipped | 0 skipped |
-| **Backend coverage** | **95.75%** — varies ±0.02pp between runs | ≥95% (local gate) |
-| **Security Invariants** | **301 / 301**, each proven to fail when its guarantee is removed | 100% verified |
+| **Backend coverage** | **95.79%** — varies ±0.02pp between runs | ≥95% (local gate) |
+| **Security Invariants** | **305 / 305**, each proven to fail when its guarantee is removed | 100% verified |
 | **import-linter contracts** | **29 kept, 0 broken** | 0 broken |
-| **MyPy** | **strict, clean over 420 files** | clean |
-| **`make smoke`** | ✅ **22 stages**, 101s, fresh images, clean teardown | green per milestone |
+| **MyPy** | **strict, clean over 423 files** | clean |
+| **`make smoke`** | ✅ **22 stages**, 133s, fresh images, clean teardown | green per milestone |
 | **Migrations** | `0001`–`0017`, additive and reversible | reversible |
 | **Architecture drift** | **0** — no ratified ADR reversed | trending to 0 |
 | **Open production bugs** | **0** | 0 |
@@ -146,7 +160,7 @@ A dashboard, not a specification. Authoritative detail: [28-ai-platform.md](docs
 | **Grounding** | ✅ Built, unchanged since M8 | Five `ViolationKind`s. Validates that every citation resolves **inside a closed evidence set** — it does **not** validate that a fact in the set is true |
 | **Decision Package** (M9) | ✅ Built | Fifteen parts; **the model authors three**. Eleven customer questions answered, eight without a model having spoken |
 | **AI Reasoning Engine** | ✅ Built | Structured, single-call. Exactly one inference per package, enforced by test |
-| **AI Research Engine** | ⛔ **Not built** — M10 | Agentic, multi-step, minutes not seconds. Requires embeddings, pgvector, tool use — **none of which exist** |
+| **AI Research Engine** | 🔵 **In progress** — M10 | Agentic, multi-step, minutes not seconds — over **Signora's own ledger**. Ruled **Internal Research** 2026-07-31: no external retrieval, and embeddings and pgvector deferred, because the Knowledge Graph stores typed edges and enum kinds rather than a corpus to embed |
 
 **The organising principle**, ratified 2026-07-30:
 
@@ -164,7 +178,7 @@ Only open items. Closed findings live in the milestone records (Appendix A) and 
 |---|---|---|---|
 | **[ADR-0031](docs/architecture/adr/0031-evidence-citation-protocol.md)** | **The renderer and parser disagree about the citation protocol.** `render.py` emits `[token]`; `EvidenceRef.parse` accepts only `token`; the prompt says *"cite by their exact reference strings"*. Three of five models were REFUSED for **obeying literally**, across two independent model families. Passing since M8 on one model's bracket-stripping habit. **PROPOSED, deliberately unimplemented** — it is an M8 defect, and fixing it invalidates both released prompts | 🔴 **High** | M8 / M9.5 |
 | **F-1** | **One `ollama_model` setting, two certified prompts.** The registry holds a single Ollama model; narration is certified for `llama3.1:8b` and reasoning for `granite3.3:2b`. **No single process configuration serves both request paths.** M10 adds a third prompt | 🟠 Medium | M10 |
-| **F-2** | **The Evidence Set question.** *(Narrowed by [32](docs/architecture/32-knowledge-ontology.md) and [34](docs/architecture/34-knowledge-contract.md); three of five options now excluded by contract.)* `EvidenceRef.kind` is a free string, so M10 could emit `research_finding:uuid` with zero platform change — making model-authored synthesis indistinguishable from a pipeline-derived fact to every check downstream | 🔴 **High** | M10 — **design review open** |
+| **F-2** | **The Evidence Set question.** *(Narrowed by [32](docs/architecture/32-knowledge-ontology.md) and [34](docs/architecture/34-knowledge-contract.md), then **downgraded by the Internal Research ruling**.)* The immediate exposure is closed by design: a `ResearchSynthesis` has **no address**, so no consumer can cite model-authored prose even deliberately, and `ResearchFinding` is DERIVED with `EvidenceRef.kind = research_finding`. What remains open is the *deferred* question — **may an ATTESTED external claim be cited?** — which arrives with external retrieval and not before | 🟠 **Medium** *(was High)* | Deferred with external retrieval |
 | **F-3** | Signal catalog `limitations` / `suggested_validation` are **engineering-authored pending domain review** | 🟠 Medium | Unassigned |
 | **F-4** | `ai_research.completed`'s reserved payload carries `artifact_ref` / `model_provenance` — **the same v2 placeholders M9 found and replaced** at T127 | 🟢 Low | M10 |
 | **F-5** | `PublishableEvent` Protocol vs frozen domain events — requires a `type: ignore` at every publish site | 🟢 Low | Unassigned |
@@ -183,16 +197,16 @@ Full register with mitigations and owners: [16-architecture-risks.md](docs/archi
 |---|---|---|
 | R-01 | **AI vendor cost exposure without budget governance** | M8 made cost *measurable*; nothing governs it. The register says explicitly: define budgets **before AI Research Engine is enabled broadly.** M10 is the caller that makes this real |
 | R-04 | PII classification / retention undefined | **Escalated to Legal.** Long lead time |
-| R-05 | AI prompt data-classification policy undefined | **Escalated to Legal.** M10 widens exposure — research reaches *public* sources |
+| R-05 | AI prompt data-classification policy undefined | **Escalated to Legal.** **M10 does not widen it** — under the Internal Research ruling, egress stays model-vendor-only, identical in kind to M8 and M9 today. *This row previously said research reaches public sources; that was the roadmap's assumption, not the ruling* |
 | ADR-0031 | Citation protocol inconsistency | §7. Grows more expensive with every prompt released |
 
 ### 🟠 Medium
 
 | ID | Risk | Note |
 |---|---|---|
-| R-09 | **AI Research timeout value undefined** | M9 ships no research integration, so nothing has ever measured it |
+| R-09 | **AI Research timeout value undefined** | M9 ships no research integration, so nothing has ever measured it. **T136 resolves it by measurement**, not by choosing a number |
 | R-10 | AI output quality regression | Substantially mitigated: golden sets, rubrics, `ai_inference`, two evaluated prompts. **Not** closed — no human-rated sample yet |
-| **New** | **Four new capability surfaces at once in M10** — agentic loop, tool use, embeddings, pgvector. M8 flagged tool use as *"carrying its own security surface deserving its own review"* | |
+| **New** | **Two new capability surfaces in M10** — agentic loop and *internal* tool use. Was four; embeddings and pgvector were deferred by the Internal Research ruling. M8 flagged tool use as *"carrying its own security surface deserving its own review"*, and internal tools reduce that surface without removing it |
 | **New** | **Fixture-shaped coverage.** Six M9 mutations survived because one seeded scenario cannot vary contested scores, shared events or shared caveats. Every future module inherits that fixture | |
 
 ### 🟢 Low
@@ -221,30 +235,48 @@ JWT key rotation requires a deploy · token revocation bounded by a 15-min TTL �
 
 ---
 
-## 10 · Next milestone — M10, AI Research Engine
+## 10 · Current milestone — M10, AI Research Engine
 
 | | |
 |---|---|
-| **Objective** | Deep, agentic, open-ended research on a qualified opportunity's entity — synthesising information beyond what any structured signal captures — producing a research artifact M9 consumes as **optional, non-blocking** enrichment |
-| **Expected outcome** | A research artifact with complete provenance · semantic retrieval over the Knowledge Graph and prior artifacts · a resumable multi-step orchestration · `ai_research.completed` cataloged · and — the structural payoff — **the evidence that lets `ai_platform` freeze** |
-| **Scale** | 12–16 ew. The largest AI milestone |
-| **Status** | 🔵 **Design review open. No implementation task is assigned, deliberately.** |
+| **Objective** | Agentic, multi-step research on a qualified opportunity — planning questions, retrieving iteratively over **Signora's own ledger**, and synthesising an artifact M9 consumes as **optional, non-blocking** enrichment |
+| **Scope** | **Internal Research**, ruled 2026-07-31. Research explores, compares and synthesises knowledge Signora already owns and reaches no external source. External retrieval is a future extension, explicitly outside M10 |
+| **Expected outcome** | Findings that cite rows a customer can open · a planner whose choices are recorded as attention, never status · a budgeted, resumable, timed-out orchestration · `ai_research.completed` cataloged · and — the structural payoff — **the evidence that lets `ai_platform` freeze** |
+| **Scale** | ~6–9 ew *(estimated)*, down from the roadmap's 12–16. **Smaller as a consequence of correction, not of cutting** — the removed items were the ones with no repository support |
+| **Status** | 🔵 **In progress — T131, T132 complete** |
 
-### Open architectural questions
+### Why the milestone shrank
 
-1. **May an ATTESTED external claim be cited?** *(F-2, blocks the evidence design)* — narrowed to a single product judgement by [34-knowledge-contract.md](docs/architecture/34-knowledge-contract.md). Synthesis, tool traces, embeddings and rankings are settled by contract. Grounding validates that a citation resolves **inside** the evidence set; it cannot validate that a fact *in* the set is true. If model-authored synthesis enters the set, reasoning cites it, grounding passes, and a customer is shown it as evidence they can check — when they would be checking one model's claim against another's. **This determines the architecture of M10 and is under review before any code is written.**
-2. **How does one process serve three certified prompts?** *(F-1)* Let M10's real need shape the answer; do not invent it prematurely.
-3. **Disclosure class** *(blocks tool-use design)* — an agent issuing queries to public services is a **new egress direction**. R-05 is escalated to Legal and no allowlist exists.
-4. **Where does cost governance live?** *(R-01)* The register says before research is enabled broadly.
-5. **What is the research timeout?** *(R-09)* Never measured.
+Two roadmap assumptions were tested against the repository and both failed ([33-ai-research-engine-scope.md](docs/architecture/33-ai-research-engine-scope.md)):
 
-### Sequencing question, raised for a ruling
+- **"M10 requires pgvector."** There is no corpus. Migration `0009` gives `entity` a 32-char enum `kind` and no text at all; relationships are typed edges; normalization stores attribute/value claims. Embedding retrieval over that is a category error — a structured query answers it exactly, deterministically, and citably. ADR-0008 also scopes pgvector to *"retrieval over prior research artifacts"*, of which M10 produces the first.
+- **"Agentic means external tools."** Every tool the architecture names is internal, and `PRODUCT_DIFFERENTIATORS.md` prohibits building a collection operation in three places. Public information already has a ratified acquisition path: the Provider Platform, under contract.
 
-**The pipeline now runs nine stages ahead of any user-visible surface.** The Decision Package is produced, stored and announced — and **no human can see it until M12**. M10 adds the most expensive, slowest, least deterministic capability in the system to a pipeline whose output nobody can yet read. M11 (6–8 ew) and M7 (6–8 ew) are both cheaper and closer to a visible surface.
+**Agentic is a control-flow property** — plan, act, observe, iterate, stop — and is orthogonal to whether the actions cross the network boundary.
 
-**The counter-argument is real:** M10 is the only remaining consumer needed to freeze `ai_platform`, and deferring it leaves the substrate every future AI module depends on unfrozen for longer.
+### The three-way split T132 installed
 
-**A short M9.5 is recommended before M10** — resolve ADR-0031 while it invalidates *two* prompts rather than three, settle F-1, and re-run the model comparison. See the M10 design review for the full argument.
+| Object | Origin | Identity | Because |
+|---|---|---|---|
+| `ResearchTask` | *not knowledge* | minted | A run happened. Running twice is twice |
+| `ResearchFinding` | **DERIVED** | `uuid5` over content | Recomputing must insert nothing |
+| `ResearchSynthesis` | **INFERRED** | minted | A model was called. Calling twice is twice |
+
+**The ruling that findings are DERIVED is load-bearing, not a label.** DERIVED describes how content was produced, and promotion does not exist (Rule 8) — so the model plans *which comparison is worth running* (attention, Rule 9) and deterministic code computes the answer. A finding therefore has **no free-text field**, which is exactly the shape every other DERIVED object in this repository already has.
+
+### Open questions
+
+1. **How does one process serve three certified prompts?** *(F-1)* Let M10's real need shape the answer; do not invent it prematurely.
+2. **Where does cost governance live?** *(R-01)* The register says before research is enabled broadly.
+3. **What is the research timeout?** *(R-09)* Never measured. **T136 resolves it by measurement.**
+
+**Two questions that previously blocked M10 no longer do.** The ATTESTED ruling is not raised, because internal findings are DERIVED; the disclosure question is not raised, because egress stays model-vendor-only. Both return with external retrieval, and not before.
+
+### Sequencing question, still open
+
+**The pipeline now runs nine stages ahead of any user-visible surface.** The Decision Package is produced, stored and announced — and **no human can see it until M12**. M11 (6–8 ew) and M7 (6–8 ew) are both cheaper and closer to a visible surface. The counter-argument is real: M10 is the only remaining consumer needed to freeze `ai_platform`.
+
+**A short M9.5 remains recommended** — resolve ADR-0031 while it invalidates *two* prompts rather than three, settle F-1, and re-run the model comparison. M10's smaller scope does not change that argument; ADR-0031's cost still grows with every prompt released.
 
 ---
 

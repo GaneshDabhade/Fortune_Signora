@@ -19,16 +19,32 @@ does not auto-discover modules, by design, so a module absent from its
 **No upstream module depends on it.** The pipeline flows one way, and the AI
 Platform in particular must stay a substrate.
 
-These tests read source and configuration. They never call a model, and they
-never require the module to contain anything.
+**Extended at T132, when the module acquired domain types**, with two
+guarantees that could not be stated before they had something to bind:
+
+**Research stays internal.** The Internal Research ruling of 2026-07-31 is a
+product decision, and one recorded only in a document is one a future task can
+contradict without noticing. ATTESTED is unconstructable and no file in the
+module may import a network client.
+
+**INFERRED knowledge is uncitable.** Enforced by absence — a synthesis has no
+address — with a positive control proving the absence is not vacuous.
+
+These tests read source, configuration and the domain's own types. They never
+call a model and never touch a database.
 """
 
 from __future__ import annotations
 
+import ast
 import tomllib
+from dataclasses import fields
 from pathlib import Path
 
 import pytest
+from modules.ai_research_engine.domain import research
+from modules.ai_research_engine.domain.knowledge import EpistemicOrigin
+from modules.ai_research_engine.domain.research import ResearchFinding
 
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
 PYPROJECT = BACKEND_ROOT / "pyproject.toml"
@@ -102,3 +118,95 @@ class TestTheResearchEdgePointsOneWay:
         )
         assert "modules.ai_platform" in sources  # type: ignore[operator]
         assert "modules.opportunity_engine" in sources  # type: ignore[operator]
+
+
+class TestResearchStaysInternal:
+    """The **Internal Research** ruling of 2026-07-31, made mechanical.
+
+    M10 was ruled to explore, compare and synthesise knowledge Signora already
+    owns, reaching no external source. That ruling is a product decision, and a
+    product decision recorded only in a document is one a future task can
+    contradict without noticing. These two tests make contradicting it fail.
+    """
+
+    def test_attested_knowledge_is_unconstructable(self) -> None:
+        """External findings cannot arrive by setting a field.
+
+        `EpistemicOrigin` deliberately omits ATTESTED — the origin of *"a named
+        outside source asserts X"*. Adding external retrieval must therefore add
+        the member, which is a visible diff on a file that records why it was
+        absent, rather than a value quietly appearing in a column.
+        """
+        origins = {origin.value for origin in EpistemicOrigin}
+        assert "attested" not in origins, (
+            "ATTESTED became constructable. M10 was ruled Internal Research: findings are "
+            "DERIVED from rows Signora owns. Admitting external assertions needs a product "
+            "ruling on whether they may be cited at all — 31-m10-design-review-evidence.md §7.2."
+        )
+        assert origins == {"derived", "inferred"}
+
+    def test_no_part_of_the_module_reaches_the_network(self) -> None:
+        """**Wider than the layering contract, deliberately.**
+
+        `import-linter` forbids `httpx` in `domain/` — a Clean Architecture
+        rule, and it would happily allow a browser tool in `infrastructure/`.
+        The ruling is about the module as a whole: every model call goes through
+        the AI Platform's adapters, which own the transport, so nothing here
+        needs a client of its own.
+        """
+        clients = {"httpx", "requests", "urllib", "urllib3", "aiohttp", "socket", "webbrowser"}
+        for source in MODULE_ROOT.rglob("*.py"):
+            tree = ast.parse(source.read_text(encoding="utf-8"))
+            for node in ast.walk(tree):
+                imported: set[str] = set()
+                if isinstance(node, ast.Import):
+                    imported = {alias.name.split(".")[0] for alias in node.names}
+                elif isinstance(node, ast.ImportFrom) and node.module:
+                    imported = {node.module.split(".")[0]}
+                offending = imported & clients
+                assert not offending, (
+                    f"{source.relative_to(MODULE_ROOT)} imports {sorted(offending)}. The AI "
+                    "Research Engine researches what Signora already owns; a network client "
+                    "here is external retrieval arriving without the ruling that authorises it."
+                )
+
+
+class TestInferredKnowledgeIsUncitable:
+    """Knowledge Contract Rule 12, enforced by absence rather than by a check."""
+
+    def test_no_inferred_type_exposes_an_evidence_address(self) -> None:
+        """A model's output must never become another model's evidence.
+
+        The enforcement is that an INFERRED object has **no address** — no
+        `ref`, no `token`, no `EvidenceRef` field — so a consumer cannot cite it
+        even deliberately. This scans every INFERRED type the module defines, so
+        a *future* one cannot quietly acquire one.
+        """
+        inferred = [
+            obj
+            for obj in vars(research).values()
+            if isinstance(obj, type)
+            and getattr(obj, "origin", None) is EpistemicOrigin.INFERRED
+        ]
+        assert inferred, "no INFERRED type found — this test would pass vacuously."
+        for cls in inferred:
+            for name in ("ref", "token", "evidence_ref"):
+                assert not hasattr(cls, name), (
+                    f"{cls.__name__} exposes '{name}'. It is INFERRED, and an addressable "
+                    "inference is a citable one — Rule 12 forbids it under any configuration."
+                )
+            addresses = [
+                field.name
+                for field in fields(cls)
+                if field.type in {"EvidenceRef", "EvidenceRef | None"}
+            ]
+            assert not addresses, (
+                f"{cls.__name__} carries {addresses}, which addresses evidence. An INFERRED "
+                "object may reference its inputs by identity; it may not become one."
+            )
+
+    def test_the_derived_finding_is_addressable(self) -> None:
+        """The positive control. A rule enforced by absence is satisfied by an
+        empty module, so something must be shown to *have* the address."""
+        assert ResearchFinding.origin is EpistemicOrigin.DERIVED
+        assert hasattr(ResearchFinding, "ref")

@@ -62,6 +62,20 @@ Both AI Research Engine and AI Reasoning Engine consume the same port; each main
 - **Vector store:** **pgvector**, colocated in the same PostgreSQL 17 instance as the rest of Signora's data (Principle 6). See [ADR-0008](adr/0008-search-and-vector-retrieval.md) for the full comparison against dedicated vector databases (Pinecone, Weaviate, Qdrant) — rejected primarily because they would introduce a second datastore with its own consistency/backup/tenancy story, directly against Principle 6, without a demonstrated need pgvector cannot meet at Signora's current and near-term embedding volume.
 - Embedding vectors are stored on the owning module's own tables (e.g., a `knowledge_graph.entity_embeddings` table), workspace-scoped and RLS-enforced exactly like any other workspace-owned data — embeddings are not exempt from tenancy rules.
 
+> **Ratified, and deliberately unbuilt as of 2026-07-31.** Nothing in this repository uses embeddings
+> or pgvector, and M10 does not adopt them. Two reasons, both from the repository rather than from
+> preference: **there is no corpus** — the Knowledge Graph's `entity` carries a 32-char enum `kind`
+> and no text, relationships are typed edges, and normalization stores attribute/value claims, so a
+> structured query answers those questions exactly and citably where an approximate-nearest-neighbour
+> hit does not; and **ADR-0008 scopes vector retrieval to *"prior research artifacts"***, of which the
+> first milestone to produce any is M10 itself.
+>
+> **The deferral is self-timing.** Embeddings arrive when a measured corpus exists that structured
+> queries cannot serve — an evidence trigger, not a date. Note also that embedding the Knowledge
+> Graph is the **Knowledge Graph's** build, not the AI Research Engine's: ADR-0008 assigns embedding
+> storage to the owning module, and one module creating another's table is a boundary violation
+> whichever milestone is convenient.
+
 ## Prompt Management: Internal Prompt Registry
 
 Rather than a third-party prompt-management SaaS, Signora builds a lightweight **Internal Prompt Registry**:
@@ -74,14 +88,33 @@ Rather than a third-party prompt-management SaaS, Signora builds a lightweight *
 
 ## AI Research Engine — Internal Design
 
+> **Corrected 2026-07-31, on the Internal Research ruling.** The tool list previously read *"Knowledge
+> Graph retrieval, pgvector semantic search, provider re-query via Provider Platform"*. Two of those
+> three required dependency edges [05-module-dependencies.md](05-module-dependencies.md) does not
+> grant — the AI Research Engine's ratified dependencies are **Opportunity Engine and AI Platform,
+> and nothing else** — and pgvector has no corpus to retrieve over, since the Knowledge Graph stores
+> typed edges and enum kinds rather than text. The ruling settles the disagreement in the graph's
+> favour and defers all three. See [33-ai-research-engine-scope.md](33-ai-research-engine-scope.md).
+
 ```mermaid
 flowchart LR
-    In[Trigger: opportunity.created] --> Plan[Research Planning:<br/>determine research steps]
-    Plan --> Tools[Agentic Tool Use:<br/>Knowledge Graph retrieval,<br/>pgvector semantic search,<br/>provider re-query via Provider Platform]
-    Tools --> Synthesize[Synthesis: structured research artifact]
+    In[Trigger: opportunity.created] --> Plan[Research Planning:<br/>which comparisons are worth running]
+    Plan --> Tools[Agentic Tool Use:<br/>internal retrieval over<br/>opportunity_engine.public]
+    Tools --> Derive[Deterministic derivation:<br/>each finding computed, citing rows]
+    Derive --> Synthesize[Synthesis: a grounded narration<br/>over the findings]
     Synthesize --> Provenance[Attach model/tool-use provenance]
     Provenance --> Publish["Publish ai_research.completed"]
 ```
+
+**The planning step directs attention; it never confers status.** A model chooses which comparison to
+run; deterministic code computes the answer. That is what makes a finding DERIVED and checkable by
+recomputation, and it is why the synthesis — which *is* model-authored — is never citable
+([34-knowledge-contract.md](34-knowledge-contract.md), Rules 9 and 12).
+
+**One ratified edge reaches the whole chain.** `OpportunityExplanation` carries the opportunity, its
+history, the originating score, the contribution ledger and one `SignalExplanation` per contributing
+signal — so a research agent walks from a tracked account to a raw provider payload through
+`opportunity_engine.public` alone, without a new dependency.
 
 - Bounded by an explicit **research timeout** (`TODO`: exact value pending production latency data — tracked as Risk R-09 in [16-architecture-risks.md](16-architecture-risks.md)); AI Reasoning Engine does not block indefinitely on it, per [05-module-dependencies.md](05-module-dependencies.md).
 - Every agentic step (tool call, retrieval, sub-query) is logged with provenance, so a research artifact's provenance chain is fully reconstructable.
