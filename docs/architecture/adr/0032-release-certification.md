@@ -1,6 +1,6 @@
 # ADR-0032 — Release Certification: the evidence a version carries, not a sixth kind of test
 
-> Status: **PROPOSED — 2026-07-31.** Recommended for ratification, with one scope change from the request that produced it.
+> Status: **ACCEPTED — 2026-07-31.** Ratified by the Product Owner. Phases 1–4 implemented; the scenario catalogue (phases 2–3 of the plan below) remains open.
 > Deciders: Product Owner · Architecture Review Board
 > Supersedes: nothing. Amends: nothing. Extends: [ADR-0027](0027-local-first-development.md) (local-first), [20-provider-simulation.md](../20-provider-simulation.md) (progressive assertion), CLAUDE.md §19 (Milestone Definition of Done).
 
@@ -206,3 +206,20 @@ The one-way door is the record format; it should be versioned from the first wri
 ## Naming collision, resolved
 
 *"Certified model"* already means something narrow and shipped: the `(model, dataset)` pairing a prompt has passed. This ADR's terms are **Certification Record** and **Release Certified**, which describe the platform. The two must not be conflated in code: nothing in `modules/ai_platform/` may take a dependency on the certification concept, and the certification record refers to prompt releases only by citing them.
+
+
+---
+
+## Implementation log
+
+| Phase | Outcome |
+|---|---|
+| **1 — the record** | Done. `CertificationRun` records facts; `satisfied` and `is_certified` are derived. Two proposed fields were dropped: an *overall outcome* (derived, so storing it creates the copy that can disagree) and a *mutation identifier* (fillable only by hand, since mutation testing has no mechanical output here) |
+| **2 — persistence** | Done. `certification/manifest.json` at the repository root, append-only, failed runs recorded too, `extra="forbid"` on every field, deterministic serialisation |
+| **3 — `make certify`** | Done. Orchestrates the existing gates, writes one run, exits non-zero when it does not certify. No options |
+| **4 — `PROJECT_STATUS.md`** | Done. §4 cites the record instead of transcribing numbers |
+| **Catalogue** | Open. One scenario today (`baseline@1`); the nine `20-provider-simulation.md` commissioned, and the failure/recovery narratives, are future milestones |
+
+**Found on the first real run.** `make certify` recorded *"smoke — 0 stages"* beside a passing smoke gate: `smoke.sh` writes each heading wrapped in ANSI bold, so a pattern anchored to a digit matched nothing. It is the failure the parser tests were written about — a failing gate is loud, and a parser that stops matching writes a wrong number where nobody reads it. The record was discarded before it was committed, so no history was rewritten, and the test now pins the exact bytes `smoke.sh` emits.
+
+**Two mutations survived the first round**, and both were real: nothing made a *scenario* fail, so every gate could pass while the customer journey did not; and nothing checked that an untracked file makes the tree dirty. Thirteen mutations are now fatal.

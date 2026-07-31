@@ -1,0 +1,77 @@
+{
+  "_comment": "Durable evidence that a specific commit satisfied the repository's guarantees under stated conditions (ADR-0032). Append-only: failed runs are recorded too, because a manifest holding only successes claims a platform that never failed to certify. Nothing here declares a verdict — `satisfied` is derived from the gates and scenarios below, and `is_certified` additionally requires that the recorded conditions still match the repository, so a rendering-protocol bump or a prompt re-release expires a certification without anyone editing this file. Written only by `make certify`.",
+  "runs": [
+    {
+      "certified_at": "2026-07-31T14:10:39.944382+00:00",
+      "commit": "94082899f8eaf9ca493575314e050113b24d7076",
+      "conditions": {
+        "migration_head": "0018",
+        "prompt_releases": [
+          {
+            "fingerprint": "bafc9d282d53e4e3ae7a10748d41e9128acb63c9ae1e6d5e00390871db2debfb",
+            "model": "llama3.1:8b",
+            "reference": "research_planning@2"
+          },
+          {
+            "fingerprint": "409a6b2e38a92f1b72022a7b205bfaf299e93e4213e83afcfe486e65fa80d3b6",
+            "model": "llama3.1:8b",
+            "reference": "research_synthesis@2"
+          }
+        ],
+        "rendering_protocol_version": 2,
+        "scenario_fingerprint": "e2bfe02eaa5da861832e0f19798c42b573b41930e813fd026aa4437c581300e4"
+      },
+      "coverage": 95.86,
+      "gates": [
+        {
+          "detail": "29 kept, 0 broken",
+          "name": "import-linter",
+          "passed": true
+        },
+        {
+          "detail": "strict, clean over 455 files",
+          "name": "mypy",
+          "passed": true
+        },
+        {
+          "detail": "1825 passed",
+          "name": "pytest",
+          "passed": true
+        },
+        {
+          "detail": "321 invariants",
+          "name": "security-invariants",
+          "passed": true
+        },
+        {
+          "detail": "24 stages in 104s",
+          "name": "smoke",
+          "passed": true
+        }
+      ],
+      "record_version": 1,
+      "scenarios": [
+        {
+          "detail": "149 assertions",
+          "name": "baseline@1 research lifecycle",
+          "passed": true
+        }
+      ],
+      "tools": [
+        [
+          "mypy",
+          "2.3.0"
+        ],
+        [
+          "pytest",
+          "9.1.1"
+        ],
+        [
+          "python",
+          "3.13.14"
+        ]
+      ],
+      "tree_clean": true
+    }
+  ]
+}

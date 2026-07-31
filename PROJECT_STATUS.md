@@ -108,22 +108,40 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 
 ## 4 · Repository health
 
+> **Not transcribed. Cited.** Every figure below comes from
+> [`certification/manifest.json`](certification/manifest.json) — written by
+> `make certify`, never by hand (ADR-0032). A number in this table that nobody
+> measured is the defect the certification record exists to remove, so this
+> section names its evidence and stops.
+
+**Latest certification — [`94082899`](certification/reports/94082899f8ea.md) · 2026-07-31 · CERTIFIED**
+
+| Gate | Recorded |
+|---|---|
+| **pytest** | 1825 passed |
+| **coverage** | 95.86% *(floor 95%)* |
+| **Security Invariants** | 321, each proven to fail when its guarantee is removed |
+| **import-linter** | 29 kept, 0 broken |
+| **MyPy** | strict, clean over 455 files |
+| **`make smoke`** | 24 stages in 104s, fresh images, clean teardown |
+| **Scenario — `baseline@1` research lifecycle** | 149 assertions |
+
+**Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0018`** · scenario set `e2bfe02e` · `research_planning@2` and `research_synthesis@2` released for `llama3.1:8b`.
+
+**A certification expires by derivation, not by decision.** Change the rendering protocol, re-release a prompt, add a migration or edit a scenario, and the recorded run stops describing the repository — `is_certified` reads false and the report says *awaiting re-certification*. Nothing is edited, and nothing can be marked certified by hand: `satisfied` and `is_certified` are derived, exactly as `passed` and `earns_release` are for prompts.
+
 | Indicator | Value | Target |
 |---|---|---|
-| **Backend tests** | **1733 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Frontend tests** | **101 passing**, 0 failing, 0 skipped | 0 skipped |
-| **Backend coverage** | **95.84%** — varies ±0.02pp between runs | ≥95% (local gate) |
-| **Security Invariants** | **317 / 317**, each proven to fail when its guarantee is removed | 100% verified |
-| **import-linter contracts** | **29 kept, 0 broken** | 0 broken |
-| **MyPy** | **strict, clean over 446 files** | clean |
-| **`make smoke`** | ✅ **23 stages**, 106s, fresh images, clean teardown | green per milestone |
 | **Migrations** | `0001`–`0018`, additive and reversible — `0018` proven by an applied downgrade/upgrade cycle | reversible |
 | **Architecture drift** | **0** — no ratified ADR reversed | trending to 0 |
 | **Open production bugs** | **0** | 0 |
 
-**Every gate runs locally.** `pytest --cov` · `make smoke` · `mypy --strict` · `lint-imports` · the Security Invariants suite · migration reversibility. A gate moving from CI to local did not make it optional — it made the local run the only run, and therefore the one that decides.
+*Frontend tests and migration reversibility are not yet certification gates — they are verified per milestone and remain transcribed here until `make certify` measures them.*
 
-**Caveat worth restating:** these numbers describe a system with zero production traffic. They are evidence of discipline, not of field reliability.
+**Every gate runs locally.** `make certify` runs them in one pass and records the result; each remains individually runnable. A gate moving from CI to local did not make it optional — it made the local run the only run, and therefore the one that decides.
+
+**Caveat worth restating:** these numbers describe a system with zero production traffic. They are evidence of discipline, not of field reliability — which is why every certification report ends with that sentence.
 
 ---
 
