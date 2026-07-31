@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: smoke smoke-keep dr up down test eval eval-reasoning eval-research
+.PHONY: smoke smoke-keep dr up down test certify eval eval-reasoning eval-research
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
 # The executable bit is filesystem state, not repository state, and it does
@@ -48,6 +48,20 @@ down:
 ## Backend suite. Truncates its target database — hence the explicit opt-in.
 test:
 	@cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run pytest --cov
+
+## Release Certification (ADR-0032). Runs every gate, then records what happened
+## as durable repository evidence in `certification/manifest.json`.
+##
+## Deliberately NOT part of `make test`, for the reason `make eval` is not: it
+## brings the production stack up and down, it takes minutes, and it writes to
+## the repository. Nothing here re-asserts a guarantee a gate already proves —
+## certification's contribution is the record, not a second opinion.
+##
+## There are no options. A mode that skipped a gate would produce a run that
+## cannot certify, and a command whose convenient path yields worthless evidence
+## teaches people to use it.
+certify:
+	@cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.certification
 
 ## Prompt evaluation against a real model. Deliberately NOT part of `make test`.
 #
