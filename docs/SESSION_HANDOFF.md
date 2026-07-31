@@ -321,6 +321,8 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 
 ### Open before M10 — a ruling is required
 
+**Read [32-knowledge-ontology.md](architecture/32-knowledge-ontology.md) first.** It classifies all 33 knowledge types Signora holds or may hold, and identifies the missing classification axis: the architecture has always classified knowledge by *how long it lives* and *who it is true for*, **never by how it came to be known** — because until M10 everything came to be known the same way. Five questions that were open in the design review are now answered by classification. **One remains, and it is a genuine judgement call:** is an ATTESTED external claim admissible as evidence?
+
 **[31-m10-design-review-evidence.md](architecture/31-m10-design-review-evidence.md) is open and blocks M10's task breakdown.** The question: *may a research artifact become evidence?* Five options analysed (never-evidence · ordinary kind · sourced findings only · read-only channel · hypothesis generator), each against ownership, explainability, auditability, customer trust, determinism, M9 impact, package impact and extensibility. **No option is recommended** — that is the ruling being requested.
 
 It matters because the repository makes the *wrong* answer easy: `EvidenceRef.kind` is an unconstrained string, so `research_finding:uuid` is constructible today with zero platform change, and grounding cannot help — it validates that a citation resolves *inside* the set, never that a fact *in* the set is true.

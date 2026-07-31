@@ -2,6 +2,7 @@
 
 > Status: **OPEN — 2026-07-31.** Analysis for a ruling. **No option is recommended in §1–§6**; the recommendation is deliberately held to §7 so the analysis can be read without it.
 > Audience: the product owner, and whoever implements M10.
+> **Reordered 2026-07-31: [32-knowledge-ontology.md](32-knowledge-ontology.md) is now the first question.** The product owner's judgement was that this review asked the right question *second* — so the ontology classifies every knowledge type Signora holds before anything is decided about research. It excludes options B and D, and the synthesis half of C, **by classification rather than by preference**. The options below stand unchanged; read the ontology first.
 > Anchors: [28-ai-platform.md](28-ai-platform.md) · [29-ai-reasoning-engine.md](29-ai-reasoning-engine.md) · [ADR-0030](adr/0030-the-decision-package.md) · [ADR-0031](adr/0031-evidence-citation-protocol.md) · [30-m9-retrospective.md](30-m9-retrospective.md) · CLAUDE.md §2, §10
 
 ---
