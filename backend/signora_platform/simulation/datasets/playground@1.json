@@ -1,0 +1,78 @@
+{
+  "_comment": "The Product Playground cast. Every company here is FICTIONAL - the names follow the convention Microsoft uses for sample data, and every domain is `.example`, which RFC 2606 reserves so it can never resolve. Nothing here describes a real organisation, and no payload generated from it should be read as intelligence about one. Real names were considered and rejected: fabricated buying signals attached to a real company are indistinguishable from real ones in a screenshot, and a demo that could be mistaken for a claim about somebody's business is a liability rather than an asset. Twelve accounts rather than two, because the design questions this exists to answer - does the row scan, does ranking beat grouping, does density hold - are unanswerable at two.",
+  "content_hash": "c69df263902c7304",
+  "entities": {
+    "northwind-logistics": {
+      "name": "Northwind Logistics",
+      "domain": "northwind.example",
+      "country": "US",
+      "founded": 2011
+    },
+    "contoso-health": {
+      "name": "Contoso Health",
+      "domain": "contoso-health.example",
+      "country": "US",
+      "founded": 2009
+    },
+    "fabrikam-industrial": {
+      "name": "Fabrikam Industrial",
+      "domain": "fabrikam.example",
+      "country": "DE",
+      "founded": 1998
+    },
+    "tailwind-freight": {
+      "name": "Tailwind Freight",
+      "domain": "tailwind.example",
+      "country": "NL",
+      "founded": 2016
+    },
+    "proseware-analytics": {
+      "name": "Proseware Analytics",
+      "domain": "proseware.example",
+      "country": "GB",
+      "founded": 2019
+    },
+    "adventure-outdoor": {
+      "name": "Adventure Outdoor",
+      "domain": "adventure.example",
+      "country": "CA",
+      "founded": 2014
+    },
+    "litware-payments": {
+      "name": "Litware Payments",
+      "domain": "litware.example",
+      "country": "SG",
+      "founded": 2020
+    },
+    "wingtip-media": {
+      "name": "Wingtip Media",
+      "domain": "wingtip.example",
+      "country": "AU",
+      "founded": 2012
+    },
+    "coho-vineyards": {
+      "name": "Coho Vineyards",
+      "domain": "coho.example",
+      "country": "FR",
+      "founded": 2005
+    },
+    "relecloud-infra": {
+      "name": "Relecloud Infrastructure",
+      "domain": "relecloud.example",
+      "country": "IE",
+      "founded": 2017
+    },
+    "vanarsdel-retail": {
+      "name": "VanArsdel Retail",
+      "domain": "vanarsdel.example",
+      "country": "US",
+      "founded": 2003
+    },
+    "lamna-legal": {
+      "name": "Lamna Legal",
+      "domain": "lamna.example",
+      "country": "GB",
+      "founded": 2007
+    }
+  }
+}

@@ -2,6 +2,14 @@
 
 > Created 2026-07-31 during M12.1. **A `PRODUCT_DESIGN_CONSTITUTION.md` was referenced but does not exist in this repository** — I checked both that name and `38-product-design-principles.md`, and neither was present. This document is started here so the design observations the milestone produced have somewhere to live, and so the next screen inherits a stated position rather than re-deriving one. It records the principles as they were given, not as I invented them.
 
+> **Superseded 2026-07-31 by the Signora Product Constitution v2.0.** The principles below were the M12.1 working set; the Constitution ratifies them and settles three questions this document had left open. Recorded rather than rewritten, because the sequence is the record.
+>
+> **The three rulings, and what changed:**
+>
+> 1. **The purpose is not to eliminate uncertainty** — it is to make uncertainty visible, understandable, quantifiable, explainable and actionable. *"Pretending certainty where none exists destroys trust."* This is what the architecture already believed: contested scores are never averaged away, dissent is preserved, `evidence_state` is derived on every read, and a disputed name says so.
+> 2. **Progressive disclosure is mandatory, and reasoning must be *reachable* rather than always visible.** Summary → reasoning → evidence → raw observations → provider details, each one interaction apart. This resolves the tension between *"never hide reasoning"* and *"reduce cognitive load"*, which as separately stated would have produced opposite screens.
+> 3. **Deterministic truth outranks generated opinion.** *"If the answer can be derived deterministically, never ask AI to invent it."* AI is used only where reasoning genuinely adds value.
+
 ## The principles this milestone worked to
 
 Stated by the product owner at M12.1 and applied to every decision below:
@@ -153,3 +161,27 @@ A stable demo dataset behind `make demo` is the right idea: the golden set has *
 **It must not be a parallel seeding system.** The Provider Simulation Framework already owns scenarios and was commissioned for ten *"deepening each milestone"*; one exists. A demo dataset belongs there, inheriting the seeded determinism, the fault injector and the provenance fields. Building a second seeder beside it would split all three across two owners — the mistake ADR-0032 declined to make with certification scenarios.
 
 **Its own slice**, and probably the highest-value non-UI work available: it unblocks D6 (grouping), makes D10's row pass reviewable against a real list, and widens the evidence base for every future prompt release.
+
+
+---
+
+## D9 — the Product Playground, built
+
+**Twelve accounts, twelve shapes.** Not twelve rows: the technology migration, the hiring surge, the provider disagreement, the acquisition, the rapid grower, the stale account, the false positive, the silent account, the rebranding, the contested account, the slow burn, and the one that is cooling.
+
+**Why shapes rather than volume.** Twelve copies of one story would pass a count and answer no design question. The Constitution's rule is *never design for two rows*, and the reason is that ranking-versus-grouping, row density and column scanning are all questions that only have answers at scale — a test asserts the accounts differ in *evidence*, not merely in name.
+
+**Why fictional companies.** The Constitution named real ones. I used the placeholder convention instead, with every domain on the RFC 2606 `.example` reserved TLD, and a test that fails on a recognisable brand. **Fabricated buying signals attached to a real company are indistinguishable from real ones in a screenshot**, and a demo that could be read as a claim about somebody's business is a liability rather than an asset. The legibility a real name buys is not worth that.
+
+**Why in the Provider Simulation Framework.** It already owns scenarios, the seeded determinism, the fault injector and the provenance fields. A second seeder beside it would split all four across two owners — the mistake ADR-0032 declined to make with certification scenarios. One source of truth for design, AI evaluation and demonstration, as the Constitution requires.
+
+### What it unblocks
+
+- **D6 (grouping vs ranking)** becomes answerable rather than speculative.
+- **D10 (row hierarchy)** becomes reviewable — I have been making density judgements against two identical rows and could not have told you whether the row scans at twelve.
+- **Every prompt evaluation** gains variety; *"two cases, one shape"* has been the standing caveat on every release the repository holds.
+- **`fabrikam-industrial` carries two legal names from two providers**, so the disputed-name disclosure is exercised by real pipeline output rather than a component test.
+
+### What is not done
+
+**`make demo` does not exist yet.** The scenario and cast are built, loadable and tested; wiring them through ingestion into a seeded workspace behind one command is the next step. The dataset is the hard half and the command is the useful half — shipping the first without the second is honest progress, not a finished feature.

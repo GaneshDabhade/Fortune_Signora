@@ -1,0 +1,410 @@
+{
+  "_comment": "The Product Playground. Twelve accounts, twelve SHAPES - not twelve rows. Each is a story a salesperson recognises, and each exercises a different part of the pipeline and the interface: the textbook displacement, the hiring surge, the provider disagreement (two sources, two legal names - the account that exercises the disputed-name disclosure with real data), the acquisition, the rapid grower, the account whose evidence went stale, the false positive with loud intent and nothing beneath it, the silent account, the rebranding mid-cycle, the contested account with opposing readings both live, the slow burn, and the one that is cooling. This is the substrate for design review, AI evaluation and demonstration - one source of truth rather than three. Every company is fictional and every domain is `.example`; see the dataset's own note for why real names were rejected.",
+  "dataset": "playground",
+  "dataset_version": 1,
+  "steps": [
+    {
+      "provider": "builtwith",
+      "subject": "northwind-logistics",
+      "offset_days": 2,
+      "facts": {
+        "technologies": [
+          {
+            "name": "LegacyERP",
+            "category": "erp",
+            "first_detected": "2019-04-01",
+            "last_detected": "2026-01-08",
+            "is_live": false
+          },
+          {
+            "name": "CloudERP",
+            "category": "erp",
+            "first_detected": "2026-01-15",
+            "last_detected": "2026-01-28",
+            "is_live": true
+          }
+        ]
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "northwind-logistics",
+      "offset_days": 0,
+      "facts": {
+        "employees": 1400
+      }
+    },
+    {
+      "provider": "bombora",
+      "subject": "northwind-logistics",
+      "offset_days": 5,
+      "facts": {
+        "intent_topics": [
+          {
+            "topic": "Cloud ERP",
+            "direction": "emerging",
+            "weeks": 6,
+            "peak": 91
+          }
+        ]
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "contoso-health",
+      "offset_days": 0,
+      "facts": {
+        "employees": 830
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "contoso-health",
+      "offset_days": 4,
+      "facts": {
+        "open_roles": 47
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "contoso-health",
+      "offset_days": 18,
+      "facts": {
+        "open_roles": 74
+      }
+    },
+    {
+      "provider": "bombora",
+      "subject": "contoso-health",
+      "offset_days": 9,
+      "facts": {
+        "intent_topics": [
+          {
+            "topic": "Revenue Operations",
+            "direction": "emerging",
+            "weeks": 3,
+            "peak": 77
+          }
+        ]
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "fabrikam-industrial",
+      "offset_days": 1,
+      "facts": {
+        "employees": 5200,
+        "legal_name": "Fabrikam Industrial GmbH"
+      }
+    },
+    {
+      "provider": "crunchbase",
+      "subject": "fabrikam-industrial",
+      "offset_days": 12,
+      "facts": {
+        "stage": "public",
+        "legal_name": "Fabrikam Industrial AG",
+        "funding_rounds": []
+      }
+    },
+    {
+      "provider": "builtwith",
+      "subject": "fabrikam-industrial",
+      "offset_days": 6,
+      "facts": {
+        "technologies": [
+          {
+            "name": "OnPremCRM",
+            "category": "crm",
+            "first_detected": "2015-06-01",
+            "last_detected": "2026-01-20",
+            "is_live": true
+          }
+        ]
+      }
+    },
+    {
+      "provider": "crunchbase",
+      "subject": "tailwind-freight",
+      "offset_days": 3,
+      "facts": {
+        "stage": "series_c",
+        "funding_rounds": [
+          {
+            "type": "series_c",
+            "amount_usd": 82000000,
+            "announced_on": "2026-01-19",
+            "investors": [
+              "Northgate Partners",
+              "Meridian Growth"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "tailwind-freight",
+      "offset_days": 0,
+      "facts": {
+        "employees": 260
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "tailwind-freight",
+      "offset_days": 16,
+      "facts": {
+        "open_roles": 31
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "proseware-analytics",
+      "offset_days": 0,
+      "facts": {
+        "employees": 90
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "proseware-analytics",
+      "offset_days": 20,
+      "facts": {
+        "employees": 155
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "proseware-analytics",
+      "offset_days": 6,
+      "facts": {
+        "open_roles": 22
+      }
+    },
+    {
+      "provider": "crunchbase",
+      "subject": "proseware-analytics",
+      "offset_days": 11,
+      "facts": {
+        "stage": "series_a",
+        "funding_rounds": [
+          {
+            "type": "series_a",
+            "amount_usd": 18000000,
+            "announced_on": "2026-01-14",
+            "investors": [
+              "Kestrel Capital"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "provider": "bombora",
+      "subject": "proseware-analytics",
+      "offset_days": 15,
+      "facts": {
+        "intent_topics": [
+          {
+            "topic": "Data Warehouse",
+            "direction": "emerging",
+            "weeks": 5,
+            "peak": 84
+          }
+        ]
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "adventure-outdoor",
+      "offset_days": 0,
+      "facts": {
+        "employees": 340
+      }
+    },
+    {
+      "provider": "builtwith",
+      "subject": "adventure-outdoor",
+      "offset_days": 1,
+      "facts": {
+        "technologies": [
+          {
+            "name": "LegacyERP",
+            "category": "erp",
+            "first_detected": "2018-02-01",
+            "last_detected": "2025-11-30",
+            "is_live": false
+          }
+        ]
+      }
+    },
+    {
+      "provider": "bombora",
+      "subject": "litware-payments",
+      "offset_days": 2,
+      "facts": {
+        "intent_topics": [
+          {
+            "topic": "Cloud ERP",
+            "direction": "emerging",
+            "weeks": 2,
+            "peak": 95
+          }
+        ]
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "litware-payments",
+      "offset_days": 0,
+      "facts": {
+        "employees": 45
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "wingtip-media",
+      "offset_days": 0,
+      "facts": {
+        "employees": 210
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "coho-vineyards",
+      "offset_days": 0,
+      "facts": {
+        "employees": 120,
+        "legal_name": "Coho Vineyards"
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "coho-vineyards",
+      "offset_days": 24,
+      "facts": {
+        "employees": 128,
+        "legal_name": "Coho Estates"
+      }
+    },
+    {
+      "provider": "builtwith",
+      "subject": "coho-vineyards",
+      "offset_days": 8,
+      "facts": {
+        "technologies": [
+          {
+            "name": "ShopCommerce",
+            "category": "ecommerce",
+            "first_detected": "2022-01-01",
+            "last_detected": "2026-01-25",
+            "is_live": true
+          }
+        ]
+      }
+    },
+    {
+      "provider": "builtwith",
+      "subject": "relecloud-infra",
+      "offset_days": 4,
+      "facts": {
+        "technologies": [
+          {
+            "name": "CloudERP",
+            "category": "erp",
+            "first_detected": "2026-01-10",
+            "last_detected": "2026-01-27",
+            "is_live": true
+          },
+          {
+            "name": "RivalERP",
+            "category": "erp",
+            "first_detected": "2026-01-05",
+            "last_detected": "2026-01-26",
+            "is_live": true
+          }
+        ]
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "relecloud-infra",
+      "offset_days": 0,
+      "facts": {
+        "employees": 610
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "relecloud-infra",
+      "offset_days": 13,
+      "facts": {
+        "open_roles": 8
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "vanarsdel-retail",
+      "offset_days": 0,
+      "facts": {
+        "employees": 12500
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "vanarsdel-retail",
+      "offset_days": 7,
+      "facts": {
+        "open_roles": 63
+      }
+    },
+    {
+      "provider": "builtwith",
+      "subject": "vanarsdel-retail",
+      "offset_days": 14,
+      "facts": {
+        "technologies": [
+          {
+            "name": "LegacyERP",
+            "category": "erp",
+            "first_detected": "2012-01-01",
+            "last_detected": "2026-01-22",
+            "is_live": true
+          }
+        ]
+      }
+    },
+    {
+      "provider": "bombora",
+      "subject": "lamna-legal",
+      "offset_days": 1,
+      "facts": {
+        "intent_topics": [
+          {
+            "topic": "Contract Intelligence",
+            "direction": "declining",
+            "weeks": 9,
+            "peak": 41
+          }
+        ]
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "lamna-legal",
+      "offset_days": 0,
+      "facts": {
+        "employees": 480
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "lamna-legal",
+      "offset_days": 21,
+      "facts": {
+        "open_roles": 3
+      }
+    }
+  ]
+}
