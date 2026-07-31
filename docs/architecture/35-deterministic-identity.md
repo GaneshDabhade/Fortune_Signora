@@ -37,6 +37,19 @@ showed that *most of their inputs are unprotected too*.
 | `buying_score_id` drops `sorted()` | ⚠️ **survives** | **Insertion order becomes a hidden input** — the defect class §2 of CLAUDE.md names outright |
 | `buying_score_id` drops `basis_at` | ✅ 2 failed | — |
 
+> **Correction, 2026-07-31, made before planning any repair.** The table above reports the
+> measurements correctly and **reads two of them wrongly.** `business_event_id` and `signal_id`
+> dropping `entity_id` are **not correctness gaps**: a business event must cite ≥1 observation and a
+> signal must cite ≥1 business event (both refused at construction), and an observation id already
+> contains `entity_id`. **The entity is therefore transitively determined by the evidence**, so two
+> entities can never share an evidence set and the collision the mutation implies is unreachable.
+> Those two inputs are *redundant defence in depth*, not load-bearing — and no test can be written
+> that fails when they are removed by observing the system, only by testing the function directly.
+> **`observation_id`'s `provider` is genuinely different**, and §2.3 of the plan below traces why.
+>
+> The corrected count is **three of ten mutations exposing something real**, not five. Recording this
+> rather than quietly restating it: the measurement was right, my reading of it was not.
+
 **Five of ten mutations survive.** The pattern is consistent and diagnostic:
 
 > **The identity tests assert what an id must *equal*. Almost nothing asserts what it must
@@ -45,7 +58,11 @@ showed that *most of their inputs are unprotected too*.
 Idempotency — *"the same situation computes the same id"* — is tested in two modules and is the
 property the docstrings talk about. **Injectivity — *"a different situation computes a different
 id"* — is tested in exactly one place** (`test_a_different_workspace_produces_a_different_identity`,
-Observation Engine). Every surviving mutation above is an injectivity failure.
+Observation Engine).
+
+Every surviving mutation above is an unasserted injectivity property of the **derivation function**.
+Per the correction, only three of them are also reachable defects in the **system**: the four
+unpinned namespaces, `observation_id`'s `provider`, and `buying_score_id`'s lost `sorted()`.
 
 ---
 
@@ -230,3 +247,200 @@ it is the one surviving mutation whose production consequence is data loss rathe
 
 **Neither blocks T133.** The Research Engine's own identity is already pinned and injectivity-tested;
 this is about the four modules built before it.
+
+---
+
+# Part II — the engineering plan
+
+**Added 2026-07-31**, converting the findings above into scheduled work. Written before T133; no
+repair applied in the same session.
+
+## 1 · The four questions, answered
+
+### Finding 1 — namespace mutations survive. Registry, or discovery tests?
+
+**The question contains a false alternative: a discovery test cannot exist without a registry.**
+Discovery finds the namespaces that *are* in the tree; to fail, it must compare them against a
+declared list of the ones that *should* be. The registry is what discovery discovers against.
+
+**So: one file holding both, and the discovery half is the valuable half.** Pinning without discovery
+protects exactly the modules someone remembered — which is how four of five came to be unprotected in
+the first place. Discovery makes forgetting a build failure, which is the whole design of
+`tenancy_policy.py`.
+
+**One objection worth answering.** Pinning a constant in a test duplicates it, and *truth has exactly
+one authoritative representation*. That principle is not violated here: the second copy exists **only
+to detect divergence** and asserts nothing else — the same shape as `tenancy_policy.py` restating
+table names that also exist in migrations, and as the prompt loader's recorded fingerprint. A
+characterisation test is the one legitimate duplicate.
+
+| | |
+|---|---|
+| Implementation change | ❌ None |
+| Stronger tests | ✅ Yes — one file, three tests |
+| Architectural document | ⚠️ One rule appended to the Knowledge Contract |
+| Roadmap task | ✅ Small, named |
+| Can wait until after M10 | ✅ **Yes** |
+
+### Finding 2 — should stability, idempotency and injectivity be a repository-wide requirement?
+
+**Yes, as a stated testing standard — and the three are genuinely distinct**, which is why naming all
+three is worth more than naming one:
+
+| Property | Question it answers | Failure mode if unasserted |
+|---|---|---|
+| **Stability** | Does the same input produce the same id **across processes and runs**? | An unordered set, a `dict`, or `hash()` in the canonical string — deterministic within a run, different after a restart. **`PYTHONHASHSEED` is the classic version of this** |
+| **Idempotency** | Does recomputation **insert nothing**? | Replay duplicates the table |
+| **Injectivity** | Does each declared input **independently change** the id? | Two different things silently become one |
+
+Currently: stability is implied by `uuid5` and never asserted · idempotency is tested in **two of five**
+modules · injectivity in **one place in the repository**.
+
+**With the correction above applied, the standard's justification changes and should be stated
+honestly.** Injectivity is a property of the *derivation function*, not always of the pipeline — for
+`business_event_id` and `signal_id` the entity is transitively determined, so the test asserts *"this
+input is deliberately part of the key"* rather than *"otherwise data collides"*. That is still worth
+asserting, because it converts accidental redundancy into recorded intent. It is simply not urgent.
+
+| | |
+|---|---|
+| Implementation change | ❌ None |
+| Stronger tests | ✅ Yes — five small per-module sets |
+| Architectural document | ✅ A testing standard, stated once |
+| Roadmap task | ✅ Yes |
+| Can wait until after M10 | ✅ **Yes** |
+
+### Finding 3 — is `provider` genuinely required for correctness?
+
+**Yes. Traced end to end through the code, not inferred — and it is the only finding here with a
+product-visible consequence.**
+
+1. `observation_id` keys on `workspace · entity · provider · attribute · kind · transition key`.
+   **Nothing else in that key encodes the provider** — the transition key is values and timestamps.
+2. Two providers reporting the same value change over the same period produce the **same** transition
+   key. Without `provider`, they collapse into **one** observation row.
+3. Detection rules run over **one provider's series at a time**, by contract:
+   *"The series is always a single provider's, so no rule can combine two providers' values into a
+   synthetic truth. Agreement between providers is counted afterwards."*
+4. `Detection.providers` is `{observation.provider for observation in evidence}`, and the use case
+   passes it straight to `BusinessEvent.corroborating_providers`.
+5. `is_corroborated` reads that set. **M9's `SupportBasis` derives from *"≥2 distinct corroborating
+   providers"*.**
+
+**So a collapsed observation does not corrupt a value — it deletes a corroborating provider.** Two
+providers independently agreeing would be reported to a customer as `LIMITED` support rather than
+`CORROBORATED`. That inverts M4's ratified contract, *agreement is evidence*, and it does so silently:
+every citation still resolves, every number is still right, and the conclusion is simply
+under-supported.
+
+**Should protecting it be a mandatory repository invariant?** **Yes — but as the specific property,
+not as a rule about identity fields.** The invariant worth stating is *"corroboration is never
+under-reported"*, asserted by deriving the same change from two providers and requiring two
+observations and two corroborating providers. A rule phrased as *"provider must appear in
+`observation_id`"* would protect today's implementation rather than the property, and would pass while
+step 3, 4 or 5 broke instead.
+
+**No test in the repository derives one attribute change from two providers.** That is why the
+mutation survives — the M9 lesson exactly: *a property a fixture cannot vary is a property the fixture
+cannot test.*
+
+| | |
+|---|---|
+| Implementation change | ❌ None — the code is correct |
+| Stronger tests | ✅ Yes — **one test, one module** |
+| Architectural document | ⚠️ Worth a line in `24-business-event-engine.md` |
+| Roadmap task | ✅ Yes, and the **only one I would not defer** |
+| Can wait until after M10 | ⚠️ **It can, but it should not.** It is roughly twenty lines and it guards shipped behaviour |
+
+### Finding 4 — would a shared `uuid5` helper improve correctness?
+
+**No. It would move the safe part and leave the dangerous part where it is.**
+
+What a helper could centralise is *canonical joining and sorting* — three lines, correct in all five
+implementations, and not the source of a single finding here. What it cannot centralise is **which
+inputs belong in the key**, which is the whole of the risk and is irreducibly domain knowledge: why
+`Signal` excludes its profile version, why `BuyingScore` includes three versions, why an observation
+may not key on claim ids. **A helper would make five modules import a shared derivation while every
+decision that could be wrong stayed exactly where it is.**
+
+It also breaks two stated rules. *Identity is owned by the owning module's `domain/`*
+([34](34-knowledge-contract.md), Rule 3) — a shared deriver relocates it to a substrate. And
+`signora_platform/` is frozen (§20a); *"a module finding the platform inconvenient is not a defect."*
+
+**The honest counter-argument, recorded:** five modules repeat a pipe-join and a `sorted()`, and one
+of them (`buying_score_id`) already survived losing its `sorted()`. That is real duplication. But the
+answer to *"the same mistake is possible in five places"* is **the shared standard proposed in Finding
+2 — a test every implementation must pass — not a shared implementation.** Sameness of *rule* does not
+require sameness of *code*, and this repository has made that call before: three modules each write
+their own repository rather than sharing a generic one.
+
+**Verdict: no shared helper. The registry (Finding 1) and the standard (Finding 2) address the same
+risk without relocating ownership.**
+
+## 2 · The plan
+
+### Immediate — before or alongside T133
+
+**Nothing is required.** The AI Research Engine's own identity is already pinned and
+injectivity-tested, T133 creates no new namespace, and none of the findings is a defect in shipped
+behaviour — they are unasserted properties of code that is correct.
+
+**One item recommended immediately after T133:** Finding 3's two-provider test. It is the only finding
+with a product-visible failure mode, it is one test in one module, and every milestone that ships
+before it makes the eventual regression harder to attribute.
+
+### After M10
+
+| Work | Size | Why it waits |
+|---|---|---|
+| Identity registry + discovery test (Finding 1) | ~1 file | No new namespace arrives until a sixth derived-identity module does, and none is planned before M11 |
+| Injectivity sets for the four earlier modules (Finding 2) | 4 small tests | Records intent; guards no reachable defect, per the correction |
+| Idempotency for the three modules lacking it | 3 small tests | Same |
+
+### Roadmap additions
+
+Two tasks, deliberately **not** a milestone. Both are repository maintenance, and neither changes
+architecture — no roadmap category applies ([§5c](../../IMPLEMENTATION_ROADMAP.md)).
+
+- **`T-ID1` — Corroboration is never under-reported.** One Observation Engine test deriving one
+  attribute change from two providers, asserting two observations and two corroborating providers.
+  *Recommended immediately after T133.*
+- **`T-ID2` — Deterministic identity registry and testing standard.** The registry file, the three
+  registry tests, and the stability/idempotency/injectivity sets for the four pre-M10 modules.
+  *After M10.*
+
+### Architectural documentation
+
+1. **[34-knowledge-contract.md](34-knowledge-contract.md) — one new rule**, alongside Rules 1–3, which
+   say *when* identity is content-derived but never what one is made of. Proposed wording:
+
+   > **RULE 24 — A content-derived identity is `uuid5` over a fixed, module-owned namespace and a
+   > canonical string of its declared inputs, with the workspace first and every multi-valued input
+   > sorted. The namespace is repository state: it may change only with a migration, and never
+   > silently.**
+
+   Consistent with that document's method — generalising what already operates five times, not
+   inventing a sixth thing.
+
+2. **[24-business-event-engine.md](24-business-event-engine.md)** — a line recording that
+   corroboration depends on per-provider observation identity, so the chain from
+   `observation_id` to `SupportBasis` is discoverable from either end.
+
+3. **This document** — already corrected above.
+
+### Repository-wide testing standards that should now exist
+
+One addition to **CLAUDE.md §11**, proposed for ratification rather than applied, since that file is
+the constitution:
+
+> **Every deterministic identity proves three properties: stability** (the same inputs produce the
+> same id across processes, so no unordered or hash-seeded value enters the canonical string),
+> **idempotency** (recomputation inserts nothing), and **injectivity** (each declared input
+> independently changes the id). **A namespace constant is pinned to its literal value by a test.**
+> These are asserted per module, never through a shared helper — identity belongs to the module that
+> owns the object.
+
+## 3 · Is any of this Category 1?
+
+**No.** No milestone moves, no dependency edge changes, no architecture changes. The identity
+functions are correct today; what is missing is assertion and a written rule. **T133 proceeds.**
