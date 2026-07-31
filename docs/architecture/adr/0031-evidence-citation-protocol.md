@@ -1,9 +1,11 @@
 # ADR-0031 — The renderer and the parser disagree about the citation protocol
 
-> Status: **PROPOSED — 2026-07-31.** Documented, deliberately **not implemented**.
+> Status: **PROPOSED — 2026-07-31.** Recorded at T128 during M9. **Amended 2026-07-31 after T137–T138**, and **recommended for ratification** — see the amendment at the end of this document. Still not implemented.
 > Deciders: Product Owner · Architecture Review Board
 > Supersedes: nothing. Amends: nothing.
 > Anchors: [28-ai-platform.md](../28-ai-platform.md) · [29-ai-reasoning-engine.md](../29-ai-reasoning-engine.md) (T128) · [ADR-0028](0028-model-runtime-by-environment.md) · [ADR-0030](0030-the-decision-package.md) · CLAUDE.md §10, §20a
+>
+> **Everything from here to *Consequences* is the record as it stood at T128, on the evidence available then. It is left unedited. The amendment supersedes its Decision and revises two of its option assessments.**
 
 ## Context
 
@@ -119,3 +121,143 @@ It was discovered inside M9, and the M9 boundary forbids changing the AI Platfor
 **The model comparison above should be re-run afterwards.** Three of the four models refused for formatting rather than reasoning, so the field of locally-usable models is very likely wider than the table suggests. Until then, `granite3.3:2b` is the **currently certified** evaluation model for `reasoning@1`, not the preferred one, and not a permanent pin.
 
 **Until this is resolved, a REFUSED verdict citing `MALFORMED_CITATION` should be read as suspect** and checked against this ADR before being recorded as a finding about a model.
+
+---
+
+# Amendment — 2026-07-31, after T137 and T138
+
+> The record above was written inside M9, from one prompt's failures. M10 has since authored two more prompts, attempted Option C twice, and measured the result. Three findings follow. The first two change how the options are assessed; the third changes the order the work must be done in.
+
+## Finding 1 — Option C has been exercised twice, and its record is one in two
+
+M10 wrote both of its prompts **with Option C already applied.** Neither was an experiment; the instruction was included because T128 had already identified the trap.
+
+[`research_planning@1`](../../../backend/modules/ai_research_engine/prompts/research_planning@1.md), rule 5:
+
+> **Cite the exact reference, without the square brackets.** … The brackets are display only, and a citation that includes them addresses nothing.
+
+[`research_synthesis@1`](../../../backend/modules/ai_research_engine/prompts/research_synthesis@1.md), rule 2:
+
+> **Every statement must cite the findings it rests on**, using the exact reference inside the square brackets, **without the brackets**. A finding is shown as `[research_finding:2f7c9a10-...]`; write `research_finding:2f7c9a10-...`.
+
+Both name the defect. Both give a worked example. Both were evaluated against **the same model, `llama3.1:8b`, through the same renderer, in the same milestone, days apart.**
+
+| Prompt | Option C applied | Result | Failure |
+|---|---|---|---|
+| `research_planning@1` | yes, rule 5 | **RELEASED**, 0 grounding failures, coverage 1.0 | — |
+| `research_synthesis@1` | yes, rule 2 | **REFUSED** ×3 consecutive runs | citation emitted as a **bare UUID** |
+
+**The synthesis failure is the inverse of the defect this ADR was written about.** The T128 evidence is models copying *more* than the citation — the bracket transcribed along with it. Here the model copied *less*: told to remove the brackets, it removed the brackets **and the `research_finding:` kind prefix**, leaving a bare UUID. `EvidenceRef.parse` finds no separator, and reports `MALFORMED_CITATION`. Grounding behaved correctly, as it did in every case above.
+
+Identical across three consecutive runs, and — the detail that matters most — **it happened on one of the two cases and not the other, from the same prompt, in the same run.** Not a model that cannot follow the instruction. A model that follows it inconsistently, within a single inference.
+
+### What this establishes, and what it does not
+
+It does not disprove Option C statistically; two prompts is two prompts. It establishes something more specific and more damaging:
+
+**Option C does not remove a failure mode. It trades one for another.** Before it was applied, every observed failure was *over-copying*. After it was applied, an *under-copying* failure appeared that had never been seen — on the only prompt in the repository whose kind prefix is long enough to read as a label rather than as part of an address. The instruction that says *"remove the brackets"* is an instruction to remove characters, and a model deciding how many to remove is a model that can decide wrongly in either direction.
+
+**The two prompts that pass do so for reasons nothing in the repository states.** `research_planning@1` passes with the workaround; `explanation_narration@1` and `reasoning@1` pass *without* it, on `granite3.3:2b`'s and `llama3.1:8b`'s bracket-stripping habits. Three of four prompts are held up by behaviour no instruction requests and no test constrains — and the fourth, the one where the workaround was applied most explicitly, is the one that failed.
+
+That is the disqualifying property. **A strategy every prompt author must apply forever, which works for reasons nobody can state and fails for reasons nobody predicted, is worse than no strategy** — because it also makes the problem look handled.
+
+## Finding 2 — nothing in the repository records the bytes the model was shown
+
+Two artifacts are recorded against every inference, and **neither covers the rendered prompt**:
+
+- **`PromptVersion.fingerprint`** — SHA-256 over `name`, `version` and **template text**. The template contains `{facts}`, not the facts.
+- **`EvidenceSet.digest`** — over the facts' `canonical_form()`, which is documented in that module as *"a stable text form, for hashing only. **Not for prompts**."*
+
+`render.py` is what joins them, and it is covered by neither. So:
+
+> **Two inferences carrying identical `prompt_fingerprint` and identical `evidence_digest` may have been shown different text.** All that is required is that `render.py` changed between them.
+
+This is a hidden input in the exact sense CLAUDE.md §2 forbids — *an input that influences behaviour without being part of the declared contract* — and it has been present since M8. It has three consequences that bear directly on this ADR:
+
+1. **A renderer change silently invalidates every release** while every recorded artifact continues to assert it. The loader catches prompt-text drift by fingerprint; the dataset catches its own drift by fingerprint; nothing catches this.
+2. **It is the reason the fix cannot be landed as a one-line change.** Correcting `_fact` without a mechanism to invalidate the measurements taken under the old rendering would leave the repository asserting three releases that no longer describe it — the failure mode CLAUDE.md §2 names last and treats as most damaging, because it is trusted.
+3. **It explains why this defect survived two milestones.** Nothing recorded the one thing that would have shown the renderer and the parser disagreeing.
+
+### The reproducibility contract, stated
+
+A prompt evaluation is a measurement of a **system**, and the system has four inputs: the prompt text · the rendered evidence · the model · the dataset. Three are bound to the measurement today. The fourth is not bound and, uniquely among the four, **its change is undetectable.**
+
+**The rendered form must therefore become part of the reproducibility contract.** Not because rendering is important, but because a measurement whose conditions can change without notice is not a measurement.
+
+## Finding 3 — the refusals this ADR rests on are not in the repository
+
+Found while gathering evidence for this amendment, and not previously recorded.
+
+`release.py` was written on the principle that failures are recorded too:
+
+> *"A manifest that recorded only passes would show a prompt with a clean history and no way to see it had been measured and found wanting — and the second engineer to evaluate it would repeat the work."*
+
+But `--record` is opt-in, the evaluation harness's recorder is `RunLog`, which is **in memory**, and no refusal has ever been written to a manifest. The five-model table in this document, and the three consecutive `research_synthesis@1` refusals, exist **only as prose in documents and commit messages.**
+
+`research_synthesis@1` therefore shows `"evaluations": []` — indistinguishable, to any tool, from a prompt nobody has ever measured. That is precisely the state `release.py`'s docstring says the design exists to prevent.
+
+**This changes the order of the work.** The whole value of the fix is a before/after comparison, and the "before" is currently anecdote. **The refusals must be recorded to their manifests before the renderer changes** — otherwise the repository loses the only evidence that the change was justified, and this ADR becomes unfalsifiable.
+
+## Revised assessment of the options
+
+| | Option | Assessment at T128 | **Revised, 2026-07-31** |
+|---|---|---|---|
+| **A** | Render the bare token | recommended | **Recommended, unchanged in substance and strengthened in argument.** It is the only option under which the citation requires no transformation. Both observed failure modes — over-copying and under-copying — are errors in *how much to transform*; an option that asks for zero transformation has no mechanism for either |
+| **B** | Tolerant parser | rejected on principle | **Rejected on evidence.** Stripping brackets recovers information that was *present and decorated*. Nothing recovers a kind that was **never emitted**. B would not have fixed the failure actually in front of us — see the analysis below |
+| **C** | State the form in the prompt | rejected as a burden on authors | **Rejected as measured.** No longer a prediction: applied twice, failed once, and the failure was a mode the workaround itself introduced |
+| **D** | Assert the round trip in a test | complement | **Required, and the gap is now precise.** `test_evidence.py` asserts `parse(ref.token) == ref` — the round trip over the *token*. Nothing asserts it over what `render` emits. **That gap is the defect, stated exactly** |
+| **E** | *(new)* Version the rendering, and bind releases to it | — | **Required.** Finding 2. Without it, A cannot be landed truthfully |
+
+### Why B remains insufficient, in detail
+
+Tolerance would have to operate at one of two places, and both fail against repository guarantees:
+
+**At the parser** — strip `[`, `]` and trailing prose. This handles T128's evidence and does nothing for T138's: `2f7c9a10-…` contains no kind, and no amount of lenience invents one.
+
+**At the resolver** — match a bare UUID against ids in the closed evidence set. This *would* have resolved the synthesis failure, so it deserves the honest answer rather than a dismissal. It is refused on three stated repository guarantees:
+
+- `EvidenceRef`'s own docstring gives the reason it is a pair: *"so two kinds sharing an identifier can never collide."* Resolution by id alone discards that property deliberately.
+- `grounding.py` states: *"It validates; it never repairs. … a validator that quietly fixed its input would make the failure rate unmeasurable, which is the one number this platform most needs about itself."*
+- It would make the citation protocol **two grammars again** — one written, one accepted — which is the defect, re-created one layer down.
+
+**No repository evidence supports tolerance preserving these guarantees, so the parser stays strict.** The fix is entirely on the producing side.
+
+## Decision
+
+> **Superseding the *"None yet"* recorded above.** That was correct in M9, where the AI Platform was outside the milestone's boundary. It is no longer correct, because M10 has now been blocked by it.
+
+**Adopt A + D + E**, as one change, in a milestone of its own:
+
+**A — the renderer emits the token undecorated**, with a delimiter that is not part of it. The string the model must produce becomes a string it can copy.
+
+**D — the round trip is asserted over the rendered output**, not over the token. A renderer that decorates a citation becomes a test failure.
+
+**E — the rendered form becomes a versioned protocol, and a release is bound to the version it was measured under.** An evaluation conducted under one rendering does not survive a change to the rendering, and `require_model` refuses rather than the repository quietly asserting a release that no longer describes it.
+
+Together these convert the citation protocol from a convention held in two places into **one owned representation with an executable check and a recorded identity** — *truth has exactly one authoritative representation, and hidden inputs are architecture defects.*
+
+### Where the protocol lives
+
+The defect was stated at T128 as *"two components share a protocol and neither owns it."* **The fix is to give it an owner, and the owner already exists.** `EvidenceRef.token` and `EvidenceRef.parse` — the writer and the reader of the citation grammar — are already neighbours in `domain/evidence.py`, which is why *they* have never drifted. What is unowned is the **display form**: the line layout that surrounds the token, invented in `application/render.py`, where the parser cannot see it.
+
+So the display form belongs beside `token` and `parse`, in the domain that owns the grammar, and `render.py` composes facts using it and contributes no formatting of its own. **`render.py` stops being a second author of the protocol and becomes its only caller.**
+
+## Consequences, revised
+
+**Three releases are invalidated** — `explanation_narration@1`, `reasoning@1`, `research_planning@1` — and none survives automatically. That is the release rule working, not collateral damage.
+
+**Prompt immutability is preserved.** Every `@1` stays on disk, unedited, with its evaluations intact: they were true under rendering version 1, and E is what makes that statement precise rather than merely believed. The corrections are `@2`s. **A record of what was true then is dated, not rewritten.**
+
+**The blast radius on the test suite is small.** Pipeline and smoke tests supply their own registries with scripted adapters and do not read the shipped manifests, so an invalidated release breaks no test and no demonstration. Only `make eval-*`, the manifests, and two tests that pin manifest contents are affected.
+
+**The five-model comparison should be re-run afterwards** — unchanged from T128, and now with a second prediction attached: if A is correct, the models that refused `reasoning@1` on formatting should pass `reasoning@2`. **If they do not, this ADR is wrong and should be recorded as wrong.**
+
+**The order is: record the refusals, then change the renderer.** Finding 3.
+
+## Recommendation
+
+**Promote this ADR from PROPOSED to ACCEPTED, and open M9.5 to implement it, before M10 resumes.**
+
+The evidence has changed category. At T128 this was a defect that narrowed the field of usable models — real, but survivable, and outside M9's boundary. It is now the thing preventing a finished milestone from closing, on a prompt that already implements the recommended workaround. Three of the four prompts in the repository are held up by an undeclared model habit; the fourth is refused.
+
+**This is not M10's work.** It changes the AI Platform and re-releases M8's and M9's prompts, and CLAUDE.md §20d forbids a milestone reaching outside what it owns to satisfy its own demonstration. Ratification belongs to the Product Owner and the Architecture Review Board; this document records the recommendation and stops there.
