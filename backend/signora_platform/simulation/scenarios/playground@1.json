@@ -1,5 +1,5 @@
 {
-  "_comment": "The Product Playground. Twelve accounts, twelve SHAPES - not twelve rows. Each is a story a salesperson recognises, and each exercises a different part of the pipeline and the interface: the textbook displacement, the hiring surge, the provider disagreement (two sources, two legal names - the account that exercises the disputed-name disclosure with real data), the acquisition, the rapid grower, the account whose evidence went stale, the false positive with loud intent and nothing beneath it, the silent account, the rebranding mid-cycle, the contested account with opposing readings both live, the slow burn, and the one that is cooling. This is the substrate for design review, AI evaluation and demonstration - one source of truth rather than three. Every company is fictional and every domain is `.example`; see the dataset's own note for why real names were rejected.",
+  "_comment": "The Product Playground. Twelve accounts, twelve SHAPES - not twelve rows. Each is a story a salesperson recognises, and each exercises a different part of the pipeline and the interface: the textbook displacement, the hiring surge, the provider disagreement (two sources, two legal names - the account that exercises the disputed-name disclosure with real data), the acquisition, the rapid grower, the account whose evidence went stale, the false positive with loud intent and nothing beneath it, the silent account, the rebranding mid-cycle, the contested account with opposing readings both live, the slow burn, and the one that is cooling. This is the substrate for design review, AI evaluation and demonstration - one source of truth rather than three. Every company is fictional and every domain is `.example`; see the dataset's own note for why real names were rejected. Corrected before first execution: the cooling account named a trend direction ('declining') the vocabulary does not have. The scenario had never run, so nothing was recorded against it - this is a fix to a file that never worked, not an edit to published history.",
   "dataset": "playground",
   "dataset_version": 1,
   "steps": [
@@ -383,7 +383,7 @@
         "intent_topics": [
           {
             "topic": "Contract Intelligence",
-            "direction": "declining",
+            "direction": "decaying",
             "weeks": 9,
             "peak": 41
           }

@@ -13,6 +13,7 @@ path moves an opportunity without a person.
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from typing import Any
 from uuid import UUID, uuid4
 
 import pytest
@@ -51,8 +52,18 @@ async def _tracked(
     factory: async_sessionmaker[AsyncSession],
     admin_factory: async_sessionmaker[AsyncSession],
     name: str,
+    *,
+    anchor: str = "acme-corp",
+    **scenario: Any,
 ) -> tuple[UUID, UUID, UUID, datetime]:
-    workspace_id, user_id, entity_id, moment = await _scored(factory, admin_factory, name)
+    """The whole pipeline, ending in qualified opportunities.
+
+    `**scenario` reaches the ingest unchanged, which is what lets the Playground
+    run *this* function rather than a parallel seeding path.
+    """
+    workspace_id, user_id, entity_id, moment = await _scored(
+        factory, admin_factory, name, anchor=anchor, **scenario
+    )
     # The scenario's evidence is thin, and Signora's shipped threshold
     # declines it — correctly. Rather than tune a product default to make a
     # demonstration pass, the workspace authors its own, which is the layer

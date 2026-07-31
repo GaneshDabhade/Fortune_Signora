@@ -182,6 +182,17 @@ A stable demo dataset behind `make demo` is the right idea: the golden set has *
 - **Every prompt evaluation** gains variety; *"two cases, one shape"* has been the standing caveat on every release the repository holds.
 - **`fabrikam-industrial` carries two legal names from two providers**, so the disputed-name disclosure is exercised by real pipeline output rather than a component test.
 
-### What is not done
+### `make demo` — built, and it runs the real product
 
-**`make demo` does not exist yet.** The scenario and cast are built, loadable and tested; wiring them through ingestion into a seeded workspace behind one command is the next step. The dataset is the hard half and the command is the useful half — shipping the first without the second is honest progress, not a finished feature.
+The Playground is now seeded by the **same function the pipeline suite runs**, over `playground@1` instead of `baseline@1`. Provider simulation → ingestion → normalization → knowledge graph → observations → business events → signals → buying scores → opportunities. **No branch anywhere knows it is a playground**; the only difference is which scenario file is named.
+
+Reaching that took four widenings, each with defaults that left every existing test untouched — the suite passing at 1901 unchanged is the proof. `_adapter` gained a scenario, `_ingest_every_provider` gained subjects, `_scored`/`_tracked` forward both, and `_acme` gained the anchor whose evidence decides the moment a scenario is scored at. **Widening rather than redesigning**, exactly as the execution principles require.
+
+### The first thing the Playground told us
+
+**Twelve accounts in; four qualified.** The other eight did not meet the qualification threshold — and that is the product working, not a seeding bug. The silent account has one employee count and nothing else. The false positive has loud intent and no corroboration. The stale one's evidence expired. **A playground that produced twelve qualified opportunities would have been lying**, and would have validated a list nobody will ever see.
+
+**It also means the attention list still cannot be judged at scale.** Four rows is better evidence than two identical ones, and it is not twelve. Whether the list needs grouping (D6) and whether the row scans in a column (D10) remain open — the honest position is that the Playground has moved them from *unanswerable* to *partially answerable*.
+
+**D14 — the eight unqualified accounts are invisible, and that may be wrong.** A seller whose evidence is thin on eight accounts currently sees nothing about them. There is a real product question here: is *"we are watching these and they have not met your bar"* worth a surface? It is not a bug, it is a gap in the story the product tells, and it belongs to a milestone that owns qualification rather than to this one.
+*Trigger:* a design partner asking where an account they expected went.

@@ -13,6 +13,7 @@ values, and it does not store an attribute anywhere.
 from __future__ import annotations
 
 from datetime import timedelta
+from typing import Final
 from uuid import UUID, uuid4
 
 import pytest
@@ -71,12 +72,27 @@ PROVIDERS = (
 )
 
 
+#: The scenario every pipeline test runs, unless it says otherwise.
+#:
+#: **A default, not a constant.** The Playground exercises the *same* path with
+#: a different scenario file — one product, one pipeline, one ingestion route.
+#: An `if playground` branch anywhere below would mean the thing being validated
+#: was no longer the thing that ships.
+DEFAULT_SCENARIO: Final = ("baseline", 1)
+DEFAULT_SUBJECTS: Final = ("acme-corp",)
+
+
 def _adapter(
-    provider: ProviderName, generator: object, capability: ProviderCapability
+    provider: ProviderName,
+    generator: object,
+    capability: ProviderCapability,
+    *,
+    scenario: tuple[str, int] = DEFAULT_SCENARIO,
 ) -> SimulatedProviderAdapter:
+    name, version = scenario
     timeline = build_timeline(
-        load_scenario("baseline", 1),
-        load("baseline", 1),
+        load_scenario(name, version),
+        load(name, version),
         VirtualClock(mode=ClockMode.INSTANT),
         seed=1,
         providers=[provider.value],
@@ -100,22 +116,36 @@ async def _workspace(factory: async_sessionmaker[AsyncSession], name: str) -> tu
 
 
 async def _ingest_every_provider(
-    factory: async_sessionmaker[AsyncSession], workspace_id: UUID, user_id: UUID
+    factory: async_sessionmaker[AsyncSession],
+    workspace_id: UUID,
+    user_id: UUID,
+    *,
+    scenario: tuple[str, int] = DEFAULT_SCENARIO,
+    subjects: tuple[str, ...] = DEFAULT_SUBJECTS,
 ) -> None:
+    """Ingest a scenario, one provider sync per (provider, subject).
+
+    **Widened rather than redesigned.** The defaults reproduce the single-subject
+    baseline ingest every existing test relies on, so this is a pure extension —
+    the suite passing unchanged is the proof. What it unlocks is the Playground:
+    twelve subjects through *this* code path rather than a second one.
+    """
     async with tenant_scoped_session(
         factory, workspace_id=workspace_id, user_id=user_id
     ) as session:
         for provider, generator, capability in PROVIDERS:
-            await build_run_sync(
-                session,
-                adapter=_adapter(provider, generator, capability),
-                publisher=PostgresOutboxEventPublisher(),
-            ).execute(
-                RunProviderSyncInput(
-                    workspace_id=workspace_id, capability=capability, subject="acme-corp"
-                ),
-                correlation_id=uuid4(),
-            )
+            adapter = _adapter(provider, generator, capability, scenario=scenario)
+            for subject in subjects:
+                await build_run_sync(
+                    session,
+                    adapter=adapter,
+                    publisher=PostgresOutboxEventPublisher(),
+                ).execute(
+                    RunProviderSyncInput(
+                        workspace_id=workspace_id, capability=capability, subject=subject
+                    ),
+                    correlation_id=uuid4(),
+                )
 
 
 async def _run_pipeline(
@@ -124,9 +154,13 @@ async def _run_pipeline(
     name: str,
     *,
     shuffled_by: int | None = None,
+    scenario: tuple[str, int] = DEFAULT_SCENARIO,
+    subjects: tuple[str, ...] = DEFAULT_SUBJECTS,
 ) -> tuple[UUID, UUID]:
     workspace_id, user_id = await _workspace(factory, name)
-    await _ingest_every_provider(factory, workspace_id, user_id)
+    await _ingest_every_provider(
+        factory, workspace_id, user_id, scenario=scenario, subjects=subjects
+    )
     await normalize_all(factory, workspace_id, user_id)
     await resolve_all(factory, admin_factory, workspace_id, user_id, shuffled_by=shuffled_by)
     return workspace_id, user_id

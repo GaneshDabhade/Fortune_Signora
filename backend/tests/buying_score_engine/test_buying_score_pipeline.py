@@ -14,6 +14,7 @@ the raw provider payload that started it.
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+from typing import Any
 from uuid import UUID
 
 import pytest
@@ -43,8 +44,15 @@ async def _through_signals(
     factory: async_sessionmaker[AsyncSession],
     admin_factory: async_sessionmaker[AsyncSession],
     name: str,
+    **scenario: Any,
 ) -> tuple[UUID, UUID]:
-    workspace_id, user_id = await _run_pipeline(factory, admin_factory, name)
+    """Ingest → normalize → resolve → observe → detect → signal.
+
+    `**scenario` forwards `scenario=` and `subjects=` to the ingest, defaulting
+    to the baseline single subject. **One pipeline**: the Playground differs by
+    which scenario file it names and by nothing else.
+    """
+    workspace_id, user_id = await _run_pipeline(factory, admin_factory, name, **scenario)
     await observe_all(factory, admin_factory, workspace_id, user_id)
     await detect_all(factory, admin_factory, workspace_id, user_id)
     await signal_all(factory, admin_factory, workspace_id, user_id)
@@ -52,7 +60,11 @@ async def _through_signals(
 
 
 async def _while_signals_are_live(
-    factory: async_sessionmaker[AsyncSession], workspace_id: UUID, user_id: UUID
+    factory: async_sessionmaker[AsyncSession],
+    workspace_id: UUID,
+    user_id: UUID,
+    *,
+    anchor: str = "acme-corp",
 ) -> tuple[UUID, datetime]:
     """A moment at which the scenario's hypotheses are still current.
 
@@ -65,7 +77,7 @@ async def _while_signals_are_live(
     async with tenant_scoped_session(
         factory, workspace_id=workspace_id, user_id=user_id
     ) as session:
-        entity_id = await _acme(session, workspace_id)
+        entity_id = await _acme(session, workspace_id, subject=anchor)
         held = await signals(session, workspace_id).signals(
             workspace_id, entity_id, live_only=False
         )
@@ -76,9 +88,14 @@ async def _scored(
     factory: async_sessionmaker[AsyncSession],
     admin_factory: async_sessionmaker[AsyncSession],
     name: str,
+    *,
+    anchor: str = "acme-corp",
+    **scenario: Any,
 ) -> tuple[UUID, UUID, UUID, datetime]:
-    workspace_id, user_id = await _through_signals(factory, admin_factory, name)
-    entity_id, moment = await _while_signals_are_live(factory, workspace_id, user_id)
+    workspace_id, user_id = await _through_signals(factory, admin_factory, name, **scenario)
+    entity_id, moment = await _while_signals_are_live(
+        factory, workspace_id, user_id, anchor=anchor
+    )
     await score_all(factory, admin_factory, workspace_id, user_id, moment=moment)
     return workspace_id, user_id, entity_id, moment
 

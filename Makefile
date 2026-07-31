@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: smoke smoke-keep dr up down test certify eval eval-reasoning eval-research
+.PHONY: smoke smoke-keep dr up down test certify demo demo-seed eval eval-reasoning eval-research
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
 # The executable bit is filesystem state, not repository state, and it does
@@ -48,6 +48,27 @@ down:
 ## Backend suite. Truncates its target database — hence the explicit opt-in.
 test:
 	@cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run pytest --cov
+
+## The Product Playground — twelve accounts through the real pipeline.
+##
+## **There is one product.** This runs the same pipeline the suite runs, over
+## `playground@1` instead of `baseline@1`. No branch anywhere knows it is a
+## playground; the only difference is which scenario file is named.
+##
+## `demo` brings the stack up and seeds. `demo-seed` re-seeds an already-running
+## stack — which is also how you join the workspace after signing in, since
+## Better Auth owns users and no credential ships in this repository.
+demo:
+	@docker compose up -d
+	@cd backend && uv run alembic upgrade head
+	@$(MAKE) demo-seed
+	@echo ""
+	@echo "  backend   cd backend && uv run uvicorn apps.api.main:app --reload --port 8000"
+	@echo "  frontend  cd frontend && npm run dev"
+	@echo "  then      http://localhost:3000/opportunities"
+
+demo-seed:
+	@cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.playground.seed
 
 ## Release Certification (ADR-0032). Runs every gate, then records what happened
 ## as durable repository evidence in `certification/manifest.json`.

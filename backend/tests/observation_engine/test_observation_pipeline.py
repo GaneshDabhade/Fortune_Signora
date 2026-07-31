@@ -46,13 +46,24 @@ async def _observe_pipeline(
     return workspace_id, user_id
 
 
-async def _acme(session: AsyncSession, workspace_id: UUID) -> UUID:
+async def _acme(
+    session: AsyncSession, workspace_id: UUID, *, subject: str = "acme-corp"
+) -> UUID:
+    """The entity one provider identity resolved to.
+
+    Selected by Apollo's own identifier rather than "the only binding": a
+    scenario carries several companies, and a helper assuming one would fail
+    for a reason unrelated to the property under test.
+
+    `subject` defaults to the baseline's account so every existing caller is
+    unchanged; the Playground names its own anchor.
+    """
     binding = (
         await session.execute(
             select(IdentityBindingModel).where(
                 IdentityBindingModel.workspace_id == workspace_id,
                 IdentityBindingModel.provider == ProviderName.APOLLO.value,
-                IdentityBindingModel.provider_external_id == "acme-corp",
+                IdentityBindingModel.provider_external_id == subject,
                 IdentityBindingModel.superseded_by.is_(None),
             )
         )
