@@ -45,6 +45,19 @@
           "coverage": 0.3333333333333333,
           "rendering_protocol_version": 1,
           "retries": 0
+        },
+        {
+          "model": "granite3.3:2b",
+          "dataset": "explanation_narration",
+          "dataset_version": 1,
+          "rubric_version": 1,
+          "evaluated_on": "2026-07-31",
+          "sample_size": 2,
+          "grounding_failures": 2,
+          "schema_failures": 0,
+          "coverage": 0.0,
+          "rendering_protocol_version": 2,
+          "retries": 0
         }
       ]
     }

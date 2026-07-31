@@ -80,28 +80,30 @@ class TestTheShippedRegistryIsIntact:
         actual = {v.reference: v.fingerprint for v in load_prompt_registry().versions}
         assert actual == PINNED_FINGERPRINTS
 
-    def test_the_narration_prompt_awaits_re_evaluation_under_protocol_2(self) -> None:
-        """**Rewritten twice, and the sequence is the record.**
+    def test_the_narration_prompt_is_released_again_under_protocol_2(self) -> None:
+        """**Rewritten three times, and the sequence is the whole record.**
 
         It first asserted the prompt was *not* usable — true while it had
-        passed nothing, and false the moment T120's harness measured it. It
-        then asserted a release for `llama3.1:8b` — true under rendering
-        protocol 1, and false the moment M9.5 Step C moved to protocol 2.
+        passed nothing, false the moment T120 measured it. It then asserted a
+        release — true under rendering protocol 1, false the moment M9.5 Step C
+        moved to protocol 2. It now asserts a release again, because Step F
+        re-measured it and it passed.
 
-        Nothing was withdrawn by hand on either occasion. The measurement is
-        untouched and still says it passed; it describes text a model would no
-        longer be shown, so it no longer earns anything. **That is the release
-        rule working, exactly as it worked the first time.**
+        **Nothing was ever withdrawn or restored by hand.** Both protocol-1 and
+        protocol-2 measurements sit in the manifest; the first records what was
+        true then and earns nothing now, and the second is what makes the prompt
+        usable today. Three rewrites, one unchanged rule.
         """
         prompt = load_prompt_registry().get("explanation_narration", 1)
 
-        (earned,) = [e for e in prompt.evaluations if e.passed]
-        assert earned.model == "llama3.1:8b"
-        assert earned.rendering_protocol_version == 1
+        under = {e.rendering_protocol_version: e for e in prompt.evaluations if e.passed}
+        assert under[1].model == "llama3.1:8b", "the original measurement was not kept"
+        assert under[2].model == "llama3.1:8b"
+        assert not under[1].earns_release, "a protocol-1 measurement must not still count"
+        assert under[2].earns_release
 
-        assert not prompt.is_released
-        with pytest.raises(PromptNotReleasableError, match="protocol"):
-            prompt.require_model("llama3.1:8b")
+        assert prompt.is_released
+        prompt.require_model("llama3.1:8b")
 
         for unearned in ("claude-sonnet-4-5", "gpt-4o", "llama3.1:70b"):
             with pytest.raises(PromptNotReleasableError):
@@ -110,7 +112,7 @@ class TestTheShippedRegistryIsIntact:
     def test_its_release_names_the_dataset_and_rubric_behind_it(self) -> None:
         """A release nobody can trace to a measurement is a declaration."""
         prompt = load_prompt_registry().get("explanation_narration", 1)
-        (evaluation,) = [e for e in prompt.evaluations if e.passed]
+        (evaluation,) = [e for e in prompt.evaluations if e.earns_release]
 
         assert evaluation.dataset == "explanation_narration"
         assert evaluation.dataset_version == 1

@@ -308,7 +308,11 @@ class TestTheProtocolBumpWithdrewEveryStaleRelease:
     @pytest.mark.parametrize(
         ("directory", "name", "model"),
         [
-            ("modules/ai_platform/prompts", "explanation_narration", "llama3.1:8b"),
+            # `explanation_narration@1` is deliberately absent: M9.5 Step F
+            # re-measured it under protocol 2 and it earned a release again, so
+            # it is no longer an example of a withdrawn one. Its full sequence —
+            # unreleased, released, withdrawn, released — is asserted in
+            # `test_prompts.py`, which is where that story belongs.
             ("modules/ai_reasoning_engine/prompts", "reasoning", "granite3.3:2b"),
             ("modules/ai_research_engine/prompts", "research_planning", "llama3.1:8b"),
         ],

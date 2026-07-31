@@ -1,7 +1,7 @@
 # Signora — Project Status
 
 > **The canonical entry point for this repository.** If you read one document, read this one.
-> **Last verified against the repository: 2026-07-31**, at `HEAD` `ba1c0a5`. Every figure below was taken from a run, a gate, or `git` — not carried forward from a plan.
+> **Last verified against the repository: 2026-07-31**, at `HEAD` `d954c93`. Every figure below is **cited from [`certification/manifest.json`](certification/manifest.json)** rather than transcribed — written by `make certify`, never by hand (ADR-0032).
 >
 > This is an **executive dashboard**, not a progress log. It answers: *where are we · what was completed · what changed architecturally · what is deferred · what's next · are we on track.* Dated history lives in the appendices and is never rewritten to match the present.
 
@@ -13,18 +13,21 @@
 
 | | |
 |---|---|
-| **Current phase** | **Product Development** — nine pipeline stages built, through the AI Reasoning Engine |
-| **Last completed milestone** | **M9 — AI Reasoning Engine**, closed 2026-07-31 |
-| **Current milestone** | **M10 — AI Research Engine** · **Internal Research** *(ruled 2026-07-31 — see §10)* |
-| **Latest commit** | `ba1c0a5` — *M10 T137 — the first model call, and a release earned…* |
+| **Current phase** | **Product implementation** — the pipeline is built; the surface is being exposed |
+| **Last completed milestone** | **M10 — AI Research Engine**, closed 2026-07-31 |
+| **Current milestone** | **M12.1 — the account attention list** *(M12 brought forward ahead of M11 and M7 — see §10)* |
+| **Latest commit** | `d954c93` — *M12.1 Step 5 — the first screen a customer can open* |
+| **Latest certification** | [`d954c930`](certification/reports/d954c930319a.md) — **CERTIFIED**, 2026-07-31 |
 | **Branch** | `main`, tree clean, pushed |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
-| **Overall completion** | **~57%** by engineering effort (~178 of ~261–339 ew) |
+| **Overall completion** | **~60%** by engineering effort (~187 of ~261–339 ew) — M10 (12–16 ew) closed, M9.5 (~3 ew) inserted and **not** closed, M12.1 in progress |
 | **Projected to GA** | ~1.3–1.9 years at 3 engineers · ~2.0–2.8 at 2 · ~3.9–5.8 at 1 (80% capacity) |
 
-**What works end to end today:** a simulated provider payload is ingested, normalised into claims, resolved into entities, diffed into observations, detected as business events, interpreted as workspace-specific signals, aggregated into a buying score, qualified into an opportunity a human commits to, narrated as a grounded explanation, and reasoned into a **Decision Package** a customer can disagree with — stored immutably, announced on the outbox, with complete provenance.
+**What works end to end today:** a simulated provider payload is ingested, normalised into claims, resolved into entities, diffed into observations, detected as business events, interpreted as workspace-specific signals, aggregated into a buying score, qualified into an opportunity a human commits to, narrated as a grounded explanation, reasoned into a **Decision Package**, and **researched into deterministic findings with a written brief** — all stored immutably, announced on the outbox, with complete provenance.
 
-**What does not exist yet:** any user-visible surface for it. The pipeline runs **nine stages ahead of the UI** (M12). See §10.
+**What a customer can now do:** sign in, choose a workspace, and open **one business screen** — the attention list, which answers *"which accounts should I work on today"* from real pipeline output. That is the first customer-visible surface in the repository's history, and it is one screen against ten pipeline stages.
+
+**🔴 What is currently broken in production, and must not be hidden:** **`reasoning@1` has no released model.** M9.5 changed the rendering protocol, which withdrew every protocol-1 release by derivation; `explanation_narration@1` re-earned its release, and `reasoning@1` did not — `granite3.3:2b` refuses under protocol 2 and `llama3.1:8b` remains UNMEASURABLE on this hardware. **The Decision Package stage would refuse at runtime.** Tests and smoke pass because they supply registry doubles. See §7.
 
 ---
 
@@ -55,14 +58,14 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | 2 | M11 | Recommendation Engine | ⏳ Queued | — |
 | 3 | M7 | Timeline | ⏳ Queued | — |
 | 4 | M12 | Revenue Intelligence Platform + business UI | ⏳ Queued | — |
-| 5 | M13 | Integrations — CRM, comms, calendar | ⏳ Queued | — |
-| 6 | M14a | Notifications | ⏳ Queued | — |
-| 7 | M14b | Billing, analytics, feature flags | ⏳ Queued | — |
-| 8 | M14.5 | Cloud Infrastructure *(deferred from M1.3B)* | ⏳ Queued | — |
-| 9 | M15 | GA readiness — load, SOC 2, PII, spend governance | ⏳ Queued | — |
+| 7 | M13 | Integrations — CRM, comms, calendar | ⏳ Queued | — |
+| 8 | M14a | Notifications | ⏳ Queued | — |
+| 9 | M14b | Billing, analytics, feature flags | ⏳ Queued | — |
+| 10 | M14.5 | Cloud Infrastructure *(deferred from M1.3B)* | ⏳ Queued | — |
+| 11 | M15 | GA readiness — load, SOC 2, PII, spend governance | ⏳ Queued | — |
 | — | 🎯 | **General Availability** | | |
 
-**Two foundations are frozen** and consumed rather than modified: `signora_platform/` (§20a) and the frontend foundation (§20c). **`ai_platform/` freezes after M10** — deliberately not after M9, because a port that has only served a single-call workload has never been asked for tool use or resumability ([28-ai-platform.md](docs/architecture/28-ai-platform.md), Condition 2).
+**Two foundations are frozen** and consumed rather than modified: `signora_platform/` (§20a) and the frontend foundation (§20c). **`ai_platform/` is frozen as of M10's close (2026-07-31)** — deliberately not after M9, because a port that had only served a single-call workload had never been asked for tool use or resumability ([28-ai-platform.md](docs/architecture/28-ai-platform.md), Condition 2).
 
 ---
 
@@ -82,7 +85,7 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | T129 | Migration `0017` — `ai_reasoning`, forced RLS, no `UPDATE` grant |
 | T130 | Model · repository · context adapter · composition root · event · smoke stage 14j |
 
-### 🔵 Current — M10, AI Research Engine · **Internal Research** *(ruled 2026-07-31)*
+### ✅ M10 — complete, T131–T138 · **Internal Research** *(ruled 2026-07-31)*
 
 | Task | Delivered |
 |---|---|
@@ -95,12 +98,34 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | T137 | `research_planning@1` — prompt, M10's own golden dataset, evaluation entry point, and **release EARNED** on `llama3.1:8b` after eight consecutive passing runs |
 | T138 | The lifecycle closed — synthesis, persistence, `ai_research.completed`, composition root, smoke stage 14k. **`research_synthesis@1` REFUSED**, and R-09 answered by measurement |
 
+**`research_synthesis@1`'s refusal is what forced M9.5.** It was the third prompt blocked by the citation protocol defect, and the milestone stopped rather than tuning around it.
+
 **The scope ruling landed before T132** and narrowed the milestone materially: research explores, compares and synthesises knowledge Signora already owns, and reaches no external source. See [33-ai-research-engine-scope.md](docs/architecture/33-ai-research-engine-scope.md) for the analysis and the ruling it records.
+
+### 🟠 M9.5 — Evidence Citation Protocol *(ADR-0031, unplanned, **not closed**)*
+
+| Step | Delivered |
+|---|---|
+| A | Three refusals recorded — the ADR's evidence base existed only as prose until this step |
+| B | The **Prompt Rendering Protocol** made a first-class concept; every evaluation records it, every release is bound to it |
+| C | Protocol **2** — the citation presented as a copyable unit; three releases withdrew themselves by derivation |
+| D | `research_planning@2` and `research_synthesis@2` — the workaround deleted, both **RELEASED** |
+| **F** | 🟠 **Incomplete.** `explanation_narration@1` re-released; **`reasoning@1` refused on every available model** |
+
+### ✅ M12.1 — in progress
+
+| Step | Delivered |
+|---|---|
+| 1–2 | `attention_list` — the first workspace-wide read path; plural buying-score read; identity-keyed cursor |
+| 3 | `GET /workspaces/{id}/accounts` — router, schemas, authorization, 20 full-stack tests |
+| 5 | `/opportunities` — the first business screen, composed from the frozen design system |
+| 6 | ⏳ Performance review — not yet measured |
 
 ### ⏳ Next tasks
 
 | Task | Scope |
 |---|---|
+| M12.2 | Entity names first, then the account brief — see §10 |
 
 **Deterministic-first ordering, unchanged from M8 and M9:** storage before retrieval, retrieval before orchestration, generation and evaluation last. **Embeddings, pgvector, external retrieval and provider re-query are deferred**, each with a stated trigger.
 
@@ -114,19 +139,21 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`94082899`](certification/reports/94082899f8ea.md) · 2026-07-31 · CERTIFIED**
+**Latest certification — [`d954c930`](certification/reports/d954c930319a.md) · 2026-07-31 · CERTIFIED**
 
 | Gate | Recorded |
 |---|---|
-| **pytest** | 1825 passed |
-| **coverage** | 95.86% *(floor 95%)* |
+| **pytest** | 1861 passed |
+| **coverage** | 95.80% *(floor 95%)* |
 | **Security Invariants** | 321, each proven to fail when its guarantee is removed |
 | **import-linter** | 29 kept, 0 broken |
 | **MyPy** | strict, clean over 455 files |
-| **`make smoke`** | 24 stages in 104s, fresh images, clean teardown |
+| **`make smoke`** | 24 stages in 151s, fresh images, clean teardown |
 | **Scenario — `baseline@1` research lifecycle** | 149 assertions |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0018`** · scenario set `e2bfe02e` · `research_planning@2` and `research_synthesis@2` released for `llama3.1:8b`.
+
+> **This certification predates the M9.5 Step F measurements.** Re-running `make certify` now would record the same gates and the same verdict — certification does not read prompt *health*, only the releases the pipeline requests, and M10's two are current. That `reasoning@1` has no release is a finding the certification record does not and should not carry; it is stated in §1 and §7 instead. **A certification is evidence that the gates passed, never that the product is correct.**
 
 **A certification expires by derivation, not by decision.** Change the rendering protocol, re-release a prompt, add a migration or edit a scenario, and the recorded run stops describing the repository — `is_certified` reads false and the report says *awaiting re-certification*. Nothing is edited, and nothing can be marked certified by hand: `satisfied` and `is_certified` are derived, exactly as `passed` and `earns_release` are for prompts.
 
@@ -147,31 +174,20 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 
 ## 5 · Released AI prompts
 
-A prompt is usable **exactly where a measurement says it is** — per `(model, dataset)`, never in general. Release is *derived* from the recorded evaluation, never declared.
+A prompt is usable **exactly where a measurement says it is** — per `(model, dataset)`, and since M9.5 per **rendering protocol** too. Release is *derived* from the recorded evaluation, never declared.
 
-| Prompt | v | Owner | Certified model | Dataset | Rubric | Evaluated | n | Coverage | Grounding / schema failures | State |
-|---|---|---|---|---|---|---|---|---|---|---|
-| `explanation_narration` | 1 | AI Platform | `llama3.1:8b` | `explanation_narration@1` | v1 | 2026-07-30 | 2 | 1.000 | 0 / 0 | ✅ **RELEASED** |
-| `reasoning` | 1 | AI Reasoning Engine | `granite3.3:2b` | `explanation_narration@1` | v1 | 2026-07-31 | 2 | 0.833 | 0 / 0 | ✅ **RELEASED** |
-| `research_planning` | 1 | AI Research Engine | `llama3.1:8b` | `research_planning@1` | v1 | 2026-07-31 | 2 | 1.000 | 0 / 0 | ✅ **RELEASED** |
-| `research_synthesis` | 1 | AI Research Engine | *none* | `research_synthesis@1` | v1 | 2026-07-31 | 2 | 0.500 | **1** / 0 | ⛔ **REFUSED** |
+| Prompt | Model | Protocol | Grounding / schema failures | Coverage | State |
+|---|---|---|---|---|---|
+| `explanation_narration@1` | `llama3.1:8b` | **2** | 0 / 0 | 1.00 | ✅ **Released** |
+| `research_planning@2` | `llama3.1:8b` | **2** | 0 / 0 | 1.00 | ✅ **Released** |
+| `research_synthesis@2` | `llama3.1:8b` | **2** | 0 / 0 | 1.00 | ✅ **Released** |
+| `reasoning@1` | `granite3.3:2b` | 2 | **2** / 0 | 0.00 | 🔴 **REFUSED** |
+| `reasoning@1` | `llama3.1:8b` | 2 | — | — | ⚪ **UNMEASURABLE** — times out on this hardware |
+| `research_planning@1` · `research_synthesis@1` | — | 1 | — | — | ⚫ Superseded by `@2`; measurements retained |
 
-**Three evaluation states, and they are distinct:** **READY** (earned release) · **REFUSED** (executed correctly, failed the gate — *evidence, not failure*) · **UNMEASURABLE** (could not execute faithfully, so no verdict was produced at all).
+**Every refusal above is in a manifest**, not only in prose — which is M9.5 Step A's whole purpose and what makes this table checkable.
 
-**`granite3.3:2b` is *currently certified*, not permanently preferred.** It was selected because it is the only model tested that stays entirely resident in 4 GiB of VRAM. Three of the four that did not pass failed on **citation form rather than reasoning** — see [ADR-0031](docs/architecture/adr/0031-evidence-citation-protocol.md), §7. The comparison should be re-run once that is corrected.
-
-```bash
-make eval                                                # explanation_narration@1
-SIGNORA_OLLAMA_MODEL=granite3.3:2b make eval-reasoning   # reasoning@1
-SIGNORA_OLLAMA_MODEL=llama3.1:8b   make eval-research     # research_planning@1
-SIGNORA_OLLAMA_MODEL=llama3.1:8b   make eval-research ARGS="--prompt research_synthesis"
-```
-
-**`research_synthesis@1` is REFUSED, and stays unreleased.** One grounding failure on one of two cases, **identical in three consecutive runs**: the model cited a bare UUID with the `research_finding:` prefix stripped. Not tuned around — the prompt, the schema, the dataset and the rubric are unchanged, and the manifest records no evaluation. **This is ADR-0031's family**, and now its clearest instance: the same prompt, the same model and the same instruction produce a correct citation on one case and a stripped one on the other.
-
-**F-1 is now live rather than anticipated.** Three released prompts want two different local models — narration and planning `llama3.1:8b`, reasoning `granite3.3:2b` — and the registry holds one. The three commands above differ only in an environment variable, and **no single process configuration serves all three request paths.** Discovered concretely at T137, when measuring `granite3.3:2b` against the planning prompt required a separate process.
-
-**`granite3.3:2b` was measured against `research_planning@1` and REFUSED**, reproducibly: 2 schema failures in each of three runs, coverage 0.000, 7.2 s per call. That is a **capability finding, not a defect** — the plan schema nests a list of steps each holding a citation-bearing object, and a 2 B model did not hold it. Recorded because a refusal is evidence: it is why the planner's certified model is not the reasoner's.
+**🔴 `reasoning@1` is the open blocker.** M9's Decision Package cannot be produced in production until it earns a release. Nothing has been tuned to make it pass: not the prompt, the delimiter, the schema, the timeout or the rubric. See the correction appended to [ADR-0031](docs/architecture/adr/0031-evidence-citation-protocol.md).
 
 ---
 
@@ -204,8 +220,8 @@ Only open items. Closed findings live in the milestone records (Appendix A) and 
 
 | ID | Finding | Severity | Owner milestone |
 |---|---|---|---|
-| **[ADR-0031](docs/architecture/adr/0031-evidence-citation-protocol.md)** | **The renderer and parser disagree about the citation protocol.** `render.py` emits `[token]`; `EvidenceRef.parse` accepts only `token`; the prompt says *"cite by their exact reference strings"*. Three of five models were REFUSED for **obeying literally**, across two independent model families. Passing since M8 on one model's bracket-stripping habit. **T138 produced its clearest instance yet**: `research_synthesis@1` was REFUSED because the model stripped the `research_finding:` prefix on one case and not the other — same prompt, same model, same run. **PROPOSED, deliberately unimplemented** — an M8 defect whose fix invalidates every released prompt, now three | 🔴 **High** | M8 / M9.5 |
-| **F-1** | **One `ollama_model` setting, now *three* certified prompts.** Narration and planning are certified for `llama3.1:8b`, reasoning for `granite3.3:2b`, and the registry holds one. **No single process configuration serves all three request paths.** No longer anticipated: at T137 it blocked a *measurement*, and the three evaluation commands now differ by an environment variable | 🔴 **High** *(was Medium)* | M10 |
+| **[ADR-0031](docs/architecture/adr/0031-evidence-citation-protocol.md)** | **Protocol 2 shipped, and did not remove over-copying.** The renderer and parser no longer disagree — the citation is presented exactly as `EvidenceRef.parse` accepts it, and no prompt instructs a transformation. But `granite3.3:2b` now copies the token **plus the em dash plus the summary**: protocol 1 *closed* the citation with a bracket, protocol 2 opens it at the line start and never terminates it. **`reasoning@1` therefore has no released model**, and M9's Decision Package cannot be produced in production. A protocol 3 that terminates the citation is the obvious hypothesis and belongs to a ratified amendment, not to the session that found this. *(Historical statement of the original defect retained in the ADR.)* | 🔴 **High** | **M9.5, open** | `render.py` emits `[token]`; `EvidenceRef.parse` accepts only `token`; the prompt says *"cite by their exact reference strings"*. Three of five models were REFUSED for **obeying literally**, across two independent model families. Passing since M8 on one model's bracket-stripping habit. **T138 produced its clearest instance yet**: `research_synthesis@1` was REFUSED because the model stripped the `research_finding:` prefix on one case and not the other — same prompt, same model, same run. **PROPOSED, deliberately unimplemented** — an M8 defect whose fix invalidates every released prompt, now three | 🔴 **High** | M8 / M9.5 |
+| **F-1** | **One `ollama_model` setting versus several certified prompts.** ⚪ **Dormant rather than resolved.** Three of the four live prompts are now certified for `llama3.1:8b` alone, so one configuration currently serves every *released* path. It returns the moment `reasoning@1` earns a release on a different model — which is the likely outcome, since `llama3.1:8b` cannot measure it at all on this hardware | 🟠 **Medium** *(was High)* | M9.5 |
 | **F-2** | **The Evidence Set question.** *(Narrowed by [32](docs/architecture/32-knowledge-ontology.md) and [34](docs/architecture/34-knowledge-contract.md), then **downgraded by the Internal Research ruling**.)* The immediate exposure is closed by design: a `ResearchSynthesis` has **no address**, so no consumer can cite model-authored prose even deliberately, and `ResearchFinding` is DERIVED with `EvidenceRef.kind = research_finding`. What remains open is the *deferred* question — **may an ATTESTED external claim be cited?** — which arrives with external retrieval and not before | 🟠 **Medium** *(was High)* | Deferred with external retrieval |
 | **F-3** | Signal catalog `limitations` / `suggested_validation` are **engineering-authored pending domain review** | 🟠 Medium | Unassigned |
 | **F-5** | `PublishableEvent` Protocol vs frozen domain events — requires a `type: ignore` at every publish site | 🟢 Low | Unassigned |
@@ -244,9 +260,17 @@ JWT key rotation requires a deploy · token revocation bounded by a 15-min TTL �
 
 ---
 
-## 9 · Recent milestone summary — M9
+## 9 · Recent milestone summary — M10, closed 2026-07-31
 
-**Full review: [30-m9-retrospective.md](docs/architecture/30-m9-retrospective.md).** Fourteen sections, written for an engineer arriving months later.
+| | |
+|---|---|
+| **Delivered** | T131–T138. Retrieval over `opportunity_engine.public` · a closed derivation catalog · three deterministic derivations · a planner that chooses work and cannot conclude · synthesis grounded against *findings* rather than facts · migration `0018`'s three tables · `ai_research.completed` · smoke stage 14k |
+| **Architectural outcome** | **Every citable thing M10 produces is deterministic.** The model chooses which comparisons to run and writes the brief; neither produces a fact anyone may cite. `ResearchSynthesis` has no address, so narration structurally cannot become evidence. `ai_platform` is frozen on this evidence — a port that has now served an agentic, resumable workload |
+| **Major findings** | The **Internal Research ruling** narrowed the milestone before T132 and removed every item with no repository support. `research_synthesis@1`'s refusal was the third prompt blocked by the citation protocol and **forced M9.5** rather than being tuned around. R-09 was answered by measurement — two model calls, ~54 s steady-state — and deliberately not converted into a threshold |
+| **Deferred** | External retrieval · browser tools · public web search · embeddings · pgvector · provider re-query · ATTESTED findings — each with a stated trigger. `T-ID1`, `T-ID2`, `T-CK1` remain unscheduled |
+| **Engineering lesson** | **A refusal is a finding, not an obstacle.** The milestone stopped on a REFUSED prompt, investigated instead of optimising, and the investigation produced a first-class repository concept (the Prompt Rendering Protocol) plus a certification framework. It also produced a *correction*: protocol 2 fixed less than predicted, and that is recorded rather than quietly absorbed |
+
+**M9's full review: [30-m9-retrospective.md](docs/architecture/30-m9-retrospective.md).** Fourteen sections, written for an engineer arriving months later.
 
 **What changed.** M9 is the first module that produces propositions its input did not contain. Everything before it derives, projects or restates; this one **concludes** — and the interesting half was never making a model reason, but *remaining accountable for a conclusion that cannot be checked against a fact.*
 
@@ -264,48 +288,32 @@ JWT key rotation requires a deploy · token revocation bounded by a 15-min TTL �
 
 ---
 
-## 10 · Current milestone — M10, AI Research Engine
+## 10 · Current milestone — M12, the product surface
+
+> **M12 was brought forward ahead of M11 and M7** on 2026-07-31, a Category 1 roadmap change and the product owner's to make. The reason is recorded evidence rather than preference: [31-m10-design-review-evidence.md](docs/architecture/31-m10-design-review-evidence.md) predicted this in a dissent — *"the pipeline runs nine stages ahead of any user-visible surface"* — and by M10's close it had come true. Full design: [37-product-surface.md](docs/architecture/37-product-surface.md).
 
 | | |
 |---|---|
-| **Objective** | Agentic, multi-step research on a qualified opportunity — planning questions, retrieving iteratively over **Signora's own ledger**, and synthesising an artifact M9 consumes as **optional, non-blocking** enrichment |
-| **Scope** | **Internal Research**, ruled 2026-07-31. Research explores, compares and synthesises knowledge Signora already owns and reaches no external source. External retrieval is a future extension, explicitly outside M10 |
-| **Expected outcome** | Findings that cite rows a customer can open · a planner whose choices are recorded as attention, never status · a budgeted, resumable, timed-out orchestration · `ai_research.completed` cataloged · and — the structural payoff — **the evidence that lets `ai_platform` freeze** |
-| **Scale** | ~6–9 ew *(estimated)*, down from the roadmap's 12–16. **Smaller as a consequence of correction, not of cutting** — the removed items were the ones with no repository support |
-| **Status** | 🔵 **In progress — T131–T138 complete** |
+| **Objective** | Make ten stages of pipeline reachable by a customer. Not more intelligence — **the first intelligence anyone can see** |
+| **Shape** | Four slices. **M12.1** the attention list · **M12.2** the account brief · **M12.3** evidence resolution and workflow actions · **M12.4** research on demand |
+| **Constraint** | No BFF, no new persistence, no new platform abstraction. The read paths exist; each module's `interface/` and the frontend are what is missing |
+| **Scale** | ~13–17 ew across the four slices |
 
-### Why the milestone shrank
+### M12.1 — in progress
 
-Two roadmap assumptions were tested against the repository and both failed ([33-ai-research-engine-scope.md](docs/architecture/33-ai-research-engine-scope.md)):
+Delivered: the first workspace-wide read path (`attention_list`), `GET /workspaces/{id}/accounts` with 20 full-stack tests, and `/opportunities` — **the first business screen in the repository's history.** Step 6, the performance review, is not yet measured.
 
-- **"M10 requires pgvector."** There is no corpus. Migration `0009` gives `entity` a 32-char enum `kind` and no text at all; relationships are typed edges; normalization stores attribute/value claims. Embedding retrieval over that is a category error — a structured query answers it exactly, deterministically, and citably. ADR-0008 also scopes pgvector to *"retrieval over prior research artifacts"*, of which M10 produces the first.
-- **"Agentic means external tools."** Every tool the architecture names is internal, and `PRODUCT_DIFFERENTIATORS.md` prohibits building a collection operation in three places. Public information already has a ratified acquisition path: the Provider Platform, under contract.
+### M12.2 — next, and re-ordered on usability evidence
 
-**Agentic is a control-flow property** — plan, act, observe, iterate, stop — and is orthogonal to whether the actions cross the network boundary.
+**Entity names ship before the account brief.** The roadmap had M12.2 as the brief; building M12.1 produced the evidence to change that order.
 
-### The three-way split T132 installed
+**Why.** The attention list currently names each account by a truncated identifier — `6b8efd21` where a company name belongs — because no module in the ratified dependency graph can reach both workflow and entity names. **A seller cannot triage a list of identifiers**, so M12.1's screen is presently demonstrable rather than usable. Resolving names is a *smaller* change than the brief (one Knowledge Graph read endpoint plus a frontend join) and it is what converts M12.1 from a proof into a tool. Shipping it first makes the existing screen useful weeks before the brief would.
 
-| Object | Origin | Identity | Because |
-|---|---|---|---|
-| `ResearchTask` | *not knowledge* | minted | A run happened. Running twice is twice |
-| `ResearchFinding` | **DERIVED** | `uuid5` over content | Recomputing must insert nothing |
-| `ResearchSynthesis` | **INFERRED** | minted | A model was called. Calling twice is twice |
+Recorded as **D2** in [38-product-design-principles.md](docs/architecture/38-product-design-principles.md).
 
-**The ruling that findings are DERIVED is load-bearing, not a label.** DERIVED describes how content was produced, and promotion does not exist (Rule 8) — so the model plans *which comparison is worth running* (attention, Rule 9) and deterministic code computes the answer. A finding therefore has **no free-text field**, which is exactly the shape every other DERIVED object in this repository already has.
+### 🔴 The open blocker, restated
 
-### Open questions
-
-1. **How does one process serve three certified prompts?** *(F-1)* Let M10's real need shape the answer; do not invent it prematurely.
-2. **Where does cost governance live?** *(R-01)* The register says before research is enabled broadly.
-3. **What is the research timeout?** *(R-09)* Never measured. **T136 resolves it by measurement.**
-
-**Two questions that previously blocked M10 no longer do.** The ATTESTED ruling is not raised, because internal findings are DERIVED; the disclosure question is not raised, because egress stays model-vendor-only. Both return with external retrieval, and not before.
-
-### Sequencing question, still open
-
-**The pipeline now runs nine stages ahead of any user-visible surface.** The Decision Package is produced, stored and announced — and **no human can see it until M12**. M11 (6–8 ew) and M7 (6–8 ew) are both cheaper and closer to a visible surface. The counter-argument is real: M10 is the only remaining consumer needed to freeze `ai_platform`.
-
-**A short M9.5 remains recommended** — resolve ADR-0031 while it invalidates *two* prompts rather than three, settle F-1, and re-run the model comparison. M10's smaller scope does not change that argument; ADR-0031's cost still grows with every prompt released.
+**`reasoning@1` has no released model.** This is M9.5's, not M12's, and it does not block M12 — but it means the shipped pipeline would refuse at the Decision Package stage, and no amount of green gates changes that. It must not be closed by tuning.
 
 ---
 

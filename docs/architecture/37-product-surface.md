@@ -171,7 +171,7 @@ M12 was already *"Revenue Intelligence Platform + business UI"*. It is brought f
 | Slice | Delivers | Size |
 |---|---|---|
 | **M12.1** | **The list.** `/accounts` ranked by score with why-now; opportunity + score endpoints; the citation component | 3–4 ew |
-| **M12.2** | **The brief.** `/accounts/[id]` with contributions, events, signals, explanation, decision package | 4–5 ew |
+| **M12.2** | **Names, then the brief.** *(Re-ordered 2026-07-31 on M12.1's evidence — see below.)* A Knowledge Graph read endpoint so accounts are named, then `/accounts/[id]` with contributions, events, signals, explanation, decision package | 4–5 ew |
 | **M12.3** | **Evidence and action.** Citation → fact resolution; stage transitions and assignment | 3–4 ew |
 | **M12.4** | **Research on demand.** Dispatch endpoint, ARQ job, status, brief on the account page | 3–4 ew |
 
@@ -213,3 +213,21 @@ Every slice inherits the Milestone Definition of Done (CLAUDE.md §19) and adds:
 **No new platform capability.** Not a BFF, not a cache, not a search index, not a new event type. If product work proves one necessary, that is a finding to raise with the measurement that proved it.
 
 **No new AI capability.** M11 (Recommendation) stays queued. The pipeline already produces more intelligence than a customer can currently see, and adding a tenth stage ahead of the surface would repeat exactly the mistake this document exists to correct.
+
+
+---
+
+## Re-ordering inside M12.2 — recorded 2026-07-31
+
+M12.1 shipped and produced evidence that changes the order of its successor.
+
+**The attention list names each account by a truncated identifier.** No module in the ratified dependency graph reaches both workflow and entity names — `Opportunity Engine → Buying Score Engine` only, and `Revenue Intelligence Platform` never reaches the Knowledge Graph. So the row reads `6b8efd21` where a company name belongs, and **a seller cannot triage a list of identifiers.**
+
+**Entity names therefore ship before the brief.** The reasoning:
+
+- It is **smaller** — one Knowledge Graph read endpoint plus a frontend join, against a page composing seven sources.
+- It **converts an existing screen from a proof into a tool**, so the value lands weeks earlier than the brief's would.
+- It **de-risks the brief**, which needs the same endpoint anyway: building it first means the brief composes a proven read rather than two new ones at once.
+- A placeholder name was never an option — it would be mock business data, which teaches a reader the wrong model and which `no-mock-data.test.tsx` forbids.
+
+**This does not change M12.2's scope**, only the order inside it. Recorded as **D2** in [38-product-design-principles.md](38-product-design-principles.md).

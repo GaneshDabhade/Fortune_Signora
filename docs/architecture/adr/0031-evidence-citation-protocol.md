@@ -276,8 +276,40 @@ Ratified by the Product Owner on 2026-07-31. Implemented in the order this docum
 | **B** — version the rendering protocol | Done, behaviour-neutral. `domain/rendering.py` owns the concept; every evaluation records its protocol; releases derive from `earns_release` rather than `passed` |
 | **C** — move the form, bump to 2 | Done. Citations are now presented exactly as `EvidenceRef.parse` accepts them. **Three releases withdrew themselves**, with no manifest edited and no migration run |
 | **D** — remove Option C from the prompts | Done. `research_planning@2` and `research_synthesis@2` authored and measured. **`research_synthesis@2` EARNED a release** — the prompt refused four consecutive times under protocol 1, passing cleanly on the same model, dataset, rubric and schema. This document's central prediction, confirmed by measurement |
-| **F** — re-evaluate the remaining prompts | Pending: `explanation_narration@1` and `reasoning@1`, plus the five-model comparison this document asks for |
+| **F** — re-evaluate the remaining prompts | **Partially done, and it falsified a prediction in this document.** `explanation_narration@1` re-earned its release on `llama3.1:8b` under protocol 2. **`reasoning@1` did not, on any model available**: see the correction below |
 
 **One correction to this document, made during Step B.** The *Where the protocol lives* section above proposes putting the display form beside `token` and `parse` in `domain/evidence.py`. That would have violated a rule that module states about itself — *"Evidence is truth; prompts are language, and the moment a fact knows how it will be phrased, changing the wording becomes a change to the evidence model."* The intent was right and the address was wrong: the protocol is its own concept in `domain/rendering.py`, depending on the grammar without living inside it.
 
 **One finding that outlived its step.** Step B's mutation round surfaced a mutation that could not be killed at protocol 1: the report stamping a literal `1` rather than reading the constant produces an identical program while the constant *is* 1. It is killed by a test that raises the running protocol and asserts the stamp follows — which is the property that made Step C's bump propagate on its own rather than silently recording new measurements under the old number.
+
+
+---
+
+## Correction — 2026-07-31: protocol 2 did not remove over-copying
+
+This document predicted, in *Revised assessment of the options*:
+
+> *"Both observed failure modes — over-copying and under-copying — are errors in how much to transform; an option that asks for zero transformation has no mechanism for either."*
+
+**That claim is wrong, and M9.5 Step F disproved it.** Re-evaluated under protocol 2, `granite3.3:2b` failed `reasoning@1` on both cases, copying the token **plus the em dash plus the entire summary**:
+
+```
+'buying_score:44c0cf0b-… — The buying score that opened this opportunity was 35 out of 120, steady.'
+'signal_contribution:346ae5cb-… — Adopting and retiring systems together suggests a stack is being replaced…'
+```
+
+Compare the protocol-1 failures quoted earlier in this document. The model has not stopped over-copying; **it has over-copied a different delimiter.**
+
+### What the evidence actually supports
+
+Protocol 2 removed the *bracket* trap and removed the need for any prompt to instruct a transformation — both real, and `research_synthesis@2` earning a release after four consecutive refusals is genuine evidence for it. What it did **not** do is make over-copying impossible.
+
+The mechanism is now visible: **protocol 1 bracketed the token, so the citation had a closing delimiter. Protocol 2 has an opening boundary — the start of the line — and no closing one.** Where the citation ends must be inferred from where prose begins, and a small model infers it wrongly. The em dash was chosen because a UUID cannot contain it; that reasoning was sound and insufficient, because the delimiter's job is not only to be distinguishable but to *terminate*.
+
+### Consequence, recorded and not acted on
+
+`reasoning@1` currently has **no released model**. `granite3.3:2b` refuses under protocol 2, and `llama3.1:8b` remains UNMEASURABLE on this machine — it times out on `ReasonedOutput`'s nested schema exactly as it did under protocol 1, so the widening of the usable field this document predicted did not materialise for M9's prompt.
+
+**Nothing was tuned.** Not the prompt, the delimiter, the schema, the timeout or the rubric. A protocol 3 that terminates the citation — placing it on its own line, or restoring a closing delimiter that is not an opening one — is the obvious next hypothesis, and it is an architectural decision that belongs to a ratified amendment rather than to the session that found the defect.
+
+**The refusals are recorded in the manifests**, which is the whole point of Step A: this correction is checkable against measurements rather than against prose.

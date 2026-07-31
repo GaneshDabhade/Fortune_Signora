@@ -12,17 +12,19 @@
 
 | | |
 |---|---|
-| **Last completed** | **M6 Opportunity Engine** — closed 2026-07-29. *The first sellable moment.* |
-| **Last completed** | **M8 AI Platform** — T111–T121 + ADR-0029, closed 2026-07-30. `explanation_narration@1` released for `llama3.1:8b`. |
-| **Completed** | **M9 AI Reasoning Engine — COMPLETE 2026-07-31.** T122–T130 delivered; `reasoning@1` **released** against `granite3.3:2b`. See [29-ai-reasoning-engine.md](architecture/29-ai-reasoning-engine.md), [ADR-0030](architecture/adr/0030-the-decision-package.md), [ADR-0031](architecture/adr/0031-evidence-citation-protocol.md), and the [M9 retrospective](architecture/30-m9-retrospective.md). |
-| **Head at handoff** | `5371e50` |
-| **Phase** | Product Pipeline. Foundations and enablement are complete and frozen. **Eight pipeline stages built, plus the AI substrate.** |
-| **Overall completion** | **~52%** by engineering effort (~162 of ~261–339 ew) |
-| **Remaining** | ~99–177 ew · ~1.0–1.6 years at 3 engineers, ~3.1–4.7 at 1 |
-| **Completed milestones** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · M4 · M5A · M5B · M6 |
-| **Branch** | `main` |
+| **Last completed** | **M10 AI Research Engine** — T131–T138, closed 2026-07-31. *Internal Research; every citable thing deterministic.* |
+| **Inserted, and open** | **M9.5 Evidence Citation Protocol** (ADR-0031). Steps A–D landed; **Step F is incomplete** |
+| **Current** | **M12.1** — the account attention list. **The first customer-visible screen exists.** |
+| **Head at handoff** | `d954c93` |
+| **Latest certification** | [`d954c930`](../certification/reports/d954c930319a.md) — CERTIFIED, 2026-07-31 |
+| **Phase** | **Product implementation.** Ten pipeline stages built and frozen behind them; the surface is being exposed. |
+| **Overall completion** | **~60%** by engineering effort (~187 of ~261–339 ew) |
+| **Completed milestones** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · M4 · M5A · M5B · M6 · M8 · M9 · **M10** |
+| **Branch** | `main`, clean, pushed |
 
-**Recent commits:** `4b3cd91` T120 evaluation harness · `5ba4754` T119 `ai_inference` · `79e7a9a` T118 the only path to a model · `d3ed085` T117 two adapters, one contract · `09b596f` repository-architecture proposal (**still awaiting ruling**)
+**🔴 Read this before anything else:** **`reasoning@1` has no released model.** M9.5 moved the rendering protocol to v2, which withdrew every protocol-1 release by derivation. `explanation_narration@1`, `research_planning@2` and `research_synthesis@2` re-earned theirs; `reasoning@1` did not — `granite3.3:2b` refuses under protocol 2 and `llama3.1:8b` is UNMEASURABLE on this hardware. **The Decision Package stage would refuse in production.** Do not tune the prompt, the delimiter, the schema or the timeout to make it pass.
+
+**Recent commits:** `d954c93` the first business screen · `d08f8d7` the first customer endpoint · `22cafac` the attention list read path · `0cc82c6` product surface roadmap · `0c6d144` certification cites itself
 
 ### Health
 
@@ -313,76 +315,28 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 
 ## 7 · Next session starting point
 
-> **Completed:** M9 — **T122–T130, closed 2026-07-31** · **In progress:** M10 AI Research Engine — **T131–T138 complete; the lifecycle is closed**
-> **Branch:** `main` · everything committed and pushed, tree clean
-> **Health:** 1733 backend + 101 frontend tests · coverage 95.84% · 317 invariants · 29 contracts · smoke green over **23 stages**
+### M12.2 — entity names before the account brief
 
-**Read [30-m9-retrospective.md](architecture/30-m9-retrospective.md) first.** It explains how the architecture evolved T122→T130, which assumptions proved false, and what carries into M10 — and it is shorter than re-reading the milestone.
+**The re-ordering is the decision to carry forward.** The roadmap had M12.2 as the account brief; M12.1 produced evidence to change the order.
 
-### M10 is under way — the ruling landed 2026-07-31
+The attention list names each account by a truncated identifier, because no module in the ratified graph reaches both workflow and entity names (`Opportunity Engine → Buying Score Engine` only; `Revenue Intelligence Platform` never reaches the Knowledge Graph). **A seller cannot triage a list of identifiers.** Resolving names is a smaller change than the brief — one Knowledge Graph read endpoint plus a frontend join — and it is what turns M12.1 from a proof into a tool.
 
-**Read [33-ai-research-engine-scope.md](architecture/33-ai-research-engine-scope.md) first.** It records
-the ruling and the analysis behind it. Then [34-knowledge-contract.md](architecture/34-knowledge-contract.md)
-for the 23 invariants T132's types implement.
+Do it first. Then the brief.
 
-> **M10 implements Internal Research.** The AI Research Engine explores, plans over, retrieves,
-> compares and synthesises knowledge Signora **already owns**. No browser, no public web search, no
-> external HTTP tool use. External retrieval is a future extension, explicitly outside M10.
+### What M12.2 inherits
 
-**Two roadmap assumptions were tested against the repository and both failed.** *"M10 requires
-pgvector"* — there is no corpus: `entity` carries a 32-char enum `kind` and no text, relationships are
-typed edges, and normalization stores attribute/value claims. *"Agentic means external tools"* — every
-tool the architecture names is internal, and `PRODUCT_DIFFERENTIATORS.md` prohibits building a
-collection operation in three places. **Agentic is a control-flow property**, orthogonal to whether the
-actions cross the network boundary.
+- **A working endpoint pattern.** `modules/opportunity_engine/interface/` is the second router in the repository and the one to copy; `apps/api/composition.py` is where cross-module wiring belongs.
+- **A frozen design system**, and `components/intelligence/` for business vocabulary — a design system that knew what a buying score was would have started learning the pipeline's language.
+- **A certification command.** `make certify` records the gates; run it at the milestone boundary, not per commit.
+- **Six deferred UX observations** in [38-product-design-principles.md](architecture/38-product-design-principles.md). D2 is the one M12.2 closes.
 
-**Deferred, each with a trigger, and no placeholders built against any of them:** external retrieval ·
-browser tools · public web search · embeddings · pgvector · provider re-query · external evidence ·
-ATTESTED findings.
+### The habits worth keeping
 
-**Two questions that previously blocked M10 no longer do.** The ATTESTED ruling is not raised, because
-internal findings are DERIVED; the disclosure question is not raised, because egress stays
-model-vendor-only — identical in kind to what M8 and M9 already ship. Both return with external
-retrieval and not before.
+**A refusal is a finding.** M10 stopped on a REFUSED prompt rather than tuning around it, and the investigation produced the Prompt Rendering Protocol, the certification framework, and a correction to ADR-0031's own prediction. That is the trade the repository keeps making and it keeps paying.
 
-**The standing instruction:** if implementation produces concrete evidence that Internal Research
-cannot satisfy M10's goals, **stop, document the evidence, and do not silently expand scope.**
+**Record what was measured, not what was hoped.** Every refusal is now in a manifest rather than in prose — including the one that proves a fix I designed worked less well than I claimed.
 
-**A short M9.5 remains recommended** — resolve ADR-0031 while it invalidates two prompts rather than
-three, settle the single-`ollama_model` question, and re-run the model comparison. M10's smaller scope
-does not weaken that argument.
-
-### M9 is closed
-
-`reasoning@1` is **RELEASED** for `granite3.3:2b` on dataset `explanation_narration@1`, rubric v1: 2 cases, 0 grounding failures, 0 schema failures, coverage 0.833, recorded after **eight consecutive passing runs**. The benchmark was not changed in any respect — only `SIGNORA_OLLAMA_MODEL`.
-
-```
-SIGNORA_OLLAMA_MODEL=granite3.3:2b make eval-reasoning
-```
-
-**`granite3.3:2b` is *currently certified*, not permanent.** Ruled 2026-07-31. It was selected because it is the only candidate tested that stays entirely resident in 4 GiB of VRAM — and three of the four models that did not pass failed on **citation form rather than reasoning** ([ADR-0031](architecture/adr/0031-evidence-citation-protocol.md)). Revisit the comparison once that protocol inconsistency is corrected; the field of usable local models is very likely wider than the current table suggests.
-
-### The one high-severity item carried forward
-
-**[ADR-0031](architecture/adr/0031-evidence-citation-protocol.md) is PROPOSED and deliberately unimplemented.** The renderer emits `[token]`; the parser accepts only `token`; the prompt says *"cite by their exact reference strings"*. Models that obey literally are marked ungrounded.
-
-It is an **M8** defect, surfaced by M9 and not fixed inside it. Correcting it changes what every prompt renders, so **both released prompts must be re-evaluated** — neither release survives automatically. Recommended direction is Option A + D: render the bare token, and assert the render→parse round trip in a test so the two cannot drift apart again.
-
-### Open question M10 will force
-
-**One `ollama_model` setting, two certified prompts.** `build_provider_registry` registers a single Ollama model; `explanation_narration@1` is certified for `llama3.1:8b` and `reasoning@1` for `granite3.3:2b`. **No single process configuration currently serves both request paths.** M10 adds a third prompt.
-
-### What M10 inherits
-
-- **The least-powerful-author rule.** M10 is agentic and will be far more tempted to generate what the platform already knows.
-- **Degrade, never empty.** Build the deterministic part first, so there is something to degrade *to*.
-- **Whenever an evaluation criterion can become an invariant, prefer the invariant.**
-- **Do not fix a finding in the milestone that discovered it.**
-- **A property a fixture cannot vary is a property the fixture cannot test** — six M9 mutations survived on exactly that.
-
-### The habit worth keeping
-
-> **The repository improved the architecture by refusing incorrect assumptions** — through contracts, mutations, unreachable guards, database grants, a layering rule, and four evaluation refusals. Not one was worked around. **Never resume from memory; always resume from the repository.**
+**Say what is broken, prominently.** `reasoning@1` is unreleased and the dashboard says so in §1, §5, §7 and §10. A green certification is evidence the gates passed, never that the product is correct.
 
 ---
 

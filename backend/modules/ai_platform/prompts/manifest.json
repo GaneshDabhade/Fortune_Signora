@@ -19,6 +19,19 @@
           "coverage": 1.0,
           "rendering_protocol_version": 1,
           "retries": 0
+        },
+        {
+          "model": "llama3.1:8b",
+          "dataset": "explanation_narration",
+          "dataset_version": 1,
+          "rubric_version": 1,
+          "evaluated_on": "2026-07-31",
+          "sample_size": 2,
+          "grounding_failures": 0,
+          "schema_failures": 0,
+          "coverage": 1.0,
+          "rendering_protocol_version": 2,
+          "retries": 1
         }
       ]
     }
