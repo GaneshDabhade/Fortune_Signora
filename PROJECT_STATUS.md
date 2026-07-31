@@ -1,7 +1,7 @@
 # Signora — Project Status
 
 > **The canonical entry point for this repository.** If you read one document, read this one.
-> **Last verified against the repository: 2026-07-31**, at `HEAD` `8109ed7`. Every figure below was taken from a run, a gate, or `git` — not carried forward from a plan.
+> **Last verified against the repository: 2026-07-31**, at `HEAD` `dbc7822`. Every figure below was taken from a run, a gate, or `git` — not carried forward from a plan.
 >
 > This is an **executive dashboard**, not a progress log. It answers: *where are we · what was completed · what changed architecturally · what is deferred · what's next · are we on track.* Dated history lives in the appendices and is never rewritten to match the present.
 
@@ -16,7 +16,7 @@
 | **Current phase** | **Product Development** — nine pipeline stages built, through the AI Reasoning Engine |
 | **Last completed milestone** | **M9 — AI Reasoning Engine**, closed 2026-07-31 |
 | **Current milestone** | **M10 — AI Research Engine** · **Internal Research** *(ruled 2026-07-31 — see §10)* |
-| **Latest commit** | `8109ed7` — *M10 T134 — retrieval that defines no new vocabulary…* |
+| **Latest commit** | `dbc7822` — *M10 T135 — the planner, which has nowhere to put an answer* |
 | **Branch** | `main`, tree clean, pushed |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
 | **Overall completion** | **~57%** by engineering effort (~178 of ~261–339 ew) |
@@ -51,7 +51,7 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | — | M6 | Opportunity Engine — **first sellable moment** | ✅ Complete | 2026-07-29 |
 | — | M8 | AI Platform — abstraction, prompts, eval harness | ✅ Complete | 2026-07-30 |
 | — | **M9** | **AI Reasoning Engine — Decision Package** | ✅ **Complete** | **2026-07-31** |
-| 1 | **M10** | **AI Research Engine** *(Internal Research)* | 🔵 **In progress — T135 complete** | — |
+| 1 | **M10** | **AI Research Engine** *(Internal Research)* | 🔵 **In progress — T136 complete** | — |
 | 2 | M11 | Recommendation Engine | ⏳ Queued | — |
 | 3 | M7 | Timeline | ⏳ Queued | — |
 | 4 | M12 | Revenue Intelligence Platform + business UI | ⏳ Queued | — |
@@ -91,6 +91,7 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | T133 | Migration `0018` — **three tables because there are three data categories**; forced RLS, no `UPDATE` grant, tenancy registration |
 | T134 | Internal retrieval — `ResearchFactSource` over `opportunity_engine.public`; business events and dissent, the two things M8's assembler omits |
 | T135 | The planner — a closed derivation catalog, steps that cannot carry a conclusion, and **stopping as a legal answer** |
+| T136 | The orchestrator — three deterministic derivations, type↔rule pairing checked at import, and **no counter, no timeout** *(see R-09 below)* |
 
 **The scope ruling landed before T132** and narrowed the milestone materially: research explores, compares and synthesises knowledge Signora already owns, and reaches no external source. See [33-ai-research-engine-scope.md](docs/architecture/33-ai-research-engine-scope.md) for the analysis and the ruling it records.
 
@@ -98,7 +99,6 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 
 | Task | Scope |
 |---|---|
-| T136 | Agentic orchestration · cost budget · timeout (resolves R-09) · resumability |
 | T137 | Prompt `research_synthesis@1` and its evaluation |
 | T138 | `ai_research.completed` · composition root · smoke stage 14k · the **non-blocking contract proven by test** |
 
@@ -110,13 +110,13 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 
 | Indicator | Value | Target |
 |---|---|---|
-| **Backend tests** | **1669 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Backend tests** | **1696 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Frontend tests** | **101 passing**, 0 failing, 0 skipped | 0 skipped |
-| **Backend coverage** | **95.82%** — varies ±0.02pp between runs | ≥95% (local gate) |
+| **Backend coverage** | **95.85%** — varies ±0.02pp between runs | ≥95% (local gate) |
 | **Security Invariants** | **316 / 316**, each proven to fail when its guarantee is removed | 100% verified |
 | **import-linter contracts** | **29 kept, 0 broken** | 0 broken |
-| **MyPy** | **strict, clean over 429 files** | clean |
-| **`make smoke`** | ✅ **22 stages**, 101s, fresh images, clean teardown | green per milestone |
+| **MyPy** | **strict, clean over 432 files** | clean |
+| **`make smoke`** | ✅ **22 stages**, 98s, fresh images, clean teardown | green per milestone |
 | **Migrations** | `0001`–`0018`, additive and reversible — `0018` proven by an applied downgrade/upgrade cycle | reversible |
 | **Architecture drift** | **0** — no ratified ADR reversed | trending to 0 |
 | **Open production bugs** | **0** | 0 |
@@ -206,7 +206,7 @@ Full register with mitigations and owners: [16-architecture-risks.md](docs/archi
 
 | ID | Risk | Note |
 |---|---|---|
-| R-09 | **AI Research timeout value undefined** | M9 ships no research integration, so nothing has ever measured it. **T136 resolves it by measurement**, not by choosing a number |
+| R-09 | **AI Research timeout value undefined** | **Still open after T136, deliberately.** Everything the orchestrator executes is a pure comparison over in-memory facts — a full plan over 35 facts runs in microseconds, measured. The term that dominates a research task is the **model call**, and no prompt exists until T137, so the number can be guessed but not measured. Wrapping microseconds in a timeout would make the risk look addressed while the part that takes minutes stayed unmeasured |
 | R-10 | AI output quality regression | Substantially mitigated: golden sets, rubrics, `ai_inference`, two evaluated prompts. **Not** closed — no human-rated sample yet |
 | **New** | **Two new capability surfaces in M10** — agentic loop and *internal* tool use. Was four; embeddings and pgvector were deferred by the Internal Research ruling. M8 flagged tool use as *"carrying its own security surface deserving its own review"*, and internal tools reduce that surface without removing it |
 | **New** | **Fixture-shaped coverage.** Six M9 mutations survived because one seeded scenario cannot vary contested scores, shared events or shared caveats. Every future module inherits that fixture | |
@@ -245,7 +245,7 @@ JWT key rotation requires a deploy · token revocation bounded by a 15-min TTL �
 | **Scope** | **Internal Research**, ruled 2026-07-31. Research explores, compares and synthesises knowledge Signora already owns and reaches no external source. External retrieval is a future extension, explicitly outside M10 |
 | **Expected outcome** | Findings that cite rows a customer can open · a planner whose choices are recorded as attention, never status · a budgeted, resumable, timed-out orchestration · `ai_research.completed` cataloged · and — the structural payoff — **the evidence that lets `ai_platform` freeze** |
 | **Scale** | ~6–9 ew *(estimated)*, down from the roadmap's 12–16. **Smaller as a consequence of correction, not of cutting** — the removed items were the ones with no repository support |
-| **Status** | 🔵 **In progress — T131–T135 complete** |
+| **Status** | 🔵 **In progress — T131–T136 complete** |
 
 ### Why the milestone shrank
 

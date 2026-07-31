@@ -40,7 +40,18 @@ from __future__ import annotations
 from uuid import UUID
 
 from modules.ai_platform.public import EvidenceFact, EvidenceRef, EvidenceValue
-from modules.ai_research_engine.domain.retrieval import BUSINESS_EVENT, DISSENTING_SIGNAL
+from modules.ai_research_engine.domain.retrieval import (
+    BUSINESS_EVENT,
+    CORROBORATED,
+    DISSENTING_SIGNAL,
+    EVENT_TYPE,
+    OBSERVED_ON,
+    OCCURRED_ON,
+    PROVIDER_COUNT,
+    PROVIDERS,
+    RELEVANCE,
+    SIGNAL_TYPE,
+)
 from modules.opportunity_engine.public import OpportunityExplanation, OpportunityQueries
 
 #: Joins a provider set into one attribute. Sorted before joining, so the same
@@ -101,11 +112,11 @@ def assemble(explanation: OpportunityExplanation) -> tuple[EvidenceFact, ...]:
         for event in signal.business_events:
             providers = tuple(sorted(event.corroborating_providers))
             event_attributes: tuple[tuple[str, EvidenceValue], ...] = (
-                ("event_type", event.type_key.value),
-                ("occurred_on", event.occurred_at.date()),
-                ("provider_count", len(providers)),
-                ("providers", PROVIDER_SEPARATOR.join(providers)),
-                ("corroborated", len(providers) > 1),
+                (EVENT_TYPE, event.type_key.value),
+                (OCCURRED_ON, event.occurred_at.date()),
+                (PROVIDER_COUNT, len(providers)),
+                (PROVIDERS, PROVIDER_SEPARATOR.join(providers)),
+                (CORROBORATED, len(providers) > 1),
             )
             ref = EvidenceRef(kind=BUSINESS_EVENT, id=event.id)
             facts.setdefault(
@@ -124,9 +135,9 @@ def assemble(explanation: OpportunityExplanation) -> tuple[EvidenceFact, ...]:
     for outweighed in score.dissent:
         dissenting = outweighed.signal
         signal_attributes: tuple[tuple[str, EvidenceValue], ...] = (
-            ("signal_type", dissenting.signal_type.value),
-            ("relevance", dissenting.relevance.value),
-            ("observed_on", dissenting.occurred_at.date()),
+            (SIGNAL_TYPE, dissenting.signal_type.value),
+            (RELEVANCE, dissenting.relevance.value),
+            (OBSERVED_ON, dissenting.occurred_at.date()),
         )
         ref = EvidenceRef(kind=DISSENTING_SIGNAL, id=dissenting.id)
         facts.setdefault(

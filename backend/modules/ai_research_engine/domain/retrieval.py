@@ -61,6 +61,18 @@ BUSINESS_EVENT: Final = "business_event"
 #: so the two kinds can never address the same row.
 DISSENTING_SIGNAL: Final = "dissenting_signal"
 
+#: Attribute names, declared once. Retrieval writes them and derivations read
+#: them, and a name spelled two ways would make a derivation silently compare
+#: nothing — the failure that looks exactly like a finding of nothing.
+EVENT_TYPE: Final = "event_type"
+OCCURRED_ON: Final = "occurred_on"
+PROVIDER_COUNT: Final = "provider_count"
+PROVIDERS: Final = "providers"
+CORROBORATED: Final = "corroborated"
+SIGNAL_TYPE: Final = "signal_type"
+RELEVANCE: Final = "relevance"
+OBSERVED_ON: Final = "observed_on"
+
 #: Every kind this module retrieves. Declared once so the disjointness test
 #: reads it rather than restating it, and so a new kind cannot be added without
 #: appearing here.
