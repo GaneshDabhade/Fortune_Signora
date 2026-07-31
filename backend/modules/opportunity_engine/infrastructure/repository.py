@@ -15,7 +15,7 @@ from __future__ import annotations
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, tuple_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -36,6 +36,7 @@ from modules.opportunity_engine.infrastructure.models import (
     OpportunityStateModel,
     WorkspaceOpportunityPolicyModel,
 )
+from signora_platform.pagination import CursorPosition
 
 SYSTEM_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
 
@@ -130,7 +131,7 @@ class SqlOpportunityRepository:
         return _to_opportunity(row) if row is not None else None
 
     async def open_page(
-        self, workspace_id: UUID, *, after: UUID | None, limit: int
+        self, workspace_id: UUID, *, after: CursorPosition | None, limit: int
     ) -> tuple[tuple[Opportunity, OpportunityState], ...]:
         latest = self._latest_sequence()
         statement = (
@@ -145,11 +146,14 @@ class SqlOpportunityRepository:
                 OpportunityModel.workspace_id == workspace_id,
                 OpportunityStateModel.stage.in_([s.value for s in OPEN_STAGES]),
             )
-            .order_by(OpportunityModel.id)
+            .order_by(OpportunityModel.created_at, OpportunityModel.id)
             .limit(limit)
         )
         if after is not None:
-            statement = statement.where(OpportunityModel.id > after)
+            statement = statement.where(
+                tuple_(OpportunityModel.created_at, OpportunityModel.id)
+                > (after.created_at, after.id)
+            )
         rows = (await self._session.execute(statement)).all()
         return tuple((_to_opportunity(row[0]), _to_state(row[1])) for row in rows)
 

@@ -24,6 +24,7 @@ from modules.opportunity_engine.domain.opportunity import Opportunity, Opportuni
 from modules.opportunity_engine.domain.policy import WorkspaceOpportunityPolicy
 from modules.signal_engine.public import Relevance, SignalType
 from modules.workspace_tenancy.public import MembershipView
+from signora_platform.pagination import CursorPosition
 
 WORKSPACE = UUID("33333333-3333-4333-8333-333333333333")
 ENTITY = UUID("44444444-4444-4444-8444-444444444444")
@@ -133,14 +134,17 @@ class FakeOpportunityRepository:
         return None
 
     async def open_page(
-        self, workspace_id: UUID, *, after: UUID | None, limit: int
+        self, workspace_id: UUID, *, after: CursorPosition | None, limit: int
     ) -> tuple[tuple[Opportunity, OpportunityState], ...]:
-        """Mirrors the SQL: open only, ordered by id, cursor-exclusive."""
+        """Mirrors the SQL: open only, keyset on `(created_at, id)`."""
         page: list[tuple[Opportunity, OpportunityState]] = []
-        for opportunity in sorted(self.rows, key=lambda o: o.id.bytes):
+        for opportunity in sorted(self.rows, key=lambda o: (o.created_at, o.id.bytes)):
             if opportunity.workspace_id != workspace_id:
                 continue
-            if after is not None and opportunity.id.bytes <= after.bytes:
+            if after is not None and (opportunity.created_at, opportunity.id.bytes) <= (
+                after.created_at,
+                after.id.bytes,
+            ):
                 continue
             state = self._latest(opportunity.id)
             if state is None or not state.is_open:

@@ -15,6 +15,7 @@ from uuid import UUID
 from modules.buying_score_engine.public import BuyingScore, BuyingScoreExplanation
 from modules.opportunity_engine.domain.opportunity import Opportunity, OpportunityState
 from modules.opportunity_engine.domain.policy import WorkspaceOpportunityPolicy
+from signora_platform.pagination import CursorPosition
 
 
 class OpportunityRepository(Protocol):
@@ -62,7 +63,7 @@ class OpportunityRepository(Protocol):
         ...
 
     async def open_page(
-        self, workspace_id: UUID, *, after: UUID | None, limit: int
+        self, workspace_id: UUID, *, after: CursorPosition | None, limit: int
     ) -> tuple[tuple[Opportunity, OpportunityState], ...]:
         """One page of open opportunities, each with its current state.
 
@@ -70,10 +71,11 @@ class OpportunityRepository(Protocol):
         stage and the holder, and fetching the state separately would make a
         page of *n* rows cost *n + 1* queries.
 
-        Ordered by the opportunity's own identifier so a cursor is stable:
-        ordering a page by a *live* score would let a recomputation between
-        pages skip or repeat a row. Attention ordering is applied above this,
-        over the page, where it cannot corrupt the cursor.
+        Keyset on ``(created_at, id)`` — the platform's pagination position,
+        reused rather than reinvented. **The cursor deliberately does not walk
+        the score**: ordering a page by a live number would let a recomputation
+        between two requests skip a row or repeat one. Attention ordering is
+        applied above this, over the page, where it cannot corrupt the walk.
         """
         ...
 

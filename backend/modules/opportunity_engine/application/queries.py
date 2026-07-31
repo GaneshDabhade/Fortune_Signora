@@ -36,6 +36,7 @@ from modules.opportunity_engine.domain.opportunity import (
     OpportunityState,
 )
 from modules.opportunity_engine.domain.policy import OpportunityPolicy, resolve_policy
+from signora_platform.pagination import CursorPosition
 
 DEFAULT_PAGE = 50
 """How many accounts one page of the attention list holds.
@@ -88,6 +89,29 @@ class OpportunityExplanation:
     evidence_state: EvidenceState
 
 
+@dataclass(frozen=True, slots=True)
+class AttentionPage:
+    """One page of the attention list.
+
+    `has_more` rather than a total: counting every open opportunity on every
+    request costs a full scan to answer a question the caller only asks in
+    order to decide whether to draw one more button.
+    """
+
+    items: tuple[TrackedOpportunity, ...]
+    has_more: bool
+
+    #: The keyset position to resume from, or `None` on the last page. Taken
+    #: from the **cursor order**, never from the ranked order — the two differ,
+    #: and resuming from the ranked last row would skip everything between.
+    @property
+    def next_position(self) -> CursorPosition | None:
+        if not self.has_more or not self.items:
+            return None
+        last = max(self.items, key=lambda t: (t.opportunity.created_at, t.opportunity.id))
+        return CursorPosition(created_at=last.opportunity.created_at, id=last.opportunity.id)
+
+
 class OpportunityQueries:
     """Read-only. Every method is scoped to one workspace, explicitly."""
 
@@ -127,10 +151,10 @@ class OpportunityQueries:
         self,
         workspace_id: UUID,
         *,
-        after: UUID | None = None,
+        after: CursorPosition | None = None,
         limit: int = DEFAULT_PAGE,
         now: datetime | None = None,
-    ) -> tuple[TrackedOpportunity, ...]:
+    ) -> AttentionPage:
         """Open opportunities for this workspace, **ordered by attention**.
 
         The question a seller opens Signora to ask — *which accounts should I
@@ -150,7 +174,11 @@ class OpportunityQueries:
         if the sort key were the live score, it could do both.
         """
         moment = now or datetime.now(UTC)
-        page = await self._repository.open_page(workspace_id, after=after, limit=limit)
+        # One more than asked for, so *"is there another page"* is answered by
+        # what the database returned rather than by a second count query.
+        page = await self._repository.open_page(workspace_id, after=after, limit=limit + 1)
+        has_more = len(page) > limit
+        page = page[:limit]
         scores = await self._scores.current_for(
             workspace_id, tuple(opportunity.entity_id for opportunity, _ in page)
         )
@@ -165,7 +193,9 @@ class OpportunityQueries:
             )
             for opportunity, state in page
         )
-        return tuple(sorted(tracked, key=_attention, reverse=True))
+        return AttentionPage(
+            items=tuple(sorted(tracked, key=_attention, reverse=True)), has_more=has_more
+        )
 
     async def explanation(
         self, workspace_id: UUID, opportunity_id: UUID, *, now: datetime | None = None

@@ -26,6 +26,7 @@ from modules.opportunity_engine.domain.opportunity import (
     Stage,
 )
 from modules.opportunity_engine.infrastructure.policy_loader import load_policy
+from signora_platform.pagination import CursorPosition
 from tests.opportunity_engine.fakes import (
     NOW,
     SELLER,
@@ -130,7 +131,7 @@ class TestTheListAnswersWhichAccountsDeserveAttention:
     async def test_accounts_are_ordered_by_their_live_score(self) -> None:
         queries, _, _, entities = _world(30, 90, 60)
 
-        listed = await queries.attention_list(WORKSPACE, now=NOW)
+        listed = (await queries.attention_list(WORKSPACE, now=NOW)).items
 
         assert [t.opportunity.entity_id for t in listed] == [
             entities[1],
@@ -145,7 +146,7 @@ class TestTheListAnswersWhichAccountsDeserveAttention:
         one is the one to open first."""
         queries, _, _, entities = _world(70, 70, contested=(1,))
 
-        listed = await queries.attention_list(WORKSPACE, now=NOW)
+        listed = (await queries.attention_list(WORKSPACE, now=NOW)).items
 
         assert listed[0].opportunity.entity_id == entities[1]
 
@@ -154,7 +155,7 @@ class TestTheListAnswersWhichAccountsDeserveAttention:
         their day by it would be working yesterday's list."""
         queries, _, _, entities = _world(20, 80)
         # Both were opened at 50; only the live scores differ.
-        listed = await queries.attention_list(WORKSPACE, now=NOW)
+        listed = (await queries.attention_list(WORKSPACE, now=NOW)).items
 
         assert {t.opportunity.score_at_creation for t in listed} == {50}
         assert listed[0].opportunity.entity_id == entities[1]
@@ -168,7 +169,7 @@ class TestNothingIsQuietlyDroppedFromTheList:
         humans commit."""
         queries, _, _, entities = _world(80, None)
 
-        listed = await queries.attention_list(WORKSPACE, now=NOW)
+        listed = (await queries.attention_list(WORKSPACE, now=NOW)).items
 
         assert len(listed) == 2
         assert listed[-1].opportunity.entity_id == entities[1]
@@ -178,14 +179,14 @@ class TestNothingIsQuietlyDroppedFromTheList:
     async def test_a_stale_score_reads_as_stale_rather_than_current(self) -> None:
         queries, _, _, _ = _world(80, stale=(0,))
 
-        (only,) = await queries.attention_list(WORKSPACE, now=NOW)
+        (only,) = (await queries.attention_list(WORKSPACE, now=NOW)).items
 
         assert only.evidence_state is EvidenceState.STALE
 
     async def test_an_empty_workspace_is_an_empty_list_not_an_error(self) -> None:
         queries, _, _, _ = _world()
 
-        assert await queries.attention_list(WORKSPACE, now=NOW) == ()
+        assert (await queries.attention_list(WORKSPACE, now=NOW)).items == ()
 
     async def test_a_closed_opportunity_never_appears(self) -> None:
         queries, repository, _, entities = _world(90, 40)
@@ -204,7 +205,7 @@ class TestNothingIsQuietlyDroppedFromTheList:
             )
         )
 
-        listed = await queries.attention_list(WORKSPACE, now=NOW)
+        listed = (await queries.attention_list(WORKSPACE, now=NOW)).items
 
         assert [t.opportunity.entity_id for t in listed] == [entities[1]]
 
@@ -235,13 +236,13 @@ class TestPagingIsStableWhileScoresMove:
         queries, _, _, entities = _world(*range(5, 55, 5))
 
         seen: list[UUID] = []
-        cursor: UUID | None = None
+        cursor: CursorPosition | None = None
         while True:
             page = await queries.attention_list(WORKSPACE, after=cursor, limit=3, now=NOW)
-            if not page:
+            seen.extend(t.opportunity.entity_id for t in page.items)
+            cursor = page.next_position
+            if cursor is None:
                 break
-            seen.extend(t.opportunity.entity_id for t in page)
-            cursor = max((t.opportunity.id for t in page), key=lambda i: i.bytes)
 
         assert sorted(seen, key=lambda e: e.bytes) == sorted(entities, key=lambda e: e.bytes)
         assert len(seen) == len(set(seen)), "an account appeared on two pages"
@@ -257,7 +258,7 @@ class TestPagingIsStableWhileScoresMove:
         """
         queries, repository, _, _ = _world(*range(10, 110, 10))
 
-        page = await queries.attention_list(WORKSPACE, limit=4, now=NOW)
+        page = (await queries.attention_list(WORKSPACE, limit=4, now=NOW)).items
 
         lowest = sorted((o.id for o in repository.rows), key=lambda i: i.bytes)[:4]
         assert sorted((t.opportunity.id for t in page), key=lambda i: i.bytes) == lowest
@@ -265,7 +266,7 @@ class TestPagingIsStableWhileScoresMove:
     async def test_within_a_page_the_ranking_still_applies(self) -> None:
         queries, _, _, _ = _world(*range(10, 110, 10))
 
-        page = await queries.attention_list(WORKSPACE, limit=4, now=NOW)
+        page = (await queries.attention_list(WORKSPACE, limit=4, now=NOW)).items
         values = [t.current_score.value for t in page if t.current_score]
 
         assert values == sorted(values, reverse=True)
@@ -275,11 +276,11 @@ class TestPagingIsStableWhileScoresMove:
 
         queries, _, _, _ = _world(*([50] * 60))
 
-        assert len(await queries.attention_list(WORKSPACE, now=NOW)) == DEFAULT_PAGE
+        assert len((await queries.attention_list(WORKSPACE, now=NOW)).items) == DEFAULT_PAGE
 
 
 @pytest.mark.parametrize("limit", [1, 2, 7])
 async def test_every_page_size_returns_at_most_that_many(limit: int) -> None:
     queries, _, _, _ = _world(*range(10, 100, 10))
 
-    assert len(await queries.attention_list(WORKSPACE, limit=limit, now=NOW)) <= limit
+    assert len((await queries.attention_list(WORKSPACE, limit=limit, now=NOW)).items) <= limit

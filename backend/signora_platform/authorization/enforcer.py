@@ -28,6 +28,10 @@ class Resource(StrEnum):
 
     WORKSPACE = "workspace"
     MEMBER = "member"
+    #: Registered by M12.1. A *use* of the platform rather than a change to
+    #: it (§20a): a new member, no interface reshaped, no existing caller
+    #: affected — the same category as registering a new event type.
+    OPPORTUNITY = "opportunity"
 
 
 class Action(StrEnum):

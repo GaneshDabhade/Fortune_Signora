@@ -5,3 +5,5 @@ p, owner, *, member, add
 p, owner, *, member, remove
 p, member, *, workspace, read
 p, member, *, member, read
+p, owner, *, opportunity, read
+p, member, *, opportunity, read
