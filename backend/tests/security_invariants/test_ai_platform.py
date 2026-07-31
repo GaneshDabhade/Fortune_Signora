@@ -368,10 +368,17 @@ class TestTheReleaseRuleHasExactlyOneException:
     ALLOWED = "evaluation"
 
     def test_only_the_harness_calls_measure(self) -> None:
+        """**Widened at T137, from the AI Platform to every module.**
+
+        The scan previously covered `modules/ai_platform` alone, so a consumer
+        calling `measure` from its own request path was invisible to it — found
+        by a mutation that swapped `execute` for `measure` in the AI Research
+        Engine and broke nothing. The rule was always repository-wide: the
+        exception belongs to evaluation, whoever's evaluation it is.
+        """
         offences: list[str] = []
-        for path in AI_PLATFORM_ROOT.rglob("*.py"):
-            relative = path.relative_to(AI_PLATFORM_ROOT)
-            if relative.parts[0] == self.ALLOWED or path.name == "infer.py":
+        for path in (BACKEND_ROOT / "modules").rglob("*.py"):
+            if self.ALLOWED in path.parts or path.name == "infer.py":
                 continue
             for node in ast.walk(ast.parse(path.read_text())):
                 if (

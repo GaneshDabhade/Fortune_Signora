@@ -547,11 +547,15 @@ name = "ai_research_engine reaches other modules only through public/"
 type = "forbidden"
 allow_indirect_imports = true
 source_modules = ["modules.ai_research_engine"]
-# **No `ignore_imports` yet, deliberately.** M9 carries a narrow exemption for
-# its evaluation composition root; import-linter refused the same entry here
-# because nothing under `evaluation/` imports anything yet, and an exemption
-# for an import that does not exist is a declared hole guarding nothing. It is
-# added in the task that writes the entry point, not before.
+# **Added at T137, by the task that wrote the import.** T131 deliberately left
+# this out: nothing under `evaluation/` imported anything yet, and an exemption
+# for an import that does not exist is a declared hole guarding nothing. The
+# entry point now exists, and wiring a registry and a harness is what a
+# composition root is *for*. One module deep — nothing else under
+# `ai_research_engine` may reach past another module's `public/`.
+ignore_imports = [
+    "modules.ai_research_engine.evaluation.** -> modules.ai_platform.**",
+]
 forbidden_modules = [
     "modules.opportunity_engine.domain",
     "modules.opportunity_engine.application",

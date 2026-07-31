@@ -1,0 +1,77 @@
+{
+  "_comment": "Golden dataset for M10 planning evaluation. Each case is the closed set of *research* facts recorded from a real pipeline run over the M2.0 baseline scenario \u2014 business events and preserved dissent, the two kinds the derivation catalog consumes. Not hand-written: every fact traces back to a simulated provider payload and the id the pipeline minted for it. `load_bearing` names the facts a useful plan must target; coverage is measured against them. `fingerprint` is the SHA-256 of `cases`: editing an expectation without bumping `version` fails to load, because a result recorded against version 1 must remain re-measurable against version 1. Regenerate with `python -m tests.ai_research_engine.seed_planning_dataset`, review the diff, and bump the version if any case changed.",
+  "name": "research_planning",
+  "version": 1,
+  "fingerprint": "d0faa53b8f3ed010d0c800ef3b7adebfca1299b6d10f041db6204b2e4fb519b2",
+  "seeded_from": "signora_platform/simulation/scenarios/baseline@1.json (M2.0)",
+  "cases": [
+    {
+      "name": "northwind",
+      "workspace_id": "c1cc7e4d-dd5c-410c-b24e-f9e5fe0ff438",
+      "facts": [
+        {
+          "kind": "business_event",
+          "id": "05f9a950-a8d8-501d-b3c6-68cb690f4904",
+          "summary": "Started using CloudERP",
+          "attributes": {
+            "corroborated": "False",
+            "event_type": "technology_adopted",
+            "occurred_on": "2026-01-11",
+            "provider_count": "1",
+            "providers": "builtwith"
+          }
+        },
+        {
+          "kind": "business_event",
+          "id": "c02f15b3-c848-5704-b2ef-37c6ccac16a1",
+          "summary": "Stopped using LegacyERP",
+          "attributes": {
+            "corroborated": "False",
+            "event_type": "technology_retired",
+            "occurred_on": "2026-01-11",
+            "provider_count": "1",
+            "providers": "builtwith"
+          }
+        }
+      ],
+      "load_bearing": [
+        "business_event:05f9a950-a8d8-501d-b3c6-68cb690f4904",
+        "business_event:c02f15b3-c848-5704-b2ef-37c6ccac16a1"
+      ]
+    },
+    {
+      "name": "contoso",
+      "workspace_id": "0ec177cc-389d-41f9-b23f-f3db921d1e08",
+      "facts": [
+        {
+          "kind": "business_event",
+          "id": "57a622f2-a79a-5342-a872-d42367dcdbb0",
+          "summary": "Started using CloudERP",
+          "attributes": {
+            "corroborated": "False",
+            "event_type": "technology_adopted",
+            "occurred_on": "2026-01-11",
+            "provider_count": "1",
+            "providers": "builtwith"
+          }
+        },
+        {
+          "kind": "business_event",
+          "id": "c44261e3-cf06-5b65-8e45-c4388bd11db0",
+          "summary": "Stopped using LegacyERP",
+          "attributes": {
+            "corroborated": "False",
+            "event_type": "technology_retired",
+            "occurred_on": "2026-01-11",
+            "provider_count": "1",
+            "providers": "builtwith"
+          }
+        }
+      ],
+      "load_bearing": [
+        "business_event:57a622f2-a79a-5342-a872-d42367dcdbb0",
+        "business_event:c44261e3-cf06-5b65-8e45-c4388bd11db0"
+      ]
+    }
+  ]
+}

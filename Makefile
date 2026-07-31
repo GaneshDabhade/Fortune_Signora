@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: smoke smoke-keep dr up down test eval eval-reasoning
+.PHONY: smoke smoke-keep dr up down test eval eval-reasoning eval-research
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
 # The executable bit is filesystem state, not repository state, and it does
@@ -83,3 +83,13 @@ eval:
 # datasets, rubric, release recorder, provider registry — is reused unchanged.
 eval-reasoning:
 	@cd backend && uv run python -m modules.ai_reasoning_engine.evaluation $(ARGS)
+
+## The same again, for the AI Research Engine's planning prompt.
+#
+# M10 owns a third entry point for the same reason M9 owns a second, and its
+# own dataset for a different one: the derivation catalog consumes
+# `business_event` and `dissenting_signal`, while M8's golden set holds none of
+# either — a planner evaluated against it could only produce steps its own
+# schema refuses.
+eval-research:
+	@cd backend && uv run python -m modules.ai_research_engine.evaluation $(ARGS)

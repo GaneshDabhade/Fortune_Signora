@@ -151,30 +151,67 @@ class TestResearchStaysInternal:
         )
         assert origins == {"derived", "inferred"}
 
-    def test_no_part_of_the_module_reaches_the_network(self) -> None:
-        """**Wider than the layering contract, deliberately.**
+    def test_no_network_client_exists_except_to_hand_to_the_platform(self) -> None:
+        """**Wider than the layering contract, and narrowed at T137.**
 
         `import-linter` forbids `httpx` in `domain/` — a Clean Architecture
         rule, and it would happily allow a browser tool in `infrastructure/`.
-        The ruling is about the module as a whole: every model call goes through
-        the AI Platform's adapters, which own the transport, so nothing here
-        needs a client of its own.
+        The ruling is about the module as a whole.
+
+        As first written this forbade a network client *anywhere*, justified by
+        *"every model call goes through the AI Platform's adapters, which own
+        the transport, so nothing here needs a client of its own."* **T137
+        disproved that.** `build_provider_registry(settings, client=client)`
+        takes a client: the platform owns the adapters, the composition root
+        owns the client's lifetime, and M9's entry point does the same.
+
+        So the rule is narrowed to what it always meant rather than exempting a
+        directory. A client may exist **only in a file that hands it to the
+        platform's registry** — which permits the one legitimate use and still
+        refuses a client anyone could fetch with, including inside
+        `evaluation/`.
         """
         clients = {"httpx", "requests", "urllib", "urllib3", "aiohttp", "socket", "webbrowser"}
         for source in MODULE_ROOT.rglob("*.py"):
-            tree = ast.parse(source.read_text(encoding="utf-8"))
+            text = source.read_text(encoding="utf-8")
+            tree = ast.parse(text)
+            imported: set[str] = set()
             for node in ast.walk(tree):
-                imported: set[str] = set()
                 if isinstance(node, ast.Import):
-                    imported = {alias.name.split(".")[0] for alias in node.names}
+                    imported |= {alias.name.split(".")[0] for alias in node.names}
                 elif isinstance(node, ast.ImportFrom) and node.module:
-                    imported = {node.module.split(".")[0]}
-                offending = imported & clients
-                assert not offending, (
-                    f"{source.relative_to(MODULE_ROOT)} imports {sorted(offending)}. The AI "
-                    "Research Engine researches what Signora already owns; a network client "
-                    "here is external retrieval arriving without the ruling that authorises it."
-                )
+                    imported |= {node.module.split(".")[0]}
+
+            offending = imported & clients
+            if not offending:
+                continue
+            assert "build_provider_registry" in text, (
+                f"{source.relative_to(MODULE_ROOT)} imports {sorted(offending)} without handing "
+                "it to the AI Platform's provider registry. The AI Research Engine researches "
+                "what Signora already owns; a client it can fetch with is external retrieval "
+                "arriving without the ruling that authorises it."
+            )
+
+    def test_no_client_exists_outside_the_composition_root(self) -> None:
+        """The other half, so the narrowing above cannot be widened by moving a
+        fetch next to a registry call. Retrieval, derivation and orchestration
+        must import no client at all."""
+        clients = {"httpx", "requests", "urllib", "urllib3", "aiohttp", "socket", "webbrowser"}
+        for layer in ("domain", "application", "infrastructure", "public"):
+            for source in (MODULE_ROOT / layer).rglob("*.py"):
+                tree = ast.parse(source.read_text(encoding="utf-8"))
+                for node in ast.walk(tree):
+                    imported: set[str] = set()
+                    if isinstance(node, ast.Import):
+                        imported = {alias.name.split(".")[0] for alias in node.names}
+                    elif isinstance(node, ast.ImportFrom) and node.module:
+                        imported = {node.module.split(".")[0]}
+                    offending = imported & clients
+                    assert not offending, (
+                        f"{source.relative_to(MODULE_ROOT)} imports {sorted(offending)}. Only "
+                        "the evaluation composition root may hold a client, and only to hand "
+                        "to the provider registry."
+                    )
 
 
 class TestOneCitationResolvesToOneSentence:
