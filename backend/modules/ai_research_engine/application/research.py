@@ -69,7 +69,10 @@ logger = logging.getLogger(__name__)
 PRODUCER_MODULE = "ai_research_engine"
 
 SYNTHESIS_PROMPT = "research_synthesis"
-SYNTHESIS_VERSION = 1
+#: Version 2 since M9.5 Step D, and the version that first earned a release:
+#: `@1` was refused four consecutive times, every failure a citation the model
+#: had *edited* rather than copied.
+SYNTHESIS_VERSION = 2
 
 #: How a research subject is addressed. An account *is* a Knowledge Graph
 #: entity, and naming it in the AI Platform's addressing vocabulary is what

@@ -1071,3 +1071,46 @@ M8's pipeline test now supplies a registry double stamped at the running protoco
 *Seven mutations, all fatal — including reverting the version, re-decorating the citation, swapping the em dash for a hyphen, and re-authoring the fact line inside `render.py`.*
 
 *1757 tests · 321 invariants · 29 contracts · mypy strict clean · coverage 95.9%.*
+
+---
+
+### Step D — the workaround is deleted, and the refused prompt earns a release
+
+> 2026-07-31. Prompt authoring only. No platform behaviour, no parser change, no rendering change.
+
+`research_planning@2` and `research_synthesis@2` are new artifacts — `@1` is immutable and untouched, and the fingerprints differ, because content identity outranks version identity.
+
+**What was removed.** Both `@1` prompts told the model to perform surgery on what it saw:
+
+> *"Cite the exact reference, **without the square brackets**. The facts are shown as `[business_event:2f7c9a10-...]`; write `business_event:2f7c9a10-...`."*
+
+Both `@2` prompts ask only that it be copied:
+
+> *"**Cite the reference exactly as shown.** Copy it character for character — do not add anything, and do not remove anything."*
+
+#### The result
+
+| Prompt | Protocol | Grounding failures | Outcome |
+|---|---|---|---|
+| `research_planning@1` | 1 | 0 | earned, then withdrawn by Step C |
+| `research_synthesis@1` | 1 | **1**, four consecutive runs | **REFUSED** |
+| `research_planning@2` | 2 | 0 | **EARNED** |
+| `research_synthesis@2` | 2 | **0** | **EARNED** |
+
+**`research_synthesis@2` is ADR-0031's central prediction, confirmed by measurement.** The same model, the same dataset, the same rubric, the same schema, the same criteria — and the prompt that failed four times in a row now passes. The only things that changed are what the model was shown and an instruction to stop editing it.
+
+Three consecutive clean runs of each, mirroring the three consecutive identical refusals in the other direction. Coverage 1.00 on both cases of both prompts.
+
+**Only the recorded run is in the manifest.** The two stability runs were executed without `--record`, because `record()` refuses a duplicate `(model, dataset, dataset_version, protocol, date)` — correctly, since evaluations accumulate and overwriting one is how an inconvenient result stops existing. The repetitions are reported here as an observation, not promoted into evidence they are not.
+
+#### Two things Step D had to change beyond the prompts
+
+**M10's request path now names `@2`** (`plan.py`, `research.py`). A prompt nothing requests is a dead artifact, and leaving the pipeline pointed at `@1` would have left it permanently refused.
+
+**One test's premise was removed by its own milestone.** `test_an_unreleased_synthesis_prompt_stores_nothing` proved that a run failing *after* deriving findings stores nothing — and it borrowed its failure from the shipped manifest, where `research_synthesis@1` genuinely had no release. Step D earned one. The arrangement is now constructed explicitly, with planning released and synthesis withheld, because **a guarantee that depends on a real prompt staying broken expires the moment the prompt is fixed.**
+
+#### The success criterion, asserted rather than described
+
+`test_no_prompt_the_pipeline_uses_instructs_a_transformation` reads the shipped `@2` files and refuses any prompt containing *"without the brackets"*, *"square bracket"*, *"strip"* or *"remove the"*. A future author reintroducing the workaround fails a test rather than rediscovering the defect.
+
+*1763 tests · 321 invariants · 29 contracts · mypy strict clean · coverage 95.85% · smoke green.*

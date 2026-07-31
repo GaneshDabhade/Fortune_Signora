@@ -1,8 +1,11 @@
 """The release rule, and the plan-ordering ruling, asserted where they bind.
 
-`research_planning@1` is **released for `llama3.1:8b` and refused for every
-other model**, because that is the only pairing anything has measured. These
-tests assert it in both directions — a release nobody can lose is not a rule.
+M10 requests `research_planning@2` and `research_synthesis@2`, both **released
+for `llama3.1:8b` and refused for every other model**, because that is the only
+pairing anything has measured under rendering protocol 2. The `@1` versions are
+still on disk, still hold the measurements they earned under protocol 1, and
+earn nothing today. Both directions are asserted — a release nobody can lose is
+not a rule.
 
 Nothing here calls a model.
 """
@@ -25,6 +28,7 @@ from modules.ai_platform.public import (
 )
 from modules.ai_platform.infrastructure.prompt_loader import load_prompt_registry
 from modules.ai_research_engine.application.plan import PROMPT_NAME, PROMPT_VERSION
+from modules.ai_research_engine.application.research import SYNTHESIS_PROMPT, SYNTHESIS_VERSION
 from modules.ai_research_engine.application.orchestrate import execute
 from modules.ai_research_engine.domain.plan import DerivationType, PlannedStep, ResearchPlan
 from modules.ai_research_engine.domain.research import ResearchTask
@@ -44,25 +48,17 @@ SUBJECT = EvidenceRef(kind="entity", id=uuid4())
 NOW = datetime(2026, 7, 31, 12, 0, tzinfo=UTC)
 
 
-class TestTheReleaseRuleBindsTheRequestPath:
-    def test_the_certified_model_awaits_re_evaluation_under_protocol_2(self) -> None:
-        """**Its release was earned, and M9.5 Step C withdrew it.**
+class TestTheRequestPathUsesTheProtocol2Prompts:
+    """M10 asks for `@2`, and `@2` is what earned a release under protocol 2."""
 
-        `research_planning@1` passed cleanly on `llama3.1:8b` — under rendering
-        protocol 1, which wrapped every citation in brackets the parser refused.
-        The prompt worked *around* that (rule 5 told the model to strip them),
-        so the measurement is real and it describes a form no longer rendered.
+    def test_both_prompts_the_pipeline_requests_are_released(self) -> None:
+        registry = load_prompt_registry(PROMPT_DIR)
 
-        Step D replaces the workaround; Step F re-measures. Until then this
-        states what is true rather than what the milestone intends.
-        """
-        prompt = load_prompt_registry(PROMPT_DIR).get(PROMPT_NAME, PROMPT_VERSION)
+        assert (PROMPT_NAME, PROMPT_VERSION) == ("research_planning", 2)
+        assert (SYNTHESIS_PROMPT, SYNTHESIS_VERSION) == ("research_synthesis", 2)
 
-        (earned,) = [e for e in prompt.evaluations if e.passed]
-        assert earned.rendering_protocol_version == 1
-
-        with pytest.raises(PromptNotReleasableError, match="protocol"):
-            prompt.require_model(CERTIFIED_MODEL)
+        registry.get(PROMPT_NAME, PROMPT_VERSION).require_model(CERTIFIED_MODEL)
+        registry.get(SYNTHESIS_PROMPT, SYNTHESIS_VERSION).require_model(CERTIFIED_MODEL)
 
     def test_an_unmeasured_model_is_refused(self) -> None:
         """**Including one certified for a different prompt.** `granite3.3:2b`
@@ -74,41 +70,60 @@ class TestTheReleaseRuleBindsTheRequestPath:
         with pytest.raises(PromptNotReleasableError):
             prompt.require_model("granite3.3:2b")
 
-    def test_the_manifest_holds_exactly_the_measurement_that_earned_it(self) -> None:
-        """`passed` is derived from the failure counts rather than stored, so a
-        release cannot be recorded by asserting it."""
-        manifest = json.loads((PROMPT_DIR / "manifest.json").read_text())
-        record = next(p for p in manifest["prompts"] if p["name"] == PROMPT_NAME)
-        (evaluation,) = record["evaluations"]
+    def test_no_prompt_the_pipeline_uses_instructs_a_transformation(self) -> None:
+        """**The success criterion of M9.5, asserted on the artifacts.**
 
-        assert record["name"] == PROMPT_NAME
-        assert evaluation["model"] == CERTIFIED_MODEL
-        assert evaluation["dataset"] == "research_planning"
-        assert evaluation["grounding_failures"] == 0
-        assert evaluation["schema_failures"] == 0
-        assert evaluation["coverage"] == 1.0
-
-    def test_the_synthesis_prompt_records_a_refusal_and_earns_no_release(self) -> None:
-        """**Measured, refused, and the manifest says so.**
-
-        Until M9.5 Step A this asserted an *empty* history, which was true and
-        far weaker: a prompt nobody has measured and a prompt measured and found
-        wanting are different facts, and only the manifest can tell them apart.
-        The refusal is now recorded, so this asserts the stronger pair — a
-        measurement exists, and it earned nothing.
+        A prompt author must never again compensate for parser behaviour. Both
+        `@1` prompts told the model to remove characters; both `@2` prompts ask
+        only that the reference be copied. This reads the shipped files, so a
+        future author reintroducing the workaround fails here.
         """
+        for name in (PROMPT_NAME, SYNTHESIS_PROMPT):
+            text = (PROMPT_DIR / f"{name}@2.md").read_text().lower()
+
+            assert "exactly as shown" in text
+            for compensation in ("without the brackets", "square bracket", "strip", "remove the"):
+                assert compensation not in text, (
+                    f"{name}@2 instructs the model to edit a citation ('{compensation}'). "
+                    "Rendering protocol 2 shows the reference as the parser accepts it, so "
+                    "copying is the winning strategy and no prompt needs to describe surgery."
+                )
+
+
+class TestTheProtocol1PromptsKeepTheirHistoryAndEarnNothing:
+    """Immutable, still on disk, still recording what they measured."""
+
+    @pytest.mark.parametrize(
+        ("name", "grounding_failures"),
+        [("research_planning", 0), ("research_synthesis", 1)],
+    )
+    def test_version_1_records_its_protocol_1_measurement(
+        self, name: str, grounding_failures: int
+    ) -> None:
         manifest = json.loads((PROMPT_DIR / "manifest.json").read_text())
-        record = next(p for p in manifest["prompts"] if p["name"] == "research_synthesis")
-        (refusal,) = record["evaluations"]
+        record = next(
+            p for p in manifest["prompts"] if p["name"] == name and p["version"] == 1
+        )
+        (measurement,) = record["evaluations"]
 
-        assert refusal["model"] == CERTIFIED_MODEL
-        assert refusal["grounding_failures"] == 1
-        assert refusal["schema_failures"] == 0
+        assert measurement["model"] == CERTIFIED_MODEL
+        assert measurement["rendering_protocol_version"] == 1
+        assert measurement["grounding_failures"] == grounding_failures
 
-        prompt = load_prompt_registry(PROMPT_DIR).get("research_synthesis", 1)
+        prompt = load_prompt_registry(PROMPT_DIR).get(name, 1)
         assert not prompt.is_released
         with pytest.raises(PromptNotReleasableError):
             prompt.require_model(CERTIFIED_MODEL)
+
+    def test_the_two_versions_are_different_artifacts(self) -> None:
+        """Content identity outranks version identity: `@2` is a new prompt,
+        never an edit of `@1`, and the fingerprints prove it."""
+        registry = load_prompt_registry(PROMPT_DIR)
+
+        for name in ("research_planning", "research_synthesis"):
+            first, second = registry.get(name, 1), registry.get(name, 2)
+            assert first.fingerprint != second.fingerprint
+            assert first.text != second.text
 
 
 def _event() -> EvidenceFact:

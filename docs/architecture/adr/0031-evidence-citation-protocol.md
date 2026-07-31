@@ -275,8 +275,8 @@ Ratified by the Product Owner on 2026-07-31. Implemented in the order this docum
 | **A** — record the outstanding refusals | Done. Three recorded, all reproduced live: `research_synthesis@1`/`llama3.1:8b`, `reasoning@1`/`qwen2.5:3b`, `reasoning@1`/`llama3.2:3b`. `qwen2.5:7b-instruct-q3_K_M` returned UNMEASURABLE and is deliberately absent |
 | **B** — version the rendering protocol | Done, behaviour-neutral. `domain/rendering.py` owns the concept; every evaluation records its protocol; releases derive from `earns_release` rather than `passed` |
 | **C** — move the form, bump to 2 | Done. Citations are now presented exactly as `EvidenceRef.parse` accepts them. **Three releases withdrew themselves**, with no manifest edited and no migration run |
-| **D** — remove Option C from the prompts | Pending |
-| **E/F** — re-evaluate and record | Pending |
+| **D** — remove Option C from the prompts | Done. `research_planning@2` and `research_synthesis@2` authored and measured. **`research_synthesis@2` EARNED a release** — the prompt refused four consecutive times under protocol 1, passing cleanly on the same model, dataset, rubric and schema. This document's central prediction, confirmed by measurement |
+| **F** — re-evaluate the remaining prompts | Pending: `explanation_narration@1` and `reasoning@1`, plus the five-model comparison this document asks for |
 
 **One correction to this document, made during Step B.** The *Where the protocol lives* section above proposes putting the display form beside `token` and `parse` in `domain/evidence.py`. That would have violated a rule that module states about itself — *"Evidence is truth; prompts are language, and the moment a fact knows how it will be phrased, changing the wording becomes a change to the evidence model."* The intent was right and the address was wrong: the protocol is its own concept in `domain/rendering.py`, depending on the grammar without living inside it.
 

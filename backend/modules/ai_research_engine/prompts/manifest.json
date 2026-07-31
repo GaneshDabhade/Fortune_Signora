@@ -42,6 +42,48 @@
           "retries": 0
         }
       ]
+    },
+    {
+      "name": "research_planning",
+      "version": 2,
+      "owner": "AI Research Engine",
+      "fingerprint": "bafc9d282d53e4e3ae7a10748d41e9128acb63c9ae1e6d5e00390871db2debfb",
+      "evaluations": [
+        {
+          "model": "llama3.1:8b",
+          "dataset": "research_planning",
+          "dataset_version": 1,
+          "rubric_version": 1,
+          "evaluated_on": "2026-07-31",
+          "sample_size": 2,
+          "grounding_failures": 0,
+          "schema_failures": 0,
+          "coverage": 1.0,
+          "rendering_protocol_version": 2,
+          "retries": 1
+        }
+      ]
+    },
+    {
+      "name": "research_synthesis",
+      "version": 2,
+      "owner": "AI Research Engine",
+      "fingerprint": "409a6b2e38a92f1b72022a7b205bfaf299e93e4213e83afcfe486e65fa80d3b6",
+      "evaluations": [
+        {
+          "model": "llama3.1:8b",
+          "dataset": "research_synthesis",
+          "dataset_version": 1,
+          "rubric_version": 1,
+          "evaluated_on": "2026-07-31",
+          "sample_size": 2,
+          "grounding_failures": 0,
+          "schema_failures": 0,
+          "coverage": 1.0,
+          "rendering_protocol_version": 2,
+          "retries": 0
+        }
+      ]
     }
   ]
 }

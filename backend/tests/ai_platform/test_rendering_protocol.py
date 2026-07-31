@@ -286,15 +286,24 @@ class TestTheProtocolBumpWithdrewEveryStaleRelease:
     """
 
     @pytest.mark.parametrize("directory", MANIFEST_DIRS)
-    def test_history_is_untouched_and_still_names_protocol_1(self, directory: str) -> None:
+    def test_no_protocol_1_measurement_was_touched_or_still_applies(self, directory: str) -> None:
+        """Every protocol-1 record is still there, and none of them earns
+        anything. Scoped to protocol 1 rather than to *all* evaluations,
+        because Step D began adding protocol-2 measurements alongside them —
+        which is the point: history accumulates, it is not replaced."""
         load_prompt_registry.cache_clear()
         registry = load_prompt_registry(Path(__file__).resolve().parents[2] / directory)
 
-        evaluations = [e for version in registry.versions for e in version.evaluations]
+        legacy = [
+            e
+            for version in registry.versions
+            for e in version.evaluations
+            if e.rendering_protocol_version == 1
+        ]
 
-        assert evaluations, f"{directory} records no measurements at all."
-        assert all(e.rendering_protocol_version == 1 for e in evaluations)
-        assert not any(e.measured_under_current_protocol for e in evaluations)
+        assert legacy, f"{directory} lost the protocol-1 measurements it recorded."
+        assert not any(e.measured_under_current_protocol for e in legacy)
+        assert not any(e.earns_release for e in legacy)
 
     @pytest.mark.parametrize(
         ("directory", "name", "model"),

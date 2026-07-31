@@ -41,6 +41,8 @@ from modules.ai_platform.public import (
     PromptRegistry,
     PromptVersion,
 )
+from modules.ai_research_engine.application.plan import PROMPT_NAME, PROMPT_VERSION
+from modules.ai_research_engine.application.research import SYNTHESIS_PROMPT, SYNTHESIS_VERSION
 from modules.ai_research_engine.infrastructure.composition import PROMPT_DIR, build_research
 from modules.ai_research_engine.infrastructure.models import (
     ResearchFindingModel,
@@ -56,6 +58,11 @@ from tests.pipeline import _published, opportunities
 pytestmark = pytest.mark.integration
 
 MODEL = "llama3.1:8b"
+
+#: The versions the pipeline actually requests, read from the pipeline rather
+#: than repeated here — a test pinned to a stale version would keep passing
+#: against a prompt nothing uses.
+PROMPT_VERSIONS = {PROMPT_NAME: PROMPT_VERSION, SYNTHESIS_PROMPT: SYNTHESIS_VERSION}
 
 
 def _plan_json(refs: list[str]) -> str:
@@ -143,12 +150,14 @@ class _ScriptedModel:
         )
 
 
-def _version(name: str) -> PromptVersion:
+def _version(name: str, *, released: bool = True) -> PromptVersion:
+    """One of M10's prompts, at the version the pipeline actually requests."""
+    version = PROMPT_VERSIONS[name]
     return PromptVersion(
         name=name,
-        version=1,
+        version=version,
         owner="ai-research@signora",
-        text=(PROMPT_DIR / f"{name}@1.md").read_text(),
+        text=(PROMPT_DIR / f"{name}@{version}.md").read_text(),
         evaluations=(
             Evaluation(
                 model=MODEL,
@@ -162,20 +171,32 @@ def _version(name: str) -> PromptVersion:
                 coverage=1.0,
                 rendering_protocol_version=PROMPT_RENDERING_PROTOCOL_VERSION,
             ),
-        ),
+        )
+        if released
+        else (),
     )
 
 
-def _released_registry() -> PromptRegistry:
+def _released_registry(*, synthesis_released: bool = True) -> PromptRegistry:
     """Both of M10's prompts, **each with a passing evaluation**.
 
     A double for the registry, not for the release *rule*: the rule is the real
     one and is satisfied here by a measurement of the shape it demands. The
     shipped manifest is untouched, and `test_planning_release.py` asserts what
     it actually holds.
+
+    `synthesis_released=False` withholds the synthesis measurement so that a run
+    fails **after** its findings are derived — the one arrangement that can prove
+    storage waits for the whole lifecycle. Until M9.5 that state was borrowed
+    from the shipped manifest, where `research_synthesis@1` genuinely had no
+    release; Step D earned one, so the condition is now constructed explicitly
+    rather than relying on a real prompt staying broken.
     """
     return PromptRegistry(
-        versions=(_version("research_planning"), _version("research_synthesis"))
+        versions=(
+            _version("research_planning"),
+            _version("research_synthesis", released=synthesis_released),
+        )
     )
 
 
@@ -291,11 +312,19 @@ class TestNothingIsStoredUntilEverythingSucceeded:
         session_factory: async_sessionmaker[AsyncSession],
         admin_session_factory: async_sessionmaker[AsyncSession],
     ) -> None:
-        """**The release rule on the request path.** `research_synthesis@1` is
-        authored and unreleased for this fake's model, so `Infer.execute`
-        refuses it — and because storage happens at the end, the refusal leaves
-        no task row and no findings rather than a run that found things and
-        said nothing."""
+        """**The release rule on the request path, and where the run reaches
+        before it fails.**
+
+        Planning is released and synthesis is not, so the run gets as far as
+        deriving its findings and *then* stops. That ordering is the whole
+        assertion: storage happens at the end, so the refusal leaves no task row
+        and no findings rather than a run that found things and said nothing.
+
+        Until M9.5 this borrowed the condition from the shipped manifest, where
+        `research_synthesis@1` genuinely had no release. Step D earned one, so
+        the arrangement is now constructed — a guarantee that depended on a real
+        prompt staying broken would have expired the moment it was fixed.
+        """
         workspace_id, user_id, entity_id, _ = await _tracked(
             session_factory, admin_session_factory, "northwind"
         )
@@ -311,7 +340,7 @@ class TestNothingIsStoredUntilEverythingSucceeded:
                 session,
                 infer=Infer(
                     providers=providers,
-                    prompts=load_prompt_registry(PROMPT_DIR),
+                    prompts=_released_registry(synthesis_released=False),
                     recorder=SqlInferenceRecorder(session_factory),
                     policy=InferencePolicy(),
                 ),

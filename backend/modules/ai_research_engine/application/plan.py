@@ -39,7 +39,11 @@ from modules.ai_platform.public import EvidenceSet, Infer, InferenceInput, Infer
 from modules.ai_research_engine.domain.plan import ResearchPlan
 
 PROMPT_NAME = "research_planning"
-PROMPT_VERSION = 1
+#: Version 2 since M9.5 Step D. `@1` instructed the model to strip the brackets
+#: rendering protocol 1 wrapped every citation in; protocol 2 shows the citation
+#: as the parser accepts it, so `@2` asks only that it be copied. `@1` remains on
+#: disk, immutable, with the measurement that earned it under the old protocol.
+PROMPT_VERSION = 2
 
 
 async def plan_research(
