@@ -196,3 +196,58 @@ Reaching that took four widenings, each with defaults that left every existing t
 
 **D14 — the eight unqualified accounts are invisible, and that may be wrong.** A seller whose evidence is thin on eight accounts currently sees nothing about them. There is a real product question here: is *"we are watching these and they have not met your bar"* worth a surface? It is not a bug, it is a gap in the story the product tells, and it belongs to a milestone that owns qualification rather than to this one.
 *Trigger:* a design partner asking where an account they expected went.
+
+---
+
+## The account brief — first slice *(M12.2, 2026-07-31)*
+
+The score, the arithmetic, and every line that produced it. Three decisions are worth inheriting, and two observations are recorded rather than built.
+
+### Decisions taken
+
+**The score is shown as a division, not a gauge.** `68 of 120 points` beside the number. A ring or a bar implies a maximum that means something — and the number is an ordering of commercial attention, so a filled 40% would state a confidence the pipeline never computed. A customer can check `min(100, points × 100 ÷ ceiling)` on paper in four seconds; **this is the moment the product either earns trust or asks for it, and asking is what every other tool does.**
+
+**The reason is placed, never paraphrased.** Each line's sentence is rendered by the pipeline from the same fields an auditor checks. The screen positions it and does nothing else. A friendlier rewording — and there were several available — would blur two lines together and make the number uncheckable against the record, which is the one thing this product cannot afford to be.
+
+**Lines that counted nothing stay on the page**, subordinate but present, with the reason they counted nothing. A zero a customer can read is information; a row that vanished is a mystery, and the question it produces goes to support.
+
+**The disagreement is stated as a reason to look harder, not as a caveat.** A contested account gets a note saying Signora has neither picked a side nor split the difference. Wording that apologised for the disagreement would invert the meaning the Buying Score Engine computed: a fought-over account warrants *more* attention, not hedged attention.
+
+### D15 — the brief has no next action either
+
+**The same gap D3 recorded on the list, one screen deeper.** A seller can now see which accounts, and why — and still cannot do anything from either page. The brief is the more acute case: it is where somebody finishes being convinced, and finishing convinced with nowhere to go is a worse experience than never being convinced.
+
+*Owner:* M12.3, which owns stage transitions and assignment. Recorded, not built — the endpoints do not exist and inventing a disabled control would be worse than the absence.
+
+### D16 — the ledger is legible at four lines; nobody knows about forty
+
+Every judgement made here — that the list needs no grouping, that uncounted lines can stay inline, that the reasons scan as a column — was made against a Playground account with a handful of contributions. **A busy account with forty lines has not been seen**, and the honest position is the same one D10 holds about the list: partially answerable, not answered.
+
+The three plausible answers are collapse-uncounted-by-default, group-by-posture, and leave it alone. **Choosing now would be guessing**, and the current shape is the one that hides nothing, which is the right default to be wrong in.
+
+*Trigger:* an account whose ledger does not fit one screen. *Owner:* whichever milestone first produces one.
+
+### D17 — the Playground's twelve shapes are not reaching the screen
+
+**Found by opening the brief against real Playground data, 2026-07-31, and it partly corrects what D9 claimed.**
+
+Every one of the four qualified accounts reads **evidence expired**, and `adventure-outdoor` — the account whose *shape* is "stale evidence" — shows a ledger of `fresh evidence (100%)`. The scenario defines twelve shapes; the screen is showing something else.
+
+**The cause is known, dated, and not new.** [26-buying-score-engine.md](26-buying-score-engine.md) recorded it at M5B's close: the simulated payloads describe events months in the past, so at wall-clock now every hypothesis has passed its shelf life, and scoring a live account requires asking the question *as of* a moment derived from the evidence. The Playground inherited that because it runs the same helper the pipeline suite runs — **which is the single-product property working exactly as designed, and is why the defect is in the data rather than in the code.**
+
+Two consequences, and the second is the more serious:
+
+1. **Every reading is expired at wall-clock now**, so the current-reading path — the normal state of the product — is never demonstrated.
+2. **All twelve accounts are scored at one moment chosen by one of them** (`northwind-logistics`, the declared anchor). A scenario whose whole point is that accounts differ *temporally* — fresh, cooling, stale — cannot express that when every account is evaluated at the same instant.
+
+**This narrows what D9 established.** The Playground did deliver twelve distinct *evidence* shapes, and did make the disputed-name path real. It has not yet delivered the twelve *temporal* shapes it names, and the "four of twelve qualified" result reported at D9 is therefore weaker evidence than it looked: an account may be unqualified because its evidence is genuinely thin, or because it was scored at a moment that did not suit it. **Those are not the same finding, and today they cannot be told apart.**
+
+*Not fixed here.* `playground@1` is content-hashed and published, so a correction is `playground@2`; and per-account scoring moments are a Provider Simulation Framework concern, not a screen's. Both are the *"evidence recent enough that several signals are concurrently live"* work M5B already scheduled and M2.0 already owns.
+
+*Owner:* the Provider Simulation Framework. *Trigger:* immediate — this degrades every design review, every demo and every prompt evaluation that uses the Playground, which is now all of them.
+
+### D18 — half the qualified accounts have no name
+
+`887bf469` and `051391d2` render as identifiers because no provider in their scenario steps emits a `LEGAL_NAME` claim. The fallback behaves exactly as designed — the real identifier, never a fabricated name — but a demo in which half the list is unnamed undersells the identity work that shipped hours earlier.
+
+A scenario-authoring gap rather than a product one: the accounts that matter should be named by at least one provider. Folded into D17's `playground@2`.

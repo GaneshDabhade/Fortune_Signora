@@ -5,10 +5,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   AccountAttention,
   AccountIdentity,
+  AccountScore,
   CursorPage,
   Workspace,
 } from '@/lib/api/types';
-import { apiRequest } from '@/lib/api/client';
+import { ApiError, apiRequest } from '@/lib/api/client';
 import { queryKeys } from '@/lib/query/keys';
 
 /**
@@ -86,6 +87,27 @@ export function useAccountIdentities(workspaceId: string | null, accountIds: str
     // Names change far more slowly than scores. Holding them longer keeps a
     // list from re-requesting identities that cannot have moved.
     staleTime: 5 * 60_000,
+  });
+}
+
+/**
+ * One account's score, with the ledger that produced it.
+ *
+ * **Never retried on a 404.** An account that has never been scored is a
+ * settled answer, not a transient failure, and retrying it three times before
+ * showing the empty state makes a fast truthful response look like a slow
+ * broken one.
+ */
+export function useAccountScore(workspaceId: string | null, accountId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.accountScore(workspaceId ?? '', accountId ?? ''),
+    queryFn: () =>
+      apiRequest<AccountScore>(`/workspaces/${workspaceId}/accounts/${accountId}/score`, {
+        workspaceId: workspaceId ?? undefined,
+      }),
+    enabled: workspaceId !== null && accountId !== null,
+    retry: (attempt, error) =>
+      !(error instanceof ApiError && error.status === 404) && attempt < 2,
   });
 }
 

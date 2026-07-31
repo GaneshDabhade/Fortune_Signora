@@ -18,16 +18,18 @@ Everything runs locally. There is no cloud environment and no remote gate ([ADR-
 ## The short version
 
 ```bash
+# 0 — configuration
+cp backend/.env.example backend/.env      # local values only; never committed
+
 # 1 — infrastructure
-docker compose up -d          # PostgreSQL on 5432, Redis on 6379
+docker compose -f infra/docker-compose.yml up -d --wait   # PostgreSQL 5432, Redis 6379
 
-# 2 — schema
-cd backend && uv run alembic upgrade head
+# 2 — schema, run under the *owner* identity, never the runtime one
+cd backend && SIGNORA_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:5432/signora \
+  uv run alembic upgrade head
 
-# 3 — seed a workspace with real pipeline data   (see "Sample data" below)
-cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 \
-  SIGNORA_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5432/signora \
-  uv run pytest tests/integration/test_api_accounts.py -q
+# 3 — seed the Product Playground: twelve accounts through the real pipeline
+make demo-seed                # or `make demo`, which does steps 1–3 for you
 
 # 4 — backend
 cd backend && SIGNORA_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5432/signora \
@@ -80,11 +82,17 @@ Sign-in is Better Auth in Next.js. On a local stack, use the sign-in page at <ht
 
 ---
 
-## Sample data — and the honest caveat
+## Sample data — the Product Playground
 
-**There is no `make demo` yet.** Today the only realistic data comes from the integration suite, which runs the *real* pipeline over the M2.0 baseline scenario and leaves its rows behind. Step 3 above is that: running the account tests seeds two accounts (`northwind`, `contoso`) with genuine business events, signals, buying scores and opportunities.
+`make demo` seeds **twelve accounts through the real pipeline**: provider simulation → ingestion → normalization → knowledge graph → observations → business events → signals → buying scores → opportunities.
 
-**This is unsatisfying and it is recorded as such.** The suite truncates tables between tests, so what survives is the last run's workspace — and you must sign in as a user who is a member of it, which the test creates rather than you. **See "Product Playground" below.**
+**There is one product.** The seeder runs the same function the pipeline suite runs, over the `playground@1` scenario instead of `baseline@1`. No branch anywhere knows it is a playground; the only difference is which scenario file is named.
+
+Twelve accounts, twelve *shapes* — a technology migration, a hiring surge, a provider disagreement, an acquisition, a rapid grower, a stale account, a false positive, a silent account, a rebranding, a contested account, a slow burn, and one that is cooling. Every company is fictional and every domain is on the RFC 2606 `.example` reserved TLD, so nothing here can be mistaken for a claim about a real business.
+
+**Sign in once before seeding.** Better Auth owns users and hashes its own passwords, so the seeder cannot create one without either committing a credential or reaching into another system's schema. Sign in at <http://localhost:3000/sign-in>, then re-run `make demo-seed`; it enrols every signed-in user in the seeded workspace and prints what it did.
+
+**Expect four qualified opportunities, not twelve.** The other eight do not meet the qualification threshold — the silent account has one attribute and nothing else, the false positive has loud intent with no corroboration, the stale one's evidence expired. **That is the product working.** A playground producing twelve qualified opportunities would be validating a list nobody will ever see.
 
 ---
 
@@ -94,39 +102,45 @@ Sign-in is Better Auth in Next.js. On a local stack, use the sign-in page at <ht
 |---|---|
 | `/` | Overview — real empty states, no business data yet |
 | **`/opportunities`** | **The attention list.** Accounts ranked by live buying score, each with why it surfaced, how far it moved, and how fresh the evidence is |
+| **`/opportunities/{accountId}`** | **The account brief.** The score, the arithmetic behind it, and every line that produced it. Opened by clicking an account name on the list |
 | `/settings` | Workspaces and members |
 
-### The endpoints behind `/opportunities`
+### The endpoints behind them
 
 ```
 GET /workspaces/{workspace_id}/accounts
 GET /workspaces/{workspace_id}/account-identities?ids=<uuid>&ids=<uuid>
+GET /workspaces/{workspace_id}/accounts/{account_id}/score
 ```
 
-Both are documented at **<http://localhost:8000/docs>**.
+All three are documented at **<http://localhost:8000/docs>**.
 
-### Expected behaviour
+### Expected behaviour — the list
 
 - Accounts appear **most pressing first** — ranked by the *live* score, not the one that opened the opportunity.
 - Each row shows **why now** (new evidence, a changed model, evidence ageing out), how far the score moved, and a badge only when the evidence is cooling or stale.
 - A **contested** account ranks above a quiet one at the same score.
 - Company names resolve in a **second request** and appear as they arrive; rows do not wait for them.
-- A name your providers **disagree** about shows an ⓘ naming who reported the one displayed.
+- A name your providers **disagree** about shows an ⓘ naming who reported the one displayed. In the Playground this is **Fabrikam Industrial**.
 - An account nothing has named shows its **real identifier**, never a placeholder.
+- **Clicking the name opens the brief.** Only the name — the rest of the row is not a link, and does not pretend to be.
+
+### Expected behaviour — the brief
+
+- The score appears beside the two integers that produce it: **`68 of 120 points`**. Check it yourself: `score = min(100, points × 100 ÷ ceiling)`.
+- **How long the reading is correct for** is stated — a buying score is exactly correct until its stated expiry, not merely recent. An expired reading is shown as expired rather than hidden.
+- **Attention is split by posture** (expansion / risk / context) and never netted. Two accounts can score the same and mean opposite things.
+- **Every line that produced the score is listed**, largest first, in the order the pipeline recorded — including lines that counted **zero**, with the reason they counted nothing.
+- On a **contested** account, the lines disagreeing with the majority reading are marked, and a note says plainly that Signora has neither picked a side nor split the difference.
+- An account with no score shows a **designed empty state**, not an error.
 
 ### Known limitations, and what is intentionally unfinished
 
-- **Rows do not link anywhere.** The account brief is the next slice; a link to a page that does not exist is worse than none *(D3)*.
+- **Neither screen leads to an action.** Assign, move stage and dismiss are M12.3 *(D3, D15)*. No disabled control is drawn in their place.
+- **A citation cannot be followed yet.** Each ledger line carries its signal and business-event identifiers, and there is nowhere to click them until M12.3 builds evidence resolution. They are on the wire, not on the screen.
+- **No narration or Decision Package on the brief.** The remaining M12.2 scope.
 - **No sort or filter controls.** A client-side sort would reorder only the loaded page while presenting it as the top of the whole list *(D4)*.
 - **One page, no infinite scroll.** The cursor works; the UI does not page yet.
-- **`reasoning@1` has no released model**, so the Decision Package stage would refuse. It is not on this screen, so you will not see it — but the pipeline is not whole.
-
----
-
-## Product Playground — recommended, not built
-
-A stable demo dataset (Microsoft, Salesforce, Stripe, NVIDIA, Snowflake, Databricks, Atlassian, HubSpot) with believable signals and scores, behind one `make demo`, is **the right idea and the right time** — the current golden set has *two* structurally identical accounts, and `28-ai-platform.md` already records "variety 1" as the main caveat on every evaluation.
-
-**One correction to the shape:** it should not be a parallel seeding system. The **Provider Simulation Framework** already owns this and was commissioned for exactly ten scenarios *"deepening each milestone"* — one exists. A demo dataset belongs there as scenarios, so it inherits the seeded determinism, the fault injector and the provenance fields rather than splitting them across two owners.
-
-Scoped and recorded in [38-product-design-principles.md](architecture/38-product-design-principles.md) as **D9**; it is its own slice, not a side effect of this one.
+- **The ledger is only known to read well at a handful of lines.** A forty-line account has not been seen *(D16)*.
+- **Every Playground account reads "evidence expired", and two of the four are unnamed.** The simulated payloads describe events months in the past, so scoring asks its question *as of* a historical moment and the reading is expired by the time you look at it. The screens are correct; the scenario's dating is not, and the twelve temporal shapes it names are therefore not being demonstrated *(D17, D18)*.
+- **`reasoning@1` has no released model**, so the Decision Package stage would refuse at runtime. It is not on either screen, so you will not see it — but the pipeline is not whole.

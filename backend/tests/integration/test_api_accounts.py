@@ -488,3 +488,255 @@ class TestAccountIdentitiesAreResolvedNotStored:
         undocumented = sorted(name for name, spec in row.items() if not spec.get("description"))
 
         assert undocumented == []
+
+
+async def _score(
+    client: AsyncClient, key_pair: KeyPair, user_id: UUID, workspace_id: UUID, account_id: UUID
+) -> Any:
+    return await client.get(
+        f"/workspaces/{workspace_id}/accounts/{account_id}/score",
+        headers=_auth(key_pair, user_id),
+    )
+
+
+class TestTheScoreExplainsItself:
+    """`GET /workspaces/{id}/accounts/{account_id}/score` — *"why this account?"*
+
+    The first surface in the repository that returns a number **and** the
+    arithmetic that produced it. These assert the property the whole module
+    exists for: that a customer handed this response can reproduce the score
+    themselves and disagree with it line by line.
+    """
+
+    async def test_a_real_account_comes_back_with_its_ledger(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        response = await _score(client, key_pair, user_id, workspace_id, entity_id)
+
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert UUID(body["account_id"]) == entity_id
+        assert 0 <= body["score"] <= 100
+        assert body["contributions"], (
+            "a score with no ledger is exactly the opaque number this module exists to avoid"
+        )
+        for line in body["contributions"]:
+            assert line["reason"].strip(), "a line a customer cannot challenge"
+
+    async def test_the_score_reproduces_from_the_lines_beneath_it(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**The property that makes the explanation worth reading.**
+
+        Sum the counted points, divide by the ceiling, cap at 100. Asserted
+        over the wire rather than in the domain, because an explanation that
+        reproduces in Python and not in the response is an explanation the
+        customer does not have.
+        """
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        body = (await _score(client, key_pair, user_id, workspace_id, entity_id)).json()
+
+        counted = sum(line["points"] for line in body["contributions"] if line["counted"])
+        assert counted == body["points"]
+        assert body["score"] == min(100, body["points"] * 100 // body["ceiling"])
+
+    async def test_an_uncounted_line_carries_no_points_and_still_says_why(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """A zero with a reason is information; an absent row is a mystery."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        body = (await _score(client, key_pair, user_id, workspace_id, entity_id)).json()
+
+        for line in body["contributions"]:
+            if not line["counted"]:
+                assert line["points"] == 0
+                assert line["reason"].strip()
+
+    async def test_dissent_is_only_claimed_where_the_account_is_contested(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """Contradiction is detected from the evidence, never asserted beside
+        it — so a line cannot be marked dissenting on an account where nothing
+        disagrees."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        body = (await _score(client, key_pair, user_id, workspace_id, entity_id)).json()
+
+        dissenting = [line for line in body["contributions"] if line["dissenting"]]
+        assert body["contested"] or dissenting == []
+
+    async def test_a_reading_states_how_long_it_is_correct_for(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """A score is a reading with a stated validity, not a live gauge.
+        `is_current` is derived server-side so the browser never has to decide
+        whether a number it was handed is still true."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        body = (await _score(client, key_pair, user_id, workspace_id, entity_id)).json()
+
+        assert body["computed_at"]
+        assert isinstance(body["is_current"], bool)
+
+    async def test_an_account_that_was_never_scored_is_404(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        user = uuid4()
+        workspace = await _workspace(client, key_pair, user)
+
+        response = await _score(client, key_pair, user, workspace, uuid4())
+
+        assert response.status_code == 404
+
+    async def test_another_workspace_s_account_is_404_and_not_a_score(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**Tenant isolation on the explanation path.** Indistinguishable from
+        an account that was never scored, deliberately: a different answer here
+        would make account identifiers enumerable across tenants."""
+        mine_workspace, mine_user, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        _, _, theirs_entity, _ = await _tracked(
+            session_factory, admin_session_factory, "contoso"
+        )
+
+        response = await _score(
+            client, key_pair, mine_user, mine_workspace, theirs_entity
+        )
+
+        assert response.status_code == 404
+
+    async def test_a_non_member_gets_404(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        workspace = await _workspace(client, key_pair, uuid4())
+
+        response = await _score(client, key_pair, uuid4(), workspace, uuid4())
+
+        assert response.status_code == 404
+
+    async def test_an_unauthenticated_request_is_refused(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        workspace = await _workspace(client, key_pair, uuid4())
+
+        response = await client.get(f"/workspaces/{workspace}/accounts/{uuid4()}/score")
+
+        assert response.status_code == 401
+
+    async def test_a_malformed_account_identifier_is_refused(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        user = uuid4()
+        workspace = await _workspace(client, key_pair, user)
+
+        response = await client.get(
+            f"/workspaces/{workspace}/accounts/not-a-uuid/score",
+            headers=_auth(key_pair, user),
+        )
+
+        assert response.status_code == 422
+
+    async def test_it_appears_in_the_generated_openapi(self, client: AsyncClient) -> None:
+        schema = (await client.get("/openapi.json")).json()
+        path = schema["paths"]["/workspaces/{workspace_id}/accounts/{account_id}/score"]["get"]
+
+        assert path["summary"] == "Why this account is scored where it is"
+        assert "why this account" in path["description"].lower()
+
+    async def test_every_response_field_is_documented(self, client: AsyncClient) -> None:
+        schema = (await client.get("/openapi.json")).json()
+        schemas = schema["components"]["schemas"]
+
+        for name in ("AccountScoreResponse", "ContributionResponse"):
+            undocumented = sorted(
+                field
+                for field, spec in schemas[name]["properties"].items()
+                if not spec.get("description")
+            )
+            assert undocumented == [], f"{name}: {undocumented} reach the wire undocumented"
+
+    async def test_the_response_exposes_no_internal_bookkeeping(self) -> None:
+        """**Every field answers a question a salesperson would ask.**
+
+        Score identity, the reading it supersedes, the configuration versions
+        in force and the three multipliers behind one line are all real, all
+        stored, and none of them is something a seller decides from.
+        """
+        from modules.buying_score_engine.interface.schemas import (
+            AccountScoreResponse,
+            ContributionResponse,
+        )
+
+        header = set(AccountScoreResponse.model_fields)
+        line = set(ContributionResponse.model_fields)
+
+        for internal in ("id", "supersedes", "basis_at", "workspace_id"):
+            assert internal not in header
+        for internal in (
+            "scoring_model_version",
+            "model_artifact_version",
+            "profile_version",
+            "payload_version",
+        ):
+            assert internal not in header
+        for internal in (
+            "base_weight",
+            "relevance_multiplier",
+            "age_multiplier",
+            "band_started_at",
+            "band_ends_at",
+        ):
+            assert internal not in line
+
+    async def test_the_schema_is_not_a_domain_entity(self) -> None:
+        """Coupling the wire contract to the domain model makes a domain
+        refactor a client-breaking change (19-api-conventions.md)."""
+        from modules.buying_score_engine.domain.ledger import Contribution
+        from modules.buying_score_engine.domain.score import BuyingScore
+        from modules.buying_score_engine.interface.schemas import (
+            AccountScoreResponse,
+            ContributionResponse,
+        )
+
+        assert not issubclass(AccountScoreResponse, BuyingScore)
+        assert not issubclass(ContributionResponse, Contribution)

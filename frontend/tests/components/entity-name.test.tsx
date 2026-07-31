@@ -165,3 +165,49 @@ describe('only disagreement is marked', () => {
     expect(screen.getByText('Northwind Traders')).toBeInTheDocument();
   });
 });
+
+describe('the name opens the account brief', () => {
+  it('links the name when there is somewhere to go', () => {
+    render(<EntityName identity={identity()} fallbackId={ACCOUNT} href="/opportunities/x" />);
+
+    expect(screen.getByRole('link', { name: 'Northwind Traders' })).toHaveAttribute(
+      'href',
+      '/opportunities/x',
+    );
+  });
+
+  it('renders no link at all without an href', () => {
+    // On the brief itself there is nowhere to go. A link back to the page you
+    // are already on is a control that does nothing, and a disabled-looking
+    // one is worse than none.
+    render(<EntityName identity={identity()} fallbackId={ACCOUNT} />);
+
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  it('links an account nobody has named yet', () => {
+    // The account with the worst label is the one a seller most wants to open.
+    // Withholding the link because the name is poor hides the page that
+    // explains why it is poor.
+    render(<EntityName identity={undefined} fallbackId={ACCOUNT} href="/opportunities/x" />);
+
+    expect(screen.getByRole('link')).toBeInTheDocument();
+  });
+
+  it('keeps the disclosure outside the link', () => {
+    // A control inside a link is invalid, activates the wrong thing on touch,
+    // and lands in the wrong place in the keyboard order. The two stay
+    // siblings.
+    render(
+      <EntityName
+        identity={identity({ agreement: 'disputed' })}
+        fallbackId={ACCOUNT}
+        href="/opportunities/x"
+      />,
+    );
+    const link = screen.getByRole('link');
+    const disclosure = screen.getByRole('button', { name: /sources disagree/i });
+
+    expect(link.contains(disclosure)).toBe(false);
+  });
+});

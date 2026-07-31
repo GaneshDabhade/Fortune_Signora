@@ -1,7 +1,8 @@
 'use client';
 
 import { Info } from 'lucide-react';
-import { useId, useState } from 'react';
+import Link from 'next/link';
+import { useId, useState, type ReactNode } from 'react';
 
 import { Skeleton } from '@/components/ui';
 import type { AccountIdentity } from '@/lib/api/types';
@@ -36,10 +37,24 @@ import { cn } from '@/lib/design/cn';
  * survive a virtualised row; an inline region needs none of that and reads
  * identically to a screen reader. When M12.3 builds the evidence surface this
  * becomes its entry point rather than a second pattern to unify.
+ *
+ * ### Why `href` links the name and not the whole row
+ *
+ * A card-wide link is the larger target, and it would have to **contain** the
+ * disclosure button — a control inside a link is invalid, unreachable by
+ * keyboard in the order a reader expects, and activates the wrong thing on
+ * touch. The alternative is an absolutely-positioned overlay with the button
+ * raised above it, which trades a real structural problem for a stacking-order
+ * one that breaks silently.
+ *
+ * Linking the name keeps the two controls siblings, gives the link the account
+ * name as its accessible name for free, and is what every list a seller already
+ * uses does.
  */
 export function EntityName({
   identity,
   fallbackId,
+  href,
   isLoading = false,
   className,
 }: {
@@ -48,6 +63,9 @@ export function EntityName({
    * a placeholder** — a fabricated name is indistinguishable from a real one,
    * and being told the truth badly beats being told a fiction well. */
   fallbackId: string;
+  /** Where this account's brief lives. Omitted on the brief itself — a link to
+   * the page you are already on is a control that does nothing. */
+  href?: string;
   /** While the identity request is in flight. **Reserves the same space the
    * name will occupy**, so the row does not rewrite itself under the reader —
    * a list that shifts costs more confidence than the extra moment saved. */
@@ -62,10 +80,15 @@ export function EntityName({
   }
 
   if (!identity?.name) {
+    // Still reachable. An account nobody has named is exactly the one a seller
+    // most wants to open, and withholding the link because the label is poor
+    // would hide the page that explains why.
     return (
       <span className={cn('font-mono text-sm text-content-subtle', className)}>
-        {fallbackId.slice(0, 8)}
-        <span className="sr-only"> — no source has named this account yet</span>
+        <Openable href={href}>
+          {fallbackId.slice(0, 8)}
+          <span className="sr-only"> — no source has named this account yet</span>
+        </Openable>
       </span>
     );
   }
@@ -77,7 +100,7 @@ export function EntityName({
     <span className={cn('flex flex-col gap-0.5', className)}>
       <span className="flex items-center gap-1.5">
         <span className="truncate text-[0.9375rem] font-medium leading-6 text-content">
-          {identity.name}
+          <Openable href={href}>{identity.name}</Openable>
         </span>
 
         {disputed ? (
@@ -115,5 +138,24 @@ export function EntityName({
         </span>
       ) : null}
     </span>
+  );
+}
+
+/**
+ * Wraps a name in a link, or leaves it alone.
+ *
+ * A component rather than a ternary at each call site, so the two renderings
+ * cannot drift — and so *"no href means no anchor"* stays true rather than
+ * becoming a disabled-looking link somebody adds later.
+ */
+function Openable({ href, children }: { href?: string; children: ReactNode }) {
+  if (!href) return <>{children}</>;
+  return (
+    <Link
+      href={href}
+      className="rounded transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+    >
+      {children}
+    </Link>
   );
 }

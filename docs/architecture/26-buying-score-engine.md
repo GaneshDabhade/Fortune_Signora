@@ -483,3 +483,31 @@ Against the simulated scenario, a real score is produced with its full ledger, e
 **1011 backend tests** passing · **95.20%** coverage · **223 Security Invariants**, of which the 16 new ones were each proven to fail when their guarantee was removed (guards deleted, constraints dropped, the `UPDATE` grant restored, `FORCE` RLS removed, an account column added, posture made overridable, a business constant introduced into scoring code, float division introduced into the ledger) · **15 import-linter contracts** kept · mypy strict clean over 307 files · `make smoke` green across 22 stages.
 
 One unrelated defect was fixed in passing: `tests/integration/test_migration_runner.py` pinned the head revision to `"0012"`, so a test about *concurrency* failed on every new migration. It now reads head from the Alembic script directory.
+
+---
+
+## The HTTP read surface — added at M12.2, 2026-07-31
+
+`GET /workspaces/{workspace_id}/accounts/{account_id}/score` — the current reading for one account **with its full ledger**. It is the second customer journey (*"why this account?"*) and the first place in the product where a number arrives with the arithmetic that produced it.
+
+**No domain or application change was required.** `BuyingScoreQueries.current()` already returned a `BuyingScore` carrying its `ContributionLedger`, which is what the endpoint serialises. The module ships an `interface/` layer and nothing else — the shape M12 predicted for every read surface.
+
+### What the response carries, and the one rule behind it
+
+**Every figure is computed server-side.** `points` (the counted total), `ceiling`, `attention_by_posture` and each line's `dissenting` flag are derived here from the ledger, not in the browser. The ledger exists so the arithmetic has exactly one implementation; a client that re-derived any of it would quietly become a second, and the two would disagree the first time an uncounted line appeared.
+
+A customer can therefore check the score with two integers and a division — `score = min(100, points × 100 ÷ ceiling)` — which is asserted over the wire rather than in the domain, because an explanation that reproduces in Python and not in the response is an explanation the customer does not have.
+
+### What is deliberately absent
+
+`id`, `supersedes`, `basis_at`, the three configuration versions and `payload_version` on the header; `base_weight`, `relevance_multiplier`, `age_multiplier`, `band_started_at` and `band_ends_at` on each line. Each is real and stored, and none is something a seller decides from — the same test M12.1 applied to the attention row.
+
+**`signal_type` is absent for a different reason, and it is the one worth recording.** The Signal Catalog owns what a signal type is *called*, and `reason` already carries that title rendered server-side. Putting the raw key on the wire beside it invites a client to build its own wordings, at which point two places would define what `displacement_opportunity` means to a customer — the duplicated-truth defect, arriving through a presentation layer.
+
+### Route shape
+
+Nested under the account (`…/accounts/{account_id}/score`) because a score is a property of an account a seller is already reading, not a resource they go looking for. **Nesting is not ownership**: the endpoint belongs to this module alone, and the Opportunity Engine's router is untouched by it. The Knowledge Graph's identity endpoint sits beside the collection instead only because it names *many* accounts in one request and cannot nest under one of them.
+
+### Verified
+
+14 full-stack tests over the real request path — JWT verification, server-side membership, RLS context, Casbin, a four-deep read composition and PostgreSQL as the least-privileged role. A non-member, an account in another workspace and an account that has never been scored all receive **404**, deliberately indistinguishable: a different answer for any of them would make account identifiers enumerable across tenants.

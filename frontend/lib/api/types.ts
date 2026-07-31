@@ -94,3 +94,61 @@ export interface AccountIdentity {
   source: string | null;
   observed_at: string | null;
 }
+
+/** What a reading implies commercially. **Never a sign in the arithmetic** —
+ * two accounts can score the same and mean opposite things, and this is the
+ * only place that difference survives. */
+export type Posture = 'expansionary' | 'contractionary' | 'neutral';
+
+/** How central a hypothesis is to this workspace's ideal customer profile.
+ * Declared, never measured. */
+export type Relevance = 'primary' | 'supporting' | 'contextual' | 'ignored';
+
+/**
+ * One line of a score's explanation — a single business event's contribution.
+ *
+ * `reason` is the sentence, rendered by the pipeline from the same fields an
+ * auditor checks. **The browser never composes its own**: the signal type's
+ * title belongs to the Signal Catalog, and a second set of wordings here would
+ * eventually disagree with it.
+ */
+export interface ScoreContribution {
+  business_event_id: string;
+  signal_id: string;
+  posture: Posture;
+  relevance: Relevance;
+  /** fresh, recent, or ageing — the decay step this evidence sits in. */
+  evidence_age: string;
+  points: number;
+  counted: boolean;
+  dissenting: boolean;
+  reason: string;
+}
+
+/**
+ * One account's score, with everything needed to challenge it.
+ *
+ * **Every number arrives computed.** `points`, `ceiling` and
+ * `attention_by_posture` are derived server-side from the ledger, so the screen
+ * displays the arithmetic rather than performing it — a figure assembled in the
+ * browser would be a second implementation of the thing the ledger exists to
+ * make singular.
+ */
+export interface AccountScore {
+  account_id: string;
+  score: number;
+  trend: Trend;
+  score_change: number;
+  trigger: ScoreTrigger;
+  contested: boolean;
+  computed_at: string;
+  valid_until: string | null;
+  /** Whether the stated validity period still holds. */
+  is_current: boolean;
+  /** The raw point total of the counted lines, before normalising. */
+  points: number;
+  /** The point total that reads as 100, from the model in force when computed. */
+  ceiling: number;
+  attention_by_posture: Partial<Record<Posture, number>>;
+  contributions: ScoreContribution[];
+}

@@ -22,6 +22,9 @@ export const queryKeys = {
 
   accounts: (workspaceId: string) => ['workspace', workspaceId, 'accounts'] as const,
 
+  accountScore: (workspaceId: string, accountId: string) =>
+    ['workspace', workspaceId, 'accounts', accountId, 'score'] as const,
+
   /** Keyed by the *sorted* ids, so the same set of accounts is one cache entry
    * however the caller happened to order them. */
   identities: (workspaceId: string, accountIds: readonly string[]) =>

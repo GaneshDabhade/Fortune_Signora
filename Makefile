@@ -58,9 +58,18 @@ test:
 ## `demo` brings the stack up and seeds. `demo-seed` re-seeds an already-running
 ## stack — which is also how you join the workspace after signing in, since
 ## Better Auth owns users and no credential ships in this repository.
+## The development stack lives in `infra/`, not at the repository root — and
+## migrations run under the **owner** identity, never the runtime one, so this
+## passes the URL explicitly rather than inheriting whatever `backend/.env`
+## happens to hold. A `.env` pointing at `signora_app` (the correct runtime
+## value) would otherwise fail migrations with a permissions error that reads
+## like a broken schema (CLAUDE.md §8).
+DEV_COMPOSE := docker compose -f infra/docker-compose.yml
+OWNER_DATABASE_URL := postgresql+asyncpg://signora:signora@localhost:5432/signora
+
 demo:
-	@docker compose up -d
-	@cd backend && uv run alembic upgrade head
+	@$(DEV_COMPOSE) up -d --wait
+	@cd backend && SIGNORA_DATABASE_URL=$(OWNER_DATABASE_URL) uv run alembic upgrade head
 	@$(MAKE) demo-seed
 	@echo ""
 	@echo "  backend   cd backend && uv run uvicorn apps.api.main:app --reload --port 8000"

@@ -1,0 +1,187 @@
+'use client';
+
+import { Badge } from '@/components/ui';
+import type { AccountScore, Posture, ScoreContribution } from '@/lib/api/types';
+import { cn } from '@/lib/design/cn';
+
+/**
+ * How Signora shows the arithmetic behind a score.
+ *
+ * **The account brief's whole reason to exist.** A ranked list can be built by
+ * anyone; a number a customer can take apart, disagree with line by line, and
+ * reproduce with a division is the thing no competitor's summary survives.
+ *
+ * Three rules govern everything here:
+ *
+ * **Nothing is calculated in the browser.** Every figure — the point total, the
+ * ceiling, the per-posture split, which lines dissent — arrives computed. The
+ * ledger exists so the arithmetic has exactly one implementation, and a screen
+ * that re-derived any of it would quietly become a second.
+ *
+ * **Nothing is reworded.** `reason` is rendered by the pipeline from the same
+ * fields an auditor checks. The screen places it; it never paraphrases it,
+ * because a friendlier sentence that blurs two lines together makes the number
+ * uncheckable against the record.
+ *
+ * **Nothing that counted is hidden.** A line worth zero points stays on the
+ * page with the reason it counted nothing. A zero you can read is information;
+ * a row that vanished is a mystery.
+ */
+
+const POSTURE_WORDING: Record<Posture, string> = {
+  expansionary: 'Expansion',
+  contractionary: 'Risk',
+  neutral: 'Context',
+};
+
+/**
+ * The score, and the two integers that produce it.
+ *
+ * **Shown as a division, not a gauge.** `68 of 120 points` is a claim a
+ * customer can check on paper in four seconds; a filled ring is a claim about a
+ * maximum that would have to be invented. This is the moment the product either
+ * earns trust or asks for it, and asking is what every other tool does.
+ */
+export function ScoreArithmetic({ score }: { score: AccountScore }) {
+  return (
+    <div className="flex items-baseline gap-3">
+      <span className="text-4xl font-semibold tabular-nums leading-none text-content">
+        <span className="sr-only">Attention score </span>
+        {score.score}
+      </span>
+      <span className="text-sm tabular-nums text-content-muted">
+        {score.points} of {score.ceiling} points
+      </span>
+    </div>
+  );
+}
+
+/**
+ * How long this reading is correct for.
+ *
+ * A buying score is **a reading with a stated validity, not a live gauge** —
+ * between the moment it was computed and `valid_until` it is exactly correct
+ * rather than merely recent. Saying so is what separates Signora's number from
+ * a dashboard metric that is silently a day old.
+ *
+ * `is_current` arrives from the server. Comparing a timestamp to the browser's
+ * clock would make the answer depend on the reader's machine.
+ */
+export function ReadingValidity({ score }: { score: AccountScore }) {
+  const until = score.valid_until ? formatDay(score.valid_until) : null;
+
+  if (!score.is_current) {
+    return (
+      <p className="text-sm text-content-muted">
+        This reading expired{until ? ` on ${until}` : ''}. It is shown as it stood —
+        nothing has replaced it yet.
+      </p>
+    );
+  }
+
+  return (
+    <p className="text-sm text-content-muted">
+      {until
+        ? `Exactly correct until ${until}, when the oldest evidence beneath it changes band.`
+        : 'Nothing is contributing, so this cannot change until new evidence arrives.'}
+    </p>
+  );
+}
+
+/**
+ * Attention split by what it implies commercially.
+ *
+ * **Deliberately never summed.** Two accounts can score identically and mean
+ * opposite things; the scalar cannot carry that and this is the only place the
+ * difference survives. Shown for every account rather than only contested ones,
+ * because *"all of this is expansion"* is as much a finding as a split is.
+ */
+export function PostureSplit({ score }: { score: AccountScore }) {
+  const present = (Object.keys(POSTURE_WORDING) as Posture[])
+    .map((posture) => [posture, score.attention_by_posture[posture] ?? 0] as const)
+    .filter(([, points]) => points > 0);
+
+  if (present.length === 0) return null;
+
+  return (
+    <dl className="flex flex-wrap gap-x-6 gap-y-2">
+      {present.map(([posture, points]) => (
+        <div key={posture} className="flex items-baseline gap-1.5">
+          <dt className="text-sm text-content-muted">{POSTURE_WORDING[posture]}</dt>
+          <dd className="text-sm font-medium tabular-nums text-content">{points}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+/**
+ * Every line that produced the score, in the order that explains it.
+ *
+ * Ordered largest-first by the pipeline, so the first line a reader sees is the
+ * one that most explains the number. **The screen does not re-sort**: storage
+ * order is the explanation's order, and re-ranking here would answer a
+ * different question from the one the ledger recorded.
+ */
+export function ContributionList({ score }: { score: AccountScore }) {
+  return (
+    <ol className="flex flex-col">
+      {score.contributions.map((line) => (
+        <li
+          key={`${line.business_event_id}:${line.signal_id}`}
+          className="border-b border-border py-3 last:border-b-0"
+        >
+          <ContributionRow line={line} />
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function ContributionRow({ line }: { line: ScoreContribution }) {
+  return (
+    <div className="flex items-start gap-4">
+      <div className="min-w-0 flex-1">
+        <p
+          className={cn(
+            'text-sm leading-6',
+            // An uncounted line is subordinate, never absent. It explains why
+            // evidence a customer can see did not move the number, which is
+            // the question they would otherwise ask support.
+            line.counted ? 'text-content' : 'text-content-muted',
+          )}
+        >
+          {line.reason}
+        </p>
+        {line.dissenting ? (
+          <div className="mt-1.5">
+            <Badge tone="accent">Disagrees with the majority reading</Badge>
+          </div>
+        ) : null}
+      </div>
+
+      <span
+        className={cn(
+          'w-10 shrink-0 pt-0.5 text-right text-sm font-medium tabular-nums',
+          line.counted ? 'text-content' : 'text-content-subtle',
+        )}
+      >
+        {line.points}
+      </span>
+    </div>
+  );
+}
+
+/**
+ * A day, in the reader's locale.
+ *
+ * Day precision throughout: evidence decays in bands measured in weeks, so a
+ * minute on a validity boundary implies a resolution the pipeline does not have.
+ */
+function formatDay(iso: string): string {
+  return new Date(iso).toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}

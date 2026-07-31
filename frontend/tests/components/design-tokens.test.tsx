@@ -16,6 +16,12 @@ import { describe, expect, it } from 'vitest';
 const UI_DIR = join(process.cwd(), 'components', 'ui');
 const SHELL_DIR = join(process.cwd(), 'components', 'shell');
 const FEEDBACK_DIR = join(process.cwd(), 'components', 'feedback');
+/** **Added at M12.2.** These compose *from* the design system rather than
+ * belonging to it, and were therefore outside this check while there were two
+ * of them. A third made the omission worth closing: the rule that a theme
+ * change is a token edit is not weaker for a component that renders a buying
+ * score than for one that renders a button. */
+const INTELLIGENCE_DIR = join(process.cwd(), 'components', 'intelligence');
 
 function sourceFiles(dir: string): { name: string; source: string }[] {
   return readdirSync(dir)
@@ -30,6 +36,7 @@ const ALL_COMPONENTS = [
   ...sourceFiles(UI_DIR),
   ...sourceFiles(SHELL_DIR),
   ...sourceFiles(FEEDBACK_DIR),
+  ...sourceFiles(INTELLIGENCE_DIR),
 ];
 
 // Tailwind's default palette. A shared component reaching for any of these

@@ -92,7 +92,10 @@ function AccountRow({
   namesLoading: boolean;
 }) {
   return (
-    <Card className="transition-colors hover:border-border-strong">
+    // No card-wide hover. **Only the account name opens the brief**, and a card
+    // that lit up under the cursor anywhere would teach a reader the whole row
+    // is clickable — then fail them everywhere but one word.
+    <Card>
       <CardBody className="flex items-start gap-4 py-3.5">
         {/* **The account leads.** A seller scans names, not numbers — the
             number tells them the order, and the order is already the list's.
@@ -102,6 +105,7 @@ function AccountRow({
           <EntityName
             identity={identity}
             fallbackId={account.account_id}
+            href={`/opportunities/${account.account_id}`}
             isLoading={namesLoading}
           />
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
