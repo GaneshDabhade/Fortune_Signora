@@ -164,7 +164,7 @@ Only open items. Closed findings live in the milestone records (Appendix A) and 
 |---|---|---|---|
 | **[ADR-0031](docs/architecture/adr/0031-evidence-citation-protocol.md)** | **The renderer and parser disagree about the citation protocol.** `render.py` emits `[token]`; `EvidenceRef.parse` accepts only `token`; the prompt says *"cite by their exact reference strings"*. Three of five models were REFUSED for **obeying literally**, across two independent model families. Passing since M8 on one model's bracket-stripping habit. **PROPOSED, deliberately unimplemented** — it is an M8 defect, and fixing it invalidates both released prompts | 🔴 **High** | M8 / M9.5 |
 | **F-1** | **One `ollama_model` setting, two certified prompts.** The registry holds a single Ollama model; narration is certified for `llama3.1:8b` and reasoning for `granite3.3:2b`. **No single process configuration serves both request paths.** M10 adds a third prompt | 🟠 Medium | M10 |
-| **F-2** | **The Evidence Set question.** `EvidenceRef.kind` is a free string, so M10 could emit `research_finding:uuid` with zero platform change — making model-authored synthesis indistinguishable from a pipeline-derived fact to every check downstream | 🔴 **High** | M10 — **design review open** |
+| **F-2** | **The Evidence Set question.** *(Narrowed by [32](docs/architecture/32-knowledge-ontology.md) and [34](docs/architecture/34-knowledge-contract.md); three of five options now excluded by contract.)* `EvidenceRef.kind` is a free string, so M10 could emit `research_finding:uuid` with zero platform change — making model-authored synthesis indistinguishable from a pipeline-derived fact to every check downstream | 🔴 **High** | M10 — **design review open** |
 | **F-3** | Signal catalog `limitations` / `suggested_validation` are **engineering-authored pending domain review** | 🟠 Medium | Unassigned |
 | **F-4** | `ai_research.completed`'s reserved payload carries `artifact_ref` / `model_provenance` — **the same v2 placeholders M9 found and replaced** at T127 | 🟢 Low | M10 |
 | **F-5** | `PublishableEvent` Protocol vs frozen domain events — requires a `type: ignore` at every publish site | 🟢 Low | Unassigned |
@@ -232,10 +232,11 @@ JWT key rotation requires a deploy · token revocation bounded by a 15-min TTL �
 
 ### Open architectural questions
 
-1. **May a research artifact become evidence?** *(F-2, blocking)* Grounding validates that a citation resolves **inside** the evidence set; it cannot validate that a fact *in* the set is true. If model-authored synthesis enters the set, reasoning cites it, grounding passes, and a customer is shown it as evidence they can check — when they would be checking one model's claim against another's. **This determines the architecture of M10 and is under review before any code is written.**
+1. **May an ATTESTED external claim be cited?** *(F-2, blocks the evidence design)* — narrowed to a single product judgement by [34-knowledge-contract.md](docs/architecture/34-knowledge-contract.md). Synthesis, tool traces, embeddings and rankings are settled by contract. Grounding validates that a citation resolves **inside** the evidence set; it cannot validate that a fact *in* the set is true. If model-authored synthesis enters the set, reasoning cites it, grounding passes, and a customer is shown it as evidence they can check — when they would be checking one model's claim against another's. **This determines the architecture of M10 and is under review before any code is written.**
 2. **How does one process serve three certified prompts?** *(F-1)* Let M10's real need shape the answer; do not invent it prematurely.
-3. **Where does cost governance live?** *(R-01)* The register says before research is enabled broadly.
-4. **What is the research timeout?** *(R-09)* Never measured.
+3. **Disclosure class** *(blocks tool-use design)* — an agent issuing queries to public services is a **new egress direction**. R-05 is escalated to Legal and no allowlist exists.
+4. **Where does cost governance live?** *(R-01)* The register says before research is enabled broadly.
+5. **What is the research timeout?** *(R-09)* Never measured.
 
 ### Sequencing question, raised for a ruling
 

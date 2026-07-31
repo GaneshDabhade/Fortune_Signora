@@ -279,4 +279,6 @@ Three sub-questions follow, and none is answerable by classification alone:
 
 The Evidence Set is not wrong. It is **an abstraction whose implicit precondition is about to stop holding**, and the ontology's recommendation is to make that precondition explicit **before** the first caller violates it — rather than discovering it afterwards in stored rows that cannot be reclassified.
 
-**Next:** a ruling on §4's remaining question. The design review's five options are unchanged, but three of them (B, D, and the synthesis half of C) are now excluded by classification rather than by preference.
+**Next:** the repository-wide rules that follow from this classification are stated in **[34-knowledge-contract.md](34-knowledge-contract.md)** — 23 invariants, every one discovered already operating in the repository rather than invented. It narrows §4's remaining question further but does not answer it.
+
+**Then:** a ruling on §4's remaining question. The design review's five options are unchanged, but three of them (B, D, and the synthesis half of C) are now excluded by classification rather than by preference.
