@@ -129,6 +129,30 @@ class SqlOpportunityRepository:
         ).scalar_one_or_none()
         return _to_opportunity(row) if row is not None else None
 
+    async def open_page(
+        self, workspace_id: UUID, *, after: UUID | None, limit: int
+    ) -> tuple[tuple[Opportunity, OpportunityState], ...]:
+        latest = self._latest_sequence()
+        statement = (
+            select(OpportunityModel, OpportunityStateModel)
+            .join(latest, latest.c.opportunity_id == OpportunityModel.id)
+            .join(
+                OpportunityStateModel,
+                (OpportunityStateModel.opportunity_id == OpportunityModel.id)
+                & (OpportunityStateModel.sequence == latest.c.sequence),
+            )
+            .where(
+                OpportunityModel.workspace_id == workspace_id,
+                OpportunityStateModel.stage.in_([s.value for s in OPEN_STAGES]),
+            )
+            .order_by(OpportunityModel.id)
+            .limit(limit)
+        )
+        if after is not None:
+            statement = statement.where(OpportunityModel.id > after)
+        rows = (await self._session.execute(statement)).all()
+        return tuple((_to_opportunity(row[0]), _to_state(row[1])) for row in rows)
+
     async def generations(self, workspace_id: UUID, entity_id: UUID) -> int:
         return int(
             (

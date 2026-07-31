@@ -32,6 +32,17 @@ class BuyingScoreRepository(Protocol):
         """The reading no later score replaces."""
         ...
 
+    async def current_for(
+        self, workspace_id: UUID, entity_ids: tuple[UUID, ...]
+    ) -> dict[UUID, BuyingScore]:
+        """The current reading for each of these accounts, in one query.
+
+        The plural exists so a list of accounts costs one round trip rather
+        than one per row. Accounts with no current score are absent from the
+        mapping rather than present with a null.
+        """
+        ...
+
     async def record(self, score: BuyingScore) -> bool:
         """Insert, ignoring an id already present. Ids are derived from the
         configuration and evidence, so recomputing an unchanged situation

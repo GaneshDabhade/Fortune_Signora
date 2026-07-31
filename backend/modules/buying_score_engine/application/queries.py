@@ -81,6 +81,18 @@ class BuyingScoreQueries:
         """
         return await self._repository.current(workspace_id, entity_id)
 
+    async def current_for(
+        self, workspace_id: UUID, entity_ids: tuple[UUID, ...]
+    ) -> dict[UUID, BuyingScore]:
+        """Current scores for many accounts at once.
+
+        The plural of `current`, added for the attention list. Deliberately a
+        mapping rather than a sequence: a caller asking about *these* accounts
+        needs to know which ones came back, and an account with no current
+        score is simply absent rather than represented by a null.
+        """
+        return await self._repository.current_for(workspace_id, entity_ids)
+
     async def explanation(
         self, workspace_id: UUID, score_id: UUID
     ) -> BuyingScoreExplanation | None:

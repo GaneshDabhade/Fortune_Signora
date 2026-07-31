@@ -75,6 +75,19 @@ class FakeScoreRepository:
         ]
         return max(live, key=lambda s: s.computed_at) if live else None
 
+    async def current_for(
+        self, workspace_id: UUID, entity_ids: tuple[UUID, ...]
+    ) -> dict[UUID, BuyingScore]:
+        """The plural. Built from `current` rather than reimplemented, so the
+        two cannot disagree about what *current* means — which is the whole
+        risk of adding a batch read beside a single one."""
+        found = {}
+        for entity_id in entity_ids:
+            score = await self.current(workspace_id, entity_id)
+            if score is not None:
+                found[entity_id] = score
+        return found
+
     async def record(self, score: BuyingScore) -> bool:
         if any(s.id == score.id for s in self.rows):
             return False

@@ -37,6 +37,13 @@ from modules.opportunity_engine.domain.opportunity import (
 )
 from modules.opportunity_engine.domain.policy import OpportunityPolicy, resolve_policy
 
+DEFAULT_PAGE = 50
+"""How many accounts one page of the attention list holds.
+
+A working list, not a report: a seller triages the top of it and pages when
+they mean to. Not configurable, because nothing has yet needed a different
+number — and a knob with one caller is a knob nobody tuned."""
+
 COOLING_DROP = 10
 """How far commercial attention must fall before the evidence reads as
 cooling. A **presentational** boundary, not a qualification one: it changes
@@ -116,6 +123,50 @@ class OpportunityQueries:
             evidence_state=evidence_state(opportunity, score, now or datetime.now(UTC)),
         )
 
+    async def attention_list(
+        self,
+        workspace_id: UUID,
+        *,
+        after: UUID | None = None,
+        limit: int = DEFAULT_PAGE,
+        now: datetime | None = None,
+    ) -> tuple[TrackedOpportunity, ...]:
+        """Open opportunities for this workspace, **ordered by attention**.
+
+        The question a seller opens Signora to ask — *which accounts should I
+        work on today* — and the first read surface in this module that is not
+        about a single account.
+
+        **Ranked by the live score, never by the score that opened the
+        opportunity.** `score_at_creation` is a fact about the past; a seller
+        ordering their day by it would be working yesterday's list. Accounts
+        whose evidence has gone stale carry no live score and sort last: they
+        still appear, because an opportunity outlives the score that created
+        it and hiding one would be this module deciding a human's workload.
+
+        **Ordering is applied over the page, not in the page query**, and the
+        distinction is load-bearing. The cursor walks a stable identifier, so
+        a recomputation between two requests cannot make a row skip or repeat;
+        if the sort key were the live score, it could do both.
+        """
+        moment = now or datetime.now(UTC)
+        page = await self._repository.open_page(workspace_id, after=after, limit=limit)
+        scores = await self._scores.current_for(
+            workspace_id, tuple(opportunity.entity_id for opportunity, _ in page)
+        )
+        tracked = tuple(
+            TrackedOpportunity(
+                opportunity=opportunity,
+                state=state,
+                current_score=scores.get(opportunity.entity_id),
+                evidence_state=evidence_state(
+                    opportunity, scores.get(opportunity.entity_id), moment
+                ),
+            )
+            for opportunity, state in page
+        )
+        return tuple(sorted(tracked, key=_attention, reverse=True))
+
     async def explanation(
         self, workspace_id: UUID, opportunity_id: UUID, *, now: datetime | None = None
     ) -> OpportunityExplanation | None:
@@ -173,3 +224,20 @@ def evidence_state(
     if opportunity.score_at_creation - score.value >= COOLING_DROP:
         return EvidenceState.COOLING
     return EvidenceState.CURRENT
+
+
+def _attention(tracked: TrackedOpportunity) -> tuple[int, int]:
+    """How the list is ordered: **live score first, then how contested it is.**
+
+    A contested account — where opposing readings are both live — ranks above
+    an uncontested one at the same score, for the reason the Buying Score
+    Engine refuses to average them away: *a fought-over account warrants more
+    attention, not average attention.*
+
+    An account with no current score sorts to the bottom rather than being
+    dropped. Its evidence has gone stale; the commitment has not.
+    """
+    score = tracked.current_score
+    if score is None:
+        return (-1, 0)
+    return (score.value, 1 if score.contested else 0)

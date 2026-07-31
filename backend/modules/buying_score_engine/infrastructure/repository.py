@@ -171,6 +171,39 @@ class SqlBuyingScoreRepository:
         ).scalar_one_or_none()
         return _to_score(row) if row is not None else None
 
+    async def current_for(
+        self, workspace_id: UUID, entity_ids: tuple[UUID, ...]
+    ) -> dict[UUID, BuyingScore]:
+        """The current score for each of these accounts, in **one** query.
+
+        Exists because the attention list needs a live score per row, and
+        asking `current()` once per account would make a 50-account page 50
+        round trips — an obviously wasteful pattern is a defect at write time
+        (CLAUDE.md §14), not a future optimisation.
+        """
+        if not entity_ids:
+            return {}
+        replaced = select(BuyingScoreModel.supersedes).where(
+            BuyingScoreModel.workspace_id == workspace_id,
+            BuyingScoreModel.supersedes.is_not(None),
+        )
+        rows = (
+            await self._session.execute(
+                select(BuyingScoreModel)
+                .where(
+                    BuyingScoreModel.workspace_id == workspace_id,
+                    BuyingScoreModel.entity_id.in_(entity_ids),
+                    BuyingScoreModel.id.not_in(replaced),
+                )
+                .order_by(BuyingScoreModel.computed_at.desc())
+            )
+        ).scalars()
+        # Newest first, so the first row seen for an entity is its current one.
+        current: dict[UUID, BuyingScore] = {}
+        for row in rows:
+            current.setdefault(row.entity_id, _to_score(row))
+        return current
+
     async def record(self, score: BuyingScore) -> bool:
         statement = (
             insert(BuyingScoreModel)

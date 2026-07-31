@@ -132,6 +132,24 @@ class FakeOpportunityRepository:
                 return opportunity
         return None
 
+    async def open_page(
+        self, workspace_id: UUID, *, after: UUID | None, limit: int
+    ) -> tuple[tuple[Opportunity, OpportunityState], ...]:
+        """Mirrors the SQL: open only, ordered by id, cursor-exclusive."""
+        page: list[tuple[Opportunity, OpportunityState]] = []
+        for opportunity in sorted(self.rows, key=lambda o: o.id.bytes):
+            if opportunity.workspace_id != workspace_id:
+                continue
+            if after is not None and opportunity.id.bytes <= after.bytes:
+                continue
+            state = self._latest(opportunity.id)
+            if state is None or not state.is_open:
+                continue
+            page.append((opportunity, state))
+            if len(page) == limit:
+                break
+        return tuple(page)
+
     async def generations(self, workspace_id: UUID, entity_id: UUID) -> int:
         return len(
             [
@@ -217,11 +235,27 @@ class FakePolicyRepository:
 class FakeBuyingScoreReader:
     """Satisfies `BuyingScoreReader` — read-only, and read live."""
 
-    def __init__(self, score: BuyingScore | None) -> None:
+    def __init__(
+        self, score: BuyingScore | None, *, scores_for: tuple[UUID, ...] = ()
+    ) -> None:
         self.score = score
+        #: Which entities this reader has a current score for. Empty means the
+        #: single-account `current()` behaviour every existing test relies on.
+        self.scores_for = scores_for
+        self.batches: list[tuple[UUID, ...]] = []
 
     async def current(self, workspace_id: UUID, entity_id: UUID) -> BuyingScore | None:
         return self.score
+
+    async def current_for(
+        self, workspace_id: UUID, entity_ids: tuple[UUID, ...]
+    ) -> dict[UUID, BuyingScore]:
+        """Records what it was asked, so a test can prove the list costs one
+        batch rather than one call per row."""
+        self.batches.append(entity_ids)
+        return {} if self.score is None else {
+            entity: self.score for entity in entity_ids if entity in self.scores_for
+        }
 
     async def explanation(
         self, workspace_id: UUID, score_id: UUID

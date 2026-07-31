@@ -61,6 +61,22 @@ class OpportunityRepository(Protocol):
         """Record a new complete workflow state."""
         ...
 
+    async def open_page(
+        self, workspace_id: UUID, *, after: UUID | None, limit: int
+    ) -> tuple[tuple[Opportunity, OpportunityState], ...]:
+        """One page of open opportunities, each with its current state.
+
+        **The pair, not the aggregate.** Every consumer of a list needs the
+        stage and the holder, and fetching the state separately would make a
+        page of *n* rows cost *n + 1* queries.
+
+        Ordered by the opportunity's own identifier so a cursor is stable:
+        ordering a page by a *live* score would let a recomputation between
+        pages skip or repeat a row. Attention ordering is applied above this,
+        over the page, where it cannot corrupt the cursor.
+        """
+        ...
+
     async def by_id(self, workspace_id: UUID, opportunity_id: UUID) -> Opportunity | None: ...
 
     async def current_state(
@@ -113,6 +129,15 @@ class BuyingScoreReader(Protocol):
     """
 
     async def current(self, workspace_id: UUID, entity_id: UUID) -> BuyingScore | None: ...
+
+    async def current_for(
+        self, workspace_id: UUID, entity_ids: tuple[UUID, ...]
+    ) -> dict[UUID, BuyingScore]:
+        """The plural, for the attention list. Stated on the port rather than
+        reached for on the concrete type, so a fake can still stand in — *if a
+        fake cannot stand in for a dependency, the dependency was never really
+        a boundary.*"""
+        ...
 
     async def explanation(
         self, workspace_id: UUID, score_id: UUID
