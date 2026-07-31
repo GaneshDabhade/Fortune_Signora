@@ -64,7 +64,7 @@ This graph is, by design, **acyclic**. No module depends on a module downstream 
 | Buying Score Engine | Signal Engine |
 | Opportunity Engine | Buying Score Engine |
 | AI Platform | *(none from domain/application)* · Opportunity Engine `public/` **from `infrastructure/` only**, behind a Protocol |
-| AI Research Engine | Opportunity Engine, AI Platform |
+| AI Research Engine | Opportunity Engine, AI Platform · **never the AI Reasoning Engine** (the edge is `ARE → AIR`; the reverse is a cycle, enforced by contract since T131) |
 | AI Reasoning Engine | Opportunity Engine, Buying Score Engine, Signal Engine, AI Research Engine, AI Platform |
 | Recommendation Engine | AI Reasoning Engine |
 | Timeline | Observation Engine, Business Event Engine, Signal Engine, Buying Score Engine, Opportunity Engine, Recommendation Engine |

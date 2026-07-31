@@ -51,7 +51,7 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | — | M6 | Opportunity Engine — **first sellable moment** | ✅ Complete | 2026-07-29 |
 | — | M8 | AI Platform — abstraction, prompts, eval harness | ✅ Complete | 2026-07-30 |
 | — | **M9** | **AI Reasoning Engine — Decision Package** | ✅ **Complete** | **2026-07-31** |
-| 1 | **M10** | **AI Research Engine** | 🔵 **Next — design review open** | — |
+| 1 | **M10** | **AI Research Engine** | 🔵 **In progress — T131 complete** | — |
 | 2 | M11 | Recommendation Engine | ⏳ Queued | — |
 | 3 | M7 | Timeline | ⏳ Queued | — |
 | 4 | M12 | Revenue Intelligence Platform + business UI | ⏳ Queued | — |
@@ -96,12 +96,12 @@ Task numbering resumes at **T131**. The sequence depends on the ruling, but the 
 
 | Indicator | Value | Target |
 |---|---|---|
-| **Backend tests** | **1564 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Backend tests** | **1570 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Frontend tests** | **101 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Backend coverage** | **95.75%** — varies ±0.02pp between runs | ≥95% (local gate) |
-| **Security Invariants** | **295 / 295**, each proven to fail when its guarantee is removed | 100% verified |
-| **import-linter contracts** | **25 kept, 0 broken** | 0 broken |
-| **MyPy** | **strict, clean over 412 files** | clean |
+| **Security Invariants** | **301 / 301**, each proven to fail when its guarantee is removed | 100% verified |
+| **import-linter contracts** | **29 kept, 0 broken** | 0 broken |
+| **MyPy** | **strict, clean over 420 files** | clean |
 | **`make smoke`** | ✅ **22 stages**, 101s, fresh images, clean teardown | green per milestone |
 | **Migrations** | `0001`–`0017`, additive and reversible | reversible |
 | **Architecture drift** | **0** — no ratified ADR reversed | trending to 0 |

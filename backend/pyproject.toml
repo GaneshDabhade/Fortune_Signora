@@ -117,12 +117,14 @@ containers = [
     "modules.opportunity_engine",
     "modules.ai_platform",
     "modules.ai_reasoning_engine",
+    "modules.ai_research_engine",
 ]
 layers = [
-    # Optional and topmost. `evaluation/` exists only in the AI Platform: it
-    # is the harness, it consumes every layer beneath it, and nothing may
-    # consume it — a module whose own code depended on how it is measured
-    # would be measuring itself.
+    # Optional and topmost. `evaluation/` is the harness plus each consuming
+    # module's own entry point (the AI Platform's, M9's, and M10's when it has
+    # a prompt): it consumes every layer beneath it, and nothing may consume
+    # it — a module whose own code depended on how it is measured would be
+    # measuring itself.
     "(evaluation)",
     "(interface)",
     "infrastructure",
@@ -508,6 +510,77 @@ forbidden_modules = [
 # that learned what was concluded about its own output would make the
 # derivation circular — and every stage before this one is rebuildable
 # precisely because nothing downstream feeds it.
+name = "no upstream module depends on the AI Research Engine"
+type = "forbidden"
+source_modules = [
+    "modules.provider_platform",
+    "modules.provider_normalization",
+    "modules.knowledge_graph",
+    "modules.observation_engine",
+    "modules.business_event_engine",
+    "modules.signal_engine",
+    "modules.buying_score_engine",
+    "modules.opportunity_engine",
+    "modules.workspace_tenancy",
+    "modules.ai_platform",
+]
+# **`modules.ai_reasoning_engine` is deliberately absent from the sources
+# above.** `ARE -> AIR` is a ratified edge (05-module-dependencies.md): the AI
+# Reasoning Engine consumes a completed research artifact opportunistically.
+# Listing it here would forbid the one dependency the module exists to serve.
+forbidden_modules = ["modules.ai_research_engine"]
+
+[[tool.importlinter.contracts]]
+# The reverse of the above, and the reason both are needed: research must never
+# reach *back* into reasoning. `ARE -> AIR` is the approved direction; a cycle
+# would make both modules unextractable and neither testable in isolation.
+name = "the AI Research Engine does not depend on the AI Reasoning Engine"
+type = "forbidden"
+source_modules = ["modules.ai_research_engine"]
+forbidden_modules = ["modules.ai_reasoning_engine"]
+
+[[tool.importlinter.contracts]]
+# Same shape as M9's. A composition root is where infrastructure is wired, so
+# `evaluation/` is exempted narrowly and one module deep — nothing else under
+# `ai_research_engine` may reach past another module's `public/`.
+name = "ai_research_engine reaches other modules only through public/"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = ["modules.ai_research_engine"]
+# **No `ignore_imports` yet, deliberately.** M9 carries a narrow exemption for
+# its evaluation composition root; import-linter refused the same entry here
+# because nothing under `evaluation/` imports anything yet, and an exemption
+# for an import that does not exist is a declared hole guarding nothing. It is
+# added in the task that writes the entry point, not before.
+forbidden_modules = [
+    "modules.opportunity_engine.domain",
+    "modules.opportunity_engine.application",
+    "modules.opportunity_engine.infrastructure",
+    "modules.opportunity_engine.interface",
+    "modules.knowledge_graph.domain",
+    "modules.knowledge_graph.application",
+    "modules.knowledge_graph.infrastructure",
+    "modules.ai_platform.domain",
+    "modules.ai_platform.application",
+]
+
+[[tool.importlinter.contracts]]
+name = "ai_research_engine: domain has no infrastructure/framework dependencies"
+type = "forbidden"
+source_modules = ["modules.ai_research_engine.domain"]
+forbidden_modules = [
+    "sqlalchemy",
+    "fastapi",
+    "httpx",
+    "arq",
+    "signora_platform.db",
+    "signora_platform.event_bus",
+    "signora_platform.api",
+    "signora_platform.auth",
+    "signora_platform.authorization",
+]
+
+[[tool.importlinter.contracts]]
 name = "no upstream module depends on the AI Reasoning Engine"
 type = "forbidden"
 source_modules = [
