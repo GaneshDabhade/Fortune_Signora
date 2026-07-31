@@ -95,6 +95,17 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # different shape, different consumers, and a shared table with a
         # `kind` column would be one representation serving two truths.
         "ai_reasoning",
+        # AI Research Engine (M10), migration 0018. **Three tables because
+        # there are three data categories**, not because there are three
+        # types: `research_task` is operational history, `research_finding` is
+        # derived intelligence rebuildable from the rows it cites, and
+        # `research_synthesis` is a materialized AI artifact. They inherit the
+        # storage rules of their category, and a pipeline rebuild treats each
+        # differently — it regenerates findings, must never fabricate a
+        # synthesis, and records tasks.
+        "research_task",
+        "research_finding",
+        "research_synthesis",
     }
 )
 
@@ -173,6 +184,18 @@ REQUIRED_POLICY_COMMANDS: Final[frozenset[str]] = frozenset({"SELECT", "INSERT",
 # actually shown, and silently invalidate every evaluation and audit citing it
 # (migration 0016; M8).
 #
+# `research_task` is immutable **before it has a lifecycle**, deliberately.
+# Budget, timeout and resumability arrive with the orchestrator; withholding
+# UPDATE now decides that progress is recorded as append-only state rows, the
+# way `opportunity_state` records workflow, rather than as columns mutated in
+# place (migration 0018; M10).
+#
+# `research_finding` is derived and content-addressed: recomputing it produces
+# the same key, so a correction is a different finding rather than an edit to
+# this one. `research_synthesis` is the same category as `ai_narration` and
+# `ai_reasoning` — what a model actually produced, at one moment, against one
+# prompt and one set of findings (migration 0018; M10).
+#
 # Adding a table here is a deliberate architectural act. The immutability it
 # claims is separately asserted in test_tenancy_policy.py.
 IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
@@ -191,6 +214,9 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         "ai_inference",
         "ai_narration",
         "ai_reasoning",
+        "research_task",
+        "research_finding",
+        "research_synthesis",
     }
 )
 
