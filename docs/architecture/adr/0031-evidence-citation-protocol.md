@@ -1,6 +1,6 @@
 # ADR-0031 — The renderer and the parser disagree about the citation protocol
 
-> Status: **PROPOSED — 2026-07-31.** Recorded at T128 during M9. **Amended 2026-07-31 after T137–T138**, and **recommended for ratification** — see the amendment at the end of this document. Still not implemented.
+> Status: **ACCEPTED — 2026-07-31.** Recorded at T128 during M9, amended after T137–T138, and ratified by the Product Owner. Implemented as milestone **M9.5**; see the implementation log at the end of this document for which steps have landed.
 > Deciders: Product Owner · Architecture Review Board
 > Supersedes: nothing. Amends: nothing.
 > Anchors: [28-ai-platform.md](../28-ai-platform.md) · [29-ai-reasoning-engine.md](../29-ai-reasoning-engine.md) (T128) · [ADR-0028](0028-model-runtime-by-environment.md) · [ADR-0030](0030-the-decision-package.md) · CLAUDE.md §10, §20a
@@ -263,3 +263,21 @@ So the display form belongs beside `token` and `parse`, in the domain that owns 
 The evidence has changed category. At T128 this was a defect that narrowed the field of usable models — real, but survivable, and outside M9's boundary. It is now the thing preventing a finished milestone from closing, on a prompt that already implements the recommended workaround. Three of the four prompts in the repository are held up by an undeclared model habit; the fourth is refused.
 
 **This is not M10's work.** It changes the AI Platform and re-releases M8's and M9's prompts, and CLAUDE.md §20d forbids a milestone reaching outside what it owns to satisfy its own demonstration. Ratification belongs to the Product Owner and the Architecture Review Board; this document records the recommendation and stops there.
+
+---
+
+## Implementation log — M9.5
+
+Ratified by the Product Owner on 2026-07-31. Implemented in the order this document argued for.
+
+| Step | Outcome |
+|---|---|
+| **A** — record the outstanding refusals | Done. Three recorded, all reproduced live: `research_synthesis@1`/`llama3.1:8b`, `reasoning@1`/`qwen2.5:3b`, `reasoning@1`/`llama3.2:3b`. `qwen2.5:7b-instruct-q3_K_M` returned UNMEASURABLE and is deliberately absent |
+| **B** — version the rendering protocol | Done, behaviour-neutral. `domain/rendering.py` owns the concept; every evaluation records its protocol; releases derive from `earns_release` rather than `passed` |
+| **C** — move the form, bump to 2 | Done. Citations are now presented exactly as `EvidenceRef.parse` accepts them. **Three releases withdrew themselves**, with no manifest edited and no migration run |
+| **D** — remove Option C from the prompts | Pending |
+| **E/F** — re-evaluate and record | Pending |
+
+**One correction to this document, made during Step B.** The *Where the protocol lives* section above proposes putting the display form beside `token` and `parse` in `domain/evidence.py`. That would have violated a rule that module states about itself — *"Evidence is truth; prompts are language, and the moment a fact knows how it will be phrased, changing the wording becomes a change to the evidence model."* The intent was right and the address was wrong: the protocol is its own concept in `domain/rendering.py`, depending on the grammar without living inside it.
+
+**One finding that outlived its step.** Step B's mutation round surfaced a mutation that could not be killed at protocol 1: the report stamping a literal `1` rather than reading the constant produces an identical program while the constant *is* 1. It is killed by a test that raises the running protocol and asserts the stamp follows — which is the property that made Step C's bump propagate on its own rather than silently recording new measurements under the old number.

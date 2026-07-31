@@ -1,22 +1,27 @@
-"""Turning an evidence set into the text a model reads.
+"""Placing evidence into a prompt template.
 
-The one place language and evidence meet, and deliberately a small one. The
-evidence domain says nothing about wording; the prompt artifact says nothing
-about a particular account. This function joins them, and does nothing else.
+**This module composes; it does not decide form.** The Prompt Rendering Protocol
+(``domain/rendering.py``) owns what a fact looks like and how a citation is
+presented; everything here is the template contract — where the evidence goes,
+and refusing a prompt with nowhere to put it.
+
+That division is the whole of ADR-0031's fix. Until M9.5 this file authored the
+citation's display form while ``EvidenceRef.parse`` defined the grammar that had
+to read it back, and nothing reconciled the two: **a protocol shared by two
+components that neither owned.** The disagreement was invisible until a model
+took its instructions literally, and it cost three prompts their release.
 
 **Deterministic by construction.** The evidence set is already in canonical
-order, attributes are already sorted, and this adds no ordering of its own —
-so the same evidence always renders to the same text, and a recorded
-``evidence_digest`` identifies exactly what the model saw.
-
-Every fact is rendered with its citation token, because a model cannot cite
-what it was never shown how to name.
+order, attributes are already sorted, and neither this module nor the protocol
+adds an ordering — so the same evidence always renders to the same text, and a
+recorded ``evidence_digest`` identifies exactly what the model saw.
 """
 
 from __future__ import annotations
 
-from modules.ai_platform.domain.evidence import EvidenceFact, EvidenceSet
+from modules.ai_platform.domain.evidence import EvidenceSet
 from modules.ai_platform.domain.prompt import PromptError, PromptVersion
+from modules.ai_platform.domain.rendering import render_facts
 
 #: Where the facts go in a prompt template.
 FACTS_PLACEHOLDER = "{facts}"
@@ -30,14 +35,4 @@ def render(prompt: PromptVersion, evidence: EvidenceSet) -> str:
             "evidence would never reach the model — which would make every statement it "
             "produced ungrounded by construction."
         )
-    return prompt.text.replace(FACTS_PLACEHOLDER, _facts(evidence))
-
-
-def _facts(evidence: EvidenceSet) -> str:
-    return "\n\n".join(_fact(fact) for fact in evidence)
-
-
-def _fact(fact: EvidenceFact) -> str:
-    lines = [f"[{fact.ref.token}] {fact.summary}"]
-    lines.extend(f"  {name}: {value}" for name, value in fact.attributes)
-    return "\n".join(lines)
+    return prompt.text.replace(FACTS_PLACEHOLDER, render_facts(evidence))

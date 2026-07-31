@@ -15,7 +15,8 @@ split exists to prevent.
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
+from dataclasses import replace
+from datetime import UTC, date, datetime
 from uuid import UUID, uuid4
 
 import pytest
@@ -37,8 +38,15 @@ from modules.ai_platform.domain.narration import (
     NarrationError,
     NarrationSubject,
 )
-from modules.ai_platform.domain.prompt import PromptNotReleasableError, PromptRegistry
+from modules.ai_platform.domain.prompt import (
+    Evaluation,
+    PromptNotReleasableError,
+    PromptRegistry,
+)
+from modules.ai_platform.domain.rendering import PROMPT_RENDERING_PROTOCOL_VERSION
 from modules.ai_platform.domain.provider import AIProviderRegistry, AIVendor
+from modules.ai_platform.infrastructure import composition
+from modules.ai_platform.infrastructure.prompt_loader import load_prompt_registry
 from modules.ai_platform.infrastructure.repository import SqlNarrationRepository
 from signora_platform.db import tenant_scoped_session
 from tests.ai_platform.fakes import FakeAdapter
@@ -521,32 +529,74 @@ async def _narrate_live(
     from signora_platform.event_bus import PostgresOutboxEventPublisher
     from tests.pipeline import opportunities
 
-    # Registered under the model the shipped prompt has actually been released
-    # for, so the release rule is exercised rather than bypassed. The adapter
-    # is scripted; the *rule* is real.
+    # Registered under the model the shipped prompt was measured against, so
+    # the release rule is exercised rather than bypassed. The adapter is
+    # scripted; the *rule* is real.
     adapter = FakeAdapter(models=frozenset({"llama3.1:8b"}), content=content)
     providers = AIProviderRegistry()
     providers.register(adapter)
 
-    async with tenant_scoped_session(
-        factory, workspace_id=workspace_id, user_id=user_id
-    ) as session:
-        narrate = build_narrate(
-            session,
-            # The same factory, so the recorder opens a *second* connection —
-            # which is the whole point: its transaction is independent of the
-            # one this block will roll back if narration fails (ADR-0029).
-            recording_sessions=factory,
-            providers=providers,
-            source=OpportunityExplanationSource(opportunities(session, workspace_id)),
-            publisher=PostgresOutboxEventPublisher(),
-            policy=InferencePolicy(max_attempts=1),
-        )
-        return await narrate.execute(
-            NarrateInput(
-                workspace_id=workspace_id,
-                entity_id=entity_id,
-                model="llama3.1:8b",
-                correlation_id=uuid4(),
+    with pytest.MonkeyPatch.context() as patched:
+        # **A double for the registry, not for the release rule** — the same
+        # distinction M10's pipeline test draws, for the same reason. M9.5 Step C
+        # moved to rendering protocol 2, which withdrew `explanation_narration@1`'s
+        # protocol-1 release by derivation; Step F re-measures it. Until then the
+        # shipped manifest cannot satisfy the rule, so this supplies a measurement
+        # of exactly the shape the rule demands and leaves the manifest untouched.
+        # `test_prompts.py` asserts what the manifest actually holds.
+        patched.setattr(composition, "load_prompt_registry", _registry_at_current_protocol)
+
+        async with tenant_scoped_session(
+            factory, workspace_id=workspace_id, user_id=user_id
+        ) as session:
+            narrate = build_narrate(
+                session,
+                # The same factory, so the recorder opens a *second* connection —
+                # which is the whole point: its transaction is independent of the
+                # one this block will roll back if narration fails (ADR-0029).
+                recording_sessions=factory,
+                providers=providers,
+                source=OpportunityExplanationSource(opportunities(session, workspace_id)),
+                publisher=PostgresOutboxEventPublisher(),
+                policy=InferencePolicy(max_attempts=1),
             )
+            return await narrate.execute(
+                NarrateInput(
+                    workspace_id=workspace_id,
+                    entity_id=entity_id,
+                    model="llama3.1:8b",
+                    correlation_id=uuid4(),
+                )
+            )
+
+
+def _registry_at_current_protocol(*_: object, **__: object) -> PromptRegistry:
+    """`explanation_narration@1`, its real text, with a measurement of the
+    shape the release rule demands taken under the *running* protocol.
+
+    Stamped from `PROMPT_RENDERING_PROTOCOL_VERSION` rather than a literal, so
+    this double keeps satisfying the rule after the next protocol change
+    instead of quietly becoming a second stale release.
+    """
+    shipped = load_prompt_registry().get("explanation_narration", 1)
+    return PromptRegistry(
+        versions=(
+            replace(
+                shipped,
+                evaluations=(
+                    Evaluation(
+                        model="llama3.1:8b",
+                        dataset="explanation_narration",
+                        dataset_version=1,
+                        rubric_version=1,
+                        evaluated_on=date(2026, 7, 31),
+                        sample_size=2,
+                        grounding_failures=0,
+                        schema_failures=0,
+                        coverage=1.0,
+                        rendering_protocol_version=PROMPT_RENDERING_PROTOCOL_VERSION,
+                    ),
+                ),
+            ),
         )
+    )

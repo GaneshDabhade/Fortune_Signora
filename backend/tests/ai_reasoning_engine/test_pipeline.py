@@ -330,10 +330,18 @@ class TestTheReleaseRuleBindsTheRequestPath:
 
         version = load_prompt_registry(PROMPT_DIR).get(REASONING_PROMPT, REASONING_PROMPT_VERSION)
 
-        assert version.is_released_for(CERTIFIED_MODEL), "the certified model must be released"
-        assert not version.is_released_for(MODEL), (
-            f"reasoning@1 must not be usable with {MODEL}; it was never measured against it."
+        certified = [e for e in version.evaluations if e.passed and e.model == CERTIFIED_MODEL]
+        assert certified, "the certified model must hold the one passing measurement"
+        assert not any(e.passed and e.model == MODEL for e in version.evaluations), (
+            f"reasoning@1 must never record a pass for {MODEL}; it was never measured against it."
         )
+
+        # Neither is usable today, but for different reasons — and the
+        # difference is the whole of M9.5. The certified model's measurement
+        # exists and describes rendering protocol 1; the other model has no
+        # measurement at all.
+        assert not version.is_released_for(CERTIFIED_MODEL)
+        assert not version.is_released_for(MODEL)
 
     async def test_execute_refuses_an_unreleased_prompt_and_stores_nothing(
         self,

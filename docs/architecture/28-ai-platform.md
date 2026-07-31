@@ -1021,3 +1021,53 @@ The refusal says so in its own words, because the two failures have opposite rem
 Nine mutations, all fatal — including the two that survived the first round: the recorder's duplicate key silently dropping the protocol, and the report stamping a literal `1` instead of reading the constant. The second is the more interesting: at protocol 1 the mutation produces an identical program, so it is invisible to any test that does not move the constant. It is killed by a test that raises the running protocol and asserts the stamp follows — which is the property that makes Step C's bump propagate on its own.
 
 *1751 tests · 29 contracts · mypy strict clean over 448 files · coverage 95.85%.*
+
+---
+
+### Step C — the form moves, and three releases withdraw themselves
+
+> 2026-07-31. **The first behaviour-changing step**, and the one the versioning existed for.
+
+**Protocol 2 presents a citation as a complete, copyable unit:**
+
+```
+signal_contribution:3f40f486-98e5-5ff7-812d-feca5aa54af7 — A retired system suggests …
+  contribution: 30
+  relevance: primary
+```
+
+The string the model must produce is now a string it can *copy*. Under protocol 1 no form the parser accepted was ever visible as a delimited unit — the model had to **derive** one by removing characters, and every observed grounding failure across three prompts and four models was an error in how much to remove: too little (the bracket transcribed) or too much (the kind prefix stripped). A form requiring no transformation has no mechanism for either.
+
+**The em dash is load-bearing, and a hyphen would not have done.** A UUID contains hyphens, so `-` sits inside the token's own alphabet and a model deciding where a citation ends would have to reason about position rather than about characters. An em dash appears nowhere in `kind:uuid`, so the boundary is unambiguous by construction. Asserted, because the reason is not visible from the character.
+
+#### What withdrew, and what did not move
+
+One constant changed from `1` to `2`. As a consequence, **by derivation and with nothing edited by hand**:
+
+| Prompt | Passed on | Status now |
+|---|---|---|
+| `explanation_narration@1` | `llama3.1:8b` | awaiting re-evaluation |
+| `reasoning@1` | `granite3.3:2b` | awaiting re-evaluation |
+| `research_planning@1` | `llama3.1:8b` | awaiting re-evaluation |
+
+**No manifest entry was removed, no release was withdrawn by hand, no migration ran, and no prompt was touched.** Every measurement still says it passed, still names protocol 1, and is still on record. `passed` is unchanged; only `earns_release` moved — which is the whole demonstration that release validity is derived rather than declared.
+
+Three tests that asserted those releases now assert the withdrawal. `test_the_narration_prompt_awaits_re_evaluation_under_protocol_2` has now been rewritten twice — it first asserted the prompt was *unusable* (true before T120), then that it held a release (true under protocol 1), and now that it awaits re-measurement. **The sequence is the record, and the rule behaved identically all three times.**
+
+#### Ownership, enforced rather than described
+
+`application/render.py` is now four statements: check the placeholder, substitute `render_facts`. It cannot reach inside a fact — a Security Invariant reads its **syntax tree** and refuses any reference to `token`, `ref`, `summary`, `attributes` or `EvidenceFact`. A renderer that cannot see a fact cannot format one.
+
+Two further invariants make the specific defect unrepresentable rather than merely superseded: no file under `modules/` may wrap a citation token in a delimiter, and only `domain/rendering.py` may declare a protocol version. The round trip is asserted over the **rendered bytes** — the assertion whose absence let the writer and the reader drift apart for two milestones.
+
+**The parser was not touched, and tests assert it still refuses everything it always refused**: a bracketed citation, a bare UUID, and a token with attributes appended. The fix is entirely on the producing side; a parser that repaired its input would make the failure rate unmeasurable.
+
+#### One coupling, found where the plan predicted it
+
+M10's scripted adapter read citations by stripping brackets off each line — the only place in the suite coupled to the form, and precisely why a renderer change had to be a version bump rather than an edit. Its replacement takes the first token of each line and keeps the ones that **parse**, which is how protocol 2 intends a model to succeed. A first attempt matched on the delimiter instead and picked up prose from the planning prompt's own derivation catalog: *a delimiter is a weaker signal than parseability.*
+
+M8's pipeline test now supplies a registry double stamped at the running protocol — the same distinction M10 already draws: **a double for the registry, never for the release rule.** The shipped manifests are untouched, and `test_prompts.py` asserts what they actually hold.
+
+*Seven mutations, all fatal — including reverting the version, re-decorating the citation, swapping the em dash for a hyphen, and re-authoring the fact line inside `render.py`.*
+
+*1757 tests · 321 invariants · 29 contracts · mypy strict clean · coverage 95.9%.*

@@ -80,23 +80,28 @@ class TestTheShippedRegistryIsIntact:
         actual = {v.reference: v.fingerprint for v in load_prompt_registry().versions}
         assert actual == PINNED_FINGERPRINTS
 
-    def test_the_narration_prompt_is_usable_only_where_it_was_measured(self) -> None:
-        """Released for `llama3.1:8b` on 2026-07-30 — earned by a real
-        evaluation run, never declared.
+    def test_the_narration_prompt_awaits_re_evaluation_under_protocol_2(self) -> None:
+        """**Rewritten twice, and the sequence is the record.**
 
-        Rewritten at that run. It previously asserted the prompt was *not*
-        usable, which was true while it had passed nothing and stopped being
-        true the moment T120's harness measured it. The durable property is
-        the one asserted now: released exactly where it was measured and
-        refused everywhere else. A prompt tuned against a small local model
-        has not been shown to behave on a frontier hosted one (ADR-0028), and
-        that gap must stay structural rather than remembered.
+        It first asserted the prompt was *not* usable — true while it had
+        passed nothing, and false the moment T120's harness measured it. It
+        then asserted a release for `llama3.1:8b` — true under rendering
+        protocol 1, and false the moment M9.5 Step C moved to protocol 2.
+
+        Nothing was withdrawn by hand on either occasion. The measurement is
+        untouched and still says it passed; it describes text a model would no
+        longer be shown, so it no longer earns anything. **That is the release
+        rule working, exactly as it worked the first time.**
         """
         prompt = load_prompt_registry().get("explanation_narration", 1)
 
-        assert prompt.is_released
-        assert prompt.is_released_for("llama3.1:8b")
-        prompt.require_model("llama3.1:8b")
+        (earned,) = [e for e in prompt.evaluations if e.passed]
+        assert earned.model == "llama3.1:8b"
+        assert earned.rendering_protocol_version == 1
+
+        assert not prompt.is_released
+        with pytest.raises(PromptNotReleasableError, match="protocol"):
+            prompt.require_model("llama3.1:8b")
 
         for unearned in ("claude-sonnet-4-5", "gpt-4o", "llama3.1:70b"):
             with pytest.raises(PromptNotReleasableError):

@@ -376,12 +376,12 @@ class TestRecordingTheMeasurement:
         manifest = _manifest_copy(tmp_path)
         record(_report(), manifest=manifest)
 
-        monkeypatch.setattr(report_module, "PROMPT_RENDERING_PROTOCOL_VERSION", 2)
+        monkeypatch.setattr(report_module, "PROMPT_RENDERING_PROTOCOL_VERSION", 3)
         written = record(_report(), manifest=manifest)
 
-        assert written.rendering_protocol_version == 2
+        assert written.rendering_protocol_version == 3
         entries = json.loads(manifest.read_text())["prompts"][0]["evaluations"]
-        assert [e["rendering_protocol_version"] for e in entries[-2:]] == [1, 2]
+        assert [e["rendering_protocol_version"] for e in entries[-2:]] == [2, 3]
 
     def test_a_recorded_run_stamps_the_running_protocol_rather_than_a_literal(
         self, monkeypatch: pytest.MonkeyPatch
@@ -393,7 +393,7 @@ class TestRecordingTheMeasurement:
         claim the old one — recording, permanently, that it was taken under
         conditions that no longer existed. Nothing else would notice.
         """
-        assert _report().as_evaluation().rendering_protocol_version == 1
+        assert _report().as_evaluation().rendering_protocol_version == PROMPT_RENDERING_PROTOCOL_VERSION
 
         monkeypatch.setattr(report_module, "PROMPT_RENDERING_PROTOCOL_VERSION", 7)
 

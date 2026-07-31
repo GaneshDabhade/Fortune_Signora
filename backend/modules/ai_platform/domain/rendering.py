@@ -47,16 +47,44 @@ below and pinned by a specimen in the test suite**, in the same way
 ``PINNED_FINGERPRINTS`` pins prompt text. Changing what a model sees without
 bumping the version fails that test.
 
-### Protocol version 1
+### Protocol version 2 — current, ratified as ADR-0031 Option A
 
-The form shipped since M8, specified here for the first time:
+**A citation is presented as a complete, copyable unit. Nothing surrounds it.**
 
 - Facts appear in the evidence set's own canonical order, separated by a blank
   line.
-- Each fact opens with its citation token **wrapped in square brackets**,
-  followed by a space and the fact's summary.
+- Each fact opens with its citation token, **exactly as ``EvidenceRef.token``
+  produces it and exactly as ``EvidenceRef.parse`` accepts it**, followed by a
+  space, an em dash, a space, and the fact's summary.
 - Each attribute follows on its own line, indented two spaces, as
   ``name: value``, in the fact's canonical attribute order.
+
+```
+signal_contribution:3f40f486-98e5-5ff7-812d-feca5aa54af7 — A retired system suggests …
+  contribution: 30
+  relevance: primary
+```
+
+**The em dash is load-bearing, and an ASCII hyphen would not do.** A UUID
+contains hyphens, so ``-`` sits inside the token's own alphabet and a model
+deciding where a citation ends would have to reason about position rather than
+about characters. An em dash appears nowhere in ``kind:uuid``, so the boundary
+is unambiguous by construction — the token is bounded by the start of the line
+and by a character it can never contain.
+
+**What this buys is that copying becomes the winning strategy.** Under version 1
+no form of the citation that the parser accepted was ever visible to the model
+as a delimited unit: it had to *derive* one by removing characters. Every
+observed grounding failure across three prompts and four models was an error in
+how much to remove — too little (the bracket transcribed) or too much (the kind
+prefix stripped). A form that requires no transformation has no mechanism for
+either.
+
+### Protocol version 1 — superseded 2026-07-31, recorded
+
+The form shipped from M8 until M9.5 Step C. Kept here because evaluations in the
+manifests still name it, and a version those records cite must remain
+explicable:
 
 ```
 [signal_contribution:3f40f486-98e5-5ff7-812d-feca5aa54af7] A retired system suggests …
@@ -64,17 +92,18 @@ The form shipped since M8, specified here for the first time:
   relevance: primary
 ```
 
-**This protocol is known to be defective** (ADR-0031): the bracket is not part
-of the token, so a model that reproduces what it sees emits a citation the
-parser rejects, and a model told to strip the bracket may strip more. Version 1
-is specified here *as it is* rather than as it should be, because M9.5 Step B is
-deliberately behaviour-neutral: naming the defect and correcting it are separate
-changes, so that the release invalidation in Step C has exactly one cause.
+The bracket was not part of the token. A model reproducing what it saw emitted a
+citation the parser rejected; a model told to strip the bracket could strip more.
+Measurements taken under it remain true and remain on record — they simply no
+longer describe what a model would be shown.
 """
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from typing import Final
+
+from modules.ai_platform.domain.evidence import EvidenceFact, EvidenceRef
 
 #: The rendering protocol this process implements.
 #:
@@ -86,4 +115,45 @@ from typing import Final
 #: **A change to what a model is shown requires a bump.** The specimen test is
 #: what enforces that, and the specification above is what makes the question
 #: answerable.
-PROMPT_RENDERING_PROTOCOL_VERSION: Final = 1
+PROMPT_RENDERING_PROTOCOL_VERSION: Final = 2
+
+#: What separates a citation from the prose that follows it. Not part of the
+#: citation, and — unlike a hyphen — not a character a citation can contain.
+_DELIMITER: Final = " — "
+
+#: How far an attribute is indented beneath the fact it belongs to.
+_INDENT: Final = "  "
+
+
+def cite(ref: EvidenceRef) -> str:
+    """The citation exactly as a model should copy it, and exactly as
+    ``EvidenceRef.parse`` accepts it.
+
+    **This function existing at all is the fix.** Before it, the writer of the
+    citation lived in ``application/render.py`` and the reader lived in
+    ``domain/evidence.py``, and nothing reconciled them — two components sharing
+    a protocol that neither owned (ADR-0031). There is now one authority, and it
+    adds nothing to what ``token`` produces.
+
+    It is deliberately a pass-through rather than an alias: a caller that wanted
+    decoration would have to change *this*, in the module named for the protocol,
+    where a version bump is the obvious next thought.
+    """
+    return ref.token
+
+
+def render_fact(fact: EvidenceFact) -> str:
+    """One fact, as protocol 2 presents it."""
+    lines = [f"{cite(fact.ref)}{_DELIMITER}{fact.summary}"]
+    lines.extend(f"{_INDENT}{name}: {value}" for name, value in fact.attributes)
+    return "\n".join(lines)
+
+
+def render_facts(facts: Iterable[EvidenceFact]) -> str:
+    """Every fact, in the order the evidence set holds them.
+
+    No ordering of its own: the set is already canonical, so the same evidence
+    always produces the same text and a recorded ``evidence_digest`` identifies
+    exactly what the model saw.
+    """
+    return "\n\n".join(render_fact(fact) for fact in facts)

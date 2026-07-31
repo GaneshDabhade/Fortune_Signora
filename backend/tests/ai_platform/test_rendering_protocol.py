@@ -8,9 +8,10 @@ altering any artifact describing it.
 
 These tests assert the fourth input now behaves like the other three.
 
-**Nothing here calls a model**, and nothing here changes what any prompt
-renders: Step B is deliberately behaviour-neutral, so the specimen below pins
-the form that has shipped since M8, defect included.
+**Nothing here calls a model.** Step B named the input and bound releases to it;
+Step C moved the form into the protocol and bumped it to 2, which withdrew every
+release earned under protocol 1 — by derivation, with no manifest edited and no
+migration run. Both halves are asserted below.
 """
 
 from __future__ import annotations
@@ -23,14 +24,19 @@ from uuid import UUID
 import pytest
 
 from modules.ai_platform.application.render import render
-from modules.ai_platform.domain.evidence import EvidenceFact, EvidenceRef, EvidenceSet
+from modules.ai_platform.domain.evidence import (
+    EvidenceError,
+    EvidenceFact,
+    EvidenceRef,
+    EvidenceSet,
+)
 from modules.ai_platform.domain.prompt import (
     Evaluation,
     PromptError,
     PromptNotReleasableError,
     PromptVersion,
 )
-from modules.ai_platform.domain.rendering import PROMPT_RENDERING_PROTOCOL_VERSION
+from modules.ai_platform.domain.rendering import PROMPT_RENDERING_PROTOCOL_VERSION, cite
 from modules.ai_platform.infrastructure.prompt_loader import load_prompt_registry
 
 MODEL = "llama3.1:8b"
@@ -182,52 +188,105 @@ class TestTwoProtocolsAreTwoMeasurements:
             _prompt(evaluation, replace(evaluation, coverage=0.9))
 
 
+def _specimen() -> EvidenceSet:
+    return EvidenceSet(
+        workspace_id=WORKSPACE,
+        facts=(
+            EvidenceFact(
+                ref=EvidenceRef(
+                    kind="signal_contribution",
+                    id=UUID("3f40f486-98e5-5ff7-812d-feca5aa54af7"),
+                ),
+                workspace_id=WORKSPACE,
+                summary="A retired system suggests displacement.",
+                attributes=(("contribution", 30), ("relevance", "primary")),
+            ),
+        ),
+        assembled_at=NOW,
+    )
+
+
 class TestTheProtocolVersionIdentifiesAForm:
-    def test_protocol_1_renders_exactly_this(self) -> None:
+    def test_protocol_2_renders_exactly_this(self) -> None:
         """**The specimen that gives the version a referent.**
 
         A bare integer nobody can check is worse than none: it makes bumping a
         matter of discipline, and discipline is what already failed here. This
-        pins what protocol 1 *is*, so changing what a model sees without
+        pins what protocol 2 *is*, so changing what a model sees without
         bumping the version fails a test rather than passing silently — the
         same guarantee `PINNED_FINGERPRINTS` gives prompt text.
 
-        The bracket below is ADR-0031's defect, pinned deliberately. Step B
-        changes no behaviour; Step C changes this specimen and the version
-        together, in one reviewable diff.
+        Protocol 1 wrapped the citation in brackets that were not part of it.
+        Here the token stands alone, bounded by the start of the line and by an
+        em dash — a character `kind:uuid` cannot contain.
         """
-        prompt = _prompt()
-        evidence = EvidenceSet(
-            workspace_id=WORKSPACE,
-            facts=(
-                EvidenceFact(
-                    ref=EvidenceRef(
-                        kind="signal_contribution",
-                        id=UUID("3f40f486-98e5-5ff7-812d-feca5aa54af7"),
-                    ),
-                    workspace_id=WORKSPACE,
-                    summary="A retired system suggests displacement.",
-                    attributes=(("contribution", 30), ("relevance", "primary")),
-                ),
-            ),
-            assembled_at=NOW,
-        )
-
-        assert PROMPT_RENDERING_PROTOCOL_VERSION == 1
-        assert render(prompt, evidence) == (
+        assert PROMPT_RENDERING_PROTOCOL_VERSION == 2
+        assert render(_prompt(), _specimen()) == (
             "A prompt. "
-            "[signal_contribution:3f40f486-98e5-5ff7-812d-feca5aa54af7] "
+            "signal_contribution:3f40f486-98e5-5ff7-812d-feca5aa54af7 — "
             "A retired system suggests displacement.\n"
             "  contribution: 30\n"
             "  relevance: primary"
         )
 
+    def test_a_hyphen_would_not_have_done(self) -> None:
+        """The delimiter must be a character the token cannot contain, and a
+        UUID is full of hyphens. Asserted rather than assumed, because the
+        reason for the em dash is not visible from the character itself."""
+        rendered = render(_prompt(), _specimen())
 
-class TestEveryShippedReleaseSurvivesThisStep:
-    """Step B must change no outcome. These read the real manifests."""
+        assert " — " in rendered
+        assert "-" in cite(next(iter(_specimen())).ref)
+
+
+class TestWhatIsRenderedIsWhatTheParserAccepts:
+    """**ADR-0031 Option D, asserted where it binds.**
+
+    `test_evidence.py` already asserts `parse(ref.token) == ref` — the round
+    trip over the *token*. Nothing asserted it over what a model is actually
+    shown, and that gap is precisely where the defect lived for two milestones.
+    """
+
+    def test_every_citation_in_a_rendered_prompt_parses_back(self) -> None:
+        evidence = _specimen()
+        body = render(_prompt(), evidence).removeprefix("A prompt. ")
+
+        for block, fact in zip(body.split("\n\n"), evidence, strict=True):
+            citation = block.splitlines()[0].split(" ")[0]
+
+            assert EvidenceRef.parse(citation) == fact.ref
+
+    def test_the_rendered_citation_is_the_token_and_nothing_more(self) -> None:
+        """A renderer that decorated the token would still round-trip if the
+        decoration happened to be strippable. This asserts the stronger thing:
+        **no decoration exists.**"""
+        fact = next(iter(_specimen()))
+        body = render(_prompt(), _specimen()).removeprefix("A prompt. ")
+
+        assert body.startswith(f"{fact.ref.token} ")
+        assert "[" not in body and "]" not in body
+
+    def test_the_parser_still_refuses_what_it_always_refused(self) -> None:
+        """**Step C did not make the parser tolerant, and must not have.**
+        The fix is entirely on the producing side; a parser that repaired its
+        input would make the failure rate unmeasurable."""
+        ref = next(iter(_specimen())).ref
+
+        for malformed in (f"[{ref.token}]", str(ref.id), f"{ref.token}:relevance=primary"):
+            with pytest.raises(EvidenceError):
+                EvidenceRef.parse(malformed)
+
+
+class TestTheProtocolBumpWithdrewEveryStaleRelease:
+    """**The point of the whole design, demonstrated against the real manifests.**
+
+    Nothing was edited to make this true: no manifest entry was removed, no
+    release was withdrawn by hand, no migration ran. One constant changed, and
+    three releases stopped being earned by derivation.
+    """
 
     @pytest.mark.parametrize("directory", MANIFEST_DIRS)
-    def test_every_recorded_measurement_names_protocol_1(self, directory: str) -> None:
+    def test_history_is_untouched_and_still_names_protocol_1(self, directory: str) -> None:
         load_prompt_registry.cache_clear()
         registry = load_prompt_registry(Path(__file__).resolve().parents[2] / directory)
 
@@ -235,20 +294,30 @@ class TestEveryShippedReleaseSurvivesThisStep:
 
         assert evaluations, f"{directory} records no measurements at all."
         assert all(e.rendering_protocol_version == 1 for e in evaluations)
-        assert all(e.measured_under_current_protocol for e in evaluations)
+        assert not any(e.measured_under_current_protocol for e in evaluations)
 
-    def test_the_three_prompts_that_were_released_still_are(self) -> None:
-        """Named individually rather than derived, so this states what is true
-        today and fails loudly in Step C when it stops being true."""
-        load_prompt_registry.cache_clear()
-        root = Path(__file__).resolve().parents[2]
-
-        released = {
+    @pytest.mark.parametrize(
+        ("directory", "name", "model"),
+        [
             ("modules/ai_platform/prompts", "explanation_narration", "llama3.1:8b"),
             ("modules/ai_reasoning_engine/prompts", "reasoning", "granite3.3:2b"),
             ("modules/ai_research_engine/prompts", "research_planning", "llama3.1:8b"),
-        }
-        for directory, name, model in released:
-            prompt = load_prompt_registry(root / directory).get(name, 1)
-            assert prompt.is_released, f"{name}@1 lost its release."
+        ],
+    )
+    def test_a_prompt_that_passed_no_longer_earns_a_release(
+        self, directory: str, name: str, model: str
+    ) -> None:
+        load_prompt_registry.cache_clear()
+        prompt = load_prompt_registry(Path(__file__).resolve().parents[2] / directory).get(name, 1)
+
+        # The measurement is intact: it passed, and it says so.
+        (earned,) = [e for e in prompt.evaluations if e.passed and e.model == model]
+        assert earned.grounding_failures == 0
+        assert earned.rendering_protocol_version == 1
+
+        # And it no longer applies.
+        assert not prompt.is_released
+        with pytest.raises(PromptNotReleasableError, match="protocol") as refusal:
             prompt.require_model(model)
+
+        assert "do not re-author" in str(refusal.value)

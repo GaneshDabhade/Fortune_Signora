@@ -35,10 +35,17 @@ guarantee (28-ai-platform.md, "the two-tier guarantee").
 from __future__ import annotations
 
 import ast
+import re
 import tomllib
+from datetime import UTC, datetime
 from pathlib import Path
+from uuid import UUID
 
 import pytest
+
+from modules.ai_platform.application.render import render
+from modules.ai_platform.domain.evidence import EvidenceFact, EvidenceRef, EvidenceSet
+from modules.ai_platform.domain.prompt import PromptVersion
 
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
 AI_PLATFORM_ROOT = BACKEND_ROOT / "modules" / "ai_platform"
@@ -489,3 +496,98 @@ class TestOperationalHistoryOutlivesTheWorkItDescribes:
         assert "self._metrics.recording_failed()" in source
         assert "logger.error(" in source
         assert "operational history lost" in source
+
+
+class TestOneAuthorityDecidesWhatAModelSees:
+    """**ADR-0031's defect, made unrepresentable.**
+
+    For two milestones `application/render.py` authored the citation's display
+    form while `EvidenceRef.parse` defined the grammar that had to read it back,
+    and nothing reconciled them — *a protocol shared by two components that
+    neither owned*. The disagreement was invisible until a model took its
+    instructions literally, and it cost three prompts their release.
+
+    These assert the ownership, not the form. The form is protocol 2 and is
+    pinned by specimen in `tests/ai_platform/test_rendering_protocol.py`; what
+    must never come back is a **second** author.
+    """
+
+    RENDERER = AI_PLATFORM_ROOT / "application" / "render.py"
+    PROTOCOL = AI_PLATFORM_ROOT / "domain" / "rendering.py"
+
+    def test_the_renderer_never_touches_a_fact_or_a_citation(self) -> None:
+        """It composes: a template, a placeholder, and the protocol's output.
+        A renderer that could *see* a fact could format one.
+
+        Read from the **syntax tree**, not the text: a first attempt matched the
+        word "attributes" in this module's own docstring, which would have made
+        the invariant fail on prose while a real reference slipped past inside
+        an f-string.
+        """
+        tree = ast.parse(self.RENDERER.read_text())
+        referenced = {node.attr for node in ast.walk(tree) if isinstance(node, ast.Attribute)} | {
+            node.id for node in ast.walk(tree) if isinstance(node, ast.Name)
+        }
+
+        for authored in ("token", "EvidenceFact", "attributes", "summary", "ref"):
+            assert authored not in referenced, (
+                f"application/render.py references '{authored}'. It composes protocol output "
+                "and must not author protocol behaviour — the moment it can reach inside a "
+                "fact, the citation has two authors again (ADR-0031)."
+            )
+
+    def test_nothing_in_the_repository_re_decorates_a_citation(self) -> None:
+        """Protocol 1 wrapped citations in brackets, which is what models
+        transcribed. **The specific defect is now forbidden by pattern**, not
+        merely superseded — anywhere, in any module."""
+        decorated = re.compile(r"[\[(<]\{[^}]*\btoken\b")
+        offenders = [
+            path.relative_to(BACKEND_ROOT)
+            for path in (BACKEND_ROOT / "modules").rglob("*.py")
+            if decorated.search(path.read_text())
+        ]
+
+        assert offenders == [], (
+            f"{offenders} wrap a citation token in a delimiter. A citation must be presented "
+            "exactly as `EvidenceRef.parse` accepts it, so that copying is the winning "
+            "strategy and no prompt has to instruct a transformation."
+        )
+
+    def test_only_the_protocol_module_names_a_protocol_version(self) -> None:
+        """One authoritative representation. A second literal would be a copy
+        that goes stale the first time the protocol moves."""
+        assignment = re.compile(r"^PROMPT_RENDERING_PROTOCOL_VERSION\s*[:=]", re.MULTILINE)
+        declaring = [
+            path.relative_to(BACKEND_ROOT)
+            for path in (BACKEND_ROOT / "modules").rglob("*.py")
+            if assignment.search(path.read_text())
+        ]
+
+        assert declaring == [self.PROTOCOL.relative_to(BACKEND_ROOT)]
+
+    def test_what_is_rendered_is_what_the_parser_accepts(self) -> None:
+        """The round trip, over the bytes rather than over the token — the
+        assertion whose absence let the two drift apart."""
+        prompt = PromptVersion(
+            name="specimen", version=1, owner="ai-platform@signora", text="{facts}"
+        )
+        workspace_id = UUID(int=99)
+        facts = tuple(
+            EvidenceFact(
+                ref=EvidenceRef(kind=kind, id=UUID(int=index)),
+                workspace_id=workspace_id,
+                summary=f"Fact {index}.",
+                attributes=(("weight", index),),
+            )
+            for index, kind in enumerate(("business_event", "signal_contribution"), start=1)
+        )
+        evidence = EvidenceSet(
+            workspace_id=workspace_id, facts=facts, assembled_at=datetime(2026, 7, 31, tzinfo=UTC)
+        )
+
+        blocks = render(prompt, evidence).split("\n\n")
+
+        assert len(blocks) == len(facts)
+        for block, fact in zip(blocks, evidence, strict=True):
+            citation = block.splitlines()[0].split(" ")[0]
+            assert EvidenceRef.parse(citation) == fact.ref

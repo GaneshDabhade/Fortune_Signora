@@ -26,6 +26,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from modules.ai_platform.domain.rendering import PROMPT_RENDERING_PROTOCOL_VERSION
 from modules.ai_platform.infrastructure.prompt_loader import load_prompt_registry
 from modules.ai_platform.infrastructure.repository import SqlInferenceRecorder
+from modules.ai_platform.domain.evidence import EvidenceError, EvidenceRef
 from modules.ai_platform.public import (
     AIProviderDescriptor,
     AIProviderRegistry,
@@ -94,6 +95,14 @@ def _brief_json(finding_refs: list[str]) -> str:
     )
 
 
+def _parses(token: str) -> bool:
+    try:
+        EvidenceRef.parse(token)
+    except EvidenceError:
+        return False
+    return True
+
+
 class _ScriptedModel:
     """Answers each call with the refs it was actually shown.
 
@@ -110,10 +119,19 @@ class _ScriptedModel:
         )
 
     async def complete(self, request: InferenceRequest) -> InferenceResult:
+        # **The fake succeeds the way protocol 2 intends a model to succeed:
+        # by copying.** It takes the first token of each line and keeps the ones
+        # that parse, which is exactly the protocol's promise — what is shown is
+        # what the parser accepts. Under protocol 1 this read brackets off the
+        # line, and a first attempt here matched prose in the prompt's own
+        # derivation catalog: a delimiter is a weaker signal than parseability.
         refs = sorted(
-            line.split("]")[0].removeprefix("[")
-            for line in request.prompt.splitlines()
-            if line.startswith("[")
+            {
+                token
+                for line in request.prompt.splitlines()
+                for token in [line.split(" ")[0]]
+                if _parses(token)
+            }
         )
         findings = [ref for ref in refs if ref.startswith("research_finding:")]
         content = _brief_json(findings) if findings else _plan_json(refs)

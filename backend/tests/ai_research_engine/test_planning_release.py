@@ -45,9 +45,24 @@ NOW = datetime(2026, 7, 31, 12, 0, tzinfo=UTC)
 
 
 class TestTheReleaseRuleBindsTheRequestPath:
-    def test_the_certified_model_resolves(self) -> None:
+    def test_the_certified_model_awaits_re_evaluation_under_protocol_2(self) -> None:
+        """**Its release was earned, and M9.5 Step C withdrew it.**
+
+        `research_planning@1` passed cleanly on `llama3.1:8b` — under rendering
+        protocol 1, which wrapped every citation in brackets the parser refused.
+        The prompt worked *around* that (rule 5 told the model to strip them),
+        so the measurement is real and it describes a form no longer rendered.
+
+        Step D replaces the workaround; Step F re-measures. Until then this
+        states what is true rather than what the milestone intends.
+        """
         prompt = load_prompt_registry(PROMPT_DIR).get(PROMPT_NAME, PROMPT_VERSION)
-        prompt.require_model(CERTIFIED_MODEL)
+
+        (earned,) = [e for e in prompt.evaluations if e.passed]
+        assert earned.rendering_protocol_version == 1
+
+        with pytest.raises(PromptNotReleasableError, match="protocol"):
+            prompt.require_model(CERTIFIED_MODEL)
 
     def test_an_unmeasured_model_is_refused(self) -> None:
         """**Including one certified for a different prompt.** `granite3.3:2b`
