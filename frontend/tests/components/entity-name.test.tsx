@@ -7,6 +7,7 @@
  * worth a second of a seller's attention.
  */
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
 import { EntityName } from '@/components/intelligence/entity-name';
@@ -25,6 +26,25 @@ function identity(overrides: Partial<AccountIdentity> = {}): AccountIdentity {
     ...overrides,
   };
 }
+
+describe('the row does not rewrite itself under the reader', () => {
+  it('reserves the space a name will occupy while it loads', () => {
+    // A list that shifts as names arrive costs more confidence than the
+    // moment it saved.
+    const { container } = render(
+      <EntityName identity={undefined} fallbackId={ACCOUNT} isLoading />,
+    );
+
+    expect(container.querySelector('.animate-pulse')).toBeInTheDocument();
+    expect(screen.queryByText('6b8efd21')).not.toBeInTheDocument();
+  });
+
+  it('shows the identifier once loading finishes with no name', () => {
+    render(<EntityName identity={undefined} fallbackId={ACCOUNT} isLoading={false} />);
+
+    expect(screen.getByText('6b8efd21')).toBeInTheDocument();
+  });
+});
 
 describe('a name is shown when one is known', () => {
   it('renders the company name', () => {
@@ -80,15 +100,28 @@ describe('only disagreement is marked', () => {
     },
   );
 
-  it('marks a disputed name', () => {
+  it('marks a disputed name with a real control, not a hover', () => {
+    // **An unreachable control is a defect, not an enhancement** (§20c). A
+    // `title` tooltip is invisible on touch and unreachable by keyboard.
     render(<EntityName identity={identity({ agreement: 'disputed' })} fallbackId={ACCOUNT} />);
 
-    expect(screen.getByLabelText('Sources disagree on this name')).toBeInTheDocument();
+    const disclosure = screen.getByRole('button', { name: /sources disagree/i });
+    expect(disclosure).toBeInTheDocument();
+    expect(disclosure).toHaveAttribute('aria-expanded', 'false');
   });
 
-  it('says who reported the shown name and how many sources exist', () => {
-    // Progressive disclosure: the row carries the fact, the detail explains
-    // it on demand rather than by default.
+  it('nothing depends on a title attribute', () => {
+    const { container } = render(
+      <EntityName identity={identity({ agreement: 'disputed' })} fallbackId={ACCOUNT} />,
+    );
+
+    expect(container.querySelector('[title]')).toBeNull();
+  });
+
+  it('explains itself to a screen reader before it is opened', () => {
+    // The explanation is in the accessibility tree whether or not the
+    // disclosure is expanded — `hidden` would remove it from both the tree
+    // and browser search, which is exactly what the tooltip did.
     render(
       <EntityName
         identity={identity({ agreement: 'disputed', source: 'builtwith', source_count: 3 })}
@@ -96,10 +129,32 @@ describe('only disagreement is marked', () => {
       />,
     );
 
-    expect(screen.getByLabelText('Sources disagree on this name')).toHaveAttribute(
-      'title',
-      expect.stringContaining('builtwith'),
-    );
+    expect(screen.getByText(/builtwith/)).toBeInTheDocument();
+    expect(screen.getByText(/3 sources/)).toBeInTheDocument();
+  });
+
+  it('opens and closes from the keyboard', async () => {
+    const user = userEvent.setup();
+    render(<EntityName identity={identity({ agreement: 'disputed' })} fallbackId={ACCOUNT} />);
+    const disclosure = screen.getByRole('button', { name: /sources disagree/i });
+
+    await user.tab();
+    expect(disclosure).toHaveFocus();
+
+    await user.keyboard('{Enter}');
+    expect(disclosure).toHaveAttribute('aria-expanded', 'true');
+
+    await user.keyboard('{Enter}');
+    expect(disclosure).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('points at the region it controls', () => {
+    render(<EntityName identity={identity({ agreement: 'disputed' })} fallbackId={ACCOUNT} />);
+    const disclosure = screen.getByRole('button', { name: /sources disagree/i });
+
+    const controlled = disclosure.getAttribute('aria-controls');
+    expect(controlled).toBeTruthy();
+    expect(document.getElementById(controlled as string)).toBeInTheDocument();
   });
 
   it('still shows the chosen name while marking the dispute', () => {

@@ -43,23 +43,36 @@ const EVIDENCE_WORDING: Record<EvidenceState, { label: string; tone: 'neutral' |
   };
 
 /**
- * The number a seller reads first.
+ * The magnitude behind a row's position.
  *
  * Typographic rather than a gauge or a ring: a dial invites comparison to a
  * maximum that means nothing here. **The score is an ordering of attention,
  * not a probability**, and drawing it as a filled percentage would state a
  * confidence the pipeline never computed.
+ *
+ * **Deliberately subordinate to the account name.** The list is already sorted,
+ * so position carries the ranking and the number only answers *how strongly* —
+ * a sanity check rather than the thing being scanned. Rendered muted and
+ * tabular so the column reads down the page without competing with the name
+ * for the eye. A score set at display weight makes every row equally loud,
+ * which is the same as having no hierarchy at all.
  */
 export function AttentionScore({ score }: { score: number | null }) {
   if (score === null) {
     return (
-      <span className="text-2xl font-medium tabular-nums text-content-subtle" aria-label="No current score">
+      <span
+        className="text-lg font-medium tabular-nums text-content-subtle"
+        aria-label="No current score"
+      >
         —
       </span>
     );
   }
   return (
-    <span className="text-2xl font-medium tabular-nums text-content">{score}</span>
+    <span className="text-lg font-medium tabular-nums text-content-muted">
+      <span className="sr-only">Attention score </span>
+      {score}
+    </span>
   );
 }
 

@@ -124,13 +124,18 @@ Reviewed as though for Linear or Stripe. **What shipped is correct and it is not
 
 ### What does not, and belongs to later slices
 
-**D10 — the row has no shape.** Score, name, reason and badges sit on one horizontal line at one weight. A seller scanning fifty rows has no visual anchor: everything is equally loud, so nothing leads. Linear's issue row works because *one* element owns the line and the rest recede. **The name should be the anchor and currently competes with the score.**
+**D10 — the row has no shape.** ✅ **Fixed.** The account name is now the anchor: it leads the row at content weight, and the score is subordinate — muted, tabular, right-aligned in its own column. **The list is already sorted, so position carries the ranking**; the number only answers *how strongly*, which is a sanity check rather than the thing being scanned. A score set at display weight made every row equally loud, which is the same as having no hierarchy at all.
+
+*Original observation:* Score, name, reason and badges sit on one horizontal line at one weight. A seller scanning fifty rows has no visual anchor: everything is equally loud, so nothing leads. Linear's issue row works because *one* element owns the line and the rest recede. **The name should be the anchor and currently competes with the score.**
 *Principle: reduce cognitive load; calm hierarchy.* **Deferred** — reshaping the row is a design pass, and doing it before the row can be clicked would tune a layout that is about to gain an affordance.
 
-**D11 — a hover title is not disclosure.** *"Your sources disagree"* is behind `title=`, which is invisible on touch, unreadable to keyboard users, and a 500ms delay away from anyone else. **The one genuinely novel interaction in the product is hidden in the weakest affordance the web has.** It wants a popover listing each provider and what it reported.
-*Principle: progressive disclosure; trust.* **Deferred** to M12.3, which builds the evidence-resolution surface a popover would belong to — building a bespoke one now would be a second disclosure pattern to unify later.
+**D11 — a hover title is not disclosure.** ✅ **Fixed, and it was not a deferral.** *"Your sources disagree"* was behind `title=`: invisible on touch, unreachable by keyboard, 500 ms away from everyone else. The frontend foundation treats an unreachable control as a **defect** rather than an enhancement (CLAUDE.md §20c), so deferring it was the wrong call and it was corrected in the same milestone. It is now a focusable `button` with `aria-expanded`, operable by Enter, Space and tap, whose explanation sits in the accessibility tree whether or not it is open — `hidden` would remove it from both the tree and browser search, which is what the tooltip did.
 
-**D12 — names arrive after the rows, and the shift is visible.** The identity request resolves second, so a row renders as `6b8efd21` and becomes `Northwind Traders`. Correct behaviour, poor experience: a list that rewrites itself under the reader's eye costs more confidence than the extra 80ms would have.
+**Why an inline region rather than a popover.** A popover must trap focus, escape a scroll container and survive a virtualised row. An inline disclosure needs none of that and reads identically to a screen reader. When M12.3 builds the evidence surface this becomes its entry point rather than a second disclosure pattern to unify.
+
+**D12 — names arrive after the rows, and the shift is visible.** ✅ **Fixed.** The name cell renders a skeleton at the height the name will occupy, so the row does not rewrite itself under the reader. Rows still do not *wait* for names — the score and the reason are what a seller triages on, and blocking the list on a label would trade the decision for the name of the thing being decided.
+
+*Original observation:* The identity request resolves second, so a row renders as `6b8efd21` and becomes `Northwind Traders`. Correct behaviour, poor experience: a list that rewrites itself under the reader's eye costs more confidence than the extra 80ms would have.
 *Principle: increase confidence.* **Deferred** — the fix is a skeleton on the name cell rather than blocking the list, and it belongs with D10's row pass.
 
 **D13 — there is nothing to *do*.** The screen answers *which accounts* and *why*, and then stops. A seller reads it and leaves. That is the largest gap in the product and it is exactly M12.3.

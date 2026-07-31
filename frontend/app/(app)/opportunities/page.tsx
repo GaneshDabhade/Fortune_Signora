@@ -40,7 +40,7 @@ export default function OpportunitiesPage() {
   // Names arrive in a second request and the rows do not wait for them: the
   // score and the reason are what a seller triages on, and blocking the list
   // on a name would trade the decision for the label.
-  const { data: identities } = useAccountIdentities(
+  const { data: identities, isLoading: namesLoading } = useAccountIdentities(
     activeWorkspace?.id ?? null,
     (data?.items ?? []).map((account) => account.account_id),
   );
@@ -61,7 +61,11 @@ export default function OpportunitiesPage() {
         <ol className="flex flex-col gap-2">
           {data.items.map((account) => (
             <li key={account.id}>
-              <AccountRow account={account} identity={identities?.get(account.account_id)} />
+              <AccountRow
+                account={account}
+                identity={identities?.get(account.account_id)}
+                namesLoading={namesLoading}
+              />
             </li>
           ))}
         </ol>
@@ -81,30 +85,42 @@ export default function OpportunitiesPage() {
 function AccountRow({
   account,
   identity,
+  namesLoading,
 }: {
   account: AccountAttention;
   identity: AccountIdentity | undefined;
+  namesLoading: boolean;
 }) {
   return (
-    <Card>
-      <CardBody className="flex items-center gap-4 py-3">
-        <div className="w-12 shrink-0 text-right">
-          <AttentionScore score={account.score} />
-        </div>
-
+    <Card className="transition-colors hover:border-border-strong">
+      <CardBody className="flex items-start gap-4 py-3.5">
+        {/* **The account leads.** A seller scans names, not numbers — the
+            number tells them the order, and the order is already the list's.
+            A score competing with the name for weight makes every row equally
+            loud, which is the same as no hierarchy at all. */}
         <div className="min-w-0 flex-1">
-          <p className="truncate">
-            <EntityName identity={identity} fallbackId={account.account_id} />
-          </p>
-          <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+          <EntityName
+            identity={identity}
+            fallbackId={account.account_id}
+            isLoading={namesLoading}
+          />
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
             <WhyNow trigger={account.trigger} />
             <ScoreMovement trend={account.trend} change={account.score_change} />
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
-          <ContestedMark contested={account.contested} />
-          <EvidenceHealth evidence={account.evidence} />
+        <div className="flex shrink-0 items-center gap-3 pt-0.5">
+          <div className="flex items-center gap-2">
+            <ContestedMark contested={account.contested} />
+            <EvidenceHealth evidence={account.evidence} />
+          </div>
+          {/* Right-aligned and tabular so the column reads as a column: at a
+              glance the eye follows the digits down the page without the
+              layout shifting under a three-digit score. */}
+          <div className="w-9 text-right">
+            <AttentionScore score={account.score} />
+          </div>
         </div>
       </CardBody>
     </Card>
