@@ -196,6 +196,8 @@ But `--record` is opt-in, the evaluation harness's recorder is `RunLog`, which i
 
 `research_synthesis@1` therefore shows `"evaluations": []` — indistinguishable, to any tool, from a prompt nobody has ever measured. That is precisely the state `release.py`'s docstring says the design exists to prevent.
 
+> **Resolved by M9.5 Step A, 2026-07-31.** Three refusals are now recorded: `research_synthesis@1` on `llama3.1:8b`, and `reasoning@1` on `qwen2.5:3b` and `llama3.2:3b`. All three reproduced live, and the rejected citations are the ones this document quotes. **`qwen2.5:7b-instruct-q3_K_M` could not be recorded**: it returned UNMEASURABLE today where T128 recorded REFUSED, because one of its two cases exceeded the timeout on this machine. An unmeasurable run yields no `Evaluation` by construction, which is correct — a partial average is how a verdict gets granted on the cases that happened to finish. It is left unrecorded rather than reconstructed from the T128 prose.
+
 **This changes the order of the work.** The whole value of the fix is a before/after comparison, and the "before" is currently anecdote. **The refusals must be recorded to their manifests before the renderer changes** — otherwise the repository loses the only evidence that the change was justified, and this ADR becomes unfalsifiable.
 
 ## Revised assessment of the options

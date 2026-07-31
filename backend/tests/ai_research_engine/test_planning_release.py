@@ -73,16 +73,25 @@ class TestTheReleaseRuleBindsTheRequestPath:
         assert evaluation["schema_failures"] == 0
         assert evaluation["coverage"] == 1.0
 
-    def test_the_synthesis_prompt_has_earned_no_release(self) -> None:
-        """**Authored and unreleased, and the manifest says so.** A release is
-        recorded by a measurement, never by asserting one — so this states what
-        is true today rather than what the milestone intends."""
+    def test_the_synthesis_prompt_records_a_refusal_and_earns_no_release(self) -> None:
+        """**Measured, refused, and the manifest says so.**
+
+        Until M9.5 Step A this asserted an *empty* history, which was true and
+        far weaker: a prompt nobody has measured and a prompt measured and found
+        wanting are different facts, and only the manifest can tell them apart.
+        The refusal is now recorded, so this asserts the stronger pair — a
+        measurement exists, and it earned nothing.
+        """
         manifest = json.loads((PROMPT_DIR / "manifest.json").read_text())
         record = next(p for p in manifest["prompts"] if p["name"] == "research_synthesis")
+        (refusal,) = record["evaluations"]
 
-        assert record["evaluations"] == []
+        assert refusal["model"] == CERTIFIED_MODEL
+        assert refusal["grounding_failures"] == 1
+        assert refusal["schema_failures"] == 0
 
         prompt = load_prompt_registry(PROMPT_DIR).get("research_synthesis", 1)
+        assert not prompt.is_released
         with pytest.raises(PromptNotReleasableError):
             prompt.require_model(CERTIFIED_MODEL)
 
