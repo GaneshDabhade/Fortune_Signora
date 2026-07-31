@@ -20,6 +20,8 @@ export const queryKeys = {
 
   members: (workspaceId: string) => ['workspace', workspaceId, 'members'] as const,
 
+  accounts: (workspaceId: string) => ['workspace', workspaceId, 'accounts'] as const,
+
   /** The prefix every workspace-scoped key shares. Passing this to
    * `invalidateQueries` clears exactly one tenant's cached data. */
   workspaceScope: (workspaceId: string) => ['workspace', workspaceId] as const,

@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { CursorPage, Workspace } from '@/lib/api/types';
+import type { AccountAttention, CursorPage, Workspace } from '@/lib/api/types';
 import { apiRequest } from '@/lib/api/client';
 import { queryKeys } from '@/lib/query/keys';
 
@@ -27,6 +27,24 @@ export function useWorkspace(workspaceId: string | null) {
     queryKey: queryKeys.workspace(workspaceId ?? ''),
     queryFn: () =>
       apiRequest<Workspace>(`/workspaces/${workspaceId}`, {
+        workspaceId: workspaceId ?? undefined,
+      }),
+    enabled: workspaceId !== null,
+  });
+}
+
+/**
+ * Accounts worth attention, most pressing first.
+ *
+ * One page, no infinite scroll: the list is a **triage surface**, and a
+ * seller who needs to scroll past fifty accounts has a prioritisation
+ * problem the product should be solving rather than a paging one.
+ */
+export function useAccounts(workspaceId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.accounts(workspaceId ?? ''),
+    queryFn: () =>
+      apiRequest<CursorPage<AccountAttention>>(`/workspaces/${workspaceId}/accounts`, {
         workspaceId: workspaceId ?? undefined,
       }),
     enabled: workspaceId !== null,

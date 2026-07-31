@@ -97,18 +97,36 @@ describe('empty states are first-class', () => {
   it('every "coming soon" navigation entry has no route implementation', () => {
     // A nav item marked Soon must not quietly have a page behind it, and a
     // page must not exist without data to fill it.
+    //
+    // **Rewritten at M12.1, and the rewrite is the point.** This asserted
+    // that *no* business route existed, which was true while no business
+    // module had a customer-facing endpoint. `/opportunities` now has one.
+    // The durable rule is the one asserted here: a route exists exactly when
+    // its nav entry has stopped saying Soon — so a page behind a Soon link,
+    // or a Soon link over a shipped page, both still fail.
+    const navigation = readFileSync(join(process.cwd(), 'components/shell/navigation.tsx'), 'utf8');
+
     const routes = SOURCES.filter(({ name }) => /^app\/.*\/page\.tsx$/.test(name)).map(
       (s) => s.name,
     );
 
-    const businessRoutes = routes.filter((route) =>
-      /(companies|opportunities|signals|timeline)/.test(route),
+    const soon = [...navigation.matchAll(/href: '\/([a-z-]+)'[^}]*comingSoon: true/g)].map(
+      (m) => m[1],
+    );
+
+    const behindSoonLinks = routes.filter((route) =>
+      soon.some((section) => route.includes(`/${section}/`)),
     );
 
     expect(
-      businessRoutes,
-      'business routes arrive with their modules, from M2.1',
+      behindSoonLinks,
+      'a page exists behind a navigation entry still marked Soon',
     ).toEqual([]);
+    expect(soon, 'sections still awaiting their module').toEqual([
+      'companies',
+      'signals',
+      'timeline',
+    ]);
   });
 
   it('EmptyState requires a description, not only a title', () => {

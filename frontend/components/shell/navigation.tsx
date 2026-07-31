@@ -25,7 +25,7 @@ interface NavItem {
 const ITEMS: readonly NavItem[] = [
   { href: '/', label: 'Overview', icon: Home },
   { href: '/companies', label: 'Companies', icon: Building2, comingSoon: true },
-  { href: '/opportunities', label: 'Opportunities', icon: LineChart, comingSoon: true },
+  { href: '/opportunities', label: 'Opportunities', icon: LineChart },
   { href: '/signals', label: 'Signals', icon: Lightbulb, comingSoon: true },
   { href: '/timeline', label: 'Timeline', icon: Clock, comingSoon: true },
   { href: '/settings', label: 'Settings', icon: Settings },

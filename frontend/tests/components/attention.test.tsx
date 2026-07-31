@@ -1,0 +1,138 @@
+/**
+ * The commercial vocabulary, as a customer reads it.
+ *
+ * These are not rendering tests. Each one asserts a **product rule** that
+ * would be invisible if it broke: a trigger silently reworded, a badge that
+ * starts appearing on every row, a score drawn as a percentage it never was.
+ * The pipeline computes these meanings carefully; the screen must not blur
+ * them on the way out.
+ */
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+
+import {
+  AttentionScore,
+  ContestedMark,
+  EvidenceHealth,
+  ScoreMovement,
+  WhyNow,
+} from '@/components/intelligence/attention';
+import type { ScoreTrigger } from '@/lib/api/types';
+
+describe('the score is an ordering, not a probability', () => {
+  it('renders the number the pipeline computed', () => {
+    render(<AttentionScore score={73} />);
+
+    expect(screen.getByText('73')).toBeInTheDocument();
+  });
+
+  it('renders no score at all when the evidence has expired', () => {
+    // Not a zero. Zero is a reading; absence is the lack of one, and showing
+    // 0 would rank a stale account as actively uninteresting.
+    render(<AttentionScore score={null} />);
+
+    expect(screen.queryByText('0')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('No current score')).toBeInTheDocument();
+  });
+
+  it('draws no percentage, gauge or progress element', () => {
+    // A filled ring implies a maximum that means something. This number is
+    // an ordering of attention; a 90 is not "90% likely to buy".
+    const { container } = render(<AttentionScore score={90} />);
+
+    expect(container.querySelector('progress, meter, svg')).toBeNull();
+    expect(container.textContent).not.toContain('%');
+  });
+});
+
+describe('every trigger has its own wording', () => {
+  const triggers: ScoreTrigger[] = [
+    'signal_generated',
+    'signal_superseded',
+    'model_changed',
+    'profile_changed',
+    'evidence_aged',
+  ];
+
+  it.each(triggers)('%s reads as something a seller can check', (trigger) => {
+    render(<WhyNow trigger={trigger} />);
+
+    expect(screen.getByText(/\w/)).toBeInTheDocument();
+  });
+
+  it('gives five triggers five distinct sentences', () => {
+    // **A translation, never a paraphrase.** Blurring two triggers into one
+    // friendly phrase makes the reason uncheckable against the record, which
+    // is the one thing this product cannot afford.
+    const wordings = triggers.map((trigger) => {
+      const { container, unmount } = render(<WhyNow trigger={trigger} />);
+      const text = container.textContent ?? '';
+      unmount();
+      return text;
+    });
+
+    expect(new Set(wordings).size).toBe(triggers.length);
+  });
+
+  it('says there is no reading rather than inventing a reason', () => {
+    render(<WhyNow trigger={null} />);
+
+    expect(screen.getByText('No current reading')).toBeInTheDocument();
+  });
+});
+
+describe('movement answers what changed overnight', () => {
+  it('shows a rise with its sign', () => {
+    render(<ScoreMovement trend="rising" change={8} />);
+
+    expect(screen.getByText('+8')).toBeInTheDocument();
+  });
+
+  it('shows a fall', () => {
+    render(<ScoreMovement trend="falling" change={-5} />);
+
+    expect(screen.getByText('-5')).toBeInTheDocument();
+  });
+
+  it('says so plainly when nothing moved', () => {
+    render(<ScoreMovement trend="steady" change={0} />);
+
+    expect(screen.getByText('No change')).toBeInTheDocument();
+  });
+});
+
+describe('badges appear only when they carry information', () => {
+  it('says nothing when the evidence is current', () => {
+    // A badge on every row saying "everything is fine" is noise, and noise
+    // trains people to stop reading badges — including the one that matters.
+    const { container } = render(<EvidenceHealth evidence="current" />);
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it.each(['cooling', 'stale'] as const)('warns when the evidence is %s', (evidence) => {
+    const { container } = render(<EvidenceHealth evidence={evidence} />);
+
+    expect(container).not.toBeEmptyDOMElement();
+  });
+
+  it('marks a contested account and stays silent on a quiet one', () => {
+    const { container: quiet } = render(<ContestedMark contested={false} />);
+    expect(quiet).toBeEmptyDOMElement();
+
+    render(<ContestedMark contested />);
+    expect(screen.getByText('Contested')).toBeInTheDocument();
+  });
+
+  it('does not describe a contested account as uncertain', () => {
+    // The Buying Score Engine refuses to average opposing readings away
+    // because a fought-over account warrants *more* attention. Wording that
+    // implied doubt would invert the meaning the pipeline computed.
+    const { container } = render(<ContestedMark contested />);
+    const text = (container.textContent ?? '').toLowerCase();
+
+    for (const wrong of ['uncertain', 'unclear', 'conflict', 'warning', 'unreliable']) {
+      expect(text).not.toContain(wrong);
+    }
+  });
+});
