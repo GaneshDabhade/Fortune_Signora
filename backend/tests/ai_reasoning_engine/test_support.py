@@ -110,9 +110,7 @@ class TestABasisMustDescribeSomethingReal:
         with pytest.raises(ValueError, match="corroborate no events"):
             _basis(contributing_events=0)
 
-    @pytest.mark.parametrize(
-        "kwargs", [{"contributing_events": -1}, {"dissenting_signals": -1}]
-    )
+    @pytest.mark.parametrize("kwargs", [{"contributing_events": -1}, {"dissenting_signals": -1}])
     def test_negative_quantities_are_refused(self, kwargs: dict[str, object]) -> None:
         with pytest.raises(ValueError, match="negative"):
             _basis(**kwargs)

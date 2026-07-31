@@ -110,9 +110,7 @@ class TemporalExplanation:
         """`basis_at` is the answer: the previous reading was correct until
         the evidence beneath it changed."""
         if self.is_first_reading:
-            return (
-                "This is the first reading for this account — there was nothing earlier to see."
-            )
+            return "This is the first reading for this account — there was nothing earlier to see."
         return (
             f"The previous reading was the correct one until {self.basis_at.date().isoformat()}, "
             "when the evidence beneath it changed."

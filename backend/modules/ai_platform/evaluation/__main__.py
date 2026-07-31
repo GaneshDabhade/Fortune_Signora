@@ -4,16 +4,29 @@ The one entry point in Signora that requires a real model, and the only place
 that is true. `make test` never reaches this file, no Security Invariant does,
 and nothing here is importable from a test that expects to run offline.
 
-**It refuses to produce a result it cannot stand behind.** If no model
-runtime is reachable it fails, loudly, naming what is missing — it does not
-skip, does not warn-and-continue, and above all does not fall back to a fake.
-A harness satisfied by a scripted adapter would measure the scripted adapter:
-a fake never invents a quantity unless it is told to, so grounding against one
-proves the checker works and nothing whatsoever about the model.
+**It refuses to produce a result it cannot stand behind.** A run that cannot
+execute faithfully reports UNMEASURABLE and no verdict — it does not skip,
+does not warn-and-continue, and above all does not fall back to a fake. That
+last guarantee is provided by *composition*, not by a check: the only adapters
+this file can register are the real ones `build_provider_registry` knows about,
+so there is no fake for it to reach.
 
-Composition happens here and only here (CLAUDE.md §6): `AISettings` is
-constructed, the adapter is built from it, the registry is assembled, and
-`Infer` is wired. Nothing below this file knows a vendor exists.
+**The provider is resolved, never named** (ruled 2026-07-30). This file passes
+`AISettings` to the AI Platform's own registry builder and asks for a *model*;
+which vendor serves it is that module's business. Evaluating against a local
+runtime today and a hosted model tomorrow is `--model` plus the credentials in
+the environment — no code change, no vendor branch, and adding OpenAI or Gemini
+later is an adapter registration rather than an edit here.
+
+**Removed 2026-07-30: an Ollama-specific reachability probe.** It hit
+`/api/tags` before every run, which gated a *hosted* evaluation on a *local*
+runtime being up, and put vendor-specific logic in the one framework that must
+have none. It was also never the thing enforcing "no fake" — composition is —
+so what it actually contributed was a nicer message for one vendor's outage.
+That fact is discovered by the transport already, and reporting it twice is two
+representations of one truth. A run against an unreachable provider now
+abandons and reports UNMEASURABLE, which is the correct answer and was always
+the correct answer.
 """
 
 from __future__ import annotations
@@ -27,12 +40,12 @@ import httpx
 from modules.ai_platform.application.infer import Infer, InferencePolicy
 from modules.ai_platform.domain.errors import AIPlatformError
 from modules.ai_platform.domain.narration import Narration
-from modules.ai_platform.domain.provider import AIProviderRegistry
 from modules.ai_platform.evaluation.dataset import load_dataset
 from modules.ai_platform.evaluation.harness import Harness
 from modules.ai_platform.evaluation.release import record
+from modules.ai_platform.evaluation.report import unmeasurable
 from modules.ai_platform.evaluation.run_log import RunLog
-from modules.ai_platform.infrastructure.adapters.ollama import OllamaAdapter
+from modules.ai_platform.infrastructure.composition import build_provider_registry
 from modules.ai_platform.infrastructure.prompt_loader import load_prompt_registry
 from modules.ai_platform.infrastructure.settings import AISettings
 
@@ -40,14 +53,6 @@ from modules.ai_platform.infrastructure.settings import AISettings
 #: the golden set seeded from the M2.0 baseline scenario.
 DEFAULT_PROMPT = "explanation_narration"
 DEFAULT_DATASET = "explanation_narration"
-
-
-async def _reachable(client: httpx.AsyncClient, base_url: str) -> bool:
-    try:
-        response = await client.get(f"{base_url.rstrip('/')}/api/tags", timeout=5.0)
-    except httpx.HTTPError:
-        return False
-    return response.status_code == httpx.codes.OK
 
 
 async def main(argv: list[str] | None = None) -> int:
@@ -59,7 +64,12 @@ async def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--prompt-version", type=int, default=1)
     parser.add_argument("--dataset", default=DEFAULT_DATASET)
     parser.add_argument("--dataset-version", type=int, default=1)
-    parser.add_argument("--model", default=None, help="defaults to the configured Ollama model")
+    parser.add_argument(
+        "--model",
+        default=None,
+        help="the model to evaluate. Defaults to the development runtime's configured "
+        "model; pass any model this environment has registered a provider for.",
+    )
     parser.add_argument(
         "--record",
         action="store_true",
@@ -69,54 +79,29 @@ async def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     settings = AISettings()
+    #: Development is the local runtime (ADR-0028), so that is the default a
+    #: developer gets. It is a *default*, not a coupling: the registry resolves
+    #: whatever `--model` names, and release is earned against the hosted one.
     model = args.model or settings.ollama_model
 
     async with httpx.AsyncClient() as client:
-        if not await _reachable(client, settings.ollama_base_url):
-            print(
-                f"No model runtime at {settings.ollama_base_url}.\n"
-                "\n"
-                "`make eval` measures a real model and will not substitute a fake for one:\n"
-                "a scripted adapter never invents a quantity unless it is told to, so a run\n"
-                "against one would prove the grounding checker works and nothing about the\n"
-                "model. Every other gate in this repository is offline by design; this one\n"
-                "is the exception, deliberately (ADR-0028, 28-ai-platform.md).\n"
-                "\n"
-                "Install Ollama and pull the configured model:\n"
-                "    curl -fsSL https://ollama.com/install.sh | sh\n"
-                f"    ollama pull {model}\n"
-                "\n"
-                "That installer needs root. Without sudo, extract the release tarball\n"
-                "into ~/.local and run the server as your own user instead — it needs no\n"
-                "privileges and is removed by deleting the directory:\n"
-                "    https://github.com/ollama/ollama/releases  (ollama-linux-amd64.tar.zst)\n"
-                "    ~/.local/bin/ollama serve\n"
-                "\n"
-                "Or point SIGNORA_OLLAMA_BASE_URL at a running one.",
-                file=sys.stderr,
-            )
-            return 2
+        # One registry, built by the module that owns vendors. Nothing here
+        # constructs an adapter, so nothing here can construct a fake.
+        providers = build_provider_registry(settings, client=client)
 
-        adapter = OllamaAdapter(
-            client=client,
-            models=frozenset({model}),
-            base_url=settings.ollama_base_url,
-        )
-        providers = AIProviderRegistry()
-        providers.register(adapter)
-
-        # One RunLog in two roles: the `InferenceRecorder` port that `Infer`
-        # writes every outcome to, and the record the harness reads back so a
-        # run can report its own retries.
+        # One prompt registry in two roles, and one `RunLog` in two: the
+        # `InferenceRecorder` port `Infer` writes every outcome to, and the
+        # record the harness reads back so a run can report its own retries.
+        prompts = load_prompt_registry()
         run_log = RunLog()
         harness = Harness(
             infer=Infer(
                 providers=providers,
-                prompts=load_prompt_registry(),
+                prompts=prompts,
                 recorder=run_log,
                 policy=InferencePolicy(),
             ),
-            prompts=load_prompt_registry(),
+            prompts=prompts,
             run_log=run_log,
         )
 
@@ -129,7 +114,7 @@ async def main(argv: list[str] | None = None) -> int:
                 output_type=Narration,
             )
         except AIPlatformError as exc:
-            print(f"evaluation abandoned: {exc}", file=sys.stderr)
+            print(unmeasurable(model, exc), file=sys.stderr)
             return 2
 
     print(report.render())

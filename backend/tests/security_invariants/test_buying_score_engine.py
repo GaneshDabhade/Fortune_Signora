@@ -90,8 +90,10 @@ STRUCTURAL_NUMBERS = (0, 1)
 
 
 def _is_business_number(value: object) -> bool:
-    return isinstance(value, int | float) and not isinstance(value, bool) and (
-        value not in STRUCTURAL_NUMBERS
+    return (
+        isinstance(value, int | float)
+        and not isinstance(value, bool)
+        and (value not in STRUCTURAL_NUMBERS)
     )
 
 
@@ -223,9 +225,7 @@ class TestTheScoreReproducesFromItsLedger:
             )
 
     def test_reproduction_needs_no_clock_and_no_configuration(self) -> None:
-        ledger = ContributionLedger(
-            entries=(_entry(points=30), _entry(points=25)), ceiling=120
-        )
+        ledger = ContributionLedger(entries=(_entry(points=30), _entry(points=25)), ceiling=120)
         signature = inspect.signature(ContributionLedger.value)
 
         assert list(signature.parameters) == ["self"]

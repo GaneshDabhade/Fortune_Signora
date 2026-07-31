@@ -153,9 +153,7 @@ def _payload() -> dict[str, object]:
         "proposition": GroundedStatement(
             text="An ERP replacement programme is underway.", evidence=(RETIREMENT, HIRING)
         ),
-        "summary": GroundedStatement(
-            text="They are replacing their ERP.", evidence=(RETIREMENT,)
-        ),
+        "summary": GroundedStatement(text="They are replacing their ERP.", evidence=(RETIREMENT,)),
         "stated_reasoning": (
             GroundedStatement(text="A system was retired.", evidence=(RETIREMENT,)),
             GroundedStatement(text="Implementation staff were hired.", evidence=(HIRING,)),

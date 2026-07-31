@@ -27,9 +27,7 @@ class ReasoningContextSource(Protocol):
     fluent paragraph about nothing, perfectly grounded in no facts at all.
     """
 
-    async def context_for(
-        self, workspace_id: UUID, entity_id: UUID
-    ) -> ReasoningContext | None: ...
+    async def context_for(self, workspace_id: UUID, entity_id: UUID) -> ReasoningContext | None: ...
 
 
 class DecisionPackageRepository(Protocol):
@@ -42,6 +40,4 @@ class DecisionPackageRepository(Protocol):
 
     async def save(self, package: DecisionPackage) -> None: ...
 
-    async def latest_for(
-        self, workspace_id: UUID, subject_id: UUID
-    ) -> DecisionPackage | None: ...
+    async def latest_for(self, workspace_id: UUID, subject_id: UUID) -> DecisionPackage | None: ...

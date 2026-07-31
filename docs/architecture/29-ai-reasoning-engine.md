@@ -177,7 +177,15 @@ Ordering follows M8's lesson: **the deterministic fields are built before the mo
 
 **The only gap is that the entry points bypass that function**, hand-registering `OllamaAdapter` directly. Routing them through it makes `--model claude-sonnet-4-5` work as configuration alone. Neither vendor is special-cased, and adding OpenAI or Gemini later is an adapter registration rather than a change here.
 
-**One wrinkle, to be solved rather than ignored at T130:** the pre-flight reachability probe hits `/api/tags`, which is Ollama-specific, and a hosted run must not be gated on a local runtime being up. Either make the probe conditional on the resolved adapter, move it behind the port, or drop it — a hosted transport failure already surfaces as UNMEASURABLE, which is the correct answer.
+**The wrinkle, and how it was resolved (T130).** The pre-flight reachability probe hit `/api/tags`, which is Ollama-specific, so a *hosted* evaluation was gated on a *local* runtime answering. Three options were on the table: make the probe conditional on the resolved adapter, move it behind the port, or drop it.
+
+**It was dropped, and the reason is stronger than "the least bad option."** The probe was documented as the thing enforcing *"the harness never substitutes a fake for a model"* — and it was not. Nothing prevents a fake except **composition**: the entry points now build their registry through `build_provider_registry`, so no fake is reachable from them. What the probe actually contributed was a nicer message for one vendor's outage, and *"the runtime is unreachable"* is a fact the transport already discovers. Two representations of one truth, the second able to be right about only one vendor.
+
+Making it conditional on the resolved adapter was rejected outright: that is vendor-specific logic in the one framework that must have none. Moving it behind the port would have meant expanding the AI Provider abstraction, which is the M9 halt condition.
+
+A run against an unreachable or unregistered provider now abandons and reports **UNMEASURABLE** — the correct answer, and always the correct answer.
+
+**Enforced, not merely intended.** `TestTheEvaluationFrameworkNamesNoVendor` in the Security Invariants suite parses every module under both `evaluation/` packages and fails if one imports or constructs a concrete adapter, or names a vendor in executable code. Docstrings are deliberately exempt — the first draft failed on three passages explaining *why* the framework is vendor-neutral, which would have banned exactly the writing that keeps the rule understood. One attribute is allowed by name, `settings.ollama_model`, as the default a developer run uses when `--model` is absent: **a default is not a branch**, nothing consults it, and registering a Gemini adapter still requires no edit there.
 
 ## T128 — halted, with two findings
 
@@ -212,6 +220,61 @@ The likely cause is the output schema: `ReasonedOutput` is **1307 bytes against 
 - **Accept that M9's benchmark is not locally executable** and record it, as ADR-0028 already anticipates for a development runtime.
 
 **`reasoning@1` remains a draft, and the release rule refuses it.** That is the system working.
+
+### T128 — the authoritative attempt (2026-07-30, T130)
+
+With both entry points routed through the provider registry, `reasoning@1` was run against the hosted production model exactly as ruled. **The result, recorded verbatim rather than summarised:**
+
+```
+UNMEASURABLE — the run produced no verdict.
+
+  model   claude-sonnet-4-5
+  reason  no registered adapter serves model 'claude-sonnet-4-5'. Registered: ['llama3.1:8b'].
+```
+
+**This is a different failure from Finding 2, and the difference is the progress.** Previously the architecture could not route to a hosted model at all. It now can: `build_provider_registry` registers the Anthropic adapter whenever `SIGNORA_ANTHROPIC_API_KEY` is present, `for_model` resolves without anyone naming a vendor, and the run is one environment variable away from executing. **No credential is configured in this environment** — there is no `.env` file in the repository and the variable is unset — so the run resolved nothing and, correctly, produced no verdict.
+
+**Nothing was manufactured.** A release could have been recorded by hand into the manifest in about a minute; it would have been a lie, and every audit citing it would have inherited the lie. `reasoning@1` stays **authored and unreleased** until a real run earns it, and `test_the_shipped_prompt_has_earned_no_release` fails the suite if an evaluation ever appears in that manifest without one.
+
+**The routing change was verified not to have broken the working path.** `make eval` was re-run against the local runtime through the new registry path: `explanation_narration@1`, 2 cases, 0 grounding failures, 0 schema failures, coverage 1.000, **release EARNED**. The change is provider-neutral in both directions.
+
+**What remains for T128 to close:** set `SIGNORA_ANTHROPIC_API_KEY` and run `make eval-reasoning ARGS="--model claude-sonnet-4-5 --record"`. Whatever it returns — READY or REFUSED — is the answer, and a REFUSED verdict initiates investigation rather than optimisation.
+
+---
+
+## T130 — four findings, every one from the repository saying no
+
+**Nothing here was designed in advance.** Each came from a contract, a grant or an existing type refusing what was being written, and each refusal was investigated before it was worked around.
+
+### 1 · `load_prompt_registry` cannot be published, and the contract is right
+
+M9 owns its own prompts, and `load_prompt_registry(directory)` is per-directory precisely so each module can. The obvious move was to export it through `ai_platform.public` so M9's composition root could bind its own prompt directory the way M8's does.
+
+**The Clean Architecture layering contract refuses it:** `public/` sits *below* `infrastructure/`, and a loader that reads the filesystem is infrastructure. Publishing it would put an infrastructure dependency underneath every consumer of the AI Platform's contract.
+
+The refusal is correct, and the resolution follows from it: **binding a module's prompt directory to an `Infer` is the application composition root's job** — the one place that may legitimately import both modules' infrastructure, and the same place `build_narrate` is already called from. `build_reason` therefore takes `infer` as a parameter and exports `PROMPT_DIR`, while still naming the prompt and version itself, because those are the release-rule decisions a caller must not be able to route around.
+
+**No change to `ai_platform` was required.** The halt condition was approached and not crossed.
+
+### 2 · The catalog was about to have two authorities
+
+`PipelineReasoningContext` was first written taking a `SignalCatalog` as its own constructor argument. `SignalQueries` already exposes `catalog()` — so a composition could have handed M9 one revision while the signals it was describing were produced under another, and the package would have stated limitations from a version that never applied to it.
+
+The parameter was **removed**. There is one catalog in force, and the module that owns signals is the one that knows which. *Compose deterministic knowledge; do not duplicate it.*
+
+### 3 · `support_level` and `contested` are duplicated truth, and are now inert
+
+Migration `0017` stores the full `SupportBasis` as JSONB **and** `support_level`/`contested` as scalar columns. The scalars are derivable from the JSONB, which makes them a stored copy of a derivable fact — a defect waiting for the two to disagree.
+
+They earn their place as an **operator query surface** (*"which accounts are on limited support?"*), so rather than change an applied migration the duplication was neutralised: `save()` writes both from one in-memory object so they cannot disagree at write time, and **`_to_package` never reads them** — `SupportBasis` derives its own level. Asserted two ways, because either alone would be weak: the scalar agrees with the derived level at write time, and an AST check proves the read path contains no reference to the columns at all. A drift can therefore never reach a customer.
+
+*Raised rather than silently accepted: if the query surface turns out not to be needed, the honest fix is a migration dropping both columns.*
+
+### 4 · The test tried to read `outbox_event`, and the grant refused it
+
+The integration test asserted publication with `SELECT count(*) FROM outbox_event` under the application role. PostgreSQL refused: `permission denied`. `signora_app` holds no read grant on a platform infrastructure table (migration `0006`, CLAUDE.md §8), and the correct response is never to restore one.
+
+`tests/pipeline.py::_published` already reads the outbox **under the relay's identity**, which is how the relay itself does it. The test now uses it and asserts more than it originally would have: the producer module, the workspace, the payload's `reasoning_id` and `support` — and that **no prose travels in the envelope**.
 
 ---
 

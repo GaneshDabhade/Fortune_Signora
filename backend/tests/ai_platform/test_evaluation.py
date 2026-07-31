@@ -538,80 +538,91 @@ class TestTheReportIsReadable:
 
 
 class TestTheCommandRefusesToInventAResult:
-    """The absence of a runtime must be *created*, never inherited.
+    """A run that cannot execute reports **no verdict**, never a low one.
 
-    Corrected 2026-07-30, and the correction matters more than the tests. As
-    first written these called ``main([])`` and relied on the developer's
-    machine having no Ollama — which was true when they were written and
-    stopped being true an hour later. They then failed, having silently been
-    testing the ambient environment rather than the refusal.
+    Rewritten 2026-07-30 with the vendor-specific reachability probe removed,
+    and the rewrite is the finding. The two tests these replace were named for
+    the guarantee *"it does not fall back to a fake"* — but the probe they
+    exercised checked whether one vendor's HTTP endpoint answered, which is a
+    different question entirely. **Nothing prevents a fake except composition:**
+    the entry point builds its registry through `build_provider_registry`, so
+    there is no fake available for it to reach. The probe was a guard whose
+    removal does not change the property it appeared to protect, and its name
+    was a false claim sitting in the test suite.
 
-    That is the worst possible shape for these two in particular: they assert
-    the guarantee that the harness never substitutes a fake for a model, and
-    a test that quietly changes meaning when a service starts cannot assert
-    anything. The unreachable address is now injected.
+    What is asserted here instead is the property that is real and load-bearing:
+    a run that cannot be executed faithfully exits non-zero and produces no
+    measurement — for a model nothing serves, exactly as for a vendor that is
+    down.
     """
 
-    #: Port 1 on the loopback. Privileged, unbound, and refused immediately —
-    #: an *address*, not a timeout, so the test is fast and cannot pass
-    #: because a connection was merely slow.
-    NOWHERE = "http://127.0.0.1:1"
-
-    @pytest.fixture(autouse=True)
-    def _no_runtime(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("SIGNORA_OLLAMA_BASE_URL", self.NOWHERE)
-
-    async def test_it_fails_rather_than_falling_back_to_a_fake(self, capsys: Any) -> None:
-        """The single most important behaviour in the harness. A run against a
-        scripted adapter would prove the grounding checker works and nothing
-        about the model — and would earn a release on that basis.
+    async def test_a_model_no_provider_serves_produces_no_verdict(self, capsys: Any) -> None:
+        """Resolution fails before a single case is attempted, and that is not
+        a fact about the prompt.
 
         The message is asserted alongside the exit code deliberately: a run
         that failed for some *other* reason would also exit non-zero, and
-        "it failed" is not evidence that it refused.
+        "it failed" is not evidence that it declined to measure.
         """
         from modules.ai_platform.evaluation.__main__ import main
 
-        exit_code = await main([])
+        exit_code = await main(["--model", "a-model-nothing-serves"])
 
         assert exit_code == 2
         printed = capsys.readouterr().err
-        assert "No model runtime" in printed
-        assert self.NOWHERE in printed, "the refusal must name the address it tried"
+        assert "UNMEASURABLE" in printed
+        assert "a-model-nothing-serves" in printed, "the refusal must name the model it tried"
+        assert "Registered:" in printed, "an engineer must learn what *is* available"
 
-    async def test_the_refusal_says_how_to_fix_it(self, capsys: Any) -> None:
-        """An engineer meeting this message should not have to read the
-        source to learn what is missing."""
+    async def test_the_refusal_states_that_a_fake_is_never_substituted(self, capsys: Any) -> None:
+        """The guarantee is stated where an engineer meets the failure, so the
+        obvious workaround is visibly not on offer."""
         from modules.ai_platform.evaluation.__main__ import main
 
-        await main([])
-        printed = capsys.readouterr().err
-        assert "ollama pull" in printed
-        assert "SIGNORA_OLLAMA_BASE_URL" in printed
+        await main(["--model", "a-model-nothing-serves"])
+        assert "will not substitute a fake" in capsys.readouterr().err
 
-    async def test_a_reachable_runtime_is_not_refused(self) -> None:
-        """The positive control, and the reason the two tests above were
-        wrong for an hour: without it, a refusal that fired unconditionally
-        would satisfy both of them."""
-        import httpx
+    async def test_the_refusal_names_no_vendor(self, capsys: Any) -> None:
+        """The positive control on the rewrite.
 
-        from modules.ai_platform.evaluation.__main__ import _reachable
+        A message that told the engineer to *"start Ollama"* would satisfy both
+        tests above while reintroducing exactly what was removed: a hosted run's
+        failure explained in terms of a local runtime.
+        """
+        from modules.ai_platform.evaluation.__main__ import main
 
-        async def handler(request: httpx.Request) -> httpx.Response:
-            return httpx.Response(200, json={"models": []})
+        await main(["--model", "a-model-nothing-serves"])
+        printed = capsys.readouterr().err.lower()
+        for vendor in ("ollama", "anthropic", "claude", "openai", "gemini"):
+            assert vendor not in printed, f"the UNMEASURABLE message names {vendor}"
 
-        transport = httpx.MockTransport(handler)
-        async with httpx.AsyncClient(transport=transport) as client:
-            assert await _reachable(client, "http://any-host") is True
-            assert await _reachable(client, self.NOWHERE) is True
+    def test_the_entry_point_constructs_no_adapter_of_its_own(self) -> None:
+        """**This is what stops a fake, and it is structural.**
 
-    async def test_an_unreachable_runtime_is_detected(self) -> None:
-        import httpx
+        A file that may not name an adapter cannot name a scripted one either.
+        The moment this fails, `make eval` has acquired a way to measure
+        something other than a real model.
+        """
+        import ast
+        from pathlib import Path
 
-        from modules.ai_platform.evaluation.__main__ import _reachable
-
-        async with httpx.AsyncClient() as client:
-            assert await _reachable(client, self.NOWHERE) is False
+        entry_point = (
+            Path(__file__).resolve().parents[2]
+            / "modules"
+            / "ai_platform"
+            / "evaluation"
+            / "__main__.py"
+        )
+        source = entry_point.read_text()
+        constructed = {
+            node.func.id
+            for node in ast.walk(ast.parse(source))
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+        }
+        assert not {name for name in constructed if name.endswith("Adapter")}, (
+            "`make eval` must obtain its providers from build_provider_registry, which is "
+            "the only reason it cannot reach a fake."
+        )
 
 
 class TestTheEvidenceTranslation:
@@ -645,7 +656,7 @@ class TestTheEvidenceTranslation:
         assert values and all(isinstance(value, str) for value in values)
 
     def test_the_opportunity_frame_is_not_load_bearing(self) -> None:
-        """"An opportunity was opened" is the frame, not the content.
+        """ "An opportunity was opened" is the frame, not the content.
         Requiring it would let a narrative pass by restating the obvious."""
         from modules.ai_platform.infrastructure.explanation import OPPORTUNITY
 

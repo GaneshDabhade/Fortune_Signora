@@ -189,9 +189,7 @@ class TestTheTenQuestionsAreAnswered:
         )
 
     async def test_a_contested_account_names_the_dissent(self) -> None:
-        reason, _, _, _ = _reason(
-            support=_support(contested=True, dissenting_signals=2)
-        )
+        reason, _, _, _ = _reason(support=_support(contested=True, dissenting_signals=2))
         answers = (await reason.execute(_request())).answers()
 
         challenges = answers["Which evidence challenges it?"]
@@ -253,9 +251,7 @@ class FakeContext:
     def __init__(self, context: ReasoningContext | None) -> None:
         self._context = context
 
-    async def context_for(
-        self, workspace_id: UUID, entity_id: UUID
-    ) -> ReasoningContext | None:
+    async def context_for(self, workspace_id: UUID, entity_id: UUID) -> ReasoningContext | None:
         return self._context
 
 
@@ -266,9 +262,7 @@ class FakePackages:
     async def save(self, package: DecisionPackage) -> None:
         self.saved.append(package)
 
-    async def latest_for(
-        self, workspace_id: UUID, subject_id: UUID
-    ) -> DecisionPackage | None:
+    async def latest_for(self, workspace_id: UUID, subject_id: UUID) -> DecisionPackage | None:
         return self.saved[-1] if self.saved else None
 
 

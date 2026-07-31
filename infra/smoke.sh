@@ -491,6 +491,36 @@ else
   fail "grounded explanation failed against the running stack"
 fi
 
+# ============================================ 14j. AI Reasoning Engine
+
+stage "14j. Defensible conclusion"
+
+# The M9 demonstration, and the first stage that produces something a customer
+# may *disagree* with rather than merely learn from. Like 14i it deliberately
+# does **not** call a model: `make eval` is the only command in this repository
+# that does, and a deployment gate needing a GPU is a gate people learn to skip.
+#
+# What it proves is the claim M9 exists to make: **twelve of the fifteen parts
+# of a Decision Package are assembled from real pipeline rows without a model
+# having said anything.** Support, temporal, alternative readings, limitations
+# and validation all come from modules that already owned those facts, so a
+# failure to reach a model degrades the package rather than emptying it.
+#
+# It also gates the release rule on the request path: `reasoning@1` is authored
+# and unreleased, so `Reason.execute` refuses it and stores nothing. That
+# refusal is the rule working, and it is asserted rather than worked around.
+if (cd ../backend && \
+    SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 \
+    SIGNORA_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    SIGNORA_TEST_APP_DATABASE_URL="postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5433/signora" \
+    SIGNORA_TEST_ADMIN_DATABASE_URL="postgresql+asyncpg://signora:signora@localhost:5433/signora" \
+    uv run pytest tests/ai_reasoning_engine -q >/tmp/smoke_ai_reasoning.log 2>&1); then
+  pass "$(grep -oE '[0-9]+ passed' /tmp/smoke_ai_reasoning.log | tail -1) against the running stack"
+else
+  tail -20 /tmp/smoke_ai_reasoning.log
+  fail "defensible conclusion failed against the running stack"
+fi
+
 # ================================================= 15. Security Invariants
 
 stage "15. Security Invariants"
@@ -554,5 +584,5 @@ printf '\n\033[32m\033[1mPLATFORM SMOKE TEST PASSED\033[0m  (%ds)\n' "$((SECONDS
 printf 'Build · startup · migrations · identities · image hygiene · health · readiness ·\n'
 printf 'auth · JWT · authorization · RLS · event bus · relay · workers · ingestion ·\n'
 printf 'normalization · identity resolution · change detection · business events ·\n'
-printf 'signals · buying scores · opportunities · grounded explanation · invariants ·
-teardown\n\n'
+printf 'signals · buying scores · opportunities · grounded explanation ·
+defensible conclusion · invariants · teardown\n\n'

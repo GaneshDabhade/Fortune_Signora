@@ -171,8 +171,7 @@ def _to_narration(row: AINarrationModel) -> MaterializedNarration:
         evidence_refs=tuple(row.evidence_refs),
         inference_id=row.inference_id,
         statements=tuple(
-            GroundedStatement(text=s["text"], evidence=tuple(s["evidence"]))
-            for s in row.statements
+            GroundedStatement(text=s["text"], evidence=tuple(s["evidence"])) for s in row.statements
         ),
         created_at=row.created_at,
         payload_version=row.payload_version,

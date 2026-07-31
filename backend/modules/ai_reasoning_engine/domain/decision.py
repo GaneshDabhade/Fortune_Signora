@@ -122,6 +122,4 @@ class ReasonedOutput(GroundedOutput):
         refuses. So the citation is the only evidence of a premise that means
         anything — the same read `coverage` takes for a different question.
         """
-        return frozenset(
-            token for statement in self.statements() for token in statement.evidence
-        )
+        return frozenset(token for statement in self.statements() for token in statement.evidence)

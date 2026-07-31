@@ -360,7 +360,7 @@ One event per raw record rather than one per claim: the claims from a record are
 |---|---|---|---|
 | `ai.narration_completed` | 1 | `narration_id`, `subject_kind`, `subject_id`, `prompt_name`, `prompt_version`, `prompt_fingerprint`, `model`, `vendor`, `evidence_digest`, `statement_count`, `inference_id`, `payload_version` | A grounded explanation was produced and stored |
 
-**Exactly one event, and the restraint is the design.** A substrate emitting events nobody consumes is speculative by definition. `ai_reasoning.completed` (M9) and `ai_research.completed` (M10) remain reserved for the modules that will actually produce them.
+**Exactly one event, and the restraint is the design.** A substrate emitting events nobody consumes is speculative by definition. `ai_research.completed` (M10) remains reserved for the module that will actually produce it; `ai_reasoning.completed` was reserved here and is now cataloged below, under its own producer.
 
 **It announces language, not a conclusion.** Every statement in the narration restates something the deterministic pipeline had already computed — grounding makes that mechanical rather than aspirational — so a consumer learns that an explanation now exists, never that Signora has decided anything new. This is the boundary between M8 and M9 expressed in the event contract.
 
@@ -373,5 +373,25 @@ One event per raw record rather than one per claim: the claims from a record are
 **No `ai.narration_failed`.** A failed inference is already recorded in `ai_inference` with its outcome and detail; an event whose information is fully contained elsewhere is a contract nobody keeps — the same reasoning that removed `signal.scored` and `opportunity.closed`.
 
 > **Added 2026-07-30**, with its producer, in the change that built it. The M8 proposal reserved exactly this event and stated it would be cataloged in the same change or not at all.
+
+### AI Reasoning Engine (M9)
+
+| Event | v | Payload | Notes |
+|---|---|---|---|
+| `ai_reasoning.completed` | 1 | `reasoning_id`, `subject_kind`, `subject_id`, `prompt_name`, `prompt_version`, `prompt_fingerprint`, `model`, `vendor`, `evidence_digest`, `support`, `contested`, `conclusion_count`, `inference_id`, `payload_version` | A Decision Package was produced and stored |
+
+**Exactly one, again.** It announces that a conclusion now *exists* — never what a consumer should do about it, which is the Recommendation Engine's question (M11). An event that told a consumer to act would move the decision out of the module that owns it and into an envelope nobody reviews.
+
+**This is the event `ai.narration_completed` deliberately is not.** M8 announces *language*: every statement restates something the pipeline already computed. M9 announces a *conclusion* — a proposition a customer may disagree with, carrying the support and contradiction needed to do so. The two events differ because the two modules differ, which is the M8/M9 boundary expressed in the contract.
+
+**Identity and counts, never the prose.** `conclusion_count` says how many statements; nothing here says what they are. *Events carry identity; ports carry payload* — the rule that keeps claim bodies out of `claim.recorded` and the contribution ledger out of `buying_score.updated`. A consumer reads the package through the module's repository.
+
+**`support` and `contested` travel as string categories, never numbers.** Exactly as `MatchStrength` and `Relevance` do. A consumer given a number would average it; a consumer given `contested` as a flag *alongside* `support` can see that contention was preserved rather than netted away — which is the property six upstream stages exist to protect. `contested` travels so no consumer rediscovers it by querying signals, which would put scoring logic in the wrong module.
+
+**`vendor` is provenance and never a decision input**, and vendor neutrality binds consumers exactly as it binds the platform (CLAUDE.md §10). `prompt_fingerprint` travels because two packages claiming version 1 with different fingerprints came from different text.
+
+**No `ai_reasoning.failed`.** A failed inference is already recorded in `ai_inference` with its outcome and detail — the same reasoning that removed `signal.scored`, `opportunity.closed` and `ai.narration_failed`.
+
+> **Added 2026-07-30**, with its producer, in the change that built it (T130). The payload was fixed in `domain/events.py` at T127; §5 of ADR-0030 records why the v2 placeholders `model_provenance` and `result_ref` were replaced by explicit provenance fields.
 
 > **Removed:** `business_event_type.published` from the v2 catalog. It assumed a runtime-mutable taxonomy that notified the system when it changed. The taxonomy is a versioned repository artifact — **the deployment is the notification** — so the event had no producer, and an event with no producer is a contract nobody is keeping.

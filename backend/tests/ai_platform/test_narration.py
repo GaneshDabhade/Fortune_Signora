@@ -232,9 +232,7 @@ class TestTheArtifactIsStoredAsAHistoricalFact:
             session_factory, workspace_id=workspace_id, user_id=uuid4()
         ) as session:
             found = await SqlNarrationRepository(session).latest_for(workspace_id, ENTITY)
-            both = (
-                await session.execute(text("SELECT count(*) FROM ai_narration"))
-            ).scalar_one()
+            both = (await session.execute(text("SELECT count(*) FROM ai_narration"))).scalar_one()
 
         assert found is not None
         assert found.statements[0].text == "A later reading."
@@ -262,9 +260,7 @@ class TestTheArtifactIsStoredAsAHistoricalFact:
         async with tenant_scoped_session(
             session_factory, workspace_id=mine, user_id=uuid4()
         ) as session:
-            count = (
-                await session.execute(text("SELECT count(*) FROM ai_narration"))
-            ).scalar_one()
+            count = (await session.execute(text("SELECT count(*) FROM ai_narration"))).scalar_one()
 
         assert count == 1
 
@@ -482,9 +478,7 @@ class TestTheWholeChainAgainstTheRealPipeline:
             narrations = (
                 await session.execute(text("SELECT count(*) FROM ai_narration"))
             ).scalar_one()
-            outcome = (
-                await session.execute(text("SELECT outcome FROM ai_inference"))
-            ).scalar_one()
+            outcome = (await session.execute(text("SELECT outcome FROM ai_inference"))).scalar_one()
 
         assert narrations == 0, "an ungrounded output must never reach a customer-visible table"
         assert outcome == "ungrounded", (

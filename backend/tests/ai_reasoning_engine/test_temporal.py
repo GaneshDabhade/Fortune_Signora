@@ -30,9 +30,7 @@ class TestWhyNowIsRecordedNeverGuessed:
     unexplainable reason is a number nobody trusts"*. M9 presents it."""
 
     @pytest.mark.parametrize("trigger", list(ScoreTrigger))
-    def test_every_trigger_has_a_customer_readable_answer(
-        self, trigger: ScoreTrigger
-    ) -> None:
+    def test_every_trigger_has_a_customer_readable_answer(self, trigger: ScoreTrigger) -> None:
         """A trigger with no phrasing would render as a crash or a raw enum
         value in front of a customer. Parametrised over the enum, so adding a
         trigger upstream fails here rather than in production."""
@@ -72,9 +70,7 @@ class TestWhyNotEarlier:
 
 
 class TestWhatChanged:
-    @pytest.mark.parametrize(
-        ("delta", "expected"), [(12, "rose by 12"), (-7, "fell by 7")]
-    )
+    @pytest.mark.parametrize(("delta", "expected"), [(12, "rose by 12"), (-7, "fell by 7")])
     def test_it_reports_direction_and_magnitude(self, delta: int, expected: str) -> None:
         assert expected in _temporal(delta=delta).what_changed()
 

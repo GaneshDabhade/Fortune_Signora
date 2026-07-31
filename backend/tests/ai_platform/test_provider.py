@@ -25,6 +25,8 @@ from modules.ai_platform.domain.provider import (
     ModelNotRegisteredError,
 )
 from modules.ai_platform.domain.usage import InferenceUsage, UsageError
+from modules.ai_platform.infrastructure.composition import build_provider_registry
+from modules.ai_platform.infrastructure.settings import AISettings
 from tests.ai_platform.fakes import FakeAdapter
 
 
@@ -225,3 +227,50 @@ class TestUsageRecordsFactsNotMoney:
     def test_negative_usage_is_refused(self, kwargs: dict[str, int]) -> None:
         with pytest.raises(UsageError, match="cannot be negative"):
             InferenceUsage(**kwargs)
+
+
+class TestTheRegistryIsBuiltFromConfigurationAlone:
+    """Which vendor serves an evaluation is a **setting**, never a code path.
+
+    Ruled 2026-07-30, and asserted here because `build_provider_registry` had
+    no test of its own — the composition root's registration rules were the
+    thing every evaluation depends on and nothing checked. Both evaluation
+    entry points now route through it, so these are the rules that decide
+    whether `--model claude-sonnet-4-5` resolves.
+    """
+
+    def _settings(self, **overrides: object) -> AISettings:
+        return AISettings(**overrides)  # type: ignore[arg-type]
+
+    async def test_a_hosted_model_resolves_once_its_credential_is_present(self) -> None:
+        """The whole of the provider-neutrality claim, in one assertion: a key
+        in the environment is the only difference between a run that cannot
+        reach a hosted model and one that can."""
+        import httpx
+
+        settings = self._settings(anthropic_api_key="k")
+        async with httpx.AsyncClient() as client:
+            registry = build_provider_registry(settings, client=client)
+            adapter = registry.for_model(settings.anthropic_model)
+        assert adapter.describe().vendor is AIVendor.ANTHROPIC
+
+    async def test_without_the_credential_the_hosted_model_is_simply_unregistered(self) -> None:
+        """The negative control, and the reason the test above means anything.
+
+        The failure is *"no adapter serves this model"* at composition — legible
+        and local — rather than a call that travels to a vendor and fails there
+        with something an engineer has to decode.
+        """
+        import httpx
+
+        settings = self._settings(anthropic_api_key=None)
+        async with httpx.AsyncClient() as client:
+            registry = build_provider_registry(settings, client=client)
+            with pytest.raises(ModelNotRegisteredError):
+                registry.for_model(settings.anthropic_model)
+
+    async def test_no_adapter_is_registered_for_a_vendor_the_caller_named(self) -> None:
+        """There is no vendor-keyed lookup to reach for, by construction. A
+        caller that cannot *name* a vendor cannot branch on one."""
+        assert not hasattr(AIProviderRegistry(), "for_vendor")
+        assert not hasattr(AIProviderRegistry(), "get")

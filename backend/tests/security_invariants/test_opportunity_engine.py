@@ -148,9 +148,7 @@ class TestNothingClosesAutomatically:
         names = set(dir(qualify_module)) | set(dir(handlers)) | set(dir(OpportunityQueries))
 
         offenders = sorted(
-            name
-            for name in names
-            if any(word in name.lower() for word in AUTOMATIC_CLOSURE_LIKE)
+            name for name in names if any(word in name.lower() for word in AUTOMATIC_CLOSURE_LIKE)
         )
         assert offenders == [], f"something can end a human's commitment for them: {offenders}"
 
@@ -316,7 +314,7 @@ class TestOneOpenOpportunityPerAccount:
     async def test_the_generation_key_makes_concurrent_creation_conflict(
         self, admin_session_factory: async_sessionmaker[AsyncSession]
     ) -> None:
-        """"Open" means *the latest state row is not terminal*, which no
+        """ "Open" means *the latest state row is not terminal*, which no
         index can express. Rather than denormalise openness onto a mutable
         column — restoring the `UPDATE` grant to buy a constraint — the
         dangerous case is converted into a conflict."""
@@ -356,9 +354,7 @@ class TestTheCitationCannotBeOrphaned:
         assert rule in ("r", b"r"), "the originating score must be RESTRICT, never CASCADE"
 
     def test_the_aggregate_cites_a_score_it_can_never_change(self) -> None:
-        assert "originating_buying_score_id" in inspect.get_annotations(
-            Opportunity, eval_str=True
-        )
+        assert "originating_buying_score_id" in inspect.get_annotations(Opportunity, eval_str=True)
         assert dataclasses.fields(Opportunity)
         with pytest.raises(dataclasses.FrozenInstanceError):
             _frozen_probe()

@@ -23,6 +23,7 @@ The product's competitive advantage is the quality of that reasoning and the evi
 | **Platform Foundations** | ✅ **Complete** — runtime, auth, deployment, smoke verification, frontend |
 | **Enablement** | ✅ **Complete** — Provider Simulation Framework |
 | **Product Development** | 🔄 **In progress** — **eight pipeline stages built, through the Opportunity Engine.** Signora now turns provider payloads into tracked accounts a seller commits to — and the first sellable moment has been reached. |
+| **AI Reasoning** | 🔄 **In progress** — **M9, T122–T130 implemented.** A **Decision Package** is composed, stored and announced end to end: fifteen parts, of which a model authors three. The prompt `reasoning@1` is authored and **not yet released** — its certification needs a hosted-provider credential, not code. |
 | **AI Platform** | ✅ **Complete** — **M8, T111–T121.** Every model call goes through one validated path, prompts are versioned artifacts, and `explanation_narration@1` has **earned a release by measurement** against `llama3.1:8b`, and a grounded narration is produced, stored and announced end to end. |
 | **Production Readiness** | ⏳ Queued — cloud infrastructure, then GA |
 
@@ -33,8 +34,8 @@ The product's competitive advantage is the quality of that reasoning and the evi
 | **Overall completion** | **~52%** by engineering effort (~162 of ~261–339 ew) |
 | **Effort remaining** | **~99–177 ew** |
 | **Milestones completed** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · M4 · M5A · M5B · **M6** |
-| **Current milestone** | **M9 — AI Reasoning Engine** — architecture **ratified** ([29-ai-reasoning-engine.md](docs/architecture/29-ai-reasoning-engine.md), [ADR-0030](docs/architecture/adr/0030-the-decision-package.md)); implementation begins at **T122**. M8 is complete and architecturally closed. |
-| **Current `HEAD`** | `670d166` — retry reporting. This line is written by the commit that follows it, so the live `HEAD` is one ahead; `git rev-parse --short HEAD` is authoritative. |
+| **Current milestone** | **M9 — AI Reasoning Engine** — **T122–T130 implemented and verified.** Architecture ratified in [29-ai-reasoning-engine.md](docs/architecture/29-ai-reasoning-engine.md) and [ADR-0030](docs/architecture/adr/0030-the-decision-package.md). **Not yet closed:** `reasoning@1` has earned no release, and a milestone whose prompt cannot legally be used is not finished. M8 is complete and architecturally closed. |
+| **Current `HEAD`** | `4427f99` — M9 T130 and the T128 provider routing. This line is written by the commit that follows it, so the live `HEAD` is one ahead; `git rev-parse --short HEAD` is authoritative. |
 | **Verification** | Local only ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate. |
 | **Projected to GA** | ~1.4–2.0 years at 3 engineers · ~2.1–3.0 at 2 · ~4.1–6.1 at 1 (80% capacity) |
 
@@ -159,7 +160,7 @@ flowchart TD
 - ✅ **Authentication** — Better Auth issues RS256 JWTs, FastAPI only verifies; the API cannot mint a token it accepts
 - ✅ **Event bus** — transactional outbox, relay, platform-owned idempotency, retry, dead-lettering
 - ✅ **Deployment foundation** — production images, concurrency-safe migration runner, restart-safe stack
-- ✅ **Smoke verification** — `make smoke`, one command, run locally. Established at M1.4 with 16 stages; **now 21**, each intelligence milestone adding its own demonstration against the live stack.
+- ✅ **Smoke verification** — `make smoke`, one command, run locally. Established at M1.4 with 16 stages; **now 22**, each intelligence milestone adding its own demonstration against the live stack.
 - ✅ **Frontend foundation** — design system, component library, shell, routing, query layer
 - ✅ **Provider Simulation Framework** — Provider Port, shared contract suite, deterministic replay, fault injection
 
@@ -169,11 +170,17 @@ flowchart TD
 
 ## 7 · Current Focus
 
-**M5B Buying Score Engine** — aggregating signals into a continuously updated buying propensity per account. It is the first module permitted to answer **"how much does this matter?"**, and M5A was deliberately shaped to leave that to it: the Signal Engine contains no scores at all.
+**M9 AI Reasoning Engine** — the first module that produces something a customer may **disagree with** rather than merely learn from. Where M8 announces *language* (every statement restating something the pipeline already computed), M9 announces a *conclusion*, and ships the evidence, support, contradiction and limits needed to challenge it.
 
-The layering principle now runs the length of the built pipeline: *claims preserve evidence · the Knowledge Graph resolves identity · the Observation Engine detects change · the Business Event Engine determines business meaning · the Signal Engine determines commercial meaning.* **The line between globally-true and customer-specific falls between the last two** — everything up to business events is true whoever reads it; signals are true for one workspace and still traceable back.
+**The principle it establishes, ratified 2026-07-30:**
 
-M5B inherits three things M5A deliberately left on the table: **weighting relevance categories** into a number, **resolving contradictory hypotheses** with a stated rule, and **applying decay** to `relevant_until`. It also inherits one requirement recorded during M5A: it must deduplicate on contributing *business events* rather than on signals, because a composite and its constituent rest on the same grounds read two ways.
+> **Every field has the least powerful author capable of producing it correctly.**
+>
+> The database owns timestamps. Code owns derived facts. Domain experts own static knowledge. AI owns inference. **Climb only as far as correctness actually requires.**
+
+Applied to the Decision Package, that partitioning leaves **the model authoring three of fifteen parts** — the proposition, the summary and the stated reasoning, each individually grounded. The other twelve are read from immutable pipeline history, derived deterministically, or snapshotted from a reviewed catalog. This is **Deterministic Explainability**, and its practical consequence is that a failure to reach a model *degrades* a package rather than emptying it.
+
+**What is outstanding.** `reasoning@1` is authored and unreleased. The release rule refuses it on the request path — asserted by test — and it will earn release only from a real evaluation against the hosted production model. That run needs `SIGNORA_ANTHROPIC_API_KEY`, which is not configured in this environment. **Nothing was manufactured to close the gap**, and a test fails the suite if an evaluation ever appears in the manifest without a run behind it.
 
 **[21-intelligence-pipeline.md](docs/architecture/21-intelligence-pipeline.md)** is the primary architectural reference for how information moves through Signora — the document to read first, kept current with what is actually built.
 
@@ -185,15 +192,15 @@ Knowledge Graph · Observation Engine · Business Events · Signals · Buying Sc
 
 | Indicator | Value | Target |
 |---|---|---|
-| **Backend tests** | **1320 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Backend tests** | **1563 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Frontend tests** | **101 passing**, 0 failing, 0 skipped | 0 skipped |
-| **Backend coverage** | **~95.3%** — varies by ±0.02pp between runs, so it is not quoted to two decimals | ≥95% (local gate) |
-| **Security invariants** | **269 / 269**, each proven to fail when its guarantee is removed | 100% verified |
-| **import-linter contracts** | **21 kept, 0 broken** | 0 broken |
+| **Backend coverage** | **~95.8%** — varies by ±0.02pp between runs, so it is not quoted to two decimals | ≥95% (local gate) |
+| **Security invariants** | **295 / 295**, each proven to fail when its guarantee is removed | 100% verified |
+| **import-linter contracts** | **25 kept, 0 broken** | 0 broken |
 | **Architecture drift** | **0** — no ratified ADR reversed; 14 documents amended for drift, all found by test or by implementation | Trending to 0 |
 | **Open production bugs** | **0** | 0 |
 | **Technical debt** | **0 outstanding** · **2 platform findings raised** (see M3A record) | — |
-| **`make smoke`** | ✅ Passing (**21 stages**, 40 checks, 84–203s depending on image-build cache) | Required per milestone |
+| **`make smoke`** | ✅ Passing (**22 stages**, 117s on the last run; 84–203s depending on image-build cache) | Required per milestone |
 
 ### Test suite composition
 
@@ -822,6 +829,7 @@ Encoded as a tracked deviation in `test_authorization.py::test_every_workspace_o
 
 | Date | Change |
 |---|---|
+| 2026-07-30 | v27 — **M9 T130 complete; M9 implementation finished, milestone not yet closed.** The Decision Package is produced, stored and announced end to end. **The principle the milestone establishes:** *every field has the least powerful author capable of producing it correctly* — which leaves the model authoring **3 of 15** parts, and makes a failure to reach a model degrade a package rather than empty it. T130 delivered the SQLAlchemy model, `SqlDecisionPackageRepository`, the `PipelineReasoningContext` adapter, `build_reason`, `ai_reasoning.completed` in the event catalog, and **smoke stage 14j** (109 tests, calling no model). **T128's architectural half closed:** both evaluation entry points now resolve providers through `build_provider_registry`, so `--model claude-sonnet-4-5` is configuration alone; the Ollama-specific `/api/tags` probe was **removed** rather than made conditional — it gated a *hosted* release run on a *local* runtime, and it was never what prevented a fake being substituted (composition is). A new Security Invariant enforces structurally that the evaluation framework names no vendor in executable code, prose exempt, with a positive control. **`reasoning@1` remains unreleased.** Run against the production model it returned **UNMEASURABLE — no adapter serves that model**, because no credential is configured here; a release could have been hand-written into the manifest in a minute and would have been a lie, so it was not, and a test now fails if one appears unearned. **Four findings, every one from the repository refusing something:** `public/` cannot publish a filesystem prompt loader (the layering contract was right, and binding prompts to an `Infer` is the application composition root's job); `SignalQueries` already owned the catalog, so a second injected copy was removed before it could disagree with itself; `signora_app` cannot read `outbox_event`, so the test uses the relay identity as the Platform Infrastructure Policy requires; and a redundant deduplication was deleted after a mutation proved it protected nothing. Eleven mutations run, six exposing real gaps that became permanent tests — including one that would have silently told every customer their evidence was single-sourced. 1563 tests, coverage 95.75%, 295 invariants, 25 contracts, `make smoke` green over 22 stages in 117s. |
 | 2026-07-29 | v25 — **M5A Signal Engine complete.** The first module producing something true for only one customer. Permanent principle ratified: *business events describe objective business phenomena; signals describe customer-specific commercial hypotheses* — signals are the first subjective layer, everything above stays globally true, everything below stays traceable back. **Ownership, not technology, decides where configuration lives:** the signal catalog is Signora's and ships as a repository artifact; the profile is the customer's and lives in immutable, versioned, attributed rows. **A workspace can never invent a signal type** — unrepresentable, not merely discouraged. Relevance is a category with no numeric meaning, so the module holds no scores at all, forcing two catalog corrections: `signal.generated` loses its `score` and `signal.scored` is removed. Composites **enrich rather than replace** — constituents are stored independently and named by the composite. Catalog entries declare a detection *strategy*, keeping domain semantics separate from mechanics. Replay has two first-class modes, historical and current, never conflated. `signal_profile` is the first customer-authored table in the platform and cannot be regenerated from anything. 905 tests, coverage 95.50%, 186 invariants, 13 contracts, `make smoke` green over 21 stages. |
 | 2026-07-29 | v24 — **M4 Business Event Engine complete.** The first module whose output reads as intelligence, and the first whose correctness is a product judgement. Permanent boundary: *answers "why is this business-relevant?", never "should we engage?"* — no priority, score, urgency, or rank, enforced by a column-name invariant. **Taxonomy is data; rules are code**, and the split is machine-enforced: rule modules are parsed as **syntax trees** and any numeric literal in a comparison other than 0 or 1 fails the build, with parameter declarations reconciled in both directions. Agreement is evidence, never truth — each provider's series is evaluated alone and two providers reaching one conclusion produce one event recording both. Taxonomy and payload versions kept separate so tuning a threshold never breaks a consumer contract. `business_event_type.published` removed: a repository artifact has no runtime publication to announce. **The CRO test changed three of nine proposed type names before implementation** — `EXECUTIVE_CHANGE` and `REVENUE_BAND_SHIFT` split by direction, `INTENT_SURGE` renamed — leaving eleven types across six business domains. Two limitations recorded rather than engineered around: the baseline scenario produces no intent surge under defensible thresholds, and AC-40 re-evaluation is wired at contract level only. 822 tests, coverage 95.39%, 154 invariants, 11 contracts, `make smoke` green over 20 stages. |
 | 2026-07-29 | v23 — **M3B Observation Engine complete.** Permanent layering principle ratified: *claims preserve evidence · the graph resolves identity · the Observation Engine detects change · the Business Event Engine determines business meaning · the Signal Engine determines commercial meaning.* Change is computed **within one provider's series** — cross-provider comparison rejected as the central error, since disagreement merged into a series manufactures growth that never happened. First values establish a baseline and produce no observation. Observation identity is derived from observed facts, so deduplication is a primary-key conflict and a mapper fix cannot duplicate the table. Late arrival refines by append-only supersession. `entity.evidence_attached` approved and added to the Knowledge Graph; the canonical vocabulary formally recognised as a platform-wide contract. A Security Invariant reads derivation as a **syntax tree** to prove no threshold has crept in. Two defects found by running rather than by tests, one of them by `make smoke` against a fresh stack. 729 tests, coverage 95.10%, 124 invariants, 9 contracts, `make smoke` green over 19 stages. |

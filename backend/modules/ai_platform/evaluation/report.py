@@ -21,6 +21,44 @@ from modules.ai_platform.domain.record import InferenceOutcome
 from modules.ai_platform.evaluation.rubric import RUBRIC_VERSION, criteria
 
 
+def unmeasurable(model: str, reason: Exception) -> str:
+    """The third evaluation state, rendered once for every entry point.
+
+    **READY, REFUSED and UNMEASURABLE are three distinct engineering states**
+    (ruled 2026-07-30). A refused run is a *result* — the prompt is not
+    releasable for this model, and that is evidence. This is the absence of a
+    result, and the two must never be conflated: an outage read as a quality
+    regression would retire a prompt that nothing was ever wrong with.
+
+    Written here rather than in each entry point because behaviour exists
+    exactly once, and a message duplicated across two commands is how the two
+    eventually report the same state differently.
+
+    **It names no vendor**, because nothing in evaluation may: the run asked
+    for a *model*, and which adapter serves one is configuration this text has
+    no business describing.
+    """
+    return (
+        f"UNMEASURABLE — the run produced no verdict.\n"
+        f"\n"
+        f"  model   {model}\n"
+        f"  reason  {reason}\n"
+        f"\n"
+        "A run that cannot execute faithfully reports nothing rather than a verdict from\n"
+        "the cases that happened to survive — a partial average recorded as a result is\n"
+        "how a release gets granted on the successes.\n"
+        "\n"
+        "Evaluation resolves a provider by **model**, never by vendor: the registry serves\n"
+        "whichever adapters this environment configured. If the model above is not\n"
+        "registered, supply its credentials and run again; if its runtime is unreachable,\n"
+        "start it. Neither is a finding about the prompt.\n"
+        "\n"
+        "This command measures a real model and will not substitute a fake for one: a\n"
+        "scripted adapter never invents a quantity unless it is told to, so a run against\n"
+        "one would prove the grounding checker works and nothing about the model."
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class CaseResult:
     """One case, measured.

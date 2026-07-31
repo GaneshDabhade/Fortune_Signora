@@ -205,6 +205,150 @@ class TestTheBoundaryContractsStayRegistered:
         )
 
 
+class TestTheEvaluationFrameworkNamesNoVendor:
+    """**The benchmark is unchanged by who executes it.**
+
+    Ruled 2026-07-30, when both evaluation entry points were routed through
+    `build_provider_registry` and an Ollama-specific reachability probe was
+    removed from each. The probe hit `/api/tags` before every run, which meant
+    a *hosted* evaluation — the one that earns a release — was gated on a
+    *local* runtime answering.
+
+    The invariant is stated structurally because the failure is quiet: a
+    vendor check added to the harness would still produce green runs on the
+    machine that added it, and would only be discovered by whoever next tried
+    to certify a prompt against a different provider. Adding OpenAI or Gemini
+    must remain an adapter registration, never an edit here.
+
+    ``evaluation/`` may still *import* a provider registry and a settings
+    object — that is composition. What it may not do is name a vendor, name a
+    concrete adapter, or reach a vendor's URL.
+    """
+
+    #: Both frameworks. M9 owns its own entry point (M8's cannot import
+    #: ``ReasonedOutput``), so the rule has two places to be broken.
+    EVALUATION_ROOTS = (
+        BACKEND_ROOT / "modules" / "ai_platform" / "evaluation",
+        BACKEND_ROOT / "modules" / "ai_reasoning_engine" / "evaluation",
+    )
+
+    #: Vendor tokens, matched against **executable code only**. Prose is
+    #: deliberately exempt: the first draft of this invariant failed on three
+    #: docstrings explaining why the framework is vendor-neutral, which would
+    #: have banned exactly the writing that keeps the rule understood. The
+    #: rule constrains what the code *does*.
+    VENDOR_TOKENS = ("ollama", "anthropic", "claude", "openai", "gpt", "gemini", "bedrock")
+
+    #: One legitimate appearance, and the reason the scan is scoped rather
+    #: than absolute: an evaluation run needs a default model when `--model`
+    #: is absent, and development is the local runtime (ADR-0028). A
+    #: **default is not a branch** — nothing consults it, `--model` overrides
+    #: it, and registering a Gemini adapter still requires no edit here.
+    ALLOWED_ATTRIBUTES = frozenset({"ollama_model"})
+
+    def _evaluation_modules(self) -> list[tuple[str, ast.Module]]:
+        found: list[tuple[str, ast.Module]] = []
+        for root in self.EVALUATION_ROOTS:
+            for path in root.rglob("*.py"):
+                found.append((str(path.relative_to(BACKEND_ROOT)), ast.parse(path.read_text())))
+        return found
+
+    @staticmethod
+    def _docstrings(tree: ast.Module) -> set[int]:
+        """Node ids of every docstring, so prose is excluded from the scan."""
+        holders = (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)
+        found: set[int] = set()
+        for node in ast.walk(tree):
+            if isinstance(node, holders) and node.body:
+                first = node.body[0]
+                if isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant):
+                    found.add(id(first.value))
+        return found
+
+    def test_the_evaluation_sources_exist(self) -> None:
+        """A scan over nothing passes. Both frameworks must be present for the
+        assertions below to have said anything at all."""
+        scanned = {name for name, _ in self._evaluation_modules()}
+        assert any("ai_platform" in name for name in scanned)
+        assert any("ai_reasoning_engine" in name for name in scanned)
+
+    def test_no_evaluation_module_imports_or_builds_a_concrete_adapter(self) -> None:
+        """**The property that actually decides whether a new vendor is free.**
+
+        An evaluation that constructs an adapter has to be edited to add one;
+        an evaluation that asks a registry does not. It is also what makes
+        "never substitutes a fake" true: a file that may not name an adapter
+        cannot name a scripted one.
+        """
+        offences: list[str] = []
+        for filename, tree in self._evaluation_modules():
+            for name in _imported_module_names(tree):
+                if "adapters" in name:
+                    offences.append(f"{filename} imports {name}")
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Call):
+                    called = str(
+                        getattr(node.func, "id", "") or getattr(node.func, "attr", "") or ""
+                    )
+                    if called.endswith("Adapter"):
+                        offences.append(f"{filename} constructs {called}")
+        assert not offences, (
+            "The evaluation framework must obtain providers from the registry the AI "
+            "Platform builds from settings, never construct one. Adding OpenAI or Gemini "
+            "has to remain an adapter registration, not an edit here.\n  " + "\n  ".join(offences)
+        )
+
+    def test_no_evaluation_module_names_a_vendor_in_code(self) -> None:
+        """String literals and attribute names, docstrings excluded.
+
+        This is what caught the `/api/tags` reachability probe: a vendor's own
+        URL, hard-coded in the framework, gating a *hosted* release run on a
+        *local* runtime answering.
+        """
+        offences: list[str] = []
+        for filename, tree in self._evaluation_modules():
+            prose = self._docstrings(tree)
+            for node in ast.walk(tree):
+                if (
+                    isinstance(node, ast.Constant)
+                    and isinstance(node.value, str)
+                    and id(node) not in prose
+                ):
+                    lowered = node.value.lower()
+                    for token in (*self.VENDOR_TOKENS, "/api/"):
+                        if token in lowered:
+                            offences.append(f"{filename} has the literal '{node.value}'")
+                elif isinstance(node, ast.Attribute) and node.attr not in self.ALLOWED_ATTRIBUTES:
+                    lowered = node.attr.lower()
+                    for token in self.VENDOR_TOKENS:
+                        if token in lowered:
+                            offences.append(f"{filename} reads '.{node.attr}'")
+        assert not offences, (
+            "A run states the *model* it wants; which adapter serves it is the registry's "
+            "answer. A vendor named in evaluation code makes the benchmark depend on who "
+            "executes it, which is the one thing it must not.\n  " + "\n  ".join(offences)
+        )
+
+    def test_the_scan_would_detect_a_vendor_if_one_appeared(self) -> None:
+        """The positive control. Without it, a scan whose token list had been
+        emptied — or whose paths had drifted — would pass silently and assert
+        nothing, which is the exact failure mode this class exists to prevent.
+        """
+        planted = ast.parse('probe("http://x/api/tags")\nadapter = OllamaAdapter()\n')
+        prose = self._docstrings(planted)
+        literals = [
+            n.value
+            for n in ast.walk(planted)
+            if isinstance(n, ast.Constant) and isinstance(n.value, str) and id(n) not in prose
+        ]
+        assert any("/api/" in literal for literal in literals)
+        assert any(
+            getattr(n.func, "id", "").endswith("Adapter")
+            for n in ast.walk(planted)
+            if isinstance(n, ast.Call)
+        )
+
+
 class TestTheReleaseRuleHasExactlyOneException:
     """``Infer.measure`` skips the release rule. Only the harness may call it.
 
