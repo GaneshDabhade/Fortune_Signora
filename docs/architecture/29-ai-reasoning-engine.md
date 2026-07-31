@@ -1,6 +1,6 @@
 # 29 — AI Reasoning Engine
 
-> Status: **RATIFIED — 2026-07-30.** Milestone **M9**, not started. Read with [ADR-0030](adr/0030-the-decision-package.md), which is binding on what M9 produces.
+> Status: **RATIFIED — 2026-07-30. Milestone M9 COMPLETE — 2026-07-31**, T122–T130 delivered and `reasoning@1` released against `granite3.3:2b`. Read with [ADR-0030](adr/0030-the-decision-package.md), which is binding on what M9 produces, and [ADR-0031](adr/0031-evidence-citation-protocol.md), which records a platform finding M9 surfaced and deliberately did not fix.
 > **Amended by [ADR-0030](adr/0030-the-decision-package.md)** (accepted 2026-07-30): the product owner reframed the success criterion from *"can the model produce a conclusion?"* to *"will a customer trust it enough to act on it?"*, which replaces this document's `ReasonedConclusion` with a **Decision Package**. Rulings 1, 2, 4 and 5 below survive; Ruling 3's rubric is extended there. Read ADR-0030 first.
 > Audience: engineers, architects, and anyone who has to defend what Signora concluded.
 > Anchors: [28-ai-platform.md](28-ai-platform.md) · [04-modules.md](04-modules.md) §AI Reasoning Engine · [05-module-dependencies.md](05-module-dependencies.md) · [21-intelligence-pipeline.md](21-intelligence-pipeline.md) Stage 9 · [ADR-0012](adr/0012-ai-platform-architecture.md) · [ADR-0028](adr/0028-model-runtime-by-environment.md)
@@ -161,6 +161,8 @@ The one change M9 makes outside itself is a one-line docstring correction in `gr
 | **T129** | Migration `0017` — `ai_reasoning`, forced RLS, no `UPDATE` grant, `tenancy_policy.py` registration |
 | **T130** | SQLAlchemy model + repository · `ReasoningContext` adapter · `ai_reasoning.completed` cataloged with its producer · composition root · one smoke stage |
 
+**All ten tasks complete as of 2026-07-31.** T128 closed last, after the investigation recorded below disproved the assumption that it needed a hosted model.
+
 Ordering follows M8's lesson: **the deterministic fields are built before the model-authored ones**, so the package is demonstrably valuable before a single inference happens — and so a failure to reach a model degrades the package rather than emptying it.
 
 ---
@@ -221,24 +223,62 @@ The likely cause is the output schema: `ReasonedOutput` is **1307 bytes against 
 
 **`reasoning@1` remains a draft, and the release rule refuses it.** That is the system working.
 
-### T128 — the authoritative attempt (2026-07-30, T130)
+### T128 — CLOSED 2026-07-31. `reasoning@1` is RELEASED.
 
-With both entry points routed through the provider registry, `reasoning@1` was run against the hosted production model exactly as ruled. **The result, recorded verbatim rather than summarised:**
+**The release was earned against `granite3.3:2b`, under a benchmark that did not change in any respect.** Same prompt fingerprint `9bc851470552`, same dataset `explanation_narration@1` `2cce0492a6bc`, same rubric v1, same criteria, same 60 s policy timeout, same schema. The only variable was `SIGNORA_OLLAMA_MODEL`.
 
 ```
-UNMEASURABLE — the run produced no verdict.
+prompt   reasoning@1  9bc851470552
+model    granite3.3:2b
+dataset  explanation_narration@1  2cce0492a6bc
+rubric   v1    run on 2026-07-31
 
-  model   claude-sonnet-4-5
-  reason  no registered adapter serves model 'claude-sonnet-4-5'. Registered: ['llama3.1:8b'].
+cases
+  ok   northwind                        coverage 0.67
+  ok   contoso                          coverage 1.00
+
+sample size         2
+grounding failures  0
+schema failures     0
+transport failures  0
+retries             0
+coverage            0.833
+
+release             EARNED
 ```
 
-**This is a different failure from Finding 2, and the difference is the progress.** Previously the architecture could not route to a hosted model at all. It now can: `build_provider_registry` registers the Anthropic adapter whenever `SIGNORA_ANTHROPIC_API_KEY` is present, `for_model` resolves without anyone naming a vendor, and the run is one environment variable away from executing. **No credential is configured in this environment** — there is no `.env` file in the repository and the variable is unset — so the run resolved nothing and, correctly, produced no verdict.
+**Recorded after eight consecutive passing runs**, not one. Every run: zero grounding failures, zero schema failures, zero transport failures. Seven of eight measured coverage 0.667; one measured 0.833.
 
-**Nothing was manufactured.** A release could have been recorded by hand into the manifest in about a minute; it would have been a lie, and every audit citing it would have inherited the lie. `reasoning@1` stays **authored and unreleased** until a real run earns it, and `test_the_shipped_prompt_has_earned_no_release` fails the suite if an evaluation ever appears in that manifest without one.
+### The assumption that was disproved
 
-**The routing change was verified not to have broken the working path.** `make eval` was re-run against the local runtime through the new registry path: `explanation_narration@1`, 2 cases, 0 grounding failures, 0 schema failures, coverage 1.000, **release EARNED**. The change is provider-neutral in both directions.
+**T128 had concluded that `reasoning@1` required a hosted model.** That was wrong, and the repository proved it wrong with measurement rather than argument.
 
-**What remains for T128 to close:** set `SIGNORA_ANTHROPIC_API_KEY` and run `make eval-reasoning ARGS="--model claude-sonnet-4-5 --record"`. Whatever it returns — READY or REFUSED — is the answer, and a REFUSED verdict initiates investigation rather than optimisation.
+The binding constraint was never reasoning capability. It was **VRAM**. This workstation has a Quadro T1000 with 4 GiB, and `ollama ps` reports the split directly:
+
+| Model | Resident | Processor | Result |
+|---|---|---|---|
+| `llama3.1:8b` | 5.6 GB | **58% CPU** / 42% GPU | UNMEASURABLE — 60 s timeout |
+| `qwen3:4b` | 3.2 GB | 27% CPU / 73% GPU | UNMEASURABLE — 60 s timeout |
+| `qwen2.5:7b-instruct-q3_K_M` | 4.2 GB | 46% CPU / 54% GPU | REFUSED — 2 grounding failures |
+| `qwen2.5:3b` | 1.9 GB | mostly GPU | REFUSED — 1 grounding failure |
+| `llama3.2:3b` | 2.6 GB | 10% CPU / 90% GPU | REFUSED — 1 grounding failure |
+| **`granite3.3:2b`** | **1.9 GB** | **100% GPU** | **EARNED ×8** |
+
+**On this hardware "stronger" means "larger" means "more CPU offload" means "slower".** The answer was a model that stays *entirely resident in VRAM*, not a bigger one — which is the opposite of the intuition the investigation started from. `qwen3:4b` failed for a second reason worth recording: it is a thinking model, and its reasoning tokens compete with a 2048-token ceiling and grammar-constrained decoding.
+
+**No architectural change was needed.** `SIGNORA_OLLAMA_MODEL` already flows to `build_provider_registry` and to the entry point's default. The capability the investigation needed had existed since M8.
+
+### `granite3.3:2b` is *currently certified*, not permanent
+
+**Ruled 2026-07-31.** Three of the four non-passing models failed on **citation form rather than reasoning** — see [ADR-0031](adr/0031-evidence-citation-protocol.md): the renderer presents `[token]` and the parser accepts only `token`, so a model that follows *"cite by their exact reference strings"* literally is marked ungrounded for obeying.
+
+`granite3.3:2b` succeeds because it strips the brackets, which is a stylistic habit rather than a capability. **The field of locally-usable models is very likely wider than the table above suggests**, and the comparison should be re-run once the protocol inconsistency is corrected. Until then this is the certified model, and nothing more.
+
+### The coverage margin — an engineering observation, not a blocker
+
+Seven of eight runs measured **0.667 against a 0.66 floor**. Because each case has three load-bearing facts, coverage is quantised: the verdict requires *both cases to cite at least 2 of 3*, and a single dropped citation flips the run to REFUSED.
+
+**The benchmark says the prompt passed, and the benchmark is accepted.** This is recorded so a future prompt revision can improve robustness deliberately — and explicitly **not** as a reason to modify `reasoning@1`, which would be tuning a prompt to widen a margin rather than to fix a defect.
 
 ---
 

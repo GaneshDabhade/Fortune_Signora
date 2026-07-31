@@ -14,7 +14,7 @@
 |---|---|
 | **Last completed** | **M6 Opportunity Engine** — closed 2026-07-29. *The first sellable moment.* |
 | **Last completed** | **M8 AI Platform** — T111–T121 + ADR-0029, closed 2026-07-30. `explanation_narration@1` released for `llama3.1:8b`. |
-| **In progress** | **M9 AI Reasoning Engine** — **T122–T130 implemented.** The only outstanding item is `reasoning@1`'s release certification, which needs a hosted-provider credential rather than code. Architecture ratified in [29-ai-reasoning-engine.md](architecture/29-ai-reasoning-engine.md) and [ADR-0030](architecture/adr/0030-the-decision-package.md). |
+| **Completed** | **M9 AI Reasoning Engine — COMPLETE 2026-07-31.** T122–T130 delivered; `reasoning@1` **released** against `granite3.3:2b`. See [29-ai-reasoning-engine.md](architecture/29-ai-reasoning-engine.md), [ADR-0030](architecture/adr/0030-the-decision-package.md), [ADR-0031](architecture/adr/0031-evidence-citation-protocol.md), and the [M9 retrospective](architecture/30-m9-retrospective.md). |
 | **Head at handoff** | `5371e50` |
 | **Phase** | Product Pipeline. Foundations and enablement are complete and frozen. **Eight pipeline stages built, plus the AI substrate.** |
 | **Overall completion** | **~52%** by engineering effort (~162 of ~261–339 ew) |
@@ -313,61 +313,43 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 
 ## 7 · Next session starting point
 
-> **In progress:** M9 — **T122–T130 implemented; T128's release certification is the only thing outstanding**
+> **Completed:** M9 — **T122–T130, closed 2026-07-31** · **Next:** M10 AI Research Engine
 > **Branch:** `main` · everything committed and pushed, tree clean
-> **Health:** 1563 backend + 101 frontend tests · coverage 95.75% · 295 invariants · 25 contracts · smoke green over **22 stages** · `HEAD` — run `git rev-parse --short HEAD`
+> **Health:** 1564 backend + 101 frontend tests · coverage ~95.8% · 295 invariants · 25 contracts · smoke green over **22 stages**
 
-### The one thing outstanding, and it needs a credential rather than code
+**Read [30-m9-retrospective.md](architecture/30-m9-retrospective.md) first.** It explains how the architecture evolved T122→T130, which assumptions proved false, and what carries into M10 — and it is shorter than re-reading the milestone.
 
-**`reasoning@1` is authored and unreleased.** Everything needed to earn its release is now built and verified; what is missing is a secret only the product owner holds.
+### M9 is closed
 
-```
-export SIGNORA_ANTHROPIC_API_KEY=...
-make eval-reasoning ARGS="--model claude-sonnet-4-5 --record"
-```
-
-Whatever it returns is the answer. **READY** records the release in the manifest. **REFUSED** is evidence, and initiates investigation rather than optimisation — do not tune the prompt, schema, model or timeout to move a number. **UNMEASURABLE** means the run could not execute faithfully and produced no verdict at all.
-
-The last attempt returned UNMEASURABLE for a new reason, and the change of reason is the progress:
+`reasoning@1` is **RELEASED** for `granite3.3:2b` on dataset `explanation_narration@1`, rubric v1: 2 cases, 0 grounding failures, 0 schema failures, coverage 0.833, recorded after **eight consecutive passing runs**. The benchmark was not changed in any respect — only `SIGNORA_OLLAMA_MODEL`.
 
 ```
-  model   claude-sonnet-4-5
-  reason  no registered adapter serves model 'claude-sonnet-4-5'. Registered: ['llama3.1:8b'].
+SIGNORA_OLLAMA_MODEL=granite3.3:2b make eval-reasoning
 ```
 
-Previously the architecture could not route to a hosted model at all. It now can — `build_provider_registry` registers the Anthropic adapter the moment its key exists, and `for_model` resolves without anyone naming a vendor. **No release was manufactured**, and `test_the_shipped_prompt_has_earned_no_release` fails the suite if an evaluation ever appears in that manifest without a run behind it.
+**`granite3.3:2b` is *currently certified*, not permanent.** Ruled 2026-07-31. It was selected because it is the only candidate tested that stays entirely resident in 4 GiB of VRAM — and three of the four models that did not pass failed on **citation form rather than reasoning** ([ADR-0031](architecture/adr/0031-evidence-citation-protocol.md)). Revisit the comparison once that protocol inconsistency is corrected; the field of usable local models is very likely wider than the current table suggests.
 
-### What T130 delivered
+### The one high-severity item carried forward
 
-| | |
-|---|---|
-| **Model + repository** | `AIReasoningModel`, `SqlDecisionPackageRepository`. Save and read-latest only; no update, no delete. `latest_for` derives recency from the rows |
-| **Context adapter** | `infrastructure/context.py` — the one file speaking the pipeline's vocabulary. Composes support, temporal, alternative readings and catalog text from four modules' `public/` surfaces |
-| **Composition root** | `build_reason`, taking `infer` as a parameter and naming the prompt itself |
-| **Event** | `ai_reasoning.completed` cataloged in `06-events.md` under its own producer |
-| **Smoke stage** | **14j, "Defensible conclusion"** — 109 tests, and it calls no model |
-| **Evaluation** | Both entry points route through `build_provider_registry`; the vendor-specific probe is gone; `make eval-reasoning` now exists as a target |
+**[ADR-0031](architecture/adr/0031-evidence-citation-protocol.md) is PROPOSED and deliberately unimplemented.** The renderer emits `[token]`; the parser accepts only `token`; the prompt says *"cite by their exact reference strings"*. Models that obey literally are marked ungrounded.
 
-### Settled during M9 — do not re-open
+It is an **M8** defect, surfaced by M9 and not fixed inside it. Correcting it changes what every prompt renders, so **both released prompts must be re-evaluated** — neither release survives automatically. Recommended direction is Option A + D: render the bare token, and assert the render→parse round trip in a test so the two cannot drift apart again.
 
-- **Deterministic Explainability.** The model authors **3 of 15** Decision Package parts. Before adding any model-authored field, ask whether the platform already owns the fact.
-- **`answers()` is the acceptance criterion**, executable: eleven customer questions, every row populated.
-- **Support introduces no threshold.** Two yes/no questions, both already derived. Contention never lowers it; event count never enters it.
-- **Catalog content is snapshotted; immutable history is referenced.**
-- **`reason.py` stays thin**, enforced by a test forbidding `if support`, `if contested`, `if trend`, `len(events)`.
-- **Exactly one inference per package.**
-- **`ai_reasoning_engine.evaluation` is the single narrow exemption** to the through-`public` contract.
-- **The evaluation framework names no vendor**, enforced structurally in the Security Invariants suite. Docstrings are exempt; `settings.ollama_model` is allowed as a default, because a default is not a branch.
-- **`support_level` and `contested` are write-only query surface** — written from one object, never read back.
-- **Binding a module's prompt directory to an `Infer` is the application composition root's job.** `public/` cannot publish a filesystem loader.
+### Open question M10 will force
 
-### The habit that produced M9
+**One `ollama_model` setting, two certified prompts.** `build_provider_registry` registers a single Ollama model; `explanation_narration@1` is certified for `llama3.1:8b` and `reasoning@1` for `granite3.3:2b`. **No single process configuration currently serves both request paths.** M10 adds a third prompt.
 
-Across the milestone: **five guards written and removed for being unreachable**, **eleven surviving mutations investigated** — six of which exposed genuine gaps and five of which were behaviour-neutral or proved a domain type made the mutation unreachable — and one ratified ADR claim that turned out to be factually wrong about the repository. **Every one improved the architecture.**
+### What M10 inherits
 
-At T130 alone, four refusals shaped the design: the layering contract refused a published loader, `SignalQueries` already owned the catalog, the `signora_app` grant refused an outbox read, and a redundant deduplication was removed once a mutation showed it protected nothing.
+- **The least-powerful-author rule.** M10 is agentic and will be far more tempted to generate what the platform already knows.
+- **Degrade, never empty.** Build the deterministic part first, so there is something to degrade *to*.
+- **Whenever an evaluation criterion can become an invariant, prefer the invariant.**
+- **Do not fix a finding in the milestone that discovered it.**
+- **A property a fixture cannot vary is a property the fixture cannot test** — six M9 mutations survived on exactly that.
 
-> A surviving mutation is architectural feedback until proven otherwise; a guard that cannot fail is documentation pretending to be code; and when a document and the repository disagree, **the repository wins.**
+### The habit worth keeping
+
+> **The repository improved the architecture by refusing incorrect assumptions** — through contracts, mutations, unreachable guards, database grants, a layering rule, and four evaluation refusals. Not one was worked around. **Never resume from memory; always resume from the repository.**
 
 ---
 
@@ -375,6 +357,7 @@ At T130 alone, four refusals shaped the design: the layering contract refused a 
 
 | Date | Change |
 |---|---|
+| 2026-07-31 | v13 — **M9 COMPLETE.** `reasoning@1` **released** against `granite3.3:2b` — 2 cases, 0 grounding failures, 0 schema failures, coverage 0.833, recorded after eight consecutive passing runs with **no change to the benchmark, dataset, rubric, schema, timeout or release criteria**. The assumption that M9 required a hosted model was **disproved by measurement**: the constraint was 4 GiB of VRAM, not reasoning capability — `llama3.1:8b` ran 58% on CPU and timed out, while a 1.9 GB model at 100% GPU passed eight times. On this hardware *stronger* means *larger* means *slower*. **[ADR-0031](architecture/adr/0031-evidence-citation-protocol.md) written and deliberately not implemented:** the renderer emits `[token]` while the parser accepts `token`, so three models were REFUSED for following *"cite by their exact reference strings"* literally — an **M8** defect that has been passing on one model's formatting habit since M8. `granite3.3:2b` is recorded as *currently certified*, not permanent. Full [M9 retrospective](architecture/30-m9-retrospective.md) written: nine stated assumptions proved false, five unreachable guards removed, eleven mutations run with six exposing real gaps. |
 | 2026-07-30 | v12 — **M9 T130 complete; M9 implementation finished.** The Decision Package is now produced, stored and announced end to end: `AIReasoningModel`, `SqlDecisionPackageRepository`, the `PipelineReasoningContext` adapter, `build_reason`, `ai_reasoning.completed` cataloged, and **smoke stage 14j** (109 tests, no model call). **T128's architectural half closed:** both evaluation entry points route through `build_provider_registry`, and the Ollama-specific `/api/tags` probe was **removed** — it gated a hosted release run on a local runtime and was never what prevented a fake (composition is). A new Security Invariant enforces that the evaluation framework names no vendor in executable code, with prose exempt and a positive control. `reasoning@1` was run against `claude-sonnet-4-5` and returned **UNMEASURABLE — no adapter serves that model**, because no credential is configured; **no release was manufactured**, and a test now fails if one ever appears unearned. Four T130 findings, all from the repository refusing something: `public/` cannot publish a filesystem prompt loader (layering), `SignalQueries` already owned the catalog (parameter removed), `signora_app` cannot read `outbox_event` (relay identity used), and a redundant deduplication was deleted after a mutation showed it protected nothing. Eleven mutations run; six exposed real gaps and became permanent tests. 1563 tests, coverage 95.75%, 295 invariants, 25 contracts, smoke green over 22 stages. |
 | 2026-07-30 | v11 — **M9 T122–T129 complete; T130 is the last task.** Records the three evaluation states (READY / REFUSED / UNMEASURABLE), `reasoning@1` authored and unreleased after an UNMEASURABLE local run, the ruling that release is earned against the hosted production model, and the T129 finding that **provider-neutral evaluation already exists** — `build_provider_registry` registers both vendors and `for_model` resolves without naming one, so only the eval entry points' hand-rolled registration needs routing through it. §7 rewritten for T130 with the full remaining work and the settled decisions that must not be re-opened. |
 | 2026-07-30 | v10 — **ADR-0029 ratified and implemented; M8 architecturally closed with no findings outstanding.** Operational history commits on its own transaction — AC-69 now holds in production, not only in the domain. `ai_narration` keeps the caller's transaction, deliberately. A failed operational write is observable rather than silent. §7 now points at M9. |

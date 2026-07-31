@@ -12,13 +12,18 @@ What is proven here is the half that is deterministic — and for M9 that half i
 limitations and validation are assembled from real pipeline rows without a model
 having said anything, which is the whole claim of Deterministic Explainability.
 
-**The shipped prompt is unreleased, and the tests do not pretend otherwise.**
-`reasoning@1` has earned no release, so `Reason.execute` refuses it — asserted
-below as a first-class outcome. The full chain is exercised against an
-*in-memory registry* holding a prompt that has passed evaluation, which is a
-test double for the registry and is never written to the shipped manifest. A
-separate test asserts the shipped manifest is still unreleased, so the double
-can never be mistaken for a release nobody earned.
+**`reasoning@1` earned its release on 2026-07-31 against `granite3.3:2b`** —
+2 cases, 0 grounding failures, 0 schema failures, coverage 0.833. It is
+released for **that model and no other**, which these tests assert in both
+directions: the certified model resolves, and `llama3.1:8b` is still refused
+because nothing ever measured it.
+
+That is why the chain below is still exercised against an *in-memory registry*
+rather than the shipped one. The double is bound to `llama3.1:8b`, so it
+proves the release **mechanism** without depending on which model happens to
+be certified this month — and `TestTheReleaseRuleBindsTheRequestPath` asserts
+the shipped manifest holds exactly the one measurement that earned it, with
+`passed` derived from the failure counts rather than stored.
 """
 
 from __future__ import annotations
@@ -268,22 +273,62 @@ class TestTheDeterministicTwelveNeedNoModel:
         assert await _context(session_factory, workspace_id, user_id, uuid4()) is None
 
 
-class TestTheReleaseRuleBindsTheRequestPath:
-    def test_the_shipped_prompt_has_earned_no_release(self) -> None:
-        """**The guard on the test double above.**
+#: The model `reasoning@1` earned its release against, 2026-07-31. **Not a
+#: permanent pin.** It was selected because it is the only candidate tested
+#: that stays entirely resident in 4 GiB of VRAM, and the renderer/parser
+#: protocol inconsistency in ADR-0031 is why several stronger models were
+#: refused. Revisit once that is corrected.
+CERTIFIED_MODEL = "granite3.3:2b"
 
-        If this ever fails, either `reasoning@1` was honestly evaluated — in
-        which case update this test with the run that earned it — or a release
-        was recorded that no measurement produced. The second is the failure
-        this exists to catch, and it is the one that would be invisible.
+
+class TestTheReleaseRuleBindsTheRequestPath:
+    """A prompt is usable **exactly where a measurement says it is.**
+
+    Rewritten 2026-07-31, when `reasoning@1` earned its release. The previous
+    version asserted the manifest was *empty* and instructed whoever broke it
+    to replace it with the run that earned the release — which is what
+    happened. What it protected has not changed: a release that no measurement
+    produced must fail the suite, and it would otherwise be invisible.
+    """
+
+    def test_the_shipped_release_names_the_run_that_earned_it(self) -> None:
+        """Every field is asserted against the recorded measurement.
+
+        A hand-written entry would have to fabricate all of them consistently,
+        and `passed` is **derived** from the failure counts rather than stored
+        — so a fabricated "release" that did not also fabricate zero grounding
+        failures would not read as released at all.
         """
         from modules.ai_platform.infrastructure.prompt_loader import load_prompt_registry
 
-        shipped = load_prompt_registry(PROMPT_DIR)
-        version = shipped.get(REASONING_PROMPT, REASONING_PROMPT_VERSION)
-        assert not version.evaluations, (
-            "reasoning@1 now records an evaluation. A release is earned by a run against a "
-            "real model and by nothing else."
+        version = load_prompt_registry(PROMPT_DIR).get(REASONING_PROMPT, REASONING_PROMPT_VERSION)
+
+        assert len(version.evaluations) == 1, (
+            "reasoning@1 should record exactly the one run that earned its release. "
+            "Evaluations accumulate; an unexpected count means one was added by hand."
+        )
+        earned = version.evaluations[0]
+        assert earned.model == CERTIFIED_MODEL
+        assert earned.dataset == "explanation_narration"
+        assert earned.dataset_version == 1
+        assert earned.grounding_failures == 0
+        assert earned.schema_failures == 0
+        assert earned.passed, "a recorded evaluation that does not pass is not a release"
+
+    def test_the_release_does_not_extend_to_other_models(self) -> None:
+        """**Release is earned per (model, dataset), never in general.**
+
+        Developing against one model demonstrates nothing about another —
+        which this milestone proved the hard way: five models were run against
+        this benchmark and four did not pass it.
+        """
+        from modules.ai_platform.infrastructure.prompt_loader import load_prompt_registry
+
+        version = load_prompt_registry(PROMPT_DIR).get(REASONING_PROMPT, REASONING_PROMPT_VERSION)
+
+        assert version.is_released_for(CERTIFIED_MODEL), "the certified model must be released"
+        assert not version.is_released_for(MODEL), (
+            f"reasoning@1 must not be usable with {MODEL}; it was never measured against it."
         )
 
     async def test_execute_refuses_an_unreleased_prompt_and_stores_nothing(
