@@ -28,6 +28,11 @@ from modules.knowledge_graph.domain.identity import (
     Relationship,
     ResolutionDecision,
 )
+from modules.knowledge_graph.domain.naming import (
+    NAME_ATTRIBUTE,
+    NameAgreement,
+    select_name,
+)
 from modules.provider_normalization.public import (
     ClaimAttribute,
     ClaimReader,
@@ -104,6 +109,54 @@ class EntityEvidence:
     claims: tuple[ClaimView, ...]
 
 
+@dataclass(frozen=True, slots=True)
+class AccountIdentity:
+    """**What Signora knows about who an account is.**
+
+    Deliberately not a name. The UI is not asking for a string — it is asking
+    for an identity, and an identity that cannot say *how sure* it is about the
+    name is one a seller has to take on trust. Every field here is derivable
+    from claims the repository already holds; nothing is stored.
+
+    **What is deliberately absent, and why** — each would be a field a caller
+    could read and not act on, which is the defect M12.1 removed from the
+    attention row:
+
+    - **The winning claim's id.** Nothing can resolve a claim id yet: there is
+      no claims endpoint. Exposing an address nobody can follow is the same
+      mistake as putting `originating_buying_score_id` on a list row. It
+      arrives with evidence resolution (M12.3), which gives it somewhere to go.
+    - **The per-provider breakdown.** *"Who said what"* is the disclosure step,
+      not the summary — returning every claim on every row of a fifty-account
+      page is exactly the payload progressive disclosure exists to avoid.
+      `agreement` and `source_count` are what a row needs to decide whether to
+      ask; the breakdown arrives with the surface that can show it.
+    - **Anything about industry, headcount or domain.** Real, claimed, and not
+      identity. A read model that grew every firmographic attribute would
+      become the entity record `Entity` refuses to be.
+    """
+
+    entity_id: UUID
+    #: `None` when no provider has named this account. **Absence, not a
+    #: placeholder** — a caller decides how to render an unnamed account, and
+    #: a manufactured string here would be indistinguishable from a real name.
+    name: str | None
+    agreement: NameAgreement
+    #: How many providers named it. `0` when nobody has; the denominator
+    #: behind `agreement`, so a caller can say *"2 of 3 sources"* without a
+    #: second call.
+    source_count: int
+    #: Who supplied the displayed name, and when they observed it. Both `None`
+    #: exactly when `name` is.
+    source: str | None
+    observed_at: datetime | None
+
+    @property
+    def is_disputed(self) -> bool:
+        """The one state worth interrupting a seller for."""
+        return self.agreement is NameAgreement.DISPUTED
+
+
 class GraphQueries:
     """Read-only. Every method is scoped to one workspace, explicitly."""
 
@@ -128,6 +181,38 @@ class GraphQueries:
         claims = await self._claims.for_subjects(_subjects(bindings))
         return EntityEvidence(entity=entity, bindings=bindings, claims=claims)
 
+    async def identities(
+        self, workspace_id: UUID, entity_ids: tuple[UUID, ...]
+    ) -> dict[UUID, AccountIdentity]:
+        """Who these accounts are, in **one** pass over bindings and claims.
+
+        A mapping rather than a sequence: a caller asking about *these*
+        accounts needs to know which came back, and an entity the workspace
+        does not own is simply absent rather than represented by an empty
+        identity it might render.
+        """
+        if not entity_ids:
+            return {}
+
+        bindings = await self._repository.bindings_for_entities(workspace_id, entity_ids)
+        claims = await self._claims.for_subjects(_subjects(bindings), attribute=NAME_ATTRIBUTE)
+
+        owner = {
+            (binding.provider, binding.provider_external_id): binding.entity_id
+            for binding in bindings
+            if binding.entity_id is not None
+        }
+        grouped: dict[UUID, list[ClaimView]] = {entity_id: [] for entity_id in entity_ids}
+        for claim in claims:
+            entity_id = owner.get((claim.provider, claim.subject_external_id))
+            if entity_id is not None and entity_id in grouped:
+                grouped[entity_id].append(claim)
+
+        return {
+            entity_id: _identity(entity_id, tuple(found))
+            for entity_id, found in grouped.items()
+        }
+
     async def relationships(
         self,
         workspace_id: UUID,
@@ -146,3 +231,15 @@ class GraphQueries:
         """Every decision that bound an identity to this entity, oldest
         first — the full explanation of how it came to be what it is."""
         return await self._repository.decisions_for_entity(workspace_id, entity_id)
+
+
+def _identity(entity_id: UUID, claims: tuple[ClaimView, ...]) -> AccountIdentity:
+    selected, agreement = select_name(claims)
+    return AccountIdentity(
+        entity_id=entity_id,
+        name=selected.value if selected else None,
+        agreement=agreement,
+        source_count=len({claim.provider for claim in claims}),
+        source=selected.provider if selected else None,
+        observed_at=selected.observed_at if selected else None,
+    )

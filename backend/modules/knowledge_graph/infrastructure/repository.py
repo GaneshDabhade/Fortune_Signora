@@ -262,6 +262,22 @@ class SqlGraphRepository:
         )
         return tuple(_to_binding(row) for row in rows.scalars())
 
+    async def bindings_for_entities(
+        self, workspace_id: UUID, entity_ids: tuple[UUID, ...]
+    ) -> tuple[IdentityBinding, ...]:
+        if not entity_ids:
+            return ()
+        rows = await self._session.execute(
+            select(IdentityBindingModel)
+            .where(
+                IdentityBindingModel.workspace_id == workspace_id,
+                IdentityBindingModel.entity_id.in_(entity_ids),
+                IdentityBindingModel.superseded_by.is_(None),
+            )
+            .order_by(IdentityBindingModel.provider, IdentityBindingModel.provider_external_id)
+        )
+        return tuple(_to_binding(row) for row in rows.scalars())
+
     async def decisions_for_entity(
         self, workspace_id: UUID, entity_id: UUID
     ) -> tuple[ResolutionDecision, ...]:

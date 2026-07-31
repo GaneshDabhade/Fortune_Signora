@@ -55,6 +55,19 @@ class GraphRepository(Protocol):
         self, workspace_id: UUID, entity_id: UUID
     ) -> tuple[IdentityBinding, ...]: ...
 
+    async def bindings_for_entities(
+        self, workspace_id: UUID, entity_ids: tuple[UUID, ...]
+    ) -> tuple[IdentityBinding, ...]:
+        """Live bindings for many entities at once.
+
+        The plural of `bindings_for_entity`, and the reason it exists is the
+        same reason the Buying Score Engine grew a plural read: naming a page
+        of fifty accounts one entity at a time is fifty round trips, and an
+        obvious N+1 is a defect at write time rather than a future
+        optimisation (CLAUDE.md §14).
+        """
+        ...
+
     async def decisions_for_entity(
         self, workspace_id: UUID, entity_id: UUID
     ) -> tuple[ResolutionDecision, ...]: ...

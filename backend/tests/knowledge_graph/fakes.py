@@ -87,6 +87,16 @@ class FakeGraphRepository:
             b for b in self.bindings if b.entity_id == entity_id and b.superseded_by is None
         )
 
+    async def bindings_for_entities(
+        self, workspace_id: UUID, entity_ids: tuple[UUID, ...]
+    ) -> tuple[IdentityBinding, ...]:
+        """The plural, built from the singular so the two cannot disagree
+        about which bindings are live."""
+        found: list[IdentityBinding] = []
+        for entity_id in entity_ids:
+            found.extend(await self.bindings_for_entity(workspace_id, entity_id))
+        return tuple(found)
+
     async def decisions_for_entity(
         self, workspace_id: UUID, entity_id: UUID
     ) -> tuple[ResolutionDecision, ...]:

@@ -10,7 +10,12 @@ be converted to a number or used in a weighted calculation; the type itself
 refuses both.
 """
 
-from modules.knowledge_graph.application.queries import ClaimSet, EntityEvidence, GraphQueries
+from modules.knowledge_graph.application.queries import (
+    AccountIdentity,
+    ClaimSet,
+    EntityEvidence,
+    GraphQueries,
+)
 from modules.knowledge_graph.domain.identity import (
     USES_TECHNOLOGY,
     Entity,
@@ -24,15 +29,18 @@ from modules.knowledge_graph.domain.identity import (
     ResolutionReason,
     ResolutionRule,
 )
+from modules.knowledge_graph.domain.naming import NameAgreement, SelectedName, select_name
 
 __all__ = [
     "USES_TECHNOLOGY",
+    "AccountIdentity",
     "ClaimSet",
     "Entity",
     "EntityEvidence",
     "EntityKind",
     "GraphQueries",
     "IdentityBinding",
+    "NameAgreement",
     "IdentityState",
     "MatchStrength",
     "Relationship",
@@ -40,4 +48,6 @@ __all__ = [
     "ResolutionOutcome",
     "ResolutionReason",
     "ResolutionRule",
+    "SelectedName",
+    "select_name",
 ]
