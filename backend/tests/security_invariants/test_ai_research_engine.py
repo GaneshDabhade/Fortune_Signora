@@ -42,6 +42,7 @@ from dataclasses import fields
 from pathlib import Path
 
 import pytest
+
 from modules.ai_platform.infrastructure.explanation import (
     BUYING_SCORE,
     CONTRIBUTION,

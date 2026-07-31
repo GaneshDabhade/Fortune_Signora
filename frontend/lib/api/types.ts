@@ -74,3 +74,23 @@ export interface AccountAttention {
   owner_id: string | null;
   opened_at: string;
 }
+
+/** Whether your sources agree on what an account is called. */
+export type NameAgreement = 'unknown' | 'single_source' | 'agreed' | 'disputed';
+
+/**
+ * Who an account is, and how sure Signora is about it.
+ *
+ * **Not a string.** An account's name is a `legal_name` claim from a provider
+ * at a time, and providers can disagree — so the identity carries the name it
+ * chose *and* whether anything else agreed. `name`, `source` and `observed_at`
+ * are null together when nobody has named the account.
+ */
+export interface AccountIdentity {
+  account_id: string;
+  name: string | null;
+  agreement: NameAgreement;
+  source_count: number;
+  source: string | null;
+  observed_at: string | null;
+}

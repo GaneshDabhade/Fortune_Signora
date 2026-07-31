@@ -22,6 +22,11 @@ export const queryKeys = {
 
   accounts: (workspaceId: string) => ['workspace', workspaceId, 'accounts'] as const,
 
+  /** Keyed by the *sorted* ids, so the same set of accounts is one cache entry
+   * however the caller happened to order them. */
+  identities: (workspaceId: string, accountIds: readonly string[]) =>
+    ['workspace', workspaceId, 'identities', [...accountIds].sort().join(',')] as const,
+
   /** The prefix every workspace-scoped key shares. Passing this to
    * `invalidateQueries` clears exactly one tenant's cached data. */
   workspaceScope: (workspaceId: string) => ['workspace', workspaceId] as const,

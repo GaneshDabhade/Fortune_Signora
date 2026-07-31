@@ -14,8 +14,8 @@
 |---|---|
 | **Last completed** | **M10 AI Research Engine** — T131–T138, closed 2026-07-31. *Internal Research; every citable thing deterministic.* |
 | **Inserted, and open** | **M9.5 Evidence Citation Protocol** (ADR-0031). Steps A–D landed; **Step F is incomplete** |
-| **Current** | **M12.1** — the account attention list. **The first customer-visible screen exists.** |
-| **Head at handoff** | `d954c93` |
+| **Current** | **M12.2** — Account Identity shipped; the account brief is next. **Two customer-facing endpoints and one screen.** |
+| **Head at handoff** | see `git log` — M12.2 identity slice |
 | **Latest certification** | [`d954c930`](../certification/reports/d954c930319a.md) — CERTIFIED, 2026-07-31 |
 | **Phase** | **Product implementation.** Ten pipeline stages built and frozen behind them; the surface is being exposed. |
 | **Overall completion** | **~60%** by engineering effort (~187 of ~261–339 ew) |
@@ -315,7 +315,11 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 
 ## 7 · Next session starting point
 
-### M12.2 — entity names before the account brief
+### M12.2 — names shipped; the brief is next
+
+**Read [docs/RUNNING.md](RUNNING.md) first** — it documents how to start the stack, seed data, sign in, and reach `/opportunities` without guessing.
+
+#### The original re-ordering, now done
 
 **The re-ordering is the decision to carry forward.** The roadmap had M12.2 as the account brief; M12.1 produced evidence to change the order.
 

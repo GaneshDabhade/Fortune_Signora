@@ -355,3 +355,136 @@ class TestARealAccountReachesTheWire:
         response = await _accounts(client, key_pair, first_user, second_workspace)
 
         assert response.status_code == 404
+
+
+class TestAccountIdentitiesAreResolvedNotStored:
+    """`GET /workspaces/{id}/account-identities` — who these accounts are.
+
+    An account's name is a `legal_name` claim, so naming one is a resolution
+    performed on every request. These assert the customer-visible half: the
+    endpoint is scoped, batched, validated, and honest about disagreement.
+    """
+
+    async def test_a_real_account_comes_back_named(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        response = await client.get(
+            f"/workspaces/{workspace_id}/account-identities",
+            params={"ids": [str(entity_id)]},
+            headers=_auth(key_pair, user_id),
+        )
+
+        assert response.status_code == 200, response.text
+        (identity,) = response.json()
+        assert UUID(identity["account_id"]) == entity_id
+        assert identity["name"], "the pipeline produced an account nothing can name"
+        assert identity["agreement"] in {"unknown", "single_source", "agreed", "disputed"}
+        assert identity["source_count"] >= 1
+
+    async def test_one_request_names_a_whole_page(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**Batched, because naming fifty rows one at a time is fifty round
+        trips.** The list endpoint and this one are joined by `account_id`."""
+        workspace_id, user_id, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        rows = (await _accounts(client, key_pair, user_id, workspace_id)).json()["items"]
+        ids = [row["account_id"] for row in rows]
+
+        response = await client.get(
+            f"/workspaces/{workspace_id}/account-identities",
+            params={"ids": ids},
+            headers=_auth(key_pair, user_id),
+        )
+
+        assert response.status_code == 200, response.text
+        assert {i["account_id"] for i in response.json()} == set(ids)
+
+    async def test_another_workspace_s_account_is_absent_rather_than_named(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**The tenancy boundary on the identity path.** Naming an account is
+        a read of another tenant's claims; asking for one by id must return
+        nothing rather than a name."""
+        mine_workspace, mine_user, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        _, _, theirs_entity, _ = await _tracked(
+            session_factory, admin_session_factory, "contoso"
+        )
+
+        response = await client.get(
+            f"/workspaces/{mine_workspace}/account-identities",
+            params={"ids": [str(theirs_entity)]},
+            headers=_auth(key_pair, mine_user),
+        )
+
+        assert response.status_code == 200
+        assert [i for i in response.json() if i["name"] is not None] == []
+
+    async def test_a_non_member_gets_404(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        workspace = await _workspace(client, key_pair, uuid4())
+
+        response = await client.get(
+            f"/workspaces/{workspace}/account-identities",
+            params={"ids": [str(uuid4())]},
+            headers=_auth(key_pair, uuid4()),
+        )
+
+        assert response.status_code == 404
+
+    async def test_asking_for_nothing_is_refused(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """A request naming no accounts is a mistake, not an empty answer."""
+        user = uuid4()
+        workspace = await _workspace(client, key_pair, user)
+
+        response = await client.get(
+            f"/workspaces/{workspace}/account-identities", headers=_auth(key_pair, user)
+        )
+
+        assert response.status_code == 422
+
+    async def test_asking_for_more_than_a_page_is_refused(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """Bounded by the same ceiling a page is: a request naming more
+        accounts than a page can hold is either a mistake or a scrape."""
+        user = uuid4()
+        workspace = await _workspace(client, key_pair, user)
+
+        response = await client.get(
+            f"/workspaces/{workspace}/account-identities",
+            params={"ids": [str(uuid4()) for _ in range(201)]},
+            headers=_auth(key_pair, user),
+        )
+
+        assert response.status_code == 422
+
+    async def test_every_field_is_documented(self, client: AsyncClient) -> None:
+        schema = (await client.get("/openapi.json")).json()
+        row = schema["components"]["schemas"]["AccountIdentityResponse"]["properties"]
+
+        undocumented = sorted(name for name, spec in row.items() if not spec.get("description"))
+
+        assert undocumented == []

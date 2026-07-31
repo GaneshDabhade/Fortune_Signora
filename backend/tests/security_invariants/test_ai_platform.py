@@ -591,3 +591,74 @@ class TestOneAuthorityDecidesWhatAModelSees:
         for block, fact in zip(blocks, evidence, strict=True):
             citation = block.splitlines()[0].split(" ")[0]
             assert EvidenceRef.parse(citation) == fact.ref
+
+
+class TestAnAccountsNameIsResolvedInExactlyOnePlace:
+    """**Naming an account is a truth-resolution, and it has one author.**
+
+    `Entity` deliberately stores no name — *"a `name` column here would be
+    truth-resolution in miniature, and it would immediately disagree with the
+    claims underneath it."* The decision therefore lives in `select_name`, and
+    these keep it there: a second place choosing between name claims is a second
+    answer to *"what is this company called"*, and the two would eventually
+    disagree on a customer's screen.
+    """
+
+    NAMING = BACKEND_ROOT / "modules" / "knowledge_graph" / "domain" / "naming.py"
+
+    def test_no_entity_type_grows_a_name_column(self) -> None:
+        """The property the read model exists to preserve. A stored display
+        name is a cached derivation that outlives the claims it came from."""
+        models = (BACKEND_ROOT / "modules" / "knowledge_graph" / "infrastructure" / "models.py")
+        tree = ast.parse(models.read_text())
+
+        entity = next(
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ClassDef) and node.name == "EntityModel"
+        )
+        columns = {
+            target.id
+            for node in entity.body
+            if isinstance(node, ast.AnnAssign) and isinstance(target := node.target, ast.Name)
+        }
+
+        for named in ("name", "legal_name", "display_name", "company_name"):
+            assert named not in columns, (
+                f"EntityModel grew a '{named}' column. An entity is an identity, not a "
+                "record; a stored name would immediately disagree with the claims beneath it."
+            )
+
+    def test_the_resolution_happens_in_exactly_one_place(self) -> None:
+        """One author for *"what is this company called"*.
+
+        **Narrowed from a broader rule that could not be stated correctly.**
+        The first attempt forbade `LEGAL_NAME` outside the resolver, and it
+        failed against six files that name the attribute for entirely
+        legitimate reasons — the vocabulary that defines it, the mapper that
+        produces it, the resolver that uses it as an identity *hint*. A guard
+        that cannot be expressed correctly should not be faked into passing
+        (CLAUDE.md §2, decorative logic), so this asserts the property that
+        *is* checkable: `select_name` is called from one place. A second caller
+        is a second surface deciding which name wins, and two surfaces
+        eventually disagree on a customer's screen.
+        """
+        callers = sorted(
+            path.relative_to(BACKEND_ROOT)
+            for path in (BACKEND_ROOT / "modules").rglob("*.py")
+            if "select_name(" in path.read_text() and path != self.NAMING
+        )
+
+        assert callers == [Path("modules/knowledge_graph/application/queries.py")], (
+            f"{callers} select a display name. Resolution belongs to one caller, so a future "
+            "precedence policy is one change rather than an archaeology exercise."
+        )
+
+    def test_the_resolver_ranks_no_provider(self) -> None:
+        """**Provider precedence is a customer policy** (D7), in the same
+        category as the scoring model and the opportunity policy. Encoding a
+        trust order here would put an unreviewed judgement in the substrate."""
+        source = self.NAMING.read_text()
+
+        for vendor in ("apollo", "builtwith", "clearbit", "zoominfo", "salesforce", "hubspot"):
+            assert vendor not in source, f"'{vendor}' is ranked inside the selection rule"

@@ -2,7 +2,12 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { AccountAttention, CursorPage, Workspace } from '@/lib/api/types';
+import type {
+  AccountAttention,
+  AccountIdentity,
+  CursorPage,
+  Workspace,
+} from '@/lib/api/types';
 import { apiRequest } from '@/lib/api/client';
 import { queryKeys } from '@/lib/query/keys';
 
@@ -48,6 +53,39 @@ export function useAccounts(workspaceId: string | null) {
         workspaceId: workspaceId ?? undefined,
       }),
     enabled: workspaceId !== null,
+  });
+}
+
+/**
+ * Names for a set of accounts, in one request.
+ *
+ * **A second request rather than a field on the list, and that is
+ * architectural.** No module may reach both workflow and entity names, so the
+ * two are composed here. Batched by design: naming fifty rows one at a time is
+ * fifty round trips.
+ *
+ * Returns a lookup rather than an array, because every caller joins it to rows
+ * it already has.
+ */
+export function useAccountIdentities(workspaceId: string | null, accountIds: string[]) {
+  const ids = [...new Set(accountIds)].sort();
+
+  return useQuery({
+    queryKey: queryKeys.identities(workspaceId ?? '', ids),
+    queryFn: async () => {
+      const query = ids.map((id) => `ids=${encodeURIComponent(id)}`).join('&');
+      const identities = await apiRequest<AccountIdentity[]>(
+        `/workspaces/${workspaceId}/account-identities?${query}`,
+        { workspaceId: workspaceId ?? undefined },
+      );
+      return new Map(identities.map((identity) => [identity.account_id, identity]));
+    },
+    // Nothing to ask about, so nothing is asked — an empty request would be a
+    // round trip whose answer is known.
+    enabled: workspaceId !== null && ids.length > 0,
+    // Names change far more slowly than scores. Holding them longer keeps a
+    // list from re-requesting identities that cannot have moved.
+    staleTime: 5 * 60_000,
   });
 }
 

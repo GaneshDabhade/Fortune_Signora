@@ -56,8 +56,8 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | — | **M9** | **AI Reasoning Engine — Decision Package** | ✅ **Complete** | **2026-07-31** |
 | — | **M10** | **AI Research Engine** *(Internal Research)* | ✅ **Complete** | **2026-07-31** |
 | — | **M9.5** | **Evidence Citation Protocol + Certification** *(ADR-0031/0032, unplanned)* | 🟠 **Open — Step F incomplete** | — |
-| 1 | **M12.1** | **Account attention list — first customer surface** | 🔵 **In progress** | — |
-| 2 | **M12.2** | **Account Identity, then the account brief** | ⏳ Next | — |
+| — | **M12.1** | **Account attention list — first customer surface** | ✅ **Complete** | **2026-07-31** |
+| 1 | **M12.2** | **Account Identity** ✅ · account brief ⏳ | 🔵 **In progress** | — |
 | 3 | M12.3 | Evidence resolution and workflow actions | ⏳ Queued | — |
 | 4 | M12.4 | Research on demand | ⏳ Queued | — |
 | — | M11 | Recommendation Engine | 🟣 **Deferred 2026-07-31** — *not cancelled*; resumes on a product trigger, see §10 | — |
@@ -116,14 +116,25 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | D | `research_planning@2` and `research_synthesis@2` — the workaround deleted, both **RELEASED** |
 | **F** | 🟠 **Incomplete.** `explanation_narration@1` re-released; **`reasoning@1` refused on every available model** |
 
-### ✅ M12.1 — in progress
+### ✅ M12.1 — complete
 
 | Step | Delivered |
 |---|---|
 | 1–2 | `attention_list` — the first workspace-wide read path; plural buying-score read; identity-keyed cursor |
 | 3 | `GET /workspaces/{id}/accounts` — router, schemas, authorization, 20 full-stack tests |
 | 5 | `/opportunities` — the first business screen, composed from the frozen design system |
-| 6 | ⏳ Performance review — not yet measured |
+| 6 | ⏳ Performance review — deferred to M12.3, where the row gains an affordance worth measuring |
+
+### 🔵 M12.2 — Account Identity shipped; the brief is next
+
+| Delivered | |
+|---|---|
+| **`AccountIdentity`** | A read model, not a string. `Entity` stores no name — naming an account is the truth-resolution the graph declined to make, so it happens once, at read time, in `select_name` |
+| **`GET …/account-identities`** | Batched; a page costs one request. Returns the name **and** whether sources agreed |
+| **`EntityName`** | The canonical way Signora renders a company. Agreement is invisible; **disputed names are marked** |
+| **Wired into the list** | Names resolve in a second request and rows do not wait for them |
+| **Tests** | 20 resolver · 7 endpoint · 10 component · 3 Security Invariants |
+| ⏳ **Next** | The account brief (J2) |
 
 ### ⏳ Next tasks
 

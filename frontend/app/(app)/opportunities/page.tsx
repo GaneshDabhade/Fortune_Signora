@@ -9,9 +9,10 @@ import {
   ScoreMovement,
   WhyNow,
 } from '@/components/intelligence/attention';
+import { EntityName } from '@/components/intelligence/entity-name';
 import { Card, CardBody, EmptyState, SkeletonText } from '@/components/ui';
-import type { AccountAttention } from '@/lib/api/types';
-import { useAccounts } from '@/lib/query/hooks';
+import type { AccountAttention, AccountIdentity } from '@/lib/api/types';
+import { useAccountIdentities, useAccounts } from '@/lib/query/hooks';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -36,6 +37,13 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 export default function OpportunitiesPage() {
   const { activeWorkspace } = useWorkspaceContext();
   const { data, isLoading, isError } = useAccounts(activeWorkspace?.id ?? null);
+  // Names arrive in a second request and the rows do not wait for them: the
+  // score and the reason are what a seller triages on, and blocking the list
+  // on a name would trade the decision for the label.
+  const { data: identities } = useAccountIdentities(
+    activeWorkspace?.id ?? null,
+    (data?.items ?? []).map((account) => account.account_id),
+  );
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6">
@@ -53,7 +61,7 @@ export default function OpportunitiesPage() {
         <ol className="flex flex-col gap-2">
           {data.items.map((account) => (
             <li key={account.id}>
-              <AccountRow account={account} />
+              <AccountRow account={account} identity={identities?.get(account.account_id)} />
             </li>
           ))}
         </ol>
@@ -70,7 +78,13 @@ export default function OpportunitiesPage() {
  * one, which is what progressive disclosure means on a list — **not a
  * collapsed panel, but information ordered so most of it is never read.**
  */
-function AccountRow({ account }: { account: AccountAttention }) {
+function AccountRow({
+  account,
+  identity,
+}: {
+  account: AccountAttention;
+  identity: AccountIdentity | undefined;
+}) {
   return (
     <Card>
       <CardBody className="flex items-center gap-4 py-3">
@@ -79,14 +93,8 @@ function AccountRow({ account }: { account: AccountAttention }) {
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="truncate font-medium text-content">
-            {/* The company name lives in the Knowledge Graph and has no
-                endpoint yet, so the account is named by its identifier
-                rather than by a placeholder that would read as a real name.
-                Resolving it is the first thing M12.2 does. */}
-            <span className="font-mono text-sm text-content-muted">
-              {account.account_id.slice(0, 8)}
-            </span>
+          <p className="truncate">
+            <EntityName identity={identity} fallbackId={account.account_id} />
           </p>
           <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1">
             <WhyNow trigger={account.trigger} />

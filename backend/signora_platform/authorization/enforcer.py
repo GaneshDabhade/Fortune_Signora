@@ -32,6 +32,10 @@ class Resource(StrEnum):
     #: it (§20a): a new member, no interface reshaped, no existing caller
     #: affected — the same category as registering a new event type.
     OPPORTUNITY = "opportunity"
+    #: Registered by M12.2 — an account is what a customer calls the company
+    #: an opportunity is about, and identities exist for accounts with no
+    #: opportunity at all, so it is a distinct resource rather than a reuse.
+    ACCOUNT = "account"
 
 
 class Action(StrEnum):

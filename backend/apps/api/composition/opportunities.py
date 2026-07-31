@@ -1,10 +1,4 @@
-"""Where the API wires modules together.
-
-**The composition boundary, and the only place that may see two modules'
-infrastructure at once.** A module's own composition root takes its
-neighbour's query surface as a *parameter* rather than constructing it —
-building one there would mean importing another module's infrastructure — so
-the assembling happens here, at the entry point, exactly as §6 requires.
+"""Composing the Opportunity Engine's read surface.
 
 ### The chain is six deep, and that is a finding rather than an accident
 
@@ -16,10 +10,10 @@ Reading a list of accounts needs `OpportunityQueries`, which needs
 
 Construction is cheap — these are objects holding a session, not queries — but
 the depth is worth recording rather than smoothing over: **the attention list
-uses exactly one method of the port it is handed** (`current_for`), and the
-five layers beneath exist to satisfy `explanation()`, which this path never
-calls. If a future read surface finds this shape genuinely costly, the
-measurement belongs in that finding, not in a speculative abstraction now.
+uses exactly one method of the port it is handed** (`current_for`), and the five
+layers beneath exist to satisfy `explanation()`, which this path never calls. If
+a future read surface finds this shape genuinely costly, the measurement belongs
+in that finding, not in a speculative abstraction now.
 """
 
 from typing import Annotated
@@ -53,8 +47,8 @@ def opportunity_queries(context: CurrentWorkspace) -> OpportunityQueries:
     """The account read surface, assembled for one request.
 
     Takes the **workspace-scoped** context, so RLS is already established and
-    the workspace identifier is one the caller was verified to be a member of
-    — never one they supplied.
+    the workspace identifier is one the caller was verified to be a member of —
+    never one they supplied.
     """
     session = context.session
     workspace_id = context.workspace_id

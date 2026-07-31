@@ -108,3 +108,43 @@ Recency ships as the selection rule: a company that renamed should display its n
 **D8 — the identity layer will want a name nobody claimed.**
 Some accounts will have no `LEGAL_NAME` claim at all. The row must then show something, and the honest something is the domain if one is bound, falling back to the identifier. Building a richer fallback chain — trading names, aliases, CRM display names — is speculative until a real dataset shows how often the simple one is insufficient.
 *Trigger:* measuring how many accounts in a real workspace have no name claim.
+
+
+---
+
+## Staff design review — the attention list with names *(M12.2)*
+
+Reviewed as though for Linear or Stripe. **What shipped is correct and it is not yet good.**
+
+### What works
+
+**The row is quiet.** One number, one sentence, a badge only when something is wrong. Most rows carry no badge at all, which is what makes the badge mean something.
+
+**The ⓘ on a disputed name is the product's thesis in one glyph** — a company name presented as a *claim* rather than a fact, with who said it a hover away. No competitor's list does this because no competitor's list could.
+
+### What does not, and belongs to later slices
+
+**D10 — the row has no shape.** Score, name, reason and badges sit on one horizontal line at one weight. A seller scanning fifty rows has no visual anchor: everything is equally loud, so nothing leads. Linear's issue row works because *one* element owns the line and the rest recede. **The name should be the anchor and currently competes with the score.**
+*Principle: reduce cognitive load; calm hierarchy.* **Deferred** — reshaping the row is a design pass, and doing it before the row can be clicked would tune a layout that is about to gain an affordance.
+
+**D11 — a hover title is not disclosure.** *"Your sources disagree"* is behind `title=`, which is invisible on touch, unreadable to keyboard users, and a 500ms delay away from anyone else. **The one genuinely novel interaction in the product is hidden in the weakest affordance the web has.** It wants a popover listing each provider and what it reported.
+*Principle: progressive disclosure; trust.* **Deferred** to M12.3, which builds the evidence-resolution surface a popover would belong to — building a bespoke one now would be a second disclosure pattern to unify later.
+
+**D12 — names arrive after the rows, and the shift is visible.** The identity request resolves second, so a row renders as `6b8efd21` and becomes `Northwind Traders`. Correct behaviour, poor experience: a list that rewrites itself under the reader's eye costs more confidence than the extra 80ms would have.
+*Principle: increase confidence.* **Deferred** — the fix is a skeleton on the name cell rather than blocking the list, and it belongs with D10's row pass.
+
+**D13 — there is nothing to *do*.** The screen answers *which accounts* and *why*, and then stops. A seller reads it and leaves. That is the largest gap in the product and it is exactly M12.3.
+
+### Reusable intelligence components — and one that has not earned it
+
+`EntityName` is the third component in `components/intelligence/`, after the attention set. All three are now used by one screen and designed for two.
+
+**`EntityCard`, `BuyingScoreBadge`, `ConfidenceIndicator`, `FreshnessIndicator`, `NarrativePreview`, `RecommendationSummary` are deliberately not built.** Each would have exactly one caller today, and a component with one caller is a function with extra ceremony. They earn their place when the account brief needs the same vocabulary the list already renders — **demonstrated reuse, not anticipated reuse**.
+
+### D9 — Product Playground
+
+A stable demo dataset behind `make demo` is the right idea: the golden set has **two structurally identical accounts**, and `28-ai-platform.md` records "variety 1" as the main caveat on every evaluation the repository holds. Realistic accounts would improve design review, stakeholder demos, and — more importantly — every prompt evaluation.
+
+**It must not be a parallel seeding system.** The Provider Simulation Framework already owns scenarios and was commissioned for ten *"deepening each milestone"*; one exists. A demo dataset belongs there, inheriting the seeded determinism, the fault injector and the provenance fields. Building a second seeder beside it would split all three across two owners — the mistake ADR-0032 declined to make with certification scenarios.
+
+**Its own slice**, and probably the highest-value non-UI work available: it unblocks D6 (grouping), makes D10's row pass reviewable against a real list, and widens the evidence base for every future prompt release.

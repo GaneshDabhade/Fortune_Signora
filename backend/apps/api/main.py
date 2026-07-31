@@ -16,6 +16,7 @@ from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
+from modules.knowledge_graph.interface.router import router as knowledge_graph_router
 from modules.opportunity_engine.interface.router import router as opportunity_router
 from modules.workspace_tenancy.infrastructure.composition import build_query_service
 from modules.workspace_tenancy.interface.errors import (
@@ -120,6 +121,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     register_exception_handlers(app, domain_errors=_error_mappings())
     app.include_router(workspace_tenancy_router)
     app.include_router(opportunity_router)
+    app.include_router(knowledge_graph_router)
 
     @app.get("/health", response_model=HealthResponse, tags=["operations"])
     async def health() -> HealthResponse:

@@ -21,7 +21,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query
 
-from apps.api.composition import OpportunityRead
+from apps.api.composition.opportunities import OpportunityRead
 from modules.opportunity_engine.interface.schemas import AccountAttentionResponse
 from signora_platform.api import CurrentWorkspace, CursorPage
 from signora_platform.authorization import Action, Resource
