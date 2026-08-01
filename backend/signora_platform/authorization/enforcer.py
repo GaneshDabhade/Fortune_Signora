@@ -42,6 +42,25 @@ class Resource(StrEnum):
     #: every member does daily, while changing what the company sells is an
     #: administrative act, and one resource could not express both.
     PRODUCT = "product"
+    #: Registered by M12.5 slice 2, on the same terms as `PRODUCT` — a *use*
+    #: of the platform rather than a change to it (§20a). Distinct from
+    #: `PRODUCT` because the two are separate aggregates: a workspace can
+    #: describe who buys a product without the right to change the catalog it
+    #: names, and one resource could not express that.
+    ICP = "icp"
+    #: Registered by M12.4, on the same terms again. Distinct from `ACCOUNT`:
+    #: reading an account is free and asking for research spends a model call,
+    #: and one resource could not express both without making every reader a
+    #: spender.
+    RESEARCH = "research"
+    #: Registered by M12.5 slice 3, on the same terms. Distinct from `ICP`
+    #: because the two are separate aggregates a customer edits on different
+    #: days — who a product is for, and who inside a company decides about it.
+    BUYING_COMMITTEE = "buying_committee"
+    #: Registered by M12.5 slice 4, on the same terms. Its own resource
+    #: because what a company is pushing this quarter is a different
+    #: administrative decision from what it sells or who buys it.
+    COMMERCIAL_FOCUS = "commercial_focus"
 
 
 class Action(StrEnum):

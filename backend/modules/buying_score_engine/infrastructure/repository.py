@@ -291,12 +291,23 @@ class SqlScoringModelRepository:
         self._session = session
 
     async def current(self, workspace_id: UUID) -> WorkspaceScoringModel | None:
+        """The scoring model in force: **the highest version.**
+
+        **Not `WHERE supersedes IS NULL`** (`B-001`). On an immutable table the
+        row with a null `supersedes` is the *first* version — the new row is
+        the one that names its predecessor — so that predicate returned
+        version 1 forever and silently ignored every revision a customer made.
+
+        Found by the repository-wide invariant written for `signal_profile`,
+        which is the argument for writing that one as a scan rather than a
+        per-table assertion: **the same shape was in three modules.**
+        """
         row = (
             await self._session.execute(
-                select(WorkspaceScoringModelModel).where(
-                    WorkspaceScoringModelModel.workspace_id == workspace_id,
-                    WorkspaceScoringModelModel.supersedes.is_(None),
-                )
+                select(WorkspaceScoringModelModel)
+                .where(WorkspaceScoringModelModel.workspace_id == workspace_id)
+                .order_by(WorkspaceScoringModelModel.version.desc())
+                .limit(1)
             )
         ).scalar_one_or_none()
         return _to_workspace_model(row) if row is not None else None

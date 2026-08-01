@@ -12,9 +12,12 @@ Run with:  ``arq apps.worker.main.WorkerSettings``
 import asyncio
 from typing import Any
 
+import httpx
 from arq.connections import RedisSettings
 
+from apps.worker import subscriptions
 from apps.worker.pools import POOLS, resolve_pool
+from modules.ai_platform.infrastructure.settings import AISettings
 from signora_platform.db import create_engine, create_session_factory
 from signora_platform.event_bus import (
     MAX_ATTEMPTS,
@@ -117,6 +120,24 @@ async def startup(ctx: dict[str, Any]) -> None:
     )
     ctx["pool"] = pool
 
+    # The runtime consumers resolve at call time. Importing `subscriptions`
+    # registered them; this is what makes them able to do any work, and it is
+    # deliberately the last thing startup does — a handler that ran against a
+    # half-built context would fail in a way nobody could read.
+    #
+    # One long-lived HTTP client: a connection per inference would spend more
+    # time in TLS setup than a model spends thinking. The timeout is generous
+    # because a research run is two calls against a model that may be local
+    # and slow, and a client timeout here would surface as a product failure
+    # rather than as a slow machine.
+    http = httpx.AsyncClient(timeout=300.0)
+    ctx["http"] = http
+    subscriptions.install(
+        subscriptions.WorkerRuntime(
+            session_factory=session_factory, http=http, ai=AISettings()
+        )
+    )
+
     logger.info(
         "worker started",
         extra={
@@ -136,6 +157,7 @@ async def shutdown(ctx: dict[str, Any]) -> None:
     cannot interrupt work in progress — which is what makes a rolling
     deploy lossless rather than merely fast.
     """
+    await ctx["http"].aclose()
     await ctx["engine"].dispose()
     logger.info("worker stopped", extra={"pool": ctx["pool"].name})
 

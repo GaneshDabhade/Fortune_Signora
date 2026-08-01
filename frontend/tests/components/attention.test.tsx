@@ -141,7 +141,13 @@ describe('badges appear only when they carry information', () => {
 
 describe('the row says what is happening, not that something happened', () => {
   it('names the hypothesis in the words the catalog owns', () => {
-    render(<Hypothesis signalType="active_evaluation" title="Active evaluation" />);
+    render(
+      <Hypothesis
+        signalType="active_evaluation"
+        posture="neutral"
+        title="Active evaluation"
+      />,
+    );
 
     expect(screen.getByText('Active evaluation')).toBeInTheDocument();
   });
@@ -151,7 +157,11 @@ describe('the row says what is happening, not that something happened', () => {
     // learn that this line is machine output — and this is the line the whole
     // row is read for.
     const { container } = render(
-      <Hypothesis signalType="expansion_opportunity" title={undefined} />,
+      <Hypothesis
+        signalType="expansion_opportunity"
+        posture="expansionary"
+        title={undefined}
+      />,
     );
 
     expect(container.textContent).not.toContain('expansion_opportunity');
@@ -162,7 +172,7 @@ describe('the row says what is happening, not that something happened', () => {
     // on it would trade the decision for the label; showing a placeholder
     // would put a shape on screen that then moves.
     const { container } = render(
-      <Hypothesis signalType="active_evaluation" title={undefined} />,
+      <Hypothesis signalType="active_evaluation" posture="neutral" title={undefined} />,
     );
 
     expect(container).toBeEmptyDOMElement();
@@ -171,16 +181,94 @@ describe('the row says what is happening, not that something happened', () => {
   it('says there is no reading when no score is live', () => {
     // The opportunity is still open and its justification has expired. That is
     // a real answer, and it is not the same as "we do not know".
-    render(<Hypothesis signalType={null} title={undefined} />);
+    render(<Hypothesis signalType={null} posture={null} title={undefined} />);
 
     expect(screen.getByText('No current reading')).toBeInTheDocument();
+  });
+
+  it('marks a contraction risk so it survives scanning', () => {
+    // **R9-03.** *Datadog · Contraction risk · 5* rendered identically to
+    // *Salesforce · New decision maker · 10*. The word was already there; a
+    // manager scanning twelve rows had to read twelve titles.
+    render(
+      <Hypothesis
+        signalType="contraction_risk"
+        posture="contractionary"
+        title="Contraction risk"
+      />,
+    );
+
+    expect(screen.getByText(/risk to existing revenue/i)).toBeInTheDocument();
+  });
+
+  it('leaves an expansion row exactly as it was', () => {
+    // Marking every posture would mark almost every row, and a badge on every
+    // row saying "everything is fine" trains people to stop reading badges.
+    render(
+      <Hypothesis
+        signalType="expansion_opportunity"
+        posture="expansionary"
+        title="Expansion opportunity"
+      />,
+    );
+
+    expect(screen.queryByText(/risk to existing revenue/i)).not.toBeInTheDocument();
+  });
+
+  it('does not rely on colour alone to say a row is a risk', () => {
+    // Colour as the only channel fails a colour-blind reader, and
+    // accessibility is a defect class rather than an enhancement (§20c).
+    const { container } = render(
+      <Hypothesis
+        signalType="contraction_risk"
+        posture="contractionary"
+        title="Contraction risk"
+      />,
+    );
+
+    expect(container.querySelector('svg')).not.toBeNull();
+  });
+
+  it('marks nothing when the posture is absent', () => {
+    // Posture and hypothesis are null together. A marked row with no
+    // hypothesis would be a claim with nothing behind it.
+    render(
+      <Hypothesis
+        signalType="contraction_risk"
+        posture={null}
+        title="Contraction risk"
+      />,
+    );
+
+    expect(screen.queryByText(/risk to existing revenue/i)).not.toBeInTheDocument();
+  });
+
+  it('maps no catalog key to a meaning of its own', () => {
+    // **The reason posture is on the wire.** A contraction key with an
+    // expansionary posture must render unmarked — proving the component reads
+    // the pipeline's judgement rather than pattern-matching the key.
+    render(
+      <Hypothesis
+        signalType="contraction_risk"
+        posture="expansionary"
+        title="Contraction risk"
+      />,
+    );
+
+    expect(screen.queryByText(/risk to existing revenue/i)).not.toBeInTheDocument();
   });
 
   it('holds no translation table of its own', async () => {
     // **A second vocabulary is wrong the moment the catalog changes, and
     // invisible when it does.** The proof is that a title the catalog has
     // never contained still renders verbatim.
-    render(<Hypothesis signalType="active_evaluation" title="Something Else Entirely" />);
+    render(
+      <Hypothesis
+        signalType="active_evaluation"
+        posture="neutral"
+        title="Something Else Entirely"
+      />,
+    );
 
     expect(screen.getByText('Something Else Entirely')).toBeInTheDocument();
   });

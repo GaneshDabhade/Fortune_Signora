@@ -10,8 +10,16 @@ from __future__ import annotations
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from modules.commercial_profile.application.declare_committee import (
+    DeclareBuyingCommittee,
+)
+from modules.commercial_profile.application.declare_focus import DeclareFocus
+from modules.commercial_profile.application.declare_icp import DeclareIcp
 from modules.commercial_profile.application.publish import PublishProductCatalog
 from modules.commercial_profile.infrastructure.repository import (
+    SqlBuyingCommitteeRepository,
+    SqlCommercialFocusRepository,
+    SqlIcpDeclarationRepository,
     SqlProductCatalogRepository,
 )
 
@@ -24,3 +32,39 @@ def build_catalogs(session: AsyncSession) -> SqlProductCatalogRepository:
 
 def build_publish_product_catalog(session: AsyncSession) -> PublishProductCatalog:
     return PublishProductCatalog(repository=SqlProductCatalogRepository(session))
+
+
+def build_icp_declarations(session: AsyncSession) -> SqlIcpDeclarationRepository:
+    return SqlIcpDeclarationRepository(session)
+
+
+def build_declare_icp(session: AsyncSession) -> DeclareIcp:
+    """**Two repositories, both this module's.** Describing who buys a product
+    requires knowing the workspace sells it, and both aggregates live in this
+    bounded context — no other module is read, and none could be."""
+    return DeclareIcp(
+        declarations=SqlIcpDeclarationRepository(session),
+        catalog=SqlProductCatalogRepository(session),
+    )
+
+
+def build_buying_committees(session: AsyncSession) -> SqlBuyingCommitteeRepository:
+    return SqlBuyingCommitteeRepository(session)
+
+
+def build_declare_buying_committee(session: AsyncSession) -> DeclareBuyingCommittee:
+    return DeclareBuyingCommittee(
+        committees=SqlBuyingCommitteeRepository(session),
+        catalog=SqlProductCatalogRepository(session),
+    )
+
+
+def build_focuses(session: AsyncSession) -> SqlCommercialFocusRepository:
+    return SqlCommercialFocusRepository(session)
+
+
+def build_declare_focus(session: AsyncSession) -> DeclareFocus:
+    return DeclareFocus(
+        focuses=SqlCommercialFocusRepository(session),
+        catalog=SqlProductCatalogRepository(session),
+    )

@@ -38,6 +38,20 @@ export const queryKeys = {
    * so one key per workspace is the whole cache surface. */
   products: (workspaceId: string) => ['workspace', workspaceId, 'products'] as const,
 
+  /** Lane B (Commercial Profile). Described whole and saved whole, like the
+   * catalog, and versioned separately from it. */
+  icp: (workspaceId: string) => ['workspace', workspaceId, 'icp'] as const,
+
+  /** Lane B (Commercial Profile). Versioned separately from the catalog and
+   * the ideal customer, so it is its own cache entry. */
+  buyingCommittee: (workspaceId: string) =>
+    ['workspace', workspaceId, 'buying-committee'] as const,
+
+  /** Lane B (Commercial Profile). The fastest-changing of the four, and
+   * versioned separately from all of them. */
+  commercialFocus: (workspaceId: string) =>
+    ['workspace', workspaceId, 'focus'] as const,
+
   signalCatalog: (workspaceId: string) =>
     ['workspace', workspaceId, 'signal-catalog'] as const,
 
@@ -48,6 +62,12 @@ export const queryKeys = {
    * however the caller happened to order them. */
   identities: (workspaceId: string, accountIds: readonly string[]) =>
     ['workspace', workspaceId, 'identities', [...accountIds].sort().join(',')] as const,
+
+  decidedAccounts: (workspaceId: string) =>
+    ['workspace', workspaceId, 'accounts', 'decided'] as const,
+
+  accountResearch: (workspaceId: string, accountId: string) =>
+    ['workspace', workspaceId, 'accounts', accountId, 'research'] as const,
 
   /** The prefix every workspace-scoped key shares. Passing this to
    * `invalidateQueries` clears exactly one tenant's cached data. */

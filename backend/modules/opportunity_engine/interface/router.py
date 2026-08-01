@@ -28,6 +28,7 @@ from modules.opportunity_engine.application.transition import TransitionOpportun
 from modules.opportunity_engine.interface.schemas import (
     AccountAttentionResponse,
     AccountOpportunityResponse,
+    DecidedAccountResponse,
     RecordDecisionRequest,
     WorkflowStateResponse,
 )
@@ -83,6 +84,53 @@ async def list_accounts(
     position = page.next_position
     return CursorPage(
         items=[AccountAttentionResponse.from_domain(t) for t in page.items],
+        next_cursor=encode_cursor(position) if position else None,
+        has_more=page.has_more,
+    )
+
+
+@router.get(
+    "/workspaces/{workspace_id}/accounts/decided",
+    response_model=CursorPage[DecidedAccountResponse],
+    summary="Accounts you have decided about, most recent first",
+)
+async def list_decided_accounts(
+    context: CurrentWorkspace,
+    queries: OpportunityRead,
+    limit: LimitParam = DEFAULT_PAGE_LIMIT,
+    cursor: CursorParam = None,
+) -> CursorPage[DecidedAccountResponse]:
+    """*"Wait — what did I just dismiss?"* (**R4-04**)
+
+    The other half of the workflow. The attention list is open work and
+    correctly leaves these out; without this they were **unreachable from
+    anywhere in the product** once a reader navigated away, which made
+    dismissal permanent in practice — and a rep who will not dismiss produces
+    no qualification-quality signal at all.
+
+    **Newest decision first**, unranked. There is nothing to rank: a reader
+    here is recalling something rather than choosing something, and applying
+    attention ordering to settled work would put the most commercially
+    interesting mistake at the top instead of the most recent one.
+
+    **No score is returned.** Re-litigating a judgement against a number that
+    moved after it was made is a different activity, and the account's own
+    brief — where reopening lives — is one click away for anybody who wants it.
+
+    The route is a literal segment under `accounts` rather than a query
+    parameter on the list above: they answer different questions, return
+    different shapes, and a flag that changed a response's fields would make
+    one client render two things.
+    """
+    context.authorize(Resource.OPPORTUNITY, Action.READ)
+    page = await queries.decided_list(
+        context.workspace_id,
+        after=decode_cursor(cursor) if cursor else None,
+        limit=limit,
+    )
+    position = page.next_position
+    return CursorPage(
+        items=[DecidedAccountResponse.from_domain(d) for d in page.items],
         next_cursor=encode_cursor(position) if position else None,
         has_more=page.has_more,
     )

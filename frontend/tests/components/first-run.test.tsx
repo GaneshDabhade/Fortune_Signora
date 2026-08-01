@@ -17,6 +17,7 @@ const workspaceContext = vi.hoisted(() => vi.fn());
 const accounts = vi.hoisted(() => vi.fn());
 const identities = vi.hoisted(() => vi.fn());
 const catalog = vi.hoisted(() => vi.fn());
+const decided = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/state/workspace-provider', () => ({
   useWorkspaceContext: workspaceContext,
@@ -26,6 +27,7 @@ vi.mock('@/lib/query/hooks', () => ({
   useAccounts: accounts,
   useAccountIdentities: identities,
   useSignalCatalog: catalog,
+  useDecidedAccounts: decided,
 }));
 
 import AttentionPage from '@/app/(app)/page';
@@ -43,6 +45,10 @@ beforeEach(() => {
   // made every branch fall through.
   accounts.mockReturnValue(IDLE);
   identities.mockReturnValue(IDLE);
+  // A reader with no organization has decided about nothing, and the section
+  // renders nothing for an empty page — which is what keeps this screen's
+  // assertion (*a heading and nothing else is a bug*) meaningful.
+  decided.mockReturnValue(IDLE);
   catalog.mockReturnValue(IDLE);
 });
 

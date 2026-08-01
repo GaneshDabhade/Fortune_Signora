@@ -51,7 +51,7 @@ export function EvidenceDrawer({
       title={data ? data.summary : 'The evidence behind this'}
       description={
         data
-          ? `Reported by ${describeProviders(data.corroborating_providers)} · ${formatDay(data.occurred_at)}`
+          ? `${describeProviders(data.corroborating_providers)} · ${formatDay(data.occurred_at)}`
           : undefined
       }
     >
@@ -144,11 +144,27 @@ function Movement({ observation }: { observation: EvidenceObservation }) {
  * different claims**, and the second is the stronger one. Naming them rather
  * than counting them lets a reader who distrusts one source see when it is the
  * one talking.
+ *
+ * ### Absence is stated, not implied (R3-01)
+ *
+ * Fifteen of sixteen events in the Playground have one provider. Every one of
+ * them read *"Reported by coresignal"*, and **a reader who sees that four times
+ * stops reading the line** — then misses it on the account where two sources
+ * agree, which is the only place it was doing any work.
+ *
+ * So the single-source case says **"Only coresignal has reported this"**. The
+ * corroborated case is unchanged, and **nothing is marked**: the contrast does
+ * the work, which is what makes it survive somebody skimming. A badge on the
+ * rare case would be a second vocabulary for a distinction the sentence already
+ * carries.
  */
 function describeProviders(providers: string[]): string {
-  if (providers.length === 0) return 'no provider on record';
-  if (providers.length === 1) return providers[0]!;
-  return `${providers.slice(0, -1).join(', ')} and ${providers.at(-1)}`;
+  if (providers.length === 0) return 'No provider on record';
+  // Not "Reported by X". The point of the line is corroboration, and a
+  // sentence that reads identically whether or not there is any cannot be
+  // reporting on it.
+  if (providers.length === 1) return `Only ${providers[0]!} has reported this`;
+  return `Reported by ${providers.slice(0, -1).join(', ')} and ${providers.at(-1)}`;
 }
 
 /** `employee_count` → `employee count`. The wire carries the pipeline's key;

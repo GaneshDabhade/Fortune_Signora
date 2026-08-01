@@ -7,8 +7,21 @@ about the customer's own declaration and they are entitled to the reason.
 
 from fastapi import status
 
+from modules.commercial_profile.application.declare_committee import (
+    CommitteeVersionConflictError,
+)
+from modules.commercial_profile.application.declare_focus import FocusVersionConflictError
+from modules.commercial_profile.application.declare_icp import IcpVersionConflictError
+from modules.commercial_profile.application.declaring import (
+    CommitteeUnknownProductError,
+    FocusUnknownProductError,
+    IcpUnknownProductError,
+)
 from modules.commercial_profile.application.publish import CatalogVersionConflictError
-from modules.commercial_profile.domain.catalog import CommercialProfileError
+from modules.commercial_profile.domain.committee import BuyingCommitteeError
+from modules.commercial_profile.domain.declaration import CommercialProfileError
+from modules.commercial_profile.domain.focus import CommercialFocusError
+from modules.commercial_profile.domain.icp import IcpError
 from signora_platform.api import ErrorMapping
 
 ERROR_MAPPING: ErrorMapping = {
@@ -17,10 +30,46 @@ ERROR_MAPPING: ErrorMapping = {
     # only useful response is to say so and let this caller reload rather
     # than overwrite work they have not seen.
     CatalogVersionConflictError: (status.HTTP_409_CONFLICT, "catalog_version_conflict"),
+    # The same reasoning, and a **distinct code** rather than a shared one:
+    # the two refusals send the reader to different pages, and a client that
+    # cannot tell them apart can only say "something changed".
+    IcpVersionConflictError: (status.HTTP_409_CONFLICT, "icp_version_conflict"),
+    # Its own code because it is the only refusal here a caller fixes
+    # somewhere else — in the catalog, not on the page they are looking at.
+    IcpUnknownProductError: (
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "icp_unknown_product",
+    ),
+    CommitteeVersionConflictError: (
+        status.HTTP_409_CONFLICT,
+        "committee_version_conflict",
+    ),
+    # **One condition, three codes by slice 4**, and deliberately not one
+    # neutral `unknown_product`: renaming a shipped code is outside this
+    # lane's budget, and each code names the page the reader fixes it on.
+    # The consolidation is raised for the product owner rather than taken.
+    CommitteeUnknownProductError: (
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "committee_unknown_product",
+    ),
+    FocusVersionConflictError: (status.HTTP_409_CONFLICT, "focus_version_conflict"),
+    FocusUnknownProductError: (
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "focus_unknown_product",
+    ),
+    # Everything the ideal customer refuses: a description with no criteria, a
+    # size range whose floor is above its ceiling, the same industry twice.
+    IcpError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "icp_refused"),
+    # Everything the committee refuses: an empty one, two roles sharing a
+    # title, a role with no title.
+    BuyingCommitteeError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "committee_refused"),
+    # A duplicated product in the focus, or an objective past its limit.
+    CommercialFocusError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "focus_refused"),
     # Everything the domain refuses: an unnamed product, two products sharing
-    # a name, the same product listed twice. Registered after the row above
-    # and never shadowing it — handler lookup walks the exception's MRO, so
-    # the derived type still wins for its own instances.
+    # a name, an ideal customer with no criteria, a size range whose floor is
+    # above its ceiling. Registered after the rows above and never shadowing
+    # them — handler lookup walks the exception's MRO, so a derived type still
+    # wins for its own instances.
     CommercialProfileError: (
         status.HTTP_422_UNPROCESSABLE_CONTENT,
         "catalog_refused",

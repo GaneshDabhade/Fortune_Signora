@@ -32,24 +32,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Final
 from uuid import UUID
 
-EMPTY_CATALOG_VERSION: Final = 0
-"""The version reported when a workspace has declared nothing.
-
-**Not a stored row.** A new workspace has no catalog, and answering with an
-empty one at version 0 means every caller gets the same shape whether or not
-anything has been declared — no `None` branch, no 404, and no seeding write
-that would tie this module to workspace creation.
-"""
+from modules.commercial_profile.domain.declaration import CommercialProfileError
 
 MAX_NAME = 128
 MAX_DESCRIPTION = 1024
-
-
-class CommercialProfileError(Exception):
-    """Something a customer declared cannot be recorded as stated."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,9 +62,7 @@ class Product:
         if not self.name.strip():
             raise CommercialProfileError("a product needs a name.")
         if len(self.name) > MAX_NAME:
-            raise CommercialProfileError(
-                f"a product name is limited to {MAX_NAME} characters."
-            )
+            raise CommercialProfileError(f"a product name is limited to {MAX_NAME} characters.")
         if len(self.description) > MAX_DESCRIPTION:
             raise CommercialProfileError(
                 f"a product description is limited to {MAX_DESCRIPTION} characters."

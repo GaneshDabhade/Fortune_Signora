@@ -478,7 +478,7 @@ Adopted, and it turned out to be more than terminology. `SignalTypeDefinition.de
 | `ProfileEntry.signal_type` typed as `SignalType` | A workspace-invented type, unrepresentable rather than discouraged |
 | Hedging-language invariant on every hypothesis | A type stating its hypothesis as a **fact**, which would mean it had drifted into the Business Event Engine's territory |
 | `ck_signal_relevance_is_held` | A stored signal of a type the workspace marked `IGNORED` |
-| `uq_signal_profile_current` | Two live interpretations for one workspace, which would make every signal generated during the overlap unexplainable |
+| ~~`uq_signal_profile_current`~~ → `uq_signal_profile_version` | Two live interpretations for one workspace, which would make every signal generated during the overlap unexplainable. **The row above is corrected, not rewritten** — see `B-001` below |
 | `signal_profile.created_by NOT NULL` | An unattributed configuration change — a commercial decision with no author |
 
 ### What the demonstration shows, including one honest limit
@@ -528,3 +528,108 @@ Two exclusions matter:
 - [x] PROJECT_STATUS and SESSION_HANDOFF updated at the boundary
 
 The two platform findings from M3A remain open and are **not** worked around: `EventHandler` receives no session, and `PublishableEvent` cannot be satisfied by a frozen dataclass. Both are queued as RFCs for the platform milestone.
+
+
+---
+
+## `supersedes IS NULL` was never currency — `B-001`, fixed 2026-08-01
+
+**The row above claimed a guard that could not fail.** `uq_signal_profile_current` was `UNIQUE (workspace_id) WHERE supersedes IS NULL`, and `SqlProfileRepository.current` read the same predicate.
+
+**On an immutable table that predicate selects the *first* version.** A revision is a new row *naming* its predecessor, so version 1 keeps the null pointer forever. Two consequences, and the second was invisible until somebody looked:
+
+1. **`current()` returned version 1 permanently.** Every revision a customer made would have been silently ignored, and every signal generated afterwards attributed to a profile nobody was using.
+2. **The index could not fail after the first write.** Two concurrent version-2 writes both carry `supersedes = <v1>`, neither is null, and both insert — the exact condition the table above said it prevented.
+
+**It never bit because nothing has ever written a second profile version.** There is no endpoint and no screen; every test writes v1. It becomes reachable the moment a customer can edit their relevance profile, which is why it was carried as 🟠-today/🔴-then rather than closed as theoretical.
+
+### The fix, and what it replaced the guard with
+
+`current()` reads `MAX(version)`. A maximum cannot invert. `product_catalog` (`0019`) and `research_request` (`0021`) already read currency this way; **this is the older code catching up with the newer, not a new idea.**
+
+The index is dropped (migration `0023`). `uq_signal_profile_version (workspace_id, version)` is what actually protects the invariant — it refuses a duplicate version at *every* version rather than only the first, so two concurrent revisions computing the same next number collide and one loses.
+
+**`supersedes` stays.** It is a true statement about lineage and historical explanation reads through it. It is simply not a currency marker, and an invariant now refuses any index that treats it as one.
+
+### The finding that made this worth more than one bug fix
+
+`B-001` was raised against `signal_profile`. The regression guard was written as a **repository-wide scan** — *no index anywhere may key currency on `supersedes IS NULL`* — rather than as an assertion about one table.
+
+**It failed immediately against two more:** `uq_scoring_model_current` (migration `0013`) and `uq_opportunity_policy_current` (`0014`), with the identical inverted `current()` reader behind each. All three are customer-authored configuration; all three are the same defect copied forward by a developer following the pattern in front of them.
+
+**A per-table assertion would have closed one bug and left two.** That is the argument, stated generally: when a defect is a *pattern*, the invariant that prevents its return should scan for the pattern, because the same reasoning that produced it once has usually produced it more than once.
+
+---
+
+# R2-02 and R3-01 — saying what the evidence cannot support *(2026-08-02, Lane A)*
+
+**Recorded before implementation.** Two findings, one argument, at two depths of the same screen.
+
+## Why this is the highest-value slice remaining
+
+**Every reachable journey is shipped.** J1 *which accounts*, J2 *why this one*, J3 *prove it*, J4 *act*, J5 *research* — M12.4 closed the last of them. What remains in M12 is refinement, and the question becomes which refinement a salesperson would notice.
+
+**R2-02 is the one that is about the thing Signora sells.** The limitations disclosure is the only place any competitor's product does not go:
+
+> *"No competitor tells a seller what their signal cannot prove. It is the most differentiating sentence on the screen and it is the smallest text on it, behind a click."*
+
+And the Sales Manager's reaction names both the value and the failure in one line: ***"This is the bit I'd want my reps to read, and it's the bit they'll never open."***
+
+**It is also the deterministic counterpart to what M12.4's real-model run found.** A research statement passed grounding while misreading its own evidence — *grounding guarantees provenance, not reasoning*. The catalog's limitations are the opposite kind of claim: **written by a domain expert, versioned, reviewed, identical for every account, and produced with no model at all.** Promoting the honest half of the page is worth more the day the inferred half is shown to be fallible.
+
+**R3-01 is the same sentence one click deeper**, and it was scheduled M12.4 and not built. Together they are one slice with one argument: *Signora says what it cannot support, at every depth a reader goes.*
+
+### What was considered and not chosen
+
+**The brief's hierarchy pass** — *"the brief reads as panels, not a story"*, four reviews old and made worse by M12.4's seventh panel. **Still the largest open design finding, and still not this slice**: it changes every section at once, and the ordering it needs is a product judgement that wants a seller in the room. D39 refused D20 for exactly that reason. **R2-02 is a piece of it done honestly** — it makes the most valuable panel more visible without inventing an order for the rest.
+
+**R9-04 / D5** — *what changed since you last looked*. Needs per-user read state, which is a real schema decision with an unfired trigger.
+
+**B-004** is Lane A's and stays deferred: the product owner directed that it belongs to the slice that builds the Provider Platform consumer, which is **blocked on Lane B's slice 5**. Fixing it now would ship a schema change nothing exercises.
+
+## The decisions
+
+### One limitation inline, the rest behind the disclosure
+
+The catalog **orders** them and the first is the strongest — *"investment ahead of growth says nothing about budget for **your** category"*, *"a funding round is not earmarked for any particular category"*. Showing the first is not showing an arbitrary one.
+
+**The original reasoning is not reversed, it is calibrated.** Twelve caveats across four hypotheses reads as a product that does not believe itself, and that is still true. One caveat per claim reads as a product that knows what its claim is worth — **the difference is not the volume, it is whether each caveat sits beside the thing it qualifies.**
+
+The disclosure keeps the rest and its count changes to *"2 more"*, because a trigger that still said *three* beside a limitation already on screen would be counting something the reader can see.
+
+**Styled as calibration, not as warning.** No icon, no tone, no border — the same muted prose the hypothesis itself uses. A limitation drawn as an alert would make Signora look unsure of a conclusion it is in fact sure of; what it is unsure of is precisely and only what the line says.
+
+### Absence of corroboration is stated, not implied
+
+Fifteen of sixteen business events read *"Reported by coresignal"*. **A reader who sees one provider four times stops reading the line**, and then misses it on the account where two sources agree.
+
+So the single-source case says **"Only coresignal has reported this"** and the corroborated case keeps *"Reported by coresignal and apollo"*. **Nothing is marked and no badge is added** — the contrast does the work, which is what makes it survive a reader who is skimming. A badge on the rare case would be a second vocabulary for a distinction the sentence already carries.
+
+## What this deliberately does not do
+
+**It does not caveat the score.** The limitations are properties of a *hypothesis type*, identical for every account; attaching one to the arithmetic would imply the arithmetic is uncertain, and it is not — it is a division a customer can repeat.
+
+**It does not add a confidence number.** A percentage here would be a judgement nobody reviewed, and the catalog deliberately holds sentences rather than scores for the same reason `Relevance` is a category.
+
+**It does not surface the catalog's own pending-review caveat.** `signals@1.json` says its limitations are *"engineering-authored pending domain review"*. That is true, it is a real finding, and it belongs to the people revising the catalog — **not on a seller's screen**, where it would undermine the sentence it qualifies without giving the reader anything to do about it.
+
+**Raised by promoting them:** these sentences now carry more weight than they did behind a click, which makes the pending domain review more valuable than it was this morning. Recorded rather than acted on — the catalog is a reviewed artifact and revising it is a domain expert's job, not a coding session's.
+
+## Measured against the seeded Playground
+
+**R3-01 said *"fifteen of sixteen events read `Reported by coresignal`"*. Across the twelve seeded accounts the real ratio is starker:**
+
+| Providers behind a business event | Events |
+|---|---|
+| **one** | **1,783** |
+| two | 17 |
+
+**Fewer than one event in a hundred is corroborated.** The old sentence was therefore identical on 99.06% of everything a reader could open — which is not a wording weakness, it is a line that **could not be read as information**, because nothing it said ever varied. R3-01 understated its own finding.
+
+It also settles the design question the finding left open. *"Say something when corroboration is absent"* sounds like adding noise to the common case; at this ratio it is the opposite: **the common case was the one carrying no signal, and stating it is what gives the rare case somewhere to stand out from.**
+
+### The finding underneath, which is not a code defect
+
+**Corroboration is nearly absent from the dataset, and that may be a property of the simulation rather than of the world.** Each provider in `playground@2` contributes different facts about a company — which is realistic for *coverage* and means two providers rarely describe the *same* phenomenon, so the corroboration path is exercised 17 times in 1,800.
+
+**D17 again — *the dataset, not the architecture, is the constraint*.** The pipeline computes corroboration correctly and the surface now reports it legibly; what neither can do is make a dataset produce agreement it does not contain. **Raised for whoever next extends the Playground**: a scenario in which two providers report the same headcount move, disagreeing on the number, would exercise the strongest thing the evidence drawer can say and currently exercises almost nothing. Not this lane's file (§20e) and not a defect — a demonstration gap, recorded so the next simulator change knows it is worth closing.

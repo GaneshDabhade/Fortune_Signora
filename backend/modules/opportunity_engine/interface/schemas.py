@@ -35,7 +35,9 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from modules.buying_score_engine.public import Posture
 from modules.opportunity_engine.application.queries import (
+    DecidedAccount,
     OpportunityBrief,
     TrackedOpportunity,
 )
@@ -152,6 +154,18 @@ class AccountAttentionResponse(BaseModel):
         )
     )
 
+    posture: Posture | None = Field(
+        description=(
+            "What the leading hypothesis implies commercially — expansionary, contractionary "
+            "or neutral. **Null exactly when `signal_type` is null**, since both come from the "
+            "live score. Sent so a client never has to map catalog keys to a commercial "
+            "meaning: that mapping is the Buying Score Engine's, and a copy here would be a "
+            "second vocabulary, wrong the moment the catalog gained a type. **Never a sign in "
+            "any arithmetic** — two accounts can score identically and mean opposite things, "
+            "which is the whole reason this is carried separately."
+        )
+    )
+
     evidence: EvidenceState = Field(
         description=(
             "How the intelligence behind this opportunity is holding up: current, cooling, "
@@ -186,6 +200,9 @@ class AccountAttentionResponse(BaseModel):
             trend=score.trend.value if score else None,
             score_change=score.delta if score else None,
             signal_type=leading.signal_type.value if leading else None,
+            # Computed on the line above and dropped until now — the same
+            # shape as `owner_id` in M12.2 and `signal_type` in M12.3.
+            posture=leading.posture if leading else None,
             contested=score.contested if score else False,
             evidence=tracked.evidence_state,
             stage=tracked.state.stage,
@@ -227,6 +244,53 @@ class WorkflowStateResponse(BaseModel):
             decided_by=state.actor_id,
             reason=state.reason,
             occurred_at=state.occurred_at,
+        )
+
+
+class DecidedAccountResponse(BaseModel):
+    """One account somebody finished with, and what they said about it.
+
+    **Four fields, and none of them is a score.** The attention row carries
+    seven because a seller is deciding what to work; nobody triages a list of
+    decisions. Putting a live score here would invite a reader to re-litigate a
+    judgement using a number that moved after they made it — and the account's
+    own brief is one click away for anybody who wants exactly that.
+
+    **`reason` is the customer's own words**, and this is the only place in the
+    product that shows them back. Every transition has required one since
+    M12.3; nothing has ever rendered one.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    account_id: UUID = Field(description="The account, so the row can open its brief.")
+    opportunity_id: UUID = Field(description="The workflow record the decision belongs to.")
+    stage: Stage = Field(
+        description=(
+            "What was decided. **`dismissed` and `closed_lost` are different answers** — one "
+            "says Signora should not have surfaced this account, the other says it was worth "
+            "pursuing and did not close. A client must not merge them."
+        )
+    )
+    reason: str = Field(description="Why, in the words the person typed.")
+    owner_id: UUID | None = Field(
+        description=(
+            "Who held it when the decision was made, or null if nobody had taken it. Compared "
+            "against the reader to say *yours* — the tier verifies tokens without learning "
+            "who anybody is, so it can never say a name (**D23**)."
+        )
+    )
+    decided_at: datetime = Field(description="When.")
+
+    @classmethod
+    def from_domain(cls, decided: DecidedAccount) -> "DecidedAccountResponse":
+        return cls(
+            account_id=decided.opportunity.entity_id,
+            opportunity_id=decided.opportunity.id,
+            stage=decided.state.stage,
+            reason=decided.state.reason,
+            owner_id=decided.state.owner_id,
+            decided_at=decided.state.occurred_at,
         )
 
 
@@ -349,6 +413,7 @@ class AccountOpportunityResponse(BaseModel):
 __all__ = [
     "AccountAttentionResponse",
     "AccountOpportunityResponse",
+    "DecidedAccountResponse",
     "RecordDecisionRequest",
     "WorkflowStateResponse",
 ]

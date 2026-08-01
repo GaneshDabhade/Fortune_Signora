@@ -79,6 +79,25 @@ class OpportunityRepository(Protocol):
         """
         ...
 
+    async def decided_page(
+        self, workspace_id: UUID, *, after: CursorPosition | None, limit: int
+    ) -> tuple[tuple[Opportunity, OpportunityState], ...]:
+        """One page of opportunities in a terminal stage (**R4-04**).
+
+        The half of the workflow the attention list correctly leaves out —
+        *"which accounts have I decided about?"* — and a distinct method rather
+        than a stage argument on `open_page` because the two differ in more
+        than a predicate: this one walks **newest first**, since a decided list
+        has no ranking to apply and the question is asked about the most recent
+        decision.
+
+        **Reachability is the point.** A dismissal that cannot be revisited is
+        permanent in practice, and a rep who will not dismiss produces no
+        qualification-quality signal at all — which is the one thing
+        `DISMISSED` exists to capture.
+        """
+        ...
+
     async def by_id(self, workspace_id: UUID, opportunity_id: UUID) -> Opportunity | None: ...
 
     async def current_state(

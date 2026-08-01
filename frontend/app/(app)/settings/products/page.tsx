@@ -1,9 +1,17 @@
 'use client';
 
+import { BuyingCommitteeEditor } from '@/components/commercial/committee';
+import { CommercialFocusEditor } from '@/components/commercial/focus';
+import { IcpEditor } from '@/components/commercial/icp';
 import { ProductCatalogEditor } from '@/components/commercial/products';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { SkeletonText } from '@/components/ui';
-import { useProductCatalog } from '@/lib/query/hooks/commercial';
+import {
+  useBuyingCommittee,
+  useCommercialFocus,
+  useIcpDeclaration,
+  useProductCatalog,
+} from '@/lib/query/hooks/commercial';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -25,6 +33,9 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 export default function ProductsPage() {
   const { activeWorkspace, isLoading: workspacesLoading } = useWorkspaceContext();
   const { data, isLoading, isError } = useProductCatalog(activeWorkspace?.id ?? null);
+  const icp = useIcpDeclaration(activeWorkspace?.id ?? null);
+  const committee = useBuyingCommittee(activeWorkspace?.id ?? null);
+  const focus = useCommercialFocus(activeWorkspace?.id ?? null);
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
@@ -38,15 +49,60 @@ export default function ProductsPage() {
 
       {!workspacesLoading && activeWorkspace === null ? <NoWorkspace /> : null}
       {isLoading ? <SkeletonText lines={4} /> : null}
-      {isError ? (
-        <p className="text-sm leading-6 text-content-muted">
-          Your products could not be loaded. That is a fault in Signora, not a missing
-          catalog — nothing you have declared has been lost.
-        </p>
-      ) : null}
+      {isError ? <CouldNotLoad what="products" /> : null}
+      {/* **B-006.** Each section reports its own failure. Rendering a section
+          only when its data arrives, and explaining only the catalog's error,
+          made an outage indistinguishable from a feature the customer does not
+          have — the same shape of defect as D36, where every branch on a page
+          tested a falsy value and nothing rendered at all. */}
+      {icp.isError ? <CouldNotLoad what="ideal customer" /> : null}
+      {committee.isError ? <CouldNotLoad what="buying committee" /> : null}
+      {focus.isError ? <CouldNotLoad what="focus" /> : null}
       {data ? (
         <ProductCatalogEditor catalog={data} workspaceId={activeWorkspace?.id ?? null} />
       ) : null}
+      {/* The ideal customer reads the catalog, so it renders once both have
+          arrived. Two queries rather than one endpoint returning both: they
+          are versioned separately, and a screen that fetched them together
+          would be the first place they looked like one thing. */}
+      {data && icp.data ? (
+        <IcpEditor
+          catalog={data}
+          declaration={icp.data}
+          workspaceId={activeWorkspace?.id ?? null}
+        />
+      ) : null}
+      {data && committee.data ? (
+        <BuyingCommitteeEditor
+          catalog={data}
+          declaration={committee.data}
+          workspaceId={activeWorkspace?.id ?? null}
+        />
+      ) : null}
+      {data && focus.data ? (
+        <CommercialFocusEditor
+          catalog={data}
+          focus={focus.data}
+          workspaceId={activeWorkspace?.id ?? null}
+        />
+      ) : null}
     </div>
+  );
+}
+
+/**
+ * A section that could not be loaded.
+ *
+ * **The wording is the point.** A customer who cannot see their ideal customer
+ * needs to know that Signora failed rather than that they never declared one —
+ * and that nothing they wrote has been lost. Page-local rather than shared:
+ * one page has four of them, and no other page has any.
+ */
+function CouldNotLoad({ what }: { what: string }) {
+  return (
+    <p className="text-sm leading-6 text-content-muted">
+      Your {what} could not be loaded. That is a fault in Signora, not a missing
+      declaration — nothing you have declared has been lost.
+    </p>
   );
 }

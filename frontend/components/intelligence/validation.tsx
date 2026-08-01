@@ -22,7 +22,7 @@ import { cn } from '@/lib/design/cn';
  * inferred; this is neither, which is why it can be shown with no model and no
  * caveat about confidence.
  *
- * ### Why the limitations are collapsed and the checks are not
+ * ### Why one limitation is inline and the rest are not
  *
  * A seller reading this has already decided the account matters and is about to
  * spend an hour on it. **The checks are what they act on; the limitations are
@@ -31,9 +31,15 @@ import { cn } from '@/lib/design/cn';
  * pieces of hedging, and a screen that hedges twelve times reads as a product
  * that does not believe itself.
  *
- * So the checks are open and the caveats are one disclosure away — present,
- * findable, in the accessibility tree whether open or not, and never the first
- * thing read.
+ * **All twelve were collapsed until R2-02, and that went one step too far.**
+ * *"This is the bit I'd want my reps to read, and it's the bit they'll never
+ * open."* No competitor tells a seller what their signal cannot prove — it was
+ * the most differentiating sentence on the screen and the smallest text on it.
+ *
+ * **The original reasoning is calibrated rather than reversed.** The first
+ * limitation is inline, the rest are one disclosure away. The difference
+ * between calibration and hedging is not the volume — it is whether each
+ * caveat sits beside the single claim it qualifies.
  *
  * ### Why the checks are not checkboxes
  *
@@ -106,24 +112,70 @@ function Relevance({ relevance }: { relevance: HypothesisValidation['relevance']
 /**
  * What this hypothesis cannot establish.
  *
- * **A real disclosure, not a tooltip**, on the same terms as the disputed-name
- * marker: focusable, `aria-expanded`, and rendered `sr-only` rather than
- * `hidden` when closed so the content is in the accessibility tree and findable
- * by browser search either way.
+ * **The first is on the page** (R2-02). The catalog orders them and the first
+ * is the strongest — *"investment ahead of growth says nothing about budget for
+ * **your** category"* — so showing one is not showing an arbitrary one.
  *
- * The count is on the trigger because *"three things this cannot tell you"* is
- * itself information — it sets the reader's expectation before they spend the
- * click.
+ * **Styled as calibration, not as warning.** No icon, no tone, no border: the
+ * same muted prose the hypothesis itself uses. A limitation drawn as an alert
+ * would make Signora look unsure of a conclusion it is in fact sure of. What it
+ * is unsure of is precisely and only what the sentence says.
+ *
+ * The rest stay behind **a real disclosure, not a tooltip**, on the same terms
+ * as the disputed-name marker: focusable, `aria-expanded`, and rendered
+ * `sr-only` rather than `hidden` when closed, so the content is in the
+ * accessibility tree and findable by browser search either way.
+ *
+ * The trigger counts what is still hidden — *"2 more"* rather than *"3"* —
+ * because a count that included the sentence already on screen would be
+ * counting something the reader can see.
  */
 function Limitations({ limitations, title }: { limitations: string[]; title: string }) {
   const detailId = useId();
   const [open, setOpen] = useState(false);
 
+  const [first, ...rest] = limitations;
+
+  if (first === undefined) return null;
+
   return (
     <div className="flex flex-col gap-1.5 border-t border-border pt-2.5">
+      <p className="text-xs leading-5 text-content-muted">
+        <span className="text-content-subtle">What this cannot tell you: </span>
+        {first}
+      </p>
+
+      {rest.length === 0 ? null : (
+        <LimitationsDisclosure
+          rest={rest}
+          title={title}
+          open={open}
+          onToggle={() => setOpen((was) => !was)}
+          detailId={detailId}
+        />
+      )}
+    </div>
+  );
+}
+
+function LimitationsDisclosure({
+  rest,
+  title,
+  open,
+  onToggle,
+  detailId,
+}: {
+  rest: string[];
+  title: string;
+  open: boolean;
+  onToggle: () => void;
+  detailId: string;
+}) {
+  return (
+    <>
       <button
         type="button"
-        onClick={() => setOpen((was) => !was)}
+        onClick={onToggle}
         aria-expanded={open}
         aria-controls={detailId}
         className={cn(
@@ -136,19 +188,20 @@ function Limitations({ limitations, title }: { limitations: string[]; title: str
           aria-hidden
           className={cn('h-3.5 w-3.5 transition-transform', open && 'rotate-90')}
         />
-        What {title} cannot tell you ({limitations.length})
+        {rest.length} more {rest.length === 1 ? 'thing' : 'things'} {title} cannot tell
+        you
       </button>
 
       <ul
         id={detailId}
         className={cn('flex flex-col gap-1.5 pl-4.5', open ? 'block' : 'sr-only')}
       >
-        {limitations.map((limitation) => (
+        {rest.map((limitation) => (
           <li key={limitation} className="text-xs leading-5 text-content-muted">
             {limitation}
           </li>
         ))}
       </ul>
-    </div>
+    </>
   );
 }

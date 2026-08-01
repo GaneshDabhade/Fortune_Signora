@@ -1,0 +1,339 @@
+# Lane coordination register
+
+> **The single place to answer *"what am I waiting on?"*** — created 2026-08-01 on the product owner's direction, before a fourth lane makes the question expensive.
+>
+> **Why now rather than later.** With two or three lanes, coordination happens in conversation and in commit messages. With five or six it does not: a question raised inside an implementation report is invisible to everybody who did not read that report, and the lane that could answer it in thirty seconds never learns it was asked. This is the smallest artifact that fixes that, and it is deliberately not a workflow.
+
+## What this is, and what it is not
+
+| It is | It is not |
+|---|---|
+| A register of **decisions one lane needs from somewhere else** before it can safely continue | **A bug tracker** — that is [`BUGS.md`](BUGS.md). A defect has an owner and a fix; a coordination item has a *question* and an answer |
+| A place to record **contracts being negotiated between lanes** | **A roadmap** — that is `IMPLEMENTATION_ROADMAP.md` and `PRODUCT_ROADMAP.md`. Nothing here schedules anything |
+| The record of **why a lane stopped** | A design document. The design lives in the module's own doc; this holds the question and the answer |
+
+**A coordination item exists because implementation cannot safely continue without an answer.** If work can proceed under a stated assumption, it is a finding for the module's design document, not an item here.
+
+## How it works
+
+**Any lane may open an item.** The **named owner** answers it. The **requesting lane** moves it to `IMPLEMENTING` and then `CLOSED`, because only the requester knows whether the answer was sufficient.
+
+**An answer is not a conversation — it is a decision with a home.** Every `ANSWERED` item names the commit, ADR or document that carries it, so the answer outlives the exchange that produced it.
+
+| Status | Meaning |
+|---|---|
+| `OPEN` | Raised. The owner has not yet seen it |
+| `WAITING` | The owner has it, and the requesting lane is blocked |
+| `ANSWERED` | Decided, with the commit or ADR named. Implementation may begin |
+| `IMPLEMENTING` | The requesting lane is building against the answer |
+| `CLOSED` | Built and merged, or withdrawn with a reason |
+
+**Ids are `C-nnn`, allocated sequentially and never reused.**
+
+**A lane reads this before starting a slice**, alongside [`BUGS.md`](BUGS.md) and [`RUNNING.md`](RUNNING.md).
+
+---
+
+## What is waiting
+
+| Id | What | Requester | Owner | Status | Blocks |
+|---|---|---|---|---|---|
+| [C-001](#c-001--the-target-account-contract) | The target-account contract — this module's first edge | Lane B | **Lane A** | `ANSWERED` → **[ADR-0036](architecture/adr/0036-target-account-contract.md)** | **Nothing. Slice 5 may begin.** `CLOSED` when both lanes have built it |
+| [C-002](#c-002--customer-language-has-no-anticorruption-layer) | Customer language has no anticorruption layer | Lane B | **Product owner** (ADR) | `OPEN` | Anything that matches an account against an ICP |
+| [C-003](#c-003--three-wire-codes-for-one-condition) | Three wire codes for one condition | Lane B | **Product owner** | `OPEN` | Nothing — but it grows every slice |
+| [C-004](#c-004--shared-documents-lag-commercial-profile) | Shared documents lag Commercial Profile | Lane B | **Integrator** | `OPEN` | Nothing today; a cold session reads a stale manifest |
+| [C-005](#c-005--who-owns-the-signal-profile-write-path) | Who owns the signal-profile write path | Lane B | **Product owner** / Lane A | `ANSWERED` — ownership. **Sequencing still the product owner's** | The first customer-editable relevance profile |
+| [C-006](#c-006--which-lane-owns-test_api_modulepy) | Which lane owns `test_api_<module>.py` | Lane B | **Product owner** | `OPEN` | Nothing — a standing ambiguity in §20e |
+| [C-007](#c-007--the-guided-first-run-is-a-two-lane-build) | The guided first run is a two-lane build | Lane B | Lane A + **product owner** | `ANSWERED` — routing and navigation. **Sequencing still the product owner's** | Sequencing after M12.5 slice 5 |
+| [C-008](#c-008--sellers-cannot-see-what-their-company-sells) | Sellers cannot see what their company sells | Lane B | **Product owner** + Integrator | `OPEN` | Nothing today. Every AE and SDR, every day |
+
+---
+
+## C-001 · The target-account contract
+
+| | |
+|---|---|
+| **Owner** | **Lane A** — Provider Platform |
+| **Requesting lane** | Lane B — Commercial Profile |
+| **Category** | Event contract · read-port ownership · **Customer–Supplier relationship** |
+| **Status** | `ANSWERED` — Lane A, `f6b6a41`. **Ratified as [ADR-0036](architecture/adr/0036-target-account-contract.md)**, 2026-08-02 |
+| **Blocks** | **Nothing. Lane B may begin slice 5** |
+| **Closes when** | Both lanes have implemented. Lane B publishes the event and the port; Lane A builds the consumer and fixes [`B-004`](BUGS.md) in the same slice |
+| **Raised** | `3931b3c`, at the close of slice 4 |
+
+**Why this is not a normal design decision.** Slice 5 introduces `commercial_profile → provider_platform` — **the first and only edge this module has ever had**, and the first time anything downstream consumes a customer's declaration. [05-module-dependencies.md](architecture/05-module-dependencies.md) types it **Customer–Supplier**, whose stated rule is that *the downstream lane's needs shape the contract*. Drawing it alone and asking afterwards would produce a contract shaped by the producer — which is the one failure this pattern exists to prevent.
+
+It also closes a gap open since M2.1: `RunProviderSync` has taken a `subject: str` for four milestones and **nothing has ever supplied one**.
+
+### Questions requiring answers
+
+| # | Question | Lane B's opening position |
+|---|---|---|
+| 1 | **Event or read port for the first delivery?** | The ADR says `commercial_profile.target_accounts_changed`. A `TargetAccountReader` on `public/` is also planned. Both can exist; which does Provider Platform actually consume first? |
+| 2 | **What does the event carry?** | **Identity and change only** — `workspace_id`, the declaration version, and that it changed. *Events carry identity; ports carry payload.* Embedding account names would make every future field an event-contract change |
+| 3 | **The list, or the delta?** | Lane B can publish either. A delta is more useful and less durable; the whole list is what the aggregate actually is |
+| 4 | **Does `subject` stay a `str`?** | Lane B declares a company **as the customer names it** — a name, unresolved, unmatched. If Provider Platform needs anything more (a domain, a country), it needs saying now, because Lane B will not resolve it |
+| 5 | **Removal semantics.** | A customer un-watching an account is a declaration, and Lane B records it. Whether polling stops, and what happens to what was already gathered, is **Provider Platform's** decision — Lane B will not model it |
+| 6 | **Scheduling and lifecycle ownership.** | **Not here.** No cadence, no polling policy, no cost, no provider selection enters Commercial Profile. Confirming this is the point of the question |
+| 7 | **Versioning expectations.** | The declaration is versioned and immutable like the other four. Does Provider Platform want the version in the event so it can ignore replays, or will it be idempotent on `event_id` alone? |
+
+> **The permanent decision now lives in [ADR-0036](architecture/adr/0036-target-account-contract.md)**, on the product owner's direction, together with four ownership boundaries ratified alongside it. **Read the ADR, not this section** — what follows is the working answer it was distilled from, kept until this item is `CLOSED` so the reasoning stays beside the question that produced it.
+
+### Resolution — Lane A, 2026-08-01
+
+**Answered by the module that owns the downstream side, question by question. Lane B's opening position is accepted on five of seven; two are answered differently, and one of those is because Provider Platform found a defect of its own while answering.**
+
+#### 1 · Event *and* read port — and they do different jobs
+
+**`commercial_profile.target_accounts_changed` is what Provider Platform consumes. `TargetAccountReader` is what its handler then calls.** Not a choice between them: the event is the *trigger*, the port is the *payload*, which is this repository's standing rule stated the other way round.
+
+The reason it is not a read port alone: a port makes Provider Platform *pull*, and pulling needs a trigger anyway. The only honest trigger is *"the customer changed their mind"*, and that is an event by definition.
+
+The reason it is not an event alone: see question 2.
+
+#### 2 · Identity and change only — **accepted, unchanged**
+
+`workspace_id` on the envelope, `declaration_version` in the payload, nothing about accounts. Lane B's reasoning is exactly right and needs no addition: embedding names would make every future field an event-contract change, and Provider Platform would be reading a copy of a truth that lives somewhere else.
+
+#### 3 · The whole list — **Lane B's second option, and for a third reason neither of us named**
+
+Lane B offered either. **Provider Platform wants the list**, and the deciding argument is not durability:
+
+**A delta from Lane B answers the wrong question.** It is a delta between two *declarations*. What Provider Platform needs is a delta against **what it has actually synced**, which is a different set — a customer can re-add an account that was declared before and never successfully fetched, and Lane B's delta would call that "no change". Provider Platform owns `provider_watermark` and can compute the only delta that matters.
+
+Also: a whole list is idempotent to apply and a delta is not, which matters on a bus with at-least-once delivery.
+
+#### 4 · `subject` stays a `str`, and stays **unresolved** — **accepted, and confirmed in the strongest terms**
+
+`ProviderRequest.subject` is documented as *"domain identifier of the subject (a company key, a domain name)"* and is **opaque to the platform, interpreted only by the adapter**. A name as the customer typed it is exactly what belongs there.
+
+**Provider Platform does not want a domain, a country, or anything else.** Asking Lane B for a domain would be asking a customer to do resolution, and resolution quality is Signora's competence, not the customer's (ruled 2026-08-01). If an unresolved name is a weak key for some provider, **that is the adapter's problem to solve and the Provider Platform's to own** — which is the whole reason `subject` is opaque.
+
+**One request, and it is small:** send the entry's **stable id** alongside the name. Not for matching — so that a customer *renaming* an entry is distinguishable from *removing one and adding another*, which are different instructions about spending money.
+
+#### 5 · Removal — **Provider Platform's decision, made here**
+
+**Polling stops.** A customer who un-watches an account has said not to spend on it, and continuing would be the platform overriding them.
+
+**Nothing already gathered is deleted.** Raw provider records are evidence, and the Knowledge Graph, observations, business events, signals, scores and every narration downstream cite them. Deleting them would erase the basis of conclusions a customer has already read and acted on. *Erasability is a property of the tenancy model* — it belongs to deleting a workspace, not to un-watching a company.
+
+**The watermark stays.** Re-adding an account then resumes incrementally instead of re-fetching a full snapshot, which is a real cost saving that requires nothing to be built.
+
+#### 6 · Scheduling and lifecycle are **entirely Provider Platform's** — confirmed
+
+No cadence, no polling policy, no cost model, no provider selection, no failover, no backoff enters Commercial Profile. This is not a boundary being negotiated; it is the 2026-08-01 provider ruling applied: **a customer declares who they care about and never how Signora finds out about them.**
+
+#### 7 · Send the version — and the reason is ordering, not replay
+
+Idempotency on `event_id` handles **redelivery**. It does not handle **ordering**: two declarations in quick succession are two workspace-level events, and per-entity ordering does not order them against each other. A handler for v5 running after v6's would sync a list that is one revision stale.
+
+So `declaration_version` on the payload, and Provider Platform will **ignore an event older than the version it has already acted on.** That is a comparison it can make locally with no coordination, and it is why the version has to be on the wire rather than only in the aggregate.
+
+---
+
+### What Lane A found while answering, and is not asking Lane B to solve
+
+**`provider_watermark` is keyed `(workspace_id, provider, capability)` — it has no `subject`.**
+
+One workspace watching one company is the only case that has ever existed, so nothing has noticed. The moment a customer declares a second target account, syncing the first advances a watermark the second then reads, and the second account's sync silently skips everything before that point. **A customer would see one account enriched and another mysteriously thin.**
+
+This is **Provider Platform's defect, not a contract problem**, and it does not block Lane B: it lives entirely on the consuming side, which Lane A has not built yet. Opened as **`B-004`** and owned by Lane A, to be fixed in the slice that builds the consumer.
+
+**Stated here rather than only in the bug register** because it is the sort of thing a downstream lane would reasonably assume was already handled, and C-001 exists precisely so that assumptions like that get said out loud.
+
+---
+
+### Lane B accepts the contract, and records what it changes
+
+*Added 2026-08-01 by Lane B, on reading the answer. Accepted in full, including both places Lane B was wrong.*
+
+**Where Lane B was wrong, and the reasoning is worth keeping.** The delta position (question 3) answered the wrong question: a delta between two *declarations* is not the delta that matters, because what Provider Platform must reconcile is the gap against **what it has actually synced** — and a customer can re-add an account declared long ago and never fetched. The whole list is also idempotent under at-least-once delivery and a delta is not. Lane B withdraws the position.
+
+**Three consequences for slice 5, recorded before any code exists:**
+
+1. **A target account entry needs a stable id** (question 4). Slice 3 deliberately gave `CommitteeRole` none, with the trigger recorded as *"the first consumer that needs to cite a particular seat"*. **That trigger has now fired for a different aggregate**, and for exactly the stated reason: without an id, a rename is indistinguishable from a remove-and-add, and those are different instructions about spending money. The entry follows `Product` — client-chosen id, stable across revisions.
+2. **`declaration_version` travels on the event** (question 7), and the reason is **ordering, not replay**. Lane B had assumed idempotency on `event_id` covered it; it does not order two workspace-level events against each other. This is a payload field Lane B would not have included on its own reasoning.
+3. **The event carries identity and change only** (question 2), and **`TargetAccountReader` on `public/` carries the payload** (question 1). Both, doing different jobs — the port would otherwise make Provider Platform pull, and pulling needs a trigger anyway.
+
+**Acknowledged and not acted on:** `B-004` is Provider Platform's, on the consuming side, and Lane B will not design around it. Saying it out loud is what stopped Lane B assuming it was handled.
+
+**This item is `ANSWERED`, not `CLOSED`, and closing it needs somebody else.** The contract is agreed but not yet *permanent*: its home is [`06-events.md`](architecture/06-events.md) (the event catalog) and the matrix row in [`05-module-dependencies.md`](architecture/05-module-dependencies.md), both 🔴 and outside both lanes' budgets. **Lane B will publish the event in slice 5 and record the contract in [40-commercial-profile.md](architecture/40-commercial-profile.md); the integrator folds it into `06` in the same merge.** Until that happens the catalog does not list an event the platform emits, which is the kind of untruth `CLAUDE.md` §2 names specifically.
+
+---
+
+## C-002 · Customer language has no anticorruption layer
+
+| | |
+|---|---|
+| **Owner** | **Product owner** — needs an ADR |
+| **Requesting lane** | Lane B |
+| **Category** | Architecture clarification · ADR requirement |
+| **Status** | `OPEN` |
+| **Blocks** | **Nothing in M12.5.** It must be answered before anything matches an account against an ICP |
+| **Raised** | `30e66d0` as F-B1; sharpened at `960b604` |
+
+Provider Normalization is an **anticorruption layer for vendor vocabulary** — it exists so provider models cannot leak inward, and it is the clearest ACL in the codebase. **Nothing plays that part for customer vocabulary.** A customer's *"United States"*, *"Fintech"*, *"mid-market"* must eventually meet a canonical claim, and the component that does that is unbuilt and unowned.
+
+[ADR-0035](architecture/adr/0035-commercial-profile.md) answers half of it: resolution *among disagreeing claims* is a Knowledge Graph slice. It does not answer *whose job it is to know that "Fintech" and the canonical industry value are the same thing.*
+
+**Question.** Three candidate homes, none chosen: the Knowledge Graph (it already resolves) · a new matching context (a distinct concern with a distinct failure mode) · a translation table owned by Commercial Profile — **which Lane B rejects**, because it would make the recording module resolve, and it is the module least equipped to review a resolution.
+
+---
+
+## C-003 · Three wire codes for one condition
+
+| | |
+|---|---|
+| **Owner** | **Product owner** |
+| **Requesting lane** | Lane B |
+| **Category** | API contract |
+| **Status** | `OPEN` |
+| **Blocks** | Nothing — **but it gets worse with every slice** |
+| **Raised** | `960b604` as F-B7 |
+
+`icp_unknown_product`, `committee_unknown_product`, `focus_unknown_product`: **one shared check, one shared message, three wire codes**, and slice 5 makes it four. A single neutral `unknown_product` is the right shape.
+
+**Question.** May Lane B rename them? Renaming a shipped code is ⚫ in the Change Budget, so Lane B will not take it unilaterally — even though every consumer is Lane B's own frontend, which reads the message rather than the code.
+
+---
+
+## C-004 · Shared documents lag Commercial Profile
+
+| | |
+|---|---|
+| **Owner** | **Integrator** |
+| **Requesting lane** | Lane B |
+| **Category** | Architecture documentation |
+| **Status** | `OPEN` |
+| **Blocks** | Nothing today. A cold session reads a manifest that is four rows out of date |
+| **Raised** | `30e66d0` as F-B3, growing each slice |
+
+`docs/architecture/01`–`21` are 🔴 and Lane B may not edit them. Accumulated, with the exact edits:
+
+- **[04-modules.md](architecture/04-modules.md), Commercial Profile manifest** → **Endpoints**: add `/workspaces/{id}/icp`, `/workspaces/{id}/buying-committee`, `/workspaces/{id}/focus`. **Tables**: add `icp_declaration`, `buying_committee`, `commercial_focus`.
+- **Same entry, *Owns*** → *business priorities* is built as **`CommercialFocus`**, deliberately not a ranking. The word `priority` invites an ordinal, and the module's own invariant refuses it.
+- **The Canonical Vocabulary Principle** ([40](architecture/40-commercial-profile.md#the-canonical-vocabulary-principle)) is written in the module doc because Lane B may not edit `04`. Its cross-module form belongs beside the provider-configuration ruling it extends.
+- **This register needs a pointer from [`README.md`](../README.md) §Parallel development, `CLAUDE.md` §20e, and the header of [`BUGS.md`](BUGS.md)** — or the lanes told to read it will not find it. Lane B has edited none of the three: the first two are outside its budget and the third is QE's prose.
+
+**No dependency edge has changed** in slices 1–4. Nothing new is imported, nothing published, the graph untouched.
+
+---
+
+## C-005 · Who owns the signal-profile write path
+
+| | |
+|---|---|
+| **Owner** | **Product owner** / Lane A |
+| **Requesting lane** | Lane B |
+| **Category** | Module ownership |
+| **Status** | `OPEN` |
+| **Blocks** | The first customer-editable relevance profile |
+| **Raised** | `3931b3c` as F-B6 |
+
+[B-001](BUGS.md) said the defect *"becomes reachable the moment a customer can edit their relevance profile, which is Lane B's territory but Lane A's module"* — a sentence containing an unresolved ownership question. The defect is fixed; the question is not.
+
+**Lane B's position: it is not Lane B's.** *"Funding rounds matter more to us than hiring"* is **signal relevance** — what Signora should treat as interesting — and the Signal Engine owns relevance by ratified principle. It is not a declaration about the customer's own commercial position, which is all Commercial Profile holds. The two are one careless sentence apart: *"we're pushing Revenue Cloud"* is slice 4; *"product-launch signals matter to us"* is not this module's, however customer-authored it looks.
+
+**Question.** Confirm the write path is Lane A's, in `signal_engine`, and schedule it there.
+
+### Resolution — Lane A, 2026-08-02
+
+**Confirmed. It is Lane A's, in `signal_engine`, and Lane B's reasoning is accepted without amendment.**
+
+It is now settled by a ratified boundary rather than by agreement between two lanes: **Signal Engine owns intelligence** ([ADR-0036 §1](architecture/adr/0036-target-account-contract.md)), and **relevance is intelligence**. The distinguishing test is the one Lane B wrote, and it is worth keeping:
+
+> *"We're pushing Revenue Cloud this quarter"* is a statement about the **customer's commercial position** — Commercial Profile, slice 4.
+> *"Product-launch signals matter to us"* is a statement about **how Signora should interpret evidence** — Signal Engine.
+
+Both are customer-authored, both are versioned, both are immutable, and **customer-authored is not the deciding property.** `signal_profile` has lived in `signal_engine` since M5A for exactly this reason, and moving it would put a module's interpretation rules outside the module that applies them.
+
+**Two things Lane A is bringing rather than promising.**
+
+**The defect that would have met the first customer is already fixed.** [`B-001`](BUGS.md) — `current()` returned version 1 forever, so the *first* revision anybody made would have been silently ignored — is closed in `c0bef97`, along with two more instances of the same pattern. Whoever ships the write path inherits a repository that reads currency correctly and an invariant that refuses the shape returning.
+
+**What remains is small.** The domain, the aggregate, the versioning, the immutability, the audit columns and the catalog constraint all exist. What does not: a `RevisSignalProfile` use case, an endpoint, and a screen.
+
+**What Lane A is not answering, because it is not an ownership question.** *Whether a customer should author relevance at all* is a product decision. There is a real argument that they should not — the catalog's defaults are reviewed by a domain expert, and a workspace that silences a signal type silences it invisibly for everybody in it. **Lane A will not schedule this until the product owner says it ships**, and the module being ours does not make the feature ours to decide.
+
+---
+
+## C-006 · Which lane owns `test_api_<module>.py`
+
+| | |
+|---|---|
+| **Owner** | **Product owner** |
+| **Requesting lane** | Lane B |
+| **Category** | Architecture clarification — `CLAUDE.md` §20e |
+| **Status** | `OPEN` |
+| **Blocks** | Nothing. A standing ambiguity every feature lane hits |
+| **Raised** | `30e66d0` as F-B5 |
+
+§20e gives QE `backend/tests/**` *except a module's own suite*. `tests/integration/test_api_<module>.py` tests exactly one module's endpoints while living in QE's directory. Slices 1–4 followed slice 1's precedent and put them there.
+
+**Proposed rule, for ratification:** *a file named `test_api_<module>.py` is that module's own suite regardless of directory; QE owns everything else in the tree, including every cross-module flow test.* That keeps two lanes' edits disjoint without moving files or splitting a suite mid-module.
+
+---
+
+## C-007 · The guided first run is a two-lane build
+
+| | |
+|---|---|
+| **Owner** | Lane A (routing and shell) + **product owner** (sequencing) |
+| **Requesting lane** | Lane B |
+| **Category** | Product decision · cross-lane build |
+| **Status** | `OPEN` |
+| **Blocks** | Nothing until M12.5 slice 5 is done |
+| **Raised** | `960b604`, assessed at the product owner's direction |
+
+The five declarations are **not settings** — they are the condition of the pipeline running at all, and the pipeline cannot run until a target account exists. Five optional-looking pages with no stated order and no end state is a completion-rate problem before it is a UX one. Full reasoning in [40-commercial-profile.md](architecture/40-commercial-profile.md#the-shape-of-the-customers-first-hour).
+
+**It needs no backend change**: a guided flow is a composition over existing reads and writes, and completeness is **derived** from the versions already returned, never stored.
+
+**Questions.** Does Lane A take the first-run route, composing Lane B's components? Is it scheduled after slice 5, as Lane B recommends — guiding a customer through steps that do not exist would demonstrate an incomplete thing well? And separately: *Your business* currently sits under **Settings**, which is Lane A's navigation call and is arguably wrong.
+
+### Resolution — Lane A, 2026-08-02
+
+**Yes, Lane A takes the route.** `frontend/app/(app)/` is Lane A's by the Change Budget, and a first run is a **composition over another lane's components** rather than a reimplementation of them — Lane A will import Lane B's declaration components and own only the sequence, the progress and the end state. Lane B keeps every form it has built; if the flow needs a component Lane B does not have, that is a request through this register rather than a copy in Lane A's tree.
+
+**Sequenced after slice 5, and Lane A agrees with Lane B's reason rather than merely accepting it.** Guiding somebody through four steps of five demonstrates an incomplete thing *well*, which is worse than demonstrating it plainly: the flow itself becomes the thing that looks finished. It also touches R6-05 — *nothing tells a new account what to do next* — which has been open since Review 6 and is the same gap seen from the other end.
+
+**Completeness is derived, never stored**, and Lane A commits to that here because it is the part a first-run flow most often gets wrong. Each declaration already returns a version; **version 0 means nothing has been declared.** A `first_run_completed` flag would be a second representation of a fact the aggregates already carry, and it would disagree the first time somebody deleted their last product.
+
+#### *Your business* under Settings — **it stays, and moving it would not fix what C-008 names**
+
+Lane A's call, and the answer is no change. [D38](38-product-design-principles.md) settled that navigation is **journeys, not data**, and reduced six entries to two by that rule. *Your business* is **authoring** — done once, revisited when something changes, and never part of a seller's morning. Settings is exactly where a thing like that belongs, and promoting it would put a page nobody opens daily beside the one page they open every day.
+
+**But C-008 is right, and it is a different fix.** *"Sellers cannot see what their company sells"* is not a symptom of the authoring page being in the wrong place — it is a symptom of **the declarations never reaching the surfaces where they would matter.** Which products an account is a fit for belongs on the **account brief**, beside the evidence; the buying committee belongs where contacts appear. Moving a settings entry into the sidebar would satisfy neither, and would leave the seller opening a configuration screen to answer a question they had while reading about an account.
+
+**Recorded so the two do not get merged**: C-007 is *how a customer gets started*; C-008 is *where their declarations show up afterwards*. They share an input and nothing else.
+
+---
+
+## C-008 · Sellers cannot see what their company sells
+
+| | |
+|---|---|
+| **Owner** | **Product owner** (the decision) + **Integrator** (the frozen foundation) |
+| **Requesting lane** | Lane B |
+| **Category** | Product decision · frontend foundation |
+| **Status** | `OPEN` |
+| **Blocks** | Nothing being built. It affects every AE and SDR, every day |
+| **Raised** | `80d9511`, in the slice-4 product review |
+
+**The API and the product disagree about who may read a commercial profile.** `policy.csv` deliberately grants **`member` read** on `product`, `icp`, `buying_committee` and `commercial_focus` — four separate decisions, each taken on the reasoning that *"every seller needs to see the catalog; changing it is the owner's"*. That read access is **unreachable**: the only screen showing any of it lives under `/settings/*`, which `GUARDED_ROUTES` restricts to `workspace:update` — owners.
+
+**So an AE working an account cannot see the ideal customer that account is supposed to match, or the buying committee they are supposed to be selling into.** The declarations exist to make selling explainable, and the people selling cannot read them.
+
+**Questions.**
+
+1. **Should sellers see the commercial profile?** Lane B's position: yes, read-only, and the API already says so.
+2. **If yes, where?** *Your business* is currently a settings page, and it is not a setting. A read-only surface for members might belong beside the account brief rather than under settings at all — which is Lane A's shell and routing.
+3. **Or should the API be narrowed instead?** The opposite resolution is legitimate and should be considered rather than assumed away: revoke `member` read on all four and make the profile genuinely administrative. Lane B thinks this is the weaker answer but it is a real option, and leaving the contradiction unresolved is the only wrong outcome.
+
+**Why Lane B has not simply fixed it.** `GUARDED_ROUTES` lives in `frontend/lib/state/permissions.ts` — frontend foundation, frozen under §20c — and the destination is Lane A's routing. Neither is Lane B's to change, and the underlying question is a product decision rather than a routing one.
+
+---
+
+## Closed
+
+*None yet.*

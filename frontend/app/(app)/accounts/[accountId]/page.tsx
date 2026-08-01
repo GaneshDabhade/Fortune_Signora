@@ -14,6 +14,7 @@ import {
 import { EntityName } from '@/components/intelligence/entity-name';
 import { EvidenceDrawer, useEvidenceDrawer } from '@/components/intelligence/evidence';
 import { NarrativeBlock } from '@/components/intelligence/narration';
+import { ResearchPanel } from '@/components/intelligence/research';
 import { AccountSequence } from '@/components/intelligence/sequence';
 import { ValidationBlock } from '@/components/intelligence/validation';
 import {
@@ -31,8 +32,10 @@ import {
   useAccountIdentities,
   useAccountNarration,
   useAccountOpportunity,
+  useAccountResearch,
   useAccountScore,
   useAccountValidation,
+  useRequestResearch,
 } from '@/lib/query/hooks';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
@@ -89,6 +92,8 @@ export default function AccountBriefPage() {
   const { data: opportunity } = useAccountOpportunity(workspaceId, accountId);
   const { data: narration } = useAccountNarration(workspaceId, accountId);
   const { data: validation } = useAccountValidation(workspaceId, accountId);
+  const { data: research } = useAccountResearch(workspaceId, accountId);
+  const requestResearch = useRequestResearch(workspaceId, accountId);
   const evidence = useEvidenceDrawer();
   const { data: identities, isLoading: nameLoading } = useAccountIdentities(workspaceId, [
     accountId,
@@ -189,6 +194,18 @@ export default function AccountBriefPage() {
               progressive disclosure means on a page — information ordered so
               most of it is never read. */}
           {validation ? <ValidationBlock validation={validation} /> : null}
+
+          {/* **Below the deterministic page, and above the ledger it cites.**
+              Research is the only thing here a person starts, and it is the
+              only thing that costs anything — so it sits after everything the
+              pipeline already knew, where a reader arrives having seen what
+              they get for free. The ledger stays last because research's own
+              findings point down into it. */}
+          <ResearchPanel
+            research={research ?? null}
+            onRequest={() => requestResearch.mutate()}
+            isRequesting={requestResearch.isPending}
+          />
 
           <section className="flex flex-col gap-3">
             <h2 className="text-sm font-semibold text-content">What contributed</h2>

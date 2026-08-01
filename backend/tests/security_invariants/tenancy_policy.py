@@ -111,6 +111,29 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # regenerated from anything, after `signal_profile`. A pipeline
         # rebuild must leave it untouched.
         "product_catalog",
+        # Commercial Profile (M12.5 slice 2), migration 0020. Who buys each
+        # product, as the customer described them — customer-authored on the
+        # same terms, and the one whose leak would be the most commercially
+        # damaging in the platform: it states a company's whole go-to-market
+        # position in its own words.
+        "icp_declaration",
+        # AI Research Engine (M12.4), migration 0021. **Workflow state**, the
+        # same category as `opportunity` — a person asked Signora to spend a
+        # model call, and nothing reproduces that. Deliberately not columns on
+        # `research_task`: an artifact records what a run produced and exists
+        # only when one succeeded, while a request survives a failure and is
+        # the only record that anybody wanted this.
+        "research_request",
+        "research_request_state",
+        # Commercial Profile (M12.5 slice 3), migration 0021. Who decides
+        # about each product — job titles the customer typed, never people:
+        # person entities are deferred platform-wide, and this table names
+        # none.
+        "buying_committee",
+        # Commercial Profile (M12.5 slice 4), migration 0023. What the
+        # customer is pushing right now — the fastest-changing of the four
+        # declarations, and the one whose staleness a customer notices first.
+        "commercial_focus",
     }
 )
 
@@ -227,6 +250,20 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         # a tenancy property, and the first draft of migration 0019 withheld
         # it until this suite refused.
         "product_catalog",
+        # Migration 0020, on identical terms: no `UPDATE` grant, `DELETE`
+        # granted because erasability is a tenancy property.
+        "icp_declaration",
+        # A request is written once and its progress is appended, exactly as
+        # `opportunity`/`opportunity_state` are — which is the shape migration
+        # 0018 committed to when it withheld UPDATE from `research_task`
+        # *before* research had a lifecycle. The status **is** the audit
+        # trail, so the two cannot disagree (migration 0021; M12.4).
+        "research_request",
+        "research_request_state",
+        # Migration 0021, likewise.
+        "buying_committee",
+        # Migration 0023, likewise.
+        "commercial_focus",
     }
 )
 

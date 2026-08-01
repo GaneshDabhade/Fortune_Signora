@@ -7,9 +7,11 @@ import type {
   AccountIdentity,
   AccountNarration,
   AccountOpportunity,
+  AccountResearch,
   AccountScore,
   AccountValidation,
   BusinessEventEvidence,
+  DecidedAccount,
   CursorPage,
   RecordDecision,
   SignalCatalog,
@@ -261,6 +263,13 @@ export function useRecordDecision(
       void client.invalidateQueries({
         queryKey: queryKeys.accounts(workspaceId ?? ''),
       });
+      // A decision is exactly what moves an account between the two lists.
+      // Without this, dismissing one would leave it visible on the list it
+      // has left and absent from the one it has joined until a reload —
+      // which is the shape of bug that teaches people to distrust a screen.
+      void client.invalidateQueries({
+        queryKey: queryKeys.decidedAccounts(workspaceId ?? ''),
+      });
     },
   });
 }
@@ -319,4 +328,90 @@ export function useInvalidateWorkspaceScope() {
 
   return (workspaceId: string) =>
     client.invalidateQueries({ queryKey: queryKeys.workspaceScope(workspaceId) });
+}
+
+/**
+ * Where research on this account stands, and the brief once there is one.
+ *
+ * **One hook for both questions.** *"Is it still running?"* and *"what did it
+ * find?"* are the same question asked at different moments, and splitting them
+ * would make the page stitch a story the server already knows.
+ *
+ * **It polls only while something is happening.** A research run takes about a
+ * minute; a page that checked every few seconds forever would spend a request
+ * a second on twelve accounts that finished yesterday. `refetchInterval`
+ * returns `false` the moment the request settles, so the polling stops itself
+ * rather than relying on the reader to leave.
+ *
+ * A `404` is *"nobody has asked"* and is not retried — retrying an answer would
+ * make an ordinary state look like a flaky one.
+ */
+export function useAccountResearch(workspaceId: string | null, accountId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.accountResearch(workspaceId ?? '', accountId ?? ''),
+    queryFn: () =>
+      apiRequest<AccountResearch>(
+        `/workspaces/${workspaceId}/accounts/${accountId}/research`,
+        { workspaceId: workspaceId ?? undefined },
+      ),
+    enabled: workspaceId !== null && accountId !== null,
+    retry: (attempt, error) =>
+      !(error instanceof ApiError && error.status === 404) && attempt < 2,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === 'requested' || status === 'running' ? 4_000 : false;
+    },
+  });
+}
+
+/**
+ * Ask Signora to research this account.
+ *
+ * **Returns immediately; nothing has run.** The server records the ask and a
+ * worker does the work, so the mutation settling means *accepted*, never
+ * *finished* — which is why success invalidates the read rather than writing a
+ * result into the cache.
+ *
+ * Asking again while a run is in flight is answered rather than refused, so
+ * there is no already-running error for a caller to handle.
+ */
+export function useRequestResearch(workspaceId: string | null, accountId: string | null) {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: () =>
+      apiRequest<AccountResearch>(
+        `/workspaces/${workspaceId}/accounts/${accountId}/research`,
+        { method: 'POST', workspaceId: workspaceId ?? undefined },
+      ),
+    onSuccess: (research) => {
+      client.setQueryData(
+        queryKeys.accountResearch(workspaceId ?? '', accountId ?? ''),
+        research,
+      );
+    },
+  });
+}
+
+/**
+ * Accounts this workspace has decided about (**R4-04**).
+ *
+ * **Fetched alongside the attention list, not behind a control.** The section
+ * renders only when the page is non-empty, so a workspace where nobody has
+ * dismissed anything shows nothing at all — and a reader who never dismisses
+ * never sees a control advertising a feature they do not use (**D6**).
+ *
+ * Invalidated by `useRecordDecision`, because deciding something is exactly
+ * what moves an account between the two lists.
+ */
+export function useDecidedAccounts(workspaceId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.decidedAccounts(workspaceId ?? ''),
+    queryFn: () =>
+      apiRequest<CursorPage<DecidedAccount>>(
+        `/workspaces/${workspaceId}/accounts/decided`,
+        { workspaceId: workspaceId ?? undefined },
+      ),
+    enabled: workspaceId !== null,
+  });
 }

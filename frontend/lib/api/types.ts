@@ -82,6 +82,12 @@ export interface AccountAttention {
   trend: Trend | null;
   score_change: number | null;
   signal_type: string | null;
+  /** What the leading hypothesis implies commercially. **Null with
+   * `signal_type`** — both come from the live score, so an account whose
+   * evidence expired has neither. Sent by the server precisely so no component
+   * maps catalog keys to a meaning: that mapping belongs to the pipeline, and a
+   * copy here would be a second vocabulary. */
+  posture: Posture | null;
   contested: boolean;
   evidence: EvidenceState;
   stage: Stage;
@@ -403,4 +409,240 @@ export interface ProductCatalog {
 export interface PublishProductCatalog {
   expected_version: number;
   products: Product[];
+}
+
+/**
+ * How big the companies that buy a product are.
+ *
+ * **A count of people, not a revenue band.** Either bound may be null —
+ * *"anything over 500"* and *"under 50"* are both real answers.
+ */
+export interface EmployeeRange {
+  minimum: number | null;
+  maximum: number | null;
+}
+
+/**
+ * Who buys one product, as the customer describes them.
+ *
+ * **Their words, not a controlled list.** `industries` and `countries` are
+ * free text: Signora records what the customer states, and nothing here is
+ * matched against anything. A profile carries no score, rank or verdict, and
+ * the API has no field that could.
+ */
+export interface ProductIcp {
+  /** A product from the catalog, and one the workspace currently sells. */
+  product_id: string;
+  industries: string[];
+  countries: string[];
+  /** Null when size was not stated. */
+  employees: EmployeeRange | null;
+  /** Anything the fields above cannot hold. May be empty. */
+  notes: string;
+}
+
+/**
+ * Who buys what this workspace sells, and who last said so.
+ *
+ * **Versioned as a whole, and separately from the catalog.** Renaming a
+ * product does not mint a version here, and describing a buyer does not mint
+ * one there — two aggregates, so neither audit history is filled with the
+ * other's changes.
+ */
+export interface IcpDeclaration {
+  /** **0 when nothing has been described** — the state every workspace starts
+   * in, and an answer rather than an absence. */
+  version: number;
+  /** One per product described. A product with no entry has no ideal customer
+   * described yet. */
+  profiles: ProductIcp[];
+  /** Null only at version 0. */
+  updated_at: string | null;
+  /** Null only at version 0. */
+  updated_by: string | null;
+}
+
+/** A complete statement of the ideal customer, replacing `expected_version`. */
+export interface DeclareIcp {
+  expected_version: number;
+  profiles: ProductIcp[];
+}
+
+/**
+ * One sentence a model wrote in a research brief, and the findings under it.
+ *
+ * The same shape as `NarrationStatement` and deliberately not the same type:
+ * these cite **findings**, not pipeline rows, and the findings are on the same
+ * response — so following a claim here costs no request at all.
+ */
+export interface ResearchStatement {
+  text: string;
+  /** `research_finding:<uuid>` tokens. **Never empty**, and every one resolves
+   * against `findings` on the same payload. */
+  cites: string[];
+}
+
+/**
+ * One deterministic comparison research performed. **DERIVED, not written.**
+ *
+ * The half of a research brief nobody has to trust: a customer who disagrees
+ * opens the rows in `cites` and runs the same comparison. That is what makes
+ * research something other than a second opinion.
+ */
+export interface ResearchFinding {
+  id: string;
+  /** How a statement addresses this finding. Matched against `cites`. */
+  ref: string;
+  /** Which comparison was performed — the name of the code that computed it. */
+  derivation: string;
+  /** What it was performed to answer, **in the catalog's own reviewed words**.
+   * On the wire so no client maps a derivation key to a sentence of its own. */
+  question: string;
+  /** What the comparison produced, rendered for display. */
+  attributes: Record<string, string>;
+  /** The pipeline rows it compared, in the citation form the evidence drawer
+   * already resolves — so a finding leads on to the business event beneath it. */
+  cites: string[];
+}
+
+/** One completed run: what was compared, and what was made of it. */
+export interface ResearchArtifact {
+  task_id: string;
+  produced_at: string;
+  /** **INFERRED.** */
+  statements: ResearchStatement[];
+  /** **DERIVED.** */
+  findings: ResearchFinding[];
+  prompt_name: string;
+  prompt_version: number;
+  model: string;
+  evidence_digest: string;
+}
+
+/**
+ * Where research on one account stands.
+ *
+ * `nothing_to_research` is **not a failure**: the run finished and found
+ * nothing worth comparing, which is a real answer on an account with little
+ * evidence. A client that rendered it as an error would have the product
+ * apologising for behaving correctly.
+ */
+export type ResearchStatus =
+  'requested' | 'running' | 'completed' | 'nothing_to_research' | 'failed';
+
+export interface AccountResearch {
+  request_id: string;
+  status: ResearchStatus;
+  requested_at: string;
+  updated_at: string;
+  /** Why it failed, verbatim. **Null unless `status` is `failed`.** */
+  detail: string | null;
+  /** The brief. **Null unless `status` is `completed`**, and never null when
+   * it is. */
+  artifact: ResearchArtifact | null;
+}
+
+/**
+ * The part a role plays in a purchase.
+ *
+ * **Five values, and they are ordinary sales language** rather than a taxonomy
+ * a customer must translate their own business into. Owned by Commercial
+ * Profile; no provider has any say in it.
+ */
+export type CommitteePart =
+  'economic_buyer' | 'champion' | 'evaluator' | 'user' | 'gatekeeper';
+
+/**
+ * One seat at the table.
+ *
+ * **A role, never a person.** The title is what the customer calls the job —
+ * *VP of Revenue Operations* — and Signora holds no individuals here. There is
+ * no influence, weight or seniority: those would be judgements about a real
+ * deal, and this is a declaration.
+ */
+export interface CommitteeRole {
+  title: string;
+  part: CommitteePart;
+}
+
+/** Who decides about one product. At least one role. */
+export interface ProductCommittee {
+  product_id: string;
+  /** In the order the customer arranged them, which carries no rank. */
+  roles: CommitteeRole[];
+}
+
+/**
+ * Who decides about what this workspace sells, and who last said so.
+ *
+ * Versioned separately from the catalog and the ideal customer, because a
+ * committee changes on a different day from either.
+ */
+export interface BuyingCommittee {
+  /** **0 when nothing has been declared.** */
+  version: number;
+  committees: ProductCommittee[];
+  /** Null only at version 0. */
+  updated_at: string | null;
+  /** Null only at version 0. */
+  updated_by: string | null;
+}
+
+/** A complete statement of the committee, replacing `expected_version`. */
+export interface DeclareBuyingCommittee {
+  expected_version: number;
+  committees: ProductCommittee[];
+}
+
+/**
+ * What this company is pushing right now.
+ *
+ * **No rank and no order.** A product is in focus or it is not — the roadmap
+ * calls this capability *business priorities*, and an ordinal here is one
+ * consumer away from a weight in a score. There is also no period: `updated_at`
+ * already says when the customer last declared this, and a typed *"Q3 2026"*
+ * would be free to disagree with it.
+ */
+export interface CommercialFocus {
+  /** **0 when nothing has been declared.** */
+  version: number;
+  /** Product ids. Unordered and unranked. */
+  products: string[];
+  /** What they are trying to do, in their words. May be empty. */
+  objective: string;
+  /** Null only at version 0. Also the answer to whether the focus is current. */
+  updated_at: string | null;
+  /** Null only at version 0. */
+  updated_by: string | null;
+}
+
+/** A complete statement of the focus, replacing `expected_version`. */
+export interface DeclareFocus {
+  expected_version: number;
+  products: string[];
+  objective: string;
+}
+
+/**
+ * One account somebody finished with, and what they said about it.
+ *
+ * **No score, no trend, no evidence state.** An open account is triaged on
+ * those; a decided one is *recalled*, and a live number beside a settled
+ * judgement invites re-litigating it against something that moved afterwards.
+ * The account's own brief — where reopening lives — is one click away.
+ */
+export interface DecidedAccount {
+  account_id: string;
+  opportunity_id: string;
+  /** **`dismissed` and `closed_lost` are different answers.** One says Signora
+   * should not have surfaced this account, the other says it was worth
+   * pursuing and did not close. Never merge them. */
+  stage: Stage;
+  /** Why, in the words the person typed. The only place in the product that
+   * shows a customer their own judgement back. */
+  reason: string;
+  /** Compared against the reader to say *yours*. Never a name — the tier
+   * verifies tokens without learning who anybody is (**D23**). */
+  owner_id: string | null;
+  decided_at: string;
 }

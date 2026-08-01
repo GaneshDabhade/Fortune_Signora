@@ -154,6 +154,31 @@ class FakeOpportunityRepository:
                 break
         return tuple(page)
 
+    async def decided_page(
+        self, workspace_id: UUID, *, after: CursorPosition | None, limit: int
+    ) -> tuple[tuple[Opportunity, OpportunityState], ...]:
+        """Mirrors the SQL: terminal only, **newest first**, keyset walking
+        backwards. The direction is the half most worth doubling here — a fake
+        that walked forwards would agree with a query that pages forever."""
+        page: list[tuple[Opportunity, OpportunityState]] = []
+        for opportunity in sorted(
+            self.rows, key=lambda o: (o.created_at, o.id.bytes), reverse=True
+        ):
+            if opportunity.workspace_id != workspace_id:
+                continue
+            if after is not None and (opportunity.created_at, opportunity.id.bytes) >= (
+                after.created_at,
+                after.id.bytes,
+            ):
+                continue
+            state = self._latest(opportunity.id)
+            if state is None or state.is_open:
+                continue
+            page.append((opportunity, state))
+            if len(page) == limit:
+                break
+        return tuple(page)
+
     async def generations(self, workspace_id: UUID, entity_id: UUID) -> int:
         return len(
             [

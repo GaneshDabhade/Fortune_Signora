@@ -13,7 +13,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { apiRequest } from '@/lib/api/client';
-import type { ProductCatalog, PublishProductCatalog } from '@/lib/api/types';
+import type {
+  BuyingCommittee,
+  CommercialFocus,
+  DeclareBuyingCommittee,
+  DeclareFocus,
+  DeclareIcp,
+  IcpDeclaration,
+  ProductCatalog,
+  PublishProductCatalog,
+} from '@/lib/api/types';
 import { queryKeys } from '@/lib/query/keys';
 
 /**
@@ -62,6 +71,141 @@ export function usePublishProductCatalog(workspaceId: string | null) {
     // and the refusal is precisely the case worth showing accurately.
     onSuccess: (published) => {
       client.setQueryData(queryKeys.products(workspaceId ?? ''), published);
+    },
+  });
+}
+
+/**
+ * Who buys what this workspace sells.
+ *
+ * **Never 404s**, and never a match. It returns what the customer described,
+ * at version 0 with no profiles until they have described anybody.
+ */
+export function useIcpDeclaration(workspaceId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.icp(workspaceId ?? ''),
+    queryFn: () =>
+      apiRequest<IcpDeclaration>(`/workspaces/${workspaceId}/icp`, {
+        workspaceId: workspaceId ?? undefined,
+      }),
+    enabled: workspaceId !== null,
+  });
+}
+
+/**
+ * Describe the ideal customer, as a complete statement.
+ *
+ * The whole description is sent, for the same reason the whole catalog is: the
+ * declaration is the unit that gets versioned, so *"describe this one"* would
+ * make what is stored depend on what was there when the request arrived.
+ *
+ * **Deliberately does not retry.** A retry would re-send a version the server
+ * has already rejected once, and every attempt would fail identically while
+ * looking like a network problem.
+ */
+export function useDeclareIcp(workspaceId: string | null) {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: (declaration: DeclareIcp) =>
+      apiRequest<IcpDeclaration>(`/workspaces/${workspaceId}/icp`, {
+        method: 'PUT',
+        body: declaration,
+        workspaceId: workspaceId ?? undefined,
+      }),
+    // Not optimistic. A description that flipped locally and was then refused
+    // on version would be the one place the product stated something untrue.
+    onSuccess: (declared) => {
+      client.setQueryData(queryKeys.icp(workspaceId ?? ''), declared);
+    },
+  });
+}
+
+/**
+ * Who decides about what this workspace sells.
+ *
+ * **Never 404s, and never an assessment.** It returns the roles the customer
+ * said are involved; whether a real company's committee is complete is a
+ * conclusion nobody has drawn.
+ */
+export function useBuyingCommittee(workspaceId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.buyingCommittee(workspaceId ?? ''),
+    queryFn: () =>
+      apiRequest<BuyingCommittee>(`/workspaces/${workspaceId}/buying-committee`, {
+        workspaceId: workspaceId ?? undefined,
+      }),
+    enabled: workspaceId !== null,
+  });
+}
+
+/**
+ * Declare the committee, as a complete statement.
+ *
+ * The whole declaration is sent, for the third time in this module and the
+ * same reason each time: the declaration is the unit that gets versioned.
+ *
+ * **Deliberately does not retry.** A retry would re-send a version the server
+ * has already rejected once.
+ */
+export function useDeclareBuyingCommittee(workspaceId: string | null) {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: (declaration: DeclareBuyingCommittee) =>
+      apiRequest<BuyingCommittee>(`/workspaces/${workspaceId}/buying-committee`, {
+        method: 'PUT',
+        body: declaration,
+        workspaceId: workspaceId ?? undefined,
+      }),
+    // Not optimistic, for the same reason as the other two: a declaration
+    // that flipped locally and was then refused on version would be the one
+    // place the product stated something untrue.
+    onSuccess: (declared) => {
+      client.setQueryData(queryKeys.buyingCommittee(workspaceId ?? ''), declared);
+    },
+  });
+}
+
+/**
+ * What this company is pushing right now.
+ *
+ * **Never 404s, and applied to nothing.** It reports the products the customer
+ * said they are pushing; no screen and no consumer yet does anything with it.
+ */
+export function useCommercialFocus(workspaceId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.commercialFocus(workspaceId ?? ''),
+    queryFn: () =>
+      apiRequest<CommercialFocus>(`/workspaces/${workspaceId}/focus`, {
+        workspaceId: workspaceId ?? undefined,
+      }),
+    enabled: workspaceId !== null,
+  });
+}
+
+/**
+ * Declare the focus, as a complete statement.
+ *
+ * The whole focus is sent, for the fourth time in this module and the same
+ * reason each time: the declaration is the unit that gets versioned.
+ *
+ * **Deliberately does not retry.** A retry would re-send a version the server
+ * has already rejected once.
+ */
+export function useDeclareFocus(workspaceId: string | null) {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: (focus: DeclareFocus) =>
+      apiRequest<CommercialFocus>(`/workspaces/${workspaceId}/focus`, {
+        method: 'PUT',
+        body: focus,
+        workspaceId: workspaceId ?? undefined,
+      }),
+    // Not optimistic, for the same reason as the other three.
+    onSuccess: (declared) => {
+      client.setQueryData(queryKeys.commercialFocus(workspaceId ?? ''), declared);
     },
   });
 }

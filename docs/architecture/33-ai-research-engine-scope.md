@@ -539,3 +539,123 @@ Three layers, three origins, and the least-powerful-author principle expressed a
 ratified graph does not grant. **The ruling settles it in the graph's favour**: Knowledge Graph
 retrieval and provider re-query are both deferred, and pgvector with them. That document was
 corrected in the same change as this ruling was recorded.
+
+---
+
+# M12.4 — Research on demand, as built *(2026-08-01, Lane A)*
+
+*Appended, not rewritten. Everything above is the M10 ruling and stands unchanged; this section records what building the customer-facing half revealed.*
+
+## The roadmap challenge, performed before any code
+
+[37-product-surface.md](37-product-surface.md) put **M12.4 — research on demand** next. The instruction is to challenge the order rather than follow it, so it was challenged twice and **the roadmap's order survived both times.** Recorded because the *reasons* are more durable than the conclusion.
+
+### Considered: R4-04 ahead of M12.4
+
+R4-04 — *a dismissed account is unreachable once you navigate away* — has **got worse since it was written**, and that was not obvious until the sequence shipped. D41 made the brief read the ranked list, so dismissing an account now removes it from the *sequence* a seller is working, not merely from the list they left behind. A 🟠 that compounds is worth re-checking.
+
+**Rejected**, on scale: R4-04 is one defect on a shipped capability with a stated workaround (the brief survives closure, deliberately). M12.4 is the last unshipped journey of six and it closes half of R11-01 🔴 — *AI research: built and unreachable*. **The compounding is recorded here so the next list slice knows it.**
+
+### Considered, and this one nearly won: split M12.4, demo first
+
+The shape M12.2 used, and it de-risks the same way: produce a real research artifact with a `make demo-research` command, render it on the brief, *then* build the dispatch machinery. R11-07 is the argument — the narration slice shipped and **could not be shown at its best** because the artifacts were bland. Learning that about research *before* building an endpoint, an event, a subscription and a status UI around it would be cheap.
+
+**Rejected on lane ownership, and the finding is the interesting part.** `backend/tests/playground/` is **QE's** (§20e: *Playground scenarios*). Lane A cannot add a demo command; raising it as a finding would block the slice on another lane.
+
+And working that through produced the argument that settles it: **the on-demand path is not plumbing around the artifact — it is the only mechanism by which a research artifact comes into existence at all.** `build_research` had **zero production callers**; nothing schedules research and no event triggers it. The trigger and the artifact necessarily ship together, so there was no smaller demoable slice inside M12.4. **The roadmap was right and the reason it was right was not the reason recorded for it.**
+
+## What the module gained
+
+**Two tables, one new event, one subscription, two endpoints, one panel.** No change to `Research`, no change to a derivation, no change to the plan or the synthesis — the M10 module is called, not modified.
+
+```
+POST /accounts/{id}/research  →  research_request + outbox row  (one transaction)
+                              →  relay  →  ai_research pool  →  handler
+                              →  RUNNING  (its own transaction, so it is visible)
+                              →  Research.run()  →  COMPLETED | NOTHING_TO_RESEARCH | FAILED
+GET  /accounts/{id}/research  →  the state, and the artifact when there is one
+```
+
+### A request is not a task with a status
+
+The first design considered and rejected. `research_task` is written **only when a run succeeded** — M10's own rule, so that a partial run can never look like a completed one that found nothing to say. A status column would put mutable workflow state on the row that gives findings their `task_id`, mixing two of the four data categories CLAUDE.md §2 keeps apart, and would make a failed run invisible.
+
+So: `research_request` is **workflow state**, in the shape `opportunity`/`opportunity_state` established. Migration `0018` had already decided this, in writing, before there was a lifecycle to decide it for:
+
+> *"this grant decides now that progress will be recorded as **append-only state rows**, the way `opportunity_state` records workflow, rather than as columns mutated in place."*
+
+That is honoured rather than revisited. **No `UPDATE` grant exists anywhere**, so a research request's status *is* its audit trail.
+
+### `NOTHING_TO_RESEARCH` is a status, not an error
+
+`Research.run()` returns `None` for an account whose plan finds nothing worth comparing, and that is a legitimate outcome on an account with two events from one provider. Collapsing it into `FAILED` would have the product apologising for behaving correctly, and would teach a seller to distrust it on exactly the accounts where it is right.
+
+### A failure is recorded, not retried
+
+The one non-obvious choice. Re-raising would give ARQ its retry, and the platform's retry policy is genuinely valuable for a transient blip. It is the wrong tool here: a run costs two model calls and about a minute, and the failures this stage produces — an unreleased prompt, a refused schema, an ungroundable plan — are **permanent within a redelivery window**. Retrying would spend the budget three times to record the same reason. So the reason is stored verbatim, the request settles, and **the customer decides whether another minute is worth it.**
+
+## Two things found by building it
+
+### A partial index over status cannot guard an append-only table
+
+The in-flight guard was first written as `UNIQUE (workspace_id, entity_id) WHERE status IN ('requested','running')`. It reads like *"one unfinished request per account"* and is not: history is append-only, so the `requested` row survives its own `running` row and **the index refuses the transition it was meant to permit.** Found by the test written to prove it fires — the same way `cardinality(cited)` was found at `0018`.
+
+**On an append-only table a partial index over status constrains history, never the present.** The guard is now `generation`, unchanged from `Opportunity`'s: two simultaneous askers compute the same number and one loses on the unique constraint.
+
+### The domain accepted a reason the database refuses
+
+`bool(detail)` is true for `"   "`; the table's CHECK is `length(trim(detail)) > 0`. A whitespace failure reason would have passed the domain and failed in a worker with a constraint name for a message. Now `.strip()`, both sides.
+
+## Findings raised, not fixed
+
+**🔴 The event bus had no production consumer.** Every `registry.subscribe` call in the repository was in a test; `opportunity_engine`'s `qualify_from_buying_score` handler exists and **has never been subscribed**, so a deployed stack runs no automatic pipeline path at all. `apps/worker/subscriptions.py` is the first, and registers only research — subscribing `qualify` would change pipeline behaviour repository-wide and belongs to a slice that owns it.
+
+**🟠 The dispatcher does not hand its session to the handler.** Detailed in [06-events.md](06-events.md). Widening `EventHandler` is a `signora_platform/` change (§20a).
+
+**🟠 Research on demand needs a relay and a worker running locally**, which [`docs/RUNNING.md`](../RUNNING.md) does not yet say — an Integrator-owned file.
+
+**🟠 A run whose worker process dies stays `RUNNING` forever**, and blocks the account's next ask. Stated rather than solved: every available remedy is a timeout somebody would have to invent, and §14 is explicit that a threshold nobody measured is worse than a known gap. The trigger to fix it is the first occurrence.
+
+**🟢 Production would refuse research today**, and correctly. `research_planning@2` and `research_synthesis@2` hold releases only for `llama3.1:8b`; a deployment holding an Anthropic key would be refused by the release rule. **That is the rule working, not a wiring defect** — the prompts earn a release against the production model, or research does not run there. No fallback was added and none should be.
+
+## The product finding this slice creates
+
+**The account brief is now seven panels, and it was already the largest open design finding.** Review 10's staff-designer pass, four reviews old at the time:
+
+> *"The list row already reads as a sentence. **The brief does not** — it reads as six panels."*
+
+Research is the seventh, and it is the heaviest: a heading, a button, a status line, a list of comparisons, a list of statements and a provenance line. **Adding it does not make the finding worse in kind, but it does make it worse in degree**, and no amount of care inside the panel addresses a problem that is about the page.
+
+Placement was chosen to cost the least: **after everything the pipeline already knew, and above the ledger.** A reader reaches the only thing that costs something having seen what they get for free, and the ledger stays below because research's own findings cite into it. That is the best available answer to a question the page's shape does not let anyone answer well.
+
+**Not fixed here, and deliberately.** A hierarchy pass over the brief is its own slice, it changes every section rather than one, and doing it inside a milestone that owns research would be exactly the borrowed-scope failure §20d names. Raised for whoever takes it, with the observation that the brief now has enough sections that *which ones to show at all* is a real question — the SDR and the RevOps analyst do not want the same six.
+
+## Verified against a real model and the real Playground *(2026-08-01)*
+
+Three seeded accounts, `llama3.1:8b`, the shipped prompt manifest, the real provider registry, the real derivations and the real repositories. **Not** through the relay and ARQ — the same use cases the worker calls, invoked directly, which leaves one hop unverified and is stated rather than implied.
+
+```
+  233e2ebf   failed                111.1s   SchemaViolationError: a derivation is planned twice
+  23c54433   completed              86.6s   2 findings · 3 statements · 0 unresolved citations
+  7570f99b   completed              61.9s   2 findings · 2 statements · 0 unresolved citations
+```
+
+**The duration copy was corrected from this.** *"About a minute"* came from M10's recorded ~54s; two of three runs beat it. The panel now says *"a minute or two"*, which is measured rather than estimated.
+
+### One in three planning calls produced an invalid plan
+
+Not tuned, not retried into submission, and **not a defect in this slice** — the release rule and the schema behaved exactly as designed: `research_planning@2` produced a plan naming one derivation twice, `ResearchPlan` refused it on both attempts, the run failed, the reason was recorded verbatim, and the customer can read it and decide whether to ask again.
+
+**It is a real quality datum about `research_planning@2`**, which earned its release on a **sample size of two**. One failure in three on unseen accounts is the kind of thing a sample of two cannot see. **Raised for the prompt's owner; nothing here was changed to improve the number** — the standing rule is that a refusal initiates investigation rather than optimisation.
+
+### The finding that vindicates the surface's design
+
+Account `23c54433`, statement two, verbatim:
+
+> *"There is no evidence of multiple providers, as the number of distinct providers and single-source conclusions are both 1."*
+
+The finding it cites says `distinct_providers=2`. **The model misread its own evidence, and the statement passed grounding** — because grounding proves a statement *cites* real evidence, never that it is *true of* that evidence. Statement one has the same shape: *"the conclusions are independently agreed upon"* against `independently_agreed=1` of `conclusions=2`.
+
+**This is exactly what the panel's ordering exists for.** The derived findings are rendered *above* the model's sentences, with their values, so a reader meets `distinct_providers=2` before they read a sentence claiming it is 1. A brief that showed only the prose would have shipped a confident falsehood a customer could not catch.
+
+**Recorded rather than fixed.** The remedy is prompt work on `research_synthesis@2` and belongs to a slice that owns evaluation, not to the surface that displays it. In the meantime the product is honest about which half a model wrote — which is the whole argument for building it this way.
