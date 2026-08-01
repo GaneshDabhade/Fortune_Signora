@@ -23,6 +23,7 @@ function account(id: string): AccountAttention {
     trend: 'rising',
     score_change: 5,
     signal_type: 'active_evaluation',
+    posture: 'neutral' as const,
     contested: false,
     evidence: 'current',
     stage: 'tracking',

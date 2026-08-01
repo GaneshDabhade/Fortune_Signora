@@ -469,3 +469,67 @@ The attention list still shows open work only. **The commitment outlives the sco
 `apps/api/composition/workflow.py`, separate from the read surface and not for tidiness. The attention list is six modules deep because a row needs a live score; **progressing an opportunity needs the workflow tables and a membership check, and nothing else at all.**
 
 That asymmetry is this module's design showing through the composition root: an opportunity holds no derived intelligence, so changing one consults none. A falling score cannot revoke a seller's commitment, and a composition that handed this path a score reader would be the first step toward one that could.
+
+---
+
+## The row carries posture *(Lane A, 2026-08-01 — closes R9-03)*
+
+**Recorded before implementation**, in this module's own document rather than in `38-product-design-principles.md`, which the Integrator owns (`CLAUDE.md` §20e).
+
+### The finding
+
+*Datadog · Contraction risk · 5 · stale* sits eleventh on the attention list, and **renders identically to** *Salesforce · New decision maker · 10*. Every element of both rows is correct.
+
+**The word is already there and nothing shows it.** The catalog title says *"Contraction risk"*, so a reader who reads the row learns it — and a CRO scanning twelve rows for trouble has to read twelve titles. R9-03 called this *"the honest remainder of D20"*, and it is a **visual-encoding** problem rather than a missing-data one.
+
+The Buying Score Engine computes `Posture` and **refuses to net it into the score**, precisely because *"two accounts can score identically and mean opposite things"*. The list is where that refusal stopped being visible.
+
+### The decision
+
+**`AccountAttentionResponse` carries `posture`, taken from the same leading contribution that already supplies `signal_type`.**
+
+`ledger.leading()` is called on the line above and its `posture` was being dropped. This is the M12.2 `owner_id` shape again and the M12.3 `signal_type` shape again: **the field was on the object, computed, and never surfaced.**
+
+**Null exactly when `signal_type` is null** — both come from the live score, so an account whose evidence has expired has neither. One absence, not two.
+
+### Why the client is given a posture rather than a mapping
+
+A component holding `{displacement_opportunity: 'risk', contraction_risk: 'risk', …}` would be a **second commercial vocabulary**, wrong the moment the catalog gained a type and invisible when it did. The same reasoning that keeps the hypothesis *title* in the catalog (**D33**) keeps its *posture* in the pipeline. The module that ranks accounts still names no hypothesis and still forms no judgement — it passes through what the ledger decided.
+
+### Only contraction is marked, and that is a product judgement
+
+**Expansionary and neutral rows render exactly as they do today.** Marking every row would mark almost every row — the list is mostly expansion — and this module's own rule already says it: *"a badge on every row saying 'everything is fine' is noise that trains people to stop reading badges."* **The marked minority is the signal.**
+
+Stated plainly because it is a judgement rather than a derivation: the pipeline treats the three postures as equal categories, and the product decides that **risk earns attention a seller would otherwise have to hunt for.**
+
+### Marked with an icon and a tone, not with colour alone
+
+A downward arrow plus the `warning` token. **Colour alone would fail a colour-blind reader**, and accessibility is a defect class rather than an enhancement (§20c).
+
+**`warning`, not `danger`.** A contraction risk is not an error and the account is not broken — it is a different *kind* of attention. `danger` reads as *something has gone wrong*, which would be the product overstating what the evidence says.
+
+### What it deliberately does not do
+
+**It does not reorder the list.** Pure score ordering stays (**D39**); posture changes what a row *says*, never where it sits — netting posture into rank is the same defect as netting it into the score.
+
+**It does not filter.** *Show me only risk* is a volume feature and D6's trigger has not fired.
+
+**It does not mark the brief.** The brief already shows posture per ledger line, where it belongs and where a reader has come for detail.
+
+### Measured against the real twelve, and R9-03 understated it
+
+| Posture | Rows |
+|---|---|
+| expansionary | 9 |
+| **contractionary** | **2** |
+| neutral | 1 |
+
+**Two of twelve marked — 17%.** The *marked minority is the signal* design holds empirically rather than by assertion.
+
+**Two things the measurement showed that the finding did not.**
+
+**Both risk rows sit at the very bottom**, at scores 5 and 1 — positions eleven and twelve of twelve. That is pure score ordering working exactly as **D39** decided, and it is precisely why marking beats reordering: a manager scanning for trouble was being asked to read to the end of the list to find it.
+
+**One of the two says nothing about risk.** `contraction_risk` renders as *"Contraction risk"* and a careful reader might catch it. **`decision_maker_departed` renders as *"Decision maker departed"*** — a neutral sentence, at score 1, at the bottom. Nothing in that row's prose tells a manager their champion has gone. R9-03 said *"the hypothesis names the risk and nothing shows it"*; for this row **the hypothesis does not name the risk either**, and posture is the only thing that carries it.
+
+> **Recorded for the product owner, not acted on:** the two accounts most worth worrying about are the two lowest-scored. That is correct — a contraction risk with thin evidence *should* score low — and it means score answers *"how much attention"* while posture answers *"what kind"*. Ranking risk higher would net posture into the ordering, which is the defect the Buying Score Engine refuses by construction. **Whether a seller wants a risk-first view is a product question, and D6's trigger has not fired.**

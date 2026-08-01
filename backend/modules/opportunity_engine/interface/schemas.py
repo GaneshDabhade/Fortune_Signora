@@ -35,6 +35,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from modules.buying_score_engine.public import Posture
 from modules.opportunity_engine.application.queries import (
     OpportunityBrief,
     TrackedOpportunity,
@@ -152,6 +153,18 @@ class AccountAttentionResponse(BaseModel):
         )
     )
 
+    posture: Posture | None = Field(
+        description=(
+            "What the leading hypothesis implies commercially — expansionary, contractionary "
+            "or neutral. **Null exactly when `signal_type` is null**, since both come from the "
+            "live score. Sent so a client never has to map catalog keys to a commercial "
+            "meaning: that mapping is the Buying Score Engine's, and a copy here would be a "
+            "second vocabulary, wrong the moment the catalog gained a type. **Never a sign in "
+            "any arithmetic** — two accounts can score identically and mean opposite things, "
+            "which is the whole reason this is carried separately."
+        )
+    )
+
     evidence: EvidenceState = Field(
         description=(
             "How the intelligence behind this opportunity is holding up: current, cooling, "
@@ -186,6 +199,9 @@ class AccountAttentionResponse(BaseModel):
             trend=score.trend.value if score else None,
             score_change=score.delta if score else None,
             signal_type=leading.signal_type.value if leading else None,
+            # Computed on the line above and dropped until now — the same
+            # shape as `owner_id` in M12.2 and `signal_type` in M12.3.
+            posture=leading.posture if leading else None,
             contested=score.contested if score else False,
             evidence=tracked.evidence_state,
             stage=tracked.state.stage,

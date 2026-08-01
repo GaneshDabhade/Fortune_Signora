@@ -1,9 +1,15 @@
 'use client';
 
-import { ArrowDownRight, ArrowRight, ArrowUpRight, Scale } from 'lucide-react';
+import {
+  ArrowDownRight,
+  ArrowRight,
+  ArrowUpRight,
+  Scale,
+  TrendingDown,
+} from 'lucide-react';
 
 import { Badge } from '@/components/ui';
-import type { EvidenceState, ScoreTrigger, Stage, Trend } from '@/lib/api/types';
+import type { EvidenceState, Posture, ScoreTrigger, Stage, Trend } from '@/lib/api/types';
 import { cn } from '@/lib/design/cn';
 
 /**
@@ -159,9 +165,16 @@ export function WhyNow({ trigger }: { trigger: ScoreTrigger | null }) {
 
 export function Hypothesis({
   signalType,
+  posture,
   title,
 }: {
   signalType: string | null;
+  /** What this hypothesis implies commercially, from the pipeline. **Null with
+   * `signalType`.** This component maps no catalog key to a meaning — that
+   * mapping is the Buying Score Engine's, and a copy here would be a second
+   * commercial vocabulary, wrong the moment the catalog gained a type and
+   * invisible when it did (R9-03). */
+  posture: Posture | null;
   /** From `useSignalCatalog`. `undefined` while it loads or if the key is one
    * this catalog version does not declare — which is a real possibility, since
    * a score records the catalog version it was formed under. */
@@ -175,7 +188,27 @@ export function Hypothesis({
     return <span className="text-sm text-content-subtle">No current reading</span>;
   }
   if (title === undefined) return null;
-  return <span className="text-sm text-content">{title}</span>;
+
+  // **Only contraction is marked**, and that is a product judgement rather
+  // than a derivation. Marking every posture would mark almost every row —
+  // the list is mostly expansion — and this file's own rule already says why:
+  // a badge on every row saying "everything is fine" trains people to stop
+  // reading badges. The marked minority is the signal.
+  if (posture !== 'contractionary') {
+    return <span className="text-sm text-content">{title}</span>;
+  }
+
+  return (
+    <span className="inline-flex items-center gap-1.5 text-sm text-warning">
+      {/* An icon as well as a tone. Colour alone would fail a colour-blind
+          reader, and accessibility is a defect class rather than an
+          enhancement (§20c). `warning`, not `danger`: a contraction risk is a
+          different *kind* of attention, not something that has gone wrong. */}
+      <TrendingDown aria-hidden className="h-3.5 w-3.5 shrink-0" />
+      {title}
+      <span className="sr-only"> — risk to existing revenue</span>
+    </span>
+  );
 }
 
 /**

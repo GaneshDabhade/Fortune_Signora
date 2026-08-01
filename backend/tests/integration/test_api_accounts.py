@@ -215,6 +215,11 @@ class TestTheResponseShapeIsTheOneDocumented:
             "trend",
             "score_change",
             "signal_type",
+            # **Added closing R9-03**, and it earns its place by the same test
+            # as every field above: *"which of these should worry me?"* is a
+            # question a sales manager asks daily, and until now the row
+            # answered it only in prose a reader had to read.
+            "posture",
             "contested",
             "evidence",
             "stage",
@@ -1907,3 +1912,77 @@ class TestTheVocabularyHasOneOwner:
             properties = schema["components"]["schemas"][name]["properties"]
             undocumented = sorted(k for k, v in properties.items() if not v.get("description"))
             assert undocumented == [], f"{name}: {undocumented} reach the wire undocumented"
+
+
+class TestTheRowSaysWhatKindOfAttentionThisIs:
+    """**R9-03.** A contraction risk rendered identically to an expansion
+    opportunity, and a manager scanning twelve rows had to read twelve titles.
+
+    The Buying Score Engine computes posture and refuses to net it into the
+    score — *two accounts can score identically and mean opposite things* —
+    and the list is where that refusal stopped being visible.
+    """
+
+    async def test_the_row_carries_the_posture_of_its_leading_hypothesis(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, user_id, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        rows = (await _accounts(client, key_pair, user_id, workspace_id)).json()["items"]
+
+        assert rows, "the fixture produced no rows"
+        for row in rows:
+            assert row["posture"] in {
+                "expansionary",
+                "contractionary",
+                "neutral",
+                None,
+            }
+
+    async def test_posture_and_hypothesis_are_absent_together(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """Both come from the live score, so an account whose evidence has
+        expired has neither. **One absence, not two** — a row with a posture
+        and no hypothesis would invite a reader to reconcile two statements
+        that are one fact."""
+        workspace_id, user_id, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        rows = (await _accounts(client, key_pair, user_id, workspace_id)).json()["items"]
+
+        for row in rows:
+            assert (row["posture"] is None) == (row["signal_type"] is None)
+
+    async def test_the_row_maps_no_catalog_key_to_a_meaning(self) -> None:
+        """**The reason posture is on the wire at all.** A client holding
+        `{contraction_risk: 'risk', …}` would be a second commercial
+        vocabulary — wrong the moment the catalog gained a type, and invisible
+        when it did. The same rule that keeps the *title* in the catalog
+        (D33) keeps its *meaning* in the pipeline.
+        """
+        import inspect
+
+        from modules.opportunity_engine.interface import schemas
+
+        source = inspect.getsource(schemas).casefold()
+        for catalog_key in (
+            "contraction_risk",
+            "expansion_opportunity",
+            "displacement_opportunity",
+        ):
+            assert catalog_key not in source, (
+                f"'{catalog_key}' is named in the module forbidden from reaching the "
+                "Signal Engine. Posture travels on the wire so it does not have to be."
+            )

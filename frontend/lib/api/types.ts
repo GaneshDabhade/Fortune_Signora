@@ -82,6 +82,12 @@ export interface AccountAttention {
   trend: Trend | null;
   score_change: number | null;
   signal_type: string | null;
+  /** What the leading hypothesis implies commercially. **Null with
+   * `signal_type`** — both come from the live score, so an account whose
+   * evidence expired has neither. Sent by the server precisely so no component
+   * maps catalog keys to a meaning: that mapping belongs to the pipeline, and a
+   * copy here would be a second vocabulary. */
+  posture: Posture | null;
   contested: boolean;
   evidence: EvidenceState;
   stage: Stage;

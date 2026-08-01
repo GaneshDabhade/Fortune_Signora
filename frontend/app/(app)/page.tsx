@@ -143,7 +143,11 @@ function AccountRow({
             isLoading={namesLoading}
           />
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-            <Hypothesis signalType={account.signal_type} title={hypothesis} />
+            <Hypothesis
+              signalType={account.signal_type}
+              posture={account.posture}
+              title={hypothesis}
+            />
             <ScoreMovement trend={account.trend} change={account.score_change} />
           </div>
         </div>
