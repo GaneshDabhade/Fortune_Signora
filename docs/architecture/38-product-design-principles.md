@@ -402,15 +402,56 @@ The first model-authored content in the product, and the first surface whose des
 
 **Raw citation tokens never reach a reader.** `signal:38b821b4-…` is an address, not information.
 
-## The finding that matters most — F-9
+## F-11 — a zero-padded figure can never ground its unpadded form
 
-**`explanation_narration@1` succeeded on 2 of 12 real accounts.**
+**Corrected 2026-08-01, and the correction is the finding.** The first
+narration run succeeded on 2 of 12 accounts, and I recorded that as an
+evaluation-dataset problem: a prompt released against a two-case golden set
+failing to generalise. **That was wrong.** The failures had a single
+deterministic cause, and a clean run afterwards succeeded on **10 of 12**, with
+both remaining failures transient timeouts rather than refusals.
 
-The prompt holds a current release: measured under protocol 2 on 2026-07-31, zero grounding failures, zero schema failures, coverage 1.0. Against the Playground it failed nine times out of twelve, and **the release is not wrong — the dataset behind it is two cases.** *"Variety 1"* has been the recorded caveat on every prompt in this repository since M8; this is the first time it has been priced.
+### The defect
 
-Every failure was the same kind, and **grounding caught all of them.** Not one fabricated statement reached the database. That is the guarantee working exactly as designed, under production conditions, on data nobody tuned for it.
+`_normalise` in `grounding.py` folds thousands separators and trailing decimal
+zeros into one canonical form. It does not fold **leading** zeros:
 
-*Owner:* the AI Platform, as an evaluation-dataset question — not a prompt question. **The prompt must not be tuned to raise this number**; a prompt edited until a demo passes is a prompt whose recorded evaluation describes something else. The correct response is a golden set with the variety the Playground now has.
+| | tokens after normalisation |
+|---|---|
+| evidence `2026-08-01` | `2026`, `08`, `01` |
+| prose *"August 1, 2026"* | `2026`, `1` |
+
+`1` is not `01`, so the statement is refused as ungrounded — **correctly by the
+letter of the check and wrongly by its purpose.** Any date falling on the first
+nine days of a month fails this way, as does any zero-padded quantity a model
+writes the way a person would.
+
+It was hidden by the same accident that hid F-10: the golden set has no
+zero-padded figure, so nothing had ever asked.
+
+### Why it looked like a dataset problem
+
+The opportunity's `opened_on` was wall-clock now — the `created_at` defect fixed
+in this slice — which on 1 August rendered as `2026-08-01`. Fixing the
+timestamp moved it to `2026-06-27`, and `27` needs no padding. **The success
+rate went from 2/12 to 10/12 because of a date change, not a prompt change**,
+which is exactly the shape of evidence that should stop anyone reaching for the
+prompt.
+
+*Severity:* 🟠 Medium — deterministic, silent, and it discards valid output.
+*Owner:* AI Platform. *Shape of the fix:* `plain.lstrip("0") or "0"` in
+`_normalise`, so `007` and `7` are one figure for the same reason `1.50` and
+`1.5` already are. **Not applied:** `ai_platform/` is frozen, and this *loosens*
+a grounding check. Relaxing a guarantee is a product-owner decision, not a
+coding-session one — the whole point of the freeze.
+
+### What survives from the original F-9
+
+Only this, and it is worth keeping: **grounding refused every one of those
+outputs, and nothing fabricated reached the database.** The guard was
+over-strict rather than absent, which is the correct direction for it to be
+wrong in. The *"variety 1"* caveat on the golden sets is still real and still
+unpriced — this run simply did not price it.
 
 ## D24 — a violation report named a figure nobody wrote
 
