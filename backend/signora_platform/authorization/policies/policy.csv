@@ -17,3 +17,7 @@ p, owner, *, product, update
 p, owner, *, icp, read
 p, member, *, icp, read
 p, owner, *, icp, update
+p, owner, *, research, read
+p, member, *, research, read
+p, owner, *, research, add
+p, member, *, research, add

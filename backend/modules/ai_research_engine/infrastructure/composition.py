@@ -27,12 +27,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.ai_platform.public import Infer
 from modules.ai_research_engine.application.plan import PROMPT_NAME, PROMPT_VERSION
+from modules.ai_research_engine.application.queries import ResearchQueries
+from modules.ai_research_engine.application.request import RequestResearch
 from modules.ai_research_engine.application.research import (
     SYNTHESIS_PROMPT,
     SYNTHESIS_VERSION,
     Research,
 )
+from modules.ai_research_engine.application.run import BeginResearchRun, FinishResearchRun
 from modules.ai_research_engine.infrastructure.repository import SqlResearchRepository
+from modules.ai_research_engine.infrastructure.request_repository import (
+    SqlResearchArtifactReader,
+    SqlResearchRequestRepository,
+)
 from modules.ai_research_engine.infrastructure.retrieval import OpportunityFactSource
 from modules.opportunity_engine.public import OpportunityQueries
 from signora_platform.event_bus import EventPublisher
@@ -74,4 +81,64 @@ def build_research(
         repository=SqlResearchRepository(session),
         publisher=publisher,
         session=session,
+    )
+
+
+def build_request_research(
+    session: AsyncSession,
+    *,
+    opportunities: OpportunityQueries,
+    publisher: EventPublisher,
+) -> RequestResearch:
+    """The ask, assembled for one API request.
+
+    **No `Infer`, and that absence is the architecture showing.** This path
+    cannot call a model because it is handed nothing that could — an API
+    handler that blocked on a research run would hold a request open for the
+    minute two model calls take (CLAUDE.md §7). The wiring makes that
+    impossible rather than merely discouraged.
+    """
+    return RequestResearch(
+        requests=SqlResearchRequestRepository(session),
+        opportunities=opportunities,
+        publisher=publisher,
+        session=session,
+    )
+
+
+def build_begin_research_run(session: AsyncSession) -> BeginResearchRun:
+    """Marking a request as running. Its own unit of work, so the status is
+    visible while the run it describes is still happening."""
+    return BeginResearchRun(requests=SqlResearchRequestRepository(session))
+
+
+def build_finish_research_run(
+    session: AsyncSession,
+    *,
+    infer: Infer,
+    model: str,
+    opportunities: OpportunityQueries,
+    publisher: EventPublisher,
+) -> FinishResearchRun:
+    """The run, assembled for one worker job. **The only caller of `Research`
+    a customer can reach**, and the mirror image of the API wiring above: this
+    one has everything needed to spend a model call and nothing that could
+    accept an HTTP request."""
+    return FinishResearchRun(
+        requests=SqlResearchRequestRepository(session),
+        research=build_research(
+            session,
+            infer=infer,
+            model=model,
+            opportunities=opportunities,
+            publisher=publisher,
+        ),
+    )
+
+
+def build_research_queries(session: AsyncSession) -> ResearchQueries:
+    """The read surface. Two readers, neither of which can write."""
+    return ResearchQueries(
+        requests=SqlResearchRequestRepository(session),
+        artifacts=SqlResearchArtifactReader(session),
     )

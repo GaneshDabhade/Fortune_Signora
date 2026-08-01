@@ -17,6 +17,10 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
 from modules.ai_platform.interface.router import router as narration_router
+from modules.ai_research_engine.interface.errors import (
+    ERROR_MAPPING as AI_RESEARCH_ENGINE_ERRORS,
+)
+from modules.ai_research_engine.interface.router import router as research_router
 from modules.business_event_engine.interface.router import router as evidence_router
 from modules.buying_score_engine.interface.router import router as buying_score_router
 from modules.commercial_profile.interface.errors import (
@@ -87,6 +91,7 @@ def _error_mappings() -> ErrorMapping:
     mappings.update(WORKSPACE_TENANCY_ERRORS)
     mappings.update(OPPORTUNITY_ENGINE_ERRORS)
     mappings.update(COMMERCIAL_PROFILE_ERRORS)
+    mappings.update(AI_RESEARCH_ENGINE_ERRORS)
     return mappings
 
 
@@ -140,6 +145,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(validation_router)
     app.include_router(evidence_router)
     app.include_router(products_router)
+    app.include_router(research_router)
 
     @app.get("/health", response_model=HealthResponse, tags=["operations"])
     async def health() -> HealthResponse:

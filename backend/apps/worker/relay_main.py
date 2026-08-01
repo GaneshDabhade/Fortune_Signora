@@ -18,6 +18,11 @@ from typing import Any
 from arq import create_pool
 from arq.connections import RedisSettings
 
+# Imported for its side effect: registering subscriptions. The relay never
+# runs a handler — it needs the registry only to know which queue each event
+# type fans out to, and an unimported subscription would leave events relayed
+# to nobody and marked done.
+from apps.worker import subscriptions  # noqa: F401
 from signora_platform.db import create_relay_engine, create_session_factory
 from signora_platform.event_bus import ArqQueuePublisher, OutboxRelay, registry
 from signora_platform.observability import (

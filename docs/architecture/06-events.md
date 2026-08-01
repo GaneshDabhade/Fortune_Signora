@@ -68,6 +68,7 @@ Events are listed in pipeline order. Payload fields below are illustrative and i
 | `buying_score.updated` | Buying Score Engine | Opportunity Engine, Timeline | `score_id`, `entity_id`, `score`, `trend`, `delta`, `contested`, `source_signal_ids`, `dissenting_signal_ids`, `trigger`, `valid_until`, `model_version` — see the M5B section below |
 | `opportunity.created` | Opportunity Engine | AI Research Engine, AI Reasoning Engine, Timeline, Revenue Intelligence Platform | `opportunity_id`, `entity_id`, `originating_buying_score_id`, `score_at_creation`, `contested_at_creation`, `qualification`, `stage`, `policy_version` — see the M6 section below |
 | `opportunity.stage_changed` | Opportunity Engine | AI Reasoning Engine, Timeline, Revenue Intelligence Platform | `opportunity_id`, `entity_id`, `previous_stage`, `new_stage`, `owner_id`, `actor_id`, `reason`, `sequence` |
+| `ai_research.requested` | AI Research Engine | AI Research Engine (its own worker — see the M12.4 section below) | `request_id`, `entity_id`, `opportunity_id`, `requested_by`, `payload_version` |
 | `ai_research.completed` | AI Research Engine | AI Reasoning Engine (optional/non-blocking, see [05-module-dependencies.md](05-module-dependencies.md)) | `research_id`, `opportunity_id`, `subject_kind`, `subject_id`, `synthesis_id`, `prompt_name`, `prompt_version`, `prompt_fingerprint`, `model`, `vendor`, `evidence_digest`, `finding_count`, `statement_count`, `inference_id`, `payload_version` — see the M10 section below |
 | `ai_reasoning.completed` | AI Reasoning Engine | Recommendation Engine, Revenue Intelligence Platform | `reasoning_id`, `opportunity_id`, `model_provenance`, `result_ref` |
 | `recommendation.created` | Recommendation Engine | Timeline, Revenue Intelligence Platform | `recommendation_id`, `opportunity_id`, `action`, `priority` |
@@ -102,6 +103,7 @@ sequenceDiagram
     SE-->>TL: signal.generated
     BSE->>OP: buying_score.updated
     BSE-->>TL: buying_score.updated
+    ARE->>ARE: ai_research.requested (from the API, via the outbox)
     OP->>ARE: opportunity.created
     OP->>AIR: opportunity.created / stage_changed
     OP-->>RI: opportunity.created
@@ -411,3 +413,58 @@ One event per raw record rather than one per claim: the claims from a record are
 **Identity and counts, never the prose.** `finding_count` says how many comparisons ran; nothing here says what they found, and `statement_count` says how long the brief is rather than what it claims. *Events carry identity; ports carry payload.*
 
 **`finding_count` is a count, never a quality.** A run with one finding is not worse than one with three — it looked at an account with less to compare.
+
+
+---
+
+## M12.4 — `ai_research.requested`, and the first production consumer
+
+*Added 2026-08-01 with research on demand.*
+
+**The first event in this catalog whose producer and consumer are the same
+module**, and the first with a *production* subscription at all: every
+`registry.subscribe` call before it was in a test.
+
+### Why a command travels on the event bus
+
+An API handler may not call a model (CLAUDE.md §7), and a research run is two
+model calls and about a minute. So the request endpoint writes the
+`research_request` row and publishes `ai_research.requested` **in the same
+transaction**, through the outbox. The relay delivers it to the `ai_research`
+pool, and a worker runs it.
+
+Publishing directly to Redis would enqueue work whose cause might never commit —
+a worker researching an account nobody successfully asked about. That is exactly
+the failure the outbox exists to prevent, and it is why this is an event rather
+than a direct enqueue.
+
+**It is deliberately not a `started` event.** Nothing is published between the
+ask and `ai_research.completed`: a *started* announcement would describe work
+that has changed nothing, and the surface a customer watches reads the request's
+own append-only state history instead.
+
+### Identity only, as everywhere else
+
+The handler reads the request row the envelope names rather than trusting the
+payload — so a replayed event cannot start a run against an account the request
+no longer points at. *Events carry identity; ports carry payload.*
+
+`requested_by` is carried because it is what a later reader needs in order to
+explain a model call in a bill, and it is not derivable from anything else on
+the envelope.
+
+### A finding raised by building it
+
+**The dispatcher opens a tenant-scoped session and does not pass it to the
+handler.** `EventHandler` is `Callable[[EventEnvelope], Awaitable[None]]`, so a
+consumer cannot join the transaction that is already open for it, and the
+idempotency claim and the work therefore commit separately.
+
+`ai_research_engine` opens its own sessions and the consequence is stated in
+`interface/handlers.py` rather than smoothed over: if the claim were lost after
+the work committed, redelivery would find a settled request, the domain would
+refuse to advance it, and the event would **dead-letter loudly and without a
+second model call.**
+
+Widening `EventHandler` is a `signora_platform/` change and belongs to the
+platform's owner (§20a). **Raised, not fixed.**

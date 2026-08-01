@@ -467,3 +467,77 @@ export interface DeclareIcp {
   expected_version: number;
   profiles: ProductIcp[];
 }
+
+/**
+ * One sentence a model wrote in a research brief, and the findings under it.
+ *
+ * The same shape as `NarrationStatement` and deliberately not the same type:
+ * these cite **findings**, not pipeline rows, and the findings are on the same
+ * response — so following a claim here costs no request at all.
+ */
+export interface ResearchStatement {
+  text: string;
+  /** `research_finding:<uuid>` tokens. **Never empty**, and every one resolves
+   * against `findings` on the same payload. */
+  cites: string[];
+}
+
+/**
+ * One deterministic comparison research performed. **DERIVED, not written.**
+ *
+ * The half of a research brief nobody has to trust: a customer who disagrees
+ * opens the rows in `cites` and runs the same comparison. That is what makes
+ * research something other than a second opinion.
+ */
+export interface ResearchFinding {
+  id: string;
+  /** How a statement addresses this finding. Matched against `cites`. */
+  ref: string;
+  /** Which comparison was performed — the name of the code that computed it. */
+  derivation: string;
+  /** What it was performed to answer, **in the catalog's own reviewed words**.
+   * On the wire so no client maps a derivation key to a sentence of its own. */
+  question: string;
+  /** What the comparison produced, rendered for display. */
+  attributes: Record<string, string>;
+  /** The pipeline rows it compared, in the citation form the evidence drawer
+   * already resolves — so a finding leads on to the business event beneath it. */
+  cites: string[];
+}
+
+/** One completed run: what was compared, and what was made of it. */
+export interface ResearchArtifact {
+  task_id: string;
+  produced_at: string;
+  /** **INFERRED.** */
+  statements: ResearchStatement[];
+  /** **DERIVED.** */
+  findings: ResearchFinding[];
+  prompt_name: string;
+  prompt_version: number;
+  model: string;
+  evidence_digest: string;
+}
+
+/**
+ * Where research on one account stands.
+ *
+ * `nothing_to_research` is **not a failure**: the run finished and found
+ * nothing worth comparing, which is a real answer on an account with little
+ * evidence. A client that rendered it as an error would have the product
+ * apologising for behaving correctly.
+ */
+export type ResearchStatus =
+  'requested' | 'running' | 'completed' | 'nothing_to_research' | 'failed';
+
+export interface AccountResearch {
+  request_id: string;
+  status: ResearchStatus;
+  requested_at: string;
+  updated_at: string;
+  /** Why it failed, verbatim. **Null unless `status` is `failed`.** */
+  detail: string | null;
+  /** The brief. **Null unless `status` is `completed`**, and never null when
+   * it is. */
+  artifact: ResearchArtifact | null;
+}

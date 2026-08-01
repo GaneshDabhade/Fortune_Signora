@@ -48,6 +48,11 @@ class Resource(StrEnum):
     #: describe who buys a product without the right to change the catalog it
     #: names, and one resource could not express that.
     ICP = "icp"
+    #: Registered by M12.4, on the same terms again. Distinct from `ACCOUNT`:
+    #: reading an account is free and asking for research spends a model call,
+    #: and one resource could not express both without making every reader a
+    #: spender.
+    RESEARCH = "research"
 
 
 class Action(StrEnum):
