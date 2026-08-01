@@ -23,9 +23,11 @@ from __future__ import annotations
 
 import ast
 import inspect
+from uuid import uuid4
 
 import pytest
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from modules.signal_engine.domain import rules
@@ -255,24 +257,90 @@ class TestCustomerAuthoredConfiguration:
     regenerated from anything. It is a statement a customer makes about
     their own business, and it needs the rigour that implies."""
 
-    async def test_a_workspace_has_at_most_one_current_profile(
+    async def test_a_workspace_cannot_hold_two_profiles_at_one_version(
         self, admin_session_factory: async_sessionmaker[AsyncSession]
     ) -> None:
         """Two live interpretations with no way to say which applied would
-        make every signal generated during the overlap unexplainable."""
+        make every signal generated during the overlap unexplainable.
+
+        **Rewritten at `B-001`, and strengthened rather than weakened.** This
+        asserted the *definition* of `uq_signal_profile_current`:
+
+            UNIQUE (workspace_id) WHERE supersedes IS NULL
+
+        which reads like *"one current profile per workspace"* and is not. On
+        an immutable table the null-`supersedes` row is the **first** version,
+        so that index held exactly one row per workspace forever and **could
+        not fail after the first write** — two concurrent version-2 writes both
+        name version 1, neither is null, and both insert. A guard that cannot
+        fail is documentation pretending to be code (CLAUDE.md §2), and a test
+        asserting its definition kept the false claim alive.
+
+        The index is dropped (migration `0023`). The property is now asserted
+        **by attempting the violation** against
+        `uq_signal_profile_version (workspace_id, version)`, which is the
+        constraint that actually holds — at every version, not only the first.
+        """
+        workspace_id = uuid4()
+        author = uuid4()
+
         async with admin_session_factory() as session, session.begin():
-            index = (
+            await session.execute(
+                text(
+                    "INSERT INTO signal_profile "
+                    "(id, workspace_id, version, entries, supersedes, created_by, updated_by) "
+                    "VALUES (:id, :ws, 1, '[]'::jsonb, NULL, :who, :who)"
+                ),
+                {"id": str(uuid4()), "ws": str(workspace_id), "who": str(author)},
+            )
+
+        with pytest.raises(IntegrityError):
+            async with admin_session_factory() as session, session.begin():
                 await session.execute(
                     text(
-                        "SELECT indexdef FROM pg_indexes "
-                        "WHERE indexname = 'uq_signal_profile_current'"
+                        "INSERT INTO signal_profile "
+                        "(id, workspace_id, version, entries, supersedes, created_by, "
+                        " updated_by) "
+                        "VALUES (:id, :ws, 1, '[]'::jsonb, NULL, :who, :who)"
+                    ),
+                    {"id": str(uuid4()), "ws": str(workspace_id), "who": str(author)},
+                )
+
+        async with admin_session_factory() as session, session.begin():
+            await session.execute(
+                text("DELETE FROM signal_profile WHERE workspace_id = :ws"),
+                {"ws": str(workspace_id)},
+            )
+
+    async def test_the_superseded_marker_is_never_read_as_currency(
+        self, admin_session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """**`B-001`, as an invariant.** No index may key currency on
+        `supersedes IS NULL` again.
+
+        The predicate is inverted on an immutable table — it selects the
+        *original* — and the same shape reached production once already. This
+        refuses it structurally rather than trusting a reviewer to remember
+        which direction a supersession pointer points.
+        """
+        async with admin_session_factory() as session, session.begin():
+            offenders = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT indexname FROM pg_indexes "
+                            "WHERE indexdef ILIKE '%supersedes IS NULL%'"
+                        )
                     )
                 )
-            ).scalar_one_or_none()
+                .scalars()
+                .all()
+            )
 
-        assert index is not None
-        assert "UNIQUE" in index
-        assert "supersedes IS NULL" in index
+        assert offenders == [], (
+            f"{offenders} key currency on `supersedes IS NULL`. On an immutable table that "
+            "is the FIRST version, not the current one — the defect B-001 recorded."
+        )
 
     async def test_every_profile_version_records_who_authored_it(
         self, admin_session_factory: async_sessionmaker[AsyncSession]

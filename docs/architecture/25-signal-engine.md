@@ -478,7 +478,7 @@ Adopted, and it turned out to be more than terminology. `SignalTypeDefinition.de
 | `ProfileEntry.signal_type` typed as `SignalType` | A workspace-invented type, unrepresentable rather than discouraged |
 | Hedging-language invariant on every hypothesis | A type stating its hypothesis as a **fact**, which would mean it had drifted into the Business Event Engine's territory |
 | `ck_signal_relevance_is_held` | A stored signal of a type the workspace marked `IGNORED` |
-| `uq_signal_profile_current` | Two live interpretations for one workspace, which would make every signal generated during the overlap unexplainable |
+| ~~`uq_signal_profile_current`~~ → `uq_signal_profile_version` | Two live interpretations for one workspace, which would make every signal generated during the overlap unexplainable. **The row above is corrected, not rewritten** — see `B-001` below |
 | `signal_profile.created_by NOT NULL` | An unattributed configuration change — a commercial decision with no author |
 
 ### What the demonstration shows, including one honest limit
@@ -528,3 +528,33 @@ Two exclusions matter:
 - [x] PROJECT_STATUS and SESSION_HANDOFF updated at the boundary
 
 The two platform findings from M3A remain open and are **not** worked around: `EventHandler` receives no session, and `PublishableEvent` cannot be satisfied by a frozen dataclass. Both are queued as RFCs for the platform milestone.
+
+
+---
+
+## `supersedes IS NULL` was never currency — `B-001`, fixed 2026-08-01
+
+**The row above claimed a guard that could not fail.** `uq_signal_profile_current` was `UNIQUE (workspace_id) WHERE supersedes IS NULL`, and `SqlProfileRepository.current` read the same predicate.
+
+**On an immutable table that predicate selects the *first* version.** A revision is a new row *naming* its predecessor, so version 1 keeps the null pointer forever. Two consequences, and the second was invisible until somebody looked:
+
+1. **`current()` returned version 1 permanently.** Every revision a customer made would have been silently ignored, and every signal generated afterwards attributed to a profile nobody was using.
+2. **The index could not fail after the first write.** Two concurrent version-2 writes both carry `supersedes = <v1>`, neither is null, and both insert — the exact condition the table above said it prevented.
+
+**It never bit because nothing has ever written a second profile version.** There is no endpoint and no screen; every test writes v1. It becomes reachable the moment a customer can edit their relevance profile, which is why it was carried as 🟠-today/🔴-then rather than closed as theoretical.
+
+### The fix, and what it replaced the guard with
+
+`current()` reads `MAX(version)`. A maximum cannot invert. `product_catalog` (`0019`) and `research_request` (`0021`) already read currency this way; **this is the older code catching up with the newer, not a new idea.**
+
+The index is dropped (migration `0023`). `uq_signal_profile_version (workspace_id, version)` is what actually protects the invariant — it refuses a duplicate version at *every* version rather than only the first, so two concurrent revisions computing the same next number collide and one loses.
+
+**`supersedes` stays.** It is a true statement about lineage and historical explanation reads through it. It is simply not a currency marker, and an invariant now refuses any index that treats it as one.
+
+### The finding that made this worth more than one bug fix
+
+`B-001` was raised against `signal_profile`. The regression guard was written as a **repository-wide scan** — *no index anywhere may key currency on `supersedes IS NULL`* — rather than as an assertion about one table.
+
+**It failed immediately against two more:** `uq_scoring_model_current` (migration `0013`) and `uq_opportunity_policy_current` (`0014`), with the identical inverted `current()` reader behind each. All three are customer-authored configuration; all three are the same defect copied forward by a developer following the pattern in front of them.
+
+**A per-table assertion would have closed one bug and left two.** That is the argument, stated generally: when a defect is a *pattern*, the invariant that prevents its return should scan for the pattern, because the same reasoning that produced it once has usually produced it more than once.

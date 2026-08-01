@@ -41,7 +41,7 @@
 |---|---|
 | **Owner** | Lane A — `signal_engine` |
 | **Severity** | 🟠 — latent today, 🔴 the moment the signal profile gets a write path |
-| **Status** | `OPEN` |
+| **Status** | `FIXED` — `0023`, and it was in **three** tables. See `25-signal-engine.md` |
 | **Found** | `1ae600d`, while building `commercial_profile` |
 
 **Steps to reproduce.** Write a `SignalProfile` at version 1. Write a second superseding it (`supersedes = <v1 id>`). Call `SqlProfileRepository.current(workspace_id)`.

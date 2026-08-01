@@ -199,12 +199,25 @@ class SqlProfileRepository:
         self._session = session
 
     async def current(self, workspace_id: UUID) -> SignalProfile | None:
+        """The profile in force: **the highest version.**
+
+        **Not `WHERE supersedes IS NULL`** (`B-001`). On an immutable table the
+        row with a null `supersedes` is the *first* version — the new row is
+        the one that names its predecessor — so that predicate returned
+        version 1 forever and silently ignored every revision a customer made.
+        It never bit because nothing has ever written a second version, which
+        is exactly the shape of defect that waits for a feature.
+
+        A maximum cannot invert. `product_catalog` (migration `0019`) and
+        `research_request` (`0021`) both read currency this way, for this
+        reason.
+        """
         row = (
             await self._session.execute(
-                select(SignalProfileModel).where(
-                    SignalProfileModel.workspace_id == workspace_id,
-                    SignalProfileModel.supersedes.is_(None),
-                )
+                select(SignalProfileModel)
+                .where(SignalProfileModel.workspace_id == workspace_id)
+                .order_by(SignalProfileModel.version.desc())
+                .limit(1)
             )
         ).scalar_one_or_none()
         return _to_profile(row) if row is not None else None
