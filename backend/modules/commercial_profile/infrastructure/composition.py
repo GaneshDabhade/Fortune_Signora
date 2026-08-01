@@ -13,10 +13,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from modules.commercial_profile.application.declare_committee import (
     DeclareBuyingCommittee,
 )
+from modules.commercial_profile.application.declare_focus import DeclareFocus
 from modules.commercial_profile.application.declare_icp import DeclareIcp
 from modules.commercial_profile.application.publish import PublishProductCatalog
 from modules.commercial_profile.infrastructure.repository import (
     SqlBuyingCommitteeRepository,
+    SqlCommercialFocusRepository,
     SqlIcpDeclarationRepository,
     SqlProductCatalogRepository,
 )
@@ -53,5 +55,16 @@ def build_buying_committees(session: AsyncSession) -> SqlBuyingCommitteeReposito
 def build_declare_buying_committee(session: AsyncSession) -> DeclareBuyingCommittee:
     return DeclareBuyingCommittee(
         committees=SqlBuyingCommitteeRepository(session),
+        catalog=SqlProductCatalogRepository(session),
+    )
+
+
+def build_focuses(session: AsyncSession) -> SqlCommercialFocusRepository:
+    return SqlCommercialFocusRepository(session)
+
+
+def build_declare_focus(session: AsyncSession) -> DeclareFocus:
+    return DeclareFocus(
+        focuses=SqlCommercialFocusRepository(session),
         catalog=SqlProductCatalogRepository(session),
     )

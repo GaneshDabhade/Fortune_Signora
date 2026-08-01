@@ -1,9 +1,8 @@
 """What every declaration that cites a product has in common.
 
-Two of them do now — the ideal customer and the buying committee — and slice
-4's priorities will be the third. Each says something *about a product*, and
-each therefore has to answer the same question first: **does the workspace
-actually sell this?**
+Three of them do now — the ideal customer, the buying committee and the
+focus. Each says something *about a product*, and each therefore has to answer
+the same question first: **does the workspace actually sell this?**
 
 **One check, several refusals.** The rule is shared because it is one rule;
 the error classes are not, because a customer fixing an ideal customer and a
@@ -41,6 +40,20 @@ class IcpUnknownProductError(UnknownProductError):
 class CommitteeUnknownProductError(UnknownProductError):
     def __init__(self, product_id: UUID) -> None:
         super().__init__(product_id, said="describe who decides about")
+
+
+class FocusUnknownProductError(UnknownProductError):
+    """The third subclass of one condition.
+
+    **Three codes for one rule is now visibly the wrong shape**, and a single
+    neutral `unknown_product` is the right one. It is still not taken here:
+    renaming a shipped code is outside this lane's budget, and the
+    consolidation is raised for the product owner rather than decided in a
+    slice.
+    """
+
+    def __init__(self, product_id: UUID) -> None:
+        super().__init__(product_id, said="focus on")
 
 
 async def sold_products(catalog: ProductCatalogRepository, workspace_id: UUID) -> frozenset[UUID]:

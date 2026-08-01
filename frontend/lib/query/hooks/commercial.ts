@@ -15,7 +15,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/api/client';
 import type {
   BuyingCommittee,
+  CommercialFocus,
   DeclareBuyingCommittee,
+  DeclareFocus,
   DeclareIcp,
   IcpDeclaration,
   ProductCatalog,
@@ -161,6 +163,49 @@ export function useDeclareBuyingCommittee(workspaceId: string | null) {
     // place the product stated something untrue.
     onSuccess: (declared) => {
       client.setQueryData(queryKeys.buyingCommittee(workspaceId ?? ''), declared);
+    },
+  });
+}
+
+/**
+ * What this company is pushing right now.
+ *
+ * **Never 404s, and applied to nothing.** It reports the products the customer
+ * said they are pushing; no screen and no consumer yet does anything with it.
+ */
+export function useCommercialFocus(workspaceId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.commercialFocus(workspaceId ?? ''),
+    queryFn: () =>
+      apiRequest<CommercialFocus>(`/workspaces/${workspaceId}/focus`, {
+        workspaceId: workspaceId ?? undefined,
+      }),
+    enabled: workspaceId !== null,
+  });
+}
+
+/**
+ * Declare the focus, as a complete statement.
+ *
+ * The whole focus is sent, for the fourth time in this module and the same
+ * reason each time: the declaration is the unit that gets versioned.
+ *
+ * **Deliberately does not retry.** A retry would re-send a version the server
+ * has already rejected once.
+ */
+export function useDeclareFocus(workspaceId: string | null) {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: (focus: DeclareFocus) =>
+      apiRequest<CommercialFocus>(`/workspaces/${workspaceId}/focus`, {
+        method: 'PUT',
+        body: focus,
+        workspaceId: workspaceId ?? undefined,
+      }),
+    // Not optimistic, for the same reason as the other three.
+    onSuccess: (declared) => {
+      client.setQueryData(queryKeys.commercialFocus(workspaceId ?? ''), declared);
     },
   });
 }

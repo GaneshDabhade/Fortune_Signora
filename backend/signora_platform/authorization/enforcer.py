@@ -57,6 +57,10 @@ class Resource(StrEnum):
     #: because the two are separate aggregates a customer edits on different
     #: days — who a product is for, and who inside a company decides about it.
     BUYING_COMMITTEE = "buying_committee"
+    #: Registered by M12.5 slice 4, on the same terms. Its own resource
+    #: because what a company is pushing this quarter is a different
+    #: administrative decision from what it sells or who buys it.
+    COMMERCIAL_FOCUS = "commercial_focus"
 
 
 class Action(StrEnum):

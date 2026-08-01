@@ -24,6 +24,7 @@ from modules.commercial_profile.domain.committee import (
     CommitteeRole,
     ProductCommittee,
 )
+from modules.commercial_profile.domain.focus import CommercialFocus
 from modules.commercial_profile.domain.icp import (
     EmployeeRange,
     IcpDeclaration,
@@ -31,6 +32,7 @@ from modules.commercial_profile.domain.icp import (
 )
 from modules.commercial_profile.infrastructure.models import (
     BuyingCommitteeModel,
+    CommercialFocusModel,
     IcpDeclarationModel,
     ProductCatalogModel,
 )
@@ -233,6 +235,47 @@ class SqlBuyingCommitteeRepository:
                 supersedes=committee.supersedes,
                 created_by=committee.created_by,
                 updated_by=committee.created_by,
+            )
+        )
+        await self._session.flush()
+
+
+def _to_focus(row: CommercialFocusModel) -> CommercialFocus:
+    return CommercialFocus(
+        id=row.id,
+        workspace_id=row.workspace_id,
+        version=row.version,
+        products=tuple(UUID(raw) for raw in row.products),
+        objective=row.objective,
+        created_at=row.created_at,
+        created_by=row.created_by,
+        supersedes=row.supersedes,
+    )
+
+
+class SqlCommercialFocusRepository:
+    """Persistence for the focus, on the same terms as the rest."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def current(self, workspace_id: UUID) -> CommercialFocus | None:
+        result = await self._session.execute(latest(CommercialFocusModel, workspace_id))
+        row = result.scalar_one_or_none()
+        return None if row is None else _to_focus(row)
+
+    async def save(self, focus: CommercialFocus) -> None:
+        """Insert the new version. Nothing is updated, ever."""
+        self._session.add(
+            CommercialFocusModel(
+                id=focus.id,
+                workspace_id=focus.workspace_id,
+                version=focus.version,
+                products=[str(product_id) for product_id in focus.products],
+                objective=focus.objective,
+                supersedes=focus.supersedes,
+                created_by=focus.created_by,
+                updated_by=focus.created_by,
             )
         )
         await self._session.flush()

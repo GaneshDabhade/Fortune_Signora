@@ -1,12 +1,14 @@
 'use client';
 
 import { BuyingCommitteeEditor } from '@/components/commercial/committee';
+import { CommercialFocusEditor } from '@/components/commercial/focus';
 import { IcpEditor } from '@/components/commercial/icp';
 import { ProductCatalogEditor } from '@/components/commercial/products';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { SkeletonText } from '@/components/ui';
 import {
   useBuyingCommittee,
+  useCommercialFocus,
   useIcpDeclaration,
   useProductCatalog,
 } from '@/lib/query/hooks/commercial';
@@ -33,6 +35,7 @@ export default function ProductsPage() {
   const { data, isLoading, isError } = useProductCatalog(activeWorkspace?.id ?? null);
   const icp = useIcpDeclaration(activeWorkspace?.id ?? null);
   const committee = useBuyingCommittee(activeWorkspace?.id ?? null);
+  const focus = useCommercialFocus(activeWorkspace?.id ?? null);
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
@@ -70,6 +73,13 @@ export default function ProductsPage() {
         <BuyingCommitteeEditor
           catalog={data}
           declaration={committee.data}
+          workspaceId={activeWorkspace?.id ?? null}
+        />
+      ) : null}
+      {data && focus.data ? (
+        <CommercialFocusEditor
+          catalog={data}
+          focus={focus.data}
           workspaceId={activeWorkspace?.id ?? null}
         />
       ) : null}

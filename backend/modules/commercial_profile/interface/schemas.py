@@ -27,6 +27,7 @@ from modules.commercial_profile.domain.committee import (
     ProductCommittee,
 )
 from modules.commercial_profile.domain.declaration import UNDECLARED
+from modules.commercial_profile.domain.focus import MAX_OBJECTIVE, CommercialFocus
 from modules.commercial_profile.domain.icp import (
     MAX_CRITERIA,
     MAX_EMPLOYEES,
@@ -460,11 +461,95 @@ class BuyingCommitteeResponse(BaseModel):
         )
 
 
+class DeclareFocusRequest(BaseModel):
+    """A complete statement of what the workspace is pushing right now."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    expected_version: int = Field(
+        ge=UNDECLARED,
+        description=(
+            "The version being replaced — **0 when declaring a focus for the first "
+            "time.** Sending the version you read turns a colleague's concurrent edit "
+            "into a refusal you can act on instead of an overwrite neither of you sees."
+        ),
+    )
+    products: tuple[UUID, ...] = Field(
+        description=(
+            "The products being pushed, each one the workspace currently sells. **No "
+            "order and no rank** — a product is in focus or it is not, and this list "
+            "carries nothing a consumer could multiply. An empty list is a legitimate "
+            "statement: *we are not pushing anything in particular*."
+        )
+    )
+    objective: str = Field(
+        default="",
+        max_length=MAX_OBJECTIVE,
+        description=(
+            "What you are trying to do, in your own words — *land three health "
+            "systems*. Read by a colleague, never parsed."
+        ),
+    )
+
+
+class CommercialFocusResponse(BaseModel):
+    """What this workspace is pushing, and who last said so."""
+
+    model_config = ConfigDict(frozen=True)
+
+    version: int = Field(
+        description=(
+            "**0 when nothing has been declared**, which is the ordinary state of a new "
+            "workspace — an empty focus is an answer, not a 404."
+        )
+    )
+    products: tuple[UUID, ...] = Field(
+        description="The products in focus. **Unordered and unranked.**"
+    )
+    objective: str = Field(description="In the customer's words. May be empty.")
+    updated_at: datetime | None = Field(
+        description=(
+            "When this was declared. Null only at version 0. **This is also the answer "
+            "to whether the focus is current** — there is no separate period field, "
+            "because it would be free to disagree with this one."
+        )
+    )
+    updated_by: UUID | None = Field(
+        description=(
+            "Who declared it. Null only at version 0. The row is never edited, so this "
+            "cannot be reattributed."
+        )
+    )
+
+    @classmethod
+    def empty(cls) -> CommercialFocusResponse:
+        """A workspace that has declared no focus."""
+        return cls(
+            version=UNDECLARED,
+            products=(),
+            objective="",
+            updated_at=None,
+            updated_by=None,
+        )
+
+    @classmethod
+    def from_domain(cls, focus: CommercialFocus) -> CommercialFocusResponse:
+        return cls(
+            version=focus.version,
+            products=focus.products,
+            objective=focus.objective,
+            updated_at=focus.created_at,
+            updated_by=focus.created_by,
+        )
+
+
 __all__ = [
     "BuyingCommitteeResponse",
+    "CommercialFocusResponse",
     "CommitteeRoleRequest",
     "CommitteeRoleResponse",
     "DeclareBuyingCommitteeRequest",
+    "DeclareFocusRequest",
     "DeclareIcpRequest",
     "EmployeeRangeRequest",
     "EmployeeRangeResponse",

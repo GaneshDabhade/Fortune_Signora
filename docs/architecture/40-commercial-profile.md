@@ -1,6 +1,6 @@
 # 40 — Commercial Profile (module design)
 
-> Status: **As built** — slices 1, 2 and 3 of 5. Lane B.
+> Status: **As built** — slices 1–4 of 5. Lane B.
 > Ratified by [ADR-0035](adr/0035-commercial-profile.md), which remains the module's architectural decision record and is **not** superseded by this document. The ADR says *why the bounded context exists*; this says **what was built inside it**, in the manner of [22](22-knowledge-graph.md)–[29](29-ai-reasoning-engine.md).
 >
 > Created 2026-08-01 with slice 2, because the module had no design document and `CLAUDE.md`'s reading order sends a session to one. A cold Lane B session had the ADR and the code, and nothing recording the decisions taken *during* implementation.
@@ -20,7 +20,7 @@ Several small ones, each versioned independently — never one profile object. P
 | 1 | `ProductCatalog` | `product_catalog` | `/workspaces/{id}/products` | 1 ✅ |
 | 2 | `IcpDeclaration` | `icp_declaration` | `/workspaces/{id}/icp` | 2 ✅ |
 | 3 | `BuyingCommittee` | `buying_committee` | `/workspaces/{id}/buying-committee` | 3 ✅ |
-| 4 | Business priorities | — | — | 4 |
+| 4 | `CommercialFocus` | `commercial_focus` | `/workspaces/{id}/focus` | 4 ✅ |
 | 5 | Target account list | — | — | 5 |
 
 Every one is **versioned, immutable and superseded**: a revision is a new row naming the one it replaces, the app role holds no `UPDATE` grant, and the repository offers no method the database would refuse. `DELETE` *is* granted — erasability is a property of the tenancy model, not a statement about what a row means.
@@ -81,17 +81,63 @@ A role is a **title the customer typed** — *"Head of Clinical Informatics"* �
 
 `buying_committee` rather than a column on `icp_declaration`, and the reason is the one that separated the first two: **a committee and an ideal customer change on different days.** Somebody adds a security reviewer without touching who the product is for, and one shared version would put both changes into an audit history that could no longer answer *what changed*. Asserted end to end: declaring a committee leaves the catalog and the ICP at their own versions.
 
+## Slice 4 — the commercial focus
+
+**What the company is pushing right now**: a set of products it currently sells, and what it is trying to do, in the customer's words. One workspace-level statement rather than a per-product map, because *"we're pushing Revenue Cloud this quarter"* is one sentence about the company, not several about products.
+
+### It is not called a priority, and that was the slice's real decision
+
+[ADR-0035](adr/0035-commercial-profile.md) and the roadmap name this capability **business priorities** — *"a priority is a ranking of these"*. The aggregate is deliberately not modelled that way, and the module's own guard is why: `test_boundary.py` refuses any domain identifier containing `priority` or `rank`, because **an ordinal in the head of the pipeline is one consumer away from a weight in a score.**
+
+Three options were weighed:
+
+| Option | Verdict |
+|---|---|
+| Store an ordinal and **exempt this file from the invariant** | **Rejected.** A guard with an exemption for the one place the temptation is strongest has stopped guarding — and the exemption would sit in the file it exempts |
+| Store an ordinal and **weaken the invariant repository-wide** | **Rejected outright.** Weakening a guard to make a change pass is what §11 forbids by name |
+| **Model what a seller actually says**: in focus, or not | **Taken.** No rank, no ordinal, no position — the API has no field a consumer could multiply, and `extra="forbid"` refuses one arriving from a client |
+
+**The third option is not a workaround; it is a better model.** A seller says *"we're pushing Revenue Cloud"*, never *"Revenue Cloud is priority two"*. Ranking five products 1–5 is an artificial exercise that produces a number nobody would defend. **The concept name differs from the roadmap's word, which is F-B3's business** — the manifest row should read `CommercialFocus`.
+
+### What it deliberately does not carry
+
+| Considered | Why it is absent |
+|---|---|
+| **A rank or position** | See above. Also asserted absent on the dataclass, on the wire, and by `extra="forbid"` |
+| **A period** — *"Q3 2026"* | `updated_at` already answers *"when did we last say this?"*, and a typed period would be a second representation of that fact, free to disagree with it. **Trigger: a customer who needs to declare next quarter's focus in advance**, which is a genuinely different fact |
+| **Anything about signals** | *"Funding rounds matter more to us than hiring"* is **signal relevance** and belongs to the Signal Engine's `signal_profile`. *"We're pushing Revenue Cloud"* is this. The two are one careless sentence apart and must never merge — see the finding below |
+
+### The one place it differs from the ideal customer
+
+**An empty focus is legal.** In the ICP, an entry with no criteria is refused, because an entry that says nothing is indistinguishable from leaving the product out — and leaving it out was always available. Here the aggregate *is* the statement, so there is nothing to leave out: an empty focus is how a customer says *"we are not pushing anything in particular"*, and it has an author and a moment, which is exactly what makes it different from never having said anything. It is also the only retraction path this module offers.
+
+## How free text stays future-proof
+
+*Recorded 2026-08-01 on the product owner's direction: today's free-text inputs must be able to support autocomplete, suggestions, synonym assistance and canonical mapping **without changing the API contract**.*
+
+**They already can, and the reason is the Canonical Vocabulary Principle rather than anything clever in the schema.** Because translation is not this module's job, none of those four capabilities requires this module's contract to change:
+
+| Capability | Where it lives | What changes here |
+|---|---|---|
+| **Autocomplete · suggestions** | A read of a suggestion source, offered as the customer types. The stored value is still whatever they chose to type | **Nothing.** A new read endpoint, owned by whoever owns the suggestion source |
+| **Synonym assistance** | The same — a hint at the edge, never a rewrite of what was stored | **Nothing** |
+| **Canonical mapping** | A **projection** computed by whoever does matching, keyed by the stored text | **Nothing.** A stored mapping here would be the translation this module must not perform |
+
+**The one thing that would break it, recorded so it is not discovered late:** if a mapping had to survive the customer *editing* a term — *"Fintech"* becoming *"Financial technology"* — the term would need a stable identity, and free strings have none. **Trigger: the first consumer that must keep a mapping attached across an edit.** The fix at that point is a per-term id, exactly as `Product` has one, and it is an additive field rather than a reshape.
+
+**The rule this sets for slices 5+**: a term-like free-text field stores the customer's words and nothing else; anything derived from it lives outside this module and is keyed by the text. Slice 4 introduced no term-like field — `objective` is a sentence, not a term — so nothing here needed the treatment.
+
 ## Refusals a customer can act on
 
 *The module's whole error surface, in one place rather than per slice.*
 
 | Code | Status | When |
 |---|---|---|
-| `catalog_version_conflict` · `icp_version_conflict` · `committee_version_conflict` | 409 | A colleague saved first. Always reported **before** any product check — a stale caller's product list is stale too, so naming the product would send them to fix the wrong page |
-| `icp_unknown_product` · `committee_unknown_product` | 422 | A declaration names a product not in the current catalog. **One shared check, distinct codes**: it is the only refusal fixed on a *different* page, and a client that cannot tell the two apart can only say *"something was wrong"* |
-| `catalog_refused` · `icp_refused` · `committee_refused` | 422 | What each aggregate's domain refuses. Distinct because the three are fixed in three different places |
+| `catalog_version_conflict` · `icp_version_conflict` · `committee_version_conflict` · `focus_version_conflict` | 409 | A colleague saved first. Always reported **before** any product check — a stale caller's product list is stale too, so naming the product would send them to fix the wrong page |
+| `icp_unknown_product` · `committee_unknown_product` · `focus_unknown_product` | 422 | A declaration names a product not in the current catalog. **One shared check, distinct codes**: it is the only refusal fixed on a *different* page, and a client that cannot tell the two apart can only say *"something was wrong"* |
+| `catalog_refused` · `icp_refused` · `committee_refused` · `focus_refused` | 422 | What each aggregate's domain refuses. Distinct because the three are fixed in three different places |
 
-> **By slice 4 there will be three codes for one condition** (`*_unknown_product`). A single neutral `unknown_product` is the better answer and is **not taken here**: renaming a shipped code is outside this lane's budget (⚫). Raised for the product owner instead.
+> **There are now three codes for one condition** (`*_unknown_product`), as predicted in slice 3, and the shape is visibly wrong. A single neutral `unknown_product` is the right answer and is **still not taken**: renaming a shipped code is outside this lane's budget (⚫). **Raised for the product owner a second time** — it is the only outstanding item in this module that gets worse with every slice.
 
 ## The Canonical Vocabulary Principle
 
@@ -143,6 +189,14 @@ ADR-0035 answers half of it — resolution among disagreeing claims is a Knowled
 
 **F-B4 — `signal_profile`'s inverted supersession. `Unchanged, and it fired this module's extraction trigger.`** Still Lane A's to fix. What changed is the consequence *here*: slice 3 is the **third** table in this module reading "the row in force", and the reason `MAX(version)` is correct rather than `supersedes IS NULL` is subtle enough that `signal_profile` got it backwards. Three hand-written copies is three chances for the fourth to be written wrongly, so the rule is now expressed **once**, in `infrastructure/versioned.py`, where it cannot be got wrong per table. This is *types make incorrect architecture impossible* applied to the one line in this module that a careful engineer has already got wrong somewhere else.
 
+**F-B6 — `signal_profile` is customer-authored configuration living in Lane A's module, and nobody owns its write path.** `New in slice 4.` [B-001](../BUGS.md) says the defect *"becomes reachable the moment a customer can edit their relevance profile, which is Lane B's territory but Lane A's module"* — and that sentence contains an unresolved ownership question, not just a bug.
+
+**The boundary this module has drawn makes the answer clear, and it is not Lane B's.** *"Funding rounds matter more to us than hiring"* is **signal relevance** — a statement about what Signora should treat as interesting — and the Signal Engine owns relevance by ratified principle. It is not a declaration about the customer's own commercial position, which is all this module holds. **Commercial Profile must not acquire it**, however customer-authored it looks: that is exactly the drift the module's boundary exists to prevent, and the slice-4 focus is one careless sentence away from it (*"we're pushing Revenue Cloud"* vs *"product-launch signals matter to us"*).
+
+**Recommendation:** the signal-profile write path is **Lane A's**, in `signal_engine`, and B-001 should be fixed as part of it rather than before it. Raised, not decided.
+
+**F-B7 — three codes for one condition, and it now grows every slice.** `New in slice 4.` `icp_unknown_product`, `committee_unknown_product`, `focus_unknown_product` — one shared check, one shared message, three wire codes, because renaming a shipped code is ⚫. **This is the only thing in the module that gets worse with each slice**, and slice 5 makes it four. A single `unknown_product` is one product-owner ruling away.
+
 **F-B5 — endpoint tests live in QE's tree. `Now a concrete proposal rather than an open question.`** §20e gives QE `backend/tests/**` except *a module's own suite*, and `tests/integration/test_api_<module>.py` tests exactly one module's endpoints while living in QE's directory. **Proposed rule, for the product owner:** *a file named `test_api_<module>.py` is that module's own suite regardless of directory; QE owns everything else in the tree, including any cross-module flow test.* That keeps the two lanes' edits disjoint without moving files or splitting a suite mid-module. Slices 1–3 follow the existing precedent until it is ruled on.
 
 ## The shape of the customer's first hour
@@ -173,11 +227,30 @@ ADR-0035 answers half of it — resolution among disagreeing claims is a Knowled
 
 **One thing worth doing sooner, and it is Lane A's call:** *Your business* sits under **Settings**, and it is not a setting. Moving it to a first-class destination is a navigation change in the shell, not a change here.
 
+## Notice to Lane A — slice 5 needs agreeing before it is built
+
+*Raised at the end of slice 4, deliberately before any slice-5 code exists.*
+
+Slice 5 is the target account list, and it carries **the first edge this module has ever had**: `commercial_profile → provider_platform`, via `commercial_profile.target_accounts_changed`. [05-module-dependencies.md](05-module-dependencies.md) types it **Customer–Supplier**, which is the one pattern whose rule is *the downstream lane must be told before the contract is drawn* — telling them afterwards is how a contract gets drawn to suit the producer.
+
+**What Lane A is being asked to agree, before implementation:**
+
+| Question | Lane B's opening position |
+|---|---|
+| **Does `RunProviderSync`'s `subject: str` stay a string?** | It has taken one since M2.1 and nothing has ever supplied one. Lane B declares a company **as the customer names it** — a name, and nothing resolved. If Provider Platform needs anything more, it needs saying now |
+| **Event or read port, for the first delivery?** | The ADR says event (`target_accounts_changed`). A `TargetAccountReader` on `public/` is also planned. Which does Provider Platform actually want to consume, and does it want the list or the delta? |
+| **What does the event carry?** | Lane B's position: **identity only** — workspace, the declaration version, and that it changed. *Events carry identity; ports carry payload* ([05](05-module-dependencies.md)), and embedding account names would make every future field an event-contract change |
+| **Who decides what happens on removal?** | A customer un-watching an account is a declaration. Whether Provider Platform stops polling, and what happens to what it already gathered, is **Provider Platform's** decision and Lane B will not model it |
+| **Where does the schedule live?** | Not here. This module records a list; **nothing about polling, cadence, cost or provider selection may enter it** |
+
+**Lane B will not build slice 5 until Lane A has answered.** The alternative — building the contract and asking afterwards — is precisely what the Customer–Supplier rule exists to stop.
+
 ## Deliberately deferred
 
 - **~~The fourth duplication.~~ `Trigger fired in slice 3; extracted, but only the dangerous part.`** With three aggregates the shared shape is finally visible rather than guessed. **Extracted:** the abstract `DeclarationModel` (`id`, `version`), the `latest()` select that encodes *"the row in force is `MAX(version)`, never `supersedes IS NULL`"* once, and `sold_products()`, the *"a declaration may only cite something we sell"* check. **Deliberately left duplicated:** the aggregates and the use cases. A frozen-slots dataclass base would force field-ordering contortions to accommodate `supersedes`'s default, and `version + 1` is not where a subtle defect hides — the *read* is, which is exactly what F-B4 shows and exactly what was centralised.
 - **Retracting a description** without deleting a product. A customer removes the last profile instead; a first-class *"we no longer sell to anybody"* has no evidence behind it yet.
 - **A `TagField` in `components/ui`.** Two screens now compose a list-of-typed-entries from `Input` + `Button`, in different enough shapes (free text · title plus a part) that the shared component is still a guess. It moves when a third wants it, or when two want the *same* one.
+- **A period on the focus.** Trigger: a customer declaring next quarter's focus before the quarter starts.
 - **A note on a committee**, the way a profile has one. No evidence anybody needs it; the escape hatch is that a role's title is free text. **Trigger: a customer writes a role title that is really a sentence.**
 - **Consolidating `*_unknown_product` into one code.** See the refusals table.
 - **`public/` stays empty.** Nothing downstream consumes a declaration until slice 5's `TargetAccountReader`. Publishing a reader now would be a contract with no counterparty.
@@ -189,7 +262,8 @@ Sign in as an owner and open **Settings → Your business → Products**. Three 
 1. **Declare a product.**
 2. **Describe who buys it** — industries and countries in your own words, a size range in people, a note.
 3. **Say who has to agree** — add *Chief Financial Officer* as the economic buyer, *Head of Security* as a gatekeeper, whatever your deals actually look like.
+4. **Say what you are pushing** — tap the products you are actively selling, and write what you are trying to do this quarter.
 
-Each section shows your own words back to you, each version line names you and the date, and every earlier version is still stored. The three are versioned separately: renaming the product leaves the other two where they were. Open the page in a second browser, save from both, and the second is told a colleague got there first rather than quietly losing the work.
+Each section shows your own words back to you, each version line names you and the date, and every earlier version is still stored. The four are versioned separately: renaming the product leaves the other three where they were. Open the page in a second browser, save from both, and the second is told a colleague got there first rather than quietly losing the work.
 
-**Nothing on any of the three screens grades a company, a person or a committee against what you typed** — that is a different module's job, and it is not built.
+**Nothing on any of the four screens grades a company, a person or a committee against what you typed, and nothing ranks anything** — those are different modules' jobs, and they are not built.

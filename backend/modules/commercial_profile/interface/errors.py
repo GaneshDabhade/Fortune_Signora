@@ -10,14 +10,17 @@ from fastapi import status
 from modules.commercial_profile.application.declare_committee import (
     CommitteeVersionConflictError,
 )
+from modules.commercial_profile.application.declare_focus import FocusVersionConflictError
 from modules.commercial_profile.application.declare_icp import IcpVersionConflictError
 from modules.commercial_profile.application.declaring import (
     CommitteeUnknownProductError,
+    FocusUnknownProductError,
     IcpUnknownProductError,
 )
 from modules.commercial_profile.application.publish import CatalogVersionConflictError
 from modules.commercial_profile.domain.committee import BuyingCommitteeError
 from modules.commercial_profile.domain.declaration import CommercialProfileError
+from modules.commercial_profile.domain.focus import CommercialFocusError
 from modules.commercial_profile.domain.icp import IcpError
 from signora_platform.api import ErrorMapping
 
@@ -49,12 +52,19 @@ ERROR_MAPPING: ErrorMapping = {
         status.HTTP_422_UNPROCESSABLE_CONTENT,
         "committee_unknown_product",
     ),
+    FocusVersionConflictError: (status.HTTP_409_CONFLICT, "focus_version_conflict"),
+    FocusUnknownProductError: (
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "focus_unknown_product",
+    ),
     # Everything the ideal customer refuses: a description with no criteria, a
     # size range whose floor is above its ceiling, the same industry twice.
     IcpError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "icp_refused"),
     # Everything the committee refuses: an empty one, two roles sharing a
     # title, a role with no title.
     BuyingCommitteeError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "committee_refused"),
+    # A duplicated product in the focus, or an objective past its limit.
+    CommercialFocusError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "focus_refused"),
     # Everything the domain refuses: an unnamed product, two products sharing
     # a name, an ideal customer with no criteria, a size range whose floor is
     # above its ceiling. Registered after the rows above and never shadowing

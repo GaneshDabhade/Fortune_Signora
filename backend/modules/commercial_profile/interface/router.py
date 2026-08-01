@@ -18,17 +18,22 @@ from apps.api.composition.products import (
     CatalogWrite,
     CommitteeRead,
     CommitteeWrite,
+    FocusRead,
+    FocusWrite,
     IcpRead,
     IcpWrite,
 )
 from modules.commercial_profile.application.declare_committee import (
     DeclareBuyingCommitteeInput,
 )
+from modules.commercial_profile.application.declare_focus import DeclareFocusInput
 from modules.commercial_profile.application.declare_icp import DeclareIcpInput
 from modules.commercial_profile.application.publish import PublishProductCatalogInput
 from modules.commercial_profile.interface.schemas import (
     BuyingCommitteeResponse,
+    CommercialFocusResponse,
     DeclareBuyingCommitteeRequest,
+    DeclareFocusRequest,
     DeclareIcpRequest,
     IcpDeclarationResponse,
     ProductCatalogResponse,
@@ -229,6 +234,65 @@ async def declare_buying_committee(
         )
     )
     return BuyingCommitteeResponse.from_domain(declaration)
+
+
+@router.get(
+    "/workspaces/{workspace_id}/focus",
+    response_model=CommercialFocusResponse,
+    summary="What this workspace is pushing right now",
+)
+async def commercial_focus(
+    context: CurrentWorkspace, focuses: FocusRead
+) -> CommercialFocusResponse:
+    """The focus in force.
+
+    **Never a 404, and never applied to anything.** It reports which products
+    the customer said they are pushing. Nothing here weights a score, ranks an
+    account, or filters a list — a consumer may one day do those things, and
+    this reports only that the customer said it, when, and who.
+    """
+    context.authorize(Resource.COMMERCIAL_FOCUS, Action.READ)
+    focus = await focuses.current(context.workspace_id)
+    return (
+        CommercialFocusResponse.empty()
+        if focus is None
+        else CommercialFocusResponse.from_domain(focus)
+    )
+
+
+@router.put(
+    "/workspaces/{workspace_id}/focus",
+    response_model=CommercialFocusResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Declare what this workspace is pushing right now",
+)
+async def declare_focus(
+    context: CurrentWorkspace, declare: FocusWrite, body: DeclareFocusRequest
+) -> CommercialFocusResponse:
+    """Record a complete statement of the focus, as a new version.
+
+    **`PUT`, and the whole focus**, for the fourth time in this module and the
+    same reason each time: the aggregate is the declaration.
+
+    **An empty focus is accepted**, and is how a customer says they are not
+    pushing anything in particular — it has an author and a moment, which is
+    what makes it different from never having said anything.
+
+    **422 when a product is not one the workspace sells**, and **409 when
+    somebody else saved first**, with the version actually in force.
+    """
+    context.authorize(Resource.COMMERCIAL_FOCUS, Action.UPDATE)
+    focus = await declare.execute(
+        DeclareFocusInput(
+            workspace_id=context.workspace_id,
+            products=body.products,
+            objective=body.objective,
+            expected_version=body.expected_version,
+            # Taken from the verified caller, never from the request.
+            actor_id=context.principal.user_id,
+        )
+    )
+    return CommercialFocusResponse.from_domain(focus)
 
 
 __all__ = ["router"]

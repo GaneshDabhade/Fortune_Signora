@@ -24,3 +24,6 @@ p, member, *, research, add
 p, owner, *, buying_committee, read
 p, member, *, buying_committee, read
 p, owner, *, buying_committee, update
+p, owner, *, commercial_focus, read
+p, member, *, commercial_focus, read
+p, owner, *, commercial_focus, update

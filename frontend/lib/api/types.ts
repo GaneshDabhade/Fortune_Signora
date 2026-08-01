@@ -597,3 +597,32 @@ export interface DeclareBuyingCommittee {
   expected_version: number;
   committees: ProductCommittee[];
 }
+
+/**
+ * What this company is pushing right now.
+ *
+ * **No rank and no order.** A product is in focus or it is not — the roadmap
+ * calls this capability *business priorities*, and an ordinal here is one
+ * consumer away from a weight in a score. There is also no period: `updated_at`
+ * already says when the customer last declared this, and a typed *"Q3 2026"*
+ * would be free to disagree with it.
+ */
+export interface CommercialFocus {
+  /** **0 when nothing has been declared.** */
+  version: number;
+  /** Product ids. Unordered and unranked. */
+  products: string[];
+  /** What they are trying to do, in their words. May be empty. */
+  objective: string;
+  /** Null only at version 0. Also the answer to whether the focus is current. */
+  updated_at: string | null;
+  /** Null only at version 0. */
+  updated_by: string | null;
+}
+
+/** A complete statement of the focus, replacing `expected_version`. */
+export interface DeclareFocus {
+  expected_version: number;
+  products: string[];
+  objective: string;
+}

@@ -75,6 +75,34 @@
 
 ---
 
+### B-003 · A lane following `RUNNING.md` exactly cannot run its own suites
+
+| | |
+|---|---|
+| **Owner** | Integrator — `docs/RUNNING.md` |
+| **Severity** | 🟡 |
+| **Status** | `OPEN` |
+| **Found** | `960b604`, by Lane B at the start of a slice |
+
+**Steps to reproduce.** Follow [RUNNING.md § Running a lane](RUNNING.md#running-a-lane) exactly — export `SIGNORA_TEST_APP_DATABASE_URL` and `SIGNORA_TEST_ADMIN_DATABASE_URL`, nothing else. Then run the impacted suites the way §20e requires during a slice: `cd backend && uv run pytest tests/<module>`.
+
+**Expected.** The suite runs against the lane's own database.
+
+**Actual.** Every test errors in setup with `RuntimeError: This suite TRUNCATES every table after each test. Set SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1…`, and `tests/integration` additionally fails to **collect** — `test_worker_retry.py` builds `Settings()` at import time and raises a Pydantic `ValidationError` without `SIGNORA_DATABASE_URL`.
+
+**Why it is a documentation defect rather than a code one.** Both variables are correct and deliberate — the truncation guard exists because the invariants once emptied a real stack. They are documented in `docs/SESSION_HANDOFF.md` §Local prerequisites and set by `make test`. But **a lane does not run `make test`** (it truncates the wrong database and §20e forbids repository-wide gates during a slice), and `RUNNING.md` is the document a lane is told is authoritative for its environment. The two disagree, and the lane-facing one is the incomplete one.
+
+**The fix, for whoever takes it.** Add both to step 2 of § Running a lane, beside the two already there. No code change:
+
+```bash
+export SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1
+export SIGNORA_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5432/signora_lane_<x>
+```
+
+**Not a defect, checked while reproducing:** Redis needs no per-lane database. `RUNNING.md` already states *"one Postgres, one Redis, many databases — nothing in the test path touches Redis today"*, and that is still true.
+
+---
+
 ## Verified
 
 *None yet.*

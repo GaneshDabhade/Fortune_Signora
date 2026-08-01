@@ -13,6 +13,7 @@ from uuid import UUID
 
 from modules.commercial_profile.domain.catalog import ProductCatalog
 from modules.commercial_profile.domain.committee import BuyingCommittee
+from modules.commercial_profile.domain.focus import CommercialFocus
 from modules.commercial_profile.domain.icp import IcpDeclaration
 
 
@@ -48,3 +49,11 @@ class BuyingCommitteeRepository(Protocol):
         ...
 
     async def save(self, committee: BuyingCommittee) -> None: ...
+
+
+class CommercialFocusRepository(Protocol):
+    async def current(self, workspace_id: UUID) -> CommercialFocus | None:
+        """The focus in force, or ``None`` when nothing has been declared."""
+        ...
+
+    async def save(self, focus: CommercialFocus) -> None: ...

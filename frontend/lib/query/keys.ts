@@ -47,6 +47,11 @@ export const queryKeys = {
   buyingCommittee: (workspaceId: string) =>
     ['workspace', workspaceId, 'buying-committee'] as const,
 
+  /** Lane B (Commercial Profile). The fastest-changing of the four, and
+   * versioned separately from all of them. */
+  commercialFocus: (workspaceId: string) =>
+    ['workspace', workspaceId, 'focus'] as const,
+
   signalCatalog: (workspaceId: string) =>
     ['workspace', workspaceId, 'signal-catalog'] as const,
 

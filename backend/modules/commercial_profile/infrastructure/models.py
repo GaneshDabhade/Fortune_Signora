@@ -15,7 +15,7 @@ from __future__ import annotations
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import CheckConstraint, ForeignKey, Integer, UniqueConstraint
+from sqlalchemy import CheckConstraint, ForeignKey, Integer, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -110,5 +110,32 @@ class BuyingCommitteeModel(DeclarationModel):
     supersedes: Mapped[UUID | None] = mapped_column(
         PGUUID(as_uuid=True),
         ForeignKey("buying_committee.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+
+class CommercialFocusModel(DeclarationModel):
+    """What the workspace is pushing right now.
+
+    **The fastest-changing of the four**, which is why it is its own table: a
+    catalog moves quarterly and a focus every planning cycle, and one shared
+    version would fill the catalog's audit history with somebody else's
+    changes.
+    """
+
+    __tablename__ = "commercial_focus"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "version", name="uq_commercial_focus_version"),
+        CheckConstraint("version > 0", name="ck_commercial_focus_version_positive"),
+    )
+
+    #: A list of product ids, read whole. **No ordinal, no position** — a
+    #: product is in focus or it is not, and a stored rank here is the column
+    #: a future consumer would multiply by something.
+    products: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
+    objective: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    supersedes: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("commercial_focus.id", ondelete="SET NULL"),
         nullable=True,
     )
