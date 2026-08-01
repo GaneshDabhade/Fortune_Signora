@@ -14,6 +14,7 @@ import {
 import { EntityName } from '@/components/intelligence/entity-name';
 import { EvidenceDrawer, useEvidenceDrawer } from '@/components/intelligence/evidence';
 import { NarrativeBlock } from '@/components/intelligence/narration';
+import { AccountSequence } from '@/components/intelligence/sequence';
 import { ValidationBlock } from '@/components/intelligence/validation';
 import {
   ContestedSince,
@@ -26,6 +27,7 @@ import { Card, CardBody, EmptyState, SkeletonText } from '@/components/ui';
 import { ApiError } from '@/lib/api/client';
 import { useSession } from '@/lib/auth/client';
 import {
+  useAccounts,
   useAccountIdentities,
   useAccountNarration,
   useAccountOpportunity,
@@ -91,6 +93,15 @@ export default function AccountBriefPage() {
   const { data: identities, isLoading: nameLoading } = useAccountIdentities(workspaceId, [
     accountId,
   ]);
+  // **The same query the attention page holds**, same cache key, so this costs
+  // no request — the brief reads the ranked order rather than fetching it, and
+  // *next* therefore means *next most pressing* (D41).
+  const { data: list } = useAccounts(workspaceId);
+  const ranked = list?.items ?? [];
+  const { data: rankedIdentities } = useAccountIdentities(
+    workspaceId,
+    ranked.map((account) => account.account_id),
+  );
 
   const notScored = error instanceof ApiError && error.status === 404;
 
@@ -199,6 +210,15 @@ export default function AccountBriefPage() {
           />
         </>
       ) : null}
+
+      {/* **Where the morning continues.** At the bottom because that is where
+          a reader finishes, and the only other navigation on this page is at
+          the top — where nobody is when they are done (R10-01). */}
+      <AccountSequence
+        accountId={accountId}
+        accounts={ranked}
+        identities={rankedIdentities}
+      />
     </div>
   );
 }

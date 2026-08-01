@@ -16,7 +16,7 @@
 | **Inserted, and open** | **M9.5 Evidence Citation Protocol** (ADR-0031). Steps A–D landed; **Step F is incomplete** |
 | **Last completed** | **M12.2 the account brief** — closed 2026-08-01. Identity, score breakdown, commitment and narration; the Decision Package is *blocked*, not skipped |
 | **Current** | **M12.3 evidence and actions.** *What to check*, *ledger citations*, *stage transitions and assignment* and *the list's why* shipped; narration citations and the list's hierarchy (D20) remain |
-| **Head at handoff** | see `git log` — M12.3 *the list knows what you are working* (**D39**, **D40**) |
+| **Head at handoff** | see `git log` — M12.3 *moving through the list* (**D41**) |
 | **Latest certification** | [`d954c930`](../certification/reports/d954c930319a.md) — CERTIFIED, 2026-07-31 |
 | **Phase** | **Product implementation.** Ten pipeline stages built and frozen behind them; the surface is being exposed. |
 | **Overall completion** | **~60%** by engineering effort (~187 of ~261–339 ew) |
@@ -38,7 +38,7 @@
 | Indicator | Value |
 |---|---|
 | Backend tests | **1992 passing**, 0 failing, 0 skipped *(measured 2026-08-01, M12.3 decision slice)* |
-| Frontend tests | **297 passing** |
+| Frontend tests | **310 passing** |
 | Backend coverage | gate **≥95%** · currently **95.61%** |
 | Security invariants | **325 / 325**, each proven to fail when its guarantee is removed |
 | import-linter contracts | **29 kept, 0 broken** |

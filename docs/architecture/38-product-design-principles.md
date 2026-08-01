@@ -951,3 +951,44 @@ Measured on the real Playground: **`owner_id` on the wire — yes. Owned by some
 **No reordering.** See D39.
 
 **It cannot name anybody but you** — **D23**. The Python tier verifies tokens without ever learning who a person is, so a row says *yours* or *taken*, and the second is the honest form of an identifier nobody can read.
+
+---
+
+# D41 — Moving through the list, not back to it *(M12.3, 2026-08-01)*
+
+**Recorded before implementation.** The finding is R10-01: the account brief has exactly one exit and it points backwards.
+
+## The decision
+
+**The brief offers the next account by name, with the position, and a keyboard path.**
+
+```
+  ─────────────────────────────────────────────────────────
+   ← Databricks, Inc.            2 of 12         Snowflake Inc. →
+```
+
+**It reads the list the attention page already holds.** `useAccounts` is the same query with the same key, so the brief costs **no additional request** — and the order is the ranking, so *next* means *next most pressing*, which is the sequence a seller is actually working.
+
+## What it deliberately does not do
+
+**It does not navigate after a decision.** The obvious idea — record a dismissal, advance automatically — takes the reader's place away from them at the exact moment they may want to re-read what they wrote. **The product may offer the next account; it may not decide the reader is finished.**
+
+**It does not remove the back link.** *All accounts* stays, because a seller who wants the list wants the list. Adding a way forward is not a reason to remove the way out.
+
+**It does not paginate.** The attention list is one page by design — *"a seller who needs to scroll past fifty accounts has a prioritisation problem the product should be solving rather than a paging one."* The sequence is therefore the loaded page, and when the current account is not in it (because a decision removed it) the sequence says so rather than guessing.
+
+## Why a keyboard path arrives with it rather than later
+
+**Three reviews have asked for one** and each time it was deferred as an interaction slice. It arrives here because **this is the one place it is not a nicety**: the whole point is to make a sequence cheap, and a sequence you must click through is only half as cheap as one you can hold a key through.
+
+`j` and `k`, which is the convention every list-with-detail product uses. **They must not fire while a decision is being typed** — a reason field containing *"jkjk"* instead of a sentence would be the product eating the customer's words, which is the one thing this module exists not to do.
+
+## Rejected
+
+**Prefetching the next brief on hover.** Linear's suggestion, three reviews old, and it belongs to whichever slice measures latency. **Nothing has measured it**, and §14 is explicit that performance work is justified by evidence rather than intuition.
+
+**An animated transition between accounts.** It is what would make the sequence *feel* like one, and it is decoration until the sequence is correct. *Returns once it is.*
+
+**Advancing automatically after a decision.** See above.
+
+**Keeping the reader's scroll position on the list instead.** It would remove the hunt without adding a sequence — and it treats the list as the place a seller works, when the brief is. *Returns if the sequence proves unwanted, which would itself be the finding.*

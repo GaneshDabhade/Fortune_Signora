@@ -1210,3 +1210,151 @@ Every competitor's list is *name · number · trend*. Signora's row carries the 
 **A *mine / everyone* filter now.** Right at three hundred accounts, premature at twelve — **a control that always shows the same thing teaches people to ignore controls.** *Returns at D6's trigger.*
 
 **Removing the score from the row.** Considered seriously under R9-02 and rejected: the gap between 75 and 1 is information the ordering cannot carry, and it is the very gap D20 was reaching for.
+
+---
+
+# Review 10 — the whole morning, as one journey *(2026-08-01, M12.3)*
+
+> **The instruction was to stop thinking in screens.** Walk from sign-in to the end of a seller's work, and challenge every *transition*. The screens have each been reviewed twice; the joins between them never have.
+
+## The journey, counted
+
+A seller with twelve accounts, working top-down:
+
+```
+  sign in                                                    1 click
+  ↓
+  ATTENTION                                    the list, ranked
+  ↓ click a name                                             1 click
+  BRIEF          score · momentum · narration · what to check · ledger
+  ↓ click a ledger line                                      1 click
+  EVIDENCE       provider readings                    (Esc closes)
+  ↓ decide                                                   2 clicks
+  ↓
+  ← "All accounts"                                           1 click
+  ATTENTION      ...back at the top, scrolled to row 1
+  ↓ find where you were, click the next name                 1 click + hunting
+  BRIEF
+  ↓
+  × 12
+```
+
+**Twenty-four navigations for twelve accounts**, plus twelve acts of re-finding your place — and the list is **shorter each time you dismiss something**, so the place you are re-finding has moved.
+
+---
+
+## R10-01 · There is exactly one exit from the brief, and it is backwards 🔴
+
+**Observation.** `← All accounts` is the only navigation on the account brief. **There is no next, no previous and no position.** Every account is an isolated visit; the product has no notion of *working through* a list.
+
+**Why it matters — this is where momentum stops, and the question was asked literally.** A seller's morning is a sequence, and Signora models it as twelve unrelated errands. Every tool built for people who live in it all day — Linear, Gmail, Superhuman, Things — lets you move to the next item **without returning to the list**, because returning is where attention leaks.
+
+**It is worse than a click.** `<Link href="/">` is a fresh navigation, so **the list scrolls back to the top every time.** After the eighth account you return to row 1 and scroll down again to find row 9.
+
+**User impact.** *(SDR)* "I'd open three, get bored of the round trip, and do the rest from the CRM." **That is the sentence that matters** — it names where the user leaves the product, which is exactly what this review was asked to find.
+
+**Suggested improvement — and this is the slice.** *Next account* on the brief, naming where it goes, with the position, and a keyboard path. **Needs no new endpoint**: the brief can read the same cached list the attention page already holds.
+
+**Priority:** High. **Milestone:** M12.3, now.
+
+---
+
+## R10-02 · Recording a decision leaves you exactly where you were 🟠
+
+**Observation.** Take an account on: the dialog closes, the stage line changes, and the page is otherwise identical. **You have finished with this account and the product does not know it.**
+
+**Why it matters.** The decision *is* the end of the visit. It is the one moment the product can be certain the reader is done — and it is the moment it does the least.
+
+**Suggested improvement.** Fold into R10-01: after a decision, the natural next thing is the next account. **Deliberately not an automatic redirect** — a page that navigates itself after you click something takes the reader's place away from them, and a dismissal is exactly when somebody wants to check what they just wrote.
+
+**Priority:** Medium. **Milestone:** M12.3, with R10-01.
+
+---
+
+## R10-03 · Nothing remembers what you have already looked at 🟡
+
+**Observation.** Return to the list after reading four briefs and it is identical to the list before you read any.
+
+**Why it matters.** A seller cannot tell, in the middle of their morning, which rows they have dealt with. Accounts they decided *nothing* about are indistinguishable from accounts they never opened.
+
+**Suggested improvement.** **D5** — per-user read state — which is a real schema decision and the same thing that would make a Morning Brief worth building (D39). **Trigger:** a design partner losing their place. R10-01 removes most of the need by removing the return trip.
+
+**Priority:** Medium. **Milestone:** unassigned.
+
+---
+
+## R10-04 · The narration says "3 facts" and cannot show them 🟠
+
+**Observation.** Ledger citations open. **Narration citations do not** — a sentence carries a fact count and no way to follow it. The tokens are `signal_contribution`, `buying_score` and `opportunity`; three resolvers do not exist.
+
+**Why it matters.** It is the one place the product visibly promises something it does not do, on the surface whose entire argument is *you can check this*.
+
+**Priority:** High. **Milestone:** M12.4. **Not this slice**, because a reader who cannot get to the *second* account will never reach the third narration.
+
+---
+
+## R10-05 · The evidence drawer is the best transition in the product 🟢
+
+**Observation.** A ledger line opens a modal, Escape closes it, and **you are exactly where you were** — same scroll, same page, no navigation.
+
+**Why it matters.** Recorded as the bar. **It is the only transition in the journey that costs the reader nothing**, and it is the model R10-01 should be measured against: the cheapest transition is the one that does not move you.
+
+**Priority:** — **Milestone:** none.
+
+---
+
+## Where each role leaves the product, and why
+
+| | Leaves at | Why | Could Signora prevent it? |
+|---|---|---|---|
+| **SDR** | The third round trip | Twenty-four navigations to read twelve accounts | **Yes — R10-01** |
+| **AE** | *"which are mine?"* | Rows say *Yours*; twelve rows must still be read to find three | At volume, a filter. D6's trigger |
+| **Sales Manager** | *"who has it?"* | *Taken* names nobody — **D23** | Needs a cross-tier profile contract |
+| **RevOps** | Does not leave | The brief's arithmetic is their whole question | — |
+| **CRO** | The first screen | Scans for risk, reads twelve rows to find two — **R9-03** | Yes, with a seller's ruling |
+
+**Three of five leave for a reason the product could remove, and one of the three is a navigation gap.**
+
+---
+
+## Could someone complete their morning entirely inside Signora?
+
+**Not yet, and the reason is not a missing feature.** Every question a seller asks has an answer somewhere in the product: *which accounts* (list), *why this one* (brief), *prove it* (evidence), *what to check* (validation), *I'm working it* (workflow). **The answers exist and the path between them costs too much.**
+
+That is a different and much better problem than the one three reviews ago, when the answers themselves were missing.
+
+---
+
+## The staff-designer pass — interaction quality
+
+**How many clicks?** **Two per account, plus a scroll-hunt.** One of the two is pure overhead.
+
+**What receives visual emphasis?** On the brief: everything equally — six sections of identical weight, **four reviews running.** On the list: the account name, correctly.
+
+**What is attended to first?** The brief's account name, then the action row. *The AE reads the action row before the score* — noted in Review 4 and unchanged.
+
+**What is ignored?** The posture split, the reading validity line, and — newly — the back link, because it is at the top and the reader finishes at the bottom.
+
+**What deserves animation?** **Almost nothing, and one thing genuinely does**: moving between accounts. A transition that shows direction is what makes a sequence feel like a sequence rather than a page load. *Recorded; not built in this slice, because correctness of the sequence comes first.*
+
+**What deserves progressive disclosure?** Already correct — the limitations disclosure, the evidence drawer.
+
+**What deserves summarisation?** Nothing on the brief. Every section is already the shortest true version.
+
+**What deserves comparison?** *"Opened at 35, +15 since"* is the only comparison in the product and it is the AE's favourite line. **A second one — this account against the rest of the book — is a real idea and needs a seller.**
+
+**What deserves storytelling?** The list row already reads as a sentence. **The brief does not** — it reads as six panels. That is the hierarchy finding, now four reviews old and increasingly the largest thing left.
+
+**Apple.** The brief's six equal-weight sections. *Fourth review.*
+
+**Stripe.** A decision is recorded and nothing confirms it beyond a changed line. **R10-02.**
+
+**Linear.** *Third review asking.* No keyboard path anywhere. **This slice adds one where it pays most.**
+
+**Notion.** Each screen reads well; **the document ends without a next page.**
+
+**Cursor.** *"Where does the product stop helping?"* — **at the bottom of the brief.** Everything above it is excellent and there is nothing below it.
+
+**Perplexity.** Ledger citations resolve; narration citations do not. **R10-04.**
+
+**OpenAI.** Still unstated: the daily surface is entirely model-free. *Fifth review.*
