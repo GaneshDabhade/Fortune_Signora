@@ -357,3 +357,60 @@ describe('it describes; it never matches', () => {
     ).toBeInTheDocument();
   });
 });
+
+describe('B-005 · a product removed from the catalog', () => {
+  const GONE = 'ffffffff-6666-4666-8666-666666666666';
+
+  function orphaned() {
+    return withQuery(
+      <IcpEditor
+        catalog={catalog()}
+        declaration={declaration({
+          profiles: [profile(), profile({ product_id: GONE, industries: ['Retail'] })],
+        })}
+        workspaceId={WORKSPACE}
+      />,
+    );
+  }
+
+  it('is never sent back to the server', async () => {
+    // **The defect this fixes.** The editor used to send everything stored
+    // while rendering only what the catalog still had, so the request
+    // consisted of a description for a product that no longer existed — and
+    // the customer's own edit was dropped before it left the browser.
+    const user = userEvent.setup();
+    render(orphaned());
+
+    await user.click(
+      screen.getByRole('button', { name: 'Remove the description for Revenue Cloud' }),
+    );
+
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    const body = sent().body as { profiles: ProductIcp[] };
+    expect(body.profiles.map((entry) => entry.product_id)).not.toContain(GONE);
+  });
+
+  it('is said out loud rather than dropped quietly', () => {
+    // Dropping it is correct; doing it silently would be a second, quieter
+    // defect. The last clause is the one that matters to a customer.
+    render(orphaned());
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      /One entry here belongs to a product you no longer sell.*the version that holds it is kept/i,
+    );
+  });
+
+  it('does not stop the customer saving what they can see', async () => {
+    const user = userEvent.setup();
+    render(orphaned());
+
+    await user.click(
+      screen.getByRole('button', { name: 'Describe who buys Revenue Cloud' }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    const body = sent().body as { profiles: ProductIcp[] };
+    expect(body.profiles.map((entry) => entry.product_id)).toEqual([CORE]);
+  });
+});

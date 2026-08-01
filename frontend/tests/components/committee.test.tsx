@@ -333,3 +333,38 @@ describe('it records seats; it evaluates nobody', () => {
     expect(screen.queryByLabelText(/name/i)).not.toBeInTheDocument();
   });
 });
+
+describe('B-005 · a product removed from the catalog', () => {
+  const GONE = 'ffffffff-6666-4666-8666-666666666666';
+
+  function orphaned() {
+    return withQuery(
+      <BuyingCommitteeEditor
+        catalog={catalog()}
+        declaration={declaration({
+          committees: [committee(), committee({ product_id: GONE })],
+        })}
+        workspaceId={WORKSPACE}
+      />,
+    );
+  }
+
+  it('is never sent back to the server', async () => {
+    const user = userEvent.setup();
+    render(orphaned());
+
+    await user.click(
+      screen.getByRole('button', { name: 'Remove the committee for Revenue Cloud' }),
+    );
+
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    const body = sent().body as { committees: ProductCommittee[] };
+    expect(body.committees.map((entry) => entry.product_id)).not.toContain(GONE);
+  });
+
+  it('is said out loud rather than dropped quietly', () => {
+    render(orphaned());
+
+    expect(screen.getByRole('status')).toHaveTextContent(/no longer sell/i);
+  });
+});

@@ -2,6 +2,10 @@
 
 import { useState } from 'react';
 
+import {
+  DroppedWithTheirProduct,
+  keptForCatalog,
+} from '@/components/commercial/catalog-scope';
 import { formatDay } from '@/components/intelligence/dates';
 import { Button, EmptyState, Input } from '@/components/ui';
 import { ApiError } from '@/lib/api/client';
@@ -40,6 +44,10 @@ export function CommercialFocusEditor({
   const declare = useDeclareFocus(workspaceId);
   const [objective, setObjective] = useState(focus.objective);
   const [editing, setEditing] = useState(false);
+  // **The catalog decides what survives** (B-005). A product removed from the
+  // catalog is not in focus, whatever the last declaration said.
+
+  const { kept, dropped } = keptForCatalog(focus.products, catalog, (id) => id);
 
   const save = (products: string[], stated: string) =>
     declare.mutate(
@@ -49,9 +57,9 @@ export function CommercialFocusEditor({
 
   const toggle = (productId: string) =>
     save(
-      focus.products.includes(productId)
-        ? focus.products.filter((other) => other !== productId)
-        : [...focus.products, productId],
+      kept.includes(productId)
+        ? kept.filter((other) => other !== productId)
+        : [...kept, productId],
       focus.objective,
     );
 
@@ -75,7 +83,7 @@ export function CommercialFocusEditor({
       ) : (
         <ul className="flex flex-wrap gap-2">
           {catalog.products.map((product) => {
-            const inFocus = focus.products.includes(product.id);
+            const inFocus = kept.includes(product.id);
 
             return (
               <li key={product.id}>
@@ -103,7 +111,7 @@ export function CommercialFocusEditor({
           className="flex flex-col gap-3"
           onSubmit={(event) => {
             event.preventDefault();
-            save(focus.products, objective.trim());
+            save(kept, objective.trim());
           }}
         >
           <Input
@@ -152,6 +160,8 @@ export function CommercialFocusEditor({
           </Button>
         </div>
       )}
+
+      <DroppedWithTheirProduct count={dropped} />
 
       <Provenance focus={focus} />
     </section>

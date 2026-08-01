@@ -49,12 +49,15 @@ export default function ProductsPage() {
 
       {!workspacesLoading && activeWorkspace === null ? <NoWorkspace /> : null}
       {isLoading ? <SkeletonText lines={4} /> : null}
-      {isError ? (
-        <p className="text-sm leading-6 text-content-muted">
-          Your products could not be loaded. That is a fault in Signora, not a missing
-          catalog — nothing you have declared has been lost.
-        </p>
-      ) : null}
+      {isError ? <CouldNotLoad what="products" /> : null}
+      {/* **B-006.** Each section reports its own failure. Rendering a section
+          only when its data arrives, and explaining only the catalog's error,
+          made an outage indistinguishable from a feature the customer does not
+          have — the same shape of defect as D36, where every branch on a page
+          tested a falsy value and nothing rendered at all. */}
+      {icp.isError ? <CouldNotLoad what="ideal customer" /> : null}
+      {committee.isError ? <CouldNotLoad what="buying committee" /> : null}
+      {focus.isError ? <CouldNotLoad what="focus" /> : null}
       {data ? (
         <ProductCatalogEditor catalog={data} workspaceId={activeWorkspace?.id ?? null} />
       ) : null}
@@ -84,5 +87,22 @@ export default function ProductsPage() {
         />
       ) : null}
     </div>
+  );
+}
+
+/**
+ * A section that could not be loaded.
+ *
+ * **The wording is the point.** A customer who cannot see their ideal customer
+ * needs to know that Signora failed rather than that they never declared one —
+ * and that nothing they wrote has been lost. Page-local rather than shared:
+ * one page has four of them, and no other page has any.
+ */
+function CouldNotLoad({ what }: { what: string }) {
+  return (
+    <p className="text-sm leading-6 text-content-muted">
+      Your {what} could not be loaded. That is a fault in Signora, not a missing
+      declaration — nothing you have declared has been lost.
+    </p>
   );
 }

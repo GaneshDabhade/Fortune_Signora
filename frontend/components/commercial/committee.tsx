@@ -3,6 +3,10 @@
 import { Pencil, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 
+import {
+  DroppedWithTheirProduct,
+  keptForCatalog,
+} from '@/components/commercial/catalog-scope';
 import { formatDay } from '@/components/intelligence/dates';
 import { Badge, Button, Dialog, EmptyState, Input, Select } from '@/components/ui';
 import { ApiError } from '@/lib/api/client';
@@ -47,6 +51,13 @@ export function BuyingCommitteeEditor({
   const [editing, setEditing] = useState<Product | null>(null);
   const declare = useDeclareBuyingCommittee(workspaceId);
 
+  // **The catalog decides what survives** (B-005), as in every editor here.
+  const { kept, dropped } = keptForCatalog(
+    declaration.committees,
+    catalog,
+    (committee) => committee.product_id,
+  );
+
   const save = (committees: ProductCommittee[]) =>
     declare.mutate(
       { expected_version: declaration.version, committees },
@@ -55,19 +66,15 @@ export function BuyingCommitteeEditor({
 
   const upsert = (committee: ProductCommittee) =>
     save(
-      declaration.committees.some(
-        (existing) => existing.product_id === committee.product_id,
-      )
-        ? declaration.committees.map((existing) =>
+      kept.some((existing) => existing.product_id === committee.product_id)
+        ? kept.map((existing) =>
             existing.product_id === committee.product_id ? committee : existing,
           )
-        : [...declaration.committees, committee],
+        : [...kept, committee],
     );
 
   const clear = (productId: string) =>
-    save(
-      declaration.committees.filter((committee) => committee.product_id !== productId),
-    );
+    save(kept.filter((committee) => committee.product_id !== productId));
 
   return (
     <section className="flex flex-col gap-4">
@@ -90,9 +97,7 @@ export function BuyingCommitteeEditor({
         <ul className="flex flex-col divide-y divide-border rounded-md border border-border">
           {catalog.products.map((product) => {
             const committee =
-              declaration.committees.find(
-                (candidate) => candidate.product_id === product.id,
-              ) ?? null;
+              kept.find((candidate) => candidate.product_id === product.id) ?? null;
 
             return (
               <li key={product.id} className="flex flex-col gap-2 px-4 py-3">
@@ -144,15 +149,13 @@ export function BuyingCommitteeEditor({
         </ul>
       )}
 
+      <DroppedWithTheirProduct count={dropped} />
+
       <Provenance declaration={declaration} />
 
       <CommitteeDialog
         product={editing}
-        committee={
-          declaration.committees.find(
-            (candidate) => candidate.product_id === editing?.id,
-          ) ?? null
-        }
+        committee={kept.find((candidate) => candidate.product_id === editing?.id) ?? null}
         pending={declare.isPending}
         onClose={() => setEditing(null)}
         onSave={upsert}

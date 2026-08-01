@@ -3,6 +3,10 @@
 import { Pencil, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 
+import {
+  DroppedWithTheirProduct,
+  keptForCatalog,
+} from '@/components/commercial/catalog-scope';
 import { formatDay } from '@/components/intelligence/dates';
 import { Button, Dialog, EmptyState, Input } from '@/components/ui';
 import { ApiError } from '@/lib/api/client';
@@ -48,6 +52,14 @@ export function IcpEditor({
 }) {
   const [editing, setEditing] = useState<Product | null>(null);
   const declare = useDeclareIcp(workspaceId);
+  // **The catalog decides what survives** (B-005). Everything below reads
+  // `kept`, never `declaration.profiles`, so a description whose product has
+  // been removed can neither be sent nor block a save the customer can see.
+  const { kept, dropped } = keptForCatalog(
+    declaration.profiles,
+    catalog,
+    (profile) => profile.product_id,
+  );
 
   const save = (profiles: ProductIcp[]) =>
     declare.mutate(
@@ -57,15 +69,15 @@ export function IcpEditor({
 
   const upsert = (profile: ProductIcp) =>
     save(
-      declaration.profiles.some((existing) => existing.product_id === profile.product_id)
-        ? declaration.profiles.map((existing) =>
+      kept.some((existing) => existing.product_id === profile.product_id)
+        ? kept.map((existing) =>
             existing.product_id === profile.product_id ? profile : existing,
           )
-        : [...declaration.profiles, profile],
+        : [...kept, profile],
     );
 
   const clear = (productId: string) =>
-    save(declaration.profiles.filter((profile) => profile.product_id !== productId));
+    save(kept.filter((profile) => profile.product_id !== productId));
 
   return (
     <section className="flex flex-col gap-4">
@@ -88,9 +100,7 @@ export function IcpEditor({
         <ul className="flex flex-col divide-y divide-border rounded-md border border-border">
           {catalog.products.map((product) => {
             const profile =
-              declaration.profiles.find(
-                (candidate) => candidate.product_id === product.id,
-              ) ?? null;
+              kept.find((candidate) => candidate.product_id === product.id) ?? null;
 
             return (
               <li
@@ -134,15 +144,13 @@ export function IcpEditor({
         </ul>
       )}
 
+      <DroppedWithTheirProduct count={dropped} />
+
       <Provenance declaration={declaration} />
 
       <IcpDialog
         product={editing}
-        profile={
-          declaration.profiles.find(
-            (candidate) => candidate.product_id === editing?.id,
-          ) ?? null
-        }
+        profile={kept.find((candidate) => candidate.product_id === editing?.id) ?? null}
         pending={declare.isPending}
         onClose={() => setEditing(null)}
         onSave={upsert}

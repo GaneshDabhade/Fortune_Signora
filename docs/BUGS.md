@@ -156,7 +156,7 @@ The cost is also asymmetric: a full re-fetch after the fix recovers it, but ever
 |---|---|
 | **Owner** | **Lane B** — `commercial_profile` (frontend) |
 | **Severity** | 🟠 — wrong behaviour a customer would hit, with no way out through the product |
-| **Status** | `OPEN` |
+| **Status** | `FIXED` — awaiting QE. All three editors, one shared rule, and a mutation check |
 | **Found** | `80d9511`, by Lane B in the slice-4 product review |
 
 **Steps to reproduce.** Declare two products. Describe an ideal customer for both. Remove the second product from the catalog. Now edit the *first* product's ideal customer and save.
@@ -179,7 +179,9 @@ The request the customer's click produces consists **entirely of a declaration f
 
 **Affects identically:** the ideal customer, the buying committee, and the focus.
 
-**The fix, for Lane B.** Send only entries whose product is still in the catalog, and tell the customer on screen that a description was dropped along with its product — silently dropping it would be a second, quieter defect. Regression test belongs in `frontend/tests/components/` beside each editor's suite, and the three-way nature of it argues for one shared assertion rather than three.
+**Fixed.** `components/commercial/catalog-scope.tsx` holds the rule once — *the catalog is the authority on which declarations still exist* — and all three editors read `kept` rather than what they were handed. An orphaned entry is **dropped and announced**: `DroppedWithTheirProduct` says it before the save, and says the version holding it is kept, because dropping it quietly would have been a second and quieter defect.
+
+**Regression tests** in each editor's own suite, plus a **mutation check**: reintroducing the defect in `icp.tsx` alone makes `B-005 · is never sent back to the server` fail, and restoring it makes it pass. A guard that cannot fail is documentation pretending to be code.
 
 ---
 
@@ -189,7 +191,7 @@ The request the customer's click produces consists **entirely of a declaration f
 |---|---|
 | **Owner** | **Lane B** — `commercial_profile` (frontend) |
 | **Severity** | 🟡 |
-| **Status** | `OPEN` |
+| **Status** | `FIXED` — awaiting QE. Page-level test, the same shape as D36's |
 | **Found** | `80d9511`, by Lane B in the slice-4 product review |
 
 **Steps to reproduce.** Make `GET /workspaces/{id}/icp` fail — stop the API after the catalog has loaded, or block the request.
@@ -200,7 +202,9 @@ The request the customer's click produces consists **entirely of a declaration f
 
 **Why.** `settings/products/page.tsx` renders each section on `data && <query>.data`, and only the catalog's `isError` produces copy. The other three queries' error states are never read.
 
-**The fix, for Lane B.** Render each section's own error, reusing the catalog's wording. One line per section, and a test that a failed query produces a message rather than silence.
+**Fixed.** Each of the four sections reports its own failure through a page-local `CouldNotLoad`, in wording that distinguishes *Signora failed* from *you never declared one* and states that nothing has been lost.
+
+**Regression test** is `frontend/tests/components/your-business.test.tsx` — **page-level deliberately**, because the defect never lived in a component and every component test passed throughout its life. The same reasoning as `first-run.test.tsx` and D36.
 
 ---
 

@@ -262,3 +262,33 @@ describe('a refusal is shown, never resolved', () => {
     resolve(focus({ version: 4 }));
   });
 });
+
+describe('B-005 · a product removed from the catalog', () => {
+  const GONE = 'ffffffff-6666-4666-8666-666666666666';
+
+  function orphaned() {
+    return withQuery(
+      <CommercialFocusEditor
+        catalog={catalog()}
+        focus={focus({ products: [CORE, GONE] })}
+        workspaceId={WORKSPACE}
+      />,
+    );
+  }
+
+  it('is never sent back to the server', async () => {
+    const user = userEvent.setup();
+    render(orphaned());
+
+    await user.click(screen.getByRole('button', { name: 'Enterprise' }));
+
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    expect(sent().body.products).not.toContain(GONE);
+  });
+
+  it('is said out loud rather than dropped quietly', () => {
+    render(orphaned());
+
+    expect(screen.getByRole('status')).toHaveTextContent(/no longer sell/i);
+  });
+});

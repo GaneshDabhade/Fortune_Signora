@@ -227,11 +227,21 @@ ADR-0035 answers half of it — resolution among disagreeing claims is a Knowled
 
 **One thing worth doing sooner, and it is Lane A's call:** *Your business* sits under **Settings**, and it is not a setting. Moving it to a first-class destination is a navigation change in the shell, not a change here.
 
-## Slice 5 is paused, deliberately
+## Slice 5 — what the ratified contract binds this module to
 
-**It carries the first edge this module has ever had** — `commercial_profile → provider_platform`, typed **Customer–Supplier** in [05-module-dependencies.md](05-module-dependencies.md), whose rule is that *the downstream lane's needs shape the contract*. Drawing it alone and asking afterwards would produce a contract shaped by the producer, which is the one failure that pattern exists to prevent.
+**The contract is [ADR-0036](adr/0036-target-account-contract.md)**, negotiated through [C-001](../LANE_COORDINATION.md#c-001--the-target-account-contract) and ratified. The reasoning lives there and is **not repeated here**; what follows is only what it obliges *this module* to do, so a session building slice 5 does not have to reconstruct it.
 
-**The seven open questions live in [`LANE_COORDINATION.md` C-001](../LANE_COORDINATION.md#c-001--the-target-account-contract)**, with Lane B's opening position on each, and are deliberately not repeated here. **Lane B will not begin slice 5 until that item is `ANSWERED`.**
+| This module must | And must not |
+|---|---|
+| Give every target account entry a **stable id**, client-chosen, `Product`-style | Reuse `CommitteeRole`'s no-id shape. The trigger slice 3 recorded — *a consumer that must cite a particular entry* — has fired: without an id, a rename is indistinguishable from a remove-and-add, and those are different instructions about spending money |
+| Publish `target_accounts_changed` carrying **`workspace_id` and `declaration_version`, nothing else** | Put account names on the bus. A copy of a truth that lives in an aggregate does not belong on an event |
+| Expose `TargetAccountReader` on `public/` returning **the whole list** | Compute or expose a delta. *What has and has not been fetched is not a fact this module holds* — the delta Provider Platform needs is against its own watermark, not against the previous declaration |
+| Pass the company name **exactly as the customer typed it** | Resolve, normalise or enrich it. `subject` is opaque by design, and asking a customer for a domain would ask them to do resolution |
+| Record a removal as an ordinary new version | Model what removal *causes*. Polling, retention and watermarks are Provider Platform's, decided in the ADR |
+
+**Why `declaration_version` is on the wire and not only in the aggregate:** ordering, not replay. Idempotency on `event_id` handles redelivery; it does not order two workspace-level events against each other, and a handler for v5 running after v6's would sync a list one revision stale.
+
+**The four ownership boundaries the ADR makes permanent** — intent here, synchronization in Provider Platform, understanding in the Knowledge Graph, relevance in the Signal Engine — are the same four this document has been asserting since slice 2. The ADR is where they stop being this module's opinion.
 
 ## Product review — 2026-08-01, the four declarations end to end
 
