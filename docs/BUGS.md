@@ -107,6 +107,32 @@ export SIGNORA_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_d
 
 | | |
 |---|---|
+| **Owner lane** | **Lane A** |
+| **Affected module** | `provider_platform` — `provider_watermark`, migration `0007` |
+| **Severity** | 🟠 unreachable today · 🔴 the moment a workspace watches two accounts |
+| **Status** | `OPEN` |
+| **Found** | `f6b6a41`, while answering [`C-001`](LANE_COORDINATION.md#c-001--the-target-account-contract) |
+| **Fix belongs to** | The slice that builds the `target_accounts_changed` consumer. **Not to be fixed opportunistically** — the consumer is what makes it reachable, and fixing one without the other leaves a schema change nothing exercises |
+
+**Trigger conditions.** All three must hold, and none does yet:
+
+1. Commercial Profile publishes a target-account list with **two or more entries** in one workspace (M12.5 slice 5);
+2. Provider Platform consumes it and runs a sync **per subject** (Lane A, unbuilt);
+3. A second sync runs for the same `(provider, capability)` in that workspace — that is, the **second account is fetched at all**.
+
+**Steps to reproduce.** Not reproducible today, and the reason is the interesting part: `RunProviderSync` has accepted a `subject` since M2.1 and **nothing has ever supplied one** except the Provider Simulation Framework, which drives every subject through one scenario without ever re-reading a watermark between two of them. Once the trigger conditions hold: declare accounts *A* and *B*, sync *A*, then sync *B* against the same provider and capability.
+
+**Expected.** Each watched account carries its own incremental position, so what has been fetched for *A* has no effect on what is fetched next for *B*.
+
+**Actual.** `uq_provider_watermark_scope` is `(workspace_id, provider, capability)` — **there is no `subject` in the key, and none in the row.** One watermark covers every account in the workspace for that provider and capability. Syncing *A* advances the position that *B*'s next sync reads as its `since`, so *B* fetches only what changed after *A*'s run and **silently skips its own history**.
+
+**Impact.** A customer sees one account richly enriched and another mysteriously thin, with **nothing in the product explaining the difference** — no error, no warning, no gap in the evidence drawer, because from the pipeline's point of view the provider simply returned little. It degrades every stage downstream: fewer claims, fewer observations, fewer business events, a lower buying score, and an account that looks genuinely quiet rather than under-fetched. **It is a data-completeness defect that presents as a commercial conclusion**, which is the worst way for one to present in this product.
+
+The cost is also asymmetric: a full re-fetch after the fix recovers it, but every conclusion drawn in the meantime was drawn on partial evidence and was shown to a customer as though it were not.
+
+**The fix, for whoever takes it.** `subject` joins the unique constraint and the lookup. The domain already carries the subject on every `ProviderRequest`, so nothing above the repository changes — it is a migration and a widened `where`. The same slice must build the consumer, per *Fix belongs to* above.
+
+---|---|
 | **Owner** | Lane A — `provider_platform` |
 | **Severity** | 🟠 — unreachable today, 🔴 the moment a workspace watches two accounts |
 | **Status** | `OPEN` |
