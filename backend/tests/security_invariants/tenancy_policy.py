@@ -111,6 +111,12 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # regenerated from anything, after `signal_profile`. A pipeline
         # rebuild must leave it untouched.
         "product_catalog",
+        # Commercial Profile (M12.5 slice 2), migration 0020. Who buys each
+        # product, as the customer described them — customer-authored on the
+        # same terms, and the one whose leak would be the most commercially
+        # damaging in the platform: it states a company's whole go-to-market
+        # position in its own words.
+        "icp_declaration",
     }
 )
 
@@ -227,6 +233,9 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         # a tenancy property, and the first draft of migration 0019 withheld
         # it until this suite refused.
         "product_catalog",
+        # Migration 0020, on identical terms: no `UPDATE` grant, `DELETE`
+        # granted because erasability is a tenancy property.
+        "icp_declaration",
     }
 )
 

@@ -38,6 +38,10 @@ export const queryKeys = {
    * so one key per workspace is the whole cache surface. */
   products: (workspaceId: string) => ['workspace', workspaceId, 'products'] as const,
 
+  /** Lane B (Commercial Profile). Described whole and saved whole, like the
+   * catalog, and versioned separately from it. */
+  icp: (workspaceId: string) => ['workspace', workspaceId, 'icp'] as const,
+
   signalCatalog: (workspaceId: string) =>
     ['workspace', workspaceId, 'signal-catalog'] as const,
 

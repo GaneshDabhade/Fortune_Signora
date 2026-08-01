@@ -15,10 +15,16 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from modules.commercial_profile.application.ports import ProductCatalogRepository
+from modules.commercial_profile.application.declare_icp import DeclareIcp
+from modules.commercial_profile.application.ports import (
+    IcpDeclarationRepository,
+    ProductCatalogRepository,
+)
 from modules.commercial_profile.application.publish import PublishProductCatalog
 from modules.commercial_profile.infrastructure.composition import (
     build_catalogs,
+    build_declare_icp,
+    build_icp_declarations,
     build_publish_product_catalog,
 )
 from signora_platform.api import CurrentWorkspace
@@ -34,7 +40,26 @@ def publish_catalog(context: CurrentWorkspace) -> PublishProductCatalog:
     return build_publish_product_catalog(context.session)
 
 
+def icp_declarations(context: CurrentWorkspace) -> IcpDeclarationRepository:
+    return build_icp_declarations(context.session)
+
+
+def declare_icp(context: CurrentWorkspace) -> DeclareIcp:
+    return build_declare_icp(context.session)
+
+
 CatalogRead = Annotated[ProductCatalogRepository, Depends(catalogs)]
 CatalogWrite = Annotated[PublishProductCatalog, Depends(publish_catalog)]
+IcpRead = Annotated[IcpDeclarationRepository, Depends(icp_declarations)]
+IcpWrite = Annotated[DeclareIcp, Depends(declare_icp)]
 
-__all__ = ["CatalogRead", "CatalogWrite", "catalogs", "publish_catalog"]
+__all__ = [
+    "CatalogRead",
+    "CatalogWrite",
+    "IcpRead",
+    "IcpWrite",
+    "catalogs",
+    "declare_icp",
+    "icp_declarations",
+    "publish_catalog",
+]

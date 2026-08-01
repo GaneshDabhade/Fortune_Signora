@@ -1,9 +1,10 @@
 'use client';
 
+import { IcpEditor } from '@/components/commercial/icp';
 import { ProductCatalogEditor } from '@/components/commercial/products';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { SkeletonText } from '@/components/ui';
-import { useProductCatalog } from '@/lib/query/hooks/commercial';
+import { useIcpDeclaration, useProductCatalog } from '@/lib/query/hooks/commercial';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -25,6 +26,7 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 export default function ProductsPage() {
   const { activeWorkspace, isLoading: workspacesLoading } = useWorkspaceContext();
   const { data, isLoading, isError } = useProductCatalog(activeWorkspace?.id ?? null);
+  const icp = useIcpDeclaration(activeWorkspace?.id ?? null);
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
@@ -46,6 +48,17 @@ export default function ProductsPage() {
       ) : null}
       {data ? (
         <ProductCatalogEditor catalog={data} workspaceId={activeWorkspace?.id ?? null} />
+      ) : null}
+      {/* The ideal customer reads the catalog, so it renders once both have
+          arrived. Two queries rather than one endpoint returning both: they
+          are versioned separately, and a screen that fetched them together
+          would be the first place they looked like one thing. */}
+      {data && icp.data ? (
+        <IcpEditor
+          catalog={data}
+          declaration={icp.data}
+          workspaceId={activeWorkspace?.id ?? null}
+        />
       ) : null}
     </div>
   );

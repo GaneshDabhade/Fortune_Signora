@@ -42,6 +42,12 @@ class Resource(StrEnum):
     #: every member does daily, while changing what the company sells is an
     #: administrative act, and one resource could not express both.
     PRODUCT = "product"
+    #: Registered by M12.5 slice 2, on the same terms as `PRODUCT` — a *use*
+    #: of the platform rather than a change to it (§20a). Distinct from
+    #: `PRODUCT` because the two are separate aggregates: a workspace can
+    #: describe who buys a product without the right to change the catalog it
+    #: names, and one resource could not express that.
+    ICP = "icp"
 
 
 class Action(StrEnum):

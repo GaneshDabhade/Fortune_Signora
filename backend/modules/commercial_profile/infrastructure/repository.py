@@ -14,7 +14,15 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.commercial_profile.domain.catalog import Product, ProductCatalog
-from modules.commercial_profile.infrastructure.models import ProductCatalogModel
+from modules.commercial_profile.domain.icp import (
+    EmployeeRange,
+    IcpDeclaration,
+    ProductIcp,
+)
+from modules.commercial_profile.infrastructure.models import (
+    IcpDeclarationModel,
+    ProductCatalogModel,
+)
 
 
 def _to_product(raw: dict[str, Any]) -> Product:
@@ -90,6 +98,103 @@ class SqlProductCatalogRepository:
                 supersedes=catalog.supersedes,
                 created_by=catalog.created_by,
                 updated_by=catalog.created_by,
+            )
+        )
+        await self._session.flush()
+
+
+def _to_range(raw: dict[str, Any] | None) -> EmployeeRange | None:
+    return (
+        None
+        if raw is None
+        else EmployeeRange(minimum=raw.get("minimum"), maximum=raw.get("maximum"))
+    )
+
+
+def _to_profile(raw: dict[str, Any]) -> ProductIcp:
+    return ProductIcp(
+        product_id=UUID(raw["product_id"]),
+        industries=tuple(raw.get("industries", ())),
+        countries=tuple(raw.get("countries", ())),
+        employees=_to_range(raw.get("employees")),
+        notes=raw.get("notes", ""),
+    )
+
+
+def _to_declaration(row: IcpDeclarationModel) -> IcpDeclaration:
+    return IcpDeclaration(
+        id=row.id,
+        workspace_id=row.workspace_id,
+        version=row.version,
+        profiles=tuple(_to_profile(raw) for raw in row.profiles),
+        created_at=row.created_at,
+        created_by=row.created_by,
+        supersedes=row.supersedes,
+    )
+
+
+class SqlIcpDeclarationRepository:
+    """Persistence for the ideal customer, on the catalog's terms exactly.
+
+    `current` and `save`, no update and no delete. The duplication with
+    `SqlProductCatalogRepository` is deliberate at two instances: what the two
+    share is *the shape of an immutable versioned declaration*, and extracting
+    that from two examples would be guessing at the third.
+    """
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def current(self, workspace_id: UUID) -> IcpDeclaration | None:
+        """The highest version this workspace has declared.
+
+        **Highest version, not `supersedes IS NULL`** — on an immutable table
+        the new row is the one that names its predecessor, so a null
+        `supersedes` marks the *first* version permanently. The same defect
+        `signal_profile` still carries, and the same avoidance the catalog
+        already uses.
+        """
+        result = await self._session.execute(
+            select(IcpDeclarationModel)
+            .where(IcpDeclarationModel.workspace_id == workspace_id)
+            .order_by(IcpDeclarationModel.version.desc())
+            .limit(1)
+        )
+        row = result.scalar_one_or_none()
+        return None if row is None else _to_declaration(row)
+
+    async def save(self, declaration: IcpDeclaration) -> None:
+        """Insert the new version. Nothing is updated, ever.
+
+        `uq_icp_declaration_version` is the concurrency control: two callers
+        who read version 3 both build version 4, and the second insert is
+        refused by the constraint rather than silently winning.
+        """
+        self._session.add(
+            IcpDeclarationModel(
+                id=declaration.id,
+                workspace_id=declaration.workspace_id,
+                version=declaration.version,
+                profiles=[
+                    {
+                        "product_id": str(profile.product_id),
+                        "industries": list(profile.industries),
+                        "countries": list(profile.countries),
+                        "employees": (
+                            None
+                            if profile.employees is None
+                            else {
+                                "minimum": profile.employees.minimum,
+                                "maximum": profile.employees.maximum,
+                            }
+                        ),
+                        "notes": profile.notes,
+                    }
+                    for profile in declaration.profiles
+                ],
+                supersedes=declaration.supersedes,
+                created_by=declaration.created_by,
+                updated_by=declaration.created_by,
             )
         )
         await self._session.flush()

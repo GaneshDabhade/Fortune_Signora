@@ -26,11 +26,13 @@ from uuid import UUID, uuid4
 
 from modules.commercial_profile.application.ports import ProductCatalogRepository
 from modules.commercial_profile.domain.catalog import (
-    EMPTY_CATALOG_VERSION,
-    CommercialProfileError,
     Product,
     ProductCatalog,
     first_catalog,
+)
+from modules.commercial_profile.domain.declaration import (
+    UNDECLARED,
+    CommercialProfileError,
 )
 
 
@@ -66,11 +68,9 @@ class PublishProductCatalog:
 
     async def execute(self, request: PublishProductCatalogInput) -> ProductCatalog:
         current = await self._repository.current(request.workspace_id)
-        actual = current.version if current is not None else EMPTY_CATALOG_VERSION
+        actual = current.version if current is not None else UNDECLARED
         if actual != request.expected_version:
-            raise CatalogVersionConflictError(
-                expected=request.expected_version, actual=actual
-            )
+            raise CatalogVersionConflictError(expected=request.expected_version, actual=actual)
 
         now = datetime.now(UTC)
         catalog = (
@@ -82,9 +82,7 @@ class PublishProductCatalog:
                 now=now,
             )
             if current is None
-            else current.revise(
-                request.products, id=uuid4(), by=request.actor_id, now=now
-            )
+            else current.revise(request.products, id=uuid4(), by=request.actor_id, now=now)
         )
         await self._repository.save(catalog)
         return catalog

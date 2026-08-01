@@ -13,7 +13,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { apiRequest } from '@/lib/api/client';
-import type { ProductCatalog, PublishProductCatalog } from '@/lib/api/types';
+import type {
+  DeclareIcp,
+  IcpDeclaration,
+  ProductCatalog,
+  PublishProductCatalog,
+} from '@/lib/api/types';
 import { queryKeys } from '@/lib/query/keys';
 
 /**
@@ -62,6 +67,52 @@ export function usePublishProductCatalog(workspaceId: string | null) {
     // and the refusal is precisely the case worth showing accurately.
     onSuccess: (published) => {
       client.setQueryData(queryKeys.products(workspaceId ?? ''), published);
+    },
+  });
+}
+
+/**
+ * Who buys what this workspace sells.
+ *
+ * **Never 404s**, and never a match. It returns what the customer described,
+ * at version 0 with no profiles until they have described anybody.
+ */
+export function useIcpDeclaration(workspaceId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.icp(workspaceId ?? ''),
+    queryFn: () =>
+      apiRequest<IcpDeclaration>(`/workspaces/${workspaceId}/icp`, {
+        workspaceId: workspaceId ?? undefined,
+      }),
+    enabled: workspaceId !== null,
+  });
+}
+
+/**
+ * Describe the ideal customer, as a complete statement.
+ *
+ * The whole description is sent, for the same reason the whole catalog is: the
+ * declaration is the unit that gets versioned, so *"describe this one"* would
+ * make what is stored depend on what was there when the request arrived.
+ *
+ * **Deliberately does not retry.** A retry would re-send a version the server
+ * has already rejected once, and every attempt would fail identically while
+ * looking like a network problem.
+ */
+export function useDeclareIcp(workspaceId: string | null) {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: (declaration: DeclareIcp) =>
+      apiRequest<IcpDeclaration>(`/workspaces/${workspaceId}/icp`, {
+        method: 'PUT',
+        body: declaration,
+        workspaceId: workspaceId ?? undefined,
+      }),
+    // Not optimistic. A description that flipped locally and was then refused
+    // on version would be the one place the product stated something untrue.
+    onSuccess: (declared) => {
+      client.setQueryData(queryKeys.icp(workspaceId ?? ''), declared);
     },
   });
 }

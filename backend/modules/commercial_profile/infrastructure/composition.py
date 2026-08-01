@@ -10,8 +10,10 @@ from __future__ import annotations
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from modules.commercial_profile.application.declare_icp import DeclareIcp
 from modules.commercial_profile.application.publish import PublishProductCatalog
 from modules.commercial_profile.infrastructure.repository import (
+    SqlIcpDeclarationRepository,
     SqlProductCatalogRepository,
 )
 
@@ -24,3 +26,17 @@ def build_catalogs(session: AsyncSession) -> SqlProductCatalogRepository:
 
 def build_publish_product_catalog(session: AsyncSession) -> PublishProductCatalog:
     return PublishProductCatalog(repository=SqlProductCatalogRepository(session))
+
+
+def build_icp_declarations(session: AsyncSession) -> SqlIcpDeclarationRepository:
+    return SqlIcpDeclarationRepository(session)
+
+
+def build_declare_icp(session: AsyncSession) -> DeclareIcp:
+    """**Two repositories, both this module's.** Describing who buys a product
+    requires knowing the workspace sells it, and both aggregates live in this
+    bounded context — no other module is read, and none could be."""
+    return DeclareIcp(
+        declarations=SqlIcpDeclarationRepository(session),
+        catalog=SqlProductCatalogRepository(session),
+    )

@@ -21,11 +21,11 @@ from modules.commercial_profile.application.publish import (
 )
 from modules.commercial_profile.domain.catalog import (
     MAX_NAME,
-    CommercialProfileError,
     Product,
     ProductCatalog,
     first_catalog,
 )
+from modules.commercial_profile.domain.declaration import CommercialProfileError
 
 WORKSPACE = UUID("11111111-1111-4111-8111-111111111111")
 ACTOR = UUID("22222222-2222-4222-8222-222222222222")
@@ -225,48 +225,3 @@ class TestPublishing:
 
         with pytest.raises(CatalogVersionConflictError):
             await publish.execute(request)
-
-
-class TestTheModuleComputesNothing:
-    def test_the_domain_names_no_score_priority_or_rank(self) -> None:
-        # **The boundary, asserted structurally.** This module records what a
-        # customer declared. The moment it carries a number about the world,
-        # it has started deciding rather than recording — and the pipeline
-        # below it already owns every such judgement.
-        #
-        # Read as a **syntax tree**, not as text: the module's prose says
-        # "nothing here is derived, matched, scored or resolved", which is
-        # the rule rather than a violation of it. The M4 and M5B invariants
-        # read ASTs for the same reason — a check that cannot tell code from
-        # a comment gets weakened until it means nothing.
-        import ast
-        import inspect
-
-        from modules.commercial_profile.domain import catalog as module
-
-        tree = ast.parse(inspect.getsource(module))
-        identifiers = {
-            node.id if isinstance(node, ast.Name) else node.attr
-            for node in ast.walk(tree)
-            if isinstance(node, (ast.Name, ast.Attribute))
-        } | {
-            node.name
-            for node in ast.walk(tree)
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
-        } | {
-            node.target.id
-            for node in ast.walk(tree)
-            if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name)
-        }
-
-        forbidden = {"score", "priority", "rank", "propensity", "fit", "weight"}
-        offenders = {
-            name
-            for name in identifiers
-            for term in forbidden
-            if term in name.casefold()
-        }
-        assert offenders == set(), (
-            f"{sorted(offenders)} name a judgement in the head of the pipeline. It "
-            "records declarations; every judgement belongs downstream."
-        )

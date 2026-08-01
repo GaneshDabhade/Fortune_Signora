@@ -410,3 +410,60 @@ export interface PublishProductCatalog {
   expected_version: number;
   products: Product[];
 }
+
+/**
+ * How big the companies that buy a product are.
+ *
+ * **A count of people, not a revenue band.** Either bound may be null —
+ * *"anything over 500"* and *"under 50"* are both real answers.
+ */
+export interface EmployeeRange {
+  minimum: number | null;
+  maximum: number | null;
+}
+
+/**
+ * Who buys one product, as the customer describes them.
+ *
+ * **Their words, not a controlled list.** `industries` and `countries` are
+ * free text: Signora records what the customer states, and nothing here is
+ * matched against anything. A profile carries no score, rank or verdict, and
+ * the API has no field that could.
+ */
+export interface ProductIcp {
+  /** A product from the catalog, and one the workspace currently sells. */
+  product_id: string;
+  industries: string[];
+  countries: string[];
+  /** Null when size was not stated. */
+  employees: EmployeeRange | null;
+  /** Anything the fields above cannot hold. May be empty. */
+  notes: string;
+}
+
+/**
+ * Who buys what this workspace sells, and who last said so.
+ *
+ * **Versioned as a whole, and separately from the catalog.** Renaming a
+ * product does not mint a version here, and describing a buyer does not mint
+ * one there — two aggregates, so neither audit history is filled with the
+ * other's changes.
+ */
+export interface IcpDeclaration {
+  /** **0 when nothing has been described** — the state every workspace starts
+   * in, and an answer rather than an absence. */
+  version: number;
+  /** One per product described. A product with no entry has no ideal customer
+   * described yet. */
+  profiles: ProductIcp[];
+  /** Null only at version 0. */
+  updated_at: string | null;
+  /** Null only at version 0. */
+  updated_by: string | null;
+}
+
+/** A complete statement of the ideal customer, replacing `expected_version`. */
+export interface DeclareIcp {
+  expected_version: number;
+  profiles: ProductIcp[];
+}

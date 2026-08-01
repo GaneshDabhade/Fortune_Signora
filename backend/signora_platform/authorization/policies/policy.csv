@@ -14,3 +14,6 @@ p, member, *, account, read
 p, owner, *, product, read
 p, member, *, product, read
 p, owner, *, product, update
+p, owner, *, icp, read
+p, member, *, icp, read
+p, owner, *, icp, update

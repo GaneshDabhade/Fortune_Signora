@@ -13,9 +13,12 @@ from uuid import UUID
 
 from fastapi import APIRouter, status
 
-from apps.api.composition.products import CatalogRead, CatalogWrite
+from apps.api.composition.products import CatalogRead, CatalogWrite, IcpRead, IcpWrite
+from modules.commercial_profile.application.declare_icp import DeclareIcpInput
 from modules.commercial_profile.application.publish import PublishProductCatalogInput
 from modules.commercial_profile.interface.schemas import (
+    DeclareIcpRequest,
+    IcpDeclarationResponse,
     ProductCatalogResponse,
     PublishProductCatalogRequest,
 )
@@ -93,6 +96,66 @@ async def publish_product_catalog(
         )
     )
     return ProductCatalogResponse.from_domain(catalog)
+
+
+@router.get(
+    "/workspaces/{workspace_id}/icp",
+    response_model=IcpDeclarationResponse,
+    summary="Who buys what this workspace sells",
+)
+async def icp_declaration(
+    context: CurrentWorkspace, declarations: IcpRead
+) -> IcpDeclarationResponse:
+    """The ideal customer in force.
+
+    **Never a 404**, and never a match. It reports what the customer stated
+    about who buys their products — comparing a real company against it is
+    somebody else's work, and this endpoint has no way to express the result.
+    """
+    context.authorize(Resource.ICP, Action.READ)
+    declaration = await declarations.current(context.workspace_id)
+    return (
+        IcpDeclarationResponse.empty()
+        if declaration is None
+        else IcpDeclarationResponse.from_domain(declaration)
+    )
+
+
+@router.put(
+    "/workspaces/{workspace_id}/icp",
+    response_model=IcpDeclarationResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Describe who buys what this workspace sells",
+)
+async def declare_icp(
+    context: CurrentWorkspace, declare: IcpWrite, body: DeclareIcpRequest
+) -> IcpDeclarationResponse:
+    """Record a complete description of the ideal customer, as a new version.
+
+    **`PUT`, and the whole description.** The aggregate is the declaration, so
+    a version is a whole statement — accepting *"describe this one product"*
+    would make what gets stored depend on what was there when the request
+    arrived, which is the lost update two people editing a page produce.
+
+    **422 when a profile names a product the workspace does not sell.** The
+    reference would resolve to nothing, in the module whose whole job is being
+    citable later.
+
+    **409 when somebody else saved first**, with the version actually in
+    force. Accepting the write would erase a colleague's work and report
+    success to both of them.
+    """
+    context.authorize(Resource.ICP, Action.UPDATE)
+    declaration = await declare.execute(
+        DeclareIcpInput(
+            workspace_id=context.workspace_id,
+            profiles=tuple(profile.to_domain() for profile in body.profiles),
+            expected_version=body.expected_version,
+            # Taken from the verified caller, never from the request.
+            actor_id=context.principal.user_id,
+        )
+    )
+    return IcpDeclarationResponse.from_domain(declaration)
 
 
 __all__ = ["router"]
