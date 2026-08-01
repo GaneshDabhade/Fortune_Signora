@@ -13,10 +13,22 @@ from uuid import UUID
 
 from fastapi import APIRouter, status
 
-from apps.api.composition.products import CatalogRead, CatalogWrite, IcpRead, IcpWrite
+from apps.api.composition.products import (
+    CatalogRead,
+    CatalogWrite,
+    CommitteeRead,
+    CommitteeWrite,
+    IcpRead,
+    IcpWrite,
+)
+from modules.commercial_profile.application.declare_committee import (
+    DeclareBuyingCommitteeInput,
+)
 from modules.commercial_profile.application.declare_icp import DeclareIcpInput
 from modules.commercial_profile.application.publish import PublishProductCatalogInput
 from modules.commercial_profile.interface.schemas import (
+    BuyingCommitteeResponse,
+    DeclareBuyingCommitteeRequest,
     DeclareIcpRequest,
     IcpDeclarationResponse,
     ProductCatalogResponse,
@@ -156,6 +168,67 @@ async def declare_icp(
         )
     )
     return IcpDeclarationResponse.from_domain(declaration)
+
+
+@router.get(
+    "/workspaces/{workspace_id}/buying-committee",
+    response_model=BuyingCommitteeResponse,
+    summary="Who decides about what this workspace sells",
+)
+async def buying_committee(
+    context: CurrentWorkspace, committees: CommitteeRead
+) -> BuyingCommitteeResponse:
+    """The committee in force.
+
+    **Never a 404, and never an assessment.** It reports the roles the
+    customer said are involved in a purchase. Whether a particular company's
+    committee is complete, who to contact, or how much any seat matters are
+    conclusions about a real deal — none of them is this module's, and this
+    response has no field that could carry one.
+    """
+    context.authorize(Resource.BUYING_COMMITTEE, Action.READ)
+    declaration = await committees.current(context.workspace_id)
+    return (
+        BuyingCommitteeResponse.empty()
+        if declaration is None
+        else BuyingCommitteeResponse.from_domain(declaration)
+    )
+
+
+@router.put(
+    "/workspaces/{workspace_id}/buying-committee",
+    response_model=BuyingCommitteeResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Declare who decides about what this workspace sells",
+)
+async def declare_buying_committee(
+    context: CurrentWorkspace,
+    declare: CommitteeWrite,
+    body: DeclareBuyingCommitteeRequest,
+) -> BuyingCommitteeResponse:
+    """Record a complete statement of the committee, as a new version.
+
+    **`PUT`, and the whole declaration**, for the third time in this module
+    and the same reason each time: the aggregate is the declaration, so
+    accepting *"add this role"* would make what gets stored depend on what was
+    there when the request arrived.
+
+    **422 when a committee names a product the workspace does not sell**, and
+    **409 when somebody else saved first** — with the version actually in
+    force, because accepting the write would erase a colleague's work and
+    report success to both of them.
+    """
+    context.authorize(Resource.BUYING_COMMITTEE, Action.UPDATE)
+    declaration = await declare.execute(
+        DeclareBuyingCommitteeInput(
+            workspace_id=context.workspace_id,
+            committees=tuple(entry.to_domain() for entry in body.committees),
+            expected_version=body.expected_version,
+            # Taken from the verified caller, never from the request.
+            actor_id=context.principal.user_id,
+        )
+    )
+    return BuyingCommitteeResponse.from_domain(declaration)
 
 
 __all__ = ["router"]

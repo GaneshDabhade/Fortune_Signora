@@ -25,6 +25,10 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
+from modules.commercial_profile.application.declaring import (
+    IcpUnknownProductError,
+    sold_products,
+)
 from modules.commercial_profile.application.ports import (
     IcpDeclarationRepository,
     ProductCatalogRepository,
@@ -50,17 +54,6 @@ class IcpVersionConflictError(CommercialProfileError):
             f"your ideal customer is at version {actual}, not {expected}. Somebody else "
             "changed it since you opened this page — reload to see their version before "
             "saving yours, so neither of you loses work."
-        )
-
-
-class UnknownProductError(CommercialProfileError):
-    """A profile names a product the workspace does not currently sell."""
-
-    def __init__(self, product_id: UUID) -> None:
-        self.product_id = product_id
-        super().__init__(
-            "you cannot describe who buys a product you have not said you sell. Add it "
-            "under Products first, then describe its ideal customer."
         )
 
 
@@ -96,11 +89,10 @@ class DeclareIcp:
         if actual != request.expected_version:
             raise IcpVersionConflictError(expected=request.expected_version, actual=actual)
 
-        catalog = await self._catalog.current(request.workspace_id)
-        sold = {product.id for product in catalog.products} if catalog else set[UUID]()
+        sold = await sold_products(self._catalog, request.workspace_id)
         for profile in request.profiles:
             if profile.product_id not in sold:
-                raise UnknownProductError(profile.product_id)
+                raise IcpUnknownProductError(profile.product_id)
 
         now = datetime.now(UTC)
         declaration = (

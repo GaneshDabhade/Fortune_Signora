@@ -15,14 +15,20 @@ from typing import Annotated
 
 from fastapi import Depends
 
+from modules.commercial_profile.application.declare_committee import (
+    DeclareBuyingCommittee,
+)
 from modules.commercial_profile.application.declare_icp import DeclareIcp
 from modules.commercial_profile.application.ports import (
+    BuyingCommitteeRepository,
     IcpDeclarationRepository,
     ProductCatalogRepository,
 )
 from modules.commercial_profile.application.publish import PublishProductCatalog
 from modules.commercial_profile.infrastructure.composition import (
+    build_buying_committees,
     build_catalogs,
+    build_declare_buying_committee,
     build_declare_icp,
     build_icp_declarations,
     build_publish_product_catalog,
@@ -48,17 +54,31 @@ def declare_icp(context: CurrentWorkspace) -> DeclareIcp:
     return build_declare_icp(context.session)
 
 
+def buying_committees(context: CurrentWorkspace) -> BuyingCommitteeRepository:
+    return build_buying_committees(context.session)
+
+
+def declare_buying_committee(context: CurrentWorkspace) -> DeclareBuyingCommittee:
+    return build_declare_buying_committee(context.session)
+
+
 CatalogRead = Annotated[ProductCatalogRepository, Depends(catalogs)]
 CatalogWrite = Annotated[PublishProductCatalog, Depends(publish_catalog)]
 IcpRead = Annotated[IcpDeclarationRepository, Depends(icp_declarations)]
 IcpWrite = Annotated[DeclareIcp, Depends(declare_icp)]
+CommitteeRead = Annotated[BuyingCommitteeRepository, Depends(buying_committees)]
+CommitteeWrite = Annotated[DeclareBuyingCommittee, Depends(declare_buying_committee)]
 
 __all__ = [
     "CatalogRead",
     "CatalogWrite",
+    "CommitteeRead",
+    "CommitteeWrite",
     "IcpRead",
     "IcpWrite",
+    "buying_committees",
     "catalogs",
+    "declare_buying_committee",
     "declare_icp",
     "icp_declarations",
     "publish_catalog",

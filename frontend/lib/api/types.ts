@@ -541,3 +541,59 @@ export interface AccountResearch {
    * it is. */
   artifact: ResearchArtifact | null;
 }
+
+/**
+ * The part a role plays in a purchase.
+ *
+ * **Five values, and they are ordinary sales language** rather than a taxonomy
+ * a customer must translate their own business into. Owned by Commercial
+ * Profile; no provider has any say in it.
+ */
+export type CommitteePart =
+  | 'economic_buyer'
+  | 'champion'
+  | 'evaluator'
+  | 'user'
+  | 'gatekeeper';
+
+/**
+ * One seat at the table.
+ *
+ * **A role, never a person.** The title is what the customer calls the job —
+ * *VP of Revenue Operations* — and Signora holds no individuals here. There is
+ * no influence, weight or seniority: those would be judgements about a real
+ * deal, and this is a declaration.
+ */
+export interface CommitteeRole {
+  title: string;
+  part: CommitteePart;
+}
+
+/** Who decides about one product. At least one role. */
+export interface ProductCommittee {
+  product_id: string;
+  /** In the order the customer arranged them, which carries no rank. */
+  roles: CommitteeRole[];
+}
+
+/**
+ * Who decides about what this workspace sells, and who last said so.
+ *
+ * Versioned separately from the catalog and the ideal customer, because a
+ * committee changes on a different day from either.
+ */
+export interface BuyingCommittee {
+  /** **0 when nothing has been declared.** */
+  version: number;
+  committees: ProductCommittee[];
+  /** Null only at version 0. */
+  updated_at: string | null;
+  /** Null only at version 0. */
+  updated_by: string | null;
+}
+
+/** A complete statement of the committee, replacing `expected_version`. */
+export interface DeclareBuyingCommittee {
+  expected_version: number;
+  committees: ProductCommittee[];
+}

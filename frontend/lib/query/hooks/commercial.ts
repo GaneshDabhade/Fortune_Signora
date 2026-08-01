@@ -14,6 +14,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { apiRequest } from '@/lib/api/client';
 import type {
+  BuyingCommittee,
+  DeclareBuyingCommittee,
   DeclareIcp,
   IcpDeclaration,
   ProductCatalog,
@@ -113,6 +115,52 @@ export function useDeclareIcp(workspaceId: string | null) {
     // on version would be the one place the product stated something untrue.
     onSuccess: (declared) => {
       client.setQueryData(queryKeys.icp(workspaceId ?? ''), declared);
+    },
+  });
+}
+
+/**
+ * Who decides about what this workspace sells.
+ *
+ * **Never 404s, and never an assessment.** It returns the roles the customer
+ * said are involved; whether a real company's committee is complete is a
+ * conclusion nobody has drawn.
+ */
+export function useBuyingCommittee(workspaceId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.buyingCommittee(workspaceId ?? ''),
+    queryFn: () =>
+      apiRequest<BuyingCommittee>(`/workspaces/${workspaceId}/buying-committee`, {
+        workspaceId: workspaceId ?? undefined,
+      }),
+    enabled: workspaceId !== null,
+  });
+}
+
+/**
+ * Declare the committee, as a complete statement.
+ *
+ * The whole declaration is sent, for the third time in this module and the
+ * same reason each time: the declaration is the unit that gets versioned.
+ *
+ * **Deliberately does not retry.** A retry would re-send a version the server
+ * has already rejected once.
+ */
+export function useDeclareBuyingCommittee(workspaceId: string | null) {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: (declaration: DeclareBuyingCommittee) =>
+      apiRequest<BuyingCommittee>(`/workspaces/${workspaceId}/buying-committee`, {
+        method: 'PUT',
+        body: declaration,
+        workspaceId: workspaceId ?? undefined,
+      }),
+    // Not optimistic, for the same reason as the other two: a declaration
+    // that flipped locally and was then refused on version would be the one
+    // place the product stated something untrue.
+    onSuccess: (declared) => {
+      client.setQueryData(queryKeys.buyingCommittee(workspaceId ?? ''), declared);
     },
   });
 }

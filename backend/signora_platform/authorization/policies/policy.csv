@@ -21,3 +21,6 @@ p, owner, *, research, read
 p, member, *, research, read
 p, owner, *, research, add
 p, member, *, research, add
+p, owner, *, buying_committee, read
+p, member, *, buying_committee, read
+p, owner, *, buying_committee, update

@@ -1,10 +1,15 @@
 'use client';
 
+import { BuyingCommitteeEditor } from '@/components/commercial/committee';
 import { IcpEditor } from '@/components/commercial/icp';
 import { ProductCatalogEditor } from '@/components/commercial/products';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { SkeletonText } from '@/components/ui';
-import { useIcpDeclaration, useProductCatalog } from '@/lib/query/hooks/commercial';
+import {
+  useBuyingCommittee,
+  useIcpDeclaration,
+  useProductCatalog,
+} from '@/lib/query/hooks/commercial';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -27,6 +32,7 @@ export default function ProductsPage() {
   const { activeWorkspace, isLoading: workspacesLoading } = useWorkspaceContext();
   const { data, isLoading, isError } = useProductCatalog(activeWorkspace?.id ?? null);
   const icp = useIcpDeclaration(activeWorkspace?.id ?? null);
+  const committee = useBuyingCommittee(activeWorkspace?.id ?? null);
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
@@ -57,6 +63,13 @@ export default function ProductsPage() {
         <IcpEditor
           catalog={data}
           declaration={icp.data}
+          workspaceId={activeWorkspace?.id ?? null}
+        />
+      ) : null}
+      {data && committee.data ? (
+        <BuyingCommitteeEditor
+          catalog={data}
+          declaration={committee.data}
           workspaceId={activeWorkspace?.id ?? null}
         />
       ) : null}

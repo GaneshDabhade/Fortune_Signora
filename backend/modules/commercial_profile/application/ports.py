@@ -12,6 +12,7 @@ from typing import Protocol
 from uuid import UUID
 
 from modules.commercial_profile.domain.catalog import ProductCatalog
+from modules.commercial_profile.domain.committee import BuyingCommittee
 from modules.commercial_profile.domain.icp import IcpDeclaration
 
 
@@ -39,3 +40,11 @@ class IcpDeclarationRepository(Protocol):
         ...
 
     async def save(self, declaration: IcpDeclaration) -> None: ...
+
+
+class BuyingCommitteeRepository(Protocol):
+    async def current(self, workspace_id: UUID) -> BuyingCommittee | None:
+        """The committee in force, or ``None`` when nothing has been said."""
+        ...
+
+    async def save(self, committee: BuyingCommittee) -> None: ...

@@ -7,11 +7,16 @@ about the customer's own declaration and they are entitled to the reason.
 
 from fastapi import status
 
-from modules.commercial_profile.application.declare_icp import (
-    IcpVersionConflictError,
-    UnknownProductError,
+from modules.commercial_profile.application.declare_committee import (
+    CommitteeVersionConflictError,
+)
+from modules.commercial_profile.application.declare_icp import IcpVersionConflictError
+from modules.commercial_profile.application.declaring import (
+    CommitteeUnknownProductError,
+    IcpUnknownProductError,
 )
 from modules.commercial_profile.application.publish import CatalogVersionConflictError
+from modules.commercial_profile.domain.committee import BuyingCommitteeError
 from modules.commercial_profile.domain.declaration import CommercialProfileError
 from modules.commercial_profile.domain.icp import IcpError
 from signora_platform.api import ErrorMapping
@@ -28,10 +33,28 @@ ERROR_MAPPING: ErrorMapping = {
     IcpVersionConflictError: (status.HTTP_409_CONFLICT, "icp_version_conflict"),
     # Its own code because it is the only refusal here a caller fixes
     # somewhere else — in the catalog, not on the page they are looking at.
-    UnknownProductError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "icp_unknown_product"),
+    IcpUnknownProductError: (
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "icp_unknown_product",
+    ),
+    CommitteeVersionConflictError: (
+        status.HTTP_409_CONFLICT,
+        "committee_version_conflict",
+    ),
+    # **One condition, three codes by slice 4**, and deliberately not one
+    # neutral `unknown_product`: renaming a shipped code is outside this
+    # lane's budget, and each code names the page the reader fixes it on.
+    # The consolidation is raised for the product owner rather than taken.
+    CommitteeUnknownProductError: (
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "committee_unknown_product",
+    ),
     # Everything the ideal customer refuses: a description with no criteria, a
     # size range whose floor is above its ceiling, the same industry twice.
     IcpError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "icp_refused"),
+    # Everything the committee refuses: an empty one, two roles sharing a
+    # title, a role with no title.
+    BuyingCommitteeError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "committee_refused"),
     # Everything the domain refuses: an unnamed product, two products sharing
     # a name, an ideal customer with no criteria, a size range whose floor is
     # above its ceiling. Registered after the rows above and never shadowing

@@ -125,6 +125,11 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # the only record that anybody wanted this.
         "research_request",
         "research_request_state",
+        # Commercial Profile (M12.5 slice 3), migration 0021. Who decides
+        # about each product — job titles the customer typed, never people:
+        # person entities are deferred platform-wide, and this table names
+        # none.
+        "buying_committee",
     }
 )
 
@@ -251,6 +256,8 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         # trail, so the two cannot disagree (migration 0021; M12.4).
         "research_request",
         "research_request_state",
+        # Migration 0021, likewise.
+        "buying_committee",
     }
 )
 

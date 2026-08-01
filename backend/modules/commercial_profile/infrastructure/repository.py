@@ -1,8 +1,13 @@
-"""Persistence for the product catalog.
+"""Persistence for the customer's declarations.
 
-Offers `current` and `save` and **nothing else**. No update, no delete: a
-catalog is superseded by a new version, and not offering the method means
+Each offers `current` and `save` and **nothing else**. No update, no delete: a
+declaration is superseded by a new version, and not offering the method means
 nobody writes code the database would refuse at runtime.
+
+**The read every one of them performs lives in `versioned.py`**, not here.
+Three hand-written copies of *"the row in force is the highest version"* would
+be three chances for the fourth to be written the way `signal_profile` wrote
+it, which is backwards.
 """
 
 from __future__ import annotations
@@ -10,19 +15,26 @@ from __future__ import annotations
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.commercial_profile.domain.catalog import Product, ProductCatalog
+from modules.commercial_profile.domain.committee import (
+    BuyingCommittee,
+    CommitteePart,
+    CommitteeRole,
+    ProductCommittee,
+)
 from modules.commercial_profile.domain.icp import (
     EmployeeRange,
     IcpDeclaration,
     ProductIcp,
 )
 from modules.commercial_profile.infrastructure.models import (
+    BuyingCommitteeModel,
     IcpDeclarationModel,
     ProductCatalogModel,
 )
+from modules.commercial_profile.infrastructure.versioned import latest
 
 
 def _to_product(raw: dict[str, Any]) -> Product:
@@ -50,25 +62,7 @@ class SqlProductCatalogRepository:
         self._session = session
 
     async def current(self, workspace_id: UUID) -> ProductCatalog | None:
-        """The highest version this workspace has declared.
-
-        **Highest version, deliberately — not `supersedes IS NULL`.** On an
-        immutable table the new row is the one that names its predecessor, so
-        the row with a null `supersedes` is the *first* version and stays
-        that way forever. `signal_profile` reads itself that way today and
-        would return version 1 after any revision; the defect is latent only
-        because nothing has ever written a second one (see the M12.5 review).
-
-        Ordering by version is also the rule the uniqueness constraint
-        already enforces, so the reader and the database agree by
-        construction rather than by coincidence.
-        """
-        result = await self._session.execute(
-            select(ProductCatalogModel)
-            .where(ProductCatalogModel.workspace_id == workspace_id)
-            .order_by(ProductCatalogModel.version.desc())
-            .limit(1)
-        )
+        result = await self._session.execute(latest(ProductCatalogModel, workspace_id))
         row = result.scalar_one_or_none()
         return None if row is None else _to_catalog(row)
 
@@ -134,32 +128,13 @@ def _to_declaration(row: IcpDeclarationModel) -> IcpDeclaration:
 
 
 class SqlIcpDeclarationRepository:
-    """Persistence for the ideal customer, on the catalog's terms exactly.
-
-    `current` and `save`, no update and no delete. The duplication with
-    `SqlProductCatalogRepository` is deliberate at two instances: what the two
-    share is *the shape of an immutable versioned declaration*, and extracting
-    that from two examples would be guessing at the third.
-    """
+    """Persistence for the ideal customer, on the catalog's terms exactly."""
 
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
     async def current(self, workspace_id: UUID) -> IcpDeclaration | None:
-        """The highest version this workspace has declared.
-
-        **Highest version, not `supersedes IS NULL`** — on an immutable table
-        the new row is the one that names its predecessor, so a null
-        `supersedes` marks the *first* version permanently. The same defect
-        `signal_profile` still carries, and the same avoidance the catalog
-        already uses.
-        """
-        result = await self._session.execute(
-            select(IcpDeclarationModel)
-            .where(IcpDeclarationModel.workspace_id == workspace_id)
-            .order_by(IcpDeclarationModel.version.desc())
-            .limit(1)
-        )
+        result = await self._session.execute(latest(IcpDeclarationModel, workspace_id))
         row = result.scalar_one_or_none()
         return None if row is None else _to_declaration(row)
 
@@ -195,6 +170,69 @@ class SqlIcpDeclarationRepository:
                 supersedes=declaration.supersedes,
                 created_by=declaration.created_by,
                 updated_by=declaration.created_by,
+            )
+        )
+        await self._session.flush()
+
+
+def _to_role(raw: dict[str, Any]) -> CommitteeRole:
+    return CommitteeRole(title=raw["title"], part=CommitteePart(raw["part"]))
+
+
+def _to_committee(raw: dict[str, Any]) -> ProductCommittee:
+    return ProductCommittee(
+        product_id=UUID(raw["product_id"]),
+        roles=tuple(_to_role(role) for role in raw["roles"]),
+    )
+
+
+def _to_buying_committee(row: BuyingCommitteeModel) -> BuyingCommittee:
+    return BuyingCommittee(
+        id=row.id,
+        workspace_id=row.workspace_id,
+        version=row.version,
+        committees=tuple(_to_committee(raw) for raw in row.committees),
+        created_at=row.created_at,
+        created_by=row.created_by,
+        supersedes=row.supersedes,
+    )
+
+
+class SqlBuyingCommitteeRepository:
+    """Persistence for the buying committee, on the same terms as the rest."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def current(self, workspace_id: UUID) -> BuyingCommittee | None:
+        result = await self._session.execute(latest(BuyingCommitteeModel, workspace_id))
+        row = result.scalar_one_or_none()
+        return None if row is None else _to_buying_committee(row)
+
+    async def save(self, committee: BuyingCommittee) -> None:
+        """Insert the new version. Nothing is updated, ever.
+
+        `uq_buying_committee_version` is the concurrency control: two callers
+        who read version 3 both build version 4, and the second insert is
+        refused by the constraint rather than silently winning.
+        """
+        self._session.add(
+            BuyingCommitteeModel(
+                id=committee.id,
+                workspace_id=committee.workspace_id,
+                version=committee.version,
+                committees=[
+                    {
+                        "product_id": str(entry.product_id),
+                        "roles": [
+                            {"title": role.title, "part": role.part.value} for role in entry.roles
+                        ],
+                    }
+                    for entry in committee.committees
+                ],
+                supersedes=committee.supersedes,
+                created_by=committee.created_by,
+                updated_by=committee.created_by,
             )
         )
         await self._session.flush()

@@ -18,8 +18,8 @@ from modules.commercial_profile.application.declare_icp import (
     DeclareIcp,
     DeclareIcpInput,
     IcpVersionConflictError,
-    UnknownProductError,
 )
+from modules.commercial_profile.application.declaring import IcpUnknownProductError
 from modules.commercial_profile.domain.catalog import (
     Product,
     ProductCatalog,
@@ -304,7 +304,7 @@ class TestAProfileMustNameAProductTheWorkspaceSells:
         # module whose whole job is being citable later.
         declarations = FakeIcpRepository()
 
-        with pytest.raises(UnknownProductError, match="Add it under Products first"):
+        with pytest.raises(IcpUnknownProductError, match="Add it under Products first"):
             await _declare(declarations, FakeCatalogRepository(CORE)).execute(
                 DeclareIcpInput(
                     workspace_id=WORKSPACE,
@@ -319,7 +319,7 @@ class TestAProfileMustNameAProductTheWorkspaceSells:
     async def test_a_workspace_with_no_catalog_can_describe_nobody(self) -> None:
         declarations = FakeIcpRepository()
 
-        with pytest.raises(UnknownProductError):
+        with pytest.raises(IcpUnknownProductError):
             await _declare(declarations, FakeCatalogRepository()).execute(
                 DeclareIcpInput(
                     workspace_id=WORKSPACE,

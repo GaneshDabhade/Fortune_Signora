@@ -10,9 +10,13 @@ from __future__ import annotations
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from modules.commercial_profile.application.declare_committee import (
+    DeclareBuyingCommittee,
+)
 from modules.commercial_profile.application.declare_icp import DeclareIcp
 from modules.commercial_profile.application.publish import PublishProductCatalog
 from modules.commercial_profile.infrastructure.repository import (
+    SqlBuyingCommitteeRepository,
     SqlIcpDeclarationRepository,
     SqlProductCatalogRepository,
 )
@@ -38,5 +42,16 @@ def build_declare_icp(session: AsyncSession) -> DeclareIcp:
     bounded context — no other module is read, and none could be."""
     return DeclareIcp(
         declarations=SqlIcpDeclarationRepository(session),
+        catalog=SqlProductCatalogRepository(session),
+    )
+
+
+def build_buying_committees(session: AsyncSession) -> SqlBuyingCommitteeRepository:
+    return SqlBuyingCommitteeRepository(session)
+
+
+def build_declare_buying_committee(session: AsyncSession) -> DeclareBuyingCommittee:
+    return DeclareBuyingCommittee(
+        committees=SqlBuyingCommitteeRepository(session),
         catalog=SqlProductCatalogRepository(session),
     )

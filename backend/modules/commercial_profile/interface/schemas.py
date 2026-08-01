@@ -18,6 +18,14 @@ from modules.commercial_profile.domain.catalog import (
     Product,
     ProductCatalog,
 )
+from modules.commercial_profile.domain.committee import (
+    MAX_ROLES,
+    MAX_TITLE,
+    BuyingCommittee,
+    CommitteePart,
+    CommitteeRole,
+    ProductCommittee,
+)
 from modules.commercial_profile.domain.declaration import UNDECLARED
 from modules.commercial_profile.domain.icp import (
     MAX_CRITERIA,
@@ -306,12 +314,164 @@ class IcpDeclarationResponse(BaseModel):
         )
 
 
+class CommitteeRoleRequest(BaseModel):
+    """One seat at the table, as the customer states it."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    title: str = Field(
+        min_length=1,
+        max_length=MAX_TITLE,
+        description=(
+            "What they are called, **in your words** — *VP of Revenue Operations*, "
+            "*Head of Clinical Informatics*. Never a person's name: this is a template "
+            "of roles, and Signora holds no individuals here."
+        ),
+    )
+    part: CommitteePart = Field(
+        description=(
+            "The part they play in a purchase. Five values, and they are ordinary sales "
+            "language rather than a taxonomy to translate into."
+        )
+    )
+
+    def to_domain(self) -> CommitteeRole:
+        return CommitteeRole(title=self.title, part=self.part)
+
+
+class ProductCommitteeRequest(BaseModel):
+    """Who decides about one product."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    product_id: UUID = Field(
+        description=(
+            "**A product from the catalog**, and one the workspace currently sells. The "
+            "id is stable across every revision of the catalog, so this reference "
+            "survives a product being renamed."
+        )
+    )
+    roles: tuple[CommitteeRoleRequest, ...] = Field(
+        min_length=1,
+        max_length=MAX_ROLES,
+        description=(
+            "At least one. **In no significant order** — the list is the customer's to "
+            "arrange, and its order carries no rank, weight or importance."
+        ),
+    )
+
+    def to_domain(self) -> ProductCommittee:
+        return ProductCommittee(
+            product_id=self.product_id,
+            roles=tuple(role.to_domain() for role in self.roles),
+        )
+
+
+class DeclareBuyingCommitteeRequest(BaseModel):
+    """A complete statement of who decides about what this workspace sells."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    expected_version: int = Field(
+        ge=UNDECLARED,
+        description=(
+            "The version being replaced — **0 when declaring a committee for the first "
+            "time.** Sending the version you read turns a colleague's concurrent edit "
+            "into a refusal you can act on instead of an overwrite neither of you sees."
+        ),
+    )
+    committees: tuple[ProductCommitteeRequest, ...] = Field(
+        description=(
+            "Every product with a committee, not a change to one. A product absent from "
+            "this list has no committee declared — and the version that declared it is "
+            "still readable."
+        )
+    )
+
+
+class CommitteeRoleResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    title: str = Field(description="As the customer wrote it.")
+    part: CommitteePart = Field(description="The part they play in a purchase.")
+
+    @classmethod
+    def from_domain(cls, role: CommitteeRole) -> CommitteeRoleResponse:
+        return cls(title=role.title, part=role.part)
+
+
+class ProductCommitteeResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    product_id: UUID = Field(description="The product this committee decides about.")
+    roles: tuple[CommitteeRoleResponse, ...] = Field(
+        description=(
+            "In the order the customer arranged them, which carries no rank or "
+            "importance — **this endpoint reports a declaration, never a judgement**."
+        )
+    )
+
+    @classmethod
+    def from_domain(cls, committee: ProductCommittee) -> ProductCommitteeResponse:
+        return cls(
+            product_id=committee.product_id,
+            roles=tuple(CommitteeRoleResponse.from_domain(r) for r in committee.roles),
+        )
+
+
+class BuyingCommitteeResponse(BaseModel):
+    """Who decides about what this workspace sells, and who last said so."""
+
+    model_config = ConfigDict(frozen=True)
+
+    version: int = Field(
+        description=(
+            "**0 when nothing has been declared**, which is the ordinary state of a new "
+            "workspace — an empty committee is an answer, not a 404."
+        )
+    )
+    committees: tuple[ProductCommitteeResponse, ...] = Field(
+        description="One per product with a committee declared."
+    )
+    updated_at: datetime | None = Field(
+        description="When this version was declared. Null only at version 0."
+    )
+    updated_by: UUID | None = Field(
+        description=(
+            "Who declared it. Null only at version 0. The row is never edited, so this "
+            "cannot be reattributed."
+        )
+    )
+
+    @classmethod
+    def empty(cls) -> BuyingCommitteeResponse:
+        """A workspace that has declared no committee."""
+        return cls(version=UNDECLARED, committees=(), updated_at=None, updated_by=None)
+
+    @classmethod
+    def from_domain(cls, declaration: BuyingCommittee) -> BuyingCommitteeResponse:
+        return cls(
+            version=declaration.version,
+            committees=tuple(
+                ProductCommitteeResponse.from_domain(c) for c in declaration.committees
+            ),
+            updated_at=declaration.created_at,
+            updated_by=declaration.created_by,
+        )
+
+
 __all__ = [
+    "BuyingCommitteeResponse",
+    "CommitteeRoleRequest",
+    "CommitteeRoleResponse",
+    "DeclareBuyingCommitteeRequest",
     "DeclareIcpRequest",
     "EmployeeRangeRequest",
     "EmployeeRangeResponse",
     "IcpDeclarationResponse",
     "ProductCatalogResponse",
+    "ProductCommitteeRequest",
+    "ProductCommitteeResponse",
     "ProductIcpRequest",
     "ProductIcpResponse",
     "ProductRequest",

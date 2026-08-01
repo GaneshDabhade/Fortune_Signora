@@ -42,6 +42,11 @@ export const queryKeys = {
    * catalog, and versioned separately from it. */
   icp: (workspaceId: string) => ['workspace', workspaceId, 'icp'] as const,
 
+  /** Lane B (Commercial Profile). Versioned separately from the catalog and
+   * the ideal customer, so it is its own cache entry. */
+  buyingCommittee: (workspaceId: string) =>
+    ['workspace', workspaceId, 'buying-committee'] as const,
+
   signalCatalog: (workspaceId: string) =>
     ['workspace', workspaceId, 'signal-catalog'] as const,
 
