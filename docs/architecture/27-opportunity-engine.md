@@ -533,3 +533,51 @@ A downward arrow plus the `warning` token. **Colour alone would fail a colour-bl
 **One of the two says nothing about risk.** `contraction_risk` renders as *"Contraction risk"* and a careful reader might catch it. **`decision_maker_departed` renders as *"Decision maker departed"*** — a neutral sentence, at score 1, at the bottom. Nothing in that row's prose tells a manager their champion has gone. R9-03 said *"the hypothesis names the risk and nothing shows it"*; for this row **the hypothesis does not name the risk either**, and posture is the only thing that carries it.
 
 > **Recorded for the product owner, not acted on:** the two accounts most worth worrying about are the two lowest-scored. That is correct — a contraction risk with thin evidence *should* score low — and it means score answers *"how much attention"* while posture answers *"what kind"*. Ranking risk higher would net posture into the ordering, which is the defect the Buying Score Engine refuses by construction. **Whether a seller wants a risk-first view is a product question, and D6's trigger has not fired.**
+
+---
+
+# R4-04 — a decision you can undo *(M12.3 remainder, 2026-08-01, Lane A)*
+
+**Recorded before implementation.** The finding is R4-04: *dismissing an account removes it from the attention list — correctly, because the list is open work — and there is no path back to it from anywhere in the product.*
+
+## Why this, over the roadmap's next item
+
+**Because it is not an inconvenience, it is a disabled feedback loop.** This module draws a distinction almost nothing else in the platform draws:
+
+> `DISMISSED` is *"we should not have been shown this"*. `CLOSED_LOST` is a sales outcome. **Collapsing them would destroy the only signal the platform gets about its own qualification quality.**
+
+And the Sales Manager's reaction to R4-04 was: *"I'd tell my reps not to dismiss anything, which defeats the point of asking them."* A rep who will not dismiss produces no qualification-quality signal at all. **The defect does not merely annoy a user — it quietly switches off the mechanism by which Signora learns it is wrong.** That is worth more than another read surface.
+
+**It has also got worse since it was written.** D41 made the account brief read the ranked list, so a dismissal now removes an account from the *sequence a seller is working*, not merely from the list they left behind. A 🟠 that compounds is one to take.
+
+## The decision
+
+**The attention page grows a second section: the accounts you have decided about — and it appears only when there are some.**
+
+```
+  ATTENTION            12 accounts, ranked
+  ─────────────────────────────────────────
+  …
+  ─────────────────────────────────────────
+  ▸ 3 accounts you have decided about
+```
+
+**Not a filter.** D6 rejected a *mine / everyone* control on the grounds that *"a control that always shows the same thing teaches people to ignore controls"*, and that reasoning binds here. A filter implies browsing; what R4-04 needs is a **way back**. So the disclosure is absent — not empty, absent — in a workspace where nobody has decided anything, and it costs a reader who never dismisses nothing at all.
+
+**Not a navigation entry.** The sidebar is two items and D38 settled why: *none of the six customer journeys is "show me all the X"*, and navigation is journeys rather than data. *"What did I decide?"* is a question about the one list, asked from the one list. The shell is also frozen (§20c), and a slice that needed to change it would be a finding rather than a change.
+
+**At the bottom, under the list.** The same reasoning D41 used for the sequence: a reader who has worked the list is at the bottom of it, and that is where the question *"wait, what did I just dismiss?"* is actually asked.
+
+**It shows the reason, in the customer's own words.** `opportunity_state.reason` is required on every transition and has never been rendered anywhere. It costs nothing to show — the row already carries it — and it is the only place in Signora that shows a customer their own judgement back to them. That is what makes the section worth opening rather than merely reachable.
+
+**The row opens the same brief.** Reopening already works there and was built to survive closure in M12.3, *"precisely because this was foreseeable"*. No second workflow surface, no second set of moves.
+
+## What it deliberately does not do
+
+**No undo button.** A dismissal is a recorded decision with a reason; un-recording it would edit history. Reopening is a *transition* — a new state row, with its own reason and its own actor — and the brief already offers exactly that. The distinction is the module's whole design and a one-click undo would erase it.
+
+**No "who dismissed it" beyond what the tier knows.** **D23** stands: the Python tier verifies tokens without learning who a person is, so a row says *yours* or *taken*. A manager reviewing their reps' dismissals wants a name, and that is a cross-tier profile contract rather than a list feature.
+
+**No time window.** *"Decided today"* would need a threshold nobody measured, and §14 is explicit about that. Newest first, paginated, the whole history.
+
+**No count on the attention rows.** The number of accounts an account has been dismissed and reopened is real and is nobody's morning question.

@@ -22,6 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.opportunity_engine.domain.opportunity import (
     OPEN_STAGES,
+    TERMINAL_STAGES,
     Opportunity,
     OpportunityState,
     Qualification,
@@ -133,7 +134,39 @@ class SqlOpportunityRepository:
     async def open_page(
         self, workspace_id: UUID, *, after: CursorPosition | None, limit: int
     ) -> tuple[tuple[Opportunity, OpportunityState], ...]:
+        return await self._page(workspace_id, OPEN_STAGES, after=after, limit=limit)
+
+    async def decided_page(
+        self, workspace_id: UUID, *, after: CursorPosition | None, limit: int
+    ) -> tuple[tuple[Opportunity, OpportunityState], ...]:
+        """The opposite half of the same query (**R4-04**).
+
+        **Newest decision first**, which is the one difference from the open
+        page and the reason this is not one method with a stage argument. The
+        open list is walked oldest-first because attention ordering is applied
+        over the page afterwards; a decided list has no ranking to apply, and
+        the question it answers — *"wait, what did I just dismiss?"* — is asked
+        about the most recent one.
+        """
+        return await self._page(
+            workspace_id, TERMINAL_STAGES, after=after, limit=limit, newest_first=True
+        )
+
+    async def _page(
+        self,
+        workspace_id: UUID,
+        stages: frozenset[Stage],
+        *,
+        after: CursorPosition | None,
+        limit: int,
+        newest_first: bool = False,
+    ) -> tuple[tuple[Opportunity, OpportunityState], ...]:
         latest = self._latest_sequence()
+        order = (
+            (OpportunityModel.created_at.desc(), OpportunityModel.id.desc())
+            if newest_first
+            else (OpportunityModel.created_at, OpportunityModel.id)
+        )
         statement = (
             select(OpportunityModel, OpportunityStateModel)
             .join(latest, latest.c.opportunity_id == OpportunityModel.id)
@@ -144,15 +177,17 @@ class SqlOpportunityRepository:
             )
             .where(
                 OpportunityModel.workspace_id == workspace_id,
-                OpportunityStateModel.stage.in_([s.value for s in OPEN_STAGES]),
+                OpportunityStateModel.stage.in_([s.value for s in stages]),
             )
-            .order_by(OpportunityModel.created_at, OpportunityModel.id)
+            .order_by(*order)
             .limit(limit)
         )
         if after is not None:
+            position = tuple_(OpportunityModel.created_at, OpportunityModel.id)
             statement = statement.where(
-                tuple_(OpportunityModel.created_at, OpportunityModel.id)
-                > (after.created_at, after.id)
+                position < (after.created_at, after.id)
+                if newest_first
+                else position > (after.created_at, after.id)
             )
         rows = (await self._session.execute(statement)).all()
         return tuple((_to_opportunity(row[0]), _to_state(row[1])) for row in rows)

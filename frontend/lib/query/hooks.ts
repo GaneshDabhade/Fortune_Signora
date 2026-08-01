@@ -11,6 +11,7 @@ import type {
   AccountScore,
   AccountValidation,
   BusinessEventEvidence,
+  DecidedAccount,
   CursorPage,
   RecordDecision,
   SignalCatalog,
@@ -262,6 +263,13 @@ export function useRecordDecision(
       void client.invalidateQueries({
         queryKey: queryKeys.accounts(workspaceId ?? ''),
       });
+      // A decision is exactly what moves an account between the two lists.
+      // Without this, dismissing one would leave it visible on the list it
+      // has left and absent from the one it has joined until a reload —
+      // which is the shape of bug that teaches people to distrust a screen.
+      void client.invalidateQueries({
+        queryKey: queryKeys.decidedAccounts(workspaceId ?? ''),
+      });
     },
   });
 }
@@ -382,5 +390,28 @@ export function useRequestResearch(workspaceId: string | null, accountId: string
         research,
       );
     },
+  });
+}
+
+/**
+ * Accounts this workspace has decided about (**R4-04**).
+ *
+ * **Fetched alongside the attention list, not behind a control.** The section
+ * renders only when the page is non-empty, so a workspace where nobody has
+ * dismissed anything shows nothing at all — and a reader who never dismisses
+ * never sees a control advertising a feature they do not use (**D6**).
+ *
+ * Invalidated by `useRecordDecision`, because deciding something is exactly
+ * what moves an account between the two lists.
+ */
+export function useDecidedAccounts(workspaceId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.decidedAccounts(workspaceId ?? ''),
+    queryFn: () =>
+      apiRequest<CursorPage<DecidedAccount>>(
+        `/workspaces/${workspaceId}/accounts/decided`,
+        { workspaceId: workspaceId ?? undefined },
+      ),
+    enabled: workspaceId !== null,
   });
 }

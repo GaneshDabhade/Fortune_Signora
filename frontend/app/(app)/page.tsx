@@ -10,11 +10,17 @@ import {
   Ownership,
   ScoreMovement,
 } from '@/components/intelligence/attention';
+import { DecidedAccounts } from '@/components/intelligence/decided';
 import { EntityName } from '@/components/intelligence/entity-name';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { Card, CardBody, EmptyState, SkeletonText } from '@/components/ui';
 import type { AccountAttention, AccountIdentity } from '@/lib/api/types';
-import { useAccountIdentities, useAccounts, useSignalCatalog } from '@/lib/query/hooks';
+import {
+  useAccountIdentities,
+  useAccounts,
+  useDecidedAccounts,
+  useSignalCatalog,
+} from '@/lib/query/hooks';
 import { useSession } from '@/lib/auth/client';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
@@ -62,6 +68,18 @@ export default function AttentionPage() {
   // decision — Casbin on the server is that, and always.
   const { data: session } = useSession();
   const viewerId = session?.user.id ?? null;
+  // The other half of the workflow (R4-04). Fetched alongside rather than
+  // behind a control: the section renders nothing when the page is empty, so
+  // a reader who never dismisses never learns it exists.
+  const { data: decided } = useDecidedAccounts(activeWorkspace?.id ?? null);
+  // Their own identity request rather than a union with the list above: the
+  // hook keys on the sorted ids, so folding them together would re-fetch every
+  // open account's name each time somebody dismisses one. Empty until a
+  // decision exists, and the hook asks nothing for an empty set.
+  const { data: decidedIdentities } = useAccountIdentities(
+    activeWorkspace?.id ?? null,
+    (decided?.items ?? []).map((account) => account.account_id),
+  );
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6">
@@ -98,6 +116,16 @@ export default function AttentionPage() {
           ))}
         </ol>
       ) : null}
+
+      {/* **Below the list, because that is where a reader finishes.** The
+          question this answers — *wait, what did I just dismiss?* — is asked
+          after working the list, not before; the same reasoning D41 used to
+          put the sequence at the bottom of the brief. */}
+      <DecidedAccounts
+        accounts={decided?.items ?? []}
+        identities={decidedIdentities}
+        viewerId={viewerId}
+      />
     </div>
   );
 }

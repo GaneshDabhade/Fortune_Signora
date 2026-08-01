@@ -550,11 +550,7 @@ export interface AccountResearch {
  * Profile; no provider has any say in it.
  */
 export type CommitteePart =
-  | 'economic_buyer'
-  | 'champion'
-  | 'evaluator'
-  | 'user'
-  | 'gatekeeper';
+  'economic_buyer' | 'champion' | 'evaluator' | 'user' | 'gatekeeper';
 
 /**
  * One seat at the table.
@@ -625,4 +621,28 @@ export interface DeclareFocus {
   expected_version: number;
   products: string[];
   objective: string;
+}
+
+/**
+ * One account somebody finished with, and what they said about it.
+ *
+ * **No score, no trend, no evidence state.** An open account is triaged on
+ * those; a decided one is *recalled*, and a live number beside a settled
+ * judgement invites re-litigating it against something that moved afterwards.
+ * The account's own brief — where reopening lives — is one click away.
+ */
+export interface DecidedAccount {
+  account_id: string;
+  opportunity_id: string;
+  /** **`dismissed` and `closed_lost` are different answers.** One says Signora
+   * should not have surfaced this account, the other says it was worth
+   * pursuing and did not close. Never merge them. */
+  stage: Stage;
+  /** Why, in the words the person typed. The only place in the product that
+   * shows a customer their own judgement back. */
+  reason: string;
+  /** Compared against the reader to say *yours*. Never a name — the tier
+   * verifies tokens without learning who anybody is (**D23**). */
+  owner_id: string | null;
+  decided_at: string;
 }

@@ -63,6 +63,9 @@ export const queryKeys = {
   identities: (workspaceId: string, accountIds: readonly string[]) =>
     ['workspace', workspaceId, 'identities', [...accountIds].sort().join(',')] as const,
 
+  decidedAccounts: (workspaceId: string) =>
+    ['workspace', workspaceId, 'accounts', 'decided'] as const,
+
   accountResearch: (workspaceId: string, accountId: string) =>
     ['workspace', workspaceId, 'accounts', accountId, 'research'] as const,
 

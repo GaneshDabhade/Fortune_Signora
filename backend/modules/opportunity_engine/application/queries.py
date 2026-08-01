@@ -149,6 +149,39 @@ class AttentionPage:
         return CursorPosition(created_at=last.opportunity.created_at, id=last.opportunity.id)
 
 
+@dataclass(frozen=True, slots=True)
+class DecidedAccount:
+    """One account somebody finished with, and what they said about it.
+
+    **Not a `TrackedOpportunity`.** That type carries a live score, a trend and
+    an evidence state, because an open account is triaged on them. A decided
+    one is not triaged at all — it is *recalled* — and the fields that answer
+    *"did I mean to do that?"* are the stage, the reason and the moment. A
+    shared type would put four live figures on a row nobody scans.
+    """
+
+    opportunity: Opportunity
+    state: OpportunityState
+
+
+@dataclass(frozen=True, slots=True)
+class DecidedPage:
+    """One page of decided accounts, **newest decision first**."""
+
+    items: tuple[DecidedAccount, ...]
+    has_more: bool
+
+    @property
+    def next_position(self) -> CursorPosition | None:
+        if not self.has_more or not self.items:
+            return None
+        # The **oldest** row on a newest-first page is the position to resume
+        # from. Taking the maximum here — as the attention page correctly does
+        # for its ascending walk — would page backwards forever.
+        last = min(self.items, key=lambda d: (d.opportunity.created_at, d.opportunity.id))
+        return CursorPosition(created_at=last.opportunity.created_at, id=last.opportunity.id)
+
+
 class OpportunityQueries:
     """Read-only. Every method is scoped to one workspace, explicitly."""
 
@@ -278,6 +311,34 @@ class OpportunityQueries:
         )
         return AttentionPage(
             items=tuple(sorted(tracked, key=_attention, reverse=True)), has_more=has_more
+        )
+
+    async def decided_list(
+        self,
+        workspace_id: UUID,
+        *,
+        after: CursorPosition | None = None,
+        limit: int = DEFAULT_PAGE,
+    ) -> DecidedPage:
+        """Accounts somebody has finished with (**R4-04**).
+
+        **No score is read.** The attention list ranks by the live score
+        because a seller is deciding what to work; nobody ranks a list of
+        decisions, and fetching a score to display beside a closed account
+        would invite a reader to re-litigate a judgement using a number that
+        moved after they made it.
+
+        That also makes this one query where the attention list is seven, which
+        is why it is a separate method rather than a flag on that one.
+        """
+        page = await self._repository.decided_page(workspace_id, after=after, limit=limit + 1)
+        has_more = len(page) > limit
+        return DecidedPage(
+            items=tuple(
+                DecidedAccount(opportunity=opportunity, state=state)
+                for opportunity, state in page[:limit]
+            ),
+            has_more=has_more,
         )
 
     async def explanation(

@@ -37,6 +37,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from modules.buying_score_engine.public import Posture
 from modules.opportunity_engine.application.queries import (
+    DecidedAccount,
     OpportunityBrief,
     TrackedOpportunity,
 )
@@ -246,6 +247,53 @@ class WorkflowStateResponse(BaseModel):
         )
 
 
+class DecidedAccountResponse(BaseModel):
+    """One account somebody finished with, and what they said about it.
+
+    **Four fields, and none of them is a score.** The attention row carries
+    seven because a seller is deciding what to work; nobody triages a list of
+    decisions. Putting a live score here would invite a reader to re-litigate a
+    judgement using a number that moved after they made it — and the account's
+    own brief is one click away for anybody who wants exactly that.
+
+    **`reason` is the customer's own words**, and this is the only place in the
+    product that shows them back. Every transition has required one since
+    M12.3; nothing has ever rendered one.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    account_id: UUID = Field(description="The account, so the row can open its brief.")
+    opportunity_id: UUID = Field(description="The workflow record the decision belongs to.")
+    stage: Stage = Field(
+        description=(
+            "What was decided. **`dismissed` and `closed_lost` are different answers** — one "
+            "says Signora should not have surfaced this account, the other says it was worth "
+            "pursuing and did not close. A client must not merge them."
+        )
+    )
+    reason: str = Field(description="Why, in the words the person typed.")
+    owner_id: UUID | None = Field(
+        description=(
+            "Who held it when the decision was made, or null if nobody had taken it. Compared "
+            "against the reader to say *yours* — the tier verifies tokens without learning "
+            "who anybody is, so it can never say a name (**D23**)."
+        )
+    )
+    decided_at: datetime = Field(description="When.")
+
+    @classmethod
+    def from_domain(cls, decided: DecidedAccount) -> "DecidedAccountResponse":
+        return cls(
+            account_id=decided.opportunity.entity_id,
+            opportunity_id=decided.opportunity.id,
+            stage=decided.state.stage,
+            reason=decided.state.reason,
+            owner_id=decided.state.owner_id,
+            decided_at=decided.state.occurred_at,
+        )
+
+
 class AccountOpportunityResponse(BaseModel):
     """What Signora committed to about this account, and what has happened since.
 
@@ -365,6 +413,7 @@ class AccountOpportunityResponse(BaseModel):
 __all__ = [
     "AccountAttentionResponse",
     "AccountOpportunityResponse",
+    "DecidedAccountResponse",
     "RecordDecisionRequest",
     "WorkflowStateResponse",
 ]
