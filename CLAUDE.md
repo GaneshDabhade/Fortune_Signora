@@ -386,17 +386,18 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 
 ## 20e. Parallel Development — Lanes
 
-**Binding from 2026-08-01.** Signora is worked by more than one session at a time. This section is what makes that safe; it does not change the architecture, and every freeze, boundary and gate above still binds unchanged.
+**Binding from 2026-08-01.** Signora is worked by more than one session at a time. This section is what makes that safe; it changes no architecture, and every freeze, boundary and gate above binds unchanged — **they matter more, not less.**
 
 ### The lanes
 
-| Lane | Owns | Branch |
-|---|---|---|
-| **A — Product Surface** | `opportunity_engine` · `buying_score_engine` · `signal_engine` · `business_event_engine` · `knowledge_graph` · `observation_engine` · `provider_*` · `ai_*` interface layers · `frontend/app/(app)/` except `settings/products` · `frontend/components/intelligence/` | `lane/surface` |
-| **B — Commercial Profile** | `modules/commercial_profile/**` · `apps/api/composition/products.py` · `frontend/components/commercial/` · `frontend/app/(app)/settings/products/` · `frontend/lib/query/hooks/commercial.ts` | `lane/commercial` |
-| **Integrator** | `main`, and every shared file below | `main` |
+| Lane | Branch | Owns | Builds features? |
+|---|---|---|---|
+| **A — Product Surface** | `lane-a-product-surface` | The pipeline's `interface/` layers · `frontend/app/(app)/` except `settings/products` · `frontend/components/intelligence/` | Yes |
+| **B — Commercial Profile** | `lane-b-commercial-profile` | `modules/commercial_profile/**` · `apps/api/composition/products.py` · `frontend/components/commercial/` · `frontend/app/(app)/settings/products/` · `frontend/lib/query/hooks/commercial.ts` | Yes |
+| **QE — Quality Engineering** | `lane-qe` | `backend/tests/**` except a module's own suite · `frontend/tests/**` except a lane's own component tests · `docs/BUGS.md` · Playground scenarios · product reviews | **No** |
+| **Integrator** | `integration`, `main` | Merges, shared documents, certification, release | No |
 
-**One session per lane. One lane per module.** A module has exactly one implementation owner at a time; if a lane needs a change inside another lane's module, that is a finding to raise, never a change to make.
+**One session per lane. One lane per module.** A module has exactly one implementation owner; if a lane needs a change inside another lane's module, that is a **finding to raise, never a change to make.**
 
 ### The Change Budget
 
@@ -413,37 +414,83 @@ Every slice knows what it may touch before it starts.
 
 ### Shared files have one owner
 
-These are the repository's conflict hotspots — together they appear in roughly two thirds of all commits. **A lane does not edit them.**
+Together these appear in roughly two thirds of all commits. **A lane does not edit them.**
 
 | File | Owner |
 |---|---|
 | `PROJECT_STATUS.md` · `docs/SESSION_HANDOFF.md` · `docs/RUNNING.md` · the roadmaps | **Integrator**, at merge |
 | `docs/architecture/38-product-design-principles.md` · `39-product-review-findings.md` | **Integrator**, at merge |
+| `docs/BUGS.md` | **QE** — the only lane that opens and closes rows; a feature lane edits only the `Status` of a bug it has fixed |
 | `CLAUDE.md` · `PRODUCT_DIFFERENTIATORS.md` | Product owner |
-| `apps/api/main.py` · `pyproject.toml` contracts · `tenancy_policy.py` · `policy.csv` · `lib/api/types.ts` · `lib/query/keys.ts` | Either lane, **append-only, one line, alphabetical where a list exists** |
+| `apps/api/main.py` · `pyproject.toml` contracts · `tenancy_policy.py` · `policy.csv` · `lib/api/types.ts` · `lib/query/keys.ts` | Any lane — **append-only, one line, alphabetical where a list exists** |
 
-**A lane reports its findings in its commit message and its own module's design doc.** The integrator folds them into the shared records at merge. That is what reduces narrative-document conflicts to zero rather than managing them.
+**A lane reports its findings in its commit message and its own module's design doc.** The integrator folds them into the shared records at merge. That reduces narrative-document conflicts to zero rather than managing them.
 
-### Git
+### Branches and merge order
 
-**`main` plus one short-lived branch per lane. Nothing else.** No develop, no release branches, no milestone branches.
+```
+lane-a-product-surface ─┐
+lane-b-commercial-profile ─┼─▶ integration ─▶ QE validates ─▶ main ─▶ certify ─▶ release
+lane-qe ────────────────┘
+```
 
-- Branch per **slice**, not per feature. **Two days maximum** — a lane branch older than that is a finding.
-- `git pull --rebase origin main` before merging. Rebase freely; nobody else has your branch.
-- **Merge fast-forward only.** No merge commits: Alembic's chain is linear, the records are append-only narratives, and a linear history is the only one where *what was true when* is readable.
-- **The gates are the review** — full local gates on the rebased branch before it merges.
-- After merging, reset the lane branch to `main`. It is a workspace, not a record.
-- Commit messages keep the existing form: `M12.5 — <what changed, in product language>`. **Not Conventional Commits** — `git log --oneline` is a changelog a cold session reads.
+| Branch | Lifetime | Who merges into it |
+|---|---|---|
+| `main` | Permanent. **Always certifiable** | Integrator, from `integration` only |
+| `integration` | Permanent. Where lanes meet and QE tests | Each lane, its own slice |
+| `lane-*` | **Permanent name, one slice of content.** Reset to `integration` after every merge | Its own session only |
 
-### Migrations
+**Rules, and they are short:**
 
-**A module owns its tables, therefore it owns their migrations.** Two additive, module-scoped migrations commute, so the only conflict is the `down_revision` chain — one line, fixed by rebasing. Never `alembic merge`: it branches history permanently to save a one-line edit. A **destructive** migration is 🔴.
+- **Branch content lives one slice — two days maximum.** A lane branch carrying more than one slice is a finding.
+- **Rebase, never merge, onto `integration`.** Rebase freely: nobody else has your lane branch.
+- **Fast-forward only, everywhere.** No merge commits. `main` advances only from `integration`, so `main` is always an ancestor of it and the fast-forward always succeeds. Three reasons this is not taste: Alembic's chain is linear, the records are append-only narratives, and a linear history is the only one where *what was true when* is readable.
+- **The gates are the review.** Full local gates on the rebased branch before it merges to `integration`.
+- **Conflicts are resolved by the lane that is rebasing**, never by the integrator — the lane knows what its change meant. A conflict in a 🔴 file means the lane was outside its budget; stop and raise it.
+- **Commit messages keep the existing form:** `M12.5 — <what changed, in product language>`. Not Conventional Commits — `git log --oneline` is a changelog a cold session reads.
+
+### Which gates run when
+
+| Moment | Runs | Why |
+|---|---|---|
+| **During a slice** | Impacted suites only · `mypy` · `tsc` · `eslint` | Unchanged policy. Speed is the point |
+| **Lane → `integration`** | The lane's full module suite · impacted integration tests · `lint-imports` · `mypy --strict` · frontend suite · production build | The lane proves its own slice |
+| **On `integration`, by QE** | **Everything**: full backend suite with the coverage gate · Security Invariants · `make smoke` · exploratory use of the product | The only place merged code is exercised together |
+| **`integration` → `main`** | Nothing new — QE has already run it | Promotion, not re-verification |
+| **Milestone close** | `make certify` · migration reversibility · `make dr` | ADR-0032 |
+
+**`make smoke` binds ports 3000 and 8000**, so every lane's dev server must be stopped before it runs. That is why it belongs to QE on `integration` rather than to a lane.
+
+### Quality Engineering
+
+**QE builds no production feature.** It owns functional, API, end-to-end, security, performance and accessibility testing, Playground validation, product reviews, regression, and certification support.
+
+> **QE reports bugs. Feature lanes fix them.** A QE session that fixes a defect in a feature lane's module has become a second implementation stream with no owner, and the module's owner no longer knows what their module does.
+
+**Why a lane rather than a phase:** every defect that has mattered in this project was found by *using* the product, not by the suite. 2046 tests found none of R4-01, R6-01–04, R7-01–03, R10-01 or R12-01. A lane whose whole job is to use the product is the only mechanism that finds that class reliably, and a lane finds it continuously rather than when somebody remembers.
+
+**QE may write tests in another lane's module suite** — that is its job — but may not change that module's production code. A failing test it adds is a bug report in executable form, and the owning lane makes it pass.
+
+### Bugs
+
+**One register: [`docs/BUGS.md`](docs/BUGS.md).** Not a file per bug, not an issue tracker, not scattered TODOs.
+
+Every row carries: **ID · Title · Owner lane · Severity · Status · Commit found · Steps · Expected · Actual.**
+
+| | |
+|---|---|
+| **Opens a bug** | QE, or any lane that finds one outside its own budget |
+| **Fixes it** | The **owning lane** — the lane that owns the module the defect is in |
+| **Verifies and closes** | **QE**, never the lane that fixed it |
+| **Severity** | 🔴 blocks a milestone · 🟠 wrong behaviour a customer would hit · 🟡 wrong but survivable · 🟢 cosmetic |
+
+**A bug fixed without a regression test is not fixed** (§11). The test belongs in the owning module's suite and is written by the lane that fixes it.
 
 ### Concurrent milestones — amending §20d
 
-§20d requires `PROJECT_STATUS.md` to reflect the previous milestone before the next begins, and [IMPLEMENTATION_ROADMAP.md §1](IMPLEMENTATION_ROADMAP.md) records *sequential single-stream execution*. **Both were written for one session and are amended here, as a Category 1 sequencing change.**
+§20d requires `PROJECT_STATUS.md` to reflect the previous milestone before the next begins, and [IMPLEMENTATION_ROADMAP.md §1](IMPLEMENTATION_ROADMAP.md) recorded *sequential single-stream execution*. **Both were written for one session and are amended here, as a Category 1 sequencing change.**
 
-> **Two lanes may run two milestones concurrently. The rule now binds per lane:** a lane does not begin its next milestone until `PROJECT_STATUS.md` reflects the previous one **of that lane**. The dependency graph still governs order — a lane may not start work whose inputs another lane has not shipped.
+> **Lanes may run concurrent milestones. The rule now binds per lane:** a lane does not begin its next milestone until `PROJECT_STATUS.md` reflects the previous one **of that lane**. The dependency graph still governs order — a lane may not start work whose inputs another lane has not shipped.
 
 Everything else in §20d is unchanged, and **strict milestone ownership matters more, not less**: a lane must never implement another lane's functionality to satisfy its own demonstration.
 

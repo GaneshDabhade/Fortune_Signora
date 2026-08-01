@@ -324,74 +324,39 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 
 ---
 
-## 7 · Next session starting point
+## 7 · Lane starting points
 
-### M12.1.5 — Playground v2, and why it interrupted the brief
+> **Rewritten 2026-08-01.** This section described M12.1.5 — three milestones behind — as *the* next starting point, which is what a cold session would have read first. **There is no single next session now.** Three lanes run concurrently (`CLAUDE.md` §20e); each has its own.
 
-**Read [docs/RUNNING.md](RUNNING.md) first** — it documents how to start the stack, seed twelve accounts, sign in, and reach `/opportunities` and the account brief without guessing. It also lists exactly what the demo showcases.
+**Every lane, before its first slice:** read [`README.md`](../README.md) → `CLAUDE.md` §20e → your module's manifest in [04-modules.md](architecture/04-modules.md). Then set up your database and ports per [RUNNING.md § Running a second lane](RUNNING.md#running-a-second-lane), and **verify the isolation** before writing code.
 
-**The decision to carry forward:** *the demo dataset had become the constraint on product work.* Every account read "evidence expired"; the account whose story was *stale evidence* showed a fresh ledger. Design decisions, UX reviews and prompt evaluations were all being made against data that could not exercise them (D17).
+### Lane A — Product Surface · `lane-a-product-surface`
 
-`playground@2` fixes it — twelve recognisable companies, twelve invented business situations, anchored on today so freshness varies on its own. **`playground@1` is superseded, retained and unedited**: a published dataset is immutable, and every result recorded against it would otherwise become uncheckable.
+**Open item awaiting the product owner: R9-03** — a contraction risk reads like a small opportunity, and posture on the row changes what a CRO scans for. **Do not implement it without the ruling.**
 
-#### The finding that outlives the dataset
+Then **M12.4 — research on demand**: `Research.run()` exists and nothing invokes it outside a test. It needs an ARQ job and an endpoint that accepts and returns immediately (§7 forbids a handler blocking on ~54 s of pipeline work).
 
-Building it surfaced **three declared capabilities with no possible input**:
+**Also owned, and outstanding:** `reasoning@1` has no released model, so the Decision Package would refuse at runtime — the product's loudest broken thing, recorded in §1 of `PROJECT_STATUS.md`. And **B-001** in [BUGS.md](BUGS.md), in `signal_engine`.
 
-- Only Apollo claimed `LEGAL_NAME`, so the naming resolver's `AGREED` and `DISPUTED` — the states M12.2 built the product to display — could never occur.
-- Neither Crunchbase nor CoreSignal offered a domain. A registry could reach an existing company only by naming it *identically*, so disagreeing produced a second company; and **every workforce fact resolved to a nameless entity of CoreSignal's own.** The account a seller could see and the account the hiring evidence described were two different rows.
-- Crunchbase declared `acquisitions` in `known_fields` since M2.2 and never translated them, leaving `acquisition_announced`, `consolidation_underway` and its scoring weight dead at the source.
+### Lane B — Commercial Profile · `lane-b-commercial-profile`
 
-All three are fixed. **The class is the finding:** each passed every test it had, and none could run. A fixture set rich enough to demonstrate the product is the first thing that exercises every declared attribute end to end — so it belongs *before* the surfaces that depend on it.
+**Slice 1 (product catalog) shipped at `1ae600d`.** Read [ADR-0035](architecture/adr/0035-commercial-profile.md) — it is the module's design record, and the manifest in `04-modules.md` is its contract.
 
-### What comes next
+**Next: slice 2 — the ICP declaration.** An ICP is *"the kind of company that buys **this product**"*, so it references a product id and inherits the catalog's discipline: versioned, immutable, superseded, its own aggregate.
 
-1. ~~Citation resolution~~ **shipped for the ledger.** A contribution opens to the business event's provider readings. **Narration citations still do not open** — a sentence shows "3 facts" and the tokens are `signal_contribution`, `buying_score` and `opportunity`, which need three more resolvers. The ledger was the most-clicked path and went first.
-2. ~~Stage transitions and assignment (J4)~~ **shipped.** `POST …/opportunities/{id}/states` — the first write in the product. It forced **D23** and answered it **halfway**: the screen says *"you"* and *"held by someone else"*, because the Python tier verifies tokens without ever learning who a person is. See **D32** — the rest is a cross-tier profile contract and belongs in an ADR, not a slice.
-3. ~~The list slice~~ **mostly shipped.** The row now names the leading hypothesis instead of the trigger: **R1-01 closed** (two distinct values across twelve accounts became six), **R1-02 closed for free** (a hypothesis and a freshness badge cannot appear to contradict), **R1-05 half closed** (tied rows 7 → 4). Still open: **D20/R1-07** — a 50 and a 1 render identically — and **R4-04**, a dismissed account being unreachable, which needs a filter and therefore a repository that can page closed work.
+**The boundary is the whole job:** it records what a customer declares. **It computes nothing, resolves nothing, matches nothing, and calls no provider.** Fit *matching* is not this module's — it needs resolved attribute values, which is a Knowledge Graph slice (Lane A) and deliberately separate. Two import-linter contracts enforce the boundary; if one fails, the slice has drifted.
 
-   **R5-02 is the finding to act on next**, and it only became visible once the labels existed: *Contraction risk* sits eleventh because the scoring model gives contraction less attention weight, which is correct ranking and wrong triage. It is also the first candidate for **D20** with the property D20 asked for — **a grouping the pipeline already computes (`posture_summary()`) rather than a threshold somebody has to invent.** It trades a ranked list for a categorised one, so it needs a seller.
-4. **F-11 needs a ruling** before it can be fixed: the one-line change loosens a grounding check inside a frozen module.
-5. **The Decision Package stays unbuilt** until `reasoning@1` earns a release.
+Slices 3–5 follow: buying-committee role templates, business priorities, and the target account list. **Slice 5 is the one that matters most to the rest of the system** — it publishes `commercial_profile.target_accounts_changed` and finally gives Provider Platform the `subject` it has taken since M2.1. That edge is Customer–Supplier: **tell Lane A before building it.**
 
-### What the decision slice added to the permanent contract
+### Lane QE · `lane-qe`
 
-- **The legal moves are sent, never inferred** (**D28**). `allowed_next` is derived from the domain's own transition table and ordered by the `Stage` enum's declaration — the order work moves in. The client reimplements no rule; the server refuses anything else regardless, because *a list a caller can ignore is not enforcement*.
-- **Who decided is never on the request** (**D29**). `RecordDecisionRequest` has no `actor_id` and a test asserts the field set, not only the behaviour. The workflow history is the one record in Signora that nothing recomputes.
-- **A closed opportunity keeps its brief** (**D27**) — settled here because M12.2 explicitly deferred it. A brief that vanished on dismissal would delete the seller's own words and make a legal reopening unreachable.
-- **A refusal is shown in the domain's own words** (**D31**), which also revealed that those words were written for logs and contain identifiers a customer cannot use (**R4-03**).
+**Builds no production feature.** First tasks, in order:
 
-### The defect the tests could not have found
+1. **Verify the lane isolation actually holds** — run a suite in each lane's database and confirm the others are untouched. Everything else depends on this.
+2. **Use the product.** Every defect that has mattered here was found that way; 2046 tests found none of them. Sign in as each of the four demo personas and work a morning.
+3. **Validate the Playground against `playground@2`** — `make demo-narrate` has not been re-run since the dataset changed, so the narrations are one bland sentence each (**R11-07**) and the M12.3 citation slice cannot be shown at its best.
+4. **Own [BUGS.md](BUGS.md)** — two rows are already open.
 
-**Every action row in the product led with "Lost".** `allowed_next` was sorted alphabetically — deterministic, and it put the move a seller almost never wants in the emphasised position on all twelve accounts, inverting the milestone's stated goal. Every assertion passed, because they asserted *which* moves and never *which first*.
-
-**It was found by rendering the real screen against the real Playground.** Third slice running where the highest-severity finding came from looking at output rather than from a suite — after F-10 and after the three unreachable capabilities. One test now asserts the order and says why.
-
-### The thing M12.3 proved, which is worth more than the feature
-
-**The answer to *"what should I do?"* was already in the repository.** `limitations` and `suggested_validation` have been in `signals@1.json` since M5A, versioned and reviewed like code, and nothing had ever displayed them. No model was needed, no new table, no new module — an interface layer over an artifact that already existed.
-
-**Before reaching for new intelligence, check what the deterministic half already knows and has never been asked.** That is the second time in three slices this has paid: F-10 was fixed by generalising a principle the same file had already articulated.
-
-### What this inherits
-
-- **Three working endpoints** and the pattern to copy: `modules/*/interface/` with one `apps/api/composition/<surface>.py` per read surface — a shared composition module gives a router transitive dependencies on modules it never touches, and import-linter refuses it.
-- **A frozen design system**, plus `components/intelligence/` for business vocabulary — the design system must never learn what a buying score is.
-- **`make demo`** — a review environment that runs the real pipeline. Twelve accounts, all nine signal types, all four identity states, all three evidence states, none of them declared.
-- **A certification command.** `make certify` records the gates; run it at the milestone boundary, not per commit.
-- **Twenty design observations** in [38-product-design-principles.md](architecture/38-product-design-principles.md). D19 and D20 are the newest and both are product-visible.
-
-### The habits worth keeping
-
-**A refusal is a finding.** M10 stopped on a REFUSED prompt rather than tuning around it, and the investigation produced the Prompt Rendering Protocol, the certification framework, and a correction to ADR-0031's own prediction.
-
-**A demo that flatters the product is worth nothing.** `playground@1` produced four qualified accounts of twelve and that was reported as the product working. It was partly a scoring artifact, and saying so is what produced M12.1.5.
-
-**Build the data before the surface that depends on it.** Three capabilities were unreachable for months because nothing had ever asked them for a real answer.
-
-**Say what is broken, prominently.** `reasoning@1` is unreleased and the dashboard says so in §1, §5, §7 and §10. A green certification is evidence the gates passed, never that the product is correct.
-
----
 
 ## Change log
 

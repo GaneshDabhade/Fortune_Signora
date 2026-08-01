@@ -138,14 +138,22 @@ export SIGNORA_TEST_ADMIN_DATABASE_URL=postgresql+asyncpg://signora:signora@loca
 
 **Every test path honours these** — the fixtures, the API integration clients and the seeders all resolve the URL from one place in `tests/conftest.py`. **Verify before your first slice:** run any integration test and confirm rows moved in your database and not in `signora`.
 
-**3 — its own ports.** Lane A keeps 3000 and 8000; a second lane uses 3100 and 8100:
+**3 — its own ports.** One block of 100 per lane, so nothing collides:
+
+| Lane | Web | API | Test database |
+|---|---|---|---|
+| A — Product Surface | 3000 | 8000 | `signora_lane_a` |
+| B — Commercial Profile | 3100 | 8100 | `signora_lane_b` |
+| QE | 3200 | 8200 | `signora_lane_qe` |
+
+
 
 ```bash
 cd frontend && npm run dev -- --port 3100
 cd backend && uv run uvicorn apps.api.main:app --reload --port 8100
 ```
 
-Set `SIGNORA_API_URL=http://localhost:8100` and `BETTER_AUTH_URL=http://localhost:3100` in that lane's `frontend/.env.local`.
+Set `SIGNORA_API_URL` and `BETTER_AUTH_URL` to that lane's ports in its `frontend/.env.local`.
 
 **One Postgres, one Redis, many databases.** There is no second stack — Postgres holds as many databases as there are lanes, and nothing in the test path touches Redis today.
 

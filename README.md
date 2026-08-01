@@ -15,6 +15,7 @@ A modular monolith: Python 3.13 · FastAPI · PostgreSQL 17 · SQLAlchemy 2.x as
 | 1 | **[`CLAUDE.md`](CLAUDE.md)** | The engineering constitution. **Binding, not advisory.** Read §20e before touching anything if you are a second session |
 | 2 | **[`docs/architecture/21-intelligence-pipeline.md`](docs/architecture/21-intelligence-pipeline.md)** | How a fact travels from raw payload to conclusion, and what each stage may *not* do |
 | 3 | **[`PROJECT_STATUS.md`](PROJECT_STATUS.md)** | Where the project actually is, and **what is currently broken** |
+| — | [`docs/BUGS.md`](docs/BUGS.md) | Open defects, with an owner each. QE opens; the owning lane fixes |
 | 4 | Your module's design doc | `docs/architecture/22`–`29`, or the manifest in [`04-modules.md`](docs/architecture/04-modules.md) |
 
 **Then**: [`docs/RUNNING.md`](docs/RUNNING.md) to run it.
@@ -61,20 +62,28 @@ docs/architecture/adr/        36 decisions. Never edited; a reversal is a new AD
 | `ai_research_engine` | A | ✅ Built · no HTTP entry point yet | — |
 | `signora_platform` | Integrator | ✅ Built | 🔒 §20a |
 | Frontend foundation | Integrator | ✅ Built | 🔒 §20c |
+| Test suites · Playground · reviews · [`BUGS.md`](docs/BUGS.md) | **QE** | ✅ Built | — |
 | Recommendation Engine · Timeline · Revenue Intelligence Platform | — | ⏳ Not started | — |
 
 **Unowned capabilities**, recorded so they stop disappearing: attribute resolution projection *(Knowledge Graph, needs a slice)* · company discovery *(future context — trigger: a provider adapter with company search)* · deprioritization intelligence *(owner exists, no milestone)* · the RevOps surface *(RIP owns it, no journey defined)* · data export and account deletion *(no owner)*.
 
 ## Parallel development
 
-Two lanes, governed by **[`CLAUDE.md` §20e](CLAUDE.md)** — read it before starting a second session.
+Three lanes, governed by **[`CLAUDE.md` §20e](CLAUDE.md)** — read it before starting a second session.
 
-| Lane | Owns | Branch |
+| Lane | Branch | Owns |
 |---|---|---|
-| **A — Product Surface** | The pipeline's interface layers, the attention list, the account brief | `lane/surface` |
-| **B — Commercial Profile** | `modules/commercial_profile/**`, `/settings/products` | `lane/commercial` |
+| **A — Product Surface** | `lane-a-product-surface` | The pipeline's interface layers, the attention list, the account brief |
+| **B — Commercial Profile** | `lane-b-commercial-profile` | `modules/commercial_profile/**`, `/settings/products` |
+| **QE — Quality Engineering** | `lane-qe` | Tests, Playground validation, product reviews, [`docs/BUGS.md`](docs/BUGS.md). **Builds no features** |
 
-**The rules in one paragraph.** One session per lane, one lane per module. Branch per *slice*, two days maximum, rebase then fast-forward into `main`. Every slice declares its **Change Budget** (🟢 your module · 🟠 announce it · 🔴 product owner + ADR · ⚫ never). **Shared documents have one owner** — a lane does not edit `PROJECT_STATUS.md`, `SESSION_HANDOFF.md`, `RUNNING.md`, the roadmaps, or `38`/`39`; it reports findings in its commit message and its module doc, and the integrator folds them in at merge. **Touching a file outside your budget is a finding to raise, not a change to make.**
+```
+lane-a ─┐
+lane-b ─┼─▶ integration ─▶ QE validates ─▶ main ─▶ certify ─▶ release
+lane-qe ┘
+```
+
+**The rules in one paragraph.** One session per lane, one lane per module. A lane branch is permanent by name and carries **one slice at a time** — two days maximum, then rebase and **fast-forward into `integration`**. Every slice declares its **Change Budget** (🟢 your module · 🟠 announce it · 🔴 product owner + ADR · ⚫ never). **Shared documents have one owner** — a lane does not edit `PROJECT_STATUS.md`, `SESSION_HANDOFF.md`, `RUNNING.md`, the roadmaps, or `38`/`39`; it reports findings in its commit message and its module doc. **QE reports bugs; feature lanes fix them; QE verifies.** **Touching a file outside your budget is a finding to raise, not a change to make.**
 
 **Each lane needs its own database and ports.** See [`docs/RUNNING.md`](docs/RUNNING.md#running-a-second-lane).
 

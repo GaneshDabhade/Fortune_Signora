@@ -2,8 +2,9 @@
 
 > **Owner:** CTO / Principal Architect · **Audience:** Engineering, TPM, Exec
 > **Status:** Living document — revised at each milestone boundary
+> **Revision:** **v4** (2026-08-01) — three-lane parallel execution adopted (§1); Lane A Product Surface, Lane B Commercial Profile, Lane QE. Supersedes v3's single-stream model, which is retained below as the record of what was decided then.
 > **Revision:** **v3** — sequential single-stream execution model adopted; Demo Checklist added to every milestone; Provider Simulation Framework strengthened with the identical-adapter-contract rule; progressive AI regression assertion model defined.
-> **Source of truth:** [`docs/architecture/`](docs/architecture/) (19 documents, 27 ADRs), [`CLAUDE.md`](CLAUDE.md), [`PRODUCT_DIFFERENTIATORS.md`](PRODUCT_DIFFERENTIATORS.md)
+> **Source of truth:** [`docs/architecture/`](docs/architecture/) — **every document in it**, plus the ADRs — [`CLAUDE.md`](CLAUDE.md), [`PRODUCT_DIFFERENTIATORS.md`](PRODUCT_DIFFERENTIATORS.md). *(Corrected 2026-08-01: this said "19 documents, 27 ADRs"; there are 41 and 36. A count in a header is a fact that goes stale on the next commit, so it is no longer stated.)*
 >
 > This roadmap sequences *what gets built and in what order*. It does not introduce architecture — every module, boundary, and technology named here is already ratified. Where this document and the architecture set disagree, the architecture set wins and this document is the bug.
 
@@ -11,7 +12,9 @@
 
 ## 1. Execution Model
 
-### Sequential single-stream execution
+### Execution model — three lanes since 2026-08-01
+
+**What v3 decided, retained as written:**
 
 **Implementation proceeds as one prioritized stream.** The roadmap's dependency graph governs *order*; it does not imply concurrency. Optimising for minimal context switching is the ruling constraint, not maximal parallelism.
 
@@ -25,11 +28,13 @@ M1.1 Platform Runtime → M1.2 Authentication Boundary → M1.3A Deployment Foun
 
 The parallel-workstream design in §9 is **retained for future team scaling** and should be re-read the moment staffing increases.
 
-> **Amended 2026-08-01 — two lanes.** Sequential single-stream execution held for 141 commits and produced the architectural consistency that makes this amendment safe. It is no longer the operating assumption: **two lanes run concurrently**, Product Surface and Commercial Profile, each owning distinct modules. A **Category 1 sequencing change** ([§5c](#5c-roadmap-change-policy)) — no module, boundary, contract or technology changes, and the dependency graph still governs order: a lane may not start work whose inputs another lane has not shipped.
+> **Amended 2026-08-01 — three lanes.** Sequential single-stream execution held for 141 commits and produced the architectural consistency that makes this amendment safe. It is no longer the operating assumption: **three lanes run concurrently** — **A** Product Surface, **B** Commercial Profile, **QE** Quality Engineering. A **Category 1 sequencing change** ([§5c](#5c-roadmap-change-policy)): no module, boundary, contract or technology changes, and the dependency graph still governs order — a lane may not start work whose inputs another lane has not shipped.
 >
-> **Why these two.** They share almost nothing: Commercial Profile is a new module with its own tables, migrations, endpoints and routes, and it needs no event-bus consumer, which is what keeps the `EventHandler` RFC off the critical path. The one shared surface is the frontend contract layer, and Lane B writes its own hooks file rather than appending to the shared one.
+> **Why A and B pair well.** They share almost nothing. Commercial Profile is a new module with its own tables, migrations, endpoints and routes, and it needs no event-bus consumer — which is what keeps the `EventHandler` RFC off the critical path. The one shared surface is the frontend contract layer, and Lane B writes its own hooks file rather than appending to the shared one.
 >
-> **Two is deliberate, not a first step toward ten.** Coordination cost is quadratic in lanes and this repository has never paid any of it. A third lane waits on evidence from a full milestone of these two. The governing rule is unchanged and now applies per lane: `CLAUDE.md` §20e.
+> **Why QE is a lane rather than a phase.** Every defect that has mattered in this project was found by *using* the product, not by the suite — R4-01, R6-01 through R6-04, R7-01 through R7-03, R10-01, R12-01. 2046 tests found none of them. A lane whose whole job is to use the product is the only mechanism that reliably finds that class, and making it a lane rather than a milestone step means it happens continuously instead of when someone remembers.
+>
+> **QE builds no production feature, and feature lanes fix their own bugs.** That separation is what stops QE becoming a second implementation stream with no owner. The governing rules are `CLAUDE.md` §20e.
 
 ### Calendar consequence — stated plainly
 
