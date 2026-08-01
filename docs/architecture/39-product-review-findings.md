@@ -929,3 +929,144 @@ It was accidentally true until this milestone, because there were no users anywh
 **Fixing the Overview page's copy instead of retiring it.** Cheaper and it would have removed the false promise. Rejected: the page's problem is that it exists between a seller and their work, not that its wording is wrong. *Returns only as part of D37's ruling.*
 
 **Removing the three *coming soon* nav entries while I was there.** Tempting and out of scope: the navigation is frozen, and this is the second finding against it. **Bundling it into a page slice is precisely what the freeze exists to prevent.** *Returns with D37.*
+
+---
+
+# Review 8 — the front door *(2026-08-01, M12.3 · D38)*
+
+Two changes reviewed together, because they answer the same question from opposite ends: **how long does it take somebody to get from a clone to a useful opinion?** Before this slice the honest answer was *nobody had ever done it.*
+
+What the navigation was, and is:
+
+```
+BEFORE                          AFTER
+
+  Overview        ← landing       Attention   ← landing, and the work
+  Companies  Soon                 Settings
+  Opportunities ← the product
+  Signals    Soon
+  Timeline   Soon
+  Settings
+
+6 entries, 2 of which went        2 entries, both of which go
+anywhere. The product was         somewhere. The product is the
+third in the list.                first thing you see.
+```
+
+---
+
+## R8-01 · The navigation was the data model, not the workflow 🔴 **FIXED**
+
+**Observation.** Companies, Signals, Opportunities and Timeline were four of the thirteen pipeline modules with a sidebar entry each.
+
+**Why it matters.** **None of the six customer journeys is *show me all the signals* or *show me all the companies*.** A signal is what explains an account; a company is what an account *is*. Both were already on the brief, where they answer something. Timeline is journey J6 and is explicitly per-account.
+
+Organising a menu by the modules that produce data is the most natural mistake an engineering team makes, and it is invisible from inside — the M1.5 comment states the intent plainly and reasonably: *"settle the information architecture before pages are written into it."* **The pages have since been written, and they disagreed with it.**
+
+**Implemented after review** (D38), as an approved §20c change rather than a page slice bending the shell.
+
+**Priority:** — **Milestone:** done, M12.3.
+
+---
+
+## R8-02 · Three of six entries advertised absence 🟠 **FIXED**
+
+**Observation.** *Companies · Soon*, *Signals · Soon*, *Timeline · Soon* on the first screen a customer sees.
+
+**Why it matters.** *(Sales Manager, Review 7)* — *"That is what a demo looks like, not a product."* A roadmap on the navigation tells a customer what they cannot do, in the place they look to find out what they can.
+
+**Implemented.** The invariant that guarded them was rewritten rather than deleted: `no-mock-data.test.tsx` asserted *"a route exists exactly when its entry stops saying Soon"*; it now asserts **every navigation entry goes somewhere**, which is the rule that survived all three versions of that test.
+
+**Priority:** — **Milestone:** done, M12.3.
+
+---
+
+## R8-03 · "Opportunities" was the product's own word for something else 🟠 **FIXED**
+
+**Observation.** **D1, raised at M12.1 and deferred twice.** *Opportunity* is Signora's domain word for **the workflow object a human commits to** — and most rows on that list are not that yet.
+
+**Why it matters.** Naming the section after the record rather than the question is the dashboard framing the product is trying to leave. **`Attention` is the domain's word too**: the score measures commercial attention, the ledger splits `attention_by_posture`, the query is `attention_list`. The vocabulary is now the same from the database to the sidebar.
+
+**Priority:** — **Milestone:** done, M12.3. *Two deferrals, then one deliberate change.*
+
+---
+
+## R8-04 · Nobody could reach the product in under an afternoon 🔴 **FIXED**
+
+**Observation.** A reviewer needed to: bring up Docker · run migrations under the owner identity · realise Better Auth's tables did not exist · generate a key pair · find OAuth credentials or register and hunt a verification link in server output · create a workspace · discover their workspace was not the seeded one · re-run the seeder.
+
+**Why it matters.** **The product owner's ability to review is a product capability**, and it had been degrading while the product improved. Five reviews carried *"I could not open the browser UI."*
+
+**Implemented.** `make demo` now does all of it: stack, schema, Better Auth's tables, **four sign-in accounts**, twelve accounts of pipeline output. `docs/RUNNING.md` is the single source of truth, with a troubleshooting table keyed on **what you see** rather than what went wrong.
+
+**Priority:** — **Milestone:** done, M12.3.
+
+---
+
+## R8-05 · Signora has two roles and reviewers asked for five 🟡
+
+**Observation.** The seeded personas are Revenue Operations, Sales Manager, Account Executive and Sales Development. **Signora's domain has `owner` and `member`.** The personas map onto those two, and RUNNING.md says so.
+
+**Why it matters.** Recorded rather than fixed because **inventing a role model to satisfy a seeding script would be domain design done by a dev tool.** What the two roles buy today is real: an owner reaches Settings and a member does not, and two accounts are what makes *"held by someone else"* reviewable.
+
+**Suggested future improvement.** A richer role model is a domain decision with a Casbin policy and an RFC behind it. **Trigger:** a customer who needs a manager to see a book without administering it — which is exactly what Marcus's persona is, and nobody has asked for yet.
+
+**Priority:** Low. **Milestone:** unassigned; needs a demonstrated need.
+
+---
+
+## R8-06 · The verification link is in the terminal, and that is a local affordance 🟡
+
+**Observation.** Registering as yourself still means reading the dev server's stdout. The four demo accounts skip it — they are created *and verified* through Better Auth's own routes.
+
+**Why it matters.** Reviewing no longer requires it, which is the point. **It is worth stating that this is a local affordance and not a product feature**, because it is the kind of convenience that quietly becomes an assumption.
+
+**Priority:** Low. **Milestone:** resolved by choosing an email provider, which is an outstanding ADR-0033 decision.
+
+---
+
+## The five roles — the front door
+
+**SDR.** *"I signed in and the first thing on screen was my morning."* **The complaint from Review 7 does not recur.**
+
+**AE.** *Delight:* two menu entries. "I know where everything is because there is nowhere else."
+
+**Sales Manager.** *First look:* signed in as Marcus, went for Settings, and it is not in the menu. **Correct — a member cannot administer a workspace — and the first time client-side permission has been visible as a product behaviour rather than as a test.**
+
+**RevOps.** *Delight:* four accounts, one password, in `make demo`. "I can put a designer in front of this."
+
+**CRO.** Signed in, saw twelve ranked accounts with what is happening at each. *"This is the first time I have opened it and not asked a question."*
+
+---
+
+## The staff-designer pass
+
+**Apple.** **Two entries.** The sidebar has stopped being a table of contents for the engineering team. *The brief's six equal-weight sections remain the largest visual problem in the product* — four reviews old now.
+
+**Stripe.** The troubleshooting table is keyed on **what you see**, not on what went wrong, which is the only key a reader can look something up under.
+
+**Linear.** Still no keyboard path through the list, and the list is now the front door — **which raises the cost.** **Medium · interaction slice.**
+
+**Notion.** *Attention · Settings.* One is the work and one is the configuration. **A two-item navigation is a strong claim that the product knows what it is for.**
+
+**Cursor.** `make demo` is one command. The two processes after it are two more. *"Would a single command run the whole stack?"* — it would, and it would hide the two processes a developer needs to see the logs of. **Recorded, not built.**
+
+**Perplexity.** Nothing to follow here.
+
+**OpenAI.** No model in the entry experience.
+
+---
+
+## Rejected ideas
+
+**A Morning Brief as the landing page.** The product owner asked directly. Rejected **for now**, and the reason is the one that condemned Overview: a brief summarising the book is *a dashboard about the work* rather than the work, and **the attention list already is the morning brief** — ranked by attention, each row naming what is happening. *Returns when it can say something the list cannot — **what changed since you last looked**, which needs per-user read state (D5). Trigger: a design partner saying they cannot tell what is new.*
+
+**Redirecting `/` to `/opportunities` instead of moving the page.** One line, no navigation change. Rejected: it leaves the sidebar saying *Overview* over a list of accounts. **A redirect that makes the menu lie is worse than the page it replaced.** *Will not return.*
+
+**Keeping the *coming soon* entries as a visible roadmap.** Rejected: a customer is not the audience for a roadmap. *Will not return.*
+
+**Seeding users by writing rows into `auth.user` with a hash we computed.** Simpler, no Better Auth API to learn. Rejected: that is authentication logic Signora would then own, in the one subsystem where a vendor was bought precisely so it would not. `auth.api.signUpEmail` and `auth.api.verifyEmail` are the same handlers the browser reaches. *Will not return.*
+
+**Inventing Manager / AE / SDR workspace roles to match the personas.** Rejected: domain design done by a seeding script. *Returns with a demonstrated need — see R8-05.*
+
+**Folding `npm run dev` and the API into `make demo`.** Rejected: it would hide the two processes whose logs a reviewer needs — including the one the verification link is printed to. *Will not return.*

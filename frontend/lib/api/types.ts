@@ -56,12 +56,7 @@ export type ScoreTrigger =
  * Only `tracking` can be reached without a person. Every stage beyond it names
  * who decided — *intelligence suggests; humans commit.*
  */
-export type Stage =
-  | 'tracking'
-  | 'engaged'
-  | 'closed_won'
-  | 'closed_lost'
-  | 'dismissed';
+export type Stage = 'tracking' | 'engaged' | 'closed_won' | 'closed_lost' | 'dismissed';
 
 /** Who decided this account was worth tracking. */
 export type Qualification = 'automatic' | 'manual';

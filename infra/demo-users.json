@@ -1,0 +1,47 @@
+{
+  "_comment": [
+    "Development sign-in accounts for the Playground. Read by BOTH the Next tier's",
+    "`npm run demo:users` (which creates them through Better Auth's own API) and the",
+    "backend seeder (which enrols them in the seeded workspace with these roles).",
+    "One list rather than two, so the two halves cannot drift.",
+    "",
+    "These are NOT a bypass. Each account is created by the same sign-up route a",
+    "browser uses, with a password Better Auth hashes and a verification token",
+    "Better Auth mints. Nothing about the authentication pipeline differs — the",
+    "accounts simply already exist.",
+    "",
+    "Addresses use the reserved `.example` TLD deliberately: it can never resolve,",
+    "so a build that one day has a real email transport cannot send anything to a",
+    "real person by accident.",
+    "",
+    "`role` is one of Signora's two workspace roles. Sales titles are in `persona`",
+    "because the product does not model them — see RUNNING.md."
+  ],
+  "password": "signora-demo-password",
+  "users": [
+    {
+      "email": "dana.reyes@northwind.example",
+      "name": "Dana Reyes",
+      "persona": "Revenue Operations — owns the workspace",
+      "role": "owner"
+    },
+    {
+      "email": "marcus.hale@northwind.example",
+      "name": "Marcus Hale",
+      "persona": "Sales Manager — reviews the book, does not administer it",
+      "role": "member"
+    },
+    {
+      "email": "priya.nair@northwind.example",
+      "name": "Priya Nair",
+      "persona": "Account Executive — works accounts end to end",
+      "role": "member"
+    },
+    {
+      "email": "sam.okafor@northwind.example",
+      "name": "Sam Okafor",
+      "persona": "Sales Development — triages the attention list every morning",
+      "role": "member"
+    }
+  ]
+}

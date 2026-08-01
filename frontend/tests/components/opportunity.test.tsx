@@ -84,7 +84,11 @@ describe('the brief says what changed since somebody committed', () => {
     // disagree the first time one of the two was absent.
     render(
       <OpportunityMomentum
-        opportunity={commitment({ score: 50, score_at_open: 30, score_change_since_open: 7 })}
+        opportunity={commitment({
+          score: 50,
+          score_at_open: 30,
+          score_change_since_open: 7,
+        })}
       />,
     );
 
@@ -161,7 +165,10 @@ describe('the workflow state says who decided, and admits when nobody has', () =
 describe('contradiction is reported only when it is news', () => {
   it('says nothing when the account has always been contested', () => {
     const { container } = render(
-      <ContestedSince opportunity={commitment({ contested_at_open: true })} contestedNow />,
+      <ContestedSince
+        opportunity={commitment({ contested_at_open: true })}
+        contestedNow
+      />,
     );
 
     expect(container).toBeEmptyDOMElement();
@@ -180,7 +187,10 @@ describe('contradiction is reported only when it is news', () => {
 
   it('reports a disagreement that has appeared since opening', () => {
     render(
-      <ContestedSince opportunity={commitment({ contested_at_open: false })} contestedNow />,
+      <ContestedSince
+        opportunity={commitment({ contested_at_open: false })}
+        contestedNow
+      />,
     );
 
     expect(screen.getByText(/did not disagree when this opened/)).toBeInTheDocument();

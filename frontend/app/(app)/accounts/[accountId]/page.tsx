@@ -49,12 +49,13 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  * ordered so most of it is never read**, not information hidden behind a
  * control.
  *
- * ### The route is `/opportunities/[accountId]`, and the segment is named
+ * ### The route is `/accounts/[accountId]`
  *
- * The parameter is an **account** identifier under a section called
- * Opportunities, which is the sort of mismatch that costs the next engineer an
- * hour. Naming the segment `accountId` puts the answer in the URL itself rather
- * than in a comment somebody has to find.
+ * It was `/opportunities/[accountId]` — an *account* identifier under a
+ * section named after the workflow record, which M12.2 flagged as *"the sort
+ * of mismatch that costs the next engineer an hour"* and worked around by
+ * naming the segment. The section is gone (**D38**), so the address can now
+ * simply say what the page is about.
  *
  * ### Composed from three requests, not one aggregate
  *
@@ -205,7 +206,7 @@ export default function AccountBriefPage() {
 function BackToList() {
   return (
     <Link
-      href="/opportunities"
+      href="/"
       className="inline-flex w-fit items-center gap-1.5 rounded text-sm text-content-muted transition-colors hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
     >
       <ArrowLeft aria-hidden className="h-3.5 w-3.5" />

@@ -20,9 +20,8 @@ import type { AccountOpportunity } from '@/lib/api/types';
 const request = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/api/client', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/api/client')>(
-    '@/lib/api/client',
-  );
+  const actual =
+    await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
   return { ...actual, apiRequest: request };
 });
 
@@ -60,7 +59,10 @@ function withQuery(node: ReactElement) {
 function sent(): { path: string; method?: string; body: Record<string, unknown> } {
   const call = request.mock.calls[0];
   expect(call, 'nothing was sent to the API').toBeDefined();
-  const [path, options] = call as [string, { method?: string; body: Record<string, unknown> }];
+  const [path, options] = call as [
+    string,
+    { method?: string; body: Record<string, unknown> },
+  ];
   return { path, method: options.method, body: options.body };
 }
 
@@ -116,7 +118,9 @@ describe('the moves offered are the ones the domain allows', () => {
     render(actions({ stage: 'tracking', allowed_next: ['closed_won'] }));
 
     expect(screen.getByRole('button', { name: 'Won' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: "I'm working this" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: "I'm working this" }),
+    ).not.toBeInTheDocument();
   });
 });
 
@@ -163,7 +167,9 @@ describe('every decision carries a sentence', () => {
 
     await user.click(screen.getByRole('button', { name: "I'm working this" }));
 
-    expect(screen.getByText(/recorded against this account permanently/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/recorded against this account permanently/i),
+    ).toBeInTheDocument();
   });
 });
 
@@ -184,7 +190,9 @@ describe('what gets sent', () => {
 
     await waitFor(() => expect(request).toHaveBeenCalled());
     const call = sent();
-    expect(call.path).toContain('/opportunities/cccccccc-3333-4333-8333-333333333333/states');
+    expect(call.path).toContain(
+      '/opportunities/cccccccc-3333-4333-8333-333333333333/states',
+    );
     expect(call.method).toBe('POST');
     expect(call.body).toEqual({
       stage: 'engaged',
@@ -217,9 +225,7 @@ describe('what gets sent', () => {
     // changes nothing, which the domain refuses as noise in the audit trail.
     const user = userEvent.setup();
     request.mockResolvedValue({ stage: 'closed_won' });
-    render(
-      actions({ stage: 'engaged', owner_id: VIEWER, allowed_next: ['closed_won'] }),
-    );
+    render(actions({ stage: 'engaged', owner_id: VIEWER, allowed_next: ['closed_won'] }));
 
     await user.click(screen.getByRole('button', { name: 'Won' }));
     await user.type(screen.getByLabelText('What won it?'), 'Signed a two-year deal.');
@@ -247,7 +253,9 @@ describe('a refusal is shown, in the words that explain it', () => {
     await user.type(screen.getByLabelText('Why are you taking this on?'), 'Trying it.');
     await user.click(screen.getByRole('button', { name: 'Take it on' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(/a won deal does not reopen/i);
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      /a won deal does not reopen/i,
+    );
   });
 
   it('claims nothing it does not know when the request never arrived', async () => {
@@ -267,12 +275,19 @@ describe('a refusal is shown, in the words that explain it', () => {
     // somebody to write a shorter one.
     const user = userEvent.setup();
     request.mockRejectedValue(
-      new ApiError(422, { code: 'transition_refused', message: 'No.', correlation_id: 'x' }),
+      new ApiError(422, {
+        code: 'transition_refused',
+        message: 'No.',
+        correlation_id: 'x',
+      }),
     );
     render(actions());
 
     await user.click(screen.getByRole('button', { name: "I'm working this" }));
-    await user.type(screen.getByLabelText('Why are you taking this on?'), 'A careful sentence.');
+    await user.type(
+      screen.getByLabelText('Why are you taking this on?'),
+      'A careful sentence.',
+    );
     await user.click(screen.getByRole('button', { name: 'Take it on' }));
 
     await screen.findByRole('alert');

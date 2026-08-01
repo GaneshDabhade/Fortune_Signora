@@ -45,7 +45,9 @@ describe('the checks are what a seller acts on', () => {
   it('shows every step the catalog suggests', () => {
     render(<ValidationBlock validation={validation()} />);
 
-    expect(screen.getByText('Check which functions the recent hiring is in.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Check which functions the recent hiring is in.'),
+    ).toBeInTheDocument();
     expect(
       screen.getByText('Ask on a first call which division the investment sits in.'),
     ).toBeInTheDocument();
@@ -64,7 +66,9 @@ describe('the checks are what a seller acts on', () => {
     // move the claim past what the evidence supports.
     render(<ValidationBlock validation={validation()} />);
 
-    expect(screen.getByText(/suggests the company is adding capacity/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/suggests the company is adding capacity/),
+    ).toBeInTheDocument();
   });
 
   it('renders nothing at all when no hypothesis is live', () => {
@@ -82,9 +86,10 @@ describe('the limitations are present, and subordinate', () => {
   it('is collapsed on arrival', async () => {
     render(<ValidationBlock validation={validation()} />);
 
-    expect(
-      screen.getByRole('button', { name: /cannot tell you/ }),
-    ).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByRole('button', { name: /cannot tell you/ })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
   });
 
   it('says how many there are before the reader spends the click', () => {

@@ -14,6 +14,7 @@
     "test:e2e": "playwright test",
     "keys:generate": "tsx scripts/generate-keys.ts",
     "auth:migrate": "tsx scripts/auth-migrate.ts",
+    "demo:users": "tsx scripts/demo-users.ts",
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {

@@ -778,3 +778,87 @@ The list itself is good. It is behind a screen that is not.
 - **The three *coming soon* entries.** Defensible at M1.5, when the point was to settle the IA before pages were written into it. **Less defensible on a screen a customer sees**, where half a navigation that leads nowhere advertises absence — though removing them and re-adding them later is its own cost.
 
 **Recorded rather than implemented.** Waiting for a ruling.
+
+---
+
+# D38 — The Information Architecture, reviewed from first principles *(M12.3, 2026-08-01)*
+
+> **Approved for review by the product owner** after D37 was raised. The instruction was explicit: *"Review the existing navigation from first principles. Do not preserve navigation simply because it already exists."*
+
+## What is actually there
+
+| Entry | State |
+|---|---|
+| `/` **Overview** | An M1.5 placeholder. Promises *"connect a data source"* — no way to connect one; integrations are M13. Three permanently-empty counters. Does not link to the attention list |
+| `/companies` **Companies** | *coming soon* |
+| `/opportunities` **Opportunities** | **The product** |
+| `/signals` **Signals** | *coming soon* |
+| `/timeline` **Timeline** | *coming soon* (M7) |
+| `/settings` **Settings** | Real |
+
+**Two of six entries lead anywhere.** The first screen every morning is one of the four that do not.
+
+## The finding, stated plainly
+
+**The navigation is organised by the pipeline's nouns, not by the seller's questions.**
+
+Companies, Signals, Opportunities and Timeline are four of the thirteen modules with a sidebar entry each. That is a data model rendered as a menu — and it is a category of mistake rather than an oversight, because **it was designed before there was a product to organise.** The M1.5 comment says so in its own words: *"Listed now so the shell's information architecture is settled before pages are written into it, rather than growing one link at a time."* Reasonable then. **The pages have now been written, and they disagree with it.**
+
+### A seller does not browse signals
+
+`37-product-surface.md` names six customer journeys. **Not one of them is *"show me all the signals"* or *"show me all the companies."*** A signal is what explains an account; a company is what an account is. Neither is a destination — they are both *inside* the answer to *"why this account?"*, where they already are.
+
+The journeys are: **which accounts today** → **why this one** → **prove it** → **I'm working it** → **go find out more** → **what changed**. That is one loop with a detail view, not six sections.
+
+### Overview answers a question nobody asked
+
+None of the six journeys is *"give me a summary."* Overview exists because a product that had no screens needed a landing page, and it has outlived that.
+
+## The decision
+
+| | |
+|---|---|
+| **`/`** | **Attention** — the ranked list. The morning *is* the product |
+| **`/accounts/[accountId]`** | The brief |
+| **`/settings`** | Workspace and members |
+
+**Two navigation entries.** Everything else a seller needs is reached from an account, because everything else a seller needs is *about* an account.
+
+### Why the list, and not a Morning Brief
+
+The product owner asked whether a **Morning Brief** should be the default. **Recommended against, for now, and the reason is the one that condemned Overview.**
+
+A brief summarising the book would be a *dashboard about the work* rather than the work. Signora's own stated principle is **workflow, not dashboard**: *"a dashboard reports on a period; a workflow surface answers a question someone is about to act on."* The attention list already **is** the morning brief — ranked by attention, each row naming what is happening, most pressing first. A summary above it would be a second thing to read before reaching the first.
+
+**It becomes right when it can say something the list cannot**: *what changed since you last looked.* That needs per-user read state (**D5**), which is a real schema decision. **Trigger:** a design partner saying they cannot tell what is new. Recorded, not built.
+
+### Why `Attention` and not `Opportunities`
+
+**D1, finally.** *Opportunity* is Signora's own domain word for **the workflow object a human commits to** — and most rows on this list are not that yet. Naming the section after the record rather than the question is the dashboard framing the product is trying to leave, and it collides with the module's vocabulary.
+
+**`Attention` is the domain's own word**, not an invention: the score measures *commercial attention*, the ledger splits `attention_by_posture`, the query is `attention_list`. The product's vocabulary becomes consistent from the database to the sidebar.
+
+### Why the three *coming soon* entries go
+
+**An entry that leads nowhere advertises absence.** The M1.5 argument — settle the IA before pages are written into it — has been *used up*: the pages exist, and the IA it settled turned out to be the data model.
+
+This is not deferring them. **They were never top-level:**
+
+- **Companies** and **Signals** are not journeys. They are what an account *is* and what explains it, and both are already on the brief.
+- **Timeline** is journey J6 and is explicitly *per-account* — *"the account's history as a sequence."* When M7 ships it belongs **on the brief**, beside the workflow history that is already there. A global timeline is a different feature nobody has asked for.
+
+## What this does not change
+
+**Not the route for the brief's content, only its address.** `/opportunities/[accountId]` becomes `/accounts/[accountId]`: the page is about an *account*, the parameter always said so, and the section name is no longer available to contradict it.
+
+**Not the frozen foundation's terms.** This is a §20c *approved architectural change* — raised as D37, reviewed here, approved before implementation. It is the process working, not an exception to it.
+
+## Rejected
+
+**Keeping Overview and improving its copy.** Removes the false promise and leaves a screen between a seller and their work. *Returns only if a summary ever earns its own place.*
+
+**Redirecting `/` to `/opportunities`.** One line, no navigation change, and it leaves the sidebar saying *Overview* for a page that is a list of accounts. **A redirect that makes the menu lie is worse than the page it replaced.**
+
+**Keeping the *coming soon* entries as a roadmap on the screen.** A customer is not the audience for a roadmap, and three of six entries being unavailable reads as a demo.
+
+**Building the Morning Brief now.** See above — it is Overview's mistake with better content until it can say what changed.

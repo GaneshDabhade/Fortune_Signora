@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, Home, LineChart, Lightbulb, Settings, Clock } from 'lucide-react';
+import { LineChart, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -15,19 +15,36 @@ import {
 interface NavItem {
   href: string;
   label: string;
-  icon: typeof Home;
-  /** Sections whose pages arrive with the modules that produce their data.
-   * Listed now so the shell's information architecture is settled before
-   * pages are written into it, rather than growing one link at a time. */
-  comingSoon?: boolean;
+  icon: typeof Settings;
 }
 
+/**
+ * **Two entries, reviewed from first principles at M12.3** (D38).
+ *
+ * It was six: Overview, Companies, Signals, Timeline, Opportunities, Settings
+ * — four of the thirteen pipeline modules with a menu item each, which is a
+ * data model rendered as navigation. That was defensible at M1.5, when the
+ * point was to settle the information architecture *before* pages were written
+ * into it. The pages have since been written and they disagree with it.
+ *
+ * **None of the six customer journeys is *show me all the signals* or *show me
+ * all the companies*.** A signal is what explains an account; a company is what
+ * an account is. Both are already on the brief, because that is where they
+ * answer something. Timeline is journey J6 and is explicitly *per-account* —
+ * when M7 ships it belongs beside the workflow history on the brief, not here.
+ *
+ * And an entry that leads nowhere advertises absence: three of six said
+ * *coming soon* on the screen a customer sees first.
+ *
+ * `Attention` rather than `Opportunities` because *Opportunity* is Signora's
+ * own word for **the workflow object a human commits to**, and most rows on
+ * this list are not that yet. *Attention* is the domain's word too — the score
+ * measures commercial attention, the ledger splits it by posture, the query is
+ * `attention_list` — so the vocabulary is now the same from the database to
+ * the sidebar.
+ */
 const ITEMS: readonly NavItem[] = [
-  { href: '/', label: 'Overview', icon: Home },
-  { href: '/companies', label: 'Companies', icon: Building2, comingSoon: true },
-  { href: '/opportunities', label: 'Opportunities', icon: LineChart },
-  { href: '/signals', label: 'Signals', icon: Lightbulb, comingSoon: true },
-  { href: '/timeline', label: 'Timeline', icon: Clock, comingSoon: true },
+  { href: '/', label: 'Attention', icon: LineChart },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
@@ -60,9 +77,6 @@ export function Navigation({ role }: { role: WorkspaceRole | null }) {
           >
             <Icon className="h-4 w-4 shrink-0" />
             <span className="flex-1">{item.label}</span>
-            {item.comingSoon ? (
-              <span className="text-xs text-content-subtle">Soon</span>
-            ) : null}
           </Link>
         );
       })}

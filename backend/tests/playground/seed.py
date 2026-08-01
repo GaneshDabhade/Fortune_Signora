@@ -49,8 +49,10 @@ violation the architecture exists to prevent.
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from uuid import UUID
 
 from sqlalchemy import text
@@ -124,6 +126,7 @@ async def _enrol_everyone(
     true (**R6-01**). Corrected once signing in became possible.
     """
     schema = os.environ.get("SIGNORA_AUTH_SCHEMA", "auth")
+    roles = _demo_roles()
 
     async with admin_factory() as session:
         exists = (
@@ -136,20 +139,41 @@ async def _enrol_everyone(
             return 0
 
         users = (
-            await session.execute(text(f'SELECT id FROM {schema}."user"'))
-        ).scalars().all()
-        for user_id in users:
+            await session.execute(text(f'SELECT id, email FROM {schema}."user"'))
+        ).all()
+        for user_id, email in users:
             await session.execute(
                 text(
                     "INSERT INTO membership (id, workspace_id, user_id, role, created_at,"
                     " updated_at, created_by, updated_by)"
-                    " VALUES (gen_random_uuid(), :w, :u, 'owner', now(), now(), :u, :u)"
+                    " VALUES (gen_random_uuid(), :w, :u, :r, now(), now(), :u, :u)"
                     " ON CONFLICT DO NOTHING"
                 ),
-                {"w": workspace_id, "u": user_id},
+                # A demo persona keeps the role its entry declares; anybody
+                # else who has signed in is the developer, and owning the
+                # workspace is what lets them look at everything.
+                {"w": workspace_id, "u": user_id, "r": roles.get(email, "owner")},
             )
         await session.commit()
         return len(users)
+
+
+def _demo_roles() -> dict[str, str]:
+    """Which workspace role each seeded persona holds.
+
+    **Read from `infra/demo-users.json`, which the Next tier's `demo:users`
+    script also reads.** Two lists would disagree about who exists the first
+    time either changed, and the disagreement would look like a permissions
+    bug.
+
+    Absent or unreadable is not an error: the file is development tooling, and
+    a developer who has only signed in themselves has no personas to place.
+    """
+    path = Path(__file__).resolve().parents[3] / "infra" / "demo-users.json"
+    if not path.exists():
+        return {}
+    declared = json.loads(path.read_text())["users"]
+    return {user["email"]: user["role"] for user in declared}
 
 
 async def main() -> int:
@@ -208,13 +232,13 @@ async def main() -> int:
         print(f"accounts    {opportunities} qualified opportunities")
         print(f"re-scored   {rescored} of {examined} readings had aged since they were opened")
         if enrolled:
-            print(f"members     {enrolled} signed-in user(s) enrolled as owner")
-            print("\nOpen http://localhost:3000/opportunities")
+            print(f"members     {enrolled} signed-in user(s) enrolled")
+            print("\nOpen http://localhost:3000")
         else:
-            print("members     none — no signed-in users exist yet")
+            print("members     none — no accounts exist yet")
             print(
-                "\nSign in once at http://localhost:3000/sign-in, then re-run this "
-                "command to be enrolled."
+                "\nCreate the demo accounts with `make demo-users`, or register at "
+                "http://localhost:3000/sign-up, then re-run this command."
             )
         return 0
     finally:

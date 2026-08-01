@@ -16,7 +16,7 @@
 | **Current phase** | **Product implementation** — the pipeline is built; the surface is being exposed |
 | **Last completed milestone** | **M10 — AI Research Engine**, closed 2026-07-31 |
 | **Current milestone** | **M12.3 — evidence and actions** *(Decision Package still deferred until `reasoning@1` is released — see §10)* |
-| **Latest commit** | *M12.3 — the first run* |
+| **Latest commit** | *M12.3 — the front door* (D38) |
 | **Latest certification** | [`d954c930`](certification/reports/d954c930319a.md) — **CERTIFIED**, 2026-07-31 *(predates M12.2; re-cut at milestone close)* |
 | **Branch** | `main`, tree clean, pushed |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
@@ -181,7 +181,10 @@ A demo environment worth reviewing a product against. Requested by the product o
 | **Tests** | 15 auth-method unit · 3 JWT-contract · 5 e2e journey · design tokens extended to `app/(auth)` |
 | **The first run** | Being a new customer for ninety seconds found **three defects in a chain, each concealing the next** — the two tiers had never agreed on what a user id *is* (every real API call would have 401'd), the seeder looked for users in the wrong schema and printed a false statement, and a signed-in user with no workspace saw a heading and blank space |
 | **Tests** | 2 id-contract · 4 page-level first-run regression · 4 empty-state |
-| ⏳ **Next** | **D37 — an information-architecture revision**, raised and awaiting a ruling. `/` is an M1.5 placeholder promising an integration capability a milestone away, and it is the first screen every morning. It is the **second** finding against the frozen navigation (**D1** was the first), which is what a due revision looks like. Then **D20**, for which **R5-02** gives a candidate the pipeline already computes |
+| **The information architecture** (**D38**) | Reviewed from first principles and approved. **Six navigation entries became two.** Companies, Signals and Timeline were four of thirteen pipeline modules with a menu item each — a data model rendered as navigation, and none of them a customer journey. `/` is now **Attention**, the ranked list: a seller's first screen is their morning's work rather than a placeholder promising an integration a milestone away. **D1** is settled with it, after two deferrals |
+| **A reviewer reaches the product in one command** | `make demo` brings up the stack, migrates the schema, creates Better Auth's tables, creates **four sign-in accounts through Better Auth's own sign-up and verification routes**, and seeds twelve accounts. `docs/RUNNING.md` is the single source of truth for setup, credentials and troubleshooting |
+| **Tests** | navigation invariant rewritten · 4 first-run regression · 4 empty-state |
+| ⏳ **Next** | **D20** — a 50 and a 1 still render identically, and **R5-02** gives it a candidate the pipeline already computes: group by *posture*, not by an invented threshold. Needs a seller |
 
 > **🟠 It ships to the Playground and not to a customer until F-3 closes.** The catalog's guidance is *engineering-authored pending domain review*, and *"ask on a first call which division the investment sits in"* is advice a real seller will act on. Good content is not the same as signed content.
 

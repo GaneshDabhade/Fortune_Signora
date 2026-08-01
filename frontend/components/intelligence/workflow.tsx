@@ -177,9 +177,7 @@ function DecisionDialog({
       open={stage !== null}
       onClose={close}
       title={stage ? ACTION_WORDING[stage] : ''}
-      description={
-        claiming ? 'This account will be assigned to you.' : undefined
-      }
+      description={claiming ? 'This account will be assigned to you.' : undefined}
       footer={
         <>
           <Button variant="ghost" onClick={close} disabled={decide.isPending}>

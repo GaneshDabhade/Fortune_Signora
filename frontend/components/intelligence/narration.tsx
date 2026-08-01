@@ -89,8 +89,9 @@ function Provenance({ narration }: { narration: AccountNarration }) {
       Written by <span className="text-content-muted">{narration.model}</span> using{' '}
       <span className="text-content-muted">{narration.prompt}</span> on{' '}
       {formatDay(narration.generated_at)}. Every sentence is restricted to facts the
-      pipeline computed — <span className="text-content-muted">the model chose the words,
-      not the facts</span>.
+      pipeline computed —{' '}
+      <span className="text-content-muted">the model chose the words, not the facts</span>
+      .
     </p>
   );
 }

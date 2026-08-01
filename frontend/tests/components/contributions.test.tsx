@@ -29,7 +29,8 @@ function line(overrides: Partial<ScoreContribution> = {}): ScoreContribution {
     points: 24,
     counted: true,
     dissenting: false,
-    reason: 'Displacement opportunity · primary relevance · fresh evidence (100%) — 24 points',
+    reason:
+      'Displacement opportunity · primary relevance · fresh evidence (100%) — 24 points',
     ...overrides,
   };
 }
@@ -145,7 +146,9 @@ describe('posture is shown, never summed', () => {
   it('lists each posture that carries attention', () => {
     render(
       <PostureSplit
-        score={reading({ attention_by_posture: { expansionary: 30, contractionary: 18 } })}
+        score={reading({
+          attention_by_posture: { expansionary: 30, contractionary: 18 },
+        })}
       />,
     );
 
@@ -159,7 +162,9 @@ describe('posture is shown, never summed', () => {
     // different accounts in the book.
     const { container } = render(
       <PostureSplit
-        score={reading({ attention_by_posture: { expansionary: 30, contractionary: 18 } })}
+        score={reading({
+          attention_by_posture: { expansionary: 30, contractionary: 18 },
+        })}
       />,
     );
 
@@ -167,7 +172,9 @@ describe('posture is shown, never summed', () => {
   });
 
   it('renders nothing when no posture carries attention', () => {
-    const { container } = render(<PostureSplit score={reading({ attention_by_posture: {} })} />);
+    const { container } = render(
+      <PostureSplit score={reading({ attention_by_posture: {} })} />,
+    );
 
     expect(container).toBeEmptyDOMElement();
   });
@@ -197,7 +204,8 @@ describe('every line stays on the page', () => {
     // **A placement, never a paraphrase.** The sentence is rendered from the
     // same fields an auditor checks; rewording it here would make the number
     // uncheckable against the record.
-    const reason = 'Budget unlocked · supporting relevance · ageing evidence (30%) — 6 points';
+    const reason =
+      'Budget unlocked · supporting relevance · ageing evidence (30%) — 6 points';
 
     render(<ContributionList score={reading({ contributions: [line({ reason })] })} />);
 
@@ -206,7 +214,9 @@ describe('every line stays on the page', () => {
 
   it('marks the lines that disagree with the majority reading', () => {
     render(
-      <ContributionList score={reading({ contributions: [line({ dissenting: true })] })} />,
+      <ContributionList
+        score={reading({ contributions: [line({ dissenting: true })] })}
+      />,
     );
 
     expect(screen.getByText('Disagrees with the majority reading')).toBeInTheDocument();
@@ -225,7 +235,11 @@ describe('every line stays on the page', () => {
     const score = reading({
       contributions: [
         line({ reason: 'first', points: 24 }),
-        line({ reason: 'second', points: 18, signal_id: '44444444-4444-4444-8444-444444444444' }),
+        line({
+          reason: 'second',
+          points: 18,
+          signal_id: '44444444-4444-4444-8444-444444444444',
+        }),
       ],
     });
 

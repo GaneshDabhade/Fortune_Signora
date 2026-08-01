@@ -35,12 +35,14 @@ const TRIGGER_WORDING: Record<ScoreTrigger, string> = {
   evidence_aged: 'Evidence aged out',
 };
 
-const EVIDENCE_WORDING: Record<EvidenceState, { label: string; tone: 'neutral' | 'warning' }> =
-  {
-    current: { label: 'Evidence current', tone: 'neutral' },
-    cooling: { label: 'Cooling', tone: 'warning' },
-    stale: { label: 'Evidence expired', tone: 'warning' },
-  };
+const EVIDENCE_WORDING: Record<
+  EvidenceState,
+  { label: string; tone: 'neutral' | 'warning' }
+> = {
+  current: { label: 'Evidence current', tone: 'neutral' },
+  cooling: { label: 'Cooling', tone: 'warning' },
+  stale: { label: 'Evidence expired', tone: 'warning' },
+};
 
 /**
  * The magnitude behind a row's position.

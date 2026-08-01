@@ -61,8 +61,8 @@ export function EvidenceDrawer({
         // omission** (M12.3's definition of done). Saying nothing here would
         // let a reader believe they had checked something they had not.
         <p className="text-sm leading-6 text-content-muted">
-          This evidence could not be loaded. That is a fault in Signora, not a
-          missing record — the citation is valid.
+          This evidence could not be loaded. That is a fault in Signora, not a missing
+          record — the citation is valid.
         </p>
       ) : null}
       {data ? <Readings observations={data.observations} /> : null}
@@ -80,8 +80,8 @@ function Readings({ observations }: { observations: EvidenceObservation[] }) {
   if (observations.length === 0) {
     return (
       <p className="text-sm leading-6 text-content-muted">
-        Signora recorded this event and kept no readings for it. That is a defect
-        worth reporting — every business event should cite what produced it.
+        Signora recorded this event and kept no readings for it. That is a defect worth
+        reporting — every business event should cite what produced it.
       </p>
     );
   }

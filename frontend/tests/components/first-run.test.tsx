@@ -28,7 +28,7 @@ vi.mock('@/lib/query/hooks', () => ({
   useSignalCatalog: catalog,
 }));
 
-import OpportunitiesPage from '@/app/(app)/opportunities/page';
+import AttentionPage from '@/app/(app)/page';
 
 const IDLE = { data: undefined, isLoading: false, isError: false };
 
@@ -54,7 +54,7 @@ describe('a signed-in reader who belongs to no workspace', () => {
       isLoading: false,
     });
 
-    render(withQuery(<OpportunitiesPage />));
+    render(withQuery(<AttentionPage />));
 
     expect(screen.getByText(/not in a workspace yet/i)).toBeInTheDocument();
   });
@@ -68,7 +68,7 @@ describe('a signed-in reader who belongs to no workspace', () => {
       isLoading: true,
     });
 
-    render(withQuery(<OpportunitiesPage />));
+    render(withQuery(<AttentionPage />));
 
     expect(screen.queryByText(/not in a workspace yet/i)).not.toBeInTheDocument();
   });
@@ -83,7 +83,7 @@ describe('a signed-in reader who belongs to no workspace', () => {
     });
     accounts.mockReturnValue({ data: { items: [] }, isLoading: false, isError: false });
 
-    render(withQuery(<OpportunitiesPage />));
+    render(withQuery(<AttentionPage />));
 
     expect(screen.queryByText(/not in a workspace yet/i)).not.toBeInTheDocument();
   });
@@ -98,9 +98,9 @@ describe('a signed-in reader who belongs to no workspace', () => {
       isLoading: false,
     });
 
-    const { container } = render(withQuery(<OpportunitiesPage />));
+    const { container } = render(withQuery(<AttentionPage />));
     const body = (container.textContent ?? '').replace(
-      /Opportunities|Accounts your evidence says are worth a look, most pressing first\./g,
+      /Attention|Accounts your evidence says are worth a look, most pressing first\./g,
       '',
     );
 

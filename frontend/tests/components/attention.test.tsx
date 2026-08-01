@@ -160,7 +160,9 @@ describe('the row says what is happening, not that something happened', () => {
     // The name arrives in a separate request from the row. Blocking the list
     // on it would trade the decision for the label; showing a placeholder
     // would put a shape on screen that then moves.
-    const { container } = render(<Hypothesis signalType="active_evaluation" title={undefined} />);
+    const { container } = render(
+      <Hypothesis signalType="active_evaluation" title={undefined} />,
+    );
 
     expect(container).toBeEmptyDOMElement();
   });

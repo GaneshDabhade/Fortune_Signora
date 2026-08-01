@@ -19,25 +19,20 @@ Everything runs locally. There is no cloud environment and no remote gate ([ADR-
 
 ```bash
 # 0 — configuration
-cp backend/.env.example backend/.env      # local values only; never committed
+cp backend/.env.example backend/.env         # local values only; never committed
+cp frontend/.env.example frontend/.env.local
+cd frontend && npm install && npm run keys:generate   # paste both halves in — see below
 
-# 1 — infrastructure
-docker compose -f infra/docker-compose.yml up -d --wait   # PostgreSQL 5432, Redis 6379
+# 1 — everything else, in one command
+make demo
+```
 
-# 2 — schema, run under the *owner* identity, never the runtime one
-cd backend && SIGNORA_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:5432/signora \
-  uv run alembic upgrade head
+`make demo` brings up PostgreSQL and Redis, migrates the schema under the **owner** identity, creates **Better Auth's own tables**, creates **four sign-in accounts**, and seeds **twelve accounts through the real pipeline**.
 
-# 3 — seed the Product Playground: twelve accounts through the real pipeline
-make demo-seed                # or `make demo`, which does steps 1–3 for you
+Then start the two processes and open the product:
 
-# 3b — OPTIONAL: narrate them with the real released prompt and a local model.
-#      Needs Ollama with llama3.1:8b. Minutes, not seconds. Offline without it.
-#      NOTE: the test suite truncates this same database. Do not run `make test`
-#      while seeding or narrating, or the demo data disappears underneath it.
-make demo-narrate
-
-# 4 — backend
+```bash
+# backend
 cd backend && SIGNORA_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5432/signora \
   SIGNORA_REDIS_URL=redis://localhost:6379/0 \
   SIGNORA_JWT_PUBLIC_KEY="$(cat .dev-keys/public.pem)" \
@@ -45,11 +40,81 @@ cd backend && SIGNORA_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_
   SIGNORA_JWT_AUDIENCE=signora-api \
   uv run uvicorn apps.api.main:app --reload --port 8000
 
-# 5 — frontend
-cd frontend && npm install && npm run dev
+# frontend
+cd frontend && npm run dev
 ```
 
-Then open **<http://localhost:3000/opportunities>**.
+**<http://localhost:3000>** → sign in as `dana.reyes@northwind.example`.
+
+> **`make test` truncates this same database.** Do not run it while reviewing, or the Playground disappears underneath you. Re-run `make demo-seed` afterwards.
+
+---
+
+## Signing in — the demo accounts
+
+**Four accounts, created through Better Auth's own sign-up and verification routes.** Not a bypass and not a fixture: each was registered by the same handler the browser's form reaches, with a password Better Auth hashed and a verification token Better Auth minted. **They simply already exist.**
+
+**Password for all four: `signora-demo-password`**
+
+| Email | Persona | Workspace role | What they can do |
+|---|---|---|---|
+| `dana.reyes@northwind.example` | Revenue Operations | **owner** | Everything, including Settings and adding members |
+| `marcus.hale@northwind.example` | Sales Manager | member | Read and work accounts; **no Settings** |
+| `priya.nair@northwind.example` | Account Executive | member | Read and work accounts |
+| `sam.okafor@northwind.example` | Sales Development | member | Read and work accounts |
+
+All four are members of the **Playground** workspace and see the same twelve accounts. Sign in as two of them in different browsers to see an account *held by someone else* after one takes it on.
+
+> **Signora has two workspace roles — `owner` and `member` — not five.** The sales titles above are personas for review, not something the product models. A richer role model is a domain decision nobody has needed yet; see `04-modules.md`.
+
+Addresses use the reserved `.example` TLD deliberately: it can never resolve, so a build that one day has a real email transport cannot mail a real person by accident. Both the accounts and their roles are declared once, in `infra/demo-users.json`, read by the script that creates them and the seeder that enrols them.
+
+### Signing up as yourself instead
+
+Register at **<http://localhost:3000/sign-up>**. Signora asks you to confirm your address before creating a session — `requireEmailVerification` is on, which is what makes `email_verified` a fact rather than something an identity provider asserted.
+
+**The link is written to the dev server's output**, framed so it is hard to miss:
+
+```
+  ┌────────────────────────────────────────────────────────────────
+  │  Verify this address to finish signing up
+  │  you@example.com
+  │
+  │  http://localhost:3000/api/auth/verify-email?token=…
+  └────────────────────────────────────────────────────────────────
+```
+
+**Nothing is bypassed and nothing is mocked.** Real token, real expiry, real route — only the transport is stdout instead of an email provider, which has not been chosen yet. The console transport **refuses to start** when `SIGNORA_ENVIRONMENT` names a deployed environment, because a reset link in a production log is a credential in a log file.
+
+Forgot-password works the same way at **<http://localhost:3000/forgot-password>**. The reply is identical whether or not the address exists — that page is unauthenticated, and a message distinguishing the two would make it an enumeration oracle.
+
+Re-run `make demo-seed` after registering, to be enrolled in the Playground.
+
+### Adding Google or Microsoft
+
+Both halves of a credential in `frontend/.env.local` and the button appears:
+
+```
+GOOGLE_CLIENT_ID=…
+GOOGLE_CLIENT_SECRET=…
+```
+
+Both halves or neither — a half-configured provider renders a button that fails at the callback, which is worse than not offering it. **Whichever method somebody uses, Better Auth issues one session and the JWT carries no record of which** ([ADR-0033](architecture/adr/0033-authentication-methods.md)).
+
+*(This replaces an earlier version of this document which said sign-in was **OAuth only**, and an earlier one still which said to "create an account with any email". The first was true when written; the second never was. Both are corrected here rather than deleted, because the sequence is the record.)*
+
+---
+
+## When something does not work
+
+| What you see | What it is |
+|---|---|
+| Sign-in fails with a database error about `auth.user` | Better Auth's tables were never created. `cd frontend && npm run auth:migrate` — `make demo` does it for you |
+| Signed in, but every screen is empty and the API 401s | No signing key. `npm run keys:generate` and put both halves where the table below says. `/api/health` reports `signing_keys: unavailable` |
+| *"You are not in a workspace yet"* | You registered after the last seed. Re-run `make demo-seed` |
+| The Playground is suddenly empty | `make test` truncates every table in the same database. Re-run `make demo-seed` |
+| `/api/health` says `sign_in_methods: degraded` | Password sign-in is switched off and no OAuth credentials are set, so nobody can sign in |
+| Migrations fail with a permissions error | They are running as `signora_app`. Schema changes execute only under the **owner** identity — pass `SIGNORA_DATABASE_URL` explicitly, as step 2 does |
 
 ---
 
@@ -77,58 +142,6 @@ SIGNORA_JWT_PRIVATE_KEY=<the private half of the same pair>
 ```
 
 **The signing key lives only in the frontend.** The Python tier holds the public half and can verify but never mint ([ADR-0026](architecture/adr/0026-jwt-boundary-architecture.md)).
-
----
-
-## Signing in
-
-**Signora offers more than one way in, and they all end in the same session** ([ADR-0033](architecture/adr/0033-authentication-methods.md)). Email and password needs no external service and is on by default; Google and Microsoft appear as buttons when their credentials are configured. Whichever you use, Better Auth issues one session shape and the token minted from it carries **no record of which** — so nothing in the API can tell them apart.
-
-### One-time setup
-
-**1 — Create Better Auth's tables.**
-
-```
-cd frontend && npm run auth:migrate
-```
-
-The `auth` schema is created by backend migration `0005`; the tables inside it belong to Better Auth and are created by this command. **Until M12.3 nothing in the repository created them**, so a fresh clone had a schema with no tables and sign-in could not work by any method — invisible because the only offered methods were OAuth and no OAuth credentials were configured either. Run it again after upgrading Better Auth; it is idempotent and prints what it changed.
-
-**2 — Generate a signing key pair** (`npm run keys:generate`) and put the halves in `frontend/.env.local` and the backend's environment, as described above. **Sign-in works without this and the product does not**: every API call needs a token, and `/api/health` will say `signing_keys: unavailable` until you do it.
-
-### The journey
-
-Register at <http://localhost:3000/sign-up>. Signora then asks you to confirm your address before it will create a session — `requireEmailVerification` is on, which is what makes `email_verified` a fact rather than something an identity provider asserted.
-
-**The link is written to the dev server's output**, framed so it is hard to miss:
-
-```
-  ┌────────────────────────────────────────────────────────────────
-  │  Verify this address to finish signing up
-  │  you@example.com
-  │
-  │  http://localhost:3000/api/auth/verify-email?token=…
-  └────────────────────────────────────────────────────────────────
-```
-
-**Nothing is bypassed and nothing is mocked.** Real token, real expiry, real Better Auth route — only the transport is stdout instead of an email provider, which has not been chosen yet. The console transport **refuses to start** when `SIGNORA_ENVIRONMENT` names a deployed environment, because a reset link in a production log is a credential in a log file.
-
-Forgot your password works the same way: <http://localhost:3000/forgot-password> writes a link to the same place. The reply is identical whether or not the address exists — that page is unauthenticated, and a message distinguishing the two would make it an enumeration oracle.
-
-### Adding Google or Microsoft
-
-Put both halves of a credential in `frontend/.env.local` and the button appears:
-
-```
-GOOGLE_CLIENT_ID=…
-GOOGLE_CLIENT_SECRET=…
-```
-
-Both halves or neither — a half-configured provider renders a button that fails at the callback, which is worse than not offering it.
-
-*(This replaces an earlier version of this document which said sign-in was **OAuth only**, and an earlier one still which said to "create an account with any email". The first was true when written; the second never was. Both are corrected here rather than deleted, because the sequence is the record.)*
-
-**After signing in, create a workspace** from Settings, then run `make demo-seed` again to be enrolled in the seeded one. A workspace is the tenancy boundary; nothing is visible without one.
 
 ---
 
@@ -177,8 +190,8 @@ Every state below is produced by the pipeline from the dates in the scenario. **
 | Route | What it does |
 |---|---|
 | `/` | Overview — real empty states, no business data yet |
-| **`/opportunities`** | **The attention list.** Accounts ranked by live buying score, each with why it surfaced, how far it moved, and how fresh the evidence is |
-| **`/opportunities/{accountId}`** | **The account brief.** The score, the arithmetic behind it, and every line that produced it. Opened by clicking an account name on the list |
+| **`/`** | **Attention.** Accounts ranked by live buying score, each naming **the hypothesis that most explains it** — *active evaluation*, *expansion opportunity*, *contraction risk* — plus how far it moved and how fresh the evidence is. This is the product's front door: the Overview page that used to sit here was retired at M12.3 ([D38](architecture/38-product-design-principles.md)) |
+| **`/accounts/{accountId}`** | **The account brief.** The score and the arithmetic behind it, what changed since somebody committed, a grounded explanation, what to check before acting, every contributing line — and the controls to say what you decided. Opened by clicking an account name |
 | `/settings` | Workspaces and members |
 
 ### The endpoints behind them

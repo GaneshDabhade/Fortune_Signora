@@ -98,35 +98,41 @@ describe('empty states are first-class', () => {
     // A nav item marked Soon must not quietly have a page behind it, and a
     // page must not exist without data to fill it.
     //
-    // **Rewritten at M12.1, and the rewrite is the point.** This asserted
-    // that *no* business route existed, which was true while no business
-    // module had a customer-facing endpoint. `/opportunities` now has one.
-    // The durable rule is the one asserted here: a route exists exactly when
-    // its nav entry has stopped saying Soon — so a page behind a Soon link,
-    // or a Soon link over a shipped page, both still fail.
-    const navigation = readFileSync(join(process.cwd(), 'components/shell/navigation.tsx'), 'utf8');
+    // **Rewritten twice.** It first asserted that *no* business route
+    // existed. It then asserted that a route exists exactly when its nav
+    // entry stops saying `Soon`. At M12.3 the `Soon` entries were removed
+    // altogether (D38): they were three of the thirteen pipeline modules
+    // given a menu item each, which is a data model rendered as navigation,
+    // and none of them was a customer journey.
+    //
+    // **The durable rule is the one that survived all three: every
+    // navigation entry goes somewhere.** A menu item without a page is the
+    // same promise-nothing-can-keep as mock data on a screen.
+    const navigation = readFileSync(
+      join(process.cwd(), 'components/shell/navigation.tsx'),
+      'utf8',
+    );
 
-    const routes = SOURCES.filter(({ name }) => /^app\/.*\/page\.tsx$/.test(name)).map(
+    const linked = [...navigation.matchAll(/href: '(\/[a-z-]*)'/g)].map((m) => m[1]!);
+    const pages = SOURCES.filter(({ name }) => /^app\/.*\/page\.tsx$/.test(name)).map(
       (s) => s.name,
     );
 
-    const soon = [...navigation.matchAll(/href: '\/([a-z-]+)'[^}]*comingSoon: true/g)].map(
-      (m) => m[1],
-    );
-
-    const behindSoonLinks = routes.filter((route) =>
-      soon.some((section) => route.includes(`/${section}/`)),
-    );
+    expect(linked.length, 'the navigation is empty').toBeGreaterThan(0);
+    for (const href of linked) {
+      const segment = href === '/' ? '' : href.slice(1);
+      const exists = pages.some((page) =>
+        segment === ''
+          ? /^app\/\([a-z]+\)\/page\.tsx$/.test(page)
+          : page.includes(`/${segment}/page.tsx`),
+      );
+      expect(exists, `the navigation links to ${href}, which has no page`).toBe(true);
+    }
 
     expect(
-      behindSoonLinks,
-      'a page exists behind a navigation entry still marked Soon',
-    ).toEqual([]);
-    expect(soon, 'sections still awaiting their module').toEqual([
-      'companies',
-      'signals',
-      'timeline',
-    ]);
+      navigation.includes('comingSoon'),
+      'a navigation entry advertises a section that does not exist',
+    ).toBe(false);
   });
 
   it('EmptyState requires a description, not only a title', () => {

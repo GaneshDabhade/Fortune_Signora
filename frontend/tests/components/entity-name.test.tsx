@@ -72,7 +72,12 @@ describe('absence is rendered as absence', () => {
   it('falls back when the identity exists but nobody named the account', () => {
     render(
       <EntityName
-        identity={identity({ name: null, agreement: 'unknown', source_count: 0, source: null })}
+        identity={identity({
+          name: null,
+          agreement: 'unknown',
+          source_count: 0,
+          source: null,
+        })}
         fallbackId={ACCOUNT}
       />,
     );
@@ -81,7 +86,9 @@ describe('absence is rendered as absence', () => {
   });
 
   it('never renders any of the words a placeholder would use', () => {
-    const { container } = render(<EntityName identity={undefined} fallbackId={ACCOUNT} />);
+    const { container } = render(
+      <EntityName identity={undefined} fallbackId={ACCOUNT} />,
+    );
     const text = (container.textContent ?? '').toLowerCase();
 
     for (const invented of ['unknown company', 'untitled', 'acme', 'n/a', 'unnamed']) {
@@ -103,7 +110,9 @@ describe('only disagreement is marked', () => {
   it('marks a disputed name with a real control, not a hover', () => {
     // **An unreachable control is a defect, not an enhancement** (§20c). A
     // `title` tooltip is invisible on touch and unreachable by keyboard.
-    render(<EntityName identity={identity({ agreement: 'disputed' })} fallbackId={ACCOUNT} />);
+    render(
+      <EntityName identity={identity({ agreement: 'disputed' })} fallbackId={ACCOUNT} />,
+    );
 
     const disclosure = screen.getByRole('button', { name: /sources disagree/i });
     expect(disclosure).toBeInTheDocument();
@@ -124,7 +133,11 @@ describe('only disagreement is marked', () => {
     // and browser search, which is exactly what the tooltip did.
     render(
       <EntityName
-        identity={identity({ agreement: 'disputed', source: 'builtwith', source_count: 3 })}
+        identity={identity({
+          agreement: 'disputed',
+          source: 'builtwith',
+          source_count: 3,
+        })}
         fallbackId={ACCOUNT}
       />,
     );
@@ -135,7 +148,9 @@ describe('only disagreement is marked', () => {
 
   it('opens and closes from the keyboard', async () => {
     const user = userEvent.setup();
-    render(<EntityName identity={identity({ agreement: 'disputed' })} fallbackId={ACCOUNT} />);
+    render(
+      <EntityName identity={identity({ agreement: 'disputed' })} fallbackId={ACCOUNT} />,
+    );
     const disclosure = screen.getByRole('button', { name: /sources disagree/i });
 
     await user.tab();
@@ -149,7 +164,9 @@ describe('only disagreement is marked', () => {
   });
 
   it('points at the region it controls', () => {
-    render(<EntityName identity={identity({ agreement: 'disputed' })} fallbackId={ACCOUNT} />);
+    render(
+      <EntityName identity={identity({ agreement: 'disputed' })} fallbackId={ACCOUNT} />,
+    );
     const disclosure = screen.getByRole('button', { name: /sources disagree/i });
 
     const controlled = disclosure.getAttribute('aria-controls');
@@ -160,7 +177,9 @@ describe('only disagreement is marked', () => {
   it('still shows the chosen name while marking the dispute', () => {
     // Disagreement is surfaced, never resolved away — and never hidden by
     // refusing to show a name at all.
-    render(<EntityName identity={identity({ agreement: 'disputed' })} fallbackId={ACCOUNT} />);
+    render(
+      <EntityName identity={identity({ agreement: 'disputed' })} fallbackId={ACCOUNT} />,
+    );
 
     expect(screen.getByText('Northwind Traders')).toBeInTheDocument();
   });
@@ -168,11 +187,11 @@ describe('only disagreement is marked', () => {
 
 describe('the name opens the account brief', () => {
   it('links the name when there is somewhere to go', () => {
-    render(<EntityName identity={identity()} fallbackId={ACCOUNT} href="/opportunities/x" />);
+    render(<EntityName identity={identity()} fallbackId={ACCOUNT} href="/accounts/x" />);
 
     expect(screen.getByRole('link', { name: 'Northwind Traders' })).toHaveAttribute(
       'href',
-      '/opportunities/x',
+      '/accounts/x',
     );
   });
 
@@ -189,7 +208,7 @@ describe('the name opens the account brief', () => {
     // The account with the worst label is the one a seller most wants to open.
     // Withholding the link because the name is poor hides the page that
     // explains why it is poor.
-    render(<EntityName identity={undefined} fallbackId={ACCOUNT} href="/opportunities/x" />);
+    render(<EntityName identity={undefined} fallbackId={ACCOUNT} href="/accounts/x" />);
 
     expect(screen.getByRole('link')).toBeInTheDocument();
   });
@@ -202,7 +221,7 @@ describe('the name opens the account brief', () => {
       <EntityName
         identity={identity({ agreement: 'disputed' })}
         fallbackId={ACCOUNT}
-        href="/opportunities/x"
+        href="/accounts/x"
       />,
     );
     const link = screen.getByRole('link');

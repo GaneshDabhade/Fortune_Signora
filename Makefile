@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: smoke smoke-keep dr up down test certify demo demo-seed demo-narrate eval eval-reasoning eval-research
+.PHONY: smoke smoke-keep dr up down test certify demo demo-seed demo-users demo-narrate eval eval-reasoning eval-research
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
 # The executable bit is filesystem state, not repository state, and it does
@@ -67,17 +67,28 @@ test:
 DEV_COMPOSE := docker compose -f infra/docker-compose.yml
 OWNER_DATABASE_URL := postgresql+asyncpg://signora:signora@localhost:5432/signora
 
+## Everything a reviewer needs, in one command: stack up, schema migrated,
+## Better Auth's own tables created, four sign-in accounts, twelve accounts of
+## pipeline output. Credentials are in docs/RUNNING.md.
 demo:
 	@$(DEV_COMPOSE) up -d --wait
 	@cd backend && SIGNORA_DATABASE_URL=$(OWNER_DATABASE_URL) uv run alembic upgrade head
+	@cd frontend && npm run --silent auth:migrate
+	@$(MAKE) demo-users
 	@$(MAKE) demo-seed
 	@echo ""
 	@echo "  backend   cd backend && uv run uvicorn apps.api.main:app --reload --port 8000"
 	@echo "  frontend  cd frontend && npm run dev"
-	@echo "  then      http://localhost:3000/opportunities"
+	@echo "  then      http://localhost:3000 — sign in as dana.reyes@northwind.example"
+	@echo "  password  see docs/RUNNING.md"
 
 demo-seed:
 	@cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.playground.seed
+
+## The Playground's sign-in accounts, created through Better Auth's own sign-up
+## and verification routes. Not a bypass: the accounts simply already exist.
+demo-users:
+	@cd frontend && npm run --silent demo:users
 
 ## Narrate the seeded accounts with the real released prompt and model.
 ##

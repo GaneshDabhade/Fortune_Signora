@@ -23,7 +23,8 @@ function line(overrides: Partial<ScoreContribution> = {}): ScoreContribution {
     evidence_age: 'fresh',
     points: 30,
     counted: true,
-    reason: 'Expansion opportunity · primary relevance · fresh evidence (100%) — 30 points',
+    reason:
+      'Expansion opportunity · primary relevance · fresh evidence (100%) — 30 points',
     dissenting: false,
     ...overrides,
   };
