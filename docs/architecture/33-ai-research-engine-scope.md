@@ -617,3 +617,45 @@ The in-flight guard was first written as `UNIQUE (workspace_id, entity_id) WHERE
 **🟠 A run whose worker process dies stays `RUNNING` forever**, and blocks the account's next ask. Stated rather than solved: every available remedy is a timeout somebody would have to invent, and §14 is explicit that a threshold nobody measured is worse than a known gap. The trigger to fix it is the first occurrence.
 
 **🟢 Production would refuse research today**, and correctly. `research_planning@2` and `research_synthesis@2` hold releases only for `llama3.1:8b`; a deployment holding an Anthropic key would be refused by the release rule. **That is the rule working, not a wiring defect** — the prompts earn a release against the production model, or research does not run there. No fallback was added and none should be.
+
+## The product finding this slice creates
+
+**The account brief is now seven panels, and it was already the largest open design finding.** Review 10's staff-designer pass, four reviews old at the time:
+
+> *"The list row already reads as a sentence. **The brief does not** — it reads as six panels."*
+
+Research is the seventh, and it is the heaviest: a heading, a button, a status line, a list of comparisons, a list of statements and a provenance line. **Adding it does not make the finding worse in kind, but it does make it worse in degree**, and no amount of care inside the panel addresses a problem that is about the page.
+
+Placement was chosen to cost the least: **after everything the pipeline already knew, and above the ledger.** A reader reaches the only thing that costs something having seen what they get for free, and the ledger stays below because research's own findings cite into it. That is the best available answer to a question the page's shape does not let anyone answer well.
+
+**Not fixed here, and deliberately.** A hierarchy pass over the brief is its own slice, it changes every section rather than one, and doing it inside a milestone that owns research would be exactly the borrowed-scope failure §20d names. Raised for whoever takes it, with the observation that the brief now has enough sections that *which ones to show at all* is a real question — the SDR and the RevOps analyst do not want the same six.
+
+## Verified against a real model and the real Playground *(2026-08-01)*
+
+Three seeded accounts, `llama3.1:8b`, the shipped prompt manifest, the real provider registry, the real derivations and the real repositories. **Not** through the relay and ARQ — the same use cases the worker calls, invoked directly, which leaves one hop unverified and is stated rather than implied.
+
+```
+  233e2ebf   failed                111.1s   SchemaViolationError: a derivation is planned twice
+  23c54433   completed              86.6s   2 findings · 3 statements · 0 unresolved citations
+  7570f99b   completed              61.9s   2 findings · 2 statements · 0 unresolved citations
+```
+
+**The duration copy was corrected from this.** *"About a minute"* came from M10's recorded ~54s; two of three runs beat it. The panel now says *"a minute or two"*, which is measured rather than estimated.
+
+### One in three planning calls produced an invalid plan
+
+Not tuned, not retried into submission, and **not a defect in this slice** — the release rule and the schema behaved exactly as designed: `research_planning@2` produced a plan naming one derivation twice, `ResearchPlan` refused it on both attempts, the run failed, the reason was recorded verbatim, and the customer can read it and decide whether to ask again.
+
+**It is a real quality datum about `research_planning@2`**, which earned its release on a **sample size of two**. One failure in three on unseen accounts is the kind of thing a sample of two cannot see. **Raised for the prompt's owner; nothing here was changed to improve the number** — the standing rule is that a refusal initiates investigation rather than optimisation.
+
+### The finding that vindicates the surface's design
+
+Account `23c54433`, statement two, verbatim:
+
+> *"There is no evidence of multiple providers, as the number of distinct providers and single-source conclusions are both 1."*
+
+The finding it cites says `distinct_providers=2`. **The model misread its own evidence, and the statement passed grounding** — because grounding proves a statement *cites* real evidence, never that it is *true of* that evidence. Statement one has the same shape: *"the conclusions are independently agreed upon"* against `independently_agreed=1` of `conclusions=2`.
+
+**This is exactly what the panel's ordering exists for.** The derived findings are rendered *above* the model's sentences, with their values, so a reader meets `distinct_providers=2` before they read a sentence claiming it is 1. A brief that showed only the prose would have shipped a confident falsehood a customer could not catch.
+
+**Recorded rather than fixed.** The remedy is prompt work on `research_synthesis@2` and belongs to a slice that owns evaluation, not to the surface that displays it. In the meantime the product is honest about which half a model wrote — which is the whole argument for building it this way.

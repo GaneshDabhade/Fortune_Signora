@@ -36,6 +36,7 @@ from modules.ai_platform.public import Infer, InferencePolicy
 from modules.ai_research_engine.domain.events import (
     RESEARCH_REQUESTED as RESEARCH_REQUESTED_EVENT,
 )
+from modules.ai_research_engine.application.run import FinishResearchRun
 from modules.ai_research_engine.infrastructure.composition import (
     PROMPT_DIR,
     build_begin_research_run,
@@ -171,7 +172,7 @@ def _opportunities(session: AsyncSession, workspace_id: UUID) -> OpportunityQuer
 async def _run_requested_research(envelope: EventEnvelope) -> None:
     current = runtime()
 
-    def finish(session: AsyncSession) -> object:
+    def finish(session: AsyncSession) -> FinishResearchRun:
         return build_finish_research_run(
             session,
             infer=_infer(current),
@@ -184,7 +185,7 @@ async def _run_requested_research(envelope: EventEnvelope) -> None:
         envelope,
         session_factory=current.session_factory,
         begin=build_begin_research_run,
-        finish=finish,  # type: ignore[arg-type]
+        finish=finish,
     )
 
 

@@ -39,8 +39,13 @@ import type { AccountResearch, ResearchFinding, ResearchStatus } from '@/lib/api
  *
  * **The wait is stated in words before it is spent, not hidden behind a
  * spinner that implies seconds.** A spinner is a promise about duration, and a
- * product that makes that promise and takes fifty-four seconds has lied to the
+ * product that makes that promise and takes a minute and a half has lied to the
  * person waiting. The status line says what is happening in a sentence.
+ *
+ * *"A minute or two"* is **measured, not estimated**: three real runs against
+ * `llama3.1:8b` and the seeded Playground took 62s, 87s and 111s. The earlier
+ * copy said *"about a minute"* from M10's recorded ~54s, and two of three runs
+ * beat it.
  *
  * ### Finding nothing is an answer
  *
@@ -105,7 +110,7 @@ function Invitation() {
     <p className="text-[0.9375rem] leading-6 text-content-muted">
       Signora can compare the evidence beneath this account against itself — which
       conclusions rest on a single provider, what the score outweighed, and how far apart
-      the evidence falls. It takes about a minute.
+      the evidence falls. It usually takes a minute or two.
     </p>
   );
 }
@@ -118,8 +123,8 @@ function Status({ research }: { research: AccountResearch }) {
     return (
       <p aria-live="polite" className="text-[0.9375rem] leading-6 text-content-muted">
         {status === 'requested'
-          ? 'Queued. This usually takes about a minute — you can leave this page and come back.'
-          : 'Comparing the evidence on this account. About a minute.'}
+          ? 'Queued. This usually takes a minute or two — you can leave this page and come back.'
+          : 'Comparing the evidence on this account. Usually a minute or two.'}
       </p>
     );
   }

@@ -83,9 +83,10 @@ describe('before anybody has asked', () => {
   it('states the wait in words before it is spent', () => {
     panel(null);
 
-    // A spinner is a promise about duration. Fifty-four seconds behind one is
-    // a promise the product cannot keep.
-    expect(screen.getByText(/about a minute/i)).toBeVisible();
+    // A spinner is a promise about duration. Ninety seconds behind one is a
+    // promise the product cannot keep. The wording is measured — 62s, 87s and
+    // 111s across three real runs — not estimated.
+    expect(screen.getByText(/a minute or two/i)).toBeVisible();
   });
 
   it('offers the ask', async () => {
@@ -108,7 +109,7 @@ describe('while it runs', () => {
     panel(research({ status: 'running', artifact: null }));
 
     expect(screen.getByText(/comparing the evidence/i)).toBeVisible();
-    expect(screen.getByText(/about a minute/i)).toBeVisible();
+    expect(screen.getByText(/a minute or two/i)).toBeVisible();
   });
 
   it('tells a queued reader they may leave', () => {
