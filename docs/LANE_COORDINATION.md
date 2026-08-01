@@ -38,7 +38,7 @@
 
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
-| [C-001](#c-001--the-target-account-contract) | The target-account contract — this module's first edge | Lane B | **Lane A** | `WAITING` | **M12.5 slice 5 — implementation is paused** |
+| [C-001](#c-001--the-target-account-contract) | The target-account contract — this module's first edge | Lane B | **Lane A** | `ANSWERED` | **Nothing. Lane B may begin slice 5** |
 | [C-002](#c-002--customer-language-has-no-anticorruption-layer) | Customer language has no anticorruption layer | Lane B | **Product owner** (ADR) | `OPEN` | Anything that matches an account against an ICP |
 | [C-003](#c-003--three-wire-codes-for-one-condition) | Three wire codes for one condition | Lane B | **Product owner** | `OPEN` | Nothing — but it grows every slice |
 | [C-004](#c-004--shared-documents-lag-commercial-profile) | Shared documents lag Commercial Profile | Lane B | **Integrator** | `OPEN` | Nothing today; a cold session reads a stale manifest |
@@ -55,8 +55,8 @@
 | **Owner** | **Lane A** — Provider Platform |
 | **Requesting lane** | Lane B — Commercial Profile |
 | **Category** | Event contract · read-port ownership · **Customer–Supplier relationship** |
-| **Status** | `WAITING` |
-| **Blocks** | **M12.5 slice 5. Lane B has paused implementation and will not start until this is `ANSWERED`** |
+| **Status** | `ANSWERED` — Lane A, this commit |
+| **Blocks** | **Nothing. Lane B may begin slice 5** |
 | **Raised** | `3931b3c`, at the close of slice 4 |
 
 **Why this is not a normal design decision.** Slice 5 introduces `commercial_profile → provider_platform` — **the first and only edge this module has ever had**, and the first time anything downstream consumes a customer's declaration. [05-module-dependencies.md](architecture/05-module-dependencies.md) types it **Customer–Supplier**, whose stated rule is that *the downstream lane's needs shape the contract*. Drawing it alone and asking afterwards would produce a contract shaped by the producer — which is the one failure this pattern exists to prevent.
@@ -75,9 +75,67 @@ It also closes a gap open since M2.1: `RunProviderSync` has taken a `subject: st
 | 6 | **Scheduling and lifecycle ownership.** | **Not here.** No cadence, no polling policy, no cost, no provider selection enters Commercial Profile. Confirming this is the point of the question |
 | 7 | **Versioning expectations.** | The declaration is versioned and immutable like the other four. Does Provider Platform want the version in the event so it can ignore replays, or will it be idempotent on `event_id` alone? |
 
-### Resolution
+### Resolution — Lane A, 2026-08-01
 
-*Not yet answered. Record the commit or ADR here, set `ANSWERED`, and Lane B will begin.*
+**Answered by the module that owns the downstream side, question by question. Lane B's opening position is accepted on five of seven; two are answered differently, and one of those is because Provider Platform found a defect of its own while answering.**
+
+#### 1 · Event *and* read port — and they do different jobs
+
+**`commercial_profile.target_accounts_changed` is what Provider Platform consumes. `TargetAccountReader` is what its handler then calls.** Not a choice between them: the event is the *trigger*, the port is the *payload*, which is this repository's standing rule stated the other way round.
+
+The reason it is not a read port alone: a port makes Provider Platform *pull*, and pulling needs a trigger anyway. The only honest trigger is *"the customer changed their mind"*, and that is an event by definition.
+
+The reason it is not an event alone: see question 2.
+
+#### 2 · Identity and change only — **accepted, unchanged**
+
+`workspace_id` on the envelope, `declaration_version` in the payload, nothing about accounts. Lane B's reasoning is exactly right and needs no addition: embedding names would make every future field an event-contract change, and Provider Platform would be reading a copy of a truth that lives somewhere else.
+
+#### 3 · The whole list — **Lane B's second option, and for a third reason neither of us named**
+
+Lane B offered either. **Provider Platform wants the list**, and the deciding argument is not durability:
+
+**A delta from Lane B answers the wrong question.** It is a delta between two *declarations*. What Provider Platform needs is a delta against **what it has actually synced**, which is a different set — a customer can re-add an account that was declared before and never successfully fetched, and Lane B's delta would call that "no change". Provider Platform owns `provider_watermark` and can compute the only delta that matters.
+
+Also: a whole list is idempotent to apply and a delta is not, which matters on a bus with at-least-once delivery.
+
+#### 4 · `subject` stays a `str`, and stays **unresolved** — **accepted, and confirmed in the strongest terms**
+
+`ProviderRequest.subject` is documented as *"domain identifier of the subject (a company key, a domain name)"* and is **opaque to the platform, interpreted only by the adapter**. A name as the customer typed it is exactly what belongs there.
+
+**Provider Platform does not want a domain, a country, or anything else.** Asking Lane B for a domain would be asking a customer to do resolution, and resolution quality is Signora's competence, not the customer's (ruled 2026-08-01). If an unresolved name is a weak key for some provider, **that is the adapter's problem to solve and the Provider Platform's to own** — which is the whole reason `subject` is opaque.
+
+**One request, and it is small:** send the entry's **stable id** alongside the name. Not for matching — so that a customer *renaming* an entry is distinguishable from *removing one and adding another*, which are different instructions about spending money.
+
+#### 5 · Removal — **Provider Platform's decision, made here**
+
+**Polling stops.** A customer who un-watches an account has said not to spend on it, and continuing would be the platform overriding them.
+
+**Nothing already gathered is deleted.** Raw provider records are evidence, and the Knowledge Graph, observations, business events, signals, scores and every narration downstream cite them. Deleting them would erase the basis of conclusions a customer has already read and acted on. *Erasability is a property of the tenancy model* — it belongs to deleting a workspace, not to un-watching a company.
+
+**The watermark stays.** Re-adding an account then resumes incrementally instead of re-fetching a full snapshot, which is a real cost saving that requires nothing to be built.
+
+#### 6 · Scheduling and lifecycle are **entirely Provider Platform's** — confirmed
+
+No cadence, no polling policy, no cost model, no provider selection, no failover, no backoff enters Commercial Profile. This is not a boundary being negotiated; it is the 2026-08-01 provider ruling applied: **a customer declares who they care about and never how Signora finds out about them.**
+
+#### 7 · Send the version — and the reason is ordering, not replay
+
+Idempotency on `event_id` handles **redelivery**. It does not handle **ordering**: two declarations in quick succession are two workspace-level events, and per-entity ordering does not order them against each other. A handler for v5 running after v6's would sync a list that is one revision stale.
+
+So `declaration_version` on the payload, and Provider Platform will **ignore an event older than the version it has already acted on.** That is a comparison it can make locally with no coordination, and it is why the version has to be on the wire rather than only in the aggregate.
+
+---
+
+### What Lane A found while answering, and is not asking Lane B to solve
+
+**`provider_watermark` is keyed `(workspace_id, provider, capability)` — it has no `subject`.**
+
+One workspace watching one company is the only case that has ever existed, so nothing has noticed. The moment a customer declares a second target account, syncing the first advances a watermark the second then reads, and the second account's sync silently skips everything before that point. **A customer would see one account enriched and another mysteriously thin.**
+
+This is **Provider Platform's defect, not a contract problem**, and it does not block Lane B: it lives entirely on the consuming side, which Lane A has not built yet. Opened as **`B-004`** and owned by Lane A, to be fixed in the slice that builds the consumer.
+
+**Stated here rather than only in the bug register** because it is the sort of thing a downstream lane would reasonably assume was already handled, and C-001 exists precisely so that assumptions like that get said out loud.
 
 ---
 
