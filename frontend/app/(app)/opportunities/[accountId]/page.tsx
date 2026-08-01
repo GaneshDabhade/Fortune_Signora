@@ -12,6 +12,7 @@ import {
   ScoreArithmetic,
 } from '@/components/intelligence/contributions';
 import { EntityName } from '@/components/intelligence/entity-name';
+import { NarrativeBlock } from '@/components/intelligence/narration';
 import {
   ContestedSince,
   OpportunityMomentum,
@@ -21,6 +22,7 @@ import { Card, CardBody, EmptyState, SkeletonText } from '@/components/ui';
 import { ApiError } from '@/lib/api/client';
 import {
   useAccountIdentities,
+  useAccountNarration,
   useAccountOpportunity,
   useAccountScore,
 } from '@/lib/query/hooks';
@@ -57,8 +59,10 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  *
  * ### What is deliberately not here yet
  *
- * The business events beneath each ledger line, the grounded narration, and the
- * Decision Package. **Nothing on this page hints at any of them.** A control
+ * The business events beneath each ledger line, and the Decision Package —
+ * which stays unbuilt until `reasoning@1` holds a release, because UI around an
+ * unavailable capability is a panel that cannot be filled. **Nothing on this
+ * page hints at either of them.** A control
  * that looks clickable and is not costs more trust than the missing feature
  * does — and a panel that says *"coming soon"* costs more than both.
  */
@@ -69,6 +73,7 @@ export default function AccountBriefPage() {
 
   const { data: score, isLoading, error } = useAccountScore(workspaceId, accountId);
   const { data: opportunity } = useAccountOpportunity(workspaceId, accountId);
+  const { data: narration } = useAccountNarration(workspaceId, accountId);
   const { data: identities, isLoading: nameLoading } = useAccountIdentities(workspaceId, [
     accountId,
   ]);
@@ -125,6 +130,13 @@ export default function AccountBriefPage() {
               <PostureSplit score={score} />
             </CardBody>
           </Card>
+
+          {/* **Prose after the number, never before it.** Deterministic truth
+              outranks generated language: a reader meets the score and its
+              arithmetic first, and the narration is the bridge between them.
+              Rendered only when one exists — absence shows nothing at all,
+              because a panel announcing a gap is worse than the gap. */}
+          {narration ? <NarrativeBlock narration={narration} /> : null}
 
           {score.contested ? <ContestedNote /> : null}
           {opportunity ? (

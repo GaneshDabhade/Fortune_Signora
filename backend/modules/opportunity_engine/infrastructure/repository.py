@@ -173,7 +173,22 @@ class SqlOpportunityRepository:
 
     async def create(self, opportunity: Opportunity, opening: OpportunityState) -> bool:
         """Both rows or neither. An opportunity in no state at all is not a
-        workflow object; it is a bug that looks like data."""
+        workflow object; it is a bug that looks like data.
+
+        **`created_at` is written from the aggregate, not left to the column
+        default.** It is not "when this row was inserted" — it is *when a
+        commitment was made*, which the use case decides from its injected
+        clock. Omitting it let `server_default now()` win silently, so the
+        domain's value was discarded on write and the row's substituted on
+        read.
+
+        Invisible in production, where qualification happens at wall-clock now
+        and the two agree. It diverges under **historical replay**, which this
+        module claims to support: an opportunity qualified against a reading
+        from June reported that it opened today, the evidence assembled for
+        narration carried that date, and a model faithfully told a customer the
+        wrong one.
+        """
         statement = (
             insert(OpportunityModel)
             .values(
@@ -188,6 +203,7 @@ class SqlOpportunityRepository:
                     "qualification": opportunity.qualification.value,
                     "policy_version": opportunity.policy_version,
                     "payload_version": opportunity.payload_version,
+                    "created_at": opportunity.created_at,
                     "created_by": opportunity.created_by,
                     "updated_by": opportunity.created_by,
                 }

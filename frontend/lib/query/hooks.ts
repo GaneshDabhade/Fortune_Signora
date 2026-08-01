@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   AccountAttention,
   AccountIdentity,
+  AccountNarration,
   AccountOpportunity,
   AccountScore,
   CursorPage,
@@ -137,6 +138,36 @@ export function useAccountOpportunity(
     enabled: workspaceId !== null && accountId !== null,
     retry: (attempt, error) =>
       !(error instanceof ApiError && error.status === 404) && attempt < 2,
+  });
+}
+
+/**
+ * The latest grounded explanation of one account.
+ *
+ * **A 404 is the ordinary state, not an error.** Narration is produced by a
+ * background worker after the deterministic pipeline has something to explain,
+ * so a freshly qualified account has none — and the brief renders nothing at
+ * all rather than an empty panel. Never retried: absence is a settled answer.
+ *
+ * Held longer than the score. A narration is immutable — a better explanation
+ * is a *new* one — so a cached copy cannot go subtly wrong, only become older
+ * than the newest.
+ */
+export function useAccountNarration(
+  workspaceId: string | null,
+  accountId: string | null,
+) {
+  return useQuery({
+    queryKey: queryKeys.accountNarration(workspaceId ?? '', accountId ?? ''),
+    queryFn: () =>
+      apiRequest<AccountNarration>(
+        `/workspaces/${workspaceId}/accounts/${accountId}/narration`,
+        { workspaceId: workspaceId ?? undefined },
+      ),
+    enabled: workspaceId !== null && accountId !== null,
+    retry: (attempt, error) =>
+      !(error instanceof ApiError && error.status === 404) && attempt < 2,
+    staleTime: 5 * 60_000,
   });
 }
 

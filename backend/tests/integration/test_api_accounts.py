@@ -948,3 +948,192 @@ class TestTheBriefKnowsWhatChanged:
             "workspace_id",
         ):
             assert internal not in fields
+
+
+async def _narration(
+    client: AsyncClient, key_pair: KeyPair, user_id: UUID, workspace_id: UUID, account_id: UUID
+) -> Any:
+    return await client.get(
+        f"/workspaces/{workspace_id}/accounts/{account_id}/narration",
+        headers=_auth(key_pair, user_id),
+    )
+
+
+class TestTheBriefCanSpeakPlainly:
+    """`GET …/accounts/{account_id}/narration` — the brief's narrative half.
+
+    **The first model-authored content with an HTTP path.** These assert the
+    contract that makes it safe to render: every statement arrives with its
+    citations, and the response says what wrote it.
+    """
+
+    async def _stored(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        workspace_id: UUID,
+        account_id: UUID,
+    ) -> None:
+        from datetime import UTC, datetime
+
+        from modules.ai_platform.domain.grounding import GroundedStatement
+        from modules.ai_platform.domain.narration import (
+            MaterializedNarration,
+            NarrationSubject,
+        )
+        from modules.ai_platform.domain.provider import AIVendor
+        from modules.ai_platform.infrastructure.repository import SqlNarrationRepository
+        from signora_platform.db import tenant_scoped_session
+
+        cited = f"buying_score:{uuid4()}"
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=uuid4()
+        ) as session:
+            await SqlNarrationRepository(session).save(
+                MaterializedNarration(
+                    id=uuid4(),
+                    workspace_id=workspace_id,
+                    correlation_id=uuid4(),
+                    subject=NarrationSubject(kind="account", id=account_id),
+                    prompt_name="explanation_narration",
+                    prompt_version=1,
+                    prompt_fingerprint="a" * 64,
+                    model="llama3.1:8b",
+                    vendor=AIVendor.OLLAMA,
+                    evidence_digest="b" * 64,
+                    evidence_refs=(cited,),
+                    inference_id=uuid4(),
+                    statements=(
+                        GroundedStatement(
+                            text="The score that opened this was 20 out of 120.",
+                            evidence=(cited,),
+                        ),
+                    ),
+                    created_at=datetime(2026, 8, 1, tzinfo=UTC),
+                )
+            )
+
+    async def test_every_statement_arrives_with_its_citations(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**The grounding guarantee, observable by the party it exists for.**
+        A statement without its evidence would be unverifiable prose, which is
+        the one thing this product must never ship."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        await self._stored(session_factory, workspace_id, entity_id)
+
+        response = await _narration(client, key_pair, user_id, workspace_id, entity_id)
+
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert body["statements"], "a narration with no statements explains nothing"
+        for statement in body["statements"]:
+            assert statement["text"].strip()
+            assert statement["evidence"], "an uncited sentence reached the wire"
+
+    async def test_the_response_says_what_wrote_it(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """Provenance on the response, not reachable from it: a customer
+        reading generated language is entitled to know what generated it while
+        they are reading it (M12.2 definition of done)."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        await self._stored(session_factory, workspace_id, entity_id)
+
+        body = (
+            await _narration(client, key_pair, user_id, workspace_id, entity_id)
+        ).json()
+
+        assert body["prompt"] == "explanation_narration@1"
+        assert body["model"] == "llama3.1:8b"
+        assert body["generated_at"]
+
+    async def test_it_carries_no_uncited_summary(self) -> None:
+        """**The one sentence a reader looks at first must not be the one
+        exempt from grounding.** The domain refuses an un-cited summary field;
+        the wire contract must not reintroduce one."""
+        from modules.ai_platform.interface.schemas import AccountNarrationResponse
+
+        fields = set(AccountNarrationResponse.model_fields)
+
+        for forbidden in ("summary", "headline", "text", "conclusion", "recommendation"):
+            assert forbidden not in fields
+
+    async def test_an_account_with_no_narration_is_404(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """The ordinary state of a new account, not an error: narration is
+        produced by a worker after the pipeline has something to explain."""
+        user = uuid4()
+        workspace = await _workspace(client, key_pair, user)
+
+        response = await _narration(client, key_pair, user, workspace, uuid4())
+
+        assert response.status_code == 404
+
+    async def test_another_workspace_s_narration_is_not_readable(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**Tenant isolation over generated content.** A narration quotes a
+        workspace's evidence in prose, which makes a leak here more legible to
+        an attacker than a leak of the underlying rows."""
+        mine_workspace, mine_user, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        theirs_workspace, _, theirs_entity, _ = await _tracked(
+            session_factory, admin_session_factory, "contoso"
+        )
+        await self._stored(session_factory, theirs_workspace, theirs_entity)
+
+        response = await _narration(
+            client, key_pair, mine_user, mine_workspace, theirs_entity
+        )
+
+        assert response.status_code == 404
+
+    async def test_a_non_member_gets_404(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        workspace = await _workspace(client, key_pair, uuid4())
+
+        response = await _narration(client, key_pair, uuid4(), workspace, uuid4())
+
+        assert response.status_code == 404
+
+    async def test_an_unauthenticated_request_is_refused(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        workspace = await _workspace(client, key_pair, uuid4())
+
+        response = await client.get(
+            f"/workspaces/{workspace}/accounts/{uuid4()}/narration"
+        )
+
+        assert response.status_code == 401
+
+    async def test_every_response_field_is_documented(self, client: AsyncClient) -> None:
+        schema = (await client.get("/openapi.json")).json()
+        schemas = schema["components"]["schemas"]
+
+        for name in ("AccountNarrationResponse", "NarrationStatementResponse"):
+            undocumented = sorted(
+                field
+                for field, spec in schemas[name]["properties"].items()
+                if not spec.get("description")
+            )
+            assert undocumented == [], f"{name}: {undocumented} reach the wire undocumented"

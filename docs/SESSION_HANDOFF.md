@@ -15,8 +15,8 @@
 | **Last completed** | **M10 AI Research Engine** — T131–T138, closed 2026-07-31. *Internal Research; every citable thing deterministic.* |
 | **Inserted, and open** | **M9.5 Evidence Citation Protocol** (ADR-0031). Steps A–D landed; **Step F is incomplete** |
 | **Last completed** | **M12.1.5 Playground v2** — closed 2026-07-31. A demo environment worth reviewing a product against |
-| **Current** | **M12.2 the account brief.** Identity, score breakdown and commitment shipped; **narration next**, Decision Package deferred until `reasoning@1` is released |
-| **Head at handoff** | see `git log` — M12.2 the commitment slice |
+| **Current** | **M12.2 the account brief.** Identity, score breakdown, commitment and **narration** shipped. Decision Package deferred until `reasoning@1` is released |
+| **Head at handoff** | see `git log` — M12.2 the narration slice |
 | **Latest certification** | [`d954c930`](../certification/reports/d954c930319a.md) — CERTIFIED, 2026-07-31 |
 | **Phase** | **Product implementation.** Ten pipeline stages built and frozen behind them; the surface is being exposed. |
 | **Overall completion** | **~60%** by engineering effort (~187 of ~261–339 ew) |
@@ -336,8 +336,10 @@ All three are fixed. **The class is the finding:** each passed every test it had
 
 ### What comes next
 
-1. **Finish M12.2** — the narration and Decision Package panels on the brief. Note the blocker: `reasoning@1` has no released model, so the package would refuse in production. The narration would not.
-2. **M12.3** — evidence resolution (a citation becomes a record), stage transitions and assignment. It also owns **D20**: the list renders a 50 and a 1 identically, which is the product declining to have an opinion it demonstrably has.
+1. **F-10 first — a customer-visible false statistic.** The pipeline computes *"grew headcount 3678%"* for NVIDIA by taking a ratio from an open-roles baseline to an employee count. `_HeadcountRule` pools both attributes into one series. **Grounding cannot catch it** — the figure is genuinely in the evidence — and every layer satisfied its own contract while it crossed the whole system. Present since M4, invisible to every gate, found by the Playground on the first run. Fix: evaluate per attribute rather than pooled, in its own slice with its own regression tests.
+2. **F-9 before more AI surface.** `explanation_narration@1` succeeded on **2 of 12** real accounts. It holds a genuine release — measured under protocol 2 with zero failures — against a **two-case** golden set. The Playground is the first varied data it has met, and nine of twelve outputs were refused by grounding. **Do not tune the prompt.** The answer is a golden set with the variety the Playground now has; a prompt edited until a demo passes is one whose recorded evaluation describes something else.
+3. **M12.3** — evidence resolution (a citation becomes a record), stage transitions and assignment. It also owns **D20** (the list renders a 50 and a 1 identically) and **D23** (an owner is a UUID with no read path to a person).
+4. **The Decision Package stays unbuilt** until `reasoning@1` earns a release. Building UI around an unavailable capability ships a panel that cannot be filled.
 
 ### What this inherits
 

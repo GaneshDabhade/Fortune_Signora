@@ -199,3 +199,35 @@ export interface AccountOpportunity {
   evidence: EvidenceState;
   history: WorkflowState[];
 }
+
+/** One sentence of a grounded explanation, and the facts it rests on. */
+export interface NarrationStatement {
+  text: string;
+  /** Citation tokens (`kind:id`). **Never empty** — an uncited statement is
+   * refused before it is stored, so a sentence you cannot check never arrives. */
+  evidence: string[];
+}
+
+/**
+ * The grounded explanation of one account, with what produced it.
+ *
+ * **Statements, not a paragraph.** Each carries its own citations, and joining
+ * them into prose would discard the mapping from claim to evidence — which is
+ * the only reason to trust any of it. There is deliberately no summary field:
+ * the sentence a reader looks at first must not be the one exempt from
+ * grounding.
+ *
+ * `prompt`, `model` and `generated_at` are provenance, and they are on the
+ * response rather than reachable from it: a customer reading generated language
+ * is entitled to know what generated it while they are reading it.
+ */
+export interface AccountNarration {
+  account_id: string;
+  statements: NarrationStatement[];
+  /** `name@version` of the prompt — a reviewed, versioned repository artifact. */
+  prompt: string;
+  model: string;
+  /** Who served the call. Provenance only; no behaviour depends on it. */
+  vendor: string;
+  generated_at: string;
+}

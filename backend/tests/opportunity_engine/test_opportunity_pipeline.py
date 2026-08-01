@@ -416,3 +416,62 @@ class TestARebuildRegeneratesIntelligenceOnly:
         assert explanation is not None and explanation.originating_score is not None, (
             "a rebuild must not orphan an opportunity's citation"
         )
+
+
+class TestAnOpportunityRecordsWhenTheCommitmentWasMade:
+    """**Not when the row was inserted.**
+
+    `created_at` on the aggregate is a domain decision — the use case takes a
+    clock — and the column carries a `server_default now()`. Until M12.2 the
+    insert omitted the value, so PostgreSQL won and the domain's was discarded.
+
+    Invisible in production, where the two agree. It broke **historical
+    replay**, which this module claims to support: an opportunity qualified
+    against a June reading reported that it opened today, the evidence
+    assembled for narration carried that date, and a model repeated the wrong
+    one to a customer.
+    """
+
+    async def test_the_stored_moment_is_the_one_the_use_case_decided(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        replayed = datetime(2026, 6, 27, 9, 30, tzinfo=UTC)
+
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "Replay", moment=replayed
+        )
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=user_id
+        ) as session:
+            tracked = await opportunities(session, workspace_id).tracked(
+                workspace_id, entity_id
+            )
+
+        assert tracked is not None
+        assert tracked.opportunity.created_at == replayed
+
+    async def test_the_aggregate_and_its_opening_state_agree(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """One event, one moment. Two timestamps that could disagree is the
+        defect; the fix is that they cannot."""
+        replayed = datetime(2026, 6, 27, 9, 30, tzinfo=UTC)
+
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "Agree", moment=replayed
+        )
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=user_id
+        ) as session:
+            queries = opportunities(session, workspace_id)
+            tracked = await queries.tracked(workspace_id, entity_id)
+            assert tracked is not None
+            history = await queries.history(workspace_id, tracked.opportunity.id)
+
+        assert history[0].occurred_at == tracked.opportunity.created_at

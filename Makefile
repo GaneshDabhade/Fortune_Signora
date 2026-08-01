@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: smoke smoke-keep dr up down test certify demo demo-seed eval eval-reasoning eval-research
+.PHONY: smoke smoke-keep dr up down test certify demo demo-seed demo-narrate eval eval-reasoning eval-research
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
 # The executable bit is filesystem state, not repository state, and it does
@@ -78,6 +78,19 @@ demo:
 
 demo-seed:
 	@cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.playground.seed
+
+## Narrate the seeded accounts with the real released prompt and model.
+##
+## **Opt-in, and separate from `demo` on purpose.** Seeding is offline and takes
+## seconds; this is one real inference per account against a local Ollama and
+## takes minutes. Folding it in would make a one-command demo fail on any
+## machine without a model runtime.
+##
+## Nothing is scripted: the real prompt registry, the real release rule, the
+## real provider. If `explanation_narration@1` were not released for the
+## configured model this refuses, exactly as production would.
+demo-narrate:
+	@cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.playground.narrate
 
 ## Release Certification (ADR-0032). Runs every gate, then records what happened
 ## as durable repository evidence in `certification/manifest.json`.

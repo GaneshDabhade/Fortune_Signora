@@ -31,6 +31,12 @@ cd backend && SIGNORA_DATABASE_URL=postgresql+asyncpg://signora:signora@localhos
 # 3 — seed the Product Playground: twelve accounts through the real pipeline
 make demo-seed                # or `make demo`, which does steps 1–3 for you
 
+# 3b — OPTIONAL: narrate them with the real released prompt and a local model.
+#      Needs Ollama with llama3.1:8b. Minutes, not seconds. Offline without it.
+#      NOTE: the test suite truncates this same database. Do not run `make test`
+#      while seeding or narrating, or the demo data disappears underneath it.
+make demo-narrate
+
 # 4 — backend
 cd backend && SIGNORA_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5432/signora \
   SIGNORA_REDIS_URL=redis://localhost:6379/0 \
@@ -138,9 +144,10 @@ GET /workspaces/{workspace_id}/accounts
 GET /workspaces/{workspace_id}/account-identities?ids=<uuid>&ids=<uuid>
 GET /workspaces/{workspace_id}/accounts/{account_id}/score
 GET /workspaces/{workspace_id}/accounts/{account_id}/opportunity
+GET /workspaces/{workspace_id}/accounts/{account_id}/narration
 ```
 
-All four are documented at **<http://localhost:8000/docs>**.
+All five are documented at **<http://localhost:8000/docs>**.
 
 ### Expected behaviour — the list
 
@@ -172,5 +179,6 @@ All four are documented at **<http://localhost:8000/docs>**.
 - **One page, no infinite scroll.** The cursor works; the UI does not page yet.
 - **The ledger is only known to read well at a handful of lines.** A forty-line account has not been seen *(D16)*.
 - **Eight of twelve accounts read "unchanged since".** Truthful — all the scenario's evidence arrives in one ingest, so after an opportunity opens the only thing that can happen is decay. The product's most encouraging story, *this account is heating up*, cannot be demonstrated at all *(D22)*.
+- **Most accounts have no narration.** `explanation_narration@1` succeeded on 2 of 12: it holds a current release measured against a **two-case** golden set, and the Playground is the first varied data it has met. Every failure was caught by grounding — nothing fabricated was stored — but the brief's narrative half is invisible on most of the demo *(F-9, D25)*.
 - **The ledger repeats itself on a composite signal.** An account whose expansion rests on two grounds shows two identical sentences, because the line names the *hypothesis* and not the evidence beneath it *(D19)*.
 - **`reasoning@1` has no released model**, so the Decision Package stage would refuse at runtime. It is not on either screen, so you will not see it — but the pipeline is not whole.

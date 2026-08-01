@@ -381,3 +381,90 @@ Reviewed as the teams named in the brief would review it. **Every item below is 
 ### The one thing all seven would say
 
 **The screen is right and it is not yet persuasive.** Every number is correct, checkable and honestly qualified — and a salesperson reads it as a report rather than as an argument. The missing element is not data; it is **narrative**, and the next slice is exactly that.
+
+---
+
+# Narration on the brief *(M12.2, 2026-08-01)*
+
+The first model-authored content in the product, and the first surface whose design problem is **trust rather than layout**: can a reader tell what a machine wrote, and how far to rely on it.
+
+## Decisions taken
+
+**Prose after the number, never before it.** Deterministic truth outranks generated language, so a reader meets the score and its arithmetic first and the narration is the bridge between them. Putting generated sentences above a checkable figure would invert the Constitution's own ordering.
+
+**One line carries the whole AI claim:** *"the model chose the words, not the facts."* It appears on every narration rather than once in documentation, because the reader who needs it is the one who has just been surprised by a sentence. Without it this is indistinguishable from any other tool's summary.
+
+**The citation is a count, not a link.** *"3 facts"* beside each sentence. Evidence resolution is M12.3's; a citation drawn as clickable and going nowhere costs more than the missing feature. The count is honest today — it says the sentence is anchored without pretending the anchor is reachable — and it becomes the affordance that opens the evidence the day there is any.
+
+**No summary line, ever.** Not on the block, not above it. The one sentence a reader looks at first must not be the one exempt from grounding — which is why the domain refuses an un-cited `summary` field, and why the screen must not invent one.
+
+**Absence renders nothing at all.** An account with no narration shows no panel, not an empty state. The brief explains itself without this; a box announcing a gap would appear on every account until a worker caught up, and would advertise the gap rather than fill it.
+
+**Raw citation tokens never reach a reader.** `signal:38b821b4-…` is an address, not information.
+
+## The finding that matters most — F-9
+
+**`explanation_narration@1` succeeded on 2 of 12 real accounts.**
+
+The prompt holds a current release: measured under protocol 2 on 2026-07-31, zero grounding failures, zero schema failures, coverage 1.0. Against the Playground it failed nine times out of twelve, and **the release is not wrong — the dataset behind it is two cases.** *"Variety 1"* has been the recorded caveat on every prompt in this repository since M8; this is the first time it has been priced.
+
+Every failure was the same kind, and **grounding caught all of them.** Not one fabricated statement reached the database. That is the guarantee working exactly as designed, under production conditions, on data nobody tuned for it.
+
+*Owner:* the AI Platform, as an evaluation-dataset question — not a prompt question. **The prompt must not be tuned to raise this number**; a prompt edited until a demo passes is a prompt whose recorded evaluation describes something else. The correct response is a golden set with the variety the Playground now has.
+
+## D24 — a violation report named a figure nobody wrote
+
+The failures read: *"the figure `'1,'` appears in the text but in none of the facts this statement cites."*
+
+`'1,'` is not a figure. It is the number tokeniser (`\d[\d,]*`) swallowing the comma in *"August 1, 2026"*. The real defect was a date, and an engineer reading `'1,'` looks for a stray digit instead of a hallucinated date — **an incorrect attribution is worse than none, because it misdirects the investigation**, which is a principle this repository already ratified about vendors and applies unchanged here.
+
+*The fix is one line* — report `_normalise(token)` rather than the raw match, or quote the surrounding phrase. *Not applied here:* `ai_platform/` is frozen as of M10's close, and a diagnostics improvement is not a security fix or a production defect. It is raised rather than taken.
+
+## D25 — the demo cannot show what it cannot narrate
+
+Ten of twelve accounts have no narration, so the brief's narrative half is invisible on most of the demo. That is correct behaviour and a poor review environment — the same shape as D22.
+
+It resolves when F-9 does. Until then `make demo-narrate` is honest about what it produced: it prints which accounts succeeded, which had nothing to explain, and which were refused, rather than reporting a total.
+
+## D26 — the demo database and the test suite share a machine
+
+Running `pytest` while `make demo-narrate` was working truncated the Playground underneath it, and the narration run continued writing into a workspace that no longer existed. Both commands are correct in isolation; together they are destructive, and nothing says so.
+
+Not a product defect and not worth a lock — the honest fix is that **`make demo-narrate` should refuse to start if the tables it depends on can vanish**, or simply that the two are documented as mutually exclusive. Recorded because the failure looked like a narration bug for several minutes, which is exactly how a workflow hazard costs more than it should.
+
+**It happened twice in one session**, which is the argument for a guard rather than a note. Both times the symptom was *"narration produced nothing"* and the cause was a `pytest` run in another terminal; both times it cost several minutes of looking in the wrong place.
+
+*Owner:* unassigned. *Smallest honest fix:* the suite and the demo should not share a database by default — `SIGNORA_TEST_APP_DATABASE_URL` already exists to point the suite elsewhere, and defaulting the demo to its own database name would make the collision impossible rather than merely documented. A line in `docs/RUNNING.md` is there now, and a line is what failed to stop it the second time.
+
+## F-10 — the pipeline computed "grew headcount 3678%", and every layer faithfully passed it on
+
+**The most serious finding of the session, and narration is what made it visible.**
+
+NVIDIA's brief carries two contradictory sentences: *"The company grew headcount 17% over 38 days"* and *"The company grew headcount 3678% over 38 days."* Both are grounded. Both are in the evidence. **The model invented nothing.**
+
+### Root cause
+
+`_HeadcountRule.evaluate` pools its attributes into one series:
+
+```python
+relevant = tuple(o for o in series if o.attribute in self.attributes)
+```
+
+`HiringSurge` declares `{EMPLOYEE_COUNT, OPEN_ROLES}`. So the ratio is taken from `window[0].previous_value` — an **open-roles** figure of 900 — to `window[-1].current_value` — an **employee-count** figure of 34,000. `(34000 − 900) / 900 = 3678%`. The recorded fact then labels the attribute from `last.attribute`, so it claims to be about `employee_count`, which it half is.
+
+The module's own docstring states the guarantee it was built for:
+
+> *"The series is always one provider's. No rule here sees two providers' values together, so nothing can combine them into a synthetic truth."*
+
+**It guards the provider axis and not the attribute axis.** Same defect class, one dimension over — and open roles and employees are no more comparable than two providers' figures are.
+
+### What this says about the architecture, which is the part worth keeping
+
+**Grounding guarantees fidelity to the pipeline. It cannot guarantee the pipeline is right** — and it never claimed to. Every layer behaved exactly as specified: the rule computed, the signal cited, the evidence rendered, the model reported, grounding verified, the screen displayed. A false number travelled the whole length of the system without a single component failing its own contract.
+
+That is not an argument against grounding; it is the argument for **why the deterministic half must be defensible on its own.** Signora's claim is that a human can check every statement — and here a human checking this one would find it correct against the evidence and still absurd. The check that was missing is the one no citation can supply: *is this ratio comparing like with like?*
+
+**It also vindicates the demo environment.** This defect has existed since M4. It survived the unit tests, the pipeline suite, the smoke test and certification, because `baseline@1` never gave one entity both an employee count and an open-roles count in the same window. **Twelve varied accounts found it in the first run.**
+
+*Severity:* 🔴 High — customer-visible, and it is a fabricated statistic presented as a measurement.
+*Owner:* Business Event Engine, as its own slice. *Shape of the fix:* evaluate per attribute rather than pooled, so a rule declaring two attributes produces at most one detection per attribute. *Not applied here:* it changes derived output across the pipeline and belongs with its own regression tests, not inside a frontend slice.
