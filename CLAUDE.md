@@ -467,6 +467,8 @@ Seven steps. **Every one names who does it**, because an unowned step is where p
 
 **A lane resets its branch to `integration` after step 7** and starts the next slice from there.
 
+**When the integrator commits directly to `main`** — governance, a shared document, a milestone record — **it fast-forwards `integration` and every idle lane branch in the same action.** Found by rehearsing this flow rather than by reading it: the first governance commit landed on `main` and left `integration` and two lanes a commit behind, which would have made the next lane rebase onto a stale base and re-do the merge. **Five branches at one commit is the resting state**, and anything else is a signal.
+
 ### Which gates run when
 
 | Moment | Runs | Why |
