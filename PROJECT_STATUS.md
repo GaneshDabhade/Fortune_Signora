@@ -168,6 +168,8 @@ A demo environment worth reviewing a product against. Requested by the product o
 ### The standing rule for every M12.x slice
 
 > **No frontend screen is complete until a human has reviewed it in the demo environment.**
+>
+> **And every user-visible feature gets a recorded product review before the next one starts** — as the five people who would use it and as the designers whose products set the bar. Findings land in [39-product-review-findings.md](docs/architecture/39-product-review-findings.md) with a priority and a milestone, and are implemented immediately **only** when they fix a correctness bug, materially reduce cognitive load, or are essential to the current milestone.
 
 Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a person opening it can say whether it is *persuasive*, and every finding in [38-product-design-principles.md](docs/architecture/38-product-design-principles.md) from D9 onward came from looking rather than from a test.
 

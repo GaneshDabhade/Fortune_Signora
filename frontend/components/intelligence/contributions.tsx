@@ -46,12 +46,24 @@ const POSTURE_WORDING: Record<Posture, string> = {
 export function ScoreArithmetic({ score }: { score: AccountScore }) {
   return (
     <div className="flex items-baseline gap-3">
-      <span className="text-4xl font-semibold tabular-nums leading-none text-content">
-        <span className="sr-only">Attention score </span>
+      {/* **The number and its arithmetic are hidden from assistive technology
+          and replaced by one sentence.** As two adjacent fragments they read
+          out concatenated: Twilio's score of 1 beside its 2 points announced
+          as *"attention score 12 of 120 points"* — a different number, stated
+          confidently. A screen reader must never be able to report a figure
+          the screen does not show. */}
+      <span
+        aria-hidden
+        className="text-4xl font-semibold tabular-nums leading-none text-content"
+      >
         {score.score}
       </span>
-      <span className="text-sm tabular-nums text-content-muted">
+      <span aria-hidden className="text-sm tabular-nums text-content-muted">
         {score.points} of {score.ceiling} points
+      </span>
+      <span className="sr-only">
+        Attention score {score.score} out of 100, from {score.points} of {score.ceiling}{' '}
+        points.
       </span>
     </div>
   );

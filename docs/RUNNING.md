@@ -82,9 +82,20 @@ SIGNORA_JWT_PRIVATE_KEY=<the private half of the same pair>
 
 ## Login
 
-Sign-in is Better Auth in Next.js. On a local stack, use the sign-in page at <http://localhost:3000/sign-in> and create an account with any email — there is no seeded user, because seeding one would put a credential in the repository.
+Sign-in is Better Auth in Next.js, and it is **OAuth only** — Google or Microsoft. Email and password are deliberately disabled ([ADR-0010](architecture/adr/0010-identity-and-access.md)): Signora's customers sign in with their work identity, and enabling passwords would add credential storage, reset flows and breach exposure for no product benefit.
 
-**After signing in, create a workspace** from Settings. A workspace is the tenancy boundary; nothing is visible without one.
+**This means the browser UI cannot be opened without OAuth credentials.** Put a Google or Microsoft client id and secret in `frontend/.env.local`:
+
+```
+GOOGLE_CLIENT_ID=…
+GOOGLE_CLIENT_SECRET=…
+```
+
+*(This corrects an earlier version of this document, which said to "create an account with any email". That has never been possible — the setting is off in `lib/auth/server.ts` and always has been.)*
+
+**Without OAuth credentials** the API is still fully reachable, which is enough to review the data the screens render. Mint a token the way the integration tests do — `signora_platform.tests.keys.mint_token` — insert a `membership` row for that user id, and call the endpoints below directly.
+
+**After signing in, create a workspace** from Settings, then run `make demo-seed` again to be enrolled in the seeded one. A workspace is the tenancy boundary; nothing is visible without one.
 
 ---
 

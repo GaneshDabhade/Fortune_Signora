@@ -61,6 +61,22 @@ describe('the score is shown as a division, not a gauge', () => {
     expect(screen.getByText('48 of 120 points')).toBeInTheDocument();
   });
 
+  it('never lets a screen reader announce a figure the screen does not show', () => {
+    // As two adjacent fragments these read out concatenated: a score of 1
+    // beside 2 points announced as "attention score 12 of 120 points" — a
+    // different number, stated confidently. One sentence replaces both.
+    const { container } = render(
+      <ScoreArithmetic score={reading({ score: 1, points: 2, ceiling: 120 })} />,
+    );
+
+    const announced = Array.from(container.querySelectorAll(':not([aria-hidden])'))
+      .map((node) => node.textContent ?? '')
+      .join(' ');
+
+    expect(announced).toContain('Attention score 1 out of 100');
+    expect(announced).not.toMatch(/score 12\b/);
+  });
+
   it('draws no progress element and states no percentage', () => {
     // A filled ring implies a maximum that means something. This is an
     // ordering of attention; 40 is not "40% likely to buy".
