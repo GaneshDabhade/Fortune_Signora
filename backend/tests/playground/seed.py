@@ -107,25 +107,37 @@ async def _enrol_everyone(
 ) -> int:
     """Add every signed-in user to the seeded workspace.
 
-    **No credential ships in this repository.** Better Auth owns users, creates
-    its tables on first run in the Next tier, and hashes its own passwords — so
-    a seeder that invented a user would either commit a password or reach into
-    another system's schema. Both are worse than asking someone to sign in once.
+    **No credential ships in this repository.** Better Auth owns users and
+    hashes its own passwords, so a seeder that invented one would either commit
+    a password or reach into another system's schema. Both are worse than
+    asking someone to sign in once.
 
     Everyone rather than a named account, because on a local machine the set of
     users *is* the developer, and asking for an email address to type is a step
     that exists only to be typed.
+
+    **Better Auth's tables live in the `auth` schema, not `public`.** This
+    looked in `public` and therefore always found nobody — and then printed
+    *"no signed-in users exist yet"*, which was a false statement about a
+    database that had one. It went unnoticed because until M12.3 nothing in the
+    repository created those tables at all, so the sentence was accidentally
+    true (**R6-01**). Corrected once signing in became possible.
     """
+    schema = os.environ.get("SIGNORA_AUTH_SCHEMA", "auth")
+
     async with admin_factory() as session:
         exists = (
             await session.execute(
-                text("SELECT to_regclass('public.\"user\"') IS NOT NULL")
+                text("SELECT to_regclass(:table) IS NOT NULL"),
+                {"table": f'{schema}."user"'},
             )
         ).scalar()
         if not exists:
             return 0
 
-        users = (await session.execute(text('SELECT id FROM "user"'))).scalars().all()
+        users = (
+            await session.execute(text(f'SELECT id FROM {schema}."user"'))
+        ).scalars().all()
         for user_id in users:
             await session.execute(
                 text(

@@ -30,6 +30,9 @@ const INTELLIGENCE_DIR = join(process.cwd(), 'components', 'intelligence');
  * A rule with a gap in its enforcement is a rule the code eventually finds the
  * gap in. The authentication screens are now inside it. */
 const AUTH_DIR = join(process.cwd(), 'app', '(auth)');
+/** Tenancy-state UI. Composed from the design system on the same terms as
+ * `components/intelligence/` — never added to it. */
+const WORKSPACE_DIR = join(process.cwd(), 'components', 'workspace');
 
 function sourceFiles(dir: string, prefix?: string): { name: string; source: string }[] {
   const label = prefix ?? (dir.split('/').pop() as string);
@@ -48,6 +51,7 @@ const ALL_COMPONENTS = [
   ...sourceFiles(FEEDBACK_DIR),
   ...sourceFiles(INTELLIGENCE_DIR),
   ...sourceFiles(AUTH_DIR, '(auth)'),
+  ...sourceFiles(WORKSPACE_DIR),
 ];
 
 // Tailwind's default palette. A shared component reaching for any of these

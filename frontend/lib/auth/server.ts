@@ -88,10 +88,36 @@ export function createAuth(config: AuthConfig = loadAuthConfig()) {
     },
 
     advanced: {
-      // Better Auth generates its own ids; we do not override them, so that
-      // `sub` in the JWT is exactly Better Auth's user id and the two
-      // systems never disagree about who a user is.
       useSecureCookies: process.env.NODE_ENV === 'production',
+      database: {
+        // **UUIDs, because the other tier requires them.**
+        //
+        // Better Auth's default id is a 32-character nanoid. `sub` carries it
+        // verbatim, and the Python verifier does `UUID(str(claims["sub"]))`
+        // and rejects anything else — so **every API request from a real
+        // signed-in user returned 401**, and the two tiers had never once
+        // agreed on what a user is.
+        //
+        // Invisible for three reasons at once: no user existed until the auth
+        // tables were created (R6-01); every test mints `sub` as a `uuid4()`,
+        // so the test path and the production path differed in exactly the
+        // field under dispute; and the comment that used to sit here asserted
+        // the opposite — *"we do not override them, so the two systems never
+        // disagree"* — which was written on the assumption that Better Auth's
+        // ids were UUIDs.
+        //
+        // `generateId` is Better Auth's own hook, so nothing is
+        // reimplemented and the vendor still owns identity — this only says
+        // *which* generator. The alternative — widening `user_id` to text
+        // across the schema, RLS, `app.user_id` and the principal — would
+        // trade a type for a defect nobody would find again.
+        //
+        // The function form rather than `'uuid'`: that setting resolves to a
+        // `gen_random_uuid()` **column default**, so it silently inserts null
+        // on any table created before it was set. Generating in the process
+        // depends on no schema state and works the same on every adapter.
+        generateId: () => crypto.randomUUID(),
+      },
     },
 
     hooks: {

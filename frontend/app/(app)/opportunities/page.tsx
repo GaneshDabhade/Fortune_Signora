@@ -10,6 +10,7 @@ import {
   ScoreMovement,
 } from '@/components/intelligence/attention';
 import { EntityName } from '@/components/intelligence/entity-name';
+import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { Card, CardBody, EmptyState, SkeletonText } from '@/components/ui';
 import type { AccountAttention, AccountIdentity } from '@/lib/api/types';
 import { useAccountIdentities, useAccounts, useSignalCatalog } from '@/lib/query/hooks';
@@ -35,7 +36,7 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  * claims can be read beside the evidence they cite.
  */
 export default function OpportunitiesPage() {
-  const { activeWorkspace } = useWorkspaceContext();
+  const { activeWorkspace, isLoading: workspacesLoading } = useWorkspaceContext();
   const { data, isLoading, isError } = useAccounts(activeWorkspace?.id ?? null);
   // Names arrive in a second request and the rows do not wait for them: the
   // score and the reason are what a seller triages on, and blocking the list
@@ -59,6 +60,12 @@ export default function OpportunitiesPage() {
         </p>
       </header>
 
+      {/* **A signed-in reader with no workspace rendered nothing at all**
+          until M12.3: the query is disabled, so `isLoading`, `isError` and
+          `data` were all falsy and every branch below was skipped (D36). It
+          is the state every brand-new account is in, and a blank page is
+          indistinguishable from a broken one. */}
+      {!workspacesLoading && activeWorkspace === null ? <NoWorkspace /> : null}
       {isLoading ? <Loading /> : null}
       {isError ? <Unavailable /> : null}
       {data && data.items.length === 0 ? <Quiet /> : null}

@@ -16,7 +16,7 @@
 | **Current phase** | **Product implementation** — the pipeline is built; the surface is being exposed |
 | **Last completed milestone** | **M10 — AI Research Engine**, closed 2026-07-31 |
 | **Current milestone** | **M12.3 — evidence and actions** *(Decision Package still deferred until `reasoning@1` is released — see §10)* |
-| **Latest commit** | *M12.3 — more than one way in* (ADR-0033) |
+| **Latest commit** | *M12.3 — the first run* |
 | **Latest certification** | [`d954c930`](certification/reports/d954c930319a.md) — **CERTIFIED**, 2026-07-31 *(predates M12.2; re-cut at milestone close)* |
 | **Branch** | `main`, tree clean, pushed |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
@@ -179,7 +179,9 @@ A demo environment worth reviewing a product against. Requested by the product o
 | **Sign-in methods** (**ADR-0033**) | Email + password alongside Google and Microsoft. **The method is configuration; the authenticated identity is invariant** — the JWT carries no record of how anybody signed in, so every future method is free downstream. Register, verify, sign in, sign out, reset: all real, none bypassed |
 | **Two dormant defects, each hiding the other** | Better Auth's tables had **never been created** by anything in the repository, and the observability hook broke every *completed* auth request. Neither could be seen, because no authentication request had ever finished. **Sign-in had not worked on a fresh clone by any method** |
 | **Tests** | 15 auth-method unit · 3 JWT-contract · 5 e2e journey · design tokens extended to `app/(auth)` |
-| ⏳ **Next** | **R6-05 — the workspace screen**, the last unreviewed surface and now the first thing a new account meets. Then **D20**, for which **R5-02** gives a candidate the pipeline already computes: group by *posture*, not by an invented threshold. Both need a product decision |
+| **The first run** | Being a new customer for ninety seconds found **three defects in a chain, each concealing the next** — the two tiers had never agreed on what a user id *is* (every real API call would have 401'd), the seeder looked for users in the wrong schema and printed a false statement, and a signed-in user with no workspace saw a heading and blank space |
+| **Tests** | 2 id-contract · 4 page-level first-run regression · 4 empty-state |
+| ⏳ **Next** | **D37 — an information-architecture revision**, raised and awaiting a ruling. `/` is an M1.5 placeholder promising an integration capability a milestone away, and it is the first screen every morning. It is the **second** finding against the frozen navigation (**D1** was the first), which is what a due revision looks like. Then **D20**, for which **R5-02** gives a candidate the pipeline already computes |
 
 > **🟠 It ships to the Playground and not to a customer until F-3 closes.** The catalog's guidance is *engineering-authored pending domain review*, and *"ask on a first call which division the investment sits in"* is advice a real seller will act on. Good content is not the same as signed content.
 
@@ -246,7 +248,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 
 | Indicator | Value | Target |
 |---|---|---|
-| **Frontend tests** | **280 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Frontend tests** | **292 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Migrations** | `0001`–`0018`, additive and reversible — `0018` proven by an applied downgrade/upgrade cycle | reversible |
 | **Architecture drift** | **0** — no ratified ADR reversed | trending to 0 |
 | **Open production bugs** | **0** | 0 |

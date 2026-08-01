@@ -726,3 +726,55 @@ The catalog holds it and it reads well. Rejected: it is per-account context the 
 ## Rejected — grouping the list by posture
 
 `attention_by_posture` is computed and would let the list separate *expansion* from *risk*, which is what a CRO scans for. Rejected **for now**: grouping reorders a list whose order is its ranking, and trading a ranked list for a categorised one is a product decision with a seller in the room. Recorded as the strongest candidate for D20's answer — **it is a grouping the pipeline already computes, rather than a threshold somebody would have to invent.**
+
+---
+
+# The first screen after signing in *(M12.3, 2026-08-01)*
+
+**Recorded before implementation**, because part of it is a decision the product owner owns rather than one a coding session should take.
+
+Authentication made the product reviewable for the first time, and the first thing it revealed was not on any screen that had been reviewed. Signing in as a genuinely new account — which is now possible, and which nobody had ever done — produces this:
+
+| Step | What happens |
+|---|---|
+| Verify, sign in | Land on `/` — **Overview** |
+| Overview | *"Connect a data source to start seeing revenue signals here."* **There is no way to connect a data source**; integrations are M13 |
+| Overview | Three cards — Companies, Signals, Opportunities — each permanently empty. The Opportunities card does not link to the Opportunities page, which exists and works |
+| Sidebar | Six entries, **three marked *coming soon*** |
+| Click Opportunities | **A bare header and nothing else** |
+
+## D36 — a signed-in user with no workspace sees nothing, and is told nothing
+
+**A defect, not a design question, and it is the state a brand-new account is in.**
+
+`useAccounts(null)` is `enabled: false`, so `isLoading` is false, `isError` is false and `data` is `undefined`. Every branch on the page tests one of those three, so **none of them renders.** The reader gets a heading and blank space — indistinguishable from a broken page, and it is what every new customer meets before they have done anything wrong.
+
+The empty states that exist are all *"this workspace has no accounts"*. The state that does not exist is **"you are not in a workspace"**, which is a different sentence and the only one that tells somebody what to do.
+
+**Fixed in this slice**, because a page that renders nothing is a production defect and needs no ruling.
+
+## D37 — the daily surface is two clicks behind a screen describing a product that does not exist
+
+**Raised, not fixed.** This one is the product owner's.
+
+A seller opens Signora every morning. The first screen is a placeholder written at M1.5, when there were no business pages to point at. It promises an integration capability that is a milestone away, shows three counters that nothing populates, and does not link to the attention list — **the one screen in the product that answers the question they came with.**
+
+The list itself is good. It is behind a screen that is not.
+
+### The recommendation
+
+**`/` should be the attention list.** A seller's first screen should be their morning's work rather than a dashboard about it, and the Overview page has no owner in the roadmap — none of the six customer journeys in [37-product-surface.md](37-product-surface.md) is *"show me a summary"*.
+
+### Why it was not simply done
+
+**The navigation is frozen** (CLAUDE.md §20c). `{ href: '/', label: 'Overview' }` lives in the application shell, and so do the three *coming soon* entries. Retiring Overview means editing the shell's information architecture, which the freeze exists to stop a single page from doing unilaterally — and **this is the second finding to hit it**: [D1](#d1) recorded *"Attention is the right noun; the navigation says Opportunities"* at M12.1 and deferred it on exactly these grounds, saying *"a rename belongs to a deliberate IA revision, not to the first page that happens to disagree with it."*
+
+**Two deferred findings on the same frozen surface is what a due IA revision looks like.** It should be one deliberate change, not two opportunistic ones.
+
+### What that revision would decide, if approved
+
+- **Retire Overview**; `/` becomes the attention list.
+- **D1's rename** — *Attention* or *Accounts* rather than *Opportunities*, which is CRM vocabulary for a record and collides with Signora's own domain term for the workflow object a human commits to.
+- **The three *coming soon* entries.** Defensible at M1.5, when the point was to settle the IA before pages were written into it. **Less defensible on a screen a customer sees**, where half a navigation that leads nowhere advertises absence — though removing them and re-adding them later is its own cost.
+
+**Recorded rather than implemented.** Waiting for a ruling.

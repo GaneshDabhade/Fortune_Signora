@@ -213,3 +213,48 @@ describe('the delivered link is never logged as an event', () => {
     expect(emitted.join('\n')).toContain(url);
   });
 });
+
+describe('the identifier Better Auth mints is one the other tier accepts', () => {
+  /**
+   * **The two tiers had never agreed on what a user is.**
+   *
+   * Better Auth's default id is a 32-character nanoid. `sub` carries it
+   * verbatim; the Python verifier does `UUID(str(claims["sub"]))` and rejects
+   * anything else — so every API request from a real signed-in user returned
+   * 401, and the JWT boundary was violated by the identity provider itself.
+   *
+   * Invisible for three compounding reasons: no user existed until the auth
+   * tables were created (R6-01); every test mints `sub` as a `uuid4()`, so the
+   * test path and the production path differed in exactly the disputed field;
+   * and the comment in `server.ts` asserted the opposite.
+   *
+   * Asserted against the configured instance rather than against a constant,
+   * because the defect was in the *wiring* — the generator was never the
+   * problem, its absence was.
+   */
+  const UUID_V4 =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+  it('mints a UUID for every model it stores', async () => {
+    const { createAuth } = await import('@/lib/auth/server');
+    const generateId = createAuth(config()).options.advanced?.database?.generateId;
+
+    expect(typeof generateId, 'no id generator is configured at all').toBe('function');
+
+    for (const model of ['user', 'session', 'account', 'verification'] as const) {
+      const id = (generateId as (o: { model: string }) => string)({ model });
+      expect(id, `${model} id is not a UUID the Python tier will accept`).toMatch(
+        UUID_V4,
+      );
+    }
+  });
+
+  it('does not delegate the id to a database column default', async () => {
+    // `generateId: 'uuid'` resolves to a `gen_random_uuid()` column default,
+    // which silently inserts null on any table created before the setting
+    // existed. Generating in the process depends on no schema state.
+    const { createAuth } = await import('@/lib/auth/server');
+
+    expect(createAuth(config()).options.advanced?.database?.generateId).not.toBe('uuid');
+  });
+});

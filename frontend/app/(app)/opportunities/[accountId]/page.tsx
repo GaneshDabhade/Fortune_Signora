@@ -21,6 +21,7 @@ import {
   WorkflowStage,
 } from '@/components/intelligence/opportunity';
 import { WorkflowActions } from '@/components/intelligence/workflow';
+import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { Card, CardBody, EmptyState, SkeletonText } from '@/components/ui';
 import { ApiError } from '@/lib/api/client';
 import { useSession } from '@/lib/auth/client';
@@ -73,7 +74,7 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  */
 export default function AccountBriefPage() {
   const { accountId } = useParams<{ accountId: string }>();
-  const { activeWorkspace } = useWorkspaceContext();
+  const { activeWorkspace, isLoading: workspacesLoading } = useWorkspaceContext();
   const workspaceId = activeWorkspace?.id ?? null;
   // Only so the page can say *you* rather than an identifier, and assign an
   // account to the person taking it on. Never an authorization decision —
@@ -127,6 +128,10 @@ export default function AccountBriefPage() {
         {score ? <ContestedMark contested={score.contested} /> : null}
       </header>
 
+      {/* Same as the list: with no workspace every query is disabled and
+          nothing rendered. Reachable directly by URL, so it needs its own
+          answer rather than relying on the list to have given one (D36). */}
+      {!workspacesLoading && workspaceId === null ? <NoWorkspace /> : null}
       {isLoading ? <Loading /> : null}
       {notScored ? <NeverScored /> : null}
       {error && !notScored ? <Unavailable /> : null}

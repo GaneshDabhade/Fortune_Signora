@@ -812,3 +812,120 @@ POST /api/auth/reset-password                       200
 **Adding `@better-auth/cli` to run migrations.** Rejected: `better-auth/db/migration` exposes the same thing from the dependency already ratified, and a committed script is more reviewable than a command in a README. *Will not return.*
 
 **Choosing an email provider now.** Tempting, since the console transport is obviously temporary. Rejected: it is a vendor decision and a new dependency, and taking it under time pressure to unblock a local review is how a five-year dependency gets chosen in an afternoon. **The port is what lets it wait.** *Returns with the first environment that is not a developer's machine.*
+
+---
+
+# Review 7 — the first run *(2026-08-01, M12.3)*
+
+**The first review conducted by actually being a new customer.** Register, verify, sign in, and see what is there — which nobody had ever done, because until the previous slice nobody could.
+
+It found three defects in a chain, each of which had been concealing the next.
+
+---
+
+## R7-01 · The two tiers had never agreed on what a user is 🔴 **FIXED**
+
+**Observation.** Better Auth's default identifier is a 32-character nanoid — `oto6T8DoM1fZsFzfVqsCEzLDSGeSSAaZ`. It is carried verbatim as `sub`. The Python verifier does `UUID(str(claims["sub"]))` and **rejects the token outright.**
+
+Proven, not inferred:
+
+```
+Better Auth default (nanoid)   REJECTED  The supplied token is not valid.
+after the fix (uuid)           ACCEPTED  user_id=acf158b0-f88c-4b71-b503-e1693601de69
+```
+
+**Why it matters.** **Every API request from a real signed-in customer would have returned 401.** The JWT boundary — the architecture's most carefully specified seam — was violated by the identity provider itself, and had been since M1.2.
+
+**Why it stayed invisible, which is the more useful finding.** Three things compounded:
+
+1. **No user had ever existed** (R6-01), so `sub` had never carried a real Better Auth id.
+2. **Every test mints `sub` as a `uuid4()`.** The test path and the production path differed in *exactly the field under dispute* — the one place a fake must not differ from the real thing.
+3. **The comment at the site asserted the opposite**: *"Better Auth generates its own ids; we do not override them, so the two systems never disagree about who a user is."* True in intent, false in fact, and it is the sentence a reviewer would have trusted.
+
+**Implemented immediately.** `generateId` is Better Auth's own hook, so nothing is reimplemented and the vendor still owns identity — this only says *which* generator. The function form rather than `'uuid'`: that setting resolves to a `gen_random_uuid()` **column default**, so it inserts null on any table created before the option was set, which is exactly what happened on the first attempt.
+
+**Priority:** — **Milestone:** done, M12.3.
+
+---
+
+## R7-02 · The seeder looked for users in the wrong schema, and said so confidently 🟠 **FIXED**
+
+**Observation.** `make demo-seed` enrols every signed-in user in the Playground. It queried `public."user"`; Better Auth's tables are in the **`auth`** schema. It therefore always found nobody, and printed:
+
+> `members     none — no signed-in users exist yet`
+
+**Why it matters.** A **false statement about a database that had a user in it** — the class of defect the repository-tells-the-truth principle names, and the reason the product owner signed in and saw an empty product with a full Playground sitting beside it.
+
+It was accidentally true until this milestone, because there were no users anywhere (R6-01). **Its docstring even asserted the cause of its own failure**: *"Better Auth … creates its tables on first run in the Next tier"*, which nothing has ever done.
+
+**Implemented immediately.** It reads `SIGNORA_AUTH_SCHEMA`, and now reports `members 1 signed-in user(s) enrolled as owner`.
+
+**Priority:** — **Milestone:** done, M12.3.
+
+---
+
+## R7-03 · A signed-in user with no workspace saw a heading and blank space 🔴 **FIXED**
+
+**Observation.** `useAccounts(null)` is `enabled: false`, so `isLoading`, `isError` and `data` are all falsy. Every branch on the page tests one of the three, so **none of them rendered.**
+
+**Why it matters.** It is the state every brand-new account is in, and a page that renders nothing is indistinguishable from a broken one. The existing empty states all say *"this workspace has no accounts"* — a different sentence with a different next action, and reusing it would be a confident wrong answer.
+
+**Implemented immediately** — see **D36**. A page-level regression test asserts it, and was checked by removing the fix: two of its four assertions fail without it.
+
+**Priority:** — **Milestone:** done, M12.3.
+
+---
+
+## R7-04 · The daily surface is two clicks behind a screen describing a product that does not exist 🔴 **RAISED, NOT FIXED**
+
+**Observation.** `/` is Overview, written at M1.5. It says *"Connect a data source to start seeing revenue signals here"* — **there is no way to connect a data source**; integrations are M13. It shows three permanently-empty counters, and its Opportunities card does not link to the Opportunities page, which exists and works.
+
+**Why it matters.** A seller opens Signora every morning and the first screen is a placeholder that promises a capability a milestone away. **The list is good and it is behind a screen that is not.**
+
+**Why it was not simply fixed.** The navigation is frozen (§20c), and this is the **second** finding to hit that surface — [D1](38-product-design-principles.md) recorded the *Opportunities* vs *Attention* naming problem at M12.1 and deferred it on exactly these grounds. **Two deferred findings on one frozen surface is what a due IA revision looks like**, and it should be one deliberate change rather than two opportunistic ones. Recorded as **D37**, awaiting a ruling.
+
+**Priority:** High. **Milestone:** an IA revision, on the product owner's approval.
+
+---
+
+## The five roles — first run, in order
+
+**SDR.** *"I signed up, confirmed my email, and landed on a page telling me to connect a data source I can't connect. Then I clicked Opportunities and it was blank."* **Every sentence of that is now either fixed or raised.**
+
+**AE.** *Delight:* sign-up asked for a password once and told me the rule first.
+
+**Sales Manager.** *Doubt:* three of six sidebar entries say *coming soon*. "That is what a demo looks like, not a product."
+
+**RevOps.** *Delight:* one identity, three sign-in methods, one access review. *Doubt:* R7-01 — "so nobody has ever actually called the API as a real user?" **Correct, and that is the finding.**
+
+**CRO.** Signed in, saw nothing, asked where the accounts were. **The shortest and most damning review any role has given.**
+
+---
+
+## The staff-designer pass
+
+**Apple.** The empty state now explains itself before asking for anything. **The screen it sits on still should not be the first screen.**
+
+**Stripe.** *"A workspace is where your accounts, evidence and decisions live"* — a term defined at the moment it is first required, which is the only moment anyone reads a definition.
+
+**Linear.** The first run is four screens deep before any work appears. **A product for people who live in it should open onto the work.** D37.
+
+**Notion.** The no-workspace copy offers both ways out — create one, or be added to a colleague's. Most sellers never create anything.
+
+**Cursor.** **The three defects here were found by using the product for ninety seconds.** No test suite would have caught any of them, and 1992 backend tests did not. *That is the finding to carry forward.*
+
+**Perplexity.** Nothing to follow.
+
+**OpenAI.** No model involved anywhere in this journey.
+
+---
+
+## Rejected ideas
+
+**Widening `user_id` to text across the schema so Better Auth's nanoid fits.** It would have worked. Rejected: it trades a type for a defect nobody would find again, and touches the schema, RLS, `app.user_id` and the principal — against one Better Auth option that does the same thing correctly. *Will not return.*
+
+**`generateId: 'uuid'`.** Better Auth's own shorthand, and the first thing tried. Rejected on evidence: it resolves to a `gen_random_uuid()` **column default**, so it inserts null on any table created before the setting existed — observed as a not-null violation on the first sign-up after the change. The function form depends on no schema state. *Will not return.*
+
+**Fixing the Overview page's copy instead of retiring it.** Cheaper and it would have removed the false promise. Rejected: the page's problem is that it exists between a seller and their work, not that its wording is wrong. *Returns only as part of D37's ruling.*
+
+**Removing the three *coming soon* nav entries while I was there.** Tempting and out of scope: the navigation is frozen, and this is the second finding against it. **Bundling it into a page slice is precisely what the freeze exists to prevent.** *Returns with D37.*
