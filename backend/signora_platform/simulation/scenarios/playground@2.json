@@ -1,0 +1,376 @@
+{
+  "_comment": "Twelve accounts, twelve business stories, told over roughly five months so that freshness varies on its own rather than being declared. Offsets are days from the scenario epoch and nothing more: WHERE the epoch sits is the decision of whoever runs the narrative, not of the narrative, which is what lets the same story be told as today's book or replayed as history. The Playground seeder anchors it relative to today and owns that number \u2014 see backend/tests/playground/seed.py. Every state a reviewer sees (current, ageing, stale, contested, disputed, unnamed) is produced by the pipeline from these events; not one of them is set.",
+  "dataset": "playground",
+  "dataset_version": 2,
+  "steps": [
+    {
+      "provider": "apollo",
+      "subject": "snowflake",
+      "offset_days": 140,
+      "facts": {}
+    },
+    {
+      "provider": "crunchbase",
+      "subject": "snowflake",
+      "offset_days": 140,
+      "facts": {
+        "acquisitions": [
+          {
+            "uuid": "snowflake-acq-1",
+            "acquiree_name": "Datavolo",
+            "announced_on": "2026-07-14"
+          }
+        ]
+      }
+    },
+    {
+      "provider": "bombora",
+      "subject": "snowflake",
+      "offset_days": 144,
+      "facts": {
+        "intent_topics": [
+          {
+            "topic": "Data Governance",
+            "direction": "sustained",
+            "weeks": 6,
+            "peak": 88
+          }
+        ]
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "databricks",
+      "offset_days": 138,
+      "facts": {}
+    },
+    {
+      "provider": "crunchbase",
+      "subject": "databricks",
+      "offset_days": 141,
+      "facts": {
+        "funding_rounds": [
+          {
+            "type": "series_j",
+            "amount_usd": 500000000,
+            "announced_on": "2026-07-11",
+            "investors": [
+              "Thrive Capital",
+              "Andreessen Horowitz"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "databricks",
+      "offset_days": 110,
+      "facts": {
+        "employees": 5200,
+        "open_roles": 300
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "databricks",
+      "offset_days": 142,
+      "facts": {
+        "employees": 6000,
+        "open_roles": 480
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "nvidia",
+      "offset_days": 105,
+      "facts": {
+        "employees": 29000,
+        "revenue_band": "$250M-$1B"
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "nvidia",
+      "offset_days": 143,
+      "facts": {
+        "employees": 34000,
+        "revenue_band": "$1B+"
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "nvidia",
+      "offset_days": 105,
+      "facts": {
+        "employees": 29000,
+        "open_roles": 900
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "nvidia",
+      "offset_days": 143,
+      "facts": {
+        "employees": 34000,
+        "open_roles": 1400
+      }
+    },
+    {
+      "provider": "crunchbase",
+      "subject": "nvidia",
+      "offset_days": 143,
+      "facts": {}
+    },
+    {
+      "provider": "apollo",
+      "subject": "hubspot",
+      "offset_days": 80,
+      "facts": {}
+    },
+    {
+      "provider": "builtwith",
+      "subject": "hubspot",
+      "offset_days": 80,
+      "facts": {
+        "technologies": [
+          {
+            "name": "LegacyMarketingCloud",
+            "category": "marketing_automation",
+            "first_detected": "2018-03-01",
+            "last_detected": "2026-05-02",
+            "is_live": false
+          },
+          {
+            "name": "ModernCDP",
+            "category": "customer_data_platform",
+            "first_detected": "2026-05-10",
+            "last_detected": "2026-07-20",
+            "is_live": true
+          }
+        ]
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "atlassian",
+      "offset_days": 135,
+      "facts": {}
+    },
+    {
+      "provider": "bombora",
+      "subject": "atlassian",
+      "offset_days": 145,
+      "facts": {
+        "intent_topics": [
+          {
+            "topic": "Zero Trust Security",
+            "direction": "sustained",
+            "weeks": 7,
+            "peak": 84
+          }
+        ]
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "salesforce",
+      "offset_days": 90,
+      "facts": {}
+    },
+    {
+      "provider": "crunchbase",
+      "subject": "salesforce",
+      "offset_days": 92,
+      "facts": {}
+    },
+    {
+      "provider": "coresignal",
+      "subject": "salesforce",
+      "offset_days": 95,
+      "facts": {
+        "employees": 72000,
+        "open_roles": 1200,
+        "employee_changes": [
+          {
+            "type": "hire",
+            "title": "Chief Revenue Officer",
+            "seniority": "executive",
+            "occurred_on": "2026-06-06"
+          }
+        ]
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "stripe",
+      "offset_days": 130,
+      "facts": {}
+    },
+    {
+      "provider": "crunchbase",
+      "subject": "stripe",
+      "offset_days": 130,
+      "facts": {}
+    },
+    {
+      "provider": "coresignal",
+      "subject": "stripe",
+      "offset_days": 50,
+      "facts": {
+        "employees": 8500,
+        "open_roles": 210
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "stripe",
+      "offset_days": 132,
+      "facts": {
+        "employees": 7300,
+        "open_roles": 95
+      }
+    },
+    {
+      "provider": "bombora",
+      "subject": "stripe",
+      "offset_days": 138,
+      "facts": {
+        "intent_topics": [
+          {
+            "topic": "AI Agents",
+            "direction": "sustained",
+            "weeks": 7,
+            "peak": 90
+          }
+        ]
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "adobe",
+      "offset_days": 20,
+      "facts": {}
+    },
+    {
+      "provider": "crunchbase",
+      "subject": "adobe",
+      "offset_days": 22,
+      "facts": {
+        "name": "Adobe Systems Incorporated"
+      }
+    },
+    {
+      "provider": "builtwith",
+      "subject": "adobe",
+      "offset_days": 20,
+      "facts": {
+        "technologies": [
+          {
+            "name": "LegacyFinanceSuite",
+            "category": "erp",
+            "first_detected": "2015-01-01",
+            "last_detected": "2026-03-20",
+            "is_live": false
+          },
+          {
+            "name": "CloudFinanceERP",
+            "category": "erp",
+            "first_detected": "2026-03-22",
+            "last_detected": "2026-07-18",
+            "is_live": true
+          }
+        ]
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "mongodb",
+      "offset_days": 55,
+      "facts": {}
+    },
+    {
+      "provider": "bombora",
+      "subject": "mongodb",
+      "offset_days": 59,
+      "facts": {
+        "intent_topics": [
+          {
+            "topic": "Vector Search",
+            "direction": "sustained",
+            "weeks": 6,
+            "peak": 78
+          }
+        ]
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "twilio",
+      "offset_days": 100,
+      "facts": {}
+    },
+    {
+      "provider": "coresignal",
+      "subject": "twilio",
+      "offset_days": 102,
+      "facts": {
+        "employees": 5800,
+        "open_roles": 140,
+        "employee_changes": [
+          {
+            "type": "departure",
+            "title": "Chief Financial Officer",
+            "seniority": "executive",
+            "occurred_on": "2026-06-13"
+          }
+        ]
+      }
+    },
+    {
+      "provider": "apollo",
+      "subject": "datadog",
+      "offset_days": 85,
+      "facts": {}
+    },
+    {
+      "provider": "crunchbase",
+      "subject": "datadog",
+      "offset_days": 85,
+      "facts": {}
+    },
+    {
+      "provider": "coresignal",
+      "subject": "datadog",
+      "offset_days": 30,
+      "facts": {
+        "employees": 5400,
+        "open_roles": 380
+      }
+    },
+    {
+      "provider": "coresignal",
+      "subject": "datadog",
+      "offset_days": 88,
+      "facts": {
+        "employees": 4600,
+        "open_roles": 120
+      }
+    },
+    {
+      "provider": "bombora",
+      "subject": "figma",
+      "offset_days": 141,
+      "facts": {
+        "intent_topics": [
+          {
+            "topic": "Design Systems",
+            "direction": "sustained",
+            "weeks": 6,
+            "peak": 82
+          }
+        ]
+      }
+    }
+  ]
+}

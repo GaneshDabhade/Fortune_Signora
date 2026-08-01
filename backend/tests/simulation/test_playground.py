@@ -1,4 +1,4 @@
-"""The Product Playground — twelve shapes, not twelve rows.
+"""The Product Playground — twelve business stories, not twelve rows.
 
 **Design decisions made against two accounts are unfalsifiable.** Until this
 existed, every hierarchy, density and grouping judgement in the product was made
@@ -6,14 +6,21 @@ against a list that could not exercise any of them, and the standing caveat on
 every prompt evaluation in the repository was *"two cases, one shape"*.
 
 These tests keep the Playground worth trusting: that it is genuinely varied,
-that nothing in it can be mistaken for a real company, and that it stays the
-*one* source of truth rather than drifting into a second fixture set.
+that it declares what is invented, that it exercises the identity states the
+product can render, and that it stays the *one* source of truth rather than
+drifting into a second fixture set.
+
+**`playground@1` is not deleted and not edited.** It remains in the repository
+as the version earlier runs cite. It is superseded rather than corrected,
+because a published dataset is immutable and every result recorded against it
+would otherwise become meaningless (D17).
 """
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -21,25 +28,25 @@ from signora_platform.simulation import dataset as dataset_module
 from signora_platform.simulation import scenario as scenario_module
 
 SCENARIO = "playground"
-VERSION = 1
+VERSION = 2
 
-#: The stories the Playground exists to tell. Named here rather than counted,
-#: because "twelve accounts" is a number and "twelve *shapes*" is the point —
-#: a scenario that grew four more copies of the same story would still pass a
+#: The business stories the Playground exists to tell. Named here rather than
+#: counted, because "twelve accounts" is a number and "twelve *stories*" is the
+#: point — a scenario that grew four more copies of one story would still pass a
 #: count and would answer no new design question.
-SHAPES = {
-    "northwind-logistics": "technology migration — the textbook displacement",
-    "contoso-health": "executive hiring surge",
-    "fabrikam-industrial": "provider disagreement — two sources, two legal names",
-    "tailwind-freight": "acquisition",
-    "proseware-analytics": "rapid growth — every indicator moving together",
-    "adventure-outdoor": "stale evidence",
-    "litware-payments": "false positive — loud intent, nothing beneath it",
-    "wingtip-media": "the silent account",
-    "coho-vineyards": "rebranding mid-cycle",
-    "relecloud-infra": "contested — opposing readings, both live",
-    "vanarsdel-retail": "the slow burn",
-    "lamna-legal": "cooling",
+STORIES = {
+    "snowflake": "acquisition, and a live evaluation beside it",
+    "databricks": "funding closed, and the hiring that follows one",
+    "nvidia": "expansion on two independent fronts",
+    "hubspot": "marketing stack replaced — evidence now recent, not fresh",
+    "atlassian": "a security initiative, named by a single source",
+    "salesforce": "a new revenue leader",
+    "stripe": "cutting headcount while evaluating — contested",
+    "adobe": "ERP replacement whose evidence has aged, under a disputed name",
+    "mongodb": "an evaluation that has just passed its shelf life",
+    "twilio": "the CFO departed",
+    "datadog": "a reduction, with nothing pulling the other way",
+    "figma": "behavioural intent and nothing else — nobody names it",
 }
 
 
@@ -53,11 +60,25 @@ def cast() -> dataset_module.Dataset:
     return dataset_module.load(SCENARIO, VERSION)
 
 
-class TestThePlaygroundIsVariedEnoughToDesignAgainst:
-    def test_it_holds_every_shape_it_claims(
+def _raw(kind: str) -> dict[str, Any]:
+    """The file as written, before the loaders interpret it.
+
+    Some of what these tests assert — the fictional-stories notice, the absence
+    of a date — is about the *artifact*, not about the object it produces, and
+    reading the loaded form would not see it.
+    """
+    root = dataset_module.DATASET_ROOT if kind == "dataset" else scenario_module.SCENARIO_ROOT
+    loaded: dict[str, Any] = json.loads(
+        (Path(root) / f"{SCENARIO}@{VERSION}.json").read_text()
+    )
+    return loaded
+
+
+class TestItIsVariedEnoughToDesignAgainst:
+    def test_it_holds_every_story_it_claims(
         self, scenario: scenario_module.Scenario
     ) -> None:
-        assert {step.subject for step in scenario.steps} == set(SHAPES)
+        assert {step.subject for step in scenario.steps} == set(STORIES)
 
     def test_it_is_large_enough_that_a_list_must_be_scanned(
         self, scenario: scenario_module.Scenario
@@ -71,14 +92,15 @@ class TestThePlaygroundIsVariedEnoughToDesignAgainst:
         self, scenario: scenario_module.Scenario
     ) -> None:
         """Variety means *different evidence*, not different names. Twelve
-        accounts each described by the same three providers would be one shape
-        twelve times, and would answer nothing the baseline scenario does not."""
+        accounts each described by the same three providers would be one story
+        twelve times."""
         by_account: dict[str, set[str]] = {}
         for step in scenario.steps:
             by_account.setdefault(step.subject, set()).add(step.provider)
 
-        distinct = {frozenset(providers) for providers in by_account.values()}
-        assert len(distinct) >= 5, "the accounts differ in name and not in evidence"
+        assert len({frozenset(p) for p in by_account.values()}) >= 6, (
+            "the accounts differ in name and not in evidence"
+        )
 
     def test_every_provider_with_a_generator_is_exercised(
         self, scenario: scenario_module.Scenario
@@ -92,61 +114,114 @@ class TestThePlaygroundIsVariedEnoughToDesignAgainst:
             "crunchbase",
         }
 
-    def test_the_evidence_spans_a_period_rather_than_one_instant(
+    def test_the_evidence_spans_months_rather_than_one_instant(
         self, scenario: scenario_module.Scenario
     ) -> None:
-        """Freshness, cooling and staleness are all *temporal*. A scenario
-        emitting everything on day zero cannot produce any of them, and the
-        interface has three states that would never be seen."""
+        """**Freshness must vary on its own.**
+
+        Every temporal state the product can render — current, ageing, cooling,
+        stale — is the band arithmetic applied to *when the evidence happened*.
+        A scenario emitting everything at once cannot produce any of them, and
+        four interface states would never be seen. The shortest relevance
+        window in the catalog is 90 days, so the span has to exceed it or
+        nothing can ever expire (D17).
+        """
         offsets = {step.offset.days for step in scenario.steps}
 
-        assert max(offsets) - min(offsets) >= 21
+        assert max(offsets) - min(offsets) > 90
+
+    def test_the_narrative_declares_no_date_of_its_own(self) -> None:
+        """**A scenario says when things happened relative to each other, never
+        when it is being told.** Anchoring belongs to whoever runs it — the same
+        story is today's book or a historical replay depending only on the
+        epoch, and a date baked in here is what made `playground@1` demonstrate
+        seven-month-old evidence (D17)."""
+        raw = _raw("scenario")
+
+        assert "epoch" not in raw
+        assert "horizon_days" not in raw
 
 
-class TestNothingHereCanBeMistakenForARealCompany:
-    def test_every_domain_is_reserved_and_cannot_resolve(
-        self, cast: dataset_module.Dataset
-    ) -> None:
-        """RFC 2606 reserves `.example` precisely so it never resolves.
+class TestNothingHereIsPresentedAsFact:
+    """**The companies are real; every business event about them is invented.**
 
-        **Fabricated buying signals attached to a real company are
-        indistinguishable from real ones in a screenshot**, and a demo that
-        could be read as a claim about somebody's business is a liability
-        rather than an asset.
-        """
-        for key in SHAPES:
-            assert cast.entity(key)["domain"].endswith(".example")
+    Real names are used because a revenue-intelligence demo is illegible
+    without companies a reviewer recognises. That makes the declaration load
+    bearing rather than decorative: fabricated buying signals attached to a
+    real company are indistinguishable from real ones in a screenshot.
+    """
 
-    def test_the_dataset_says_plainly_that_it_is_fictional(self) -> None:
-        raw = json.loads(
-            (
-                Path(dataset_module.DATASET_ROOT) / f"{SCENARIO}@{VERSION}.json"
-            ).read_text()
+    def test_the_dataset_says_plainly_that_the_stories_are_invented(self) -> None:
+        comment = _raw("dataset")["_comment"].upper()
+
+        assert "FICTIONAL" in comment
+        assert "SCREENSHOT" in comment, (
+            "the notice must travel with an image, which is how this data leaves its context"
         )
 
-        assert "FICTIONAL" in raw["_comment"]
+    def test_no_entity_carries_a_figure_presented_as_reported(
+        self, cast: dataset_module.Dataset
+    ) -> None:
+        """Firmographics are approximate by construction. Nothing in the cast
+        may claim a source, a date of observation, or a provider — those are
+        the fields that would make an invented figure read as a measurement."""
+        for key in STORIES:
+            entity = cast.entity(key)
+            assert not {"source", "observed_at", "provider", "as_of"} & set(entity)
 
-    def test_it_names_no_real_company(self, cast: dataset_module.Dataset) -> None:
-        """A guard rather than a habit. The convention is deliberate — these
-        are the placeholder names Microsoft ships in its own sample data — and
-        a future contributor reaching for a recognisable brand fails here."""
-        real = {
-            "microsoft",
-            "salesforce",
-            "stripe",
-            "nvidia",
-            "snowflake",
-            "databricks",
-            "atlassian",
-            "hubspot",
-            "google",
-            "amazon",
-            "oracle",
-            "sap",
-        }
-        named = " ".join(cast.entity(key)["name"].lower() for key in SHAPES)
 
-        assert not any(brand in named for brand in real)
+class TestTheIdentityStatesTheProductRendersAreAllReachable:
+    """Each of these was **unreachable through the pipeline** before M12.1.5.
+
+    Only one mapper claimed a legal name, and neither the registry nor the
+    workforce provider offered a domain — so a second source could agree only
+    by naming a company identically, and disagreeing split it into two
+    companies instead. The product could render `AGREED` and `DISPUTED` and
+    could never be given either.
+    """
+
+    def _namers(self, scenario: scenario_module.Scenario) -> dict[str, set[str]]:
+        #: The providers that claim a legal name. Kept in step with the
+        #: mappers rather than inferred, so adding a third namer fails here
+        #: and is reviewed rather than absorbed.
+        naming = {"apollo", "crunchbase"}
+        by_account: dict[str, set[str]] = {key: set() for key in STORIES}
+        for step in scenario.steps:
+            if step.provider in naming:
+                by_account[step.subject].add(step.provider)
+        return by_account
+
+    def test_some_account_is_named_by_two_sources(
+        self, scenario: scenario_module.Scenario
+    ) -> None:
+        assert any(len(p) >= 2 for p in self._namers(scenario).values())
+
+    def test_some_account_is_named_by_exactly_one(
+        self, scenario: scenario_module.Scenario
+    ) -> None:
+        """`SINGLE_SOURCE` is *uncorroborated*, not agreement, and the product
+        says so — which it can only be seen to do if the state occurs."""
+        assert any(len(p) == 1 for p in self._namers(scenario).values())
+
+    def test_some_account_is_named_by_nobody(
+        self, scenario: scenario_module.Scenario
+    ) -> None:
+        """The fallback shows the real identifier rather than a fabricated
+        name. **The account with the worst label is the one worth opening**, so
+        the demo must contain one."""
+        assert any(len(p) == 0 for p in self._namers(scenario).values())
+
+    def test_two_sources_disagree_about_exactly_one_account(
+        self, scenario: scenario_module.Scenario
+    ) -> None:
+        """A registry name beside a trading name — the realistic form of the
+        disagreement. Exactly one, because the marker is meant to be rare: on
+        every row it would be noise, and noise trains people to stop reading."""
+        overridden = [
+            step.subject for step in scenario.steps if "name" in step.facts
+        ]
+
+        assert len(overridden) == 1
 
 
 class TestItStaysOneSourceOfTruth:
@@ -158,15 +233,19 @@ class TestItStaysOneSourceOfTruth:
         assert (Path(scenario_module.SCENARIO_ROOT) / f"{SCENARIO}@{VERSION}.json").exists()
         assert (Path(dataset_module.DATASET_ROOT) / f"{SCENARIO}@{VERSION}.json").exists()
 
+    def test_the_superseded_version_is_still_loadable(self) -> None:
+        """Kept, not deleted. Every run recorded against `playground@1` cites
+        it, and a correction that removed it would make those records
+        uncheckable."""
+        assert dataset_module.load(SCENARIO, 1).version == 1
+
     def test_the_cast_is_immutable_once_published(
         self, cast: dataset_module.Dataset, tmp_path: Path
     ) -> None:
         """Editing a published dataset invalidates every result recorded
         against it. A correction is a new version."""
-        raw = json.loads(
-            (Path(dataset_module.DATASET_ROOT) / f"{SCENARIO}@{VERSION}.json").read_text()
-        )
-        raw["entities"]["lamna-legal"]["name"] = "Edited After Publication"
+        raw = _raw("dataset")
+        raw["entities"]["figma"]["name"] = "Edited After Publication"
         (tmp_path / f"{SCENARIO}@{VERSION}.json").write_text(json.dumps(raw))
 
         with pytest.raises(dataset_module.DatasetError, match="content hash mismatch"):
@@ -176,8 +255,10 @@ class TestItStaysOneSourceOfTruth:
         self, scenario: scenario_module.Scenario, cast: dataset_module.Dataset
     ) -> None:
         """Determinism is what lets a design review, an AI evaluation and a
-        demo all cite the same run. Asserted by comparing timelines rather than
-        by inspection."""
+        demo all cite the same run. **Anchoring the epoch to today does not
+        weaken it**: the epoch is an explicit input, and determinism means the
+        same inputs produce the same outputs — not that the inputs may never
+        include a date."""
         from signora_platform.simulation.clock import VirtualClock
 
         def timeline() -> list[str]:

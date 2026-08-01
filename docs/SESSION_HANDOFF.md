@@ -14,8 +14,9 @@
 |---|---|
 | **Last completed** | **M10 AI Research Engine** — T131–T138, closed 2026-07-31. *Internal Research; every citable thing deterministic.* |
 | **Inserted, and open** | **M9.5 Evidence Citation Protocol** (ADR-0031). Steps A–D landed; **Step F is incomplete** |
-| **Current** | **M12.2** — Account Identity shipped; the account brief is next. **Two customer-facing endpoints and one screen.** |
-| **Head at handoff** | see `git log` — M12.2 identity slice |
+| **Current** | **M12.1.5 Playground v2** — inserted 2026-07-31 ahead of the rest of M12.2, because the demo data had become the constraint on product work |
+| **Shipped since** | **M12.2 part one** — Account Identity *and* the score breakdown. **Three customer-facing endpoints and two screens.** The narration and Decision Package panels remain |
+| **Head at handoff** | see `git log` — M12.1.5 Playground v2 |
 | **Latest certification** | [`d954c930`](../certification/reports/d954c930319a.md) — CERTIFIED, 2026-07-31 |
 | **Phase** | **Product implementation.** Ten pipeline stages built and frozen behind them; the surface is being exposed. |
 | **Overall completion** | **~60%** by engineering effort (~187 of ~261–339 ew) |
@@ -315,30 +316,44 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 
 ## 7 · Next session starting point
 
-### M12.2 — names shipped; the brief is next
+### M12.1.5 — Playground v2, and why it interrupted the brief
 
-**Read [docs/RUNNING.md](RUNNING.md) first** — it documents how to start the stack, seed data, sign in, and reach `/opportunities` without guessing.
+**Read [docs/RUNNING.md](RUNNING.md) first** — it documents how to start the stack, seed twelve accounts, sign in, and reach `/opportunities` and the account brief without guessing. It also lists exactly what the demo showcases.
 
-#### The original re-ordering, now done
+**The decision to carry forward:** *the demo dataset had become the constraint on product work.* Every account read "evidence expired"; the account whose story was *stale evidence* showed a fresh ledger. Design decisions, UX reviews and prompt evaluations were all being made against data that could not exercise them (D17).
 
-**The re-ordering is the decision to carry forward.** The roadmap had M12.2 as the account brief; M12.1 produced evidence to change the order.
+`playground@2` fixes it — twelve recognisable companies, twelve invented business situations, anchored on today so freshness varies on its own. **`playground@1` is superseded, retained and unedited**: a published dataset is immutable, and every result recorded against it would otherwise become uncheckable.
 
-The attention list names each account by a truncated identifier, because no module in the ratified graph reaches both workflow and entity names (`Opportunity Engine → Buying Score Engine` only; `Revenue Intelligence Platform` never reaches the Knowledge Graph). **A seller cannot triage a list of identifiers.** Resolving names is a smaller change than the brief — one Knowledge Graph read endpoint plus a frontend join — and it is what turns M12.1 from a proof into a tool.
+#### The finding that outlives the dataset
 
-Do it first. Then the brief.
+Building it surfaced **three declared capabilities with no possible input**:
 
-### What M12.2 inherits
+- Only Apollo claimed `LEGAL_NAME`, so the naming resolver's `AGREED` and `DISPUTED` — the states M12.2 built the product to display — could never occur.
+- Neither Crunchbase nor CoreSignal offered a domain. A registry could reach an existing company only by naming it *identically*, so disagreeing produced a second company; and **every workforce fact resolved to a nameless entity of CoreSignal's own.** The account a seller could see and the account the hiring evidence described were two different rows.
+- Crunchbase declared `acquisitions` in `known_fields` since M2.2 and never translated them, leaving `acquisition_announced`, `consolidation_underway` and its scoring weight dead at the source.
 
-- **A working endpoint pattern.** `modules/opportunity_engine/interface/` is the second router in the repository and the one to copy; `apps/api/composition.py` is where cross-module wiring belongs.
-- **A frozen design system**, and `components/intelligence/` for business vocabulary — a design system that knew what a buying score was would have started learning the pipeline's language.
+All three are fixed. **The class is the finding:** each passed every test it had, and none could run. A fixture set rich enough to demonstrate the product is the first thing that exercises every declared attribute end to end — so it belongs *before* the surfaces that depend on it.
+
+### What comes next
+
+1. **Finish M12.2** — the narration and Decision Package panels on the brief. Note the blocker: `reasoning@1` has no released model, so the package would refuse in production. The narration would not.
+2. **M12.3** — evidence resolution (a citation becomes a record), stage transitions and assignment. It also owns **D20**: the list renders a 50 and a 1 identically, which is the product declining to have an opinion it demonstrably has.
+
+### What this inherits
+
+- **Three working endpoints** and the pattern to copy: `modules/*/interface/` with one `apps/api/composition/<surface>.py` per read surface — a shared composition module gives a router transitive dependencies on modules it never touches, and import-linter refuses it.
+- **A frozen design system**, plus `components/intelligence/` for business vocabulary — the design system must never learn what a buying score is.
+- **`make demo`** — a review environment that runs the real pipeline. Twelve accounts, all nine signal types, all four identity states, all three evidence states, none of them declared.
 - **A certification command.** `make certify` records the gates; run it at the milestone boundary, not per commit.
-- **Six deferred UX observations** in [38-product-design-principles.md](architecture/38-product-design-principles.md). D2 is the one M12.2 closes.
+- **Twenty design observations** in [38-product-design-principles.md](architecture/38-product-design-principles.md). D19 and D20 are the newest and both are product-visible.
 
 ### The habits worth keeping
 
-**A refusal is a finding.** M10 stopped on a REFUSED prompt rather than tuning around it, and the investigation produced the Prompt Rendering Protocol, the certification framework, and a correction to ADR-0031's own prediction. That is the trade the repository keeps making and it keeps paying.
+**A refusal is a finding.** M10 stopped on a REFUSED prompt rather than tuning around it, and the investigation produced the Prompt Rendering Protocol, the certification framework, and a correction to ADR-0031's own prediction.
 
-**Record what was measured, not what was hoped.** Every refusal is now in a manifest rather than in prose — including the one that proves a fix I designed worked less well than I claimed.
+**A demo that flatters the product is worth nothing.** `playground@1` produced four qualified accounts of twelve and that was reported as the product working. It was partly a scoring artifact, and saying so is what produced M12.1.5.
+
+**Build the data before the surface that depends on it.** Three capabilities were unreachable for months because nothing had ever asked them for a real answer.
 
 **Say what is broken, prominently.** `reasoning@1` is unreleased and the dashboard says so in §1, §5, §7 and §10. A green certification is evidence the gates passed, never that the product is correct.
 

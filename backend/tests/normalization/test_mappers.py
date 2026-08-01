@@ -180,8 +180,10 @@ class TestPreserveInformation:
             },
         )
 
-        value = outcome.claims[0].value
-        assert isinstance(value, FundingValue)
+        # Selected by type rather than by position. The mapper now also claims
+        # the organisation's name, and a test that indexed into the list was
+        # asserting an ordering it never meant to pin.
+        (value,) = [c.value for c in outcome.claims if isinstance(c.value, FundingValue)]
         assert value.amount == 24_000_000
         assert value.currency == "USD"
 
@@ -337,3 +339,59 @@ class TestOutcomeAlwaysProduced:
 
         assert outcome.claims == ()
         assert outcome.is_total_failure is False
+
+
+class TestARegistryCanNameACompany:
+    """**Added at M12.1.5**, and each of these was unreachable before it.
+
+    Until this change exactly one mapper claimed `LEGAL_NAME`, and the
+    Crunchbase hint carried no domain. Between them those two facts made the
+    naming resolver's `AGREED` and `DISPUTED` states **impossible to reach
+    through the pipeline** — the product could render a disagreement it could
+    never be given. That is not a demo gap; it is a shipped capability with no
+    possible input.
+    """
+
+    def test_crunchbase_claims_the_name_it_reports(self) -> None:
+        outcome = _normalize(
+            "crunchbase",
+            {"organization": {"uuid": "globex", "name": "Globex Corporation"}},
+        )
+
+        names = [
+            claim.value
+            for claim in outcome.claims
+            if claim.attribute is ClaimAttribute.LEGAL_NAME
+        ]
+        assert names == ["Globex Corporation"]
+
+    def test_crunchbase_offers_a_domain_so_a_differing_name_is_still_one_company(
+        self,
+    ) -> None:
+        """**The half that makes disagreement possible.**
+
+        Identity resolves on provider id, exact domain, or legal name *plus*
+        country. With no domain, a registry could only reach an existing
+        company by naming it identically — so asserting a different name
+        produced a *second company* rather than a disagreement about one, and
+        the state the product exists to surface could never occur.
+        """
+        hint = MAPPERS["crunchbase"].subject(
+            {
+                "organization": {
+                    "uuid": "globex",
+                    "name": "Globex Corporation Ltd",
+                    "website_url": "https://globex.example",
+                }
+            }
+        )
+
+        assert hint.domain == "globex.example"
+        assert hint.legal_name == "Globex Corporation Ltd"
+
+    def test_a_registry_with_no_website_still_maps(self) -> None:
+        """Absent rather than empty. A `""` domain would match another
+        company that also failed to report one."""
+        hint = MAPPERS["crunchbase"].subject({"organization": {"uuid": "globex"}})
+
+        assert hint.domain is None

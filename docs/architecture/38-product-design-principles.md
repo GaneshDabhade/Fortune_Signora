@@ -251,3 +251,45 @@ Two consequences, and the second is the more serious:
 `887bf469` and `051391d2` render as identifiers because no provider in their scenario steps emits a `LEGAL_NAME` claim. The fallback behaves exactly as designed — the real identifier, never a fabricated name — but a demo in which half the list is unnamed undersells the identity work that shipped hours earlier.
 
 A scenario-authoring gap rather than a product one: the accounts that matter should be named by at least one provider. Folded into D17's `playground@2`.
+
+---
+
+# M12.1.5 — Playground v2, and the product review it made possible
+
+**The milestone existed because the demo data was limiting product development.** D17 recorded that; this is what changed and what reviewing against real data then showed.
+
+## What the dataset now does
+
+Twelve recognisable companies with **entirely invented business situations**, spanning five months against a shortest relevance window of ninety days — so *current*, *recent*, *ageing*, *cooling* and *stale* all occur, produced by band arithmetic rather than declared. Details in [20-provider-simulation.md](20-provider-simulation.md).
+
+**Real company names were the product owner's call, made twice.** D9 recorded my objection — fabricated buying signals attached to a real company are indistinguishable from real ones in a screenshot — and it stands. The mitigation is that the disclaimer lives *inside the dataset*, and a test asserts it names screenshots, because that is how this data leaves the context that explains it. **The objection is recorded, not re-argued.**
+
+## D19 — the ledger repeats itself on a composite signal
+
+NVIDIA's expansion rests on two independent grounds, and the brief shows **two identical sentences at thirty points each**. Databricks shows the same.
+
+It is not a bug in the arithmetic — the ledger's unit is the *business event*, deliberately, so an expansion resting on two events contributes twice. It is a defect in the **language**: `reason` names the hypothesis and never the evidence beneath it, so two lines that a customer cannot tell apart look like a display error rather than two grounds.
+
+**This is the first thing a reviewer notices on the highest-scoring account in the demo**, which makes it the worst possible place for it.
+
+*Owner:* the Buying Score Engine — the ledger's wording belongs where its arithmetic lives, and the fix is to render the contributing event into the sentence, not to collapse the lines. Collapsing them would hide the second ground, which is the opposite of what the ledger exists for.
+
+## The five review questions, answered honestly
+
+**Does each account tell a unique story?** **Yes, now.** Twelve distinct chains, all nine signal types, all three postures, all four identity states. Under `playground@1` the answer was no — one temporal shape, twelve times.
+
+**Does opening multiple accounts feel repetitive?** **Partly.** The *shapes* differ; the *presentation* does not vary with them. A one-line ledger and a three-line ledger get the same layout, the same weight and the same heading. Twilio at 1 point and NVIDIA at 50 are the same screen — and they should not be, because one is a rounding error and the other is the reason a seller opens the product.
+
+**Are there opportunities for richer storytelling?** The largest is that **the brief still has no narrative**. The pipeline computes *why now*, the contradiction, and the ageing — and the page reports them as a table of facts. The AI narration and Decision Package are the missing half, and they are the remaining M12.2 scope. **Second: nothing on either screen says what happened *before*.** A score that fell from 30 to 10 is a story; the brief shows only where it landed.
+
+**Does the demo communicate Signora's value in under five minutes?** **Yes, for the explainability claim; no, for the product.** Open the list, click Stripe, see two opposing readings both counted with the minority named — that lands in ninety seconds and no competitor's summary survives it. What does not land is what a seller *does* next, because there is nothing to do (D3, D15).
+
+**Would this be compelling in a customer demonstration?** **To a technical buyer, yes.** To an economic buyer, not yet: it demonstrates a system that is right, not a workflow that saves anyone time. The gap is not more intelligence — it is the action surface M12.3 owns.
+
+## D20 — the list does not distinguish a 50 from a 1
+
+Twelve rows, scores from 50 down to 1, rendered identically. **The bottom of this list is noise** — Twilio at 1 point is one contextual signal at 60% weight, and presenting it with the same visual weight as an account with two live primary hypotheses is the product declining to have an opinion it demonstrably has.
+
+Three plausible answers: a threshold below which accounts are collapsed; a visual break between *worth your morning* and *worth knowing*; or grouping by why-now rather than ranking (D6, now genuinely reviewable). **Choosing needs a seller, not a designer** — this is the first finding in the set that the Playground cannot settle on its own.
+
+*Owner:* M12.3, alongside the sort and filter controls D4 deferred.

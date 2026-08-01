@@ -356,3 +356,54 @@ class TestNormalization:
         assert decision.outcome is ResolutionOutcome.CREATED, (
             "two companies with no domain must not resolve to each other"
         )
+
+
+class TestOneProvidersKeyIsNeverAnothersIdentity:
+    """**Where the under-merge rule actually lives.**
+
+    A pipeline test used to assert this by pointing at CoreSignal, which
+    supplied nothing matchable — so the guarantee was demonstrated by a
+    *fixture's poverty* rather than by the resolver. When that mapper started
+    reporting a domain (M12.1.5), the demonstration vanished with it and the
+    rule looked like it had been relaxed.
+
+    It had not. It is asserted here instead, where no payload can take it away.
+    """
+
+    def test_a_matching_key_from_a_different_provider_does_not_bind(self) -> None:
+        """Two vendors using `acme-corp` as their private key is a coincidence
+        of naming, not a statement about one company. Treating it as identity
+        is the over-merge this module is built to refuse."""
+        decision, _ = resolve(
+            _input(provider="coresignal", domain=None, legal_name=None),
+            (
+                _candidate(
+                    uuid4(), provider="apollo", provider_external_id="acme-corp"
+                ),
+            ),
+            workspace_id=WORKSPACE,
+            now=NOW,
+        )
+
+        assert decision.outcome is ResolutionOutcome.CREATED, (
+            "one provider's private key was accepted as another's identity"
+        )
+
+    def test_the_same_key_from_the_same_provider_is_certain(self) -> None:
+        """The other half of the rule: a provider cannot be wrong about its
+        own identifiers, so this is the strongest match there is."""
+        entity = uuid4()
+
+        decision, _ = resolve(
+            _input(provider="apollo", domain=None, legal_name=None),
+            (
+                _candidate(
+                    entity, provider="apollo", provider_external_id="acme-corp"
+                ),
+            ),
+            workspace_id=WORKSPACE,
+            now=NOW,
+        )
+
+        assert decision.entity_id == entity
+        assert decision.strength is MatchStrength.CERTAIN

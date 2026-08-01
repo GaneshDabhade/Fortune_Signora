@@ -1,0 +1,173 @@
+{
+  "_comment": "Signora's demonstration cast. THE COMPANIES ARE REAL; EVERY BUSINESS EVENT, SIGNAL, SCORE AND NARRATIVE ATTACHED TO THEM IS FICTIONAL AND INVENTED FOR PRODUCT REVIEW. Nothing here was observed, reported, or obtained from any provider, and none of it is a claim about any company's actual behaviour, plans, finances or purchasing intent. Real names are used because a demonstration of a revenue intelligence product is illegible without companies a reviewer recognises; the firmographics are approximate and the stories are not. Screenshots must carry this notice with them.",
+  "content_hash": "95283aeaef3effb0",
+  "entities": {
+    "snowflake": {
+      "name": "Snowflake Inc.",
+      "domain": "snowflake.com",
+      "country": "US",
+      "industry": "data infrastructure",
+      "founded": 2012,
+      "employees": 7400,
+      "revenue_band": "$1B+",
+      "stage": "public",
+      "contact_titles": [
+        "Chief Information Officer",
+        "VP Data Platform"
+      ]
+    },
+    "databricks": {
+      "name": "Databricks, Inc.",
+      "domain": "databricks.com",
+      "country": "US",
+      "industry": "data and AI",
+      "founded": 2013,
+      "employees": 6000,
+      "revenue_band": "$1B+",
+      "stage": "late_stage_venture",
+      "contact_titles": [
+        "Chief Technology Officer",
+        "VP Platform Engineering"
+      ]
+    },
+    "nvidia": {
+      "name": "NVIDIA Corporation",
+      "domain": "nvidia.com",
+      "country": "US",
+      "industry": "semiconductors",
+      "founded": 1993,
+      "employees": 29000,
+      "revenue_band": "$250M-$1B",
+      "stage": "public",
+      "contact_titles": [
+        "VP Enterprise Systems",
+        "Director of IT Operations"
+      ]
+    },
+    "hubspot": {
+      "name": "HubSpot, Inc.",
+      "domain": "hubspot.com",
+      "country": "US",
+      "industry": "software",
+      "founded": 2006,
+      "employees": 8100,
+      "revenue_band": "$1B+",
+      "stage": "public",
+      "contact_titles": [
+        "Chief Marketing Officer",
+        "Director of Marketing Operations"
+      ]
+    },
+    "atlassian": {
+      "name": "Atlassian Corporation",
+      "domain": "atlassian.com",
+      "country": "AU",
+      "industry": "software",
+      "founded": 2002,
+      "employees": 12000,
+      "revenue_band": "$1B+",
+      "stage": "public",
+      "contact_titles": [
+        "Chief Information Security Officer",
+        "Head of Platform Security"
+      ]
+    },
+    "salesforce": {
+      "name": "Salesforce, Inc.",
+      "domain": "salesforce.com",
+      "country": "US",
+      "industry": "software",
+      "founded": 1999,
+      "employees": 72000,
+      "revenue_band": "$1B+",
+      "stage": "public",
+      "contact_titles": [
+        "Chief Revenue Officer",
+        "SVP Revenue Operations"
+      ]
+    },
+    "stripe": {
+      "name": "Stripe, Inc.",
+      "domain": "stripe.com",
+      "country": "US",
+      "industry": "payments",
+      "founded": 2010,
+      "employees": 8500,
+      "revenue_band": "$1B+",
+      "stage": "late_stage_venture",
+      "contact_titles": [
+        "VP Engineering",
+        "Head of Internal Tooling"
+      ]
+    },
+    "adobe": {
+      "name": "Adobe Inc.",
+      "domain": "adobe.com",
+      "country": "US",
+      "industry": "software",
+      "founded": 1982,
+      "employees": 30000,
+      "revenue_band": "$1B+",
+      "stage": "public",
+      "contact_titles": [
+        "VP Finance Systems",
+        "Director of ERP"
+      ]
+    },
+    "mongodb": {
+      "name": "MongoDB, Inc.",
+      "domain": "mongodb.com",
+      "country": "US",
+      "industry": "database software",
+      "founded": 2007,
+      "employees": 5200,
+      "revenue_band": "$1B+",
+      "stage": "public",
+      "contact_titles": [
+        "VP Product",
+        "Director of Developer Platform"
+      ]
+    },
+    "twilio": {
+      "name": "Twilio Inc.",
+      "domain": "twilio.com",
+      "country": "US",
+      "industry": "communications software",
+      "founded": 2008,
+      "employees": 5800,
+      "revenue_band": "$1B+",
+      "stage": "public",
+      "contact_titles": [
+        "Chief Financial Officer",
+        "VP Procurement"
+      ]
+    },
+    "datadog": {
+      "name": "Datadog, Inc.",
+      "domain": "datadoghq.com",
+      "country": "US",
+      "industry": "observability",
+      "founded": 2010,
+      "employees": 5400,
+      "revenue_band": "$1B+",
+      "stage": "public",
+      "contact_titles": [
+        "VP Engineering",
+        "Director of Reliability"
+      ]
+    },
+    "figma": {
+      "name": "Figma, Inc.",
+      "domain": "figma.com",
+      "country": "US",
+      "industry": "design software",
+      "founded": 2012,
+      "employees": 1500,
+      "revenue_band": "$250M-$1B",
+      "stage": "public",
+      "contact_titles": [
+        "Head of Design Operations"
+      ]
+    }
+  }
+}

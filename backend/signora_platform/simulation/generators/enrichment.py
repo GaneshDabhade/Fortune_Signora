@@ -93,6 +93,14 @@ class CrunchbaseFixtureGenerator(PayloadGenerator):
             "organization": {
                 "uuid": event.subject,
                 "name": facts.get("name", event.subject),
+                # The registry's own homepage field. Added at M12.1.5, and not
+                # cosmetically: without a domain, Crunchbase can only reach an
+                # existing company by asserting the *same* legal name it already
+                # carries — so two providers could agree about a name and could
+                # never disagree, because disagreeing split them into two
+                # companies. A registry that reports a homepage is also simply
+                # what Crunchbase is.
+                "website_url": f"https://{facts.get('domain', 'example.com')}",
                 "funding_stage": facts.get("stage", "series_a"),
             },
             "funding_rounds": [
@@ -125,6 +133,13 @@ class CoreSignalFixtureGenerator(PayloadGenerator):
         return {
             "_fixture": _fixture_notice("CoreSignal"),
             "company_id": event.subject,
+            # A workforce provider identifies companies by their website; it
+            # has to, or it could not tell two employers with the same name
+            # apart. Added at M12.1.5 for the reason Crunchbase's was: without
+            # it this provider matched on nothing any other provider emits, so
+            # every hiring surge and every reduction resolved to a company of
+            # its own — nameless, and invisible beside the account it described.
+            "website": facts.get("domain", "example.com"),
             "workforce": {
                 "employee_count": facts.get("employees", 0),
                 "employee_count_change_90d": facts.get("employee_delta_90d", 0),

@@ -90,14 +90,38 @@ async def _scored(
     name: str,
     *,
     anchor: str = "acme-corp",
+    moment: datetime | None = None,
     **scenario: Any,
 ) -> tuple[UUID, UUID, UUID, datetime]:
+    """Score the workspace, and say **when** the question was asked.
+
+    `moment` defaults to a moment derived from the anchor account's own
+    evidence — the historical-replay path every pipeline test needs, because
+    the baseline scenario's payloads describe events long past.
+
+    A caller that supplies one is asking the question **as of then** instead.
+    That is what the Playground does with today's date: an account list is a
+    claim about *now*, and one assembled at a moment chosen by a single account
+    can only express that one account's sense of time.
+    """
     workspace_id, user_id = await _through_signals(factory, admin_factory, name, **scenario)
-    entity_id, moment = await _while_signals_are_live(
-        factory, workspace_id, user_id, anchor=anchor
-    )
-    await score_all(factory, admin_factory, workspace_id, user_id, moment=moment)
-    return workspace_id, user_id, entity_id, moment
+
+    if moment is None:
+        entity_id, at = await _while_signals_are_live(
+            factory, workspace_id, user_id, anchor=anchor
+        )
+    else:
+        # **Not merely an optimisation.** Deriving the moment reads the anchor's
+        # live signals, so an anchor that happens to hold none fails there — and
+        # a caller who supplied a moment was not asking for one to be derived.
+        at = moment
+        async with tenant_scoped_session(
+            factory, workspace_id=workspace_id, user_id=user_id
+        ) as session:
+            entity_id = await _acme(session, workspace_id, subject=anchor)
+
+    await score_all(factory, admin_factory, workspace_id, user_id, moment=at)
+    return workspace_id, user_id, entity_id, at
 
 
 class TestTheReductionIsSafe:

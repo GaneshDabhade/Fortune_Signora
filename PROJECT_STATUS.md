@@ -1,7 +1,7 @@
 # Signora — Project Status
 
 > **The canonical entry point for this repository.** If you read one document, read this one.
-> **Last verified against the repository: 2026-07-31**, at `HEAD` `d954c93`. Every figure below is **cited from [`certification/manifest.json`](certification/manifest.json)** rather than transcribed — written by `make certify`, never by hand (ADR-0032).
+> **Last verified against the repository: 2026-07-31**, at `HEAD` `a565077`. Test, coverage and contract figures are verified against a local run; the certification manifest is re-cut at milestone close (ADR-0032).
 >
 > This is an **executive dashboard**, not a progress log. It answers: *where are we · what was completed · what changed architecturally · what is deferred · what's next · are we on track.* Dated history lives in the appendices and is never rewritten to match the present.
 
@@ -15,9 +15,9 @@
 |---|---|
 | **Current phase** | **Product implementation** — the pipeline is built; the surface is being exposed |
 | **Last completed milestone** | **M10 — AI Research Engine**, closed 2026-07-31 |
-| **Current milestone** | **M12.1 — the account attention list** *(M12 brought forward ahead of M11 and M7 — see §10)* |
-| **Latest commit** | `d954c93` — *M12.1 Step 5 — the first screen a customer can open* |
-| **Latest certification** | [`d954c930`](certification/reports/d954c930319a.md) — **CERTIFIED**, 2026-07-31 |
+| **Current milestone** | **M12.1.5 — Playground v2 / demo environment** *(inserted 2026-07-31, ahead of the rest of M12.2 — see §10)* |
+| **Latest commit** | `a565077` — *M12.2 — the account brief, where a number can be taken apart* |
+| **Latest certification** | [`d954c930`](certification/reports/d954c930319a.md) — **CERTIFIED**, 2026-07-31 *(predates M12.2; re-cut at milestone close)* |
 | **Branch** | `main`, tree clean, pushed |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
 | **Overall completion** | **~60%** by engineering effort (~187 of ~261–339 ew) — M10 (12–16 ew) closed, M9.5 (~3 ew) inserted and **not** closed, M12.1 in progress |
@@ -25,7 +25,7 @@
 
 **What works end to end today:** a simulated provider payload is ingested, normalised into claims, resolved into entities, diffed into observations, detected as business events, interpreted as workspace-specific signals, aggregated into a buying score, qualified into an opportunity a human commits to, narrated as a grounded explanation, reasoned into a **Decision Package**, and **researched into deterministic findings with a written brief** — all stored immutably, announced on the outbox, with complete provenance.
 
-**What a customer can now do:** sign in, choose a workspace, and open **one business screen** — the attention list, which answers *"which accounts should I work on today"* from real pipeline output. That is the first customer-visible surface in the repository's history, and it is one screen against ten pipeline stages.
+**What a customer can now do:** sign in, choose a workspace, and open **two business screens** — the attention list (*"which accounts should I work on today"*) and the account brief (*"why this one"*), the second of which shows a score **with the arithmetic that produced it**, line by line, reproducible with a division. That is the point at which Signora stops being rankable and starts being arguable.
 
 **🔴 What is currently broken in production, and must not be hidden:** **`reasoning@1` has no released model.** M9.5 changed the rendering protocol, which withdrew every protocol-1 release by derivation; `explanation_narration@1` re-earned its release, and `reasoning@1` did not — `granite3.3:2b` refuses under protocol 2 and `llama3.1:8b` remains UNMEASURABLE on this hardware. **The Decision Package stage would refuse at runtime.** Tests and smoke pass because they supply registry doubles. See §7.
 
@@ -57,7 +57,8 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | — | **M10** | **AI Research Engine** *(Internal Research)* | ✅ **Complete** | **2026-07-31** |
 | — | **M9.5** | **Evidence Citation Protocol + Certification** *(ADR-0031/0032, unplanned)* | 🟠 **Open — Step F incomplete** | — |
 | — | **M12.1** | **Account attention list — first customer surface** | ✅ **Complete** | **2026-07-31** |
-| 1 | **M12.2** | **Account Identity** ✅ · account brief ⏳ | 🔵 **In progress** | — |
+| — | **M12.1.5** | **Playground v2 — a demo environment worth reviewing against** *(inserted)* | 🔵 **In progress** | — |
+| 1 | **M12.2** | **Account Identity** ✅ · score breakdown ✅ · narration + package ⏳ | 🔵 **In progress** | — |
 | 3 | M12.3 | Evidence resolution and workflow actions | ⏳ Queued | — |
 | 4 | M12.4 | Research on demand | ⏳ Queued | — |
 | — | M11 | Recommendation Engine | 🟣 **Deferred 2026-07-31** — *not cancelled*; resumes on a product trigger, see §10 | — |
@@ -125,22 +126,37 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | 5 | `/opportunities` — the first business screen, composed from the frozen design system |
 | 6 | ⏳ Performance review — deferred to M12.3, where the row gains an affordance worth measuring |
 
-### 🔵 M12.2 — Account Identity shipped; the brief is next
+### 🔵 M12.2 — Account Identity and the score breakdown shipped
 
 | Delivered | |
 |---|---|
 | **`AccountIdentity`** | A read model, not a string. `Entity` stores no name — naming an account is the truth-resolution the graph declined to make, so it happens once, at read time, in `select_name` |
 | **`GET …/account-identities`** | Batched; a page costs one request. Returns the name **and** whether sources agreed |
 | **`EntityName`** | The canonical way Signora renders a company. Agreement is invisible; **disputed names are marked** |
-| **Wired into the list** | Names resolve in a second request and rows do not wait for them |
-| **Tests** | 20 resolver · 7 endpoint · 10 component · 3 Security Invariants |
-| ⏳ **Next** | The account brief (J2) |
+| **`GET …/accounts/{id}/score`** | The score **with its full ledger** — every business event that contributed, what each added, and why the ones that added nothing added nothing |
+| **`/opportunities/[accountId]`** | The account brief. `68 of 120 points` beside the number: a customer checks the score with a division rather than trusting it |
+| **Tests** | 20 resolver · 7 identity endpoint · 14 score endpoint · 25 component · 3 Security Invariants |
+| ⏳ **Next** | The narration and Decision Package panels — blocked in production by `reasoning@1`, see §7 |
+
+### 🔵 M12.1.5 — Playground v2, inserted 2026-07-31
+
+A demo environment worth reviewing a product against. Requested by the product owner after M12.2's brief showed that **the dataset, not the architecture, had become the constraint** (D17).
+
+| Delivered | |
+|---|---|
+| **`playground@2`** | Twelve recognisable companies, twelve **invented** business situations, spanning five months. `playground@1` is superseded, retained and unedited |
+| **The epoch belongs to the runner** | A scenario declares offsets and no date; the seeder anchors it relative to today. Asserted by a test, because a date baked into the narrative is what made v1 demonstrate seven-month-old evidence |
+| **Two scoring passes** | Opportunities qualify against scores as they stood five weeks ago; the scheduled sweep last ran three days ago. **Current, cooling and stale all occur and none is declared** |
+| **Three unreachable capabilities fixed** | See §5 — each was complete in every layer except the one that had to supply the evidence |
+| **Product review** | Recorded as D19 and D20 in [38-product-design-principles.md](docs/architecture/38-product-design-principles.md) |
 
 ### ⏳ Next tasks
 
 | Task | Scope |
 |---|---|
-| M12.2 | Entity names first, then the account brief — see §10 |
+| M12.1.5 | Close out: certification re-cut, then resume M12.2 |
+| M12.2 | The narration and Decision Package panels — the remaining half of the brief |
+| M12.3 | Evidence resolution, stage transitions, assignment — and the list's missing hierarchy (D20) |
 
 **Deterministic-first ordering, unchanged from M8 and M9:** storage before retrieval, retrieval before orchestration, generation and evaluation last. **Embeddings, pgvector, external retrieval and provider re-query are deferred**, each with a stated trigger.
 
@@ -238,6 +254,7 @@ Only open items. Closed findings live in the milestone records (Appendix A) and 
 | **[ADR-0031](docs/architecture/adr/0031-evidence-citation-protocol.md)** | **Protocol 2 shipped, and did not remove over-copying.** The renderer and parser no longer disagree — the citation is presented exactly as `EvidenceRef.parse` accepts it, and no prompt instructs a transformation. But `granite3.3:2b` now copies the token **plus the em dash plus the summary**: protocol 1 *closed* the citation with a bracket, protocol 2 opens it at the line start and never terminates it. **`reasoning@1` therefore has no released model**, and M9's Decision Package cannot be produced in production. A protocol 3 that terminates the citation is the obvious hypothesis and belongs to a ratified amendment, not to the session that found this. *(Historical statement of the original defect retained in the ADR.)* | 🔴 **High** | **M9.5, open** | `render.py` emits `[token]`; `EvidenceRef.parse` accepts only `token`; the prompt says *"cite by their exact reference strings"*. Three of five models were REFUSED for **obeying literally**, across two independent model families. Passing since M8 on one model's bracket-stripping habit. **T138 produced its clearest instance yet**: `research_synthesis@1` was REFUSED because the model stripped the `research_finding:` prefix on one case and not the other — same prompt, same model, same run. **PROPOSED, deliberately unimplemented** — an M8 defect whose fix invalidates every released prompt, now three | 🔴 **High** | M8 / M9.5 |
 | **F-1** | **One `ollama_model` setting versus several certified prompts.** ⚪ **Dormant rather than resolved.** Three of the four live prompts are now certified for `llama3.1:8b` alone, so one configuration currently serves every *released* path. It returns the moment `reasoning@1` earns a release on a different model — which is the likely outcome, since `llama3.1:8b` cannot measure it at all on this hardware | 🟠 **Medium** *(was High)* | M9.5 |
 | **F-2** | **The Evidence Set question.** *(Narrowed by [32](docs/architecture/32-knowledge-ontology.md) and [34](docs/architecture/34-knowledge-contract.md), then **downgraded by the Internal Research ruling**.)* The immediate exposure is closed by design: a `ResearchSynthesis` has **no address**, so no consumer can cite model-authored prose even deliberately, and `ResearchFinding` is DERIVED with `EvidenceRef.kind = research_finding`. What remains open is the *deferred* question — **may an ATTESTED external claim be cited?** — which arrives with external retrieval and not before | 🟠 **Medium** *(was High)* | Deferred with external retrieval |
+| **F-8** | **Three declared capabilities had no possible input, found by building a demo dataset (M12.1.5).** Only Apollo claimed `LEGAL_NAME`, so the naming resolver's `AGREED` and `DISPUTED` states — which M12.2 built the product to display — could never occur. Neither Crunchbase nor CoreSignal offered a domain, so a registry could reach an existing company only by naming it *identically*, and **every workforce fact resolved to a nameless entity of CoreSignal's own**: the account a seller could see and the account the hiring evidence described were two different rows. Crunchbase declared `acquisitions` in `known_fields` since M2.2 and never translated them, leaving `acquisition_announced`, `consolidation_underway` and its scoring weight dead at the source. **All three are fixed**; the finding kept open is the *class* — every one passed the tests it had, and none could run | 🟠 Medium | **Fixed M12.1.5; class unassigned** |
 | **F-3** | Signal catalog `limitations` / `suggested_validation` are **engineering-authored pending domain review** | 🟠 Medium | Unassigned |
 | **F-5** | `PublishableEvent` Protocol vs frozen domain events — requires a `type: ignore` at every publish site | 🟢 Low | Unassigned |
 | **F-6** | **Nine `CHECK` constraints cannot reject what they were written to reject.** `array_length('{}', 1)` returns NULL, and a `CHECK` fails only on FALSE — so `array_length(x, 1) >= 1` accepts the empty array. Proven end to end: a `signal` citing **no** business events inserts successfully. Affects `observation`, `business_event`, `signal`, `buying_score`, `ai_narration`, `ai_reasoning` across six milestones. **No production defect** — every write path goes through a domain type that refuses the empty case — but nine comments claim a guarantee that does not hold. Repaired only in migration `0018`, which found it. See [36](docs/architecture/36-empty-array-checks.md) | 🟠 Medium | `T-CK1`, unscheduled |
@@ -325,6 +342,18 @@ Delivered: the first workspace-wide read path (`attention_list`), `GET /workspac
 **Why.** The attention list currently names each account by a truncated identifier — `6b8efd21` where a company name belongs — because no module in the ratified dependency graph can reach both workflow and entity names. **A seller cannot triage a list of identifiers**, so M12.1's screen is presently demonstrable rather than usable. Resolving names is a *smaller* change than the brief (one Knowledge Graph read endpoint plus a frontend join) and it is what converts M12.1 from a proof into a tool. Shipping it first makes the existing screen useful weeks before the brief would.
 
 Recorded as **D2** in [38-product-design-principles.md](docs/architecture/38-product-design-principles.md).
+
+*Both halves shipped: names, then the score breakdown. The narration and Decision Package panels remain.*
+
+### M12.1.5 — inserted 2026-07-31, because the data had become the constraint
+
+**A Category 1 insertion and the product owner's call.** M12.2's brief was the first surface with enough detail to expose what the demo dataset could not do: every account read *"evidence expired"*, and the account whose story was *stale evidence* showed a fresh ledger (D17). Design decisions, UX reviews and prompt evaluations were all being made against data that could not exercise them.
+
+**Scope:** a demonstration dataset optimised for product review rather than for unit testing — twelve recognisable companies, twelve invented business situations, anchored on today so freshness varies on its own; complete identity coverage; determinism preserved; and the same pipeline, with no demo-only path.
+
+**What it cost, and what it found.** The dataset itself was the smaller half. Building it surfaced **three declared capabilities with no possible input** (§7, F-8) — the naming resolver's multi-source states, every workforce fact's route to the company it described, and the entire acquisition chain. Each was complete in every layer except the one that had to supply the evidence, and each passed the tests it had.
+
+**The rule this establishes:** a fixture set rich enough to demonstrate the product is also the first thing that exercises every declared attribute end to end. It belongs *before* the surfaces that depend on it, not after.
 
 ### M11 — deferred 2026-07-31, and why it is not cancelled
 

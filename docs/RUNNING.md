@@ -82,17 +82,43 @@ Sign-in is Better Auth in Next.js. On a local stack, use the sign-in page at <ht
 
 ---
 
-## Sample data — the Product Playground
+## The Product Playground — what `make demo` showcases
 
 `make demo` seeds **twelve accounts through the real pipeline**: provider simulation → ingestion → normalization → knowledge graph → observations → business events → signals → buying scores → opportunities.
 
-**There is one product.** The seeder runs the same function the pipeline suite runs, over the `playground@1` scenario instead of `baseline@1`. No branch anywhere knows it is a playground; the only difference is which scenario file is named.
-
-Twelve accounts, twelve *shapes* — a technology migration, a hiring surge, a provider disagreement, an acquisition, a rapid grower, a stale account, a false positive, a silent account, a rebranding, a contested account, a slow burn, and one that is cooling. Every company is fictional and every domain is on the RFC 2606 `.example` reserved TLD, so nothing here can be mistaken for a claim about a real business.
+**There is one product.** The seeder runs the same function the pipeline suite runs, over the `playground@2` scenario instead of `baseline@1`. No branch anywhere knows it is a playground; the only things that differ are which scenario file is named and where its timeline is anchored.
 
 **Sign in once before seeding.** Better Auth owns users and hashes its own passwords, so the seeder cannot create one without either committing a credential or reaching into another system's schema. Sign in at <http://localhost:3000/sign-in>, then re-run `make demo-seed`; it enrols every signed-in user in the seeded workspace and prints what it did.
 
-**Expect four qualified opportunities, not twelve.** The other eight do not meet the qualification threshold — the silent account has one attribute and nothing else, the false positive has loud intent with no corroboration, the stale one's evidence expired. **That is the product working.** A playground producing twelve qualified opportunities would be validating a list nobody will ever see.
+### The twelve stories
+
+Twelve companies you will recognise, and **twelve business situations that are entirely invented.** Nothing here was observed or reported, and none of it is a claim about any company's actual behaviour, plans, finances or purchasing intent. The dataset says so in its own body, so the notice travels with a screenshot.
+
+| Account | The story | What the pipeline makes of it |
+|---|---|---|
+| **NVIDIA** | Hiring and revenue both moving | Expansion opportunity, on two independent grounds |
+| **Databricks** | A round closed, and the hiring that follows one | Expansion opportunity · a funding line that counted **zero**, with its reason |
+| **Snowflake** | An acquisition, and a live evaluation beside it | Active evaluation · consolidation underway |
+| **Stripe** | Cutting headcount while evaluating AI tooling | **Contested** — both readings live, the minority marked |
+| **Atlassian** | A security initiative | Active evaluation, from intent alone |
+| **Figma** | Behavioural intent and nothing else | **Nobody has named it** — the row shows its real identifier |
+| **HubSpot** | A marketing stack replaced two months ago | Displacement · modernization, at **recent** weight — and **cooling** |
+| **Salesforce** | A new revenue leader | New decision maker — neutral, not expansionary |
+| **Adobe** | An ERP replacement whose evidence has aged | **Ageing** evidence at 30% · a **disputed name** (registry vs trading) |
+| **MongoDB** | An evaluation that has just passed its shelf life | **Stale** — correct when read, not refreshed since |
+| **Datadog** | A reduction, with nothing pulling the other way | Contraction risk · **stale** |
+| **Twilio** | The CFO departed | Decision maker departed — barely qualifying, and honest about it |
+
+### What is demonstrated, and none of it is set
+
+Every state below is produced by the pipeline from the dates in the scenario. **Not one is declared anywhere.**
+
+- **Score spread 1–50**, not a wall of similar numbers.
+- **Freshness varies on its own** — fresh (100%), recent (60%) and ageing (30%) all appear in the ledgers, because the narrative spans five months and the shortest relevance window is ninety days.
+- **Current, cooling and stale** all occur. Opportunities are qualified against the scores as they stood five weeks ago, and the scheduled re-scoring last ran three days ago — so an account whose evidence expired inside that gap reads stale, exactly as a customer would see it.
+- **All nine signal types** in the catalog fire, across all three postures.
+- **All four identity states**: agreed, single-source, disputed, and nobody-has-named-it.
+- **A line that counted zero**, with the reason it counted nothing.
 
 ---
 
@@ -121,7 +147,7 @@ All three are documented at **<http://localhost:8000/docs>**.
 - Each row shows **why now** (new evidence, a changed model, evidence ageing out), how far the score moved, and a badge only when the evidence is cooling or stale.
 - A **contested** account ranks above a quiet one at the same score.
 - Company names resolve in a **second request** and appear as they arrive; rows do not wait for them.
-- A name your providers **disagree** about shows an ⓘ naming who reported the one displayed. In the Playground this is **Fabrikam Industrial**.
+- A name your providers **disagree** about shows an ⓘ naming who reported the one displayed. In the Playground this is **Adobe** — the registry's name beside the trading one.
 - An account nothing has named shows its **real identifier**, never a placeholder.
 - **Clicking the name opens the brief.** Only the name — the rest of the row is not a link, and does not pretend to be.
 
@@ -142,5 +168,5 @@ All three are documented at **<http://localhost:8000/docs>**.
 - **No sort or filter controls.** A client-side sort would reorder only the loaded page while presenting it as the top of the whole list *(D4)*.
 - **One page, no infinite scroll.** The cursor works; the UI does not page yet.
 - **The ledger is only known to read well at a handful of lines.** A forty-line account has not been seen *(D16)*.
-- **Every Playground account reads "evidence expired", and two of the four are unnamed.** The simulated payloads describe events months in the past, so scoring asks its question *as of* a historical moment and the reading is expired by the time you look at it. The screens are correct; the scenario's dating is not, and the twelve temporal shapes it names are therefore not being demonstrated *(D17, D18)*.
+- **The ledger repeats itself on a composite signal.** An account whose expansion rests on two grounds shows two identical sentences, because the line names the *hypothesis* and not the evidence beneath it *(D19)*.
 - **`reasoning@1` has no released model**, so the Decision Package stage would refuse at runtime. It is not on either screen, so you will not see it — but the pipeline is not whole.

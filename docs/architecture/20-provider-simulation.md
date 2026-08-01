@@ -499,3 +499,35 @@ When webhook support lands, **simulated webhooks traverse the real HTTP endpoint
 The simulator produces realistic provider payloads through nine stages, entering the system **only** at the Provider Port. Datasets are immutable and versioned; scenarios are seeded and deterministic; payloads are vendor-shaped and treated as untrusted; faults surface through the Port's real failure semantics; delivery matches the four real integration modes; the adapter satisfies the identical production contract, verified by a contract suite run against both implementations. Four test-enforced guards prevent production activation. Every payload carries the dataset, scenario, seed, and correlation identifiers that make AI quality changes attributable.
 
 **The framework's worth reduces to one question: can any downstream stage tell the difference?** Every contract above is chosen so the answer is no.
+
+---
+
+## `playground@2` — the demonstration dataset *(M12.1.5, 2026-07-31)*
+
+`playground@1` established that twelve *evidence* shapes were worth having. It did not survive contact with the product: every account read *"evidence expired"*, and the account whose story was *stale evidence* showed a fresh ledger (D17). `playground@2` supersedes it. **The first version is retained and unedited** — a published dataset is immutable, and every result recorded against it would otherwise become uncheckable.
+
+### Real companies, invented stories
+
+The cast names twelve companies a reviewer recognises, because a revenue-intelligence demonstration is illegible without them. **Every business event, signal, score and narrative attached to them is fictional**, declared in the dataset's own `_comment` and asserted by a test — including that the notice names screenshots, which is how this data leaves the context that explains it.
+
+`playground@1` took the opposite decision and used placeholder companies. That was the safer choice and it was overruled by the product owner on demonstration grounds; the mitigation is that the declaration is *inside the artifact*, so it travels with any copy of it.
+
+### The epoch belongs to the runner, not the narrative
+
+A scenario declares offsets. **Where those offsets sit is the decision of whoever tells the story** — the same narrative is today's book or a historical replay depending only on the epoch. `playground@2` therefore carries no date at all, and a test asserts it never acquires one; the Playground seeder anchors it relative to today and owns that number.
+
+This is what makes freshness vary on its own. The narrative spans roughly five months against a shortest relevance window of ninety days, so *current*, *recent*, *ageing* and *expired* all occur — produced by the band arithmetic from the dates in the file. **No state is declared anywhere.**
+
+### Three claims the simulator could describe and the pipeline could never produce
+
+Building the dataset surfaced three gaps of one kind: a capability complete in every layer except the one that had to supply the evidence. None was a demo problem; each was a shipped feature with **no possible input**.
+
+| Gap | What was unreachable |
+|---|---|
+| Only Apollo claimed `LEGAL_NAME` | `AGREED` and `DISPUTED` — the naming resolver's two multi-source states, which M12.2 built the product to display |
+| Neither Crunchbase nor CoreSignal offered a domain | Identity resolves on provider id, exact domain, or legal name **plus** country. A registry could reach an existing company only by naming it *identically*, so disagreeing produced a second company rather than a disagreement about one. Worse: **every workforce fact resolved to a nameless entity of CoreSignal's own** — the account a seller could see and the account the hiring evidence described were two different rows, and the interesting one had no name |
+| Crunchbase declared `acquisitions` in `known_fields` and never translated them | `acquisition_announced` (taxonomy), `consolidation_underway` (catalog) and its weight in the scoring model — a complete chain, dead at the source since M2.2 |
+
+All three are fixed in the mappers, and each is faithful to the real vendor independent of the demo: a registry reports a company's homepage and its name; a workforce provider identifies companies by website or it could not tell two employers with the same name apart; and a registry that lists acquisitions is reporting them.
+
+**The finding worth keeping is the shape**: a fixture set rich enough to demonstrate the product is also the first thing that exercises every declared attribute end to end. Three capabilities passed every test they had and could not run.

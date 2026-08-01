@@ -54,6 +54,7 @@ async def _tracked(
     name: str,
     *,
     anchor: str = "acme-corp",
+    moment: datetime | None = None,
     **scenario: Any,
 ) -> tuple[UUID, UUID, UUID, datetime]:
     """The whole pipeline, ending in qualified opportunities.
@@ -62,7 +63,7 @@ async def _tracked(
     run *this* function rather than a parallel seeding path.
     """
     workspace_id, user_id, entity_id, moment = await _scored(
-        factory, admin_factory, name, anchor=anchor, **scenario
+        factory, admin_factory, name, anchor=anchor, moment=moment, **scenario
     )
     # The scenario's evidence is thin, and Signora's shipped threshold
     # declines it — correctly. Rather than tune a product default to make a

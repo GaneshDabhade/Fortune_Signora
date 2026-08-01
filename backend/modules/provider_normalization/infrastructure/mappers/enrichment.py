@@ -23,6 +23,7 @@ from modules.provider_normalization.domain.mapper import (
 )
 from modules.provider_normalization.domain.outcome import Rejection, RejectionReason
 from modules.provider_normalization.domain.vocabulary import (
+    AcquisitionValue,
     ClaimAttribute,
     FundingValue,
     RevenueBand,
@@ -153,13 +154,31 @@ class CrunchbaseMapper(ProviderMapper):
 
     def subject(self, payload: Mapping[str, Any]) -> SubjectHint:
         org = payload.get("organization", {})
+        website = str(org.get("website_url", ""))
         return SubjectHint(
-            provider_external_id=str(org.get("uuid", "")), legal_name=org.get("name")
+            provider_external_id=str(org.get("uuid", "")),
+            # **Added at M12.1.5, and it closes a real gap.** Identity resolves
+            # on provider id, exact domain, or legal name *plus* country. With
+            # no domain, a registry could reach an existing company only by
+            # naming it identically — so `DISPUTED` was unreachable through this
+            # provider by construction: a differing name produced a second
+            # company rather than a disagreement about one.
+            domain=website.removeprefix("https://").removeprefix("http://") or None,
+            legal_name=org.get("name"),
         )
 
     def translate(
         self, payload: Mapping[str, Any], observed_at: datetime
     ) -> Iterator[MappedClaim | Rejection]:
+        # A company registry's primary fact is what the company is *called*.
+        # Claimed rather than only hinted, so the naming resolver has a second
+        # source to agree or disagree with — until M12.1.5 exactly one mapper
+        # emitted this attribute, which made `AGREED` and `DISPUTED` states the
+        # product could render but the pipeline could never produce.
+        name = payload.get("organization", {}).get("name")
+        if isinstance(name, str) and name:
+            yield MappedClaim(ClaimAttribute.LEGAL_NAME, name, observed_at)
+
         for index, round_ in enumerate(payload.get("funding_rounds", [])):
             announced, bad = parse_date(
                 round_.get("announced_on"), f"funding_rounds[{index}].announced_on"
@@ -181,14 +200,65 @@ class CrunchbaseMapper(ProviderMapper):
                 observed_at,
             )
 
+        # **Declared in `known_fields` since M2.2 and never translated.**
+        # Everything downstream of this claim already existed — the
+        # `acquisition_announced` rule, its taxonomy entry, the
+        # `consolidation_underway` signal and its weight in the scoring model —
+        # so an acquisition has been detectable in every layer except the one
+        # that had to produce the evidence. The whole chain was unreachable.
+        for index, acquisition in enumerate(payload.get("acquisitions", [])):
+            counterparty = acquisition.get("acquiree_name")
+            if not counterparty:
+                yield Rejection(
+                    RejectionReason.MISSING_REQUIRED_FIELD,
+                    f"acquisitions[{index}].acquiree_name — an acquisition with no "
+                    "counterparty names nothing a seller could act on",
+                )
+                continue
+
+            announced, bad_date = parse_date(
+                acquisition.get("announced_on"), f"acquisitions[{index}].announced_on"
+            )
+            if bad_date:
+                yield bad_date
+
+            yield MappedClaim(
+                ClaimAttribute.ACQUISITION,
+                AcquisitionValue(
+                    counterparty=str(counterparty),
+                    announced_on=announced,
+                    amount=acquisition.get("price_usd"),
+                    currency="USD" if acquisition.get("price_usd") is not None else None,
+                ),
+                observed_at,
+            )
+
 
 class CoreSignalMapper(ProviderMapper):
     provider = "coresignal"
-    known_fields = frozenset({"company_id", "workforce", "hiring_by_function", "employee_changes"})
+    known_fields = frozenset(
+        {"company_id", "website", "workforce", "hiring_by_function", "employee_changes"}
+    )
     ignored_fields = _FIXTURE_MARKER
 
     def subject(self, payload: Mapping[str, Any]) -> SubjectHint:
-        return SubjectHint(provider_external_id=str(payload.get("company_id", "")))
+        """**The domain is what makes workforce evidence reach a company.**
+
+        Added at M12.1.5. Identity resolves on provider id, exact domain, or
+        legal name plus country, and this mapper emitted only the first — its
+        own key, which no other provider shares. So every hiring surge, every
+        reduction and every executive appointment resolved to an entity of this
+        provider's own, carrying no name, no domain and no firmographics.
+
+        The account a seller could see and the account the workforce evidence
+        described were **two different rows**, and the interesting one was the
+        one with no name on it.
+        """
+        website = str(payload.get("website", ""))
+        return SubjectHint(
+            provider_external_id=str(payload.get("company_id", "")),
+            domain=website.removeprefix("https://").removeprefix("http://") or None,
+        )
 
     def translate(
         self, payload: Mapping[str, Any], observed_at: datetime

@@ -12,7 +12,7 @@ values, and it does not store an attribute anywhere.
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Final
 from uuid import UUID, uuid4
 
@@ -58,8 +58,6 @@ from tests.pipeline import normalize_all, queries, resolve_all
 
 pytestmark = pytest.mark.integration
 
-REPLAY = ReplayRecord("baseline", 1, "1", "0.1.0-fixture", "instant", "baseline@1")
-
 #: Each provider's generator, capability, and the mapper it feeds. Every one
 #: goes through the same Provider Port — the graph never learns which is
 #: which, and could not behave differently if it wanted to (AC-21).
@@ -88,12 +86,29 @@ def _adapter(
     capability: ProviderCapability,
     *,
     scenario: tuple[str, int] = DEFAULT_SCENARIO,
+    epoch: datetime | None = None,
 ) -> SimulatedProviderAdapter:
+    """One provider's view of a scenario.
+
+    `epoch` is **where the scenario's timeline is anchored**. Steps declare an
+    offset from it, so the epoch decides whether the story reads as history or
+    as the last few months. The default is the clock's own — fixed, which is
+    what every pipeline test needs. The Playground anchors relative to today
+    instead, because a demonstration of *"which accounts deserve attention"*
+    that shows seven-month-old evidence is demonstrating the wrong thing.
+
+    Determinism is untouched: the epoch is an explicit input, recorded in the
+    clock's own description, and the same epoch always produces the same
+    timeline. Nothing here reads a clock it was not given.
+    """
     name, version = scenario
+    clock = VirtualClock(mode=ClockMode.INSTANT) if epoch is None else VirtualClock(
+        mode=ClockMode.INSTANT, epoch=epoch
+    )
     timeline = build_timeline(
         load_scenario(name, version),
         load(name, version),
-        VirtualClock(mode=ClockMode.INSTANT),
+        clock,
         seed=1,
         providers=[provider.value],
     )
@@ -102,7 +117,13 @@ def _adapter(
         capabilities=frozenset({capability}),
         generator=generator,  # type: ignore[arg-type]
         plan=DeliveryPlan(timeline, page_size=100),
-        replay=REPLAY,
+        # Names the scenario actually running. It was pinned to `baseline@1`
+        # for every run, which meant a Playground payload recorded provenance
+        # claiming it replayed a scenario it had never touched — a false lead in
+        # the first place anyone would look.
+        replay=ReplayRecord(
+            name, 1, str(version), "0.1.0-fixture", "instant", f"{name}@{version}"
+        ),
     )
 
 
@@ -122,6 +143,7 @@ async def _ingest_every_provider(
     *,
     scenario: tuple[str, int] = DEFAULT_SCENARIO,
     subjects: tuple[str, ...] = DEFAULT_SUBJECTS,
+    epoch: datetime | None = None,
 ) -> None:
     """Ingest a scenario, one provider sync per (provider, subject).
 
@@ -134,7 +156,9 @@ async def _ingest_every_provider(
         factory, workspace_id=workspace_id, user_id=user_id
     ) as session:
         for provider, generator, capability in PROVIDERS:
-            adapter = _adapter(provider, generator, capability, scenario=scenario)
+            adapter = _adapter(
+                provider, generator, capability, scenario=scenario, epoch=epoch
+            )
             for subject in subjects:
                 await build_run_sync(
                     session,
@@ -156,10 +180,11 @@ async def _run_pipeline(
     shuffled_by: int | None = None,
     scenario: tuple[str, int] = DEFAULT_SCENARIO,
     subjects: tuple[str, ...] = DEFAULT_SUBJECTS,
+    epoch: datetime | None = None,
 ) -> tuple[UUID, UUID]:
     workspace_id, user_id = await _workspace(factory, name)
     await _ingest_every_provider(
-        factory, workspace_id, user_id, scenario=scenario, subjects=subjects
+        factory, workspace_id, user_id, scenario=scenario, subjects=subjects, epoch=epoch
     )
     await normalize_all(factory, workspace_id, user_id)
     await resolve_all(factory, admin_factory, workspace_id, user_id, shuffled_by=shuffled_by)
@@ -214,18 +239,28 @@ class TestIdentityResolution:
 
         assert {"apollo", "builtwith", "bombora"} <= providers
 
-    async def test_a_provider_offering_no_matchable_identity_stays_separate(
+    async def test_workforce_evidence_reaches_the_company_it_describes(
         self,
         session_factory: async_sessionmaker[AsyncSession],
         admin_session_factory: async_sessionmaker[AsyncSession],
     ) -> None:
-        """CoreSignal supplies only its own key — nothing another provider
-        can be compared against.
+        """**Inverted at M12.1.5, and the inversion is a defect being fixed.**
 
-        Binding it anyway, on the coincidence that the fixtures use the same
-        subject name, would mean treating one provider's private identifier
-        as another's. That is the over-merge this module is built to refuse,
-        and an under-merge is the correct, visible failure.
+        This previously asserted that CoreSignal *stays separate*, because it
+        supplied only its own key and nothing another provider could be
+        compared against. That was a true statement about the mapper and a
+        correct under-merge — but the consequence was that **every hiring
+        surge, reduction and executive appointment resolved to an entity of
+        CoreSignal's own**, carrying no name, no domain and no firmographics.
+        The account a seller could see and the account the workforce evidence
+        described were two different rows, and the interesting one had no name
+        on it.
+
+        The mapper now offers the domain the provider actually reports, so the
+        evidence lands on the company. **The under-merge rule it was protecting
+        is untouched and is asserted where it is real** — in
+        `test_resolution.py`, against the resolver rather than against whichever
+        fixture happened to be impoverished.
         """
         workspace_id, user_id = await _run_pipeline(session_factory, admin_session_factory, "Graph")
 
@@ -244,7 +279,7 @@ class TestIdentityResolution:
             ).scalar_one()
 
         assert coresignal.state == IdentityState.IDENTIFIED.value
-        assert coresignal.entity_id != acme
+        assert coresignal.entity_id == acme
 
     async def test_every_binding_explains_itself(
         self,
