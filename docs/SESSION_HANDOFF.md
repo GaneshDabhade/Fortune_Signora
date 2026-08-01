@@ -14,9 +14,9 @@
 |---|---|
 | **Last completed** | **M10 AI Research Engine** — T131–T138, closed 2026-07-31. *Internal Research; every citable thing deterministic.* |
 | **Inserted, and open** | **M9.5 Evidence Citation Protocol** (ADR-0031). Steps A–D landed; **Step F is incomplete** |
-| **Last completed** | **M12.1.5 Playground v2** — closed 2026-07-31. A demo environment worth reviewing a product against |
-| **Current** | **M12.2 the account brief.** Identity, score breakdown, commitment and **narration** shipped. Decision Package deferred until `reasoning@1` is released |
-| **Head at handoff** | see `git log` — M12.2 the narration slice |
+| **Last completed** | **M12.2 the account brief** — closed 2026-08-01. Identity, score breakdown, commitment and narration; the Decision Package is *blocked*, not skipped |
+| **Current** | **M12.3 evidence and actions.** *What to check* shipped; citation resolution and stage transitions remain |
+| **Head at handoff** | see `git log` — M12.3 the what-to-check slice |
 | **Latest certification** | [`d954c930`](../certification/reports/d954c930319a.md) — CERTIFIED, 2026-07-31 |
 | **Phase** | **Product implementation.** Ten pipeline stages built and frozen behind them; the surface is being exposed. |
 | **Overall completion** | **~60%** by engineering effort (~187 of ~261–339 ew) |
@@ -336,11 +336,17 @@ All three are fixed. **The class is the finding:** each passed every test it had
 
 ### What comes next
 
-1. ~~F-10~~ **Fixed 2026-08-01.** `_HeadcountRule` evaluates one measure at a time; the pipeline now reports *"Grew headcount 17%"* and *"Grew open roles 56%"* as two conclusions with their own baselines. **The lesson worth carrying:** the correct pattern was already in the same file — `BuyingIntentSurge` groups by topic because *"a rollup across topics would produce a number that means nothing to anybody"* — and had simply never been generalised to the axis next door. When a module states a principle, check whether it applies to more than the case that prompted it.
-2. **F-11 needs a ruling before it can be fixed.** `_normalise` does not strip leading zeros, so evidence carrying `2026-08-01` cannot ground a model writing *"August 1, 2026"* — `01` is not `1`. Deterministic, silent, and it discards valid output; any date in the first nine days of a month fails. The one-line fix *loosens* a grounding check inside a frozen module, which is a product-owner decision rather than a coding-session one. **Recorded because it was first misdiagnosed:** narration succeeded on 2 of 12, then on 10 of 12 after a *date* fix with no prompt change. If a success rate moves on something other than the prompt, the prompt was not the problem.
-3. **M12.3** — and Review 1 makes it one coherent slice rather than four errands. Its four high findings are the same shape: the list needs a *why* that discriminates between rows (R1-01), the brief needs to stop contradicting the list (R1-02, R1-04), and a citation needs to open (Perplexity). Full register: [39-product-review-findings.md](architecture/39-product-review-findings.md).
-4. **M12.3** — evidence resolution (a citation becomes a record), stage transitions and assignment. It also owns **D20** (the list renders a 50 and a 1 identically) and **D23** (an owner is a UUID with no read path to a person).
-5. **The Decision Package stays unbuilt** until `reasoning@1` earns a release. Building UI around an unavailable capability ships a panel that cannot be filled.
+1. **Citation resolution (J3)** — a ledger line and a narration sentence open to the fact beneath them. Both already carry `signal_id` and `business_event_id` on the wire and neither can be opened. **This is the largest remaining trust gap**: the brief's whole argument is *you can check this*, and the check stops one level short.
+2. **Stage transitions and assignment (J4)** — and it forces **D23**, because an owner is a UUID with no read path to a person.
+3. **The list slice** — Review 1's R1-01, R1-02, R1-05 and D20 are all about *which* account you pick, not what you do after. They belong together and not in M12.3.
+4. **F-11 needs a ruling** before it can be fixed: the one-line change loosens a grounding check inside a frozen module.
+5. **The Decision Package stays unbuilt** until `reasoning@1` earns a release.
+
+### The thing M12.3 proved, which is worth more than the feature
+
+**The answer to *"what should I do?"* was already in the repository.** `limitations` and `suggested_validation` have been in `signals@1.json` since M5A, versioned and reviewed like code, and nothing had ever displayed them. No model was needed, no new table, no new module — an interface layer over an artifact that already existed.
+
+**Before reaching for new intelligence, check what the deterministic half already knows and has never been asked.** That is the second time in three slices this has paid: F-10 was fixed by generalising a principle the same file had already articulated.
 
 ### What this inherits
 

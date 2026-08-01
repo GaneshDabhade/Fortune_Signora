@@ -86,12 +86,12 @@ async def _still_there(
 ) -> bool:
     """Has the workspace survived since the last account?
 
-    **A guard rather than a note, because the note failed three times.** The
-    test suite truncates every table in this database, so a `pytest` run in
-    another terminal deletes the Playground underneath a narration in
-    progress. The run then continues writing into a workspace that no longer
-    exists and reports nothing at the end — a silent failure whose symptom
-    ("narration produced nothing") points nowhere near its cause.
+    **A guard rather than a note, because the note failed three times.** Two
+    things truncate this database — the test suite, and a second `demo-seed` —
+    and either one deletes the Playground underneath a narration in progress.
+    The run then continues writing into a workspace that no longer exists and
+    reports nothing at the end: a silent failure whose symptom ("narration
+    produced nothing") points nowhere near its cause.
 
     One cheap query per account turns several minutes of looking in the wrong
     place into one sentence.
@@ -138,10 +138,14 @@ async def main() -> int:
 
             for entity_id in entities:
                 if not await _still_there(admin_factory, workspace_id):
+                    # Names what happened, not who did it. The first version
+                    # blamed `pytest` because that was the cause the first
+                    # three times — and the fourth was a second `demo-seed`,
+                    # which the message would have sent someone away from.
                     print(
-                        "\nThe Playground workspace disappeared mid-run. The test suite "
-                        "truncates this database — something ran `pytest` against it.\n"
-                        "Re-seed and re-run, with nothing else touching the database."
+                        "\nThe Playground workspace was truncated mid-run. Both the test "
+                        "suite and a second `make demo-seed` do that.\n"
+                        "Re-seed and re-run, with nothing else touching this database."
                     )
                     return 1
 

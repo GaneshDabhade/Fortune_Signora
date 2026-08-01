@@ -1137,3 +1137,211 @@ class TestTheBriefCanSpeakPlainly:
                 if not spec.get("description")
             )
             assert undocumented == [], f"{name}: {undocumented} reach the wire undocumented"
+
+
+async def _live_account(
+    session_factory: async_sessionmaker[AsyncSession],
+    admin_session_factory: async_sessionmaker[AsyncSession],
+) -> tuple[UUID, UUID, UUID, Any]:
+    """One account whose hypotheses are current at wall-clock now.
+
+    The Playground anchors its narrative relative to today, which is the only
+    seeded data in the repository where "live" means anything. `atlassian` is
+    the smallest such account — one intent surge, one hypothesis — so the test
+    asserts the endpoint rather than the scenario.
+    """
+    from datetime import UTC, datetime, timedelta
+
+    now = datetime.now(UTC)
+    today = datetime(now.year, now.month, now.day, tzinfo=UTC)
+    return await _tracked(
+        session_factory,
+        admin_session_factory,
+        "live",
+        scenario=("playground", 2),
+        subjects=("atlassian",),
+        epoch=today - timedelta(days=150),
+        moment=now,
+        anchor="atlassian",
+    )
+
+
+async def _validation(
+    client: AsyncClient, key_pair: KeyPair, user_id: UUID, workspace_id: UUID, account_id: UUID
+) -> Any:
+    return await client.get(
+        f"/workspaces/{workspace_id}/accounts/{account_id}/validation",
+        headers=_auth(key_pair, user_id),
+    )
+
+
+class TestTheBriefSaysWhatToCheck:
+    """`GET …/accounts/{account_id}/validation` — *"what should I do?"*
+
+    **The first surface that is about action rather than about truth**, and it
+    needed no model: `limitations` and `suggested_validation` have been in the
+    Signal Catalog since M5A and had never been displayed.
+    """
+
+    async def test_a_real_account_says_what_to_confirm(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**Seeded from the Playground, not the baseline, and that is the
+        test.** Guidance is only offered for *live* hypotheses, and the
+        baseline scenario describes events months in the past — at wall-clock
+        now every one of its signals has passed its shelf life, so it can only
+        ever produce an empty answer. An account with something current is the
+        only way to assert this endpoint says anything at all."""
+        workspace_id, user_id, entity_id, _ = await _live_account(
+            session_factory, admin_session_factory
+        )
+
+        response = await _validation(client, key_pair, user_id, workspace_id, entity_id)
+
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert body["hypotheses"], "an account with live signals and no guidance"
+        for entry in body["hypotheses"]:
+            assert entry["suggested_validation"], "a hypothesis with nothing to check"
+
+    async def test_every_hypothesis_states_what_it_cannot_prove(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**The load-bearing half.** A confident number invites over-reading,
+        and this is the only place that says what it cannot support. A type
+        claiming no limitations would be asserting certainty the evidence
+        cannot carry — the catalog refuses to declare one."""
+        workspace_id, user_id, entity_id, _ = await _live_account(
+            session_factory, admin_session_factory
+        )
+
+        body = (
+            await _validation(client, key_pair, user_id, workspace_id, entity_id)
+        ).json()
+
+        assert body["hypotheses"]
+        for entry in body["hypotheses"]:
+            assert entry["limitations"], f"{entry['title']} claims no limitations"
+
+    async def test_the_guidance_never_mentions_this_account(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**It is not a recommendation, and this is what keeps it from
+        becoming one.** The guidance is a property of the hypothesis type — the
+        same for every account and every workspace — so nothing in it may be
+        specific to the company being read. A field that started naming the
+        account would be an inference wearing the catalog's clothes."""
+        workspace_id, user_id, entity_id, _ = await _live_account(
+            session_factory, admin_session_factory
+        )
+
+        body = (
+            await _validation(client, key_pair, user_id, workspace_id, entity_id)
+        ).json()
+
+        assert body["hypotheses"]
+        for entry in body["hypotheses"]:
+            prose = " ".join((*entry["limitations"], *entry["suggested_validation"]))
+            assert str(entity_id) not in prose
+            assert str(workspace_id) not in prose
+
+    async def test_the_most_relevant_hypothesis_is_first(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """Ordering is the product's judgement about what to validate first,
+        and `relevance` is the only declaration of importance the platform
+        holds — the workspace's own, never an inference."""
+        workspace_id, user_id, entity_id, _ = await _live_account(
+            session_factory, admin_session_factory
+        )
+
+        order = {"primary": 0, "supporting": 1, "contextual": 2, "ignored": 3}
+        body = (
+            await _validation(client, key_pair, user_id, workspace_id, entity_id)
+        ).json()
+        ranks = [order[entry["relevance"]] for entry in body["hypotheses"]]
+
+        assert ranks == sorted(ranks)
+
+    async def test_an_account_with_nothing_live_is_an_empty_answer_not_a_404(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """*"Nothing is currently held about this account"* is a real answer.
+        A 404 would say the account does not exist, which is a different and
+        wrong statement."""
+        user = uuid4()
+        workspace = await _workspace(client, key_pair, user)
+
+        response = await _validation(client, key_pair, user, workspace, uuid4())
+
+        assert response.status_code == 200, response.text
+        assert response.json()["hypotheses"] == []
+
+    async def test_a_non_member_gets_404(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        workspace = await _workspace(client, key_pair, uuid4())
+
+        response = await _validation(client, key_pair, uuid4(), workspace, uuid4())
+
+        assert response.status_code == 404
+
+    async def test_an_unauthenticated_request_is_refused(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        workspace = await _workspace(client, key_pair, uuid4())
+
+        response = await client.get(
+            f"/workspaces/{workspace}/accounts/{uuid4()}/validation"
+        )
+
+        assert response.status_code == 401
+
+    async def test_another_workspace_s_account_yields_nothing(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        mine_workspace, mine_user, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        _, _, theirs_entity, _ = await _tracked(
+            session_factory, admin_session_factory, "contoso"
+        )
+
+        response = await _validation(
+            client, key_pair, mine_user, mine_workspace, theirs_entity
+        )
+
+        assert response.status_code == 200
+        assert response.json()["hypotheses"] == []
+
+    async def test_every_response_field_is_documented(self, client: AsyncClient) -> None:
+        schema = (await client.get("/openapi.json")).json()
+        schemas = schema["components"]["schemas"]
+
+        for name in ("AccountValidationResponse", "HypothesisValidationResponse"):
+            undocumented = sorted(
+                field
+                for field, spec in schemas[name]["properties"].items()
+                if not spec.get("description")
+            )
+            assert undocumented == [], f"{name}: {undocumented} reach the wire undocumented"

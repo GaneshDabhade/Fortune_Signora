@@ -19,6 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 from modules.ai_platform.interface.router import router as narration_router
 from modules.buying_score_engine.interface.router import router as buying_score_router
 from modules.knowledge_graph.interface.router import router as knowledge_graph_router
+from modules.signal_engine.interface.router import router as validation_router
 from modules.opportunity_engine.interface.router import router as opportunity_router
 from modules.workspace_tenancy.infrastructure.composition import build_query_service
 from modules.workspace_tenancy.interface.errors import (
@@ -126,6 +127,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(knowledge_graph_router)
     app.include_router(buying_score_router)
     app.include_router(narration_router)
+    app.include_router(validation_router)
 
     @app.get("/health", response_model=HealthResponse, tags=["operations"])
     async def health() -> HealthResponse:

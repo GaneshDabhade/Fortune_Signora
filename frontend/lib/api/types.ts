@@ -231,3 +231,30 @@ export interface AccountNarration {
   vendor: string;
   generated_at: string;
 }
+
+/**
+ * One live hypothesis, and what a seller should do about it.
+ *
+ * **Not a recommendation.** Nothing here is about this account: `limitations`
+ * and `suggested_validation` are properties of the hypothesis *type*, owned and
+ * versioned by the Signal Catalog. What `expansion_opportunity` fails to prove
+ * is identical on Tuesday and Wednesday and for every workspace.
+ */
+export interface HypothesisValidation {
+  signal_id: string;
+  title: string;
+  /** What it *proposes*, phrased as a possibility — a signal suggests, never asserts. */
+  hypothesis: string;
+  relevance: Relevance;
+  /** **What this hypothesis does not prove.** Never empty. */
+  limitations: string[];
+  /** What to confirm before acting. Never empty. */
+  suggested_validation: string[];
+}
+
+/** What to check on an account, and what its evidence cannot tell you. */
+export interface AccountValidation {
+  account_id: string;
+  /** Most relevant first. Empty when nothing is currently held — an answer, not an error. */
+  hypotheses: HypothesisValidation[];
+}

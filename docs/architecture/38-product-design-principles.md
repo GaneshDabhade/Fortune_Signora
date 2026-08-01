@@ -527,3 +527,67 @@ Two conclusions, each with its own baseline, each named for what it measured —
 **The pattern was already in the same file, one class down.** `BuyingIntentSurge` groups by topic, with the reasoning written out: *"a company researching two unrelated topics is two pieces of news. A rollup across topics would produce a number that means nothing to anybody."* Employees and open roles are two unrelated measures on precisely that argument. **The fix was to apply a principle the module had already articulated and then not generalised** — which is the more useful lesson than the arithmetic.
 
 Four regression tests pin it, including the exact 900 → 34,000 shape.
+
+---
+
+# M12.3 — what to build, decided before writing code
+
+**The milestone's goal, as set by the product owner:** *reduce uncertainty after an account has been selected*, and begin answering **"what should I do?"** — with no Recommendation Engine, no invented AI, and only deterministic information the platform already holds.
+
+Every deferred finding was re-read against that goal. Most did not survive it.
+
+## What the deferred findings actually belong to
+
+| Finding | Verdict |
+|---|---|
+| **R1-01** the *why now* line repeats 11 times of 12 | **Not M12.3.** It is a *list* improvement — it changes which account you select, not what you do after selecting one. Real and high-value; it belongs to a list slice with R1-05 and D20. |
+| **R1-02** trigger and evidence state contradict on a row | **Not M12.3**, same reason. It is a trust bug on the list. |
+| **R1-04** the brief never mentions cooling | **Yes.** It is on the brief, it is a contradiction between two screens, and it costs trust exactly where M12.3 is trying to build it. Small. |
+| **R1-05 / R1-07 / D20** ties, and a 1-point account | **Not M12.3.** List hierarchy. |
+| **R1-06** the workflow line is identical everywhere | **Resolves itself** the moment assignment exists, which M12.3 introduces. No action. |
+| **Perplexity — a citation cannot be followed** | **Yes.** This is J3 and it is the differentiator. |
+| **D3 / D15 — no next action** | **Yes.** This is the milestone. |
+| **D23** an owner is a UUID with no name | **Yes, forced.** Assignment cannot ship without it. |
+| **D22** the Playground cannot show a rising score | Playground scope, not product. |
+| **F-11** leading zeros in grounding | Needs a product-owner ruling; loosens a guarantee inside a frozen module. |
+
+## The thing already in the repository that answers *"what should I do?"*
+
+**The Signal Catalog carries `limitations` and `suggested_validation` on every signal type, and nothing has ever displayed them.**
+
+```
+expansion_opportunity
+  limitations:
+    - Investment ahead of growth says nothing about budget for *your* category —
+      capacity spend is often funded by cutting elsewhere.
+    - It does not indicate that a purchase decision is underway, only that the
+      company is adding capability.
+    - Growth in one division does not imply growth in the one you sell to.
+  suggested_validation:
+    - Check which functions the recent hiring is in, and whether they are the
+      ones that would use your product.
+    - Ask on a first call which division the investment sits in — the signal
+      cannot tell you.
+```
+
+That is **action guidance, written for a customer, versioned, reviewed like code, and entirely deterministic.** It is the answer the milestone asked for, and it has been sitting in `signals@1.json` since M5A.
+
+**Why this is not "displaying more data".** `suggested_validation` tells a seller *what to do next*. `limitations` tells them *what the score cannot support*, which stops the over-reading that a confident number invites. **Naming the uncertainty is the uncertainty reduction** — it is the Constitution's *"make uncertainty legible rather than eliminate it"* applied to the moment before someone acts.
+
+**Why it is not a recommendation.** It says nothing about *this* account. It is a property of the *hypothesis type* — what `expansion_opportunity` fails to prove is identical on Tuesday and Wednesday and for every workspace, which is why the catalog owns it. A recommendation would be account-specific and inferred; this is neither.
+
+## The interaction, challenged before it was built
+
+**Rejected — bolting the guidance onto the score endpoint.** It would have been one fewer request and it merges *how the number was computed* with *what to do about it*. Those are different questions asked at different moments, and a response answering both would be read as one.
+
+**Rejected — deriving the guidance from the score's ledger.** The ledger names contributing signals, so the guidance could be keyed to what actually drove the number. But the Buying Score Engine is downstream of the Signal Engine, and asking it for catalog prose would put the score in the business of explaining hypotheses it only weighs. **The live signals are the right input**: a hypothesis worth validating is one that is *current*, not one that happens to carry points.
+
+**Rejected — showing the guidance on the attention list.** Twelve accounts × three limitations each is a wall. It belongs where somebody has already chosen to concentrate.
+
+**Chosen:** the Signal Engine owns it, keyed by account, derived from that account's **live** signals. `GET /workspaces/{id}/accounts/{account_id}/validation`. No new persistence, no new module, no duplicated logic — the catalog is already loaded and the signals are already queryable.
+
+## The objection that must travel with it — F-3
+
+**`limitations` and `suggested_validation` are engineering-authored pending domain review** (finding F-3, open since M5A). Displaying them promotes unreviewed text to customer-facing product copy, and *"ask on a first call which division the investment sits in"* is advice a real seller will act on.
+
+The content is good. That is not the same as it being **signed**. Shipping this to a paying customer requires closing F-3 first; shipping it to the Playground does not. **Recorded here so the milestone cannot quietly convert a known gap into a customer promise.**

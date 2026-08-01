@@ -8,6 +8,7 @@ import type {
   AccountNarration,
   AccountOpportunity,
   AccountScore,
+  AccountValidation,
   CursorPage,
   Workspace,
 } from '@/lib/api/types';
@@ -167,6 +168,33 @@ export function useAccountNarration(
     enabled: workspaceId !== null && accountId !== null,
     retry: (attempt, error) =>
       !(error instanceof ApiError && error.status === 404) && attempt < 2,
+    staleTime: 5 * 60_000,
+  });
+}
+
+/**
+ * What to check on this account, and what its evidence cannot tell you.
+ *
+ * **No 404 to handle.** An account with nothing currently held returns an empty
+ * list, because *"nothing is live here"* is a real answer and a 404 would say
+ * the account does not exist — a different and wrong statement.
+ *
+ * Held as long as the identities are: this is catalog prose keyed by hypothesis
+ * type, and it changes when a domain expert edits a versioned artifact, not
+ * when a score moves.
+ */
+export function useAccountValidation(
+  workspaceId: string | null,
+  accountId: string | null,
+) {
+  return useQuery({
+    queryKey: queryKeys.accountValidation(workspaceId ?? '', accountId ?? ''),
+    queryFn: () =>
+      apiRequest<AccountValidation>(
+        `/workspaces/${workspaceId}/accounts/${accountId}/validation`,
+        { workspaceId: workspaceId ?? undefined },
+      ),
+    enabled: workspaceId !== null && accountId !== null,
     staleTime: 5 * 60_000,
   });
 }

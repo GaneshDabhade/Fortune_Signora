@@ -13,6 +13,7 @@ import {
 } from '@/components/intelligence/contributions';
 import { EntityName } from '@/components/intelligence/entity-name';
 import { NarrativeBlock } from '@/components/intelligence/narration';
+import { ValidationBlock } from '@/components/intelligence/validation';
 import {
   ContestedSince,
   OpportunityMomentum,
@@ -25,6 +26,7 @@ import {
   useAccountNarration,
   useAccountOpportunity,
   useAccountScore,
+  useAccountValidation,
 } from '@/lib/query/hooks';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
@@ -37,8 +39,8 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  *
  * ### The order the questions are answered in
  *
- * *What changed* → *how much attention* → *how long that holds* → *why* → *what
- * disagrees*. A reader stops as soon as they are convinced, which is what
+ * *What changed* → *how much attention* → *how long that holds* → *what to do
+ * next* → *why* → *what disagrees*. A reader stops as soon as they are convinced, which is what
  * progressive disclosure means on a page rather than in a panel: **information
  * ordered so most of it is never read**, not information hidden behind a
  * control.
@@ -74,6 +76,7 @@ export default function AccountBriefPage() {
   const { data: score, isLoading, error } = useAccountScore(workspaceId, accountId);
   const { data: opportunity } = useAccountOpportunity(workspaceId, accountId);
   const { data: narration } = useAccountNarration(workspaceId, accountId);
+  const { data: validation } = useAccountValidation(workspaceId, accountId);
   const { data: identities, isLoading: nameLoading } = useAccountIdentities(workspaceId, [
     accountId,
   ]);
@@ -142,6 +145,13 @@ export default function AccountBriefPage() {
           {opportunity ? (
             <ContestedSince opportunity={opportunity} contestedNow={score.contested} />
           ) : null}
+
+          {/* **Action before evidence.** A reader who is already convinced
+              gets what to do next without scrolling past the arithmetic; one
+              who is not continues to the ledger below. That is what
+              progressive disclosure means on a page — information ordered so
+              most of it is never read. */}
+          {validation ? <ValidationBlock validation={validation} /> : null}
 
           <section className="flex flex-col gap-3">
             <h2 className="text-sm font-semibold text-content">What contributed</h2>

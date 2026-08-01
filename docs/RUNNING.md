@@ -156,9 +156,10 @@ GET /workspaces/{workspace_id}/account-identities?ids=<uuid>&ids=<uuid>
 GET /workspaces/{workspace_id}/accounts/{account_id}/score
 GET /workspaces/{workspace_id}/accounts/{account_id}/opportunity
 GET /workspaces/{workspace_id}/accounts/{account_id}/narration
+GET /workspaces/{workspace_id}/accounts/{account_id}/validation
 ```
 
-All five are documented at **<http://localhost:8000/docs>**.
+All six are documented at **<http://localhost:8000/docs>**.
 
 ### Expected behaviour — the list
 
@@ -179,6 +180,7 @@ All five are documented at **<http://localhost:8000/docs>**.
 - **Attention is split by posture** (expansion / risk / context) and never netted. Two accounts can score the same and mean opposite things.
 - **Every line that produced the score is listed**, largest first, in the order the pipeline recorded — including lines that counted **zero**, with the reason they counted nothing.
 - On a **contested** account, the lines disagreeing with the majority reading are marked, and a note says plainly that Signora has neither picked a side nor split the difference.
+- **"Before you act"** lists what to confirm for each live hypothesis, and hides *what it cannot tell you* behind a disclosure. **No model produced any of it** — it is the Signal Catalog's own guidance, versioned and reviewed like code, and it had never been displayed before M12.3.
 - An account with no score shows a **designed empty state**, not an error.
 
 ### Known limitations, and what is intentionally unfinished

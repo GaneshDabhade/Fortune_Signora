@@ -15,8 +15,8 @@
 |---|---|
 | **Current phase** | **Product implementation** — the pipeline is built; the surface is being exposed |
 | **Last completed milestone** | **M10 — AI Research Engine**, closed 2026-07-31 |
-| **Current milestone** | **M12.2 — the account brief** *(resumed after M12.1.5; Decision Package deferred until `reasoning@1` is released — see §10)* |
-| **Latest commit** | `2fdc40b` — *M12.2 — the brief learns what changed* |
+| **Current milestone** | **M12.3 — evidence and actions** *(Decision Package still deferred until `reasoning@1` is released — see §10)* |
+| **Latest commit** | `188953d` — *F-10 — one conclusion per measure, never one across measures* |
 | **Latest certification** | [`d954c930`](certification/reports/d954c930319a.md) — **CERTIFIED**, 2026-07-31 *(predates M12.2; re-cut at milestone close)* |
 | **Branch** | `main`, tree clean, pushed |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
@@ -25,7 +25,7 @@
 
 **What works end to end today:** a simulated provider payload is ingested, normalised into claims, resolved into entities, diffed into observations, detected as business events, interpreted as workspace-specific signals, aggregated into a buying score, qualified into an opportunity a human commits to, narrated as a grounded explanation, reasoned into a **Decision Package**, and **researched into deterministic findings with a written brief** — all stored immutably, announced on the outbox, with complete provenance.
 
-**What a customer can now do:** sign in, choose a workspace, and open **two business screens** — the attention list (*"which accounts should I work on today"*) and the account brief (*"why this one"*), the second of which shows a score **with the arithmetic that produced it**, line by line, reproducible with a division. That is the point at which Signora stops being rankable and starts being arguable.
+**What a customer can now do:** sign in, choose a workspace, and open **two business screens** — the attention list (*"which accounts should I work on today"*) and the account brief (*"why this one"*). The brief shows a score **with the arithmetic that produced it**, the movement since somebody committed, a grounded explanation in plain language, and — since M12.3 — **what to check before acting on it, and what the evidence cannot tell you.** That last part answers *"what should I do?"* with no model and no recommendation: it is domain-authored catalog prose that had been in the repository since M5A and never displayed.
 
 **🔴 What is currently broken in production, and must not be hidden:** **`reasoning@1` has no released model.** M9.5 changed the rendering protocol, which withdrew every protocol-1 release by derivation; `explanation_narration@1` re-earned its release, and `reasoning@1` did not — `granite3.3:2b` refuses under protocol 2 and `llama3.1:8b` remains UNMEASURABLE on this hardware. **The Decision Package stage would refuse at runtime.** Tests and smoke pass because they supply registry doubles. See §7.
 
@@ -58,8 +58,8 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | — | **M9.5** | **Evidence Citation Protocol + Certification** *(ADR-0031/0032, unplanned)* | 🟠 **Open — Step F incomplete** | — |
 | — | **M12.1** | **Account attention list — first customer surface** | ✅ **Complete** | **2026-07-31** |
 | — | **M12.1.5** | **Playground v2 — a demo environment worth reviewing against** *(inserted)* | ✅ **Complete** | **2026-07-31** |
-| 1 | **M12.2** | Identity ✅ · score ✅ · commitment ✅ · **narration ✅** · package 🚫 | 🔵 **In progress** | — |
-| 3 | M12.3 | Evidence resolution and workflow actions | ⏳ Queued | — |
+| — | **M12.2** | Identity ✅ · score ✅ · commitment ✅ · narration ✅ · package 🚫 *(blocked, not skipped)* | ✅ **Complete** | **2026-08-01** |
+| 1 | **M12.3** | **Evidence and actions** — what to check ✅ · citations ⏳ · transitions ⏳ | 🔵 **In progress** | — |
 | 4 | M12.4 | Research on demand | ⏳ Queued | — |
 | — | M11 | Recommendation Engine | 🟣 **Deferred 2026-07-31** — *not cancelled*; resumes on a product trigger, see §10 | — |
 | 5 | M7 | Timeline | ⏳ Queued | — |
@@ -153,11 +153,26 @@ A demo environment worth reviewing a product against. Requested by the product o
 | **Three unreachable capabilities fixed** | See §5 — each was complete in every layer except the one that had to supply the evidence |
 | **Product review** | Recorded as D19 and D20 in [38-product-design-principles.md](docs/architecture/38-product-design-principles.md) |
 
+### 🔵 M12.3 — evidence and actions
+
+**The milestone's goal, set by the product owner:** reduce uncertainty *after* an account has been selected, and begin answering **"what should I do?"** — with no Recommendation Engine, no invented AI, and only deterministic information the platform already holds.
+
+| Delivered | |
+|---|---|
+| **`GET …/accounts/{id}/validation`** | Per live hypothesis: what it proposes, **what it does not prove**, and what to confirm before acting. Owned by the Signal Engine |
+| **"Before you act"** | The checks open; the limitations one disclosure away, in the accessibility tree either way. No checkbox — nothing owns per-user state, and a control that forgets is worse than none |
+| **The source** | `limitations` and `suggested_validation` have been in `signals@1.json` since **M5A** and had never been displayed. No model, no new table, no new module |
+| **Tests** | 9 endpoint · 13 component |
+| ⏳ **Next** | Citation resolution (J3), then stage transitions and assignment (J4) |
+
+> **🟠 It ships to the Playground and not to a customer until F-3 closes.** The catalog's guidance is *engineering-authored pending domain review*, and *"ask on a first call which division the investment sits in"* is advice a real seller will act on. Good content is not the same as signed content.
+
 ### ⏳ Next tasks
 
 | Task | Scope |
 |---|---|
-| M12.2 | **Narration** — the brief's missing narrative half, and the only AI capability with a current release |
+| M12.3 | **Citation resolution** — a ledger line and a narration sentence open to the fact beneath them. The largest remaining trust gap |
+| M12.3 | Stage transitions and assignment, which also forces **D23** (an owner is a UUID with no name) |
 | M12.2 | The Decision Package panel, **on the trigger `reasoning@1` earns a release** and not before |
 | M12.3 | Evidence resolution, stage transitions, assignment — and the list's missing hierarchy (D20) |
 
