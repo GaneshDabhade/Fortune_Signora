@@ -15,7 +15,7 @@
 | **Last completed** | **M10 AI Research Engine** — T131–T138, closed 2026-07-31. *Internal Research; every citable thing deterministic.* |
 | **Inserted, and open** | **M9.5 Evidence Citation Protocol** (ADR-0031). Steps A–D landed; **Step F is incomplete** |
 | **Last completed** | **M12.2 the account brief** — closed 2026-08-01. Identity, score breakdown, commitment and narration; the Decision Package is *blocked*, not skipped |
-| **Current** | **M12.3 evidence and actions.** *What to check* shipped; citation resolution and stage transitions remain |
+| **Current** | **M12.3 evidence and actions.** *What to check* and *ledger citations* shipped; narration citations and stage transitions remain |
 | **Head at handoff** | see `git log` — M12.3 the what-to-check slice |
 | **Latest certification** | [`d954c930`](../certification/reports/d954c930319a.md) — CERTIFIED, 2026-07-31 |
 | **Phase** | **Product implementation.** Ten pipeline stages built and frozen behind them; the surface is being exposed. |
@@ -336,7 +336,7 @@ All three are fixed. **The class is the finding:** each passed every test it had
 
 ### What comes next
 
-1. **Citation resolution (J3)** — a ledger line and a narration sentence open to the fact beneath them. Both already carry `signal_id` and `business_event_id` on the wire and neither can be opened. **This is the largest remaining trust gap**: the brief's whole argument is *you can check this*, and the check stops one level short.
+1. ~~Citation resolution~~ **shipped for the ledger.** A contribution opens to the business event's provider readings. **Narration citations still do not open** — a sentence shows "3 facts" and the tokens are `signal_contribution`, `buying_score` and `opportunity`, which need three more resolvers. The ledger was the most-clicked path and went first.
 2. **Stage transitions and assignment (J4)** — and it forces **D23**, because an owner is a UUID with no read path to a person.
 3. **The list slice** — Review 1's R1-01, R1-02, R1-05 and D20 are all about *which* account you pick, not what you do after. They belong together and not in M12.3.
 4. **F-11 needs a ruling** before it can be fixed: the one-line change loosens a grounding check inside a frozen module.

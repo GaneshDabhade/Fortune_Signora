@@ -531,3 +531,57 @@ Building the dataset surfaced three gaps of one kind: a capability complete in e
 All three are fixed in the mappers, and each is faithful to the real vendor independent of the demo: a registry reports a company's homepage and its name; a workforce provider identifies companies by website or it could not tell two employers with the same name apart; and a registry that lists acquisitions is reporting them.
 
 **The finding worth keeping is the shape**: a fixture set rich enough to demonstrate the product is also the first thing that exercises every declared attribute end to end. Three capabilities passed every test they had and could not run.
+
+---
+
+## Proportionality review — 2026-08-01, before M12.3's second slice
+
+> **The simulator exists to make Signora better. It is not a product.** Reviewed against one question, applied to every candidate: *what specific Signora capability does this validate?* Where the answer was unclear, the item is recorded and not built.
+
+### What the Playground already exercises
+
+Measured against the twelve seeded accounts, not asserted:
+
+| Capability | Exercised |
+|---|---|
+| Providers with generators | **5 of 5** |
+| Business event types | **10 of 11** — all but `revenue_contraction` |
+| Signal types | **9 of 9**, across all three postures |
+| Evidence states | current · cooling · stale |
+| Identity states | agreed · single-source · disputed · nobody-has-named-it |
+| Contested scoring | one account, with the minority named |
+| Uncounted ledger lines | three accounts |
+| Corroboration | one business event with **two** providers agreeing |
+| Narration | ~10 of 12 accounts, real model, real release rule |
+| Opportunity lifecycle | `tracking` only |
+| Research | **never** |
+
+### Required Now — **none**
+
+**That is the finding.** Every path M12.3's citation resolution must render already occurs in the Playground: a single-provider event, a corroborated one, a signal with several contributing events, a dissenting signal, an uncounted contribution, an expired signal, and narration citing all four evidence kinds. The four kinds themselves — `opportunity`, `buying_score`, `signal_contribution`, `business_event` — each address a real row, so nothing about the data blocks the slice.
+
+**One corroborated event out of sixteen is the right number, not a shortfall.** In reality most facts come from one provider; a Playground where everything is corroborated would be less realistic, not more. It sits on the top-ranked account, which is the one a reviewer opens.
+
+**The temptation resisted:** building a disagreement scenario *before* the viewer that would display it. The honest sequence is to build the viewer against real data and let it show what is thin — otherwise the scenario is written to flatter a design nobody has tested.
+
+### Required Soon
+
+**S-1 · Two providers disagreeing about a value.** Adobe disagrees about a *name*; no account disagrees about a *number*. The evidence viewer's *"did the providers corroborate?"* column is only interesting when the answer is sometimes no, and R2-01 — identical guidance on two accounts — is partly the same gap: the checks point at evidence that is never in tension. **Validates:** J3's second iteration, and the explainability claim that disagreement is surfaced rather than resolved. **Cost:** one entity, two providers, different employee counts. *Trigger:* the evidence viewer exists and reads thin.
+
+**S-2 · `revenue_contraction` never fires.** One of eleven business event types has never run end to end — the counterpart to `revenue_growth`, feeding `contraction_risk`. **Validates:** a declared capability that no gate has ever executed, which is precisely the class F-10 came from. **Cost:** one Apollo step with a lower revenue band on an existing account. *Trigger:* the next dataset version; it does not deserve one of its own.
+
+**S-3 · Research on a Playground account.** `make demo` produces no research artifact, so M12.4's surface will have nothing to render. **Validates:** M12.4 directly. *Trigger:* M12.4 starts.
+
+### Future — recorded, not built
+
+**Provider faults.** The fault injector exists and the Playground never uses it. No customer-visible behaviour currently depends on a provider failing, and building outage scenarios before there is a surface that reports degraded ingestion would be simulator work with no product to validate.
+
+**Volume.** Twelve accounts answer *does the row scan in a column*; they do not answer *does the list work at three hundred*. D6, D10 and D20 are all partly waiting on this. **Deferred deliberately:** the list's hierarchy questions are unanswered at twelve, and answering them at three hundred first would design for a scale no customer has yet.
+
+**Several workspaces with different profiles.** Would exercise relevance and scoring-model variation. Nothing in the product currently lets a customer see two workspaces at once.
+
+**Opportunity lifecycle beyond `tracking`.** Every account sits at `tracking` because **only a human may move one** — the simulator must not, and a seeder that manufactured `engaged` rows would be forging the one thing in the pipeline that records a human decision. M12.3's transitions are exercised by a reviewer clicking, which is the correct way.
+
+### The rule this review establishes
+
+**A simulator gap is only a gap when a shipped or next-slice capability cannot be demonstrated without it.** Everything else is a note. The Playground earned its milestone by finding F-10, D17, D18, D19, D22 and F-9 — and the way it keeps earning it is by growing *after* the product asks a question the data cannot answer, never before.

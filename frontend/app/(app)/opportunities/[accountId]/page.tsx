@@ -12,6 +12,7 @@ import {
   ScoreArithmetic,
 } from '@/components/intelligence/contributions';
 import { EntityName } from '@/components/intelligence/entity-name';
+import { EvidenceDrawer, useEvidenceDrawer } from '@/components/intelligence/evidence';
 import { NarrativeBlock } from '@/components/intelligence/narration';
 import { ValidationBlock } from '@/components/intelligence/validation';
 import {
@@ -61,12 +62,12 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  *
  * ### What is deliberately not here yet
  *
- * The business events beneath each ledger line, and the Decision Package —
+ * The Decision Package —
  * which stays unbuilt until `reasoning@1` holds a release, because UI around an
  * unavailable capability is a panel that cannot be filled. **Nothing on this
- * page hints at either of them.** A control
- * that looks clickable and is not costs more trust than the missing feature
- * does — and a panel that says *"coming soon"* costs more than both.
+ * page hints at it.** A control that looks clickable and is not costs more
+ * trust than the missing feature does — and a panel that says *"coming soon"*
+ * costs more than both.
  */
 export default function AccountBriefPage() {
   const { accountId } = useParams<{ accountId: string }>();
@@ -77,6 +78,7 @@ export default function AccountBriefPage() {
   const { data: opportunity } = useAccountOpportunity(workspaceId, accountId);
   const { data: narration } = useAccountNarration(workspaceId, accountId);
   const { data: validation } = useAccountValidation(workspaceId, accountId);
+  const evidence = useEvidenceDrawer();
   const { data: identities, isLoading: nameLoading } = useAccountIdentities(workspaceId, [
     accountId,
   ]);
@@ -157,10 +159,20 @@ export default function AccountBriefPage() {
             <h2 className="text-sm font-semibold text-content">What contributed</h2>
             <Card>
               <CardBody className="py-1">
-                <ContributionList score={score} />
+                <ContributionList score={score} onOpenEvidence={evidence.open} />
               </CardBody>
             </Card>
           </section>
+
+          {/* **Where the argument ends.** Every line above is Signora's
+              reasoning about a fact; this is the fact. Rendered once for the
+              page rather than per line — a dozen mounted dialogs to show one
+              is a dozen too many. */}
+          <EvidenceDrawer
+            workspaceId={workspaceId}
+            eventId={evidence.eventId}
+            onClose={evidence.close}
+          />
         </>
       ) : null}
     </div>

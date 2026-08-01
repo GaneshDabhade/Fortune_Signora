@@ -9,6 +9,7 @@ import type {
   AccountOpportunity,
   AccountScore,
   AccountValidation,
+  BusinessEventEvidence,
   CursorPage,
   Workspace,
 } from '@/lib/api/types';
@@ -195,6 +196,30 @@ export function useAccountValidation(
         { workspaceId: workspaceId ?? undefined },
       ),
     enabled: workspaceId !== null && accountId !== null,
+    staleTime: 5 * 60_000,
+  });
+}
+
+/**
+ * The readings beneath one business event — where a citation ends.
+ *
+ * **Fetched only when a citation is opened.** Every ledger line names an event
+ * and most are never followed; loading all of them with the brief would be a
+ * dozen requests to answer a question nobody asked. `enabled` is the whole
+ * mechanism.
+ *
+ * Immutable once written — a business event is superseded, never edited — so a
+ * cached copy cannot go subtly wrong.
+ */
+export function useBusinessEvent(workspaceId: string | null, eventId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.businessEvent(workspaceId ?? '', eventId ?? ''),
+    queryFn: () =>
+      apiRequest<BusinessEventEvidence>(
+        `/workspaces/${workspaceId}/business-events/${eventId}`,
+        { workspaceId: workspaceId ?? undefined },
+      ),
+    enabled: workspaceId !== null && eventId !== null,
     staleTime: 5 * 60_000,
   });
 }

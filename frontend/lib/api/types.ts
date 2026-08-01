@@ -258,3 +258,36 @@ export interface AccountValidation {
   /** Most relevant first. Empty when nothing is currently held — an answer, not an error. */
   hypotheses: HypothesisValidation[];
 }
+
+/** One provider's reading — the fact under the fact. */
+export interface EvidenceObservation {
+  provider: string;
+  attribute: string;
+  /** What it was before, or null on a first reading. **The half that makes a
+   * change checkable**: a current value alone cannot be argued with. */
+  previous_value: unknown;
+  current_value: unknown;
+  direction: string;
+  /** When the *provider* observed it — never when Signora stored it. */
+  observed_at: string;
+}
+
+/**
+ * What happened, and every reading that says so.
+ *
+ * **The end of a citation.** Every other surface says something *about* a fact
+ * — the signal interprets it, the score weighs it, the narration describes it.
+ * The observations here are the only content Signora did not write.
+ */
+export interface BusinessEventEvidence {
+  id: string;
+  type_key: string;
+  /** Signora's sentence, rendered from the same fields the readings carry. */
+  summary: string;
+  occurred_at: string;
+  /** Every provider whose readings independently support this. **One is not a
+   * weakness** — it is a differently-supported fact. */
+  corroborating_providers: string[];
+  /** Oldest first: a change reads forwards. */
+  observations: EvidenceObservation[];
+}

@@ -1345,3 +1345,191 @@ class TestTheBriefSaysWhatToCheck:
                 if not spec.get("description")
             )
             assert undocumented == [], f"{name}: {undocumented} reach the wire undocumented"
+
+
+class TestACitationResolvesToARecord:
+    """`GET …/business-events/{event_id}` — *"prove it."*
+
+    **The end of every citation in the product.** Every other surface says
+    something *about* a fact; the observations here are the only content
+    Signora did not write, which is why a citation has to end at them rather
+    than at another summary.
+    """
+
+    async def _an_event(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        user_id: UUID,
+        workspace_id: UUID,
+        account_id: UUID,
+    ) -> str:
+        """A business event id, taken from a ledger line the way a reader would."""
+        score = (
+            await _score(client, key_pair, user_id, workspace_id, account_id)
+        ).json()
+        return str(score["contributions"][0]["business_event_id"])
+
+    async def test_a_ledger_line_opens_to_the_readings_beneath_it(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**The whole point.** A contribution names a business event; the
+        event opens to what a provider actually reported."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        event_id = await self._an_event(client, key_pair, user_id, workspace_id, entity_id)
+
+        response = await client.get(
+            f"/workspaces/{workspace_id}/business-events/{event_id}",
+            headers=_auth(key_pair, user_id),
+        )
+
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert body["summary"].strip()
+        assert body["observations"], "a citation that resolves to no evidence at all"
+
+    async def test_every_reading_names_its_provider_and_when_it_was_seen(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """A reading with no source is not evidence. `observed_at` is the
+        provider's moment, never Signora's — the distinction is what lets a
+        reader judge staleness independently of when the pipeline ran."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        event_id = await self._an_event(client, key_pair, user_id, workspace_id, entity_id)
+
+        body = (
+            await client.get(
+                f"/workspaces/{workspace_id}/business-events/{event_id}",
+                headers=_auth(key_pair, user_id),
+            )
+        ).json()
+
+        for observation in body["observations"]:
+            assert observation["provider"].strip()
+            assert observation["observed_at"]
+            assert observation["current_value"] is not None
+
+    async def test_corroboration_is_reported_rather_than_assumed(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """A fact supported by one provider is not a weaker fact — it is a
+        differently-supported one. Every provider that reported it appears,
+        and the observations cannot name a provider the event omits."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        event_id = await self._an_event(client, key_pair, user_id, workspace_id, entity_id)
+
+        body = (
+            await client.get(
+                f"/workspaces/{workspace_id}/business-events/{event_id}",
+                headers=_auth(key_pair, user_id),
+            )
+        ).json()
+
+        assert body["corroborating_providers"]
+        reporting = {o["provider"] for o in body["observations"]}
+        assert reporting <= set(body["corroborating_providers"])
+
+    async def test_the_readings_are_oldest_first(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """A change reads forwards. Newest-first would make *"29,000 → 34,000"*
+        arrive backwards."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        event_id = await self._an_event(client, key_pair, user_id, workspace_id, entity_id)
+
+        body = (
+            await client.get(
+                f"/workspaces/{workspace_id}/business-events/{event_id}",
+                headers=_auth(key_pair, user_id),
+            )
+        ).json()
+        seen = [o["observed_at"] for o in body["observations"]]
+
+        assert seen == sorted(seen)
+
+    async def test_another_workspace_s_evidence_is_404(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**A citation is a bare identifier.** If a foreign event answered
+        differently from a missing one, evidence would be enumerable across
+        tenants by guessing."""
+        mine_workspace, mine_user, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        theirs_workspace, theirs_user, theirs_entity, _ = await _tracked(
+            session_factory, admin_session_factory, "contoso"
+        )
+        theirs_event = await self._an_event(
+            client, key_pair, theirs_user, theirs_workspace, theirs_entity
+        )
+
+        response = await client.get(
+            f"/workspaces/{mine_workspace}/business-events/{theirs_event}",
+            headers=_auth(key_pair, mine_user),
+        )
+
+        assert response.status_code == 404
+
+    async def test_an_event_that_does_not_exist_is_404(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        user = uuid4()
+        workspace = await _workspace(client, key_pair, user)
+
+        response = await client.get(
+            f"/workspaces/{workspace}/business-events/{uuid4()}",
+            headers=_auth(key_pair, user),
+        )
+
+        assert response.status_code == 404
+
+    async def test_an_unauthenticated_request_is_refused(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        workspace = await _workspace(client, key_pair, uuid4())
+
+        response = await client.get(
+            f"/workspaces/{workspace}/business-events/{uuid4()}"
+        )
+
+        assert response.status_code == 401
+
+    async def test_every_response_field_is_documented(self, client: AsyncClient) -> None:
+        schema = (await client.get("/openapi.json")).json()
+        schemas = schema["components"]["schemas"]
+
+        for name in ("BusinessEventEvidenceResponse", "ObservationResponse"):
+            undocumented = sorted(
+                field
+                for field, spec in schemas[name]["properties"].items()
+                if not spec.get("description")
+            )
+            assert undocumented == [], f"{name}: {undocumented} reach the wire undocumented"

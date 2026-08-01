@@ -16,7 +16,7 @@
 | **Current phase** | **Product implementation** — the pipeline is built; the surface is being exposed |
 | **Last completed milestone** | **M10 — AI Research Engine**, closed 2026-07-31 |
 | **Current milestone** | **M12.3 — evidence and actions** *(Decision Package still deferred until `reasoning@1` is released — see §10)* |
-| **Latest commit** | `188953d` — *F-10 — one conclusion per measure, never one across measures* |
+| **Latest commit** | `ab85b14` — *M12.3 — what to check before you act* |
 | **Latest certification** | [`d954c930`](certification/reports/d954c930319a.md) — **CERTIFIED**, 2026-07-31 *(predates M12.2; re-cut at milestone close)* |
 | **Branch** | `main`, tree clean, pushed |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
@@ -59,7 +59,7 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | — | **M12.1** | **Account attention list — first customer surface** | ✅ **Complete** | **2026-07-31** |
 | — | **M12.1.5** | **Playground v2 — a demo environment worth reviewing against** *(inserted)* | ✅ **Complete** | **2026-07-31** |
 | — | **M12.2** | Identity ✅ · score ✅ · commitment ✅ · narration ✅ · package 🚫 *(blocked, not skipped)* | ✅ **Complete** | **2026-08-01** |
-| 1 | **M12.3** | **Evidence and actions** — what to check ✅ · citations ⏳ · transitions ⏳ | 🔵 **In progress** | — |
+| 1 | **M12.3** | **Evidence and actions** — what to check ✅ · citations ✅ · transitions ⏳ | 🔵 **In progress** | — |
 | 4 | M12.4 | Research on demand | ⏳ Queued | — |
 | — | M11 | Recommendation Engine | 🟣 **Deferred 2026-07-31** — *not cancelled*; resumes on a product trigger, see §10 | — |
 | 5 | M7 | Timeline | ⏳ Queued | — |
@@ -163,7 +163,9 @@ A demo environment worth reviewing a product against. Requested by the product o
 | **"Before you act"** | The checks open; the limitations one disclosure away, in the accessibility tree either way. No checkbox — nothing owns per-user state, and a control that forgets is worse than none |
 | **The source** | `limitations` and `suggested_validation` have been in `signals@1.json` since **M5A** and had never been displayed. No model, no new table, no new module |
 | **Tests** | 9 endpoint · 13 component |
-| ⏳ **Next** | Citation resolution (J3), then stage transitions and assignment (J4) |
+| **`GET …/business-events/{id}`** | Where a citation ends: the event, its readings, and **which providers reported it**. The only content on the brief Signora did not write |
+| **The evidence drawer** | A ledger line opens it. The affordance was withheld for two slices *because it had nowhere to go* |
+| ⏳ **Next** | Stage transitions and assignment (J4), which also forces **D23** |
 
 > **🟠 It ships to the Playground and not to a customer until F-3 closes.** The catalog's guidance is *engineering-authored pending domain review*, and *"ask on a first call which division the investment sits in"* is advice a real seller will act on. Good content is not the same as signed content.
 
@@ -171,7 +173,6 @@ A demo environment worth reviewing a product against. Requested by the product o
 
 | Task | Scope |
 |---|---|
-| M12.3 | **Citation resolution** — a ledger line and a narration sentence open to the fact beneath them. The largest remaining trust gap |
 | M12.3 | Stage transitions and assignment, which also forces **D23** (an owner is a UUID with no name) |
 | M12.2 | The Decision Package panel, **on the trigger `reasoning@1` earns a release** and not before |
 | M12.3 | Evidence resolution, stage transitions, assignment — and the list's missing hierarchy (D20) |

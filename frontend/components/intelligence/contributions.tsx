@@ -136,7 +136,16 @@ export function PostureSplit({ score }: { score: AccountScore }) {
  * order is the explanation's order, and re-ranking here would answer a
  * different question from the one the ledger recorded.
  */
-export function ContributionList({ score }: { score: AccountScore }) {
+export function ContributionList({
+  score,
+  onOpenEvidence,
+}: {
+  score: AccountScore;
+  /** Opens the readings beneath a line. **Optional on purpose** — the ledger
+   * renders identically without it, so a caller with nowhere to send the
+   * reader draws no affordance rather than a dead one. */
+  onOpenEvidence?: (businessEventId: string) => void;
+}) {
   return (
     <ol className="flex flex-col">
       {score.contributions.map((line) => (
@@ -144,27 +153,54 @@ export function ContributionList({ score }: { score: AccountScore }) {
           key={`${line.business_event_id}:${line.signal_id}`}
           className="border-b border-border py-3 last:border-b-0"
         >
-          <ContributionRow line={line} />
+          <ContributionRow line={line} onOpenEvidence={onOpenEvidence} />
         </li>
       ))}
     </ol>
   );
 }
 
-function ContributionRow({ line }: { line: ScoreContribution }) {
+function ContributionRow({
+  line,
+  onOpenEvidence,
+}: {
+  line: ScoreContribution;
+  onOpenEvidence?: (businessEventId: string) => void;
+}) {
+  const reason = (
+    <span
+      className={cn(
+        'text-sm leading-6',
+        // An uncounted line is subordinate, never absent. It explains why
+        // evidence a customer can see did not move the number, which is
+        // the question they would otherwise ask support.
+        line.counted ? 'text-content' : 'text-content-muted',
+      )}
+    >
+      {line.reason}
+    </span>
+  );
+
   return (
     <div className="flex items-start gap-4">
       <div className="min-w-0 flex-1">
-        <p
-          className={cn(
-            'text-sm leading-6',
-            // An uncounted line is subordinate, never absent. It explains why
-            // evidence a customer can see did not move the number, which is
-            // the question they would otherwise ask support.
-            line.counted ? 'text-content' : 'text-content-muted',
+        <p>
+          {onOpenEvidence ? (
+            <button
+              type="button"
+              onClick={() => onOpenEvidence(line.business_event_id)}
+              className={cn(
+                'rounded text-left underline decoration-border underline-offset-4',
+                'transition-colors hover:decoration-content-muted',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+              )}
+            >
+              {reason}
+              <span className="sr-only"> — show the provider readings behind this</span>
+            </button>
+          ) : (
+            reason
           )}
-        >
-          {line.reason}
         </p>
         {line.dissenting ? (
           <div className="mt-1.5">
