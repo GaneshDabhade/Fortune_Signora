@@ -114,8 +114,8 @@ class ResearchQueries:
         stored = await self._artifacts.by_task(workspace_id, task_id)
         if stored is None:
             raise ResearchArtifactMissing(
-                f"research request settled as completed naming task {task_id}, and no such "
-                "artifact is stored. A completed run with nothing to read is a storage fault; "
+                "This research request settled as completed and its artifact is not "
+                "stored. A completed run with nothing to read is a storage fault; "
                 "rendering it as 'no research yet' would hide the loss of an AI artifact."
             )
         task, findings, synthesis = stored

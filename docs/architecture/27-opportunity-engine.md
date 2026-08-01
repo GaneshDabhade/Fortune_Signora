@@ -581,3 +581,86 @@ And the Sales Manager's reaction to R4-04 was: *"I'd tell my reps not to dismiss
 **No time window.** *"Decided today"* would need a threshold nobody measured, and §14 is explicit about that. Newest first, paginated, the whole history.
 
 **No count on the attention rows.** The number of accounts an account has been dismissed and reopened is real and is nobody's morning question.
+
+---
+
+# R4-02 and R4-03 — the words the product uses when it refuses you *(2026-08-02, Lane A)*
+
+**Recorded before implementation.** The one screen where a seller *acts* is the one screen whose failure copy nobody has read as a customer.
+
+## Why this slice
+
+Every reachable journey is shipped and the brief's hierarchy pass is **deliberately not a lane's to take alone** — it is a collaborative product-design activity that wants real sellers. What is left that a lane can do well is the refinement nobody has looked at: **what Signora says when it says no.**
+
+**R4-03 turned out to be a pattern rather than an instance**, which is the shape the last two slices found twice. Scanning every exception type registered in an `ERROR_MAPPING` — the messages that reach a customer *verbatim* — found three defects in one function:
+
+| What a customer sees | Why it is wrong |
+|---|---|
+| `opportunity 6d1510af-… is already engaged with the same owner.` | An identifier the reader cannot use. **R4-03** |
+| `'tracking' cannot become 'closed_won'.` | The platform's schema keys, on a screen ADR-0034 says never shows them |
+| `Allowed from here: ['closed_lost', 'dismissed', 'engaged']` | **A Python list repr.** Brackets, quotes and underscores, rendered to a salesperson |
+
+The third was not in R4-03 and is the worst of the three. *(RevOps: "It looks like a stack trace leaked into the UI." They were describing the UUID. They had not seen the list.)*
+
+## The decisions
+
+### R4-02 · A move is named for where it is going **and where it came from**
+
+*"What's the difference between Lost and Not a real opportunity if I never touched it?"* — which is exactly the distinction this module exists to protect, unreadable at the point of use.
+
+`ACTION_WORDING` is keyed by target stage. **It becomes keyed by `(from, to)`**, and one entry changes: from `tracking`, `closed_lost` reads **"Lost without pursuing"**. Everything else is unchanged, because everything else already reads correctly from every state it is offered from.
+
+**The domain is not touched.** The stage set is right — a deal you knew about, did not chase, and that closed elsewhere *is* a loss — and R4-02 says so. This is a labelling problem and the fix stays in the label.
+
+### R4-03 · Identifiers leave the messages, at the source
+
+Per R4-03's own recommendation, and it is the stronger of the two options it offered: **a message that needs sanitising before display is a message that will be shown unsanitised somewhere else.**
+
+The opportunity id is already on the row, in the log line and on the correlation id. It is in the message because the message was written for a log, and it has been customer copy since M12.3 without anybody re-reading it as one.
+
+**Asserted repository-wide, not per-message.** A Security Invariant now walks every exception type registered in an `ERROR_MAPPING` and refuses any that formats an identifier into its message. The same shape as the `supersedes IS NULL` scan, and for the same reason: this is a pattern a developer following the file in front of them will reproduce.
+
+### The transition refusal gets a sentence about **staleness**, because that is what it means to a person
+
+**A departure from M12.3's rule that the domain's own words reach the customer, and the reason is narrow.**
+
+That rule is right where the domain's explanation is something a customer can act on. Here it is not: **a customer can only ever reach this refusal by being out of date.** The dialog offers exactly `allowed_next`, derived server-side, so an illegal move requires a stale page or a colleague acting concurrently — and *"'tracking' cannot become 'closed_won'"* answers a question they did not ask.
+
+So `transition_refused` renders **"This account has moved since you opened this page. Reload to see where it stands."**
+
+**This is not a second copy of the rules.** It states no rule — that is precisely what makes it safe to hold client-side, where a transition table would not be. The server's prose is unchanged and still reaches logs, the API and any other consumer.
+
+## What this deliberately does not do
+
+**It does not restructure the error envelope.** The correct long-term fix is the domain raising *facts* — from-stage, to-stage — and the interface carrying them in `details` so the client composes the sentence from the wording map it already owns. **`details` exists on the envelope and the platform's domain handler does not populate it**, and that handler is `signora_platform/` and frozen (§20a). **Raised as a coordination item rather than half-built.**
+
+**It does not soften `dismissed`.** *"Not a real opportunity"* stays. It is feedback about Signora's judgement rather than a sales outcome, and blurring the two would destroy the only signal the platform gets about its own qualification quality.
+
+**It does not add a confidence or severity to a refusal.** A refusal is certain; the product knows exactly why it refused.
+
+## What the invariant found, and the finding underneath it
+
+Writing the scan as a repository-wide rule rather than a per-message assertion found **four more** beyond the three R4-03 described — in a second module as well as this one:
+
+```
+  ai_research_engine/application/queries.py   ResearchArtifactMissing  {task_id}
+  ai_research_engine/domain/request.py        ResearchRequestError     {task_id}
+  opportunity_engine/domain/opportunity.py    OpportunityError         {id}
+  opportunity_engine/domain/opportunity.py    OpportunityError         {opportunity_id}
+```
+
+All seven are fixed. **But the four the scan found are a different kind of error from the three R4-03 described, and that difference is a finding.**
+
+### One exception class is serving two purposes, and the mapping cannot tell them apart
+
+The three R4-03 named are **refusals**: *you cannot do that.* The four the scan found are **invariant violations**: *this cannot have happened.* A negative score at creation, a state row with no reason, a completed request whose artifact is missing — none is anything a customer did.
+
+`ERROR_MAPPING` maps `OpportunityError → 422 transition_refused`, and `OpportunityError` is the base of both. **So an internal fault renders to a customer as though they had made an illegal move**, under a code that names a transition. That is a false attribution of exactly the kind the AI Platform ruled against:
+
+> **Failure attribution must be truthful.** *An error must never name a component that was not involved… an incorrect attribution is worse than none, because it misdirects the investigation.*
+
+Removing the identifiers makes the messages safe to show, which is this slice. **It does not make them true.**
+
+**The fix is to split the hierarchy** — a base for refusals, which maps to `422`, and a separate one for invariant violations, which does not map at all and becomes a `500`. It is a small change in both modules and it needs one thing this lane cannot supply: **`signora_platform/api/errors.py` registers no catch-all handler**, so an unmapped exception bypasses the standard envelope entirely and returns a bare framework `500`. Splitting the hierarchy without that would trade a wrong code for a wrong envelope.
+
+**Raised as a coordination item rather than half-built**, per the rule that a slice needing another module pauses instead of designing both halves alone.

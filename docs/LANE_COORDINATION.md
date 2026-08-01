@@ -46,6 +46,7 @@
 | [C-006](#c-006--which-lane-owns-test_api_modulepy) | Which lane owns `test_api_<module>.py` | Lane B | **Product owner** | `OPEN` | Nothing — a standing ambiguity in §20e |
 | [C-007](#c-007--the-guided-first-run-is-a-two-lane-build) | The guided first run is a two-lane build | Lane B | Lane A + **product owner** | `ANSWERED` — routing and navigation. **Sequencing still the product owner's** | Sequencing after M12.5 slice 5 |
 | [C-008](#c-008--sellers-cannot-see-what-their-company-sells) | Sellers cannot see what their company sells | Lane B | **Product owner** + Integrator | `OPEN` | Nothing today. Every AE and SDR, every day |
+| [C-009](#c-009--an-internal-fault-reaches-a-customer-as-a-422) | An internal fault reaches a customer as a `422` | Lane A | **Product owner** (platform §20a) | `OPEN` | Nothing today. Splitting the error hierarchy in any module |
 
 ---
 
@@ -337,3 +338,43 @@ Lane A's call, and the answer is no change. [D38](38-product-design-principles.m
 ## Closed
 
 *None yet.*
+
+
+---
+
+## C-009 · An internal fault reaches a customer as a `422`
+
+| | |
+|---|---|
+| **Owner** | **Product owner** — the change is in `signora_platform/`, which is frozen (§20a) |
+| **Requesting lane** | Lane A, while assigned to `opportunity_engine` |
+| **Category** | Error contract · platform change · **failure attribution** |
+| **Status** | `OPEN` |
+| **Blocks** | Nothing today. It blocks *doing this properly* in any module that wants to split its error hierarchy |
+| **Raised** | `R4-02/R4-03` slice, 2026-08-02 |
+
+**One exception class is serving refusals and invariant violations, and `ERROR_MAPPING` cannot tell them apart.**
+
+`OpportunityError → 422 transition_refused` is correct for *"a won deal does not reopen"*. It is applied identically to *"an opportunity cannot record a negative score at creation"* — which no customer caused and which no customer can act on. The same shape exists in `ai_research_engine` (`ResearchRequestError`), and it will exist in every module that follows the pattern.
+
+**This is the failure-attribution rule, in the API layer:**
+
+> *An error must never name a component that was not involved… an incorrect attribution is worse than none, because it misdirects the investigation.*
+
+A support engineer reading `transition_refused` on a bug report will look at the transition table. The transition table is fine.
+
+### Why a lane cannot fix it alone
+
+The correct split is a refusal base that maps to `422` and an invariant base that maps to nothing, so it surfaces as a `500`. **`signora_platform/api/errors.py` registers no catch-all `Exception` handler**, so an unmapped exception bypasses the standard envelope and returns a bare framework `500` — no `code`, no `correlation_id`, no `error` object. Every client, including Signora's own, parses that envelope.
+
+So splitting the hierarchy today trades a wrong code for a **missing envelope**, which is worse: `correlation_id` is the only thread between a customer's report and the log line that explains it.
+
+### The question
+
+Add a catch-all handler to `signora_platform/api/errors.py` that returns the standard envelope with `code: "internal_error"`, a fixed message, and the `correlation_id` — **and no `str(exc)`**, so an internal fault stops being customer prose at all. That is a platform change under §20a and needs the product owner.
+
+**Once it exists**, each module splits its own hierarchy inside its own budget, and the invariant added in this slice (`tests/security_invariants/test_customer_facing_messages.py`) narrows from *"no mapped message may name an identifier"* to *"no refusal may"* — a stronger rule, because an internal message would then be free to say everything an engineer needs.
+
+### What was done meanwhile
+
+**Identifiers were removed from all seven messages**, so nothing unreadable reaches a screen today. The attribution is still wrong and is stated in [27-opportunity-engine.md](architecture/27-opportunity-engine.md) rather than left implicit.

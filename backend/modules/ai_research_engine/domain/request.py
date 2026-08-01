@@ -162,7 +162,7 @@ class ResearchRequestState:
         if (self.status is ResearchStatus.COMPLETED) != (self.task_id is not None):
             raise ResearchRequestError(
                 "a completed request names its artifact and no other status has one. "
-                f"Status {self.status.value!r} with task_id {self.task_id!r} would make "
+                f"Status {self.status.value!r} with an artifact named would make "
                 "'is there something to read?' answerable two different ways."
             )
         # `.strip()`, not truthiness. A reason of `"   "` is no reason, and

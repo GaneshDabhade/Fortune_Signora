@@ -59,6 +59,31 @@ const ACTION_WORDING: Record<Stage, string> = {
 };
 
 /**
+ * The moves that read differently depending on where they are offered from.
+ *
+ * **R4-02.** From `tracking`, *"Lost"* sits beside *"nobody has taken it yet"*
+ * and reads as a mistake in the product rather than as an outcome distinct
+ * from *"Not a real opportunity"*. An AE asked it directly: *"What's the
+ * difference between Lost and Not a real opportunity if I never touched it?"*
+ * — which is exactly the distinction this module exists to protect, unreadable
+ * at the point of use.
+ *
+ * **The domain is not touched and must not be.** A deal you knew about, did
+ * not chase, and that closed elsewhere *is* a loss; the stage set is right.
+ * This is a labelling problem, and the fix stays in the label.
+ *
+ * Keyed by origin, falling through to `ACTION_WORDING` — so a move that reads
+ * correctly from everywhere is written once, and only the exception is stated.
+ */
+const ACTION_FROM: Partial<Record<Stage, Partial<Record<Stage, string>>>> = {
+  tracking: { closed_lost: 'Lost without pursuing' },
+};
+
+function actionWording(from: Stage, to: Stage): string {
+  return ACTION_FROM[from]?.[to] ?? ACTION_WORDING[to];
+}
+
+/**
  * What the reason field is actually asking.
  *
  * A single *"Reason"* label would collect a single kind of sentence. The
@@ -108,7 +133,7 @@ export function WorkflowActions({
           variant={index === 0 ? 'secondary' : 'ghost'}
           onClick={() => setChoice(stage)}
         >
-          {ACTION_WORDING[stage]}
+          {actionWording(opportunity.stage, stage)}
         </Button>
       ))}
 
@@ -176,7 +201,7 @@ function DecisionDialog({
     <Dialog
       open={stage !== null}
       onClose={close}
-      title={stage ? ACTION_WORDING[stage] : ''}
+      title={stage ? actionWording(opportunity.stage, stage) : ''}
       description={claiming ? 'This account will be assigned to you.' : undefined}
       footer={
         <>
@@ -221,8 +246,31 @@ function DecisionDialog({
  * The Opportunity Engine's refusals are prose written for a customer. A
  * network failure is not, so anything without the API's error envelope gets a
  * sentence that does not pretend to know what happened.
+ *
+ * ### One code is answered here rather than passed through
+ *
+ * **`transition_refused` is only reachable by being out of date.** This dialog
+ * offers exactly `allowed_next`, derived server-side from the domain's own
+ * table, so an illegal move needs a stale page or a colleague deciding at the
+ * same moment. The domain's explanation — *"'tracking' cannot become
+ * 'closed_won'. Allowed from here: …"* — answers a question the reader did not
+ * ask, in the platform's vocabulary (ADR-0034), and leaves them with nothing to
+ * do.
+ *
+ * **This is not a second copy of the transition rules.** It states no rule,
+ * which is exactly what makes it safe to hold client-side where a table would
+ * not be. The server's prose is unchanged and still reaches the logs, the API
+ * and every other consumer.
+ *
+ * Every other code passes through, because every other refusal is a statement
+ * about the customer's own data that they can act on.
  */
 function refusal(error: unknown): string {
-  if (error instanceof ApiError) return error.message;
+  if (error instanceof ApiError) {
+    if (error.code === 'transition_refused') {
+      return 'This account has moved since you opened this page. Reload to see where it stands.';
+    }
+    return error.message;
+  }
   return 'This could not be recorded. Nothing has changed — try again.';
 }

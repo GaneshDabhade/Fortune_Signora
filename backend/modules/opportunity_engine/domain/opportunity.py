@@ -170,7 +170,7 @@ class Opportunity:
             raise OpportunityError("an opportunity's generation cannot be negative.")
         if self.score_at_creation < 0:
             raise OpportunityError(
-                f"opportunity {self.id} records a negative score at creation."
+                "An opportunity cannot record a negative score at creation."
             )
 
 
@@ -210,7 +210,7 @@ class OpportunityState:
             )
         if not self.reason.strip():
             raise OpportunityError(
-                f"state {self.sequence} of opportunity {self.opportunity_id} has no reason. "
+                f"State {self.sequence} of this opportunity has no reason. "
                 "Workflow that cannot explain itself is worse than intelligence that cannot: a "
                 "human chose it, and the choice is the record."
             )
@@ -268,8 +268,13 @@ def next_state(
     that progresses an opportunity without a person does not compile.
     """
     if stage is current.stage and owner_id == current.owner_id:
+        # **No identifier in the message** (R4-03). This reaches a customer
+        # verbatim, and the opportunity id is already on the row they are
+        # looking at, in the log line and on the correlation id. It was here
+        # because the sentence was written for a log and became customer copy
+        # at M12.3 without anybody re-reading it as one.
         raise OpportunityError(
-            f"opportunity {current.opportunity_id} is already {stage} with the same owner. "
+            f"This account is already {stage} with the same owner. "
             "A state row that changes nothing is noise in the audit trail."
         )
     if stage is not current.stage and stage not in _ALLOWED[current.stage]:
@@ -279,7 +284,12 @@ def next_state(
                 "A won deal does not reopen — the next deal at that account is genuinely a new "
                 "opportunity, and conflating them distorts every win-rate figure computed later."
                 if current.stage is Stage.CLOSED_WON
-                else f"Allowed from here: {sorted(s.value for s in _ALLOWED[current.stage])}."
+                # Joined, not repr'd. `sorted(...)` of a generator rendered a
+                # **Python list literal** into a sentence a salesperson reads —
+                # brackets, quotes and all (R4-03, found while fixing it).
+                else "Allowed from here: "
+                + ", ".join(sorted(s.value for s in _ALLOWED[current.stage]))
+                + "."
             )
         )
     return OpportunityState(

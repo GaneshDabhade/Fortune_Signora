@@ -93,7 +93,8 @@ class BeginResearchRun:
         found = await self._requests.by_id(workspace_id, request_id)
         if found is None:
             raise RequestNotFound(
-                f"research request {request_id} does not exist in this workspace."
+                # No identifier: this reaches a customer as a 422 (R4-03).
+                "That research request does not exist in this workspace."
             )
         request, current = found
         # The domain refuses anything that is not `REQUESTED`, which is what

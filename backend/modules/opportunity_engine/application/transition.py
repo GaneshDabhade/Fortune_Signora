@@ -107,7 +107,8 @@ class TransitionOpportunity:
         opportunity = await self._repository.by_id(request.workspace_id, request.opportunity_id)
         if opportunity is None:
             raise OpportunityNotFound(
-                f"opportunity {request.opportunity_id} does not exist in this workspace."
+                # No identifier: this reaches a customer verbatim (R4-03).
+                "This account has no opportunity in this workspace."
             )
 
         current = await self._repository.current_state(
@@ -115,7 +116,10 @@ class TransitionOpportunity:
         )
         if current is None:
             raise OpportunityError(
-                f"opportunity {request.opportunity_id} has no state. An opportunity in no state "
+                # Reaches a customer as a 422, so no identifier (R4-03) — and
+                # the id an engineer needs is on the correlation id and the log
+                # line this raise produces.
+                "This account's opportunity has no recorded state. An opportunity in no state "
                 "at all is a bug that looks like data."
             )
 
@@ -161,7 +165,10 @@ class TransitionOpportunity:
     async def _verify_member(self, workspace_id: UUID, user_id: UUID, verb: str) -> None:
         if await self._workspaces.get_membership(workspace_id, user_id) is None:
             raise MembershipError(
-                f"user {user_id} is not a member of this workspace and cannot {verb} it. "
+                # No identifier (R4-03). Which person was named is on the
+                # request the caller sent; repeating it back as a UUID tells
+                # them nothing they can act on.
+                f"That person is not a member of this workspace and cannot {verb} it. "
                 "Membership is verified server-side on every assignment, never trusted from "
                 "the request."
             )

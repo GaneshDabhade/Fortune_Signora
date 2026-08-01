@@ -85,7 +85,11 @@ describe('the moves offered are the ones the domain allows', () => {
     render(actions());
 
     expect(screen.getByRole('button', { name: "I'm working this" })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Lost' })).toBeInTheDocument();
+    // "Lost without pursuing" from `tracking` — R4-02. The move is named for
+    // where it came from as well as where it is going.
+    expect(
+      screen.getByRole('button', { name: 'Lost without pursuing' }),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Not a real opportunity' }),
     ).toBeInTheDocument();
@@ -238,6 +242,33 @@ describe('what gets sent', () => {
 
 describe('a refusal is shown, in the words that explain it', () => {
   it('repeats what the server actually said', async () => {
+    // Every refusal but one passes through: it is a statement about the
+    // customer's own data that they can act on.
+    const user = userEvent.setup();
+    request.mockRejectedValue(
+      new ApiError(422, {
+        code: 'owner_not_a_member',
+        message:
+          'That person is not a member of this workspace and cannot hold work in it.',
+        correlation_id: 'x',
+      }),
+    );
+    render(actions());
+
+    await user.click(screen.getByRole('button', { name: "I'm working this" }));
+    await user.type(screen.getByLabelText('Why are you taking this on?'), 'Trying it.');
+    await user.click(screen.getByRole('button', { name: 'Take it on' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      /not a member of this workspace/i,
+    );
+  });
+
+  it('answers a refused transition with what the reader can do about it', async () => {
+    // **R4-03, and the one code that does not pass through.** A transition is
+    // only refusable when the reader is out of date — the dialog offers
+    // exactly `allowed_next`. The domain's explanation answers a question they
+    // did not ask, in the platform's vocabulary, and leaves them nothing to do.
     const user = userEvent.setup();
     request.mockRejectedValue(
       new ApiError(422, {
@@ -253,8 +284,35 @@ describe('a refusal is shown, in the words that explain it', () => {
     await user.type(screen.getByLabelText('Why are you taking this on?'), 'Trying it.');
     await user.click(screen.getByRole('button', { name: 'Take it on' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      /a won deal does not reopen/i,
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/has moved since you opened this page/i);
+    // No transition table, and no schema keys.
+    expect(alert.textContent).not.toContain('closed_won');
+    expect(alert.textContent).not.toContain('Allowed from here');
+  });
+
+  it('never shows a schema key or an identifier in a refusal', async () => {
+    // The blanket property. A message that needs sanitising before display is
+    // a message that will be shown unsanitised somewhere else (R4-03) — the
+    // backend invariant asserts the same rule at the source.
+    const user = userEvent.setup();
+    request.mockRejectedValue(
+      new ApiError(422, {
+        code: 'transition_refused',
+        message:
+          'opportunity 6d1510af-4468-4ddc-924a-543c66975c28 is already engaged with the same owner.',
+        correlation_id: 'x',
+      }),
+    );
+    render(actions());
+
+    await user.click(screen.getByRole('button', { name: "I'm working this" }));
+    await user.type(screen.getByLabelText('Why are you taking this on?'), 'Trying it.');
+    await user.click(screen.getByRole('button', { name: 'Take it on' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).not.toMatch(
+      /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i,
     );
   });
 
