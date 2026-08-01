@@ -107,13 +107,13 @@ Both halves or neither — a half-configured provider renders a button that fail
 
 ---
 
-## Running a second lane
+## Running a lane
 
-Two development lanes work the same repository at once (`CLAUDE.md` §20e). **Separate clones isolate the code; they do not isolate the database or the ports** — and a second `pytest` run against the shared database truncates the first lane's rows mid-test, producing failures neither lane can reproduce.
+Three development lanes work the same repository at once (`CLAUDE.md` §20e). **Separate clones isolate the code; they do not isolate the database or the ports** — and a second `pytest` run against the shared database truncates another lane's rows mid-test, producing failures nobody can reproduce.
 
-Three things per lane, all environment variables.
+Three things per lane, all environment variables. **Substitute your lane's row from the table in step 3.**
 
-**1 — its own database**, once:
+**1 — its own database**, once. **All three already exist and are migrated to head**, so this is only needed for a lane added later:
 
 ```bash
 cd backend
@@ -138,13 +138,13 @@ export SIGNORA_TEST_ADMIN_DATABASE_URL=postgresql+asyncpg://signora:signora@loca
 
 **Every test path honours these** — the fixtures, the API integration clients and the seeders all resolve the URL from one place in `tests/conftest.py`. **Verify before your first slice:** run any integration test and confirm rows moved in your database and not in `signora`.
 
-**3 — its own ports.** One block of 100 per lane, so nothing collides:
+**3 — its own ports and database.** One block of 100 per lane, so nothing collides:
 
-| Lane | Web | API | Test database |
-|---|---|---|---|
-| A — Product Surface | 3000 | 8000 | `signora_lane_a` |
-| B — Commercial Profile | 3100 | 8100 | `signora_lane_b` |
-| QE | 3200 | 8200 | `signora_lane_qe` |
+| Lane | Branch | Web | API | Test database |
+|---|---|---|---|---|
+| A — Product Surface | `lane-a-product-surface` | 3000 | 8000 | `signora_lane_a` |
+| B — Commercial Profile | `lane-b-commercial-profile` | 3100 | 8100 | `signora_lane_b` |
+| QE | `lane-qe` | 3200 | 8200 | `signora_lane_qe` |
 
 
 
@@ -157,7 +157,7 @@ Set `SIGNORA_API_URL` and `BETTER_AUTH_URL` to that lane's ports in its `fronten
 
 **One Postgres, one Redis, many databases.** There is no second stack — Postgres holds as many databases as there are lanes, and nothing in the test path touches Redis today.
 
-> **`make smoke` binds ports 3000 and 8000.** It cannot run while any dev server holds them — stop both lanes' dev servers first. Worth knowing before a milestone gate, because the failure reads as *"stack did not reach healthy"* rather than *"a port is in use"*.
+> **`make smoke` binds ports 3000 and 8000.** It cannot run while any dev server holds them — stop **every** lane's dev server first. Worth knowing before a milestone gate, because the failure reads as *"stack did not reach healthy"* rather than *"a port is in use"*.
 
 > **The Playground lives in `signora`, and no lane's tests may target it.** That is the whole point of steps 1 and 2: it is the database `make demo-seed` fills and the one you review the product in.
 

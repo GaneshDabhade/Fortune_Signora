@@ -12,7 +12,7 @@ A modular monolith: Python 3.13 · FastAPI · PostgreSQL 17 · SQLAlchemy 2.x as
 
 | # | Document | Why |
 |---|---|---|
-| 1 | **[`CLAUDE.md`](CLAUDE.md)** | The engineering constitution. **Binding, not advisory.** Read §20e before touching anything if you are a second session |
+| 1 | **[`CLAUDE.md`](CLAUDE.md)** | The engineering constitution. **Binding, not advisory.** Read §20e before touching anything if you are working in a lane |
 | 2 | **[`docs/architecture/21-intelligence-pipeline.md`](docs/architecture/21-intelligence-pipeline.md)** | How a fact travels from raw payload to conclusion, and what each stage may *not* do |
 | 3 | **[`PROJECT_STATUS.md`](PROJECT_STATUS.md)** | Where the project actually is, and **what is currently broken** |
 | — | [`docs/BUGS.md`](docs/BUGS.md) | Open defects, with an owner each. QE opens; the owning lane fixes |
@@ -69,7 +69,7 @@ docs/architecture/adr/        36 decisions. Never edited; a reversal is a new AD
 
 ## Parallel development
 
-Three lanes, governed by **[`CLAUDE.md` §20e](CLAUDE.md)** — read it before starting a second session.
+Three lanes, governed by **[`CLAUDE.md` §20e](CLAUDE.md)** — read it before starting a lane.
 
 | Lane | Branch | Owns |
 |---|---|---|
@@ -85,7 +85,7 @@ lane-qe ┘
 
 **The rules in one paragraph.** One session per lane, one lane per module. A lane branch is permanent by name and carries **one slice at a time** — two days maximum, then rebase and **fast-forward into `integration`**. Every slice declares its **Change Budget** (🟢 your module · 🟠 announce it · 🔴 product owner + ADR · ⚫ never). **Shared documents have one owner** — a lane does not edit `PROJECT_STATUS.md`, `SESSION_HANDOFF.md`, `RUNNING.md`, the roadmaps, or `38`/`39`; it reports findings in its commit message and its module doc. **QE reports bugs; feature lanes fix them; QE verifies.** **Touching a file outside your budget is a finding to raise, not a change to make.**
 
-**Each lane needs its own database and ports.** See [`docs/RUNNING.md`](docs/RUNNING.md#running-a-second-lane).
+**Each lane needs its own database and ports.** See [`docs/RUNNING.md`](docs/RUNNING.md#running-a-lane).
 
 ## How we work
 

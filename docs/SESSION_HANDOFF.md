@@ -328,7 +328,7 @@ A **known limitation** is a deliberate scope boundary that behaves correctly; **
 
 > **Rewritten 2026-08-01.** This section described M12.1.5 — three milestones behind — as *the* next starting point, which is what a cold session would have read first. **There is no single next session now.** Three lanes run concurrently (`CLAUDE.md` §20e); each has its own.
 
-**Every lane, before its first slice:** read [`README.md`](../README.md) → `CLAUDE.md` §20e → your module's manifest in [04-modules.md](architecture/04-modules.md). Then set up your database and ports per [RUNNING.md § Running a second lane](RUNNING.md#running-a-second-lane), and **verify the isolation** before writing code.
+**Every lane, before its first slice:** read [`README.md`](../README.md) → `CLAUDE.md` §20e → your module's manifest in [04-modules.md](architecture/04-modules.md). Then set up your database and ports per [RUNNING.md § Running a lane](RUNNING.md#running-a-lane), and **verify the isolation** before writing code.
 
 ### Lane A — Product Surface · `lane-a-product-surface`
 

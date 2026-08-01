@@ -8,6 +8,10 @@
 
 **QE opens. The owning lane fixes. QE verifies and closes** — never the lane that fixed it.
 
+**Any lane may open a bug** it finds outside its own budget — that is the correct alternative to fixing another lane's module. **Only QE sets `VERIFIED`.**
+
+**`integration` never fast-forwards to `main` with an open 🔴.** That is the one blocking rule; 🟠 and below are the product owner's call.
+
 | Severity | Meaning |
 |---|---|
 | 🔴 | Blocks a milestone |

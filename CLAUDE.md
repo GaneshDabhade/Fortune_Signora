@@ -449,6 +449,24 @@ lane-qe ────────────────┘
 - **Conflicts are resolved by the lane that is rebasing**, never by the integrator — the lane knows what its change meant. A conflict in a 🔴 file means the lane was outside its budget; stop and raise it.
 - **Commit messages keep the existing form:** `M12.5 — <what changed, in product language>`. Not Conventional Commits — `git log --oneline` is a changelog a cold session reads.
 
+### The canonical merge flow
+
+Seven steps. **Every one names who does it**, because an unowned step is where parallel work stalls.
+
+| # | Step | Who | What |
+|---|---|---|---|
+| 1 | **Slice** | Lane | Declare the Change Budget, implement, write tests |
+| 2 | **Impacted tests** | Lane | Its module suite, impacted integration tests, `mypy --strict`, `lint-imports`, frontend suite, production build |
+| 3 | **Push the lane branch** | Lane | `git push origin lane-<x>`. **Backup, not a trigger** — a push stores the repository and starts nothing (§20c-2) |
+| 4 | **Rebase and merge to `integration`** | Lane | `git pull --rebase origin integration`, re-run gates, then `--ff-only`. **The lane resolves its own conflicts** |
+| 5 | **QE validation** | **QE** | Full backend suite with the coverage gate · Security Invariants · `make smoke` · **exploratory use of the product**. Defects become `B-nnn` rows |
+| 6 | **Certification** *(when applicable)* | Integrator | Milestone boundaries only: `make certify`, migration reversibility, `make dr` (ADR-0032) |
+| 7 | **Fast-forward to `main`** | Integrator | Promotion, not re-verification — QE has already run everything. Then folds lane findings into the shared records |
+
+**`integration` never fast-forwards to `main` with an open 🔴 bug.** That is the one blocking rule; 🟠 and below are the product owner's call.
+
+**A lane resets its branch to `integration` after step 7** and starts the next slice from there.
+
 ### Which gates run when
 
 | Moment | Runs | Why |
