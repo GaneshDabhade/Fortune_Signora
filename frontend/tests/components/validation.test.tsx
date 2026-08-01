@@ -92,12 +92,73 @@ describe('the limitations are present, and subordinate', () => {
     );
   });
 
-  it('says how many there are before the reader spends the click', () => {
-    // "Three things this cannot tell you" is itself information — it sets the
-    // expectation rather than making the reader discover the volume.
+  it('puts the first limitation on the page, unopened', () => {
+    // **R2-02.** "This is the bit I'd want my reps to read, and it's the bit
+    // they'll never open." No competitor tells a seller what their signal
+    // cannot prove; it was the most differentiating sentence on the screen and
+    // the smallest text on it.
     render(<ValidationBlock validation={validation()} />);
 
-    expect(screen.getByRole('button', { name: /\(3\)/ })).toBeInTheDocument();
+    expect(
+      screen.getByText(/Investment ahead of growth says nothing about budget/),
+    ).toBeVisible();
+  });
+
+  it("promotes the catalog's first limitation, not an arbitrary one", () => {
+    // The catalog orders them and the first is the strongest. Showing one is
+    // only defensible because showing *the first* is not showing any old one.
+    //
+    // Asserted by structure rather than by visibility: the others are
+    // `sr-only`, deliberately, so a screen reader can still reach them — and
+    // `toBeVisible` cannot tell `sr-only` from on-screen.
+    render(<ValidationBlock validation={validation()} />);
+
+    // `.closest('p')` because the label is its own span — the sentence lives
+    // in the paragraph around it.
+    const promoted =
+      screen.getByText(/What this cannot tell you/).closest('p')?.textContent ?? '';
+
+    expect(promoted).toContain('Investment ahead of growth says nothing about budget');
+    expect(promoted).not.toContain('Growth in one division');
+  });
+
+  it('reads as calibration rather than as a warning', () => {
+    // A limitation drawn as an alert would make Signora look unsure of a
+    // conclusion it is in fact sure of. What it is unsure of is precisely and
+    // only what the sentence says.
+    const { container } = render(<ValidationBlock validation={validation()} />);
+
+    const inline = screen.getByText(/Investment ahead of growth/);
+    expect(inline.className).not.toMatch(/danger|warning/);
+    expect(container.querySelector('[class*="warning"]')).toBeNull();
+  });
+
+  it('offers no disclosure when there is nothing more to disclose', () => {
+    render(
+      <ValidationBlock
+        validation={validation({
+          hypotheses: [
+            {
+              ...validation().hypotheses[0]!,
+              limitations: ['The only thing it cannot tell you.'],
+            },
+          ],
+        })}
+      />,
+    );
+
+    expect(screen.getByText('The only thing it cannot tell you.')).toBeVisible();
+    expect(screen.queryByRole('button', { name: /more things/ })).toBeNull();
+  });
+
+  it('counts what is still hidden, not what is on the screen', () => {
+    // "2 more things this cannot tell you" is itself information — it sets the
+    // expectation rather than making the reader discover the volume. Since
+    // R2-02 the first is inline, so a trigger still saying *three* would be
+    // counting a sentence the reader can already see.
+    render(<ValidationBlock validation={validation()} />);
+
+    expect(screen.getByRole('button', { name: /^2 more things/ })).toBeInTheDocument();
   });
 
   it('keeps every caveat in the accessibility tree while closed', async () => {
