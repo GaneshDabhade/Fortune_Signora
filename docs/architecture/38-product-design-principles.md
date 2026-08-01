@@ -336,6 +336,8 @@ That is truthful and it is a demo limitation rather than a product one. All the 
 
 *Owner:* M12.3, which introduces assignment and therefore introduces the need. It is a real API gap, not a styling question: Workspace & Tenancy owns members and exposes them, but nothing joins a member to the identity that Better Auth holds.
 
+> **Outcome, 2026-08-01:** M12.3 shipped assignment and answered this only halfway — the screen can say *"you"* and says *"held by someone else"* for anybody else. See **D32**, which records why the remaining half is a cross-tier contract rather than a slice.
+
 ---
 
 ## Product Design Review — the account brief
@@ -591,3 +593,73 @@ That is **action guidance, written for a customer, versioned, reviewed like code
 **`limitations` and `suggested_validation` are engineering-authored pending domain review** (finding F-3, open since M5A). Displaying them promotes unreviewed text to customer-facing product copy, and *"ask on a first call which division the investment sits in"* is advice a real seller will act on.
 
 The content is good. That is not the same as it being **signed**. Shipping this to a paying customer requires closing F-3 first; shipping it to the Playground does not. **Recorded here so the milestone cannot quietly convert a known gap into a customer promise.**
+
+---
+
+# M12.3 — evidence and action, as built *(2026-08-01)*
+
+## D27 — a closed opportunity keeps its brief
+
+M12.2 left `OpportunityQueries.brief()` returning `None` for an account with no **open** opportunity, and said so in the docstring: *"deliberate until M12.3, which owns reopening and therefore owns the question of what a closed opportunity's brief should say."*
+
+**The answer is that it keeps it**, and the reasoning only became visible once a customer could make the decision. Until then nothing was lost by hiding a closed opportunity. The moment a seller can dismiss an account, a brief that vanished with the dismissal would:
+
+- take **their own words** with it — the dismissal reason is the only feedback Signora ever receives about its qualification quality, and it would become unreadable the instant it was written;
+- make a **legal transition unreachable** — `dismissed → tracking` is allowed by the domain, and being able to undo a dismissal is what makes dismissing safe to do;
+- read as **the product deleting the account they just judged**.
+
+The open opportunity still wins whenever there is one, so the ordinary path stays a single query and history can never shadow live work. Otherwise the most recent generation, which is the one whose outcome a reader is asking about.
+
+**The commitment outlives the score that created it; the record outlives the commitment.**
+
+*Found by a test, not by design review* — two assertions about closing an account failed with a 404 the moment they were written.
+
+## D28 — the legal moves are sent, never inferred
+
+The brief carries `allowed_next`, derived from the domain's `allowed_from(stage)`. A client that reimplemented the transition table would be **a second representation of the rules, wrong the moment either changed** — and the drift would be invisible, because both sides would look correct in isolation.
+
+The server refuses anything else regardless: **a list a caller can ignore is not enforcement.** The client-side offer is a courtesy in exactly the sense §20c means it, and the integration suite proves the refusal independently of the offer.
+
+**The ordering is part of the contract.** Sorted by the `Stage` enum's own declaration — `tracking → engaged → won → lost → dismissed`, the order work actually moves in — which is deterministic *and* meaningful. The first draft sorted alphabetically, which was equally deterministic and put **"Lost"** ahead of **"I'm working this"** on every account in the product (R4-01).
+
+## D29 — who decided is never on the request
+
+`RecordDecisionRequest` carries `stage`, `reason` and `owner_id`. It does **not** carry `actor_id`, and a test asserts the field set rather than only the behaviour.
+
+A request able to name its own actor would let one member sign another's name to a dismissal. The workflow history is **the one record in Signora that nothing can recompute** — every derived table rebuilds byte for byte from the evidence beneath it, and a decision does not — so a wrong entry there is wrong permanently.
+
+Who *decided* and who *holds it* stay separate facts, because a manager assigning work depends on them being separate.
+
+## D30 — every decision costs a sentence, and the sentence is the point
+
+The domain refuses a state with no reason. The interface does not route around it: each action asks a **different** question, because a single *"Reason"* label collects a single kind of answer.
+
+| Move | Asked |
+|---|---|
+| `engaged` | Why are you taking this on? |
+| `dismissed` | Why shouldn't Signora have shown you this? |
+| `closed_won` | What won it? |
+| `closed_lost` | Why was it lost? |
+| `tracking` | Why are you picking this back up? |
+
+The dismissal question is the valuable one: it is the only feedback loop from a seller's judgement back into qualification quality, and *"not interested"* and *"they are a reseller, wrong profile entirely"* are worth very different amounts.
+
+**Considered and rejected:** supplying a default reason so that taking an account on is one click. It would have put the same sentence on every account — R1-06's defect, manufactured deliberately.
+
+## D31 — a refusal is shown in the domain's own words
+
+The Opportunity Engine's messages were written to be read: *"A won deal does not reopen — the next deal at that account is genuinely a new opportunity, and conflating them distorts every win-rate figure computed later."* The platform's domain-error handler passes `str(exc)` through and the dialog renders it.
+
+Replacing that with *"Something went wrong"* would discard the best explanation in the system. **Anything without the API's error envelope gets a sentence that does not pretend to know what happened**, because a network failure is not a refusal.
+
+**The cost, recorded as R4-03:** those messages were written for logs and now contain identifiers a customer cannot use. Passing them through was right and was decided without reading what they said.
+
+## D32 — D23 is now live, and only half answerable
+
+Assignment shipped, so the brief now renders ownership — and **Signora can say "you" and can say nobody else's name.** Better Auth owns user profiles in the Next.js tier; the Python tier verifies tokens without ever learning who a person is (ADR-0026). An owner arrives as an identifier and nothing more.
+
+The screen says *"held by someone else"*. A raw identifier would be the same absence dressed as information.
+
+**This is an API gap, not a styling question.** Workspace & Tenancy owns members and exposes them; nothing joins a member to the identity Better Auth holds. The workflow history is where it costs most — *"a person"* where a name belongs, in the one part of the product whose entire value is attribution.
+
+*Owner:* unassigned, and it needs a decision rather than an implementation — whether profiles are read through a Next.js route over Better Auth's tables, or surfaced through `workspace_tenancy` from a profile the Python tier is told about. **The second is a new cross-tier contract and belongs in an ADR, not a slice.**

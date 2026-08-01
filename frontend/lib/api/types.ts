@@ -198,6 +198,26 @@ export interface AccountOpportunity {
   score_change_since_open: number | null;
   evidence: EvidenceState;
   history: WorkflowState[];
+  /**
+   * Which stages this may legally become from where it stands.
+   *
+   * **Sent by the server, never inferred here.** The transition rules belong
+   * to the Opportunity Engine's domain, and a client that reimplemented them
+   * would be a second copy — wrong the moment either changed. Empty on a won
+   * deal, which does not reopen.
+   */
+  allowed_next: Stage[];
+}
+
+/** A human deciding something about an account.
+ *
+ * There is no `actor_id`: who decided is taken from the verified caller, and a
+ * request able to name its own actor could sign somebody else's name to a
+ * dismissal. */
+export interface RecordDecision {
+  stage: Stage;
+  reason: string;
+  owner_id?: string;
 }
 
 /** One sentence of a grounded explanation, and the facts it rests on. */

@@ -410,3 +410,62 @@ A qualifying score opens a suggestion nobody owns; re-running qualification open
 | **D** | **Contested scores** | **Qualify by default.** A fought-over account is exactly what a seller should look at; the policy may require confidence, and the opportunity records that it was qualified from a contested score. |
 
 **Every question is settled. Implementation proceeds.**
+
+---
+
+## The write surface — M12.3, 2026-08-01
+
+Until this slice the module had exactly one HTTP path shape: two reads, both of them the pipeline reporting itself. **`POST /workspaces/{workspace_id}/opportunities/{opportunity_id}/states` is the first write a customer can perform anywhere in Signora**, and everything about its shape follows from what it records.
+
+### It is `states`, not `transitions`
+
+The collection name is the storage model, deliberately. An `OpportunityState` is a *complete statement of workflow state*, not a delta — reading the current one is a single row, a future workflow field needs no discriminator, and no row can describe a change whose starting point disagrees with the row before it. Calling the collection `transitions` would name something the module does not store.
+
+There is **no `PATCH`**, and no update grant behind one. Progress is an append, which is what makes the status *be* the audit trail rather than something kept beside it.
+
+### `actor_id` is not on the request contract
+
+`RecordDecisionRequest` carries `stage`, `reason` and an optional `owner_id`. Who decided comes from the verified principal.
+
+A caller able to name its own actor could sign another member's name to a dismissal, and **the workflow history is the one record in Signora that nothing recomputes** — every derived table rebuilds byte for byte from the evidence beneath it; a decision does not. An integration test asserts the field set rather than only the behaviour, because a future author adding `actor_id` "for the CRM sync" would make impersonation possible with no other test failing.
+
+Who *decided* and who *holds it* stay separate facts, because a manager assigning work depends on them being separate.
+
+### The legal moves are published, never inferred
+
+`AccountOpportunityResponse.allowed_next` is derived from `allowed_from(stage)` and ordered by the `Stage` enum's own declaration — `tracking → engaged → won → lost → dismissed`, the order work actually moves in. A client renders them in order and reimplements nothing.
+
+Two reasons the ordering is part of the contract rather than a client concern:
+
+- `allowed_from` returns a `frozenset`, whose iteration order would otherwise be a **hidden input** to the response.
+- The first implementation sorted alphabetically — equally deterministic, and it put **"Lost"** ahead of **"I'm working this"** on every account in the product.
+
+**The server refuses anything else regardless.** A list a caller can ignore is not enforcement, and the integration suite proves the refusal independently of the offer.
+
+### A closed opportunity keeps its brief
+
+`brief()` returns the open opportunity when there is one and otherwise the most recent generation. M6 shipped `None` for a closed account and M12.2 recorded the question as this milestone's to settle.
+
+A brief that vanished the moment somebody dismissed an account would take **their own words** with it — the dismissal reason is the only feedback the platform ever receives about its own qualification quality — leave a legal reopening unreachable, and read as the product deleting the account they had just judged.
+
+The attention list still shows open work only. **The commitment outlives the score that created it; the record outlives the commitment.**
+
+### Failures, and what each one is honestly about
+
+| Raised | HTTP | Why |
+|---|---|---|
+| `OpportunityNotFound` | **404** `opportunity_not_found` | An opportunity the caller cannot see is indistinguishable from one that never existed. A 422 saying *"that transition is illegal"* would confirm it exists, and identifiers would become enumerable one status code at a time |
+| `MembershipError` | **422** `owner_not_a_member` | The *assignee* is not a member. Not 403: the caller is permitted to do this, and naming the wrong person is a fault in the request rather than in their permissions. **An incorrect attribution is worse than none** |
+| `OpportunityError` | **422** `transition_refused` | Everything the domain refuses. Handler lookup walks the exception's MRO, so the two rows above still win for their own types |
+
+**The domain's messages reach the caller verbatim**, because they were written to be read — *"A won deal does not reopen — the next deal at that account is genuinely a new opportunity, and conflating them distorts every win-rate figure computed later."* Recorded as **R4-03**: those sentences were also written for logs, and some carry identifiers a customer cannot use.
+
+### Authorization
+
+`opportunity:update` is granted to **owner and member alike**. A member *is* the seller; an SDR who could not take an account on or dismiss one would find the product unusable. A Security Invariant states the boundary the grant does not cross — a member still cannot rename the workspace or add a colleague — so a rewrite of this feature cannot take it away.
+
+### Composition
+
+`apps/api/composition/workflow.py`, separate from the read surface and not for tidiness. The attention list is six modules deep because a row needs a live score; **progressing an opportunity needs the workflow tables and a membership check, and nothing else at all.**
+
+That asymmetry is this module's design showing through the composition root: an opportunity holds no derived intelligence, so changing one consults none. A falling score cannot revoke a seller's commitment, and a composition that handed this path a score reader would be the first step toward one that could.

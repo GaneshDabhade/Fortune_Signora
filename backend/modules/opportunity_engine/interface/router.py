@@ -23,9 +23,13 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, Query, status
 
 from apps.api.composition.opportunities import OpportunityRead
+from apps.api.composition.workflow import OpportunityWorkflow
+from modules.opportunity_engine.application.transition import TransitionOpportunityInput
 from modules.opportunity_engine.interface.schemas import (
     AccountAttentionResponse,
     AccountOpportunityResponse,
+    RecordDecisionRequest,
+    WorkflowStateResponse,
 )
 from signora_platform.api import CurrentWorkspace, CursorPage
 from signora_platform.authorization import Action, Resource
@@ -117,6 +121,60 @@ async def account_opportunity(
             detail="No opportunity is open for this account.",
         )
     return AccountOpportunityResponse.from_domain(brief)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/opportunities/{opportunity_id}/states",
+    status_code=status.HTTP_201_CREATED,
+    response_model=WorkflowStateResponse,
+    summary="Record what you decided about this account",
+)
+async def record_decision(
+    context: CurrentWorkspace,
+    workflow: OpportunityWorkflow,
+    opportunity_id: UUID,
+    body: RecordDecisionRequest,
+) -> WorkflowStateResponse:
+    """*"I'm working this one."* — **the first write in the product surface.**
+
+    Everything else a customer can reach reports what the pipeline computed.
+    This records what a person chose, and the two are different kinds of fact:
+    delete every derived table and the pipeline rebuilds it byte for byte,
+    while nothing anywhere reproduces a decision somebody made.
+
+    **Who decided is taken from the verified principal, never from the body.**
+    A request that could name its own actor would let one member sign
+    another's name to a dismissal — and the workflow history is the one record
+    in Signora that cannot be recomputed if it is wrong.
+
+    **The collection is `states`, not `transitions`, because that is what is
+    stored**: each row is a *complete* statement of workflow state rather than
+    a delta, so reading the current one is a single row and no two rows can
+    describe a change whose starting point disagrees with the row before it.
+    A `201` returns the state exactly as recorded.
+
+    Nothing here is a partial update. There is no `PATCH` on an opportunity
+    and no update grant behind one: progress is an append, which is what makes
+    the status *be* the audit trail rather than something kept beside it.
+
+    The domain refuses an illegal change — a won deal reopening, a state that
+    changes nothing, a decision with no reason — and its own words are
+    returned. **The client offers only the legal moves; this is what enforces
+    them.**
+    """
+    context.authorize(Resource.OPPORTUNITY, Action.UPDATE)
+    result = await workflow.execute(
+        TransitionOpportunityInput(
+            workspace_id=context.workspace_id,
+            opportunity_id=opportunity_id,
+            stage=body.stage,
+            actor_id=context.principal.user_id,
+            reason=body.reason,
+            owner_id=body.owner_id,
+        ),
+        correlation_id=context.correlation_id,
+    )
+    return WorkflowStateResponse.from_domain(result.state)
 
 
 __all__ = ["router"]

@@ -11,7 +11,9 @@ import type {
   AccountValidation,
   BusinessEventEvidence,
   CursorPage,
+  RecordDecision,
   Workspace,
+  WorkflowState,
 } from '@/lib/api/types';
 import { ApiError, apiRequest } from '@/lib/api/client';
 import { queryKeys } from '@/lib/query/keys';
@@ -221,6 +223,44 @@ export function useBusinessEvent(workspaceId: string | null, eventId: string | n
       ),
     enabled: workspaceId !== null && eventId !== null,
     staleTime: 5 * 60_000,
+  });
+}
+
+/**
+ * Records what a person decided about an account.
+ *
+ * **The only write in the product surface**, and the invalidation is the whole
+ * reason it lives here rather than in a component. A decision changes the
+ * brief, the attention list *and* whether the account appears on it at all —
+ * dismissing something is how a seller makes their morning shorter, and a list
+ * that kept showing it would make the decision pointless.
+ *
+ * Deliberately **not optimistic**. Everywhere else in this product a number on
+ * screen is one the server computed; a stage that flipped locally and was then
+ * refused — a won deal cannot reopen — would be the one place the UI stated
+ * something untrue, however briefly. The round trip is the price of that.
+ */
+export function useRecordDecision(
+  workspaceId: string | null,
+  accountId: string | null,
+  opportunityId: string | null,
+) {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: (decision: RecordDecision) =>
+      apiRequest<WorkflowState>(
+        `/workspaces/${workspaceId}/opportunities/${opportunityId}/states`,
+        { method: 'POST', body: decision, workspaceId: workspaceId ?? undefined },
+      ),
+    onSuccess: () => {
+      void client.invalidateQueries({
+        queryKey: queryKeys.accountOpportunity(workspaceId ?? '', accountId ?? ''),
+      });
+      void client.invalidateQueries({
+        queryKey: queryKeys.accounts(workspaceId ?? ''),
+      });
+    },
   });
 }
 

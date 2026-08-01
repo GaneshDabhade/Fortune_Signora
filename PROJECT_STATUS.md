@@ -1,7 +1,7 @@
 # Signora — Project Status
 
 > **The canonical entry point for this repository.** If you read one document, read this one.
-> **Last verified against the repository: 2026-07-31**, at `HEAD` `a565077`. Test, coverage and contract figures are verified against a local run; the certification manifest is re-cut at milestone close (ADR-0032).
+> **Last verified against the repository: 2026-08-01**, at the M12.3 decision slice. Test, coverage and contract figures are verified against a local run; the certification manifest is re-cut at milestone close (ADR-0032).
 >
 > This is an **executive dashboard**, not a progress log. It answers: *where are we · what was completed · what changed architecturally · what is deferred · what's next · are we on track.* Dated history lives in the appendices and is never rewritten to match the present.
 
@@ -16,16 +16,18 @@
 | **Current phase** | **Product implementation** — the pipeline is built; the surface is being exposed |
 | **Last completed milestone** | **M10 — AI Research Engine**, closed 2026-07-31 |
 | **Current milestone** | **M12.3 — evidence and actions** *(Decision Package still deferred until `reasoning@1` is released — see §10)* |
-| **Latest commit** | `ab85b14` — *M12.3 — what to check before you act* |
+| **Latest commit** | *M12.3 — a decision, recorded* — the first write in the product surface |
 | **Latest certification** | [`d954c930`](certification/reports/d954c930319a.md) — **CERTIFIED**, 2026-07-31 *(predates M12.2; re-cut at milestone close)* |
 | **Branch** | `main`, tree clean, pushed |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
-| **Overall completion** | **~60%** by engineering effort (~187 of ~261–339 ew) — M10 (12–16 ew) closed, M9.5 (~3 ew) inserted and **not** closed, M12.1 in progress |
+| **Overall completion** | **~61%** by engineering effort (~190 of ~261–339 ew) — M10 (12–16 ew) closed, M9.5 (~3 ew) inserted and **not** closed, M12.3 in progress |
 | **Projected to GA** | ~1.3–1.9 years at 3 engineers · ~2.0–2.8 at 2 · ~3.9–5.8 at 1 (80% capacity) |
 
 **What works end to end today:** a simulated provider payload is ingested, normalised into claims, resolved into entities, diffed into observations, detected as business events, interpreted as workspace-specific signals, aggregated into a buying score, qualified into an opportunity a human commits to, narrated as a grounded explanation, reasoned into a **Decision Package**, and **researched into deterministic findings with a written brief** — all stored immutably, announced on the outbox, with complete provenance.
 
 **What a customer can now do:** sign in, choose a workspace, and open **two business screens** — the attention list (*"which accounts should I work on today"*) and the account brief (*"why this one"*). The brief shows a score **with the arithmetic that produced it**, the movement since somebody committed, a grounded explanation in plain language, and — since M12.3 — **what to check before acting on it, and what the evidence cannot tell you.** That last part answers *"what should I do?"* with no model and no recommendation: it is domain-authored catalog prose that had been in the repository since M5A and never displayed.
+
+They can also **follow any ledger line to the provider readings beneath it**, and — since M12.3's third slice — **record what they decided**: take an account on, hand it to a colleague, dismiss it as not a real opportunity, or close it won or lost. Every change names who decided and why, is appended rather than edited, and appears on the next load. **This is the first write in the product surface**, and it is the point at which Signora stops being something a seller reads and becomes something they use.
 
 **🔴 What is currently broken in production, and must not be hidden:** **`reasoning@1` has no released model.** M9.5 changed the rendering protocol, which withdrew every protocol-1 release by derivation; `explanation_narration@1` re-earned its release, and `reasoning@1` did not — `granite3.3:2b` refuses under protocol 2 and `llama3.1:8b` remains UNMEASURABLE on this hardware. **The Decision Package stage would refuse at runtime.** Tests and smoke pass because they supply registry doubles. See §7.
 
@@ -59,7 +61,7 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | — | **M12.1** | **Account attention list — first customer surface** | ✅ **Complete** | **2026-07-31** |
 | — | **M12.1.5** | **Playground v2 — a demo environment worth reviewing against** *(inserted)* | ✅ **Complete** | **2026-07-31** |
 | — | **M12.2** | Identity ✅ · score ✅ · commitment ✅ · narration ✅ · package 🚫 *(blocked, not skipped)* | ✅ **Complete** | **2026-08-01** |
-| 1 | **M12.3** | **Evidence and actions** — what to check ✅ · citations ✅ · transitions ⏳ | 🔵 **In progress** | — |
+| 1 | **M12.3** | **Evidence and actions** — what to check ✅ · citations ✅ · transitions and assignment ✅ · list hierarchy ⏳ | 🔵 **In progress** | — |
 | 4 | M12.4 | Research on demand | ⏳ Queued | — |
 | — | M11 | Recommendation Engine | 🟣 **Deferred 2026-07-31** — *not cancelled*; resumes on a product trigger, see §10 | — |
 | 5 | M7 | Timeline | ⏳ Queued | — |
@@ -165,7 +167,12 @@ A demo environment worth reviewing a product against. Requested by the product o
 | **Tests** | 9 endpoint · 13 component |
 | **`GET …/business-events/{id}`** | Where a citation ends: the event, its readings, and **which providers reported it**. The only content on the brief Signora did not write |
 | **The evidence drawer** | A ledger line opens it. The affordance was withheld for two slices *because it had nowhere to go* |
-| ⏳ **Next** | Stage transitions and assignment (J4), which also forces **D23** |
+| **Tests** | 8 endpoint · 5 component |
+| **`POST …/opportunities/{id}/states`** | **The first write in the product.** A seller takes an account on, dismisses it, or records an outcome — each with a sentence, each naming who decided. `actor_id` is not on the request contract at all |
+| **The decision controls** | Beside the stage line, so workflow lives in one place on the screen. The legal moves arrive from the domain via `allowed_next`; the client reimplements no rule and the server refuses anything else regardless |
+| **A closed brief survives** (**D27**) | M12.2 deferred *"what should a closed opportunity's brief say"* to this milestone. It keeps it — otherwise a dismissal would delete the seller's own words and make a legal reopening unreachable |
+| **Tests** | 24 endpoint · 17 component · 1 new Security Invariant |
+| ⏳ **Next** | The list's missing hierarchy — R1-01, R1-02, R1-05, D20 — which is one coherent slice about *which* account you pick |
 
 > **🟠 It ships to the Playground and not to a customer until F-3 closes.** The catalog's guidance is *engineering-authored pending domain review*, and *"ask on a first call which division the investment sits in"* is advice a real seller will act on. Good content is not the same as signed content.
 
@@ -173,9 +180,11 @@ A demo environment worth reviewing a product against. Requested by the product o
 
 | Task | Scope |
 |---|---|
-| M12.3 | Stage transitions and assignment, which also forces **D23** (an owner is a UUID with no name) |
+| M12.3 | **The list slice** — R1-01 (*why now* repeats 11 of 12), R1-02 (trigger and evidence state contradict), R1-05 (invisible tiebreak), D20/R1-07 (a 50 and a 1 render identically). One coherent change about *which* account you pick |
+| M12.3 | **R4-04** — a dismissed account is unreachable once you navigate away. A *closed and dismissed* filter, which is the same list slice |
 | M12.2 | The Decision Package panel, **on the trigger `reasoning@1` earns a release** and not before |
-| M12.3 | Evidence resolution, stage transitions, assignment — and the list's missing hierarchy (D20) |
+| M12.4 | Narration citations still show a fact count and cannot be opened — `signal_contribution`, `buying_score` and `opportunity` need resolvers |
+| unassigned | **D32** — the other half of D23. Naming a person needs a cross-tier profile contract and belongs in an ADR, not a slice |
 
 **Deterministic-first ordering, unchanged from M8 and M9:** storage before retrieval, retrieval before orchestration, generation and evaluation last. **Embeddings, pgvector, external retrieval and provider re-query are deferred**, each with a stated trigger.
 
@@ -217,9 +226,20 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 
 **A certification expires by derivation, not by decision.** Change the rendering protocol, re-release a prompt, add a migration or edit a scenario, and the recorded run stops describing the repository — `is_certified` reads false and the report says *awaiting re-certification*. Nothing is edited, and nothing can be marked certified by hand: `satisfied` and `is_certified` are derived, exactly as `passed` and `earns_release` are for prompts.
 
+**Current local run — 2026-08-01, M12.3 decision slice.** The certification above is a dated record of the run that produced it and is not edited; these are today's figures, and they differ because three M12 slices have landed since.
+
+| Gate | Now |
+|---|---|
+| **pytest** | **1992 passed**, 0 failing, 0 skipped |
+| **coverage** | **95.61%** *(floor 95%)* |
+| **Security Invariants** | **325**, +1 this slice — *a member may work accounts and still not run the workspace* |
+| **import-linter** | 29 kept, 0 broken |
+| **MyPy** | strict, clean over **486 files** |
+| **`make smoke`** | not re-run this slice — no deployability surface changed. Due at the milestone boundary |
+
 | Indicator | Value | Target |
 |---|---|---|
-| **Frontend tests** | **101 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Frontend tests** | **235 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Migrations** | `0001`–`0018`, additive and reversible — `0018` proven by an applied downgrade/upgrade cycle | reversible |
 | **Architecture drift** | **0** — no ratified ADR reversed | trending to 0 |
 | **Open production bugs** | **0** | 0 |

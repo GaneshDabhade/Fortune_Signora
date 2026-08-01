@@ -44,7 +44,19 @@ const STAGE_WORDING: Record<Stage, string> = {
  * shaped around, and a screen that presented Signora's suggestion as though it
  * were a decision somebody made would quietly invert it.
  */
-export function WorkflowStage({ opportunity }: { opportunity: AccountOpportunity }) {
+export function WorkflowStage({
+  opportunity,
+  viewerId = null,
+}: {
+  opportunity: AccountOpportunity;
+  /** The signed-in user. **Signora can say *you* and can say nobody else's
+   * name**: Better Auth owns user profiles in the Next.js tier and the Python
+   * tier verifies tokens without ever learning who a person is (ADR-0026), so
+   * an owner arrives here as an identifier and nothing more. *"Held by someone
+   * else"* is the honest form of that — a raw identifier on screen would be
+   * the same absence dressed as information. Recorded as **D23**. */
+  viewerId?: string | null;
+}) {
   const unclaimed = opportunity.owner_id === null;
 
   return (
@@ -54,6 +66,14 @@ export function WorkflowStage({ opportunity }: { opportunity: AccountOpportunity
         <>
           {' · '}
           <span className="text-content-subtle">nobody has taken it yet</span>
+        </>
+      ) : null}
+      {!unclaimed ? (
+        <>
+          {' · '}
+          <span className="text-content-subtle">
+            {opportunity.owner_id === viewerId ? 'you hold this' : 'held by someone else'}
+          </span>
         </>
       ) : null}
     </p>

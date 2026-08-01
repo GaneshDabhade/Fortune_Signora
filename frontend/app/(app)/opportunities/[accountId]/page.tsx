@@ -20,8 +20,10 @@ import {
   OpportunityMomentum,
   WorkflowStage,
 } from '@/components/intelligence/opportunity';
+import { WorkflowActions } from '@/components/intelligence/workflow';
 import { Card, CardBody, EmptyState, SkeletonText } from '@/components/ui';
 import { ApiError } from '@/lib/api/client';
+import { useSession } from '@/lib/auth/client';
 import {
   useAccountIdentities,
   useAccountNarration,
@@ -73,6 +75,11 @@ export default function AccountBriefPage() {
   const { accountId } = useParams<{ accountId: string }>();
   const { activeWorkspace } = useWorkspaceContext();
   const workspaceId = activeWorkspace?.id ?? null;
+  // Only so the page can say *you* rather than an identifier, and assign an
+  // account to the person taking it on. Never an authorization decision —
+  // Casbin on the server is that, and always.
+  const { data: session } = useSession();
+  const viewerId = session?.user.id ?? null;
 
   const { data: score, isLoading, error } = useAccountScore(workspaceId, accountId);
   const { data: opportunity } = useAccountOpportunity(workspaceId, accountId);
@@ -99,10 +106,21 @@ export default function AccountBriefPage() {
           />
           {/* The workflow line sits under the name rather than in the score
               card: it is about the *account*, not about the number, and a
-              seller reads it once on arrival and never again. */}
+              seller reads it once on arrival and never again.
+
+              **The decision sits with it**, so workflow lives in exactly one
+              place on the screen. An AE who arrived already knowing they are
+              working this account should not have to read a brief to say so;
+              a reader who is still deciding scrolls, decides, and comes back
+              to a control they have already seen. */}
           {opportunity ? (
-            <div className="mt-0.5">
-              <WorkflowStage opportunity={opportunity} />
+            <div className="mt-0.5 flex flex-col gap-2.5">
+              <WorkflowStage opportunity={opportunity} viewerId={viewerId} />
+              <WorkflowActions
+                opportunity={opportunity}
+                workspaceId={workspaceId}
+                viewerId={viewerId}
+              />
             </div>
           ) : null}
         </div>

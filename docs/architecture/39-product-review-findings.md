@@ -294,3 +294,234 @@ Stripe (39)      Active evaluation [primary]
 **Showing the guidance on the attention list.** Twelve accounts × three limitations is a wall. Rejected; it belongs where somebody has already chosen to concentrate. *Will not return.*
 
 **A confidence figure.** Considered because "how sure are you" is the obvious next question. Rejected: **nothing computes it.** The catalog knows what a hypothesis cannot prove and not how likely this one is, and a number here would be an inference wearing the catalog's clothes. *Returns only with the Recommendation Engine, and as its output rather than as a decoration.*
+
+---
+
+# Review 3 — the citation that opens *(2026-08-01, M12.3)*
+
+**J3, "prove it".** The click that is the whole argument for Signora rather than a summary. Same limitation as Reviews 1 and 2 — the browser UI could not be opened (OAuth-only sign-in, no credentials configured) — so components were rendered against real API responses. Findings resting on visual judgement are marked 👁.
+
+What the real data produced, opening NVIDIA's largest ledger line:
+
+```
+Hiring surge — 5,000 people and 500 open roles in 38 days
+Reported by coresignal and apollo · 25 Jul
+
+  employee count   29,000 → 34,000        coresignal · 25 Jul
+  open roles       400 → 900              apollo · 25 Jul
+
+Across sixteen business events in the Playground, exactly one names two providers.
+```
+
+---
+
+## R3-01 · Corroboration is the most valuable thing in the drawer and the rarest 🟠
+
+**Observation.** Fifteen of sixteen events read *"Reported by coresignal"*. One reads *"Reported by coresignal and apollo"*, and it sits on the top-ranked account.
+
+**Why it matters.** The line is doing real work — *"reported by CoreSignal"* and *"reported by CoreSignal and Apollo"* are different claims, and the second is stronger. But a reader who opens four citations and sees one provider each time will stop reading the line, and then miss it on the one that matters.
+
+**User impact.** *(RevOps)* "I'd want to know when two sources agree. I'd also stop looking after the third single-source event."
+
+**Suggested future improvement.** Say something when corroboration is **absent**, not only when it is present — *"only CoreSignal has reported this"* is a fact a reader should have, and it makes the corroborated case legible by contrast. Cheap: the same field, the other branch.
+
+**Priority:** Medium. **Milestone:** M12.4, with the drawer's second pass.
+
+---
+
+## R3-02 · The drawer shows what a provider said and never what Signora did with it 🟡
+
+**Observation.** The readings appear as `29,000 → 34,000`. The ledger line that opened them says *"Expansion opportunity · primary relevance · fresh evidence (100%) — 30 points"*. Nothing connects the two: the drawer never says which rule turned this movement into that conclusion.
+
+**Why it matters.** It is one level short of the full chain. A reader can now check that the *fact* is real; they still cannot check that the *inference* was reasonable.
+
+**User impact.** *(Sales Manager)* "I believe the numbers. I still don't know why 5,000 hires is worth 30 points and not 10."
+
+**Suggested future improvement.** The business event carries its `type_key`, and the Business Event taxonomy carries the rule that detected it. Naming the rule — *"detected by sustained-growth over 38 days"* — closes the last gap. **Not new inference; a lookup in an artifact already loaded.**
+
+**Priority:** Medium. **Milestone:** M12.4.
+
+---
+
+## R3-03 · Nothing on the page said the citation could be opened until it could 🟢 **Deliberate**
+
+**Observation.** The ledger rendered its reasons as flat text through M12.2 and now renders them as buttons. No transitional affordance ever existed.
+
+**Why it matters.** Recorded as a *confirmation*, not a defect. **A control that looks clickable and goes nowhere costs more trust than the missing feature does**, and the test that enforces it (`draws no affordance at all without a handler`) is now permanent. Worth stating in the register because the same pressure will arrive with the Decision Package.
+
+**Priority:** — **Milestone:** none. The bar to hold.
+
+---
+
+## The five roles
+
+**SDR.** *Delight:* "It showed me the actual numbers. I could put that in an email." *Ignored:* the provider names — "I don't know which of those is good."
+
+**AE.** *First look:* straight to the biggest ledger line, then the drawer. *Trust:* "The before-value is what makes it real. A current number alone I'd have to take on faith."
+
+**Sales Manager.** *Doubt:* R3-02 — the fact is checkable and the judgement is not.
+
+**RevOps.** *Delight:* "Two providers named, not 'multiple sources'." *Doubt:* R3-01.
+
+**CRO.** *First look:* did not open a citation at all. **That is the finding, and it is correct** — the drawer exists so the claim *survives* the click, not so every reader makes it.
+
+---
+
+## The staff-designer pass
+
+**Apple.** The drawer is the cleanest surface in the product — one subject, one table, nothing decorative. **The rest of the brief should look more like this.** 👁 **—**
+
+**Stripe.** Values are rendered exactly as received, including `34000` without a thousands separator. **Correct and slightly hostile.** Formatting here would be Signora editing a provider's claim inside the one view that exists to show it unedited — so the answer is probably a monospace column and better alignment rather than a changed number. 👁 **Low · M12.4.**
+
+**Linear.** Escape closes it and focus is trapped, both free from the native `<dialog>`. **No way to move between citations without closing and re-opening.** **Low · interaction slice.**
+
+**Notion.** The title is the event summary and the subtitle names the sources. **Right hierarchy — Signora's sentence on top, the evidence beneath.**
+
+**Perplexity.** **The finding that has been High since Review 1 is closed.** Every ledger citation resolves to a record. *"Narration sentences still show a fact count and cannot be opened"* replaces it. **High · M12.4.**
+
+**OpenAI.** No model touched anything in this drawer and it does not say so. Same gap as R2's, now on the surface where it matters most: **this is the least AI-generated screen in the product and the one a sceptic would most want that stated on.** **Medium · M12.4.**
+
+---
+
+# Review 4 — recording a decision *(2026-08-01, M12.3)*
+
+**J4.** The first write in the product. Reviewed against the twelve-account Playground, with one real decision recorded through the real HTTP path.
+
+What the real data produced:
+
+```
+NVIDIA Corporation      Signora is tracking this · nobody has taken it yet
+                        [ I'm working this ] [ Lost ] [ Not a real opportunity ]
+
+  → "I'm working this"
+    This account will be assigned to you.
+    Why are you taking this on? ______________________________
+    Recorded against this account permanently, with your name and the date.
+
+  after:
+  NVIDIA Corporation    Being worked · you hold this
+                        [ Won ] [ Lost ] [ Not a real opportunity ]
+
+    27 Jun  tracking   Signora: Commercial attention reached 75, which your
+                       qualification policy (v1) treats as worth tracking.
+    01 Aug  engaged    a person: Their VP of Data replied to my note; call
+                       booked for Thursday.
+```
+
+---
+
+## R4-01 · The moves arrived alphabetically, so "Lost" led and "I'm working this" came last 🔴 **FIXED**
+
+**Observation.** `allowed_next` was sorted by stage *value*, producing `closed_lost, dismissed, engaged` — and the client renders the first as the emphasised action. Every tracked account offered **[Lost] [Not a real opportunity] [I'm working this]**.
+
+**Why it matters.** Not cosmetic. The emphasised control on every account was the one a seller almost never wants, and the milestone's entire purpose — *making the next decision easier* — was inverted by a sort key chosen for determinism alone.
+
+**User impact.** *(SDR)* "The big button was 'Lost'. I assumed the product expected me to give up."
+
+**Implemented immediately** — it defeats the milestone's goal, and the correct order was already in the domain. Sorted by the `Stage` enum's own declaration, which runs `tracking → engaged → won → lost → dismissed`: the order work actually moves in. Still deterministic, and now derived from something meaningful rather than from the alphabet.
+
+**Found by rendering the real screen, not by a test.** Every assertion passed with the wrong order, because the tests asserted *which* moves and never *which first*. One now asserts the order and says why.
+
+**Priority:** — **Milestone:** done, M12.3.
+
+---
+
+## R4-02 · "Lost" is offered on an account nobody ever worked 🟠
+
+**Observation.** From `tracking`, the legal moves are `engaged`, `closed_lost`, `dismissed`. A seller who never engaged can record a loss.
+
+**Why it matters.** The domain is defensible — a deal you knew about, did not chase, and that closed elsewhere *is* a loss. But on screen, beside *"nobody has taken it yet"*, **"Lost" reads as a mistake in the product** rather than as a distinct outcome from "Not a real opportunity".
+
+**User impact.** *(AE)* "What's the difference between Lost and Not a real opportunity if I never touched it?" — which is exactly the distinction the module was built to protect, now unreadable at the point of use.
+
+**Suggested future improvement.** Word it for the state it is offered from: *"Lost without pursuing"* from `tracking`, *"Lost"* from `engaged`. The wording map is already keyed by target stage; keying it by `(from, to)` is the same table with one more dimension. **Do not change the domain** — the stage set is right and this is a labelling problem.
+
+**Priority:** Medium. **Milestone:** M12.4.
+
+---
+
+## R4-03 · A refusal shows the customer an internal identifier 🟡
+
+**Observation.** Recording a decision that changes nothing returns *"opportunity 6d1510af-4468-4ddc-924a-543c66975c28 is already engaged with the same owner."* — and the dialog shows that sentence verbatim, on purpose.
+
+**Why it matters.** Passing the domain's own words through is the right call and it was made without checking what those words contain. **The explanation is excellent; the UUID in front of it is noise the reader cannot use.** Reachable in practice from two open tabs.
+
+**User impact.** *(RevOps)* "It looks like a stack trace leaked into the UI."
+
+**Suggested future improvement.** The domain messages were written for logs and are now customer copy. Either the id moves out of the message (it is already on the row, the log line and the correlation id) or the interface strips it. **The first is better** — a message that needs sanitising before display is a message that will be shown unsanitised somewhere else.
+
+**Priority:** Medium. **Milestone:** M12.4.
+
+---
+
+## R4-04 · A dismissed account is unreachable once you navigate away 🟠
+
+**Observation.** Dismissing an account removes it from the attention list — correctly, because the list is open work. Its brief still exists and still offers reopening, and **there is no path back to it from anywhere in the product.**
+
+**Why it matters.** Being able to undo a dismissal is what makes dismissing safe. Today it is undoable for as long as you stay on the page and permanent the moment you leave.
+
+**User impact.** *(Sales Manager)* "I'd tell my reps not to dismiss anything, which defeats the point of asking them."
+
+**Suggested future improvement.** A filter on the list — *closed and dismissed* — which is list work and belongs with R1-01, R1-05 and D20. **The brief itself is already correct**: it was made to survive closure in this slice precisely because this was foreseeable.
+
+**Priority:** Medium. **Milestone:** the list slice.
+
+---
+
+## R4-05 · Every account offers the same three moves 🟢 **Correct, recorded so it is not "fixed"**
+
+**Observation.** Twelve identical action rows, exactly like R1-06's workflow line.
+
+**Why it matters.** Unlike a *description*, identical **options** carry no penalty: you can do the same things to any tracked account, and a product that varied its verbs by score would be inventing a judgement it never computed. **Recorded so a future reviewer does not read it as R1-06 repeating.**
+
+**Priority:** — **Milestone:** none.
+
+---
+
+## The five roles
+
+**SDR.** *Delight:* "I clicked one button and it was mine." *Doubt:* R4-02.
+
+**AE.** *First look:* the action row, before the score. **Second milestone running where the actionable thing outranks the arithmetic** — the brief is becoming reference material behind a decision, which is the right direction. *Confusing:* nothing.
+
+**Sales Manager.** *Trust:* "Every change names who and why, and I can't edit it. That is a manager's dream and a rep's least favourite feature." *Doubt:* R4-04, strongly.
+
+**RevOps.** *Delight:* "The dismissal reason is a feedback loop into qualification quality. Nothing else we own has one." *Doubt:* R4-03.
+
+**CRO.** *First look:* the history, not the buttons. *Trust:* "Two lines: what the machine suggested, what the human decided. That is the product's argument in four inches." *Doubt:* "Where do I see this across the team?" — **the first request in four reviews that is genuinely a new capability rather than a gap.**
+
+**The common thread has moved again.** Review 1: *"and then what?"* Review 2: *"and I still can't do it here."* Now: **nobody said either.** Four of five asked about *other people's* accounts — a team view, an assignment queue, a manager's roll-up. The single-seller loop is closed.
+
+---
+
+## The staff-designer pass
+
+**Apple.** Three buttons now sit under the account name, in the position of highest attention, and the page still has six sections of equal weight. **The hierarchy finding is now three reviews old and is the largest visual problem in the product.** 👁 **Medium · the brief's visual pass.**
+
+**Stripe.** The reason field says it is permanent *before* it is typed. **The best microcopy in the product.** What is missing: after recording, nothing confirms it beyond the stage line changing.
+
+**Linear.** The dialog traps focus and Escape cancels, both free. **No keyboard path to the actions themselves** — three tabs past a back link. **Low · interaction slice.**
+
+**Notion.** The history reads as a document: date, state, who, why. **It is the only part of the product that reads like a record rather than a screen.**
+
+**Cursor.** *"a person"* in the history where a name belongs — **D23**, now live rather than theoretical. The workflow log is where it hurts most: an audit trail that cannot name the auditor is half a trail. **High · needs the profile read path.**
+
+**Perplexity.** Every claim on this surface is the customer's own. **Nothing to follow, and that is the answer.**
+
+**OpenAI.** No model is involved in any of this and the product does not say so. Third review in a row for the same observation, now with the strongest case: **the audit trail is the one thing in Signora a regulator would ask about, and it is entirely deterministic.** **Medium · M12.4.**
+
+---
+
+## Rejected ideas
+
+**An optimistic stage change.** The UI would feel instant. Rejected: everywhere else on this page a figure is one the server computed, and a stage that flipped locally and was then refused — a won deal cannot reopen — would be the one place the product stated something untrue, however briefly. *Returns only if measured latency makes the round trip painful, which is a measurement, not a guess.*
+
+**A confirmation step on dismissal.** Considered because it is the destructive-feeling action. Rejected: **the required reason already is the confirmation**, and it collects something useful instead of asking the same question twice. *Will not return.*
+
+**Making the reason optional on "I'm working this".** The friction is real — taking an account on is the one decision a seller wants instant. Rejected: the domain refuses a stateless reason, and routing around it with a client-supplied constant would put the same sentence on every account, which is R1-06's defect manufactured deliberately. *Will not return.*
+
+**Checkboxes on "Before you act", now that a write path exists.** R2's rejection was *"nothing owns per-user state"* and this slice does not change that: an opportunity state is a workspace fact about an account, not a private note about a reader. **Storing a tick there would put one seller's reading habits into the account's permanent audit trail.** *Returns with per-user storage, which is a real schema decision.*
+
+**Stage transitions from the attention list.** One click to dismiss a whole row, without opening it. Tempting and rejected: **the reason is what makes the dismissal worth collecting**, and a list-level control would either skip it or put a dialog on top of a triage surface. *May return* once the reason's value is proven and a keyboard-driven list exists.
+
+**Bulk actions.** Rejected as premature — twelve accounts, no design partner, and the CRO's team-view request is a better answer to the same need. *Evidence-triggered.*

@@ -15,8 +15,8 @@
 | **Last completed** | **M10 AI Research Engine** — T131–T138, closed 2026-07-31. *Internal Research; every citable thing deterministic.* |
 | **Inserted, and open** | **M9.5 Evidence Citation Protocol** (ADR-0031). Steps A–D landed; **Step F is incomplete** |
 | **Last completed** | **M12.2 the account brief** — closed 2026-08-01. Identity, score breakdown, commitment and narration; the Decision Package is *blocked*, not skipped |
-| **Current** | **M12.3 evidence and actions.** *What to check* and *ledger citations* shipped; narration citations and stage transitions remain |
-| **Head at handoff** | see `git log` — M12.3 the what-to-check slice |
+| **Current** | **M12.3 evidence and actions.** *What to check*, *ledger citations* and *stage transitions and assignment* shipped; narration citations and the list's hierarchy remain |
+| **Head at handoff** | see `git log` — M12.3 the decision slice, *the first write in the product surface* |
 | **Latest certification** | [`d954c930`](../certification/reports/d954c930319a.md) — CERTIFIED, 2026-07-31 |
 | **Phase** | **Product implementation.** Ten pipeline stages built and frozen behind them; the surface is being exposed. |
 | **Overall completion** | **~60%** by engineering effort (~187 of ~261–339 ew) |
@@ -31,14 +31,14 @@
 
 | Indicator | Value |
 |---|---|
-| Backend tests | **1320 passing**, 0 failing, 0 skipped |
-| Frontend tests | **101 passing** |
-| Backend coverage | gate **≥95%** · currently **~95.3%** |
-| Security invariants | **269 / 269**, each proven to fail when its guarantee is removed |
-| import-linter contracts | **21 kept, 0 broken** |
+| Backend tests | **1992 passing**, 0 failing, 0 skipped *(measured 2026-08-01, M12.3 decision slice)* |
+| Frontend tests | **235 passing** |
+| Backend coverage | gate **≥95%** · currently **95.61%** |
+| Security invariants | **325 / 325**, each proven to fail when its guarantee is removed |
+| import-linter contracts | **29 kept, 0 broken** |
 | `make smoke` | ✅ **21 stages**, 40 checks, 84–203s — includes the cross-tier JWT contract (15b) since 2026-07-29 |
-| Migrations | 0000–0014, all reversible |
-| mypy strict | Clean, 361 files |
+| Migrations | 0000–0018, all reversible |
+| mypy strict | Clean, **486 files** |
 | Open production bugs | **0** |
 | Technical debt | **0 outstanding** · **2 platform findings raised** (§5) |
 
@@ -337,10 +337,23 @@ All three are fixed. **The class is the finding:** each passed every test it had
 ### What comes next
 
 1. ~~Citation resolution~~ **shipped for the ledger.** A contribution opens to the business event's provider readings. **Narration citations still do not open** — a sentence shows "3 facts" and the tokens are `signal_contribution`, `buying_score` and `opportunity`, which need three more resolvers. The ledger was the most-clicked path and went first.
-2. **Stage transitions and assignment (J4)** — and it forces **D23**, because an owner is a UUID with no read path to a person.
-3. **The list slice** — Review 1's R1-01, R1-02, R1-05 and D20 are all about *which* account you pick, not what you do after. They belong together and not in M12.3.
+2. ~~Stage transitions and assignment (J4)~~ **shipped.** `POST …/opportunities/{id}/states` — the first write in the product. It forced **D23** and answered it **halfway**: the screen says *"you"* and *"held by someone else"*, because the Python tier verifies tokens without ever learning who a person is. See **D32** — the rest is a cross-tier profile contract and belongs in an ADR, not a slice.
+3. **The list slice — now the whole of what remains in M12.3.** R1-01 (*why now* repeats 11 of 12), R1-02 (trigger and evidence state contradict), R1-05 (invisible tiebreak), D20/R1-07 (a 50 and a 1 render identically), and **R4-04** (a dismissed account is unreachable once you navigate away, which wants a *closed and dismissed* filter). All are about *which* account you pick.
 4. **F-11 needs a ruling** before it can be fixed: the one-line change loosens a grounding check inside a frozen module.
 5. **The Decision Package stays unbuilt** until `reasoning@1` earns a release.
+
+### What the decision slice added to the permanent contract
+
+- **The legal moves are sent, never inferred** (**D28**). `allowed_next` is derived from the domain's own transition table and ordered by the `Stage` enum's declaration — the order work moves in. The client reimplements no rule; the server refuses anything else regardless, because *a list a caller can ignore is not enforcement*.
+- **Who decided is never on the request** (**D29**). `RecordDecisionRequest` has no `actor_id` and a test asserts the field set, not only the behaviour. The workflow history is the one record in Signora that nothing recomputes.
+- **A closed opportunity keeps its brief** (**D27**) — settled here because M12.2 explicitly deferred it. A brief that vanished on dismissal would delete the seller's own words and make a legal reopening unreachable.
+- **A refusal is shown in the domain's own words** (**D31**), which also revealed that those words were written for logs and contain identifiers a customer cannot use (**R4-03**).
+
+### The defect the tests could not have found
+
+**Every action row in the product led with "Lost".** `allowed_next` was sorted alphabetically — deterministic, and it put the move a seller almost never wants in the emphasised position on all twelve accounts, inverting the milestone's stated goal. Every assertion passed, because they asserted *which* moves and never *which first*.
+
+**It was found by rendering the real screen against the real Playground.** Third slice running where the highest-severity finding came from looking at output rather than from a suite — after F-10 and after the three unreachable capabilities. One test now asserts the order and says why.
 
 ### The thing M12.3 proved, which is worth more than the feature
 

@@ -70,6 +70,38 @@ class TestCasbinEnforcement:
             action=Action.UPDATE,
         )
 
+    def test_a_member_may_work_accounts_and_still_not_run_the_workspace(
+        self, authorizer: CasbinAuthorizer
+    ) -> None:
+        """**The grant M12.3 added, and its boundary.**
+
+        A member *is* the seller — an SDR who could not take an account on or
+        dismiss one would find the product unusable, so `opportunity:update`
+        is theirs by design. It buys nothing else: they still cannot rename
+        the workspace or add a colleague, which are the two ways a workflow
+        permission would otherwise become an administrative one.
+
+        Stated here rather than only in the opportunity tests because a
+        rewrite of that feature must not be able to take the boundary with
+        it.
+        """
+        workspace_id = uuid4()
+
+        assert authorizer.is_allowed(
+            role="member",
+            workspace_id=workspace_id,
+            resource=Resource.OPPORTUNITY,
+            action=Action.UPDATE,
+        )
+        for resource, action in (
+            (Resource.WORKSPACE, Action.UPDATE),
+            (Resource.MEMBER, Action.ADD),
+            (Resource.MEMBER, Action.REMOVE),
+        ):
+            assert not authorizer.is_allowed(
+                role="member", workspace_id=workspace_id, resource=resource, action=action
+            ), f"a member was permitted to {action} {resource}"
+
     def test_an_unrecognised_role_is_denied_everything(self, authorizer: CasbinAuthorizer) -> None:
         """Policy must fail closed. A role added to the domain model but not
         to the policy gets nothing, rather than inheriting a permissive

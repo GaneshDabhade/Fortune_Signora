@@ -7,5 +7,7 @@ p, member, *, workspace, read
 p, member, *, member, read
 p, owner, *, opportunity, read
 p, member, *, opportunity, read
+p, owner, *, opportunity, update
+p, member, *, opportunity, update
 p, owner, *, account, read
 p, member, *, account, read

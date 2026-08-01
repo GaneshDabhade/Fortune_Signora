@@ -44,7 +44,61 @@ from modules.opportunity_engine.domain.opportunity import (
     OpportunityState,
     Qualification,
     Stage,
+    allowed_from,
 )
+
+
+#: Where each stage sits in the order work moves. Read from the enum rather
+#: than written out, so a stage added to the domain cannot be forgotten here
+#: and silently sort last.
+_STAGE_ORDER: dict[Stage, int] = {stage: index for index, stage in enumerate(Stage)}
+
+
+class RecordDecisionRequest(BaseModel):
+    """A human deciding something about an account.
+
+    **The only write in the product surface, and the shape encodes why.**
+    Every other endpoint reports what the pipeline computed; this one records
+    what a person chose, and *intelligence suggests, humans commit* is what
+    makes the two different kinds of fact.
+
+    Note what is **not** here: `actor_id`. Who decided is taken from the
+    verified principal on the request, never from the body — a caller able to
+    name the actor could sign another member's name to a decision, and the
+    workflow history is the one record in Signora that nothing can reproduce
+    from evidence if it is wrong.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    stage: Stage = Field(
+        description=(
+            "Where this should stand now. Only some changes are legal from where it "
+            "stands today — a won deal never reopens, and a stage that changes nothing "
+            "is refused rather than recorded as noise in the audit trail."
+        )
+    )
+    reason: str = Field(
+        # 512 is the column's own bound, echoed so an over-long reason is a
+        # documented 422 naming the field rather than a database error. The
+        # *rule* that a reason cannot be blank stays in the domain, which is
+        # the one place it is enforced.
+        max_length=512,
+        description=(
+            "Why you decided this, in your words. Required on every change, because "
+            "workflow has to explain itself as thoroughly as the intelligence does — "
+            "*'someone changed it'* is not an explanation. On a dismissal this is the "
+            "only feedback Signora ever gets about its own qualification quality."
+        ),
+    )
+    owner_id: UUID | None = Field(
+        default=None,
+        description=(
+            "Who should hold this account from now on. Null leaves ownership exactly as "
+            "it is. Membership is verified server-side on every assignment, so an account "
+            "cannot be handed to somebody outside the workspace."
+        ),
+    )
 
 
 class AccountAttentionResponse(BaseModel):
@@ -242,6 +296,17 @@ class AccountOpportunityResponse(BaseModel):
         )
     )
 
+    allowed_next: tuple[Stage, ...] = Field(
+        description=(
+            "Which stages this may legally become from where it stands. **Sent rather than "
+            "inferred**: the rules are the domain's, and a client that reimplemented them "
+            "would be a second copy of them, wrong the moment either changed. Empty on a won "
+            "deal, which does not reopen — the next deal at that account is genuinely a new "
+            "opportunity. A client offers exactly these and the server still refuses anything "
+            "else, because a list a caller can ignore is not enforcement."
+        )
+    )
+
     @classmethod
     def from_domain(cls, brief: OpportunityBrief) -> "AccountOpportunityResponse":
         return cls(
@@ -257,11 +322,23 @@ class AccountOpportunityResponse(BaseModel):
             score_change_since_open=brief.score_change_since_open,
             evidence=brief.evidence_state,
             history=tuple(WorkflowStateResponse.from_domain(s) for s in brief.history),
+            # **Ordered by the `Stage` enum's own declaration**, which runs
+            # tracking → engaged → won → lost → dismissed: the order work
+            # actually moves in. Two things at once — the same position always
+            # produces the same wire bytes (`allowed_from` returns a frozenset,
+            # whose iteration order would otherwise be a hidden input), and a
+            # client rendering them in order leads with the move a seller
+            # usually wants. Sorting alphabetically did the first and put
+            # *"Lost"* ahead of *"I'm working this"*.
+            allowed_next=tuple(
+                sorted(allowed_from(brief.state.stage), key=lambda s: _STAGE_ORDER[s])
+            ),
         )
 
 
 __all__ = [
     "AccountAttentionResponse",
     "AccountOpportunityResponse",
+    "RecordDecisionRequest",
     "WorkflowStateResponse",
 ]

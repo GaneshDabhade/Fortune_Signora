@@ -187,19 +187,34 @@ class OpportunityQueries:
     async def brief(
         self, workspace_id: UUID, entity_id: UUID, *, now: datetime | None = None
     ) -> OpportunityBrief | None:
-        """The open opportunity for this account, with everything it records.
+        """This account's latest opportunity, with everything it records.
 
         Keyed by **account**, not by opportunity id, because that is what the
         caller has: a seller arrives from a list of companies, and asking them
         to know a workflow record's identifier to read about a company would be
         the data model leaking into the product.
 
-        `None` when nothing is open here. An account with a closed opportunity
-        reads the same as one that never had a commitment — deliberate until
-        M12.3, which owns reopening and therefore owns the question of what a
-        closed opportunity's brief should say.
+        **A closed opportunity still has a brief** — settled in M12.3, which
+        owns both this question and reopening. Until a customer could *make* a
+        decision there was nothing to lose by hiding one; once they can, a
+        brief that vanished the moment somebody dismissed an account would
+        take their own words with it, leave a legal reopening unreachable, and
+        read exactly like the product deleting the account they just judged.
+        The commitment outlives the score that created it, and the record of it
+        outlives the commitment.
+
+        The **open** one wins whenever there is one, so the ordinary path stays
+        a single query and cannot be shadowed by history; otherwise the most
+        recent generation, which is the one whose outcome a reader is asking
+        about. `None` only when this account has never had a commitment at all.
         """
         opportunity = await self._repository.open_for_entity(workspace_id, entity_id)
+        if opportunity is None:
+            opportunity = max(
+                await self._repository.for_entity(workspace_id, entity_id),
+                key=lambda previous: previous.generation,
+                default=None,
+            )
         if opportunity is None:
             return None
         state = await self._repository.current_state(workspace_id, opportunity.id)

@@ -21,6 +21,9 @@ from modules.business_event_engine.interface.router import router as evidence_ro
 from modules.buying_score_engine.interface.router import router as buying_score_router
 from modules.knowledge_graph.interface.router import router as knowledge_graph_router
 from modules.signal_engine.interface.router import router as validation_router
+from modules.opportunity_engine.interface.errors import (
+    ERROR_MAPPING as OPPORTUNITY_ENGINE_ERRORS,
+)
 from modules.opportunity_engine.interface.router import router as opportunity_router
 from modules.workspace_tenancy.infrastructure.composition import build_query_service
 from modules.workspace_tenancy.interface.errors import (
@@ -78,6 +81,7 @@ def _error_mappings() -> ErrorMapping:
         InvalidCursorError: (400, "invalid_cursor"),
     }
     mappings.update(WORKSPACE_TENANCY_ERRORS)
+    mappings.update(OPPORTUNITY_ENGINE_ERRORS)
     return mappings
 
 

@@ -31,6 +31,7 @@ function commitment(overrides: Partial<AccountOpportunity> = {}): AccountOpportu
     score_change_since_open: 20,
     evidence: 'current',
     history: [],
+    allowed_next: ['closed_lost', 'dismissed', 'engaged'],
     ...overrides,
   };
 }

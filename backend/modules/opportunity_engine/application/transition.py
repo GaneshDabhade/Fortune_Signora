@@ -48,6 +48,18 @@ class MembershipError(OpportunityError):
     """An opportunity was assigned to somebody outside the workspace."""
 
 
+class OpportunityNotFound(OpportunityError):
+    """No opportunity with that identifier is visible in this workspace.
+
+    **Distinguished from every other failure here so the interface can answer
+    404 rather than 422.** A caller naming an opportunity from another
+    workspace must get the same answer as one naming an opportunity that was
+    never created — anything else lets identifiers be enumerated one status
+    code at a time, which is the reasoning behind 404-not-403 applied to a
+    resource inside the workspace rather than to the workspace itself.
+    """
+
+
 @dataclass(frozen=True, slots=True)
 class TransitionOpportunityInput:
     workspace_id: UUID
@@ -94,7 +106,7 @@ class TransitionOpportunity:
     ) -> TransitionOpportunityResult:
         opportunity = await self._repository.by_id(request.workspace_id, request.opportunity_id)
         if opportunity is None:
-            raise OpportunityError(
+            raise OpportunityNotFound(
                 f"opportunity {request.opportunity_id} does not exist in this workspace."
             )
 
