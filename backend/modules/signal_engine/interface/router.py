@@ -13,6 +13,7 @@ from apps.api.composition.validation import SignalRead
 from modules.signal_engine.interface.schemas import (
     AccountValidationResponse,
     HypothesisValidationResponse,
+    SignalCatalogResponse,
 )
 from modules.signal_engine.domain.catalog import Relevance
 from signora_platform.api import CurrentWorkspace
@@ -82,6 +83,40 @@ async def account_validation(
             )
         ),
     )
+
+
+@router.get(
+    "/workspaces/{workspace_id}/signal-catalog",
+    response_model=SignalCatalogResponse,
+    summary="What Signora can conclude about an account, and what each is called",
+)
+async def signal_catalog(
+    context: CurrentWorkspace, queries: SignalRead
+) -> SignalCatalogResponse:
+    """The hypothesis vocabulary — **the one place a signal type has a name.**
+
+    Every other surface that shows a hypothesis cites it by key. The attention
+    list does, because the module that ranks accounts is forbidden from
+    reaching the Signal Engine at all: *it decides what to track and never
+    forms hypotheses or weighs them*, and a workflow module that could name one
+    is a workflow module that could branch on one.
+
+    So the key travels and the name is resolved here, by its owner. The
+    alternative — a translation table in the client — is a second vocabulary,
+    and two representations of one truth become contradictory truth.
+
+    **Names only.** What a hypothesis proposes, what it cannot prove and what
+    to check are per-account questions the validation surface already answers;
+    repeating them here would put the same prose in two places, and the copy
+    nobody looks at is the one that goes stale.
+
+    Workspace-scoped like every endpoint, so authorization carries a workspace
+    in its tuple. The vocabulary itself is global today — a workspace reads the
+    catalog, it does not author one — and the path is what lets that change
+    without a client knowing.
+    """
+    context.authorize(Resource.ACCOUNT, Action.READ)
+    return SignalCatalogResponse.from_domain(queries.catalog())
 
 
 __all__ = ["router"]

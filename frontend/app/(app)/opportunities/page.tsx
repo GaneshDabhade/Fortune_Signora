@@ -6,13 +6,13 @@ import {
   AttentionScore,
   ContestedMark,
   EvidenceHealth,
+  Hypothesis,
   ScoreMovement,
-  WhyNow,
 } from '@/components/intelligence/attention';
 import { EntityName } from '@/components/intelligence/entity-name';
 import { Card, CardBody, EmptyState, SkeletonText } from '@/components/ui';
 import type { AccountAttention, AccountIdentity } from '@/lib/api/types';
-import { useAccountIdentities, useAccounts } from '@/lib/query/hooks';
+import { useAccountIdentities, useAccounts, useSignalCatalog } from '@/lib/query/hooks';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -44,6 +44,11 @@ export default function OpportunitiesPage() {
     activeWorkspace?.id ?? null,
     (data?.items ?? []).map((account) => account.account_id),
   );
+  // The vocabulary, so a row can say *active evaluation* rather than
+  // `active_evaluation`. A third request and a cheap one: it is a small
+  // versioned artifact, held for the session, and it parallelises with the
+  // other two rather than following them.
+  const { data: catalog } = useSignalCatalog(activeWorkspace?.id ?? null);
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6">
@@ -65,6 +70,9 @@ export default function OpportunitiesPage() {
                 account={account}
                 identity={identities?.get(account.account_id)}
                 namesLoading={namesLoading}
+                hypothesis={
+                  account.signal_type ? catalog?.get(account.signal_type) : undefined
+                }
               />
             </li>
           ))}
@@ -86,10 +94,13 @@ function AccountRow({
   account,
   identity,
   namesLoading,
+  hypothesis,
 }: {
   account: AccountAttention;
   identity: AccountIdentity | undefined;
   namesLoading: boolean;
+  /** The catalog's title for this row's leading hypothesis. */
+  hypothesis: string | undefined;
 }) {
   return (
     // No card-wide hover. **Only the account name opens the brief**, and a card
@@ -109,7 +120,7 @@ function AccountRow({
             isLoading={namesLoading}
           />
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-            <WhyNow trigger={account.trigger} />
+            <Hypothesis signalType={account.signal_type} title={hypothesis} />
             <ScoreMovement trend={account.trend} change={account.score_change} />
           </div>
         </div>

@@ -34,6 +34,9 @@ export const queryKeys = {
   accountValidation: (workspaceId: string, accountId: string) =>
     ['workspace', workspaceId, 'accounts', accountId, 'validation'] as const,
 
+  signalCatalog: (workspaceId: string) =>
+    ['workspace', workspaceId, 'signal-catalog'] as const,
+
   businessEvent: (workspaceId: string, eventId: string) =>
     ['workspace', workspaceId, 'business-events', eventId] as const,
 

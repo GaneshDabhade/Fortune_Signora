@@ -15,8 +15,8 @@
 | **Last completed** | **M10 AI Research Engine** — T131–T138, closed 2026-07-31. *Internal Research; every citable thing deterministic.* |
 | **Inserted, and open** | **M9.5 Evidence Citation Protocol** (ADR-0031). Steps A–D landed; **Step F is incomplete** |
 | **Last completed** | **M12.2 the account brief** — closed 2026-08-01. Identity, score breakdown, commitment and narration; the Decision Package is *blocked*, not skipped |
-| **Current** | **M12.3 evidence and actions.** *What to check*, *ledger citations* and *stage transitions and assignment* shipped; narration citations and the list's hierarchy remain |
-| **Head at handoff** | see `git log` — M12.3 the decision slice, *the first write in the product surface* |
+| **Current** | **M12.3 evidence and actions.** *What to check*, *ledger citations*, *stage transitions and assignment* and *the list's why* shipped; narration citations and the list's hierarchy (D20) remain |
+| **Head at handoff** | see `git log` — M12.3 the list slice, *the row says what is happening* |
 | **Latest certification** | [`d954c930`](../certification/reports/d954c930319a.md) — CERTIFIED, 2026-07-31 |
 | **Phase** | **Product implementation.** Ten pipeline stages built and frozen behind them; the surface is being exposed. |
 | **Overall completion** | **~60%** by engineering effort (~187 of ~261–339 ew) |
@@ -338,7 +338,9 @@ All three are fixed. **The class is the finding:** each passed every test it had
 
 1. ~~Citation resolution~~ **shipped for the ledger.** A contribution opens to the business event's provider readings. **Narration citations still do not open** — a sentence shows "3 facts" and the tokens are `signal_contribution`, `buying_score` and `opportunity`, which need three more resolvers. The ledger was the most-clicked path and went first.
 2. ~~Stage transitions and assignment (J4)~~ **shipped.** `POST …/opportunities/{id}/states` — the first write in the product. It forced **D23** and answered it **halfway**: the screen says *"you"* and *"held by someone else"*, because the Python tier verifies tokens without ever learning who a person is. See **D32** — the rest is a cross-tier profile contract and belongs in an ADR, not a slice.
-3. **The list slice — now the whole of what remains in M12.3.** R1-01 (*why now* repeats 11 of 12), R1-02 (trigger and evidence state contradict), R1-05 (invisible tiebreak), D20/R1-07 (a 50 and a 1 render identically), and **R4-04** (a dismissed account is unreachable once you navigate away, which wants a *closed and dismissed* filter). All are about *which* account you pick.
+3. ~~The list slice~~ **mostly shipped.** The row now names the leading hypothesis instead of the trigger: **R1-01 closed** (two distinct values across twelve accounts became six), **R1-02 closed for free** (a hypothesis and a freshness badge cannot appear to contradict), **R1-05 half closed** (tied rows 7 → 4). Still open: **D20/R1-07** — a 50 and a 1 render identically — and **R4-04**, a dismissed account being unreachable, which needs a filter and therefore a repository that can page closed work.
+
+   **R5-02 is the finding to act on next**, and it only became visible once the labels existed: *Contraction risk* sits eleventh because the scoring model gives contraction less attention weight, which is correct ranking and wrong triage. It is also the first candidate for **D20** with the property D20 asked for — **a grouping the pipeline already computes (`posture_summary()`) rather than a threshold somebody has to invent.** It trades a ranked list for a categorised one, so it needs a seller.
 4. **F-11 needs a ruling** before it can be fixed: the one-line change loosens a grounding check inside a frozen module.
 5. **The Decision Package stays unbuilt** until `reasoning@1` earns a release.
 

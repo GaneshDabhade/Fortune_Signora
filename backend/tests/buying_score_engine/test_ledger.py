@@ -240,3 +240,59 @@ class TestValidity:
         )
 
         assert ledger.valid_until() == soon
+
+
+class TestTheLeadingEntry:
+    """*"Which hypothesis most explains this number?"* — asked of the ledger,
+    because the ledger is the authoritative explanation.
+
+    The attention list needs the answer and is forbidden from computing one:
+    its module decides what to track and never forms hypotheses or weighs them,
+    and its import contract refuses `signal_engine` outright.
+    """
+
+    def test_it_is_the_largest_counted_entry(self) -> None:
+        ledger = ContributionLedger(
+            entries=(entry(points=10), entry(points=40), entry(points=25)), ceiling=120
+        )
+
+        leading = ledger.leading()
+
+        assert leading is not None
+        assert leading.contribution == 40
+
+    def test_an_uncounted_entry_never_leads(self) -> None:
+        """An entry that counted nothing explains nothing about a number it did
+        not move. It stays on the brief with the reason it counted nothing —
+        that is the ledger's job — and it does not get to name the account."""
+        counted = entry(points=10)
+        ledger = ContributionLedger(
+            entries=(entry(points=90, counted=False), counted), ceiling=120
+        )
+
+        leading = ledger.leading()
+
+        assert leading is not None
+        assert leading.business_event_id == counted.business_event_id
+
+    def test_nothing_counted_leads_to_nothing(self) -> None:
+        """A real state, not an error: a score whose evidence was all
+        attributed elsewhere has no leading anything, and the row must be able
+        to say so rather than invent one."""
+        ledger = ContributionLedger(entries=(entry(points=30, counted=False),), ceiling=120)
+
+        assert ledger.leading() is None
+
+    def test_a_tie_does_not_depend_on_storage_order(self) -> None:
+        """**Hidden inputs are architecture defects.** The pipeline happens to
+        store entries largest-first; depending on that would let an ordering
+        nobody promised decide what a customer reads, and two ledgers with
+        identical arithmetic could then answer differently.
+        """
+        first, second = entry(points=30), entry(points=30)
+
+        forwards = ContributionLedger(entries=(first, second), ceiling=120).leading()
+        backwards = ContributionLedger(entries=(second, first), ceiling=120).leading()
+
+        assert forwards is not None and backwards is not None
+        assert forwards.business_event_id == backwards.business_event_id

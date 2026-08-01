@@ -16,7 +16,7 @@
 | **Current phase** | **Product implementation** — the pipeline is built; the surface is being exposed |
 | **Last completed milestone** | **M10 — AI Research Engine**, closed 2026-07-31 |
 | **Current milestone** | **M12.3 — evidence and actions** *(Decision Package still deferred until `reasoning@1` is released — see §10)* |
-| **Latest commit** | *M12.3 — a decision, recorded* — the first write in the product surface |
+| **Latest commit** | *M12.3 — the list says what is happening* |
 | **Latest certification** | [`d954c930`](certification/reports/d954c930319a.md) — **CERTIFIED**, 2026-07-31 *(predates M12.2; re-cut at milestone close)* |
 | **Branch** | `main`, tree clean, pushed |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
@@ -61,7 +61,7 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | — | **M12.1** | **Account attention list — first customer surface** | ✅ **Complete** | **2026-07-31** |
 | — | **M12.1.5** | **Playground v2 — a demo environment worth reviewing against** *(inserted)* | ✅ **Complete** | **2026-07-31** |
 | — | **M12.2** | Identity ✅ · score ✅ · commitment ✅ · narration ✅ · package 🚫 *(blocked, not skipped)* | ✅ **Complete** | **2026-08-01** |
-| 1 | **M12.3** | **Evidence and actions** — what to check ✅ · citations ✅ · transitions and assignment ✅ · list hierarchy ⏳ | 🔵 **In progress** | — |
+| 1 | **M12.3** | **Evidence and actions** — what to check ✅ · citations ✅ · transitions and assignment ✅ · the list's *why* ✅ · list hierarchy (D20) ⏳ | 🔵 **In progress** | — |
 | 4 | M12.4 | Research on demand | ⏳ Queued | — |
 | — | M11 | Recommendation Engine | 🟣 **Deferred 2026-07-31** — *not cancelled*; resumes on a product trigger, see §10 | — |
 | 5 | M7 | Timeline | ⏳ Queued | — |
@@ -172,7 +172,11 @@ A demo environment worth reviewing a product against. Requested by the product o
 | **The decision controls** | Beside the stage line, so workflow lives in one place on the screen. The legal moves arrive from the domain via `allowed_next`; the client reimplements no rule and the server refuses anything else regardless |
 | **A closed brief survives** (**D27**) | M12.2 deferred *"what should a closed opportunity's brief say"* to this milestone. It keeps it — otherwise a dismissal would delete the seller's own words and make a legal reopening unreachable |
 | **Tests** | 24 endpoint · 17 component · 1 new Security Invariant |
-| ⏳ **Next** | The list's missing hierarchy — R1-01, R1-02, R1-05, D20 — which is one coherent slice about *which* account you pick |
+| **`GET …/signal-catalog`** | The hypothesis vocabulary — **the one place a signal type has a name.** Nine types, versioned, reviewed like code, in the repository since M5A |
+| **The list says what is happening** | The *why now* column carried `ScoreTrigger` and produced **two** distinct values across twelve real accounts. It now names the leading hypothesis and produces **six**. Closes **R1-01**, closes **R1-02** for free, halves the invisible ties of **R1-05** |
+| **`ContributionLedger.leading()`** | *Which hypothesis most explains this number* is a question for the ledger — the module that ranks accounts is forbidden from reaching the one that forms hypotheses, and ties break on the event id rather than on storage order |
+| **Tests** | 12 endpoint · 5 component · 4 ledger unit |
+| ⏳ **Next** | **D20** — a 50 and a 1 still render identically, and **R5-02** now gives it a candidate answer the pipeline already computes: group by *posture*, not by an invented threshold. Needs a seller |
 
 > **🟠 It ships to the Playground and not to a customer until F-3 closes.** The catalog's guidance is *engineering-authored pending domain review*, and *"ask on a first call which division the investment sits in"* is advice a real seller will act on. Good content is not the same as signed content.
 

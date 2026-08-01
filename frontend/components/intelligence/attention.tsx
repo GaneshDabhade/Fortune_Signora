@@ -110,8 +110,42 @@ export function ScoreMovement({
 /**
  * Why this account is on the list right now.
  *
- * **The single most important line on the row.** A list that ranks without
- * saying why is a leaderboard, and a seller cannot act on a leaderboard.
+ * **The single most important line on the row**, and for two milestones it was
+ * very nearly a constant. It carried `ScoreTrigger` — *why the score was last
+ * recomputed* — which across twelve real accounts produced **two** distinct
+ * values: *new evidence arrived* seven times and *evidence aged out* five. A
+ * seller reads this line asking **why does this company matter today**, a
+ * commercial question the enum structurally cannot answer, and a column that
+ * never differs is worse than an absent one because it costs width and
+ * attention and returns nothing (R1-01).
+ *
+ * It now names the hypothesis that most explains the score, which produces six
+ * across the same twelve — *active evaluation*, *expansion opportunity*,
+ * *displacement opportunity*, *contraction risk*, *new decision maker*,
+ * *decision maker departed*. That is a seller's sentence rather than a
+ * pipeline's.
+ *
+ * **The title comes from the catalog, never from this file.** A `Record<
+ * SignalType, string>` here would be a second vocabulary, wrong the moment the
+ * catalog changed and invisible when it did — and the module that produced
+ * this row is forbidden from naming a hypothesis for exactly that reason.
+ *
+ * While the catalog is in flight the row shows nothing rather than a key.
+ * `expansion_opportunity` is not a sentence, and a reader who saw one would
+ * learn that this line is machine output.
+ */
+/**
+ * What last moved this number. **On the brief, and no longer on the list.**
+ *
+ * `ScoreTrigger` describes the last *recomputation*; the evidence badge
+ * describes *now*. Side by side on a list row with no visual separation, a
+ * reader assumes they describe one moment and concludes the product is
+ * confused — *"stale · new evidence arrived"* is literally correct and reads
+ * as a defect (R1-02).
+ *
+ * It is not deleted, because on the brief the question *"why did this number
+ * move?"* is one somebody is actually asking, and there it sits beside the
+ * arithmetic rather than beside a freshness badge.
  */
 export function WhyNow({ trigger }: { trigger: ScoreTrigger | null }) {
   return (
@@ -119,6 +153,27 @@ export function WhyNow({ trigger }: { trigger: ScoreTrigger | null }) {
       {trigger ? TRIGGER_WORDING[trigger] : 'No current reading'}
     </span>
   );
+}
+
+export function Hypothesis({
+  signalType,
+  title,
+}: {
+  signalType: string | null;
+  /** From `useSignalCatalog`. `undefined` while it loads or if the key is one
+   * this catalog version does not declare — which is a real possibility, since
+   * a score records the catalog version it was formed under. */
+  title: string | undefined;
+}) {
+  if (signalType === null) {
+    // Not "unknown" and not blank: the opportunity is open and its
+    // justification has expired, which is the thing the badge beside this
+    // already says. Saying it twice in different words invites the reader to
+    // reconcile two statements that are one fact.
+    return <span className="text-sm text-content-subtle">No current reading</span>;
+  }
+  if (title === undefined) return null;
+  return <span className="text-sm text-content">{title}</span>;
 }
 
 /**

@@ -213,7 +213,7 @@ class TestTheResponseShapeIsTheOneDocumented:
             "score",
             "trend",
             "score_change",
-            "trigger",
+            "signal_type",
             "contested",
             "evidence",
             "stage",
@@ -307,7 +307,7 @@ class TestARealAccountReachesTheWire:
         rows = response.json()["items"]
         (row,) = [r for r in rows if UUID(r["account_id"]) == entity_id]
         assert 0 <= row["score"] <= 100
-        assert row["trigger"], "a row with no reason to exist is a row nobody can act on"
+        assert row["signal_type"], "a row with no hypothesis is a row nobody can act on"
         assert row["evidence"] in {"current", "cooling", "stale"}
         assert row["stage"]
 
@@ -1532,4 +1532,149 @@ class TestACitationResolvesToARecord:
                 for field, spec in schemas[name]["properties"].items()
                 if not spec.get("description")
             )
+            assert undocumented == [], f"{name}: {undocumented} reach the wire undocumented"
+
+
+class TestTheRowSaysWhatIsHappening:
+    """**The most-read line on the daily surface.**
+
+    It used to carry `ScoreTrigger` — *why the score was last recomputed* — and
+    across twelve real accounts that produced **two** distinct values. A seller
+    reads that line asking *why does this company matter today*, which is a
+    different question the enum cannot answer.
+
+    It now carries the hypothesis that most explains the score, which produces
+    six across the same twelve. Asserted over the real pipeline rather than a
+    fixture, because the finding was about **variety in practice**, not about
+    whether a field is populated.
+    """
+
+    async def test_the_row_names_the_hypothesis_that_leads_the_score(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        rows = (await _accounts(client, key_pair, user_id, workspace_id)).json()["items"]
+
+        (row,) = [r for r in rows if UUID(r["account_id"]) == entity_id]
+        assert row["signal_type"], "a scored account with no leading hypothesis"
+
+    async def test_it_is_a_key_and_never_a_title(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**The module that ranks accounts may not name a hypothesis.** Its
+        import contract forbids reaching the Signal Engine at all — *it decides
+        what to track and never forms hypotheses or weighs them* — so the row
+        carries the catalog's key and the catalog supplies the words.
+        """
+        workspace_id, user_id, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        rows = (await _accounts(client, key_pair, user_id, workspace_id)).json()["items"]
+        catalog = (
+            await client.get(
+                f"/workspaces/{workspace_id}/signal-catalog",
+                headers=_auth(key_pair, user_id),
+            )
+        ).json()
+
+        keys = {t["key"] for t in catalog["types"]}
+        titles = {t["title"] for t in catalog["types"]}
+        present = {r["signal_type"] for r in rows if r["signal_type"]}
+
+        assert present, "no row named a hypothesis at all"
+        assert present <= keys
+        assert present.isdisjoint(titles), "a title reached the row; the key was the contract"
+
+    async def test_the_trigger_is_gone_from_the_row(self) -> None:
+        """It described **the last recomputation** while the evidence badge
+        beside it described **now**, and side by side with no separation the
+        two read as a contradiction — *stale · new evidence arrived* (R1-02).
+
+        It is not deleted: the brief still carries it, where *"why did this
+        number move"* is a question somebody is actually asking.
+        """
+        from modules.opportunity_engine.interface.schemas import AccountAttentionResponse
+
+        assert "trigger" not in AccountAttentionResponse.model_fields
+
+
+class TestTheVocabularyHasOneOwner:
+    async def test_the_catalog_names_every_hypothesis_the_pipeline_can_form(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        user = uuid4()
+        workspace = await _workspace(client, key_pair, user)
+
+        response = await client.get(
+            f"/workspaces/{workspace}/signal-catalog", headers=_auth(key_pair, user)
+        )
+
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert body["version"] >= 1
+        assert len(body["types"]) >= 1
+        assert all(t["key"] and t["title"] for t in body["types"])
+
+    async def test_it_carries_names_and_nothing_else(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """What a hypothesis proposes, cannot prove, and how to check it are
+        per-account questions the validation surface already answers. The same
+        prose in two places means one of them goes stale."""
+        from modules.signal_engine.interface.schemas import SignalTypeResponse
+
+        assert set(SignalTypeResponse.model_fields) == {"key", "title"}
+
+    async def test_it_is_ordered_so_two_requests_agree(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """Catalog declaration order is an authoring accident. Sorting by title
+        means a client rendering a legend gets the same one twice."""
+        user = uuid4()
+        workspace = await _workspace(client, key_pair, user)
+
+        titles = [
+            t["title"]
+            for t in (
+                await client.get(
+                    f"/workspaces/{workspace}/signal-catalog",
+                    headers=_auth(key_pair, user),
+                )
+            ).json()["types"]
+        ]
+
+        assert titles == sorted(titles)
+
+    async def test_a_non_member_gets_404(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """The vocabulary is not secret, and the answer is still 404 — every
+        endpoint under a workspace path answers alike, or the ones that do not
+        become the way to test whether a workspace exists."""
+        owner, outsider = uuid4(), uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+
+        response = await client.get(
+            f"/workspaces/{workspace}/signal-catalog", headers=_auth(key_pair, outsider)
+        )
+
+        assert response.status_code == 404
+
+    async def test_every_field_is_documented(self, client: AsyncClient) -> None:
+        schema = (await client.get("/openapi.json")).json()
+        for name in ("SignalCatalogResponse", "SignalTypeResponse"):
+            properties = schema["components"]["schemas"][name]["properties"]
+            undocumented = sorted(k for k, v in properties.items() if not v.get("description"))
             assert undocumented == [], f"{name}: {undocumented} reach the wire undocumented"

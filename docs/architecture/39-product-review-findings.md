@@ -525,3 +525,142 @@ NVIDIA Corporation      Signora is tracking this · nobody has taken it yet
 **Stage transitions from the attention list.** One click to dismiss a whole row, without opening it. Tempting and rejected: **the reason is what makes the dismissal worth collecting**, and a list-level control would either skip it or put a dialog on top of a triage surface. *May return* once the reason's value is proven and a keyboard-driven list exists.
 
 **Bulk actions.** Rejected as premature — twelve accounts, no design partner, and the CRO's team-view request is a better answer to the same need. *Evidence-triggered.*
+
+---
+
+# Review 5 — the list, after it learned to say what is happening *(2026-08-01, M12.3)*
+
+**J1, the daily habit.** *"If it is not good, nothing else gets used."* Same limitation as Reviews 1–4 — the browser UI could not be opened (OAuth-only sign-in, no credentials configured) — so the three requests were composed exactly as the page composes them and read in page order. Findings resting on visual judgement are marked 👁.
+
+The real twelve, before and after:
+
+```
+BEFORE (Review 1)                              AFTER
+
+ 50  Databricks    New evidence arrived         75  Databricks    Expansion opportunity
+ 50  NVIDIA        New evidence arrived         75  NVIDIA        Expansion opportunity
+ 43  Snowflake     New evidence arrived         43  Snowflake     Active evaluation
+ 39  Stripe        CONTESTED                    39  Stripe        Active evaluation      CONTESTED
+ 33  7c33ed38      New evidence arrived         33  Atlassian     Active evaluation
+ 33  Atlassian     New evidence arrived         33  7622265e      Active evaluation
+ 20  HubSpot       Evidence aged out            20  HubSpot       Displacement opportunity  COOLING
+ 10  MongoDB       Evidence aged out            10  Salesforce    New decision maker
+ 10  Salesforce    New evidence arrived         10  MongoDB       Active evaluation         STALE
+ 10  Adobe         DISPUTED-NAME                10  Adobe         Displacement opportunity  COOLING
+  5  Datadog       New evidence arrived          5  Datadog       Contraction risk          STALE
+  1  Twilio        Evidence aged out             1  Twilio        Decision maker departed
+
+2 distinct reasons across 12 rows          6 distinct reasons across 12 rows
+```
+
+---
+
+## R5-01 · The list now has a shape, and the shape is the finding 🟢
+
+**Observation.** Read top to bottom the list says: *two companies are expanding · four are actively evaluating · two are displacing an incumbent · one has a new decision maker · one is contracting · one lost its champion.* Previously it said *something happened* eight times and *something expired* four times.
+
+**Why it matters.** This is the difference between a ranked list and a **book of business**. A seller can now form an intention before opening anything — *I'll do the two expansions first, and I need to look at Datadog because contraction risk is not something you leave* — which is the job the screen exists for.
+
+**User impact.** *(AE)* "I know what my morning is without clicking anything." *(SDR)* "I stopped reading that column by the fourth row" — the Review 1 complaint — does not recur, because no two consecutive rows say the same thing until the four `active_evaluation`s.
+
+**Priority:** — **Milestone:** shipped.
+
+---
+
+## R5-02 · A contraction risk sits eleventh, and the list gives no way to notice 🟠
+
+**Observation.** *Datadog · Contraction risk · STALE · 5*. It is correctly ranked — the scoring model gives contraction less attention weight — and it is now **legible for the first time**, which is what makes the placement visible as a question.
+
+**Why it matters.** Attention score and commercial urgency are not the same thing. An account that is contracting is one a seller may need to act on *sooner* than one that is expanding, and the list orders by the former while a human triages by the latter. **The pipeline already knows this** — `posture_summary()` separates expansionary from contractionary attention and refuses to net them, deliberately, because "two accounts can score identically and mean opposite things".
+
+**User impact.** *(CRO)* "Churn risk at position eleven, under things that are going well. That is the row I would want at the top of my Monday."
+
+**Suggested future improvement.** This is the strongest candidate yet for **D20**'s answer, and it has the property D20 asked for: **a grouping the pipeline already computes rather than a threshold somebody has to invent.** Group or mark by posture — *expansion* and *risk* as visibly different things — rather than picking a score cutoff. Needs a seller, still, because it trades a ranked list for a categorised one.
+
+**Priority:** High. **Milestone:** the next list slice, with D20.
+
+---
+
+## R5-03 · Four rows still tie, and two of them are now identical in every visible way 🟡
+
+**Observation.** Databricks and NVIDIA: both 75, both *Expansion opportunity*, both evidence-current. Atlassian and the unnamed account: both 33, both *Active evaluation*. Rows sharing a score fell from **7 to 4**, and for the remaining 4 the hypothesis does not separate them either.
+
+**Why it matters.** R1-05's stated fix was *"once R1-01 lands, the signal title differentiates them"*. It differentiates **most** of them. Recorded as partly closed rather than closed, because a finding marked resolved on a prediction that only half held is how a register stops being trustworthy.
+
+**User impact.** *(SDR)* "Why is Databricks above NVIDIA?" — still no answer on screen, for two rows instead of six.
+
+**Suggested future improvement.** The honest remaining differentiator is *how much* evidence sits behind each — NVIDIA's 75 rests on one live signal, Databricks' on two. That is on the ledger and nowhere on the row. **Do not invent a tiebreak label**; if the ranking has a rule, state it.
+
+**Priority:** Low. **Milestone:** the next list slice.
+
+---
+
+## R5-04 · The vocabulary is on screen and nothing explains it 🟡
+
+**Observation.** *Displacement opportunity* and *Active evaluation* are Signal Catalog terms. A first-time reader meets nine of them with no definition anywhere on the list.
+
+**Why it matters.** The catalog carries `why_it_matters` for exactly this, and the endpoint deliberately does not serve it — *the same prose in two places means the copy nobody looks at goes stale.* That reasoning holds for the **row**; it may not hold for a **legend**.
+
+**User impact.** *(Sales Manager)* "I'd need to teach these nine words in onboarding. I'd rather the product taught them."
+
+**Suggested future improvement.** Not a tooltip on every row — that is a wall. A one-time legend, or the definition on the brief where the hypothesis is already being explained by the validation surface. **The validation block already shows it on the brief**, so this may already be answered for anyone who clicks through, and the finding is really about the reader who never does.
+
+**Priority:** Low. **Milestone:** unassigned; needs evidence that anyone is confused.
+
+---
+
+## R5-05 · The `signal_type` key would reach the screen if the catalog request failed 🟢 **Prevented**
+
+**Observation.** The row carries `expansion_opportunity`; the title arrives in a separate request. If that request fails or is slow, the component renders **nothing** rather than the key.
+
+**Why it matters.** Recorded as a confirmation. `expansion_opportunity` is not a sentence, and a reader who saw one would learn that this line is machine output — on the line the entire row is read for. A test asserts the raw key can never appear.
+
+**Priority:** — **Milestone:** none. The bar to hold.
+
+---
+
+## The five roles
+
+**SDR.** *First look:* the reasons, not the names — "the column that used to be wallpaper is now the thing I read." *Delight:* "Decision maker departed. That is a real reason to call someone." *Doubt:* R5-03.
+
+**AE.** *First look:* the two expansions. *Confusing:* nothing. *Ignored:* the score, for the first time in five reviews — **the hypothesis is doing the triage and the number is doing the ordering**, which is the right division of labour and was not true yesterday.
+
+**Sales Manager.** *Trust:* "Nine categories, applied consistently, with the same words every time." *Doubt:* R5-04 — "I'd have to teach the vocabulary."
+
+**RevOps.** *Delight:* "The category comes from a versioned artifact, not from a model. I can report on it." **The first time in five reviews that RevOps has been delighted by something on the list rather than on the brief.** *Doubt:* nothing new.
+
+**CRO.** *First look:* scanned for risk, found *Contraction risk* at eleven and *Decision maker departed* at twelve. **R5-02, stated as a complaint about the ordering rather than about the labels** — which is only possible now that the labels exist.
+
+**The common thread.** In Review 1 every role reached *"and then what?"* within a minute. In Review 4 four of five asked about other people's accounts. **Now the complaints are about *ordering* — which is the complaint you get from someone who has read the whole list and believes it.**
+
+---
+
+## The staff-designer pass
+
+**Apple.** The row is now name · reason · movement · badges · score, and it reads left to right in the order a person decides. **The list is in better shape than the brief**, whose six equal-weight sections have been the top visual finding for three reviews. 👁 **—**
+
+**Stripe.** *"Expansion opportunity"* is a category, and a category invites the question *how many are there?* Nine — and the product never says so. **A count would frame every row.** 👁 **Low.**
+
+**Linear.** Three requests, still no prefetch on hover, still no keyboard path through the list. **Unchanged and now more costly**, because the list is worth living in. **Medium · interaction slice.**
+
+**Notion.** The row reads as a sentence: *Databricks — Expansion opportunity — +15.* **That is the first line of prose Signora writes with no model involved**, and it is better than the narration's opening sentence. 👁
+
+**Cursor.** The reason changes when the evidence changes and the screen has no way to say *this one moved category since yesterday*. **That would be the single most valuable thing on this list** — an account that went from *Active evaluation* to *Contraction risk* is a different account. Needs per-user read state (**D5**). **High value, real schema decision · unassigned.**
+
+**Perplexity.** The category is not followable from the list. It is one click away on the brief, where the validation surface explains it. **Correct as is** — a list that made every category a citation would be a list nobody could scan.
+
+**OpenAI.** **The strongest thing here: no model touched this screen, and the categories come from a reviewed artifact with a version number.** Third review asking for that to be stated somewhere. On the daily surface it is the most defensible sentence the product could print.
+
+---
+
+## Rejected ideas
+
+**A `Record<SignalType, string>` in the client, avoiding the catalog request.** One fewer round trip. Rejected: it is a second vocabulary, wrong the moment the catalog changes and invisible when it does — and the module that produces the row is forbidden from naming a hypothesis for precisely this reason. A test proves the client holds no table. *Will not return.*
+
+**Serving the title on the attention row.** Simplest for the client. Rejected: `opportunity_engine`'s import contract forbids `modules.signal_engine` outright, with a stated reason — *"it never forms hypotheses or weighs them"* — and a workflow module that can name a hypothesis is one that can branch on one. *Will not return.*
+
+**A batched score endpoint from the Buying Score Engine.** Architecturally the purest owner of *"which hypothesis leads"*. Rejected: the attention query already loads every score, so this would add a duplicate read to the one surface opened every morning in exchange for moving a field access. *Returns* if the attention list stops loading full scores.
+
+**Keeping the trigger alongside the hypothesis.** Two reasons per row. Rejected: that is R1-02 preserved on purpose — two timeframes side by side that a reader must reconcile. *Will not return; it lives on the brief.*
+
+**Grouping the list by posture, now.** The strongest idea in this review (R5-02) and deliberately not built. It reorders a list whose order is its ranking, and **trading a ranked list for a categorised one is a product decision with a seller in the room.** *Returns with D20.*

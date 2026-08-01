@@ -22,7 +22,12 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from modules.signal_engine.domain.catalog import Relevance, SignalTypeDefinition
+from modules.signal_engine.domain.catalog import (
+    Relevance,
+    SignalCatalog,
+    SignalType,
+    SignalTypeDefinition,
+)
 from modules.signal_engine.domain.signal import Signal
 
 
@@ -105,4 +110,73 @@ class AccountValidationResponse(BaseModel):
     )
 
 
-__all__ = ["AccountValidationResponse", "HypothesisValidationResponse"]
+class SignalTypeResponse(BaseModel):
+    """One hypothesis type, named."""
+
+    model_config = ConfigDict(frozen=True)
+
+    key: SignalType = Field(
+        description=(
+            "The stable identifier other surfaces cite. An account row names the hypothesis "
+            "that most explains its score with this and nothing else — **the module that "
+            "ranks accounts is not allowed to know what a hypothesis is called**, and a "
+            "client holding its own translation table would be a second vocabulary that "
+            "drifts from this one within a release."
+        )
+    )
+    title: str = Field(
+        description=(
+            "What it is called, in the words a seller uses. Owned here so the product, "
+            "analytics, documentation and support read one definition rather than four "
+            "descriptions that disagree."
+        )
+    )
+
+
+class SignalCatalogResponse(BaseModel):
+    """The hypothesis vocabulary in force.
+
+    **Deliberately names and nothing else.** What a hypothesis *proposes*, what
+    it cannot prove, and what to check are all per-account questions already
+    answered by the validation surface — shipping them here as well would put
+    the same prose in two places, and the one nobody looks at goes stale first.
+
+    Small, versioned and immutable in practice: a change to the catalog is a
+    new version of a reviewed artifact, never an edit, so a client may hold
+    this for as long as it likes.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    version: int = Field(
+        description=(
+            "The catalog version this vocabulary comes from. Recorded on every signal the "
+            "pipeline produces, so a title shown today can be checked against the "
+            "definition that was in force when the hypothesis was formed."
+        )
+    )
+    types: tuple[SignalTypeResponse, ...] = Field(
+        description=(
+            "Every hypothesis type Signora can form, ordered by title so two requests "
+            "agree. Every type is declared and produced — a type nobody produces is a "
+            "promise the product cannot keep, and the catalog refuses to load with one."
+        )
+    )
+
+    @classmethod
+    def from_domain(cls, catalog: SignalCatalog) -> "SignalCatalogResponse":
+        return cls(
+            version=catalog.version,
+            types=tuple(
+                SignalTypeResponse(key=definition.key, title=definition.title)
+                for definition in sorted(catalog.types, key=lambda d: d.title)
+            ),
+        )
+
+
+__all__ = [
+    "AccountValidationResponse",
+    "HypothesisValidationResponse",
+    "SignalCatalogResponse",
+    "SignalTypeResponse",
+]

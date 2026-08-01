@@ -69,10 +69,16 @@ export type Qualification = 'automatic' | 'manual';
 /**
  * One account on the attention list.
  *
- * `score`, `trend`, `score_change` and `trigger` are null together: they all
- * come from the live buying score, and when the evidence behind it has
+ * `score`, `trend`, `score_change` and `signal_type` are null together: they
+ * all come from the live buying score, and when the evidence behind it has
  * expired there is no live score to read. The opportunity is still open —
  * it outlives the score that created it.
+ *
+ * **`signal_type` is a catalog key and never a title.** The module that ranks
+ * accounts is forbidden from reaching the one that forms hypotheses, so the
+ * key travels and `useSignalCatalog` supplies the words. A translation table
+ * here would be a second vocabulary, and two representations of one truth
+ * become contradictory truth.
  */
 export interface AccountAttention {
   id: string;
@@ -80,12 +86,31 @@ export interface AccountAttention {
   score: number | null;
   trend: Trend | null;
   score_change: number | null;
-  trigger: ScoreTrigger | null;
+  signal_type: string | null;
   contested: boolean;
   evidence: EvidenceState;
   stage: Stage;
   owner_id: string | null;
   opened_at: string;
+}
+
+/** One hypothesis type, named by the catalog that owns it. */
+export interface SignalTypeName {
+  key: string;
+  title: string;
+}
+
+/**
+ * The hypothesis vocabulary in force.
+ *
+ * Names only — what a hypothesis proposes and cannot prove are per-account
+ * questions the validation surface answers. A change to the catalog is a new
+ * version of a reviewed artifact rather than an edit, so this can be held for
+ * as long as a session lasts.
+ */
+export interface SignalCatalog {
+  version: number;
+  types: SignalTypeName[];
 }
 
 /** Whether your sources agree on what an account is called. */

@@ -12,6 +12,7 @@ import type {
   BusinessEventEvidence,
   CursorPage,
   RecordDecision,
+  SignalCatalog,
   Workspace,
   WorkflowState,
 } from '@/lib/api/types';
@@ -261,6 +262,34 @@ export function useRecordDecision(
         queryKey: queryKeys.accounts(workspaceId ?? ''),
       });
     },
+  });
+}
+
+/**
+ * What Signora can conclude about an account, and what each is called.
+ *
+ * **The one place a hypothesis has a name.** Every surface that shows one
+ * cites it by key: the attention list does because the module that ranks
+ * accounts is forbidden from reaching the Signal Engine at all, and a
+ * translation table in this file would be a second vocabulary that drifts from
+ * the catalog within a release.
+ *
+ * Held for the session. A change to the catalog is a **new version of a
+ * reviewed artifact**, never an edit, so a held copy cannot go subtly wrong —
+ * only become older than the newest, and the version travels with it.
+ */
+export function useSignalCatalog(workspaceId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.signalCatalog(workspaceId ?? ''),
+    queryFn: async () => {
+      const catalog = await apiRequest<SignalCatalog>(
+        `/workspaces/${workspaceId}/signal-catalog`,
+        { workspaceId: workspaceId ?? undefined },
+      );
+      return new Map(catalog.types.map((type) => [type.key, type.title]));
+    },
+    enabled: workspaceId !== null,
+    staleTime: Infinity,
   });
 }
 

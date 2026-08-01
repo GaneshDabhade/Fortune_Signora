@@ -133,10 +133,15 @@ class AccountAttentionResponse(BaseModel):
             "has sat at 70 for a month from one that reached 70 last night."
         )
     )
-    trigger: str | None = Field(
+    signal_type: str | None = Field(
         description=(
-            "Why this account rose to attention now — a new signal, a superseded one, a "
-            "changed scoring model or profile, or evidence ageing out."
+            "The hypothesis that most explains this score — *active evaluation*, "
+            "*expansion opportunity*, *contraction risk*. **Resolve its title from the "
+            "signal catalog**: this row carries the key and never the name, because the "
+            "module that ranks accounts is forbidden from reaching the one that forms "
+            "hypotheses, and a client holding its own translation table would be a second "
+            "vocabulary that drifts from the catalog within a release. Null when no score "
+            "is live, or when nothing counted toward one."
         )
     )
     contested: bool = Field(
@@ -169,13 +174,18 @@ class AccountAttentionResponse(BaseModel):
     @classmethod
     def from_domain(cls, tracked: TrackedOpportunity) -> "AccountAttentionResponse":
         score = tracked.current_score
+        # **The ledger decides which hypothesis leads, not this module.** Asking
+        # it is the difference between passing a key through and forming a
+        # judgement about intelligence in the module least equipped to review
+        # one — which is what its import contract forbids.
+        leading = score.ledger.leading() if score else None
         return cls(
             id=tracked.opportunity.id,
             account_id=tracked.opportunity.entity_id,
             score=score.value if score else None,
             trend=score.trend.value if score else None,
             score_change=score.delta if score else None,
-            trigger=score.trigger.value if score else None,
+            signal_type=leading.signal_type.value if leading else None,
             contested=score.contested if score else False,
             evidence=tracked.evidence_state,
             stage=tracked.state.stage,

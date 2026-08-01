@@ -663,3 +663,66 @@ The screen says *"held by someone else"*. A raw identifier would be the same abs
 **This is an API gap, not a styling question.** Workspace & Tenancy owns members and exposes them; nothing joins a member to the identity Better Auth holds. The workflow history is where it costs most — *"a person"* where a name belongs, in the one part of the product whose entire value is attribution.
 
 *Owner:* unassigned, and it needs a decision rather than an implementation — whether profiles are read through a Next.js route over Better Auth's tables, or surfaced through `workspace_tenancy` from a profile the Python tier is told about. **The second is a new cross-tier contract and belongs in an ADR, not a slice.**
+
+---
+
+# The list says what is happening *(M12.3, 2026-08-01)*
+
+## The slice was chosen by measurement, not by roadmap order
+
+The roadmap's remaining M12.3 item was *"the list slice"* — R1-01, R1-02, R1-05, D20/R1-07 and R4-04 bundled together. Rather than implement the bundle, each was measured against the real Playground first.
+
+**R1-01 measured.** Across twelve accounts the `ScoreTrigger` column produced **two** distinct values: `signal_generated` ×8, `evidence_aged` ×4. The leading hypothesis produced **six**: `active_evaluation` ×5, `expansion_opportunity` ×2, `displacement_opportunity` ×2, `new_decision_maker`, `contraction_risk`, `decision_maker_departed`.
+
+That single change carries four of the five findings, which is why it shipped alone:
+
+| Finding | Effect |
+|---|---|
+| **R1-01** the *why now* line is nearly constant | **Closed.** Two distinct values become six |
+| **R1-02** trigger and evidence state contradict | **Closed, for free.** *"stale · new evidence arrived"* cannot occur once the trigger leaves the row; a hypothesis and a freshness badge do not appear to contradict |
+| **R1-05** ties are broken invisibly | **Partly.** Rows sharing a score drop from **7 to 4** — the two 75s and the two 33s still share a hypothesis. Stated rather than claimed |
+| **D20 / R1-07** a 50 and a 1 render identically | **Untouched, deliberately.** Recorded as needing a seller rather than a designer, and inventing a threshold here would be exactly the unreviewed judgement that finding warns about |
+| **R4-04** a dismissed account is unreachable | **Deferred.** It needs a filter, which means a query parameter and a repository that can page closed work — a domain change, and a different slice |
+
+## D33 — the row carries a key and the catalog carries the name
+
+`AccountAttentionResponse.signal_type` is `expansion_opportunity`, never *"Expansion opportunity"*. The title comes from `GET /workspaces/{id}/signal-catalog`, owned by the Signal Engine.
+
+**This is not a preference; it is the only shape the boundary permits.** `opportunity_engine`'s import contract forbids `modules.signal_engine` **entirely** — not merely its internals, the way the Buying Score Engine's `public/` is permitted — with a stated reason:
+
+> *"M6 decides what to track; it never forms hypotheses or weighs them. Reaching past the Buying Score Engine would let a workflow rule quietly become an intelligence rule, in the module least equipped to review it."*
+
+So the module that ranks accounts **cannot name a hypothesis**, and the alternative — a `Record<SignalType, string>` in the client — would be a second vocabulary, wrong the moment the catalog changed and invisible when it did. A component test proves the client holds no table of its own: a title the catalog has never contained still renders verbatim.
+
+**Three requests on the daily list, and the third is free.** The catalog is a small versioned artifact, held for the session, and it parallelises rather than following.
+
+## D34 — *which hypothesis leads* is a question for the ledger
+
+`ContributionLedger.leading()` returns the largest **counted** entry, ties broken on the business event id.
+
+It could have been three lines in the attention response. It is not, for two reasons:
+
+- **The ledger is the authoritative explanation**, so *"which hypothesis most explains this number"* is a question about the ledger. Computing it elsewhere would be forming a judgement about intelligence in whatever module happened to be standing there — the exact thing the import contract above exists to prevent.
+- **Storage order is a hidden input.** The pipeline stores entries largest-first and nothing promises it will continue to; a caller that took `entries[0]` would let an ordering nobody guaranteed decide what a customer reads. Two ledgers with identical arithmetic must answer identically, and a test asserts it by building the same ledger in both orders.
+
+An uncounted entry never leads: an entry worth zero points explains nothing about a number it did not move. It stays on the brief with the reason it counted nothing — that is the ledger's job — and it does not get to name the account.
+
+## D35 — the trigger moved rather than being deleted
+
+`ScoreTrigger` still renders, on the brief, beside the arithmetic. **It answers a real question in the wrong place.** *"Why did this number move?"* is asked by somebody already looking at the number; next to a freshness badge on a triage row it is a second timeframe the reader has to reconcile, and R1-02 is what that reconciliation feels like.
+
+A field that discriminates poorly is not a bad field. It is a field on the wrong screen.
+
+## Rejected — a batched score endpoint
+
+The Buying Score Engine owns the ledger, so it could serve *"the leading hypothesis for these accounts"* directly, and that is architecturally the purest reading.
+
+Rejected: the attention query **already loads every score**, so a second module re-reading them would be a duplicate query added to the one surface a seller opens every morning, in exchange for moving a `.value` access. *Returns* if the attention list ever stops loading full scores.
+
+## Rejected — putting `why_it_matters` on the catalog response
+
+The catalog holds it and it reads well. Rejected: it is per-account context the validation surface already gives, and the same prose in two places means the copy nobody looks at goes stale first. **Avoid adding UI because data exists.** *Returns* if a surface needs to explain a hypothesis where the validation endpoint is not already being called.
+
+## Rejected — grouping the list by posture
+
+`attention_by_posture` is computed and would let the list separate *expansion* from *risk*, which is what a CRO scans for. Rejected **for now**: grouping reorders a list whose order is its ranking, and trading a ranked list for a categorised one is a product decision with a seller in the room. Recorded as the strongest candidate for D20's answer — **it is a grouping the pipeline already computes, rather than a threshold somebody would have to invent.**

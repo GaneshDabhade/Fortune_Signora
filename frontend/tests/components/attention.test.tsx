@@ -14,6 +14,7 @@ import {
   AttentionScore,
   ContestedMark,
   EvidenceHealth,
+  Hypothesis,
   ScoreMovement,
   WhyNow,
 } from '@/components/intelligence/attention';
@@ -134,5 +135,50 @@ describe('badges appear only when they carry information', () => {
     for (const wrong of ['uncertain', 'unclear', 'conflict', 'warning', 'unreliable']) {
       expect(text).not.toContain(wrong);
     }
+  });
+});
+
+describe('the row says what is happening, not that something happened', () => {
+  it('names the hypothesis in the words the catalog owns', () => {
+    render(<Hypothesis signalType="active_evaluation" title="Active evaluation" />);
+
+    expect(screen.getByText('Active evaluation')).toBeInTheDocument();
+  });
+
+  it('never renders the raw key', () => {
+    // `expansion_opportunity` is not a sentence. A reader who saw one would
+    // learn that this line is machine output — and this is the line the whole
+    // row is read for.
+    const { container } = render(
+      <Hypothesis signalType="expansion_opportunity" title={undefined} />,
+    );
+
+    expect(container.textContent).not.toContain('expansion_opportunity');
+  });
+
+  it('shows nothing at all while the vocabulary is in flight', () => {
+    // The name arrives in a separate request from the row. Blocking the list
+    // on it would trade the decision for the label; showing a placeholder
+    // would put a shape on screen that then moves.
+    const { container } = render(<Hypothesis signalType="active_evaluation" title={undefined} />);
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('says there is no reading when no score is live', () => {
+    // The opportunity is still open and its justification has expired. That is
+    // a real answer, and it is not the same as "we do not know".
+    render(<Hypothesis signalType={null} title={undefined} />);
+
+    expect(screen.getByText('No current reading')).toBeInTheDocument();
+  });
+
+  it('holds no translation table of its own', async () => {
+    // **A second vocabulary is wrong the moment the catalog changes, and
+    // invisible when it does.** The proof is that a title the catalog has
+    // never contained still renders verbatim.
+    render(<Hypothesis signalType="active_evaluation" title="Something Else Entirely" />);
+
+    expect(screen.getByText('Something Else Entirely')).toBeInTheDocument();
   });
 });

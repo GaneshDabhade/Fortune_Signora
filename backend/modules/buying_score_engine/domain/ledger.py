@@ -166,6 +166,32 @@ class ContributionLedger:
     def contributing_signals(self) -> tuple[UUID, ...]:
         return tuple(sorted({entry.signal_id for entry in self.entries}, key=str))
 
+    def leading(self) -> "Contribution | None":
+        """The entry that most explains this score.
+
+        **Asked here because the ledger is the authoritative explanation**, and
+        *"which hypothesis most explains this number"* is a question about the
+        explanation. A caller computing it from `entries` would be forming a
+        judgement about intelligence in whatever module it happened to be
+        standing in — which is exactly what the attention list must not do, and
+        what its import contract forbids it from doing well.
+
+        Uncounted entries are excluded: an entry worth zero points explains
+        nothing about a number it did not move.
+
+        **Ties break on the business event id, not on storage order.** The
+        pipeline happens to store entries largest-first, and depending on that
+        would make an ordering nobody promised into a hidden input — two
+        ledgers with identical arithmetic could then answer differently.
+
+        `None` when nothing counted, which is a real state: a score of zero
+        with expired evidence has no leading anything.
+        """
+        counted = [entry for entry in self.entries if entry.counted]
+        if not counted:
+            return None
+        return min(counted, key=lambda entry: (-entry.contribution, str(entry.business_event_id)))
+
     def posture_summary(self) -> dict[Posture, int]:
         """Attention by posture — **never summed into the scalar.**
 
