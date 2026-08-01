@@ -664,3 +664,151 @@ BEFORE (Review 1)                              AFTER
 **Keeping the trigger alongside the hypothesis.** Two reasons per row. Rejected: that is R1-02 preserved on purpose — two timeframes side by side that a reader must reconcile. *Will not return; it lives on the brief.*
 
 **Grouping the list by posture, now.** The strongest idea in this review (R5-02) and deliberately not built. It reorders a list whose order is its ranking, and **trading a ranked list for a categorised one is a product decision with a seller in the room.** *Returns with D20.*
+
+---
+
+# Review 6 — the way in *(2026-08-01, M12.3 · ADR-0033)*
+
+**The first screen every customer sees, and the first review conducted in a browser.** Five reviews carried the same limitation — *"I could not open the browser UI"* — because sign-in offered only OAuth and no credentials were configured. That limitation is now gone, and it turned out to be hiding a second one.
+
+What the journey actually does, verified end to end through the real routes:
+
+```
+POST /api/auth/sign-up/email                        200   user created, unverified
+POST /api/auth/sign-in/email    (before verifying)  403   refused
+GET  …/verify-email?token=…                         200   emailVerified → true
+POST /api/auth/sign-in/email    (after verifying)   200   session created
+POST /api/auth/request-password-reset  (real addr)  200
+POST /api/auth/request-password-reset  (unknown)    200   indistinguishable
+GET  …/reset-password/{token}                       302 → /reset-password?token=…
+POST /api/auth/reset-password                       200
+     old password                                   401
+     new password                                   200
+     the used link, replayed                        400
+```
+
+---
+
+## R6-01 · Sign-in had never worked on a fresh clone, for any method 🔴 **FIXED**
+
+**Observation.** The `auth` schema existed and contained **no tables**. Nothing in the repository has ever created them — no migration, no script, no documented step. Better Auth's tables are the vendor's, created by its own tooling, and that tooling was never wired in.
+
+**Why it matters.** This is the defect underneath the one that was reported. Enabling password sign-in without finding it would have produced *"relation auth.user does not exist"* and the product owner still could not have reviewed anything. **The OAuth gap was hiding it**: nobody could get far enough to see the second failure, because they never got past the first.
+
+**User impact.** Every reviewer, every day, for five milestones.
+
+**Implemented immediately** — a correctness bug, and the actual blocker. `npm run auth:migrate` uses `better-auth/db/migration`, so the already-ratified dependency is sufficient and no new package was added. `docs/RUNNING.md` now names it as step one.
+
+**Priority:** — **Milestone:** done, M12.3.
+
+---
+
+## R6-02 · The observability hook had been breaking every completed auth request 🔴 **FIXED**
+
+**Observation.** `hooks.after` was a bare async function. Better Auth 1.6 requires `createAuthMiddleware`. A plain function runs, emits its event, and then leaves Better Auth to continue with a context it did not build — so sign-up **created the user, sent the verification email, and returned 500.**
+
+**Why it matters.** A side effect that succeeds behind a failed response is the worst shape a bug can have: the customer retries and gets *"an account already exists"*.
+
+**How it stayed hidden.** It could only fire on a request that reached the end of an auth route, and no request ever had — see R6-01. **Two dormant defects, each concealing the other, in the subsystem with the most tests around it.**
+
+**Implemented immediately.** The hook is wrapped, with a comment saying what it hides when it is not.
+
+**Priority:** — **Milestone:** done, M12.3.
+
+---
+
+## R6-03 · The sign-in page was the one screen not built from the design system 🟠 **FIXED**
+
+**Observation.** `app/(auth)` used Tailwind's default palette directly. `design-tokens.test.tsx` scanned `components/` and nothing else, so **the first screen every customer sees** was outside the rule the whole product follows.
+
+**Why it matters.** A rule with a gap in its enforcement is a rule the code eventually finds the gap in — and it found it on the highest-traffic screen in the product.
+
+**Implemented immediately** — an enforcement gap, not a redesign. The five auth screens are composed from `components/ui`, and the check now covers the directory. It caught its first violation on the first run: my own docstring, quoting the utilities it was describing.
+
+**Priority:** — **Milestone:** done, M12.3.
+
+---
+
+## R6-04 · Three auth pages were prerendered, baking configuration into the build 🟠 **FIXED**
+
+**Observation.** `/sign-in`, `/sign-up` and `/forgot-password` were static. They read `loadAuthConfig()`, so **which sign-in methods exist was decided at build time.**
+
+**Why it matters.** An image built without OAuth credentials keeps showing no provider buttons after being deployed *with* them. That is the Infrastructure Contract's environment-based-configuration rule (§20b), and the violation predates this change — `/sign-in` has been static since M1.5.
+
+**Implemented immediately.** All five auth routes read configuration at boot.
+
+**Priority:** — **Milestone:** done, M12.3.
+
+---
+
+## R6-05 · Nothing tells a new account what to do next 🟠
+
+**Observation.** Verify → signed in → `/workspaces` → an empty list and a create form. The journey from *"I have an account"* to *"I can see something"* is undescribed, and the seeded Playground is invisible until `make demo-seed` is re-run.
+
+**Why it matters.** **The first ninety seconds are the only ones a new customer spends without a reason to leave**, and Signora currently spends them on a form with no explanation of what a workspace is or why they need one.
+
+**User impact.** *(SDR)* "It asked me to name something before it showed me anything."
+
+**Suggested future improvement.** The workspace screen is the last unreviewed surface in the product and it is now reachable. It needs its own slice — one that answers *what is this and why am I being asked* before it asks.
+
+**Priority:** High. **Milestone:** the next slice — see below.
+
+---
+
+## R6-06 · A verified account still has no way in without a signing key 🟡
+
+**Observation.** With no `SIGNORA_JWT_PRIVATE_KEY`, sign-in succeeds, `/workspaces` loads, and every API call fails. `/api/health` says `signing_keys: unavailable`; the UI says nothing.
+
+**Why it matters.** The one remaining setup cliff, and it presents as a broken product rather than as missing configuration.
+
+**Suggested future improvement.** The shell already fetches health. A single banner — *"Signora cannot reach its API: no signing key is configured"* — turns a mystery into an instruction. **Operator-facing, and it should never appear for a customer**, which is exactly why it can be blunt.
+
+**Priority:** Medium. **Milestone:** unassigned; small and self-contained.
+
+---
+
+## The five roles
+
+**SDR.** *First look:* "It looks like every other sign-up, which is what I want from a sign-up." *Doubt:* R6-05 — "then it asked me to make a workspace and I didn't know what that was."
+
+**AE.** *Delight:* the password field states the length rule before it is broken.
+
+**Sales Manager.** *Trust:* "It made me confirm my email. The tools that don't are the ones I worry about."
+
+**RevOps.** *Delight:* "Password, Google and Microsoft all land in the same place and the backend can't tell which. That is one access review, not three." **The strongest endorsement any role has given an architectural decision.**
+
+**CRO.** *First look:* signed in, saw an empty workspace list, asked where the accounts were. **R6-05, from the person least likely to ask twice.**
+
+---
+
+## The staff-designer pass
+
+**Apple.** One card, one form, nothing decorative. **The quietest screen in the product and it should stay that way** — somebody here is not evaluating Signora yet.
+
+**Stripe.** The reset confirmation is worded to be true whether or not the address exists — *"if there is an account for that address"*. **A security property expressed as copy rather than as a caveat.**
+
+**Linear.** Enter submits, tab order follows reading order, both free from using a real `<form>`. **No keyboard path between the auth screens**, but they are not screens anyone lives in. **Low.**
+
+**Notion.** Five screens, one voice, one frame. The verify screen says what will happen rather than what has happened.
+
+**Cursor.** The verification link appears in the terminal you started the server in. **For a developer this is better than email**, and it is worth saying plainly that this is a local affordance, not a product feature.
+
+**Perplexity.** Nothing to follow here, correctly.
+
+**OpenAI.** No model touches any of this. Consistent with the rest of the product and, as in three previous reviews, unstated.
+
+---
+
+## Rejected ideas
+
+**A development sign-in bypass.** What was originally imagined, and explicitly ruled out by the product owner before being ruled out here. `18-authentication.md` already names it an anti-pattern: it diverges the test path from production and inevitably reaches production. **It would also have failed the actual goal** — the point was to exercise the customer's journey, and a bypass exercises nothing. *Will not return.*
+
+**A seeded test user.** Would have given a session without a sign-up, leaving registration, verification and reset unexercised — the three flows most likely to be wrong, and the two that turned out to be broken. It also puts a credential in the repository. *Will not return.*
+
+**A `provider` claim in the JWT.** Tempting for analytics and audit. Rejected as the load-bearing decision of ADR-0033: a claim the backend can read is a claim the backend can branch on, and the first branch would be a security decision keyed to a method rather than a policy. Method is recorded in the auth event log, where nothing consults it. *Will not return.*
+
+**An identity abstraction over Better Auth.** Better Auth *is* the abstraction. Wrapping it would duplicate authentication logic, which is what buying a vendor avoided. *Will not return.*
+
+**Adding `@better-auth/cli` to run migrations.** Rejected: `better-auth/db/migration` exposes the same thing from the dependency already ratified, and a committed script is more reviewable than a command in a README. *Will not return.*
+
+**Choosing an email provider now.** Tempting, since the console transport is obviously temporary. Rejected: it is a vendor decision and a new dependency, and taking it under time pressure to unblock a local review is how a five-year dependency gets chosen in an afternoon. **The port is what lets it wait.** *Returns with the first environment that is not a developer's machine.*

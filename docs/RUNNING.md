@@ -80,20 +80,53 @@ SIGNORA_JWT_PRIVATE_KEY=<the private half of the same pair>
 
 ---
 
-## Login
+## Signing in
 
-Sign-in is Better Auth in Next.js, and it is **OAuth only** — Google or Microsoft. Email and password are deliberately disabled ([ADR-0010](architecture/adr/0010-identity-and-access.md)): Signora's customers sign in with their work identity, and enabling passwords would add credential storage, reset flows and breach exposure for no product benefit.
+**Signora offers more than one way in, and they all end in the same session** ([ADR-0033](architecture/adr/0033-authentication-methods.md)). Email and password needs no external service and is on by default; Google and Microsoft appear as buttons when their credentials are configured. Whichever you use, Better Auth issues one session shape and the token minted from it carries **no record of which** — so nothing in the API can tell them apart.
 
-**This means the browser UI cannot be opened without OAuth credentials.** Put a Google or Microsoft client id and secret in `frontend/.env.local`:
+### One-time setup
+
+**1 — Create Better Auth's tables.**
+
+```
+cd frontend && npm run auth:migrate
+```
+
+The `auth` schema is created by backend migration `0005`; the tables inside it belong to Better Auth and are created by this command. **Until M12.3 nothing in the repository created them**, so a fresh clone had a schema with no tables and sign-in could not work by any method — invisible because the only offered methods were OAuth and no OAuth credentials were configured either. Run it again after upgrading Better Auth; it is idempotent and prints what it changed.
+
+**2 — Generate a signing key pair** (`npm run keys:generate`) and put the halves in `frontend/.env.local` and the backend's environment, as described above. **Sign-in works without this and the product does not**: every API call needs a token, and `/api/health` will say `signing_keys: unavailable` until you do it.
+
+### The journey
+
+Register at <http://localhost:3000/sign-up>. Signora then asks you to confirm your address before it will create a session — `requireEmailVerification` is on, which is what makes `email_verified` a fact rather than something an identity provider asserted.
+
+**The link is written to the dev server's output**, framed so it is hard to miss:
+
+```
+  ┌────────────────────────────────────────────────────────────────
+  │  Verify this address to finish signing up
+  │  you@example.com
+  │
+  │  http://localhost:3000/api/auth/verify-email?token=…
+  └────────────────────────────────────────────────────────────────
+```
+
+**Nothing is bypassed and nothing is mocked.** Real token, real expiry, real Better Auth route — only the transport is stdout instead of an email provider, which has not been chosen yet. The console transport **refuses to start** when `SIGNORA_ENVIRONMENT` names a deployed environment, because a reset link in a production log is a credential in a log file.
+
+Forgot your password works the same way: <http://localhost:3000/forgot-password> writes a link to the same place. The reply is identical whether or not the address exists — that page is unauthenticated, and a message distinguishing the two would make it an enumeration oracle.
+
+### Adding Google or Microsoft
+
+Put both halves of a credential in `frontend/.env.local` and the button appears:
 
 ```
 GOOGLE_CLIENT_ID=…
 GOOGLE_CLIENT_SECRET=…
 ```
 
-*(This corrects an earlier version of this document, which said to "create an account with any email". That has never been possible — the setting is off in `lib/auth/server.ts` and always has been.)*
+Both halves or neither — a half-configured provider renders a button that fails at the callback, which is worse than not offering it.
 
-**Without OAuth credentials** the API is still fully reachable, which is enough to review the data the screens render. Mint a token the way the integration tests do — `signora_platform.tests.keys.mint_token` — insert a `membership` row for that user id, and call the endpoints below directly.
+*(This replaces an earlier version of this document which said sign-in was **OAuth only**, and an earlier one still which said to "create an account with any email". The first was true when written; the second never was. Both are corrected here rather than deleted, because the sequence is the record.)*
 
 **After signing in, create a workspace** from Settings, then run `make demo-seed` again to be enrolled in the seeded one. A workspace is the tenancy boundary; nothing is visible without one.
 
@@ -105,7 +138,7 @@ GOOGLE_CLIENT_SECRET=…
 
 **There is one product.** The seeder runs the same function the pipeline suite runs, over the `playground@2` scenario instead of `baseline@1`. No branch anywhere knows it is a playground; the only things that differ are which scenario file is named and where its timeline is anchored.
 
-**Sign in once before seeding.** Better Auth owns users and hashes its own passwords, so the seeder cannot create one without either committing a credential or reaching into another system's schema. Sign in at <http://localhost:3000/sign-in>, then re-run `make demo-seed`; it enrols every signed-in user in the seeded workspace and prints what it did.
+**Sign in once before seeding.** Better Auth owns users and hashes its own passwords, so the seeder cannot create one without either committing a credential or reaching into another system's schema. Register at <http://localhost:3000/sign-up>, then re-run `make demo-seed`; it enrols every signed-in user in the seeded workspace and prints what it did.
 
 ### The twelve stories
 

@@ -1,33 +1,51 @@
-import { loadAuthConfig, configuredProviders } from '@/lib/auth/config';
+import { loadAuthConfig, oauthMethods } from '@/lib/auth/config';
 
-import { SignInButtons } from './sign-in-buttons';
+import { AuthLink, AuthShell } from '../auth-shell';
+import { SignInForm } from './sign-in-form';
 
 /**
- * Sign-in page.
+ * **Read at boot, never baked in.** This page's content depends on which
+ * sign-in methods are configured, and Next.js would otherwise prerender it —
+ * so an image built without OAuth credentials would keep showing no provider
+ * buttons after being deployed *with* them, because the HTML was decided at
+ * build time.
  *
- * Only providers with complete credentials are offered — rendering a button
- * for a half-configured provider produces a failure at the OAuth callback,
- * which is worse than not offering it at all.
+ * That is the Infrastructure Contract's environment-based-configuration rule
+ * (CLAUDE.md §20b), and the violation predates this change: `/sign-in` has
+ * been static since M1.5.
+ */
+export const dynamic = 'force-dynamic';
+
+/**
+ * Sign in.
+ *
+ * **Methods are configuration** (ADR-0033). Password sign-in is on unless
+ * switched off; an OAuth button appears only when both halves of its
+ * credentials are present, because a half-configured provider renders a button
+ * that fails at the callback — worse than not offering it.
  */
 export default function SignInPage() {
-  const providers = configuredProviders(loadAuthConfig());
+  const config = loadAuthConfig();
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-sm space-y-6 rounded-lg border border-slate-200 bg-white p-8 shadow-sm">
-        <div className="space-y-1">
-          <h1 className="text-xl font-semibold">Sign in to Signora</h1>
-          <p className="text-sm text-slate-500">AI Revenue Intelligence Platform</p>
-        </div>
-
-        {providers.length === 0 ? (
-          <p className="rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-            No sign-in provider is configured. Set Google or Microsoft OAuth credentials.
-          </p>
-        ) : (
-          <SignInButtons providers={providers} />
-        )}
-      </div>
-    </main>
+    <AuthShell
+      title="Sign in to Signora"
+      description="AI Revenue Intelligence"
+      footer={
+        <>
+          New here? <AuthLink href="/sign-up">Create an account</AuthLink>
+        </>
+      }
+    >
+      <SignInForm
+        passwordEnabled={config.passwordEnabled}
+        oauthMethods={oauthMethods(config)}
+      />
+      {config.passwordEnabled ? (
+        <p className="text-sm text-content-muted">
+          <AuthLink href="/forgot-password">Forgot your password?</AuthLink>
+        </p>
+      ) : null}
+    </AuthShell>
   );
 }

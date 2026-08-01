@@ -16,7 +16,7 @@
 | **Current phase** | **Product implementation** — the pipeline is built; the surface is being exposed |
 | **Last completed milestone** | **M10 — AI Research Engine**, closed 2026-07-31 |
 | **Current milestone** | **M12.3 — evidence and actions** *(Decision Package still deferred until `reasoning@1` is released — see §10)* |
-| **Latest commit** | *M12.3 — the list says what is happening* |
+| **Latest commit** | *M12.3 — more than one way in* (ADR-0033) |
 | **Latest certification** | [`d954c930`](certification/reports/d954c930319a.md) — **CERTIFIED**, 2026-07-31 *(predates M12.2; re-cut at milestone close)* |
 | **Branch** | `main`, tree clean, pushed |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
@@ -176,7 +176,10 @@ A demo environment worth reviewing a product against. Requested by the product o
 | **The list says what is happening** | The *why now* column carried `ScoreTrigger` and produced **two** distinct values across twelve real accounts. It now names the leading hypothesis and produces **six**. Closes **R1-01**, closes **R1-02** for free, halves the invisible ties of **R1-05** |
 | **`ContributionLedger.leading()`** | *Which hypothesis most explains this number* is a question for the ledger — the module that ranks accounts is forbidden from reaching the one that forms hypotheses, and ties break on the event id rather than on storage order |
 | **Tests** | 12 endpoint · 5 component · 4 ledger unit |
-| ⏳ **Next** | **D20** — a 50 and a 1 still render identically, and **R5-02** now gives it a candidate answer the pipeline already computes: group by *posture*, not by an invented threshold. Needs a seller |
+| **Sign-in methods** (**ADR-0033**) | Email + password alongside Google and Microsoft. **The method is configuration; the authenticated identity is invariant** — the JWT carries no record of how anybody signed in, so every future method is free downstream. Register, verify, sign in, sign out, reset: all real, none bypassed |
+| **Two dormant defects, each hiding the other** | Better Auth's tables had **never been created** by anything in the repository, and the observability hook broke every *completed* auth request. Neither could be seen, because no authentication request had ever finished. **Sign-in had not worked on a fresh clone by any method** |
+| **Tests** | 15 auth-method unit · 3 JWT-contract · 5 e2e journey · design tokens extended to `app/(auth)` |
+| ⏳ **Next** | **R6-05 — the workspace screen**, the last unreviewed surface and now the first thing a new account meets. Then **D20**, for which **R5-02** gives a candidate the pipeline already computes: group by *posture*, not by an invented threshold. Both need a product decision |
 
 > **🟠 It ships to the Playground and not to a customer until F-3 closes.** The catalog's guidance is *engineering-authored pending domain review*, and *"ask on a first call which division the investment sits in"* is advice a real seller will act on. Good content is not the same as signed content.
 
@@ -234,7 +237,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 
 | Gate | Now |
 |---|---|
-| **pytest** | **1992 passed**, 0 failing, 0 skipped |
+| **pytest** | **1992 passed**, 0 failing, 0 skipped *(unchanged this slice — no backend code was touched)* |
 | **coverage** | **95.61%** *(floor 95%)* |
 | **Security Invariants** | **325**, +1 this slice — *a member may work accounts and still not run the workspace* |
 | **import-linter** | 29 kept, 0 broken |
@@ -243,7 +246,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 
 | Indicator | Value | Target |
 |---|---|---|
-| **Frontend tests** | **235 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Frontend tests** | **280 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Migrations** | `0001`–`0018`, additive and reversible — `0018` proven by an applied downgrade/upgrade cycle | reversible |
 | **Architecture drift** | **0** — no ratified ADR reversed | trending to 0 |
 | **Open production bugs** | **0** | 0 |

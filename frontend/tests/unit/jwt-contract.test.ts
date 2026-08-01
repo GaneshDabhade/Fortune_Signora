@@ -148,3 +148,72 @@ describe('token issuance', () => {
     ).rejects.toThrow();
   });
 });
+
+describe('the token says nothing about how somebody signed in', () => {
+  /**
+   * **The property that makes every future sign-in method free** (ADR-0033).
+   *
+   * A password sign-in, a Google redirect and a Microsoft redirect all produce
+   * one session shape, and the token minted from it carries no record of which
+   * was used. The Python tier therefore cannot distinguish them, because there
+   * is nothing in the token to distinguish — and a claim the backend can read
+   * is a claim the backend can branch on.
+   *
+   * This was true by *omission* from M1.2. It is asserted from M12.3, so a
+   * future author adding `provider` "for analytics" breaks a test that
+   * explains why instead of shipping a security decision keyed to a method.
+   */
+  const FORBIDDEN = ['provider', 'amr', 'auth_method', 'method', 'idp', 'login_method'];
+
+  it('carries no claim naming an authentication method', () => {
+    const claims = buildClaims(subject) as unknown as Record<string, unknown>;
+
+    for (const claim of FORBIDDEN) {
+      expect(
+        claim in claims,
+        `'${claim}' would let backend behaviour depend on how a user signed in`,
+      ).toBe(false);
+    }
+  });
+
+  it('mints an identical claim set however the session was created', async () => {
+    // The subject is what Better Auth hands us, and it is the same object for
+    // every method: an id, a session, an address, whether it is verified.
+    // There is no fourth thing to carry, which is the point.
+    const password = buildClaims(subject) as unknown as Record<string, unknown>;
+    const oauth = buildClaims(subject) as unknown as Record<string, unknown>;
+
+    expect(Object.keys(password).sort()).toEqual(Object.keys(oauth).sort());
+  });
+
+  it('exposes exactly the documented claims and no others', async () => {
+    // A closed set rather than a subset check: a new claim has to be a
+    // deliberate change to 18-authentication.md and both tiers, never
+    // something that arrives with a convenience.
+    const { privateKey, publicKey } = await keys();
+    const token = await issueAccessToken(subject, {
+      issuer: ISSUER,
+      audience: AUDIENCE,
+      privateKey,
+    });
+    const { payload } = await jwtVerify(token, publicKey, {
+      issuer: ISSUER,
+      audience: AUDIENCE,
+    });
+
+    expect(Object.keys(payload).sort()).toEqual(
+      [
+        'active_workspace_id',
+        'aud',
+        'email',
+        'email_verified',
+        'exp',
+        'iat',
+        'iss',
+        'jti',
+        'sid',
+        'sub',
+      ].sort(),
+    );
+  });
+});

@@ -9,7 +9,7 @@
  * These checks make those states observable before a user finds them.
  */
 
-import { loadAuthConfig, configuredProviders, type AuthConfig } from '@/lib/auth/config';
+import { loadAuthConfig, signInMethods, type AuthConfig } from '@/lib/auth/config';
 import { checkKeyHealth } from '@/lib/auth/keys';
 import { getAuthPool } from '@/lib/auth/server';
 
@@ -26,7 +26,7 @@ export interface AuthHealthReport {
     database: SubsystemCheck;
     signing_keys: SubsystemCheck;
     jwt_configuration: SubsystemCheck;
-    oauth_providers: SubsystemCheck;
+    sign_in_methods: SubsystemCheck;
   };
 }
 
@@ -85,20 +85,29 @@ function checkJwtConfiguration(config: AuthConfig): SubsystemCheck {
   return { status: 'ok' };
 }
 
-function checkOAuthProviders(config: AuthConfig): SubsystemCheck {
-  const providers = configuredProviders(config);
+/**
+ * Whether anybody can actually sign in.
+ *
+ * **The question is about methods, not about OAuth** (ADR-0033). This check
+ * previously counted social providers and reported *"sign-in is unavailable"*
+ * when there were none — which became a **false report about a healthy
+ * install** the moment password sign-in existed, and a health check that lies
+ * about a working system is worse than one that is absent.
+ */
+function checkSignInMethods(config: AuthConfig): SubsystemCheck {
+  const methods = signInMethods(config);
 
-  if (providers.length === 0) {
+  if (methods.length === 0) {
     // Degraded rather than unavailable: the process is healthy and can serve
     // traffic, but no human can sign in. Distinguishing the two matters —
     // an orchestrator should not restart this process, but an operator does
     // need to know.
     return {
       status: 'degraded',
-      detail: 'No OAuth provider is configured; sign-in is unavailable.',
+      detail: 'No sign-in method is configured; nobody can sign in.',
     };
   }
-  return { status: 'ok', detail: `Configured: ${providers.join(', ')}.` };
+  return { status: 'ok', detail: `Available: ${methods.join(', ')}.` };
 }
 
 function worst(statuses: CheckStatus[]): CheckStatus {
@@ -118,7 +127,7 @@ export async function checkAuthHealth(
     database,
     signing_keys: signingKeys,
     jwt_configuration: checkJwtConfiguration(config),
-    oauth_providers: checkOAuthProviders(config),
+    sign_in_methods: checkSignInMethods(config),
   };
 
   return {

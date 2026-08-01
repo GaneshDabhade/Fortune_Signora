@@ -38,7 +38,10 @@ test.describe('unauthenticated access', () => {
     expect(body).toHaveProperty('checks.signing_keys');
     expect(body).toHaveProperty('checks.jwt_configuration');
     expect(body).toHaveProperty('checks.database');
-    expect(body).toHaveProperty('checks.oauth_providers');
+    // Renamed at M12.3: the question is "can anybody sign in", not "is OAuth
+    // configured" — two questions that were the same only while OAuth was the
+    // only method (ADR-0033).
+    expect(body).toHaveProperty('checks.sign_in_methods');
   });
 
   test('no response ever carries the private signing key', async ({ request }) => {
@@ -51,15 +54,38 @@ test.describe('unauthenticated access', () => {
 });
 
 test.describe('sign-in surface', () => {
-  test('offers a provider button when one is configured', async ({ page }) => {
+  test('always offers a way in that needs no external service', async ({ page }) => {
+    // **The reason this milestone exists.** Before ADR-0033 the page offered
+    // only OAuth, so an install with no provider credentials had no sign-in
+    // at all — and the product owner could not review the product.
     await page.goto('/sign-in');
 
+    await expect(page.getByLabel('Email')).toBeVisible();
+    await expect(page.getByLabel('Password')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
+  });
+
+  test('leads to registration and to password recovery', async ({ page }) => {
+    await page.goto('/sign-in');
+
+    await expect(page.getByRole('link', { name: 'Create an account' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Forgot your password?' })).toBeVisible();
+  });
+
+  test('offers a provider button when one is configured, and nothing when not', async ({
+    page,
+  }) => {
+    await page.goto('/sign-in');
+    const provider = page.getByRole('button', { name: /Continue with/ });
+
     if (hasOAuth) {
-      await expect(page.getByRole('button', { name: /Continue with/ })).toBeVisible();
+      await expect(provider).toBeVisible();
     } else {
-      // Explicit rather than a blank page: an operator seeing this knows
-      // exactly what is missing.
-      await expect(page.getByText(/No sign-in provider is configured/)).toBeVisible();
+      // **No error message any more, and that is the change.** An install
+      // without OAuth credentials is not broken — it has one sign-in method
+      // instead of three, and the page says so by simply not drawing a button
+      // that would fail at the callback.
+      await expect(provider).toHaveCount(0);
     }
   });
 });

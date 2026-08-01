@@ -88,7 +88,14 @@ These are absolute. A pull request violating any of them should be rejected outr
 | `iat` / `exp` | yes | Issued-at and expiry. |
 | `jti` | yes | Unique token id, for future replay detection and revocation. |
 
-### What the token deliberately omits
+### What the token deliberately omits — including *how* somebody signed in
+
+**No claim names the authentication method**, and this is the property that makes every future method free (ADR-0033). A password sign-in, a Google redirect and a Microsoft redirect all produce one session shape and one claim set; the Python tier cannot distinguish them because there is nothing in the token to distinguish.
+
+This was true by omission from M1.2 and is asserted from M12.3, so a future author adding `provider` "for analytics" breaks a test rather than shipping a security decision keyed to a method. The reasoning is the same as vendor neutrality in the AI Platform: **method is provenance, never an input to a decision** — and here it is not even carried.
+
+Magic link, enterprise SSO and passkeys therefore need no backend change at all. They add a method in Better Auth and nothing downstream knows.
+
 
 **No permissions, capabilities, or authorization decisions.** Casbin is the single source of authorization truth, evaluated per request against policy held in Signora's own version control. Embedding permissions would fork authorization across two systems and delay every policy change until tokens expire.
 
@@ -209,6 +216,8 @@ Two design points:
 
 ## Local Development and Testing
 
+- **Better Auth's tables are created by `npm run auth:migrate`**, once, and again after a Better Auth upgrade. Backend migration `0005` creates the `auth` *schema*; the tables inside it are the vendor's and Alembic must not own them — a hand-written copy of another system's schema disagrees with it on the first upgrade. **Until M12.3 nothing created them at all**, so sign-in could not work by any method on a fresh clone.
+- **Sign in with email and password.** Verification and reset links are written to the dev server's stdout by the console transport, which refuses to start in a deployed environment (ADR-0033). The flow is not shortened — real token, real expiry, real route.
 - Tests generate an **ephemeral RSA key pair in-process**, sign tokens with the private half, and configure the verifier with the public half. No key material is committed, and no fixture private key exists to leak.
 - `npm run keys:generate` produces a local development pair, printed to stdout rather than written to disk so key material never lands in a file by accident. It emits the private key for `frontend/.env.local` and the public key for both tiers — making the asymmetry visible at the point of use.
 - Because the API cannot mint tokens, there is no "dev mode" that skips verification. A test needing an authenticated caller mints a token exactly as Next.js would, which keeps the test path and the production path identical.

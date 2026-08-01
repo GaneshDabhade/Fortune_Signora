@@ -25,6 +25,13 @@ export const AUTH_EVENTS = {
   LOGOUT: 'AUTH_LOGOUT',
   OAUTH_CALLBACK: 'AUTH_OAUTH_CALLBACK',
   WORKSPACE_SWITCH: 'AUTH_WORKSPACE_SWITCH',
+  // Both carry an address that was asked to prove something and **never the
+  // link that was sent** — a verification or reset URL is a bearer credential
+  // for the seconds it lives, and `sanitize` drops the field regardless.
+  SIGN_UP: 'AUTH_SIGN_UP',
+  VERIFICATION_REQUESTED: 'AUTH_VERIFICATION_REQUESTED',
+  PASSWORD_RESET_REQUESTED: 'AUTH_PASSWORD_RESET_REQUESTED',
+  PASSWORD_RESET_COMPLETED: 'AUTH_PASSWORD_RESET_COMPLETED',
 } as const;
 
 export type AuthEventName = (typeof AUTH_EVENTS)[keyof typeof AUTH_EVENTS];
@@ -41,7 +48,10 @@ export interface AuthEventContext {
   userId?: string;
   sessionId?: string;
   workspaceId?: string;
-  provider?: 'google' | 'microsoft';
+  /** How somebody signed in. **Provenance in the log and nowhere else** — it
+   * is deliberately not a JWT claim, so no backend decision can ever depend
+   * on it (ADR-0033). */
+  provider?: 'google' | 'microsoft' | 'password';
   /** Coarse reason for a failure. Must stay coarse — a message echoing why
    * a credential was rejected helps an attacker enumerate. */
   reason?: string;

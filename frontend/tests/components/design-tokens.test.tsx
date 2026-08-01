@@ -22,14 +22,24 @@ const FEEDBACK_DIR = join(process.cwd(), 'components', 'feedback');
  * change is a token edit is not weaker for a component that renders a buying
  * score than for one that renders a button. */
 const INTELLIGENCE_DIR = join(process.cwd(), 'components', 'intelligence');
+/** **Added at M12.3 (ADR-0033), and it found something.** This check scanned
+ * `components/` and nothing else, so `app/(auth)` — **the first screen every
+ * customer sees** — had been using `bg-white`, `border-slate-200` and
+ * `text-slate-500` since M1.5, forbidden everywhere the check could reach.
+ *
+ * A rule with a gap in its enforcement is a rule the code eventually finds the
+ * gap in. The authentication screens are now inside it. */
+const AUTH_DIR = join(process.cwd(), 'app', '(auth)');
 
-function sourceFiles(dir: string): { name: string; source: string }[] {
-  return readdirSync(dir)
-    .filter((file) => file.endsWith('.tsx') || file.endsWith('.ts'))
-    .map((file) => ({
-      name: `${dir.split('/').pop()}/${file}`,
-      source: readFileSync(join(dir, file), 'utf8'),
-    }));
+function sourceFiles(dir: string, prefix?: string): { name: string; source: string }[] {
+  const label = prefix ?? (dir.split('/').pop() as string);
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(dir, entry.name);
+    // Route segments are directories, so this walks rather than listing.
+    if (entry.isDirectory()) return sourceFiles(path, `${label}/${entry.name}`);
+    if (!entry.name.endsWith('.tsx') && !entry.name.endsWith('.ts')) return [];
+    return [{ name: `${label}/${entry.name}`, source: readFileSync(path, 'utf8') }];
+  });
 }
 
 const ALL_COMPONENTS = [
@@ -37,6 +47,7 @@ const ALL_COMPONENTS = [
   ...sourceFiles(SHELL_DIR),
   ...sourceFiles(FEEDBACK_DIR),
   ...sourceFiles(INTELLIGENCE_DIR),
+  ...sourceFiles(AUTH_DIR, '(auth)'),
 ];
 
 // Tailwind's default palette. A shared component reaching for any of these

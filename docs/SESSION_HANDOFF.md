@@ -16,7 +16,7 @@
 | **Inserted, and open** | **M9.5 Evidence Citation Protocol** (ADR-0031). Steps A–D landed; **Step F is incomplete** |
 | **Last completed** | **M12.2 the account brief** — closed 2026-08-01. Identity, score breakdown, commitment and narration; the Decision Package is *blocked*, not skipped |
 | **Current** | **M12.3 evidence and actions.** *What to check*, *ledger citations*, *stage transitions and assignment* and *the list's why* shipped; narration citations and the list's hierarchy (D20) remain |
-| **Head at handoff** | see `git log` — M12.3 the list slice, *the row says what is happening* |
+| **Head at handoff** | see `git log` — M12.3 authentication methods (**ADR-0033**), *more than one way in* |
 | **Latest certification** | [`d954c930`](../certification/reports/d954c930319a.md) — CERTIFIED, 2026-07-31 |
 | **Phase** | **Product implementation.** Ten pipeline stages built and frozen behind them; the surface is being exposed. |
 | **Overall completion** | **~60%** by engineering effort (~187 of ~261–339 ew) |
@@ -25,6 +25,8 @@
 
 **🔴 Read this before anything else:** **`reasoning@1` has no released model.** M9.5 moved the rendering protocol to v2, which withdrew every protocol-1 release by derivation. `explanation_narration@1`, `research_planning@2` and `research_synthesis@2` re-earned theirs; `reasoning@1` did not — `granite3.3:2b` refuses under protocol 2 and `llama3.1:8b` is UNMEASURABLE on this hardware. **The Decision Package stage would refuse in production.** Do not tune the prompt, the delimiter, the schema or the timeout to make it pass.
 
+**🟢 Sign-in works now, and did not before.** Better Auth's tables had never been created by anything in the repository, and the `after` hook broke every completed auth request — two defects each hiding the other, invisible because no authentication request had ever finished. Run **`cd frontend && npm run auth:migrate`** once on any clone, then register at `/sign-up`; the verification link is written to the dev server's stdout. See [ADR-0033](architecture/adr/0033-authentication-methods.md) and `docs/RUNNING.md`.
+
 **Recent commits:** `d954c93` the first business screen · `d08f8d7` the first customer endpoint · `22cafac` the attention list read path · `0cc82c6` product surface roadmap · `0c6d144` certification cites itself
 
 ### Health
@@ -32,7 +34,7 @@
 | Indicator | Value |
 |---|---|
 | Backend tests | **1992 passing**, 0 failing, 0 skipped *(measured 2026-08-01, M12.3 decision slice)* |
-| Frontend tests | **235 passing** |
+| Frontend tests | **280 passing** |
 | Backend coverage | gate **≥95%** · currently **95.61%** |
 | Security invariants | **325 / 325**, each proven to fail when its guarantee is removed |
 | import-linter contracts | **29 kept, 0 broken** |
