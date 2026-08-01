@@ -23,7 +23,13 @@ M1.1 Platform Runtime → M1.2 Authentication Boundary → M1.3A Deployment Foun
      → M14.5 Cloud Infrastructure → M15 GA readiness → General Availability
 ```
 
-The parallel-workstream design in §9 is **retained for future team scaling** and should be re-read the moment staffing increases. It is not the current operating assumption.
+The parallel-workstream design in §9 is **retained for future team scaling** and should be re-read the moment staffing increases.
+
+> **Amended 2026-08-01 — two lanes.** Sequential single-stream execution held for 141 commits and produced the architectural consistency that makes this amendment safe. It is no longer the operating assumption: **two lanes run concurrently**, Product Surface and Commercial Profile, each owning distinct modules. A **Category 1 sequencing change** ([§5c](#5c-roadmap-change-policy)) — no module, boundary, contract or technology changes, and the dependency graph still governs order: a lane may not start work whose inputs another lane has not shipped.
+>
+> **Why these two.** They share almost nothing: Commercial Profile is a new module with its own tables, migrations, endpoints and routes, and it needs no event-bus consumer, which is what keeps the `EventHandler` RFC off the critical path. The one shared surface is the frontend contract layer, and Lane B writes its own hooks file rather than appending to the shared one.
+>
+> **Two is deliberate, not a first step toward ten.** Coordination cost is quadratic in lanes and this repository has never paid any of it. A third lane waits on evidence from a full milestone of these two. The governing rule is unchanged and now applies per lane: `CLAUDE.md` §20e.
 
 ### Calendar consequence — stated plainly
 

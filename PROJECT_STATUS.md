@@ -18,7 +18,7 @@
 | **Current milestone** | **M12.3 — evidence and actions** *(Decision Package still deferred until `reasoning@1` is released — see §10)* |
 | **Latest commit** | *M12.3 — moving through the list* (D41) |
 | **Latest certification** | [`d954c930`](certification/reports/d954c930319a.md) — **CERTIFIED**, 2026-07-31 *(predates M12.2; re-cut at milestone close)* |
-| **Branch** | `main`, tree clean, pushed |
+| **Branch** | `main`, tree clean, pushed. **Two lanes from 2026-08-01** — `lane/surface` (Product Surface) and `lane/commercial` (Commercial Profile), governed by [CLAUDE.md §20e](CLAUDE.md) |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
 | **Overall completion** | **~61%** by engineering effort (~190 of ~261–339 ew) — M10 (12–16 ew) closed, M9.5 (~3 ew) inserted and **not** closed, M12.3 in progress |
 | **Projected to GA** | ~1.3–1.9 years at 3 engineers · ~2.0–2.8 at 2 · ~3.9–5.8 at 1 (80% capacity) |

@@ -107,6 +107,54 @@ Both halves or neither — a half-configured provider renders a button that fail
 
 ---
 
+## Running a second lane
+
+Two development lanes work the same repository at once (`CLAUDE.md` §20e). **Separate clones isolate the code; they do not isolate the database or the ports** — and a second `pytest` run against the shared database truncates the first lane's rows mid-test, producing failures neither lane can reproduce.
+
+Three things per lane, all environment variables.
+
+**1 — its own database**, once:
+
+```bash
+cd backend
+uv run python -c "
+import asyncio, asyncpg
+async def main():
+    c = await asyncpg.connect('postgresql://signora:signora@localhost:5432/postgres')
+    await c.execute('CREATE DATABASE signora_lane_b OWNER signora')
+    await c.close()
+asyncio.run(main())"
+
+SIGNORA_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:5432/signora_lane_b \
+  uv run alembic upgrade head
+```
+
+**2 — point the tests at it.** In that lane's shell or `backend/.env`:
+
+```bash
+export SIGNORA_TEST_APP_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5432/signora_lane_b
+export SIGNORA_TEST_ADMIN_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:5432/signora_lane_b
+```
+
+**Every test path honours these** — the fixtures, the API integration clients and the seeders all resolve the URL from one place in `tests/conftest.py`. **Verify before your first slice:** run any integration test and confirm rows moved in your database and not in `signora`.
+
+**3 — its own ports.** Lane A keeps 3000 and 8000; a second lane uses 3100 and 8100:
+
+```bash
+cd frontend && npm run dev -- --port 3100
+cd backend && uv run uvicorn apps.api.main:app --reload --port 8100
+```
+
+Set `SIGNORA_API_URL=http://localhost:8100` and `BETTER_AUTH_URL=http://localhost:3100` in that lane's `frontend/.env.local`.
+
+**One Postgres, one Redis, many databases.** There is no second stack — Postgres holds as many databases as there are lanes, and nothing in the test path touches Redis today.
+
+> **`make smoke` binds ports 3000 and 8000.** It cannot run while any dev server holds them — stop both lanes' dev servers first. Worth knowing before a milestone gate, because the failure reads as *"stack did not reach healthy"* rather than *"a port is in use"*.
+
+> **The Playground lives in `signora`, and no lane's tests may target it.** That is the whole point of steps 1 and 2: it is the database `make demo-seed` fills and the one you review the product in.
+
+---
+
 ## When something does not work
 
 | What you see | What it is |

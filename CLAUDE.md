@@ -2,7 +2,17 @@
 
 > This file governs how Claude Code behaves while working in this repository. It is binding, not advisory. It does not describe what Signora does as a product — that lives in `docs/architecture/`. This file describes how work gets done here.
 >
-> The architecture itself is defined in `docs/architecture/01-overview.md` through `docs/architecture/17-future-recommendations.md`, plus the ratified Architecture Decision Records in `docs/architecture/adr/`. That set is the single source of truth for *what the architecture is* — including the full, ratified technology stack (no open technology choices remain; see `docs/architecture/08-technology-stack.md` and its linked ADRs). This file is the single source of truth for *how Claude must behave* while implementing it. Where this file references a rule, the linked document is authoritative on the details; this file is authoritative on the behavior it demands from Claude.
+> The architecture itself is defined by **every document in `docs/architecture/`**, plus the ratified Architecture Decision Records in `docs/architecture/adr/`. That set is the single source of truth for *what the architecture is* — including the full, ratified technology stack (no open technology choices remain; see `docs/architecture/08-technology-stack.md` and its linked ADRs). This file is the single source of truth for *how Claude must behave* while implementing it. Where this file references a rule, the linked document is authoritative on the details; this file is authoritative on the behavior it demands from Claude.
+>
+> **The numbered documents fall into three groups**, and knowing which is which is how a session decides what binds it:
+>
+> | Range | What it is | Binding? |
+> |---|---|---|
+> | **`01`–`21`** | System architecture — principles, modules, dependencies, events, tenancy, security, API conventions, and `21-intelligence-pipeline.md`, **the reference to read first** | Yes |
+> | **`22`–`29`**, plus `33` | **Module designs**, one per module, each marked *as built*. Read the one you are working in | Yes, for that module |
+> | **`30`+** | **Records and cross-cutting notes** — retrospectives, design-review evidence, product surface, design decisions, review findings. Dated; never rewritten | As history, not as instruction |
+>
+> **Corrected 2026-08-01.** This sentence said the architecture was `01-overview.md` **through `17-future-recommendations.md`**. There are 39 numbered documents and 36 ADRs. A session reading its constitution literally could not see documents `18`–`39` — including every module design and the entire product-surface design. Harmless while one session held the whole tree in context; **a correctness defect the moment a second session starts cold**, which is why it is fixed here before Lane B begins.
 
 ---
 
@@ -371,6 +381,71 @@ It is the **executive dashboard**, not a progress log. It must answer, at a glan
 Each update includes: milestone status (Completed / In Progress / Blocked) · completion date · commit hashes · **current `HEAD`** · scope delivered · acceptance criteria satisfied · **tests, coverage, Security Invariants, and import-linter contracts** · outstanding architectural work · outstanding deferred items · **known limitations, distinguished from architectural debt** · roadmap changes · new architectural decisions · technical debt introduced or repaid · risks and blockers · updated implementation progress · updated effort remaining · updated projected timeline · links to new ADRs, architecture documents, or implementation notes.
 
 **It must describe the implementation, never the proposal.** Before announcing a milestone complete, Claude verifies each figure against the repository — the test count from a run, the coverage from the gate, `HEAD` from git — rather than carrying forward what was planned. The documentation update is committed *with* the milestone and pushed with it, not after.
+
+---
+
+## 20e. Parallel Development — Lanes
+
+**Binding from 2026-08-01.** Signora is worked by more than one session at a time. This section is what makes that safe; it does not change the architecture, and every freeze, boundary and gate above still binds unchanged.
+
+### The lanes
+
+| Lane | Owns | Branch |
+|---|---|---|
+| **A — Product Surface** | `opportunity_engine` · `buying_score_engine` · `signal_engine` · `business_event_engine` · `knowledge_graph` · `observation_engine` · `provider_*` · `ai_*` interface layers · `frontend/app/(app)/` except `settings/products` · `frontend/components/intelligence/` | `lane/surface` |
+| **B — Commercial Profile** | `modules/commercial_profile/**` · `apps/api/composition/products.py` · `frontend/components/commercial/` · `frontend/app/(app)/settings/products/` · `frontend/lib/query/hooks/commercial.ts` | `lane/commercial` |
+| **Integrator** | `main`, and every shared file below | `main` |
+
+**One session per lane. One lane per module.** A module has exactly one implementation owner at a time; if a lane needs a change inside another lane's module, that is a finding to raise, never a change to make.
+
+### The Change Budget
+
+Every slice knows what it may touch before it starts.
+
+| Tier | Contains | Authority |
+|---|---|---|
+| 🟢 **Green** | Your own module's `domain`/`application`/`infrastructure`/`interface` · its tests · its design doc · your own frontend components and routes · a bug fix inside your module | Lane, freely |
+| 🟠 **Amber** | Your module's `public/` · a new table (**with its `tenancy_policy.py` registration**) · a new event (**with its `06-events.md` entry**) · a new endpoint · a new component in `components/ui` · a migration | Lane — **announce it in the commit message** |
+| 🔴 **Red** | `signora_platform/**` · the frontend foundation (`components/ui`, `lib/query`, `lib/state`, shell) · a new module or bounded context · a new cross-module dependency · a new dependency · `docs/architecture/01`–`21` · `adr/` · any frozen decision · the roadmap | **Product owner + ADR** |
+| ⚫ **Black** | Rename an API · move architecture · rewrite documentation · refactor another lane's module · weaken or delete a Security Invariant · rewrite a dated record · create CI/CD (§20c-2) | Never |
+
+**Touching a file outside your budget is a finding to raise, not a change to make.** The same discipline as §20a, applied to the whole repository.
+
+### Shared files have one owner
+
+These are the repository's conflict hotspots — together they appear in roughly two thirds of all commits. **A lane does not edit them.**
+
+| File | Owner |
+|---|---|
+| `PROJECT_STATUS.md` · `docs/SESSION_HANDOFF.md` · `docs/RUNNING.md` · the roadmaps | **Integrator**, at merge |
+| `docs/architecture/38-product-design-principles.md` · `39-product-review-findings.md` | **Integrator**, at merge |
+| `CLAUDE.md` · `PRODUCT_DIFFERENTIATORS.md` | Product owner |
+| `apps/api/main.py` · `pyproject.toml` contracts · `tenancy_policy.py` · `policy.csv` · `lib/api/types.ts` · `lib/query/keys.ts` | Either lane, **append-only, one line, alphabetical where a list exists** |
+
+**A lane reports its findings in its commit message and its own module's design doc.** The integrator folds them into the shared records at merge. That is what reduces narrative-document conflicts to zero rather than managing them.
+
+### Git
+
+**`main` plus one short-lived branch per lane. Nothing else.** No develop, no release branches, no milestone branches.
+
+- Branch per **slice**, not per feature. **Two days maximum** — a lane branch older than that is a finding.
+- `git pull --rebase origin main` before merging. Rebase freely; nobody else has your branch.
+- **Merge fast-forward only.** No merge commits: Alembic's chain is linear, the records are append-only narratives, and a linear history is the only one where *what was true when* is readable.
+- **The gates are the review** — full local gates on the rebased branch before it merges.
+- After merging, reset the lane branch to `main`. It is a workspace, not a record.
+- Commit messages keep the existing form: `M12.5 — <what changed, in product language>`. **Not Conventional Commits** — `git log --oneline` is a changelog a cold session reads.
+
+### Migrations
+
+**A module owns its tables, therefore it owns their migrations.** Two additive, module-scoped migrations commute, so the only conflict is the `down_revision` chain — one line, fixed by rebasing. Never `alembic merge`: it branches history permanently to save a one-line edit. A **destructive** migration is 🔴.
+
+### Concurrent milestones — amending §20d
+
+§20d requires `PROJECT_STATUS.md` to reflect the previous milestone before the next begins, and [IMPLEMENTATION_ROADMAP.md §1](IMPLEMENTATION_ROADMAP.md) records *sequential single-stream execution*. **Both were written for one session and are amended here, as a Category 1 sequencing change.**
+
+> **Two lanes may run two milestones concurrently. The rule now binds per lane:** a lane does not begin its next milestone until `PROJECT_STATUS.md` reflects the previous one **of that lane**. The dependency graph still governs order — a lane may not start work whose inputs another lane has not shipped.
+
+Everything else in §20d is unchanged, and **strict milestone ownership matters more, not less**: a lane must never implement another lane's functionality to satisfy its own demonstration.
 
 ---
 

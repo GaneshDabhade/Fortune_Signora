@@ -37,16 +37,31 @@ os.environ.setdefault("SIGNORA_JWT_PUBLIC_KEY", "test-placeholder-not-a-key")
 os.environ.setdefault("SIGNORA_JWT_ISSUER", "https://auth.signora.test")
 os.environ.setdefault("SIGNORA_JWT_AUDIENCE", "signora-api-test")
 
-DEFAULT_APP_DATABASE_URL = (
-    "postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5432/signora"
+# The target database, resolved **once, here**, from the environment.
+#
+# **This is what makes two development lanes possible** (CLAUDE.md §20e).
+# These were plain constants, and `SIGNORA_TEST_APP_DATABASE_URL` was read
+# only by the two fixtures below — so every API integration test, which
+# constructs `Settings(database_url=DEFAULT_APP_DATABASE_URL)` directly,
+# ignored the override and went to the shared database regardless. Two lanes
+# running `pytest` at the same time would have truncated each other's rows
+# mid-run, producing failures neither could reproduce.
+#
+# Reading the environment at the constant means all twelve call sites
+# inherit the isolation without knowing it exists.
+DEFAULT_APP_DATABASE_URL = os.environ.get(
+    "SIGNORA_TEST_APP_DATABASE_URL",
+    "postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5432/signora",
 )
-DEFAULT_ADMIN_DATABASE_URL = "postgresql+asyncpg://signora:signora@localhost:5432/signora"
+DEFAULT_ADMIN_DATABASE_URL = os.environ.get(
+    "SIGNORA_TEST_ADMIN_DATABASE_URL",
+    "postgresql+asyncpg://signora:signora@localhost:5432/signora",
+)
 
 
 @pytest.fixture(scope="session")
 async def app_engine() -> AsyncIterator[AsyncEngine]:
-    url = os.environ.get("SIGNORA_TEST_APP_DATABASE_URL", DEFAULT_APP_DATABASE_URL)
-    engine = create_async_engine(url)
+    engine = create_async_engine(DEFAULT_APP_DATABASE_URL)
     try:
         yield engine
     finally:
@@ -55,8 +70,7 @@ async def app_engine() -> AsyncIterator[AsyncEngine]:
 
 @pytest.fixture(scope="session")
 async def admin_engine() -> AsyncIterator[AsyncEngine]:
-    url = os.environ.get("SIGNORA_TEST_ADMIN_DATABASE_URL", DEFAULT_ADMIN_DATABASE_URL)
-    engine = create_async_engine(url)
+    engine = create_async_engine(DEFAULT_ADMIN_DATABASE_URL)
     try:
         yield engine
     finally:
