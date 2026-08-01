@@ -174,7 +174,7 @@ A customer declares *Healthcare*, *Manufacturing*, *Fintech*, *Security*, *Unite
 
 ADR-0035 answers half of it — resolution among disagreeing claims is a Knowledge Graph slice. It does not answer the other half: *whose job is it to know that "Fintech" and the canonical industry value are the same thing?* Three candidate homes, none chosen: the Knowledge Graph (it already resolves), a new matching context (it is a distinct concern with a distinct failure mode), or a translation table owned here (**rejected** — it would make this module resolve, and it is the module least equipped to review a resolution).
 
-**Roadmap impact: none before slice 5.** Slice 3 and slice 4 declare nothing that needs translating. **It must be answered before anything matches an account against an ICP**, and that is an RFC for the product owner, not a coding session's call.
+**Roadmap impact: none before slice 5.** Slice 3 and slice 4 declare nothing that needs translating. **It must be answered before anything matches an account against an ICP** — tracked as [C-002](../LANE_COORDINATION.md#c-002--customer-language-has-no-anticorruption-layer).
 
 **F-B2 — ~~a controlled value space cannot cross this boundary~~. `Corrected — the slice-2 statement was too strong.`** It claimed revenue *cannot be declared here* and that three criteria were architecturally blocked. That is wrong, and the module's own design disproves it: `industries` is free text and the canonical vocabulary also has an `industry` attribute — the same overlap, shipped and correct.
 
@@ -182,7 +182,7 @@ ADR-0035 answers half of it — resolution among disagreeing claims is a Knowled
 
 *Why it was overstated:* the impossibility of importing `RevenueBand` is real, and I generalised from a genuine constraint on **one implementation** to a false constraint on **the capability**. Worth naming, because it is the shape of error that turns a design choice into a phantom blocker in a roadmap.
 
-**F-B3 — `04-modules.md` is stale, and Lane B may not edit it (🔴). `Unchanged, and now three rows.`** For the integrator at merge:
+**F-B3 — `04-modules.md` is stale, and Lane B may not edit it (🔴).** The accumulated edits moved to [C-004](../LANE_COORDINATION.md#c-004--shared-documents-lag-commercial-profile) when the register was created, so the integrator has one place to find them. For reference:
 - Commercial Profile manifest → **Endpoints**: add `/workspaces/{id}/icp` and `/workspaces/{id}/buying-committee`; **Tables**: add `icp_declaration` and `buying_committee`.
 - **Also worth folding in:** the cross-module form of the Canonical Vocabulary Principle above, beside the existing provider-configuration ruling in the Provider Platform entry, which it extends rather than repeats.
 - **No dependency edge changed** by slice 2 or slice 3. Nothing new imported, nothing published, graph untouched.
@@ -193,11 +193,11 @@ ADR-0035 answers half of it — resolution among disagreeing claims is a Knowled
 
 **The boundary this module has drawn makes the answer clear, and it is not Lane B's.** *"Funding rounds matter more to us than hiring"* is **signal relevance** — a statement about what Signora should treat as interesting — and the Signal Engine owns relevance by ratified principle. It is not a declaration about the customer's own commercial position, which is all this module holds. **Commercial Profile must not acquire it**, however customer-authored it looks: that is exactly the drift the module's boundary exists to prevent, and the slice-4 focus is one careless sentence away from it (*"we're pushing Revenue Cloud"* vs *"product-launch signals matter to us"*).
 
-**Recommendation:** the signal-profile write path is **Lane A's**, in `signal_engine`, and B-001 should be fixed as part of it rather than before it. Raised, not decided.
+**Recommendation:** the signal-profile write path is **Lane A's**, in `signal_engine`. Tracked as [C-005](../LANE_COORDINATION.md#c-005--who-owns-the-signal-profile-write-path).
 
-**F-B7 — three codes for one condition, and it now grows every slice.** `New in slice 4.` `icp_unknown_product`, `committee_unknown_product`, `focus_unknown_product` — one shared check, one shared message, three wire codes, because renaming a shipped code is ⚫. **This is the only thing in the module that gets worse with each slice**, and slice 5 makes it four. A single `unknown_product` is one product-owner ruling away.
+**F-B7 — three codes for one condition, and it now grows every slice.** `New in slice 4.` `icp_unknown_product`, `committee_unknown_product`, `focus_unknown_product` — one shared check, one shared message, three wire codes, because renaming a shipped code is ⚫. **This is the only thing in the module that gets worse with each slice**, and slice 5 makes it four. Tracked as [C-003](../LANE_COORDINATION.md#c-003--three-wire-codes-for-one-condition).
 
-**F-B5 — endpoint tests live in QE's tree. `Now a concrete proposal rather than an open question.`** §20e gives QE `backend/tests/**` except *a module's own suite*, and `tests/integration/test_api_<module>.py` tests exactly one module's endpoints while living in QE's directory. **Proposed rule, for the product owner:** *a file named `test_api_<module>.py` is that module's own suite regardless of directory; QE owns everything else in the tree, including any cross-module flow test.* That keeps the two lanes' edits disjoint without moving files or splitting a suite mid-module. Slices 1–3 follow the existing precedent until it is ruled on.
+**F-B5 — endpoint tests live in QE's tree. `Now a concrete proposal rather than an open question.`** §20e gives QE `backend/tests/**` except *a module's own suite*, and `tests/integration/test_api_<module>.py` tests exactly one module's endpoints while living in QE's directory. **Proposed rule, now [C-006](../LANE_COORDINATION.md#c-006--which-lane-owns-test_api_modulepy):** *a file named `test_api_<module>.py` is that module's own suite regardless of directory; QE owns everything else in the tree, including any cross-module flow test.* That keeps the two lanes' edits disjoint without moving files or splitting a suite mid-module. Slices 1–3 follow the existing precedent until it is ruled on.
 
 ## The shape of the customer's first hour
 
@@ -223,27 +223,15 @@ ADR-0035 answers half of it — resolution among disagreeing claims is a Knowled
 2. **Completeness is derived, never stored.** *"Has this customer finished setting up?"* is answerable from the versions already returned by the reads the screen makes. A stored `onboarding_completed` flag would be a second representation of a derivable fact — and it would lie the moment somebody deleted their last product. This is *truth has exactly one authoritative representation* applied to a progress bar.
 3. **It is a two-lane build.** Lane B owns `components/commercial/**` and `settings/products`; **Lane A owns the shell, the routing and the rest of `app/(app)/`**, so a first-run route belongs to Lane A composing Lane B's components. Neither lane can ship it alone, and it needs sequencing between them rather than a surprise.
 
-**Recommended sequencing: after slice 5, not before.** Guiding a customer through a flow whose last two steps do not exist would demonstrate an incomplete thing well — and §20d forbids building slice 5's capability to make slice 3 demonstrable. Until then the settings pages are correct and honest.
+**Recommended sequencing: after slice 5, not before**, and it is a two-lane build — tracked as [C-007](../LANE_COORDINATION.md#c-007--the-guided-first-run-is-a-two-lane-build).  Guiding a customer through a flow whose last two steps do not exist would demonstrate an incomplete thing well — and §20d forbids building slice 5's capability to make slice 3 demonstrable. Until then the settings pages are correct and honest.
 
 **One thing worth doing sooner, and it is Lane A's call:** *Your business* sits under **Settings**, and it is not a setting. Moving it to a first-class destination is a navigation change in the shell, not a change here.
 
-## Notice to Lane A — slice 5 needs agreeing before it is built
+## Slice 5 is paused, deliberately
 
-*Raised at the end of slice 4, deliberately before any slice-5 code exists.*
+**It carries the first edge this module has ever had** — `commercial_profile → provider_platform`, typed **Customer–Supplier** in [05-module-dependencies.md](05-module-dependencies.md), whose rule is that *the downstream lane's needs shape the contract*. Drawing it alone and asking afterwards would produce a contract shaped by the producer, which is the one failure that pattern exists to prevent.
 
-Slice 5 is the target account list, and it carries **the first edge this module has ever had**: `commercial_profile → provider_platform`, via `commercial_profile.target_accounts_changed`. [05-module-dependencies.md](05-module-dependencies.md) types it **Customer–Supplier**, which is the one pattern whose rule is *the downstream lane must be told before the contract is drawn* — telling them afterwards is how a contract gets drawn to suit the producer.
-
-**What Lane A is being asked to agree, before implementation:**
-
-| Question | Lane B's opening position |
-|---|---|
-| **Does `RunProviderSync`'s `subject: str` stay a string?** | It has taken one since M2.1 and nothing has ever supplied one. Lane B declares a company **as the customer names it** — a name, and nothing resolved. If Provider Platform needs anything more, it needs saying now |
-| **Event or read port, for the first delivery?** | The ADR says event (`target_accounts_changed`). A `TargetAccountReader` on `public/` is also planned. Which does Provider Platform actually want to consume, and does it want the list or the delta? |
-| **What does the event carry?** | Lane B's position: **identity only** — workspace, the declaration version, and that it changed. *Events carry identity; ports carry payload* ([05](05-module-dependencies.md)), and embedding account names would make every future field an event-contract change |
-| **Who decides what happens on removal?** | A customer un-watching an account is a declaration. Whether Provider Platform stops polling, and what happens to what it already gathered, is **Provider Platform's** decision and Lane B will not model it |
-| **Where does the schedule live?** | Not here. This module records a list; **nothing about polling, cadence, cost or provider selection may enter it** |
-
-**Lane B will not build slice 5 until Lane A has answered.** The alternative — building the contract and asking afterwards — is precisely what the Customer–Supplier rule exists to stop.
+**The seven open questions live in [`LANE_COORDINATION.md` C-001](../LANE_COORDINATION.md#c-001--the-target-account-contract)**, with Lane B's opening position on each, and are deliberately not repeated here. **Lane B will not begin slice 5 until that item is `ANSWERED`.**
 
 ## Deliberately deferred
 
