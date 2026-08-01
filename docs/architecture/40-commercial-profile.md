@@ -233,6 +233,53 @@ ADR-0035 answers half of it — resolution among disagreeing claims is a Knowled
 
 **The seven open questions live in [`LANE_COORDINATION.md` C-001](../LANE_COORDINATION.md#c-001--the-target-account-contract)**, with Lane B's opening position on each, and are deliberately not repeated here. **Lane B will not begin slice 5 until that item is `ANSWERED`.**
 
+## Product review — 2026-08-01, the four declarations end to end
+
+*A dated record. Requested by the product owner while slice 5 was blocked on [C-001](../LANE_COORDINATION.md#c-001--the-target-account-contract), and written **before** any fix, so the findings are not shaped by what was convenient to change. Reviewed as five people, not as an engineer reading their own JSX.*
+
+**The headline: the module is honest and the screen is not finished.** Every claim the four sections make about what Signora does with a declaration is true, and none of them tells a first-time customer what to do, in what order, or when they are done. Two defects are real enough to have bug rows.
+
+### What each person actually experiences
+
+| Person | What they get today | The finding |
+|---|---|---|
+| **First-time customer** (owner, day one) | Four sections stacked on one page, no stated order, no end | Nothing says *"do these four, then Signora can start"*. The page ends with no next step, because the step that starts the pipeline is slice 5. **They cannot tell whether they are finished** |
+| **Product manager** | Can declare products, buyers, committees and focus, and see who last changed each | The best-served persona. Their one gap is history: four screens promise *"every version is kept"* and none can show one |
+| **Sales administrator** | The owner role, so full write access; the natural custodian of all four | Removing a product is a one-click, unconfirmed action that **silently breaks the other three sections** — [B-005](../BUGS.md) |
+| **SDR** | **Nothing. Cannot reach the page at all** | `/settings/*` is owner-guarded, so a member sees none of it — even though the API deliberately grants `member` read on all four resources. [C-008](../LANE_COORDINATION.md#c-008--sellers-cannot-see-what-their-company-sells) |
+| **AE** | **Nothing, same reason** | An AE working an account cannot see the ICP that account is supposed to match, or the committee they are supposed to be selling into. This is the review's most valuable finding |
+
+### Defects, with bug rows
+
+**[B-005](../BUGS.md) — removing a product locks the customer out of the other three sections.** 🟠 The ICP, committee and focus editors each send *everything stored* on save. A profile whose product has been removed from the catalog is no longer displayed — but it is still sent, and the server correctly refuses it with `icp_unknown_product` naming a product that is **not on the screen**. The customer cannot clear it through the UI, because clearing also re-sends it. Reproducible in four clicks, and the three sections are affected identically.
+
+**[B-006](../BUGS.md) — three of the four sections vanish silently when their query fails.** 🟡 The page renders each section only when its data has arrived, and only the catalog's `isError` produces a message. If the ICP request fails, the customer sees products, no ideal customer section, and no explanation — the absence looks like a feature they do not have.
+
+### Findings that are not defects
+
+**The promise nothing can keep.** All four sections say *"Every version is kept — a change is a new one, never an edit."* It is true, it is the module's best property, and **there is no way to see a single earlier version.** The rows exist and are immutable; no endpoint exposes them. Either the product should show history, or the sentence is a claim a customer cannot check. **Recommendation: a read endpoint per aggregate returning prior versions, and a "history" disclosure per section.** It is the smallest slice that turns the module's discipline into something a customer benefits from rather than reads about.
+
+**Four empty states, three of them identical.** A workspace with no products shows *"No products yet"* followed by *"Add a product first"* three times. Honest, and it reads as a broken page rather than a sequence.
+
+**No orientation and no completion.** The header says what the page is for; nothing numbers the four, orders them, or marks what is done. A first-time customer cannot answer *"what do I still owe Signora?"* — which is [C-007](../LANE_COORDINATION.md#c-007--the-guided-first-run-is-a-two-lane-build)'s argument arriving from a different direction: the guided flow is not polish, it is the missing answer to a question the page provokes.
+
+**Destructive actions have no confirmation and no undo.** *Remove the description for X*, *Remove the committee for X*, and deleting a product all fire on one click. Versioning means nothing is truly lost — but with no history surface, the customer has no way to believe that, and no way to recover.
+
+**The link says "Products" for a page called "Your business."** `/settings` links to `/settings/products`, whose heading is *Your business* and which now holds four things. The route name is a slice-1 artifact.
+
+**Validation messages are good, and one is not.** The refusals a customer can hit read well — *"reload to see their version before saving yours, so neither of you loses work"* explains the consequence, not the rule. The exception is the one behind B-005, which names a product the customer cannot see.
+
+**The copy is honest about non-use, and that raises a fair question.** Each section says what Signora will *not* do with the declaration — *"it does not grade anyone against it"*, *"no judgement about how much any of them matters"*, *"nothing here is ranked"*. That is correct and worth keeping. But nothing says what Signora **will** do, because for the committee and the focus nothing consumes them yet. A customer entitled to ask *"then why am I filling this in?"* has no answer on the page.
+
+### What Lane B proposes to fix, in order
+
+1. **B-005** — the defect that locks a customer out. A fix belongs in the editors: send only entries whose product is still in the catalog, and say so on screen when one is dropped.
+2. **B-006** — render each section's error, not only the catalog's.
+3. **Version history** — the promise the module already keeps and cannot show.
+4. Empty-state consolidation, confirmation on destructive actions, and the route name — genuine, and none of them is worth a slice on its own.
+
+**Not proposed:** the guided flow ([C-007](../LANE_COORDINATION.md#c-007--the-guided-first-run-is-a-two-lane-build), two lanes, after slice 5) and read access for sellers ([C-008](../LANE_COORDINATION.md#c-008--sellers-cannot-see-what-their-company-sells), frozen foundation).
+
 ## Deliberately deferred
 
 - **~~The fourth duplication.~~ `Trigger fired in slice 3; extracted, but only the dangerous part.`** With three aggregates the shared shape is finally visible rather than guessed. **Extracted:** the abstract `DeclarationModel` (`id`, `version`), the `latest()` select that encodes *"the row in force is `MAX(version)`, never `supersedes IS NULL`"* once, and `sold_products()`, the *"a declaration may only cite something we sell"* check. **Deliberately left duplicated:** the aggregates and the use cases. A frozen-slots dataclass base would force field-ordering contortions to accommodate `supersedes`'s default, and `version + 1` is not where a subtle defect hides — the *read* is, which is exactly what F-B4 shows and exactly what was centralised.

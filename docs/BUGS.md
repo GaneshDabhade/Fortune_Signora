@@ -124,6 +124,60 @@ export SIGNORA_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_d
 
 ---
 
+### B-005 · Removing a product locks the customer out of the ideal customer, committee and focus
+
+| | |
+|---|---|
+| **Owner** | **Lane B** — `commercial_profile` (frontend) |
+| **Severity** | 🟠 — wrong behaviour a customer would hit, with no way out through the product |
+| **Status** | `OPEN` |
+| **Found** | `80d9511`, by Lane B in the slice-4 product review |
+
+**Steps to reproduce.** Declare two products. Describe an ideal customer for both. Remove the second product from the catalog. Now edit the *first* product's ideal customer and save.
+
+**Expected.** The edit saves. The removed product's profile is history, and history does not block a new declaration.
+
+**Actual.** `422 icp_unknown_product` — *"you cannot describe who buys a product you have not said you sell"* — naming a product **that is no longer on the screen**. The customer cannot clear it either: the remove path re-sends the whole declaration too. **The section is unusable until the product is added back.**
+
+**Why.** All three editors send *everything stored*, which is correct for a whole-statement `PUT`, and render only entries whose product is in the current catalog. The two diverge the moment a product is removed. The server is behaving correctly — the client is sending a declaration the customer cannot see.
+
+**Observed, not inferred.** Rendering `IcpEditor` with a catalog of one product and a declaration holding two profiles — one for the surviving product, one for a removed one — then clicking *Remove the description for Revenue Cloud*:
+
+```
+ON SCREEN:            removed product NOT visible
+SENT product_ids:     ["eeeeeeee-…"]      ← only the removed product's profile
+SENT the removed one? true
+```
+
+The request the customer's click produces consists **entirely of a declaration for a product that no longer exists**. Their own edit is discarded from the payload and the invisible one is all that is sent, so the server refuses the whole request. It is not merely a confusing message: the visible work is dropped before it leaves the browser.
+
+**Affects identically:** the ideal customer, the buying committee, and the focus.
+
+**The fix, for Lane B.** Send only entries whose product is still in the catalog, and tell the customer on screen that a description was dropped along with its product — silently dropping it would be a second, quieter defect. Regression test belongs in `frontend/tests/components/` beside each editor's suite, and the three-way nature of it argues for one shared assertion rather than three.
+
+---
+
+### B-006 · Three of the four sections vanish silently when their query fails
+
+| | |
+|---|---|
+| **Owner** | **Lane B** — `commercial_profile` (frontend) |
+| **Severity** | 🟡 |
+| **Status** | `OPEN` |
+| **Found** | `80d9511`, by Lane B in the slice-4 product review |
+
+**Steps to reproduce.** Make `GET /workspaces/{id}/icp` fail — stop the API after the catalog has loaded, or block the request.
+
+**Expected.** A message saying the ideal customer could not be loaded, in the same words the catalog already uses: *a fault in Signora, not a missing declaration*.
+
+**Actual.** The section is simply absent. The customer sees Products and nothing else, with no explanation — **an outage is indistinguishable from a feature they do not have.**
+
+**Why.** `settings/products/page.tsx` renders each section on `data && <query>.data`, and only the catalog's `isError` produces copy. The other three queries' error states are never read.
+
+**The fix, for Lane B.** Render each section's own error, reusing the catalog's wording. One line per section, and a test that a failed query produces a message rather than silence.
+
+---
+
 ## Verified
 
 *None yet.*
