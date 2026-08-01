@@ -81,6 +81,31 @@ async def _playground(
     return UUID(str(workspace_id)), tuple(UUID(str(e)) for e in entities)
 
 
+async def _still_there(
+    admin_factory: async_sessionmaker[AsyncSession], workspace_id: UUID
+) -> bool:
+    """Has the workspace survived since the last account?
+
+    **A guard rather than a note, because the note failed three times.** The
+    test suite truncates every table in this database, so a `pytest` run in
+    another terminal deletes the Playground underneath a narration in
+    progress. The run then continues writing into a workspace that no longer
+    exists and reports nothing at the end — a silent failure whose symptom
+    ("narration produced nothing") points nowhere near its cause.
+
+    One cheap query per account turns several minutes of looking in the wrong
+    place into one sentence.
+    """
+    async with admin_factory() as session:
+        return bool(
+            (
+                await session.execute(
+                    text("SELECT 1 FROM workspace WHERE id = :w"), {"w": workspace_id}
+                )
+            ).scalar()
+        )
+
+
 async def main() -> int:
     if os.environ.get("SIGNORA_ALLOW_DESTRUCTIVE_TESTS") != "1":
         print(
@@ -112,6 +137,14 @@ async def main() -> int:
             written = 0
 
             for entity_id in entities:
+                if not await _still_there(admin_factory, workspace_id):
+                    print(
+                        "\nThe Playground workspace disappeared mid-run. The test suite "
+                        "truncates this database — something ran `pytest` against it.\n"
+                        "Re-seed and re-run, with nothing else touching the database."
+                    )
+                    return 1
+
                 started = time.monotonic()
                 try:
                     async with tenant_scoped_session(

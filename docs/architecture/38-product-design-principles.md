@@ -473,7 +473,9 @@ Running `pytest` while `make demo-narrate` was working truncated the Playground 
 
 Not a product defect and not worth a lock — the honest fix is that **`make demo-narrate` should refuse to start if the tables it depends on can vanish**, or simply that the two are documented as mutually exclusive. Recorded because the failure looked like a narration bug for several minutes, which is exactly how a workflow hazard costs more than it should.
 
-**It happened twice in one session**, which is the argument for a guard rather than a note. Both times the symptom was *"narration produced nothing"* and the cause was a `pytest` run in another terminal; both times it cost several minutes of looking in the wrong place.
+**It happened three times in one session** — twice before it was written down and once after, by the person who had just written it down. That is the argument for a guard rather than a note: `make demo-narrate` now re-checks that the workspace still exists before each account and aborts with the cause named, turning a silent several-minute misdiagnosis into one sentence. **A note in a document does not stop anything; it only makes the eventual failure feel avoidable.**
+
+The original observation follows. Both times the symptom was *"narration produced nothing"* and the cause was a `pytest` run in another terminal; both times it cost several minutes of looking in the wrong place.
 
 *Owner:* unassigned. *Smallest honest fix:* the suite and the demo should not share a database by default — `SIGNORA_TEST_APP_DATABASE_URL` already exists to point the suite elsewhere, and defaulting the demo to its own database name would make the collision impossible rather than merely documented. A line in `docs/RUNNING.md` is there now, and a line is what failed to stop it the second time.
 
@@ -508,4 +510,20 @@ That is not an argument against grounding; it is the argument for **why the dete
 **It also vindicates the demo environment.** This defect has existed since M4. It survived the unit tests, the pipeline suite, the smoke test and certification, because `baseline@1` never gave one entity both an employee count and an open-roles count in the same window. **Twelve varied accounts found it in the first run.**
 
 *Severity:* 🔴 High — customer-visible, and it is a fabricated statistic presented as a measurement.
-*Owner:* Business Event Engine, as its own slice. *Shape of the fix:* evaluate per attribute rather than pooled, so a rule declaring two attributes produces at most one detection per attribute. *Not applied here:* it changes derived output across the pipeline and belongs with its own regression tests, not inside a frontend slice.
+
+### ✅ Fixed 2026-08-01, as its own slice
+
+`_HeadcountRule` now evaluates **one measure at a time**, producing at most one detection per declared attribute. The pipeline's output on the same data:
+
+```
+Grew headcount 17% over 38 days     employee_count  29000 → 34000
+Grew open roles 56% over 38 days    open_roles        900 →  1400
+```
+
+Two conclusions, each with its own baseline, each named for what it measured — and the 3678% gone.
+
+**Two halves, and the second was easy to miss.** Emitting per-attribute detections is not enough on its own: the summary template said *"Grew headcount {percent}%"* regardless of attribute, so the open-roles detection would have read *"Grew headcount 56%"* — a new false statement replacing the old one. The phrasing now takes the measure's own noun.
+
+**The pattern was already in the same file, one class down.** `BuyingIntentSurge` groups by topic, with the reasoning written out: *"a company researching two unrelated topics is two pieces of news. A rollup across topics would produce a number that means nothing to anybody."* Employees and open roles are two unrelated measures on precisely that argument. **The fix was to apply a principle the module had already articulated and then not generalised** — which is the more useful lesson than the arithmetic.
+
+Four regression tests pin it, including the exact 900 → 34,000 shape.

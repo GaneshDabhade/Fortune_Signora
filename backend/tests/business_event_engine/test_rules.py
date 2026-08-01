@@ -326,6 +326,78 @@ class TestHiringSurge:
         assert HiringSurge().evaluate(shrinking, _params(BusinessEventType.HIRING_SURGE)) == ()
 
 
+class TestOneConclusionPerMeasure:
+    """**F-10.** `hiring_surge` declares two attributes, and the rule pooled
+    them into one series — so the ratio ran from whichever measure happened to
+    be earliest to whichever happened to be latest.
+
+    Against real data that compared a jobs page against a payroll: an
+    open-roles baseline of 900 and 34,000 employees produced *"Grew headcount
+    3678%"*, stored as `attribute: employee_count`. Nothing downstream could
+    catch it — the figure was genuinely in the evidence, so the signal cited
+    it, grounding passed it, and a model repeated it to a customer.
+    """
+
+    def test_two_measures_never_share_a_ratio(self) -> None:
+        """The exact shape that produced 3678%: open roles first, headcount
+        last, one window."""
+        mixed = (
+            _change(ClaimAttribute.OPEN_ROLES, 900, 1400, 0, 30),
+            _change(ClaimAttribute.EMPLOYEE_COUNT, 29000, 34000, 30, 38),
+        )
+
+        detections = HiringSurge().evaluate(mixed, _params(BusinessEventType.HIRING_SURGE))
+
+        for detection in detections:
+            start, end = detection.facts["starting_value"], detection.facts["ending_value"]
+            assert not (start == 900 and end == 34000), (
+                "a ratio was taken from an open-roles baseline to an employee count"
+            )
+
+    def test_each_measure_is_reported_under_its_own_name(self) -> None:
+        """*"Grew headcount 56%"* about a jobs page is a false statement even
+        when the arithmetic is right."""
+        mixed = (
+            _change(ClaimAttribute.OPEN_ROLES, 900, 1400, 0, 30),
+            _change(ClaimAttribute.EMPLOYEE_COUNT, 29000, 34000, 30, 38),
+        )
+
+        summaries = {
+            d.facts["attribute"]: d.summary
+            for d in HiringSurge().evaluate(mixed, _params(BusinessEventType.HIRING_SURGE))
+        }
+
+        assert "headcount" in summaries[ClaimAttribute.EMPLOYEE_COUNT.value]
+        assert "open roles" in summaries[ClaimAttribute.OPEN_ROLES.value]
+
+    def test_the_recorded_attribute_is_the_one_measured(self) -> None:
+        """It was taken from the last observation in a pooled window, so it
+        named whichever measure was most recent rather than the one the ratio
+        was computed over."""
+        mixed = (
+            _change(ClaimAttribute.OPEN_ROLES, 900, 1400, 0, 30),
+            _change(ClaimAttribute.EMPLOYEE_COUNT, 29000, 34000, 30, 38),
+        )
+
+        for detection in HiringSurge().evaluate(mixed, _params(BusinessEventType.HIRING_SURGE)):
+            attribute = ClaimAttribute(detection.facts["attribute"])
+            assert {o.attribute for o in detection.evidence} == {attribute}
+
+    def test_a_measure_that_did_not_move_produces_nothing(self) -> None:
+        """Per-measure means each is judged on its own thresholds, so a flat
+        one is silent rather than being carried by the other."""
+        one_moved = (
+            _change(ClaimAttribute.OPEN_ROLES, 1000, 1010, 0, 30),
+            _change(ClaimAttribute.EMPLOYEE_COUNT, 29000, 34000, 30, 38),
+        )
+
+        detections = HiringSurge().evaluate(one_moved, _params(BusinessEventType.HIRING_SURGE))
+
+        assert {d.facts["attribute"] for d in detections} == {
+            ClaimAttribute.EMPLOYEE_COUNT.value
+        }
+
+
 class TestHeadcountDecline:
     def test_a_material_reduction_is_news(self) -> None:
         shrinking = (
