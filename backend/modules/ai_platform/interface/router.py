@@ -15,7 +15,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, status
 
-from apps.api.composition.narration import NarrationRead
+from apps.api.composition.narration import ExplanationRead, NarrationRead
 from modules.ai_platform.interface.schemas import AccountNarrationResponse
 from signora_platform.api import CurrentWorkspace
 from signora_platform.authorization import Action, Resource
@@ -29,7 +29,10 @@ router = APIRouter(tags=["accounts"])
     summary="What the evidence about this account says, in plain language",
 )
 async def account_narration(
-    context: CurrentWorkspace, queries: NarrationRead, account_id: UUID
+    context: CurrentWorkspace,
+    queries: NarrationRead,
+    evidence: ExplanationRead,
+    account_id: UUID,
 ) -> AccountNarrationResponse:
     """*"Why does this matter?"* — the account brief's narrative half.
 
@@ -45,6 +48,19 @@ async def account_narration(
     paragraph — joining the statements would discard the mapping from claim to
     evidence, which is the only reason to trust any of it.
 
+    **Every citation resolves** (D42). `facts` carries the evidence the
+    statements cite — the summaries and figures the model was actually given,
+    re-derived through the same assembler that produced them, because storing a
+    copy beside the citation tokens would duplicate a truth the pipeline can
+    reproduce.
+
+    **And the response says whether that re-derivation still matches.**
+    `evidence_unchanged` compares the set against the digest recorded when the
+    narration was written. Without it, resolving a citation would quietly
+    present *today's* facts as the ones the model saw — so the check is not a
+    feature beside the resolution, it is the condition that makes resolution
+    honest.
+
     **404 when nothing has been narrated**, which is the ordinary state of a
     new account: narration is produced by a background worker after the
     deterministic pipeline has something to explain. It is the same answer an
@@ -57,7 +73,12 @@ async def account_narration(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Nothing has been narrated for this account yet.",
         )
-    return AccountNarrationResponse.from_domain(narration)
+    # An account whose opportunity has closed keeps its narration (D27) and has
+    # no current explanation to re-derive, so this is legitimately None. The
+    # response says the citations could not be resolved rather than omitting
+    # them silently.
+    current = await evidence.evidence_for(context.workspace_id, account_id)
+    return AccountNarrationResponse.from_domain(narration, current)
 
 
 __all__ = ["router"]

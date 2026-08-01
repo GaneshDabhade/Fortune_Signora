@@ -1358,3 +1358,81 @@ That is a different and much better problem than the one three reviews ago, when
 **Perplexity.** Ledger citations resolve; narration citations do not. **R10-04.**
 
 **OpenAI.** Still unstated: the daily surface is entirely model-free. *Fifth review.*
+
+---
+
+# Review 11 — the citation that opens, and the vision audit around it *(M12.3, 2026-08-01)*
+
+Two things happened in this pass: the **Vision & Roadmap Consistency Review** (recorded in [PRODUCT_ROADMAP.md](../../PRODUCT_ROADMAP.md), not repeated here) and the slice it did *not* change — **D42**, resolving narration citations.
+
+**The review deliberately did not redirect the slice.** It found the largest gaps in the product's *entrance* — no ICP, no target account selection, no customer-authored configuration — and every one of them is either an architectural decision or a milestone of its own. Redirecting M12.3's last slice into them would have been the exact anti-pattern §20d names: building ahead to satisfy a finding the current milestone does not own.
+
+## R11-01 · Nine of twenty lifecycle stages are implemented, and five more are built and unreachable 🔴
+
+**Observation.** Reconstructed the full customer lifecycle and checked each stage against the repository rather than the roadmap. Implemented: workspace creation, graph, events, signals, scores, opportunities, workflow. **Built and unreachable:** AI reasoning (no released model), AI research (no entry point), the signal relevance profile (no endpoint, no screen), outcomes (recorded, unconsumed), invitations (a weaker capability wearing the name).
+
+**Why it matters.** **The pipeline is not the risk.** Everything between "companies exist" and "a seller decides" works and is defensible. What is missing is the customer's own half — *who are we, what do we sell, who do we watch* — and it is missing so completely that no module owns it.
+
+**Priority:** High. **Milestone:** recommendation 1 of the Consistency Review. **Raised, not fixed.**
+
+---
+
+## R11-02 · Three capabilities entered the roadmap through a demo scenario and never through a scope entry 🟠
+
+**Observation.** *"Add a target account list"* (M2.1) · *"invite a colleague"* (M1) · business screens *"from M2 onward"* (already corrected 2026-07-31). Each was written as a demonstration step; none had a corresponding scope line; nothing afterwards reconciled the two.
+
+**Why it matters.** **A Demo Checklist is a promise, and the roadmap has been reading it as prose.** It is also the mechanism by which a capability can be simultaneously "in the roadmap" and unscheduled — which is precisely how ICP disappeared without anyone deciding to drop it.
+
+**Fixed here:** both demo scenarios corrected in place, dated rather than rewritten. **The rule that follows:** a capability named in a Demo Checklist and absent from that milestone's Scope is a roadmap defect, checked at the milestone boundary.
+
+---
+
+## R11-03 · Two documents made provider configuration a customer responsibility 🟠 **FIXED**
+
+**Observation.** `04-modules.md` recorded Provider Platform as owning *"which providers are enabled **per workspace/plan**"*, and `37-product-surface.md` stated outright that *"provider precedence is a **customer** policy — the same category as the scoring model."*
+
+**Why it matters.** The second is the dangerous one: it did not merely permit a customer-facing provider control, it **classified one as belonging to the same category as the scoring model**, which is genuinely customer-authored. A future milestone reading that sentence would have built a provider-precedence screen and been right to.
+
+**Both corrected**, with the distinction written down permanently: *a company-intelligence provider is Signora's supplier; a CRM is the customer's system.* The customer-facing half survives — **disagreement is shown, never hidden** — because that is evidence, not configuration.
+
+---
+
+## R11-04 · A citation that resolves to another of Signora's own summaries is not a citation 🟢 **Design corrected before building**
+
+**Observation.** R10-04 framed the gap as *"three resolvers do not exist"*. Building them would have closed the finding and been wrong: all three cited kinds — `opportunity`, `buying_score`, `signal_contribution` — are things **Signora wrote**, and the evidence drawer had already ruled that *"a citation has to end at [provider readings] rather than at another summary."*
+
+**What the citation actually addresses** is the `EvidenceFact` the model was given — a summary and typed attributes, which are not stored but are **reproducible**, because `assemble()` is a pure function written so the seeder and the runtime produce byte-identical evidence.
+
+**Why it matters.** It turned a three-endpoint slice into a no-new-endpoint one, **and produced a better product**: a reader now sees the prompt's own content rather than a record fetched afterwards. *The strongest possible form of "here is what it was told."*
+
+---
+
+## R11-05 · Re-deriving evidence without checking the digest would have been a quiet lie 🔴 **Prevented**
+
+**Observation.** Re-deriving the evidence set and presenting it as *"what this sentence rests on"* shows **today's** facts. The narration was grounded against the set as it stood when it was written. Those differ the moment anything about the account moves.
+
+**Why it matters.** It is the exact failure this codebase is built to refuse — a screen stating something subtly untrue, confidently, with no way for a reader to tell. `ai_narration.evidence_digest` has been stored since M8 and **read by nothing**; comparing against it is what makes the whole slice honest.
+
+**And it is the better half of the feature.** A customer can now see *whether an explanation still stands*. `evidence_state` already answers that for the score; nothing answered it for the narration, which carried only a date.
+
+---
+
+## R11-06 · The attributes are engineering's words, and they stay that way 🟡
+
+**Observation.** Run against real Playground data, a resolved fact reads `contested false · delta 0 · ceiling 120 · value 35`. `contested false` is not how a seller talks.
+
+**Why it matters, and why it is not being fixed.** These are **verbatim what the model was shown**, and the digest covers their textual form. Prettifying `false` into *"No"* would show the reader something different from what was cited — a second vocabulary, and the one place where a second vocabulary would defeat the panel's entire purpose. **The verbatim-ness is the value.**
+
+**Recorded as a deliberate trade-off**, not as debt. If it proves genuinely unreadable in front of a seller, the fix belongs upstream in `explanation.py` — where the *pipeline* chooses its wording — and never in the browser.
+
+**Priority:** Low. **Milestone:** on evidence from a real reviewer.
+
+---
+
+## R11-07 · The narrations in the Playground are one bland sentence each 🟠
+
+**Observation.** Verified end to end against three real accounts. Every citation resolved, `evidence_unchanged` was true, and the facts were genuine. **The narration itself read: *"This account is being tracked."*** — one statement, citing all four facts.
+
+**Why it matters.** The slice works and **cannot be shown at its best**, because the sentence a reviewer would click is not worth clicking. This is D17 again — *the dataset, not the architecture, is the constraint* — now reaching the AI layer: those rows predate `playground@2`, and `make demo-narrate` against the current dataset has not been run since.
+
+**Not a code defect.** The next demo pass should re-run `make demo-narrate` on `playground@2` before this slice is reviewed. **Priority:** Medium, and it is a *demonstration* task rather than an engineering one.

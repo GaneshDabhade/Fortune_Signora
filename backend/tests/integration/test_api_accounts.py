@@ -11,6 +11,7 @@ count; each test states something a customer would notice.
 """
 
 from collections.abc import AsyncIterator
+from types import SimpleNamespace
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -1126,11 +1127,239 @@ class TestTheBriefCanSpeakPlainly:
 
         assert response.status_code == 401
 
+    async def _grounded(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        workspace_id: UUID,
+        account_id: UUID,
+        *,
+        digest: str | None = None,
+    ) -> tuple[str, ...]:
+        """Store a narration cited against **the account's real evidence**.
+
+        `_stored` invents a token and a digest, which is right for the tests
+        that only care about the grounding contract. These need the genuine
+        article: a citation that resolves, and a digest that either matches the
+        evidence or deliberately does not.
+
+        Returns the tokens it cited, so a test can assert against them without
+        reconstructing the assembler's output.
+        """
+        from datetime import UTC, datetime
+
+        from modules.ai_platform.domain.grounding import GroundedStatement
+        from modules.ai_platform.domain.narration import (
+            MaterializedNarration,
+            NarrationSubject,
+        )
+        from modules.ai_platform.domain.provider import AIVendor
+        from modules.ai_platform.infrastructure.repository import SqlNarrationRepository
+        from signora_platform.db import tenant_scoped_session
+
+        evidence = await self._evidence(session_factory, workspace_id, account_id)
+        assert evidence is not None, "the account has no explanation to cite"
+        tokens = tuple(fact.ref.token for fact in evidence)
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=uuid4()
+        ) as session:
+            await SqlNarrationRepository(session).save(
+                MaterializedNarration(
+                    id=uuid4(),
+                    workspace_id=workspace_id,
+                    correlation_id=uuid4(),
+                    subject=NarrationSubject(kind="account", id=account_id),
+                    prompt_name="explanation_narration",
+                    prompt_version=1,
+                    prompt_fingerprint="a" * 64,
+                    model="llama3.1:8b",
+                    vendor=AIVendor.OLLAMA,
+                    evidence_digest=digest or evidence.digest,
+                    evidence_refs=tokens,
+                    inference_id=uuid4(),
+                    statements=(
+                        GroundedStatement(
+                            text="This account is worth a look.", evidence=(tokens[0],)
+                        ),
+                        # Deliberately cites the same fact again: three
+                        # sentences resting on one fact must not produce three
+                        # copies of it.
+                        GroundedStatement(
+                            text="The evidence behind it is recent.",
+                            evidence=(tokens[0], tokens[-1]),
+                        ),
+                    ),
+                    created_at=datetime(2026, 8, 1, tzinfo=UTC),
+                )
+            )
+        return tokens
+
+    async def _evidence(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        workspace_id: UUID,
+        account_id: UUID,
+    ) -> Any:
+        from apps.api.composition.opportunities import opportunity_queries
+        from modules.ai_platform.infrastructure.explanation import (
+            OpportunityExplanationSource,
+        )
+        from signora_platform.db import tenant_scoped_session
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=uuid4()
+        ) as session:
+            context = SimpleNamespace(session=session, workspace_id=workspace_id)
+            source = OpportunityExplanationSource(opportunity_queries(context))  # type: ignore[arg-type]
+            return await source.evidence_for(workspace_id, account_id)
+
+    async def test_a_citation_resolves_to_the_fact_the_model_was_given(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**D42.** *"3 facts"* with no way to follow them was the one place the
+        product visibly promised something it did not do, on the surface whose
+        whole argument is *you can check this*."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        tokens = await self._grounded(session_factory, workspace_id, entity_id)
+
+        body = (
+            await _narration(client, key_pair, user_id, workspace_id, entity_id)
+        ).json()
+
+        cited = {token for s in body["statements"] for token in s["evidence"]}
+        resolved = {fact["token"] for fact in body["facts"]}
+        assert cited, "the fixture cites nothing"
+        assert cited <= resolved, f"unresolvable citations reached the wire: {cited - resolved}"
+        assert tokens[0] in resolved
+
+    async def test_a_fact_two_statements_cite_appears_once(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """The citation is the token and the fact is looked up. Carrying the
+        same fact inside each statement would be copies of one truth, and the
+        copies eventually disagree."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        await self._grounded(session_factory, workspace_id, entity_id)
+
+        body = (
+            await _narration(client, key_pair, user_id, workspace_id, entity_id)
+        ).json()
+
+        tokens = [fact["token"] for fact in body["facts"]]
+        assert len(tokens) == len(set(tokens)), f"a fact was repeated: {tokens}"
+
+    async def test_a_fact_carries_the_owning_module_s_own_words(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """A citation resolves into the pipeline's vocabulary, not the
+        substrate's paraphrase of it — and carries the figures behind the
+        sentence, which is what makes it checkable rather than merely readable."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        await self._grounded(session_factory, workspace_id, entity_id)
+
+        body = (
+            await _narration(client, key_pair, user_id, workspace_id, entity_id)
+        ).json()
+
+        for fact in body["facts"]:
+            assert fact["summary"].strip(), "a fact a reader cannot read is not evidence"
+            assert fact["kind"] in {"opportunity", "buying_score", "signal_contribution"}
+        assert any(fact["attributes"] for fact in body["facts"])
+
+    async def test_it_says_the_evidence_is_unchanged_when_it_is(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """The digest recorded at write time, compared against the set
+        re-derived now. **This is what makes re-derivation honest** — without
+        it the response would present today's facts as the ones a model saw."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        await self._grounded(session_factory, workspace_id, entity_id)
+
+        body = (
+            await _narration(client, key_pair, user_id, workspace_id, entity_id)
+        ).json()
+
+        assert body["evidence_unchanged"] is True
+
+    async def test_it_says_the_evidence_moved_when_the_digest_disagrees(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """A narration is never edited to catch up with its account. It is
+        dated, and the product says so rather than quietly re-describing it."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        await self._grounded(session_factory, workspace_id, entity_id, digest="c" * 64)
+
+        body = (
+            await _narration(client, key_pair, user_id, workspace_id, entity_id)
+        ).json()
+
+        assert body["evidence_unchanged"] is False
+        # The citations still resolve: what moved is the *set*, and the facts
+        # still present are still the facts. Refusing to resolve any of them
+        # would hide the half a reader can still check.
+        assert body["facts"], "a changed digest emptied facts that still resolve"
+
+    async def test_an_unresolvable_citation_is_absent_rather_than_invented(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """`_stored` cites a token no evidence set contains. Nothing may be
+        fabricated to fill it, and `evidence_unchanged` must not claim the
+        evidence still matches."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        await self._stored(session_factory, workspace_id, entity_id)
+
+        body = (
+            await _narration(client, key_pair, user_id, workspace_id, entity_id)
+        ).json()
+
+        assert body["facts"] == []
+        assert body["evidence_unchanged"] is False
+
     async def test_every_response_field_is_documented(self, client: AsyncClient) -> None:
         schema = (await client.get("/openapi.json")).json()
         schemas = schema["components"]["schemas"]
 
-        for name in ("AccountNarrationResponse", "NarrationStatementResponse"):
+        for name in (
+            "AccountNarrationResponse",
+            "NarrationStatementResponse",
+            "EvidenceFactResponse",
+        ):
             undocumented = sorted(
                 field
                 for field, spec in schemas[name]["properties"].items()

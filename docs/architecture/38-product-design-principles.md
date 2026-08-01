@@ -992,3 +992,65 @@ Measured on the real Playground: **`owner_id` on the wire — yes. Owned by some
 **Advancing automatically after a decision.** See above.
 
 **Keeping the reader's scroll position on the list instead.** It would remove the hunt without adding a sequence — and it treats the list as the place a seller works, when the brief is. *Returns if the sequence proves unwanted, which would itself be the finding.*
+
+---
+
+# D42 — A narration citation resolves to the fact, and says whether it still holds *(M12.3, 2026-08-01)*
+
+**Recorded before implementation.** The finding is **R10-04**: a narration statement carries *"3 facts"* and no way to follow them. It is the one place the product visibly promises something it does not do, on the surface whose entire argument is *you can check this*.
+
+## The naive framing is wrong, and the reason matters
+
+R10-04 says *"three resolvers do not exist"* — for `signal_contribution`, `buying_score` and `opportunity`. Building three endpoints that return those three records would close the finding and be a **design mistake**, because the evidence drawer already ruled on where a citation may end:
+
+> *"Every other surface says something about a fact. The signal interprets it, the score weighs it, the narration describes it — and all three are Signora's own reasoning. The readings in here are the only content the platform did not write, **which is why a citation has to end at them rather than at another summary.**"*
+
+All three cited kinds are things **Signora wrote**. Resolving a citation to a signal's rationale would end it at another of Signora's own sentences — a summary vouching for a summary, which is what every competitor's product already does.
+
+## What the citation actually addresses
+
+The cited facts are not rows in a table. They are the **`EvidenceFact`s the model was given** — a summary and typed attributes, assembled by `explanation.py` from the pipeline's own records:
+
+```
+buying_score:8f3a…   "The buying score that opened this opportunity was 62 out of 120, rising."
+                      value 62 · ceiling 120 · delta +8 · contested false
+```
+
+**That is the answer to "3 facts"** — literally the prompt's own content, which is the strongest possible form of *"here is what it was told."*
+
+## The decision
+
+**The narration response carries the resolved facts, and states whether the evidence still matches the digest it was written against.**
+
+Three properties, and the third is what makes the other two honest:
+
+**Facts are re-derived, never stored.** `assemble()` is a pure function over `OpportunityExplanation`, written so *"the seeder and the runtime source produce byte-identical evidence from identical input"*. Storing a copy of the facts beside `evidence_refs` would be a second representation of something derivable — the duplicated-truth defect, arriving through a presentation layer.
+
+**Facts appear once, not per statement.** Three statements citing the same fact cite the same token. The response carries `facts` keyed by token and leaves `statements[].evidence` exactly as it is — the citation is the token, and the fact is looked up.
+
+**The digest is checked, and the answer is shown.** `ai_narration.evidence_digest` has been stored since M8 and read by nothing. Re-deriving evidence and presenting it as *"what this sentence rests on"* without checking would quietly show **today's** facts as the ones the model saw. So `evidence_unchanged` is not a feature bolted on — it is the condition under which re-derivation is truthful at all.
+
+## What falls out for free, and is the better half
+
+A customer can now see **whether an explanation still stands.** The narration has always carried `generated_at` — a date, with no way to know whether anything beneath it moved. Now:
+
+- **unchanged** — the evidence behind this account is byte-identical to what the model was shown.
+- **changed** — these sentences describe what was true when they were written, and the account has moved since.
+
+`evidence_state` (current · cooling · stale) already tells a seller how fresh the *score's* evidence is. This is the same question asked of the *explanation*, and it is answered by a hash comparison rather than a heuristic.
+
+## What it deliberately does not do
+
+**It does not regenerate the narration.** A stale explanation is a background-worker concern; a `POST` here would be the most tempting shortcut in the product (§7, Principle 13). The product says the evidence moved and leaves it at that.
+
+**It does not hide a changed narration.** Suppressing it would delete the record of what a customer was shown — the immutability rule, applied to display.
+
+**It does not resolve a citation to a business event.** That chain exists (`signal → business_events → observations`) and it is a *further* click, not this one. The fact is what the sentence rests on; the reading is what the fact rests on, and the ledger already opens that.
+
+## Rejected
+
+**Three endpoints returning the three records.** The framing R10-04 proposed. It ends a citation at another summary Signora wrote, and it would add three routes where the honest answer needs none.
+
+**Storing the evidence facts on `ai_narration`.** Would make resolution trivial and duplicate a derivable truth into an immutable table, where the copy can never be corrected. **The digest already carries the identity of the input; the input itself is reproducible.**
+
+**Suppressing `evidence_unchanged` when the account has no open opportunity.** A dismissed account keeps its brief (**D27**), and its narration survives with it — but there is no current explanation to re-derive, so no fact resolves. The response says so. *An unresolvable citation is a visible absence, never a silent one.*

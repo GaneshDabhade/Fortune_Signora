@@ -249,6 +249,26 @@ export interface NarrationStatement {
 }
 
 /**
+ * One fact a statement cites — **exactly what the model was given**.
+ *
+ * Not a record fetched afterwards: the summary and attributes here are the ones
+ * assembled into the prompt, which is the strongest available form of *"here is
+ * what it was told."* The wording belongs to the module that owns the concept,
+ * so a citation resolves into the pipeline's vocabulary rather than a paraphrase.
+ */
+export interface EvidenceFact {
+  /** The citation this answers, exactly as it appears on a statement. */
+  token: string;
+  /** `opportunity`, `buying_score`, `signal_contribution` — which layer of the
+   * argument the sentence is standing on. */
+  kind: string;
+  summary: string;
+  /** The figures behind the summary, in canonical order. **Text, not numbers**:
+   * the textual form is what the model saw and what the digest covers. */
+  attributes: Record<string, string>;
+}
+
+/**
  * The grounded explanation of one account, with what produced it.
  *
  * **Statements, not a paragraph.** Each carries its own citations, and joining
@@ -264,6 +284,14 @@ export interface NarrationStatement {
 export interface AccountNarration {
   account_id: string;
   statements: NarrationStatement[];
+  /** The facts the statements cite, each **once** however many sentences rest
+   * on it. Empty when the evidence could not be re-derived — an answer, not an
+   * error, and always accompanied by `evidence_unchanged: false`. */
+  facts: EvidenceFact[];
+  /** Whether the evidence behind this account is still byte-identical to what
+   * the model was shown. **False means these sentences are dated, not wrong** —
+   * a narration is never edited to catch up with its account. */
+  evidence_unchanged: boolean;
   /** `name@version` of the prompt — a reviewed, versioned repository artifact. */
   prompt: string;
   model: string;

@@ -106,9 +106,15 @@ Each module below follows the template: Purpose, Owns, Does Not Own, Core Concep
 
 **Purpose:** Orchestrates every external company-intelligence provider integration as a managed capability: credential lifecycle, per-provider rate-limit and quota compliance, polling/webhook scheduling, cost tracking, and adapter health monitoring. This is the runtime home of the Provider Abstraction Layer's adapters (Principle 9).
 
-**Owns:** Provider registry (which providers are enabled per workspace/plan), provider credentials (via the secrets mechanism), scheduling and backoff policy per provider, per-provider cost/usage accounting, provider health/circuit-breaker state.
+**Owns:** Provider registry, provider credentials (via the secrets mechanism), scheduling and backoff policy per provider, per-provider cost/usage accounting, provider health/circuit-breaker state, **provider selection, failover, routing, and conflict resolution**.
 
 **Does Not Own:** Transforming raw payloads into canonical shape (Provider Normalization), entity resolution (Knowledge Graph).
+
+> **Provider configuration is Signora's responsibility, never the customer's** (ruled 2026-08-01 by the product owner; binding on every milestone). A customer never chooses, enables, disables, ranks, credentials or troubleshoots Apollo, Bombora, CoreSignal, Crunchbase, LinkedIn, ZoomInfo, BuiltWith or any successor. Selection, orchestration, failover, retries, rate limiting, cost optimisation, mapping, normalization, health, quality, conflict resolution and routing are all **Signora's implementation detail**.
+>
+> What a customer receives is signals, evidence, freshness, confidence, corroboration, supporting facts and a business explanation. **Provider identity reaches a customer only as evidence** — *"three providers reported this"* — and never as a control. A screen that lets a customer configure a data provider has moved Signora's core competence onto the customer's desk.
+>
+> **This entry previously read *"which providers are enabled per workspace/plan"***, which could be read as a customer-facing toggle. It never meant one — plan-level packaging is Signora's commercial decision — but the phrasing invited the wrong build, so it is corrected here rather than clarified in a footnote. **The one legitimate customer-facing credential surface is the Integration Abstraction Layer** ([13-integrations.md](13-integrations.md)): a customer connects *their own* Salesforce, Gmail or calendar, because those are the customer's systems. A company-intelligence provider is Signora's supplier, and the distinction is permanent.
 
 **Core Concepts:** Provider Registration, Adapter, Quota, Poll/Webhook Schedule, Provider Health.
 

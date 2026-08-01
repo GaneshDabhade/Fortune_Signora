@@ -7,6 +7,7 @@
  * ever presents prose as though it were a measurement.
  */
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
 import { NarrativeBlock } from '@/components/intelligence/narration';
@@ -18,13 +19,35 @@ function narration(overrides: Partial<AccountNarration> = {}): AccountNarration 
     statements: [
       {
         text: 'Hiring and revenue both moved in the last month.',
-        evidence: ['signal:aaaa', 'business_event:bbbb'],
+        evidence: ['signal_contribution:aaaa', 'opportunity:bbbb'],
       },
       {
         text: 'Nothing in the evidence points the other way.',
         evidence: ['buying_score:cccc'],
       },
     ],
+    facts: [
+      {
+        token: 'signal_contribution:aaaa',
+        kind: 'signal_contribution',
+        summary: 'Headcount in platform engineering grew over the quarter.',
+        attributes: { contribution: '15', observed_on: '2026-07-04' },
+      },
+      {
+        token: 'opportunity:bbbb',
+        kind: 'opportunity',
+        summary: 'An opportunity was opened for this account, qualified as automatic.',
+        attributes: { score_at_creation: '48' },
+      },
+      {
+        token: 'buying_score:cccc',
+        kind: 'buying_score',
+        summary:
+          'The buying score that opened this opportunity was 48 out of 120, rising.',
+        attributes: { value: '48', ceiling: '120' },
+      },
+    ],
+    evidence_unchanged: true,
     prompt: 'explanation_narration@1',
     model: 'llama3.1:8b',
     vendor: 'ollama',
@@ -50,13 +73,32 @@ describe('every sentence arrives with the evidence it rests on', () => {
     expect(screen.getByText('1 fact')).toBeInTheDocument();
   });
 
-  it('does not render a citation as something clickable', () => {
-    // Evidence resolution is M12.3's. A citation drawn as a link and going
-    // nowhere costs more trust than the missing feature does.
-    const { container } = render(<NarrativeBlock narration={narration()} />);
+  it('makes a citation clickable only when it resolves', async () => {
+    // **Replaces an assertion that was right until D42.** It read "does not
+    // render a citation as something clickable", because evidence resolution
+    // did not exist and a control going nowhere costs more trust than the
+    // missing feature does. The invariant behind it survives unchanged: an
+    // affordance appears exactly when there is something behind it.
+    const user = userEvent.setup();
+    render(<NarrativeBlock narration={narration()} />);
 
-    expect(container.querySelector('a')).toBeNull();
+    await user.click(screen.getByRole('button', { name: '2 facts' }));
+
+    expect(
+      screen.getByText('Headcount in platform engineering grew over the quarter.'),
+    ).toBeInTheDocument();
+  });
+
+  it('falls back to a plain count when nothing can be resolved', () => {
+    // A closed opportunity keeps its narration (D27) and has no current
+    // explanation to re-derive. The sentence is still anchored; the anchor is
+    // out of reach, and a dead control would say otherwise.
+    const { container } = render(
+      <NarrativeBlock narration={narration({ facts: [], evidence_unchanged: false })} />,
+    );
+
     expect(container.querySelector('button')).toBeNull();
+    expect(screen.getByText('2 facts')).toBeInTheDocument();
   });
 
   it('never shows a raw citation token to a reader', () => {
@@ -64,8 +106,8 @@ describe('every sentence arrives with the evidence it rests on', () => {
     // a leaked identifier and tell a seller nothing.
     const { container } = render(<NarrativeBlock narration={narration()} />);
 
-    expect(container.textContent).not.toContain('signal:aaaa');
-    expect(container.textContent).not.toContain('business_event:bbbb');
+    expect(container.textContent).not.toContain('signal_contribution:aaaa');
+    expect(container.textContent).not.toContain('opportunity:bbbb');
   });
 
   it('joins nothing into a paragraph', () => {
@@ -124,5 +166,85 @@ describe('a single-statement narration is still a narration', () => {
 
     expect(screen.getAllByRole('listitem')).toHaveLength(1);
     expect(screen.getByText('One thing happened.')).toBeInTheDocument();
+  });
+});
+
+describe('a citation opens what the model was given', () => {
+  it('shows the fact in the owning module’s own words, with its figures', async () => {
+    // Not a record fetched afterwards — the summary and attributes here are
+    // the ones assembled into the prompt, which is the strongest available
+    // form of "here is what it was told".
+    const user = userEvent.setup();
+    render(<NarrativeBlock narration={narration()} />);
+
+    await user.click(screen.getByRole('button', { name: '1 fact' }));
+
+    expect(
+      screen.getByText(
+        'The buying score that opened this opportunity was 48 out of 120, rising.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText('120')).toBeInTheDocument();
+  });
+
+  it('opens only the facts the sentence cites', async () => {
+    // The whole point of statement-level citation is that a sentence rests on
+    // *these* facts. Showing the account's entire evidence set would discard
+    // the mapping the grounding guarantee exists to preserve.
+    const user = userEvent.setup();
+    render(<NarrativeBlock narration={narration()} />);
+
+    await user.click(screen.getByRole('button', { name: '1 fact' }));
+
+    expect(
+      screen.queryByText('Headcount in platform engineering grew over the quarter.'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('says the evidence moved, at the moment somebody is checking it', async () => {
+    // A reader who has opened a citation is checking something, and that is
+    // exactly when "what was true then" versus "what is true now" matters.
+    const user = userEvent.setup();
+    render(<NarrativeBlock narration={narration({ evidence_unchanged: false })} />);
+
+    await user.click(screen.getByRole('button', { name: '1 fact' }));
+
+    expect(
+      screen.getByText(/evidence behind this account has changed/i),
+    ).toBeInTheDocument();
+  });
+
+  it('says nothing about staleness when the evidence still matches', async () => {
+    const user = userEvent.setup();
+    render(<NarrativeBlock narration={narration()} />);
+
+    await user.click(screen.getByRole('button', { name: '1 fact' }));
+
+    expect(screen.queryByText(/has changed since/i)).not.toBeInTheDocument();
+  });
+
+  it('names an unrecognised kind rather than hiding it', async () => {
+    // A new citation kind arriving is something a reader should see, not
+    // something the browser should quietly swallow.
+    const user = userEvent.setup();
+    render(
+      <NarrativeBlock
+        narration={narration({
+          statements: [{ text: 'Something new.', evidence: ['research_finding:z'] }],
+          facts: [
+            {
+              token: 'research_finding:z',
+              kind: 'research_finding',
+              summary: 'A finding.',
+              attributes: {},
+            },
+          ],
+        })}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: '1 fact' }));
+
+    expect(screen.getByText('research_finding')).toBeInTheDocument();
   });
 });

@@ -228,14 +228,14 @@ All seven are documented at **<http://localhost:8000/docs>**.
 - **Every line that produced the score is listed**, largest first, in the order the pipeline recorded — including lines that counted **zero**, with the reason they counted nothing.
 - On a **contested** account, the lines disagreeing with the majority reading are marked, and a note says plainly that Signora has neither picked a side nor split the difference.
 - **Every ledger line opens.** Click one and a dialog shows the provider readings beneath it — `29,000 → 34,000, CoreSignal, 25 Jul` — and names every provider that reported it. **This is the only content on the brief Signora did not write.**
+- **Every narration citation opens too**, since M12.3's last slice. A sentence reading *"2 facts"* is a control: click it and you see **exactly what the model was given** — the summaries and figures that went into the prompt, in the words of the part of Signora that computed them. Requires `make demo-narrate` to have run.
+- **And it says whether the explanation still holds.** The evidence is re-derived and compared against the digest recorded when the sentences were written. If the account has moved since, the dialog says so — *"a narration is never rewritten to catch up"* — rather than presenting today's facts as the ones the model saw.
 - **"Before you act"** lists what to confirm for each live hypothesis, and hides *what it cannot tell you* behind a disclosure. **No model produced any of it** — it is the Signal Catalog's own guidance, versioned and reviewed like code, and it had never been displayed before M12.3.
 - An account with no score shows a **designed empty state**, not an error.
 
 ### Known limitations, and what is intentionally unfinished
 
-- **Neither screen leads to an action.** Assign, move stage and dismiss are M12.3 *(D3, D15)*. No disabled control is drawn in their place.
-- **Narration citations still do not open.** A sentence says "3 facts" and cannot show them: those tokens address scores, opportunities and signals, which need their own resolvers. The ledger's citations do open.
-- **No narration or Decision Package on the brief.** The remaining M12.2 scope.
+- **No Decision Package on the brief.** `reasoning@1` has no released model, so there is nothing to show — deliberately not built around an unavailable capability.
 - **No sort or filter controls.** A client-side sort would reorder only the loaded page while presenting it as the top of the whole list *(D4)*.
 - **One page, no infinite scroll.** The cursor works; the UI does not page yet.
 - **The ledger is only known to read well at a handful of lines.** A forty-line account has not been seen *(D16)*.

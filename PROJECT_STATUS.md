@@ -189,7 +189,11 @@ A demo environment worth reviewing a product against. Requested by the product o
 | **Tests** | 5 ownership component tests |
 | **The morning is a sequence** (**D41**) | Walking the whole journey found where momentum stopped: the brief had **one exit and it pointed backwards**, so twelve accounts cost **twenty-four navigations** and every return scrolled the list to row 1. The brief now names the next account, shows the position, and answers `j`/`k`. **No new request** — it reads the same cached list the attention page holds, so *next* means *next most pressing* |
 | **Tests** | 11 sequence component tests |
-| ⏳ **Next** | **R9-03** — a contraction risk still reads like a small opportunity; posture on the row, using the pipeline's own word. **Wants a seller's ruling.** Then **R10-04** — narration citations still cannot be opened (M12.4) |
+| **Every citation opens** (**D42**) | *"3 facts"* was a count for two milestones because there was nowhere for it to go. It now opens **exactly what the model was given** — the summaries and figures that went into the prompt. **No new endpoint:** the facts are re-derived through the same pure assembler that produced them, because storing a copy of a reproducible truth is the duplicated-truth defect arriving through a presentation layer. R10-04's framing (*three resolvers*) was rejected first: all three cited kinds are things Signora wrote, and a citation may not end at another of its own summaries |
+| **And the explanation says whether it still holds** | `ai_narration.evidence_digest` has been stored since M8 and **read by nothing**. Comparing it against the re-derived set is what makes re-derivation honest — without it the screen would present today's facts as the ones the model saw. A changed digest is stated, never hidden, and **never repaired by editing the narration** |
+| **Tests** | 6 endpoint · 7 component |
+| **Vision & Roadmap Consistency Review** | Commissioned at this boundary. **Nine of twenty lifecycle stages implemented, five more built and unreachable.** ICP confirmed forgotten — deferred out of M5A, M5B and M6, named in three architecture documents, never given a milestone. **Target account selection is worse:** written into M2.1's demo scenario, never into its scope, and recorded as missing for the first time here. Two documents making provider configuration a customer responsibility corrected. Recorded in [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md) |
+| ⏳ **Next** | **R9-03** — a contraction risk still reads like a small opportunity; posture on the row, using the pipeline's own word. **Wants a seller's ruling.** Then M12.3 closes: certification re-cut and full gates |
 
 > **🟠 It ships to the Playground and not to a customer until F-3 closes.** The catalog's guidance is *engineering-authored pending domain review*, and *"ask on a first call which division the investment sits in"* is advice a real seller will act on. Good content is not the same as signed content.
 
@@ -200,7 +204,8 @@ A demo environment worth reviewing a product against. Requested by the product o
 | M12.3 | **The list slice** — R1-01 (*why now* repeats 11 of 12), R1-02 (trigger and evidence state contradict), R1-05 (invisible tiebreak), D20/R1-07 (a 50 and a 1 render identically). One coherent change about *which* account you pick |
 | M12.3 | **R4-04** — a dismissed account is unreachable once you navigate away. A *closed and dismissed* filter, which is the same list slice |
 | M12.2 | The Decision Package panel, **on the trigger `reasoning@1` earns a release** and not before |
-| M12.4 | Narration citations still show a fact count and cannot be opened — `signal_contribution`, `buying_score` and `opportunity` need resolvers |
+| M12.4 | Research on demand — dispatch, status, and the brief. The one genuinely new backend capability the product surface still needs |
+| **M12.5** *(proposed)* | **The workspace a customer authors** — the signal relevance profile over HTTP and on screen, and membership by invitation. Both have a shipped module and a ratified owner; neither has an entry point. **Recommendation 1 of the Consistency Review, awaiting the product owner** |
 | unassigned | **D32** — the other half of D23. Naming a person needs a cross-tier profile contract and belongs in an ADR, not a slice |
 
 **Deterministic-first ordering, unchanged from M8 and M9:** storage before retrieval, retrieval before orchestration, generation and evaluation last. **Embeddings, pgvector, external retrieval and provider re-query are deferred**, each with a stated trigger.

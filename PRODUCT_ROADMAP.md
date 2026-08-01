@@ -33,6 +33,87 @@ The first genuinely sellable moment is **M6**. That is a fact about the architec
 >
 > M0's *first sellable moment* (M6, Qualified Opportunities) and every milestone's customer promise are unaffected.
 
+## Vision & Roadmap Consistency Review — 2026-08-01
+
+> Commissioned by the product owner at the M12.3 boundary, after ICP was found to have quietly left active planning during M12. **A consistency review, not a redesign**: no milestone is renumbered, no architecture is changed, and every recommendation below is classified under [IMPLEMENTATION_ROADMAP.md §5c](IMPLEMENTATION_ROADMAP.md#5c-roadmap-change-policy).
+>
+> The question asked was: *"have we unintentionally lost, delayed, or forgotten any important capability that was part of Signora's original vision?"* **The answer is yes, and the pattern is sharper than a list of gaps.**
+
+### The finding, stated plainly
+
+**Signora has built the intelligence pipeline and never built the customer's half of it.**
+
+Thirteen modules turn a provider payload into a defensible commercial conclusion. But every stage of that pipeline runs against configuration **no customer can author** — and in most cases against configuration that no milestone owns. The pipeline is the second half of a product whose first half was never sequenced.
+
+The reason it went unnoticed is structural, not careless. Each individual deferral was correct and reasoned at the time: ICP needs a resolution policy · person entities need an ontology decision · runtime-editable artifacts need a trigger. **What nobody was tracking is that they all deferred into the same hole**, and that hole is "everything a customer does before the pipeline can run for them."
+
+### The journey, stage by stage
+
+The lifecycle below is the product owner's, checked against the repository rather than against the roadmap.
+
+| # | Stage | State | Evidence |
+|---|---|---|---|
+| 1 | Customer creates workspace | ✅ **Implemented** | `POST /workspaces` · settings screen |
+| 2 | Invites users | 🟠 **Overstated** | `POST /workspaces/{id}/members` takes a **`user_id` UUID**. There is no invitation, no email, no acceptance, no UI. M1's demo scenario says *"invite a colleague"*; you must already know their database identifier |
+| 3 | Defines products / solutions | ❌ **Never named** | No module, no table, no milestone, no deferral record. Absent from every document in the repository |
+| 4 | Defines ICP | 🔴 **Forgotten** | Deferred out of **M5A, M5B and M6**; named in three architecture documents as deserving its own milestone; **never given one.** The confirmed instance |
+| 5 | Defines buying committee | 🟣 **Correctly deferred** | `EntityKind` has one member: `COMPANY`. `person entities` is on the deferred list. But the ICP definition says *"multi-threaded buying committee"*, and **D23/D32 are this absence surfacing** — an owner is a UUID with no name |
+| 6 | Configures business goals | 🟠 **Built, unreachable** | `signal_profile` — immutable, versioned, attributed, and *"the first genuinely customer-authored data in the platform"*. It has a domain model, a table, a repository and a `save` port. **It has no endpoint and no screen.** The only way a workspace gets one is the seeder |
+| 7 | Discovers companies | ❌ **Never named** | Nothing decides which companies Signora watches |
+| 8 | Approves companies | ❌ **Never named** | — |
+| 9 | Signora monitors companies | 🟠 **Half** | `RunProviderSync` takes a `subject` string and **nothing supplies one.** No scheduler; the worker registers `[dispatch_event]` and nothing else. M2.1's demo says *"Add a target account list"* — a demo step for a capability that was never built |
+| 10 | Knowledge graph | ✅ Implemented | M3A |
+| 11 | Business events | ✅ Implemented | M4 |
+| 12 | Signals | ✅ Implemented | M5A |
+| 13 | Buying scores | ✅ Implemented | M5B |
+| 14 | Qualified opportunities | ✅ Implemented | M6 — *first sellable moment* |
+| 15 | AI reasoning | 🔴 **Built, blocked** | Decision Package complete end to end; **`reasoning@1` has no released model.** Would refuse at runtime |
+| 16 | AI research | 🟠 **Built, unreachable** | Complete; **no HTTP entry point.** M12.4 |
+| 17 | Workflow | ✅ **Implemented** | M12.3 — the first write in the product |
+| 18 | CRM | ⏳ Planned | M13 |
+| 19 | Outcomes | 🟠 **Recorded, unread** | `opportunity.stage_changed` carries `actor_id` and `reason` and **nothing consumes it.** Every dismissal reason a seller has typed is written and never read |
+| 20 | Learning | 🟣 Deferred | M11. The flywheel PRODUCT_DIFFERENTIATORS names as *the mechanism behind moats #1–#3* has no consumer, and is additionally blocked by the platform's handler-registration debt |
+
+**Nine of twenty stages are implemented. Five more are built and unreachable.** The pipeline is not the risk; the entrance and the exit are.
+
+### Capabilities that slipped from earlier planning
+
+Four, distinguished by *how* they slipped, because the failure modes are different and only one of them is a process failure.
+
+| Capability | How it slipped | Severity |
+|---|---|---|
+| **Account fit / ICP** | Deferred three times **with reasons**, each correct. Recorded in `PROJECT_STATUS`, `SESSION_HANDOFF`, `25-`, `26-` and `27-`. Never given a milestone number, so it appears in every planning document and no plan | 🔴 The named instance. **A deferral without an owner is a deletion with a paper trail** |
+| **Target account selection** | Written into M2.1's *demo scenario* (*"Add a target account list"*) and never into its *scope*. The demo checklist was authored against a capability nobody scheduled | 🔴 **Worse than ICP**, because nothing anywhere records it as missing. This review is the first document to name it |
+| **Invitations** | M1's demo scenario claims it; `add_member` implements a weaker thing with the same name | 🟠 A repository telling a small untruth about itself (§2) |
+| **Products / solutions** | Never proposed in any document | 🟡 Genuinely out of scope so far, not lost — but note that *why now* is currently workspace-agnostic without it |
+
+**The pattern worth keeping:** three of the four slipped through a **demo scenario written ahead of a scope entry.** A demo step is a promise, and the roadmap has been treating it as prose. From here, a capability named in a Demo Checklist and absent from that milestone's Scope is a roadmap defect, and the reviewer's job is to catch it at the milestone boundary.
+
+### Provider responsibility — reviewed, two corrections made
+
+**Ruled by the product owner 2026-08-01: provider configuration is never a customer capability.** Reviewed against every customer-facing milestone. Two documents asserted otherwise and both are corrected in this change:
+
+- **[04-modules.md](docs/architecture/04-modules.md)** said Provider Platform owns *"which providers are enabled **per workspace/plan**"* — ambiguous between Signora's commercial packaging and a customer toggle. Rewritten, with selection, failover, routing and conflict resolution named explicitly as Signora's.
+- **[37-product-surface.md](docs/architecture/37-product-surface.md)** said *"provider precedence is a **customer** policy — the same category as the scoring model"*, and flagged a future policy artifact for it. **Reversed.** A customer cannot rank suppliers they were never told about.
+
+**No milestone exposes provider configuration**, and M13's per-workspace OAuth grants are the legitimate opposite case: a customer connecting *their own* Salesforce or Gmail. The distinction is now written down: **a company-intelligence provider is Signora's supplier; a CRM is the customer's system.**
+
+### Recommended roadmap adjustments
+
+Recommendations only. Two are the product owner's to approve; none is applied to the execution order by this review.
+
+| # | Recommendation | Category (§5c) |
+|---|---|---|
+| 1 | **Name a milestone that owns customer configuration** — provisionally **M12.5, "the workspace a customer authors"**: the signal relevance profile over HTTP and on screen, and workspace membership by invitation. It is *not* ICP, and must not become a place to smuggle ICP in | **1 — sequencing.** Every part already has a shipped module and a ratified owner |
+| 2 | **Give account fit / ICP a milestone number**, so it stops being deferred by every milestone in turn. It still needs its resolution-policy decision first, and that decision is an RFC | **3 — architectural.** Requires approval; explicitly *not* taken here |
+| 3 | **Record target account selection as a missing capability with no owner.** Do not assign it opportunistically: *which companies does Signora watch* is a bounded-context question, and the honest answer today is that no module owns it | **3 — architectural.** Raised, not resolved |
+| 4 | **Correct M2.1's and M1's demo scenarios** to describe what those milestones actually delivered, dated as corrections rather than rewritten | **1 — sequencing.** Applied below |
+| 5 | **Consume `opportunity.stage_changed`** once the platform's handler-registration RFC lands. Dismissal reasons are the only feedback Signora receives about its own qualification quality, and they are currently written to a table nobody reads | **1 — sequencing**, gated on an existing RFC |
+
+**What this review does not recommend:** re-ordering M12, pausing product implementation, or building any of the above before M12.3 closes. The current slice sequence is producing the highest-value work in the project's history, and the finding here is about *what comes after*, not about stopping.
+
+---
+
 ## Milestone Map
 
 | Milestone | Phase | Label | Headline |
@@ -76,6 +157,8 @@ The first genuinely sellable moment is **M6**. That is a fact about the architec
 
 **Demo scenario:** Sign in with Google → create "Acme Revenue" workspace → invite a colleague → they see the workspace, and provably cannot see anyone else's.
 
+> **Corrected 2026-08-01.** *"Invite a colleague"* was never built. What shipped is `POST /workspaces/{id}/members`, which takes a **`user_id` UUID** — so adding somebody requires already knowing their database identifier, and there is no screen for it. Isolation is genuinely proven and demoable; the invitation is not. Recorded rather than rewritten: the milestone's real achievement was the authentication boundary and tenant isolation, and this one line overstated the rest. Invitations are recommendation 1 of the Consistency Review.
+
 **Customer outcome:** Design partners can be onboarded into a real environment, which starts the feedback loop months before the product is useful.
 
 **Success metrics:** Sign-in success rate >99% · event relayed end-to-end with traceable `correlation_id` · deployed environment reachable.
@@ -89,6 +172,8 @@ The first genuinely sellable moment is **M6**. That is a fact about the architec
 **Business value:** Proves the multi-provider thesis technically. Five providers (Apollo, CoreSignal, BuiltWith, Similarweb, NeverBounce) across five distinct data categories, behind one abstraction — the foundation of the "Multi-Provider Fusion" differentiator, and the thing that removes the "GTM engineer maintaining pipelines" burden that plagues Clay's user base.
 
 **Demo scenario:** Add a target account list → watch provider ingestion populate raw records with full provenance → show the same company enriched by three providers simultaneously.
+
+> **Corrected 2026-08-01.** *"Add a target account list"* describes a capability **no milestone ever scoped.** `RunProviderSync` takes a `subject` and nothing decides what the subjects are; there is no scheduler, and the deployed worker registers one function. The second and third clauses shipped and are demoable through the Playground seeder. This is the clearest instance of the pattern the Consistency Review names: **a demo scenario written ahead of a scope entry, which nothing afterwards reconciled.** *Which companies does Signora watch* has no owning module today, and assigning one is an architectural decision rather than a milestone task.
 
 **Customer outcome:** "Signora is watching my accounts" — a credible progress signal for design partners, not yet a workflow.
 
