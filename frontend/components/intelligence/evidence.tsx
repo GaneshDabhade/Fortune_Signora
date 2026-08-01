@@ -80,8 +80,8 @@ function Readings({ observations }: { observations: EvidenceObservation[] }) {
   if (observations.length === 0) {
     return (
       <p className="text-sm leading-6 text-content-muted">
-        Signora recorded this event and kept no readings for it. That is a defect worth
-        reporting — every business event should cite what produced it.
+        Signora recorded this and kept no readings for it. That is a defect worth
+        reporting — nothing should appear here without the readings that produced it.
       </p>
     );
   }

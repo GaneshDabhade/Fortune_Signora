@@ -46,7 +46,7 @@ beforeEach(() => {
   catalog.mockReturnValue(IDLE);
 });
 
-describe('a signed-in reader who belongs to no workspace', () => {
+describe('a signed-in reader who belongs to no organization', () => {
   it('is told why the screen is empty, rather than shown an empty screen', () => {
     workspaceContext.mockReturnValue({
       workspaces: [],
@@ -56,11 +56,11 @@ describe('a signed-in reader who belongs to no workspace', () => {
 
     render(withQuery(<AttentionPage />));
 
-    expect(screen.getByText(/not in a workspace yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/not part of an organization yet/i)).toBeInTheDocument();
   });
 
   it('is not told anything while the answer is still being fetched', () => {
-    // Announcing "you have no workspace" during the first paint would be a
+    // Announcing "you belong to no organization" during the first paint would be a
     // confident wrong answer to somebody who has three.
     workspaceContext.mockReturnValue({
       workspaces: [],

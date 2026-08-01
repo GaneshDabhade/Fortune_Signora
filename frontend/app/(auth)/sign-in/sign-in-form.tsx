@@ -46,7 +46,12 @@ export function SignInForm({
       // client-side navigation alone would render the destination against a
       // server component tree that still believes nobody is signed in.
       router.refresh();
-      router.push('/workspaces');
+      // **`/workspaces` for three slices, and no such route has ever
+      // existed** — a password sign-in landed on the not-found page. Found by
+      // the ADR-0034 vocabulary audit rather than by a test, because the code
+      // was reasoning about a tenancy concept while the product needed a
+      // destination. `/` is the attention list: a seller's morning (D38).
+      router.push('/');
       return;
     }
     setError(result.error ?? null);

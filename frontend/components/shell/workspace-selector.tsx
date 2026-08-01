@@ -4,11 +4,17 @@ import { Select, Skeleton } from '@/components/ui';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
- * Switches the active workspace.
+ * Switches the active organization.
  *
- * Renders nothing when the caller belongs to exactly one workspace: a
- * select with a single option is a control that cannot do anything, and
- * it invites the user to look for options that do not exist.
+ * Renders nothing when the caller belongs to exactly one: a select with a
+ * single option is a control that cannot do anything, and it invites the user
+ * to look for options that do not exist.
+ *
+ * **The label says *organization* and the component says `workspace`**
+ * (ADR-0034). The accessible name is the one thing here a person actually
+ * reads — a screen-reader user hearing *"active workspace"* would be the only
+ * customer ever told the internal word, which is the worst possible place for
+ * it to survive.
  */
 export function WorkspaceSelector() {
   const { workspaces, activeWorkspace, setActiveWorkspace, isLoading } =
@@ -23,7 +29,7 @@ export function WorkspaceSelector() {
 
   return (
     <Select
-      label="Active workspace"
+      label="Active organization"
       labelHidden
       value={activeWorkspace?.id ?? ''}
       onChange={(event) => setActiveWorkspace(event.target.value)}

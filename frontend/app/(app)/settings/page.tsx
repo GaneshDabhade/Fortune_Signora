@@ -25,12 +25,20 @@ import { useCreateWorkspace } from '@/lib/query/hooks';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
- * Workspace settings.
+ * Organization settings.
  *
  * The only screen in M1.5 backed by real data, because Workspace &
  * Tenancy is the only shipped module. It doubles as the proof that the
  * shell, query layer, toasts, and dialog compose against a real API rather
  * than a fixture.
+ *
+ * **The screen says *organization*; the code says `workspace`, and that is
+ * deliberate** (ADR-0034). One concept, two vocabularies: a customer's
+ * company on Signora, and the tenancy boundary that isolates it. The
+ * translation happens here, at the edge, and never travels inward — the
+ * hook, the query key, the API path and the RLS scope all stay `workspace`,
+ * because *workspace* is precise about isolation in a way *organization*
+ * is not.
  */
 export default function SettingsPage() {
   const { workspaces, activeWorkspace, setActiveWorkspace, isLoading } =
@@ -55,7 +63,9 @@ export default function SettingsPage() {
         toast({
           tone: 'error',
           message:
-            error instanceof ApiError ? error.message : 'Could not create the workspace.',
+            error instanceof ApiError
+              ? error.message
+              : 'Could not create the organization.',
           detail:
             error instanceof ApiError ? `Reference: ${error.correlationId}` : undefined,
         });
@@ -68,23 +78,27 @@ export default function SettingsPage() {
       <header className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold text-content">Settings</h1>
-          <p className="mt-1 text-sm text-content-muted">Workspaces you belong to.</p>
+          <p className="mt-1 text-sm text-content-muted">
+            The organizations you belong to.
+          </p>
         </div>
-        <Button onClick={() => setDialogOpen(true)}>New workspace</Button>
+        <Button onClick={() => setDialogOpen(true)}>New organization</Button>
       </header>
 
       <Card>
         <CardHeader>
-          <CardTitle>Workspaces</CardTitle>
+          <CardTitle>Organizations</CardTitle>
         </CardHeader>
         <CardBody>
           {isLoading ? (
             <SkeletonText lines={3} />
           ) : workspaces.length === 0 ? (
             <EmptyState
-              title="No workspaces yet"
-              description="A workspace holds one company's revenue data. Create one to get started."
-              action={<Button onClick={() => setDialogOpen(true)}>New workspace</Button>}
+              title="No organizations yet"
+              description="An organization is your company on Signora. Create one to get started."
+              action={
+                <Button onClick={() => setDialogOpen(true)}>New organization</Button>
+              }
               className="border-0 bg-transparent"
             />
           ) : (
@@ -118,8 +132,12 @@ export default function SettingsPage() {
       <Dialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
-        title="New workspace"
-        description="Workspaces are isolated from each other. Data never crosses between them."
+        title="New organization"
+        // **Not "organizations are isolated from each other".** That was the
+        // previous copy, and it is a true statement of the tenancy
+        // architecture put in front of a salesperson — it answers a question
+        // nobody asked and raises one nobody wanted (ADR-0034).
+        description="Your company on Signora. Its accounts, evidence and decisions are its own."
         footer={
           <>
             <Button variant="secondary" onClick={() => setDialogOpen(false)}>

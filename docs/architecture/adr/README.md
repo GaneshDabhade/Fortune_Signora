@@ -56,6 +56,7 @@ Every ADR follows this structure:
 | [0031](0031-evidence-citation-protocol.md) | The renderer and the parser disagree about the citation protocol |
 | [0032](0032-release-certification.md) | Release Certification: the evidence a version carries, not a sixth kind of test |
 | [0033](0033-authentication-methods.md) | Authentication Methods Are Configuration — email + password alongside OAuth; the method changes and the authenticated identity does not |
+| [0034](0034-ubiquitous-language.md) | The Product's Ubiquitous Language — *Organization* is what a customer says, *workspace* is what the platform says, and the boundary is enforced by a test |
 
 ## How to Propose a New ADR
 

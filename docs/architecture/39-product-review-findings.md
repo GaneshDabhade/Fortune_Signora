@@ -1436,3 +1436,69 @@ Two things happened in this pass: the **Vision & Roadmap Consistency Review** (r
 **Why it matters.** The slice works and **cannot be shown at its best**, because the sentence a reviewer would click is not worth clicking. This is D17 again — *the dataset, not the architecture, is the constraint* — now reaching the AI layer: those rows predate `playground@2`, and `make demo-narrate` against the current dataset has not been run since.
 
 **Not a code defect.** The next demo pass should re-run `make demo-narrate` on `playground@2` before this slice is reviewed. **Priority:** Medium, and it is a *demonstration* task rather than an engineering one.
+
+---
+
+# Review 12 — the words the product uses *(M12.3, 2026-08-01)*
+
+Commissioned on the product owner's clarification that **Workspace has always been an internal architectural concept**. The audit read every user-visible string in `app/` and `components/`.
+
+## R12-01 · A password sign-in redirected to a route that has never existed 🔴 **FIXED**
+
+**Observation.** `router.push('/workspaces')`. There is no `app/(app)/workspaces/page.tsx` and there never has been. **Every password sign-in for three slices landed on the not-found page.**
+
+**Why it matters.** It is the first ten seconds of a new customer's life, on the flow ADR-0033 shipped specifically so the product owner could review the product. **1992 backend tests and 316 frontend tests did not catch it** — nothing asserted where a successful sign-in goes.
+
+**And it is the vocabulary finding, not a separate bug.** The code was reasoning about a *tenancy* concept while the product needed a *destination*, and the two drifted apart because the repository has only ever had one word for them. Fixed to `/` — the attention list, a seller's morning (**D38**).
+
+**Now enforced twice:** no route path may name an internal concept, and **every `router.push` must resolve to a page that exists.** The second is the durable one; it would have caught this on the day it shipped.
+
+---
+
+## R12-02 · The product explained its own tenancy model to a salesperson 🔴 **FIXED**
+
+**Observation.** The new-organization dialog read: *"Workspaces are isolated from each other. Data never crosses between them."*
+
+**Why it matters.** Every word is **true**, and it is a correct summary of [11-tenancy.md](11-tenancy.md). It is also a sentence about RLS shown to somebody who wants to add their company. **It answers a question nobody asked and raises one nobody wanted** — a customer who was not worried about data crossing between tenants is now.
+
+**The empty state every new account sees** was the same defect at greater cost: *"A workspace is where your accounts, evidence and decisions live — and it is the boundary Signora keeps every customer's data inside."* Signora's architecture, taught to a seller before they had done anything.
+
+---
+
+## R12-03 · A screen-reader user was the only customer told the internal word 🟠 **FIXED**
+
+**Observation.** `<Select label="Active workspace" labelHidden>` in the application header. Sighted users see the organization's name; the accessible name said *workspace*.
+
+**Why it matters.** **The worst possible place for a leak to survive** — invisible to everyone reviewing the product, and audible only to the customer least able to work around it. The vocabulary test scans `aria-label` for exactly this reason.
+
+---
+
+## R12-04 · "Organization" appears nowhere in the repository 🔴 **The root cause**
+
+**Observation.** Searched every markdown file, ADR, roadmap and source file. **The customer-facing term for a tenant has never been written down.**
+
+**Why it matters, and why it is not a process failure.** Every leaked string was written deliberately, by an engineer who had read the architecture, in a codebase whose constitution has demanded a consistent ubiquitous language since the first commit. **They are what happens when the only vocabulary that is written down is the internal one** — an engineer reaching for the right word finds `Workspace`, correctly, because it is the only word available.
+
+**This is the ICP pattern in a different register**: an intent that lived in discussion, never reached a document, and therefore never reached the build. `CLAUDE.md` §4 governs the language *between engineers* and has always been silent on the language *between the product and its customer*.
+
+**Fixed by [ADR-0034](adr/0034-ubiquitous-language.md)**, which defines both vocabularies — and by the test, because *a guard that cannot fail is documentation pretending to be code*, and a glossary nobody can violate is the same thing.
+
+---
+
+## R12-05 · The test found a leak the audit had missed 🟢
+
+**Observation.** `evidence.tsx` told a customer *"every **business event** should cite what produced it"* — internal pipeline vocabulary in an error message, in a file the manual audit had already read and passed.
+
+**Why it matters.** **It is the argument for the test, made by the test on its first run.** A human reading for *workspace* does not see *business event*; a scan checking a list sees both. It also arrived through the most ordinary route imaginable — an error message, where an engineer naturally reaches for the word the system uses.
+
+---
+
+## R12-06 · Three more capabilities entered through a Demo Scenario 🟠
+
+**Observation.** **Deprioritization intelligence** — a named differentiator, *"nearly free… sitting unclaimed"*, in M5's demo scenario and no milestone's scope. **The RevOps view** — Job 7, in M11's demo scenario, and [37-product-surface.md](37-product-surface.md)'s six journeys are all a seller's. **Invitations** — M1's demo scenario, already recorded.
+
+**Why it matters.** With target-account selection from the first review, that is **four confirmed instances**. It is no longer a coincidence; it is **the dominant way capability leaves this roadmap**. A Demo Checklist is a promise and the roadmap has been reading it as prose.
+
+**The RevOps one is the most commercially serious.** PRODUCT_ROADMAP calls that surface *"the first surface that serves the economic buyer rather than only the end user — which is what makes renewal and expansion conversations possible."* **The buyer who signs the cheque has no screen in the product surface design.**
+
+**Priority:** High. **Raised, not fixed** — both are category-3.

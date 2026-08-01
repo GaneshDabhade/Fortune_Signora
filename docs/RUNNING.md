@@ -56,16 +56,18 @@ cd frontend && npm run dev
 
 **Password for all four: `signora-demo-password`**
 
-| Email | Persona | Workspace role | What they can do |
+| Email | Persona | Role | What they can do |
 |---|---|---|---|
 | `dana.reyes@northwind.example` | Revenue Operations | **owner** | Everything, including Settings and adding members |
 | `marcus.hale@northwind.example` | Sales Manager | member | Read and work accounts; **no Settings** |
 | `priya.nair@northwind.example` | Account Executive | member | Read and work accounts |
 | `sam.okafor@northwind.example` | Sales Development | member | Read and work accounts |
 
-All four are members of the **Playground** workspace and see the same twelve accounts. Sign in as two of them in different browsers to see an account *held by someone else* after one takes it on.
+All four belong to the **Playground** organization and see the same twelve accounts. Sign in as two of them in different browsers to see an account *held by someone else* after one takes it on.
 
-> **Signora has two workspace roles — `owner` and `member` — not five.** The sales titles above are personas for review, not something the product models. A richer role model is a domain decision nobody has needed yet; see `04-modules.md`.
+> **The screen says *organization*; the API says `workspace`.** One concept, two vocabularies, and the split is deliberate ([ADR-0034](architecture/adr/0034-ubiquitous-language.md)): a customer's company on Signora, and the tenancy boundary that isolates it. The translation happens in `frontend/` and never travels inward — every path below, the `workspace_id` column, the RLS scope and the JWT claim all keep the internal name, because *workspace* is precise about isolation in a way *organization* is not.
+
+> **Signora has two roles — `owner` and `member` — not five.** The sales titles above are personas for review, not something the product models. A richer role model is a domain decision nobody has needed yet; see `04-modules.md`.
 
 Addresses use the reserved `.example` TLD deliberately: it can never resolve, so a build that one day has a real email transport cannot mail a real person by accident. Both the accounts and their roles are declared once, in `infra/demo-users.json`, read by the script that creates them and the seeder that enrols them.
 
@@ -111,7 +113,7 @@ Both halves or neither — a half-configured provider renders a button that fail
 |---|---|
 | Sign-in fails with a database error about `auth.user` | Better Auth's tables were never created. `cd frontend && npm run auth:migrate` — `make demo` does it for you |
 | Signed in, but every screen is empty and the API 401s | No signing key. `npm run keys:generate` and put both halves where the table below says. `/api/health` reports `signing_keys: unavailable` |
-| *"You are not in a workspace yet"* | You registered after the last seed. Re-run `make demo-seed` |
+| *"You are not part of an organization yet"* | You registered after the last seed. Re-run `make demo-seed` |
 | The Playground is suddenly empty | `make test` truncates every table in the same database. Re-run `make demo-seed` |
 | `/api/health` says `sign_in_methods: degraded` | Password sign-in is switched off and no OAuth credentials are set, so nobody can sign in |
 | Migrations fail with a permissions error | They are running as `signora_app`. Schema changes execute only under the **owner** identity — pass `SIGNORA_DATABASE_URL` explicitly, as step 2 does |
@@ -151,7 +153,7 @@ SIGNORA_JWT_PRIVATE_KEY=<the private half of the same pair>
 
 **There is one product.** The seeder runs the same function the pipeline suite runs, over the `playground@2` scenario instead of `baseline@1`. No branch anywhere knows it is a playground; the only things that differ are which scenario file is named and where its timeline is anchored.
 
-**Sign in once before seeding.** Better Auth owns users and hashes its own passwords, so the seeder cannot create one without either committing a credential or reaching into another system's schema. Register at <http://localhost:3000/sign-up>, then re-run `make demo-seed`; it enrols every signed-in user in the seeded workspace and prints what it did.
+**Sign in once before seeding.** Better Auth owns users and hashes its own passwords, so the seeder cannot create one without either committing a credential or reaching into another system's schema. Register at <http://localhost:3000/sign-up>, then re-run `make demo-seed`; it enrols every signed-in user in the seeded organization and prints what it did.
 
 ### The twelve stories
 

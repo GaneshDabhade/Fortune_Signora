@@ -114,6 +114,67 @@ Recommendations only. Two are the product owner's to approve; none is applied to
 
 ---
 
+## Second Consistency Pass — Organization vs Workspace, 2026-08-01
+
+> Commissioned immediately after the first review, on the product owner's clarification that **Workspace has always been an internal architectural concept and must not become part of the customer's mental model.**
+
+### The finding
+
+**It already had.** *"Organization" appears nowhere in the repository** — not in an ADR, not in an architecture document, not in a roadmap, not in code. The intent existed in earlier discussions and was never written down, so the product built the only word the repository had.
+
+| Surface | What a customer read |
+|---|---|
+| Empty state, **every new account** | *"You are not in a workspace yet"* · *"Create a workspace"* |
+| Settings | *"Workspaces"* · *"New workspace"* · *"Workspaces are isolated from each other. Data never crosses between them."* |
+| Application header | *"Active workspace"* — the accessible name, so a screen-reader user heard it |
+| **After a password sign-in** | a redirect to **`/workspaces`**, a route that has never existed |
+
+**The last line is why this became an ADR rather than a copy edit.** The leak was not cosmetic: it produced a **dead route in the first ten seconds of a new customer's life**, because the code was reasoning about tenancy while the product needed a destination and nobody noticed the two had drifted apart.
+
+The second-worst is *"Workspaces are isolated from each other. Data never crosses between them."* — a **true and correct statement of the tenancy architecture, in a dialog a salesperson reads.** It answers a question nobody asked and raises one nobody wanted.
+
+**Fixed in this change**, with [ADR-0034](docs/architecture/adr/0034-ubiquitous-language.md) defining both vocabularies and a test enforcing the boundary. The internal language is untouched: `workspace_id`, RLS, the API path and the JWT claim all stay, because *workspace* is precise about isolation in a way *organization* is not.
+
+### The onboarding sequence — reviewed, and one correction
+
+The proposed sequence is **right**, and it is right for a reason worth stating: it never asks a customer to name a mechanism. One correction and one caution.
+
+**Correction — verification should not gate organization creation.** Putting *verify email* before *create organization* means a new customer's first experience is a dead-end inbox wait, and the value of verification is protecting *actions*, not *setup*. Recommended:
+
+```
+create account → create organization → invite colleagues → configure → daily workflow
+        └── verify email, in parallel, gating invitations and the first data run
+```
+
+**Caution — configuration is four screens before any value.** *Products → ICP → Buying Committee → approve companies* is a long walk before a customer sees a single account. **Signora's differentiator is that it has already done the work when you open it**, and an onboarding that front-loads four forms contradicts that. Recommended: **make everything after Organization skippable, with defaults**, and let configuration be something a customer *improves* after seeing their first list rather than a gate before it.
+
+### What the pass found beyond vocabulary
+
+| # | Capability | Classification | Evidence |
+|---|---|---|---|
+| 1 | **Team / invitations** | **Missing** | `POST /members` takes a `user_id` UUID; no invitation, no email, no acceptance, no screen. **Better Auth's `organization` plugin is already in the dependency tree** and provides organizations, roles and invitations — no new dependency, but a category-3 adoption needing its own ADR |
+| 2 | **Deprioritization intelligence** | **Never assigned** | A named differentiator — *"nearly free… sitting unclaimed"* — with named owners (Buying Score + Opportunity Engine), appearing four times in [PRODUCT_DIFFERENTIATORS.md](PRODUCT_DIFFERENTIATORS.md) and in **zero** milestones. **M5's demo scenario names it**: *"show the inverse: an account explicitly deprioritized, with reasoning."* The third instance of the Demo-Checklist pattern |
+| 3 | **The RevOps / economic-buyer surface** | **Never assigned** | Job 7, and M11's demo says *"Plus the RevOps view: is the motion working, at the signal level"* — described as *"the first surface that serves the economic buyer… which is what makes renewal and expansion conversations possible."* [37-product-surface.md](docs/architecture/37-product-surface.md) defines six journeys and **all six are a seller's.** The buyer who signs the cheque has no screen in the design |
+| 4 | **Organization / customer vocabulary** | **Missing → fixed here** | See above |
+| 5 | Search · saved views · comparison | **Deferred**, correctly | Evidence-triggered in 37 §3; the trigger is a design partner with enough accounts |
+| 6 | Notifications · billing · analytics | **Planned** | M14a, M14b |
+
+**Three of the six were named in a Demo Scenario and never in a Scope entry** — the same mechanism the first review identified. That is now four confirmed instances (target accounts, invitations, deprioritization, the RevOps view), which makes it the dominant failure mode in this roadmap rather than a coincidence.
+
+### Provider configuration — re-checked, still clean
+
+Re-audited every customer-facing surface and every future customer-facing milestone after the first review's corrections. **No screen offers provider configuration, and no milestone scopes any.** The vocabulary test deliberately permits the word *provider* in customer copy, because *"reported by CoreSignal and Apollo"* is **evidence** — which the product owner's ruling explicitly preserves — while configuration is absent by construction.
+
+### Recommendations added
+
+| # | Recommendation | Category (§5c) |
+|---|---|---|
+| 6 | **Adopt Better Auth's `organization` plugin** for organization creation, roles and invitations, rather than building a bespoke invitation flow. Already in the tree; needs its own ADR | **3 — architectural** |
+| 7 | **Give deprioritization intelligence a milestone**, or delete the claim from PRODUCT_DIFFERENTIATORS. It cannot stay a governing differentiator that no plan contains | **3 — architectural** |
+| 8 | **Add a RevOps journey (J7) to the Product Surface design**, or record explicitly that the economic buyer is served after GA | **1 — sequencing**, once J7's content is decided |
+
+---
+
 ## Milestone Map
 
 | Milestone | Phase | Label | Headline |
