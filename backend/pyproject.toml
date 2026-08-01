@@ -115,6 +115,7 @@ containers = [
     "modules.signal_engine",
     "modules.buying_score_engine",
     "modules.opportunity_engine",
+    "modules.commercial_profile",
     "modules.ai_platform",
     "modules.ai_reasoning_engine",
     "modules.ai_research_engine",
@@ -635,6 +636,57 @@ forbidden_modules = [
     "signora_platform.api",
     "signora_platform.auth",
     "signora_platform.authorization",
+]
+
+# The head of the pipeline, and the contract that keeps it a head.
+#
+# `commercial_profile` records what a customer declares. If it could read a
+# signal, a score or an opportunity, "declaration" would quietly become
+# "declaration informed by our own conclusions" — the module would start
+# computing, and the one boundary it has would be gone. It is allowed exactly
+# one downstream neighbour, and only through `public/`.
+[[tool.importlinter.contracts]]
+name = "commercial_profile declares; it never reads the pipeline"
+type = "forbidden"
+source_modules = ["modules.commercial_profile"]
+forbidden_modules = [
+    "modules.provider_platform",
+    "modules.provider_normalization",
+    "modules.knowledge_graph",
+    "modules.observation_engine",
+    "modules.business_event_engine",
+    "modules.signal_engine",
+    "modules.buying_score_engine",
+    "modules.opportunity_engine",
+    "modules.ai_platform",
+    "modules.ai_reasoning_engine",
+    "modules.ai_research_engine",
+]
+
+# Nothing consumes it yet, and the contract exists now so that when something
+# does, it arrives through `public/` rather than by reaching inside.
+[[tool.importlinter.contracts]]
+name = "other modules reach commercial_profile only through public/"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "modules.provider_platform",
+    "modules.provider_normalization",
+    "modules.knowledge_graph",
+    "modules.observation_engine",
+    "modules.business_event_engine",
+    "modules.signal_engine",
+    "modules.buying_score_engine",
+    "modules.opportunity_engine",
+    "modules.ai_platform",
+    "modules.ai_reasoning_engine",
+    "modules.ai_research_engine",
+]
+forbidden_modules = [
+    "modules.commercial_profile.domain",
+    "modules.commercial_profile.application",
+    "modules.commercial_profile.infrastructure",
+    "modules.commercial_profile.interface",
 ]
 
 [[tool.importlinter.contracts]]

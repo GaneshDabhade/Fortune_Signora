@@ -206,6 +206,8 @@ GET /workspaces/{workspace_id}/accounts/{account_id}/opportunity
 GET /workspaces/{workspace_id}/accounts/{account_id}/narration
 GET /workspaces/{workspace_id}/accounts/{account_id}/validation
 GET /workspaces/{workspace_id}/business-events/{event_id}
+GET /workspaces/{workspace_id}/products
+PUT /workspaces/{workspace_id}/products
 ```
 
 All seven are documented at **<http://localhost:8000/docs>**.
@@ -235,8 +237,17 @@ All seven are documented at **<http://localhost:8000/docs>**.
 - **"Before you act"** lists what to confirm for each live hypothesis, and hides *what it cannot tell you* behind a disclosure. **No model produced any of it** — it is the Signal Catalog's own guidance, versioned and reviewed like code, and it had never been displayed before M12.3.
 - An account with no score shows a **designed empty state**, not an error.
 
+### Your business — `/settings/products`
+
+- **The first screen where you tell Signora something.** Everything else reports what the pipeline computed; this records what your company sells, and it is the input the pipeline has never had.
+- **Add, edit and remove products.** Each change saves immediately as a **new version** of the catalog — nothing is edited, and the footer says which version is in force.
+- **A product keeps its id when you rename it**, which is what will let an ICP or a priority cite it later and still resolve.
+- **Open it in two browsers and save from both.** The second is refused with the version actually in force, rather than quietly overwriting the first — the failure a versioned catalog exists to make visible.
+- **Owners only.** `/settings/*` is owner-guarded, and the server refuses a member's write independently with 403.
+
 ### Known limitations, and what is intentionally unfinished
 
+- **Products are declared and nothing consumes them yet.** ICP, buying committee, priorities and the target account list are slices 2–5; the last of those is what finally gives Provider Platform a source for the companies it monitors.
 - **No Decision Package on the brief.** `reasoning@1` has no released model, so there is nothing to show — deliberately not built around an unavailable capability.
 - **No sort or filter controls.** A client-side sort would reorder only the loaded page while presenting it as the top of the whole list *(D4)*.
 - **One page, no infinite scroll.** The cursor works; the UI does not page yet.

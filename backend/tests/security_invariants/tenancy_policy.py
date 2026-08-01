@@ -106,6 +106,11 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         "research_task",
         "research_finding",
         "research_synthesis",
+        # Commercial Profile (M12.5), migration 0019. **Customer-authored
+        # declaration** — the second table in the platform that cannot be
+        # regenerated from anything, after `signal_profile`. A pipeline
+        # rebuild must leave it untouched.
+        "product_catalog",
     }
 )
 
@@ -217,6 +222,11 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         "research_task",
         "research_finding",
         "research_synthesis",
+        # A revision is a new version naming the one it supersedes; no
+        # `UPDATE` grant exists. `DELETE` deliberately does — erasability is
+        # a tenancy property, and the first draft of migration 0019 withheld
+        # it until this suite refused.
+        "product_catalog",
     }
 )
 

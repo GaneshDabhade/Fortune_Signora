@@ -109,7 +109,15 @@ When providers agree, the row shows the name and nothing else — no badge, no a
 
 ### Deferred from M12.2
 
-**D7 — provider precedence is a customer policy, not a default.**
+**D7 — provider precedence is a customer policy, not a default.** — 🔴 **SUPERSEDED 2026-08-01.**
+
+> **Reversed by the product owner's ruling that provider configuration is never customer-facing** ([04-modules.md](04-modules.md), [ADR-0035](adr/0035-commercial-profile.md)). **This entry is the origin of the claim** — two descendants in `37-product-surface.md` and `04-modules.md` were corrected first, and this one survived the sweep. A customer cannot rank suppliers they were never told about, and asking them to would hand Signora's core competence back across the table.
+>
+> **Recency is not a default awaiting a customer's ruling — it is Signora's stated resolution rule**, and improving it is Signora's job. The customer-facing half survives unchanged and is the part that mattered: **disagreement is shown, never hidden.**
+>
+> Left standing as written, dated rather than rewritten: it records what was decided then, and the decision to reverse it is only legible beside the original.
+
+**The original entry, as written:**
 Recency ships as the selection rule: a company that renamed should display its new name, and recency is the only ordering the claim record supports without inventing a provider trust ranking. **A customer who would rather see their CRM's name than the freshest third-party one is expressing a policy** — the same category as the scoring model and the opportunity policy, both of which are versioned, customer-owned artifacts. Encoding a precedence order in code now would put an unreviewed judgement in the substrate.
 *Trigger:* a customer disagreeing with a displayed name. Not before.
 

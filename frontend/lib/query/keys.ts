@@ -34,6 +34,10 @@ export const queryKeys = {
   accountValidation: (workspaceId: string, accountId: string) =>
     ['workspace', workspaceId, 'accounts', accountId, 'validation'] as const,
 
+  /** Lane B (Commercial Profile). The catalog is read whole and saved whole,
+   * so one key per workspace is the whole cache surface. */
+  products: (workspaceId: string) => ['workspace', workspaceId, 'products'] as const,
+
   signalCatalog: (workspaceId: string) =>
     ['workspace', workspaceId, 'signal-catalog'] as const,
 

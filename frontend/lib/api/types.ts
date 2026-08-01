@@ -359,3 +359,48 @@ export interface BusinessEventEvidence {
   /** Oldest first: a change reads forwards. */
   observations: EvidenceObservation[];
 }
+
+/**
+ * One thing the customer sells.
+ *
+ * **Declared, never derived.** Every other type in this file describes
+ * something Signora computed about the world; a product is a sentence
+ * somebody typed. It is the first customer-authored shape to reach the
+ * product surface.
+ */
+export interface Product {
+  /** Stable across every revision of the catalog. **Chosen by the client**,
+   * which is what makes saving idempotent — a retried save cannot duplicate
+   * a product — and what lets everything declared later cite one. */
+  id: string;
+  name: string;
+  /** What it does, in the customer's own words. May be empty. */
+  description: string;
+}
+
+/**
+ * What this workspace sells, and who last said so.
+ *
+ * **Versioned as a whole.** The catalog is the unit: a version is a complete
+ * statement, so a product absent from `products` is one the workspace no
+ * longer sells — and the version that contained it stays readable. Saving
+ * quotes the version being replaced, which turns a colleague's concurrent
+ * edit into a refusal rather than an overwrite neither of you sees.
+ */
+export interface ProductCatalog {
+  /** **0 when nothing has been declared** — the state every workspace starts
+   * in, and an answer rather than an absence. */
+  version: number;
+  products: Product[];
+  /** Null only at version 0. */
+  updated_at: string | null;
+  /** Null only at version 0. A declaration names its author permanently:
+   * the row is never edited, so this cannot be reattributed. */
+  updated_by: string | null;
+}
+
+/** A complete statement of the catalog, replacing `expected_version`. */
+export interface PublishProductCatalog {
+  expected_version: number;
+  products: Product[];
+}

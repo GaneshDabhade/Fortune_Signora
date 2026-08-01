@@ -11,3 +11,6 @@ p, owner, *, opportunity, update
 p, member, *, opportunity, update
 p, owner, *, account, read
 p, member, *, account, read
+p, owner, *, product, read
+p, member, *, product, read
+p, owner, *, product, update

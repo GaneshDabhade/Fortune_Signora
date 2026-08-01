@@ -36,6 +36,12 @@ class Resource(StrEnum):
     #: an opportunity is about, and identities exist for accounts with no
     #: opportunity at all, so it is a distinct resource rather than a reuse.
     ACCOUNT = "account"
+    #: Registered by M12.5. A *use* of the platform rather than a change to
+    #: it (§20a) — a new member, no interface reshaped, no existing caller
+    #: affected. Distinct from `WORKSPACE`: reading the catalog is something
+    #: every member does daily, while changing what the company sells is an
+    #: administrative act, and one resource could not express both.
+    PRODUCT = "product"
 
 
 class Action(StrEnum):

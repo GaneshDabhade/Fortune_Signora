@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 
 import { useToast } from '@/components/feedback/toast';
@@ -84,6 +85,25 @@ export default function SettingsPage() {
         </div>
         <Button onClick={() => setDialogOpen(true)}>New organization</Button>
       </header>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Your business</CardTitle>
+        </CardHeader>
+        <CardBody>
+          <p className="text-sm text-content-muted">
+            What your company sells, and — as it arrives — who buys it and who decides.
+            Signora needs this before it can tell you anything useful about anyone
+            else&apos;s company.
+          </p>
+          <Link
+            href="/settings/products"
+            className="mt-3 inline-block rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            Products
+          </Link>
+        </CardBody>
+      </Card>
 
       <Card>
         <CardHeader>

@@ -102,6 +102,42 @@ Each module below follows the template: Purpose, Owns, Does Not Own, Core Concep
 
 ---
 
+### Commercial Profile
+
+> **Manifest** — the fastest way to understand this module. Stable facts only; anything volatile (status, milestone, open findings) lives in `PROJECT_STATUS.md` and the README's module registry, so it is never stated twice.
+>
+> | | |
+> |---|---|
+> | **Purpose** | Records what a customer declares about their own commercial position. **The head of the intelligence pipeline.** |
+> | **Owns** | Product catalog · solutions · ICP definition · buying-committee role templates · target account list · business priorities · commercial versioning · commercial audit history |
+> | **Does Not Own** | Provider configuration/precedence/selection/normalization (Provider Platform) · identity resolution (Knowledge Graph) · **truth resolution** (nobody, deliberately) · signal generation (Signal Engine) · opportunity qualification (Opportunity Engine) · recommendations · research · **company discovery** (a future context) · **person entities** (deferred) |
+> | **Public contracts** | **None yet**, deliberately — nothing downstream consumes a declaration until slice 5. `public/` exists and is empty so the first consumer arrives through it. |
+> | **Endpoints** | `/workspaces/{id}/products` |
+> | **Events produced** | None yet. The first is `commercial_profile.target_accounts_changed` (slice 5), when Provider Platform finally has a source for the `subject` it has taken since M2.1. |
+> | **Events consumed** | None. It is the head; nothing precedes it. |
+> | **Tables** | `product_catalog` — see [11-tenancy.md](11-tenancy.md) and `tenancy_policy.py` |
+> | **Depends on** | Workspace & Tenancy (scope) — and nothing else. **The only module with no upstream pipeline dependency.** |
+> | **Forbidden** | Every pipeline module, enforced by two import-linter contracts |
+> | **Frozen** | No |
+
+**Purpose:** Answers *"who are we, what do we sell, and which companies are worth watching?"* — the customer's declaration of commercial intent, versioned and attributable, and the **input the pipeline never had**. Ratified in [ADR-0035](adr/0035-commercial-profile.md).
+
+**The boundary in one line: it records; it computes nothing, resolves nothing, and calls no provider.** That is what lets it sit upstream of a ten-stage pipeline without knowing the pipeline exists.
+
+**Owns:** Product catalog, solutions, ICP definition, buying-committee role templates, the target account list, business priorities, and the versioning and audit history of all of them. Each is a **separate small aggregate** — products change quarterly and a watch list changes weekly, and versioning them together would produce an audit history nobody could read.
+
+**Does Not Own:** Anything derived. Provider concerns of every kind (Provider Platform), identity resolution (Knowledge Graph), truth resolution (nobody today — see ADR-0035), commercial hypotheses (Signal Engine), qualification (Opportunity Engine), recommendations, research, **company discovery** and **person entities**.
+
+**Core Concepts:** Product, Product Catalog, ICP Definition, Buying Committee Role, Target Account, Business Priority, Catalog Version.
+
+**Key Published Events:** none yet; `commercial_profile.target_accounts_changed` arrives with the target account list.
+
+**Key Consumed Events:** none — nothing precedes the head of the pipeline.
+
+> **Company discovery is a future bounded context, not part of this module.** Its trigger is recorded so it is not a judgement call later: **a provider adapter exposing company search against firmographic criteria.** Until then there is no context, no module, and nothing scheduled — the same treatment `Assignments` already has. The **manual** target account list is not discovery and belongs here.
+
+---
+
 ### Provider Platform
 
 **Purpose:** Orchestrates every external company-intelligence provider integration as a managed capability: credential lifecycle, per-provider rate-limit and quota compliance, polling/webhook scheduling, cost tracking, and adapter health monitoring. This is the runtime home of the Provider Abstraction Layer's adapters (Principle 9).

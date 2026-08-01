@@ -62,6 +62,7 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | — | **M12.1.5** | **Playground v2 — a demo environment worth reviewing against** *(inserted)* | ✅ **Complete** | **2026-07-31** |
 | — | **M12.2** | Identity ✅ · score ✅ · commitment ✅ · narration ✅ · package 🚫 *(blocked, not skipped)* | ✅ **Complete** | **2026-08-01** |
 | 1 | **M12.3** | **Evidence and actions** — what to check ✅ · citations ✅ · transitions and assignment ✅ · the list's *why* ✅ · list hierarchy (D20) ⏳ | 🔵 **In progress** | — |
+| 2 | **M12.5** | **Commercial Profile — the head of the pipeline** · products ✅ · ICP ⏳ · committee ⏳ · priorities ⏳ · target accounts ⏳ | 🔵 **In progress** | — |
 | 4 | M12.4 | Research on demand | ⏳ Queued | — |
 | — | M11 | Recommendation Engine | 🟣 **Deferred 2026-07-31** — *not cancelled*; resumes on a product trigger, see §10 | — |
 | 5 | M7 | Timeline | ⏳ Queued | — |
@@ -155,6 +156,27 @@ A demo environment worth reviewing a product against. Requested by the product o
 | **Three unreachable capabilities fixed** | See §5 — each was complete in every layer except the one that had to supply the evidence |
 | **Product review** | Recorded as D19 and D20 in [38-product-design-principles.md](docs/architecture/38-product-design-principles.md) |
 
+### 🔵 M12.5 — Commercial Profile, slice 1: the product catalog
+
+**The fourteenth module, and the first with no upstream dependency.** Signora had thirteen modules that process companies and nothing that said *which* companies — `RunProviderSync` has taken a `subject` since M2.1 and nothing has ever supplied one. Ratified in [ADR-0035](docs/architecture/adr/0035-commercial-profile.md).
+
+| Delivered | |
+|---|---|
+| **`commercial_profile`** | Records what a customer declares. **It computes nothing, resolves nothing, and calls no provider** — which is what lets it sit upstream of a ten-stage pipeline without knowing the pipeline exists. Two import-linter contracts enforce it (29 → 31) |
+| **`ProductCatalog`** | Versioned, immutable, superseded — the `signal_profile` discipline. **A product's identity outlives the catalog containing it**, so everything declared later can cite one and still resolve twelve revisions on |
+| **`GET`/`PUT …/products`** | The catalog is saved **whole**, because it is the versioned unit. `expected_version` turns a colleague's concurrent save into a **409 a person can act on** rather than an overwrite neither of them sees. Client-chosen product ids make the `PUT` idempotent |
+| **Migration `0019`** | Forced RLS, no `UPDATE` grant. **Currency is `MAX(version)`, not `supersedes IS NULL`** — see the finding below |
+| **`/settings/products`** | The first screen where a customer tells Signora something. Already owner-guarded by `GUARDED_ROUTES`; the server refuses a member's write independently (403, asserted) |
+| **Tests** | 17 domain · 16 endpoint · 14 component · 2 new Security Invariant registrations |
+
+**Two architectural findings, both from building it.**
+
+**`signal_profile`'s supersession direction is inverted.** The new row carries `supersedes = <old id>` and `current()` selects `WHERE supersedes IS NULL` — which is the **first** version, permanently. It is latent only because nothing has ever written a second profile, and **it would become reachable the moment the signal profile gets a write API**, which is slice 2/4 territory. Not fixed here: different module, and the fix wants its own change. `product_catalog` deliberately reads `MAX(version)` instead.
+
+**The Security Invariants refused my first migration, and were right.** I withheld `DELETE` to protect the audit history. *Erasability is a property of the tenancy model, not of what a row means* — a table the app role cannot delete from is a workspace that cannot be erased. Immutability is an **application** concern and is enforced where it belongs: no `UPDATE` grant, and a repository offering no delete method.
+
+**Deliberately not built:** no event (nothing consumes a declaration until slice 5) · no `public/` contract (the package exists and is empty, so the first consumer arrives through it) · no ICP matching, no discovery, no provider integration.
+
 ### 🔵 M12.3 — evidence and actions
 
 **The milestone's goal, set by the product owner:** reduce uncertainty *after* an account has been selected, and begin answering **"what should I do?"** — with no Recommendation Engine, no invented AI, and only deterministic information the platform already holds.
@@ -209,7 +231,7 @@ A demo environment worth reviewing a product against. Requested by the product o
 | M12.3 | **R4-04** — a dismissed account is unreachable once you navigate away. A *closed and dismissed* filter, which is the same list slice |
 | M12.2 | The Decision Package panel, **on the trigger `reasoning@1` earns a release** and not before |
 | M12.4 | Research on demand — dispatch, status, and the brief. The one genuinely new backend capability the product surface still needs |
-| **M12.5** *(proposed)* | **The workspace a customer authors** — the signal relevance profile over HTTP and on screen, and membership by invitation. Both have a shipped module and a ratified owner; neither has an entry point. **Recommendation 1 of the Consistency Review, awaiting the product owner** |
+| **M12.5** | **Commercial Profile**, slices 2–5 — ICP declaration · buying committee templates · business priorities · target account list. The last of these publishes `target_accounts_changed` and finally gives Provider Platform the `subject` it has taken since M2.1 |
 | unassigned | **D32** — the other half of D23. Naming a person needs a cross-tier profile contract and belongs in an ADR, not a slice |
 
 **Deterministic-first ordering, unchanged from M8 and M9:** storage before retrieval, retrieval before orchestration, generation and evaluation last. **Embeddings, pgvector, external retrieval and provider re-query are deferred**, each with a stated trigger.

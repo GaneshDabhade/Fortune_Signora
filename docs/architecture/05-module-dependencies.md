@@ -17,6 +17,7 @@ This document defines the **allowed dependency directions** between modules defi
 ```mermaid
 flowchart LR
     WS["Workspace & Tenancy"] -.scopes.-> ALL[All Modules]
+    CP[Commercial Profile] --> PP
 
     PP[Provider Platform] --> PN[Provider Normalization]
     PN --> KG[Knowledge Graph]
@@ -55,7 +56,8 @@ This graph is, by design, **acyclic**. No module depends on a module downstream 
 | Module | Depends on (via events, unless noted) |
 |---|---|
 | Workspace & Tenancy | none |
-| Provider Platform | Workspace & Tenancy (sync, for workspace-scoped provider enablement) |
+| Commercial Profile | Workspace & Tenancy (sync, for workspace scope) |
+| Provider Platform | Workspace & Tenancy (sync, for workspace scope) · Commercial Profile (event, for the target account list — **slice 5**) |
 | Provider Normalization | Provider Platform |
 | Knowledge Graph | Provider Normalization |
 | Observation Engine | Knowledge Graph |
@@ -79,6 +81,28 @@ It is the only node in this graph that is **consumed by** downstream modules whi
 The one reach it makes — `opportunity_engine.public`, to narrate an explanation the pipeline has already computed — happens **only in `infrastructure/`**, satisfying an `ExplanationSource` Protocol declared in `application/ports.py`. Three import-linter contracts hold the line: domain and application may not import a business module *at all*; infrastructure may reach one only through `public/`; and no business module may import the AI Platform. A Security Invariant asserts the contracts themselves are still registered, because a rule deleted from configuration cannot be broken.
 
 This is the M5B `SignalReader` finding applied deliberately rather than discovered under pressure: **if a fake cannot stand in for a dependency, the dependency was never really a boundary.**
+
+
+## Context map — what *kind* of coupling each edge is
+
+> Added 2026-08-01, for parallel development. The graph above says *who depends on whom*; this says **how tightly**, in DDD's vocabulary — which is what tells a development lane whether it may change something freely, must tell another lane, or needs an ADR.
+
+| Upstream → Downstream | Pattern | What it means for a lane |
+|---|---|---|
+| **Workspace & Tenancy → all** | Conformist | Every module conforms to `workspace_id`; none influences it |
+| **Commercial Profile → Provider Platform** | Customer–Supplier | Downstream's needs shape the contract. Negotiable between lanes |
+| **Provider Platform → Provider Normalization** | **Anticorruption Layer** | The clearest ACL in the codebase — it exists so vendor models cannot leak inward, and *"any judgement of which claim is true"* is explicitly refused |
+| **Provider Normalization → Knowledge Graph** | **Published Language** | The canonical claim vocabulary; [34-knowledge-contract.md](34-knowledge-contract.md) is its specification |
+| Knowledge Graph → Observation → Business Event | Customer–Supplier | Stages, negotiated at the boundary |
+| **Business Event Engine → Signal Engine** | **Published Language** | The taxonomy is *"a product asset, and Signora's business language"*, versioned separately from payloads for exactly this reason |
+| Signal → Buying Score → Opportunity | Customer–Supplier | Via `SignalExplanation`, `ContributionLedger` |
+| **AI Research → AI Reasoning** | Customer–Supplier, **non-blocking** | Documented timeout and fallback. The template for any future optional edge |
+| **AI Platform → both AI engines** | **Open Host Service** | One published protocol — port, registry, prompt registry, evidence set — for many consumers, vendor-neutral by construction |
+| **AI Platform → Opportunity Engine `public/`** | Conformist | Reads, influences nothing. Infrastructure layer only |
+| Everything → **Timeline**, **Revenue Intelligence Platform** | Conformist | Projections; they own none of what they display |
+| **`signora_platform`** | **Shared Kernel, frozen** | Not a bounded context. CLAUDE.md §20a governs it |
+
+**The rule this produces:** a lane may change anything behind a **Conformist** or **ACL** edge freely · a **Customer–Supplier** edge requires telling the downstream lane · a **Published Language** edge requires an ADR.
 
 ## Synchronous vs. Asynchronous Dependencies
 

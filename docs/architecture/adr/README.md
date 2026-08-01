@@ -57,6 +57,7 @@ Every ADR follows this structure:
 | [0032](0032-release-certification.md) | Release Certification: the evidence a version carries, not a sixth kind of test |
 | [0033](0033-authentication-methods.md) | Authentication Methods Are Configuration — email + password alongside OAuth; the method changes and the authenticated identity does not |
 | [0034](0034-ubiquitous-language.md) | The Product's Ubiquitous Language — *Organization* is what a customer says, *workspace* is what the platform says, and the boundary is enforced by a test |
+| [0035](0035-commercial-profile.md) | Commercial Profile — the head of the intelligence pipeline: the bounded context that records what a customer declares, and the owner ICP never had |
 
 ## How to Propose a New ADR
 
