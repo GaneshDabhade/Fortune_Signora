@@ -7,6 +7,7 @@ import {
   ContestedMark,
   EvidenceHealth,
   Hypothesis,
+  Ownership,
   ScoreMovement,
 } from '@/components/intelligence/attention';
 import { EntityName } from '@/components/intelligence/entity-name';
@@ -14,6 +15,7 @@ import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { Card, CardBody, EmptyState, SkeletonText } from '@/components/ui';
 import type { AccountAttention, AccountIdentity } from '@/lib/api/types';
 import { useAccountIdentities, useAccounts, useSignalCatalog } from '@/lib/query/hooks';
+import { useSession } from '@/lib/auth/client';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -56,6 +58,10 @@ export default function AttentionPage() {
   // versioned artifact, held for the session, and it parallelises with the
   // other two rather than following them.
   const { data: catalog } = useSignalCatalog(activeWorkspace?.id ?? null);
+  // Only so a row can say *yours* rather than *taken*. Never an authorization
+  // decision — Casbin on the server is that, and always.
+  const { data: session } = useSession();
+  const viewerId = session?.user.id ?? null;
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6">
@@ -86,6 +92,7 @@ export default function AttentionPage() {
                 hypothesis={
                   account.signal_type ? catalog?.get(account.signal_type) : undefined
                 }
+                viewerId={viewerId}
               />
             </li>
           ))}
@@ -108,12 +115,15 @@ function AccountRow({
   identity,
   namesLoading,
   hypothesis,
+  viewerId,
 }: {
   account: AccountAttention;
   identity: AccountIdentity | undefined;
   namesLoading: boolean;
   /** The catalog's title for this row's leading hypothesis. */
   hypothesis: string | undefined;
+  /** The signed-in reader, so a row they hold can say so. */
+  viewerId: string | null;
 }) {
   return (
     // No card-wide hover. **Only the account name opens the brief**, and a card
@@ -140,6 +150,14 @@ function AccountRow({
 
         <div className="flex shrink-0 items-center gap-3 pt-0.5">
           <div className="flex items-center gap-2">
+            {/* **What the seller did, beside what the evidence says.** The
+                one action Signora offers had no visible consequence on the
+                surface a seller opens every morning (D40). */}
+            <Ownership
+              ownerId={account.owner_id}
+              stage={account.stage}
+              viewerId={viewerId}
+            />
             <ContestedMark contested={account.contested} />
             <EvidenceHealth evidence={account.evidence} />
           </div>

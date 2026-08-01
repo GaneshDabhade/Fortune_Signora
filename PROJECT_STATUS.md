@@ -16,7 +16,7 @@
 | **Current phase** | **Product implementation** — the pipeline is built; the surface is being exposed |
 | **Last completed milestone** | **M10 — AI Research Engine**, closed 2026-07-31 |
 | **Current milestone** | **M12.3 — evidence and actions** *(Decision Package still deferred until `reasoning@1` is released — see §10)* |
-| **Latest commit** | *M12.3 — the front door* (D38) |
+| **Latest commit** | *M12.3 — the list knows what you are working* (D39, D40) |
 | **Latest certification** | [`d954c930`](certification/reports/d954c930319a.md) — **CERTIFIED**, 2026-07-31 *(predates M12.2; re-cut at milestone close)* |
 | **Branch** | `main`, tree clean, pushed |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
@@ -184,7 +184,10 @@ A demo environment worth reviewing a product against. Requested by the product o
 | **The information architecture** (**D38**) | Reviewed from first principles and approved. **Six navigation entries became two.** Companies, Signals and Timeline were four of thirteen pipeline modules with a menu item each — a data model rendered as navigation, and none of them a customer journey. `/` is now **Attention**, the ranked list: a seller's first screen is their morning's work rather than a placeholder promising an integration a milestone away. **D1** is settled with it, after two deferrals |
 | **A reviewer reaches the product in one command** | `make demo` brings up the stack, migrates the schema, creates Better Auth's tables, creates **four sign-in accounts through Better Auth's own sign-up and verification routes**, and seeds twelve accounts. `docs/RUNNING.md` is the single source of truth for setup, credentials and troubleshooting |
 | **Tests** | navigation invariant rewritten · 4 first-run regression · 4 empty-state |
-| ⏳ **Next** | **D20** — a 50 and a 1 still render identically, and **R5-02** gives it a candidate the pipeline already computes: group by *posture*, not by an invented threshold. Needs a seller |
+| **D20, evaluated and closed** (**D39**) | Every option measured against the real twelve before anything was written. **Grouping produces six groups for twelve rows, three of them holding a single row** — a feature of a long list, and D6's trigger has not fired. **Pure score ordering stays**, and D20's premise is rejected: in a ranked list, position *is* the judgement, and the complaint was written before rows said anything |
+| **The list knows what you are working** (**D40**) | J4 shipped *"I'm working this"* and the list rendered nothing with it — `owner_id` had been on the wire since M12.1, unused. Rows now read *Yours* / *Taken* / *Being worked*, and **the same list reads differently to each person**. No filter and no reordering: both are volume features |
+| **Tests** | 5 ownership component tests |
+| ⏳ **Next** | **R9-03 / the honest remainder of D20** — a contraction risk still reads like a small opportunity. Posture on the row, using the pipeline's own word rather than catalog keys hardcoded in a component. **It changes what a CRO scans for, so it wants a seller in the room** |
 
 > **🟠 It ships to the Playground and not to a customer until F-3 closes.** The catalog's guidance is *engineering-authored pending domain review*, and *"ask on a first call which division the investment sits in"* is advice a real seller will act on. Good content is not the same as signed content.
 
@@ -251,7 +254,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 
 | Indicator | Value | Target |
 |---|---|---|
-| **Frontend tests** | **292 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Frontend tests** | **297 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Migrations** | `0001`–`0018`, additive and reversible — `0018` proven by an applied downgrade/upgrade cycle | reversible |
 | **Architecture drift** | **0** — no ratified ADR reversed | trending to 0 |
 | **Open production bugs** | **0** | 0 |

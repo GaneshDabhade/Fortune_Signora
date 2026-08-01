@@ -1070,3 +1070,143 @@ Organising a menu by the modules that produce data is the most natural mistake a
 **Inventing Manager / AE / SDR workspace roles to match the personas.** Rejected: domain design done by a seeding script. *Returns with a demonstrated need — see R8-05.*
 
 **Folding `npm run dev` and the API into `make demo`.** Rejected: it would hide the two processes whose logs a reviewer needs — including the one the verification link is printed to. *Will not return.*
+
+---
+
+# Review 9 — the Attention page, reviewed as a workflow *(2026-08-01, M12.3)*
+
+> **The instruction was explicit: review the workflow, not the implementation.** Challenge every element. Does a row answer *what happened · why does it matter · what should I do · what evidence supports this · what could change this*?
+
+The row, element by element, and what each is actually for:
+
+```
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  NVIDIA Corporation                          [Yours]  [Contested] 75 │
+  │  Expansion opportunity   +15                                         │
+  └──────────────────────────────────────────────────────────────────────┘
+      ↑ name          ↑ hypothesis  ↑ move    ↑ ownership  ↑ dissent  ↑ score
+```
+
+| Element | The question it answers | Verdict |
+|---|---|---|
+| **Account name** | *Who is this?* | **Earns its place.** A seller scans names, and it is the only link |
+| **Hypothesis** | *What happened, and why does it matter?* | **Earns it, and it is the row's spine** — six distinct values across twelve accounts since the list slice |
+| **Movement** | *What changed?* | **Earns it, narrowly.** It is the only *temporal* fact on the row |
+| **Ownership** | *What should I do — or has somebody?* | **New this slice.** Silent on the common case |
+| **Contested** | *What evidence disagrees?* | **Earns it, rarely.** One row of twelve, and it is the most interesting row |
+| **Evidence health** | *What could change this?* | **Earns it, rarely.** Silent when current |
+| **Score** | *How much attention?* | **Earns it as an ordering.** Redundant as a number — see R9-02 |
+
+---
+
+## R9-01 · The row answers four of the five questions, and the fifth is one click away 🟢
+
+**Observation.** *What happened* (hypothesis) · *why it matters* (hypothesis + posture in the wording) · *what evidence supports this* (**not on the row**) · *what could change this* (evidence health) · *what should I do* (ownership, newly).
+
+**Why that is right rather than a gap.** *"What evidence supports this"* is the brief's entire job, and putting it on a row would make twelve rows unscannable. **The list's contract is that every row is followable, not that every row is complete.** That is what progressive disclosure means on a list — information ordered so most of it is never read.
+
+**Would a salesperson naturally click this row?** Yes, and the evidence is behavioural rather than aesthetic: they click the *name*, which is the only link, and the hypothesis beside it is the reason they chose that name over another. Before the list slice they had no reason and the click was arbitrary.
+
+**Priority:** — **Milestone:** none. Recorded as the bar.
+
+---
+
+## R9-02 · The score is on the row twice 🟡
+
+**Observation.** The list is *ordered by* score and also *prints* score. Position and number carry the same fact.
+
+**Why it matters.** Every other element is silent when it has nothing to say. The number is the only one that is always present and never surprising — you already know row 1 outranks row 2, because it is row 1.
+
+**The counter-argument, which is why this is not being changed.** The number is not only a rank: `75` and `1` differ in a way position cannot express, and **removing it would leave a reader unable to tell a strong book from a thin one.** That gap — between 75 and 1 — is exactly what D20 was reaching for, and it turns out the score *already* expresses it. The redundancy is in the ordering, not the number.
+
+**Suggested future improvement.** If anything goes, it is the ordering's *implicitness*, not the number: a list that stated its own rule (*"ranked by attention, most pressing first"*) would make the number's second job legible. **The page subtitle already says this.** Recorded and closed.
+
+**Priority:** Low. **Milestone:** none.
+
+---
+
+## R9-03 · A contraction risk still reads like a small opportunity 🟠
+
+**Observation.** *Datadog · Contraction risk · 5 · stale* sits eleventh. Every element of that row is correct and the row looks exactly like *Salesforce · New decision maker · 10*.
+
+**Why it matters.** **The hypothesis names the risk and nothing shows it.** A CRO scanning twelve rows for trouble reads twelve rows. The pipeline computes posture and refuses to net it away precisely because *"two accounts can score identically and mean opposite things"* — and the list is where that refusal stops being visible.
+
+**Suggested future improvement.** Posture on the row, from the leading contribution — the pipeline's own word, not a set of catalog keys hardcoded in a component. **Deliberately not built in this slice:** it changes what a CRO scans for, which is a product judgement that wants a seller in the room, and D39 records it as the honest remainder of D20.
+
+**Priority:** Medium. **Milestone:** next, with a seller.
+
+---
+
+## R9-04 · Every row is one line of a story and no row tells one 🟡
+
+**Observation.** *"NVIDIA — Expansion opportunity — +15 — Yours — 75."* That is a sentence. **What it is not is a change**: nothing says whether this is new since yesterday, or the fourth morning it has looked identical.
+
+**Why it matters.** A seller opening Signora daily is asking *what changed*, and the list answers *what is true*. Those coincide on day one and diverge by day three.
+
+**Suggested future improvement.** **D5** — *what changed since you last looked* — needs per-user read state and is a real schema decision. It is also what would make a Morning Brief worth building, which D39 rejected for exactly this reason.
+
+**Priority:** Medium. **Milestone:** unassigned. **Trigger:** a design partner saying they cannot tell what is new.
+
+---
+
+## R9-05 · Could this row become the defining interaction of Signora? 🟢
+
+**Asked directly by the product owner, and worth answering directly: it already is, and one element makes it so.**
+
+Every competitor's list is *name · number · trend*. Signora's row carries the **hypothesis** — a versioned, reviewed, deterministic classification of what is happening at that company, produced with no model, which a customer can follow to the evidence and challenge line by line.
+
+**The defining interaction is the click, not the row.** The row earns the click; the brief survives it. No competitor's summary survives being clicked.
+
+**What would strengthen it, in order:** posture (R9-03), then *what changed since you last looked* (R9-04). **What would weaken it:** anything that makes the row longer.
+
+**Priority:** — **Milestone:** none.
+
+---
+
+## The five roles — the morning question, and whether the list answers it
+
+**SDR** — *"Who do I call today?"* **Answered.** Top-down, stop when you have three. *"The reason column is why I pick one over another."*
+
+**AE** — *"Which of my accounts moved?"* **Newly answered, partly.** Rows say *Yours*. *Doubt:* "I still read twelve rows to find my three." **A filter, at volume — D6's trigger.**
+
+**Sales Manager** — *"Where should my team focus?"* **Partly.** *Taken* says somebody has it and not who. **D23**, and it bites hardest here.
+
+**RevOps** — *"Is the intelligence behaving?"* **Not a list question**, and correctly so — theirs is answered by the brief's arithmetic. *Delight:* "Nothing on this screen was written by a model."
+
+**CRO** — *"What is at risk?"* **Not answered.** R9-03. *"I read every row to find the two that matter."*
+
+**The common thread.** Reviews 1–4 were about *whether the list said anything*. This one is about *whether it says it in the right order for the person reading* — three of five roles now want the same list arranged for them. **That is a filtering and grouping question, and it arrives when the list is long enough to need one.**
+
+---
+
+## The staff-designer pass
+
+**Apple.** Seven elements on a row and **five of them are silent most of the time**. That is the discipline: the row grows only when the account is unusual. **The best-composed surface in the product.**
+
+**Stripe.** The score prints beside an ordering that already implies it (R9-02) — and the number carries information the ordering cannot. **Kept, deliberately, and now documented.**
+
+**Linear.** Still no keyboard path, and this is now the front door. `j`/`k` and `Enter` would cost little and this is the third review to ask. **Medium · interaction slice.**
+
+**Notion.** *"NVIDIA — Expansion opportunity — +15 — Yours."* **Reads as a sentence, in a product where no model wrote it.**
+
+**Cursor.** *Yours* is the first element on this screen that reflects the reader back at them. **The product now knows who is looking**, which is the beginning of it feeling like a tool rather than a report.
+
+**Perplexity.** Every row is followable, and the click ends at provider readings. **The click is the product.**
+
+**OpenAI.** Nothing on this screen is model-authored, on the screen opened most often. **Still unstated, four reviews running.** On the daily surface it is the most defensible sentence Signora could print.
+
+---
+
+## Rejected ideas
+
+**Grouping the list.** Measured: six groups for twelve rows, **three holding a single row**. See **D39**. *Returns at D6's trigger — a list that stops fitting on one screen.*
+
+**Pinning risk above everything else.** It works, and it puts *which hypotheses count as risk* in a React component — a second opinion about the Signal Catalog held by the layer least able to review one. *Returns as posture on the row, which is the pipeline's own word.*
+
+**Named sections — Heating Up, Cooling, Decision Maker Left.** Each is a restatement of a field already on the row. *Will not return in this form.*
+
+**Sorting owned rows to the top.** It makes the list's order depend on who is looking, and the ranking is the ranking. *Returns as a filter, not as an ordering.*
+
+**A *mine / everyone* filter now.** Right at three hundred accounts, premature at twelve — **a control that always shows the same thing teaches people to ignore controls.** *Returns at D6's trigger.*
+
+**Removing the score from the row.** Considered seriously under R9-02 and rejected: the gap between 75 and 1 is information the ordering cannot carry, and it is the very gap D20 was reaching for.

@@ -862,3 +862,92 @@ This is not deferring them. **They were never top-level:**
 **Keeping the *coming soon* entries as a roadmap on the screen.** A customer is not the audience for a roadmap, and three of six entries being unavailable reads as a demo.
 
 **Building the Morning Brief now.** See above — it is Overview's mistake with better content until it can say what changed.
+
+---
+
+# D39 — D20, evaluated *(M12.3, 2026-08-01)*
+
+> **The product owner asked for a proper evaluation rather than a choice from a menu**, and specifically not to jump to grouping or to defend score ordering by default. Every option below was measured against the real twelve-account Playground before anything was written.
+
+## The five mornings, and what each is actually asking
+
+| | The question they open with | What answers it |
+|---|---|---|
+| **SDR** | *"Who do I call today?"* | A short ordered list of names with a reason. They work top-down and stop |
+| **AE** | *"Which of **my** accounts moved?"* | **Ownership.** They do not triage the workspace; they check their book |
+| **Sales Manager** | *"Where should my team focus?"* | Ownership again, across people |
+| **RevOps** | *"Is the intelligence behaving?"* | **Not a daily list question.** Theirs is answered by the brief's arithmetic |
+| **CRO** | *"What is at risk?"* | Posture, not rank |
+
+**Three distinct questions, not five.** *Who do I call* · *what moved on mine* · *what is at risk*. The list answers the first well and the other two not at all.
+
+## What each option actually produces, measured
+
+```
+OPTION B — grouped by hypothesis, score-ordered inside
+
+  Expansion opportunity (2) · Active evaluation (5) · Displacement (2)
+  New decision maker (1) · Contraction risk (1) · Decision maker departed (1)
+
+  6 groups for 12 rows.  THREE OF SIX HOLD A SINGLE ROW.
+
+OPTION C — risk pinned above everything else
+
+  Needs attention (2)  ·  Everything else (10)
+```
+
+**Grouping is a feature of a long list, and this list is twelve rows.** Six headings to read twelve accounts is more chrome than content, and it destroys the one ordering the product actually computed — Datadog would sit under its own heading, above nine accounts that matter more. **D6 already set the trigger and it has not fired:** *"a workspace with enough accounts that the ranked list stops fitting on one screen."*
+
+**Option C works structurally and hardcodes a judgement in the wrong place.** *Which hypotheses count as risk* would be a set of catalog keys living in a React component — a second opinion about the Signal Catalog, held by the layer least able to review one. The pipeline already has the word: **posture**, which `posture_summary()` refuses to net away precisely because *"two accounts can score identically and mean opposite things."*
+
+## The conclusion: pure score ordering stays, and D20's premise is rejected
+
+> *"If everything gets the same treatment, the ranking isn't a judgement — it's a sort."* — the CRO, Review 1
+
+**In a ranked list, position *is* the judgement.** Making row 1 visually heavier restates in a second channel what the reader already knows from it being row 1 — the same information, more ink. And any visual break needs a threshold, which is the unreviewed judgement D20 itself warned about.
+
+**D20 was written before the rows said anything.** At Review 1 every row read *"New evidence arrived"*, so the score was genuinely the only differentiator and its uniform treatment was the whole screen. Since the list slice each row names what is happening at that account, and **the complaint has quietly been answered by content rather than by hierarchy.**
+
+## What D20 actually contained, now that it can be separated
+
+**One: risk is ranked by attention and read by urgency (R5-02).** *Contraction risk* sits eleventh because the scoring model weights contraction lower — correct ranking, wrong triage. **Two rows of twelve.** The honest fix is to put **posture** on the row so a risk row looks like one, using the pipeline's own word rather than a hardcoded set. **It changes what a CRO scans, which is a product judgement with a seller in it.** Recorded, not built.
+
+**Two: the list has no notion of *mine*, and that is the larger finding.** See D40.
+
+## Rejected
+
+**Hybrid grouping** (risk pinned, everything else ranked). The best of the grouped options and still Option C's problem: something must decide what counts as risk, and at two rows of twelve the section is a heading over a pair.
+
+**Named sections — *Heating Up*, *Cooling*, *Decision Maker Left*.** Attractive, and each is a **restatement of a field already on the row**: trend, evidence state, hypothesis. A section header that repeats its rows' content is a table of contents for six items.
+
+**Sorting owned accounts to the top.** It would make the list's order depend on who is looking, and **the ranking is the ranking**. Marking is enough at this size; ordering becomes a *filter* question when volume demands one, which is D6's trigger again.
+
+---
+
+# D40 — The list does not know what you are working
+
+**The finding this evaluation actually produced, and it outranks D20.**
+
+J4 shipped *"I'm working this"* last slice. **Take an account on, return to the list, and nothing has changed** — `owner_id` and `stage` are both on the wire and neither is rendered. The one action Signora offers has no visible consequence on the surface a seller opens every morning.
+
+Measured on the real Playground: **`owner_id` on the wire — yes. Owned by somebody — 0 of 12.** The field has been carried since M12.1 and never used.
+
+**Why it beats every D20 option on the six questions:**
+
+| | |
+|---|---|
+| Would a customer immediately notice? | **Yes** — it is the missing half of the action they just took |
+| Does it reduce uncertainty? | *"Is anyone on this?"* is answered per row, rather than by opening twelve briefs |
+| Does it shorten time-to-decision? | A seller skips what is not theirs |
+| Does it improve trust? | **A team using Signora for a week currently sees no trace of itself in it** |
+| Does it reduce cognitive load? | Twelve accounts becomes *the three I am working, plus nine nobody has claimed* |
+
+**It needs no new endpoint, no new field and no new query.** The row already carries both facts, and the session already knows who is reading. That is the whole slice.
+
+### What it deliberately does not do
+
+**No filter.** A *mine / everyone* control is right at three hundred accounts and premature at twelve, where marking is enough and a control that always shows the same thing teaches people to ignore controls. **Trigger:** D6's — a list that stops fitting on one screen.
+
+**No reordering.** See D39.
+
+**It cannot name anybody but you** — **D23**. The Python tier verifies tokens without ever learning who a person is, so a row says *yours* or *taken*, and the second is the honest form of an identifier nobody can read.

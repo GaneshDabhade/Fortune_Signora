@@ -3,7 +3,7 @@
 import { ArrowDownRight, ArrowRight, ArrowUpRight, Scale } from 'lucide-react';
 
 import { Badge } from '@/components/ui';
-import type { EvidenceState, ScoreTrigger, Trend } from '@/lib/api/types';
+import type { EvidenceState, ScoreTrigger, Stage, Trend } from '@/lib/api/types';
 import { cn } from '@/lib/design/cn';
 
 /**
@@ -206,3 +206,65 @@ export function ContestedMark({ contested }: { contested: boolean }) {
     </Badge>
   );
 }
+
+/**
+ * Whether anybody is working this account, and whether it is you.
+ *
+ * **The missing half of the action the product already offers.** J4 shipped
+ * *"I'm working this"* and the list rendered nothing with it — take an account
+ * on, return here, and the row was identical. `owner_id` and `stage` have been
+ * on the wire since M12.1 and neither had ever been used (**D40**).
+ *
+ * ### It marks and does not reorder
+ *
+ * Sorting owned rows to the top would make the list's order depend on who is
+ * looking, and the ranking is the ranking. A *mine / everyone* filter is right
+ * at three hundred accounts and premature at twelve, where a control that
+ * always shows the same thing teaches people to ignore controls.
+ *
+ * ### Silent on the ordinary case
+ *
+ * An unclaimed account that Signora is merely tracking says nothing — that is
+ * most rows most of the time, and a badge on every one of them would be noise
+ * that trains a reader past the badges that matter.
+ *
+ * ### It can say *you* and it cannot say anybody else's name
+ *
+ * **D23.** The Python tier verifies tokens without ever learning who a person
+ * is, so *taken* is the honest form of an identifier nobody can read.
+ */
+export function Ownership({
+  ownerId,
+  stage,
+  viewerId,
+}: {
+  ownerId: string | null;
+  stage: Stage;
+  /** The signed-in reader. Null while the session is still resolving, which
+   * renders as *taken* rather than as a wrong *yours*. */
+  viewerId: string | null;
+}) {
+  if (ownerId === null) {
+    // Closed without an owner — somebody decided about it and never held it.
+    // Worth saying, because the row is otherwise indistinguishable from work
+    // nobody has looked at.
+    if (stage === 'tracking') return null;
+    return <Badge tone="neutral">{STAGE_MARK[stage]}</Badge>;
+  }
+
+  return ownerId === viewerId ? (
+    <Badge tone="accent">Yours</Badge>
+  ) : (
+    <Badge tone="neutral">Taken</Badge>
+  );
+}
+
+/** What a stage is called where there is room for one word. The brief spells
+ * each of them out; a list row has to be scannable. */
+const STAGE_MARK: Record<Stage, string> = {
+  tracking: 'Tracking',
+  engaged: 'Being worked',
+  closed_won: 'Won',
+  closed_lost: 'Lost',
+  dismissed: 'Dismissed',
+};

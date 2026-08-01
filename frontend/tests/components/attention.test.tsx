@@ -15,6 +15,7 @@ import {
   ContestedMark,
   EvidenceHealth,
   Hypothesis,
+  Ownership,
   ScoreMovement,
   WhyNow,
 } from '@/components/intelligence/attention';
@@ -182,5 +183,58 @@ describe('the row says what is happening, not that something happened', () => {
     render(<Hypothesis signalType="active_evaluation" title="Something Else Entirely" />);
 
     expect(screen.getByText('Something Else Entirely')).toBeInTheDocument();
+  });
+});
+
+describe('the list shows what you are working', () => {
+  const VIEWER = 'aaaaaaaa-1111-4111-8111-111111111111';
+  const COLLEAGUE = 'bbbbbbbb-2222-4222-8222-222222222222';
+
+  it('says nothing about an account nobody has claimed', () => {
+    // Most rows, most mornings. A badge on every one of them is noise that
+    // trains a reader past the badges that matter.
+    const { container } = render(
+      <Ownership ownerId={null} stage="tracking" viewerId={VIEWER} />,
+    );
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('marks a row the reader took on', () => {
+    // **The missing half of the action.** J4 shipped "I'm working this" and
+    // the list rendered nothing with it — take an account on, come back, and
+    // the row was identical (D40).
+    render(<Ownership ownerId={VIEWER} stage="engaged" viewerId={VIEWER} />);
+
+    expect(screen.getByText('Yours')).toBeInTheDocument();
+  });
+
+  it('says a colleague has it without naming them', () => {
+    // **D23.** The Python tier verifies tokens without ever learning who a
+    // person is, so an identifier is all that arrives and "taken" is the
+    // honest form of one nobody can read.
+    const { container } = render(
+      <Ownership ownerId={COLLEAGUE} stage="engaged" viewerId={VIEWER} />,
+    );
+
+    expect(screen.getByText('Taken')).toBeInTheDocument();
+    expect(container.textContent).not.toContain(COLLEAGUE);
+  });
+
+  it('does not claim a row is yours before the session resolves', () => {
+    // Announcing "Yours" and then correcting it reads as a bug, and getting
+    // ownership wrong is the one thing this badge exists not to do.
+    render(<Ownership ownerId={COLLEAGUE} stage="engaged" viewerId={null} />);
+
+    expect(screen.getByText('Taken')).toBeInTheDocument();
+    expect(screen.queryByText('Yours')).not.toBeInTheDocument();
+  });
+
+  it('says what happened to an account somebody closed without holding', () => {
+    // Otherwise the row is indistinguishable from work nobody has looked at,
+    // when in fact somebody decided about it.
+    render(<Ownership ownerId={null} stage="dismissed" viewerId={VIEWER} />);
+
+    expect(screen.getByText('Dismissed')).toBeInTheDocument();
   });
 });
