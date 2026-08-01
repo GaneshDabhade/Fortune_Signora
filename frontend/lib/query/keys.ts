@@ -52,6 +52,11 @@ export const queryKeys = {
   commercialFocus: (workspaceId: string) =>
     ['workspace', workspaceId, 'focus'] as const,
 
+  /** Lane B (Commercial Profile). The one declaration anything downstream
+   * reads, and the only one that announces its own changes. */
+  targetAccounts: (workspaceId: string) =>
+    ['workspace', workspaceId, 'target-accounts'] as const,
+
   signalCatalog: (workspaceId: string) =>
     ['workspace', workspaceId, 'signal-catalog'] as const,
 

@@ -22,12 +22,17 @@ from apps.api.composition.products import (
     FocusWrite,
     IcpRead,
     IcpWrite,
+    TargetAccountsRead,
+    TargetAccountsWrite,
 )
 from modules.commercial_profile.application.declare_committee import (
     DeclareBuyingCommitteeInput,
 )
 from modules.commercial_profile.application.declare_focus import DeclareFocusInput
 from modules.commercial_profile.application.declare_icp import DeclareIcpInput
+from modules.commercial_profile.application.declare_target_accounts import (
+    DeclareTargetAccountsInput,
+)
 from modules.commercial_profile.application.publish import PublishProductCatalogInput
 from modules.commercial_profile.interface.schemas import (
     BuyingCommitteeResponse,
@@ -35,9 +40,11 @@ from modules.commercial_profile.interface.schemas import (
     DeclareBuyingCommitteeRequest,
     DeclareFocusRequest,
     DeclareIcpRequest,
+    DeclareTargetAccountsRequest,
     IcpDeclarationResponse,
     ProductCatalogResponse,
     PublishProductCatalogRequest,
+    TargetAccountListResponse,
 )
 from signora_platform.api import CurrentWorkspace
 from signora_platform.authorization import Action, Resource
@@ -293,6 +300,67 @@ async def declare_focus(
         )
     )
     return CommercialFocusResponse.from_domain(focus)
+
+
+@router.get(
+    "/workspaces/{workspace_id}/target-accounts",
+    response_model=TargetAccountListResponse,
+    summary="Which companies this workspace watches",
+)
+async def target_accounts(
+    context: CurrentWorkspace, accounts: TargetAccountsRead
+) -> TargetAccountListResponse:
+    """The list in force.
+
+    **Never a 404, and never a status.** It reports the companies the customer
+    named. Whether Signora has looked at any of them yet, what it found, and
+    when it will look again are Provider Platform's facts — this response has
+    no field that could carry one.
+    """
+    context.authorize(Resource.TARGET_ACCOUNT, Action.READ)
+    declaration = await accounts.current(context.workspace_id)
+    return (
+        TargetAccountListResponse.empty()
+        if declaration is None
+        else TargetAccountListResponse.from_domain(declaration)
+    )
+
+
+@router.put(
+    "/workspaces/{workspace_id}/target-accounts",
+    response_model=TargetAccountListResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Declare which companies this workspace watches",
+)
+async def declare_target_accounts(
+    context: CurrentWorkspace,
+    declare: TargetAccountsWrite,
+    body: DeclareTargetAccountsRequest,
+) -> TargetAccountListResponse:
+    """Record a complete statement of the watch list, as a new version.
+
+    **The only write in this module that anybody downstream hears about.** It
+    publishes `commercial_profile.target_accounts_changed` on the request's own
+    transaction, so the row and the announcement commit together or not at all.
+
+    **The endpoint returns once the declaration is durably recorded**, not once
+    anything has been synchronized. Nothing about providers happens inside this
+    request, and the response says nothing about what will (§7, ADR-0036).
+
+    **409 when somebody else saved first**, with the version actually in force.
+    """
+    context.authorize(Resource.TARGET_ACCOUNT, Action.UPDATE)
+    declaration = await declare.execute(
+        DeclareTargetAccountsInput(
+            workspace_id=context.workspace_id,
+            accounts=tuple(account.to_domain() for account in body.accounts),
+            expected_version=body.expected_version,
+            # Taken from the verified caller, never from the request.
+            actor_id=context.principal.user_id,
+        ),
+        correlation_id=context.correlation_id,
+    )
+    return TargetAccountListResponse.from_domain(declaration)
 
 
 __all__ = ["router"]

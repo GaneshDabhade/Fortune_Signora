@@ -36,6 +36,14 @@ from modules.commercial_profile.domain.icp import (
     IcpDeclaration,
     ProductIcp,
 )
+from modules.commercial_profile.domain.target_accounts import (
+    MAX_ACCOUNTS,
+    TargetAccount,
+    TargetAccountList,
+)
+from modules.commercial_profile.domain.target_accounts import (
+    MAX_NAME as MAX_ACCOUNT_NAME,
+)
 
 
 class ProductRequest(BaseModel):
@@ -543,8 +551,116 @@ class CommercialFocusResponse(BaseModel):
         )
 
 
+class TargetAccountRequest(BaseModel):
+    """One company the customer wants watched."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    id: UUID = Field(
+        description=(
+            "**Chosen by the client and stable across every revision.** It is what lets "
+            "a consumer tell a *rename* from a *remove and re-add* — different "
+            "instructions about spending money — and what makes saving the same list "
+            "twice produce the same list."
+        )
+    )
+    name: str = Field(
+        min_length=1,
+        max_length=MAX_ACCOUNT_NAME,
+        description=(
+            "The company, **as you would say it**. Signora does not ask for a domain or "
+            "a registration number: working out which company you mean is our job, not "
+            "yours."
+        ),
+    )
+
+    def to_domain(self) -> TargetAccount:
+        return TargetAccount(id=self.id, name=self.name)
+
+
+class DeclareTargetAccountsRequest(BaseModel):
+    """A complete statement of which companies this workspace watches."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    expected_version: int = Field(
+        ge=UNDECLARED,
+        description=(
+            "The version being replaced — **0 when declaring the first list.** Sending "
+            "the version you read turns a colleague's concurrent edit into a refusal "
+            "you can act on instead of an overwrite neither of you sees."
+        ),
+    )
+    accounts: tuple[TargetAccountRequest, ...] = Field(
+        max_length=MAX_ACCOUNTS,
+        description=(
+            "The whole list, not a change to it. A company absent from this list is one "
+            "you no longer want watched — and the version that contained it is still "
+            "readable. **No order and no rank**: nothing here says one account matters "
+            "more than another."
+        ),
+    )
+
+
+class TargetAccountResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID = Field(description="Stable across every revision of the list.")
+    name: str = Field(description="As the customer typed it. Never resolved.")
+
+    @classmethod
+    def from_domain(cls, account: TargetAccount) -> TargetAccountResponse:
+        return cls(id=account.id, name=account.name)
+
+
+class TargetAccountListResponse(BaseModel):
+    """Which companies this workspace watches, and who last said so."""
+
+    model_config = ConfigDict(frozen=True)
+
+    version: int = Field(
+        description=(
+            "**0 when nothing has been declared**, which is the ordinary state of a new "
+            "workspace. Every save increments it, and **the same number travels on the "
+            "event that tells Signora the list changed** — so it is part of a published "
+            "contract rather than only this endpoint's bookkeeping."
+        )
+    )
+    accounts: tuple[TargetAccountResponse, ...] = Field(
+        description=(
+            "In the order the customer arranged them, which carries no rank. **Never a "
+            "status**: whether Signora has looked at an account yet, and what it found, "
+            "belong to other parts of the product."
+        )
+    )
+    updated_at: datetime | None = Field(
+        description="When this version was declared. Null only at version 0."
+    )
+    updated_by: UUID | None = Field(
+        description=(
+            "Who declared it. Null only at version 0. The row is never edited, so this "
+            "cannot be reattributed."
+        )
+    )
+
+    @classmethod
+    def empty(cls) -> TargetAccountListResponse:
+        """A workspace that has named no companies."""
+        return cls(version=UNDECLARED, accounts=(), updated_at=None, updated_by=None)
+
+    @classmethod
+    def from_domain(cls, declaration: TargetAccountList) -> TargetAccountListResponse:
+        return cls(
+            version=declaration.version,
+            accounts=tuple(TargetAccountResponse.from_domain(a) for a in declaration.accounts),
+            updated_at=declaration.created_at,
+            updated_by=declaration.created_by,
+        )
+
+
 __all__ = [
     "BuyingCommitteeResponse",
+    "DeclareTargetAccountsRequest",
     "CommercialFocusResponse",
     "CommitteeRoleRequest",
     "CommitteeRoleResponse",
@@ -558,6 +674,9 @@ __all__ = [
     "ProductCommitteeRequest",
     "ProductCommitteeResponse",
     "ProductIcpRequest",
+    "TargetAccountListResponse",
+    "TargetAccountRequest",
+    "TargetAccountResponse",
     "ProductIcpResponse",
     "ProductRequest",
     "ProductResponse",

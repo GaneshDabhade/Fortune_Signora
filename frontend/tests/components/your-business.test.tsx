@@ -20,6 +20,7 @@ const products = vi.hoisted(() => vi.fn());
 const icp = vi.hoisted(() => vi.fn());
 const committee = vi.hoisted(() => vi.fn());
 const focus = vi.hoisted(() => vi.fn());
+const targets = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/state/workspace-provider', () => ({
   useWorkspaceContext: workspaceContext,
@@ -30,6 +31,7 @@ vi.mock('@/lib/query/hooks/commercial', () => ({
   useIcpDeclaration: icp,
   useBuyingCommittee: committee,
   useCommercialFocus: focus,
+  useTargetAccounts: targets,
   usePublishProductCatalog: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
   useDeclareIcp: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
   useDeclareBuyingCommittee: () => ({
@@ -38,6 +40,11 @@ vi.mock('@/lib/query/hooks/commercial', () => ({
     isError: false,
   }),
   useDeclareFocus: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
+  useDeclareTargetAccounts: () => ({
+    mutate: vi.fn(),
+    isPending: false,
+    isError: false,
+  }),
 }));
 
 import YourBusinessPage from '@/app/(app)/settings/products/page';
@@ -72,6 +79,7 @@ beforeEach(() => {
   icp.mockReturnValue(IDLE);
   committee.mockReturnValue(IDLE);
   focus.mockReturnValue(IDLE);
+  targets.mockReturnValue(IDLE);
 });
 
 describe('a section that could not be loaded', () => {
@@ -79,6 +87,7 @@ describe('a section that could not be loaded', () => {
     ['ideal customer', icp],
     ['buying committee', committee],
     ['focus', focus],
+    ['accounts', targets],
   ])('says so, for the %s', (what, query) => {
     // **Absence is the defect.** Without this the section simply is not there,
     // and the customer has no way to tell an outage from a capability they
@@ -106,10 +115,11 @@ describe('a section that could not be loaded', () => {
     icp.mockReturnValue(FAILED);
     committee.mockReturnValue(FAILED);
     focus.mockReturnValue(FAILED);
+    targets.mockReturnValue(FAILED);
 
     render(withQuery(<YourBusinessPage />));
 
-    expect(screen.getAllByText(/could not be loaded/i)).toHaveLength(3);
+    expect(screen.getAllByText(/could not be loaded/i)).toHaveLength(4);
   });
 
   it('leaves the sections that did load alone', () => {

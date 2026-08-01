@@ -15,13 +15,21 @@ from modules.commercial_profile.application.declare_committee import (
 )
 from modules.commercial_profile.application.declare_focus import DeclareFocus
 from modules.commercial_profile.application.declare_icp import DeclareIcp
+from modules.commercial_profile.application.declare_target_accounts import (
+    DeclareTargetAccounts,
+)
 from modules.commercial_profile.application.publish import PublishProductCatalog
 from modules.commercial_profile.infrastructure.repository import (
     SqlBuyingCommitteeRepository,
     SqlCommercialFocusRepository,
     SqlIcpDeclarationRepository,
     SqlProductCatalogRepository,
+    SqlTargetAccountListRepository,
 )
+from modules.commercial_profile.infrastructure.target_account_reader import (
+    SqlTargetAccountReader,
+)
+from signora_platform.event_bus import EventPublisher
 
 
 def build_catalogs(session: AsyncSession) -> SqlProductCatalogRepository:
@@ -68,3 +76,34 @@ def build_declare_focus(session: AsyncSession) -> DeclareFocus:
         focuses=SqlCommercialFocusRepository(session),
         catalog=SqlProductCatalogRepository(session),
     )
+
+
+def build_target_accounts(session: AsyncSession) -> SqlTargetAccountListRepository:
+    return SqlTargetAccountListRepository(session)
+
+
+def build_declare_target_accounts(
+    session: AsyncSession, *, publisher: EventPublisher
+) -> DeclareTargetAccounts:
+    """The module's only write that announces itself.
+
+    **The publisher writes to the outbox on this same session**, so the row
+    and the event announcing it commit together or not at all. Injected rather
+    than constructed here, because which publisher is in use is the
+    composition root's decision and a test's to substitute.
+    """
+    return DeclareTargetAccounts(
+        repository=SqlTargetAccountListRepository(session),
+        publisher=publisher,
+        session=session,
+    )
+
+
+def build_target_account_reader(session: AsyncSession) -> SqlTargetAccountReader:
+    """The module's published read side.
+
+    **Built here so another module never constructs it.** A consumer depends
+    on the `TargetAccountReader` Protocol in `public/`; its composition root
+    calls this, and the consumer never learns that any of it is backed by SQL.
+    """
+    return SqlTargetAccountReader(session)

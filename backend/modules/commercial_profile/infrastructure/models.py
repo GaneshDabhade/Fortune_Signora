@@ -114,6 +114,33 @@ class BuyingCommitteeModel(DeclarationModel):
     )
 
 
+class TargetAccountListModel(DeclarationModel):
+    """The companies a customer wants watched.
+
+    **The only declaration in this module anything downstream reads.** It is
+    still customer-authored and still regenerable from nothing: a pipeline
+    rebuild replays everything the providers returned, and must not invent the
+    list that asked for it.
+    """
+
+    __tablename__ = "target_account_list"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "version", name="uq_target_account_list_version"),
+        CheckConstraint("version > 0", name="ck_target_account_list_version_positive"),
+    )
+
+    #: JSONB, read whole, like every other declaration here. **Nothing joins
+    #: on a name inside it** — matching a name to a company is the Knowledge
+    #: Graph's, and a relational shape here would invite the query that does
+    #: it in the wrong module.
+    accounts: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, nullable=False)
+    supersedes: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("target_account_list.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+
 class CommercialFocusModel(DeclarationModel):
     """What the workspace is pushing right now.
 

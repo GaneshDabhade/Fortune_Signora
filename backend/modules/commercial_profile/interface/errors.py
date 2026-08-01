@@ -12,6 +12,9 @@ from modules.commercial_profile.application.declare_committee import (
 )
 from modules.commercial_profile.application.declare_focus import FocusVersionConflictError
 from modules.commercial_profile.application.declare_icp import IcpVersionConflictError
+from modules.commercial_profile.application.declare_target_accounts import (
+    TargetAccountsVersionConflictError,
+)
 from modules.commercial_profile.application.declaring import (
     CommitteeUnknownProductError,
     FocusUnknownProductError,
@@ -22,6 +25,7 @@ from modules.commercial_profile.domain.committee import BuyingCommitteeError
 from modules.commercial_profile.domain.declaration import CommercialProfileError
 from modules.commercial_profile.domain.focus import CommercialFocusError
 from modules.commercial_profile.domain.icp import IcpError
+from modules.commercial_profile.domain.target_accounts import TargetAccountError
 from signora_platform.api import ErrorMapping
 
 ERROR_MAPPING: ErrorMapping = {
@@ -53,6 +57,10 @@ ERROR_MAPPING: ErrorMapping = {
         "committee_unknown_product",
     ),
     FocusVersionConflictError: (status.HTTP_409_CONFLICT, "focus_version_conflict"),
+    TargetAccountsVersionConflictError: (
+        status.HTTP_409_CONFLICT,
+        "target_accounts_version_conflict",
+    ),
     FocusUnknownProductError: (
         status.HTTP_422_UNPROCESSABLE_CONTENT,
         "focus_unknown_product",
@@ -65,6 +73,13 @@ ERROR_MAPPING: ErrorMapping = {
     BuyingCommitteeError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "committee_refused"),
     # A duplicated product in the focus, or an objective past its limit.
     CommercialFocusError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "focus_refused"),
+    # An unnamed company, two entries sharing a name, the same entry twice.
+    # **No `*_unknown_product` here** — a watch list cites no product, so the
+    # condition C-003 tracks does not reach a fourth code after all.
+    TargetAccountError: (
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "target_accounts_refused",
+    ),
     # Everything the domain refuses: an unnamed product, two products sharing
     # a name, an ideal customer with no criteria, a size range whose floor is
     # above its ceiling. Registered after the rows above and never shadowing

@@ -16,10 +16,12 @@ import { apiRequest } from '@/lib/api/client';
 import type {
   BuyingCommittee,
   CommercialFocus,
+  DeclareTargetAccounts,
   DeclareBuyingCommittee,
   DeclareFocus,
   DeclareIcp,
   IcpDeclaration,
+  TargetAccountList,
   ProductCatalog,
   PublishProductCatalog,
 } from '@/lib/api/types';
@@ -206,6 +208,53 @@ export function useDeclareFocus(workspaceId: string | null) {
     // Not optimistic, for the same reason as the other three.
     onSuccess: (declared) => {
       client.setQueryData(queryKeys.commercialFocus(workspaceId ?? ''), declared);
+    },
+  });
+}
+
+/**
+ * Which companies this workspace watches.
+ *
+ * **Never 404s.** A workspace that has named nobody gets version 0 and an
+ * empty list, which is the state every workspace starts in.
+ */
+export function useTargetAccounts(workspaceId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.targetAccounts(workspaceId ?? ''),
+    queryFn: () =>
+      apiRequest<TargetAccountList>(`/workspaces/${workspaceId}/target-accounts`, {
+        workspaceId: workspaceId ?? undefined,
+      }),
+    enabled: workspaceId !== null,
+  });
+}
+
+/**
+ * Declare the watch list, as a complete statement.
+ *
+ * **The only write in this module that anything downstream hears about.** The
+ * server records the list and announces the change in one transaction; this
+ * client sends the whole list, for the same reason as the other four — the
+ * declaration is the unit that gets versioned.
+ *
+ * **Deliberately does not retry.** A retry would re-send a version the server
+ * has already rejected once.
+ */
+export function useDeclareTargetAccounts(workspaceId: string | null) {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: (declaration: DeclareTargetAccounts) =>
+      apiRequest<TargetAccountList>(`/workspaces/${workspaceId}/target-accounts`, {
+        method: 'PUT',
+        body: declaration,
+        workspaceId: workspaceId ?? undefined,
+      }),
+    // Not optimistic, for the same reason as the other four — and with more
+    // at stake here, because a list shown as saved but refused would be a
+    // customer believing Signora had been told to watch something.
+    onSuccess: (declared) => {
+      client.setQueryData(queryKeys.targetAccounts(workspaceId ?? ''), declared);
     },
   });
 }

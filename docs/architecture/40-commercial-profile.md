@@ -1,6 +1,6 @@
 # 40 — Commercial Profile (module design)
 
-> Status: **As built** — slices 1–4 of 5. Lane B.
+> Status: **As built** — M12.5 complete, slices 1–5. Lane B.
 > Ratified by [ADR-0035](adr/0035-commercial-profile.md), which remains the module's architectural decision record and is **not** superseded by this document. The ADR says *why the bounded context exists*; this says **what was built inside it**, in the manner of [22](22-knowledge-graph.md)–[29](29-ai-reasoning-engine.md).
 >
 > Created 2026-08-01 with slice 2, because the module had no design document and `CLAUDE.md`'s reading order sends a session to one. A cold Lane B session had the ADR and the code, and nothing recording the decisions taken *during* implementation.
@@ -21,7 +21,7 @@ Several small ones, each versioned independently — never one profile object. P
 | 2 | `IcpDeclaration` | `icp_declaration` | `/workspaces/{id}/icp` | 2 ✅ |
 | 3 | `BuyingCommittee` | `buying_committee` | `/workspaces/{id}/buying-committee` | 3 ✅ |
 | 4 | `CommercialFocus` | `commercial_focus` | `/workspaces/{id}/focus` | 4 ✅ |
-| 5 | Target account list | — | — | 5 |
+| 5 | `TargetAccountList` | `target_account_list` | `/workspaces/{id}/target-accounts` | 5 ✅ |
 
 Every one is **versioned, immutable and superseded**: a revision is a new row naming the one it replaces, the app role holds no `UPDATE` grant, and the repository offers no method the database would refuse. `DELETE` *is* granted — erasability is a property of the tenancy model, not a statement about what a row means.
 
@@ -227,21 +227,45 @@ ADR-0035 answers half of it — resolution among disagreeing claims is a Knowled
 
 **One thing worth doing sooner, and it is Lane A's call:** *Your business* sits under **Settings**, and it is not a setting. Moving it to a first-class destination is a navigation change in the shell, not a change here.
 
-## Slice 5 — what the ratified contract binds this module to
+## Slice 5 — the target account list, and the module's first contract
 
-**The contract is [ADR-0036](adr/0036-target-account-contract.md)**, negotiated through [C-001](../LANE_COORDINATION.md#c-001--the-target-account-contract) and ratified. The reasoning lives there and is **not repeated here**; what follows is only what it obliges *this module* to do, so a session building slice 5 does not have to reconstruct it.
+**The slice that gives the pipeline an input.** `RunProviderSync` has taken a `subject: str` since M2.1 and nothing has ever supplied one; every company the platform has processed arrived from a seeder. A customer can now name companies, and the rest of the platform can read them.
 
-| This module must | And must not |
+Governed by **[ADR-0036](adr/0036-target-account-contract.md)**, negotiated through [C-001](../LANE_COORDINATION.md#c-001--the-target-account-contract). The reasoning lives there and is **not repeated here**; what follows is what was built.
+
+### Three surfaces, and only one of them is new in kind
+
+| Surface | What it is |
 |---|---|
-| Give every target account entry a **stable id**, client-chosen, `Product`-style | Reuse `CommitteeRole`'s no-id shape. The trigger slice 3 recorded — *a consumer that must cite a particular entry* — has fired: without an id, a rename is indistinguishable from a remove-and-add, and those are different instructions about spending money |
-| Publish `target_accounts_changed` carrying **`workspace_id` and `declaration_version`, nothing else** | Put account names on the bus. A copy of a truth that lives in an aggregate does not belong on an event |
-| Expose `TargetAccountReader` on `public/` returning **the whole list** | Compute or expose a delta. *What has and has not been fetched is not a fact this module holds* — the delta Provider Platform needs is against its own watermark, not against the previous declaration |
-| Pass the company name **exactly as the customer typed it** | Resolve, normalise or enrich it. `subject` is opaque by design, and asking a customer for a domain would ask them to do resolution |
-| Record a removal as an ordinary new version | Model what removal *causes*. Polling, retention and watermarks are Provider Platform's, decided in the ADR |
+| `PUT`/`GET /workspaces/{id}/target-accounts` | The fifth declaration, on the same terms as the other four |
+| **`commercial_profile.target_accounts_changed`** | The module's **first published event**. `workspace_id` on the envelope, `declaration_version` in the payload, **nothing about accounts** |
+| **`TargetAccountReader` on `public/`** | The module's **first public contract**. Frozen views, the whole list, never a delta |
 
-**Why `declaration_version` is on the wire and not only in the aggregate:** ordering, not replay. Idempotency on `event_id` handles redelivery; it does not order two workspace-level events against each other, and a handler for v5 running after v6's would sync a list one revision stale.
+### An entry has a stable id, and a committee role does not
 
-**The four ownership boundaries the ADR makes permanent** — intent here, synchronization in Provider Platform, understanding in the Knowledge Graph, relevance in the Signal Engine — are the same four this document has been asserting since slice 2. The ADR is where they stop being this module's opinion.
+Slice 3 gave `CommitteeRole` no identifier and recorded the trigger for adding one: *the first consumer that needs to cite a particular entry.* **That trigger fired here**, for the reason ADR-0036 states — without an id a rename is indistinguishable from a remove-and-add, and those are different instructions about spending money. Client-chosen, like `Product`'s, which is also what makes the save idempotent.
+
+### What the table and the payload deliberately do not hold
+
+**No synchronization state anywhere.** No watermark, no last-fetched, no provider, no cadence, no status — not as a column, not as a response field, not on the event. Each would be this module holding a fact about synchronization, and the wire contract is asserted in a test rather than reviewed for, because *a watch list looks like a job queue* and the first field to arrive would be a status.
+
+**No resolution.** The name is what the customer typed. There is no search, no autocomplete against a company database, and no check that a company exists. Asking for a domain would be asking a customer to do resolution.
+
+**`MAX_ACCOUNTS` is a typo guard, not a plan limit.** How many companies a customer is *entitled* to watch is commercial packaging and a cost model — the first is not this module's and the second is Provider Platform's.
+
+### Every accepted declaration is announced
+
+Including one that removes the last account, and one whose content matches the previous version. **Deciding that a restatement changes nothing requires knowing what has already been synchronized** — a fact Provider Platform holds and this module does not. Suppressing an event to save a consumer some work would be this module reasoning about synchronization.
+
+The event is published on the request's own session, **after the save and inside the same transaction**. Asserted three ways: the use case records the ordering, the endpoint test reads the outbox under the privileged identity, and a refused declaration is proven to announce nothing.
+
+### The one thing the screen may not say
+
+Saving records the list and announces the change. **Nothing consumes that announcement yet** — the consuming side is Lane A's and unbuilt (see `B-004`). So the screen says Signora *has been told*, and does not say it has started looking. A screen promising monitoring the platform is not doing would be the product asserting something untrue, which is worse than under-promising. Enforced by a test.
+
+### The `public/` surface is a stable interface from today
+
+Adding fields is compatible; removing or repurposing one is not, and a breaking change is a new version with a stated deprecation window (§9). Three things it must never grow — a delta, a resolved value, anything about synchronization — are named in the package docstring, because the next person to touch it will not have read this document.
 
 ## Product review — 2026-08-01, the four declarations end to end
 
@@ -308,7 +332,10 @@ Sign in as an owner and open **Settings → Your business → Products**. Three 
 2. **Describe who buys it** — industries and countries in your own words, a size range in people, a note.
 3. **Say who has to agree** — add *Chief Financial Officer* as the economic buyer, *Head of Security* as a gatekeeper, whatever your deals actually look like.
 4. **Say what you are pushing** — tap the products you are actively selling, and write what you are trying to do this quarter.
+5. **Name the companies you are watching** — type them the way you say them. No website, no legal name, no lookup.
 
-Each section shows your own words back to you, each version line names you and the date, and every earlier version is still stored. The four are versioned separately: renaming the product leaves the other three where they were. Open the page in a second browser, save from both, and the second is told a colleague got there first rather than quietly losing the work.
+Each section shows your own words back to you, each version line names you and the date, and every earlier version is still stored. The five are versioned separately: renaming the product leaves the other four where they were.
 
-**Nothing on any of the four screens grades a company, a person or a committee against what you typed, and nothing ranks anything** — those are different modules' jobs, and they are not built.
+**Step 5 is the one that changed the platform.** Saving it announces `commercial_profile.target_accounts_changed`, which is the first thing this module has ever told anybody. **Nothing consumes it yet** — the consuming side is Lane A's and unbuilt — so the screen says Signora has been told and does not claim it has started looking. Open the page in a second browser, save from both, and the second is told a colleague got there first rather than quietly losing the work.
+
+**Nothing on any of the five screens grades a company, a person or a committee against what you typed, and nothing ranks anything** — those are different modules' jobs, and they are not built.

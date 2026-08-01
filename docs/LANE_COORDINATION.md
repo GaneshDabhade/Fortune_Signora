@@ -40,7 +40,7 @@
 |---|---|---|---|---|---|
 | [C-001](#c-001--the-target-account-contract) | The target-account contract — this module's first edge | Lane B | **Lane A** | `ANSWERED` → **[ADR-0036](architecture/adr/0036-target-account-contract.md)** | **Nothing. Slice 5 may begin.** `CLOSED` when both lanes have built it |
 | [C-002](#c-002--customer-language-has-no-anticorruption-layer) | Customer language has no anticorruption layer | Lane B | **Product owner** (ADR) | `OPEN` | Anything that matches an account against an ICP |
-| [C-003](#c-003--three-wire-codes-for-one-condition) | Three wire codes for one condition | Lane B | **Product owner** | `OPEN` | Nothing — but it grows every slice |
+| [C-003](#c-003--three-wire-codes-for-one-condition) | Three wire codes for one condition | Lane B | **Product owner** | `OPEN` | Nothing. **It stopped growing** — slice 5 cites no product |
 | [C-004](#c-004--shared-documents-lag-commercial-profile) | Shared documents lag Commercial Profile | Lane B | **Integrator** | `OPEN` | Nothing today; a cold session reads a stale manifest |
 | [C-005](#c-005--who-owns-the-signal-profile-write-path) | Who owns the signal-profile write path | Lane B | **Product owner** / Lane A | `ANSWERED` — ownership. **Sequencing still the product owner's** | The first customer-editable relevance profile |
 | [C-006](#c-006--which-lane-owns-test_api_modulepy) | Which lane owns `test_api_<module>.py` | Lane B | **Product owner** | `OPEN` | Nothing — a standing ambiguity in §20e |
@@ -213,7 +213,21 @@ Provider Normalization is an **anticorruption layer for vendor vocabulary** — 
 
 - **[04-modules.md](architecture/04-modules.md), Commercial Profile manifest** → **Endpoints**: add `/workspaces/{id}/icp`, `/workspaces/{id}/buying-committee`, `/workspaces/{id}/focus`. **Tables**: add `icp_declaration`, `buying_committee`, `commercial_focus`.
 - **Same entry, *Owns*** → *business priorities* is built as **`CommercialFocus`**, deliberately not a ranking. The word `priority` invites an ordinal, and the module's own invariant refuses it.
+- **Same entry, *Public contracts* and *Events produced*** → both said *"none yet"*. Slice 5 shipped `TargetAccountReader` and `commercial_profile.target_accounts_changed`.
+- **[05-module-dependencies.md](architecture/05-module-dependencies.md)** → the read-port table gains `TargetAccountReader → TargetAccountListView` (owner Commercial Profile, consumer Provider Platform). **The graph and the matrix already show the edge**; only the port table is missing it.
 - **The Canonical Vocabulary Principle** ([40](architecture/40-commercial-profile.md#the-canonical-vocabulary-principle)) is written in the module doc because Lane B may not edit `04`. Its cross-module form belongs beside the provider-configuration ruling it extends.
+- **`06-events.md` does not list an event the platform now emits.** Slice 5 publishes `commercial_profile.target_accounts_changed` and §9 requires the catalog to be updated *in the same change*; the catalog is 🔴 and Lane B may not write it. **This is the most consequential row in this item** — the others are stale text, this one is a live omission. Ready to paste:
+
+  | Field | Value |
+  |---|---|
+  | **Event type** | `commercial_profile.target_accounts_changed` |
+  | **Version** | 1 |
+  | **Producer** | `commercial_profile` |
+  | **Consumer** | Provider Platform (unbuilt — Lane A) |
+  | **Payload** | `declaration_version: int`, and nothing else |
+  | **Why so small** | Identity and change only. The list is read through `TargetAccountReader`; the version is there for **ordering, not replay** ([ADR-0036](architecture/adr/0036-target-account-contract.md) §3, §7) |
+  | **Emitted** | On every accepted declaration, including one that empties the list |
+
 - **This register needs a pointer from [`README.md`](../README.md) §Parallel development, `CLAUDE.md` §20e, and the header of [`BUGS.md`](BUGS.md)** — or the lanes told to read it will not find it. Lane B has edited none of the three: the first two are outside its budget and the third is QE's prose.
 
 **No dependency edge has changed** in slices 1–4. Nothing new is imported, nothing published, the graph untouched.

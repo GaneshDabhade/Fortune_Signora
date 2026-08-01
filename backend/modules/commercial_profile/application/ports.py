@@ -15,6 +15,7 @@ from modules.commercial_profile.domain.catalog import ProductCatalog
 from modules.commercial_profile.domain.committee import BuyingCommittee
 from modules.commercial_profile.domain.focus import CommercialFocus
 from modules.commercial_profile.domain.icp import IcpDeclaration
+from modules.commercial_profile.domain.target_accounts import TargetAccountList
 
 
 class ProductCatalogRepository(Protocol):
@@ -57,3 +58,11 @@ class CommercialFocusRepository(Protocol):
         ...
 
     async def save(self, focus: CommercialFocus) -> None: ...
+
+
+class TargetAccountListRepository(Protocol):
+    async def current(self, workspace_id: UUID) -> TargetAccountList | None:
+        """The list in force, or ``None`` when nothing has been declared."""
+        ...
+
+    async def save(self, accounts: TargetAccountList) -> None: ...

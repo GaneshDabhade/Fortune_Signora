@@ -61,6 +61,11 @@ class Resource(StrEnum):
     #: because what a company is pushing this quarter is a different
     #: administrative decision from what it sells or who buys it.
     COMMERCIAL_FOCUS = "commercial_focus"
+    #: Registered by M12.5 slice 5, on the same terms. Its own resource
+    #: because choosing which companies Signora spends money watching is the
+    #: most consequential declaration a customer makes, and the one most
+    #: likely to want a narrower grant than the rest of the profile later.
+    TARGET_ACCOUNT = "target_account"
 
 
 class Action(StrEnum):

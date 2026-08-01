@@ -2,6 +2,7 @@
 
 import { BuyingCommitteeEditor } from '@/components/commercial/committee';
 import { CommercialFocusEditor } from '@/components/commercial/focus';
+import { TargetAccountsEditor } from '@/components/commercial/target-accounts';
 import { IcpEditor } from '@/components/commercial/icp';
 import { ProductCatalogEditor } from '@/components/commercial/products';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
@@ -11,6 +12,7 @@ import {
   useCommercialFocus,
   useIcpDeclaration,
   useProductCatalog,
+  useTargetAccounts,
 } from '@/lib/query/hooks/commercial';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
@@ -36,6 +38,7 @@ export default function ProductsPage() {
   const icp = useIcpDeclaration(activeWorkspace?.id ?? null);
   const committee = useBuyingCommittee(activeWorkspace?.id ?? null);
   const focus = useCommercialFocus(activeWorkspace?.id ?? null);
+  const targets = useTargetAccounts(activeWorkspace?.id ?? null);
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
@@ -58,6 +61,7 @@ export default function ProductsPage() {
       {icp.isError ? <CouldNotLoad what="ideal customer" /> : null}
       {committee.isError ? <CouldNotLoad what="buying committee" /> : null}
       {focus.isError ? <CouldNotLoad what="focus" /> : null}
+      {targets.isError ? <CouldNotLoad what="accounts" /> : null}
       {data ? (
         <ProductCatalogEditor catalog={data} workspaceId={activeWorkspace?.id ?? null} />
       ) : null}
@@ -83,6 +87,15 @@ export default function ProductsPage() {
         <CommercialFocusEditor
           catalog={data}
           focus={focus.data}
+          workspaceId={activeWorkspace?.id ?? null}
+        />
+      ) : null}
+      {/* **The one declaration that cites no product**, so it needs no catalog
+          and renders independently of it. A customer can name the companies
+          they are chasing before they have written down what they sell. */}
+      {targets.data ? (
+        <TargetAccountsEditor
+          accounts={targets.data}
           workspaceId={activeWorkspace?.id ?? null}
         />
       ) : null}

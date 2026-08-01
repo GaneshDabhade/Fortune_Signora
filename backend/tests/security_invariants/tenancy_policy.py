@@ -134,6 +134,11 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # customer is pushing right now — the fastest-changing of the four
         # declarations, and the one whose staleness a customer notices first.
         "commercial_focus",
+        # Commercial Profile (M12.5 slice 5), migration 0025. The companies a
+        # customer wants watched — **the pipeline's input**, and the only
+        # declaration anything downstream reads. A leak here tells a
+        # competitor exactly which accounts a company is pursuing.
+        "target_account_list",
     }
 )
 
@@ -264,6 +269,8 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         "buying_committee",
         # Migration 0023, likewise.
         "commercial_focus",
+        # Migration 0025, likewise.
+        "target_account_list",
     }
 )
 

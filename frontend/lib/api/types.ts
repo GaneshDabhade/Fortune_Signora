@@ -646,3 +646,43 @@ export interface DecidedAccount {
   owner_id: string | null;
   decided_at: string;
 }
+
+/**
+ * One company the customer wants watched.
+ *
+ * **The name is exactly what they typed** — Signora does not ask for a domain
+ * or a registration number, because working out which company they mean is its
+ * job rather than theirs. The id is chosen by the client and stable across
+ * every revision, which is what lets a rename be told apart from a
+ * remove-and-re-add.
+ */
+export interface TargetAccount {
+  id: string;
+  name: string;
+}
+
+/**
+ * Which companies this workspace watches, and who last said so.
+ *
+ * **The declaration the rest of the platform reads.** Its `version` is the same
+ * integer that travels on the event announcing a change, so it is part of a
+ * published contract rather than this screen's bookkeeping.
+ *
+ * It carries **no status**: whether Signora has looked at an account, what it
+ * found, and when it will look again belong to other parts of the product.
+ */
+export interface TargetAccountList {
+  /** **0 when nothing has been declared.** */
+  version: number;
+  accounts: TargetAccount[];
+  /** Null only at version 0. */
+  updated_at: string | null;
+  /** Null only at version 0. */
+  updated_by: string | null;
+}
+
+/** A complete statement of the watch list, replacing `expected_version`. */
+export interface DeclareTargetAccounts {
+  expected_version: number;
+  accounts: TargetAccount[];
+}

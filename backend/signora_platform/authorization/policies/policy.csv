@@ -27,3 +27,6 @@ p, owner, *, buying_committee, update
 p, owner, *, commercial_focus, read
 p, member, *, commercial_focus, read
 p, owner, *, commercial_focus, update
+p, owner, *, target_account, read
+p, member, *, target_account, read
+p, owner, *, target_account, update

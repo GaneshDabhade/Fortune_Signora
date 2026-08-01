@@ -30,11 +30,16 @@ from modules.commercial_profile.domain.icp import (
     IcpDeclaration,
     ProductIcp,
 )
+from modules.commercial_profile.domain.target_accounts import (
+    TargetAccount,
+    TargetAccountList,
+)
 from modules.commercial_profile.infrastructure.models import (
     BuyingCommitteeModel,
     CommercialFocusModel,
     IcpDeclarationModel,
     ProductCatalogModel,
+    TargetAccountListModel,
 )
 from modules.commercial_profile.infrastructure.versioned import latest
 
@@ -276,6 +281,57 @@ class SqlCommercialFocusRepository:
                 supersedes=focus.supersedes,
                 created_by=focus.created_by,
                 updated_by=focus.created_by,
+            )
+        )
+        await self._session.flush()
+
+
+def _to_account(raw: dict[str, Any]) -> TargetAccount:
+    return TargetAccount(id=UUID(raw["id"]), name=raw["name"])
+
+
+def _to_account_list(row: TargetAccountListModel) -> TargetAccountList:
+    return TargetAccountList(
+        id=row.id,
+        workspace_id=row.workspace_id,
+        version=row.version,
+        accounts=tuple(_to_account(raw) for raw in row.accounts),
+        created_at=row.created_at,
+        created_by=row.created_by,
+        supersedes=row.supersedes,
+    )
+
+
+class SqlTargetAccountListRepository:
+    """Persistence for the watch list, on the same terms as the rest."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def current(self, workspace_id: UUID) -> TargetAccountList | None:
+        result = await self._session.execute(latest(TargetAccountListModel, workspace_id))
+        row = result.scalar_one_or_none()
+        return None if row is None else _to_account_list(row)
+
+    async def save(self, accounts: TargetAccountList) -> None:
+        """Insert the new version. Nothing is updated, ever.
+
+        **No flush of the event here.** The caller publishes on the same
+        session afterwards, and both land in one transaction — which is the
+        only arrangement in which a consumer can never see an announcement of
+        something that did not happen.
+        """
+        self._session.add(
+            TargetAccountListModel(
+                id=accounts.id,
+                workspace_id=accounts.workspace_id,
+                version=accounts.version,
+                accounts=[
+                    {"id": str(account.id), "name": account.name} for account in accounts.accounts
+                ],
+                supersedes=accounts.supersedes,
+                created_by=accounts.created_by,
+                updated_by=accounts.created_by,
             )
         )
         await self._session.flush()
