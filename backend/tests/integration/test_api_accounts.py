@@ -740,3 +740,211 @@ class TestTheScoreExplainsItself:
 
         assert not issubclass(AccountScoreResponse, BuyingScore)
         assert not issubclass(ContributionResponse, Contribution)
+
+
+async def _opportunity(
+    client: AsyncClient, key_pair: KeyPair, user_id: UUID, workspace_id: UUID, account_id: UUID
+) -> Any:
+    return await client.get(
+        f"/workspaces/{workspace_id}/accounts/{account_id}/opportunity",
+        headers=_auth(key_pair, user_id),
+    )
+
+
+class TestTheBriefKnowsWhatChanged:
+    """`GET …/accounts/{account_id}/opportunity` — *"what changed?"*
+
+    The attention list knows only about now. This is the record of what was
+    true when somebody committed, which is what makes today's number mean
+    something: 50 on an account opened at 20 is a different situation from 50
+    on one opened at 60.
+    """
+
+    async def test_it_reports_then_beside_now(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        response = await _opportunity(client, key_pair, user_id, workspace_id, entity_id)
+
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert UUID(body["account_id"]) == entity_id
+        assert body["score_at_open"] >= 0
+        assert body["opened_at"]
+        assert body["stage"] in {"tracking", "engaged", "closed_won", "closed_lost", "dismissed"}
+
+    async def test_the_movement_is_computed_from_the_two_it_reports(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """Derived server-side, and checkable against the two numbers beside
+        it — a client that subtracted them itself would be a second
+        implementation of the only arithmetic on this response."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        body = (
+            await _opportunity(client, key_pair, user_id, workspace_id, entity_id)
+        ).json()
+
+        if body["score"] is None:
+            assert body["score_change_since_open"] is None
+        else:
+            assert body["score_change_since_open"] == body["score"] - body["score_at_open"]
+
+    async def test_no_live_score_reports_absence_rather_than_no_change(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**Zero and null mean opposite things here.** Zero is a reading that
+        has not moved; null is the absence of one. A brief reporting *"no
+        change"* for an account whose evidence expired would state the reverse
+        of what happened."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        body = (
+            await _opportunity(client, key_pair, user_id, workspace_id, entity_id)
+        ).json()
+
+        assert (body["score"] is None) == (body["score_change_since_open"] is None)
+
+    async def test_the_history_is_complete_and_ordered(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """Append-only, oldest first. The status *is* the audit trail."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        history = (
+            await _opportunity(client, key_pair, user_id, workspace_id, entity_id)
+        ).json()["history"]
+
+        assert history, "an opportunity with no recorded state cannot explain itself"
+        assert [e["occurred_at"] for e in history] == sorted(e["occurred_at"] for e in history)
+        for entry in history:
+            assert entry["reason"].strip(), "a workflow change that explains nothing"
+
+    async def test_the_opening_entry_names_no_person(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**Intelligence suggests; humans commit.** Signora may open an
+        account at `tracking` and may do nothing else, so the first entry is
+        the one state with no actor — and every later one must name someone."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        history = (
+            await _opportunity(client, key_pair, user_id, workspace_id, entity_id)
+        ).json()["history"]
+
+        assert history[0]["stage"] == "tracking"
+        assert history[0]["decided_by"] is None
+        for entry in history[1:]:
+            assert entry["decided_by"] is not None
+
+    async def test_an_account_with_nothing_open_is_404(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        user = uuid4()
+        workspace = await _workspace(client, key_pair, user)
+
+        response = await _opportunity(client, key_pair, user, workspace, uuid4())
+
+        assert response.status_code == 404
+
+    async def test_another_workspace_s_account_is_404(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """Indistinguishable from an account with nothing open, deliberately."""
+        mine_workspace, mine_user, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        _, _, theirs_entity, _ = await _tracked(
+            session_factory, admin_session_factory, "contoso"
+        )
+
+        response = await _opportunity(
+            client, key_pair, mine_user, mine_workspace, theirs_entity
+        )
+
+        assert response.status_code == 404
+
+    async def test_a_non_member_gets_404(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        workspace = await _workspace(client, key_pair, uuid4())
+
+        response = await _opportunity(client, key_pair, uuid4(), workspace, uuid4())
+
+        assert response.status_code == 404
+
+    async def test_an_unauthenticated_request_is_refused(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        workspace = await _workspace(client, key_pair, uuid4())
+
+        response = await client.get(
+            f"/workspaces/{workspace}/accounts/{uuid4()}/opportunity"
+        )
+
+        assert response.status_code == 401
+
+    async def test_every_response_field_is_documented(self, client: AsyncClient) -> None:
+        schema = (await client.get("/openapi.json")).json()
+        schemas = schema["components"]["schemas"]
+
+        for name in ("AccountOpportunityResponse", "WorkflowStateResponse"):
+            undocumented = sorted(
+                field
+                for field, spec in schemas[name]["properties"].items()
+                if not spec.get("description")
+            )
+            assert undocumented == [], f"{name}: {undocumented} reach the wire undocumented"
+
+    async def test_the_response_exposes_no_internal_bookkeeping(self) -> None:
+        """`generation`, `policy_version` and `originating_buying_score_id` are
+        real, stored, and none of them is something a seller decides from. The
+        score id belongs here the day a citation can be *followed* from it —
+        M12.3 owns that, and adding it now would be a field nobody can use."""
+        from modules.opportunity_engine.interface.schemas import AccountOpportunityResponse
+
+        fields = set(AccountOpportunityResponse.model_fields)
+
+        for internal in (
+            "generation",
+            "policy_version",
+            "originating_buying_score_id",
+            "payload_version",
+            "workspace_id",
+        ):
+            assert internal not in fields

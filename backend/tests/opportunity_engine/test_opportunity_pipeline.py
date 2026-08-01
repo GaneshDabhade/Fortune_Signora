@@ -70,7 +70,10 @@ async def _tracked(
     # demonstration pass, the workspace authors its own, which is the layer
     # this milestone added. Asserted in its own right below.
     await set_opportunity_policy(factory, workspace_id, user_id, minimum_score=1)
-    await qualify_all(factory, admin_factory, workspace_id, user_id)
+    # Opened *at the moment the question was asked*, not at wall-clock now.
+    # An opportunity records a commitment, and a commitment made against a
+    # historical reading did not happen today.
+    await qualify_all(factory, admin_factory, workspace_id, user_id, moment=moment)
     return workspace_id, user_id, entity_id, moment
 
 

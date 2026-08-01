@@ -18,11 +18,15 @@ object; the account is what the customer came to look at.
 """
 
 from typing import Annotated
+from uuid import UUID
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query, status
 
 from apps.api.composition.opportunities import OpportunityRead
-from modules.opportunity_engine.interface.schemas import AccountAttentionResponse
+from modules.opportunity_engine.interface.schemas import (
+    AccountAttentionResponse,
+    AccountOpportunityResponse,
+)
 from signora_platform.api import CurrentWorkspace, CursorPage
 from signora_platform.authorization import Action, Resource
 from signora_platform.pagination import (
@@ -78,6 +82,41 @@ async def list_accounts(
         next_cursor=encode_cursor(position) if position else None,
         has_more=page.has_more,
     )
+
+
+@router.get(
+    "/workspaces/{workspace_id}/accounts/{account_id}/opportunity",
+    response_model=AccountOpportunityResponse,
+    summary="What Signora committed to here, and what has happened since",
+)
+async def account_opportunity(
+    context: CurrentWorkspace, queries: OpportunityRead, account_id: UUID
+) -> AccountOpportunityResponse:
+    """*"What changed?"* — the first question the account brief has to answer.
+
+    An opportunity records that **something was worth tracking at a moment**:
+    the score that justified it, whether it was already contested, who decided,
+    and when. Read beside today's score, that is the account's movement — and
+    it is the one thing the attention list structurally cannot show, because
+    the list only knows about now.
+
+    **The whole workflow history comes with it**, oldest first, append-only.
+    Every entry names who decided and why, including the opening one, which
+    names nobody: Signora may suggest tracking an account and may do nothing
+    else. *Intelligence suggests; humans commit.*
+
+    Keyed by **account**, because that is what a seller arrives with. **404
+    when nothing is open here** — the same answer an account in another
+    workspace gets, deliberately, so account identifiers stay unenumerable.
+    """
+    context.authorize(Resource.OPPORTUNITY, Action.READ)
+    brief = await queries.brief(context.workspace_id, account_id)
+    if brief is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No opportunity is open for this account.",
+        )
+    return AccountOpportunityResponse.from_domain(brief)
 
 
 __all__ = ["router"]

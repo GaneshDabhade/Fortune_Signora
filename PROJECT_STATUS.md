@@ -15,8 +15,8 @@
 |---|---|
 | **Current phase** | **Product implementation** — the pipeline is built; the surface is being exposed |
 | **Last completed milestone** | **M10 — AI Research Engine**, closed 2026-07-31 |
-| **Current milestone** | **M12.1.5 — Playground v2 / demo environment** *(inserted 2026-07-31, ahead of the rest of M12.2 — see §10)* |
-| **Latest commit** | `a565077` — *M12.2 — the account brief, where a number can be taken apart* |
+| **Current milestone** | **M12.2 — the account brief** *(resumed after M12.1.5; Decision Package deferred until `reasoning@1` is released — see §10)* |
+| **Latest commit** | `bf5464a` — *M12.1.5 — Playground v2, and three capabilities that could never run* |
 | **Latest certification** | [`d954c930`](certification/reports/d954c930319a.md) — **CERTIFIED**, 2026-07-31 *(predates M12.2; re-cut at milestone close)* |
 | **Branch** | `main`, tree clean, pushed |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
@@ -57,8 +57,8 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | — | **M10** | **AI Research Engine** *(Internal Research)* | ✅ **Complete** | **2026-07-31** |
 | — | **M9.5** | **Evidence Citation Protocol + Certification** *(ADR-0031/0032, unplanned)* | 🟠 **Open — Step F incomplete** | — |
 | — | **M12.1** | **Account attention list — first customer surface** | ✅ **Complete** | **2026-07-31** |
-| — | **M12.1.5** | **Playground v2 — a demo environment worth reviewing against** *(inserted)* | 🔵 **In progress** | — |
-| 1 | **M12.2** | **Account Identity** ✅ · score breakdown ✅ · narration + package ⏳ | 🔵 **In progress** | — |
+| — | **M12.1.5** | **Playground v2 — a demo environment worth reviewing against** *(inserted)* | ✅ **Complete** | **2026-07-31** |
+| 1 | **M12.2** | Identity ✅ · score breakdown ✅ · commitment ✅ · narration ⏳ · package 🚫 | 🔵 **In progress** | — |
 | 3 | M12.3 | Evidence resolution and workflow actions | ⏳ Queued | — |
 | 4 | M12.4 | Research on demand | ⏳ Queued | — |
 | — | M11 | Recommendation Engine | 🟣 **Deferred 2026-07-31** — *not cancelled*; resumes on a product trigger, see §10 | — |
@@ -135,8 +135,10 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | **`EntityName`** | The canonical way Signora renders a company. Agreement is invisible; **disputed names are marked** |
 | **`GET …/accounts/{id}/score`** | The score **with its full ledger** — every business event that contributed, what each added, and why the ones that added nothing added nothing |
 | **`/opportunities/[accountId]`** | The account brief. `68 of 120 points` beside the number: a customer checks the score with a division rather than trusting it |
-| **Tests** | 20 resolver · 7 identity endpoint · 14 score endpoint · 25 component · 3 Security Invariants |
-| ⏳ **Next** | The narration and Decision Package panels — blocked in production by `reasoning@1`, see §7 |
+| **`GET …/accounts/{id}/opportunity`** | What Signora committed to, and what has happened since — **the movement the list structurally cannot show**, because the list only knows about today |
+| **Tests** | 20 resolver · 7 identity endpoint · 14 score endpoint · 13 commitment endpoint · 44 component · 3 Security Invariants |
+| ⏳ **Next** | **Narration.** `explanation_narration@1` holds a current release, so it is the production-ready half |
+| 🚫 **Deferred** | **The Decision Package panel.** `reasoning@1` has no released model; building UI around an unavailable capability would ship a panel that cannot be filled (§7) |
 
 ### 🔵 M12.1.5 — Playground v2, inserted 2026-07-31
 
@@ -154,11 +156,19 @@ A demo environment worth reviewing a product against. Requested by the product o
 
 | Task | Scope |
 |---|---|
-| M12.1.5 | Close out: certification re-cut, then resume M12.2 |
-| M12.2 | The narration and Decision Package panels — the remaining half of the brief |
+| M12.2 | **Narration** — the brief's missing narrative half, and the only AI capability with a current release |
+| M12.2 | The Decision Package panel, **on the trigger `reasoning@1` earns a release** and not before |
 | M12.3 | Evidence resolution, stage transitions, assignment — and the list's missing hierarchy (D20) |
 
 **Deterministic-first ordering, unchanged from M8 and M9:** storage before retrieval, retrieval before orchestration, generation and evaluation last. **Embeddings, pgvector, external retrieval and provider re-query are deferred**, each with a stated trigger.
+
+---
+
+### The standing rule for every M12.x slice
+
+> **No frontend screen is complete until a human has reviewed it in the demo environment.**
+
+Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a person opening it can say whether it is *persuasive*, and every finding in [38-product-design-principles.md](docs/architecture/38-product-design-principles.md) from D9 onward came from looking rather than from a test.
 
 ---
 

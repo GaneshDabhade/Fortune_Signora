@@ -14,9 +14,9 @@
 |---|---|
 | **Last completed** | **M10 AI Research Engine** — T131–T138, closed 2026-07-31. *Internal Research; every citable thing deterministic.* |
 | **Inserted, and open** | **M9.5 Evidence Citation Protocol** (ADR-0031). Steps A–D landed; **Step F is incomplete** |
-| **Current** | **M12.1.5 Playground v2** — inserted 2026-07-31 ahead of the rest of M12.2, because the demo data had become the constraint on product work |
-| **Shipped since** | **M12.2 part one** — Account Identity *and* the score breakdown. **Three customer-facing endpoints and two screens.** The narration and Decision Package panels remain |
-| **Head at handoff** | see `git log` — M12.1.5 Playground v2 |
+| **Last completed** | **M12.1.5 Playground v2** — closed 2026-07-31. A demo environment worth reviewing a product against |
+| **Current** | **M12.2 the account brief.** Identity, score breakdown and commitment shipped; **narration next**, Decision Package deferred until `reasoning@1` is released |
+| **Head at handoff** | see `git log` — M12.2 the commitment slice |
 | **Latest certification** | [`d954c930`](../certification/reports/d954c930319a.md) — CERTIFIED, 2026-07-31 |
 | **Phase** | **Product implementation.** Ten pipeline stages built and frozen behind them; the surface is being exposed. |
 | **Overall completion** | **~60%** by engineering effort (~187 of ~261–339 ew) |

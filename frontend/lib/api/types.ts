@@ -44,14 +44,27 @@ export type ScoreTrigger =
   | 'profile_changed'
   | 'evidence_aged';
 
-/** Where an opportunity sits in the seller's workflow. */
+/**
+ * Where an opportunity sits in the seller's workflow.
+ *
+ * **Corrected at M12.2.** This listed `qualified` and `proposed`, which the
+ * domain has never had, and omitted `dismissed`, which it has always had —
+ * hand-written types drifting from the model they mirror. `dismissed` is not a
+ * sales outcome: it means *we should not have been shown this*, and it is the
+ * only feedback Signora gets about its own qualification quality.
+ *
+ * Only `tracking` can be reached without a person. Every stage beyond it names
+ * who decided — *intelligence suggests; humans commit.*
+ */
 export type Stage =
   | 'tracking'
   | 'engaged'
-  | 'qualified'
-  | 'proposed'
   | 'closed_won'
-  | 'closed_lost';
+  | 'closed_lost'
+  | 'dismissed';
+
+/** Who decided this account was worth tracking. */
+export type Qualification = 'automatic' | 'manual';
 
 /**
  * One account on the attention list.
@@ -151,4 +164,38 @@ export interface AccountScore {
   ceiling: number;
   attention_by_posture: Partial<Record<Posture, number>>;
   contributions: ScoreContribution[];
+}
+
+/** One workflow state, exactly as it was recorded. Append-only, never edited. */
+export interface WorkflowState {
+  stage: Stage;
+  owner_id: string | null;
+  /** Null only on the opening entry — the one state Signora may author. */
+  decided_by: string | null;
+  reason: string;
+  occurred_at: string;
+}
+
+/**
+ * What Signora committed to about an account, and what has happened since.
+ *
+ * **Then beside now.** `score_at_open` is a fact about the moment of
+ * commitment and never changes; `score` is today. `score_change_since_open` is
+ * derived server-side from the two — `null` rather than `0` when no score is
+ * live, because zero is a reading that has not moved and null is the absence
+ * of one.
+ */
+export interface AccountOpportunity {
+  id: string;
+  account_id: string;
+  stage: Stage;
+  owner_id: string | null;
+  opened_at: string;
+  opened_by: Qualification;
+  score_at_open: number;
+  contested_at_open: boolean;
+  score: number | null;
+  score_change_since_open: number | null;
+  evidence: EvidenceState;
+  history: WorkflowState[];
 }

@@ -137,9 +137,10 @@ Every state below is produced by the pipeline from the dates in the scenario. **
 GET /workspaces/{workspace_id}/accounts
 GET /workspaces/{workspace_id}/account-identities?ids=<uuid>&ids=<uuid>
 GET /workspaces/{workspace_id}/accounts/{account_id}/score
+GET /workspaces/{workspace_id}/accounts/{account_id}/opportunity
 ```
 
-All three are documented at **<http://localhost:8000/docs>**.
+All four are documented at **<http://localhost:8000/docs>**.
 
 ### Expected behaviour — the list
 
@@ -153,6 +154,8 @@ All three are documented at **<http://localhost:8000/docs>**.
 
 ### Expected behaviour — the brief
 
+- **What changed leads.** *"Opened at 35, 5 weeks ago · −15 since"* — the movement since somebody committed, which is the one figure the list cannot show because it only knows about today.
+- Under the account name, **what Signora has and has not decided**: *"Signora is tracking this · nobody has taken it yet."* Only `tracking` is machine-authored; every stage beyond it names a person.
 - The score appears beside the two integers that produce it: **`68 of 120 points`**. Check it yourself: `score = min(100, points × 100 ÷ ceiling)`.
 - **How long the reading is correct for** is stated — a buying score is exactly correct until its stated expiry, not merely recent. An expired reading is shown as expired rather than hidden.
 - **Attention is split by posture** (expansion / risk / context) and never netted. Two accounts can score the same and mean opposite things.
@@ -168,5 +171,6 @@ All three are documented at **<http://localhost:8000/docs>**.
 - **No sort or filter controls.** A client-side sort would reorder only the loaded page while presenting it as the top of the whole list *(D4)*.
 - **One page, no infinite scroll.** The cursor works; the UI does not page yet.
 - **The ledger is only known to read well at a handful of lines.** A forty-line account has not been seen *(D16)*.
+- **Eight of twelve accounts read "unchanged since".** Truthful — all the scenario's evidence arrives in one ingest, so after an opportunity opens the only thing that can happen is decay. The product's most encouraging story, *this account is heating up*, cannot be demonstrated at all *(D22)*.
 - **The ledger repeats itself on a composite signal.** An account whose expansion rests on two grounds shows two identical sentences, because the line names the *hypothesis* and not the evidence beneath it *(D19)*.
 - **`reasoning@1` has no released model**, so the Decision Package stage would refuse at runtime. It is not on either screen, so you will not see it — but the pipeline is not whole.

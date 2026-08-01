@@ -90,6 +90,43 @@ class OpportunityExplanation:
 
 
 @dataclass(frozen=True, slots=True)
+class OpportunityBrief:
+    """One tracked account, as the account brief needs it.
+
+    **Then and now, in one object.** The opportunity records what was true when
+    a commitment was made — the score that justified it, whether it was already
+    contested, who decided — and `current_score` says what is true today. The
+    distance between the two is the single most useful fact on the brief, and
+    neither half means much alone.
+
+    Distinct from `OpportunityExplanation`, which carries the *originating
+    score's* full signal chain. That is the evidence surface's shape (M12.3);
+    this is the workflow's, and loading five layers of signal explanation to
+    render a stage badge would be the N+1 of read models.
+    """
+
+    opportunity: Opportunity
+    state: OpportunityState
+    #: Complete and in order, oldest first. **Never rewritten.**
+    history: tuple[OpportunityState, ...]
+    current_score: BuyingScore | None
+    evidence_state: EvidenceState
+
+    @property
+    def score_change_since_open(self) -> int | None:
+        """How far commercial attention has moved since somebody committed.
+
+        `None` when no score is live — **not zero.** Zero is a reading that has
+        not moved; absence is the lack of one, and a brief showing *"no change"*
+        for an account whose evidence expired would be stating the opposite of
+        what happened.
+        """
+        if self.current_score is None:
+            return None
+        return self.current_score.value - self.opportunity.score_at_creation
+
+
+@dataclass(frozen=True, slots=True)
 class AttentionPage:
     """One page of the attention list.
 
@@ -143,6 +180,37 @@ class OpportunityQueries:
         return TrackedOpportunity(
             opportunity=opportunity,
             state=state,
+            current_score=score,
+            evidence_state=evidence_state(opportunity, score, now or datetime.now(UTC)),
+        )
+
+    async def brief(
+        self, workspace_id: UUID, entity_id: UUID, *, now: datetime | None = None
+    ) -> OpportunityBrief | None:
+        """The open opportunity for this account, with everything it records.
+
+        Keyed by **account**, not by opportunity id, because that is what the
+        caller has: a seller arrives from a list of companies, and asking them
+        to know a workflow record's identifier to read about a company would be
+        the data model leaking into the product.
+
+        `None` when nothing is open here. An account with a closed opportunity
+        reads the same as one that never had a commitment — deliberate until
+        M12.3, which owns reopening and therefore owns the question of what a
+        closed opportunity's brief should say.
+        """
+        opportunity = await self._repository.open_for_entity(workspace_id, entity_id)
+        if opportunity is None:
+            return None
+        state = await self._repository.current_state(workspace_id, opportunity.id)
+        if state is None:
+            return None
+
+        score = await self._scores.current(workspace_id, entity_id)
+        return OpportunityBrief(
+            opportunity=opportunity,
+            state=state,
+            history=await self._repository.history(workspace_id, opportunity.id),
             current_score=score,
             evidence_state=evidence_state(opportunity, score, now or datetime.now(UTC)),
         )

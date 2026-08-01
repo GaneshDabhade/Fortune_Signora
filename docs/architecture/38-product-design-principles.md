@@ -293,3 +293,91 @@ Twelve rows, scores from 50 down to 1, rendered identically. **The bottom of thi
 Three plausible answers: a threshold below which accounts are collapsed; a visual break between *worth your morning* and *worth knowing*; or grouping by why-now rather than ranking (D6, now genuinely reviewable). **Choosing needs a seller, not a designer** — this is the first finding in the set that the Playground cannot settle on its own.
 
 *Owner:* M12.3, alongside the sort and filter controls D4 deferred.
+
+---
+
+# The account brief — the workflow half *(M12.2, 2026-08-01)*
+
+The Opportunity Engine has always recorded *what was true when somebody committed*. The brief never read it. Adding it answers the first of the eight questions the brief must answer — **what changed** — and it is the one figure no other screen can produce: the list knows today's score and today's overnight move, neither of which says whether an account has been climbing for a month.
+
+## Decisions taken
+
+**One delta on this screen, not two.** The list shows `+8` — *what moved overnight*. The brief shows `+20` — *what has happened since we started watching*. The first draft had both, and **two deltas ask a reader to reconcile two numbers that answer different questions.** The overnight figure stays where "what moved overnight" is the question. Recorded because it is a subtraction, not an addition: the screen got better by losing a number.
+
+**The workflow line sits under the name, not in the score card.** It is about the *account*, not the number, and a seller reads it once on arrival and never again. Putting it beside the score would have given it a weight it has to earn every time the page is opened.
+
+**`tracking` says out loud that nobody has committed.** *"Signora is tracking this · nobody has taken it yet."* **Intelligence suggests; humans commit** is the principle the module is shaped around, and a screen presenting a suggestion as a decision would quietly invert it. This is the one place in the product where that principle is visible to a customer.
+
+**Contradiction is reported only when it is news.** *"Your sources did not disagree when this opened. They do now."* An account that has *become* contested is a different situation from one that always was; a line saying *"still contested"* on every contested account is a fact nobody needed.
+
+**`dismissed` is not softened into `closed`.** One is feedback about Signora's judgement, the other is a sales outcome, and collapsing them destroys the only signal the platform gets about its own qualification quality.
+
+## D21 — a workflow timeline with one entry is a list pretending to be a history
+
+**Planned, then not built, and the reasoning is the finding.** Every account in the demo has exactly one workflow state: the opening one. A timeline component would render a single row on every account in the product, look like a stub, and teach a reader that the section is not worth reading.
+
+The information is **one sentence** until transitions exist — *"Signora opened this five weeks ago at 30"* — and that is what shipped. The timeline belongs to M12.3, which owns transitions and will therefore have something to put in it.
+
+*The rule worth keeping:* a component whose value depends on data volume should not ship before the volume does. It is the same judgement that kept the citation un-clickable rather than drawing a dead link.
+
+## D22 — the Playground can demonstrate a falling score, never a rising one
+
+**Found by shipping the momentum line and looking at all twelve accounts.** Eight of twelve read *"unchanged since"*, and the four that moved all moved **down**.
+
+That is truthful and it is a demo limitation rather than a product one. All the scenario's evidence arrives in a single ingest, so after the opportunity opens the only thing that can happen is decay — nothing new ever arrives to push a score up. In production the common case is the opposite: an account climbs because evidence keeps arriving.
+
+**The consequence is that the brief's headline answer to *"what changed?"* is "nothing" on two-thirds of the demo**, and that the product's most encouraging story — *this account is heating up* — cannot be shown at all.
+
+*The fix:* the seeder ingests in two passes — an early set, score, qualify, then the recent set and score again — which is what actually happens to a customer. *Owner:* the Provider Simulation Framework, alongside `playground@3`. Not done here: it is Playground scope, and rebuilding the seeder inside a product slice is how milestones stop meaning anything.
+
+## D23 — an owner is a UUID with no name behind it
+
+`owner_id` is a user identifier and **there is no read path from a user id to a person**. The demo never exercises it (nothing has been assigned), so the screen currently says *"nobody has taken it yet"* and is correct — but the moment M12.3 ships assignment, the brief will need to render a person and will have nothing but a UUID.
+
+*Owner:* M12.3, which introduces assignment and therefore introduces the need. It is a real API gap, not a styling question: Workspace & Tenancy owns members and exposes them, but nothing joins a member to the identity that Better Auth holds.
+
+---
+
+## Product Design Review — the account brief
+
+Reviewed as the teams named in the brief would review it. **Every item below is a criticism I agree with**; none is fixed here, and each names its owner.
+
+### Apple — *is every element earning its place?*
+
+**The brief has four cards and no hierarchy between them.** Score, contested note, contested-since, ledger — each is a `Card`, each has the same border, the same padding and the same visual weight. A page where everything is a panel has told the reader nothing about what matters. The score card should be the page's subject and the rest should be quieter.
+
+**The back link is a link, and could be the product's first real navigation gesture.** *"← All accounts"* is what a prototype ships.
+
+### Stripe — *would a developer trust this?*
+
+**The arithmetic is the best thing on the screen and it is whispered.** `60 of 120 points` sits at `text-sm` in muted grey beside a `text-4xl` number. **That ratio is exactly backwards for a product whose differentiator is that the number can be checked.** The check should be as prominent as the claim.
+
+**No page states its own freshness.** The reader is told when the *reading* expires and never when the page was loaded. Stripe's dashboards always say when data was fetched, because a stale browser tab is indistinguishable from stale data.
+
+### Linear — *is it fast, and is it keyboard-reachable?*
+
+**Three sequential requests, no prefetch.** Hovering a row on the list could warm the brief; nothing does. And **the brief cannot be reached or left from the keyboard beyond tabbing** — no `j`/`k` through the list, no `Esc` to go back. A product for people who live in it all day should not require the mouse.
+
+**Nothing indicates position.** Opening the fourth of twelve accounts, a seller loses the list. There is no *"4 of 12"*, no next/previous.
+
+### Notion — *does the page read as a document?*
+
+**It reads as a form.** The strongest version of this screen is a paragraph a seller could paste into an email — *"NVIDIA has been climbing since June: hiring and revenue both moved, and nothing contradicts it."* Signora computes every fact in that sentence and renders none of it as prose. That is what the narration slice is for, and it is the largest remaining gap.
+
+**Section headings are inconsistent.** *"What contributed"* is the only heading on the page; the score card and the momentum line have none. Either everything is titled or nothing is.
+
+### Cursor / OpenAI — *where is the AI, and is it honest about itself?*
+
+**There is no AI on this screen at all, and that is currently correct** — `reasoning@1` has no released model, and the narration is not wired. But it means the brief today shows Signora's *deterministic* half only, and a customer told this is an AI product will ask where it is.
+
+**When narration lands, provenance must be visible on the page**, not in a tooltip: which prompt, which model, when. The M12.2 definition of done already requires it; recording it here so it is not discovered late.
+
+### Perplexity — *can every claim be followed?*
+
+**The ledger names its evidence and cannot open it.** Each line carries `signal_id` and `business_event_id` on the wire and neither is reachable. **This is the single largest trust gap in the product**: the page's whole argument is *"you can check this"*, and the check stops one level short. M12.3 owns it, and it should be the next thing built after the narration.
+
+**The posture split has no explanation.** *"Expansion 60"* assumes a reader knows what posture is. One sentence would fix it, and its absence is the difference between a figure and a fact.
+
+### The one thing all seven would say
+
+**The screen is right and it is not yet persuasive.** Every number is correct, checkable and honestly qualified — and a salesperson reads it as a report rather than as an argument. The missing element is not data; it is **narrative**, and the next slice is exactly that.

@@ -1,5 +1,6 @@
 'use client';
 
+import { formatDay } from '@/components/intelligence/dates';
 import { Badge } from '@/components/ui';
 import type { AccountScore, Posture, ScoreContribution } from '@/lib/api/types';
 import { cn } from '@/lib/design/cn';
@@ -170,18 +171,4 @@ function ContributionRow({ line }: { line: ScoreContribution }) {
       </span>
     </div>
   );
-}
-
-/**
- * A day, in the reader's locale.
- *
- * Day precision throughout: evidence decays in bands measured in weeks, so a
- * minute on a validity boundary implies a resolution the pipeline does not have.
- */
-function formatDay(iso: string): string {
-  return new Date(iso).toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
 }

@@ -395,6 +395,8 @@ async def qualify_all(
     admin_factory: async_sessionmaker[AsyncSession],
     workspace_id: UUID,
     user_id: UUID,
+    *,
+    moment: datetime | None = None,
 ) -> int:
     """Consider every scored account for tracking.
 
@@ -402,6 +404,12 @@ async def qualify_all(
     thing: open an opportunity at `TRACKING`, which commits nobody. There is
     deliberately no stage in this harness that closes or progresses one —
     those require a person, and the absence of the code is the enforcement.
+
+    `moment` is **when the commitment was made**. The use case has always
+    accepted a clock and this helper never forwarded one, so every opportunity
+    opened at wall-clock now — which is invisible in a test and wrong in a
+    demonstration, where it made twelve accounts all report they were opened
+    today. Defaulted, so existing callers are unchanged.
     """
     envelopes = [
         envelope
@@ -416,6 +424,7 @@ async def qualify_all(
             session,
             scores=buying_scores(session, workspace_id),
             publisher=PostgresOutboxEventPublisher(),
+            clock=None if moment is None else (lambda: moment),
         )
         for envelope in envelopes:
             await qualify_from_buying_score(envelope, qualify=qualify)

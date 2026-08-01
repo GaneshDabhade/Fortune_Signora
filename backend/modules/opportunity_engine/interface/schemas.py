@@ -35,8 +35,16 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from modules.opportunity_engine.application.queries import TrackedOpportunity
-from modules.opportunity_engine.domain.opportunity import EvidenceState, Stage
+from modules.opportunity_engine.application.queries import (
+    OpportunityBrief,
+    TrackedOpportunity,
+)
+from modules.opportunity_engine.domain.opportunity import (
+    EvidenceState,
+    OpportunityState,
+    Qualification,
+    Stage,
+)
 
 
 class AccountAttentionResponse(BaseModel):
@@ -122,4 +130,138 @@ class AccountAttentionResponse(BaseModel):
         )
 
 
-__all__ = ["AccountAttentionResponse"]
+class WorkflowStateResponse(BaseModel):
+    """One complete statement of workflow state, as it was recorded."""
+
+    model_config = ConfigDict(frozen=True)
+
+    stage: Stage = Field(description="Where this stood after the change.")
+    owner_id: UUID | None = Field(
+        description="Who held it at that point, or null if nobody had taken it."
+    )
+    decided_by: UUID | None = Field(
+        description=(
+            "The person who made this change. Null only on the opening entry — Signora may "
+            "suggest tracking an account and may do nothing else, so that is the one state "
+            "with no human behind it."
+        )
+    )
+    reason: str = Field(
+        description=(
+            "Why it changed. Recorded on every entry, because workflow has to explain itself "
+            "as thoroughly as the intelligence does — *'someone changed it'* is not an "
+            "explanation."
+        )
+    )
+    occurred_at: datetime = Field(description="When it changed.")
+
+    @classmethod
+    def from_domain(cls, state: OpportunityState) -> "WorkflowStateResponse":
+        return cls(
+            stage=state.stage,
+            owner_id=state.owner_id,
+            decided_by=state.actor_id,
+            reason=state.reason,
+            occurred_at=state.occurred_at,
+        )
+
+
+class AccountOpportunityResponse(BaseModel):
+    """What Signora committed to about this account, and what has happened since.
+
+    **The brief's *then and now*.** Every field is either a fact recorded when
+    somebody committed, or the same fact today. A score of 50 means something
+    different on an account opened at 20 than on one opened at 60, and the
+    attention list cannot show that because it only knows about now.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID = Field(description="The opportunity — Signora's record of a commitment.")
+    account_id: UUID = Field(description="The company it is about.")
+
+    stage: Stage = Field(
+        description=(
+            "Where this sits in your workflow. Only `tracking` can be reached without a "
+            "person: Signora suggests, and every stage beyond that names who decided it."
+        )
+    )
+    owner_id: UUID | None = Field(
+        description="Who holds this account, or null if nobody has taken it."
+    )
+    opened_at: datetime = Field(description="When Signora started tracking this account.")
+    opened_by: Qualification = Field(
+        description=(
+            "How it got here — `automatic` if Signora suggested it from the evidence, "
+            "`manual` if a person opened it regardless of the score."
+        )
+    )
+
+    score_at_open: int = Field(
+        description=(
+            "Commercial attention at the moment of commitment. A **fact about then**, never "
+            "a cached copy of the current number — it is what justified opening this, and it "
+            "does not change when the score does."
+        )
+    )
+    contested_at_open: bool = Field(
+        description=(
+            "Whether opposing readings were already live when it opened. Read beside "
+            "`contested` on the score: an account that has *become* contested is a different "
+            "situation from one that always was."
+        )
+    )
+
+    score: int | None = Field(
+        description=(
+            "Commercial attention now. Null when no score is live — the opportunity outlives "
+            "the score that created it, so a commitment stays open after its justification "
+            "expires."
+        )
+    )
+    score_change_since_open: int | None = Field(
+        description=(
+            "Signed movement since the commitment was made. **The one number the attention "
+            "list cannot show you**, because it only knows about today. Null rather than "
+            "zero when no score is live: zero is a reading that has not moved."
+        )
+    )
+    evidence: EvidenceState = Field(
+        description=(
+            "How the intelligence behind this commitment is holding up: current, cooling, or "
+            "stale. Computed when you ask and never stored, so an account can go cold without "
+            "Signora closing it for you."
+        )
+    )
+
+    history: tuple[WorkflowStateResponse, ...] = Field(
+        description=(
+            "Every workflow state in order, oldest first. Append-only and never rewritten — "
+            "the status *is* the audit trail rather than something kept beside it, so the two "
+            "cannot disagree."
+        )
+    )
+
+    @classmethod
+    def from_domain(cls, brief: OpportunityBrief) -> "AccountOpportunityResponse":
+        return cls(
+            id=brief.opportunity.id,
+            account_id=brief.opportunity.entity_id,
+            stage=brief.state.stage,
+            owner_id=brief.state.owner_id,
+            opened_at=brief.opportunity.created_at,
+            opened_by=brief.opportunity.qualification,
+            score_at_open=brief.opportunity.score_at_creation,
+            contested_at_open=brief.opportunity.contested_at_creation,
+            score=brief.current_score.value if brief.current_score else None,
+            score_change_since_open=brief.score_change_since_open,
+            evidence=brief.evidence_state,
+            history=tuple(WorkflowStateResponse.from_domain(s) for s in brief.history),
+        )
+
+
+__all__ = [
+    "AccountAttentionResponse",
+    "AccountOpportunityResponse",
+    "WorkflowStateResponse",
+]

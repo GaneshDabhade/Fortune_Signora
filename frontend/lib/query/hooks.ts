@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   AccountAttention,
   AccountIdentity,
+  AccountOpportunity,
   AccountScore,
   CursorPage,
   Workspace,
@@ -105,6 +106,34 @@ export function useAccountScore(workspaceId: string | null, accountId: string | 
       apiRequest<AccountScore>(`/workspaces/${workspaceId}/accounts/${accountId}/score`, {
         workspaceId: workspaceId ?? undefined,
       }),
+    enabled: workspaceId !== null && accountId !== null,
+    retry: (attempt, error) =>
+      !(error instanceof ApiError && error.status === 404) && attempt < 2,
+  });
+}
+
+/**
+ * What Signora committed to about one account, and what has happened since.
+ *
+ * **Not folded into `useAccountScore`.** The score belongs to the Buying Score
+ * Engine and the commitment to the Opportunity Engine; no module in the
+ * ratified graph reaches both, so the brief composes them here — the same
+ * reason names arrive separately (37-product-surface.md §7).
+ *
+ * Not retried on a 404: an account with nothing open is a settled answer, and
+ * retrying makes a fast truthful response look like a slow broken one.
+ */
+export function useAccountOpportunity(
+  workspaceId: string | null,
+  accountId: string | null,
+) {
+  return useQuery({
+    queryKey: queryKeys.accountOpportunity(workspaceId ?? '', accountId ?? ''),
+    queryFn: () =>
+      apiRequest<AccountOpportunity>(
+        `/workspaces/${workspaceId}/accounts/${accountId}/opportunity`,
+        { workspaceId: workspaceId ?? undefined },
+      ),
     enabled: workspaceId !== null && accountId !== null,
     retry: (attempt, error) =>
       !(error instanceof ApiError && error.status === 404) && attempt < 2,

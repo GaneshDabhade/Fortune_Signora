@@ -4,7 +4,7 @@ import { ArrowLeft, Scale } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
-import { ContestedMark, ScoreMovement, WhyNow } from '@/components/intelligence/attention';
+import { ContestedMark, WhyNow } from '@/components/intelligence/attention';
 import {
   ContributionList,
   PostureSplit,
@@ -12,9 +12,18 @@ import {
   ScoreArithmetic,
 } from '@/components/intelligence/contributions';
 import { EntityName } from '@/components/intelligence/entity-name';
+import {
+  ContestedSince,
+  OpportunityMomentum,
+  WorkflowStage,
+} from '@/components/intelligence/opportunity';
 import { Card, CardBody, EmptyState, SkeletonText } from '@/components/ui';
 import { ApiError } from '@/lib/api/client';
-import { useAccountIdentities, useAccountScore } from '@/lib/query/hooks';
+import {
+  useAccountIdentities,
+  useAccountOpportunity,
+  useAccountScore,
+} from '@/lib/query/hooks';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -24,28 +33,34 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  * seller who has decided *which* accounts now has to decide whether they agree,
  * and then defend that to somebody else. **This page exists to be argued with.**
  *
+ * ### The order the questions are answered in
+ *
+ * *What changed* → *how much attention* → *how long that holds* → *why* → *what
+ * disagrees*. A reader stops as soon as they are convinced, which is what
+ * progressive disclosure means on a page rather than in a panel: **information
+ * ordered so most of it is never read**, not information hidden behind a
+ * control.
+ *
  * ### The route is `/opportunities/[accountId]`, and the segment is named
  *
  * The parameter is an **account** identifier under a section called
  * Opportunities, which is the sort of mismatch that costs the next engineer an
  * hour. Naming the segment `accountId` puts the answer in the URL itself rather
- * than in a comment somebody has to find. The section keeps its name because a
- * seller works a list of opportunities; the brief is about the company one of
- * them is on.
+ * than in a comment somebody has to find.
  *
- * ### Composed from two requests, not one aggregate
+ * ### Composed from three requests, not one aggregate
  *
- * The name comes from the Knowledge Graph and the score from the Buying Score
- * Engine, because no module in the ratified graph reaches both. Composing them
- * here was the option that needed no architectural change
- * (37-product-surface.md §7).
+ * The name comes from the Knowledge Graph, the score from the Buying Score
+ * Engine, the commitment from the Opportunity Engine — no module in the
+ * ratified graph reaches all three. Composing them here was the option that
+ * needed no architectural change (37-product-surface.md §7).
  *
  * ### What is deliberately not here yet
  *
- * The business events and observations beneath each line, and the AI narration
- * and Decision Package, land in later M12 slices. **Nothing on this page hints
- * at them.** A control that looks clickable and is not costs more trust than
- * the missing feature does.
+ * The business events beneath each ledger line, the grounded narration, and the
+ * Decision Package. **Nothing on this page hints at any of them.** A control
+ * that looks clickable and is not costs more trust than the missing feature
+ * does — and a panel that says *"coming soon"* costs more than both.
  */
 export default function AccountBriefPage() {
   const { accountId } = useParams<{ accountId: string }>();
@@ -53,6 +68,7 @@ export default function AccountBriefPage() {
   const workspaceId = activeWorkspace?.id ?? null;
 
   const { data: score, isLoading, error } = useAccountScore(workspaceId, accountId);
+  const { data: opportunity } = useAccountOpportunity(workspaceId, accountId);
   const { data: identities, isLoading: nameLoading } = useAccountIdentities(workspaceId, [
     accountId,
   ]);
@@ -64,12 +80,22 @@ export default function AccountBriefPage() {
       <BackToList />
 
       <header className="flex items-start justify-between gap-4">
-        <EntityName
-          identity={identities?.get(accountId)}
-          fallbackId={accountId}
-          isLoading={nameLoading}
-          className="text-lg"
-        />
+        <div className="min-w-0">
+          <EntityName
+            identity={identities?.get(accountId)}
+            fallbackId={accountId}
+            isLoading={nameLoading}
+            className="text-lg"
+          />
+          {/* The workflow line sits under the name rather than in the score
+              card: it is about the *account*, not about the number, and a
+              seller reads it once on arrival and never again. */}
+          {opportunity ? (
+            <div className="mt-0.5">
+              <WorkflowStage opportunity={opportunity} />
+            </div>
+          ) : null}
+        </div>
         {score ? <ContestedMark contested={score.contested} /> : null}
       </header>
 
@@ -83,17 +109,27 @@ export default function AccountBriefPage() {
             <CardBody className="flex flex-col gap-4">
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <ScoreArithmetic score={score} />
-                <div className="flex flex-col items-end gap-1">
-                  <WhyNow trigger={score.trigger} />
-                  <ScoreMovement trend={score.trend} change={score.score_change} />
-                </div>
+                <WhyNow trigger={score.trigger} />
               </div>
+
+              {/* **What changed**, given the same weight as the number itself.
+                  A score is a position; the movement since somebody committed
+                  is the story, and it is the one figure no other screen has. */}
+              {opportunity ? (
+                <div className="border-t border-border pt-3">
+                  <OpportunityMomentum opportunity={opportunity} />
+                </div>
+              ) : null}
+
               <ReadingValidity score={score} />
               <PostureSplit score={score} />
             </CardBody>
           </Card>
 
           {score.contested ? <ContestedNote /> : null}
+          {opportunity ? (
+            <ContestedSince opportunity={opportunity} contestedNow={score.contested} />
+          ) : null}
 
           <section className="flex flex-col gap-3">
             <h2 className="text-sm font-semibold text-content">What contributed</h2>
