@@ -106,7 +106,8 @@
 | [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | M14b is three concerns in one roadmap row, and none has a module | Lane A | **Product owner** (bounded context 🔴) | `OPEN` — **architectural** | **The whole of M14b.** [R-01](architecture/16-architecture-risks.md) has been waiting for it at High/High |
 | [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide) | Identifier allocation is still only *unlikely* to collide | Lane A | **QE** + product owner | `OPEN` — **directed by the product owner** | Nothing built. **The repository scaling past three actors without manual reconciliation** |
 | [C-202](#c-202--four-shared-documents-disagree-and-one-disagrees-with-itself) | Four shared documents disagree, and one disagrees with itself | Lane A | **QE** | `OPEN` — **directed by the product owner** | Nothing built. **A cold session trusting any status in the repository** |
-| [C-202b](#c-202b--is-an-invitation-better-auths-or-signoras) | Is an invitation Better Auth's or Signora's? | Lane A | **Product owner** (vendor capability + ADR) | `OPEN` — **architectural** | **Inviting anybody.** Every workspace is permanently whoever created it. **Not the members list** |
+| [C-206](#c-206--is-an-invitation-better-auths-or-signoras) | Is an invitation Better Auth's or Signora's? | Lane A | **Product owner** (vendor capability + ADR) | `OPEN` — **architectural** | **Inviting anybody**, and — corrected 2026-08-02 — **the members list too**: no membership carries an address until an invitation writes one |
+| [C-207](#c-207--casbin-cannot-express-an-action-on-yourself) | Casbin cannot express an action on yourself | Lane A | **Product owner** (platform §20a) | `OPEN` — **architectural** | **Leaving an organization**, and every self-directed operation after it |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
 >
@@ -1791,7 +1792,7 @@ It is also the failure mode this repository keeps finding in a different coat: [
 
 | | |
 |---|---|
-| **No longer blocked by this item** | **TS-01, the Team page.** It can list members with no cross-tier lookup, no BFF and no admin plugin |
+| **No longer blocked *in design*** | **TS-01, the Team page** — it needs no cross-tier lookup, no BFF and no admin plugin. **Corrected 2026-08-02: it is still blocked *in sequence*.** `MembershipResponse` carries no address and none can be backfilled, so the column arrives with the invitation flow ([C-206](#c-206--is-an-invitation-better-auths-or-signoras)). The narrowing changes *what* unblocks TS-01, not *whether* it is blocked |
 | **Still blocked** | Display names, avatars, AI attribution, audit actors, mentions, notifications. **This remains the highest-leverage item on the board** — it is simply no longer what stops Team Management starting |
 
 ### It is now both halves of team management, and a second journey
@@ -2232,9 +2233,9 @@ Alembic's `down_revision` is a linear chain: **a gap is a broken graph, not an o
 
 ---
 
-## C-202b · Is an invitation Better Auth's or Signora's?
+## C-206 · Is an invitation Better Auth's or Signora's?
 
-> Numbered from Lane A's block. **Renumber freely** — it is one cycle old and cited nowhere but here.
+> **Was `C-202b` for part of one cycle.** QE renumbered Lane A's earlier items to `C-203`–`C-205` at merge while this was being written, so it takes the next free number in Lane A's block. **Cited nowhere else at the time of renaming.**
 
 | | |
 |---|---|
@@ -2278,6 +2279,58 @@ Alembic's `down_revision` is a linear chain: **a gap is a broken graph, not an o
 | **Cost of waiting** | **Every workspace stays a single person.** [J10](architecture/43-customer-experience.md) cannot open |
 
 **Full discovery — thirty customer questions, the stress test against the roadmap, and the two weak points — is [46-team-management.md](architecture/46-team-management.md).** Not restated here (§2).
+
+
+---
+
+## C-207 · Casbin cannot express an action on yourself
+
+| | |
+|---|---|
+| **Owner** | **Product owner** — `signora_platform/authorization/` is frozen (§20a) |
+| **Requesting lane** | Lane A |
+| **Category** | Authorization model · platform freeze |
+| **Status** | `OPEN` |
+| **Kind** | **Architectural blocker** |
+| **Blocks** | **Leaving an organization**, and every self-directed operation Signora will ever have |
+| **Raised** | 2026-08-02, implementing the first Team Management slice |
+
+**`policies/model.conf` defines the request tuple as `(sub, dom, obj, act)`, and `sub` is *the caller's role*.** The caller's **identity is not in the tuple**.
+
+> **So the model can say *"an owner may remove a member"* and cannot say *"anybody may remove themselves"*.**
+
+**Found trying to build the one Team Management slice that needs neither names nor a ruling.** Leaving an organization needs no identity resolution and no invitation — and it cannot be authorized.
+
+### Why each way round is worse than raising it
+
+| | |
+|---|---|
+| **Add `Action.LEAVE`** | `Action` is in `signora_platform/authorization/enforcer.py` — **frozen.** A platform change needs an RFC, which is this item |
+| **Grant `p, member, *, member, remove` and restrict to self in the handler** | **The policy would then assert that members may remove members, which is false.** The repository already carries one grant it cannot honour — `member:remove` with no endpoint — and adding a second that *overstates* is worse: the first is a missing capability, this would be a **false statement about who may do what**, in the file an auditor reads first |
+| **Skip the check for this endpoint** | §7 admits no carve-out, and rightly. **The first endpoint without a policy check is the one nobody notices later** |
+
+### It is small, structural, and will recur
+
+**Every self-directed operation meets it:** leave an organization · change your own notification preferences (M14a) · delete your own account · manage your own connected systems. **None is buildable today**, and each will look like a five-line endpoint to whoever tries next.
+
+### Options, with a recommendation
+
+| | | |
+|---|---|---|
+| **A** | **Add `Action.LEAVE`**, granted to both roles | Smallest and most literal. ❌ **One new verb per self-directed operation**, and the enum grows with the product |
+| **B** | **A `self` subject the enforcer resolves** — the caller's role *or* the literal `self` when the target is the caller | Expresses the concept once. ❌ **Changes the request tuple**, so every call site and the model file move together |
+| **C** — *recommended* | **Rule it out of Casbin entirely.** Acting on yourself is not an authorization question: **it is a consequence of membership**, which `CurrentWorkspace` already verifies before any handler runs. Record the rule in §7 — *"an operation whose only subject is the caller requires membership and no policy tuple"* — so the absence is a stated decision rather than a gap | ✅ Adds nothing to the platform, and it is **true**: nobody needs permission to stop being somewhere. ❌ It is a **governance change to §7**, which is the product owner's |
+
+**Lane A recommends C**, and notes it costs no code at all — it makes an existing verified fact sufficient, and says so where an auditor will look.
+
+### Implementation impact
+
+| | |
+|---|---|
+| **If C** | One paragraph in §7, then the leave endpoint is ordinary work. **No migration, no platform change, no new grant** |
+| **If A** | A frozen-platform change plus a `policy.csv` line, then the same endpoint |
+| **If B** | A frozen-platform change touching the model file and every `authorize` call |
+| **Cost of waiting** | **A person cannot leave an organization.** Small today — every workspace has one member — and permanent for every self-directed feature after it |
 
 
 ---

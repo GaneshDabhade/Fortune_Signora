@@ -26,7 +26,7 @@
 | **1 · There is no way to invite anybody** | `POST /members` takes **`user_id: UUID`**. A customer cannot type one, and nothing resolves an email to a user. **An organization is permanently whoever created it** |
 | **2 · There is no way to remove anybody** | **`p, owner, *, member, remove` is granted in [`policy.csv`](../../backend/signora_platform/authorization/policies/policy.csv):5** — and there is **no endpoint, no use case, and no domain method.** A reviewed authorization grant for an operation the system cannot perform |
 | **3 · A membership has no lifecycle** | Created, never changed. No role change, no suspension, no departure, no ownership transfer. `Membership` carries `updated_at` and `updated_by`, and **nothing has ever updated one** |
-| **4 · Nobody has a name** | [C-024](../LANE_COORDINATION.md). A team page today renders UUIDs |
+| **4 · Nobody has a name** | [C-203](../LANE_COORDINATION.md). A team page today renders UUIDs |
 
 > **Number 2 is the most interesting.** It is the same shape as the seam that produced PS-03, PS-05, TS-02 and three Provider Platform slices: **a contract the repository declared and never honoured.** Somebody reviewed that grant and decided owners may remove members. The product cannot.
 
@@ -134,7 +134,7 @@
 | **Ownership transfer · restructuring** | D4 makes transfer a first-class operation on Day One | ✅ |
 | **Audit exports · compliance history** | **D3's immutable ended-membership record is the audit trail.** Export is a projection over it | ✅ **because immutability was chosen now** |
 | **SSO · SCIM · Azure AD · Okta · Google Workspace** | ⚠️ **The one that needs saying.** SCIM *provisions memberships from an external directory* — an invitation flow it bypasses entirely. **It does not break the model**: SCIM becomes a second author of the same membership record. **What it breaks is the assumption that a membership is always created by an invitation**, so the record must not require an invitation id |
-| **Comments · mentions · approvals · notifications** | All need *"which person"*, which is [C-024](../LANE_COORDINATION.md), and all cite a membership that D3 guarantees still exists | ✅ |
+| **Comments · mentions · approvals · notifications** | All need *"which person"*, which is [C-203](../LANE_COORDINATION.md), and all cite a membership that D3 guarantees still exists | ✅ |
 
 ### The four architectural questions, answered
 
@@ -143,7 +143,7 @@
 | **Have I mixed identity with authorization?** | **No, and the split is the design.** Better Auth owns *who you are*; Casbin owns *what you may do*; Membership owns *which organization you belong to*. Three things, three owners, and the invitation is the only place they meet |
 | **Have I mixed workspace membership with business ownership?** | **They are already separate and must stay so.** `Opportunity.owner_id` is *who is working this account*; membership is *who may sign in to this organization*. **D3's ended-membership record is what keeps an assignment readable after somebody leaves** |
 | **Is another bounded context emerging?** | **One is, and it is not Team Management** — see §6 |
-| **Am I coupling unnecessarily?** | **One coupling is real and unavoidable:** every module that names an actor depends on membership resolving to a person. That is C-024, and it is a *contract* rather than a coupling — the same shape as `EntityName` |
+| **Am I coupling unnecessarily?** | **One coupling is real and unavoidable:** every module that names an actor depends on membership resolving to a person. That is C-203, and it is a *contract* rather than a coupling — the same shape as `EntityName` |
 
 ---
 
@@ -192,11 +192,11 @@
 
 ---
 
-## 7 · [C-024](../LANE_COORDINATION.md) can be narrowed on evidence, before any ruling
+## 7 · [C-203](../LANE_COORDINATION.md) can be narrowed on evidence, before any ruling
 
 **The product owner asked that dependencies be narrowed by evidence rather than by another decision. Discovery produces one.**
 
-**C-024's hard half was never *"can we get a name"* — it was *"which ids may a caller resolve"*, a privacy-scoping question.** Every option in that item needed an answer to it.
+**C-203's hard half was never *"can we get a name"* — it was *"which ids may a caller resolve"*, a privacy-scoping question.** Every option in that item needed an answer to it.
 
 > **An email-addressed invitation removes the question for the Team page.** The membership records **the address the organization typed when it invited them.** There is nothing to resolve and nobody to look up: **the organization already knows, because it supplied it.**
 
@@ -204,8 +204,8 @@
 
 | | |
 |---|---|
-| **Narrowed** | The Team page can list an organization's members **without any cross-tier lookup, BFF, or admin plugin.** TS-01 stops depending on C-024 |
-| **Still open** | Display names, avatars, AI attribution, audit actors and mentions. **C-024 remains, and remains the highest-leverage item** — it is simply no longer what blocks Team Management |
+| **Narrowed** | The Team page can list an organization's members **without any cross-tier lookup, BFF, or admin plugin.** TS-01 stops depending on C-203 |
+| **Still open** | Display names, avatars, AI attribution, audit actors and mentions. **C-203 remains, and remains the highest-leverage item** — it is simply no longer what blocks Team Management |
 
 ---
 
@@ -216,3 +216,120 @@
 **Not proposed: any code.** Option C enables a vendor capability, which is 🔴.
 
 **Proposed: a ruling on §6**, and then implementation in slices, each independently releasable — the members list first, because it is the one that needs nothing from §6 and closes [J9](43-customer-experience.md).
+
+---
+
+## 9 · Phase 3 — the administrator's experience, and two corrections to §7
+
+**Written before implementation, and it began by finding two things wrong with this document's own conclusions.** Both are recorded rather than quietly edited, because each is a claim about sequencing that a lane acted on.
+
+### Correction 1 — the C-203 narrowing is real, and it lands later than §7 says
+
+**§7 concluded that the members list stops depending on C-203.** The reasoning holds. **The delivery does not.**
+
+`MembershipResponse` carries `id · workspace_id · user_id · role · created_at`. **There is no address**, because no address was ever supplied: `create_workspace` mints the founder's membership from a session, and `POST /members` takes a `user_id`. **The column the narrowing depends on is written by the invitation flow**, which is [C-206](../LANE_COORDINATION.md).
+
+**And it cannot be backfilled.** For every membership that exists today nobody typed an address, and inventing one would be the mistake [B-004](../BUGS.md)'s migration explicitly refused — *"existing rows keep an empty subject rather than a guessed one."*
+
+> **So the narrowing stands and the sequencing was wrong.** The members list becomes nameable **with TM-03, not before it.** *"TS-01 is unblocked"* was a claim about the design, stated as though it were a claim about the schema.
+
+### Correction 2 — a self-directed action cannot be authorized at all
+
+**Leaving an organization looked like the one slice needing neither names nor a ruling.** It needs neither, and it still cannot be built.
+
+`policies/model.conf` defines the request tuple as **`(sub, dom, obj, act)`**, where `sub` is *"the caller's workspace role"*. **The caller's identity is not in the tuple** — only their role. So Casbin can express *"an owner may remove a member"* and **cannot express *"anybody may remove themselves"***.
+
+| Route out | Why not |
+|---|---|
+| Add `Action.LEAVE` | `Action` lives in `signora_platform/authorization/enforcer.py` — **frozen (§20a)** |
+| Grant `p, member, *, member, remove` and restrict to self in the handler | **The policy would then say members may remove members, which is false.** A reviewed authorization grant that overstates is worse than an absent one — this repository already has one such grant, and it is finding #2 of §1 |
+| Skip authorization for this endpoint | §7: *"Authorization for every endpoint is a Casbin policy check."* No carve-out, and rightly |
+
+> **Every self-directed operation in Signora's future is inexpressible today** — leave an organization, change your own notification settings, delete your own account. **Raised as [C-207](../LANE_COORDINATION.md).** It is small, structural, and it will be met again.
+
+### What this leaves buildable today: nothing, and that is the honest answer
+
+| Slice | Blocked on |
+|---|---|
+| **Members list** | [C-203](../LANE_COORDINATION.md) — until TM-03 supplies addresses |
+| **Leaving** | [C-207](../LANE_COORDINATION.md) — self-directed authorization |
+| **Removal · role change · ownership transfer** | Naming a person — [C-203](../LANE_COORDINATION.md) |
+| **Invitations** | [C-206](../LANE_COORDINATION.md) |
+
+**The design below is therefore written now and implemented when the rulings land.** That ordering is deliberate: the questions it answers are product questions, and none of them gets easier by waiting.
+
+---
+
+## 10 · The design — an administrator's workspace, not a table of users
+
+> **The test the product owner set:** *"A good Team Management page should feel like an administrator's workspace rather than a table of users."*
+>
+> **What separates the two is that a workspace answers questions and a table answers lookups.** An administrator arrives with one of four questions, and the page is ordered by how often they arrive with each.
+
+```
+  Settings → Team
+
+  ┌────────────────────────────────────────────────────────┐
+  │  Your team                                             │
+  │  4 people · 2 can administer Signora                   │  ← the answer to
+  │                                                        │    "is this right?"
+  │  ┌──────────────────────────────────────────────────┐  │
+  │  │ ⚠ 2 invitations sent over a week ago,            │  │  ← only when true
+  │  │   still unaccepted            Resend · Revoke    │  │
+  │  └──────────────────────────────────────────────────┘  │
+  │                                                        │
+  │  People                                                │
+  │  ana@acme.com          Owner    joined 12 June   You   │
+  │  ravi@acme.com         Owner    joined 2 July          │
+  │  jo@acme.com           Member   joined 4 July          │
+  │                                                        │
+  │  Invited                                               │
+  │  sam@acme.com          Member   sent 6 days ago        │
+  │  kit@acme.com          Member   expired 2 days ago     │
+  │                                                        │
+  │  ＋ Invite a colleague                                  │
+  └────────────────────────────────────────────────────────┘
+```
+
+### The eleven questions, answered
+
+| | |
+|---|---|
+| **How does an administrator know who should be invited next?** | **The product does not know, and must not guess.** Signora has never seen a customer's org chart. **What it can do is make the absence visible**: a workspace of one says so, and every seller who signs in and finds an empty attention list is a person somebody forgot to invite. *(If a directory is ever connected — SSO, SCIM — the question becomes answerable and the answer is theirs, not ours.)* |
+| **How does the product help recover forgotten invitations?** | **The banner, and it is the whole feature.** An invitation older than a week and unaccepted is surfaced at the top with *Resend* and *Revoke* beside it. **Nobody goes looking for a forgotten invitation** — that is what forgotten means — so the page has to raise it |
+| **What happens when they expire?** | **They stay, marked expired.** Deleting them would erase the evidence that somebody was invited and never came, which is the one fact an administrator needs to act on |
+| **Should pending appear differently from members?** | **Different section, not a status column.** *"Who is in my organization"* and *"who is on their way in"* are different questions, and a `Status: pending` column invites sorting a person next to a not-yet-person |
+| **How does first-run become Team Management?** | **The empty state is the invitation prompt.** A workspace of one has one honest sentence — *"You are the only person here. Signora is more useful when the people working these accounts can see them."* — and one control. **The one moment an administrator is guaranteed to be looking** |
+| **What should a brand-new workspace look like?** | Exactly that. **Not an empty table with headers** — a table of one row with column headings is the product showing its schema |
+| **How is ownership transfer explained?** | **As a gain, then a loss, in that order.** *"Ravi will be able to administer Signora, invite people and change your organization's settings."* — then, only when the actor is the sole owner and is leaving: *"You will no longer be able to."* **The second sentence is the dangerous one and it appears only when it is true** |
+| **What if an owner accidentally removes themselves?** | **They cannot, if they are the last one** — refused in the domain (D4), not in a dialog a second tab can race. **If they are not the last, it succeeds and is recoverable**: another owner re-invites them, and D3's ended-membership record shows exactly what happened and when |
+| **How are dangerous actions progressively disclosed?** | **By scope, not by hiding.** Row actions live behind a per-row menu; *Transfer ownership* and *Leave* live at the foot of the page, away from the list — **an administrator scanning names should not be one mis-click from restructuring the organization** |
+| **Which actions deserve confirmation?** | **Those that are hard to reverse or affect somebody else**: removing a person, transferring ownership, leaving. Each names the person and the consequence — never *"Are you sure?"*, which asks a question the customer cannot answer |
+| **Which deserve undo instead?** | **Revoking an invitation** — reversible by resending, and confirming it would be ceremony over a control an administrator uses to correct a typo. **Nothing else here is undoable**, and offering undo where the underlying operation cannot be reversed is worse than a confirmation |
+
+### The rest of the surface, decided
+
+| | |
+|---|---|
+| **Search · filter · sort** | **Not on Day One, and the trigger is stated:** a workspace where the list does not fit on one screen. Three people do not need a search box, and D38's reasoning applies — a control that earns its place at 200 rows is furniture at 4 |
+| **Last active** | **Not built, and not merely deferred.** It needs per-user activity tracking that does not exist, and it is the kind of number that reads as surveillance to the people in the list. If it arrives, it arrives with a stated purpose |
+| **Bulk operations** | Same trigger as search. **The domain methods are per-member either way**, so the screen changes and nothing else does |
+| **Ownership indicator** | **The role column, and the count in the header.** *"2 can administer Signora"* is the sentence that matters — it is what makes D4's refusal comprehensible before a customer meets it |
+| **Permission explanation** | **Still the weakest part of this design.** *Owner* and *Member* are shown; what each may actually do is thirty Casbin tuples in engineering's vocabulary. **A tooltip would be a lie by compression.** Recorded in §5 and unsolved |
+| **Keyboard and accessibility** | The list is a `<table>` with real headers; row menus are buttons; the dialog is the existing native `<dialog>`, which already traps focus. **Nothing new is invented** |
+| **Responsive** | **Deferred to [C-026](../LANE_COORDINATION.md)** like every other screen, and it will be a real question here: five columns do not survive one column |
+
+### Reuse — what this needs and what already exists
+
+**Audited before designing, not after.** Everything below exists and will be used unchanged.
+
+| Need | Already built |
+|---|---|
+| The member list | `useWorkspaceMembers`, `queryKeys.members`, `Membership` — **all three shipped and uncalled** |
+| The viewer's own role | `useViewerRole` (TS-02) |
+| Table · dialog · badge · empty state · skeleton · button · input · select | `components/ui/*` |
+| Success and failure messaging | `useToast`, with `correlation_id` |
+| Route guarding | `GUARDED_ROUTES`, `RouteGuard` |
+| The settings entrance | **`/settings` and its card pattern (CX-01)** — a Team card joins Products and Connections |
+
+**Nothing new is proposed for `components/ui`.** The one shape this page introduces — a per-row action menu — is used exactly once, and §20c is explicit that a component earns promotion to the library on its second caller, not its first.
