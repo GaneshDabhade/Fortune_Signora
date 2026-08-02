@@ -6,6 +6,7 @@ import { useId, useState } from 'react';
 import { Badge } from '@/components/ui';
 import type {
   AccountValidation,
+  EvidenceState,
   HypothesisValidation,
   SupportingEvent,
 } from '@/lib/api/types';
@@ -50,31 +51,125 @@ import { cn } from '@/lib/design/cn';
  * They look exactly like a checklist and there is nowhere to store a tick. **A
  * control that forgets is worse than no control**, so these are list markers.
  * When something owns per-user state, they can become real.
+ *
+ * ### The section is always here once the page has something to say — R2-03
+ *
+ * It used to render nothing when nothing was live, on the same reasoning that
+ * governs narration: *a panel announcing a gap is worse than the gap*. **On
+ * this section that reasoning was wrong**, and the difference is worth stating
+ * because it decides where the rule applies.
+ *
+ * A narration that does not exist is Signora having nothing to add. **Nothing
+ * live is not nothing to say** — on a page whose subject is an open commitment
+ * it means the commitment is running ahead of its evidence, which is the most
+ * actionable sentence on the screen. And absence cannot carry it: *"the section
+ * just isn't there, so I can't tell if there's nothing to check or if the
+ * feature didn't load."* Two very different states rendered identically, as
+ * nothing.
+ *
+ * So this component answers all three — **what to check**, **nothing is
+ * current**, and **this did not load** — and they are told apart by what they
+ * say rather than by whether they appear.
  */
 export function ValidationBlock({
   validation,
+  evidence,
+  isError = false,
   onOpenEvidence,
 }: {
-  validation: AccountValidation;
+  /** Undefined while the request is in flight. **Not the same as empty**: a
+   * page that rendered *"nothing is current"* before the answer arrived would
+   * state something it does not yet know. */
+  validation: AccountValidation | undefined;
+  /** How the evidence behind this account is holding up, when a commitment
+   * exists to hold it up *against*. It is the only thing that can explain an
+   * empty answer, and it is deliberately optional — an account nobody has
+   * taken on has no such reading, and inventing one would be a claim. */
+  evidence?: EvidenceState;
+  /** The request failed. Rendered as its own sentence rather than as absence,
+   * which is the half of R2-03 no empty state can cover. */
+  isError?: boolean;
   /** Opens a recorded event in the drawer the ledger already uses. Omitted
    * where there is nowhere to send the reader — the same rule the ledger
    * follows: a control that looks clickable and goes nowhere costs more trust
    * than the missing feature does. */
   onOpenEvidence?: (businessEventId: string) => void;
 }) {
-  if (validation.hypotheses.length === 0) return null;
+  if (!isError && validation === undefined) return null;
 
   return (
     <section className="flex flex-col gap-3">
       <h2 className="text-sm font-semibold text-content">Before you act</h2>
-      <ol className="flex flex-col gap-3">
-        {validation.hypotheses.map((hypothesis) => (
-          <li key={hypothesis.signal_id}>
-            <Hypothesis hypothesis={hypothesis} onOpenEvidence={onOpenEvidence} />
-          </li>
-        ))}
-      </ol>
+      {isError ? (
+        <Unavailable />
+      ) : validation !== undefined && validation.hypotheses.length > 0 ? (
+        <ol className="flex flex-col gap-3">
+          {validation.hypotheses.map((hypothesis) => (
+            <li key={hypothesis.signal_id}>
+              <Hypothesis hypothesis={hypothesis} onOpenEvidence={onOpenEvidence} />
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <NothingCurrent evidence={evidence} />
+      )}
     </section>
+  );
+}
+
+/**
+ * Signora is holding nothing about this account — **and that is the answer**.
+ *
+ * **Stated, never implied by an empty screen.** On a page about an open
+ * commitment this is information: what a seller is working is no longer backed
+ * by anything current. It is also the case a reader is least equipped to guess
+ * at, which is why it says so in a sentence.
+ *
+ * **Why the wording forks on evidence state.** `stale` is the one case where
+ * the product knows *why* there is nothing — the score behind this account is
+ * past its validity, or there is no live score at all — and saying so turns an
+ * absence into a reason. Everywhere else it says only what it knows and stops:
+ * a second sentence guessing at the cause would be exactly the inference this
+ * surface exists not to make.
+ *
+ * **Drawn as calibration, not as a warning**, on the same terms as the
+ * limitations below it. Nothing has gone wrong; there is simply nothing to
+ * confirm, and an alert would say the opposite.
+ */
+function NothingCurrent({ evidence }: { evidence?: EvidenceState }) {
+  return (
+    <div className="rounded-md border border-border bg-surface-raised px-4 py-3.5">
+      <p className="text-sm leading-6 text-content-muted">
+        {evidence === 'stale'
+          ? 'There is nothing to check right now. The evidence behind this account has expired, so the score above is the last reading rather than a current one.'
+          : 'There is nothing to check right now. Signora is not holding anything current about this account — nothing has been ruled out, there is simply nothing to confirm.'}
+      </p>
+    </div>
+  );
+}
+
+/**
+ * The request failed, and says so.
+ *
+ * **The half of R2-03 that no empty state can cover.** *"The section just isn't
+ * there, so I can't tell if there's nothing to check or if the feature didn't
+ * load."* Both readings were rendered as nothing, so one sentence had to become
+ * two — and this is the one that says an outage is Signora's fault rather than
+ * a fact about the account.
+ *
+ * The wording is the page's own, deliberately: a seller who sees the same
+ * sentence in two places learns that it means *try again*, and a second
+ * phrasing of one situation is how a product starts sounding uncertain about
+ * what happened to it.
+ */
+function Unavailable() {
+  return (
+    <div className="rounded-md border border-border bg-surface-raised px-4 py-3.5">
+      <p className="text-sm leading-6 text-content-muted">
+        Signora could not load what to check on this account. Nothing has changed about
+        the account — reload to try again.
+      </p>
+    </div>
   );
 }
 

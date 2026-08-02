@@ -4,7 +4,11 @@ import { ArrowLeft, Scale } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
-import { ContestedMark, WhyNow } from '@/components/intelligence/attention';
+import {
+  ContestedMark,
+  EvidenceHealth,
+  WhyNow,
+} from '@/components/intelligence/attention';
 import {
   ContributionList,
   PostureSplit,
@@ -91,7 +95,10 @@ export default function AccountBriefPage() {
   const { data: score, isLoading, error } = useAccountScore(workspaceId, accountId);
   const { data: opportunity } = useAccountOpportunity(workspaceId, accountId);
   const { data: narration } = useAccountNarration(workspaceId, accountId);
-  const { data: validation } = useAccountValidation(workspaceId, accountId);
+  const { data: validation, isError: validationFailed } = useAccountValidation(
+    workspaceId,
+    accountId,
+  );
   const { data: research } = useAccountResearch(workspaceId, accountId);
   const requestResearch = useRequestResearch(workspaceId, accountId);
   const evidence = useEvidenceDrawer();
@@ -164,10 +171,25 @@ export default function AccountBriefPage() {
 
               {/* **What changed**, given the same weight as the number itself.
                   A score is a position; the movement since somebody committed
-                  is the story, and it is the one figure no other screen has. */}
+                  is the story, and it is the one figure no other screen has.
+
+                  **The evidence badge sits beside it, and it is the list's own
+                  component** (R1-04). The list showed *Cooling* on two accounts
+                  and the brief never said the word — it rendered `is_current`,
+                  which is true of a different fact, so the two screens
+                  disagreed about the same account and no reader would ever
+                  reconstruct why. *"The list flagged it, the detail page
+                  didn't, so I assumed the list was noisy."*
+
+                  Rendering the same component rather than a second phrasing is
+                  the point: two wordings for one fact is how a customer catches
+                  a product contradicting itself, and this one already had. It
+                  says nothing when the evidence is current — *"everything is
+                  fine"* is noise that trains people to stop reading badges. */}
               {opportunity ? (
-                <div className="border-t border-border pt-3">
+                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-border pt-3">
                   <OpportunityMomentum opportunity={opportunity} />
+                  <EvidenceHealth evidence={opportunity.evidence} />
                 </div>
               ) : null}
 
@@ -192,10 +214,23 @@ export default function AccountBriefPage() {
               gets what to do next without scrolling past the arithmetic; one
               who is not continues to the ledger below. That is what
               progressive disclosure means on a page — information ordered so
-              most of it is never read. */}
-          {validation ? (
-            <ValidationBlock validation={validation} onOpenEvidence={evidence.open} />
-          ) : null}
+              most of it is never read.
+
+              **Rendered whatever the answer is** (R2-03). *"Nothing is
+              currently held about this account"* is actionable on a page whose
+              subject is an open commitment, and a failed request is a third
+              thing again — the section used to render all three as absence,
+              which made an outage indistinguishable from a quiet account.
+
+              `evidence` comes from the opportunity because that is what the
+              reading is held up *against*: an account nobody has taken on has
+              no such state, and the block is built to say less when so. */}
+          <ValidationBlock
+            validation={validation}
+            evidence={opportunity?.evidence}
+            isError={validationFailed}
+            onOpenEvidence={evidence.open}
+          />
 
           {/* **Below the deterministic page, and above the ledger it cites.**
               Research is the only thing here a person starts, and it is the

@@ -78,14 +78,76 @@ describe('the checks are what a seller acts on', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders nothing at all when no hypothesis is live', () => {
-    // Not an empty state: the brief explains itself without this, and a panel
-    // announcing a gap is worse than the gap.
-    const { container } = render(
-      <ValidationBlock validation={validation({ hypotheses: [] })} />,
-    );
+  it('renders nothing while the answer is still in flight', () => {
+    // Undefined is not empty. A section saying "nothing is current" before the
+    // request has returned would state something the page does not yet know.
+    const { container } = render(<ValidationBlock validation={undefined} />);
 
     expect(container).toBeEmptyDOMElement();
+  });
+});
+
+describe('nothing live is an answer, not an absence — R2-03', () => {
+  // **This reverses an earlier decision, deliberately.** The block used to
+  // return null on an empty list, on the same reasoning that governs
+  // narration: a panel announcing a gap is worse than the gap. Here that was
+  // wrong — on a page about an open commitment, "nothing is current" means the
+  // commitment is running ahead of its evidence, which is the most actionable
+  // sentence on the screen.
+
+  it('says so, where it used to say nothing', () => {
+    render(<ValidationBlock validation={validation({ hypotheses: [] })} />);
+
+    expect(screen.getByRole('heading', { name: 'Before you act' })).toBeVisible();
+    expect(screen.getByText(/There is nothing to check right now/)).toBeVisible();
+  });
+
+  it('names the reason when the evidence has expired', () => {
+    // `stale` is the one case the product knows *why*, so it says why. The
+    // reason turns an absence into a fact about the account.
+    render(
+      <ValidationBlock validation={validation({ hypotheses: [] })} evidence="stale" />,
+    );
+
+    expect(screen.getByText(/evidence behind this account has expired/)).toBeVisible();
+  });
+
+  it('guesses at no reason when it has none', () => {
+    // "Cooling" says the score fell; it does not say why nothing is held. A
+    // sentence inventing the link would be the inference this surface exists
+    // not to make.
+    render(
+      <ValidationBlock validation={validation({ hypotheses: [] })} evidence="cooling" />,
+    );
+
+    expect(screen.queryByText(/has expired/)).toBeNull();
+    expect(screen.getByText(/nothing has been ruled out/)).toBeVisible();
+  });
+
+  it('says something different when the request failed', () => {
+    // **The half no empty state can cover.** "The section just isn't there, so
+    // I can't tell if there's nothing to check or if the feature didn't load."
+    render(<ValidationBlock validation={undefined} isError />);
+
+    expect(screen.getByText(/could not load what to check/)).toBeVisible();
+    expect(screen.queryByText(/nothing to check right now/)).toBeNull();
+  });
+
+  it('never reads as an alert', () => {
+    // Nothing has gone wrong. Drawn as calibration, on the same terms as the
+    // limitations — an alert would say the opposite of what happened.
+    const { container } = render(
+      <ValidationBlock validation={validation({ hypotheses: [] })} evidence="stale" />,
+    );
+
+    expect(container.querySelector('[class*="danger"]')).toBeNull();
+    expect(container.querySelector('[class*="warning"]')).toBeNull();
+  });
+
+  it('shows the checks, and not the empty sentence, when something is live', () => {
+    render(<ValidationBlock validation={validation()} />);
+
+    expect(screen.queryByText(/nothing to check right now/)).toBeNull();
   });
 });
 
