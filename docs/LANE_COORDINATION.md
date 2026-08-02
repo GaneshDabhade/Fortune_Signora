@@ -1358,6 +1358,93 @@ The model is now four: **Integration (catalog) · Connected Account · Grant · 
 
 ---
 
+## C-019 · A claim is invisible to the step meant to arbitrate it
+
+| | |
+|---|---|
+| **Owner** | **Product owner** — the Task Claim Protocol is `CLAUDE.md` §20e, governance |
+| **Requesting lane** | Lane B |
+| **Category** | Repository process · the claim protocol |
+| **Status** | `OPEN` |
+| **Blocks** | Nothing. **It has already happened once**, and it will happen again on every concurrent claim |
+| **Raised** | 2026-08-02, by Lane B, immediately after losing a race the protocol did not detect |
+
+**Step 7 publishes the claim to the lane's own branch. Step 8 looks at `integration`.** Those are different places, and nothing merges the first into the second before step 9 has to decide.
+
+> **A lane can complete all ten steps, see `integration` unchanged, and be second.**
+
+**What happened, on the protocol's first genuinely concurrent use.** Lane B claimed `TASK-002`, pushed to `lane-b-commercial-profile`, and ran step 8: `git pull --rebase origin integration` returned *"up to date"* and `BACKLOG.md` on `integration` still read `READY`. By the letter of the protocol the claim was first. **It was not** — Lane A already held `TASK-002` at `IN VALIDATION` on `lane-a-product-surface`, and had moved on to `TASK-004`. Lane B found this only by reading Lane A's branch directly, which no step asks for.
+
+**The claim was abandoned per step 9 and cost one commit and no code**, exactly as the design intends. The ordering worked. **The detection did not.**
+
+### Why this is not simply "Lane B should have looked harder"
+
+**Both lanes behaved correctly.** Neither published to `integration`; nothing in the protocol says to. The failure is that *"look at what came back"* names a place a claim is not yet in — and a rule whose correct execution still permits the outcome it prevents is the rule that needs changing, not the operator.
+
+It is also the failure mode this repository keeps finding in a different coat: [B-015](BUGS.md) is a guard reporting success while examining a ref that holds none of the relevant history. **Same shape, one level up** — the check is pointed somewhere the fact is not.
+
+### Three candidate resolutions, and Lane B's position
+
+| | What it costs | What it fixes |
+|---|---|---|
+| **A · Step 7 pushes the claim to `integration` too** | The claim commit merges immediately, before any implementation. Two extra commands | Makes `integration` the single place a claim exists, so step 8's question is answerable there. **Lane B has been doing this since `TASK-001`** — not as a decision, but because it seemed obviously right, which is its own small finding |
+| **B · Step 8 reads every lane branch** | Step 8 becomes `git fetch` plus a scan across `refs/remotes/origin/lane-*` | Detects the collision without changing where claims live. **This is what [TASK-005](BACKLOG.md) now implements**, and it works — but it is a *detector*, and it runs when somebody runs it |
+| **C · Both** | Nothing beyond A and B | A prevents the ambiguity; B catches the case where a lane forgets. Belt and braces on a rule whose whole purpose is arbitration |
+
+**Lane B recommends C, and would take A first if only one is wanted.** B is already built and shipping in TASK-005; it makes the collision *findable*, which is worth having regardless. But a detector that runs at Closeout finds a race hours after both lanes have written code, and A is what stops the race being possible at all — it costs two commands and makes step 8's answer mean what step 8 claims it means.
+
+**The question.** Does the protocol change, and to which of the three? **Lane B will not amend `CLAUDE.md` §20e** — it is the product owner's file and this is governance, not tooling.
+
+### Ids collided too, in the same hour, and it is the same root cause
+
+**Lane A opened `C-018` on its branch while Lane B was reading `integration`, where the highest was `C-017`.** Lane B has taken `C-019` rather than `C-018` — having seen Lane A's branch — but a lane that only read `integration` would have allocated `C-018` twice. **QE has already had to renumber this register once for exactly this reason.** Whatever resolves the claim race should resolve id allocation with it: both are *"two lanes writing to a shared namespace on branches neither can see."*
+## C-018 · Nobody owns the customer-facing name of an attribute
+
+| | |
+|---|---|
+| **Owner** | **Product owner**, with `knowledge_graph`'s assignee |
+| **Requesting lane** | Lane A |
+| **Category** | Ownership · vocabulary · module boundary |
+| **Status** | `OPEN` |
+| **Blocks** | **[TASK-003](BACKLOG.md)**, which cannot be implemented without the answer |
+| **Raised** | 2026-08-02, during the Task Claim Protocol's pre-claim review of TASK-003 |
+
+**The task is [R11-06](architecture/39-product-review-findings.md) — *the attributes are engineering's words*.** A seller reads `contested false · delta 0 · ceiling 120`, and `employee_count` where they would say *headcount*. The backlog assigns it to `knowledge_graph` and notes that [ADR-0034](architecture/adr/0034-ubiquitous-language.md)'s customer vocabulary reaches attribute names with nothing enforcing it there.
+
+**It was not claimed, because every available implementation contradicts something already written down.**
+
+| Candidate home | What it contradicts |
+|---|---|
+| `knowledge_graph` publishes a display label per attribute | **AC-28 and the module's root decision** — *"an entity is an identity, not a record"*, it stores no resolved attribute values, and `(entity, attribute)` is a query key rather than a described thing. And ADR-0034: *the translation lives at the frontend edge and **never travels inward*** |
+| The frontend translates | **R11-06 itself**: *"the fix belongs upstream in `explanation.py` — where the pipeline chooses its wording — and **never in the browser**"* |
+| A reviewed catalog of attribute labels | **Nothing** — but it does not exist, and creating one is a new artifact with an owner, a version and a review process |
+
+**The third is what the code already predicted.** `frontend/components/intelligence/research.tsx` carries, since M12.4: *"The attribute names are engineering's words and stay that way **until the catalog gives them customer ones** (R11-06)."* A previous lane reached the same conclusion and recorded it in a comment where nothing tracks it.
+
+**It is also what `CLAUDE.md` §2 would predict** — *every field has the least powerful author capable of producing it correctly*. A label for `employee_count` is **static knowledge a domain expert owns**, exactly like the Signal Catalog's titles, limitations and suggested checks. It is not something the graph should derive and not something a browser should invent.
+
+### What Lane A found while reviewing, and did not fix
+
+**The browser already translates, three different ways, for the same kind of name.**
+
+| Where | Treatment | `employee_count` becomes |
+|---|---|---|
+| `evidence.tsx` | `replaceAll('_', ' ')` | `employee count` |
+| `research.tsx` | spaced, then sentence case | `Employee count` |
+| `narration.tsx` | none | `employee_count` |
+
+**That is R11-06's own warning realised in triplicate** — *a second vocabulary, and the one place where a second vocabulary would defeat the panel's entire purpose* — except there are three of them and they disagree. Not fixed here: converging them in the browser would encode the answer to this item, and doing that is what the register exists to prevent.
+
+### The question, stated so it can be answered
+
+1. **Does an attribute get a customer-facing name at all**, or is R11-06's *"the verbatim-ness is the value"* still the ruling? Its own milestone is *"on evidence from a real reviewer"*, and **no reviewer evidence has been recorded** — so the trigger may simply not have fired.
+2. If it does — **which artifact owns it**, and who reviews a change to it?
+3. Does that name reach the **evidence drawer**, where the whole point is showing the reader exactly what was cited?
+
+**Question 3 is the one that decides whether this is small.** Everywhere else a friendlier name is a cosmetic improvement; in the drawer it is Signora relabelling a provider's claim inside the one view that exists to show it unedited.
+
+---
+
 ## Closed
 
 ## C-016 · Two branch names encode a permanent module assignment that no longer exists

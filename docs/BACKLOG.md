@@ -87,6 +87,7 @@
 | **Slice** | KG-01 |
 | **Status** | `READY` |
 | **Notes** | 🟡. [ADR-0034](architecture/adr/0034-ubiquitous-language.md)'s customer vocabulary reaches attribute names, and nothing enforces it there yet |
+| **Skipped by Lane A**, 2026-08-02 | **Not claimable as written — [C-018](LANE_COORDINATION.md) opened.** Every available implementation contradicts something already written: `knowledge_graph` publishing labels contradicts AC-28 (*an entity is an identity, not a record*) and ADR-0034 (*the translation never travels inward*); translating in the browser contradicts [R11-06](architecture/39-product-review-findings.md) itself (*never in the browser*); the third option — a reviewed catalog of attribute labels — does not exist. **R11-06 also records itself as a deliberate trade-off** whose milestone is *"on evidence from a real reviewer"*, and no reviewer evidence has been recorded, so the trigger may not have fired. Lane A took **TASK-004** instead |
 
 ### TASK-004 · The brief distinguishes *not narrated* from *narrated against evidence that no longer resolves*
 
@@ -94,7 +95,7 @@
 |---|---|
 | **Module** | Product Surface |
 | **Slice** | PS-02 |
-| **Status** | `READY` |
+| **Status** | `CLAIMED` — **Lane A**, 2026-08-02. Taken after [TASK-003](#task-003--the-attributes-are-engineerings-words-r11-06) was skipped with its reason recorded |
 | **Notes** | The lane's half of [B-010](BUGS.md). The `RUNNING.md` half is QE's and is done separately. **Do not "fix" it by deleting narrations** — a materialized AI artifact is a historical fact (§2) |
 
 ### TASK-005 · `state-check` learns the backlog
