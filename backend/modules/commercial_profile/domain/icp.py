@@ -106,7 +106,7 @@ class EmployeeRange:
             raise IcpError("the smallest company you sell to cannot be larger than the largest.")
 
 
-def _validate(values: tuple[str, ...], *, what: str) -> None:
+def validate_criterion_list(values: tuple[str, ...], *, what: str) -> None:
     """Check a list of stated criteria without changing what was stated.
 
     **Validated, never normalised.** The customer's own capitalisation and
@@ -143,8 +143,8 @@ class ProductIcp:
     notes: str = ""
 
     def __post_init__(self) -> None:
-        _validate(self.industries, what="industry")
-        _validate(self.countries, what="country")
+        validate_criterion_list(self.industries, what="industry")
+        validate_criterion_list(self.countries, what="country")
         if len(self.notes) > MAX_NOTES:
             raise IcpError(f"a note about an ideal customer is limited to {MAX_NOTES} characters.")
         if not self.industries and not self.countries and self.employees is None:
