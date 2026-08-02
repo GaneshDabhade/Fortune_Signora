@@ -123,6 +123,7 @@ containers = [
     "modules.ai_platform",
     "modules.ai_reasoning_engine",
     "modules.ai_research_engine",
+    "modules.timeline",
 ]
 layers = [
     # Optional and topmost. `evaluation/` is the harness plus each consuming
@@ -691,6 +692,32 @@ forbidden_modules = [
     "modules.commercial_profile.application",
     "modules.commercial_profile.infrastructure",
     "modules.commercial_profile.interface",
+]
+
+# The tail of the pipeline, and the contract that keeps it a tail.
+#
+# `timeline` is a projection: it owns none of what it displays and decides
+# nothing about it. If it could import a signal, a score or an opportunity it
+# would be one convenience away from re-deriving meaning the owning module has
+# already decided — and a second opinion about a fact is how two surfaces start
+# disagreeing about one account. It consumes events and publishes nothing.
+[[tool.importlinter.contracts]]
+name = "timeline projects; it never reads a module it displays"
+type = "forbidden"
+source_modules = ["modules.timeline"]
+forbidden_modules = [
+    "modules.provider_platform",
+    "modules.provider_normalization",
+    "modules.knowledge_graph",
+    "modules.observation_engine",
+    "modules.business_event_engine",
+    "modules.signal_engine",
+    "modules.buying_score_engine",
+    "modules.opportunity_engine",
+    "modules.commercial_profile",
+    "modules.ai_platform",
+    "modules.ai_reasoning_engine",
+    "modules.ai_research_engine",
 ]
 
 [[tool.importlinter.contracts]]

@@ -78,7 +78,15 @@ An entry records **what was true when the event arrived**. Upstream supersession
 
 Seven event types produce **one** `TimelineEntry` with a discriminated `kind`, not seven tables and not seven aggregates. The alternative — a table per source — makes the one query the module exists to serve (*"everything for this entity, newest first"*) a seven-way union that grows a branch per upstream.
 
-The entry carries: the workspace, the entity, `occurred_at` (the domain time, **not** the arrival time), the kind, the originating `event_id`, the source module, a **stable reference to the row upstream**, and a short customer-facing summary line.
+The entry carries: the workspace, the entity, `occurred_at` (the domain time, **not** the arrival time), the kind, the originating `event_id`, the source module, a **stable reference to the row upstream**, and structured `detail`.
+
+> **Amended in slice 1: no rendered sentence is stored.** This paragraph originally ended *"and a short customer-facing summary line"*. Implementation showed it must not, for two reasons that only became visible with the immutability rule beside it.
+>
+> **A stored sentence is a copy of the phrasing catalog that can never be corrected.** Entries are immutable, so improving one word of customer copy would mean a new row for every entry ever written — or an edit the grant does not permit. The phrasing is *static knowledge a domain expert owns* (§2, least-powerful-author) and belongs in a reviewed catalog read at render time, exactly like the Signal Catalog's titles.
+>
+> **And it would put the customer's vocabulary inside the database**, which [ADR-0034](0034-ubiquitous-language.md) forbids in the same sentence that says the translation lives at the frontend edge and never travels inward.
+>
+> So the entry stores what happened in structured form and the edge decides how to say it.
 
 **`occurred_at` is the domain's time and ordering is by it.** Arrival order is a fact about the bus, not about the account — and a feed ordered by arrival tells a seller that a thing that happened in March happened after a thing that happened in June.
 

@@ -139,6 +139,13 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # declaration anything downstream reads. A leak here tells a
         # competitor exactly which accounts a company is pursuing.
         "target_account_list",
+        # Timeline (M7 slice 1), migration 0026. **The first table that is a
+        # projection**: every row is derived from an event whose source of
+        # truth is another module's table, so losing it loses an index over
+        # facts rather than any fact. It is still tenant-owned and still
+        # forced-RLS — a projection of workspace-scoped facts is workspace-
+        # scoped, and being rebuildable is not an isolation argument.
+        "timeline_entry",
     }
 )
 
@@ -271,6 +278,10 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         "commercial_focus",
         # Migration 0025, likewise.
         "target_account_list",
+        # Migration 0026. A projected entry records what an upstream module
+        # said at one moment; a correction is a new entry naming the event it
+        # came from. No `UPDATE` grant, `DELETE` granted on the same terms.
+        "timeline_entry",
     }
 )
 
