@@ -1,8 +1,14 @@
 """provider_platform: a watermark belongs to one subject
 
-Revision ID: 0026
-Revises: 0025
+Revision ID: 0027
+Revises: 0026
 Create Date: 2026-08-02
+
+**Renumbered from 0026 to 0027 on 2026-08-02.** Lane B's `0026_timeline_entry`
+reached `integration` first and both declared `0025` as their parent, which is a
+branched Alembic history. **The chain is linear on purpose** — it is one of the
+three reasons this repository is fast-forward only — so the later arrival moves,
+and the later arrival is this one.
 
 **B-004.** `provider_watermark` is keyed `(workspace_id, provider, capability)`
 and carries no subject, so a workspace watching two accounts shares one
@@ -41,8 +47,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0026"
-down_revision: str | None = "0025"
+revision: str = "0027"
+down_revision: str | None = "0026"
 branch_labels: Sequence[str] | None = None
 depends_on: Sequence[str] | None = None
 

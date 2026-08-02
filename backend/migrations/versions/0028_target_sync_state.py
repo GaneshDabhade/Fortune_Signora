@@ -1,7 +1,7 @@
 """provider_platform: what declaration this workspace has been synced against
 
-Revision ID: 0027
-Revises: 0026
+Revision ID: 0028
+Revises: 0027
 Create Date: 2026-08-02
 
 **One row per workspace, holding one integer.**
@@ -35,8 +35,8 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
 
-revision: str = "0027"
-down_revision: str | None = "0026"
+revision: str = "0028"
+down_revision: str | None = "0027"
 branch_labels: Sequence[str] | None = None
 depends_on: Sequence[str] | None = None
 
