@@ -559,6 +559,16 @@ promoted commit SHA  ==  certified commit SHA
 
 **Repository Closeout operates on the promoted commit and never on a newer `integration` head.** `PROJECT_STATUS.md`, [`SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md), [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md), repository metrics, certification metrics, milestone progress and roadmap progress **all describe that one commit.** A dashboard mixing figures from the promoted commit with figures from a later one describes no repository at all.
 
+#### A cycle is warranted by executable change, not by movement
+
+**Ratified 2026-08-02, product owner.** Certification runs when `integration` carries **meaningful executable change** — production implementation, infrastructure, migrations, executable tooling, governance tooling, architectural behaviour.
+
+**Documentation, claim commits, planning updates and execution-board maintenance accumulate** until they accompany executable work. Certifying them alone spends a full gate run proving a markdown table is still true, **which is how a team learns to skip cycles** — and the habit of skipping is the one thing this model cannot survive.
+
+**`make certified ARGS="--next-cycle"` answers it**, by the same test `--audit-main` applies to a Closeout commit: *does anything here change what the software does?*
+
+> **Observations found during certification do not expand its scope.** Unless one is a **blocking defect**, it is recorded, prioritized in [`BACKLOG.md`](docs/BACKLOG.md), and addressed if it becomes a recurring bottleneck. A cycle certifies the commit it pinned, and nothing else.
+
 #### The next cycle is never ambiguous
 
 **Immediately after Repository Ready, QE compares the latest `integration` SHA with the latest certified SHA.** Differ → **a new certification cycle is available, and its input is exactly the commits in between.** Identical → there is nothing to certify. **There is never a question about which repository state is awaiting certification**, which is the property the whole rule exists to produce.

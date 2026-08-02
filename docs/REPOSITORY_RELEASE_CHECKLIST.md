@@ -59,9 +59,10 @@ git merge-base --is-ancestor integration HEAD && echo "rebased: will fast-forwar
 make certified ARGS="--next-cycle"
 ```
 
-**Not every advance of `integration` deserves a cycle.** A claim commit changes two registers and nothing a gate can fail on; certifying it spends a full gate run proving a markdown table is still true, **which is how a team learns to skip cycles.** If the only pending commits are claims, stop here — they ride to `main` inside the next certified snapshot.
+**A cycle is warranted by executable change, not by movement.** Production code, infrastructure, migrations, tooling and architectural behaviour earn one; **documentation, claims, planning and board maintenance accumulate** until they accompany executable work. If nothing pending changes what the software does, stop here.
 
-- [ ] `--next-cycle` reports at least one **substantive** commit
+- [ ] `--next-cycle` reports at least one **executable** commit
+- [ ] **Observations found while certifying stay out of scope** — unless one blocks, it is recorded in [`BACKLOG.md`](BACKLOG.md) and addressed if it recurs
 
 ### Take the Certification Snapshot
 

@@ -198,49 +198,48 @@ def _audit_claims() -> int:
 def _next_cycle() -> int:
     """What is waiting for certification, and whether it is worth a cycle.
 
-    **Not every advance of `integration` deserves one.** A claim commit changes
-    two registers and nothing a gate could fail on, so certifying it burns a full
-    gate run — seven minutes of build, suite, smoke and scenario — to prove that
-    a row in a markdown table is still true. **That is how a team learns to skip
-    cycles**, which is the habit the whole model depends on not forming.
+    **A cycle is warranted by executable change, not by movement** (ratified
+    2026-08-02, product owner). Production code, infrastructure, migrations,
+    tooling and architectural behaviour earn one. **Documentation, claims,
+    planning and execution-board maintenance accumulate** until they accompany
+    executable work — certifying them alone spends seven minutes of build, suite,
+    smoke and scenario proving a markdown table is still true, **which is how a
+    team learns to skip cycles.**
 
-    So this answers the real question — *is there anything to certify?* — rather
-    than the mechanical one, *has the branch moved?*
+    An earlier version asked only whether a commit was a *claim*, so a claim that
+    also opened a coordination item counted as substantive and would have
+    triggered a cycle for three documentation commits. The test is now the same
+    one `_is_closeout` applies: **does anything here change what the software
+    does?**
     """
     pending = _git("rev-list", "--reverse", "main..integration").splitlines()
     if not pending:
         print("Repository Ready — `integration` == `main`. Nothing awaits certification.")
         return 0
 
-    claims: list[str] = []
-    substantive: list[str] = []
+    accumulating: list[str] = []
+    executable: list[str] = []
     for commit in pending:
-        changed = [
-            line
-            for line in _git("show", "--name-only", "--format=", commit).splitlines()
-            if line
-        ]
         subject = _git("log", "-1", "--format=%s", commit)
-        if changed and all(path in CLAIM_PATHS for path in changed):
-            claims.append(f"{commit[:7]}  {subject}")
-        else:
-            substantive.append(f"{commit[:7]}  {subject}")
+        non_executable, _ = _is_closeout(commit)
+        line = f"{commit[:7]}  {subject}"
+        (accumulating if non_executable else executable).append(line)
 
     print(f"`integration` is {len(pending)} commit(s) ahead of `main`.\n")
-    if claims:
-        print(f"  {len(claims)} claim(s), changing nothing a gate can fail on:")
-        for line in claims:
+    if accumulating:
+        print(f"  {len(accumulating)} documentation/planning commit(s), accumulating:")
+        for line in accumulating:
             print(f"    · {line}")
-    if substantive:
-        print(f"\n  {len(substantive)} substantive commit(s):")
-        for line in substantive:
+    if executable:
+        print(f"\n  {len(executable)} executable commit(s):")
+        for line in executable:
             print(f"    · {line}")
 
-    if not substantive:
+    if not executable:
         print(
-            "\nNo cycle needed. Claims ride to `main` inside the next certified\n"
-            "snapshot; certifying them alone would spend a full gate run proving a\n"
-            "markdown table is still true."
+            "\nNo cycle needed. Nothing here changes what the software does, so it\n"
+            "accumulates until it accompanies executable work — a cycle is warranted\n"
+            "by executable change, not by movement."
         )
         return 0
 

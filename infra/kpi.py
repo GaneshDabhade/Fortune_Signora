@@ -160,7 +160,19 @@ def register_kpis() -> dict[str, str]:
         else 0
     )
 
+    # **Unclaimed READY depth.** The leading indicator of a supply problem: when it
+    # reaches zero, a lane with nothing to claim reaches for work that has no task
+    # id and no agreed scope — which is exactly how one stalled on M7. It measures
+    # the queue, never the plan; what belongs in the queue is the product owner's.
+    ready_blocks = re.split(r"^### TASK-", backlog, flags=re.M)[1:]
+    unclaimed = sum(
+        1
+        for block in ready_blocks
+        if "`READY`" in block.split("\n\n")[0] or "`READY`" in block[:400]
+    )
+
     return {
+        "Queue depth (claimable now)": f"{unclaimed} — a lane with none reaches for undefined work",
         "Open bugs": f"{still_open} open · {fixed} fixed awaiting verification · "
         f"{verified} verified · {wontfix} won't fix",
         "Bugs by severity": " · ".join(f"{k} {v}" for k, v in by_severity.items()) or "—",
