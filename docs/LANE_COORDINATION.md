@@ -1521,6 +1521,66 @@ It is also the failure mode this repository keeps finding in a different coat: [
 
 ---
 
+## C-022 · Governance belongs to QE and the product owner — and this branch carries governance edits
+
+| | |
+|---|---|
+| **Owner** | **Product owner** + **QE** |
+| **Requesting lane** | Lane A |
+| **Category** | Governance ownership |
+| **Status** | `OPEN` |
+| **Blocks** | Nothing being implemented. **It blocks a lane from knowing which rules are in force** |
+| **Raised** | 2026-08-02, on the product owner's ruling the same day |
+
+**Ruled 2026-08-02:** a feature lane no longer modifies repository governance — `CLAUDE.md`, the execution workflow, lifecycle definitions, governance terminology, repository state legends, the execution board's structure. **A lane may identify an improvement, document the reasoning, open an item and recommend it. QE and the product owner evolve the rules.**
+
+**The rule is not yet written anywhere in the repository**, which is the first thing this item asks for. Until it is, the next lane will do what Lane A did — read *"documentation is part of the implementation"* (§12) and edit the rulebook in good faith.
+
+### What this branch already carries, and why it is not being reverted
+
+**Made before the ruling, each on explicit product-owner direction, and each accepted at the time.** They are listed so QE can adopt them, re-author them, or drop them — **as a decision rather than as a discovery in a diff.**
+
+| Where | What |
+|---|---|
+| `CLAUDE.md` §20e | *Execution ownership ends at `IN VALIDATION`* · *Continuous execution* · `CHANGES REQUESTED` · the two kinds of blocker · Claim Protocol steps 6a/6b/10 |
+| `CLAUDE.md` §20e | The *Concurrent milestones* paragraph that made a lane wait for `PROJECT_STATUS.md` — **withdrawn**, because it was the idle time *Continuous execution* removes |
+| [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) | Status legend: `IN PROGRESS`, `CHANGES REQUESTED`, `ACTIVE` scoped to QE's row, `BLOCKED` split by kind, a *Set by* column |
+| [`BACKLOG.md`](BACKLOG.md) | Status legend: `IN PROGRESS`, `IN VALIDATION`, `CHANGES REQUESTED`, QE's three |
+
+**Reverting them would leave the repository describing an execution model nobody is following** — the same defect class as a dashboard describing the previous milestone (§2), pointed the other way. **Keeping them silently would leave governance authored by a feature lane.** Neither is a lane's call, so both are put here.
+
+### And a second thing this item asks for: task identifiers
+
+**Lane A may no longer mint them** (ruled 2026-08-02), and three pieces of work now exist without one:
+
+| Work | State |
+|---|---|
+| **PP-02** — the target-account consumer | Built, pushed, `IN VALIDATION`. **No id** |
+| **PP-03** — un-watching stops the spending | Blocked on [C-021](#c-021), and [re-scoped before it started](architecture/41-provider-platform.md) |
+| **The Product Surface list slice** | See below — **it turns out to be already done** |
+
+## The queue is decision-limited, not capacity-limited
+
+**Recorded 2026-08-02 by Lane A, after returning to the queue with `provider_platform` architecturally blocked and finding nothing claimable.** This is an observation offered for the product owner's planning, **not a request to reprioritize** — position is theirs.
+
+| Candidate | Why it is not executable |
+|---|---|
+| [TASK-003](BACKLOG.md) | `READY`, blocked on [C-018](#c-018) — unanswered |
+| [TASK-005](BACKLOG.md) | `READY` **in the register only.** The check is on `integration`; [B-017](BUGS.md) records it as Lane B's and `IN VALIDATION`. **Claiming it would be the duplicate implementation the protocol exists to prevent** |
+| **Product Surface — the list (R1-01 🔴, R1-02 🔴)** | **Already implemented.** The row shows the Signal Catalog's title and the trigger has moved to the brief, exactly as R1-01 prescribed. R1-02 was *"resolved for free by R1-01"* and is. **[37-product-surface.md](architecture/37-product-surface.md) still calls this *"the only part of the milestone still open"*** — that sentence is stale, and it is the one a lane looking for work reads first |
+| Product Surface — [TASK-011](BACKLOG.md) (D20/R1-07) | `WAITING` on a seller in the room. Not a slice |
+| Product Surface — [TASK-014](BACKLOG.md), [TASK-016](BACKLOG.md) | `BLOCKED` — one on [C-021](#c-021), one on a trigger that has not fired |
+| `provider_platform` — PP-03 | `BLOCKED`, architectural, [C-021](#c-021) |
+| `timeline` — M7 | Lane B's |
+| [TASK-006](BACKLOG.md) · [TASK-007](BACKLOG.md) · [TASK-008](BACKLOG.md) · [TASK-009](BACKLOG.md) · [TASK-010](BACKLOG.md) · [TASK-012](BACKLOG.md) · [TASK-013](BACKLOG.md) | **All `WAITING` on the product owner** |
+| `apps/` · `signora_platform/` | Unassignable — [C-010](#c-010) |
+
+> **Seven of the eight `WAITING` rows wait on one person, and two lanes are idle behind them.** Adding a third lane would add nothing. **The binding constraint on this repository is no longer engineering capacity.**
+
+**The two decisions that would free the most engineering time**, offered as observation rather than as priority: **[C-021](#c-021)** returns Lane A to `provider_platform` immediately and unblocks [C-007](#c-007--the-guided-first-run-is-a-two-lane-build) behind it, and **[C-010](#c-010)** ends the ownership gap that four defects have already fallen into.
+
+---
+
 ## Closed
 
 ## C-016 · Two branch names encode a permanent module assignment that no longer exists
