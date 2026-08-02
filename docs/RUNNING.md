@@ -31,6 +31,62 @@ Everything runs locally. There is no cloud environment and no remote gate ([ADR-
 
 ---
 
+## Two operating modes, and they are mutually exclusive
+
+**Added 2026-08-02, on the product owner's direction, after a certification run failed for a reason that was not a defect.**
+
+**This repository has exactly two ways of being run, and they want the same two ports.** Knowing which one you are in is the difference between a five-minute diagnosis and an instant answer.
+
+| | **Human Review Mode** | **QE Release Mode** |
+|---|---|---|
+| **Purpose** | Interactive product evaluation — *using* Signora | Repository validation and certification |
+| **Started by** | `make demo`, then the two dev processes | `make smoke` · `make certify` · `make dr` |
+| **Runs** | frontend · backend · Playground data | a self-contained stack the gates build themselves |
+| **Ports** | **3000 / 8000** | **3000 / 8000** — *the same two* |
+| **Database** | `signora` | `signora` (smoke builds its own; `make test` truncates) |
+| **Who** | the product owner, reviewing on `main` | QE |
+
+> **They cannot run at the same time.** `make smoke` builds its own stack on 3000 and 8000, so a review session holding those ports makes it fail — around stage 3 of 24, with a message about the stack not becoming healthy. **That reads like a repository defect and is not one.**
+
+### Check before you start — one second, not five minutes
+
+```bash
+make release-preflight
+```
+
+| Exit | Meaning |
+|---|---|
+| **0** `READY` | Ports free. QE Release Mode may begin |
+| **2** `WAITING` | **A Human Review session is active.** An *environment* state, **not a repository failure** — release engineering waits |
+| **3** `BLOCKED` | Something unrecognised holds a port, or a documented prerequisite is missing |
+
+**`make smoke` runs this automatically** and refuses immediately rather than failing slowly.
+
+> **Never stop somebody else's review session to obtain a green pipeline.** QE's authority is to make a documented gate *runnable*, never to make it *pass* (`CLAUDE.md` §20e). A review session in progress is work, not an obstacle.
+
+### Leaving Human Review Mode
+
+**Three things are running, and all three must stop.** There is no single command, which is exactly why this section exists:
+
+```bash
+# 1 — the two foreground processes: Ctrl-C in each terminal
+#     (the `uvicorn` on 8000 and `npm run dev` on 3000)
+
+# 2 — confirm the ports actually came back
+make release-preflight            # expect: READY
+
+# 3 — optional: stop the backing services too
+docker compose -f infra/docker-compose.yml down
+```
+
+**Step 2 is the one people skip.** A backgrounded `next dev` survives closing its terminal, and the next person to run a gate inherits a failure that looks like a defect in their own work.
+
+### Lanes never collide with either mode
+
+**A lane's ports start at 3300/8300** and are allocated in [§ Running a lane](#running-a-lane). **That table exists to keep this collision limited to the two modes above** — a lane running on its own row can develop right through a review session or a certification run, and neither notices.
+
+---
+
 ## The short version
 
 ```bash

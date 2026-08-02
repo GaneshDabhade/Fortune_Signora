@@ -27,8 +27,21 @@
 # gate there is. Invoking through bash removes the failure mode entirely and
 # behaves identically on Linux, macOS, and WSL.
 
+## Is the workstation ready for QE Release Mode? Classifies in under a second.
+#
+# Human Review Mode (`make demo`) and QE Release Mode want the same two ports,
+# 3000 and 8000. The collision used to surface several minutes into a smoke run
+# as "3 of 24 stages", which reads like a repository defect and is not one.
+#
+#   0 ready · 2 waiting on a review session · 3 blocked
+release-preflight:
+	@python3 infra/release-preflight.py
+
 ## Verify the whole platform end to end, then tear down.
-smoke:
+#
+# Preflighted, so a run that cannot possibly succeed says why immediately
+# rather than after building a stack it will not be able to bind.
+smoke: release-preflight
 	@bash ./infra/smoke.sh
 
 ## Same, but leave the stack running for inspection after a failure.

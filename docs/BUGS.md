@@ -69,6 +69,51 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-026 · The repository does not own its line endings, and depends on every contributor's git config
+
+| | |
+|---|---|
+| **Module** | Repository configuration — a missing `.gitattributes` |
+| **Current assignee** | **none — not assignable.** [C-010](LANE_COORDINATION.md) |
+| **Severity** | 🟡 — **latent, not active.** Nothing is broken today; the exposure is real and cheap to close |
+| **Status** | `OPEN` |
+| **Found** | 2026-08-02, by QE, investigating a suspected line-ending problem at the product owner's request |
+
+**First, the honest correction.** **There is no CRLF problem in this repository today**, and QE did not report one. The investigation was asked for on the assumption that a CRLF observation had been made; it had not. What the investigation *did* find is the condition that would produce one.
+
+**Measured.**
+
+```bash
+ls .gitattributes                              # No such file
+git config --get core.autocrlf                 # unset
+git ls-files --eol | awk '{print $1}' | sort | uniq -c
+#   824 i/lf        ← every text file is LF in the index
+#   102 i/none      ← binary
+```
+
+**Expected.** A repository states its own line-ending policy, so that a clone behaves identically on Linux, macOS, WSL and Windows regardless of who configured what.
+
+**Actual.** **No `.gitattributes` exists.** Normalisation depends entirely on each contributor's `core.autocrlf`, which on this workstation is unset — and unset is only safe *because the workstation is Linux*. **A Windows contributor with git's default `core.autocrlf=true` would commit CRLF into `infra/smoke.sh` and `infra/disaster-recovery.sh`**, and a shell script with CRLF line endings fails with `bad interpreter: /bin/bash^M` — an error that names neither the file's real problem nor the machine that caused it.
+
+**Why it matters more here than in most repositories.** Under [ADR-0027](architecture/adr/0027-local-first-development.md) **the local run is the only run**, and `smoke.sh` and `disaster-recovery.sh` are two of the gates that decide whether anything ships. **A line-ending accident in those two files disables certification for whoever receives it**, with a message that reads like a broken interpreter rather than a checkout artifact.
+
+**Smallest sufficient fix, recommended and deliberately not implemented.** A single `.gitattributes` at the repository root:
+
+```gitattributes
+* text=auto eol=lf
+*.sh text eol=lf
+*.png binary
+*.jpg binary
+*.ico binary
+```
+
+`* text=auto eol=lf` makes the repository — not the contributor — the authority: LF in the index and LF in every working tree. The explicit `*.sh` line is redundant under it and is kept because **the two files whose corruption would be most expensive should be the two nobody has to reason about.**
+
+**Why the repository should own this rather than documenting it** (§2): a rule kept by every contributor configuring their client correctly is a rule that will be broken by the first person who does not, and the failure lands on somebody else's machine. **This is convention replaced by enforcement**, which is the substitution the repository already prefers everywhere else.
+
+**One caveat for whoever implements it.** Adding `.gitattributes` to a repository that is already uniformly LF is a no-op for content — verified above, 824 of 824 text files are already `i/lf` — so **no renormalisation commit is needed and none should be made.** If that ever stops being true, `git add --renormalize .` is the mechanism, and it must be its own commit.
+
+
 ### B-024 · The credential store that must not be readable has no tests at all
 
 | | |
