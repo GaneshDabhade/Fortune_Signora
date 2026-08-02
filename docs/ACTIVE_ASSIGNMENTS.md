@@ -68,7 +68,7 @@
 | Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Started |
 |---|---|---|---|---|---|---|---|---|
 | **Lane A** | — | `lane-a-product-surface` | — | — | `AVAILABLE` | — | **Run the Task Claim Protocol.** Nobody will assign it; the queue is open | — |
-| **Lane B** | **[TASK-001](BACKLOG.md#task-001--verify-the-three-fixes-qe-may-not-close)** | `lane-b-commercial-profile` | Repository — documentation, `infra/`, production image | one slice | `CLAIMED` | — | Reproduce [B-009](BUGS.md), [B-013](BUGS.md) and [B-014](BUGS.md) from a clean shell, **from the original steps, never from the diff** | 2026-08-02 |
+| **Lane B** | **[TASK-001](BACKLOG.md#task-001--verify-the-three-fixes-qe-may-not-close)** | `lane-b-commercial-profile` | Repository — documentation, `infra/`, production image | one slice | `IN VALIDATION` | — | **READY FOR QE.** All three `VERIFIED`; [B-012](BUGS.md) evidence recorded, status left. **Two new defects opened: [B-015](BUGS.md), [B-016](BUGS.md)** — neither fixed here | 2026-08-02 |
 | **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | Idle until a lane pushes work to `integration`. **QE's turn begins there** | 2026-08-01 |
 
 **Which lanes are available is the `Status` column above, and is not restated here** — a sentence beside a table is a second copy of one fact, and it drifted within an hour of being written (§2). **Unclaimed capacity:** lanes C, D and E ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).

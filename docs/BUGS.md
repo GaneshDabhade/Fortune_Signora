@@ -69,6 +69,76 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-015 · The certification audit passes vacuously in every lane's clone
+
+| | |
+|---|---|
+| **Module** | **none** — repository process, `infra/certification-guard.py` |
+| **Current assignee** | **none — not assignable.** [C-010](LANE_COORDINATION.md), and this is a fifth defect in that gap |
+| **Severity** | 🟠 — **the audit reports success while examining nothing.** No history is wrong today; the check that would notice is inert wherever a lane runs it |
+| **Status** | `OPEN` |
+| **Found** | `a9cc204`, by Lane B while verifying [B-014](#b-014--two-commits-reached-main-outside-certification-and-nothing-noticed) under [TASK-001](BACKLOG.md) |
+
+**Steps to reproduce.** From any feature lane's clone, on a lane branch:
+
+```bash
+python3 infra/certification-guard.py --audit-main
+```
+
+**Expected.** The 12 commits promoted since ratification are audited, as they are when the same logic runs against the ref holding the promoted history.
+
+**Actual.**
+
+```
+audit — no commit has been promoted since the rule was ratified.
+```
+
+**Exit code `0`.** Nothing was examined and the run reports success.
+
+**The cause is one word.** [`certification-guard.py:162`](../infra/certification-guard.py#L162) resolves the range `f"{RULE_RATIFIED_AT}..main"`, and `main` is the **local** ref. Line 165 does the same for `_is_ancestor(c, "main")`.
+
+**A feature lane's local `main` is always stale, by design.** A lane never checks out `main` and never promotes to it — QE does, on its own clone. This clone's `main` sits at `f996a42`, **35 commits behind `origin/main`**, and `f996a42..` contains none of the promoted work, so the range is empty and the audit short-circuits on `if not commits`.
+
+**Proof it is the ref and not the history.** The same script with `main` → `origin/main`, changed nowhere else, reports `12 commit(s) … 0 violations. The guarantee holds.` The audit is correct; it is pointed at the wrong ref.
+
+**Why it is worth a row.** This is the failure mode [B-014](#b-014--two-commits-reached-main-outside-certification-and-nothing-noticed)'s own text names — *a guard that cannot fail is documentation pretending to be code* — reappearing one level up. The guard **can** fail, and does when it sees the real history; but every lane that runs it as documented gets a green result that means nothing, and a green result is the one nobody investigates. It is **Decorative Logic** in the sense `CLAUDE.md` §2 defines: removing the check would not change the property it appears to protect, for the people most likely to run it.
+
+**The fix, for whoever takes it.** Resolve the promoted ref explicitly rather than trusting a local branch name — `origin/main`, or a `--ref` argument, or `git rev-parse --verify` on both and prefer the one that is ahead. **And make the empty range loud rather than silent:** *"no commit has been promoted"* and *"the ref you gave me has no promoted commits on it"* are different facts, and today they print the same sentence and the same exit code. The second should be an error.
+
+**Not fixed here.** `infra/` has no assignable lane ([C-010](LANE_COORDINATION.md)) and Lane B is verifying, not fixing. Reported rather than repaired, which is the correct alternative to touching another owner's file.
+
+---
+
+### B-016 · The documented startup command reads a key file nothing creates
+
+| | |
+|---|---|
+| **Module** | repository documentation — [`docs/RUNNING.md:54`](RUNNING.md) |
+| **Current assignee** | **QE** — `RUNNING.md` is QE's (`CLAUDE.md` §20e) |
+| **Severity** | 🟡 — the API still starts; the key is silently empty, and the symptom appears later as *"signed in, every screen empty, everything 401s"* |
+| **Status** | `OPEN` |
+| **Found** | `a9cc204`, by Lane B while verifying [B-009](#b-009--the-documented-command-for-starting-the-api-cannot-start-the-api) under [TASK-001](BACKLOG.md) |
+
+**Steps to reproduce.** From a fresh clone, follow [`RUNNING.md`](RUNNING.md) exactly: `cp backend/.env.example backend/.env`, `npm install`, `npm run keys:generate`, `make demo`. Then copy the documented backend command, which contains:
+
+```bash
+SIGNORA_JWT_PUBLIC_KEY="$(cat .dev-keys/public.pem)" \
+```
+
+**Expected.** The public key, as the preceding steps produced it.
+
+**Actual.** `cat: .dev-keys/public.pem: No such file or directory`, and `SIGNORA_JWT_PUBLIC_KEY` is set to the **empty string**. The API starts anyway — `Application startup complete` — so nothing announces the problem at the moment it is caused.
+
+**`.dev-keys/` is never created by anything in this repository.** It appears exactly once, in that command. [`frontend/scripts/generate-keys.ts`](../frontend/scripts/generate-keys.ts) does not write PEM files — it prints `SIGNORA_JWT_PRIVATE_KEY=` and `SIGNORA_JWT_PUBLIC_KEY=` lines to paste into `frontend/.env.local` and `backend/.env`, which is what the setup step above tells the reader to do. **The command is a leftover from a file-based mechanism that no longer exists.**
+
+**The sharp edge, and it is stated as an inference rather than a measurement.** The reader has just pasted the correct key into `backend/.env`. An environment variable set on the command line takes precedence over a `.env` value in pydantic-settings, so **the documented command plausibly overrides a correctly configured key with an empty one** — turning a working setup into the 401 symptom that [`RUNNING.md:203`](RUNNING.md) already has a troubleshooting row for. **Lane B did not verify the override**, only that the file is absent and the variable ends up empty. Confirming it is the fix's first step.
+
+**The fix, for whoever takes it.** Delete the `SIGNORA_JWT_PUBLIC_KEY` line from the command block — the key is already in `backend/.env` by then, which is the mechanism `keys:generate` actually implements. **Same class as [B-009](#b-009--the-documented-command-for-starting-the-api-cannot-start-the-api), in the same command block:** *"every command below is copy-pasteable from a fresh clone"*, and one line of it is not.
+
+**A second, smaller note for the same fix.** `.gitignore` covers `.env` and `.env.*` but has **no entry for `.dev-keys/` or `*.pem`**. Nothing creates that directory today, so nothing is at risk — but a reader who takes the command literally and creates it by hand, as Lane B did while verifying, ends up with an **RSA private key as an untracked, unignored file**. If the command block keeps any reference to a key directory, the ignore rule belongs with it (`CLAUDE.md` §13).
+
+---
+
 ### B-002 · `make smoke` cannot run while any dev server is up
 
 | | |
@@ -277,7 +347,7 @@ Three consequences, in ascending order of seriousness:
 | **Module** | repository documentation — `docs/RUNNING.md`, `Makefile`, `README.md` |
 | **Current assignee** | QE |
 | **Severity** | 🟠 — it stopped a reviewer at the first step, and the error did not name the cause |
-| **Status** | **`FIXED`** — fixed by the QE lane under product-owner direction, 2026-08-01. **Awaiting verification by someone other than QE** |
+| **Status** | **`VERIFIED`** — Lane B, 2026-08-02, under [TASK-001](BACKLOG.md). Reproduced from the original steps on `a9cc204` |
 | **Found** | `f996a42`, QE lane, first attempt to start the product |
 
 **Steps to reproduce.** Run `make demo`. Copy the command it prints — the same one in [`RUNNING.md`](RUNNING.md) lines 41 and 153:
@@ -309,6 +379,20 @@ Three sites: `docs/RUNNING.md:41`, `docs/RUNNING.md:153`, `Makefile:80`. `README
 **When the fix was written the three sites were Integrator-owned**, and QE edited them under explicit product-owner direction. Later the same day the Integrator role was absorbed into QE and the files became QE's outright, so the exception is now moot — recorded because the sequence is the record, not because it is still needed.
 
 **QE fixed this, so QE may not close it.** `VERIFIED` is set by someone else reproducing the original steps from a clean shell — not by reading the diff, and not by the lane that wrote the fix. **The role merge does not dissolve this rule**; it is the one place QE genuinely needs a second pair of eyes.
+
+### Verification — Lane B, 2026-08-02, [TASK-001](BACKLOG.md)
+
+**From the original steps, never from the diff.** This clone had no `backend/.env` and no `.dev-keys/`, so the starting point was genuinely the one a new reviewer has.
+
+| Check | Result |
+|---|---|
+| `apps/api/main.py` exports a module-level `app` | **No** — parsed the module: `create_app` only. The original command would still fail, which is why the fix was to the documentation |
+| The **documented** command from [`RUNNING.md:57`](RUNNING.md), copy-pasted with its env block | **Started.** `Application startup complete`, no `Error loading ASGI app` |
+| `GET /health` | **`200`** · `{"status":"ok","environment":"local"}` |
+| All five `apps.api.main:` sites agree | **Yes** — `RUNNING.md:57`, `RUNNING.md:187`, `Makefile:80`, `Dockerfile:78`, `docker-compose.prod.yml:92`, every one `create_app` with `--factory` |
+| `backend/tests/test_documented_commands.py` | **11 passed** |
+
+**One thing the verification hit that is not this bug.** The regression test errors with `RuntimeError: This suite TRUNCATES every table…` unless `SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1` is set — **even though it touches no database**, being pure static analysis of documentation. A session-scoped fixture applies the guard to the whole suite. Harmless once known, and adjacent to [B-003](#b-003--a-lane-following-runningmd-exactly-cannot-run-its-own-suites). **Not opened as a defect** — the guard is correct and deliberately broad; recorded so the next person to run this file in isolation is not stopped by it.
 
 ---
 
@@ -355,7 +439,7 @@ Three sites: `docs/RUNNING.md:41`, `docs/RUNNING.md:153`, `Makefile:80`. `README
 | **Module** | **none** — repository process |
 | **Current assignee** | **none — not assignable.** [C-010](LANE_COORDINATION.md) |
 | **Severity** | 🟡 — the changes were small, reviewed and correct; **the process gap is the defect** |
-| **Status** | `FIXED` — the rule that prevents it was ratified 2026-08-02 and is enforced by `infra/certification-guard.py`. **Awaiting verification by someone other than QE** |
+| **Status** | **`VERIFIED`** — Lane B, 2026-08-02, under [TASK-001](BACKLOG.md). Both cases run: zero violations, **and the guard proven able to refuse one**. See [B-015](#b-015--the-certification-audit-passes-vacuously-in-every-lanes-clone) for a defect the verification exposed |
 | **Found** | `e44819b`, by `certification-guard.py --audit-main` on its first run — **against the commits QE had just written** |
 
 **Steps to reproduce.** `python3 infra/certification-guard.py --audit-main`, with `RULE_RATIFIED_AT` set to the certified commit `f669172`.
@@ -370,6 +454,21 @@ Three sites: `docs/RUNNING.md:41`, `docs/RUNNING.md:153`, `Makefile:80`. `README
 
 **For whoever verifies it.** Run the audit; it must report zero violations. Then edit `infra/state-check.py`, commit it to `main` with a Closeout message, and confirm the audit refuses it. **A guard that cannot fail is documentation pretending to be code**, and this one was written by finding a real violation on its first run.
 
+### Verification — Lane B, 2026-08-02, [TASK-001](BACKLOG.md)
+
+**Both halves run, and the negative case is the one that matters.** The violation was committed in a **throwaway clone** under the session scratchpad, never in the working repository and never pushed; the clone was deleted afterwards.
+
+| Case | Result |
+|---|---|
+| **Positive** — audit against the promoted `main` (`2c35d86`) | **12 commits since ratification · 0 violations.** 4 certified · 7 inside a certified snapshot · 1 Closeout. *"The guarantee holds"*, exit `0` |
+| **Negative** — `infra/state-check.py` edited, committed to `main` with a Closeout subject | **`REFUSED — 1 commit(s) reached main uncertified`**, naming the commit and the offending path, **exit `1`** |
+
+**The guard can fail, and does.** It identified `infra/state-check.py` as executable despite the Closeout message, which is the precise distinction the fix exists to draw — a fact about paths, not about the commit subject.
+
+**The claim in this row is therefore true**, and the property it asserts about `main` holds today.
+
+> **But the verification also found the guard reporting a clean pass while examining nothing** — see **[B-015](#b-015--the-certification-audit-passes-vacuously-in-every-lanes-clone)**. That is a new defect in the fix's *reliability*, not a retraction of the fix: the guarantee above was confirmed by running the same logic against the ref that actually holds the promoted history.
+
 ---
 
 ### B-013 · The worker and the relay cannot start from a production image
@@ -379,7 +478,7 @@ Three sites: `docs/RUNNING.md:41`, `docs/RUNNING.md:153`, `Makefile:80`. `README
 | **Module** | **none** — `apps/worker/` is composition-root production code, plus `backend/pyproject.toml` |
 | **Current assignee** | **none — not assignable.** [C-010](LANE_COORDINATION.md) |
 | **Severity** | 🔴 — **two of the six production services crash-loop.** Nothing deployed would process an event |
-| **Status** | **`FIXED`** — fixed by QE under product-owner direction, 2026-08-02. **Awaiting verification by someone other than QE** |
+| **Status** | **`VERIFIED`** — Lane B, 2026-08-02, under [TASK-001](BACKLOG.md). `make smoke` green end to end on `a9cc204` |
 | **Found** | `3f4e988`, by QE at lifecycle stage 1, the first `make smoke` run since 2026-07-31 |
 
 **Steps to reproduce.** `make smoke`.
@@ -404,6 +503,21 @@ ModuleNotFoundError: No module named 'httpx'
 
 **Fixed 2026-08-02.** `httpx>=0.27` moved into `[project].dependencies` with the reason recorded beside it, `uv lock` re-run, and **`make smoke` passes end to end — 21 stages, 125s**, having failed at stage 2 immediately before. Not a new dependency and no ADR required: it was an approved one filed under the wrong heading. **QE applied it under explicit product-owner direction**, because `apps/` and `pyproject.toml` have no assignable lane ([C-010](LANE_COORDINATION.md)) — and **QE may not verify its own fix.**
 
+### Verification — Lane B, 2026-08-02, [TASK-001](BACKLOG.md)
+
+**The regression test for this bug is `make smoke` itself**, as the fix says, so the verification is a full run from the original step. `make` is absent on this workstation ([B-011](#b-011--make-is-not-installed-on-this-workstation--not-a-repository-defect), `WONTFIX`), so it ran as `bash infra/smoke.sh` — the same script the target invokes.
+
+**`PLATFORM SMOKE TEST PASSED` — 128s, 24 stage headings, zero failures.**
+
+| The stage that failed before | Result |
+|---|---|
+| Stage 1 — images | ✓ API, worker, relay and frontend images built |
+| **Stage 2 — startup** | ✓ **No `relay is 'restarting'`.** This is the exact assertion that failed |
+| Stage 12 — event bus, relay, workers | ✓ workers consuming without error · ✓ **relay running without error**, having survived the database restart in stage 6 |
+| Stage 15 — Security Invariants | ✓ 354 passed against the running stack |
+
+**The two services that crash-looped now start from a production image and process events**, which is the property the bug says was broken. Nothing was read from the diff: the run builds the images from the tree and starts them.
+
 ---
 
 ### B-012 · `main` was advanced by a merge commit through a GitHub pull request
@@ -427,6 +541,17 @@ ModuleNotFoundError: No module named 'httpx'
 **The reconciliation.** On the product owner's direction, **`integration` was rebased onto `main`** (`e1a34a6 053aa70 4d5f19f` → `bdb014f 5b1e388 3f4e988`) and force-pushed. `main`'s history was left untouched, including the merge commit — *correct a claim about the present; date a record of the past*. Lanes A and B rebase onto the new `integration` at their next startup, which their startup sequence already requires.
 
 **Why it stays open as a record.** The merge is still in `main`'s history and always will be. This row is what explains it to whoever finds it, and the fix is procedural: **`main` moves by `git merge --ff-only` from `integration`, run locally by QE, and by nothing else.**
+
+### Verification — Lane B, 2026-08-02. **Evidence only; the status is deliberately unchanged**
+
+**This row is in the same condition as the three in [TASK-001](BACKLOG.md) — `FIXED` by QE, awaiting somebody else — but the task names three, and a lane does not widen `READY` work.** So the checks were run and recorded; **setting the status is left to the product owner or QE.**
+
+| Check | Result |
+|---|---|
+| Merge commits on `main` since the reconciliation (`e44819b..origin/main`) | **None.** History is linear |
+| `origin/main` and `origin/integration` related by fast-forward | **Yes** — `integration` is exactly 1 ahead, and that one is this task's claim commit |
+
+**The reconciliation held**, and the condition that made the next promotion impossible is gone. The merge commit itself remains in history, as this row says it always will.
 
 ---
 
