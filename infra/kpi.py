@@ -214,9 +214,11 @@ def register_kpis() -> dict[str, str]:
 
     # One authority for what a row means, shared with state-check (registers.py).
     rows = bug_rows(bugs)
-    fixed = sum(1 for r in rows if "FIXED" in r.status)
-    verified = sum(1 for r in rows if "VERIFIED" in r.status)
-    wontfix = sum(1 for r in rows if "WONTFIX" in r.status)
+    # **One row, one bucket** — `BugRow.state`, not a substring search. These four
+    # must sum to the number of rows, and did not until B-101.
+    fixed = sum(1 for r in rows if r.state == "FIXED")
+    verified = sum(1 for r in rows if r.state == "VERIFIED")
+    wontfix = sum(1 for r in rows if r.state == "WONTFIX")
     still_open = sum(1 for r in rows if r.unresolved)
     by_severity = {
         marker: sum(1 for r in rows if r.severity == marker)

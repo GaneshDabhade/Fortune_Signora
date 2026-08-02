@@ -44,7 +44,7 @@
 
 | | |
 |---|---|
-| **Certification** | ✅ **CERTIFIED** — [`2262bb566b84`](../certification/reports/2262bb566b84.md), bound to **commit `2262bb5`** and migration head `0030`. It expires by derivation the moment a migration, a prompt release, the rendering protocol or the scenario set changes. **`make certified ARGS="--audit-main"` proves the guarantee across the whole branch** |
+| **Certification** | ✅ **CERTIFIED** — [`1e269f5c8499`](../certification/reports/1e269f5c8499.md), bound to **commit `1e269f5`** and migration head `0030`. It expires by derivation the moment a migration, a prompt release, the rendering protocol or the scenario set changes. **`make certified ARGS="--audit-main"` proves the guarantee across the whole branch** |
 | **Active lanes** | [ACTIVE_ASSIGNMENTS.md](ACTIVE_ASSIGNMENTS.md) — the execution board. **Both feature lanes are `AVAILABLE`**: Lane A finished R2-01 and Lane B finished M12.5. **Both are building**: Lane A holds TASK-002, Lane B holds TASK-001. **A claim is pushed to `integration`**, which is the ref every lane pulls — pushing it only to a lane branch is how the protocol failed to arbitrate on its first day |
 | **Open blockers** | [C-010](LANE_COORDINATION.md) — no lane is assignable to `apps/`, `signora_platform/` or repository process. **Three defects landed in that gap this cycle** ([B-007](BUGS.md), [B-012](BUGS.md), [B-013](BUGS.md)); the last was fixed only because the product owner directed QE to touch it. [C-012](LANE_COORDINATION.md)/[C-013](LANE_COORDINATION.md) wait on RFCs queued since M3A |
 | **Open defects** | [BUGS.md](BUGS.md) — **0 open 🔴.** Seven rows are `FIXED` awaiting verification, and **[B-009](BUGS.md), [B-013](BUGS.md) and [B-014](BUGS.md) may not be closed by QE**, which fixed them |

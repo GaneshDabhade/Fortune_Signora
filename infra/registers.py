@@ -17,6 +17,11 @@ from dataclasses import dataclass
 SEVERITY_MARKERS = "🔴🟠🟡🟢"
 UNRESOLVED_PREFIXES = ("`OPEN`", "`FIXING`")
 
+# **The lifecycle, in order, and the order is what makes it readable.** A status
+# cell is prose, and the operative state is the one it *opens* with — exactly the
+# rule already applied to severity above.
+STATES = ("OPEN", "FIXING", "FIXED", "VERIFIED", "WONTFIX")
+
 
 @dataclass(frozen=True)
 class BugRow:
@@ -30,6 +35,24 @@ class BugRow:
     def blocks_promotion(self) -> bool:
         """🔴 **and** unresolved. A fixed 🔴 is a record, not a blocker."""
         return self.severity == "🔴" and self.unresolved
+
+    @property
+    def state(self) -> str:
+        """The **one** lifecycle state this row is in.
+
+        **The first state token in the cell is the operative one** — the same rule
+        `bug_rows` applies to a conditional severity, for the same reason: the rest
+        of the cell is commentary, and a row that *names* its next state has not
+        reached it.
+
+        Counting by substring instead put nine rows in two buckets at once
+        ([B-101](../docs/BUGS.md)), because *"`FIXED` — **`VERIFIED` is QE's to
+        set**"* contains both words. The totals then exceeded the number of rows,
+        published under a banner promising they were never edited by hand — which
+        made them more trusted, not less.
+        """
+        found = [(self.status.find(f"`{s}`"), s) for s in STATES if f"`{s}`" in self.status]
+        return min(found)[1] if found else ""
 
 
 def bug_rows(text: str) -> list[BugRow]:

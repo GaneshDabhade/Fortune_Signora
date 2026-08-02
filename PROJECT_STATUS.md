@@ -30,7 +30,7 @@
 
 > ⚠️ **The cycle's headline is not the promotion; it is why there was so little to promote.** Two lanes produced eight commits and **zero executable change**, because every next step needs a decision nobody has made. The pipeline is healthy and has almost nothing to carry.
 
-**Repository health:** 2568 backend tests · **95.51% coverage** *(floor 95)* · 701 frontend tests · 360 Security Invariants · mypy strict over 614 files · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · 17 modules · 39 ADRs.
+**Repository health:** 2568 backend tests · **95.51% coverage** *(floor 95)* · 701 frontend tests · 360 Security Invariants · mypy strict over 614 files · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
 
 ---
 
@@ -370,32 +370,35 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`e5a266d17203`](certification/reports/e5a266d17203.md) · 2026-08-02 · ✅ CERTIFIED**
+**Latest certification — [`1e269f5c8499`](certification/reports/1e269f5c8499.md) · 2026-08-02 · ✅ CERTIFIED**
 
-**Certified commit `e5a266d` · promoted commit `e5a266d`.** Identical, checked after the merge and re-checked by `make certified`.
+**Certified commit `1e269f5` · promoted commit `1e269f5`.** Identical, checked by `infra/certification-guard.py` before the fast-forward and re-checked by `make certified`.
 
 | Gate | Recorded |
 |---|---|
-| **pytest** | **2563 passed** |
-| **coverage** | **95.52%** *(floor 95%)* |
+| **pytest** | **2568 passed** |
+| **coverage** | **95.51%** *(floor 95%)* |
 | **Security Invariants** | **360**, each proven to fail when its guarantee is removed |
 | **import-linter** | **34 kept**, 0 broken |
-| **MyPy** | strict, clean over **613 files** |
-| **`make smoke`** | **24 stages in 160s**, fresh images, clean teardown |
+| **MyPy** | strict, clean over **614 files** |
+| **`make smoke`** | **24 stages in 136s**, fresh images, clean teardown |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0030`** · scenario set `0cf6b2c581e4` · working tree clean · `research_planning@2` and `research_synthesis@2` released for `llama3.1:8b`.
 
-**Also verified this cycle, and not yet certification gates:** frontend **701 tests** across 39 files, typecheck, lint and production build · **migration reversibility to base and back** · **`make dr`** — every component restarted, nothing lost, 360 invariants re-run against the restarted stack.
+**Also verified this cycle, and not yet certification gates:** frontend **701 tests** across 39 files, typecheck, lint and production build · **migration reversibility to base and back** · **`make dr`** — every component restarted, nothing lost, 360 invariants re-run against the restarted stack · **runtime composition**, 2 of 2 expected wired, 0 unexpected.
 
 | Indicator | Value | Target |
 |---|---|---|
 | **Frontend tests** | **701 passing**, 0 failing, 0 skipped | 0 skipped |
-| **Modules** | **17** · **42** numbered architecture documents · **39** ADRs | — |
+| **Modules** | **15 implemented** · **46** numbered architecture documents · **40** ADRs | — |
+| **Module count, reconciled** | [`04-modules.md`](docs/architecture/04-modules.md) ratifies **13 core + 1 platform = 14**; `integrations` and `timeline` were added since under [ADR-0025](docs/architecture/adr/0025-module-boundary-evolution.md). **15 directories is the measured figure**; [README](README.md) still says *fourteen* | reconcile |
 | **Migrations** | **`0000`–`0030`**, additive and reversible — verified to base and back this cycle | — |
 | **Architecture drift** | **0** — no ratified ADR reversed | trending to 0 |
-| **Open defects** | **14 rows: 6 `OPEN`** (2 🟠 reachable · 1 🟠 latent · 3 🟡) · **7 `FIXED` awaiting verification** · 1 `WONTFIX` · **0 open 🔴** ([docs/BUGS.md](docs/BUGS.md)) | 0 🔴 |
-| **Coordination items** | **17** — 1 `CLOSED`, the rest open or waiting ([docs/LANE_COORDINATION.md](docs/LANE_COORDINATION.md)) | shrinking |
+| **Open defects** | **34 rows: 13 `OPEN`** · **15 `FIXED` awaiting verification** · **5 `VERIFIED`** · 1 `WONTFIX` · **0 unresolved 🔴** ([docs/BUGS.md](docs/BUGS.md)) | 0 🔴 |
+| **Coordination items** | **37** — 5 closed, the rest open or waiting ([docs/LANE_COORDINATION.md](docs/LANE_COORDINATION.md)) | shrinking |
+
+> ⚠️ **Every figure in the two tables above was stale until this audit, and two were stale by two cycles.** §4 named `e5a266d17203` while `main` had been certified twice since; the defect and coordination counts were less than half their real values. **Nothing detected it** — `state-check` verifies that §1 names a reachable commit and never reads §4. Recorded as the reason the audit happened at all, and as a gap: **the dashboard has one checked section and eight unchecked ones.**
 
 > **A certification expires by derivation, not by decision.** Change the rendering protocol, re-release a prompt, add a migration or edit a scenario, and the recorded run stops describing the repository — `is_certified` reads false and the report says *awaiting re-certification*. Nothing is edited, and **nothing can be marked certified by hand**.
 
@@ -416,20 +419,26 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Indicator | Value |
 |---|---|
 | **Certification** | |
-| Certification cycles | 11 |
-| Certified | 11 of 11 |
-| Mean time to certify (last 5) | 6.5 min |
-| Mean smoke duration | 121.5 s |
-| Mean certify → Ready (last 5) | 1.5 min |
+| Certification cycles | 19 |
+| Certified | 19 of 19 |
+| Mean time to certify (last 5) | 17.1 min |
+| Mean smoke duration | 377.1 s |
+| Mean certify → Ready (last 5) | 4.4 min |
+| **Release flow** | |
+| Certification run success rate | 100% (19 of 19 runs) |
+| ↳ excludes | candidates rejected at validation — see Repository Health |
+| Commits per release | mean 10.2, median 5, range 2–49 |
+| Mean candidate age | 177.3 min  — oldest commit → certified |
+| Release frequency | 0.35 releases/hour over 54h |
 | **Defects and queues** | |
-| Queue depth (claimable now) | 4 — a lane with none reaches for undefined work |
-| Open bugs | 7 open · 8 fixed awaiting verification · 4 verified · 1 won't fix |
-| Bugs by severity | 🔴 1 · 🟠 9 · 🟡 6 |
+| Queue depth (claimable now) | 1 — a lane with none reaches for undefined work |
+| Open bugs | 13 open · 15 fixed awaiting verification · 5 verified · 1 won't fix |
+| Bugs by severity | 🔴 1 · 🟠 22 · 🟡 10 |
 | Open 🔴 (blocks promotion) | 0 |
-| Coordination items | 18 · 3 closed |
-| Backlog | 17 tasks · 5 READY · 12 WAITING/BLOCKED · 3 claimed |
+| Coordination items | 37 · 5 closed |
+| Backlog | 17 tasks · 5 READY · 12 WAITING/BLOCKED · 4 claimed |
 | **Automation** | |
-| Governance checks, executable | 21 |
+| Governance checks, executable | 28 |
 | Security Invariant files | 6 |
 | Gate commands | make test · smoke · dr · certify · certified · state-check · doc-drift · kpi |
 

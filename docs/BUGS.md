@@ -80,6 +80,41 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-101 · The KPI block counted nine bug rows twice, under a banner promising nothing was typed by hand
+
+| | |
+|---|---|
+| **Module** | None — `infra/kpi.py`, governance tooling ([C-010](LANE_COORDINATION.md)) |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — **a published figure that was wrong in the direction of looking healthier**, in the one table that advertises itself as machine-measured |
+| **Status** | **`FIXED`** — QE, 2026-08-02. `BugRow.state` added to `infra/registers.py`; the four buckets now sum to the row count. **`VERIFIED` is another lane's** |
+| **Found** | 2026-08-02, by QE, auditing `PROJECT_STATUS.md` §4 for drift |
+
+**Steps to reproduce.** `make kpi` against any register where a row records its fix and names the state it has not yet reached — the repository's own convention, e.g. *"**`FIXED`** — Lane B, 2026-08-02. **`VERIFIED` is QE's to set**"*.
+
+**Expected.** Each row counted once. The four buckets sum to the number of rows.
+
+**Actual.** `register_kpis` substring-matched the whole status cell:
+
+```python
+fixed    = sum(1 for r in rows if "FIXED"    in r.status)
+verified = sum(1 for r in rows if "VERIFIED" in r.status)
+```
+
+**Nine rows contained both words**, so `13 open · 17 fixed · 11 verified · 1 won't fix` totalled **42 against 33 rows.**
+
+**The banner is what makes it 🟠 rather than 🟡.** The block carries *"`make kpi` writes this block. It is regenerated at every Closeout and **never edited by hand** — a number somebody typed is a number that stops being true quietly."* **That claim is true and was the reason to trust the wrong figure.** A hand-typed number invites checking; a machine-generated one does not.
+
+**Two things were found underneath it, and both matter more than the miscount.**
+
+**1 · Three rows were verified in name only.** [B-009](#b-009--make-smoke-has-not-run-since-the-platform-was-frozen), [B-013](#b-013--the-worker-and-the-relay-cannot-start-from-a-production-image) and [B-014](#b-014--a-closeout-commit-may-touch-infra-and-change-what-certification-means) had a verification note appended to a cell that still opened with `FIXED`. Corrected to open with `VERIFIED`.
+
+**2 · QE's own audit used the same broken precedence the tool did.** I counted a row as `VERIFIED` if the word appeared anywhere, and reported **11 verified** in the cycle-23 summary. **The true figure was 5.** I also reported the severity counts as wrong when they were correct — `bug_rows` deliberately takes the *first* marker in a conditional cell, and my check took 🔴 wherever it appeared. **Both of my numbers were wrong in the same direction as the tool's, because they made the same assumption.**
+
+**The fix is the rule the module already applied to severity, extended to status.** `BugRow.state` returns the **first** lifecycle token in the cell; the rest is commentary, and a row that *names* its next state has not reached it. It lives in `registers.py` because that module exists precisely so `state-check` and `kpi` cannot disagree — the same defect class, one layer up, which is why it belongs there rather than in `kpi.py`.
+
+**Not affected:** `state-check`'s promotion gate. `unresolved` reads the cell's *prefix* and was always correct, so **no 🔴 was ever mis-cleared** — verified across all 33 rows.
+
 ### B-100 · A lane's rebase silently reverted the execution board by seven cycles, and every gate passed
 
 | | |
@@ -1018,7 +1053,7 @@ Three consequences, in ascending order of seriousness:
 | **Module** | repository documentation — `docs/RUNNING.md`, `Makefile`, `README.md` |
 | **Current assignee** | QE |
 | **Severity** | 🟠 — it stopped a reviewer at the first step, and the error did not name the cause |
-| **Status** | **`FIXED`** — fixed by the QE lane under product-owner direction, 2026-08-01. **`VERIFIED`** — QE, 2026-08-02, on Lane B's independent evidence below ([TASK-001](BACKLOG.md)) |
+| **Status** | **`VERIFIED`** — QE, 2026-08-02, on Lane B's independent evidence below ([TASK-001](BACKLOG.md)). Fixed by the QE lane under product-owner direction, 2026-08-01 |
 | **Found** | `f996a42`, QE lane, first attempt to start the product |
 
 **Steps to reproduce.** Run `make demo`. Copy the command it prints — the same one in [`RUNNING.md`](RUNNING.md) lines 41 and 153:
@@ -1123,7 +1158,7 @@ Three sites: `docs/RUNNING.md:41`, `docs/RUNNING.md:153`, `Makefile:80`. `README
 | **Module** | **none** — repository process |
 | **Current assignee** | **none — not assignable.** [C-010](LANE_COORDINATION.md) |
 | **Severity** | 🟡 — the changes were small, reviewed and correct; **the process gap is the defect** |
-| **Status** | `FIXED` — the rule that prevents it was ratified 2026-08-02 and is enforced by `infra/certification-guard.py`. **`VERIFIED`** — QE, 2026-08-02, on Lane B's independent evidence below ([TASK-001](BACKLOG.md)), both cases, and [B-015](#b-015--the-certification-audit-passes-vacuously-in-every-lanes-clone) should be read before it is |
+| **Status** | **`VERIFIED`** — QE, 2026-08-02, on Lane B's independent evidence below ([TASK-001](BACKLOG.md)), both cases. The rule that prevents it is enforced by `infra/certification-guard.py`; [B-015](#b-015--the-certification-audit-passes-vacuously-in-every-lanes-clone) should be read before it |
 | **Found** | `e44819b`, by `certification-guard.py --audit-main` on its first run — **against the commits QE had just written** |
 
 **Steps to reproduce.** `python3 infra/certification-guard.py --audit-main`, with `RULE_RATIFIED_AT` set to the certified commit `f669172`.
@@ -1171,7 +1206,7 @@ Three sites: `docs/RUNNING.md:41`, `docs/RUNNING.md:153`, `Makefile:80`. `README
 | **Module** | **none** — `apps/worker/` is composition-root production code, plus `backend/pyproject.toml` |
 | **Current assignee** | **none — not assignable.** [C-010](LANE_COORDINATION.md) |
 | **Severity** | 🔴 — **two of the six production services crash-loop.** Nothing deployed would process an event |
-| **Status** | **`FIXED`** — fixed by QE under product-owner direction, 2026-08-02. **`VERIFIED`** — QE, 2026-08-02, on Lane B's independent evidence below ([TASK-001](BACKLOG.md)) |
+| **Status** | **`VERIFIED`** — QE, 2026-08-02, on Lane B's independent evidence below ([TASK-001](BACKLOG.md)). Fixed by QE under product-owner direction, 2026-08-02 |
 | **Found** | `3f4e988`, by QE at lifecycle stage 1, the first `make smoke` run since 2026-07-31 |
 
 **Steps to reproduce.** `make smoke`.

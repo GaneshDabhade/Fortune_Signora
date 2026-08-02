@@ -2,7 +2,7 @@
 
 **The AI reasoning layer that tells revenue teams which companies to pursue, why now, and what to do next — with evidence, not guesses.**
 
-A modular monolith: Python 3.13 · FastAPI · PostgreSQL 17 · SQLAlchemy 2.x async · Next.js 15. Fourteen modules turn a provider payload into a commercial conclusion a seller can act on **and defend** — every claim followed to the record that produced it.
+A modular monolith: Python 3.13 · FastAPI · PostgreSQL 17 · SQLAlchemy 2.x async · Next.js 15. Fifteen modules turn a provider payload into a commercial conclusion a seller can act on **and defend** — every claim followed to the record that produced it.
 
 > **This file is the entry point.** Humans, Claude sessions and other AI agents start here. It routes; it does not duplicate. Anything volatile — test counts, coverage, milestone status — lives in [`PROJECT_STATUS.md`](PROJECT_STATUS.md) and is deliberately not repeated below.
 
@@ -58,7 +58,7 @@ docs/architecture/adr/        36 decisions. Never edited; a reversal is a new AD
 | Module | Status | Frozen | Design doc |
 |---|---|---|---|
 | `workspace_tenancy` | ✅ Built | — | [`04-modules.md`](docs/architecture/04-modules.md) |
-| `commercial_profile` | 🔵 Slice 1 of 5 | — | [ADR-0035](docs/architecture/adr/0035-commercial-profile.md) |
+| `commercial_profile` | ✅ Built — all five slices promoted (M12.5) | — | [ADR-0035](docs/architecture/adr/0035-commercial-profile.md) · [ADR-0041](docs/architecture/adr/0041-icp-aggregate.md) *(proposed)* |
 | `provider_platform` · `provider_normalization` | ✅ Built | — | [`20`](docs/architecture/20-provider-simulation.md) · [`34`](docs/architecture/34-knowledge-contract.md) |
 | `knowledge_graph` · `observation_engine` | ✅ Built | — | [`22`](docs/architecture/22-knowledge-graph.md) · [`23`](docs/architecture/23-observation-engine.md) |
 | `business_event_engine` · `signal_engine` · `buying_score_engine` | ✅ Built | — | [`24`](docs/architecture/24-business-event-engine.md) · [`25`](docs/architecture/25-signal-engine.md) · [`26`](docs/architecture/26-buying-score-engine.md) |
@@ -70,7 +70,9 @@ docs/architecture/adr/        36 decisions. Never edited; a reversal is a new AD
 | `signora_platform` | ✅ Built | 🔒 §20a | **Not assignable** — [C-010](docs/LANE_COORDINATION.md) |
 | Frontend foundation | ✅ Built | 🔒 §20c | **Not assignable** — [C-010](docs/LANE_COORDINATION.md) |
 | Test suites · Playground · reviews · integration · promotion | ✅ Built | — | [`QUALITY_ENGINEERING.md`](docs/QUALITY_ENGINEERING.md) — **QE, permanently** |
-| Recommendation Engine · Timeline · Revenue Intelligence Platform | ⏳ Not started | — | — |
+| `timeline` | ✅ Built — S01–S04a promoted; **the deployed worker consumes it** ([B-301](docs/BUGS.md)) | — | [`45`](docs/architecture/45-timeline.md) |
+| `integrations` | 🔵 In progress — M13 S01, S02, S09 promoted | — | [`13`](docs/architecture/13-integrations.md) · [`44`](docs/architecture/44-integrations.md) |
+| Recommendation Engine · Revenue Intelligence Platform | ⏳ Not started | — | — |
 
 **The design doc column is load-bearing.** Under rotating assignment it is the next lane's only inherited context, and a slice is not complete until it is true (`CLAUDE.md` §12).
 
