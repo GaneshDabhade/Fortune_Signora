@@ -254,6 +254,23 @@ A task is done only when all of the following are true:
 - The change has been reviewed against the checklist in §18.
 - Nothing was left half-implemented, commented out, or gated behind an unused flag "for later."
 
+**Quality is the lane's, before it is QE's** (ratified 2026-08-02, product owner, after three candidates were rejected on coverage a lane could have seen in seconds). **A slice is implementation-complete only when all of these hold** — and the lane, not QE, establishes them:
+
+| | |
+|---|---|
+| **Implementation complete** | The requirement, at the scope required |
+| **Tests complete** | Golden path *and* realistic failure modes (§11) |
+| **Coverage expectations met** | **`make coverage-debt ARGS="<your module>"`** — no file the slice introduced sits at 0%, and the slice does not push the repository under the floor |
+| **Type checking clean** | `mypy --strict` · `tsc --noEmit` |
+| **Import contracts clean** | `lint-imports` |
+| **Migrations verified** | Reversible to base and back, if the slice adds one |
+| **Documentation updated** | The module's design doc, consistent with the code (§12) |
+| **Self-validation performed** | The lane ran its own gates on the **rebased** branch |
+| **Independently demonstrable** | §2 — showable without naming a module, a table or a port |
+| **Ready for QE validation** | All of the above **before** the handover, not after the rejection |
+
+> **QE validates that this happened. QE does not make it happen.** A coverage gap found at certification is the same gap that was visible to the lane in seconds — `make coverage-debt` reads the data `pytest --cov` already wrote and names the file. **Quality moves left because it is cheaper there, not because QE minds looking.**
+
 ### Milestone Definition of Done
 
 *Binding from M6 onward.* A **milestone** is complete only when every one of the following has been satisfied. Not most of them, and not "everything but the push."
@@ -1027,6 +1044,15 @@ Every row carries: **ID · Title · Module · Current assignee · Severity · St
 | **Fixes it** | The lane **currently assigned** the module the defect is in |
 | **Verifies and closes** | **QE**, never the lane that fixed it |
 | **Severity** | 🔴 blocks a milestone · 🟠 wrong behaviour a customer would hit · 🟡 wrong but survivable · 🟢 cosmetic |
+
+**Severity says how much it hurts. A second question says whether the repository can move** (ratified 2026-08-02, product owner):
+
+| Class | What it is | Priority |
+|---|---|---|
+| **Blocking Quality Defect** | **Prevents promotion.** Coverage below the floor · a failing test · a failing type check · a broken migration · an import-contract violation · a Security Invariant failure | **The owning lane's highest priority.** Addressed **before significant new feature work**, unless another lane can make meaningful independent progress meanwhile |
+| **Non-blocking defect** | Functional and UX improvements · technical debt · future hardening | Normal prioritisation |
+
+> **This is a flow rule, not a stop-work order.** A blocking defect holds **every** lane's finished work hostage, because every candidate is cut from the same `integration` — [B-024](docs/BUGS.md) held 9 commits on `integration` and 25 on a lane that had never touched the affected modules. **Restoring flow is worth more than one more slice**, and it is usually far smaller.
 
 **Finding a defect outside your assignment is not permission to fix it — it is an obligation to report it.** Finding a bug never grants implementation ownership. Open the row with every field above filled, then **carry on inside your Change Budget**. Do not fix it, do not work around it silently, and do not leave it in a comment or a commit message where nothing tracks it.
 

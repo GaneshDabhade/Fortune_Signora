@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: smoke smoke-keep dr up down test certify certified kpi doc-drift state-check demo demo-seed demo-users demo-narrate eval eval-reasoning eval-research
+.PHONY: smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight demo demo-seed demo-users demo-narrate eval eval-reasoning eval-research
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
 # The executable bit is filesystem state, not repository state, and it does
@@ -154,6 +154,18 @@ certified:
 ##     make kpi ARGS="--markdown"      # the block PROJECT_STATUS.md carries
 kpi:
 	@python3 ./infra/kpi.py $(ARGS)
+
+## Where is the coverage debt, and is it growing? (CLAUDE.md §19)
+#
+# Reads the data `pytest --cov` already wrote — it runs nothing, so it is
+# seconds. **A lane runs this before handing over**, which is the whole point:
+# coverage stops being something QE discovers four cycles later.
+#
+#     make coverage-debt                    # whole repository, worst first
+#     make coverage-debt ARGS="timeline"    # one module
+#     make coverage-debt ARGS="--new"       # files never executed by a test
+coverage-debt:
+	@python3 ./infra/coverage-debt.py $(ARGS)
 
 ## Advisory: do the governance documents agree with the repository?
 ## Run at Repository Closeout, before declaring Repository Ready (CLAUDE.md

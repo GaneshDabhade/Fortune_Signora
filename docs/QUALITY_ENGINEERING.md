@@ -312,7 +312,8 @@ Four capabilities the architecture already treats as QE's, of which two exist. *
 | 9 | **Governance compliance** | `state-check` findings, and whether any were left standing deliberately |
 | 10 | **Architecture health** | Frozen boundaries intact · module count · `lint-imports` contracts |
 | 11 | **Product alignment** | **Once per cycle:** is the promoted work moving a customer capability, or only the substrate? |
-| 12 | **Technical debt trend** | Coverage direction, open-defect direction, register direction — **trend, not snapshot** |
+| 12 | **Technical debt trend** | Coverage direction, open-defect direction, register direction — **trend, not snapshot**. Coverage reports **five things**: repository direction · delta since the last promotion · the modules carrying the largest gaps · **files newly at 0%** · whether debt is growing or shrinking. `make coverage-debt` derives all five |
+| 12b | **Blocking Quality Defects** | Which lane owns one, how long it has blocked promotion, and **whether that lane is working it or building elsewhere** |
 | 13 | **Overall project risk** | One sentence. The thing most likely to hurt, named |
 
 > **Derive every line that can be derived.** Lines 2, 3, 5, 9 and 10 come from `make certified`, `make kpi` and `make state-check` and are never typed from memory. Lines 6, 8, 11 and 13 are judgements, and are the reason a person still writes this section.
