@@ -99,6 +99,33 @@
 | **Status** | `IN VALIDATION` — **Lane A**, 2026-08-02. Taken after [TASK-003](#task-003--the-attributes-are-engineerings-words-r11-06) was skipped with its reason recorded |
 | **Notes** | The lane's half of [B-010](BUGS.md). The `RUNNING.md` half is QE's and is done separately. **Do not "fix" it by deleting narrations** — a materialized AI artifact is a historical fact (§2) |
 
+### TASK-015 · `provider_watermark` cannot tell two target accounts apart (B-004)
+
+| | |
+|---|---|
+| **Module** | `provider_platform` |
+| **Slice** | PP-01 — **slice 1 of the target-account consumer** |
+| **Status** | `CLAIMED` — **Lane A**, 2026-08-02 |
+| **Notes** | **Left `BLOCKED` because its blocker is now being built by the same lane in the same effort.** The row read *"blocked on the consumer — not to be fixed opportunistically, without it the schema change has nothing exercising it."* That condition is **satisfied rather than waived**: [ADR-0036](architecture/adr/0036-target-account-contract.md) names this *"one defect that must be fixed before the consumer is built"*, and PP-02 is what exercises it |
+
+### TASK-018 · Nothing consumes a customer's target accounts
+
+| | |
+|---|---|
+| **Module** | `provider_platform` |
+| **Slice** | PP-02 — **the consumer itself** |
+| **Status** | `READY` — **Lane A**, next in the module effort |
+| **Notes** | The capability [TASK-014](#blocked--on-a-capability-and-on-which) and [C-007](LANE_COORDINATION.md) are blocked on. Fully specified by [ADR-0036](architecture/adr/0036-target-account-contract.md) §2–§7: the event triggers, `TargetAccountReader` supplies, Provider Platform computes its own delta against `provider_watermark`, and an event older than the acted-on `declaration_version` is ignored |
+
+### TASK-019 · Un-watching an account does not stop the spending
+
+| | |
+|---|---|
+| **Module** | `provider_platform` |
+| **Slice** | PP-03 |
+| **Status** | `READY` — **Lane A**, last in the module effort |
+| **Notes** | [ADR-0036](architecture/adr/0036-target-account-contract.md) §6. **Polling stops; nothing is deleted, and the watermark stays** so re-adding resumes incrementally. Raw records are evidence that live conclusions already cite — *erasability is a property of the tenancy model* |
+
 ### TASK-005 · `state-check` learns the backlog
 
 | | |
@@ -130,7 +157,6 @@
 | Id | Task | Module | Blocked on |
 |---|---|---|---|
 | **TASK-014** | [C-007](LANE_COORDINATION.md) — the guided first run | Product Surface | The `target_accounts_changed` consumer in `provider_platform`. The sequencing condition has fired — all five declarations exist — so this is a missing capability, not a missing decision |
-| **TASK-015** | [B-004](BUGS.md) — `provider_watermark` cannot tell two target accounts apart | `provider_platform` | The same consumer. **Not to be fixed opportunistically**: without it, the schema change has nothing exercising it |
 | **TASK-016** | [R9-04 / D5](architecture/39-product-review-findings.md) — what changed since you last looked | Product Surface | Per-user read state, which does not exist. **Trigger unfired** — a design partner saying they cannot tell what is new |
 
 ## DONE — promoted, removed at the next Closeout
