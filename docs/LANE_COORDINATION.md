@@ -61,6 +61,7 @@
 | [C-017](#c-017--the-onboarding-honesty-principle-has-no-permanent-home) | The onboarding honesty principle has no permanent home | Lane B | **Product owner** + QE | `OPEN` — **ratifiable text ready to paste** as `D39` | Nothing being built. **Every future onboarding flow, wizard and assistant** |
 | [C-020](#c-020--m7-has-no-scope-and-timeline-has-no-design) | M7 has no scope, and Timeline has no design | Lane B | **Product owner** (roadmap 🔴) | `OPEN` | **M7** — [`TASK-017`](BACKLOG.md), `WAITING`. Lane B released it and is `AVAILABLE` |
 | [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it) | Timeline has a surface and nowhere to mount it | Lane B | **Lane A** + product owner | `OPEN` | **Nothing in Timeline** — backend and component built; only the mount point |
+| [C-025](#c-025--m13-is-not-a-module-and-its-consumers-do-not-exist-yet) | M13 is not a module, and its consumers do not exist yet | Lane B | **Product owner** | `OPEN` | **M13's credential half** — no tier may run an integration OAuth flow |
 
 ---
 
@@ -941,3 +942,86 @@ Every built module has one, marked *as built*: `22`–`29`, `33`, and `40-commer
 **Ten lines in a file Lane B may not edit**, and nothing else — import `AccountHistory`, call `useAccountTimeline`, pass the flags through. **Lane B will write the code and hand it over if that is easier than describing it**; what it will not do is edit `frontend/app/(app)/accounts/[accountId]/page.tsx` directly, because that is Lane A's and the boundary is worth more than the ten lines.
 
 **Timeline's feature lead stays with Lane B** through the collaboration: the contract, the component, its behaviour and its acceptance criteria are Timeline's, and Product Surface contributes the mount.
+
+---
+
+## C-025 · M13 is not a module, and its consumers do not exist yet
+
+| | |
+|---|---|
+| **Owner** | **Product owner** — scope, sequencing and one ratified rule |
+| **Requesting lane** | Lane B, assigned M13 on 2026-08-02 |
+| **Category** | Milestone scope · module ownership · authentication boundary |
+| **Status** | `OPEN` |
+| **Blocks** | **M13's credential half entirely.** Parts of it are executable today; the part every adapter needs first is not |
+| **Raised** | 2026-08-02, during the M13 implementation readiness review, **before any code** |
+
+**M13 was reviewed the way M7 was. It is in a different condition, and the difference is not that it lacks documentation — [13-integrations.md](architecture/13-integrations.md) is 157 lines of ratified architecture. It is that the architecture describes something other than a module.**
+
+### 1 · The Integration Abstraction Layer is a pattern, not a bounded context
+
+[13-integrations.md](architecture/13-integrations.md) puts the Integration Port inside the **consuming module** — the diagram's subgraph is labelled *"Consuming Module (e.g., Revenue Intelligence Platform)"* — and its adapters in that module's infrastructure layer. Onboarding step 1 is *"confirm the port exists on the relevant consuming module, or define a new one via RFC."*
+
+That is exactly `CLAUDE.md` §6: **a port belongs to the module that owns the language it represents.** It follows that there is no `modules/integrations/` to build, and **[04-modules.md](architecture/04-modules.md) confirms it** — fourteen modules are defined and Integrations is not among them. It appears once in that file, inside another entry's correction note.
+
+> **M13 is a capability delivered across consuming modules, not a fifteenth bounded context.** Building `modules/integrations/` would create the god-module the two-layer split exists to prevent, and would put four CRMs' vocabulary in one context that owns none of it.
+
+**This is a scope question rather than a defect**, and it changes what "M13 complete" means before a line is written.
+
+### 2 · The consuming modules are the two that are not built
+
+| Consumer named | State |
+|---|---|
+| **Revenue Intelligence Platform** — the document's own example | **Not started** ([README.md](../README.md)) |
+| **Recommendation Engine** — the natural owner of *deliver a recommendation to Slack* | **Deferred** 2026-07-31 |
+| **Notifications (M14a)** — [ADR-0017](architecture/adr/0017-notifications.md) targets Slack and Teams as delivery channels | Position **18**, after M13 |
+
+**Every outbound use case in [ADR-0015](architecture/adr/0015-communication-email-and-calendar-integrations.md) belongs to a module that does not exist.** The *inbound* halves — CRM activity and calendar/email engagement as an observation source — belong to modules that do: Observation Engine and Business Event Engine are built and running.
+
+### 3 · The blocker: nobody may run an integration OAuth flow
+
+**This is the finding that stops the credential half, and it is a conflict between two ratified rules rather than a gap.**
+
+| Rule | Says |
+|---|---|
+| [18-authentication.md:49](architecture/18-authentication.md) | The Python tier must **"never implement an OAuth flow, callback handler, or authorization-code exchange"** |
+| `CLAUDE.md` §13 | *"A sign-in OAuth token (Google/Microsoft, via Better Auth) must never be reused as an integration OAuth token (e.g., Gmail, Google Calendar) or vice versa — separate grants, separate scopes, **separate storage**"* |
+
+**Every ratified integration is an authorization-code grant with a callback** — Salesforce, HubSpot, Pipedrive, Zoho, Slack, Teams, Gmail, Microsoft 365, Google Calendar, Outlook. So the first thing any adapter needs is a flow the Python tier is forbidden to run and the auth tier is forbidden to conflate with sign-in.
+
+**Three ways out, none of them a lane's:**
+
+| | | |
+|---|---|---|
+| **A** | Next.js runs a **second** OAuth flow, distinct from Better Auth, and hands the grant to Python | Keeps the Python tier's rule intact. Needs a defined transfer, and puts a customer's Salesforce token through the tier §13 separates it from |
+| **B** | Python gains a **narrow, integration-only** exception to `18-authentication.md:49` | Honest about where the credential is used, and edits a ratified document that exists to keep exactly one authority |
+| **C** | A dedicated credential component | Cleanest boundary, largest build, and a new bounded context needs an RFC |
+
+**Lane B recommends A** — the rule the Python tier holds is about *authentication authority*, and an integration grant is not authentication; but it is a real decision about the product's security architecture and is not one an implementing lane may take.
+
+### 4 · Three things M13 needs that the repository has never built
+
+| | |
+|---|---|
+| **Inbound webhooks** | CRM change events and Gmail push both require an endpoint that receives an **unauthenticated external call**. Every endpoint in the repository today requires a verified JWT and a resolved workspace; **`grep` finds no webhook handler anywhere.** Signature verification, replay windows and per-vendor secrets are a new API surface pattern, not a new route |
+| **Integration credential storage** | No table, no port, no type. [13-integrations.md](architecture/13-integrations.md) says AWS Secrets Manager per-workspace, RLS-scoped — and **M14.5 provisions Secrets Manager at position 20, three milestones after M13** |
+| **Integration simulation** | `signora_platform/simulation` simulates **providers** — inbound, Signora's own suppliers. There is nothing for outbound integrations, and [20-provider-simulation.md](architecture/20-provider-simulation.md) never mentions them. `no-mock-data` (AC-14) forbids building the UI against hand-written JSON, so a Salesforce simulator is a prerequisite rather than a convenience |
+
+### 5 · Eleven vendors is not one milestone
+
+[ADR-0014](architecture/adr/0014-crm-integration-strategy.md) and [ADR-0015](architecture/adr/0015-communication-email-and-calendar-integrations.md) ratify **eleven adapters across five categories**, and both ADRs decide *which vendors* and nothing about *how many ship when*. At 18–26 ew M13 is already the second-largest remaining milestone; as written it is a phase, exactly as M12 was before it became M12.1–M12.5 in practice.
+
+### What Lane B recommends
+
+**Decisions needed, in the order they block work:**
+
+| # | Decision | Why it cannot wait |
+|---|---|---|
+| 1 | **The OAuth boundary** — A, B or C above | Nothing with a credential can be built until it is answered |
+| 2 | **Is M13 a module or a capability?** | Decides whether anything is created under `modules/` at all |
+| 3 | **Which vendors ship in M13**, of eleven | The difference between one milestone and a phase |
+| 4 | **Does M13 precede its consumers, or follow them?** | RIP and Recommendation Engine are the outbound consumers and neither exists |
+
+**What is executable today, if the product owner wants Lane B building rather than waiting.** The **inbound** half needs no OAuth and no new consumer: CRM activity and calendar/email engagement as an **observation source** flows into Observation Engine and Business Event Engine, which are built. It still needs decision 1 for real credentials — but it can be built and proven against a simulator first, which is the same order the pipeline itself was built in.
+
+**Lane B has written no M13 code** and has not created `modules/integrations/`.
