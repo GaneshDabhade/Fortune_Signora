@@ -1,8 +1,10 @@
 # Active assignments — the execution board
 
-> **The repository's current execution state, and the only authoritative record of it.** Established 2026-08-01; became **the execution board** on 2026-08-02, on the product owner's direction.
+> **The repository's current execution state, and the only authoritative record of it.** Established 2026-08-01; became **the execution board** on 2026-08-02; became **claim-based** the same day, when scheduling moved from QE to a pull model.
 >
-> **Written by QE at Repository Closeout, after every promotion** (`CLAUDE.md` §20e). A lane reads it; it does not write it. If this file and any other document disagree about who is implementing what, **this file is right and the other is a defect.**
+> **A lane writes its own row when it claims work.** QE reconciles the board at Repository Closeout and removes what has been promoted, but **QE does not decide who does what** (`CLAUDE.md` §20e). If this file and any other document disagree about who is implementing what, **this file is right and the other is a defect.**
+>
+> **This file holds active execution only.** What is *available* to work on is [`BACKLOG.md`](BACKLOG.md), which the product owner prioritizes — the two are deliberately separate, because a board that also holds the queue becomes a place to negotiate priority.
 
 ## The eight questions it answers
 
@@ -35,7 +37,8 @@
 
 ## The rules
 
-- **QE assigns.** A lane does not claim work, and does not carry work forward into a new slice without an assignment.
+- **A lane claims; nobody assigns.** Take the highest [`READY`](BACKLOG.md) item you can, and **write the row here before the first line of implementation.** A claim that is not written down is two lanes about to build the same thing.
+- **Claim from the top of the queue.** If the top item cannot be taken, say why in its backlog note and take the next — skipping silently is re-prioritizing, and priority is the product owner's.
 - **One active assignment per lane. One assignee per module.** Both directions, at all times.
 - **When a lane finishes a slice: mark it `COMPLETE`, return the lane to `AVAILABLE`, and remove the completed row.** A row describing work already on `main` is the defect this file exists to prevent — **no lane may remain assigned to work that has shipped, and no stale assignment is left behind.**
 - **A row is a slice, not a milestone.** *Commercial Profile — slice 2* is an assignment; *Commercial Profile* is not.
@@ -45,12 +48,12 @@
 
 | Status | Meaning |
 |---|---|
-| `ASSIGNED` | Allocated, not yet started |
+| `CLAIMED` | Taken from the backlog, not yet started |
 | `ACTIVE` | Being implemented |
 | `BLOCKED` | Waiting on a `C-` item or a dependency. **Name it** |
 | `IN VALIDATION` | Handed to QE — **committed and pushed**, in the lifecycle, not yet promoted |
-| `COMPLETE` | Promoted to `main`. **Marked, then removed, and the lane returned to `AVAILABLE`** |
-| `AVAILABLE` | No assignment. **Free to be allocated** |
+| `COMPLETE` | Promoted to `main`. **Marked by QE at Closeout, then removed, and the lane returns to `AVAILABLE`** |
+| `AVAILABLE` | No current slice. **Free to claim from [`BACKLOG.md`](BACKLOG.md)** — not waiting for anyone |
 
 > **`IN VALIDATION` means the work exists as commits QE can take.** Uncommitted work in a session's working tree is `ACTIVE`, whatever stage it feels like it has reached — **the board describes the repository, not an intention.** This distinction was added on 2026-08-02 after this file recorded QE's own governance slice as `IN VALIDATION` while it was still entirely uncommitted.
 
@@ -60,39 +63,25 @@
 
 | Lane | Assignment | Module | Milestone | Slice | Status | Blocked by | Depends on | Next action | Started |
 |---|---|---|---|---|---|---|---|---|---|
-| **Lane A** | — | — | — | — | `AVAILABLE` | — | — | **QE to assign.** R2-01 certified and promoted at `1bbee30` | — |
-| **Lane B** | — | — | — | — | `AVAILABLE` | — | — | **QE to assign.** M12.5 completed and promoted at `3f4e988` | — |
+| **Lane A** | — | — | — | — | `AVAILABLE` | — | — | **Claim from [`BACKLOG.md`](BACKLOG.md).** Last slice: R2-01, promoted in `1bbee30` | — |
+| **Lane B** | — | — | — | — | `AVAILABLE` | — | — | **Claim from [`BACKLOG.md`](BACKLOG.md).** Last slice: M12.5 slice 5, promoted at `3f4e988` | — |
 | **QE** | Repository lifecycle and governance | — (the repository) | — | permanent | `ACTIVE` | — | — | Next cycle: validate whatever a lane hands over | 2026-08-01 |
 
-**Available lanes:** **Lane A and Lane B — both.** **Unassigned capacity:** lanes C, D and E are unclaimed ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).
+**Available lanes:** **Lane A and Lane B — both, and neither is waiting on anybody.** An `AVAILABLE` lane claims its next slice from [`BACKLOG.md`](BACKLOG.md) and starts. **Unclaimed capacity:** lanes C, D and E ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).
 
-**QE's assignment is permanent** and is never removed — it is the one row that outlives its own completion, because the responsibility is the repository rather than a slice inside it.
+**QE's row is permanent** and is never removed — it is the one row that outlives its own completion, because the responsibility is the repository rather than a slice inside it. **QE claims nothing and is claimed by nothing.**
 
-> **This file changed hands on 2026-08-02.** Lane A created it the same day as a **claim board** — a lane wrote its own row before starting, so two lanes could not take the same slice. The product owner has since made it **QE's, written at Repository Closeout**, and given it eight questions to answer per row. **The change is who writes it, not what it is for**, and the claim it prevents is the same one.
+> **This file has changed hands twice in one day, and has ended up where it started.** Lane A created it as a **claim board** — a lane writes its own row before starting, so two lanes cannot take the same slice. It then became QE's, written at Closeout, with eight questions per row. It is now **claim-based again**, with QE reconciling rather than deciding: the eight questions were the improvement worth keeping, and **QE scheduling was the part that would not scale.** The claim it prevents has been the same one throughout.
 
-## Unassigned work, highest value first
+## What is available to claim
 
-**Available to allocate — but a lane does not claim; QE assigns** (`CLAUDE.md` §20e).
-
-| Item | Where | Note |
-|---|---|---|
-| **[C-008](LANE_COORDINATION.md)** — sellers cannot see what their company sells | Product Surface | **Proposal accepted 2026-08-02**; awaiting the choice of option A/B/C/D from the product owner. *"A repository-level capability, not a module enhancement"* |
-| **[C-007](LANE_COORDINATION.md)** — the guided first run | Product Surface | The sequencing condition has fired: all five declarations exist. **Blocked on a capability, not a decision** — the `target_accounts_changed` consumer |
-| **R2-03** — an account with nothing live says nothing at all | Product Surface | 🟡, and overlaps R1-04 |
-| **R11-06** — the attributes are engineering's words | Knowledge Graph | 🟡 |
-| **R9-04 / D5** — what changed since you last looked | Product Surface | Needs per-user read state. **Trigger unfired** — a design partner saying they cannot tell what is new |
-| **The brief's hierarchy pass** | Product Surface | **Not allocatable to a lane.** A collaborative product-design activity that needs a seller present |
-| **Verification of [B-009](BUGS.md)** | Repository documentation | **Not QE's** — QE wrote the fix, so somebody else reproduces it from a clean shell |
+**[`BACKLOG.md`](BACKLOG.md)** — `READY` first, in priority order. **It is not repeated here**: a queue in two places is a queue that will disagree with itself about what is next, and the copy nobody maintains is the one a lane will read (§2).
 
 ## Blocked, and on what
 
-| Item | Lane | Blocked on |
-|---|---|---|
-| [B-004](BUGS.md) — `provider_watermark` cannot tell two target accounts apart | A | Lane B's M12.5 slice 5. **Not to be fixed opportunistically** — the consumer is what makes it reachable |
-| [C-005](LANE_COORDINATION.md) implementation — the signal-profile write path | A | The product owner's ruling on *whether* a customer should author relevance at all. Ownership is answered; sequencing is not |
-| [C-007](LANE_COORDINATION.md) implementation — the guided first run | A | M12.5 slice 5 |
-| [C-009](LANE_COORDINATION.md) — an internal fault reaches a customer as a `422` | A | The product owner. A `signora_platform/` change under §20a, with a full proposal recorded |
-| [B-007](BUGS.md) · [B-012](BUGS.md) | **nobody** | [C-010](LANE_COORDINATION.md) — no lane is assignable to `apps/` or repository process |
+**Only lanes appear here — a *lane* that is stuck, not an *item* that is unstartable.** Blocked items live in [`BACKLOG.md`](BACKLOG.md) under `WAITING` and `BLOCKED`.
+
+*No lane is currently blocked.* Both are `AVAILABLE`, which is a different thing: nothing prevents either from claiming its next slice right now.
 
 ## Recently completed
 

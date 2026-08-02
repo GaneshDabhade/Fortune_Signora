@@ -226,7 +226,7 @@ git log --grep="Slice-Handoff" main~10..main  # what the lanes reported
 
 - [ ] **1 · `PROJECT_STATUS.md`** — repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed · recommended next work. **Concise, always representing `main`**
 - [ ] **2 · [`SESSION_HANDOFF.md`](SESSION_HANDOFF.md)** — current repository state · certification state · active lanes · open blockers · pending work · recommendations. **Not a second dashboard**
-- [ ] **3 · [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md)** — promoted assignments marked `COMPLETE` **and removed**; lanes returned to `AVAILABLE`; no stale rows
+- [ ] **3 · [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md)** — promoted claims marked `COMPLETE` **and removed**; lanes returned to `AVAILABLE`; no stale rows. **Do not fill in what a lane does next** — it claims from [`BACKLOG.md`](BACKLOG.md), and QE allocating would put every idle lane back behind this session (§20e)
 - [ ] **4 · Certification state** refreshed
 - [ ] **5 · Repository metrics** refreshed
 - [ ] **6 · Milestone progress** refreshed
@@ -276,7 +276,8 @@ git log --oneline "$CERT_SHA"..integration
 
 - [ ] **`make certified` confirms `main`** — certified, or a Closeout commit that provably changes nothing executable
 - [ ] **`make certified ARGS="--audit-main"` reports zero violations** — *every* commit on `main` since ratification, not just the head
-- [ ] **The next cycle's input is identified** — `integration` versus the certified SHA. Differ → a cycle is available, and its input is exactly the commits between them. Identical → nothing is awaiting certification
+- [ ] **The next cycle's input is identified, and begun if there is any** — `integration` versus the certified SHA. Differ → **start the next cycle at stage 0**, and its input is exactly the commits between them. Identical → nothing is awaiting certification, and QE is idle until a lane pushes
+- [ ] **No lane is waiting on QE.** An `AVAILABLE` lane claims from [`BACKLOG.md`](BACKLOG.md) without asking; if anything in the records implies otherwise, that is the bottleneck this model removed
 - [ ] `state-check` run and every finding resolved or consciously accepted — **it reports, it never repairs, and each finding has more than one correct resolution**
 - [ ] Every box above is ticked, and every tick is true
 - [ ] **11 · Repository Ready declared**

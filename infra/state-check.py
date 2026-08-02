@@ -99,6 +99,7 @@ def main() -> int:
     assignments = _read("docs/ACTIVE_ASSIGNMENTS.md")
     bugs = _read("docs/BUGS.md")
     coordination = _read("docs/LANE_COORDINATION.md")
+    backlog = _read("docs/BACKLOG.md")
 
     # 1 — the dashboard must not predate the promotion it describes.
     #
@@ -183,6 +184,38 @@ def main() -> int:
             "SESSION_HANDOFF.md does not mention the promoted commit while "
             "PROJECT_STATUS.md does. A cold session reads the handoff first."
         )
+
+    # 5b — the pull model, checked where it actually breaks.
+    #
+    # Not "is there a backlog" — a file existing proves nothing. What breaks is a
+    # lane sitting idle because a document told it to wait for an allocation that
+    # nobody is going to make, which is the bottleneck the model removed.
+    if assignments:
+        waiting = [
+            line.strip()
+            for line in assignments.splitlines()
+            if line.startswith("| ") and ("to assign" in line or "await" in line.lower() and "assign" in line.lower())
+        ]
+        if waiting:
+            findings.append(
+                f"ACTIVE_ASSIGNMENTS.md has {len(waiting)} row(s) implying a lane is waiting "
+                f"to be assigned work. Lanes pull from BACKLOG.md; nobody assigns "
+                f"(CLAUDE.md §20e)."
+            )
+
+    # 5c — a claim must be visible on both sides, or two lanes can take one item.
+    if backlog:
+        claimed = re.findall(r"`CLAIMED`\s*(?:by|—|-)?\s*\*{0,2}(Lane [A-Z])", backlog)
+        unrecorded = [lane for lane in claimed if lane not in assignments]
+        if unrecorded:
+            findings.append(
+                f"BACKLOG.md marks {', '.join(sorted(set(unrecorded)))} as having claimed an "
+                f"item, and ACTIVE_ASSIGNMENTS.md does not carry the claim. A claim that is "
+                f"visible on one side only is two lanes about to build the same thing."
+            )
+        else:
+            ready = len(re.findall(r"^\| \d+ \|", backlog, re.M))
+            notes.append(f"Backlog: {ready} READY item(s), every claim recorded on both sides.")
 
     # 6 — a coordination register that only grows has become a discussion log.
     opened = len(re.findall(r"^#{2,3} C-\d+", coordination, re.M))

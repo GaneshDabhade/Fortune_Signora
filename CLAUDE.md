@@ -409,7 +409,8 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 | **Documentation rules** | §12 | the owning document itself |
 | **Definition of Done · slice completion** | §19 · §20e *Completion* | — |
 | **Change Budget** | §20e | — |
-| **Lane assignment** | §20e *Modules are permanent* | [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) — **the execution board** |
+| **Work allocation** | §20e *Nobody assigns; lanes pull* | [`docs/BACKLOG.md`](docs/BACKLOG.md) — **the READY queue**, prioritized by the product owner |
+| **Lane assignment** | §20e *Modules are permanent* | [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) — **the execution board**, written by the claiming lane |
 | **Startup workflow** | §20e *Startup* | — |
 | **Cross-lane communication** | §20e *The slice* | [`docs/LANE_COORDINATION.md`](docs/LANE_COORDINATION.md) |
 | **Bug reporting** | §20e *Bugs* | [`docs/BUGS.md`](docs/BUGS.md) |
@@ -469,6 +470,8 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 ### The QE lifecycle
 
 **QE's responsibility is not repository testing. It is the complete repository lifecycle** (ratified 2026-08-02, product owner). **Seven stages, always in this order:**
+
+> **Scheduling is not one of them** (ratified 2026-08-02, product owner). **QE validates, certifies, integrates, promotes, closes out, synchronizes and declares. It does not decide who works on what.** Quality, integration, certification and promotion belong together — each is a judgement about the repository as a whole. **Work allocation is a product decision**, and routing it through QE meant every idle lane waited on the one session that was busy certifying. See *Nobody assigns; lanes pull* below.
 
 | # | Stage | What it is | Deterministic? |
 |---|---|---|---|
@@ -567,6 +570,37 @@ promoted commit SHA  ==  certified commit SHA
 
 **What this does not license:** installing a *new project dependency* (🔴, §6 — that needs an ADR), changing what the repository requires, or working around a failing gate by changing the environment until it passes. **The authority is to make the documented gate runnable, never to make it pass.**
 
+### Nobody assigns; lanes pull
+
+**Ratified 2026-08-02, product owner.** Work allocation was QE's, and it made QE responsible for five things where four belong together.
+
+| | |
+|---|---|
+| **Quality engineering · integration · certification · promotion** | **One authority, and correctly so.** Each is a judgement about the repository as a whole, and one session running the same gates in the same order beats a separation whose only holder has nothing of its own to ship |
+| **Work scheduling** | **Not one of those.** It is a product decision about value, and it has nothing to do with whether a commit is fit to promote |
+
+> **The bottleneck is arithmetic, not authority.** With QE scheduling, an idle lane waits for the one session that is busy certifying — so **every additional lane increases the wait rather than the throughput**, which is the opposite of what lanes exist to do. Three roles, cleanly separated: **the product owner plans, feature lanes execute, QE assures and releases.**
+
+```
+  Product Owner          feature lanes              QE
+  ─────────────          ─────────────              ──
+  owns priority     ──▶  pull from READY      ──▶   validate · certify
+  writes BACKLOG.md      claim in                   integrate · promote
+                         ACTIVE_ASSIGNMENTS         close out · declare
+                         then build                 never schedules
+```
+
+**The rules, and they are short:**
+
+- **[`docs/BACKLOG.md`](docs/BACKLOG.md) is the queue**, in priority order, and **the product owner owns that order.**
+- **A lane may claim only a `READY` item.** `WAITING` needs somebody to answer; `BLOCKED` needs somebody to build. Neither is claimable, and both are listed so nothing disappears.
+- **Claim before implementing, and write it down in the same action.** The claim lands in [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) **before the first line of code**. A claim nobody can see is two lanes about to build the same thing.
+- **Claim from the top.** If the top item cannot be taken — it needs a module another lane is inside, or a decision nobody has made — **say so in its backlog note and take the next one.** Skipping quietly is re-prioritizing, and priority is not a lane's to hold.
+- **A lane never reorders, reprioritizes, adds or removes a backlog item.** A defect goes to [`BUGS.md`](docs/BUGS.md), a dependency to [`LANE_COORDINATION.md`](docs/LANE_COORDINATION.md), and anything else is a conversation with the product owner.
+- **QE writes nothing in the backlog and allocates nothing.** At Closeout it reconciles the *board* — removing what has been promoted — and stops there.
+
+**One lane per module still binds**, and it is what makes a claim refusable: if the item you are about to take needs a module somebody else is inside, you cannot take it, and the note saying so is more useful to the product owner than a silent skip.
+
 ### The Change Budget
 
 Every slice knows what it may touch before it starts.
@@ -596,7 +630,8 @@ Together these appear in roughly two thirds of all commits. **A lane does not ed
 | [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md) | **The lifecycle runbook** — every command and tick-box from validation to Repository Ready | **QE** |
 | `PROJECT_STATUS.md` | **The executive dashboard** — *"where are we?"*, measured | **QE**, at Closeout |
 | [`docs/SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) | **Operational context** — *"what should the next session know?"* | **QE**, at Closeout |
-| [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) | **The execution board** — *"who is doing what, right now?"* | **QE**, at Closeout |
+| [`docs/BACKLOG.md`](docs/BACKLOG.md) | **The READY queue** — *"what is available, and in what order?"* | **Product owner.** A lane writes **only** its claim; QE writes nothing |
+| [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) | **The execution board** — *"who is doing what, right now?"* | **The claiming lane**, at once. **QE** reconciles it at Closeout |
 | `docs/architecture/38` · `39` | Design decisions · review findings | **QE**, at merge |
 | The roadmaps | *Scope* is the product owner's · *progress* is QE's | Both, as marked |
 | `PRODUCT_DIFFERENTIATORS.md` | Product strategy | Product owner |
@@ -671,7 +706,7 @@ Three sequences. **Every step names who does it.**
 | 4 | **Take the rows assigned to your lane** | If one belongs naturally to today's work, **fix it first, with a regression test**. If it is deferred, **record the reason in the commit message**. Never silently ignore an assigned bug |
 | 5 | **Read [`docs/LANE_COORDINATION.md`](docs/LANE_COORDINATION.md)** | **Every open item, not only your own.** Another lane's pending contract change is something to discover now, not at merge |
 | 6 | **Read [`docs/RUNNING.md`](docs/RUNNING.md#running-a-lane)** | Use **only** your assigned ports, PostgreSQL database, Redis index and environment variables. **Never invent a local convention** — that table is authoritative |
-| 7 | **Confirm your assignment** | Milestone · slice · **the module you are assigned and its architectural boundaries** · what it depends on · which coordination items touch it |
+| 7 | **Claim your slice** | If you are carrying one, confirm it. If you are `AVAILABLE`, **take the highest `READY` item in [`docs/BACKLOG.md`](docs/BACKLOG.md) you can take, and record the claim in [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) before writing any code.** Then confirm: milestone · slice · **the module and its architectural boundaries** · what it depends on · which coordination items touch it |
 | 8 | **Read your own uncommitted history** | `git log integration..HEAD` — what is already on this branch that you have forgotten, or that a previous session left |
 | 9 | **Only then begin the slice** | |
 
@@ -707,7 +742,7 @@ Three sequences. **Every step names who does it.**
 | 10 | **Promote** — *lifecycle 4* | **QE** | `git merge --ff-only <certified-sha>` into `main`, after `infra/certification-guard.py` confirms that SHA is certified. **Certification passed, so this happens** — no approval, no pause, no waiting state |
 | 11 | **Repository Closeout** — *lifecycle 5* | **QE** | **Mandatory, never optional.** The eleven activities in *Repository Closeout* below, in order, **every figure measured from the promoted commit** — never from a lane's report and never from a newer `integration` head. Includes the release summary |
 | 12 | **Synchronize the branches** — *lifecycle 6* | **QE** | Fast-forward `integration` to `main` if it lags · fast-forward **every idle lane branch** · **leave lanes in active development alone** — they rebase at the start of their next slice. Verify every branch shares the promoted baseline |
-| 13 | **Assign the next work** | **QE** | Mark completed assignments `COMPLETE`, then **remove them** — no lane stays assigned to work that has reached `main`. Return the lane to `AVAILABLE`; allocate idle lanes |
+| 13 | **Reconcile the board** | **QE** | Mark promoted claims `COMPLETE`, then **remove them** — no lane stays recorded against work that has reached `main` — and return those lanes to `AVAILABLE`. **QE does not allocate what they do next**: they claim from [`BACKLOG.md`](docs/BACKLOG.md) |
 | 14 | **Declare Repository Ready** — *lifecycle 7* | **QE** | Only once [`REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md) is complete. The next development cycle may begin. **Not before** |
 | 15 | **Human product review** | Product owner | On `main`, in the demo environment (3000/8000). **No frontend screen is complete until a human has reviewed it there** (§2). **After Repository Ready, never gating it** |
 | 16 | **Release** | — | Deferred to M14.5. There is no release today ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)) |
@@ -789,7 +824,7 @@ Slice-Handoff:
 |---|---|---|
 | 1 | **Refresh `PROJECT_STATUS.md`** | The executive dashboard — repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed · recommended next work |
 | 2 | **Refresh [`SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md)** | The operational context the next session needs — and **not a second copy of the dashboard** |
-| 3 | **Refresh [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md)** | Completed assignments marked `COMPLETE` **and then removed**; the lane returned to `AVAILABLE`; new assignments recorded **only once formally allocated** |
+| 3 | **Refresh [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md)** | Promoted claims marked `COMPLETE` **and then removed**; the lane returned to `AVAILABLE`. **QE reconciles the board; it does not fill it** — a lane's next row is written by that lane when it claims |
 | 4 | **Refresh certification state** | The record is current for the promoted commit. A fast-forward promotes the tree that was certified, so it carries over — **if anything changed the conditions it names, it is re-cut here** |
 | 5 | **Refresh repository metrics** | Every figure in *Repository metrics* below, **re-measured** |
 | 6 | **Refresh milestone progress** | Which milestone, which slices closed, what remains |

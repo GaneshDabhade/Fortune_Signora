@@ -84,7 +84,7 @@ Every hit must resolve from `SIGNORA_TEST_APP_DATABASE_URL`, `SIGNORA_TEST_ADMIN
 
 **Publish measurements, not estimates.** Test counts, coverage, invariant counts, contract counts, `HEAD`, certification statistics, percentage complete — **every one read from the promoted commit.** A lane's figure is a claim; QE's is a measurement, and where they differ the measurement is what ships.
 
-**Clearing the assignment board is a step, not tidying.** Mark the promoted assignment `COMPLETE`, **then remove it**, and return the lane to `AVAILABLE`. **A row describing work already on `main` is the defect that file exists to prevent** — a lane reading it would believe it still holds something it finished.
+**Clearing the board is a step, not tidying.** Mark the promoted claim `COMPLETE`, **then remove it**, and return the lane to `AVAILABLE`. **A row describing work already on `main` is the defect that file exists to prevent** — a lane reading it would believe it still holds something it finished. **What that lane does next is not QE's to write**: it claims from [`BACKLOG.md`](BACKLOG.md).
 
 **`state-check` is the last thing that can catch an omission.** It found two on its first run against a correct-looking repository: the certification had expired by derivation when M12.5 added migration `0019`, and `SESSION_HANDOFF.md` was seven commits behind the dashboard. **Neither was visible to any test.**
 
@@ -173,6 +173,7 @@ Four capabilities the architecture already treats as QE's, of which two exist. *
 
 - Build a customer feature, or change any module's production code — **including while integrating**.
 - **Promote with a gate unrun**, or shorten the sequence because a slice looks small (§20e, *Repository certification*).
+- **Schedule work, or tell a lane what to do next.** Lanes pull from [`BACKLOG.md`](BACKLOG.md), whose order is the product owner's (§20e, *Nobody assigns; lanes pull*). QE reconciles the board at Closeout and stops there — **an idle lane is not waiting for QE, and QE deciding otherwise is how one session becomes the throughput ceiling for all of them.**
 - **Promote a commit that was not itself certified** — `git merge --ff-only integration` instead of the certified SHA, or re-pointing a cycle at a newer commit part-way through (§20e, *Certification is attached to a commit*). `infra/certification-guard.py` refuses it; do not route around the refusal.
 - Resolve another lane's rebase conflict. Hand the branch back; the lane knows what its change meant.
 - Close a bug it fixed itself, or verify a fix by reading the diff instead of reproducing the original steps.
