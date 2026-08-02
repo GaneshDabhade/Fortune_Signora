@@ -56,6 +56,7 @@
 | `ACTIVE` | Being implemented |
 | `BLOCKED` | Waiting on a `C-` item or a dependency. **Name it** |
 | `IN VALIDATION` | Handed to QE — **committed and pushed**, in the lifecycle, not yet promoted |
+| `CHANGES REQUESTED` | **QE, during validation.** Something did not hold, and the corrections are named. Returned to the implementing lane, which fixes them in place and returns the task to `IN VALIDATION` |
 | `COMPLETE` | Promoted to `main`. **Marked by QE at Closeout, then removed, and the lane returns to `AVAILABLE`** |
 | `AVAILABLE` | No current slice. **Free to claim from [`BACKLOG.md`](BACKLOG.md)** — not waiting for anyone |
 
@@ -63,13 +64,13 @@
 
 ---
 
-## Current — as of 2026-08-02, `e07f3f9`
+## Current — as of 2026-08-02, `5352886`
 
 | Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Started |
 |---|---|---|---|---|---|---|---|---|
-| **Lane A** | **TASK-002 · TASK-004** | `lane-a-product-surface` | Product Surface | PS-01 · PS-02 | `IN VALIDATION` | — | **QE to validate** — both pushed and finished. *Reconciled by QE from the lane branch; the claims never reached `integration`* | 2026-08-02 |
+| **Lane A** | **TASK-002 · TASK-004 · provider_platform** | `lane-a-product-surface` | Product Surface · Provider Platform | PS-01 · PS-02 · PP-01 · PP-02 | `CHANGES REQUESTED` | — | **The branch will not fast-forward onto `integration`, and the rebase conflicts — returned unvalidated.** [B-018](BUGS.md) names the cause and the fix. Rebase, re-run the gates, push, set `IN VALIDATION` again. **The implementation area stays with Lane A** | 2026-08-02 |
 | **Lane B** | **M7 — Timeline** *(implementation initiative)* | `lane-b-commercial-profile` | `timeline` | design | `AVAILABLE` | — | **Design delivered; awaiting a product decision.** [ADR-0038](architecture/adr/0038-timeline.md) proposed and **amended in review** — its rebuild property is not achievable as drafted. Four open questions now, not three. **No implementation until ratified**, and the queue holds nothing else eligible | 2026-08-02 |
-| **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | Idle until a lane pushes work to `integration`. **QE's turn begins there** | 2026-08-01 |
+| **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | **Waiting on Lane A's rebase.** Nothing is at `IN VALIDATION`, and `integration` carries documentation only — no cycle is warranted (§20e) | 2026-08-01 |
 
 **Which lanes are available is the `Status` column above, and is not restated here** — a sentence beside a table is a second copy of one fact, and it drifted within an hour of being written (§2). **Unclaimed capacity:** lanes C, D and E ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).
 
@@ -85,7 +86,7 @@
 
 **Only lanes appear here — a *lane* that is stuck, not an *item* that is unstartable.** Blocked items live in [`BACKLOG.md`](BACKLOG.md) under `WAITING` and `BLOCKED`.
 
-*No lane is currently blocked.* Both are `AVAILABLE`, which is a different thing: nothing prevents either from claiming its next slice right now.
+*No lane is currently blocked.* Lane A holds four slices returned for a rebase — work in hand, not a blocker. Lane B is `AVAILABLE`, which is a different thing again: nothing prevents it from claiming, and nothing in the queue is eligible.
 
 ## Recently completed
 

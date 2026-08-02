@@ -412,6 +412,7 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 | **Work allocation** | §20e *Nobody assigns; lanes pull* | [`docs/BACKLOG.md`](docs/BACKLOG.md) — **the READY queue**, prioritized by the product owner |
 | **Claiming a task** | §20e *The Task Claim Protocol* | the claim commit itself — **atomic, because a push is** |
 | **Lane assignment** | §20e *Modules are permanent* | [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) — **the execution board**, written by the claiming lane |
+| **Implementation area vs integration cadence** | §20e *Implementation ownership and integration cadence are independent* | — |
 | **Startup workflow** | §20e *Startup* | — |
 | **Cross-lane communication** | §20e *The slice* | [`docs/LANE_COORDINATION.md`](docs/LANE_COORDINATION.md) |
 | **Bug reporting** | §20e *Bugs* | [`docs/BUGS.md`](docs/BUGS.md) |
@@ -468,6 +469,37 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 >
 > **What still constrains QE is the gate, not another role:** the lifecycle below is not QE's to shorten, and **QE never manually overrides a failing gate.**
 
+### Implementation ownership and integration cadence are independent
+
+**Ratified 2026-08-02, product owner.** A lane is no longer assigned a single slice. It is assigned an **implementation area** — Provider Platform, Timeline, AI Platform, Product Surface, Commercial Profile — and it keeps that area across several related slices, because **engineering context is expensive to rebuild and cheap to keep.**
+
+**That must not slow integration, and these are two different clocks:**
+
+| | |
+|---|---|
+| **Implementation ownership** | **Coarse and long-running.** A lane holds an implementation area until it is **complete**, becomes **blocked**, or is **explicitly reassigned.** Nothing else ends it — and in particular, **certification does not.** Promoting PP-01 leaves Provider Platform exactly where it was: with Lane A |
+| **Integration cadence** | **Fine and continuous.** Every **independently complete** slice flows through the full lifecycle the moment it is testable, whether or not more slices are coming in the same area |
+
+```
+  Lane A owns Provider Platform  ──────────────────────────────────────────▶  until complete
+
+     PP-01 ──▶ IN VALIDATION ──▶ certified ──▶ promoted        ownership unchanged
+        └────────▶ PP-02 ──▶ IN VALIDATION ──▶ certified ──▶ promoted
+                      └────────▶ PP-03 ──▶ …
+
+  implementation and validation run at the same time, deliberately
+```
+
+**Neither side waits for the other.** The lane does not wait for certification before starting the next slice (*Continuous execution*). **QE does not wait for the implementation area to finish before validating** — a slice reaching `IN VALIDATION` is validated, certified, promoted and closed out on its own, and *"more is coming in this area"* is never a reason to hold it.
+
+**Why the fine clock is the valuable one:** `main` receives PP-01, PP-02 and PP-03 as three certified increments rather than one large one weeks later, so **a defect is found next to the code that introduced it**, merge complexity stays small because each slice becomes the baseline before the next grows onto it, and the repository's account of itself moves continuously rather than in one jump at the end of a module.
+
+> **Large ownership buys engineering continuity. Small slices buy continuous integration. They are complementary, and the repository is optimised for both at once** — a lane holding one area for weeks, and a repository that has never been more than one slice away from a certified state.
+
+**Repository state is refreshed after every promoted executable slice**, not when the area finishes: `PROJECT_STATUS.md`, [`SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md), [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md), certification metrics, milestone and roadmap progress, repository health. **The repository always describes the latest promoted state.**
+
+**This changes nothing about certification scope.** Only executable change opens a cycle; documentation, claims, planning and board maintenance still accumulate until an executable slice reaches `IN VALIDATION` (*A cycle is warranted by executable change, not by movement*).
+
 ### The QE lifecycle
 
 **QE's responsibility is not repository testing. It is the complete repository lifecycle** (ratified 2026-08-02, product owner). **Seven stages, always in this order:**
@@ -478,7 +510,7 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 
 | # | Stage | What it is | Deterministic? |
 |---|---|---|---|
-| **1** | **Validate feature lanes** | Repository-wide functional · API · integration · end-to-end · Security Invariants · coverage · regression · accessibility · performance · exploratory use of the product · product review. QE **creates, maintains, extends and retires** repository-wide automated tests; **lanes own the tests specific to the slices they implement** | No — judgement, and findings become `B-nnn` rows |
+| **1** | **Validate feature lanes** | Repository-wide functional · API · integration · end-to-end · Security Invariants · coverage · regression · accessibility · performance · exploratory use of the product · product review. QE **creates, maintains, extends and retires** repository-wide automated tests; **lanes own the tests specific to the slices they implement**. **Every slice at `IN VALIDATION` is taken at once — never held because more are expected in the same implementation area** | No — judgement, and findings become `B-nnn` rows |
 | **2** | **Execute repository-wide certification** | `make certify` · migration reversibility · `make dr` ([ADR-0032](docs/architecture/adr/0032-release-certification.md)) **against the pinned commit from the Certification Snapshot** | **Yes.** The gates are the decision |
 | **3** | **Integrate validated work into `integration`** | Fast-forward only. Reconcile [`BUGS.md`](docs/BUGS.md) and [`LANE_COORDINATION.md`](docs/LANE_COORDINATION.md), verify the Slice Handoff's claims, fold findings into `38`/`39`. **A branch that will not fast-forward is returned to its lane** | Yes — `--ff-only` succeeds or it does not |
 | **4** | **Promote the certified commit to `main`** | `git merge --ff-only <certified-sha>` — **never `integration`**, whose head may have moved. **Certification passed, so this happens**: no approval, and no waiting state between stages 2 and 4 | **Yes** |

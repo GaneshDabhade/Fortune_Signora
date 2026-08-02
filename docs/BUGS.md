@@ -69,6 +69,102 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-020 · `state-check` reads a task id anywhere in a board row, including the explanation of why a lane *cannot* take it
+
+| | |
+|---|---|
+| **Module** | Repository tooling — `infra/state-check.py`, rule 5c(a) |
+| **Current assignee** | **Lane B**, inside [TASK-005](BACKLOG.md) — that task is *"`state-check` learns the backlog"*, and this is the same code |
+| **Severity** | 🟡 — advisory output only, but it is the failure mode that teaches people to ignore an advisory |
+| **Status** | `OPEN` |
+| **Found** | 2026-08-02, by QE, writing a board row that explained which tasks Lane B could **not** claim |
+
+**Steps to reproduce.** Put a task id in a row's `Next action` cell for a lane that does not hold it, then:
+
+```bash
+python3 infra/state-check.py
+#  ·  TASK-002 is claimed by Lane A and Lane B at once.
+```
+
+**Expected.** A task is *claimed* by the lane whose **`Task` column** names it.
+
+**Actual.** `board_rows` scans the entire line — `re.findall(r"\bTASK-(\d+)\b", row)` — so a row saying *"Lane A holds TASK-002, which is why I am idle"* registers as a competing claim. The contested-claim check then fires on the one arrangement it should read as correct.
+
+**Fix.** Read the `Task` column only: split the row on `|` and take the second field, exactly as the lane name is already taken from the first. The prose in the remaining cells is explanation, not assertion.
+
+**Why it is worth fixing rather than working around.** The board's own rule is *"a row names a `TASK-nnn`"* precisely so that *"are these the same task?"* is a fact. **A checker that punishes precise prose pushes rows toward vague prose**, which costs the board the property the ids were introduced to give it — and today's workaround was exactly that: the ids were removed from Lane B's cell to silence a check that was wrong.
+
+---
+
+### B-019 · The constitution's branch table now says two different things about `integration`
+
+| | |
+|---|---|
+| **Module** | **none** — `CLAUDE.md`, on `lane-a-product-surface` only. It has not reached `main` |
+| **Current assignee** | **Lane A**, to remove during the B-018 rebase — it is that lane's edit |
+| **Severity** | 🟠 — a governing rule that contradicts itself is followed differently by two readers |
+| **Status** | `OPEN` |
+| **Found** | 2026-08-02, by QE, reading `16896ca` during validation |
+
+**Steps to reproduce.**
+
+```bash
+git show origin/lane-a-product-surface:CLAUDE.md | grep -c '^| `integration` | Permanent'
+# 2
+```
+
+**Expected.** One row per branch in the *Branches and promotion* table. **Truth has exactly one authoritative representation** (§2).
+
+**Actual.** `16896ca` **appended** revised `integration` and `lane-*` rows instead of replacing the originals, so the table carries both. They disagree on the rule that matters most: the surviving original says *"a lane may fast-forward `integration` with a claim-only commit — that is the arbitration point, and it is the only exception"*, and the addition says *"**QE only.** A lane rebases and pushes."* **The first is correct and load-bearing** — it is what makes the Task Claim Protocol atomic, and `certification-guard.py --audit-claims` enforces it. The second would silently disable claim arbitration.
+
+**Fix.** Keep the original `integration` row verbatim, including the claim-commit exception. Keep the *new* `lane-*` row, which is the one this refinement actually changed. Delete the other two.
+
+**The finding underneath it.** `CLAUDE.md` is 🔴 in the Change Budget and *"Product owner"* in *Shared files have one owner*, and `16896ca`, `f262d2c` and `835388f` wrote 74 lines of it from a feature lane. **The content is not the problem** — it matches what the product owner has since ratified, and *Continuous execution* is a genuine improvement. **The concurrency is:** two sessions editing the constitution on separate branches produced a contradiction that neither could see, and no gate reads that file. **A governance change belongs on one branch at a time**, and if a lane is asked to draft one it should say so and hand the text over rather than commit it.
+
+---
+
+### B-018 · Lane A's branch carries two of Lane B's pre-rebase commits and will not fast-forward
+
+| | |
+|---|---|
+| **Module** | **none** — repository process. The affected branch is `lane-a-product-surface` |
+| **Current assignee** | **Lane A** — it is that lane's rebase, and §20e reserves conflict resolution to the lane that is rebasing |
+| **Severity** | 🟠 — four finished slices, two of them executable and substantial, cannot be validated |
+| **Status** | `OPEN` |
+| **Found** | 2026-08-02, by QE, taking `1a348ef` into lifecycle stage 1 |
+
+**Steps to reproduce.**
+
+```bash
+git fetch origin
+git merge-base --is-ancestor origin/integration origin/lane-a-product-surface   # exit 1
+git log --oneline origin/integration..origin/lane-a-product-surface | tail -2
+#   945e120 M7 returns to WAITING, and Lane B rescans rather than waits
+#   a599201 Claim M7 — Timeline, and why it cannot start
+```
+
+**Expected.** A branch handed to QE fast-forwards onto `integration` (§20e, *Completion* step 3: the lane rebases and resolves its own conflicts).
+
+**Actual.** The branch's merge base with `integration` is `f80f57d` — a `main` commit from an earlier Closeout — and it carries **two commits that belong to Lane B**: `a599201` and `945e120`, the M7 claim and its release. Both are already on `integration` under different hashes (`4c4b0d3`, `0a86d7a`), rebased there when QE integrated them. Replaying the branch therefore replays two commits whose content is already present, and `a599201` conflicts in [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) and [`LANE_COORDINATION.md`](LANE_COORDINATION.md).
+
+**The fix is two commands, and it is Lane A's.**
+
+```bash
+git checkout lane-a-product-surface
+git rebase origin/integration      # git skips 945e120 automatically
+git rebase --skip                  # a599201 — Lane B's, already on integration
+```
+
+**Then re-run the gates on the rebased branch** (*Completion* step 4 — rebasing changes the program), push, and set the row back to `IN VALIDATION`. **The implementation area does not move**: Product Surface and Provider Platform stay with Lane A throughout.
+
+**Two findings worth carrying, both larger than the rebase.**
+
+**One — a lane branch acquired another lane's commits.** It happened at `6eb8cb0`, where Lane A branched from a point that already held Lane B's unrebased claim rather than from `integration`. Startup step 1 exists to prevent exactly this, and the cost is invisible until the branch is handed over — nothing fails while the lane is working. **Worth checking at push time rather than at merge time**, which is a `state-check` rule somebody could write.
+
+**Two — this is what the certified-commit rule looks like from the other side.** QE rebases lanes onto `integration` at merge, so a lane branching from another lane's *pre-merge* commit is building on a tree that will never exist again. **Branch from `integration`, always** — never from another lane's branch, however current it looks.
+
+---
+
 ### B-017 · A lane's merged slice disappeared from `integration`, and the backlog reoffers it
 
 | | |
