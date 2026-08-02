@@ -68,7 +68,7 @@
 | Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Started |
 |---|---|---|---|---|---|---|---|---|
 | **Lane A** | — | `lane-a-product-surface` | — | — | `AVAILABLE` | — | **Run the Task Claim Protocol.** Nobody will assign it; the queue is open | — |
-| **Lane B** | **M7 — Timeline** *(module assignment)* | `lane-b-commercial-profile` | `timeline` | — | `BLOCKED` | **[C-020](LANE_COORDINATION.md)** — M7 has no milestone definition and no module design; Meilisearch is ratified for it and provisioned nowhere | **Product owner to rule on [C-020](LANE_COORDINATION.md).** Startup workflow complete; implementation cannot begin without a scope nobody has written. Lane B has offered to draft the design for ratification | 2026-08-02 |
+| **Lane B** | — | `lane-b-commercial-profile` | — | — | `AVAILABLE` | — | **Rescanned the queue; nothing is eligible.** M7 released to `WAITING` on [C-020](LANE_COORDINATION.md) — not begun, so not `BLOCKED`. [TASK-002](BACKLOG.md) and [TASK-004](BACKLOG.md) read `READY` here but Lane A holds both on its branch; [TASK-003](BACKLOG.md) is blocked by `C-018`; [TASK-005](BACKLOG.md)'s intent is already satisfied ([B-017](BUGS.md)). **Free the moment any of those is reconciled** | — |
 | **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | Idle until a lane pushes work to `integration`. **QE's turn begins there** | 2026-08-01 |
 
 **Which lanes are available is the `Status` column above, and is not restated here** — a sentence beside a table is a second copy of one fact, and it drifted within an hour of being written (§2). **Unclaimed capacity:** lanes C, D and E ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).

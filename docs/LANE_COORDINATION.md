@@ -59,7 +59,7 @@
 | [C-014](#c-014--accessibility-and-performance-testing-are-qes-and-neither-exists) | Accessibility and performance testing are QE's, and neither exists | QE | **Product owner** (a milestone number) | `OPEN` | Nothing. **§20c already treats an accessibility issue as a defect class** |
 | [C-016](#c-016--two-branch-names-encode-a-permanent-module-assignment-that-no-longer-exists) | Two branch names encode a permanent module assignment that no longer exists | QE | **Product owner** | `OPEN` | Nothing. It misleads every lane that reads `git branch` |
 | [C-017](#c-017--the-onboarding-honesty-principle-has-no-permanent-home) | The onboarding honesty principle has no permanent home | Lane B | **Product owner** + QE | `OPEN` — **ratifiable text ready to paste** as `D39` | Nothing being built. **Every future onboarding flow, wizard and assistant** |
-| [C-020](#c-020--m7-has-no-scope-and-timeline-has-no-design) | M7 has no scope, and Timeline has no design | Lane B | **Product owner** (roadmap 🔴) | `OPEN` | **M7 entirely.** Lane B is assigned and cannot begin |
+| [C-020](#c-020--m7-has-no-scope-and-timeline-has-no-design) | M7 has no scope, and Timeline has no design | Lane B | **Product owner** (roadmap 🔴) | `OPEN` | **M7** — [`TASK-017`](BACKLOG.md), `WAITING`. Lane B released it and is `AVAILABLE` |
 
 ---
 
@@ -808,7 +808,8 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 | **Requesting lane** | Lane B, assigned M7 on 2026-08-02 |
 | **Category** | Milestone definition · module design · infrastructure dependency |
 | **Status** | `OPEN` |
-| **Blocks** | **M7 entirely.** Lane B is assigned and cannot begin |
+| **Blocks** | **M7 entirely** — recorded as [`TASK-017`](BACKLOG.md), `WAITING`, not `BLOCKED` |
+| **Why `WAITING`** | Ruled 2026-08-02: **`BLOCKED` is work already begun that a dependency has stopped; `WAITING` is work not yet executable.** M7 has never been implementable — its architecture is unagreed — so it belongs to repository planning rather than to engineering execution, and **the lane does not sit idle beside it** |
 | **Raised** | 2026-08-02, during the startup workflow for the M7 module assignment, **before any code** |
 
 **Lane B is assigned M7 and has completed the startup workflow. Implementation cannot begin, and the reason is not a dependency on another lane — it is that nobody has written down what M7 is.**
