@@ -15,6 +15,7 @@ from modules.integrations.domain.connection import (
 )
 
 NOW = datetime(2026, 8, 2, 12, 0, tzinfo=UTC)
+ACTOR = uuid4()
 
 
 def _account(state: ConnectionState = ConnectionState.NOT_CONNECTED, **kw: object) -> ConnectedAccount:
@@ -27,6 +28,7 @@ def _account(state: ConnectionState = ConnectionState.NOT_CONNECTED, **kw: objec
         "label": "Acme calendars",
         "state": state,
         "connected_at": None,
+        "actor_id": ACTOR,
     }
     defaults.update(kw)
     return ConnectedAccount(**defaults)  # type: ignore[arg-type]
@@ -74,7 +76,7 @@ class TestUsability:
 class TestTransitions:
     def test_connecting_records_when(self) -> None:
         account = _account(ConnectionState.AUTHORIZING).transition(
-            ConnectionState.CONNECTED, at=NOW
+            ConnectionState.CONNECTED, at=NOW, by=ACTOR
         )
         assert account.connected_at == NOW
 
@@ -82,24 +84,24 @@ class TestTransitions:
         """*When did we connect this?* is a fact about the relationship, not
         about the most recent token refresh."""
         first = _account(ConnectionState.AUTHORIZING).transition(
-            ConnectionState.CONNECTED, at=NOW
+            ConnectionState.CONNECTED, at=NOW, by=ACTOR
         )
         later = datetime(2026, 9, 1, tzinfo=UTC)
-        again = first.transition(ConnectionState.EXPIRED, at=later).transition(
-            ConnectionState.CONNECTED, at=later
+        again = first.transition(ConnectionState.EXPIRED, at=later, by=ACTOR).transition(
+            ConnectionState.CONNECTED, at=later, by=ACTOR
         )
         assert again.connected_at == NOW
 
     def test_transitioning_returns_a_new_account(self) -> None:
         before = _account(ConnectionState.CONNECTED)
-        after = before.transition(ConnectionState.VALIDATED, at=NOW)
+        after = before.transition(ConnectionState.VALIDATED, at=NOW, by=ACTOR)
         assert before.state is ConnectionState.CONNECTED
         assert after.state is ConnectionState.VALIDATED
 
     def test_an_expired_connection_recovers_by_refresh(self) -> None:
         assert (
             _account(ConnectionState.EXPIRED)
-            .transition(ConnectionState.CONNECTED, at=NOW)
+            .transition(ConnectionState.CONNECTED, at=NOW, by=ACTOR)
             .state
             is ConnectionState.CONNECTED
         )
@@ -110,10 +112,10 @@ class TestTransitions:
         dashboard reports it healthy. Only the customer can undo it, and that
         starts at authorization."""
         with pytest.raises(ConnectionTransitionError):
-            _account(ConnectionState.REVOKED).transition(ConnectionState.CONNECTED, at=NOW)
+            _account(ConnectionState.REVOKED).transition(ConnectionState.CONNECTED, at=NOW, by=ACTOR)
         assert (
             _account(ConnectionState.REVOKED)
-            .transition(ConnectionState.AUTHORIZING, at=NOW)
+            .transition(ConnectionState.AUTHORIZING, at=NOW, by=ACTOR)
             .state
             is ConnectionState.AUTHORIZING
         )
@@ -121,14 +123,14 @@ class TestTransitions:
     def test_a_connection_cannot_skip_authorization(self) -> None:
         with pytest.raises(ConnectionTransitionError, match="not_connected to connected"):
             _account(ConnectionState.NOT_CONNECTED).transition(
-                ConnectionState.CONNECTED, at=NOW
+                ConnectionState.CONNECTED, at=NOW, by=ACTOR
             )
 
     def test_validation_requires_a_connection_first(self) -> None:
         """`VALIDATED` means a real call succeeded, so it cannot precede one."""
         with pytest.raises(ConnectionTransitionError):
             _account(ConnectionState.AUTHORIZING).transition(
-                ConnectionState.VALIDATED, at=NOW
+                ConnectionState.VALIDATED, at=NOW, by=ACTOR
             )
 
     def test_every_state_can_be_left(self) -> None:
@@ -145,7 +147,7 @@ class TestTransitions:
 
 def _can_reach(state: ConnectionState, target: ConnectionState) -> bool:
     try:
-        _account(state).transition(target, at=NOW)
+        _account(state).transition(target, at=NOW, by=ACTOR)
     except ConnectionTransitionError:
         return False
     return True

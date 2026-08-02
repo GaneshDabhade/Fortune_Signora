@@ -93,7 +93,12 @@ class DisconnectSystem:
         self._revoker = revoker or NoRevoker()
 
     async def execute(
-        self, workspace_id: UUID, connected_account_id: UUID, *, at: datetime
+        self,
+        workspace_id: UUID,
+        connected_account_id: UUID,
+        *,
+        at: datetime,
+        actor_id: UUID,
     ) -> DisconnectResult:
         account = await self._accounts.get(workspace_id, connected_account_id)
         if account is None:
@@ -112,14 +117,14 @@ class DisconnectSystem:
 
         grant = await self._grants.current_for(workspace_id, connected_account_id)
         if grant is not None:
-            await self._grants.save(grant.revoke(at=at))
+            await self._grants.save(grant.revoke(at=at, by=actor_id))
 
         # Material last, and unconditionally. A grant marked revoked with its
         # credential still in storage is the gap this whole capability exists
         # to close.
         await self._secrets.purge_for(str(connected_account_id))
 
-        disconnected = account.transition(ConnectionState.DISCONNECTED, at=at)
+        disconnected = account.transition(ConnectionState.DISCONNECTED, at=at, by=actor_id)
         await self._accounts.save(disconnected)
         return DisconnectResult(
             disconnected, revoked_at_provider=revoked, already_disconnected=False

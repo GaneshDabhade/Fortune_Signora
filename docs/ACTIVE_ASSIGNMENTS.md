@@ -70,7 +70,8 @@
 |---|---|---|---|---|---|---|---|---|
 | **Lane A** | **TASK-002 · TASK-004 · `provider_platform`** | `lane-a-product-surface` | Product Surface · Provider Platform | PS-01 · PS-02 · PS-03 · PS-04 · PP-01 · PP-02 · PP-04 · PP-05 · PP-06 | `IN VALIDATION` | — | **The largest unreleased batch, and ready longest.** Rebase onto the promoted `3ef367d` and push; QE pins on arrival | 2026-08-02 |
 | **Lane B** | **M7 — Timeline** *(implementation initiative, feature lead)* | `lane-b-commercial-profile` | `timeline` | S01–S04a | `IN VALIDATION` | — | **[B-023](BUGS.md) fixed and pushed — re-validation ready.** All four gates green: `tsc` clean, 488 frontend, build, eslint. The four slices are one candidate again | 2026-08-02 |
-| **Lane B** | **M13 — Integrations** *(feature lead)* | `lane-b-commercial-profile` | `integrations` · `timeline` | S03–S08 | `CHANGES REQUESTED` | — | **Third candidate rejected, and it is 0.02% away — [B-024](BUGS.md).** `secrets.py` went **0% → 61%**; coverage moved 94.79% → **94.98%** against a 95% floor. **`timeline/interface/handlers.py` is 0% covered with 11 statements — covering that one file clears the floor.** It is Timeline's event-consumption path, and Timeline is already on `main` | 2026-08-02 |
+| **Lane B** | **M13 — Integrations** *(implementation initiative)* | `lane-b-commercial-profile` | `integrations` | S01–S09 | `IN VALIDATION` | — | **Complete and paused, ownership retained.** S09 closes [B-024](BUGS.md): 2518 backend, coverage **95.69%**, the four named files at 100%, and **three real defects** came out from under them. Design doc written — [41-integrations.md](architecture/41-integrations.md). **What remains is a HubSpot developer application, not product work** | 2026-08-02 |
+| **Lane B** | **M14a — Notifications** *(implementation initiative)* | `lane-b-commercial-profile` | *(to be determined — see below)* | domain discovery | `ACTIVE` | — | **Assigned by the product owner, 2026-08-02.** Discovery before code, as with M7 and M13: whether Notifications is a bounded context, a platform capability or part of another module is **the first question**, not an assumption. No `modules/notifications/` exists and none will be created before that is answered | 2026-08-02 |
 | **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | **Cycle 15 promoted (`3ef367d`). 15 of 15 certified.** Watching coverage — four consecutive declines, 0.16 above the floor | 2026-08-01 |
 
 **Which lanes are available is the `Status` column above, and is not restated here** — a sentence beside a table is a second copy of one fact, and it drifted within an hour of being written (§2). **Unclaimed capacity:** lanes C, D and E ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).
@@ -87,7 +88,9 @@
 
 **Only lanes appear here — a *lane* that is stuck, not an *item* that is unstartable.** Blocked items live in [`BACKLOG.md`](BACKLOG.md) under `WAITING` and `BLOCKED`.
 
-*No lane is currently blocked.* Lane A holds four slices returned for a rebase — work in hand, not a blocker. Lane B is `AVAILABLE`, which is a different thing again: nothing prevents it from claiming, and nothing in the queue is eligible.
+*No lane is currently blocked.* Lane A holds four slices returned for a rebase — work in hand, not a blocker.
+
+**M13 is *paused*, which is none of the three statuses above and is deliberately not recorded as blocked.** A blocked lane cannot proceed; Lane B can, and has — it holds M14a. What M13 is waiting for is a **HubSpot developer application**, an environmental prerequisite outside any lane's authority, and the module's ownership stays with Lane B rather than being released. The resume conditions are in [41-integrations.md §9](architecture/41-integrations.md), written so that a lane arriving months from now needs no commit history.
 
 ## Recently completed
 

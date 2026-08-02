@@ -25,6 +25,7 @@ def _to_account(row: ConnectedAccountModel) -> ConnectedAccount:
         label=row.label,
         state=ConnectionState(row.state),
         connected_at=row.connected_at,
+        actor_id=row.updated_by,
     )
 
 
@@ -74,6 +75,8 @@ class SqlConnectedAccountRepository:
                     label=account.label,
                     state=account.state.value,
                     connected_at=account.connected_at,
+                    created_by=account.actor_id,
+                    updated_by=account.actor_id,
                 )
             )
             return
@@ -83,6 +86,9 @@ class SqlConnectedAccountRepository:
         row.label = account.label
         row.state = account.state.value
         row.connected_at = account.connected_at
+        # `created_by` is deliberately not reassigned: who connected it is a
+        # fact about a moment that a later disconnection must not overwrite.
+        row.updated_by = account.actor_id
 
 
 class SqlGrantStore:
@@ -118,6 +124,7 @@ class SqlGrantStore:
             expires_at=row.expires_at,
             refreshable=row.refreshable,
             revoked_at=row.revoked_at,
+            actor_id=row.updated_by,
         )
 
     async def save(self, grant: IntegrationGrant) -> None:
@@ -133,9 +140,12 @@ class SqlGrantStore:
                     expires_at=grant.expires_at,
                     refreshable=grant.refreshable,
                     revoked_at=grant.revoked_at,
+                    created_by=grant.actor_id,
+                    updated_by=grant.actor_id,
                 )
             )
             return
         row.expires_at = grant.expires_at
         row.revoked_at = grant.revoked_at
         row.secret_ref = grant.secret_ref
+        row.updated_by = grant.actor_id

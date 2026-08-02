@@ -23,6 +23,7 @@ from modules.integrations.domain.grant import IntegrationGrant
 
 NOW = datetime(2026, 8, 2, 12, 0, tzinfo=UTC)
 WORKSPACE = uuid4()
+ACTOR = uuid4()
 
 
 def _account(state: ConnectionState = ConnectionState.VALIDATED) -> ConnectedAccount:
@@ -35,6 +36,7 @@ def _account(state: ConnectionState = ConnectionState.VALIDATED) -> ConnectedAcc
         label="Acme",
         state=state,
         connected_at=NOW - timedelta(days=10),
+        actor_id=ACTOR,
     )
 
 
@@ -48,6 +50,7 @@ def _grant(account: ConnectedAccount) -> IntegrationGrant:
         expires_at=None,
         refreshable=True,
         revoked_at=None,
+        actor_id=ACTOR,
     )
 
 
@@ -118,14 +121,14 @@ class TestTheCredentialIsDestroyed:
         *"Signora can no longer read from this"* true rather than believed."""
         account = _account()
         system, _, _, purger = _system(account, _grant(account))
-        await system.execute(WORKSPACE, account.id, at=NOW)
+        await system.execute(WORKSPACE, account.id, at=NOW, actor_id=ACTOR)
         assert purger.purged == [str(account.id)]
 
     @pytest.mark.asyncio
     async def test_the_grant_is_revoked_too(self) -> None:
         account = _account()
         system, _, grants, _ = _system(account, _grant(account))
-        await system.execute(WORKSPACE, account.id, at=NOW)
+        await system.execute(WORKSPACE, account.id, at=NOW, actor_id=ACTOR)
         assert grants.grant is not None
         assert grants.grant.revoked_at == NOW
 
@@ -134,7 +137,7 @@ class TestTheCredentialIsDestroyed:
         """An abandoned half-finished connection must still be removable."""
         account = _account(ConnectionState.AUTHORIZING)
         system, accounts, _, purger = _system(account, None)
-        await system.execute(WORKSPACE, account.id, at=NOW)
+        await system.execute(WORKSPACE, account.id, at=NOW, actor_id=ACTOR)
         assert accounts.account is not None
         assert accounts.account.state is ConnectionState.DISCONNECTED
         assert purger.purged == [str(account.id)]
@@ -151,7 +154,7 @@ class TestTheVendorCannotBlockIt:
         system, accounts, _, purger = _system(
             account, _grant(account), FakeRevoker(raises=True)
         )
-        result = await system.execute(WORKSPACE, account.id, at=NOW)
+        result = await system.execute(WORKSPACE, account.id, at=NOW, actor_id=ACTOR)
         assert result.account.state is ConnectionState.DISCONNECTED
         assert result.revoked_at_provider is False
         assert purger.purged == [str(account.id)]
@@ -160,14 +163,14 @@ class TestTheVendorCannotBlockIt:
     async def test_a_refused_revocation_is_reported_rather_than_hidden(self) -> None:
         account = _account()
         system, _, _, _ = _system(account, _grant(account), FakeRevoker(succeeds=False))
-        result = await system.execute(WORKSPACE, account.id, at=NOW)
+        result = await system.execute(WORKSPACE, account.id, at=NOW, actor_id=ACTOR)
         assert result.revoked_at_provider is False
 
     @pytest.mark.asyncio
     async def test_a_successful_revocation_is_reported(self) -> None:
         account = _account()
         system, _, _, _ = _system(account, _grant(account), FakeRevoker(succeeds=True))
-        result = await system.execute(WORKSPACE, account.id, at=NOW)
+        result = await system.execute(WORKSPACE, account.id, at=NOW, actor_id=ACTOR)
         assert result.revoked_at_provider is True
 
     @pytest.mark.asyncio
@@ -183,8 +186,8 @@ class TestIdempotence:
     async def test_disconnecting_twice_is_not_an_error(self) -> None:
         account = _account()
         system, accounts, _, purger = _system(account, _grant(account))
-        first = await system.execute(WORKSPACE, account.id, at=NOW)
-        second = await system.execute(WORKSPACE, account.id, at=NOW + timedelta(days=1))
+        first = await system.execute(WORKSPACE, account.id, at=NOW, actor_id=ACTOR)
+        second = await system.execute(WORKSPACE, account.id, at=NOW + timedelta(days=1), actor_id=ACTOR)
         assert first.already_disconnected is False
         assert second.already_disconnected is True
         # The second call touches nothing — a customer clicking twice must not
@@ -195,14 +198,14 @@ class TestIdempotence:
     async def test_an_unknown_connection_is_refused_without_saying_why(self) -> None:
         system, _, _, _ = _system(None)
         with pytest.raises(ConnectionNotFound):
-            await system.execute(WORKSPACE, uuid4(), at=NOW)
+            await system.execute(WORKSPACE, uuid4(), at=NOW, actor_id=ACTOR)
 
     @pytest.mark.asyncio
     async def test_another_organizations_connection_is_not_disconnectable(self) -> None:
         account = _account()
         system, _, _, _ = _system(account, _grant(account))
         with pytest.raises(ConnectionNotFound):
-            await system.execute(uuid4(), account.id, at=NOW)
+            await system.execute(uuid4(), account.id, at=NOW, actor_id=ACTOR)
 
 
 class TestEveryUsableStateCanBeLeft:
@@ -228,9 +231,9 @@ class TestEveryUsableStateCanBeLeft:
             # lifecycle table, so it is the one state disconnect cannot reach
             # directly. Asserted rather than assumed.
             with pytest.raises(Exception):
-                await system.execute(WORKSPACE, account.id, at=NOW)
+                await system.execute(WORKSPACE, account.id, at=NOW, actor_id=ACTOR)
             return
-        result = await system.execute(WORKSPACE, account.id, at=NOW)
+        result = await system.execute(WORKSPACE, account.id, at=NOW, actor_id=ACTOR)
         assert result.account.state is ConnectionState.DISCONNECTED
         assert purger.purged == [str(account.id)]
 

@@ -61,7 +61,8 @@
 | [C-017](#c-017--the-onboarding-honesty-principle-has-no-permanent-home) | The onboarding honesty principle has no permanent home | Lane B | **Product owner** + QE | `OPEN` — **ratifiable text ready to paste** as `D39` | Nothing being built. **Every future onboarding flow, wizard and assistant** |
 | [C-020](#c-020--m7-has-no-scope-and-timeline-has-no-design) | M7 has no scope, and Timeline has no design | Lane B | **Product owner** (roadmap 🔴) | `OPEN` | **M7** — [`TASK-017`](BACKLOG.md), `WAITING`. Lane B released it and is `AVAILABLE` |
 | [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it) | Timeline has a surface and nowhere to mount it | Lane B | **Lane A** + product owner | `OPEN` | **Nothing in Timeline** — backend and component built; only the mount point |
-| [C-025](#c-025--m13-is-not-a-module-and-its-consumers-do-not-exist-yet) | M13 is not a module, and its consumers do not exist yet | Lane B | **Product owner** | `OPEN` | **M13's credential half** — no tier may run an integration OAuth flow |
+| [C-025](#c-025--m13-is-not-a-module-and-its-consumers-do-not-exist-yet) | M13 is not a module, and its consumers do not exist yet | Lane B | **Product owner** | `ANSWERED` — all four decisions taken 2026-08-02. **M13 paused on an environmental dependency, not this item** | **Nothing.** The remaining work needs a HubSpot developer application, not a decision |
+| [C-026](#c-026--the-connection-center-is-reachable-only-by-typing-its-url) | The Connection Center is reachable only by typing its URL | Lane B | **Lane A** + product owner | `OPEN` | **Nothing in Integrations** — the page is built and tested; only the navigation entry |
 
 ---
 
@@ -1309,6 +1310,45 @@ The model is now four: **Integration (catalog) · Connected Account · Grant · 
 #### Freeze recommendation
 
 **Additional scenarios stopped changing the architecture after mTLS.** Every mechanism after it either passed unchanged or confirmed a rule already stated. **Lane B recommends freezing this model** — four concepts, three separated capabilities, two lifecycles, capability-first resolution, and the credential bound per connected account — and beginning slice 1 on the product owner's OAuth ruling.
+
+### Resolution — product owner, 2026-08-02. All four decisions taken.
+
+| # | Question | Decision |
+|---|---|---|
+| 1 | **The OAuth boundary** | **Option A.** The authorization-code flow executes entirely in Next.js; Python is responsible for storage, validation, refresh and revocation only. Signora-user authentication stays completely separate from external-system authorization |
+| 2 | **Module or capability?** | **A module.** `modules/integrations/` owns the relationship, because **a Connected Account exists independently of synchronization** — before it, during a pause, after a revocation, and even if it never happens. Provider Platform consumes it; the edge is `provider_platform → integrations` and never the reverse |
+| 3 | **Which vendors** | **HubSpot and Google Calendar.** Salesforce next; Slack deferred until something downstream is worth delivering into it |
+| 4 | **Order relative to consumers** | **M13 precedes them.** Connecting a system is a customer capability in its own right and does not wait for a consumer to justify it |
+
+### This item is answered. M13 paused for a different reason.
+
+**M13 stopped on 2026-08-02 at the boundary between product work and environmental work, and none of the four questions above is what stopped it.**
+
+**What remains is a HubSpot developer application** — a client id, a client secret, and a registered redirect URI. Without them nothing can complete a real handshake, and the product says so rather than pretending: every catalog entry reports `connectable: false`, the callback route returns `provider_unavailable` rather than a stub, and **nothing simulates a completed connection.**
+
+**The resume conditions are written down** — [41-integrations.md §9](architecture/41-integrations.md) — in enough detail that a lane arriving months from now needs no commit history. The short version: supply the credentials, implement the token exchange at the one place that returns `provider_unavailable`, call `ConnectSystem`, and flip `connectable` **only after a real handshake succeeds.** Everything else exists and is tested.
+
+**Left `ANSWERED` rather than `CLOSED`** because the register's own rule is that an item closes when the work it was blocking is implemented, and the last step of that work has not run. It blocks nothing in the meantime.
+
+---
+
+## C-026 · The Connection Center is reachable only by typing its URL
+
+| | |
+|---|---|
+| **Decision required** | Where the connections entry belongs in the application shell — and whether it is one entry or part of a Settings group |
+| **Participating modules** | frontend shell (**Lane A**) · `integrations` (Lane B) |
+| **Current assignee(s)** | **Lane A** — the shell and navigation are the frozen frontend foundation (§20c) |
+| **Blocking** | **Nothing in Integrations.** `/settings/connections` is built, tested and reachable at its URL |
+| **Raised** | 2026-08-02, by Lane B, at the M13 pause |
+
+**The same class as [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it), in a different module, and reported for the same reason.** A page nothing links to is a page a customer will not find, and *"it works if you type the URL"* is not a shipped capability. The OAuth routes already redirect to `/settings/connections?system=…&outcome=…`, so the return trip lands correctly; there is simply no way in from the product.
+
+**Lane B has not added the entry.** Navigation lives in the frozen frontend foundation, which is Lane A's, and adding a link there would be a lane editing outside its Change Budget to save a coordination item — precisely the trade §20e forbids.
+
+**Lane B's position, offered rather than asserted:** *Settings → Connections*, using the customer's word. The screen already says **Connections**, never *integrations*, *providers* or *adapters*, per [ADR-0034](architecture/adr/0034-ubiquitous-language.md).
+
+**Closes when** the entry exists in the shell and a customer can reach the page without knowing its address.
 
 ---
 

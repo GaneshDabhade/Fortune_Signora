@@ -98,7 +98,10 @@ class TestConnecting:
         connect, accounts, grants, secrets = _connect()
         account = await connect.execute(_request(), at=NOW)
         assert account.state is ConnectionState.CONNECTED
-        assert accounts.saved == [account]
+        # Saved twice — `AUTHORIZING` so the credential and grant have a parent
+        # row to reference, then `CONNECTED` once both exist. The last write is
+        # what the customer sees.
+        assert accounts.saved[-1] == account
         assert grants.saved[0].connected_account_id == account.id
         assert secrets.stored[grants.saved[0].secret_ref].material == b"tok"
 
@@ -137,17 +140,53 @@ class TestConnecting:
 
 
 class TestOrderingProtectsTheCustomer:
+    """**The property, not the sequence.**
+
+    This asserted *"material is written first, and a failure leaves no
+    connection at all"* — a rule the database refuses. Material and grants both
+    carry a foreign key to the connection, so writing either first is rejected;
+    it passed only because a fake cannot refuse an insert (B-024).
+
+    What the rule was actually protecting is unchanged and asserted below: **a
+    connection is never left readable as `CONNECTED` with no credential behind
+    it.** The connection is now written first, in `AUTHORIZING`, which the
+    Connection Center already reports as *you started this and did not finish*
+    — true, actionable, and disconnectable.
+    """
+
     @pytest.mark.asyncio
-    async def test_a_failed_secret_write_leaves_no_connection_behind(self) -> None:
-        """**Material first, deliberately.** If the connection were written
-        first and this failed, the Connection Center would say *Ready to use*
-        about a credential that does not exist — the one lie that screen was
-        built to prevent."""
+    async def test_a_failed_secret_write_never_leaves_a_connection_looking_ready(
+        self,
+    ) -> None:
         connect, accounts, grants, _ = _connect(FakeSecrets(fails=True))
         with pytest.raises(RuntimeError):
             await connect.execute(_request(), at=NOW)
-        assert accounts.saved == []
         assert grants.saved == []
+        assert all(a.state is not ConnectionState.CONNECTED for a in accounts.saved)
+
+    @pytest.mark.asyncio
+    async def test_a_half_finished_connection_is_one_a_customer_can_still_remove(
+        self,
+    ) -> None:
+        """The state left behind must not be a trap. `AUTHORIZING` reaches
+        `DISCONNECTED`, so an abandoned attempt can be cleared."""
+        connect, accounts, _, _ = _connect(FakeSecrets(fails=True))
+        with pytest.raises(RuntimeError):
+            await connect.execute(_request(), at=NOW)
+        stranded = accounts.saved[-1]
+        assert stranded.state is ConnectionState.AUTHORIZING
+        assert (
+            stranded.transition(ConnectionState.DISCONNECTED, at=NOW, by=stranded.actor_id).state
+            is ConnectionState.DISCONNECTED
+        )
+
+    @pytest.mark.asyncio
+    async def test_the_credential_exists_before_the_grant_that_names_it(self) -> None:
+        """A grant pointing at material that was never stored reads as usable
+        and fails at the vendor with nothing to explain it."""
+        connect, _, grants, secrets = _connect()
+        await connect.execute(_request(), at=NOW)
+        assert grants.saved[0].secret_ref in secrets.stored
 
 
 class TestTheSecretStore:

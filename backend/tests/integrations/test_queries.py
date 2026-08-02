@@ -22,6 +22,7 @@ from modules.integrations.domain.grant import IntegrationGrant
 
 NOW = datetime(2026, 8, 2, 12, 0, tzinfo=UTC)
 WORKSPACE = uuid4()
+ACTOR = uuid4()
 
 
 def _account(
@@ -39,6 +40,7 @@ def _account(
         label=label,
         state=state,
         connected_at=NOW - timedelta(days=30),
+        actor_id=ACTOR,
     )
 
 
@@ -57,6 +59,7 @@ def _grant(
         expires_at=expires_at,
         refreshable=refreshable,
         revoked_at=None,
+        actor_id=ACTOR,
     )
 
 
@@ -234,6 +237,7 @@ class TestTheViewShowsNoBookkeeping:
             label="Someone else",
             state=ConnectionState.VALIDATED,
             connected_at=None,
+            actor_id=ACTOR,
         )
         views = await _queries([_account(), other]).connections(WORKSPACE, at=NOW)
         assert len(views) == 1

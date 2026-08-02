@@ -153,6 +153,11 @@ class ConnectedAccount:
     label: str
     state: ConnectionState
     connected_at: datetime | None
+    #: Who last changed this connection. **Required, with no default**, on the
+    #: rule `next_state` already follows in the Opportunity Engine: a state
+    #: change nobody is attributable for is a state change nobody can explain,
+    #: and a default would quietly attribute every one of them to the platform.
+    actor_id: UUID
 
     def __post_init__(self) -> None:
         if not self.integration:
@@ -165,12 +170,16 @@ class ConnectedAccount:
         """Whether asking the vendor for anything could succeed."""
         return self.state not in UNUSABLE_STATES
 
-    def transition(self, to: ConnectionState, *, at: datetime) -> ConnectedAccount:
+    def transition(self, to: ConnectionState, *, at: datetime, by: UUID) -> ConnectedAccount:
         """Move to `to`, refusing a transition the lifecycle does not allow.
 
         **Returns a new account rather than mutating.** The state of a
         connection is a fact about a moment, and a caller holding the previous
         value should keep holding what it read.
+
+        **`by` has no default.** *"Who disconnected our CRM?"* is a question a
+        customer asks during an incident, and the only moment the answer exists
+        is this one.
         """
         if to not in _ALLOWED[self.state]:
             raise ConnectionTransitionError(
@@ -188,4 +197,5 @@ class ConnectedAccount:
             label=self.label,
             state=to,
             connected_at=connected_at,
+            actor_id=by,
         )

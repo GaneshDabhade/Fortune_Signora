@@ -171,7 +171,7 @@ git ls-files --eol | awk '{print $1}' | sort | uniq -c
 | **Module** | `integrations` · `timeline` |
 | **Current assignee** | **Lane B**, feature lead for both |
 | **Severity** | 🟠 — it rejected a Release Candidate, and one file of it is security-relevant |
-| **Status** | `OPEN` |
+| **Status** | **`FIXED`** — Lane B, 2026-08-02. All four named files at **100%**; three real defects came out from under it. **`VERIFIED` is QE's to set** |
 | **Found** | 2026-08-02, by QE, certifying `9ba0ea6` — **the candidate was rejected and abandoned** |
 
 **Steps to reproduce.**
@@ -252,6 +252,44 @@ modules/timeline/infrastructure/repository.py      21   9  52%   ← unchanged
 **Recorded, not editorialised.** Lane B may have reasons for the sequencing that QE cannot see, and finding a defect outside one's assignment is an obligation to report rather than a licence to prioritise somebody else's queue. **What QE will not do is normalise the repetition:** a second identical rejection is reported as an escalation, not as *"candidate rejected again."*
 
 **Not to be fixed by lowering the floor**, and not by adding assertions that execute lines without testing behaviour. The two 0% files are the work; the percentage follows.
+
+### Fix — Lane B, 2026-08-02
+
+**QE's escalation was accurate and its last sentence was the important one.** The percentage was never the defect; the two 0% files were. **Three real defects were sitting under them, and every one would have reached a customer.**
+
+| # | Defect | Why no existing test could see it |
+|---|---|---|
+| 1 | **Every connection insert would have failed.** `connected_account.created_by` and `updated_by` are `NOT NULL`; nothing supplied them. **The first customer to connect anything would have hit it** | Every repository test used a fake, and **a fake cannot refuse an insert** |
+| 2 | **The write order violated the foreign keys.** `ConnectSystem` wrote credential material before the connection it references. Both `integration_secret` and `integration_grant` have an FK to `connected_account` | Same — the doubles accepted any order, and one unit test *asserted* the wrong one |
+| 3 | **`ConnectionNotFound` escaped as a `500`.** It had no entry in the central error mapping, so a caller naming another organization's connection was told the platform had broken rather than being refused | No test had ever called the route with a connection id it could not see |
+
+**Fixes.** `ConnectedAccount` and `IntegrationGrant` gain a required `actor_id` with **no default** — the rule `next_state` already follows — which makes `ConnectInput.actor_id` load-bearing after four slices of being declared and never read, and answers *"who disconnected our CRM?"* at the only moment the answer exists. `created_by` is never reassigned on update, so a later disconnection cannot destroy the record of who connected it. The write order is now connection → material → grant → connection, with the row landing in `AUTHORIZING` first, which **preserves the property the old ordering was protecting**: a partial failure leaves *"you started this and did not finish"*, never *Ready to use* over a credential that does not exist. `modules/integrations/interface/errors.py` maps `ConnectionNotFound` to **404, never 403**.
+
+**Tests — 42 added, all against real PostgreSQL as `signora_app`:**
+
+| File | What it proves |
+|---|---|
+| `tests/integration/test_integrations_persistence.py` | A connection survives the schema · who connected it is not overwritten by who disconnected it · the unique identity constraint is live · **the material is not what lands in the column** · a rotated key refuses rather than resolving to something · purging actually removes it · another organization's credential is invisible under RLS |
+| `tests/integration/test_timeline_persistence.py` | The projection path end to end · redelivery losing the race against a unique index · **ties broken identically by PostgreSQL and by the cursor** — the unit suite pages against a fake that reimplements the same rule, so only the database can prove they agree |
+| `tests/integration/test_api_connections.py` | Authorization at the route: a member may read and **may not** disconnect · 404-never-403 · the disconnect names its caller · nothing is advertised as `connectable` before it is |
+
+**Measured on the fixed tree**, `HEAD` of `lane-b-commercial-profile`:
+
+```
+2518 passed        (was 2460, then 2476)
+Required test coverage of 95.0% reached. Total coverage: 95.69%     (was 94.79%, then 94.98%)
+```
+
+| File | Before | After |
+|---|---|---|
+| `modules/integrations/infrastructure/secrets.py` | **0%** | **100%** |
+| `modules/integrations/infrastructure/repository.py` | 35% | **100%** |
+| `modules/timeline/interface/handlers.py` | **0%** | **100%** |
+| `modules/timeline/infrastructure/repository.py` | 52% | **100%** |
+
+`mypy --strict` clean · `lint-imports` 34 kept, 0 broken · frontend `tsc` clean, 616 tests.
+
+**The general lesson, recorded because it will recur:** a fake that reimplements a rule can only ever agree with itself. Where the rule lives in the database — a constraint, an ordering, a keyset predicate, RLS — the test has to be there too. Written up in [41-integrations.md §10](architecture/41-integrations.md).
 
 ### B-025 · A coverage failure is reported as a test failure, and names the wrong gate
 

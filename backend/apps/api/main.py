@@ -27,6 +27,9 @@ from modules.commercial_profile.interface.errors import (
     ERROR_MAPPING as COMMERCIAL_PROFILE_ERRORS,
 )
 from modules.commercial_profile.interface.router import router as products_router
+from modules.integrations.interface.errors import (
+    ERROR_MAPPING as INTEGRATIONS_ERRORS,
+)
 from modules.integrations.interface.router import router as integrations_router
 from modules.timeline.interface.router import router as timeline_router
 from modules.knowledge_graph.interface.router import router as knowledge_graph_router
@@ -94,6 +97,7 @@ def _error_mappings() -> ErrorMapping:
     mappings.update(OPPORTUNITY_ENGINE_ERRORS)
     mappings.update(COMMERCIAL_PROFILE_ERRORS)
     mappings.update(AI_RESEARCH_ENGINE_ERRORS)
+    mappings.update(INTEGRATIONS_ERRORS)
     return mappings
 
 

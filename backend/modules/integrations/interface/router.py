@@ -108,6 +108,9 @@ async def disconnect(
     """
     context.authorize(Resource.INTEGRATION, Action.UPDATE)
     result = await disconnector.execute(
-        context.workspace_id, connection_id, at=datetime.now(UTC)
+        context.workspace_id,
+        connection_id,
+        at=datetime.now(UTC),
+        actor_id=context.principal.user_id,
     )
     return DisconnectResponse.from_domain(result)

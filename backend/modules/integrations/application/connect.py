@@ -80,45 +80,63 @@ class ConnectSystem:
         if entry_for(request.integration) is None:
             raise UnknownIntegration(request.integration)
 
-        account = ConnectedAccount(
+        # Through `AUTHORIZING` rather than straight to `CONNECTED`: the
+        # lifecycle says a connection is authorized before it exists, and a use
+        # case that skipped its own state machine would make the machine
+        # decorative.
+        authorizing = ConnectedAccount(
             id=uuid4(),
             workspace_id=request.workspace_id,
             integration=request.integration,
             external_account_id=request.external_account_id,
             endpoint=request.endpoint,
             label=request.label,
-            # Through `AUTHORIZING` rather than straight to `CONNECTED`: the
-            # lifecycle says a connection is authorized before it exists, and a
-            # use case that skipped its own state machine would make the machine
-            # decorative.
             state=ConnectionState.NOT_CONNECTED,
             connected_at=None,
-        ).transition(ConnectionState.AUTHORIZING, at=at).transition(
-            ConnectionState.CONNECTED, at=at
-        )
+            actor_id=request.actor_id,
+        ).transition(ConnectionState.AUTHORIZING, at=at, by=request.actor_id)
 
-        secret_ref = f"integration/{account.id}"
-        # Material first. If the grant were written first and this failed, a
-        # connection would read as working with nothing behind it — and the
-        # screen would say "Ready to use" about a credential that does not
-        # exist.
+        # **The connection is written first, and the order is not stylistic.**
+        # Material and grants are children of a connection — `integration_secret`
+        # and `integration_grant` both carry a foreign key to it — so writing
+        # either first is refused by the database. Found by the first test to
+        # run this against PostgreSQL rather than a fake, which accepted any
+        # order; see B-024.
+        #
+        # It costs nothing, because the row lands in `AUTHORIZING`. A failure
+        # anywhere below therefore leaves a connection that reads as *"you
+        # started connecting this and did not finish"* — which is true, is
+        # already what the Connection Center says, and is already something a
+        # customer can disconnect. The state it must never be left in is
+        # `CONNECTED` with nothing behind it, and that only happens on the last
+        # line.
+        await self._accounts.save(authorizing)
+
+        secret_ref = f"integration/{authorizing.id}"
+        # Material before the grant. A grant naming a credential that was never
+        # stored would read as usable and fail at the vendor.
         await self._secrets.store(
             secret_ref=secret_ref,
             workspace_id=str(request.workspace_id),
-            connected_account_id=str(account.id),
+            connected_account_id=str(authorizing.id),
             credential=request.credential,
         )
-        await self._accounts.save(account)
         await self._grants.save(
             IntegrationGrant(
                 id=uuid4(),
                 workspace_id=request.workspace_id,
-                connected_account_id=account.id,
+                connected_account_id=authorizing.id,
                 secret_ref=secret_ref,
                 scopes=request.scopes,
                 expires_at=request.expires_at,
                 refreshable=request.refreshable,
                 revoked_at=None,
+                actor_id=request.actor_id,
             )
         )
-        return account
+
+        connected = authorizing.transition(
+            ConnectionState.CONNECTED, at=at, by=request.actor_id
+        )
+        await self._accounts.save(connected)
+        return connected

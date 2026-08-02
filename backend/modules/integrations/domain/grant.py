@@ -89,6 +89,9 @@ class IntegrationGrant:
     #: Whether new material can be obtained without the customer present.
     refreshable: bool
     revoked_at: datetime | None
+    #: Who last acted on this grant — authorised it, or withdrew it. Required,
+    #: with no default, for the same reason `ConnectedAccount.actor_id` is.
+    actor_id: UUID
 
     def __post_init__(self) -> None:
         if not self.secret_ref:
@@ -110,10 +113,11 @@ class IntegrationGrant:
         if self.is_expired(at=at):
             raise GrantExpired("the grant's lifetime ran out")
 
-    def revoke(self, *, at: datetime) -> IntegrationGrant:
+    def revoke(self, *, at: datetime, by: UUID) -> IntegrationGrant:
         """Record that permission ended. **Idempotent** — the first revocation
         is the one that counts, and a second report of the same withdrawal must
-        not move the timestamp."""
+        not move the timestamp, nor reattribute it to whoever reported it last.
+        """
         if self.revoked_at is not None:
             return self
         return IntegrationGrant(
@@ -125,4 +129,5 @@ class IntegrationGrant:
             expires_at=self.expires_at,
             refreshable=self.refreshable,
             revoked_at=at,
+            actor_id=by,
         )

@@ -24,6 +24,7 @@ from modules.integrations.domain.grant import (
 
 NOW = datetime(2026, 8, 2, 12, 0, tzinfo=UTC)
 WORKSPACE = uuid4()
+ACTOR = uuid4()
 
 
 def _account(state: ConnectionState = ConnectionState.VALIDATED, **kw: object) -> ConnectedAccount:
@@ -36,6 +37,7 @@ def _account(state: ConnectionState = ConnectionState.VALIDATED, **kw: object) -
         "label": "Acme production",
         "state": state,
         "connected_at": NOW,
+        "actor_id": ACTOR,
     }
     defaults.update(kw)
     return ConnectedAccount(**defaults)  # type: ignore[arg-type]
@@ -51,6 +53,7 @@ def _grant(account: ConnectedAccount, **kw: object) -> IntegrationGrant:
         "expires_at": None,
         "refreshable": True,
         "revoked_at": None,
+        "actor_id": ACTOR,
     }
     defaults.update(kw)
     return IntegrationGrant(**defaults)  # type: ignore[arg-type]
@@ -165,8 +168,8 @@ class TestGrantLifecycle:
     def test_revocation_is_idempotent(self) -> None:
         """A second report of one withdrawal must not move the timestamp — it
         is when permission ended, not when Signora last noticed."""
-        first = _grant(_account()).revoke(at=NOW)
-        assert first.revoke(at=NOW + timedelta(days=1)).revoked_at == NOW
+        first = _grant(_account()).revoke(at=NOW, by=ACTOR)
+        assert first.revoke(at=NOW + timedelta(days=1), by=ACTOR).revoked_at == NOW
 
 
 class TestResolution:
