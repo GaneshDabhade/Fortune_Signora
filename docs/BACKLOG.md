@@ -66,8 +66,9 @@
 |---|---|
 | **Module** | Product Surface |
 | **Slice** | PS-01 |
-| **Status** | `READY` |
+| **Status** | `CLAIMED` — **Lane A**, 2026-08-02 |
 | **Notes** | 🟡. Overlaps R1-04 — read both before starting |
+| **On claiming** | **R1-04 is 🟠, unimplemented, and is the same plumbing.** The brief receives `evidence` on the opportunity response and renders `is_current` only, so *cooling* never reaches it — and R2-03 cannot be answered without the brief learning the same fact. Lane A will surface evidence state on the brief once and let both findings read it, rather than adding a second path for the second finding. **The task is not being rewritten**: R1-04 has no id, and inserting `READY` scope is the product owner's. If the overlap should instead be a separate task, say so and the R1-04 half is reported rather than shipped |
 
 ### TASK-003 · The attributes are engineering's words (R11-06)
 
