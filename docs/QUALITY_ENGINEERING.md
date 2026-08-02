@@ -539,3 +539,47 @@ OPEN → collect recommendations → Lane A analysis → Lane B analysis
 > **QE does not manufacture governance work to stay busy.** The same rule the lanes follow: *"a lane never invents work"*, and **`AVAILABLE` with an empty queue is a correct repository state, not a stalled one.**
 >
 > **`READY FOR NEW ASSIGNMENT` is the honest report when the repository is healthy**, and QE reaching for one more refinement instead is the failure this state exists to prevent. **It has a specific tell: a cycle whose only output is process.**
+
+---
+
+## 13 · Verifying the Engineering Laws
+
+**[`ENGINEERING_LAWS.md`](../ENGINEERING_LAWS.md) states thirteen laws. This section is how QE checks them, and nothing else** — the laws themselves are not restated, and where this section needs one it links.
+
+> **QE validates that the lane satisfied the laws. QE does not satisfy them on the lane's behalf.** The same rule as coverage (`CLAUDE.md` §19): a reuse duplication found at certification is the same duplication that was visible to the lane before it wrote the code, and moving the check left is why it is cheaper there.
+
+### What QE reads first
+
+**The Slice Handoff's four law fields — `Reuse`, `Preserved`, `Reachable`, `Rollback`.** A slice missing any of them is `CHANGES REQUESTED` before any gate is run, because **the fields are what make the laws checkable at all** and reconstructing them from a diff is how QE starts describing what a lane intended.
+
+### The checks, per law
+
+| Law | How QE verifies it | Cost |
+|---|---|---|
+| **L-1 Reuse** | Read the `Reuse` field against the diff. **Grep the `New` bucket's names across `public/`, `policy.csv`, `06-events.md` and `components/ui`.** A hit that the audit missed is the finding | ~5 min |
+| **L-2 Evidence** | Re-measure every figure the lane reported. **A lane offers a claim; QE publishes a measurement** — and where they differ, the measurement ships | Already in Closeout |
+| **L-3 Document-first** | If the slice touches a listed change class, confirm a design doc or ADR **predates** its implementation commits — `git log` on both paths | ~2 min |
+| **L-4 Independent slice** | **Perform the demo from the `Demo` line.** A demo needing a paragraph of architecture fails the law | Part of validation |
+| **L-5 Capability** | Confirm `Delivered` answers *what a customer can now do*. **`None` is acceptable and is published as `None`** | ~1 min |
+| **L-6 Journey** | **Follow the `Reachable` line as the stated role**, not as an owner. Confirm something links to it | Part of exploratory use |
+| **L-7 Production path** | `make runtime-composition`. **`Unexpected missing wiring` must not have increased** | Seconds |
+| **L-8 Behaviour** | The repository-wide suite — **the only place merged code runs together**. Any regression is `CHANGES REQUESTED` | Part of validation |
+| **L-9 Data** | Read `Rollback` for a `LIMITATION` line. **A destructive migration with no product-owner confirmation is refused** | ~2 min |
+| **L-11 Migration contract** | Ten fields present in the docstring; `downgrade base` and back | Part of certification |
+| **L-10 Evolution** | Confirm any duplication names its retirement slice. **Duplication with no retirement date is a finding** | ~2 min |
+| **L-12 Debt classification** | Every item the slice raises is in the right register. **QE moves a misfiled item and records the move** | Part of Closeout |
+| **L-13 Operational** | `make smoke` · `make dr` · Security Invariants | Part of certification |
+
+### The four laws QE cannot check with a command
+
+**L-1, L-3, L-5 and L-12 are human checks**, and [`ENGINEERING_LAWS.md`](../ENGINEERING_LAWS.md) says so rather than implying otherwise.
+
+> **QE's obligation is therefore to notice erosion, not to catch every instance.** A single missed reuse is cheap. **Three slices in a row whose `Reuse` field reads *"new — no equivalent"* without a search is a pattern**, and a pattern is what QE escalates — as a `B-` row against process, with a proposed check attached.
+>
+> **The right response to a repeated human-check failure is a command, never a firmer sentence.** [B-022](BUGS.md) is the precedent: a bolded warning in this repository's own runbook was violated within hours **by the person who wrote it**, and only `infra/release-preflight.py` fixed it.
+
+### What QE must not do with these laws
+
+- **Not fix a reuse duplication.** It is a defect in a module QE does not implement — a `B-` row, assigned to that module's current assignee.
+- **Not waive a law because a slice is small.** The gates are the decision, and the authority is to run them faithfully rather than to judge whether the result matters.
+- **Not add a law.** Amendment is the product owner's, through the same route as `CLAUDE.md`.

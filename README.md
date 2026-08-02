@@ -13,14 +13,15 @@ A modular monolith: Python 3.13 · FastAPI · PostgreSQL 17 · SQLAlchemy 2.x as
 | # | Document | Why |
 |---|---|---|
 | 1 | **[`CLAUDE.md`](CLAUDE.md)** | The engineering constitution. **Binding, not advisory.** Read §20e before touching anything if you are working in a lane |
-| 2 | **[`docs/architecture/21-intelligence-pipeline.md`](docs/architecture/21-intelligence-pipeline.md)** | How a fact travels from raw payload to conclusion, and what each stage may *not* do |
-| 3 | **[`PROJECT_STATUS.md`](PROJECT_STATUS.md)** | Where the project actually is, and **what is currently broken** |
+| 2 | **[`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md)** | **The Repository Engineering Standard — how an implementation must be built.** Thirteen laws, each grounded in a defect this repository actually had. `CLAUDE.md` governs how work *moves*; this governs how it is *built* |
+| 3 | **[`docs/architecture/21-intelligence-pipeline.md`](docs/architecture/21-intelligence-pipeline.md)** | How a fact travels from raw payload to conclusion, and what each stage may *not* do |
+| 4 | **[`PROJECT_STATUS.md`](PROJECT_STATUS.md)** | Where the project actually is, and **what is currently broken** |
 | — | [`docs/BUGS.md`](docs/BUGS.md) | Open defects, each against a module. **Any lane opens; the module's current assignee fixes; QE verifies.** Read it before every slice |
 | — | [`docs/LANE_COORDINATION.md`](docs/LANE_COORDINATION.md) | **What one lane needs from another**, and what is waiting on a decision. Read it before every slice — this is where an assumption gets caught before it becomes architecture |
 | — | [`docs/BACKLOG.md`](docs/BACKLOG.md) | **The READY queue**, in priority order, every task carrying a permanent `TASK-nnn`. If you are a lane with no current slice, **run the Task Claim Protocol** (`CLAUDE.md` §20e) — nobody will assign it to you |
 | — | [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) | **The execution board** — who is doing what right now, on which module, at which slice, blocked by what, and what happens next. **Write your claim here before writing code** |
 | — | [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md) | **QE only.** The seven-stage repository cycle — validate · certify · integrate · promote · close out · synchronize · declare — with every command and tick-box |
-| 4 | **Your assigned module's design doc** | `docs/architecture/22`–`29`, or the manifest in [`04-modules.md`](docs/architecture/04-modules.md). **Under rotating assignment this is your only inherited context** |
+| 5 | **Your assigned module's design doc** | `docs/architecture/22`–`29`, or the manifest in [`04-modules.md`](docs/architecture/04-modules.md). **Under rotating assignment this is your only inherited context** |
 
 **Then**: [`docs/RUNNING.md`](docs/RUNNING.md) to run it.
 
@@ -46,7 +47,7 @@ backend/apps/api/composition/ one file per read surface
 frontend/components/ui/       the design system — FROZEN (§20c)
 frontend/components/<area>/   business components, composed from ui/
 docs/architecture/            01–21 architecture · 22–29 module designs · 30+ records
-docs/architecture/adr/        36 decisions. Never edited; a reversal is a new ADR
+docs/architecture/adr/        40 decisions. Never edited; a reversal is a new ADR
 ```
 
 ## Module registry

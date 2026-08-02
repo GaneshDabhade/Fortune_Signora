@@ -267,6 +267,7 @@ A task is done only when all of the following are true:
 | **Documentation updated** | The module's design doc, consistent with the code (§12) |
 | **Self-validation performed** | The lane ran its own gates on the **rebased** branch |
 | **Independently demonstrable** | §2 — showable without naming a module, a table or a port |
+| **Engineering Laws satisfied** | **The eleven handover gates in [`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md) §L-15** — reuse audit · behaviour preservation · data preservation · migration contract · backward compatibility · architecture consistency · runtime composition · customer journey · documentation · QE impact · no blocking defect |
 | **Ready for QE validation** | All of the above **before** the handover, not after the rejection |
 
 > **QE validates that this happened. QE does not make it happen.** A coverage gap found at certification is the same gap that was visible to the lane in seconds — `make coverage-debt` reads the data `pytest --cov` already wrote and names the file. **Quality moves left because it is cheaper there, not because QE minds looking.**
@@ -422,6 +423,7 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 | Rule area | Stated here | Performed in |
 |---|---|---|
 | **Engineering principles** | §2 · §3 | — |
+| **How an implementation is built** | §19 *(the gates)* · §20e *(the handoff)* | [`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md) — **the Repository Engineering Standard.** Thirteen laws: reuse, evidence, document-first, independent slices, customer capability, journey integrity, production path, behaviour and data preservation, evolution over replacement, migration contracts, debt classification, operational readiness |
 | **Testing rules** | §11 | [`backend/tests/README.md`](backend/tests/README.md) · [`frontend/tests/README.md`](frontend/tests/README.md) |
 | **Documentation rules** | §12 | the owning document itself |
 | **Definition of Done · slice completion** | §19 · §20e *Completion* | — |
@@ -986,6 +988,14 @@ Slice-Handoff:
   Delivered:     A customer can declare which kind of company buys each
                  product, versioned the way the catalog is.
   Demo:          Settings → Products → an ICP on any product row
+  Reuse:         reused    — ProductCatalog, useProducts, VersionedEntry
+                 extended  — Product gains an icp association
+                 new       — IcpDeclaration; no equivalent exists (L-1 audit)
+  Preserved:     behaviour — product catalog unchanged, its suite untouched
+                 data      — additive table; no existing row modified
+  Reachable:     Settings → Products. Owner edits; member sees it read-only
+  Rollback:      0021 down-migration drops icp_declaration.
+                 LIMITATION: declared ICPs are not recoverable
   Budget:        green modules/commercial_profile/**
                  amber migration 0021, table icp_declaration
                        (registered in tenancy_policy.py)
@@ -999,6 +1009,8 @@ Slice-Handoff:
   Limitations:   ICP is declared; nothing consumes it yet
   Findings:      none
 ```
+
+**`Reuse`, `Preserved`, `Reachable` and `Rollback` are the [`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md) fields** — L-1, L-8/L-9, L-6 and L-11 respectively. **Their meaning lives there and is not restated here**; the handoff is where they become checkable, because a commit message travels with the change forever and is greppable.
 
 **Every field is required; `none` is a valid value and silence is not.** `Delivered` and `Demo` are written **in the customer's vocabulary** (§4, ADR-0034) — they become the sentence a non-engineer reads in `PROJECT_STATUS.md`, and a line naming a module, a table or a port has not described a product slice.
 
