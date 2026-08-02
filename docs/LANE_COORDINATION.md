@@ -1581,6 +1581,57 @@ It is also the failure mode this repository keeps finding in a different coat: [
 
 ---
 
+## C-023 · M13 is ratified architecture, not an executable milestone
+
+| | |
+|---|---|
+| **Owner** | **Product owner** |
+| **Requesting lane** | Lane A |
+| **Category** | Milestone definition · module ownership · sequencing |
+| **Status** | `OPEN` |
+| **Blocks** | Lane A taking M13 as its execution assignment while `provider_platform` waits on [C-021](#c-021) |
+| **Raised** | 2026-08-02, on the product owner's direction to *"claim the first implementation slice of M13 **if** it is fully defined, executable, approved, and no other lane owns it"* |
+
+**The condition does not hold, and the reasons are the same shape as [C-020](#c-020)'s for M7.** Recorded rather than worked around, because the difference between *ratified* and *executable* is exactly what M7 exposed a day earlier.
+
+**What M13 does have:** a ratified architecture document ([13-integrations.md](architecture/13-integrations.md), v2), three ratified vendor ADRs ([0013](architecture/adr/0013-company-intelligence-provider-strategy.md), [0014](architecture/adr/0014-crm-integration-strategy.md), [0015](architecture/adr/0015-communication-email-and-calendar-integrations.md)), a roadmap position (17 of 21) and an estimate (18–26 ew).
+
+**What it does not have:**
+
+| Missing | Why it stops implementation |
+|---|---|
+| **A milestone definition** | No M13.1, no slices, no acceptance criteria — the phrase `M13.` appears nowhere in the repository except forward references. **The same gap that returned M7 to `WAITING`** |
+| **An owning module** | Fourteen modules exist and none is an integrations module. [13-integrations.md](architecture/13-integrations.md) says *"confirm the port exists on the relevant consuming module, **or define a new one via RFC**"* — and **which** consuming module is undecided. A new module is 🔴 |
+| **Anywhere to put a credential** | *"Credentials via AWS Secrets Manager, per-workspace OAuth grants stored per-tenant."* Secrets Manager arrives in **M14.5**, deferred, and [ADR-0027](architecture/adr/0027-local-first-development.md) keeps everything local until then |
+| **Any way to validate an adapter** | The Provider Simulation Framework is **inbound only**. There is no outbound integration simulator, and §20e forbids creating data by a route a customer does not have — so a Salesforce adapter could be written and **not exercised** |
+| **Its place in the order** | M13 is position **17**. M11 (14) is deferred, M7 (15) is `WAITING` and unscoped, M12 (16) has open slices. Starting M13 skips three milestones, and *the dependency graph still governs order* (§20e) |
+
+**And the roadmap forbids the one slice that would otherwise be startable.** *"No port is built speculatively. Integration Port in M13 — **each with its first concrete implementation**"* ([IMPLEMENTATION_ROADMAP.md §137](../IMPLEMENTATION_ROADMAP.md), `CLAUDE.md` §6). So *"define the Integration Port"* is explicitly not a slice on its own, and the first concrete implementation needs a vendor, a credential store and a simulator — none of which exist.
+
+### What would make it executable
+
+**Four decisions, in this order.** None is a lane's.
+
+1. **Which integration first**, and why — one vendor, not a category. Slack posts a message and needs one webhook; Salesforce is a bidirectional sync and is the largest thing on the list.
+2. **Which module owns the Integration Port**, or an RFC for a new one.
+3. **Where a per-workspace OAuth grant lives before M14.5.** This is the one that most looks like an engineering detail and is not — it is a security boundary (§13: a sign-in token is never an integration token).
+4. **How an adapter is validated without the vendor.** An outbound counterpart to the Provider Simulation Framework, or an explicit ruling that the first adapter ships unexercised.
+
+**Lane A has no recommendation on question 1** — it is a commercial judgement about which customer's workflow to enter first, and a lane that picked one would be choosing product direction.
+
+## A governance recommendation, recorded and not implemented
+
+**Ownership and execution should be separate columns on the board** (product owner, 2026-08-02). Recorded here because governance is QE's and the product owner's ([C-022](#c-022)).
+
+| | Changes | Example today |
+|---|---|---|
+| **Assigned modules** | Rarely. Survives waiting, survives a temporary reassignment elsewhere | Lane A owns `provider_platform`, suspended at PP-03 |
+| **Current execution** | Constantly. Determines whether a lane is busy | Whatever Lane A is actually building this hour |
+
+**Today the board conflates them**, so a lane that owns a suspended module and is working elsewhere has to choose which fact its row states — and either choice makes the other invisible. **The failure this prevents is a suspended module quietly disappearing** as the repository grows: nobody removes it, but nothing shows it either, and the next assignee inherits a module whose open slice is recorded only in a coordination item nobody re-reads.
+
+---
+
 ## Closed
 
 ## C-016 · Two branch names encode a permanent module assignment that no longer exists
