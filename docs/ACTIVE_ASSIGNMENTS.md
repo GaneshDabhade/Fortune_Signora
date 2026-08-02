@@ -64,14 +64,14 @@
 
 ---
 
-## Current — as of 2026-08-02, `2e70b0e`
+## Current — as of 2026-08-02, `e08c7cb`
 
 | Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Started |
 |---|---|---|---|---|---|---|---|---|
-| **Lane A** | **TASK-002 · TASK-004 · `provider_platform`** | `lane-a-product-surface` | Product Surface · Provider Platform | PS-01 · PS-02 · PP-01 · PP-02 · PP-04 · PP-05 · PP-06 | `IN VALIDATION` | — | **The next Release Candidate.** Rebase onto the promoted `2e70b0e` and push; QE pins immediately. **17 commits, ready for some time** | 2026-08-02 |
-| **Lane B** | **M7 — Timeline** *(implementation initiative, feature lead)* | `lane-b-commercial-profile` | `timeline` | S01–S04a | `IN VALIDATION` | — | **[B-023](BUGS.md) fixed and pushed — re-validation ready.** All four gates green: `tsc` clean, 488 frontend, build, eslint. The four slices are one candidate again | 2026-08-02 |
-| **Lane B** | **M13 — Integrations** *(implementation initiative)* | `lane-b-commercial-profile` | `integrations` | **S01 of 5** | `IN VALIDATION` | — | **S01 READY FOR QE** — Connected Account, Grant, execution context, migration `0027`, 34 import contracts, 38 tests. **Continuing to S02** (the connections surface) without waiting | 2026-08-02 |
-| **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | **Cycle 13 promoted (`2e70b0e`). 13 of 13 certified.** Next candidate is Lane A's, on push | 2026-08-01 |
+| **Lane A** | **TASK-002 · TASK-004 · `provider_platform`** | `lane-a-product-surface` | Product Surface · Provider Platform | PS-01 · PS-02 · PS-03 · PP-01 · PP-02 · PP-04 · PP-05 · PP-06 | `IN VALIDATION` | — | **The largest unreleased batch, and ready longest.** Rebase onto the promoted `e08c7cb` and push; QE pins on arrival | 2026-08-02 |
+| **Lane B** | **M13 — Integrations** *(feature lead)* | `lane-b-commercial-profile` | `integrations` | S01 **promoted** | `BLOCKED` | [C-025](LANE_COORDINATION.md) — two ratified rules conflict over who may run an OAuth flow | **Product decision.** The storage every adapter needs exists; the flow that fills it cannot be built until this is answered | 2026-08-02 |
+| **Lane B** | **M7 — Timeline** *(feature lead)* | `lane-b-commercial-profile` | `timeline` | S01–S04a **promoted** | `BLOCKED` | [C-024](LANE_COORDINATION.md) — the feed has nowhere to mount, and the route is Lane A's | **Product decision on placement**, then ten lines in Lane A's brief page | 2026-08-02 |
+| **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | **Cycle 14 promoted (`e08c7cb`). 14 of 14 certified.** Next candidate is whatever reaches `integration` first | 2026-08-01 |
 
 **Which lanes are available is the `Status` column above, and is not restated here** — a sentence beside a table is a second copy of one fact, and it drifted within an hour of being written (§2). **Unclaimed capacity:** lanes C, D and E ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).
 
@@ -95,6 +95,7 @@
 
 | Lane | Assignment | Promoted | Commit |
 |---|---|---|---|
+| B | **M13-S01** — a customer's connection to their own systems | 2026-08-02 | `e08c7cb` |
 | B | **M7 Timeline S01–S04a** — a seller can see what has happened to an account | 2026-08-02 | `048aeed` · `96bb5c0` · `7cb7fed` · `056a53a` |
 | B | B-023 — a guard that narrows, and the gate that caught it | 2026-08-02 | `2e70b0e` |
 | B | **TASK-005** — `state-check` learns the claims; the two registers must name the same holder | 2026-08-02 | `8da47b5` |
