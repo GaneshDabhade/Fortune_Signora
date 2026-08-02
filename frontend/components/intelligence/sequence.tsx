@@ -32,6 +32,26 @@ import type { AccountAttention, AccountIdentity } from '@/lib/api/types';
  * list — but its brief survives (**D27**). The sequence says it has no
  * position rather than inventing one.
  */
+/**
+ * The account after this one in the ranked order.
+ *
+ * **Exported so the decision dialog and this nav agree.** *Next* is a single
+ * rule — *next most pressing*, read from the same cached ranking the attention
+ * list holds — and two places computing it separately is how a product ends up
+ * offering a reader two different "next"s in one visit.
+ *
+ * `undefined` when this account is last, or is not on the list at all: a
+ * dismissed account keeps its brief and loses its position (**D27**), and the
+ * honest answer there is no next rather than the top of the list.
+ */
+export function nextInSequence(
+  accounts: AccountAttention[],
+  accountId: string,
+): AccountAttention | undefined {
+  const index = accounts.findIndex((account) => account.account_id === accountId);
+  return index >= 0 ? accounts[index + 1] : undefined;
+}
+
 export function AccountSequence({
   accountId,
   accounts,
@@ -44,7 +64,7 @@ export function AccountSequence({
 }) {
   const index = accounts.findIndex((account) => account.account_id === accountId);
   const previous = index > 0 ? accounts[index - 1] : undefined;
-  const next = index >= 0 ? accounts[index + 1] : undefined;
+  const next = nextInSequence(accounts, accountId);
 
   useAccountKeys({
     previous: previous?.account_id,

@@ -389,3 +389,102 @@ describe('who holds an account', () => {
     expect(screen.getByText(/nobody has taken it yet/)).toBeInTheDocument();
   });
 });
+
+describe('a decision is the end of the visit — R10-02', () => {
+  // "You have finished with this account and the product does not know it."
+  // The decision is the one moment the product can be certain the reader is
+  // done, and it used to close the dialog and do nothing else.
+
+  function next() {
+    return { name: 'Initech', go: vi.fn() };
+  }
+
+  function withNext(offer: { name: string; go: () => void }) {
+    return withQuery(
+      <WorkflowActions
+        opportunity={opportunity()}
+        workspaceId="eeeeeeee-5555-4555-8555-555555555555"
+        viewerId={VIEWER}
+        next={offer}
+      />,
+    );
+  }
+
+  async function dismiss(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole('button', { name: 'Not a real opportunity' }));
+    await user.type(screen.getByLabelText(/Why/), 'Wrong segment.');
+    await user.click(screen.getByRole('button', { name: 'Dismiss it' }));
+    await waitFor(() => expect(request).toHaveBeenCalled());
+  }
+
+  it('offers the next account once the decision is recorded', async () => {
+    const user = userEvent.setup();
+    request.mockResolvedValue({ stage: 'dismissed' });
+    render(withNext(next()));
+
+    await dismiss(user);
+
+    expect(await screen.findByRole('button', { name: /Next: Initech/ })).toBeVisible();
+  });
+
+  it('never navigates on its own', async () => {
+    // **Deliberately not an automatic redirect.** A page that navigates itself
+    // after you click something takes the reader's place away from them — and
+    // a decision is exactly when somebody wants to check what they wrote.
+    const user = userEvent.setup();
+    const offer = next();
+    request.mockResolvedValue({ stage: 'dismissed' });
+    render(withNext(offer));
+
+    await dismiss(user);
+
+    expect(offer.go).not.toHaveBeenCalled();
+  });
+
+  it('offers staying as a real choice', async () => {
+    const user = userEvent.setup();
+    request.mockResolvedValue({ stage: 'dismissed' });
+    render(withNext(next()));
+
+    await dismiss(user);
+
+    expect(await screen.findByRole('button', { name: 'Stay here' })).toBeVisible();
+  });
+
+  it('goes only when the reader says so', async () => {
+    const user = userEvent.setup();
+    const offer = next();
+    request.mockResolvedValue({ stage: 'dismissed' });
+    render(withNext(offer));
+
+    await dismiss(user);
+    await user.click(await screen.findByRole('button', { name: /Next: Initech/ }));
+
+    expect(offer.go).toHaveBeenCalledOnce();
+  });
+
+  it('closes with nothing to offer when this is the last account', async () => {
+    // An offer that goes nowhere is the affordance this surface refuses
+    // everywhere else, so with no next the dialog behaves exactly as before.
+    const user = userEvent.setup();
+    request.mockResolvedValue({ stage: 'dismissed' });
+    render(actions());
+
+    await dismiss(user);
+
+    expect(screen.queryByRole('button', { name: /^Next:/ })).toBeNull();
+  });
+
+  it('stops asking a question it has already been answered', async () => {
+    // A dialog that keeps its form after the decision is recorded invites a
+    // reader to answer twice, and the second attempt would be refused by a
+    // domain that is right to refuse it.
+    const user = userEvent.setup();
+    request.mockResolvedValue({ stage: 'dismissed' });
+    render(withNext(next()));
+
+    await dismiss(user);
+
+    expect(screen.queryByRole('button', { name: 'Dismiss it' })).toBeNull();
+  });
+});

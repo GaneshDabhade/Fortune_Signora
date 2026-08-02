@@ -466,3 +466,22 @@ The fix is not to duplicate the sentence. It moves onto the panel **only when no
 **It is also the product's central claim, on the one screen where it matters.** *Intelligence suggests; humans commit* — and until now the brief could not tell a reader which of the two had happened. **The wording protects that**: *"Signora suggested this"*, never *"Signora decided this"*, because the domain is explicit that an automatic qualification *"is still only a suggestion — the opportunity opens at `tracking`, which commits nobody."* Overstating it on the screen whose job is to let a seller disagree would be the worst place to do it.
 
 **Both facts, not one.** The stage says what is happening now; `opened_by` says why it started. Dropping the stage to make room would trade a current fact for a historical one.
+
+---
+
+## PS-04 — the decision is the end of the visit *(2026-08-02)*
+
+**R10-02**, and the first slice chosen by the *product-refinement* lens rather than the contract lens.
+
+> *"Take an account on: the dialog closes, the stage line changes, and the page is otherwise identical. **You have finished with this account and the product does not know it.** The decision is the one moment the product can be certain the reader is done — and it is the moment it does the least."*
+
+**Where the sequence at the foot of the page could not reach.** D41 put *next* where a reader finishes *reading*; R10-02 is about where a reader finishes *deciding*, which is a different moment and the more certain one.
+
+| Decision | Why |
+|---|---|
+| **An offer, never a redirect** | The finding is explicit: *a page that navigates itself after you click something takes the reader's place away from them, and a dismissal is exactly when somebody wants to check what they just wrote.* **Nothing moves until the reader says so**, and *Stay here* is a real choice rather than a dismissal affordance |
+| **Nothing offered when there is no next** | The dialog closes exactly as before. **An offer that goes nowhere** is what this surface refuses in citations, in workflow controls and in the sequence |
+| **Nothing offered when the name has not resolved** | *"Next: "* is worse than no offer. The sequence applies the same rule |
+| **The question stops being asked** | The dialog's title changes to the past tense and the form is replaced. A dialog that keeps its question after the question is answered invites a second answer, which the domain would rightly refuse |
+| **`nextInSequence` is exported and shared** | One definition of *next*, read from the same cached ranking. **Two places computing it separately is how a reader gets offered two different "next"s in one visit** (§2) |
+| **Navigation belongs to the page** | The component takes a name and a callback. Reaching for a router inside a presentational control would make every test of a decision mount an app router to assert wording — and `Button` has no `as`, so a styled link would mean restyling a frozen component (§20c) |

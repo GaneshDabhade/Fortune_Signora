@@ -2,7 +2,7 @@
 
 import { ArrowLeft, Scale } from 'lucide-react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 import {
   ContestedMark,
@@ -19,7 +19,7 @@ import { EntityName } from '@/components/intelligence/entity-name';
 import { EvidenceDrawer, useEvidenceDrawer } from '@/components/intelligence/evidence';
 import { NarrativeBlock } from '@/components/intelligence/narration';
 import { ResearchPanel } from '@/components/intelligence/research';
-import { AccountSequence } from '@/components/intelligence/sequence';
+import { AccountSequence, nextInSequence } from '@/components/intelligence/sequence';
 import { ValidationBlock } from '@/components/intelligence/validation';
 import {
   ContestedSince,
@@ -84,6 +84,7 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  */
 export default function AccountBriefPage() {
   const { accountId } = useParams<{ accountId: string }>();
+  const router = useRouter();
   const { activeWorkspace, isLoading: workspacesLoading } = useWorkspaceContext();
   const workspaceId = activeWorkspace?.id ?? null;
   // Only so the page can say *you* rather than an identifier, and assign an
@@ -124,6 +125,13 @@ export default function AccountBriefPage() {
 
   const notScored = error instanceof ApiError && error.status === 404;
 
+  // **Where the morning continues, offered at the moment a decision is made**
+  // (R10-02). The same ranking the sequence at the foot of the page uses, and
+  // the same rule — one definition of *next*, or a reader could be offered two
+  // different ones in a single visit.
+  const upNext = nextInSequence(ranked, accountId);
+  const upNextName = upNext ? rankedIdentities?.get(upNext.account_id)?.name : undefined;
+
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <BackToList />
@@ -152,6 +160,18 @@ export default function AccountBriefPage() {
                 opportunity={opportunity}
                 workspaceId={workspaceId}
                 viewerId={viewerId}
+                // **Named or not offered.** A row whose name has not resolved
+                // would read as *"Next: "* — the sequence below has the same
+                // rule, and an offer that cannot say where it goes is the
+                // affordance this surface refuses everywhere else.
+                {...(upNext && upNextName
+                  ? {
+                      next: {
+                        name: upNextName,
+                        go: () => router.push(`/accounts/${upNext.account_id}`),
+                      },
+                    }
+                  : {})}
               />
             </div>
           ) : null}

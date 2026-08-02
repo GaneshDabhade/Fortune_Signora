@@ -111,11 +111,20 @@ export function WorkflowActions({
   opportunity,
   workspaceId,
   viewerId,
+  next,
 }: {
   opportunity: AccountOpportunity;
   workspaceId: string | null;
   /** The signed-in user, so taking an account on can assign it to them. */
   viewerId: string | null;
+  /** Where the morning continues, if anywhere — a name to offer and a way to
+   * go there. **Omitted rather than defaulted**: an offer that goes nowhere is
+   * the failure this surface refuses everywhere else.
+   *
+   * **The navigation is the page's, not this component's.** Reaching for a
+   * router here would make a presentational control require one, and every
+   * test of a decision would have to mount an app router to assert wording. */
+  next?: { name: string; go: () => void } | undefined;
 }) {
   const [choice, setChoice] = useState<Stage | null>(null);
 
@@ -142,6 +151,7 @@ export function WorkflowActions({
         workspaceId={workspaceId}
         viewerId={viewerId}
         stage={choice}
+        next={next}
         onClose={() => setChoice(null)}
       />
     </div>
@@ -166,19 +176,23 @@ function DecisionDialog({
   workspaceId,
   viewerId,
   stage,
+  next,
   onClose,
 }: {
   opportunity: AccountOpportunity;
   workspaceId: string | null;
   viewerId: string | null;
   stage: Stage | null;
+  next?: { name: string; go: () => void } | undefined;
   onClose: () => void;
 }) {
   const [reason, setReason] = useState('');
+  const [recorded, setRecorded] = useState<Stage | null>(null);
   const decide = useRecordDecision(workspaceId, opportunity.account_id, opportunity.id);
 
   const close = () => {
     setReason('');
+    setRecorded(null);
     decide.reset();
     onClose();
   };
@@ -193,7 +207,11 @@ function DecisionDialog({
     if (stage === null || reason.trim() === '') return;
     decide.mutate(
       { stage, reason, ...(claiming ? { owner_id: viewerId } : {}) },
-      { onSuccess: close },
+      // **R10-02.** The decision is the end of the visit — the one moment the
+      // product can be certain the reader is done — and it used to close the
+      // dialog and do nothing else. With somewhere to go, it offers; with
+      // nowhere, it closes exactly as before.
+      { onSuccess: () => (next === undefined ? close() : setRecorded(stage)) },
     );
   };
 
@@ -201,9 +219,42 @@ function DecisionDialog({
     <Dialog
       open={stage !== null}
       onClose={close}
-      title={stage ? actionWording(opportunity.stage, stage) : ''}
-      description={claiming ? 'This account will be assigned to you.' : undefined}
+      title={
+        recorded
+          ? RECORDED_WORDING[recorded]
+          : stage
+            ? actionWording(opportunity.stage, stage)
+            : ''
+      }
+      description={
+        recorded === null && claiming ? 'This account will be assigned to you.' : undefined
+      }
       footer={
+        recorded !== null && next !== undefined ? (
+          <>
+            {/* **An offer, never a redirect.** A page that navigates itself
+                after you click something takes the reader's place away from
+                them — and a decision is exactly when somebody wants to check
+                what they just wrote. So *stay* is a real choice, listed
+                first, and nothing moves until they say so. */}
+            <Button variant="ghost" onClick={close}>
+              Stay here
+            </Button>
+            {/* **A button rather than a styled link**, because `Button` has
+                no `as` and `components/ui` is frozen (§20c) — restyling a
+                shared component for one caller is exactly what that rule
+                forbids. The same destination is a real link at the foot of the
+                page, where the sequence already offers it. */}
+            <Button
+              onClick={() => {
+                close();
+                next.go();
+              }}
+            >
+              Next: {next.name}
+            </Button>
+          </>
+        ) : (
         <>
           <Button variant="ghost" onClick={close} disabled={decide.isPending}>
             Cancel
@@ -217,8 +268,15 @@ function DecisionDialog({
             {stage ? CONFIRM_WORDING[stage] : ''}
           </Button>
         </>
+        )
       }
     >
+      {recorded !== null ? (
+        <p className="text-sm leading-6 text-content-muted">
+          Recorded against this account, with your name and the date. Your list has
+          moved on — the next most pressing account is below.
+        </p>
+      ) : (
       <form
         className="flex flex-col gap-3"
         onSubmit={(event) => {
@@ -236,6 +294,7 @@ function DecisionDialog({
           {...(decide.error ? { error: refusal(decide.error) } : {})}
         />
       </form>
+      )}
     </Dialog>
   );
 }
@@ -274,3 +333,19 @@ function refusal(error: unknown): string {
   }
   return 'This could not be recorded. Nothing has changed — try again.';
 }
+
+/**
+ * What was just recorded, said back in the past tense.
+ *
+ * **The title changes rather than a banner appearing.** A dialog that keeps
+ * its question after the question is answered invites a reader to answer it
+ * twice, and the second attempt would be refused by a domain that is right to
+ * refuse it.
+ */
+const RECORDED_WORDING: Record<Stage, string> = {
+  tracking: 'Back to tracking',
+  engaged: "You're working this",
+  closed_won: 'Recorded as won',
+  closed_lost: 'Recorded as lost',
+  dismissed: 'Dismissed',
+};
