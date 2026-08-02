@@ -2396,3 +2396,23 @@ Two scenarios were **excluded on principle rather than on effort**, and the reas
 
 **Status: `ANSWERED`. What remains before implementation is one 🔴 ratification** — the fifteenth entry in [04-modules.md](architecture/04-modules.md), drafted in ADR-0040 §10 and a paste away. **Lane B will not add it**; a lane writing itself a new bounded context is the one change ⚫ forbids outright.
 
+
+### Lane B ownership audit — 2026-08-02, before beginning N-01
+
+**Product owner's direction: resolve everything executable and Lane-B-owned before expanding into a new module.** Run in full; recorded because *"I checked and there was nothing"* is only useful if it says what was checked.
+
+| Surface | Result |
+|---|---|
+| **Bugs assigned to Lane B** | **One was executable and is now resolved.** [B-020](BUGS.md) was `OPEN` and had **already been fixed** inside [TASK-005](BACKLOG.md), with its regression test, and the register had lagged the fix by a day. Verified from the original steps rather than the diff, and the row now reads `FIXED`. [B-023](BUGS.md), [B-024](BUGS.md) and [B-027](BUGS.md) are `FIXED` awaiting QE's `VERIFIED`, which a lane may not set |
+| **Open bugs in modules Lane B holds** | **None.** Every other `OPEN` row belongs to QE, Lane A, or the unassignable set under [C-010](#c-010--no-lane-is-assignable-to-apps-or-signora_platform-and-a-defect-is-sitting-in-one) |
+| **Coordination items Lane B raised** | **Fourteen. None closeable today.** [C-001](#c-001--the-target-account-contract) is the only one whose closure is Lane B's to perform, and its condition is not met: it closes when *both* lanes have implemented, and `provider_platform` still contains no `target_accounts_changed` consumer while [B-004](BUGS.md) remains `OPEN`. **Left open, correctly** |
+| **Backlog** | [TASK-001](BACKLOG.md) and [TASK-005](BACKLOG.md) are complete and `READY FOR QE`. `DONE` is QE's at promotion |
+| **QE feedback** | None outstanding against Lane B. The cycle-18 `CHANGES REQUESTED` was B-024, resolved in M13-S09 and **promoted** at `bd57c7c` |
+| **Documentation** | [41-integrations.md](architecture/41-integrations.md) created at the M13 pause; [ADR-0040](architecture/adr/0040-notifications.md) proposed. No module Lane B holds has documentation lagging its implementation |
+
+**Deliberately not duplicated:** QE reviewed all fourteen product-owner dependencies individually earlier the same session (`0632680`) and closed two. **Re-running that review would be a second opinion nobody asked for**, and the register's value is that one authority reconciles it.
+
+**One finding, reported rather than edited.** [B-003](BUGS.md) still names **Integrator** as its owner — a role abolished on 2026-08-01 and folded into QE. QE corrected the same staleness on C-004 and C-008 in `0632680` and this row was missed. **Lane B has not changed it**: rewriting another row's owner is reconciliation, which is QE's, and a register naming a role that no longer exists is a register nobody can act on.
+
+**Conclusion: Lane B's release path is clear.** Everything owned is either resolved, or resolved and awaiting a status only QE may set.
+

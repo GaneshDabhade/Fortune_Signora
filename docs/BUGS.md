@@ -514,7 +514,7 @@ python3 infra/kpi.py | grep Coordination      # 18 · 3 closed
 | **Module** | Repository tooling — `infra/state-check.py`, rule 5c(a) |
 | **Current assignee** | **Lane B**, inside [TASK-005](BACKLOG.md) — that task is *"`state-check` learns the backlog"*, and this is the same code |
 | **Severity** | 🟡 — advisory output only, but it is the failure mode that teaches people to ignore an advisory |
-| **Status** | `OPEN` |
+| **Status** | **`FIXED`** — Lane B, in [TASK-005](BACKLOG.md) (`8da47b5`). **The register lagged the fix; corrected 2026-08-02** during a Lane B ownership audit. **`VERIFIED` is QE's to set** |
 | **Found** | 2026-08-02, by QE, writing a board row that explained which tasks Lane B could **not** claim |
 
 **Steps to reproduce.** Put a task id in a row's `Next action` cell for a lane that does not hold it, then:
@@ -531,6 +531,21 @@ python3 infra/state-check.py
 **Fix.** Read the `Task` column only: split the row on `|` and take the second field, exactly as the lane name is already taken from the first. The prose in the remaining cells is explanation, not assertion.
 
 **Why it is worth fixing rather than working around.** The board's own rule is *"a row names a `TASK-nnn`"* precisely so that *"are these the same task?"* is a fact. **A checker that punishes precise prose pushes rows toward vague prose**, which costs the board the property the ids were introduced to give it — and today's workaround was exactly that: the ids were removed from Lane B's cell to silence a check that was wrong.
+
+### Fix — Lane B, `8da47b5`. The register lagged it; audited and corrected 2026-08-02.
+
+**Fixed as written**, inside TASK-005 and in the same code. `_board_claims` reads **`cells[2]` — the `Task` column — and nothing else**, so prose in `Next action` is explanation rather than assertion, which is what the bug asked for.
+
+**Regression test:** `backend/tests/test_claim_agreement.py::TestTheBoardIsReadByColumn::test_a_next_action_referencing_another_task_is_not_a_claim`, which is the reported reproduction verbatim — a `CLAIMED` row for `TASK-005` whose `Next action` reads *"blocked behind TASK-009"*. 16 tests in the file, all passing.
+
+**Verified from the original steps rather than the diff**, using the exact arrangement the report describes — a row saying *"Lane A holds TASK-002, which is why I am idle"*:
+
+```
+board claims: {'002': {'Lane A'}, '005': {'Lane B'}}
+contested   : none
+```
+
+**Why this row stayed `OPEN` for a day after being fixed, recorded because it is the interesting part.** TASK-005's commit carried the fix and its test but **did not update this row**, because the row is filed under repository tooling and the task was filed under `state-check`. **A defect and the task that fixes it are not the same record**, and closing one does not close the other — which is precisely the gap a per-lane ownership audit exists to catch, and the reason this one is now part of Lane B's routine before starting new work.
 
 ---
 
