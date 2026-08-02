@@ -23,7 +23,7 @@
 | **Latest certification** | ✅ [`f6691728aaf9`](../certification/reports/f6691728aaf9.md) — **CERTIFIED 2026-08-02**, bound to migration head `0025` and protocol v2. Every gate green |
 | **Phase** | **Product implementation.** Ten pipeline stages built and frozen behind them; the surface is being exposed |
 | **Overall completion** | **~66%** by engineering effort — see [PROJECT_STATUS.md](../PROJECT_STATUS.md) |
-| **Branch** | `main`, `integration` and `lane-qe` all at `6aadea9`, clean, pushed |
+| **Branch** | `main` and `lane-qe` at the certified baseline, clean, pushed. **`integration` is one slice ahead** — R2-01, validated by Lane A and **not yet by QE**. That is the next cycle's stage 1, and the reason a new slice starts by rebasing rather than by assuming |
 
 **🔴 Read this before anything else:** **`reasoning@1` has no released model.** M9.5 moved the rendering protocol to v2, which withdrew every protocol-1 release by derivation. `explanation_narration@1`, `research_planning@2` and `research_synthesis@2` re-earned theirs; `reasoning@1` did not — `granite3.3:2b` refuses under protocol 2 and `llama3.1:8b` is UNMEASURABLE on this hardware. **The Decision Package stage would refuse in production.** Do not tune the prompt, the delimiter, the schema or the timeout to make it pass.
 
@@ -44,11 +44,11 @@
 | | |
 |---|---|
 | **Certification** | ✅ **CERTIFIED** — [`f6691728aaf9`](../certification/reports/f6691728aaf9.md), bound to migration head `0025`. It expires by derivation the moment a migration, a prompt release, the rendering protocol or the scenario set changes |
-| **Active lanes** | [ACTIVE_ASSIGNMENTS.md](ACTIVE_ASSIGNMENTS.md) — the execution board, and the only authoritative answer to *who is doing what*. **Lane B is `AVAILABLE`** |
+| **Active lanes** | [ACTIVE_ASSIGNMENTS.md](ACTIVE_ASSIGNMENTS.md) — the execution board. **Both feature lanes are `AVAILABLE`**: Lane A finished R2-01 and Lane B finished M12.5. **QE assigns; a lane does not claim** |
 | **Open blockers** | [C-010](LANE_COORDINATION.md) — no lane is assignable to `apps/`, `signora_platform/` or repository process. **Three defects landed in that gap this cycle** ([B-007](BUGS.md), [B-012](BUGS.md), [B-013](BUGS.md)); the last was fixed only because the product owner directed QE to touch it. [C-012](LANE_COORDINATION.md)/[C-013](LANE_COORDINATION.md) wait on RFCs queued since M3A |
 | **Open defects** | [BUGS.md](BUGS.md) — **0 open 🔴.** Six rows are `FIXED` awaiting verification, and **[B-009](BUGS.md) and [B-013](BUGS.md) may not be closed by QE**, which fixed them |
 | **Pending work** | M12.3 list hierarchy (D20) · R2-01 · **M9.5 Step F** · [B-010](BUGS.md) — nothing narrates in the Playground, so M12.3's headline feature cannot be demonstrated · `reasoning@1` still has no released model (below) |
-| **Recommendations** | Rule [C-010](LANE_COORDINATION.md) first — it is the constraint that bound hardest this cycle. Then verify the two QE fixes, then allocate Lane B |
+| **Recommendations** | **Validate and promote R2-01 first** — it is sitting on `integration` unvalidated. Then rule [C-010](LANE_COORDINATION.md), the constraint that bound hardest this cycle. Then choose an option for [C-008](LANE_COORDINATION.md), whose proposal is accepted and waiting. Then allocate both lanes |
 | **Before your first slice** | **Rebase onto `integration`.** It was rewritten on 2026-08-02 to reconcile a merge commit on `main` ([B-012](BUGS.md)); a lane branch created before that will not fast-forward |
 | **Tooling** | `make` was absent from this workstation and was installed 2026-08-02 ([B-011](BUGS.md), [RUNNING.md](RUNNING.md)). **A missing prerequisite is installed, not worked around** (`CLAUDE.md` §20e). **Export all three lane database variables before `make certify`** — without them it measures the shared default and reports different numbers |
 
