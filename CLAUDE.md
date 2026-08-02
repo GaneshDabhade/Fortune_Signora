@@ -597,7 +597,7 @@ promoted commit SHA  ==  certified commit SHA
 
 - **[`docs/BACKLOG.md`](docs/BACKLOG.md) is the authoritative work queue**, in priority order, and **the queue order *is* the priority.** The product owner owns it. **Every task carries a permanent `TASK-nnn`**, and every other document refers to work by that id rather than by its title.
 - **A lane may claim only a `READY` item.** `WAITING` needs somebody to answer; `BLOCKED` needs somebody to build. Neither is claimable, and both are listed so nothing disappears.
-- **Claim before implementing, by the Task Claim Protocol below.** The claim is a **standalone commit, pushed**, and it is not yours until you have pulled and confirmed nobody beat you to it. **A claim nobody can see is two lanes about to build the same thing.**
+- **Claim before implementing, by the Task Claim Protocol below.** The claim is a **standalone commit, pushed to `integration`**, and it is not yours until you have pulled and confirmed nobody beat you to it. **A claim nobody else can see is two lanes about to build the same thing** — which is why it goes to the ref every lane pulls, not to your own.
 - **Claim from the top.** If the top item cannot be taken — it needs a module another lane is inside, or a decision nobody has made — **say so in its backlog note and take the next one.** Skipping quietly is re-prioritizing, and priority is not a lane's to hold.
 - **A lane never reorders, reprioritizes, removes, or inserts `READY` work without the product owner.** It may claim, it may record why it skipped the first `READY` task, and it may move a task it holds through the lifecycle. A defect goes to [`BUGS.md`](docs/BUGS.md), a dependency to [`LANE_COORDINATION.md`](docs/LANE_COORDINATION.md), and anything else is a conversation with the product owner.
 - **QE writes nothing in the backlog and allocates nothing.** At Closeout it reconciles the *board* — removing what has been promoted — and stops there.
@@ -620,7 +620,7 @@ promoted commit SHA  ==  certified commit SHA
 | 4 | **Select** | The **highest** `READY` task that has **no active assignee**, **no unmet dependency**, and **is not already claimed** |
 | 5 | **Record the claim** | Update **only your own row** in [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md), naming the `TASK-nnn`, and mark the task `CLAIMED` in the backlog |
 | 6 | **Commit it alone** | **A standalone commit containing nothing but the claim.** `Claim TASK-002 — <title>` |
-| 7 | **Push** | `git push origin <lane-branch>`. **This is the moment the claim exists** |
+| 7 | **Push the claim to `integration`** | `git checkout integration && git merge --ff-only <lane-branch> && git push origin integration`, then push your lane branch. **This is the moment the claim exists** — and it must exist *where every other lane will look* |
 | 8 | **Pull and rebase again** | `git pull --rebase origin integration`, and look at what came back |
 | 9 | **If somebody else claimed it first** | **Abandon your claim** — drop the commit, return to step 3, take the next eligible task. **Do not negotiate, do not split the task, do not proceed in parallel** |
 | 10 | **Only now, implement** | A successful claim is recorded *and* synchronized. Not before |
@@ -630,6 +630,10 @@ promoted commit SHA  ==  certified commit SHA
 **Why a standalone commit.** A claim mixed into an implementation commit cannot land before the implementation, so it cannot arbitrate anything — it announces a decision already acted on. **Alone, it is cheap to abandon**: `git reset --hard origin/integration` costs nothing when nothing was built on it.
 
 **Why step 8 is not optional.** A push proves your claim was written; it does not prove it was *first*. Step 8 is where you learn, and step 9 is what you do about it. **A lane that pushes and starts building has not run this protocol** — it has recorded a claim and assumed it won.
+
+> **Why the claim goes to `integration` and not only to the lane branch** (corrected 2026-08-02, after watching it fail). **`integration` is the one ref every lane pulls** — it is step 1 of Startup. A claim pushed only to `lane-a-product-surface` is invisible to every other lane, so the queue still reads as unclaimed and **the race the protocol exists to prevent is still open.** Observed live: two lanes ran the protocol exactly as written, one claim reached `integration` and the other did not, and the second task sat there looking free while somebody was building it.
+>
+> **This is the one thing a feature lane may push to `integration`**, and it is bounded so tightly that a machine checks it: **a claim commit touches [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) and [`BACKLOG.md`](docs/BACKLOG.md) and nothing else.** A commit calling itself a claim while carrying code is refused by `infra/certification-guard.py --audit-claims`. Everything else still arrives on `integration` the same way it always has: QE fast-forwards a validated lane branch.
 
 **Losing a race costs one commit and no code.** That is the entire point of the ordering, and it is why the protocol reads as more ceremony than it costs.
 
@@ -705,7 +709,7 @@ Together these appear in roughly two thirds of all commits. **A lane does not ed
 | Branch | Lifetime | Who moves it |
 |---|---|---|
 | `main` | Permanent. **Every commit on it was individually certified** | **QE only**, fast-forwarded to a **certified SHA** |
-| `integration` | Permanent. Where lanes meet. **It keeps moving during certification, deliberately** | **QE only.** A lane rebases and pushes; **QE performs the fast-forward** |
+| `integration` | Permanent. Where lanes meet. **It keeps moving during certification, deliberately** | **QE**, for all work. **A lane may fast-forward it with a claim-only commit** — that is the arbitration point, and it is the only exception |
 | `lane-*` | **Permanent name, one slice of content.** Reset to `integration` after every merge | Its own session only |
 
 > **The lane still rebases and still resolves its own conflicts; QE performs the fast-forward.** This is the reading that satisfies both rules at once, and it is not a compromise: **a fast-forward after a clean rebase has no conflicts by construction**, so QE never adjudicates code it did not write, and every arrival on `integration` still passes through one authority. A lane that hands QE a branch which will not fast-forward has not finished step 4.

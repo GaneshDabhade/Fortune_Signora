@@ -28,6 +28,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from registers import bug_rows, malformed_tables  # noqa: E402
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MIGRATIONS = REPO_ROOT / "backend" / "migrations" / "versions"
 
@@ -168,12 +171,28 @@ def main() -> int:
         )
 
     # 4 — the one blocking rule.
-    open_section = bugs.split("## Verified")[0] if "## Verified" in bugs else bugs
-    if "🔴" in open_section and "| 🔴 | Blocks a milestone |" not in open_section:
+    #
+    # This check used to ask whether "🔴" appeared anywhere above the Verified
+    # section, minus a legend row. The legend is *always* there, so the condition
+    # was never true and **the one rule that blocks a promotion was never
+    # checked** — Decorative Logic (§2), found by a KPI tool disagreeing with it.
+    # The parsing now lives in `registers.py`, so the two tools cannot drift apart
+    # about what "blocking" means.
+    rows = bug_rows(bugs)
+    for row in rows:
+        if row.malformed:
+            findings.append(
+                f"{row.identifier} has no Severity or no Status row. Every row carries "
+                f"both, and a row missing one cannot be reasoned about."
+            )
+    blocking = [row.identifier for row in rows if row.blocks_promotion]
+    if blocking:
         findings.append(
-            "BUGS.md appears to carry an open 🔴. `integration` never fast-forwards "
-            "to `main` with one open."
+            f"BUGS.md carries {len(blocking)} unresolved 🔴 ({', '.join(blocking)}). "
+            f"`integration` never fast-forwards to `main` with one open (CLAUDE.md §20e)."
         )
+    else:
+        notes.append(f"No unresolved 🔴 across {len(rows)} bug row(s) — promotion is not blocked.")
 
     # 5 — the handoff is the cold-start document; a dashboard newer than it
     #     means a session would resume from the older of the two.
@@ -239,6 +258,25 @@ def main() -> int:
             ready = len(re.findall(r"^### TASK-\d+", backlog, re.M))
             notes.append(
                 f"Backlog: {len(known)} task(s), {ready} READY, no task claimed twice."
+            )
+
+    # 5d — structural corruption in a register, which no gate reads.
+    #
+    # A malformed table survived four certifications on `main`: a reconciliation
+    # script stranded a header, leaving `---|---|` with no `| | |` above it and a
+    # second Status row inside one bug. Nothing failed, because gates read code.
+    for name, text in (
+        ("docs/BUGS.md", bugs),
+        ("docs/LANE_COORDINATION.md", coordination),
+        ("docs/BACKLOG.md", backlog),
+        ("docs/ACTIVE_ASSIGNMENTS.md", assignments),
+    ):
+        orphans = malformed_tables(text)
+        if orphans:
+            findings.append(
+                f"{name} has a malformed table at line(s) "
+                f"{', '.join(str(n) for n in orphans[:5])} — a separator with no header "
+                f"row above it. Usually the residue of a merge that split a section."
             )
 
     # 6 — a coordination register that only grows has become a discussion log.

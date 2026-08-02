@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: smoke smoke-keep dr up down test certify certified doc-drift state-check demo demo-seed demo-users demo-narrate eval eval-reasoning eval-research
+.PHONY: smoke smoke-keep dr up down test certify certified kpi doc-drift state-check demo demo-seed demo-users demo-narrate eval eval-reasoning eval-research
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
 # The executable bit is filesystem state, not repository state, and it does
@@ -130,6 +130,17 @@ doc-drift:
 ##     make certified ARGS="--audit-main"   # the guarantee, across the branch
 certified:
 	@python3 ./infra/certification-guard.py $(ARGS)
+
+## Engineering KPIs, derived from the repository rather than reported about it.
+##
+## Every figure comes from the certification manifest, git history and the
+## registers — nothing is entered by hand, for the same reason no gate result is.
+## They measure how the process runs, never whether the software is correct.
+##
+##     make kpi
+##     make kpi ARGS="--markdown"      # the block PROJECT_STATUS.md carries
+kpi:
+	@python3 ./infra/kpi.py $(ARGS)
 
 ## Advisory: do the governance documents agree with the repository?
 ## Run at Repository Closeout, before declaring Repository Ready (CLAUDE.md

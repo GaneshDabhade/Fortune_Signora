@@ -145,21 +145,6 @@ The cost is also asymmetric: a full re-fetch after the fix recovers it, but ever
 
 **The fix, for whoever takes it.** `subject` joins the unique constraint and the lookup. The domain already carries the subject on every `ProviderRequest`, so nothing above the repository changes — it is a migration and a widened `where`. The same slice must build the consumer, per *Fix belongs to* above.
 
----|---|
-| **Owner** | Lane A — `provider_platform` |
-| **Severity** | 🟠 — unreachable today, 🔴 the moment a workspace watches two accounts |
-| **Status** | `OPEN` |
-| **Found** | `fba0647`, while answering `C-001` |
-
-**Steps to reproduce.** Not reproducible today: nothing supplies a `subject` outside the simulation, and every scenario syncs one. It becomes reproducible the moment Commercial Profile's target-account list has two entries and Provider Platform consumes it.
-
-**Expected.** Each watched account has its own incremental position, so syncing one does not affect what another fetches next.
-
-**Actual.** `uq_provider_watermark_scope` is `(workspace_id, provider, capability)` — **there is no `subject`.** One watermark covers every account in a workspace for a given provider and capability, so syncing account A advances the position account B then reads, and B's next sync skips everything before that point. A customer would see one account richly enriched and another mysteriously thin, with nothing in the product explaining the difference.
-
-**Why it has never bitten.** `RunProviderSync` has taken a `subject` since M2.1 and **nothing has ever supplied one** except the Provider Simulation Framework, which syncs the scenario's subjects through a single workspace and never re-reads a watermark across two of them in a way that would show it.
-
-**The fix, for whoever takes it.** `subject` joins the unique key and the lookup. It is a migration and a widened `where` — the domain already carries the subject on every request, so nothing above the repository changes. **The same slice must build the `target_accounts_changed` consumer**, because that is what makes the defect reachable and it would be dishonest to fix one without the other.
 
 ---
 

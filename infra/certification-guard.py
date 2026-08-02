@@ -144,6 +144,113 @@ def _is_closeout(commit: str) -> tuple[bool, list[str]]:
     return (not offending and bool(changed)), offending
 
 
+# A claim commit is the one thing a feature lane may push to `integration`, so it
+# is bounded to the two registers. Anything else in it is code arriving on a
+# shared branch without a gate.
+CLAIM_PATHS = ("docs/ACTIVE_ASSIGNMENTS.md", "docs/BACKLOG.md")
+
+
+def _claim_commits(rev_range: str) -> list[str]:
+    return _git("rev-list", "--reverse", rev_range, "--grep=^Claim TASK-").splitlines()
+
+
+def _audit_claims() -> int:
+    """Every claim commit on `integration` touches the registers and nothing else."""
+    commits = _claim_commits("main..integration") + _claim_commits(
+        f"{RULE_RATIFIED_AT}..main"
+    )
+    if not commits:
+        print("audit — no claim commits to check.")
+        return 0
+
+    violations: list[tuple[str, str, list[str]]] = []
+    for commit in commits:
+        changed = [
+            line
+            for line in _git("show", "--name-only", "--format=", commit).splitlines()
+            if line
+        ]
+        offending = [path for path in changed if path not in CLAIM_PATHS]
+        if offending:
+            violations.append((commit[:7], _git("log", "-1", "--format=%s", commit), offending))
+
+    print(f"audit — {len(commits)} claim commit(s)\n")
+    if not violations:
+        print(
+            "  every one touches only ACTIVE_ASSIGNMENTS.md and BACKLOG.md.\n\n"
+            "A claim is the one thing a feature lane may push to `integration`, and\n"
+            "none of them carried anything else."
+        )
+        return 0
+
+    print(f"REFUSED — {len(violations)} claim commit(s) carried more than a claim:\n")
+    for short, subject, offending in violations:
+        print(f"  · {short}  {subject}")
+        for path in offending[:5]:
+            print(f"      also changed {path}")
+    print(
+        "\n  A claim is bounded so that a lane may push it to a shared branch.\n"
+        "  Code reaches `integration` by QE fast-forwarding a validated lane branch."
+    )
+    return 1
+
+
+def _next_cycle() -> int:
+    """What is waiting for certification, and whether it is worth a cycle.
+
+    **Not every advance of `integration` deserves one.** A claim commit changes
+    two registers and nothing a gate could fail on, so certifying it burns a full
+    gate run — seven minutes of build, suite, smoke and scenario — to prove that
+    a row in a markdown table is still true. **That is how a team learns to skip
+    cycles**, which is the habit the whole model depends on not forming.
+
+    So this answers the real question — *is there anything to certify?* — rather
+    than the mechanical one, *has the branch moved?*
+    """
+    pending = _git("rev-list", "--reverse", "main..integration").splitlines()
+    if not pending:
+        print("Repository Ready — `integration` == `main`. Nothing awaits certification.")
+        return 0
+
+    claims: list[str] = []
+    substantive: list[str] = []
+    for commit in pending:
+        changed = [
+            line
+            for line in _git("show", "--name-only", "--format=", commit).splitlines()
+            if line
+        ]
+        subject = _git("log", "-1", "--format=%s", commit)
+        if changed and all(path in CLAIM_PATHS for path in changed):
+            claims.append(f"{commit[:7]}  {subject}")
+        else:
+            substantive.append(f"{commit[:7]}  {subject}")
+
+    print(f"`integration` is {len(pending)} commit(s) ahead of `main`.\n")
+    if claims:
+        print(f"  {len(claims)} claim(s), changing nothing a gate can fail on:")
+        for line in claims:
+            print(f"    · {line}")
+    if substantive:
+        print(f"\n  {len(substantive)} substantive commit(s):")
+        for line in substantive:
+            print(f"    · {line}")
+
+    if not substantive:
+        print(
+            "\nNo cycle needed. Claims ride to `main` inside the next certified\n"
+            "snapshot; certifying them alone would spend a full gate run proving a\n"
+            "markdown table is still true."
+        )
+        return 0
+
+    print(
+        f"\nCERTIFICATION CYCLE AVAILABLE — snapshot at "
+        f"{_git('rev-parse', 'integration')[:7]} and begin at stage 0."
+    )
+    return 0
+
+
 def _audit_main() -> int:
     """Every commit on `main` since the rule reached it inside a certified snapshot.
 
@@ -220,10 +327,24 @@ def main() -> int:
         action="store_true",
         help="walk every commit on `main` since the rule and prove the guarantee holds",
     )
+    parser.add_argument(
+        "--audit-claims",
+        action="store_true",
+        help="a lane may push a claim to `integration` and nothing else — check that it did",
+    )
+    parser.add_argument(
+        "--next-cycle",
+        action="store_true",
+        help="is there anything on `integration` worth certifying, and what is it?",
+    )
     args = parser.parse_args()
 
     if args.audit_main:
         return _audit_main()
+    if args.audit_claims:
+        return _audit_claims()
+    if args.next_cycle:
+        return _next_cycle()
 
     target = _git("rev-parse", args.commit)
     if not target:

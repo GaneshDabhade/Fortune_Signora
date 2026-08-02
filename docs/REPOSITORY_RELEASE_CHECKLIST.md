@@ -53,6 +53,16 @@ git checkout <lane-branch> && git pull --ff-only
 git merge-base --is-ancestor integration HEAD && echo "rebased: will fast-forward"
 ```
 
+### Is a cycle warranted at all?
+
+```bash
+make certified ARGS="--next-cycle"
+```
+
+**Not every advance of `integration` deserves a cycle.** A claim commit changes two registers and nothing a gate can fail on; certifying it spends a full gate run proving a markdown table is still true, **which is how a team learns to skip cycles.** If the only pending commits are claims, stop here — they ride to `main` inside the next certified snapshot.
+
+- [ ] `--next-cycle` reports at least one **substantive** commit
+
 ### Take the Certification Snapshot
 
 ```bash
@@ -267,6 +277,8 @@ git push origin main integration <idle-lane-branches>
 ```bash
 make certified                                # is `main`'s head certified, or a checked Closeout?
 make certified ARGS="--audit-main"            # the guarantee, across every commit since ratification
+make certified ARGS="--audit-claims"          # every lane claim on `integration` carried only a claim
+make kpi                                      # refresh the engineering KPI panel
 python3 infra/state-check.py                  # advisory: do the documents agree with the repository?
 
 # what is waiting for the next cycle, and there is never any doubt:
@@ -276,6 +288,8 @@ git log --oneline "$CERT_SHA"..integration
 
 - [ ] **`make certified` confirms `main`** — certified, or a Closeout commit that provably changes nothing executable
 - [ ] **`make certified ARGS="--audit-main"` reports zero violations** — *every* commit on `main` since ratification, not just the head
+- [ ] **`make certified ARGS="--audit-claims"` reports zero violations** — no lane pushed anything but a claim to `integration`
+- [ ] **`make kpi ARGS="--markdown"` refreshed into `PROJECT_STATUS.md`** — derived, never typed
 - [ ] **The next cycle's input is identified, and begun if there is any** — `integration` versus the certified SHA. Differ → **start the next cycle at stage 0**, and its input is exactly the commits between them. Identical → nothing is awaiting certification, and QE is idle until a lane pushes
 - [ ] **No lane is waiting on QE.** An `AVAILABLE` lane claims from [`BACKLOG.md`](BACKLOG.md) without asking; if anything in the records implies otherwise, that is the bottleneck this model removed
 - [ ] `state-check` run and every finding resolved or consciously accepted — **it reports, it never repairs, and each finding has more than one correct resolution**

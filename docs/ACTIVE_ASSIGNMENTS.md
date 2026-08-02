@@ -71,7 +71,7 @@
 | **Lane B** | **[TASK-001](BACKLOG.md#task-001--verify-the-three-fixes-qe-may-not-close)** | `lane-b-commercial-profile` | Repository — documentation, `infra/`, production image | one slice | `CLAIMED` | — | Reproduce [B-009](BUGS.md), [B-013](BUGS.md) and [B-014](BUGS.md) from a clean shell, **from the original steps, never from the diff** | 2026-08-02 |
 | **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | Idle until a lane pushes work to `integration`. **QE's turn begins there** | 2026-08-01 |
 
-**Available lanes:** **Lane A and Lane B — both, and neither is waiting on anybody.** An `AVAILABLE` lane claims its next slice from [`BACKLOG.md`](BACKLOG.md) and starts. **Unclaimed capacity:** lanes C, D and E ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).
+**Which lanes are available is the `Status` column above, and is not restated here** — a sentence beside a table is a second copy of one fact, and it drifted within an hour of being written (§2). **Unclaimed capacity:** lanes C, D and E ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).
 
 **QE's row is permanent** and is never removed — it is the one row that outlives its own completion, because the responsibility is the repository rather than a slice inside it. **QE claims nothing and is claimed by nothing.**
 
