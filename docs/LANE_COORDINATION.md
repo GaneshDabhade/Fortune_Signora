@@ -1025,3 +1025,86 @@ That is exactly `CLAUDE.md` §6: **a port belongs to the module that owns the la
 **What is executable today, if the product owner wants Lane B building rather than waiting.** The **inbound** half needs no OAuth and no new consumer: CRM activity and calendar/email engagement as an **observation source** flows into Observation Engine and Business Event Engine, which are built. It still needs decision 1 for real credentials — but it can be built and proven against a simulator first, which is the same order the pipeline itself was built in.
 
 **Lane B has written no M13 code** and has not created `modules/integrations/`.
+
+---
+
+### Architecture review — Lane B, 2026-08-02, at the product owner's direction
+
+*The product owner asked Lane B to prove or disprove its own finding rather than assume it. **The finding survives, but not for the reason first given** — and the strongest counter-argument had to be tested first.*
+
+#### The counter-argument, tested and answered
+
+**Provider Platform *is* a module** (`modules/provider_platform/`), it owns the Provider Abstraction Layer, and its vendor adapters live inside it at `infrastructure/adapters/`. By symmetry, Integrations could be a module owning the Integration Abstraction Layer, and C-025's original reasoning — *"a port belongs to the consuming module"* — would prove too much: it would forbid Provider Platform too.
+
+**So the argument from §6 alone is not sufficient.** What separates them is in the ratified text, one row of [13-integrations.md](architecture/13-integrations.md)'s own comparison table:
+
+| | Provider Abstraction Layer | Integration Abstraction Layer |
+|---|---|---|
+| **Orchestrated/consumed by** | **Provider Platform** (registry, credentials, scheduling) | **Any module needing to push/sync data externally** |
+
+**Providers have a named orchestrator. Integrations are ratified as having none.** Principle 9 describes a layer *and* the module that runs it; Principle 11 describes *"the same ports-and-adapters approach"* and names no owner. That is the distinction, and it is deliberate rather than an omission.
+
+#### Why there is no single orchestrator to build
+
+Provider Platform has **one verb**: *fetch what this supplier knows about this subject*. Every provider does the same thing, which is what makes a registry, a watermark, a health record and one port coherent.
+
+**Integration has no single verb.** Push an opportunity to Salesforce · post a message to Slack · read a calendar · send an email · pull CRM activity. Those are five languages owned by five different modules, and a context that owned all of them would own none of their vocabulary.
+
+> **A module needs a ubiquitous language. *"Talks to a third party"* is not one — it is a direction of travel.**
+
+#### The axis that actually splits M13, and it is ratified
+
+[04-modules.md:153](architecture/04-modules.md) already states it, and calls it permanent:
+
+> *"A customer connects **their own** Salesforce, Gmail or calendar, because those are the customer's systems. A company-intelligence provider is **Signora's supplier**, and the distinction is permanent."*
+
+**So the split is by whose credential it is and which way the data flows — never by vendor.** Cut that way, M13 is three things with three different owners:
+
+| # | What it is | Who owns it | State |
+|---|---|---|---|
+| **1** | **Inbound customer-system data** — CRM activity, email engagement, calendar meetings *as an observation source* | **Provider Platform**, extended | **Executable.** Architecturally a provider whose credential is the customer's. Everything already built applies: the port, watermarks, retry, health, circuit-breaking — **and the entire Provider Simulation Framework, whose seam is that same port** |
+| **2** | **Outbound delivery** — an opportunity into Salesforce, a recommendation into Slack, a meeting onto a calendar | **The delivering module**, port in its `domain/`, adapters in its `infrastructure/` — exactly as [13-integrations.md](architecture/13-integrations.md) specifies | **Blocked, and not on architecture.** Recommendation Engine is deferred and Revenue Intelligence Platform is not started. There is no module to hang the port on |
+| **3** | **The grant lifecycle** — authorize, store, refresh, revoke, scope | **Platform capability** | Needed identically by 1 and 2. **Not a module**: it has no domain language, it is a security boundary, and every consumer needs the same behaviour — the same category as JWT verification in `signora_platform/auth/` |
+
+**That is the answer to the product owner's question: a combination, and the combining axis is direction and credential ownership rather than vendor.** Nothing new is invented — item 1 is Provider Platform, item 2 is what the document already says, and only item 3 has no home today.
+
+#### Who should own integration authorization
+
+**The apparent conflict dissolves on a precise reading, and the precision is the recommendation.**
+
+[18-authentication.md:49](architecture/18-authentication.md) forbids the Python tier from implementing *"an OAuth flow, callback handler, or **authorization-code exchange**"*. **A refresh-token grant is none of those.** The rule exists to keep one Authentication Authority for *users*; refreshing a customer's Salesforce token authenticates nobody and issues no session.
+
+| Candidate | Verdict |
+|---|---|
+| **Consuming module** | **No.** Every module reimplements refresh, and a token bug becomes five token bugs |
+| **A dedicated bounded context** | **No.** *"Hold a token and refresh it"* is not a ubiquitous language, and a new context needs an RFC to say nothing |
+| **Edge (Next.js) for everything** | **No.** It puts long-lived customer credentials in the tier §13 exists to separate them from, and the refresh worker has no browser |
+| **Split by mechanism** — **recommended** | **The flow** (redirect, callback, code exchange) in **Next.js**: browser-mediated, needs a public callback URL, and is what `18-authentication.md:49` reserves. **A separate OAuth client from Better Auth's** — separate registration, separate scopes, separate secret, per §13. **The grant** stored workspace-scoped in Postgres under RLS, and **refreshed by the Python tier**, which is machine-to-machine and outside the prohibition |
+
+**This needs the product owner's confirmation and not a lane's**, because it is an interpretation of a security rule — but it requires **no edit to any ratified document**, which is why Lane B prefers it to the alternatives.
+
+#### Commercial reading, which changes the order
+
+**Not every integration needs OAuth, and the highest-value one is the cheapest.**
+
+- **Resend** is Signora's own API key. **Slack** can start as an incoming-webhook URL a customer pastes. Neither needs item 3 at all.
+- Of the OAuth integrations, **calendar-inbound is the smallest valuable slice and Lane B would ship it first** — *a meeting was booked with this account* is arguably the strongest buying signal the product could carry, and the Google Calendar API is trivial beside Salesforce's object model. **CRM is the loudest ask and the largest build.**
+- **Inbound before outbound**, on evidence rather than preference: inbound improves the thing customers already pay for and needs no unbuilt module, while every outbound consumer is deferred or not started.
+
+**Poll before webhook.** Polling reuses watermarks, retry, health and circuit-breaking that Provider Platform already has. A webhook is a public unauthenticated endpoint with signature verification, replay windows and per-vendor secrets — **a new security surface bought to save latency nobody has asked to reduce.** Webhooks are the optimization, and the trigger is a customer who needs sub-poll-interval freshness.
+
+#### Simulation is not a blocker and should be first-class
+
+If inbound integrations are providers (item 1), **they inherit the Provider Simulation Framework unchanged**, because its seam is the Provider Port and the contract test suite already runs against simulated and production adapters identically. That is not a coincidence — it is the strongest practical argument for item 1, and it is how the whole pipeline was built before a real provider existed.
+
+#### Recommended sequencing
+
+| | Slice | Depends on |
+|---|---|---|
+| **1** | **The grant lifecycle** — flow in Next.js, grant table under RLS, refresh in Python | The OAuth ruling above. **Everything else waits on this** |
+| **2** | **Calendar inbound as an observation source**, against a simulated adapter first | Slice 1, Provider Platform (built) |
+| **3** | **Email engagement inbound**, same shape | Slice 2 |
+| **4** | **CRM activity inbound** | Slice 3. The largest of the inbound three |
+| **—** | **All outbound delivery** | **Not schedulable.** Recommendation Engine and RIP do not exist |
+
+**M13 as ratified is a phase.** Cut this way, the executable part is three slices in one module Lane B can build today, and the rest is honestly blocked on modules rather than on architecture.
