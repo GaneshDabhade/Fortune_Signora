@@ -80,6 +80,39 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-100 · A lane's rebase silently reverted the execution board by seven cycles, and every gate passed
+
+| | |
+|---|---|
+| **Module** | None — `docs/ACTIVE_ASSIGNMENTS.md`, a shared register |
+| **Current assignee** | **QE** — the mechanism is QE's, and the repaired rows were QE's own |
+| **Severity** | 🟠 — **the repository asserted a state that was seven cycles stale**, and nothing in the pipeline could see it |
+| **Status** | **`FIXED`** — QE, 2026-08-02. Board repaired at integration; `state-check` rule 5g added. **`VERIFIED` is another lane's** |
+| **Found** | 2026-08-02, by QE, validating Lane A's branch at `cb5cd33` |
+
+**Steps to reproduce.** Rebase a long-lived lane branch onto an `integration` that QE has written a Closeout commit into. Resolve the inevitable conflict in `ACTIVE_ASSIGNMENTS.md` by keeping the branch's side — which is the natural resolution, because the rest of the file *is* the lane's own rows.
+
+**Expected.** The board describes the promoted repository.
+
+**Actual.** The board went **backwards**:
+
+| | before the rebase | after |
+|---|---|---|
+| Header | `2262bb5` — cycle 22 | **`3451f8b`** |
+| QE's row | *Cycle 22 promoted. 22 pinned, 18 certified* | **Cycle 15 promoted. 15 of 15 certified** |
+| Completed | 11 rows | **9** — `2262bb5` and `e5a266d` deleted |
+| Lane B | one current row | **two rows describing B-023 and B-024**, both fixed and promoted |
+
+**Nothing was careless, and that is the finding.** Lane A resolved a conflict in a file that is mostly its own rows by keeping its own version — the resolution a careful engineer makes. **The two rows it destroyed were QE's, in the same table, and git had no way to say so.**
+
+**Every gate passed.** `state-check` ran clean on the branch: it verifies `PROJECT_STATUS.md` names a commit reachable from `main`, and that file was untouched. **No check read the board's own header**, so a seven-cycle regression was invisible to a repository whose whole discipline is that its records tell the truth (§2).
+
+**This is [ADR-0039](architecture/adr/0039-release-engineering-model.md) RC-2 arriving in the wild** — *fast-forward-only × shared mutable files ⇒ a mandatory rebase that is lossy by construction* — and it is the **second** instance after [B-018](#b-018--lane-as-branch-carries-two-of-lane-bs-pre-rebase-commits-and-will-not-fast-forward). RC-2 predicted the class before it happened twice.
+
+**The fix, in two parts.** The rows are repaired at integration, which is QE's job at Closeout anyway. **The durable half is `state-check` rule 5g**: the board's `Current — as of` SHA must be reachable from `main` and must not name a commit older than the one `PROJECT_STATUS.md` names. A stale board is now a finding rather than a thing somebody happens to notice.
+
+**What it does not fix.** Rule 5g catches the *header*. A lane that reverted only a row would still pass — the header is a proxy, not a proof. **Recorded rather than solved**: the real answer is RC-2's, which is to stop storing derivable state in a hand-merged file, and that is ADR-0039's to propose and the product owner's to schedule.
+
 ### B-301 · Timeline is promoted, wired and consumes nothing — the deployed worker never registers its projection
 
 | | |
@@ -985,7 +1018,7 @@ Three consequences, in ascending order of seriousness:
 | **Module** | repository documentation — `docs/RUNNING.md`, `Makefile`, `README.md` |
 | **Current assignee** | QE |
 | **Severity** | 🟠 — it stopped a reviewer at the first step, and the error did not name the cause |
-| **Status** | **`FIXED`** — fixed by the QE lane under product-owner direction, 2026-08-01. **Independent verification complete — result `PASS`**, Lane B, [TASK-001](BACKLOG.md), evidence below. **`VERIFIED` is QE's to set** |
+| **Status** | **`FIXED`** — fixed by the QE lane under product-owner direction, 2026-08-01. **`VERIFIED`** — QE, 2026-08-02, on Lane B's independent evidence below ([TASK-001](BACKLOG.md)) |
 | **Found** | `f996a42`, QE lane, first attempt to start the product |
 
 **Steps to reproduce.** Run `make demo`. Copy the command it prints — the same one in [`RUNNING.md`](RUNNING.md) lines 41 and 153:
@@ -1090,7 +1123,7 @@ Three sites: `docs/RUNNING.md:41`, `docs/RUNNING.md:153`, `Makefile:80`. `README
 | **Module** | **none** — repository process |
 | **Current assignee** | **none — not assignable.** [C-010](LANE_COORDINATION.md) |
 | **Severity** | 🟡 — the changes were small, reviewed and correct; **the process gap is the defect** |
-| **Status** | `FIXED` — the rule that prevents it was ratified 2026-08-02 and is enforced by `infra/certification-guard.py`. **Independent verification complete — result `PASS` on both cases**, Lane B, [TASK-001](BACKLOG.md), evidence below. **`VERIFIED` is QE's to set**, and [B-015](#b-015--the-certification-audit-passes-vacuously-in-every-lanes-clone) should be read before it is |
+| **Status** | `FIXED` — the rule that prevents it was ratified 2026-08-02 and is enforced by `infra/certification-guard.py`. **`VERIFIED`** — QE, 2026-08-02, on Lane B's independent evidence below ([TASK-001](BACKLOG.md)), both cases, and [B-015](#b-015--the-certification-audit-passes-vacuously-in-every-lanes-clone) should be read before it is |
 | **Found** | `e44819b`, by `certification-guard.py --audit-main` on its first run — **against the commits QE had just written** |
 
 **Steps to reproduce.** `python3 infra/certification-guard.py --audit-main`, with `RULE_RATIFIED_AT` set to the certified commit `f669172`.
@@ -1138,7 +1171,7 @@ Three sites: `docs/RUNNING.md:41`, `docs/RUNNING.md:153`, `Makefile:80`. `README
 | **Module** | **none** — `apps/worker/` is composition-root production code, plus `backend/pyproject.toml` |
 | **Current assignee** | **none — not assignable.** [C-010](LANE_COORDINATION.md) |
 | **Severity** | 🔴 — **two of the six production services crash-loop.** Nothing deployed would process an event |
-| **Status** | **`FIXED`** — fixed by QE under product-owner direction, 2026-08-02. **Independent verification complete — result `PASS`**, Lane B, [TASK-001](BACKLOG.md), evidence below. **`VERIFIED` is QE's to set** |
+| **Status** | **`FIXED`** — fixed by QE under product-owner direction, 2026-08-02. **`VERIFIED`** — QE, 2026-08-02, on Lane B's independent evidence below ([TASK-001](BACKLOG.md)) |
 | **Found** | `3f4e988`, by QE at lifecycle stage 1, the first `make smoke` run since 2026-07-31 |
 
 **Steps to reproduce.** `make smoke`.

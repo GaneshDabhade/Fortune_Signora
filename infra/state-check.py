@@ -167,8 +167,9 @@ def main() -> int:
     # exists to catch.
     certified = _latest_certification() or {}
     certified_commit = str(certified.get("commit") or "")[:7]
+    status_named: str | None = None
     if main_sha and status:
-        named = _newest_named_commit(status, main_sha)
+        named = status_named = _newest_named_commit(status, main_sha)
         if named is None:
             findings.append(
                 f"PROJECT_STATUS.md names no commit reachable from `main` ({main_sha}). "
@@ -415,6 +416,34 @@ def main() -> int:
             )
         if not clashes and numbered:
             notes.append(f"Architecture documents: {len(numbered)} numbered, none duplicated.")
+
+    # 5g — the execution board's own header, which nothing read until B-100.
+    #
+    # A lane rebasing onto a Closeout commit hits a conflict in this file and
+    # resolves it by keeping its own side — the natural resolution, because the
+    # rest of the file *is* its rows. Lane A did exactly that and moved the board
+    # back seven cycles; every gate passed, because rule 1 reads PROJECT_STATUS.md
+    # and that file was untouched.
+    #
+    # **The header is a proxy, not a proof.** A reverted *row* still passes. The
+    # real answer is ADR-0039 RC-2's — stop hand-merging derivable state — and
+    # this is the cheap check that makes the common case visible meanwhile.
+    board_sha = re.search(r"^## Current — as of [^,]+,\s*`([0-9a-f]{7,40})`", assignments, re.M)
+    if board_sha:
+        named = board_sha.group(1)
+        if not _is_ancestor(named, "HEAD"):
+            findings.append(
+                f"ACTIVE_ASSIGNMENTS.md is dated at `{named}`, which is not reachable "
+                f"from HEAD. The execution board describes a repository this one is not."
+            )
+        elif status_named and _is_ancestor(named, status_named) and named != status_named:
+            findings.append(
+                f"ACTIVE_ASSIGNMENTS.md is dated at `{named}` but PROJECT_STATUS.md names "
+                f"`{status_named}`, which is newer. The board has gone backwards — the "
+                f"B-100 signature, where a rebase keeps a lane's side of a shared table."
+            )
+        else:
+            notes.append(f"ACTIVE_ASSIGNMENTS.md is dated at `{named}`, reachable from HEAD.")
 
     # 6 — a coordination register that only grows has become a discussion log.
     opened = len(re.findall(r"^#{2,3} C-\d+", coordination, re.M))
