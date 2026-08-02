@@ -214,7 +214,15 @@ modules/timeline/infrastructure/repository.py      21   9  52%   ← unchanged
 
 **Two candidates have now been rejected for one unfixed defect.** `9ba0ea6` and `a2ca53d`, both abandoned, both correctly. **Nothing on `integration` can certify until these four files are covered**, which is the shared-base pattern again — now at **three occurrences**, counting [B-023](BUGS.md).
 
-### Third rejection, and it is 0.02% away — 2026-08-02, candidate `d758754`
+### Candidate `d758754` — NOT CERTIFIED, 2026-08-02
+
+| | |
+|---|---|
+| **Release Candidate** | ❌ **NOT CERTIFIED.** **Disposition: permanently abandoned** — `d758754` will never be promoted to `main` |
+| **Implementation** | **IN PROGRESS — not rejected.** Lane B's work stands and moved the number. The resulting commits form a **new** candidate; **no implementation effort is discarded** |
+| **Next action** | **Lane B** — cover `modules/timeline/interface/handlers.py`, push. **QE pins and certifies the new snapshot immediately** |
+
+### Third rejection, and it is 0.02% away
 
 **Real progress, and the number says so.** `secrets.py` went **0% → 61%** (34 missed → 12); the suite grew 2460 → 2476; coverage moved **94.79% → 94.98%**. Lane B did the work this row asked for.
 

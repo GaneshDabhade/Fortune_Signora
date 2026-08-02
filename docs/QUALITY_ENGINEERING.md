@@ -209,6 +209,24 @@ Four capabilities the architecture already treats as QE's, of which two exist. *
 
 **A rejected candidate is never patched into passing.** There is no such thing as a candidate that certified on its second attempt — the second attempt is a different snapshot, with a different SHA and its own record. **This is what makes "every commit on `main` was individually certified" a fact rather than a claim**, and it is why B-022's discarded manifest entry was discarded rather than annotated.
 
+### Reporting a rejection — three statements, never one
+
+**Ratified 2026-08-02, product owner.** *"Candidate abandoned"* reads as *"the implementation was rejected"*, and it never means that. **The snapshot and the work have different lifecycles and must be reported separately.**
+
+> **Release Candidate**
+> **Status:** ❌ NOT CERTIFIED
+> **Disposition:** permanently abandoned. **This SHA will never be promoted to `main`.**
+>
+> **Implementation**
+> **Status:** IN PROGRESS — **not rejected.** The owning lane addresses the named defects; the resulting commits form a **new** candidate. **No implementation effort is discarded.**
+>
+> **Next action**
+> *Named lane · named files · what happens when it lands.*
+
+**Why the distinction is load-bearing rather than cosmetic.** The immutability rule — *a rejected candidate is never patched into passing* — only stays palatable if everyone understands that **the snapshot is thrown away and the work is not.** Reported as one sentence, it sounds like a lane's slice was binned. **Reported as three, it says exactly what happened: one SHA is dead, the code is alive, and here is the shortest path to the next candidate.**
+
+**The Next action is not a courtesy.** A rejection that does not say *which lane, which files, and what QE does when they land* leaves the fastest route to be rediscovered by whoever reads it.
+
 ### What the candidate model does *not* yet solve
 
 **A defect that reaches `integration` blocks every candidate cut after it.** [B-023](BUGS.md) is the worked example: two type errors in one lane's test file, and unrelated slices from another lane cannot certify. **The candidate is immutable and independent; its *base* is neither.**
