@@ -429,3 +429,104 @@ An invitation is **two facts with two owners**, and separating them dissolves mo
 **What the evidence supports instead:** one Signora-owned table, one new `purpose` on an existing port, and an acceptance rule that reads a claim already required on every request. **No new dependency. No frozen-file change. No plugin.**
 
 > **The simpler design was reachable in §6 and was missed because the vendor was the obvious answer to *"do not build authentication"*.** It is still not built here — **email ownership is proved by Better Auth**, exactly as the rule requires. What changed is noticing that the proof already arrives.
+
+---
+
+## 12 · The invitation lifecycle, completely — before any code
+
+**Documented first on the product owner's direction.** The exercise paid twice: it collapsed a long list of scenarios into **four states**, and it found the one thing that stops half the slice.
+
+### There are four states, and only one of them is stored as a state
+
+| State | How it is known |
+|---|---|
+| **`pending`** | **Derived** — none of the three below |
+| **`accepted`** | `accepted_at` is set |
+| **`revoked`** | `revoked_at` is set |
+| **`expired`** | **Derived** — `expires_at < now()` |
+
+> **Expiry is computed, never flipped by a job.** A stored `expired` flag needs something to write it, and until that thing runs the row is wrong — the same reasoning that makes `evidence_state` derived and `release` derived from evaluations. **`expires_at` is the fact; `expired` is the reading.**
+
+**All three terminal states are permanent.** An expired invitation is not revived by extending a date; a new intent is a new row.
+
+### Every scenario, resolved against those four
+
+**Most of the product owner's list are not states — they are *events arriving at a state*, which is why the table is long and the state machine is short.**
+
+| Scenario | Resolution |
+|---|---|
+| **Sent twice** | **Refused.** One `pending` invitation per `(workspace, email)`, enforced by a **partial unique index** `WHERE accepted_at IS NULL AND revoked_at IS NULL`. Two live invitations to one address is two ways in (D2) |
+| **Resent** | **The same row, delivered again.** Not a new invitation — that is what the partial index makes structurally true rather than merely intended |
+| **Sent again after expiry or revocation** | **A new row**, and correct: the old one records that somebody was invited and did not come |
+| **Already accepted** | Refused, and the wording is *"you are already in this organization"* — not an error, a fact |
+| **Accepted while already a member** | **Not an error either.** The customer's intent — *be in this workspace* — is already satisfied. The invitation is marked accepted, **the membership is untouched**, and its `created_at` stays the original |
+| **Accepted after the role on the invitation changed** | **The row is the truth at acceptance.** An administrator who edits a pending invitation is changing what they are offering, and the offer is what gets accepted |
+| **Accepted after revocation** | **Refused.** State is checked at acceptance, never at delivery — so an email opened before a revocation still cannot be used after it |
+| **Revoked after the email was opened** | **Revocation wins**, by the same rule. There is no window |
+| **Accepted after expiry** | Refused, with *"ask for a new invitation"* — the one message here that needs to offer a next step |
+| **Accepted after the inviter left** | **Succeeds.** See below — it is the most interesting one |
+| **Accepted after ownership transfer** | **Succeeds.** An invitation is the organization's intent, not the inviter's personal act |
+| **Accepted after the workspace is deleted** | The row is gone with it — `ON DELETE CASCADE`, the same as `membership`. Acceptance finds nothing and says so |
+| **Accepted after the workspace is archived** | **No archive concept exists.** Recorded so the next lane does not assume one |
+| **Replay** | **Structurally impossible.** There is no token to replay — acceptance matches on the verified email claim, and the state check makes a repeat a no-op |
+| **Multiple invitations, different workspaces** | Orthogonal. Each is its own row |
+| **One verified email accepting several** | Each accepted separately. **Already supported** — `list_user_workspaces` and the workspace selector exist |
+
+### Who owns an invitation after the inviter leaves — **nobody, and that is the point**
+
+**The product owner's question, and the repository already answers it.**
+
+> **`invited_by` is an immutable historical fact, exactly like `decided_by` on a workflow state.** It records *who did this*, and **it never transfers.**
+
+| | |
+|---|---|
+| **Does acceptance still succeed?** | **Yes.** The organization invited this person; a departure does not withdraw that. **Withdrawal is an act, and it has a column** |
+| **Should attribution move?** | **Never.** A record of the past that is rewritten to match the present is the failure `CLAUDE.md` §2 names in the same breath as documentation drift |
+| **Does audit change?** | **No — and this is why D3 keeps ended memberships.** *"Ana invited Sam"* stays readable after Ana leaves, because Ana's membership row still exists |
+| **Should ownership transfer?** | **There is no ownership to transfer.** An invitation belongs to the workspace. The inviter is provenance, not an owner — the same distinction as `Opportunity.owner_id` versus `decided_by` |
+
+**A pending invitation from somebody who has left is therefore valid and slightly odd to look at**, which the design handles the way it handles everything else: it says so. *"Invited by Ana, who has since left"* is more useful than silently reattributing it to whoever is administering today.
+
+---
+
+## 13 · The invariants, and which aggregate each one names
+
+**On the product owner's direction, and because *"the invariant determines the aggregate"* is only useful if the invariants are written down.**
+
+| Invariant | Spans | Aggregate |
+|---|---|---|
+| **A workspace always has at least one owner** | **Every membership in the workspace** | **Workspace** |
+| **One live membership per `(workspace, user)`** | Two memberships | **Workspace** |
+| **One pending invitation per `(workspace, email)`** | Two invitations | **Workspace** |
+| **A membership's role is one of the declared roles** | One membership | **Membership** |
+| **An ended membership is never re-opened** | One membership | **Membership** |
+| **An invitation reaches exactly one terminal state** | One invitation | **Invitation** |
+| **Acceptance creates a membership** | **Invitation and Membership together** | **Workspace** — it is the only thing that sees both |
+| **Permissions** | Nothing. **Casbin evaluates a role, and roles are values** | *No aggregate* |
+| **Audit · Timeline · Notifications** | Nothing — they **cite** a membership and constrain nothing | *No aggregate* |
+| **Billing seats** *(M14b)* | **Every live membership in the workspace** | **Workspace** — and it lands where the count already lives |
+
+> **Three invariants span a set, and all three name Workspace. Three constrain one row each, and name their own entity.** That is the whole aggregate map, and it explains the existing code's split rather than overturning it.
+>
+> **The useful prediction:** billing seats will need exactly the count the last-owner rule already needs. **A capability two milestones away lands on machinery this slice builds** — which is what an aggregate boundary is for.
+
+---
+
+## 14 · What stops acceptance, and it is not a decision — it is RLS
+
+**Found while planning the endpoint, and it splits TM-03 in two.**
+
+**Inviting, listing and revoking are ordinary workspace-scoped operations.** They need **no new authorization at all**: inviting *is* `member:add`, revoking *is* `member:remove`, listing *is* `member:read` — **three grants that already exist in `policy.csv`**, because an invitation is a deferred membership and the policy already describes it. **No new `Resource`, no new `Action`, no frozen-platform change.**
+
+**Acceptance is different, and the reason is structural:**
+
+| | |
+|---|---|
+| **The accepter is not a member yet** | `CurrentWorkspace` verifies membership before any handler runs. **It will refuse them — correctly** |
+| **The invitation row is workspace-owned** | Every RLS policy in this repository is `workspace_id = current_setting('app.workspace_id')`, and [`session.py:32`](../../backend/signora_platform/db/session.py) sets exactly one variable. **There is no user-scoped session setting** |
+
+> **So a person cannot read the invitation addressed to them**, because reading it requires a workspace context that membership grants and they do not have. **The row is theirs to act on and invisible to them.**
+
+**This is not [C-207](../LANE_COORDINATION.md).** That is about *authorizing* an action on yourself. This is about **tenant-scoped data whose legitimate reader is, by definition, outside the tenant** — a new shape, and the first time the tenancy model has met it.
+
+**Raised as [C-208](../LANE_COORDINATION.md)**, and **it blocks only acceptance.** The invitation aggregate, its lifecycle, persistence, the partial index, inviting, listing and revoking are all buildable now — which is how the slice is being taken.

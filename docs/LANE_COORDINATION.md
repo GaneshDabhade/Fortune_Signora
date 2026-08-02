@@ -194,6 +194,7 @@
 | [C-202](#c-202--four-shared-documents-disagree-and-one-disagrees-with-itself) | Four shared documents disagree, and one disagrees with itself | Lane A | **QE** | `OPEN` — **directed by the product owner** | Nothing built. **A cold session trusting any status in the repository** |
 | [C-206](#c-206--is-an-invitation-better-auths-or-signoras) | Is an invitation Better Auth's or Signora's? | Lane A | **Product owner** | **`OPEN` — narrowed sharply 2026-08-02.** The plugin recommendation is **withdrawn**; the proof already arrives in the JWT | **One email delivery decision.** The invitation table, acceptance and the members list are no longer blocked by it |
 | [C-207](#c-207--casbin-cannot-express-an-action-on-yourself) | Casbin cannot express an action on yourself | Lane A | **Product owner** (platform §20a) | `OPEN` — **architectural** | **Leaving an organization**, and every self-directed operation after it |
+| [C-208](#c-208--a-tenant-scoped-row-whose-only-legitimate-reader-is-outside-the-tenant) | A tenant-scoped row whose only legitimate reader is outside the tenant | Lane A | **Product owner** (tenancy · platform §20a) | `OPEN` — **architectural.** Recommendation costs no platform change | **Accepting an invitation only.** Inviting, listing and revoking are unblocked |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
 >
@@ -2320,6 +2321,53 @@ Alembic's `down_revision` is a linear chain: **a gap is a broken graph, not an o
 | **If A** | A frozen-platform change plus a `policy.csv` line, then the same endpoint |
 | **If B** | A frozen-platform change touching the model file and every `authorize` call |
 | **Cost of waiting** | **A person cannot leave an organization.** Small today — every workspace has one member — and permanent for every self-directed feature after it |
+
+
+---
+
+## C-208 · A tenant-scoped row whose only legitimate reader is outside the tenant
+
+| | |
+|---|---|
+| **Owner** | **Product owner** — it is a tenancy-model question, and `signora_platform/db/` is frozen (§20a) |
+| **Requesting lane** | Lane A |
+| **Category** | Tenancy · Row-Level Security |
+| **Status** | `OPEN` |
+| **Kind** | **Architectural blocker** |
+| **Blocks** | **Accepting an invitation.** Nothing else in Team Management |
+| **Raised** | 2026-08-02, planning TM-03's acceptance endpoint |
+
+**An invitation is workspace-owned data, and the person it is addressed to is — by definition — not in the workspace yet.**
+
+| | |
+|---|---|
+| `CurrentWorkspace` verifies membership before any handler runs | **It refuses the accepter, correctly.** They are not a member |
+| Every RLS policy is `workspace_id = current_setting('app.workspace_id')` | [`session.py:32`](../backend/signora_platform/db/session.py) sets **one** variable, and there is **no user-scoped session setting** |
+
+> **So the row addressed to somebody is invisible to them**, because reading it needs a workspace context that membership grants and they do not have.
+
+**This is a new shape rather than a variant of [C-207](#c-207--casbin-cannot-express-an-action-on-yourself).** That one is about *authorizing* an action on yourself. This is about **tenant-scoped data whose legitimate reader is outside the tenant** — the first time the tenancy model has met it, and it will recur for anything a person receives before they belong.
+
+### Options
+
+| | | |
+|---|---|---|
+| **A** | **A second session setting** — `app.user_email` — and an RLS policy of `workspace_id = …` **OR** `invited_email = …` | Keeps everything in Postgres, where the tenancy model is authoritative. ❌ **Changes `signora_platform/db/session.py`**, frozen, and a second variable is a second thing every unit of work must set correctly |
+| **B** | **A workspace-less read path** for invitations only, executed under a role that is not `signora_app` | ❌ **A role that bypasses RLS is exactly what §8 forbids**, and the exemption would be permanent |
+| **C** — *recommended* | **Acceptance never reads across tenants.** The customer names the organization they are accepting — the invitation email links to `/join/{workspace_id}` — so the workspace is supplied by the request and `app.workspace_id` can be set before the read, **exactly as it is for every other endpoint.** The row is then found by `(workspace_id, invited_email = the verified claim)` | ✅ **No platform change, no new setting, no RLS exemption, no cross-tenant read.** ⚠️ It means *"show me every invitation waiting for me"* is not offered — a customer accepts the one they were sent rather than browsing a list |
+
+**Lane A recommends C**, and the trade-off is worth stating plainly: **the missing feature is a cross-workspace inbox**, which nothing has asked for and which would be the one screen in Signora that reads outside a tenant. **Every invitation arrives with a link; the link carries the workspace; the tenancy model never bends.**
+
+**If C is accepted this item closes with no code beyond the endpoint**, and the recommendation is a design constraint rather than a change.
+
+### Implementation impact
+
+| | |
+|---|---|
+| **Unblocked regardless** | **The invitation aggregate, its lifecycle, the partial unique index, inviting, listing and revoking** — all workspace-scoped, and **needing no new authorization**: inviting *is* `member:add`, revoking *is* `member:remove`, listing *is* `member:read`, and all three grants exist |
+| **If C** | The accept endpoint takes the workspace in its path. **Ordinary work** |
+| **If A** | A frozen-platform change to session handling, plus a second RLS clause on one table |
+| **Cost of waiting** | **An invitation can be sent and not accepted.** TM-03 ships its administrator half and stops at the customer half |
 
 
 ---
