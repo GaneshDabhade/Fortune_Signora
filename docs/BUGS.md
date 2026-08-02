@@ -69,27 +69,6 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
-### B-001 · `signal_profile` reads the wrong row as "current"
-
-| | |
-|---|---|
-| **Owner** | Lane A — `signal_engine` |
-| **Severity** | 🟠 — latent today, 🔴 the moment the signal profile gets a write path |
-| **Status** | `FIXED` — `0023`, and it was in **three** tables. See `25-signal-engine.md` |
-| **Found** | `1ae600d`, while building `commercial_profile` |
-
-**Steps to reproduce.** Write a `SignalProfile` at version 1. Write a second superseding it (`supersedes = <v1 id>`). Call `SqlProfileRepository.current(workspace_id)`.
-
-**Expected.** Version 2 — the profile in force.
-
-**Actual.** Version 1, permanently. `current()` selects `WHERE supersedes IS NULL`, and on an immutable table the row with a null `supersedes` is the **first** version; the *new* row is the one that names its predecessor. `uq_signal_profile_current`, the partial unique index, is built on the same inverted assumption.
-
-**Why it has never bitten.** Nothing has ever written a second profile version — there is no API and no UI, and every test writes v1. **It becomes reachable the moment a customer can edit their relevance profile**, which is Lane B's territory but Lane A's module.
-
-**The fix, for whoever takes it.** `product_catalog` (migration `0019`) solves the same problem by reading `MAX(version)` and letting `uq_(workspace_id, version)` be the concurrency control — no partial index, no `UPDATE` grant needed. Same shape applies here.
-
----
-
 ### B-002 · `make smoke` cannot run while any dev server is up
 
 | | |
@@ -444,7 +423,25 @@ ModuleNotFoundError: No module named 'httpx'
 
 ## Verified
 
-*None yet.*
+### B-001 · `signal_profile` reads the wrong row as "current"
+
+| | |
+|---|---|
+| **Owner** | Lane A — `signal_engine` |
+| **Severity** | 🟠 — latent today, 🔴 the moment the signal profile gets a write path |
+| **Status** | **`VERIFIED`** — QE, 2026-08-02. Reproduced on `6aadea9`: `tests/signal_engine/test_profile_currency.py` writes a superseding version and asserts `current()` returns it, across all three tables, and passes in the promoted tree. Migration `0023` |
+| **Found** | `1ae600d`, while building `commercial_profile` |
+
+**Steps to reproduce.** Write a `SignalProfile` at version 1. Write a second superseding it (`supersedes = <v1 id>`). Call `SqlProfileRepository.current(workspace_id)`.
+
+**Expected.** Version 2 — the profile in force.
+
+**Actual.** Version 1, permanently. `current()` selects `WHERE supersedes IS NULL`, and on an immutable table the row with a null `supersedes` is the **first** version; the *new* row is the one that names its predecessor. `uq_signal_profile_current`, the partial unique index, is built on the same inverted assumption.
+
+**Why it has never bitten.** Nothing has ever written a second profile version — there is no API and no UI, and every test writes v1. **It becomes reachable the moment a customer can edit their relevance profile**, which is Lane B's territory but Lane A's module.
+
+**The fix, for whoever takes it.** `product_catalog` (migration `0019`) solves the same problem by reading `MAX(version)` and letting `uq_(workspace_id, version)` be the concurrency control — no partial index, no `UPDATE` grant needed. Same shape applies here.
+
 
 ## Won't fix
 

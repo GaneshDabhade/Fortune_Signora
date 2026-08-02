@@ -67,6 +67,12 @@ def main() -> int:
     notes: list[str] = []
 
     main_sha = _git("rev-parse", "--short=7", "main")
+    # The dashboard is written *after* the promotion it describes, so the commit
+    # carrying it is one ahead of the commit it names. Accepting `main`'s parent
+    # is not a loosening: a check nothing can satisfy would be failed every cycle
+    # and then ignored, which is worse than not checking. Anything older than the
+    # parent is genuinely stale and still reported.
+    parent_sha = _git("rev-parse", "--short=7", "main~1")
     status = _read("PROJECT_STATUS.md")
     handoff = _read("docs/SESSION_HANDOFF.md")
     assignments = _read("docs/ACTIVE_ASSIGNMENTS.md")
@@ -75,14 +81,15 @@ def main() -> int:
 
     # 1 — the dashboard should name the promoted commit.
     if main_sha and status:
-        if main_sha not in status:
+        if main_sha not in status and parent_sha not in status:
             findings.append(
                 f"PROJECT_STATUS.md does not mention `main` ({main_sha}). Either the "
                 f"dashboard predates the promotion, or Repository Closeout did not "
                 f"run (lifecycle stage 5)."
             )
         else:
-            notes.append(f"PROJECT_STATUS.md names `main` ({main_sha}).")
+            named = main_sha if main_sha in status else f"{parent_sha}, the commit it closed out"
+            notes.append(f"PROJECT_STATUS.md names `main` ({named}).")
 
     # 2 — certification expires by derivation. Say so out loud rather than
     #     leaving it to somebody to notice.
@@ -129,17 +136,18 @@ def main() -> int:
 
     # 5 — the handoff is the cold-start document; a dashboard newer than it
     #     means a session would resume from the older of the two.
-    if main_sha and handoff and main_sha not in handoff and main_sha in status:
+    handoff_names_head = main_sha in handoff or parent_sha in handoff
+    if main_sha and handoff and not handoff_names_head and (main_sha in status or parent_sha in status):
         findings.append(
             "SESSION_HANDOFF.md does not mention the promoted commit while "
             "PROJECT_STATUS.md does. A cold session reads the handoff first."
         )
 
     # 6 — a coordination register that only grows has become a discussion log.
-    opened = len(re.findall(r"^### C-\d+", coordination, re.M))
+    opened = len(re.findall(r"^#{2,3} C-\d+", coordination, re.M))
     closed = 0
     if "## Closed" in coordination:
-        closed = len(re.findall(r"^### C-\d+", coordination.split("## Closed")[1], re.M))
+        closed = len(re.findall(r"^#{2,3} C-\d+", coordination.split("\n## Closed")[1], re.M))
     if opened and closed == 0 and opened >= 10:
         findings.append(
             f"LANE_COORDINATION.md holds {opened} items and has closed none. The "

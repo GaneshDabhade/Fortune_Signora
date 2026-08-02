@@ -56,15 +56,15 @@
 
 ---
 
-## Current — as of 2026-08-02
+## Current — as of 2026-08-02, `6aadea9`
 
 | Lane | Assignment | Module | Milestone | Slice | Status | Blocked by | Depends on | Next action | Started |
 |---|---|---|---|---|---|---|---|---|---|
 | **Lane A** | Two accounts get identical guidance (**R2-01**) | `signal_engine` · `opportunity_engine` | product surface | R2-01 | `ACTIVE` | — | — | Lane implements; **rebase onto the reconciled `integration` first** | 2026-08-02 |
-| **Lane B** | Target accounts | `commercial_profile` | M12.5 | slice 5 of 5 | `ACTIVE` | — | [C-001](LANE_COORDINATION.md) answered by [ADR-0036](architecture/adr/0036-target-account-contract.md) | Lane implements; **rebase onto the reconciled `integration` first** | 2026-08-02 |
-| **QE** | Repository lifecycle and governance | — (the repository) | — | governance slice | `ACTIVE` | — | — | Run the seven-stage lifecycle ([checklist](REPOSITORY_RELEASE_CHECKLIST.md)) | 2026-08-01 |
+| **Lane B** | — | — | — | — | `AVAILABLE` | — | — | **QE to assign.** M12.5 completed and promoted at `3f4e988` | — |
+| **QE** | Repository lifecycle and governance | — (the repository) | — | permanent | `ACTIVE` | — | — | Next cycle: validate whatever a lane hands over | 2026-08-01 |
 
-**Available lanes:** none. **Unassigned capacity:** lanes C, D and E are unclaimed ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).
+**Available lanes:** **Lane B.** **Unassigned capacity:** lanes C, D and E are unclaimed ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).
 
 **QE's assignment is permanent** and is never removed — it is the one row that outlives its own completion, because the responsibility is the repository rather than a slice inside it.
 
@@ -98,6 +98,8 @@
 
 | Lane | Assignment | Promoted | Commit |
 |---|---|---|---|
+| QE | The repository operating model, certification `f6691728aaf9`, and B-013 | 2026-08-02 | `f669172` · `6aadea9` |
+| B | M12.5 slice 5 — target accounts. **M12.5 complete** | 2026-08-02 | `3f4e988` |
 | A | M12.4 — research on demand | 2026-08-02 | `c1f5985` |
 | A | R4-02 · R4-03 — the words the product uses when it refuses you | 2026-08-02 | `bdb014f` |
 | A | R2-02 · R3-01 — saying what the evidence cannot support | 2026-08-02 | `64d9f2e` |

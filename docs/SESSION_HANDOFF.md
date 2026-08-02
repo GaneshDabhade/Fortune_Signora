@@ -5,7 +5,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-01 · **`main` at `f996a42`**
+> **As of:** 2026-08-02 · **`main` at `6aadea9`** · ✅ **CERTIFIED**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
@@ -15,16 +15,15 @@
 
 | | |
 |---|---|
-| **Last completed** | **M10 AI Research Engine** — T131–T138, closed 2026-07-31. *Internal Research; every citable thing deterministic.* |
+| **Last completed** | **M12.5 Commercial Profile** — all five slices promoted 2026-08-02. *A customer declares what they sell, who buys it, who agrees, what they are pushing, and which companies they are going after.* **The pipeline finally has an input** |
+| **Also shipped** | **M12.4 research on demand**, verified against a real model |
 | **Inserted, and open** | **M9.5 Evidence Citation Protocol** (ADR-0031). Steps A–D landed; **Step F is incomplete** |
-| **Last completed** | **M12.2 the account brief** — closed 2026-08-01. Identity, score breakdown, commitment and narration; the Decision Package is *blocked*, not skipped |
-| **Current** | **M12.3 evidence and actions.** *What to check*, *ledger citations*, *stage transitions and assignment* and *the list's why* shipped; narration citations and the list's hierarchy (D20) remain |
-| **Head at handoff** | **`f996a42`** — *Record the rule the merge rehearsal exposed* |
-| **Latest certification** | [`d954c930`](../certification/reports/d954c930319a.md) — certified 2026-07-31, and **now expired by derivation**: it is bound to migration head `0018` and `main` is at `0019`. **`make certify` is the next action on this repository** |
-| **Phase** | **Product implementation.** Ten pipeline stages built and frozen behind them; the surface is being exposed. |
-| **Overall completion** | **~60%** by engineering effort (~187 of ~261–339 ew) |
-| **Completed milestones** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · M4 · M5A · M5B · M6 · M8 · M9 · **M10** |
-| **Branch** | `main`, clean, pushed |
+| **Current** | **M12.3 evidence and actions** — the brief's hierarchy (D20) remains · **R2-01**, two accounts get identical guidance, is Lane A's |
+| **Head at handoff** | **`6aadea9`** — *Certification f6691728aaf9* |
+| **Latest certification** | ✅ [`f6691728aaf9`](../certification/reports/f6691728aaf9.md) — **CERTIFIED 2026-08-02**, bound to migration head `0025` and protocol v2. Every gate green |
+| **Phase** | **Product implementation.** Ten pipeline stages built and frozen behind them; the surface is being exposed |
+| **Overall completion** | **~66%** by engineering effort — see [PROJECT_STATUS.md](../PROJECT_STATUS.md) |
+| **Branch** | `main`, `integration` and `lane-qe` all at `6aadea9`, clean, pushed |
 
 **🔴 Read this before anything else:** **`reasoning@1` has no released model.** M9.5 moved the rendering protocol to v2, which withdrew every protocol-1 release by derivation. `explanation_narration@1`, `research_planning@2` and `research_synthesis@2` re-earned theirs; `reasoning@1` did not — `granite3.3:2b` refuses under protocol 2 and `llama3.1:8b` is UNMEASURABLE on this hardware. **The Decision Package stage would refuse in production.** Do not tune the prompt, the delimiter, the schema or the timeout to make it pass.
 
@@ -34,9 +33,9 @@
 
 **🟢 Sign-in works now, and did not before.** Better Auth's tables had never been created by anything in the repository, and the `after` hook broke every completed auth request — two defects each hiding the other, invisible because no authentication request had ever finished. Run **`cd frontend && npm run auth:migrate`** once on any clone, then register at `/sign-up`; the verification link is written to the dev server's stdout. **A third defect sat behind those two**: Better Auth's default id is a nanoid and the Python verifier requires a UUID, so every API call from a real signed-in user would have 401'd. Fixed with Better Auth's own `generateId` hook — the *function* form, because `'uuid'` resolves to a column default that inserts null on tables created before it. See [ADR-0033](architecture/adr/0033-authentication-methods.md) and `docs/RUNNING.md`.
 
-**Recent commits:** `f996a42` the merge rehearsal's rule · `2da8bd4` three lanes and a bug register · `1ae600d` **M12.5 — the head of the pipeline finally exists** · `cf99a07` the customer says organization · `4b23ffa` the citation opens
+**Recent commits:** `6aadea9` certification `f6691728aaf9` · `f669172` **the repository gets an operating model** · `3f4e988` **M12.5 — the pipeline finally has an input** · `5b1e388` C-009 gains a proposed architecture · `3931b3c` a customer says what they are pushing this quarter · `c1f5985` **M12.4 — ask Signora to look into this one properly**
 
-**Where everything now lives.** Four registers, one responsibility each, and a session should read all four before its first slice: [BUGS.md](BUGS.md) *what is wrong* · [LANE_COORDINATION.md](LANE_COORDINATION.md) *what one lane needs from another* · [ACTIVE_ASSIGNMENTS.md](ACTIVE_ASSIGNMENTS.md) *who is doing what* · [RUNNING.md](RUNNING.md) *which ports and database are yours*. The rules governing all of them are `CLAUDE.md` §20e; how QE operates them is [QUALITY_ENGINEERING.md](QUALITY_ENGINEERING.md).
+**Where everything now lives.** Four registers, one responsibility each, and a session should read all four before its first slice: [BUGS.md](BUGS.md) *what is wrong* · [LANE_COORDINATION.md](LANE_COORDINATION.md) *what one lane needs from another* · [ACTIVE_ASSIGNMENTS.md](ACTIVE_ASSIGNMENTS.md) *who is doing what* · [RUNNING.md](RUNNING.md) *which ports and database are yours*. The rules governing all of them are `CLAUDE.md` §20e; how QE operates them is [QUALITY_ENGINEERING.md](QUALITY_ENGINEERING.md), and the cycle itself is [REPOSITORY_RELEASE_CHECKLIST.md](REPOSITORY_RELEASE_CHECKLIST.md).
 
 ### What a session needs operationally
 
@@ -44,14 +43,16 @@
 
 | | |
 |---|---|
-| **Certification** | 🟠 **Expired by derivation** — the record is bound to migration head `0018` and the repository is at `0019`. `is_certified` reads false on its own. **`make certify` is the next action on this repository** |
-| **Active lanes** | [ACTIVE_ASSIGNMENTS.md](ACTIVE_ASSIGNMENTS.md) — the execution board, and the only authoritative answer to *who is doing what* |
-| **Open blockers** | [C-010](LANE_COORDINATION.md) no assignee exists for `apps/`/platform code, which blocks [B-007](BUGS.md) and [B-012](BUGS.md) · [C-011](LANE_COORDINATION.md) holds R9-03 inside Lane A's slice · [C-012](LANE_COORDINATION.md)/[C-013](LANE_COORDINATION.md) waiting on RFCs queued since M3A |
-| **Open defects** | [BUGS.md](BUGS.md) — **0 🔴**, so nothing blocks promotion. [B-009](BUGS.md) is `FIXED` and needs verification **by someone other than QE** |
-| **Pending work** | M12.3 list hierarchy (D20) · M12.4 research on demand · M12.5 slices 2–5 · **M9.5 Step F** · `reasoning@1` has no released model (below) |
-| **Tooling** | `make` was absent from this workstation and was installed 2026-08-02 ([B-011](BUGS.md), [RUNNING.md](RUNNING.md)). **A missing prerequisite is installed, not worked around** (`CLAUDE.md` §20e) |
+| **Certification** | ✅ **CERTIFIED** — [`f6691728aaf9`](../certification/reports/f6691728aaf9.md), bound to migration head `0025`. It expires by derivation the moment a migration, a prompt release, the rendering protocol or the scenario set changes |
+| **Active lanes** | [ACTIVE_ASSIGNMENTS.md](ACTIVE_ASSIGNMENTS.md) — the execution board, and the only authoritative answer to *who is doing what*. **Lane B is `AVAILABLE`** |
+| **Open blockers** | [C-010](LANE_COORDINATION.md) — no lane is assignable to `apps/`, `signora_platform/` or repository process. **Three defects landed in that gap this cycle** ([B-007](BUGS.md), [B-012](BUGS.md), [B-013](BUGS.md)); the last was fixed only because the product owner directed QE to touch it. [C-012](LANE_COORDINATION.md)/[C-013](LANE_COORDINATION.md) wait on RFCs queued since M3A |
+| **Open defects** | [BUGS.md](BUGS.md) — **0 open 🔴.** Six rows are `FIXED` awaiting verification, and **[B-009](BUGS.md) and [B-013](BUGS.md) may not be closed by QE**, which fixed them |
+| **Pending work** | M12.3 list hierarchy (D20) · R2-01 · **M9.5 Step F** · [B-010](BUGS.md) — nothing narrates in the Playground, so M12.3's headline feature cannot be demonstrated · `reasoning@1` still has no released model (below) |
+| **Recommendations** | Rule [C-010](LANE_COORDINATION.md) first — it is the constraint that bound hardest this cycle. Then verify the two QE fixes, then allocate Lane B |
+| **Before your first slice** | **Rebase onto `integration`.** It was rewritten on 2026-08-02 to reconcile a merge commit on `main` ([B-012](BUGS.md)); a lane branch created before that will not fast-forward |
+| **Tooling** | `make` was absent from this workstation and was installed 2026-08-02 ([B-011](BUGS.md), [RUNNING.md](RUNNING.md)). **A missing prerequisite is installed, not worked around** (`CLAUDE.md` §20e). **Export all three lane database variables before `make certify`** — without them it measures the shared default and reports different numbers |
 
-**Local prerequisites:** Docker · `uv` on `PATH` (`~/.local/bin`) · Postgres and Redis via `infra/docker-compose.yml`. Tests need `SIGNORA_DATABASE_URL` (migration identity) and `SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1` — the suite truncates every table, and the flag is a deliberate guard.
+**Local prerequisites:** Docker · `uv` on `PATH` (`~/.local/bin`) · Postgres and Redis via `infra/docker-compose.yml`. Tests need all three lane database variables plus `SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1` ([RUNNING.md § Running a lane](RUNNING.md#running-a-lane)) — the suite truncates, and the flag is a deliberate guard. **`make` is required and is now installed.**
 
 ---
 
