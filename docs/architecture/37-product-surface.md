@@ -429,3 +429,40 @@ The fix is not to duplicate the sentence. It moves onto the panel **only when no
 - **It does not rewrite a dated narration.** The sentences still render in full — *"false means these sentences are dated, not wrong"* — because a narration is never edited to catch up with its account.
 - **It says nothing about when one will appear.** The brief does not know, and a promise the repository cannot keep is the failure D39 names.
 
+---
+
+## Team — Implementation Waiting, declared 2026-08-02
+
+**The customer-facing surface over `workspace_tenancy`.** Selected by the module-review methodology rather than from a queue: `GET /workspaces/{id}/members` was built, authorized and tested with **no caller**, `queryKeys.members` was declared with no use, and `Membership` was declared in `lib/api/types.ts` with no consumer. **Three declared contracts, none exercised.**
+
+### Completed
+
+| | |
+|---|---|
+| **TS-02** | The shell resolves the signed-in person's real role instead of hardcoding `owner`. A `TODO(M2.1)` had claimed this needed a `GET /workspaces/{id}/me`; **it did not** — `Membership` already carried `user_id` and `role`, and the session already carried the user's id |
+
+### Suspended
+
+| | Blocked on | Resume trigger |
+|---|---|---|
+| **TS-01** — the Team page | **[C-024](../LANE_COORDINATION.md)** — nothing in the product can render a person's name | A repository-wide identity-resolution approach is accepted |
+
+**The blocker is not this page's.** `MembershipResponse` returns `user_id` and cannot return a name, correctly: Better Auth is the sole Authentication Authority and the Python tier only verifies ([ADR-0026](adr/0026-jwt-boundary-architecture.md)). **The same question appears in Timeline, comments, audit history, AI attribution, notifications, mentions and assignments** — so answering it inside the Team page would decide it for all of them by accident. §What this document deliberately does not propose already forbids the shortcut: *"not a BFF"*.
+
+### Remaining implementation work, once C-024 lands
+
+**The Team page itself**, in the customer's vocabulary — who belongs, each person's role, who owns the organization, and where collaboration begins. Everything but the names is already reachable.
+
+**Deliberately unplanned: invitations.** `POST /workspaces/{id}/members` adds a member directly rather than inviting one, and [R11-01](39-product-review-findings.md) calls the existing capability *"a weaker capability wearing the name"*. **Whether a customer-facing invitation flow is in scope is a product question, not a reading of the architecture.**
+
+---
+
+## PS-03 — the brief says who put this account in front of you *(2026-08-02)*
+
+**R1-06.** *"Signora is tracking this · nobody has taken it yet"*, identical on all twelve briefs — *"true, and after the first account it is furniture. A line that is constant across every instance carries no information at that instance."*
+
+**`opened_by` has been on the wire since M12.1 and rendered nowhere**, and it is the fact that differentiates them. Found by the same audit that produced TS-02: a declared contract with no consumer.
+
+**It is also the product's central claim, on the one screen where it matters.** *Intelligence suggests; humans commit* — and until now the brief could not tell a reader which of the two had happened. **The wording protects that**: *"Signora suggested this"*, never *"Signora decided this"*, because the domain is explicit that an automatic qualification *"is still only a suggestion — the opportunity opens at `tracking`, which commits nobody."* Overstating it on the screen whose job is to let a seller disagree would be the worst place to do it.
+
+**Both facts, not one.** The stage says what is happening now; `opened_by` says why it started. Dropping the stage to make room would trade a current fact for a historical one.

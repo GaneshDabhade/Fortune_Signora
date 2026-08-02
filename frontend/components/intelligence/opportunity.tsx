@@ -44,6 +44,24 @@ const STAGE_WORDING: Record<Stage, string> = {
  * shaped around, and a screen that presented Signora's suggestion as though it
  * were a decision somebody made would quietly invert it.
  */
+/**
+ * Why this account is being tracked at all.
+ *
+ * **A translation, never a paraphrase.** Each phrase maps to exactly one
+ * `Qualification` the domain records, so a reader can check what they were
+ * told against what was stored.
+ *
+ * *"Signora suggested this"* is deliberately not *"Signora decided this"*. The
+ * domain's own words: an automatic qualification *"is still only a suggestion —
+ * the opportunity opens at `tracking`, which commits nobody."* Wording that
+ * implied a decision would overstate what the pipeline did, on the screen whose
+ * whole job is to let a seller disagree with it.
+ */
+const OPENED_BY_WORDING: Record<AccountOpportunity['opened_by'], string> = {
+  automatic: 'Signora suggested this',
+  manual: 'somebody here added it',
+};
+
 export function WorkflowStage({
   opportunity,
   viewerId = null,
@@ -62,6 +80,18 @@ export function WorkflowStage({
   return (
     <p className="text-sm text-content-muted">
       {STAGE_WORDING[opportunity.stage]}
+      {/* **Who put this in front of you** — R1-06. `opened_by` has been on the
+          wire since M12.1 and rendered nowhere, and its absence is exactly why
+          this line read as furniture: *"Signora is tracking this · nobody has
+          taken it yet"*, identical on all twelve briefs. A line constant across
+          every instance carries no information at that instance.
+
+          It is also the product's central claim made visible on the one screen
+          where it matters. **Intelligence suggests; humans commit** — and until
+          now the brief could not tell a reader which of the two had happened
+          here. */}
+      {' · '}
+      <span className="text-content-subtle">{OPENED_BY_WORDING[opportunity.opened_by]}</span>
       {opportunity.stage === 'tracking' && unclaimed ? (
         <>
           {' · '}

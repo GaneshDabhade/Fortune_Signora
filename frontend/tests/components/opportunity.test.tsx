@@ -227,3 +227,54 @@ describe('dates are written the way a person would say them', () => {
     expect(howLongAgo('2026-06-26T00:00:00Z', now)).not.toMatch(/\d{2,} days/);
   });
 });
+
+describe('the brief says who put this account in front of you — R1-06', () => {
+  // **The line was identical on all twelve briefs.** "Signora is tracking this
+  // · nobody has taken it yet" — true, and after the first account it is
+  // furniture. `opened_by` has been on the wire since M12.1 and rendered
+  // nowhere, and it is the fact that differentiates them.
+
+  it('says Signora suggested an account it qualified itself', () => {
+    render(<WorkflowStage opportunity={commitment({ opened_by: 'automatic' })} />);
+
+    expect(screen.getByText(/Signora suggested this/)).toBeVisible();
+  });
+
+  it('says a person added one they opened themselves', () => {
+    render(<WorkflowStage opportunity={commitment({ opened_by: 'manual' })} />);
+
+    expect(screen.getByText(/somebody here added it/)).toBeVisible();
+  });
+
+  it('never says Signora *decided* anything', () => {
+    // The domain's own words: an automatic qualification "is still only a
+    // suggestion — the opportunity opens at `tracking`, which commits nobody."
+    // Intelligence suggests; humans commit, and the wording must not overstate
+    // it on the one screen whose job is to let a seller disagree.
+    render(<WorkflowStage opportunity={commitment({ opened_by: 'automatic' })} />);
+
+    expect(screen.queryByText(/Signora decided/)).toBeNull();
+    expect(screen.queryByText(/Signora qualified/)).toBeNull();
+  });
+
+  it('says it alongside the stage rather than replacing it', () => {
+    // Two facts, not one: *what is happening* and *why it started*. Dropping
+    // the stage to make room would trade a current fact for a historical one.
+    render(<WorkflowStage opportunity={commitment({ opened_by: 'manual' })} />);
+
+    const line = screen.getByText(/somebody here added it/).closest('p')?.textContent ?? '';
+    expect(line).toContain('Signora is tracking this');
+  });
+
+  it('still says who holds it, on top of who started it', () => {
+    render(
+      <WorkflowStage
+        opportunity={commitment({ opened_by: 'automatic', owner_id: 'u1' })}
+        viewerId="u1"
+      />,
+    );
+
+    const line = screen.getByText(/Signora suggested this/).closest('p')?.textContent ?? '';
+    expect(line).toContain('you hold this');
+  });
+});
