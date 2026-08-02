@@ -530,3 +530,107 @@ An invitation is **two facts with two owners**, and separating them dissolves mo
 **This is not [C-207](../LANE_COORDINATION.md).** That is about *authorizing* an action on yourself. This is about **tenant-scoped data whose legitimate reader is, by definition, outside the tenant** — a new shape, and the first time the tenancy model has met it.
 
 **Raised as [C-208](../LANE_COORDINATION.md)**, and **it blocks only acceptance.** The invitation aggregate, its lifecycle, persistence, the partial index, inviting, listing and revoking are all buildable now — which is how the slice is being taken.
+
+---
+
+## 15 · Seven challenges before TM-03a
+
+### D7 · Events before states — a principle worth keeping
+
+> **A new customer scenario is an *event against an existing state* until proven otherwise. Only add a lifecycle state when no existing one can absorb the event.**
+
+**Sixteen scenarios in §12 produced zero new states.** The pressure to add them is real and comes from the wording — *"invitation revoked after email opened"* sounds like a state, and it is `revoked` plus a fact about when somebody read something.
+
+**The test:** does the scenario change what is *true of the record*, or only what *happened to it*? The first is a state; the second is an event. **Notifications, billing, approvals, playbooks and feature flags will each meet this**, and each will be tempted by a `SENT_BUT_NOT_YET_SEEN`.
+
+### Challenge A · Tokenless acceptance, stress-tested — **it is stronger on security and weaker on flexibility, and that is the right trade**
+
+| Scenario | Tokenless | With a token |
+|---|---|---|
+| **Email forwarded to somebody else** | **Refused.** Their verified address does not match | **Accepted.** Whoever holds the link gets in |
+| **Shared mailbox** (`sales@acme.com`) | Works — whoever controls the mailbox controls the address. **A Better Auth property, not an invitation one** | Same |
+| **Alias** (`sam+signora@` vs `sam@`) | ❌ **Refused, and this is the real cost** | Accepted |
+| **Address changed between invite and accept** | ❌ Refused — same cost | Accepted |
+| **Multiple browser sessions** | No effect. The claim is on the token, not the session | Same |
+| **Account linking · SSO takeover** | No effect **unless the primary email changes**, which is the same case as above | Same |
+| **Multiple verified identities** *(Better Auth has one `email` today)* | ⚠️ **The one that would force a change** — an invitation to a secondary address would not match. The fix is small: match against a list if the claim ever carries one | Unaffected |
+
+> **The security direction is the decisive one.** *"An invitation link that works for whoever holds it"* is **a credential sitting in an inbox**, and email is forwarded, archived, and synced to devices nobody remembers owning. **Tokenless makes forwarding fail closed.**
+>
+> **And the costs are asymmetric in recoverability.** An alias mismatch is fixed by an administrator re-inviting the right address — **annoying and reversible.** The wrong person accepting a forwarded link is **already inside**, and no correction undoes what they saw.
+
+**The design holds, and the failure must be legible:** *"This invitation was sent to `sam@acme.com`. You are signed in as `sam+signora@acme.com`."* — the address is shown, so the refusal is a fact rather than a mystery.
+
+### Challenge B · Is `revoke` really `member:remove`? — **Sufficient, not fundamental**
+
+**They are semantically different and today's mapping hides it:**
+
+| | |
+|---|---|
+| **`member:remove`** | **Ends a relationship.** Takes access from somebody who has it, and interrupts their work |
+| **Revoking an invitation** | **Withdraws an offer.** Nobody has access; nothing is interrupted |
+
+**The blast radius is not comparable**, and the same is true one step earlier: `member:add` *creates* a relationship, while inviting *proposes* one. **Today they coincide because there is exactly one way in and one way out.**
+
+> **Recorded as sufficient with its trigger stated: the first role that may invite but not remove.** A sales manager who can bring an SDR onto the team but not remove a colleague is an ordinary enterprise need, and on that day the two split. **Not before** — a permission introduced for a role that does not exist is speculative (§6).
+
+### Challenge C · Editable, or revoke-and-create? — **Immutable, and the index already enforces it**
+
+**Changing the role on a pending invitation, three ways:**
+
+| | Audit | Customer understanding |
+|---|---|---|
+| **Edit in place** | ❌ The offer originally made is **gone.** The row shows only its final shape | ❌ The email said *member*; acceptance grants *owner*. **The product told them one thing and did another** |
+| **Revoke and create** | ✅ *"Invited as member · withdrawn · invited as owner"* — the whole story | ✅ A new offer, and a new email that matches it |
+
+**Revoke-and-create, and it is the repository's existing discipline**: every declaration in Commercial Profile is versioned and immutable, a change is a new version, and *"an editable record of the past is a record nobody can cite"* (§2).
+
+**The partial unique index makes it the only available path** — a second pending invitation cannot exist until the first is revoked. **The constraint and the principle are the same mechanism**, which is what §2 means by a violation being unrepresentable rather than discouraged.
+
+**Resend stays the same row**, and is consistent: **it changes nothing about the offer.** Extending an expiry *does* change the offer, so it is also revoke-and-create.
+
+### Challenge D · C-208 stress-tested — **it survives, and it is smaller than it looked**
+
+**Nine scenarios, all against the single-tenant rule:**
+
+| | |
+|---|---|
+| **From another logged-in workspace** · **after switching organizations** | The path names workspace B; the session's `active_workspace_id` says A. **§13 already rules: the claim is a routing hint, never a grant.** Context is set from the path. **One tenant** |
+| **Logged out** | Sign in, return. Unchanged |
+| **Logged into a different account** | Refused — verified email does not match. **Message names the invited address and offers to sign out** |
+| **Expired · revoked · workspace deleted** | Checked inside the workspace context, like every other read |
+| **Organization renamed** | A name is not an identity; the path carries the id |
+| **Inviter removed** | Succeeds — §12 |
+
+> **All nine hold, and none reads outside a tenant.**
+
+**And it needs no platform change, which is smaller than [C-208](../LANE_COORDINATION.md) itself claimed.** `set_workspace_context` is already a public function in [`signora_platform/db/session.py`](../../backend/signora_platform/db/session.py):69. **The acceptance endpoint needs a dependency that verifies the token and sets context from the path without requiring membership** — that is a new dependency **in this module's interface layer, composed from platform functions that already exist.** Using the platform, not changing it.
+
+**What remains for the product owner is one sentence:** *may a request establish workspace context from a path parameter when the caller is not yet a member?* **Everything else follows.**
+
+### Challenge E · A sender that is not a person — **the pressure point is not here**
+
+**`invited_by` is a user id, and SCIM, imports and automation have none.** But the Phase 2 stress test already found the answer: **SCIM does not invite. It provisions memberships directly**, bypassing invitations entirely — so the pressure lands on **Membership not requiring an invitation id**, which §4 already recorded.
+
+**Bulk invite and CSV import are still human acts** through a different door; `invited_by` stays a person.
+
+**The genuine gap is an admin API or automation that invites**, and the repository has already solved that shape **twice**: `Opportunity.opened_by` is `automatic | manual`, and `WorkflowState.decided_by is None` means *Signora authored it*. **An actor is a person or the system, and the schema says which.** Today's design should follow that pattern rather than invent a third — **noted, not built.**
+
+### Challenge F · Is *"pending relationship"* the better aggregate? — **No, and the test is nullability**
+
+**Tested against every example given:**
+
+| | |
+|---|---|
+| **Pending membership** *(invitation)* | Counterparty is **not yet a user.** Needs an address, delivery, verification, expiry |
+| **Pending ownership transfer** | Counterparty **already is a member.** Needs no address, no delivery, no verification |
+| **Pending role change** | **Does not exist.** A role change is immediate |
+| **Pending billing seat** | **Not a relationship** — a quantity |
+| **Pending feature enablement** | **Not a relationship** — a flag |
+| **Pending org merge · external collaboration** | **Do not exist**, in the roadmap or anywhere else |
+
+**Two of seven are genuinely pending relationships, and they differ in the load-bearing way:** one counterparty is a stranger and one is a colleague. **That single difference drives the address, the delivery, the verification and the expiry** — everything the aggregate is made of.
+
+> **A generalized aggregate would carry a nullable email, a nullable target user, a nullable role and a nullable expiry — and a nullable column is a state the type cannot refuse.** That is directly against *types should make incorrect architecture impossible* (§2), and it would buy reuse of a table at the cost of every invariant the type currently enforces.
+
+**Invitation stays, and the trigger for revisiting is stated: a third pending relationship with the same shape** — email-addressed, expiring, delivered. **Two is a coincidence; three is a pattern.**

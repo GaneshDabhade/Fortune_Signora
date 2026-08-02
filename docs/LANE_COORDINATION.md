@@ -194,7 +194,7 @@
 | [C-202](#c-202--four-shared-documents-disagree-and-one-disagrees-with-itself) | Four shared documents disagree, and one disagrees with itself | Lane A | **QE** | `OPEN` — **directed by the product owner** | Nothing built. **A cold session trusting any status in the repository** |
 | [C-206](#c-206--is-an-invitation-better-auths-or-signoras) | Is an invitation Better Auth's or Signora's? | Lane A | **Product owner** | **`OPEN` — narrowed sharply 2026-08-02.** The plugin recommendation is **withdrawn**; the proof already arrives in the JWT | **One email delivery decision.** The invitation table, acceptance and the members list are no longer blocked by it |
 | [C-207](#c-207--casbin-cannot-express-an-action-on-yourself) | Casbin cannot express an action on yourself | Lane A | **Product owner** (platform §20a) | `OPEN` — **architectural** | **Leaving an organization**, and every self-directed operation after it |
-| [C-208](#c-208--a-tenant-scoped-row-whose-only-legitimate-reader-is-outside-the-tenant) | A tenant-scoped row whose only legitimate reader is outside the tenant | Lane A | **Product owner** (tenancy · platform §20a) | `OPEN` — **architectural.** Recommendation costs no platform change | **Accepting an invitation only.** Inviting, listing and revoking are unblocked |
+| [C-208](#c-208--a-tenant-scoped-row-whose-only-legitimate-reader-is-outside-the-tenant) | A tenant-scoped row whose only legitimate reader is outside the tenant | Lane A | **Product owner** (tenancy) | `OPEN` — **narrowed to one sentence 2026-08-02.** No platform change; nine scenarios stress-tested | **Accepting an invitation only.** Inviting, listing and revoking are unblocked |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
 >
@@ -2359,6 +2359,14 @@ Alembic's `down_revision` is a linear chain: **a gap is a broken graph, not an o
 **Lane A recommends C**, and the trade-off is worth stating plainly: **the missing feature is a cross-workspace inbox**, which nothing has asked for and which would be the one screen in Signora that reads outside a tenant. **Every invitation arrives with a link; the link carries the workspace; the tenancy model never bends.**
 
 **If C is accepted this item closes with no code beyond the endpoint**, and the recommendation is a design constraint rather than a change.
+
+### Stress-tested, and smaller than this item claimed — 2026-08-02
+
+**Nine acceptance scenarios, all preserving one tenant at a time:** from another logged-in workspace · logged out · logged into a different account · after switching organizations · after expiry · after revocation · after workspace deletion · after rename · after the inviter left. **All nine hold, and none reads outside a tenant.** Detail in [46-team-management.md](architecture/46-team-management.md) §15 Challenge D.
+
+**And it needs no platform change.** `set_workspace_context` is **already a public function** in [`signora_platform/db/session.py`](../backend/signora_platform/db/session.py):69. The acceptance endpoint needs a dependency that verifies the token and sets context from the path **without requiring membership** — a new dependency **in this module's interface layer, composed from platform functions that already exist.** *Using* the platform, not changing it.
+
+> **So what remains is one sentence, not an architecture:** *may a request establish workspace context from a path parameter when the caller is not yet a member?* Everything else follows, and option A's frozen-file change is no longer on the table.
 
 ### Implementation impact
 
