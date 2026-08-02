@@ -19,8 +19,8 @@
 | **Current phase** | **Product implementation** — the pipeline is built; the surface is being exposed |
 | **Last completed milestone** | **M12.5 — Commercial Profile**, all five slices promoted 2026-08-02. The head of the pipeline now exists |
 | **Current milestones** | **M12.3 — the product surface.** The brief's hierarchy (D20) remains; **R2-01 shipped this cycle**. *(Decision Package still deferred until `reasoning@1` is released — see §7)* |
-| **`main` at** | **`1bbee30`** — *Certification binds to a commit, and a commit cannot be a branch*. **This is the certified commit itself**, promoted by SHA |
-| **Certification status** | ✅ **CERTIFIED** — [`1bbee30b7e62`](certification/reports/1bbee30b7e62.md), 2026-08-02, bound to migration head **`0025`** and rendering protocol **v2**. **Commit-bound**: this record names `1bbee30`, and `1bbee30` is what was promoted. See §4 |
+| **`main` at** | **`624f770`** — *Certification 1bbee30b7e62*. **The certified commit itself**, promoted by SHA and checked after the merge |
+| **Certification status** | ✅ **CERTIFIED** — [`624f7704647b`](certification/reports/624f7704647b.md), 2026-08-02, bound to migration head **`0025`** and rendering protocol **v2**. **Commit-bound**: the record names `624f770`, and `624f770` is what was promoted. `make certified ARGS="--audit-main"` proves it across the branch. See §4 |
 | **Branches** | **`main` and `lane-qe` at the promoted, certified baseline.** `integration` sits **one slice ahead** — Lane A's R2-01 landed while QE was measuring `main`; it is validated by its own lane, **not yet by QE**, and is the next cycle's stage 1. Both feature lane branches are synchronized to `integration`. **QE is the only lane that merges, certifies, promotes and publishes this file** ([CLAUDE.md §20e](CLAUDE.md)). Who is on what: [docs/ACTIVE_ASSIGNMENTS.md](docs/ACTIVE_ASSIGNMENTS.md) · defects: [docs/BUGS.md](docs/BUGS.md) · cross-lane questions: [docs/LANE_COORDINATION.md](docs/LANE_COORDINATION.md) |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
 | **Overall completion** | **~66%** by engineering effort (~205 of ~261–339 ew) — M12.5 closed (five slices) · M12.4 shipped · M9.5 (~3 ew) inserted and **not** closed. **An estimate, and marked as one**; every other figure on this page is measured |
@@ -88,9 +88,11 @@ They can also **follow any ledger line to the provider readings beneath it**, an
 | 4 | **[B-010](docs/BUGS.md)** — nothing narrates in the Playground | M12.3's headline feature cannot be demonstrated today |
 | 5 | **[C-008](docs/LANE_COORDINATION.md)** — sellers cannot see what their company sells | Proposal accepted; awaiting a choice between four options |
 
-### Known limitation, introduced this cycle
+### Closed the same day it was opened
 
-**`make certified` reads the certification manifest from the working tree, and a commit never contains its own certificate.** Between promotion and Closeout — the minutes when the record exists on `integration` but not yet on `main` — the guard reports `main` as uncertified. It is correct again the moment Closeout lands the record. **The fix is to read the manifest from every ref rather than from the tree**, and it is a slice rather than a Closeout, because `infra/` decides whether a gate passes ([B-014](docs/BUGS.md)).
+**The limitation recorded an hour ago — that the guard read the manifest only from the working tree, and so called a freshly promoted commit uncertified — is fixed.** The manifest is now read from the tree and from every ref that holds one. **The fix went through its own certification cycle rather than riding along in a Closeout**, because `infra/` decides whether a gate passes.
+
+**The same cycle corrected what the audit was asking for.** It demanded a certificate for every commit on `main`, which promotion cannot deliver: a fast-forward brings the certified commit's ancestors with it, and those were never individually a candidate for shipping. The guarantee is now stated as what it is — **no commit reaches `main` except inside a certified snapshot** — and that is checkable, so it is checked.
 
 ---
 
@@ -331,9 +333,9 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`1bbee30b7e62`](certification/reports/1bbee30b7e62.md) · 2026-08-02 · ✅ CERTIFIED**
+**Latest certification — [`624f7704647b`](certification/reports/624f7704647b.md) · 2026-08-02 · ✅ CERTIFIED**
 
-**Certified commit `1bbee30` · promoted commit `1bbee30`.** Identical, checked after the merge and re-checked by `make certified`.
+**Certified commit `624f770` · promoted commit `624f770`.** Identical, checked after the merge and re-checked by `make certified`.
 
 | Gate | Recorded |
 |---|---|
@@ -342,7 +344,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | **Security Invariants** | **354**, each proven to fail when its guarantee is removed |
 | **import-linter** | **31 kept**, 0 broken |
 | **MyPy** | strict, clean over **547 files** |
-| **`make smoke`** | **24 stages in 117s**, fresh images, clean teardown |
+| **`make smoke`** | **24 stages in 120s**, fresh images, clean teardown |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0025`** · scenario set `0cf6b2c581e4` · working tree clean · `research_planning@2` and `research_synthesis@2` released for `llama3.1:8b`.
