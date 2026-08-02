@@ -1218,6 +1218,34 @@ tests/components/timeline-feed.test.tsx(80,19): error TS2345: (the same)
 
 ---
 
+### B-019 · Below 768px the product has no navigation at all
+
+| | |
+|---|---|
+| **Module** | Frontend foundation — `frontend/components/shell/app-shell.tsx` |
+| **Current assignee** | **none — not assignable.** The foundation is frozen (§20c) and, like `apps/`, has no lane. See [C-026](LANE_COORDINATION.md) |
+| **Severity** | 🟠 — **an unreachable control**, which is §20c's own example of a foundation defect. Whether it is a *defect* or a *non-goal* depends on a product decision nobody has made |
+| **Status** | `OPEN` |
+| **Found** | `9d6635e`, by Lane A during a production-UI review |
+
+**Steps to reproduce.** Sign in. Narrow the viewport below `768px`, or open the product on a phone.
+
+**Expected.** Some way to reach Settings and the attention list.
+
+**Actual.** `app-shell.tsx:31` — `<aside className="hidden w-sidebar … md:block">`. The aside holds **the wordmark and the entire `<Navigation>`**, and below `md` it is removed. **Nothing replaces it.** The topbar carries only the workspace selector, the theme toggle and sign-out.
+
+**So on a phone a signed-in customer cannot reach Settings at all**, and can reach the attention list only from an account brief's *"All accounts"* link. Landing on `/settings` from a bookmark is a dead end short of editing the URL.
+
+**It was not an oversight in one place — it is the whole surface.** Across `app/` and `components/`, **three files carry any responsive rule**: `button.tsx`, `app-shell.tsx` and `authenticated-shell.tsx`. Every product screen has none.
+
+**Why `hidden md:block` is evidence rather than a decision.** A product that had chosen to be desktop-only would leave the sidebar visible and let the layout be cramped. Hiding it says somebody saw it did not fit and removed it — **and the replacement was never built.**
+
+**Not fixed by the reporting lane, for two reasons.** The file is frozen foundation, and more importantly **the fix depends on a product decision that does not exist**: whether Signora is expected to work on a phone at all. Restoring navigation on a viewport where the account brief is unusable would be polish on a screen nobody supports, and inventing that requirement is not a lane's ([C-026](LANE_COORDINATION.md)).
+
+---
+
+---
+
 ## Verified
 
 ### B-001 · `signal_profile` reads the wrong row as "current"

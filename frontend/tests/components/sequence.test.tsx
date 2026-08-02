@@ -176,3 +176,42 @@ describe('the keyboard path', () => {
     expect(push).not.toHaveBeenCalled();
   });
 });
+
+describe('the shortcuts say they exist', () => {
+  // `j` and `k` have moved through accounts since D41 and nothing has ever
+  // said so. A shortcut nobody knows about is functionality that exists and
+  // delivers nothing.
+
+  it('shows the key beside the account it moves to', () => {
+    render(<AccountSequence accountId="b" accounts={RANKED} identities={NAMES} />);
+
+    expect(screen.getByText('j')).toBeInTheDocument();
+    expect(screen.getByText('k')).toBeInTheDocument();
+  });
+
+  it('keeps them out of the accessible name', () => {
+    // A screen-reader user navigates by link. Hearing "k NVIDIA Corporation"
+    // makes the name harder to hear, not easier — the keycap is an affordance
+    // for people who can see it.
+    //
+    // **Asserted through the role query, not `textContent`.** The first
+    // version of this test read `textContent`, which is the DOM and includes
+    // `aria-hidden` nodes; the accessible name excludes them. It failed, and
+    // it was the test that was wrong — which is the same lesson PS-07 found in
+    // a fixture, one layer up.
+    render(<AccountSequence accountId="b" accounts={RANKED} identities={NAMES} />);
+
+    expect(
+      screen.getByRole('link', { name: 'NVIDIA Corporation' }),
+    ).toBeInTheDocument();
+  });
+
+  it('shows no key where there is nowhere to go', () => {
+    // The last account has no next, so `Step` renders nothing at all — and a
+    // keycap for a key that does nothing would teach a reader it is broken.
+    render(<AccountSequence accountId="c" accounts={RANKED} identities={NAMES} />);
+
+    expect(screen.queryByText('j')).toBeNull();
+    expect(screen.getByText('k')).toBeInTheDocument();
+  });
+});

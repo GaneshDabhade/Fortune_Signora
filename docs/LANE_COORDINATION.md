@@ -1741,6 +1741,42 @@ assert set(SignalTypeResponse.model_fields) == {"key", "title"}
 
 ---
 
+## C-026 · Is Signora expected to work on a phone?
+
+| | |
+|---|---|
+| **Owner** | **Product owner** |
+| **Requesting lane** | Lane A |
+| **Category** | Product scope · frontend foundation |
+| **Status** | `OPEN` |
+| **Blocks** | [B-019](BUGS.md), and every responsive decision in Product Surface |
+| **Raised** | 2026-08-02, during a production-UI review |
+
+**No repository document states a supported viewport.** Not the roadmap, not the design principles, not the frontend foundation. **Three files in the entire frontend carry a responsive rule.**
+
+**And one of them removes the navigation.** `app-shell.tsx` hides the sidebar below `768px` and nothing replaces it, so a signed-in customer on a phone cannot reach Settings ([B-019](BUGS.md)).
+
+### Why a lane cannot answer this
+
+**The two readings lead to opposite work**, and neither is smaller:
+
+| If | Then |
+|---|---|
+| **Desktop-only is the intent** | B-019 is **not a defect** — it is a missing statement. The right change is a *documented* supported viewport and, arguably, a message below it rather than a silently broken frame. **Roughly a paragraph** |
+| **Mobile is expected** | B-019 is the first of many. Every screen needs a responsive pass, the brief's eleven sections need an order that survives one column, and the shell needs a mobile navigation pattern that does not exist. **A milestone, not a slice** |
+
+**Restoring navigation without answering this would be the worst of both**: polish on a viewport where the account brief is unusable, and an implicit promise that the product supports a device nobody has designed for.
+
+### What Lane A recommends
+
+**State a supported viewport, whatever it is.** The value is not in choosing mobile — it is in the repository saying which, so a screen can be reviewed against a target rather than against an assumption.
+
+**If desktop-only:** say so, and make the frame say so below the threshold instead of silently dropping the navigation. That is a smaller fix than B-019's, and it turns a broken experience into an honest one.
+
+**Lane A has no recommendation between the two.** Which devices a seller uses is a customer fact, and this lane has never seen one.
+
+---
+
 ## Closed
 
 ## C-016 · Two branch names encode a permanent module assignment that no longer exists

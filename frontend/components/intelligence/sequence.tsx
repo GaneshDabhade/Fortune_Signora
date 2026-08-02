@@ -125,9 +125,39 @@ function Step({
       ].join(' ')}
     >
       {forwards ? null : <ArrowLeft aria-hidden className="h-3.5 w-3.5 shrink-0" />}
+      {forwards ? null : <Key hint="k" />}
       <span className="truncate">{name}</span>
+      {forwards ? <Key hint="j" /> : null}
       {forwards ? <ArrowRight aria-hidden className="h-3.5 w-3.5 shrink-0" /> : null}
     </Link>
+  );
+}
+
+/**
+ * The key that does this, shown beside the thing it does.
+ *
+ * **`j` and `k` have moved through accounts since D41 and nothing has ever
+ * said so.** A shortcut nobody knows about is functionality that exists and
+ * delivers nothing — the same shape as a field on the wire that no screen
+ * reads, in a different layer.
+ *
+ * **Beside the control, not in a help panel.** A shortcut is learned where it
+ * is used; a keyboard-shortcuts dialog is read by people who already know
+ * there are shortcuts to look for.
+ *
+ * **`aria-hidden`, deliberately.** The link's accessible name is the account
+ * and its direction — a screen-reader user navigates by landmark and link, and
+ * hearing *"k Snowflake Inc"* would make the name harder to hear, not easier.
+ * The keycap is an affordance for the people who can see it.
+ */
+function Key({ hint }: { hint: 'j' | 'k' }) {
+  return (
+    <kbd
+      aria-hidden
+      className="hidden shrink-0 rounded border border-border px-1 font-sans text-[0.6875rem] leading-4 text-content-subtle sm:inline"
+    >
+      {hint}
+    </kbd>
   );
 }
 
