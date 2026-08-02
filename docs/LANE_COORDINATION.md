@@ -141,6 +141,9 @@
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
 | [C-001](#c-001--the-target-account-contract) | The target-account contract — this module's first edge | Lane B | **Lane A** | `ANSWERED` → **[ADR-0036](architecture/adr/0036-target-account-contract.md)** | **Nothing. Slice 5 may begin.** `CLOSED` when both lanes have built it |
+| [C-303](#c-303--an-icp-is-not-an-addressable-thing-and-every-verb-the-brief-asks-for-needs-one) | An ICP is not an addressable thing, and every verb the brief asks for needs one | Lane B | **Product owner** | `OPEN` | **All ICP Management implementation.** One aggregate decision, one product question underneath it |
+| [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) | A notification is per-person, and workspace RLS is not enough | Lane B | **Product owner** (tenancy 🔴) | `OPEN` | **M14a N-01's migration.** The pattern exists; the ruling does not |
+| [C-301](#c-301--nothing-asserts-what-the-deployed-worker-consumes) | Nothing asserts what the deployed worker consumes | Lane B | **QE** | `OPEN` | **Nothing today.** Every future consumer can ship [B-301](BUGS.md) again |
 | [C-002](#c-002--customer-language-has-no-anticorruption-layer) | Customer language has no anticorruption layer | Lane B | **Product owner** (ADR) | `OPEN` | Anything that matches an account against an ICP |
 | [C-003](#c-003--three-wire-codes-for-one-condition) | Three wire codes for one condition | Lane B | **Product owner** | `OPEN` | Nothing. **It stopped growing** — slice 5 cites no product |
 | [C-004](#c-004--shared-documents-lag-commercial-profile) | Shared documents lag Commercial Profile | Lane B | **QE** | `OPEN` | Nothing today; a cold session reads a stale manifest |
@@ -2913,4 +2916,148 @@ USING (
 **What "no ruling" costs, stated plainly.** N-01 cannot ship a table. There is no partial version — a notification table without the right policy is one that would have to be migrated later under real customer data, and a migration that tightens RLS on a populated table is exactly the change nobody wants to make in production.
 
 **Lane B recommends A**, and will not write the migration until it is ruled on. **N-01 has no other blocker of its own** — it waits on the `04-modules.md` entry (C-027) regardless, and both can be answered in one pass.
+
+
+---
+
+## C-303 · An ICP is not an addressable thing, and every verb the brief asks for needs one
+
+| | |
+|---|---|
+| **Decision required** | **One aggregate decision**, and **one product question** underneath it that changes what an ICP *is* |
+| **Participating modules** | `commercial_profile` — currently **unassigned**; Lane B built it in M12.5 |
+| **Current assignee(s)** | **Product owner** — the structural decision was reserved explicitly |
+| **Blocking** | **All ICP Management implementation.** Discovery, audit and design continue |
+| **Raised** | 2026-08-02, by Lane B, assigned ICP Management, **after the reuse audit and before any code** |
+
+### 1 · The reuse audit — what already exists, and it is more than expected
+
+**Substantial ICP implementation already ships, and none of it should be replaced.** Delivered as M12.5 slice 2 and reviewed since.
+
+| Layer | Artifact | Verdict |
+|---|---|---|
+| **Domain** | `IcpDeclaration`, `ProductIcp`, `EmployeeRange`, `IcpError` | **Reuse.** The validation rules, the customer's-words principle and the *"describes, never matches"* boundary are all correct and stay |
+| **Application** | `DeclareIcp`, `DeclareIcpInput`, `IcpVersionConflictError` | **Extend.** Optimistic concurrency on `expected_version` is right and generalises |
+| **Infrastructure** | `icp_declaration` (migration `0020`, JSONB `profiles`), versioned repository on the shared `DeclarationModel` | **Extend.** RLS forced, no `UPDATE` grant, `uq_(workspace_id, version)` as the concurrency control |
+| **Interface** | `GET`/`PUT /workspaces/{id}/icp`, purpose-built schemas, `ERROR_MAPPING` | **Evolve, not replace** — see §4 |
+| **Frontend** | `IcpEditor`, `useDeclareIcp`, `queryKeys.icp`, `IcpDeclaration`/`ProductIcp` types | **Reuse the editor's field design; extend around it** |
+| **Tests** | **32** domain · **19** API · **18** component | **Keep every one.** They encode decisions, not implementation |
+| **Docs** | [40-commercial-profile.md](architecture/40-commercial-profile.md) slice 2 · [ADR-0035](architecture/adr/0035-commercial-profile.md) | **Current and accurate** |
+
+**Nothing downstream consumes an ICP.** `commercial_profile/public/` publishes only `TargetAccountReader`; no module imports `IcpDeclaration`. **That makes evolving the model unusually cheap**, and it is the single most useful fact the audit produced: there are no consumers to migrate, no event contract to version, and no coupling to unwind.
+
+### 2 · The finding: the model has no place to put an ICP
+
+**Today an ICP is not a thing. It is a slice of a document.**
+
+```
+IcpDeclaration          ← one per workspace, versioned, immutable
+└── profiles: tuple[ProductIcp, ...]
+    └── ProductIcp(product_id, industries, countries, employees, notes)
+                   ↑ no id, no name, no state, and one per product — enforced
+```
+
+`IcpDeclaration.__post_init__` refuses *"one product is described twice"*. A `ProductIcp` has **no identity of its own**: it is addressed by `product_id`, it has no name, and it has no lifecycle.
+
+**Every verb in the brief presupposes an identity and a lifecycle that do not exist:**
+
+| Asked for | Why it cannot be expressed today |
+|---|---|
+| Create · duplicate · **multiple ICPs** | The uniqueness rule forbids a second one for a product |
+| Archive · restore · activate · deactivate · **draft** | There is no state on a `ProductIcp`, and the document is immutable — states would be a second mutable truth beside it |
+| **Default** | Nothing to point at; there is no id |
+| Search · filter · sort · bulk operations | Nothing to enumerate — `profiles` is a JSONB array inside one row |
+| Compare · version history *per ICP* | Versions exist **for the whole workspace**. *"Version 7 of the EMEA ICP"* has no referent |
+| Usage indicators · health · effectiveness | Nothing to attach them to |
+
+**This is not a defect and the existing design was not wrong.** [40-commercial-profile.md](architecture/40-commercial-profile.md) records the alternative being considered and rejected, with a trigger: *"Rejected: one aggregate per product… **Trigger to revisit: a customer with enough products that two people edit different profiles concurrently and collide.**"*
+
+> **The brief is a stronger trigger than the one recorded.** Not concurrency — **an ICP becoming a thing a customer names, opens, copies, retires and compares.** The recorded trigger anticipated pressure from *scale*; this is pressure from *identity*.
+
+### 3 · The product question underneath it, and it is the real decision
+
+**Before the aggregate can be shaped, one sentence has to be settled**, because today's model answers it one way and the brief implies the other.
+
+> **Is an ICP *"the kind of company that buys **this product**"*, or *"a named segment we sell into"*?**
+
+Today it is strictly the first — `ProductIcp` names a product, exactly one per product, and the module's own docstring is *"an ICP is 'the kind of company that buys **this**'"*.
+
+**The customer sentence that breaks it:** *"We sell Revenue Cloud to mid-market fintech in the US, and separately to enterprise insurers in the UK."* **Two ICPs, one product.** Structurally impossible today. The brief's territories, markets, business units and product lines are all this sentence.
+
+| | Shape | Consequence |
+|---|---|---|
+| **A** | **Keep product-keyed.** *"Multiple"* means multiple products | **Does not satisfy the brief.** Recorded only so the option is visibly rejected rather than skipped |
+| **B** ✅ | **`Icp` names exactly one product, plus a customer-given name.** Several per product | Keeps *"who buys **this**"* intact and unambiguous for every future consumer. Every verb in the brief works. Costs: *"EMEA Enterprise"* for two products is two ICPs, which is mild duplication a customer would probably expect |
+| **C** | **`Icp` is a named segment; product is one criterion among many** (0..n products) | More expressive and avoids that duplication. **Costs the sentence that makes an ICP meaningful** — an ICP naming no product is *"companies we like"*, which is vaguer for a customer to reason about and much vaguer for a consumer to act on |
+| **D** | **B with the product optional** | Rejected: two meanings for one type, and a downstream consumer would have to branch on which kind it received |
+
+**Lane B recommends B**, on the evidence that the module's whole value is being *citable* — every downstream use of an ICP will ask *"who buys what?"*, and C makes half the answer optional.
+
+### 4 · What Lane B is **not** proposing
+
+**Not a new module.** A bounded-context analysis was run and the evidence points the other way: the ubiquitous language is identical (a customer *declares* their commercial reality), the invariant is identical (*"it records; it computes nothing, resolves nothing, matches nothing"*, guarded by `tests/commercial_profile/test_boundary.py` reading the domain as a syntax tree), the lifecycle is identical (versioned, immutable, superseded), and an ICP references a **product from this module's own catalog** — so extracting it would create a cross-module dependency for no gain.
+
+> **This is an aggregate change, not a context change** — and [40-commercial-profile.md](architecture/40-commercial-profile.md)'s own opening already says the module holds *"several small aggregates, each versioned independently — never one profile object."* Promoting ICP to its own aggregate makes the module **more** consistent with its stated design, not less.
+
+**Not a replacement of the API.** `GET`/`PUT /workspaces/{id}/icp` continues to answer *"what is our ICP?"* — it becomes a collection resource alongside per-ICP resources, and existing clients are not broken by adding siblings.
+
+**Not a rewrite of the editor.** The field design, the free-text principle, the immediate-save behaviour and the dropped-product handling ([B-005](BUGS.md)) are all correct and stay; the work is the surface *around* them — a list, a lifecycle, a default.
+
+### 5 · What unblocks this
+
+**Two answers, in one pass:**
+
+1. **The product question in §3** — B, C, or something the brief means that Lane B has not seen.
+2. **Confirmation that ICP stays inside Commercial Profile** as a first-class aggregate rather than becoming a fifteenth bounded context.
+
+**And one assignment matter:** `commercial_profile` currently has **no assignee**. Lane B built it and is recording the claim on the board with this item; if that is wrong, it is a board correction rather than an architectural one.
+
+**Independent work that continues meanwhile:** the customer journey and UI/UX design (Phases 3 and 4), the stress test (Phase 2), and the QE impact statement — **none of which encodes an assumption about the answer**, because all of them describe what a customer does rather than how it is stored. **Nothing is implemented.**
+
+
+### 6 · The customer journey, designed while the structural question is open
+
+**None of this encodes an assumption about the answer**, because it describes what a customer does rather than how it is stored. Recorded now so that the decision in §3 arrives at a journey rather than at a blank page.
+
+| | The customer's question | What the product does |
+|---|---|---|
+| **JI1** | *"Who do we sell to?"* | The list, and **it is the screen that does not exist today.** Today an ICP is only reachable through a per-product editor, so *"show me everything we've said about who buys from us"* has no page |
+| **JI2** | *"We sell this to two very different kinds of company."* | A second ICP for the same product. **The sentence today's model refuses** |
+| **JI3** | *"Which one is Signora actually using?"* | A stated default, visible on the list rather than inferred |
+| **JI4** | *"Start from the EMEA one and change the country."* | Duplicate. The most common way a real second ICP gets written |
+| **JI5** | *"We don't sell into that market any more."* | Archive — **not delete.** Everything Signora found under that ICP was found *because of it*, and deleting the reason leaves the evidence unexplainable |
+| **JI6** | *"Is this too broad?"* | The hardest question on the page, and the one with no honest answer yet — see §7 |
+| **JI7** | *"What changed, and who changed it?"* | Already answered by the existing model: every declaration is versioned, immutable, and names its author |
+
+**JI5 is the one with an architectural consequence.** *Delete* and *archive* are different promises, and the repository already has the vocabulary: a declaration is immutable and superseded. **An archived ICP is a state, not a deletion** — and a deleted one, if it is ever offered, must state what happens to what it produced.
+
+**JI6 is deliberately unanswered.** *"Too broad"* means *"this would match too many companies"*, and **matching does not exist** — it needs resolved attribute values from the Knowledge Graph, which is [C-002](#c-002--customer-language-has-no-anticorruption-layer)'s open anticorruption question. **Offering a health indicator before matching exists would be the product asserting something it cannot compute**, which is the rule the Connection Center already follows with `connectable: false`. It is recorded as the first thing to build once C-002 is answered, and is not in Day One.
+
+### 7 · The stress test, run against the brief's own scenarios
+
+**Four moved the design. The rest were absorbed.**
+
+| Scenario | Consequence |
+|---|---|
+| **Hundreds of ICPs** | The list is a **cursor-paginated collection**, not a JSONB array in one row. Today's `profiles` array is read whole on every request and rewritten whole on every save — **fine for a handful, wrong for hundreds**, and it is the clearest technical argument for the aggregate change in §2 independent of the product argument in §3 |
+| **Multiple products × territories × business units** | **The multiplication is the point of §3.** Under B it is *n* ICPs and the customer names them; under C it is fewer ICPs with more criteria each. **This is the scenario the product owner should picture when choosing** |
+| **Archived and draft ICPs** | A lifecycle state on an aggregate whose *content* is immutable and versioned. **The two must not be confused**: content is superseded, state is updated. That is the same split ADR-0040 draws for notifications, and the same `UPDATE`-grant-on-named-columns-only treatment applies |
+| **ICP effectiveness · performance analytics** | **Does not belong here, and the boundary test would refuse it.** `tests/commercial_profile/test_boundary.py` reads the domain as a syntax tree and rejects any identifier naming a judgement — `score`, `rank`, `fit`, `weight`. **Effectiveness is a judgement.** It belongs to whoever owns measurement, reading ICPs through a port; recording it here would put a verdict in the module whose whole guarantee is that it holds none |
+| **Templates · AI-assisted creation** | Both are *sources* of an ICP's content, not new concepts. An ICP written by a template and one typed by a seller are the same aggregate with different provenance. **Provenance is a field; neither is a new lifecycle** — and AI-authored content would need [ADR-0031](architecture/adr/0031-evidence-citation-protocol.md)'s citation discipline before it ships |
+| **Import / export · bulk editing** | Absorbed. Bulk edit is *n* revisions, each versioned; the optimistic-concurrency rule already in `DeclareIcp` is what makes that safe rather than last-write-wins |
+| **Historical comparison** | Already possible — declarations are immutable and superseded. **Per-ICP history needs the aggregate change; workspace-wide history exists today** |
+| **Shared ICPs across teams** | **Out of scope, and it is a tenancy question rather than an ICP one.** The repository has no team-below-workspace concept. Recorded rather than designed around |
+
+### 8 · QE impact, stated ahead of implementation
+
+**So automation evolves alongside rather than behind.**
+
+| | |
+|---|---|
+| **New APIs** | A collection and per-ICP resources alongside the existing `GET`/`PUT /workspaces/{id}/icp`, which keeps working |
+| **Migration** | A new table, and a **data migration from `icp_declaration.profiles`** — the first in this repository that moves customer data rather than adding to it. **Reversibility needs stating explicitly** |
+| **Regression areas** | `test_api_icp.py` (19), `test_icp.py` (32), `icp.test.tsx` (18), `your-business.test.tsx`, `test_boundary.py`, `tenancy_policy.py` registration |
+| **Seed data** | Through the existing declaration path, never by inserting rows |
+| **Demo scenario** | *"We sell Revenue Cloud to two different kinds of company, and Signora knows which one is which"* |
+| **Performance** | The first list in this module that can be long. Cursor pagination, no `COUNT` |
 
