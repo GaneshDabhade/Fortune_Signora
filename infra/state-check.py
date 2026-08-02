@@ -80,6 +80,55 @@ def _newest_named_commit(text: str, head: str) -> str | None:
     return newest
 
 
+HOLDING_STATUSES = ("CLAIMED", "ACTIVE", "IN VALIDATION", "CHANGES REQUESTED")
+
+
+def _backlog_claims(backlog: str) -> dict[str, str]:
+    """`{task id: lane}` for every task the backlog says somebody is holding.
+
+    Parsed **per `### TASK-nnn` block**, not line by line. A claim note routinely
+    names the tasks the lane passed over — the reason it took this one — so a
+    line-oriented scan reads those as claims by the claiming lane.
+    """
+    claims: dict[str, str] = {}
+    for block in re.split(r"^### TASK-", backlog, flags=re.M)[1:]:
+        task = re.match(r"(\d+)", block)
+        status = re.search(r"\|\s*\*\*Status\*\*\s*\|(.*)", block)
+        if task is None or status is None:
+            continue
+        row = status.group(1)
+        if not any(f"`{state}`" in row for state in HOLDING_STATUSES):
+            continue
+        lane = re.search(r"\*\*(Lane [A-Z]|QE)\*\*", row)
+        if lane is not None:
+            claims[task.group(1)] = lane.group(1)
+    return claims
+
+
+def _board_claims(assignments: str) -> dict[str, set[str]]:
+    """`{task id: lanes}` from the board's *Current* section only.
+
+    Scoped the same way check 3 is: *Recently completed* names tasks that have
+    shipped, and counting those as live claims would leave every finished task
+    looking contested forever. Only the `Task` cell is read — a `Next action`
+    may reference a blocker's id without claiming it.
+    """
+    if "## Current" not in assignments:
+        return {}
+    current = assignments.split("## Current", 1)[1].split("\n## ", 1)[0]
+    claims: dict[str, set[str]] = {}
+    for row in current.splitlines():
+        if not row.startswith("| ") or "TASK-" not in row:
+            continue
+        cells = row.split("|")
+        lane = cells[1].strip().strip("*")
+        if not (lane.startswith("Lane") or lane == "QE"):
+            continue
+        for task in re.findall(r"\bTASK-(\d+)\b", cells[2] if len(cells) > 2 else ""):
+            claims.setdefault(task, set()).add(lane)
+    return claims
+
+
 def _latest_certification() -> dict[str, object] | None:
     manifest = REPO_ROOT / "certification" / "manifest.json"
     if not manifest.exists():
@@ -226,33 +275,57 @@ def main() -> int:
     #      task has a permanent id. "Are these the same task?" must be a fact.
     if backlog and assignments:
         known = set(re.findall(r"\bTASK-(\d+)\b", backlog))
-        board_rows = [
-            line for line in assignments.splitlines()
-            if line.startswith("| ") and "TASK-" in line
-        ]
+        board_here = _board_claims(assignments)
 
         # (a) two lanes holding one task — the race the protocol exists to lose safely.
-        held: dict[str, list[str]] = {}
-        for row in board_rows:
-            lane = row.split("|")[1].strip().strip("*")
-            for task in re.findall(r"\bTASK-(\d+)\b", row):
-                held.setdefault(task, []).append(lane)
-        contested = {t: lanes for t, lanes in held.items() if len(set(lanes)) > 1}
-        if contested:
-            for task, lanes in contested.items():
-                findings.append(
-                    f"TASK-{task} is claimed by {' and '.join(sorted(set(lanes)))} at once. "
-                    f"The Task Claim Protocol requires the later claim to be abandoned "
-                    f"(CLAUDE.md §20e)."
-                )
+        #
+        # **Reads `_board_claims` rather than scanning rows itself.** The scan this
+        # replaced matched every line in the file containing a task id and took the
+        # first cell as the lane, which made two things claims that are not:
+        # *Recently completed* rows (a finished task looks contested forever) and a
+        # task id mentioned in a `Next action`. It reported `TASK-001` held by
+        # "B" and "Lane B" at once — one row in each section, neither a live claim.
+        # One parser, used by both checks: duplicated truth eventually contradicts
+        # itself, and here it did.
+        contested = {t: lanes for t, lanes in board_here.items() if len(lanes) > 1}
+        for task, lanes in sorted(contested.items()):
+            findings.append(
+                f"TASK-{task} is claimed by {' and '.join(sorted(lanes))} at once. "
+                f"The Task Claim Protocol requires the later claim to be abandoned "
+                f"(CLAUDE.md §20e)."
+            )
 
         # (b) a board row naming a task the backlog has never heard of.
-        unknown = {t for row in board_rows for t in re.findall(r"\bTASK-(\d+)\b", row)} - known
+        unknown = set(board_here) - known
         if unknown:
             findings.append(
                 f"ACTIVE_ASSIGNMENTS.md names {', '.join('TASK-' + t for t in sorted(unknown))}, "
                 f"which BACKLOG.md does not define. A claim must refer to a task that exists."
             )
+
+        # (c) the two registers must name the same holder.
+        #
+        # **A claim is recorded in two files, so the two can disagree**, and 5c(a)
+        # cannot see it: that check reads the board alone, so a backlog row saying
+        # `CLAIMED — Lane X` with no board row is invisible. Both directions are
+        # wrong in the same way and for the same reason — a lane reading one file
+        # concludes the task is free while a lane reading the other concludes it is
+        # taken, which is the duplicate implementation the protocol exists to stop,
+        # arriving through the registers instead of through a race.
+        for task, lane in _backlog_claims(backlog).items():
+            holders = board_here.get(task, set())
+            if not holders:
+                findings.append(
+                    f"BACKLOG.md says {lane} holds TASK-{task}; ACTIVE_ASSIGNMENTS.md "
+                    f"has no row for it. A lane reading only the board would take work "
+                    f"somebody else is doing."
+                )
+            elif lane not in holders:
+                findings.append(
+                    f"BACKLOG.md says {lane} holds TASK-{task}; the board says "
+                    f"{' and '.join(sorted(holders))}. One of the two is wrong, and "
+                    f"neither is authoritative over the other."
+                )
 
         if not contested and not unknown:
             ready = len(re.findall(r"^### TASK-\d+", backlog, re.M))

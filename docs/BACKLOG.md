@@ -93,7 +93,7 @@
 |---|---|
 | **Module** | Repository tooling — `infra/` |
 | **Slice** | one slice |
-| **Status** | `CLAIMED` — **Lane B**, 2026-08-02 |
+| **Status** | `CLAIMED` — **Lane B**, 2026-08-02. **Complete and `READY FOR QE`** — `DONE` is QE's at promotion |
 | **On claiming** | **Only the unbuilt half.** [B-017](BUGS.md) asked whether this task was superseded; measured, it is *half* superseded. QE's `e1d2fa6` routed claims to `integration`, which makes cross-branch detection largely moot — **that half is withdrawn.** But *"every `CLAIMED` row has a matching lane on the board"* is **not built**: `state-check` check 5c reads the board only, so a backlog row reading `CLAIMED — Lane X` with no board row is invisible today. Lane B builds that half and leaves B-017's ruling to QE |
 | **Notes** | Assert that no task is claimed twice and that every `CLAIMED` row has a matching lane on the board. **A slice, not a Closeout** — `infra/` decides whether gates pass ([B-014](BUGS.md)). *Partly delivered 2026-08-02; what remains is the id-level checking* |
 
