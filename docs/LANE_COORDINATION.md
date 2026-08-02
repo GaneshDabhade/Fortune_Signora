@@ -1445,6 +1445,54 @@ It is also the failure mode this repository keeps finding in a different coat: [
 
 ---
 
+## C-021 · An event handler cannot reach a provider adapter
+
+| | |
+|---|---|
+| **Owner** | **Product owner** — `apps/worker/` has no assignable lane ([C-010](#c-010), [TASK-006](BACKLOG.md)) |
+| **Requesting lane** | Lane A |
+| **Category** | Composition root · background work · module boundary |
+| **Status** | `OPEN` |
+| **Blocks** | **The last step of PP-02.** Everything above it is built and tested; nothing yet reads a company a customer declared |
+| **Raised** | 2026-08-02, while wiring the target-account consumer |
+
+**Everything a lane may build is built.** The delta rule, the version ordering, the state table, the repository, the use case and the event handler are complete, typed and covered by 17 unit tests. What remains is one thing: **how the handler actually starts a sync.**
+
+### The obstruction, precisely
+
+| | |
+|---|---|
+| `RunProviderSync` needs a `ProviderAdapter` | Supplied from `ctx["provider_registry"]` in the **ARQ task** context |
+| An event handler gets a `WorkerRuntime` | Which holds `session_factory`, `http` and `ai` — **and no provider registry** |
+| A module cannot enqueue ARQ work | `signora_platform/event_bus/queue.py` is the only enqueue path and it is **the relay's**, driven from the outbox. Frozen (§20a) |
+
+**So the handler can decide what to sync and has no way to start it.** Both routes out are outside a lane's budget:
+
+| Route | What it needs | Whose |
+|---|---|---|
+| **A** — add the provider registry to `WorkerRuntime` and run the syncs in the handler | A change to `apps/worker/subscriptions.py` beyond appending a subscription | `apps/` — **unassignable**, C-010 |
+| **B** — publish `provider.sync.requested`, let the relay enqueue it, consume it | A new event type **and its `06-events.md` entry** | 🔴 — `docs/architecture/01`–`21` |
+
+### What Lane A recommends, and why
+
+**Route A, with the syncs run inline in the handler.**
+
+**Not because it is smaller.** Because the fan-out objection it invites is answerable and B's cost is not. A declaration of *n* companies becomes *n* paged conversations in one handler invocation — but the handler runs on the `provider_sync` pool, which exists for exactly this, and **the failure mode self-heals**: a timeout dead-letters the event, redelivery recomputes the delta against watermarks that have since advanced, and the work remaining shrinks on every attempt. `CLAUDE.md` §14 is explicit that performance work is justified by evidence rather than by intuition, and the largest declaration anyone has is twelve.
+
+**Route B is the architecturally purer answer and it buys a per-company retry**, which is genuinely better. It costs a permanent event type on a bus, for a message that never leaves the module that publishes it — *inter-module communication defaults to events* (§9) is a rule about crossing boundaries, and this crosses none.
+
+**The `SyncDispatcher` port is written so either can be implemented without the use case changing.** That is deliberate: this item asks which adapter to write, not what to redesign.
+
+### A second finding, and it is `CLAUDE.md`'s own text
+
+**🟠 Amber permits *"a new event (with its `06-events.md` entry)"*. 🔴 Red forbids `docs/architecture/01`–`21`, which contains `06-events.md`.** A lane following the budget literally is both allowed and forbidden to add an event.
+
+**It is not hypothetical — it has already cost.** Lane B shipped `commercial_profile.target_accounts_changed` and could not catalog it; the entry sits in [C-013](#c-013) marked *"ready to paste"*, and the repository currently emits an event its own catalog does not list. **That is the defect class `CLAUDE.md` §2 exists to prevent**, reached by following the rules rather than by breaking them.
+
+**Not resolved here.** Governance is the product owner's, and a lane that reconciled two rules by choosing one would have changed the rulebook to suit its own slice.
+
+---
+
 ## Closed
 
 ## C-016 · Two branch names encode a permanent module assignment that no longer exists

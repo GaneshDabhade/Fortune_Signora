@@ -46,6 +46,8 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         "provider_sync",
         "provider_watermark",
         "raw_provider_record",
+        # Provider Platform's target-account consumer (PP-02), migration 0027.
+        "target_sync_state",
         # Provider Normalization (M2.2), migration 0008.
         "claim",
         "normalization_outcome",

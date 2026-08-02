@@ -19,6 +19,7 @@ from modules.provider_platform.domain.sync import (
     RawProviderRecord,
     SyncWatermark,
 )
+from modules.provider_platform.domain.targets import TargetSyncState
 
 
 class SyncRepository(Protocol):
@@ -45,4 +46,31 @@ class SyncRepository(Protocol):
     async def store_records(self, records: list[RawProviderRecord]) -> int:
         """Returns the number actually inserted; a re-sync legitimately
         delivers records already stored."""
+        ...
+
+
+class TargetSyncStateRepository(Protocol):
+    """Where *"which declaration have we acted on"* is kept.
+
+    Its own port rather than a method on `SyncRepository`, because the two
+    answer different questions and are read at different moments: one is per
+    `(provider, capability, subject)` and is touched by every sync, this is
+    per workspace and is touched once per declaration.
+    """
+
+    async def get(self, workspace_id: UUID) -> TargetSyncState:
+        """The state, or one with `declaration_version=None` when this
+        workspace has never been synchronised against a declaration."""
+        ...
+
+    async def save(self, state: TargetSyncState) -> None: ...
+
+    async def subjects_with_a_position(self, workspace_id: UUID) -> frozenset[str]:
+        """Every subject this workspace has successfully read at least once.
+
+        **A position, not a row.** A watermark with no position records an
+        attempt that stored nothing, and treating that as read is precisely
+        the mistake ADR-0036 §4 warns about — an account declared, never
+        fetched, and re-declared would look like *"no change"*.
+        """
         ...

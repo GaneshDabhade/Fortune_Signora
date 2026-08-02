@@ -108,24 +108,6 @@
 | **Status** | `IN VALIDATION` — **Lane A**, 2026-08-02. Migration `0026`; 907 backend tests pass |
 | **Notes** | **Left `BLOCKED` because its blocker is now being built by the same lane in the same effort.** The row read *"blocked on the consumer — not to be fixed opportunistically, without it the schema change has nothing exercising it."* That condition is **satisfied rather than waived**: [ADR-0036](architecture/adr/0036-target-account-contract.md) names this *"one defect that must be fixed before the consumer is built"*, and PP-02 is what exercises it |
 
-### TASK-018 · Nothing consumes a customer's target accounts
-
-| | |
-|---|---|
-| **Module** | `provider_platform` |
-| **Slice** | PP-02 — **the consumer itself** |
-| **Status** | `READY` — **Lane A**, next in the module effort |
-| **Notes** | The capability [TASK-014](#blocked--on-a-capability-and-on-which) and [C-007](LANE_COORDINATION.md) are blocked on. Fully specified by [ADR-0036](architecture/adr/0036-target-account-contract.md) §2–§7: the event triggers, `TargetAccountReader` supplies, Provider Platform computes its own delta against `provider_watermark`, and an event older than the acted-on `declaration_version` is ignored |
-
-### TASK-019 · Un-watching an account does not stop the spending
-
-| | |
-|---|---|
-| **Module** | `provider_platform` |
-| **Slice** | PP-03 |
-| **Status** | `READY` — **Lane A**, last in the module effort |
-| **Notes** | [ADR-0036](architecture/adr/0036-target-account-contract.md) §6. **Polling stops; nothing is deleted, and the watermark stays** so re-adding resumes incrementally. Raw records are evidence that live conclusions already cite — *erasability is a property of the tenancy model* |
-
 ### TASK-005 · `state-check` learns the backlog
 
 | | |

@@ -1,4 +1,4 @@
-"""Persistence for provider syncs, watermarks, and raw records."""
+"""Persistence for provider syncs, watermarks, raw records and target state."""
 
 from __future__ import annotations
 
@@ -15,10 +15,12 @@ from modules.provider_platform.domain.sync import (
     RawProviderRecord,
     SyncWatermark,
 )
+from modules.provider_platform.domain.targets import TargetSyncState
 from modules.provider_platform.infrastructure.models import (
     ProviderSyncModel,
     ProviderWatermarkModel,
     RawProviderRecordModel,
+    TargetSyncStateModel,
 )
 
 #: Records are written by a background worker with no acting user. A fixed
@@ -133,3 +135,54 @@ class ProviderSyncRepository:
         )
         result: CursorResult[object] = await self._session.execute(statement)  # type: ignore[assignment]
         return int(result.rowcount or 0)
+
+
+class SqlTargetSyncStateRepository:
+    """Persistence for *"which declaration have we acted on"*.
+
+    Reads `provider_watermark` for the set of subjects already read — its own
+    module's table, which is the only reason this is allowed to know about it
+    at all.
+    """
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def get(self, workspace_id: UUID) -> TargetSyncState:
+        statement = select(TargetSyncStateModel).where(
+            TargetSyncStateModel.workspace_id == workspace_id
+        )
+        model = (await self._session.execute(statement)).scalar_one_or_none()
+        return TargetSyncState(
+            workspace_id=workspace_id,
+            declaration_version=model.declaration_version if model else None,
+        )
+
+    async def save(self, state: TargetSyncState) -> None:
+        if state.declaration_version is None:
+            raise ValueError("a target sync state with no version records nothing")
+        statement = (
+            insert(TargetSyncStateModel)
+            .values(
+                id=uuid4(),
+                workspace_id=state.workspace_id,
+                declaration_version=state.declaration_version,
+                created_by=SYSTEM_USER_ID,
+                updated_by=SYSTEM_USER_ID,
+            )
+            .on_conflict_do_update(
+                constraint="uq_target_sync_state_workspace",
+                set_={"declaration_version": state.declaration_version},
+            )
+        )
+        await self._session.execute(statement)
+
+    async def subjects_with_a_position(self, workspace_id: UUID) -> frozenset[str]:
+        # **A position, not a row.** A watermark with no position records an
+        # attempt that stored nothing; treating that as read is exactly the
+        # mistake a declaration-delta makes (ADR-0036 §4).
+        statement = select(ProviderWatermarkModel.subject).where(
+            ProviderWatermarkModel.workspace_id == workspace_id,
+            ProviderWatermarkModel.position.is_not(None),
+        )
+        return frozenset((await self._session.execute(statement)).scalars().all())

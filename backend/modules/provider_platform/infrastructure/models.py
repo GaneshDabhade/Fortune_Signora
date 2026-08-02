@@ -94,3 +94,24 @@ class RawProviderRecordModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMi
         DateTime(timezone=True), nullable=False, index=True
     )
     payload: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+
+
+class TargetSyncStateModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMixin):
+    """Which declaration this workspace's targets were last synced against.
+
+    **One row per workspace, holding one integer.** It answers a single
+    question — *where are we now* — which is why a second row for the same
+    workspace would be a second answer to it.
+
+    Updated in place rather than appended, and that is correct: this is
+    current position, the same category as `provider_watermark`. What
+    *happened* is recorded by `provider_sync` and the outbox.
+    """
+
+    __tablename__ = "target_sync_state"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", name="uq_target_sync_state_workspace"),
+    )
+
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    declaration_version: Mapped[int] = mapped_column(Integer, nullable=False)

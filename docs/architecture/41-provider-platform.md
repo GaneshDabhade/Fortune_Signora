@@ -63,12 +63,46 @@
 
 **Removal stops polling and deletes nothing** (§6). Raw records are evidence that conclusions a customer has already read and acted on still cite. *Erasability is a property of the tenancy model* — it belongs to deleting a workspace, not to un-watching a company. **The watermark stays**, so re-adding resumes incrementally.
 
-## Slices, and where this document was written
+## The implementation sequence
 
-| Slice | Task | State |
+**The order is the ADR's, not a preference.** PP-01 must precede PP-02 because the consumer is what gives a workspace two subjects; PP-03 must follow PP-02 because *stopping* polling is meaningless before anything starts it.
+
+| Slice | What it establishes | State |
 |---|---|---|
-| **PP-01** — a watermark belongs to one subject | [TASK-015](../BACKLOG.md) / [B-004](../BUGS.md) | Built 2026-08-02 |
-| **PP-02** — the consumer | [TASK-018](../BACKLOG.md) | Next |
-| **PP-03** — un-watching stops the spending | [TASK-019](../BACKLOG.md) | After PP-02 |
+| **PP-01** — a watermark belongs to one subject | [B-004](../BUGS.md), and the precondition [ADR-0036](adr/0036-target-account-contract.md) names | Built 2026-08-02 · [TASK-015](../BACKLOG.md) |
+| **PP-02** — the consumer | The module's first real input | **Built to the composition root; blocked there by [C-021](../LANE_COORDINATION.md)** |
+| **PP-03** — un-watching stops the spending | [ADR-0036](adr/0036-target-account-contract.md) §6 | Planned |
+
+> **PP-02 and PP-03 are proposed slices, not registered tasks** (product-owner refinement, 2026-08-02). A feature lane plans its own sequence inside its implementation area; **it does not mint repository task identifiers** — that namespace is registered centrally, so two lanes cannot extend it independently. This table is the plan; [`BACKLOG.md`](../BACKLOG.md) is the register, and only QE writes ids into it.
+
+### What PP-02 built, and where it stops
+
+**Everything a lane may build.** The delta rule (`domain/targets.py`), the version ordering, `target_sync_state` (migration `0027`), its repository, the `SyncDeclaredTargets` use case and the event handler — typed, and covered by 17 unit tests against fakes.
+
+**It stops at one thing: the handler cannot reach a provider adapter.** `RunProviderSync` needs a `ProviderAdapter`, which lives in the ARQ task context; an event handler receives a `WorkerRuntime`, which holds a session factory, an HTTP client and AI settings and **no provider registry**. And no module can enqueue ARQ work — the only enqueue path is the relay's, driven from the outbox and frozen under §20a.
+
+**So the consumer can decide what to sync and has no way to start it.** Both routes out are outside a lane's Change Budget, which is [C-021](../LANE_COORDINATION.md).
+
+**`SyncDispatcher` is a port precisely so this is a question about which adapter to write**, not about what to redesign. Nothing above it changes whichever way the decision goes.
+
+### Three outcomes, and why none of them is an error
+
+`SyncDeclaredTargets` returns a reason rather than a bare *"nothing happened"*, because three ordinary situations produce no work and one of them is worth investigating:
+
+| | Means |
+|---|---|
+| `stale` | The event announced a declaration already overtaken. **Checked before the declaration is read**, so a stale event costs nothing |
+| `never_declared` | The workspace has never declared a list. *"They have not told us yet"* is a state to wait in |
+| `nothing_new` | Every declared company has already been read. **The version is still recorded**, or the next event would recompute an identical delta forever |
+
+**Dispatch happens before the version is recorded.** If recording fails, the event redelivers, the delta is recomputed against the same watermarks and the same companies are dispatched again — wasteful once, and every layer below is idempotent. Recording first and failing to dispatch would lose the work **silently**, and nothing downstream would notice a company that was never fetched.
+
+## Operational considerations
+
+**Fan-out is the known scaling question, and it is deliberately not designed for yet.** A declaration of *n* companies becomes *n* syncs. Under the recommended dispatch (C-021, route A) they run in one handler invocation on the `provider_sync` pool.
+
+**The trigger to revisit is a declaration large enough to exceed that pool's job timeout** — not a number chosen now. §14 is explicit that performance work is justified by evidence rather than intuition, and the largest declaration in existence is twelve. **The failure mode is also self-healing**: a timeout dead-letters the event, redelivery recomputes the delta against watermarks that have since advanced, and the remaining work shrinks on every attempt.
+
+**Removal is PP-03 and is not implemented.** Until it is, un-watching a company stops nothing — the declaration shrinks and no watermark changes. Stated here because it is invisible from the code: nothing looks wrong, and the spending simply continues.
 
 **PP-02 is what [TASK-014](../BACKLOG.md) and [C-007](../LANE_COORDINATION.md) are blocked on** — the guided first run ends by publishing a declaration nothing consumes, and *"a guided first run is the most prominent place in the product to make a promise."*
