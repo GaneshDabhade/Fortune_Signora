@@ -91,9 +91,9 @@
 | [C-020](#c-020--m7-has-no-scope-and-timeline-has-no-design) | M7 has no scope, and Timeline has no design | Lane B | **Product owner** (roadmap 🔴) | `OPEN` | **M7** — [`TASK-017`](BACKLOG.md), `WAITING`. Lane B released it and is `AVAILABLE` |
 | [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it) | Timeline has a surface and nowhere to mount it | Lane B | **Lane A** + product owner | `OPEN` | **Nothing in Timeline** — backend and component built; only the mount point |
 | [C-025](#c-025--m13-is-not-a-module-and-its-consumers-do-not-exist-yet) | M13 is not a module, and its consumers do not exist yet | Lane B | **Product owner** | `ANSWERED` — all four decisions taken 2026-08-02. **M13 paused on an environmental dependency, not this item** | **Nothing.** The remaining work needs a HubSpot developer application, not a decision |
-| [C-026 *(Lane B's)*](#c-026--the-connection-center-is-reachable-only-by-typing-its-url) | The Connection Center is reachable only by typing its URL | Lane B | **Lane A** + product owner | **`IMPLEMENTING`** — Lane A shipped it as **CX-01**, 2026-08-02, before reading this row. `CLOSED` is Lane B's | **Nothing.** Settings now carries a Connections card |
+| [C-026 *(Lane B's)*](#c-026--the-connection-center-is-reachable-only-by-typing-its-url) | The Connection Center is reachable only by typing its URL | Lane B | — | **`IMPLEMENTING`** — shipped as **CX-01**. **Narrowed to nothing**; `CLOSED` is Lane B's | **Nothing, on either side** |
 
-| [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it) | Timeline has a surface and nowhere to mount it | Lane B | **Lane A** + product owner | **`IMPLEMENTING`** — Lane A's half delivered 2026-08-02 (**CX-03**). `CLOSED` is Lane B's to set | **Nothing.** The feed is mounted on the account brief |
+| [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it) | Timeline has a surface and nowhere to mount it | Lane B | ~~Lane A~~ → **[C-012](#c-012--eventhandler-receives-no-session-so-no-module-handler-is-registered)** | **`IMPLEMENTING`** — mount delivered (**CX-03**). **Narrowed: the remaining work is data, not placement** | **Nothing is buildable.** The feed is mounted and renders empty — `project_to_timeline` is wired into no worker and no seeder |
 | [C-025](#c-025--m13-is-not-a-module-and-its-consumers-do-not-exist-yet) | M13 is not a module, and its consumers do not exist yet | Lane B | **Product owner** | `OPEN` | **M13's credential half** — no tier may run an integration OAuth flow |
 | [C-018](#c-018--nobody-owns-the-customer-facing-name-of-an-attribute) | Nobody owns the customer-facing name of an attribute | Lane A | **Product owner** | `OPEN` | [`TASK-003`](BACKLOG.md), skipped with its reason recorded |
 | [C-019](#c-019--a-claim-is-invisible-to-the-step-meant-to-arbitrate-it) | A claim is invisible to the step meant to arbitrate it | Lane A | **Product owner** + QE | `OPEN` | Nothing — **largely superseded**; see the item |
@@ -1016,6 +1016,23 @@ Every built module has one, marked *as built*: `22`–`29`, `33`, and `40-commer
 
 **`CLOSED` is the requesting lane's to set**, and Lane B is the requester.
 
+### Narrowed — 2026-08-02. **The mount is not the remaining work; the data is**
+
+**The product owner's instruction is to continuously narrow a dependency to only what is actually left**, and this one moved the same day it was satisfied.
+
+| | |
+|---|---|
+| **Was** | *"Ten lines in a file Lane B may not edit."* **Delivered — CX-03** |
+| **Is** | **Nothing writes a timeline row outside a test.** `make runtime-composition` reports **1 of 9** consumers wired; `project_to_timeline` appears in `apps/` zero times and in no seeder |
+| **Owner of what remains** | **Not Lane A, and not Lane B.** It is [C-012](#c-012--eventhandler-receives-no-session-so-no-module-handler-is-registered) — `EventHandler` receives no session, so the deployed worker consumes almost nothing. **A product-owner decision recorded since M3A, not a defect** |
+| **Resume trigger** | The timeline projection is subscribed by the deployed worker, or a seeder drives it |
+
+**What a customer sees meanwhile:** the section renders, headed *What has happened*, saying **"Nothing has been recorded about this company yet"** — on every account, in every environment, including the demo stack.
+
+**Lane A recommends keeping the mount** rather than reverting it. Un-mounting would hide a wiring gap behind a missing feature, which is the inversion PS-01 and PS-02 exist to prevent, and the section becomes correct the moment a row exists.
+
+**One thing Lane A cannot fix and is naming instead.** That empty-state sentence is the product saying *it looked and found nothing*, when it never looked — the same class of defect as R2-02. **The copy belongs to Timeline's component**, so it is Lane B's call whether it should distinguish *no history yet* from *history is not being recorded*.
+
 ---
 
 ## C-025 · M13 is not a module, and its consumers do not exist yet
@@ -1427,6 +1444,8 @@ The model is now four: **Integration (catalog) · Connected Account · Grant · 
 ---
 
 ## C-026 · The Connection Center is reachable only by typing its URL
+
+> **Narrowed to nothing — 2026-08-02.** Lane A shipped the entry point as **CX-01**: a *Connections* card on `/settings`, with a route census in `tests/components/settings-index.test.tsx` that asserts **every** `/settings/*` route has a link, so the class of defect cannot recur silently. **No work remains on either side.** `CLOSED` is Lane B's to set as the requesting lane.
 
 | | |
 |---|---|

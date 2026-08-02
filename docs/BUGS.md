@@ -1360,6 +1360,10 @@ tests/components/timeline-feed.test.tsx(80,19): error TS2345: (the same)
 
 **So the fix is not "add two directories" — it is to select files the way the test beside it already does.** That closes the directory half permanently. The *undefined-token* half still needs a second assertion, because both checks look for wrong colours and neither looks for absent ones.
 
+**Coordination on the structural half — 2026-08-02, on the product owner's direction.** *"Fix enforcement, not symptoms. `design-tokens.test.tsx` should adopt the same discovery mechanism instead of extending another hardcoded list."*
+
+**Lane A is not implementing it** and is naming the owner instead: the check is repository-wide test infrastructure, which is **QE's**, and the 44 lines are **Lane B's**. **The two halves can be fixed independently and in either order** — a walk-based check will simply start failing on the 44 lines, which is the correct sequence if QE goes first.
+
 **Two fixes, and they are different owners.** The 44 lines are Lane B's, in Lane B's modules. **Strengthening the check so a third instance is impossible is the frontend foundation's**, which has no assignee — recorded here rather than opened as a separate row, because it is the same defect seen from the enforcement side. A check that can only catch one of the two ways a colour goes wrong is worth saying out loud.
 
 **Not fixed by the reporting lane.** Both modules are Lane B's, and *finding a defect is an obligation to report it, never permission to fix it* (`CLAUDE.md` §20e).

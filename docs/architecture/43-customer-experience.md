@@ -91,7 +91,7 @@
 | **Address not found** | *any unmatched URL* | Product Surface | n/a | ✅ **CX-02** | ✅ Complete | **Production** |
 | **Render failure, outside the shell** | *any* | Product Surface | n/a | ✅ **CX-02** | ✅ Complete | **Production** |
 | **Team** | — | Workspace & Tenancy | ✅ endpoint | ❌ | ❌ | **Blocked — [C-024](../LANE_COORDINATION.md)** |
-| **Account history** | on `/accounts/[id]` | Timeline | ✅ | ✅ | ✅ Complete — **CX-03** | **Production** |
+| **Account history** | on `/accounts/[id]` | Timeline | ⚠️ **served, never written** | ✅ **CX-03** | ⚠️ **Renders its empty state everywhere** | **Mounted; awaiting data** |
 | **Provider health** | — | Provider Platform | ❌ **no router** | ❌ | ❌ | **No HTTP surface at all** |
 | **Billing · plan · usage** | — | *undecided* | ❌ | ❌ | ❌ | **Blocked — [C-200](../LANE_COORDINATION.md)** |
 | **Notifications** | — | *M14a, not started* | ❌ | ❌ | ❌ | **Not started** |
@@ -117,6 +117,17 @@
 ---
 
 ## 3 · Capability Mapping
+
+**Every capability falls into exactly one of four buckets. Nothing lives outside them** (product owner, 2026-08-02):
+
+| | |
+|---|---|
+| **Reachable** | A customer can discover it, navigate to it and complete the workflow |
+| **Blocked** | A decision or a dependency stands in the way, and it is **named** |
+| **Missing implementation** | It should exist and does not |
+| **Intentionally unreachable** | It correctly has no screen — and the entry **says why, what replaces it, and why exposing it would be wrong** |
+
+> **The fourth must never become a dumping ground for unfinished work.** An entry that cannot answer all three questions is not intentional; it is *Blocked* or *Missing* wearing a calmer label. That test is applied to every row in the ⚪ table below.
 
 **Every backend endpoint, against what a customer can actually do with it.** This is the roadmap for completing the customer experience.
 
@@ -172,6 +183,10 @@
 
 **The one is not a gap.** `/integrations` returns the catalog *and* what is connected; `/connections` returns only the latter. The Connection Center reads the superset, which is the correct choice. **Recorded as an observation for the owning lane, not opened as a defect** — an endpoint may legitimately outlive its first consumer.
 
+> **An endpoint is not a capability — and this is the limit that cost most.** The census asks whether a route is *served* and *called*. It cannot ask whether **anything ever writes the data behind it**, and on 2026-08-02 that turned out to matter: `make runtime-composition` reports **1 of 9** modules declaring an event consumer is wired into the deployed worker. **Eight projections, including Timeline's, are never invoked outside a test** — a deliberate consequence of [C-012](../LANE_COORDINATION.md), not a defect, and invisible to every endpoint-level check.
+>
+> **The correction to the method: three questions, not two.** *Is it served* · *is it called* · **is anything writing what it serves.** The third is answered by `make runtime-composition`, and this document now cites it rather than assuming a served endpoint has data behind it.
+
 > **A request is not a screen, and this is where the check stops being mechanical.** Two endpoints are *requested* and still reach no customer: `GET /members` is fetched only so the shell can resolve **your own** role (TS-02), and its list is rendered nowhere. **Automation can tell you a route is called. Only reading the pages tells you whether anybody sees the answer.**
 
 ### ⚪ Intentionally unreachable — capabilities that correctly have no screen
@@ -225,15 +240,19 @@
 | **J3** | Understand why, with evidence | ✅ **Complete** | — |
 | **J4** | Decide, and record why | ✅ **Complete** | — |
 | **J5** | Move to the next decision | ✅ **Complete** (PS-04) | — |
-| **J6** | See an account's history over time | ✅ **Complete** — CX-03 | — |
+| **J6** | See an account's history over time | ⚠️ **Surfaced, not yet answerable** | **Nothing writes a timeline row outside a test.** The mount is done; `project_to_timeline` is not subscribed by the deployed worker and no seeder calls it ([C-012](../LANE_COORDINATION.md)) |
 | **J7** | Tell Signora who we sell to | ⚠️ **Half** | An owner can declare; **a seller cannot read** |
 | **J8** | Connect our systems | ⚠️ **Half** | Complete once reached; **unreachable** |
 | **J9** | See who is on the team | 🔴 **Blocked** | No screen; no way to name a person |
 | **J10** | **Invite a colleague** | 🔴 **Blocked** | **`POST /members` takes a `user_id: UUID`.** A customer cannot type one, and resolving an email to a user is Better Auth's, in the Next tier — **[C-024](../LANE_COORDINATION.md) again, from the write side** |
 
-**Six of ten are complete.** J6 closed on 2026-08-02 when CX-03 mounted the feed, and J8 closed when CX-01 gave the Connection Center a door.
+**Five of ten are complete.** J8 closed on 2026-08-02 when CX-01 gave the Connection Center a door. **J6 did not close, and the correction is worth more than the count.**
 
-**The four that remain are each stopped by a decision, not by engineering:** J7 waits on `C-008`, **J9 and J10 both on `C-024`**, and the responsive question on `C-026`. **C-024 now holds two journeys and both halves of team management** — reading who is there, and adding anybody — which makes it the highest-leverage decision on this page.
+> **CX-03 mounted the feed, and the feed has nothing to render.** `make runtime-composition` reports 1 of 9 consumers wired; `project_to_timeline` is called from tests and nowhere else. **The section renders *"Nothing has been recorded about this company yet"* on every account, in every environment, including the demo stack.**
+>
+> **The mount is still right and is not being reverted.** It is what [C-024](../LANE_COORDINATION.md) asked for, and un-mounting would hide a wiring gap behind a missing feature — the exact inversion PS-01 and PS-02 exist to prevent. **What is wrong is the sentence the customer reads**: the product says it looked and found nothing, when it never looked. That copy belongs to Timeline's component and is not Product Surface's to change.
+
+**The five that remain are each stopped by a decision, not by engineering:** J6 waits on `C-012`, and J7 waits on `C-008`, **J9 and J10 both on `C-024`**, and the responsive question on `C-026`. **C-024 now holds two journeys and both halves of team management** — reading who is there, and adding anybody — which makes it the highest-leverage decision on this page.
 
 **Two of the six were closed by ten lines and a card**, which is the pattern worth carrying: *the gap between a shipped backend and a customer is usually smaller than it looks, and invisible to every test in the repository.*
 
@@ -315,14 +334,17 @@
 
 **Required by the product owner from 2026-08-02**, in the implementation report of every customer-visible change, so **automation evolves alongside the product instead of catching up afterward.**
 
-**Four headings, and `none` is a valid answer under any of them:**
+**It answers five questions and nothing more. Concise and objective — this is a hand-off to QE, not a second Slice Handoff.**
 
 | | |
 |---|---|
-| **UI changes** | New pages · routes · dialogs · controls · navigation · changed layouts · new empty, loading, error and confirmation states · accessibility · keyboard · responsive behaviour |
-| **Workflow changes** | New, changed, completed or removed journeys · navigation · permissions · entry and exit points |
-| **Backend usage** | Endpoints newly consumed · previously consumed · no longer consumed · changed contracts · flags · permission changes |
-| **Expected automation impact** | **What QE should review** — existing UI tests needing updates, new automation required, regression suites affected, end-to-end journeys affected, accessibility, visual regression, navigation and API-contract validation |
+| **1** | **What should QE validate?** |
+| **2** | **Are new tests expected?** |
+| **3** | **Are automation changes required?** |
+| **4** | **Are visual or UI regression changes expected?** |
+| **5** | **Does this affect certification?** |
+
+**`none` is a valid answer to any of them, and silence is not.**
 
 > **The lane does not write those tests.** Its responsibility is to describe the change precisely enough that QE can update, create or retire automation without reading the diff — the same reason the Slice Handoff exists, applied to validation instead of to status.
 
