@@ -331,6 +331,29 @@ Four capabilities the architecture already treats as QE's, of which two exist. *
 | 12b | **Blocking Quality Defects** | Which lane owns one, how long it has blocked promotion, and **whether that lane is working it or building elsewhere** |
 | 13 | **Overall project risk** | One sentence. The thing most likely to hurt, named |
 
+### The six health dimensions
+
+**Ratified 2026-08-02, product owner.** The thirteen lines above are *what to report*; these six are *how to read them*. **Every cycle answers all six**, briefly.
+
+| Dimension | The question |
+|---|---|
+| **Technical Health** | Do the gates pass, and is coverage moving the right way? |
+| **Release Health** | Is anything reaching `main`, and how often? |
+| **Architecture Health** | Are boundaries intact, contracts kept, and **is runtime composition converging** (`make runtime-composition`)? |
+| **Dependency Health** | Is the register shrinking, and **has anything sat in one stage for three cycles**? |
+| **Customer Value Health** | **See below. The one that is easiest to answer dishonestly** |
+| **Process Health** | Did every promotion follow the lifecycle? Were any gates skipped or overridden? |
+
+### Customer Value Health — answered honestly, every cycle
+
+**Five questions, and the shape of the answer matters more than the answer:**
+
+*Did customers gain a new capability? · Did customers gain reliability? · Was this cycle mostly governance? · Mostly architecture? · Mostly tooling?*
+
+> **A repository can spend months getting measurably better while the product stands still, and it will not notice from the inside** — every individual cycle will have been justified, because governance and tooling work always is. **The only defence is writing down which kind of cycle it was, every time, including when the answer is unflattering.**
+
+**QE's own record so far, stated plainly:** cycles 16–19 were **governance and tooling**, correctly — three candidates were rejected on a real defect. **Cycle 21 was substantial customer value**, and it was Lane A's, not QE's. **QE has produced no customer capability, ever, and never will** — which is why this dimension measures the repository rather than QE, and why QE reporting it is the point rather than a conflict.
+
 > **Derive every line that can be derived.** Lines 2, 3, 5, 9 and 10 come from `make certified`, `make kpi` and `make state-check` and are never typed from memory. Lines 6, 8, 11 and 13 are judgements, and are the reason a person still writes this section.
 
 **A line with nothing to say says "nothing changed" and moves on.** The section is a health check, not an essay — if it grows past a screen it has stopped being readable at a glance, which was its only purpose.
@@ -425,6 +448,23 @@ OPEN → collect recommendations → Lane A analysis → Lane B analysis
 
 **Every stage before the ruling is QE's**, and every stage after it is QE's except the implementation. **The product owner's only step is the ruling** — which is the point: their time is the scarcest input, and archaeology should not be part of it.
 
+### Every dependency carries four fields, and they age visibly
+
+| Field | Rule |
+|---|---|
+| **Current Stage** | `Discovery` · `Analysis` · `Waiting for Decision` · `Decision Made` · `Implementation` · `Verification` · `Closed` |
+| **Current Owner** | Whichever of the four owners the **current stage** belongs to — not all four at once |
+| **Next Action** | **Exactly one concrete, executable step.** Never *"waiting"*, never *"follow up"*, never *"monitor"*. If the only honest next action is *"the product owner rules"*, that **is** the action, and QE has finished its part |
+| **Blocked Since** | The cycle number · **Last reviewed** · **Expected resume trigger** |
+
+### The three-cycle escalation
+
+> **If a dependency stays in the same stage for three consecutive QE cycles, QE escalates it in Repository Health.**
+
+**Not because it has become urgent.** Because **a stagnant dependency is silently reclassified as normal** — nobody decides to accept it, it is simply still there next cycle, and then the one after. **Visibility is the only thing that stops that**, and the escalation is the visibility.
+
+**Escalating is not chasing.** It is one line in a health report saying *this has not moved in three cycles, here is the stage, here is the owner, here is the one action.*
+
 ### A dependency is a decision package, never a title
 
 **Each carries:** the current problem · why implementation stopped · options · **recommendation** · trade-offs · affected milestones · affected modules · migration impact · risk · expected implementation after the decision.
@@ -482,3 +522,20 @@ OPEN → collect recommendations → Lane A analysis → Lane B analysis
 **It does not try to detect semantic duplicates mechanically.** Two findings phrased differently about one cause cannot be matched by string comparison, and **a checker that claimed to would be Decorative Logic** (§2) — it would pass while missing exactly the cases that matter. **The mechanical part is exact-id collision; the judgement is QE's at merge, which is the one moment both registers are visible.**
 
 **It does not merge state.** Debian's shared-state merge is right for a live tracker with thousands of contributors; here it would mean editing an alias and expecting a canonical to change. **A retired alias is frozen** — its text is the historical record of what that lane saw.
+
+
+---
+
+## 12 · Lane Availability — QE reports its own state, like every lane
+
+**Ratified 2026-08-02, product owner.** **Every QE report ends with exactly one of three states.** The implementation lanes already do this; QE was exempt by accident, and the exemption let *"here is more governance"* stand in for *"there is nothing to do."*
+
+| State | When | What it must carry |
+|---|---|---|
+| **`ACTIVE`** | A candidate is pinned, or a cycle is in progress | Current work · next validation · current certification |
+| **`WAITING FOR CANDIDATE`** | Repository ready, environment ready, **nothing awaiting validation** | That all three are true |
+| **`READY FOR NEW ASSIGNMENT`** | No repository-quality work remains · no pending certification · **no dependency coordination requiring QE** | The three conditions, each confirmed |
+
+> **QE does not manufacture governance work to stay busy.** The same rule the lanes follow: *"a lane never invents work"*, and **`AVAILABLE` with an empty queue is a correct repository state, not a stalled one.**
+>
+> **`READY FOR NEW ASSIGNMENT` is the honest report when the repository is healthy**, and QE reaching for one more refinement instead is the failure this state exists to prevent. **It has a specific tell: a cycle whose only output is process.**

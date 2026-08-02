@@ -39,6 +39,28 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MODULES = REPO_ROOT / "backend" / "modules"
+
+# **Which modules the current architecture expects to be consuming *today*.**
+#
+# Without this, "8 unwired" reads as eight defects, and it is one. The pipeline
+# stages are deliberately unwired under C-012 — `EventHandler` receives no
+# session, so they run in-process — and that is a product-owner decision with an
+# RFC attached, not a gap.
+#
+# **A judgement, maintained by QE, re-checked every cycle**, and deliberately a
+# short list rather than an inferred one: inferring it would mean guessing which
+# blockage is intentional, which is exactly the question a human should answer.
+# **Moving a module out of BLOCKED_BY_C012 is how the architecture records that
+# it now expects live consumption.**
+BLOCKED_BY_C012 = {
+    "business_event_engine": "pipeline stage — in-process until C-012",
+    "buying_score_engine": "pipeline stage — in-process until C-012",
+    "knowledge_graph": "pipeline stage — in-process until C-012",
+    "observation_engine": "pipeline stage — in-process until C-012",
+    "opportunity_engine": "pipeline stage — in-process until C-012",
+    "provider_platform": "pipeline stage — in-process until C-012",
+    "signal_engine": "pipeline stage — in-process until C-012",
+}
 WORKER = REPO_ROOT / "backend" / "apps" / "worker"
 
 
@@ -92,31 +114,42 @@ def main() -> int:
         else:
             unwired.append((module, handlers))
 
-    print(f"\n  Deployed composition — `apps/worker`\n")
-    print(f"    {subscriptions} registry.subscribe() call(s)")
-    print(f"    {len(wired)} of {len(declared)} modules declaring a consumer are wired\n")
+    blocked = [(m, h) for m, h in unwired if m in BLOCKED_BY_C012]
+    unexpected = [(m, h) for m, h in unwired if m not in BLOCKED_BY_C012]
+    expected = len(declared) - len(blocked)
+
+    print("\n  Runtime Composition\n")
+    print(f"    Modules declaring consumers        {len(declared)}")
+    print(f"    Runtime wired                      {len(wired)}")
+    print(f"    Waiting on architectural decision  {len(blocked)}   (C-012)")
+    print(f"    Expected by current architecture   {expected}")
+    print(f"    Unexpected missing wiring          {len(unexpected)}"
+          f"{'   ← every one is a defect' if unexpected else ''}")
+    print(f"\n    {subscriptions} registry.subscribe() call(s) in apps/worker\n")
 
     if wired:
         print("    wired:")
         for module in wired:
             print(f"      ✓ {module}")
-    if unwired:
-        print("\n    declared but not wired:")
-        for module, handlers in unwired:
-            names = ", ".join(handlers[:3]) or "no public handler"
-            print(f"      · {module:<26} {names}")
+    if unexpected:
+        print("\n    UNEXPECTED — declared, expected to be wired, and is not:")
+        for module, handlers in unexpected:
+            print(f"      ✗ {module:<26} {', '.join(handlers[:3]) or 'no public handler'}")
+    if blocked:
+        print("\n    waiting on C-012, deliberately:")
+        for module, _ in blocked:
+            print(f"      · {module:<26} {BLOCKED_BY_C012[module]}")
 
     print(
-        "\n  Most of these are deliberate. C-012 has recorded since M3A that"
-        "\n  `EventHandler` receives no session, so the pipeline runs in-process"
-        "\n  and the deployed worker consumes almost nothing. **That is a"
-        "\n  product-owner decision, not a defect.**"
+        "\n  This answers *what is deployed today*, never *what should eventually"
+        "\n  exist*. The C-012 group is a product-owner decision with an RFC"
+        "\n  attached, and counting it as failure would make the number useless."
         "\n"
-        "\n  What this number is for: C-012's claim was prose that nothing"
-        "\n  re-measured. Now it moves — up when a module is wired, and visibly"
-        "\n  not when one ships expecting to be."
+        "\n  **Unexpected missing wiring is the line that matters.** It was 1"
+        "\n  when B-301 was found, and every one of them is a capability that"
+        "\n  ships complete and does nothing."
     )
-    return 1 if (args.strict and unwired) else 0
+    return 1 if (args.strict and unexpected) else 0
 
 
 if __name__ == "__main__":

@@ -697,13 +697,20 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 | [B-025](BUGS.md) | the certification harness |
 | **[B-301](BUGS.md)** | **`apps/worker/subscriptions.py` — the composition root** |
 
-**What this item now covers, stated so nothing falls between the words:**
+### Six responsibility areas, named so this never becomes a miscellaneous bucket
 
-- **`apps/` in its entirety** — the API composition root and the worker composition root
-- **Runtime composition** — which handlers the deployed worker subscribes, and which projections are wired
-- **Deployment composition** — what a deployed process actually runs, as distinct from what the modules can do
-- **Repository composition validation** — the checks that prove the above, including `infra/runtime-composition.py`
-- **`signora_platform/`** under the §20a freeze, and **repository process code** in `infra/`
+**The risk of widening an ownership item is that it turns into *"everything nobody owns"*, and a future contributor cannot tell whether their issue belongs here.** Each area below has a test for membership.
+
+| # | Area | What belongs here | The membership test |
+|---|---|---|---|
+| **1** | **Repository Composition** | `apps/api/main.py` — which routers, dependencies and policies the API assembles | *Does it decide what the API process is made of?* |
+| **2** | **Runtime Composition** | `apps/worker/subscriptions.py` — which handlers are subscribed, which projections are wired | *Does it decide what the worker process consumes?* |
+| **3** | **Deployment Composition** | `infra/docker-compose.prod.yml`, entrypoints, process topology | *Does it decide what runs, as opposed to what exists?* |
+| **4** | **Shared Tooling** | `infra/*.py`, the `Makefile`, gate scripts | *Does it decide whether a gate passes?* |
+| **5** | **Shared Infrastructure** | `signora_platform/` under the §20a freeze | *Is it the substrate every module imports?* |
+| **6** | **Shared Bootstrapping** | migrations runner, `pyproject.toml` runtime dependencies, seeding | *Does it decide whether the system can start at all?* |
+
+**Every one of the seven defects maps to exactly one area** — B-007 and B-013 to *Bootstrapping*, B-012 to *Deployment*, B-014, B-022 and B-025 to *Tooling*, **B-301 to *Runtime Composition***. **A defect that maps to none of the six does not belong to C-010**, and that is the point of writing them down.
 
 **The measurement, now that one exists.** `make runtime-composition` reports **1 of 9 modules declaring a consumer are wired.** Eight are deliberate under [C-012](#c-012--eventhandler-receives-no-session-so-no-module-handler-is-registered) — **and nothing was re-measuring that claim between M3A and today.** B-301 was the one that was *not* deliberate, and it took a lane's own module audit to find it.
 
