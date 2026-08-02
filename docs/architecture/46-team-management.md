@@ -333,3 +333,99 @@
 | The settings entrance | **`/settings` and its card pattern (CX-01)** — a Team card joins Products and Connections |
 
 **Nothing new is proposed for `components/ui`.** The one shape this page introduces — a per-row action menu — is used exactly once, and §20c is explicit that a component earns promotion to the library on its second caller, not its first.
+
+---
+
+## 11 · Challenging my own conclusions — and one of them was wrong
+
+**Seven challenges set by the product owner, answered against the repository rather than from memory.** One overturns a recommendation this document made two sections ago.
+
+### Challenge 1 · Is Better Auth really the right owner for an invitation? — **No, and §6 was inconsistent with itself**
+
+**§6 rejected option A — membership in the vendor's tables — on one argument:** the `auth` schema is unreadable by `signora_app`, so **the Python tier cannot verify what it cannot read.**
+
+> **That argument applies just as forcefully to the invitation record, and §6 did not apply it.** *"Ana invited sam@acme.com to Acme Revenue as a member on 2 August"* is **workspace-scoped tenant data** — it needs `workspace_id`, RLS and an audit trail — and §6 recommended putting it where none of those reach. **The recommendation contradicted its own reasoning one paragraph earlier.**
+
+**The product owner's finer split is the correct one, and the evidence supports going further than it proposes.**
+
+An invitation is **two facts with two owners**, and separating them dissolves most of the dependency:
+
+| The fact | Owner | Why |
+|---|---|---|
+| *"This address belongs to the person holding it"* | **Better Auth** | Authentication, and **it already does this** |
+| *"Ana invited this address into this workspace, as a member, on this date"* | **Signora** | Workspace-scoped business intent, RLS-enforced, audit-relevant, and **the row that supplies the address [C-203](../LANE_COORDINATION.md)'s narrowing needs** |
+
+### And the proof of ownership already arrives, in the token
+
+**Measured, not assumed:**
+
+| | |
+|---|---|
+| `frontend/lib/auth/jwt.ts` | Every access token carries **`email`** and **`email_verified`** |
+| `backend/signora_platform/auth/jwt_verifier.py:36-37` | Both are **required claims**, and `email_verified` is type-checked as a boolean |
+| `frontend/lib/auth/server.ts:58` | **`requireEmailVerification: true`** — a password account cannot sign in unverified, and an OAuth provider asserts it |
+
+> **So the Python tier already knows, on every request, a verified email address that the caller has proved they own.** Accepting an invitation is *matching a pending row against a claim the token already carries* — **no plugin, no invitation token, no expiry logic in a link, and no cross-tier call.**
+
+**Signora writes none of the security-sensitive parts, which was the whole reason to reach for the vendor** — and it reaches for the part of the vendor it is already using rather than enabling a new one.
+
+**What this leaves of [C-206](../LANE_COORDINATION.md): who sends one email.** The Python tier has no transport; `lib/auth/email.ts` has one, with a two-value `purpose` union and a comment saying it is a port *"without anticipating"* a third. **That is a narrowing from *"which system owns invitations"* to *"which tier delivers a message, and is that M14a's"*.**
+
+### Challenge 2 · Is Membership the correct business aggregate? — **Yes, and Invitation is a third one**
+
+`Membership` is *"this person belongs to this workspace with this role"*. Its lifecycle — created, role changed, ended — is its own, and nothing outside it is transactionally consistent with it. **The existing split is right and the code's own reasoning for it still holds.**
+
+**Invitation is not part of Membership**, and the test is that it exists when no membership does. Its lifecycle is `pending → accepted | revoked | expired`, and **acceptance is where one aggregate creates another** — which is exactly the shape the last decision needs to be explicit about.
+
+### Challenge 3 · Is Workspace the aggregate root? — **For the membership *set*, yes. For a membership, no.**
+
+**The question is decided by the invariant, not by the entity.** D4's rule — *the last owner cannot leave* — spans **every membership in a workspace**. An invariant over a set means the consistency boundary is the set's owner.
+
+| | |
+|---|---|
+| **Workspace** is the root for **anything that changes the shape of the membership set** — ending, transferring, the last-owner refusal |
+| **Membership** is its own aggregate for **its own facts** — its role, when it began, when it ended |
+
+**This does not mean loading every membership to change one**, which is what the code deliberately avoids. **The invariant needs a count, not a collection**, and a count is one query inside the same transaction.
+
+**"Person within a workspace" is not an aggregate and should never become one.** It is a *projection* over a Signora membership and a Better Auth identity, and making it an aggregate would put user identity in the Python tier — the thing §13 exists to prevent.
+
+**What this settles for later:** audit, timeline, notifications, mentions, assignments and billing seats all cite a **membership** — a durable, workspace-scoped, immutably-ended record. **None of them needs a person aggregate**, and each keeps working after somebody leaves precisely because D3 keeps the row.
+
+### Challenge 4 · Is *"self-operation is not authorization"* always true? — **No. There is a counterexample, and it sharpens the rule**
+
+**Stress-tested against every self-operation Signora will plausibly have:**
+
+| Operation | Self? | Where it belongs |
+|---|---|---|
+| **Leave a workspace** | ✅ | Membership + the last-owner invariant. **Not Casbin** |
+| **Password · MFA · avatar · email · delete account** | ✅ | **Better Auth's, entirely.** These never reach the Python tier |
+| **Notification preferences** *(M14a)* | ✅ | Self, per workspace. **Not Casbin** |
+| **API tokens** | ✅ | Self. **Not Casbin** |
+| **Disconnect "my" connected system** | ❌ **The counterexample** | **It is not yours.** A connected system belongs to the *organization* — `integration:update` is owner-only, and the person who connected HubSpot is not thereby entitled to disconnect it. **Casbin, correctly** |
+
+> **The refinement the counterexample forces:** a self-operation is one whose **only subject and only object are the caller**. Connecting a system fails the second half — the object is the workspace's. Leaving passes both: the object is your own membership.
+>
+> **Stated as a rule:** *an operation requires no policy tuple only when the thing it changes would cease to exist if the caller did.* A membership would. A CRM connection would not.
+
+**With that boundary the principle survives every case tested**, and it is worth generalising: it removes a Casbin entry from four future features and prevents the *"my"* mistake — treating something a person created as something they own.
+
+### Challenge 5 · Does existing capability already solve part of this? — **Yes, three things, and one of them is the whole invitation flow**
+
+| | |
+|---|---|
+| **Email verification** | **Solves invitation acceptance outright**, via a claim already on every token |
+| **`useWorkspaceMembers` · `queryKeys.members` · `Membership`** | Shipped, uncalled, and exactly the list this needs |
+| **`lib/auth/email.ts`** | A delivery port with a transport and an event, needing **one more `purpose` value** rather than a new mechanism |
+
+### Challenge 6 · Anything to reuse rather than extend? — **`policy.csv`'s `member:remove`, which already exists and is unhonoured**
+
+**The grant is there and reviewed.** Removal needs **no policy change at all** — only the endpoint, use case and domain method the grant already assumes. **The authorization half of TM-02 is done and has been since M1.**
+
+### Challenge 7 · Is there a simpler design? — **Yes, and it is the one this section arrived at**
+
+**§6 recommended enabling a vendor plugin: a new dependency, a new schema, a two-tier acceptance path, and an ADR amendment.**
+
+**What the evidence supports instead:** one Signora-owned table, one new `purpose` on an existing port, and an acceptance rule that reads a claim already required on every request. **No new dependency. No frozen-file change. No plugin.**
+
+> **The simpler design was reachable in §6 and was missed because the vendor was the obvious answer to *"do not build authentication"*.** It is still not built here — **email ownership is proved by Better Auth**, exactly as the rule requires. What changed is noticing that the proof already arrives.

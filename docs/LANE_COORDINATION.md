@@ -106,7 +106,7 @@
 | [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | M14b is three concerns in one roadmap row, and none has a module | Lane A | **Product owner** (bounded context 🔴) | `OPEN` — **architectural** | **The whole of M14b.** [R-01](architecture/16-architecture-risks.md) has been waiting for it at High/High |
 | [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide) | Identifier allocation is still only *unlikely* to collide | Lane A | **QE** + product owner | `OPEN` — **directed by the product owner** | Nothing built. **The repository scaling past three actors without manual reconciliation** |
 | [C-202](#c-202--four-shared-documents-disagree-and-one-disagrees-with-itself) | Four shared documents disagree, and one disagrees with itself | Lane A | **QE** | `OPEN` — **directed by the product owner** | Nothing built. **A cold session trusting any status in the repository** |
-| [C-206](#c-206--is-an-invitation-better-auths-or-signoras) | Is an invitation Better Auth's or Signora's? | Lane A | **Product owner** (vendor capability + ADR) | `OPEN` — **architectural** | **Inviting anybody**, and — corrected 2026-08-02 — **the members list too**: no membership carries an address until an invitation writes one |
+| [C-206](#c-206--is-an-invitation-better-auths-or-signoras) | Is an invitation Better Auth's or Signora's? | Lane A | **Product owner** | **`OPEN` — narrowed sharply 2026-08-02.** The plugin recommendation is **withdrawn**; the proof already arrives in the JWT | **One email delivery decision.** The invitation table, acceptance and the members list are no longer blocked by it |
 | [C-207](#c-207--casbin-cannot-express-an-action-on-yourself) | Casbin cannot express an action on yourself | Lane A | **Product owner** (platform §20a) | `OPEN` — **architectural** | **Leaving an organization**, and every self-directed operation after it |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
@@ -2278,6 +2278,37 @@ Alembic's `down_revision` is a linear chain: **a gap is a broken graph, not an o
 | **If B** | An `invitation` table with its `tenancy_policy.py` registration, expiry, revocation, delivery, and an email-ownership proof Signora would be writing itself |
 | **Cost of waiting** | **Every workspace stays a single person.** [J10](architecture/43-customer-experience.md) cannot open |
 
+### Narrowed sharply — 2026-08-02, and the recommendation above is withdrawn
+
+**Challenged on the product owner's direction, and option C was inconsistent with this item's own reasoning.** §6 rejected option A because the `auth` schema is unreadable by `signora_app` — *the Python tier cannot verify what it cannot read* — and then recommended putting the **invitation** there, which is equally workspace-scoped, equally audit-relevant and equally in need of RLS.
+
+**An invitation is two facts with two owners:**
+
+| The fact | Owner |
+|---|---|
+| *"This address belongs to the person holding it"* | **Better Auth** — and it already does this |
+| *"Ana invited this address into this workspace, as a member, on this date"* | **Signora.** Workspace-scoped business intent, and the row that supplies the address [C-203](#c-203--nothing-in-the-product-can-render-a-persons-name)'s narrowing needs |
+
+**And the proof already arrives in the token. Measured:**
+
+| | |
+|---|---|
+| `frontend/lib/auth/jwt.ts` | Every access token carries **`email`** and **`email_verified`** |
+| `backend/signora_platform/auth/jwt_verifier.py:36-37` | Both are **required claims**; `email_verified` is type-checked |
+| `frontend/lib/auth/server.ts:58` | **`requireEmailVerification: true`** |
+
+> **The Python tier already knows, on every request, a verified address the caller has proved they own.** Accepting an invitation is matching a pending row against a claim the token already carries — **no plugin, no invitation token, no expiry in a link, no cross-tier call.**
+
+**So the earlier recommendation is withdrawn.** Enabling the `organization` plugin would add a dependency, a schema, an ADR amendment and a two-tier acceptance path to obtain a proof the repository already has.
+
+| | |
+|---|---|
+| **What remains of this item** | **Who sends one email.** The Python tier has no transport; [`lib/auth/email.ts`](../frontend/lib/auth/email.ts) has one, with a two-value `purpose` union and a comment describing itself as a port *"without anticipating"* a third. **Is a third value this tier's, or is invitation delivery M14a's?** |
+| **What is now unblocked** | **Everything else.** The invitation table, its lifecycle, acceptance, and — through it — the members list |
+| **Severity** | Was *"inviting anybody"*. Is now **one delivery decision**, and even that has an obvious answer if M14a is far off |
+
+**Full analysis, including the six other self-challenges, is [46-team-management.md](architecture/46-team-management.md) §11.**
+
 **Full discovery — thirty customer questions, the stress test against the roadmap, and the two weak points — is [46-team-management.md](architecture/46-team-management.md).** Not restated here (§2).
 
 
@@ -2322,6 +2353,22 @@ Alembic's `down_revision` is a linear chain: **a gap is a broken graph, not an o
 | **C** — *recommended* | **Rule it out of Casbin entirely.** Acting on yourself is not an authorization question: **it is a consequence of membership**, which `CurrentWorkspace` already verifies before any handler runs. Record the rule in §7 — *"an operation whose only subject is the caller requires membership and no policy tuple"* — so the absence is a stated decision rather than a gap | ✅ Adds nothing to the platform, and it is **true**: nobody needs permission to stop being somewhere. ❌ It is a **governance change to §7**, which is the product owner's |
 
 **Lane A recommends C**, and notes it costs no code at all — it makes an existing verified fact sufficient, and says so where an auditor will look.
+
+### Stress-tested on the product owner's direction — 2026-08-02. **It survives, with one counterexample that sharpens it**
+
+| Operation | Self? | Where it belongs |
+|---|---|---|
+| **Leave a workspace** | ✅ | Membership + the last-owner invariant. **Not Casbin** |
+| **Password · MFA · avatar · email · delete account** | ✅ | **Better Auth's entirely** — these never reach the Python tier |
+| **Notification preferences** *(M14a)* | ✅ | Self, per workspace. **Not Casbin** |
+| **API tokens** | ✅ | Self. **Not Casbin** |
+| **Disconnect "my" connected system** | ❌ **The counterexample** | **It is not yours.** A connection belongs to the *organization* — `integration:update` is owner-only, and whoever connected HubSpot is not thereby entitled to disconnect it. **Casbin, correctly** |
+
+> **The refinement it forces:** a self-operation is one whose **only subject and only object are the caller**. Connecting a system fails the second half — the object is the workspace's.
+>
+> **Stated as a rule:** *an operation requires no policy tuple only when the thing it changes would cease to exist if the caller did.* A membership would. A CRM connection would not.
+
+**Worth generalising rather than solving for Team Management alone**, as the product owner proposed: it removes a Casbin entry from four future features, and the counterexample prevents the *"my"* mistake — treating something a person created as something they own.
 
 ### Implementation impact
 
