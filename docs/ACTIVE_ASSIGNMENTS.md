@@ -64,13 +64,13 @@
 
 ---
 
-## Current — as of 2026-08-02, `3ef367d`
+## Current — as of 2026-08-02, `3451f8b`
 
 | Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Started |
 |---|---|---|---|---|---|---|---|---|
 | **Lane A** | **TASK-002 · TASK-004 · `provider_platform`** | `lane-a-product-surface` | Product Surface · Provider Platform | PS-01 · PS-02 · PS-03 · PS-04 · PP-01 · PP-02 · PP-04 · PP-05 · PP-06 | `IN VALIDATION` | — | **The largest unreleased batch, and ready longest.** Rebase onto the promoted `3ef367d` and push; QE pins on arrival | 2026-08-02 |
-| **Lane B** | **M7 — Timeline** *(implementation initiative, feature lead)* | `lane-b-commercial-profile` | `timeline` | S01–S04a | `IN VALIDATION` | — | **[B-023](BUGS.md) fixed and pushed — re-validation ready.** All four gates green: `tsc` clean, 488 frontend, build, eslint. The four slices are one candidate again | 2026-08-02 |
-| **Lane B** | **M13 — Integrations** *(implementation initiative)* | `lane-b-commercial-profile` | `integrations` | **S06 of 6** | `IN VALIDATION` | — | **S01–S06 READY FOR QE.** The acquisition framework: signed single-use state, provider table, callback translation. 595 frontend tests. **Only the HubSpot handshake remains, and it needs real credentials** | 2026-08-02 |
+| **Lane B** | **M13 — Integrations** *(feature lead)* | `lane-b-commercial-profile` | `integrations` | S03 · S04 | `CHANGES REQUESTED` | — | **Candidate `9ba0ea6` rejected and abandoned — [B-024](BUGS.md).** Coverage 94.79% against a 95% floor, and `integrations/infrastructure/secrets.py` is **0% covered** while the slice is titled *a credential that is not readable*. Every test passes; nothing is broken. **The two 0% files are the work** | 2026-08-02 |
+| **Lane B** | **M7 — Timeline** *(feature lead)* | `timeline` | `timeline` | S01–S04a **promoted** | `BLOCKED` | [C-024](LANE_COORDINATION.md) — the feed has nowhere to mount | **Product decision on placement.** Also carries [B-024](BUGS.md): `timeline/interface/handlers.py` is 0% covered — the module's event-consumption path | 2026-08-02 |
 | **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | **Cycle 15 promoted (`3ef367d`). 15 of 15 certified.** Watching coverage — four consecutive declines, 0.16 above the floor | 2026-08-01 |
 
 **Which lanes are available is the `Status` column above, and is not restated here** — a sentence beside a table is a second copy of one fact, and it drifted within an hour of being written (§2). **Unclaimed capacity:** lanes C, D and E ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).

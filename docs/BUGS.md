@@ -69,6 +69,76 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-024 · The credential store that must not be readable has no tests at all
+
+| | |
+|---|---|
+| **Module** | `integrations` · `timeline` |
+| **Current assignee** | **Lane B**, feature lead for both |
+| **Severity** | 🟠 — it rejected a Release Candidate, and one file of it is security-relevant |
+| **Status** | `OPEN` |
+| **Found** | 2026-08-02, by QE, certifying `9ba0ea6` — **the candidate was rejected and abandoned** |
+
+**Steps to reproduce.**
+
+```bash
+cd backend && uv run pytest --cov -q
+# FAIL Required test coverage of 95.0% not reached. Total coverage: 94.79%
+# 2460 passed          ← every test passes; nothing is broken
+uv run coverage report --skip-covered --sort=miss | tail -8
+```
+
+**Expected.** Coverage at or above the 95% floor.
+
+**Actual.** **94.79%**, and the gap is concentrated in the two newest modules:
+
+| File | Cover | Missed |
+|---|---|---|
+| `modules/integrations/infrastructure/secrets.py` | **0%** | **34** |
+| `modules/integrations/infrastructure/repository.py` | **35%** | 26 |
+| `modules/timeline/interface/handlers.py` | **0%** | 11 |
+| `modules/timeline/infrastructure/repository.py` | **52%** | 9 |
+| `modules/integrations/application/queries.py` | 90% | 8 |
+
+**88 of the repository's 491 missed statements — 18% — sit in two modules built in the last two days.**
+
+**The percentage is the least interesting part of this row.** `secrets.py` is **0% covered**, and the commit that introduced it is titled *"a credential that is not readable"*. **A guarantee about credential confidentiality that no test exercises is a guarantee nobody has checked** — §11 requires the failure paths, and §2 is explicit that a guard which cannot fail is documentation pretending to be code. `timeline/interface/handlers.py` at 0% is the module's event-consumption path, which is how every entry it will ever hold gets there.
+
+**This was predicted, and the prediction is in the record.** Coverage fell 95.57 → 95.37 → 95.19 → 95.16 across four cycles, and cycle 15's Closeout stated the failure mode exactly: *"the next sizeable slice lands the repository below the floor, and a candidate is rejected for coverage rather than for a defect."* **The gate did its job.**
+
+**Not to be fixed by lowering the floor**, and not by adding assertions that execute lines without testing behaviour. The two 0% files are the work; the percentage follows.
+
+### B-025 · A coverage failure is reported as a test failure, and names the wrong gate
+
+| | |
+|---|---|
+| **Module** | Repository tooling — `backend/tests/certification/` |
+| **Current assignee** | **none — not assignable.** [C-010](LANE_COORDINATION.md) |
+| **Severity** | 🟡 — diagnosis only; the certification decision was correct |
+| **Status** | `OPEN` |
+| **Found** | 2026-08-02, by QE, reading the rejection of `9ba0ea6` |
+
+**Steps to reproduce.** Certify a commit whose coverage is below the floor.
+
+```
+❌ pytest — 2457 passed
+❌ smoke  — 3 stages in 93s
+Coverage 94.79%
+
+Why this run does not certify
+  · gate 'pytest' failed: 2457 passed        ← reads as a test failure
+  · coverage 94.79% is below 95.0%           ← the actual cause
+```
+
+**Expected.** A failing gate names what actually failed (§10, *failure attribution must be truthful* — *"an incorrect attribution is worse than none, because it misdirects the investigation"*).
+
+**Actual.** `pytest` is invoked with `--cov`, so `--cov-fail-under` makes it exit non-zero when coverage is short. The harness reads the exit code and marks the **pytest** gate failed, printing *"2457 passed"* as its reason — **a failure message whose entire content is a success count.** The same defect is then reported twice, once under a name that is not responsible.
+
+**It cost real time here.** The first reading was *"three tests are failing"* — 2460 in a direct run against 2457 here — and diagnosing that took a second full suite run to establish that **nothing was broken at all.**
+
+**Fix.** Either run coverage as its own gate and drop `--cov-fail-under` from the pytest invocation, or report the pytest gate as passed-with-coverage-short. **Do not merely reword the message**: the gate is currently wrong about which component failed, not just unclear.
+
+
 ### B-023 · `tsc --noEmit` fails on the Timeline feed tests, and the suite that passes cannot see it
 
 | | |
