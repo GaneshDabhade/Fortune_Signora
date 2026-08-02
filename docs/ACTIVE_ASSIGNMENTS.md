@@ -56,11 +56,11 @@
 
 ---
 
-## Current — as of 2026-08-02, `6aadea9`
+## Current — as of 2026-08-02, `1bbee30`
 
 | Lane | Assignment | Module | Milestone | Slice | Status | Blocked by | Depends on | Next action | Started |
 |---|---|---|---|---|---|---|---|---|---|
-| **Lane A** | — | — | — | — | `AVAILABLE` | — | — | **QE to assign.** R2-01 landed on `integration` at `f450a36`, **not yet validated or promoted** | — |
+| **Lane A** | — | — | — | — | `AVAILABLE` | — | — | **QE to assign.** R2-01 certified and promoted at `1bbee30` | — |
 | **Lane B** | — | — | — | — | `AVAILABLE` | — | — | **QE to assign.** M12.5 completed and promoted at `3f4e988` | — |
 | **QE** | Repository lifecycle and governance | — (the repository) | — | permanent | `ACTIVE` | — | — | Next cycle: validate whatever a lane hands over | 2026-08-01 |
 
@@ -101,7 +101,8 @@
 | Lane | Assignment | Promoted | Commit |
 |---|---|---|---|
 | QE | The repository operating model, certification `f6691728aaf9`, and B-013 | 2026-08-02 | `f669172` · `6aadea9` |
-| A | R2-01 — the guidance is generic; what it points at is not. **On `integration`, awaiting validation** | *not yet promoted* | `f450a36` |
+| A | R2-01 — the guidance says what it is pointing at, and ADR-0037 | 2026-08-02 | `efaa987` |
+| QE | Certification binds to an immutable commit, enforced by `certification-guard.py` | 2026-08-02 | `1bbee30` |
 | B | M12.5 slice 5 — target accounts. **M12.5 complete** | 2026-08-02 | `3f4e988` |
 | A | M12.4 — research on demand | 2026-08-02 | `c1f5985` |
 | A | R4-02 · R4-03 — the words the product uses when it refuses you | 2026-08-02 | `bdb014f` |

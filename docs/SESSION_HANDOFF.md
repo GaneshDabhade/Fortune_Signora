@@ -5,7 +5,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-02 · **`main` at `6aadea9`** · ✅ **CERTIFIED**
+> **As of:** 2026-08-02 · **`main` at `1bbee30`** · ✅ **CERTIFIED, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
@@ -18,12 +18,12 @@
 | **Last completed** | **M12.5 Commercial Profile** — all five slices promoted 2026-08-02. *A customer declares what they sell, who buys it, who agrees, what they are pushing, and which companies they are going after.* **The pipeline finally has an input** |
 | **Also shipped** | **M12.4 research on demand**, verified against a real model |
 | **Inserted, and open** | **M9.5 Evidence Citation Protocol** (ADR-0031). Steps A–D landed; **Step F is incomplete** |
-| **Current** | **M12.3 evidence and actions** — the brief's hierarchy (D20) remains · **R2-01**, two accounts get identical guidance, is Lane A's |
-| **Head at handoff** | **`6aadea9`** — *Certification f6691728aaf9* |
-| **Latest certification** | ✅ [`f6691728aaf9`](../certification/reports/f6691728aaf9.md) — **CERTIFIED 2026-08-02**, bound to migration head `0025` and protocol v2. Every gate green |
+| **Current** | **M12.3 evidence and actions** — the brief's hierarchy (D20) remains. **R2-01 shipped** this cycle |
+| **Head at handoff** | **`1bbee30`** — **the certified commit itself.** Promotion is now by SHA, never by branch (`CLAUDE.md` §20e) |
+| **Latest certification** | ✅ [`1bbee30b7e62`](../certification/reports/1bbee30b7e62.md) — **CERTIFIED 2026-08-02**, bound to commit `1bbee30`, migration head `0025`, protocol v2. **Certified commit == promoted commit**, checked by `make certified` |
 | **Phase** | **Product implementation.** Ten pipeline stages built and frozen behind them; the surface is being exposed |
 | **Overall completion** | **~66%** by engineering effort — see [PROJECT_STATUS.md](../PROJECT_STATUS.md) |
-| **Branch** | `main` and `lane-qe` at the certified baseline, clean, pushed. **`integration` is one slice ahead** — R2-01, validated by Lane A and **not yet by QE**. That is the next cycle's stage 1, and the reason a new slice starts by rebasing rather than by assuming |
+| **Branch** | `main` at the certified commit `1bbee30`. **Before starting a slice, compare `integration` against the certified SHA** — differ means a cycle is available and its input is exactly the commits between them; identical means nothing is awaiting certification. There is never any ambiguity about it |
 
 **🔴 Read this before anything else:** **`reasoning@1` has no released model.** M9.5 moved the rendering protocol to v2, which withdrew every protocol-1 release by derivation. `explanation_narration@1`, `research_planning@2` and `research_synthesis@2` re-earned theirs; `reasoning@1` did not — `granite3.3:2b` refuses under protocol 2 and `llama3.1:8b` is UNMEASURABLE on this hardware. **The Decision Package stage would refuse in production.** Do not tune the prompt, the delimiter, the schema or the timeout to make it pass.
 
@@ -33,7 +33,7 @@
 
 **🟢 Sign-in works now, and did not before.** Better Auth's tables had never been created by anything in the repository, and the `after` hook broke every completed auth request — two defects each hiding the other, invisible because no authentication request had ever finished. Run **`cd frontend && npm run auth:migrate`** once on any clone, then register at `/sign-up`; the verification link is written to the dev server's stdout. **A third defect sat behind those two**: Better Auth's default id is a nanoid and the Python verifier requires a UUID, so every API call from a real signed-in user would have 401'd. Fixed with Better Auth's own `generateId` hook — the *function* form, because `'uuid'` resolves to a column default that inserts null on tables created before it. See [ADR-0033](architecture/adr/0033-authentication-methods.md) and `docs/RUNNING.md`.
 
-**Recent commits:** `6aadea9` certification `f6691728aaf9` · `f669172` **the repository gets an operating model** · `3f4e988` **M12.5 — the pipeline finally has an input** · `5b1e388` C-009 gains a proposed architecture · `3931b3c` a customer says what they are pushing this quarter · `c1f5985` **M12.4 — ask Signora to look into this one properly**
+**Recent commits:** `1bbee30` **certification binds to a commit** · `8aae5c6` C-017 gets a home · `c231266` registers reconciled · `efaa987` **R2-01 — the guidance says what it is pointing at** · `f669172` the repository gets an operating model · `3f4e988` **M12.5 — the pipeline finally has an input**
 
 **Where everything now lives.** Four registers, one responsibility each, and a session should read all four before its first slice: [BUGS.md](BUGS.md) *what is wrong* · [LANE_COORDINATION.md](LANE_COORDINATION.md) *what one lane needs from another* · [ACTIVE_ASSIGNMENTS.md](ACTIVE_ASSIGNMENTS.md) *who is doing what* · [RUNNING.md](RUNNING.md) *which ports and database are yours*. The rules governing all of them are `CLAUDE.md` §20e; how QE operates them is [QUALITY_ENGINEERING.md](QUALITY_ENGINEERING.md), and the cycle itself is [REPOSITORY_RELEASE_CHECKLIST.md](REPOSITORY_RELEASE_CHECKLIST.md).
 
@@ -43,12 +43,12 @@
 
 | | |
 |---|---|
-| **Certification** | ✅ **CERTIFIED** — [`f6691728aaf9`](../certification/reports/f6691728aaf9.md), bound to migration head `0025`. It expires by derivation the moment a migration, a prompt release, the rendering protocol or the scenario set changes |
+| **Certification** | ✅ **CERTIFIED** — [`1bbee30b7e62`](../certification/reports/1bbee30b7e62.md), bound to **commit `1bbee30`** and migration head `0025`. It expires by derivation the moment a migration, a prompt release, the rendering protocol or the scenario set changes. **`make certified ARGS="--audit-main"` proves the guarantee across the whole branch** |
 | **Active lanes** | [ACTIVE_ASSIGNMENTS.md](ACTIVE_ASSIGNMENTS.md) — the execution board. **Both feature lanes are `AVAILABLE`**: Lane A finished R2-01 and Lane B finished M12.5. **QE assigns; a lane does not claim** |
 | **Open blockers** | [C-010](LANE_COORDINATION.md) — no lane is assignable to `apps/`, `signora_platform/` or repository process. **Three defects landed in that gap this cycle** ([B-007](BUGS.md), [B-012](BUGS.md), [B-013](BUGS.md)); the last was fixed only because the product owner directed QE to touch it. [C-012](LANE_COORDINATION.md)/[C-013](LANE_COORDINATION.md) wait on RFCs queued since M3A |
-| **Open defects** | [BUGS.md](BUGS.md) — **0 open 🔴.** Six rows are `FIXED` awaiting verification, and **[B-009](BUGS.md) and [B-013](BUGS.md) may not be closed by QE**, which fixed them |
+| **Open defects** | [BUGS.md](BUGS.md) — **0 open 🔴.** Seven rows are `FIXED` awaiting verification, and **[B-009](BUGS.md), [B-013](BUGS.md) and [B-014](BUGS.md) may not be closed by QE**, which fixed them |
 | **Pending work** | M12.3 list hierarchy (D20) · R2-01 · **M9.5 Step F** · [B-010](BUGS.md) — nothing narrates in the Playground, so M12.3's headline feature cannot be demonstrated · `reasoning@1` still has no released model (below) |
-| **Recommendations** | **Validate and promote R2-01 first** — it is sitting on `integration` unvalidated. Then rule [C-010](LANE_COORDINATION.md), the constraint that bound hardest this cycle. Then choose an option for [C-008](LANE_COORDINATION.md), whose proposal is accepted and waiting. Then allocate both lanes |
+| **Recommendations** | Rule [C-010](LANE_COORDINATION.md) — four defects have now landed in code no lane may touch. Then choose an option for [C-008](LANE_COORDINATION.md), whose proposal is accepted and waiting. Then allocate both lanes, which are idle |
 | **Before your first slice** | **Rebase onto `integration`.** It was rewritten on 2026-08-02 to reconcile a merge commit on `main` ([B-012](BUGS.md)); a lane branch created before that will not fast-forward |
 | **Tooling** | `make` was absent from this workstation and was installed 2026-08-02 ([B-011](BUGS.md), [RUNNING.md](RUNNING.md)). **A missing prerequisite is installed, not worked around** (`CLAUDE.md` §20e). **Export all three lane database variables before `make certify`** — without them it measures the shared default and reports different numbers |
 

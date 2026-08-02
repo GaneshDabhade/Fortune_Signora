@@ -18,9 +18,9 @@
 |---|---|
 | **Current phase** | **Product implementation** — the pipeline is built; the surface is being exposed |
 | **Last completed milestone** | **M12.5 — Commercial Profile**, all five slices promoted 2026-08-02. The head of the pipeline now exists |
-| **Current milestones** | **M12.3 / M12.4 — the product surface.** Research on demand shipped; the brief's hierarchy (D20) and R2-01 remain. *(Decision Package still deferred until `reasoning@1` is released — see §7)* |
-| **`main` at** | **`6aadea9`** — *Certification f6691728aaf9*, plus the Closeout commits that record it |
-| **Certification status** | ✅ **CERTIFIED** — [`f6691728aaf9`](certification/reports/f6691728aaf9.md), 2026-08-02, bound to migration head **`0025`** and rendering protocol **v2**. Every gate green; see §4 |
+| **Current milestones** | **M12.3 — the product surface.** The brief's hierarchy (D20) remains; **R2-01 shipped this cycle**. *(Decision Package still deferred until `reasoning@1` is released — see §7)* |
+| **`main` at** | **`1bbee30`** — *Certification binds to a commit, and a commit cannot be a branch*. **This is the certified commit itself**, promoted by SHA |
+| **Certification status** | ✅ **CERTIFIED** — [`1bbee30b7e62`](certification/reports/1bbee30b7e62.md), 2026-08-02, bound to migration head **`0025`** and rendering protocol **v2**. **Commit-bound**: this record names `1bbee30`, and `1bbee30` is what was promoted. See §4 |
 | **Branches** | **`main` and `lane-qe` at the promoted, certified baseline.** `integration` sits **one slice ahead** — Lane A's R2-01 landed while QE was measuring `main`; it is validated by its own lane, **not yet by QE**, and is the next cycle's stage 1. Both feature lane branches are synchronized to `integration`. **QE is the only lane that merges, certifies, promotes and publishes this file** ([CLAUDE.md §20e](CLAUDE.md)). Who is on what: [docs/ACTIVE_ASSIGNMENTS.md](docs/ACTIVE_ASSIGNMENTS.md) · defects: [docs/BUGS.md](docs/BUGS.md) · cross-lane questions: [docs/LANE_COORDINATION.md](docs/LANE_COORDINATION.md) |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
 | **Overall completion** | **~66%** by engineering effort (~205 of ~261–339 ew) — M12.5 closed (five slices) · M12.4 shipped · M9.5 (~3 ew) inserted and **not** closed. **An estimate, and marked as one**; every other figure on this page is measured |
@@ -37,62 +37,60 @@ They can also **follow any ledger line to the provider readings beneath it**, an
 
 ---
 
-## 1b · Release summary — 2026-08-02
+## 1b · Release summary — 2026-08-02, cycle 2
 
-**Derived from `main` at `6aadea9`, never copied from a lane's report.** Nineteen commits since `f996a42`, where this dashboard previously stopped.
+**Derived from the promoted commit `1bbee30`, and from nothing else.** Four commits since `e44819b`.
 
 ### Features delivered
 
-- **Commercial Profile is complete — all five slices** (M12.5). A customer can now declare **what they sell**, **who buys it** (the ideal customer), **who has to agree** (the buying committee), **what they are pushing this quarter**, and **which companies they are going after**. The last of those is the one that matters architecturally: *the pipeline finally has an input.* `RunProviderSync` has taken a `subject` since M2.1 and nothing had ever supplied one.
-- **Research on demand** (M12.4). A seller can ask Signora to look into an account properly and read what it found — verified against a real model, with the copy corrected to match what the model actually does.
-- **The product says what it cannot support** (R2-02, R3-01) and **refuses in words a person can act on** (R4-02, R4-03).
-- **A decision you can undo** (R4-04). Recording what you decided is no longer one-way.
-- **The row says what kind of attention it needs** — the attention list distinguishes kinds of attention rather than presenting one undifferentiated queue.
+- **The guidance says what it is pointing at** (R2-01). Two accounts no longer receive identical wording: what the product tells a seller to check is now tied to the evidence behind that account rather than to a shared template. [ADR-0037](docs/architecture/adr/0037-failure-categories.md) records the failure categories it introduced.
+
+### Governance — the release guarantee
+
+**Certification now binds to an immutable commit rather than to a branch** (`CLAUDE.md` §20e). A cycle opens with a **Certification Snapshot** pinning one SHA; every measurement derives from it; promotion is `git merge --ff-only <certified-sha>`. `integration` keeps moving during certification by design, and anything landing after the snapshot belongs to the next cycle automatically.
+
+> **The repository guarantee, stated exactly:** *every commit on `main` was either individually certified, or is a Closeout commit that provably changes nothing executable.* **Enforced by [`infra/certification-guard.py`](infra/certification-guard.py)** — `make certified` refuses a promotion, `make certified ARGS="--audit-main"` proves the guarantee across the branch by checking **paths, not commit messages**.
+
+**This cycle is the first one that was commit-bound end to end.** Certified `1bbee30`; promoted `1bbee30`; every figure below measured at `1bbee30`.
 
 ### Bugs fixed
 
 | | |
 |---|---|
-| [B-001](docs/BUGS.md) | `supersedes IS NULL` was never currency — and it was in **three** tables, not one. Migration `0023`. **Verified this cycle** |
-| [B-005](docs/BUGS.md) · [B-006](docs/BUGS.md) | Removing a product locked the customer out of three declarations; three of four sections vanished silently when their query failed. `FIXED`, awaiting verification |
-| [B-009](docs/BUGS.md) | The documented command for starting the API could not start the API. `FIXED` by QE, so **QE may not close it** |
-| [B-013](docs/BUGS.md) 🔴 | **The worker and the relay could not start from a production image.** `httpx` was filed as a test dependency and production code imports it at module scope. Found by the first honest `make smoke` since 2026-07-31 |
-| [B-012](docs/BUGS.md) | `main` had been advanced by a merge commit through a GitHub pull request. Branches reconciled; `main`'s history left intact |
-| [B-011](docs/BUGS.md) | `make` was missing from the workstation. Installed without root; **not a repository defect** |
+| [B-014](docs/BUGS.md) | **Two commits reached `main` outside certification and nothing noticed.** Found by the guard's first audit — against the two commits QE had written an hour earlier, both labelled Closeout and both editing `infra/state-check.py`. `FIXED` by the rule; QE wrote it, so QE may not close it |
 
-**Four new rows opened** — [B-007](docs/BUGS.md), [B-008](docs/BUGS.md), [B-010](docs/BUGS.md), [B-012](docs/BUGS.md) — and five renumbered, because two lanes allocated `B-003`…`B-006` independently while the repository ran on two baselines.
+**And the rule caught its own author twice more.** The governance slice was first committed straight to `main` — executable files, no certification — and was moved to `lane-qe` and put through the lifecycle instead. `main` was reset before anything was pushed.
 
 ### Architectural decisions introduced
 
 | | |
 |---|---|
-| [ADR-0036](docs/architecture/adr/0036-target-account-contract.md) | The target-account contract — Commercial Profile's first edge |
-| `CLAUDE.md` §20e | **The QE lifecycle**: seven stages, in one order, with Repository Closeout mandatory and Repository Ready declared only from a complete checklist |
-| [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md) | The runbook for that lifecycle — every command and tick-box, in one place |
-
-### Migrations
-
-`0020` ICP · `0021` research request · `0022` buying committee · `0023` `supersedes` is not currency · `0024` commercial focus · `0025` target account list. **Head `0025`**, all reversible — checked to base and back this cycle.
+| [ADR-0037](docs/architecture/adr/0037-failure-categories.md) | Failure categories — what the product says when it cannot support a claim |
+| `CLAUDE.md` §20e | **Certification is attached to a commit, never to a branch**, with the Certification Snapshot, the promotion equality rule, and the bounded Closeout exception |
 
 ### Coordination
 
-**Sixteen items, one closed.** [C-015](docs/LANE_COORDINATION.md) — the port allocation — is settled in [RUNNING.md](docs/RUNNING.md#running-a-lane). The register was renumbered around the promoted `C-001`…`C-009`, and two `lane-qe` items were dropped rather than renumbered because they had already been answered.
+**Seventeen items, one closed.** [C-017](docs/LANE_COORDINATION.md) was opened by Lane B — the onboarding rule needed a home outside the argument that produced it.
 
 ### Remaining blockers
 
-1. **`reasoning@1` has no released model**, so the Decision Package stage would refuse at runtime (§7). Unchanged this cycle.
-2. **[C-010](docs/LANE_COORDINATION.md)** — `apps/`, `signora_platform/` and repository process have **no assignable lane**. [B-007](docs/BUGS.md), [B-012](docs/BUGS.md) and [B-013](docs/BUGS.md) all sat in that gap; the last was fixed only because the product owner directed QE to touch it.
-3. **Six defects are `FIXED` awaiting verification**, four of them by somebody other than QE.
+1. **`reasoning@1` has no released model**, so the Decision Package stage would refuse at runtime (§7). Unchanged.
+2. **[C-010](docs/LANE_COORDINATION.md)** — `apps/`, `signora_platform/` and repository process still have **no assignable lane**. [B-007](docs/BUGS.md), [B-012](docs/BUGS.md) and [B-014](docs/BUGS.md) all sit there.
+3. **Seven defects are `FIXED` awaiting verification**, five of them by somebody other than QE.
 
 ### Recommended next work
 
 | Priority | What | Why |
 |---|---|---|
-| 1 | **Rule [C-010](docs/LANE_COORDINATION.md)** | Three defects have already landed in unassignable code this cycle. It is the constraint that binds hardest |
-| 2 | **Verify [B-009](docs/BUGS.md) and [B-013](docs/BUGS.md)** | Both fixed by QE, and QE may not close its own fixes |
-| 3 | **R2-01** — two accounts get identical guidance | Named by the product owner as the strongest remaining product candidate |
+| 1 | **Rule [C-010](docs/LANE_COORDINATION.md)** | Four defects have now landed in unassignable code. It is the constraint that binds hardest, and it has bound harder every cycle |
+| 2 | **Verify [B-009](docs/BUGS.md), [B-013](docs/BUGS.md), [B-014](docs/BUGS.md)** | All fixed by QE, and QE may not close its own fixes |
+| 3 | **Teach the guard to find a record that is not yet on `main`** | Known limitation below. A slice, not a Closeout — `infra/` decides whether gates pass |
 | 4 | **[B-010](docs/BUGS.md)** — nothing narrates in the Playground | M12.3's headline feature cannot be demonstrated today |
-| 5 | **M9.5 Step F** | Inserted, open, and the oldest outstanding commitment on the board |
+| 5 | **[C-008](docs/LANE_COORDINATION.md)** — sellers cannot see what their company sells | Proposal accepted; awaiting a choice between four options |
+
+### Known limitation, introduced this cycle
+
+**`make certified` reads the certification manifest from the working tree, and a commit never contains its own certificate.** Between promotion and Closeout — the minutes when the record exists on `integration` but not yet on `main` — the guard reports `main` as uncertified. It is correct again the moment Closeout lands the record. **The fix is to read the manifest from every ref rather than from the tree**, and it is a slice rather than a Closeout, because `infra/` decides whether a gate passes ([B-014](docs/BUGS.md)).
 
 ---
 
@@ -333,30 +331,32 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`f6691728aaf9`](certification/reports/f6691728aaf9.md) · 2026-08-02 · ✅ CERTIFIED**
+**Latest certification — [`1bbee30b7e62`](certification/reports/1bbee30b7e62.md) · 2026-08-02 · ✅ CERTIFIED**
+
+**Certified commit `1bbee30` · promoted commit `1bbee30`.** Identical, checked after the merge and re-checked by `make certified`.
 
 | Gate | Recorded |
 |---|---|
-| **pytest** | **2325 passed** |
-| **coverage** | **95.59%** *(floor 95%)* |
+| **pytest** | **2332 passed** |
+| **coverage** | **95.57%** *(floor 95%)* |
 | **Security Invariants** | **354**, each proven to fail when its guarantee is removed |
 | **import-linter** | **31 kept**, 0 broken |
-| **MyPy** | strict, clean over **546 files** |
-| **`make smoke`** | **24 stages in 114s**, fresh images, clean teardown |
+| **MyPy** | strict, clean over **547 files** |
+| **`make smoke`** | **24 stages in 117s**, fresh images, clean teardown |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0025`** · scenario set `0cf6b2c581e4` · working tree clean · `research_planning@2` and `research_synthesis@2` released for `llama3.1:8b`.
 
-**Also verified this cycle, and not yet certification gates:** frontend **463 tests** across 29 files, typecheck, lint and production build · **migration reversibility to base and back** · **`make dr`** — every component restarted, nothing lost, 354 invariants re-run against the restarted stack.
+**Also verified this cycle, and not yet certification gates:** frontend **468 tests** across 29 files, typecheck, lint and production build · **migration reversibility to base and back** · **`make dr`** — every component restarted, nothing lost, 354 invariants re-run against the restarted stack.
 
 | Indicator | Value | Target |
 |---|---|---|
-| **Frontend tests** | **463 passing**, 0 failing, 0 skipped | 0 skipped |
-| **Modules** | **14** · **40** numbered architecture documents · **36** ADRs | — |
+| **Frontend tests** | **468 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Modules** | **14** · **40** numbered architecture documents · **37** ADRs | — |
 | **Migrations** | **`0000`–`0025`**, additive and reversible | — |
 | **Architecture drift** | **0** — no ratified ADR reversed | trending to 0 |
-| **Open defects** | **13 rows: 6 `OPEN`** (2 🟠 reachable · 1 🟠 latent · 3 🟡) · **6 `FIXED` awaiting verification** · 1 `WONTFIX` · **0 open 🔴** ([docs/BUGS.md](docs/BUGS.md)) | 0 🔴 |
-| **Coordination items** | **16** — 1 `CLOSED`, the rest open or waiting ([docs/LANE_COORDINATION.md](docs/LANE_COORDINATION.md)) | shrinking |
+| **Open defects** | **14 rows: 6 `OPEN`** (2 🟠 reachable · 1 🟠 latent · 3 🟡) · **7 `FIXED` awaiting verification** · 1 `WONTFIX` · **0 open 🔴** ([docs/BUGS.md](docs/BUGS.md)) | 0 🔴 |
+| **Coordination items** | **17** — 1 `CLOSED`, the rest open or waiting ([docs/LANE_COORDINATION.md](docs/LANE_COORDINATION.md)) | shrinking |
 
 > **A certification expires by derivation, not by decision.** Change the rendering protocol, re-release a prompt, add a migration or edit a scenario, and the recorded run stops describing the repository — `is_certified` reads false and the report says *awaiting re-certification*. Nothing is edited, and **nothing can be marked certified by hand**.
 
