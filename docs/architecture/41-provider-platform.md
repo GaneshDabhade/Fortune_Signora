@@ -80,7 +80,7 @@
 
 ### What PP-02 built, and where it stops
 
-**Everything a lane may build.** The delta rule (`domain/targets.py`), the version ordering, `target_sync_state` (migration `0027`), its repository, the `SyncDeclaredTargets` use case and the event handler — typed, and covered by 17 unit tests against fakes.
+**Everything a lane may build.** The delta rule (`domain/targets.py`), the version ordering, `target_sync_state` (migration `0030`), its repository, the `SyncDeclaredTargets` use case and the event handler — typed, and covered by 17 unit tests against fakes.
 
 **It stops at one thing: the handler cannot reach a provider adapter.** `RunProviderSync` needs a `ProviderAdapter`, which lives in the ARQ task context; an event handler receives a `WorkerRuntime`, which holds a session factory, an HTTP client and AI settings and **no provider registry**. And no module can enqueue ARQ work — the only enqueue path is the relay's, driven from the outbox and frozen under §20a.
 
@@ -196,8 +196,8 @@
 
 | | |
 |---|---|
-| **PP-01** | A watermark belongs to one subject. [B-004](../BUGS.md), migration `0027` |
-| **PP-02** | The target-account consumer — delta against what was read, ordering by declaration version. Migration `0028` |
+| **PP-01** | A watermark belongs to one subject. [B-004](../BUGS.md), migration `0029` |
+| **PP-02** | The target-account consumer — delta against what was read, ordering by declaration version. Migration `0030` |
 | **PP-04** | Latency, throughput and failure-by-kind, which [12-scalability.md](12-scalability.md)'s extraction trigger depended on |
 | **PP-05** | The declared rate limit is honoured instead of discovered by being throttled |
 | **PP-06** | Ingestion records whether a payload was simulated, and its replay provenance |

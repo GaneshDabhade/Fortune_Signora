@@ -64,13 +64,17 @@
 
 ---
 
-## Current — as of 2026-08-02, `bd57c7c`
+## Current — as of 2026-08-02, `3451f8b`
 
 | Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Started |
 |---|---|---|---|---|---|---|---|---|
-| **Lane A** | **TASK-002 · TASK-004 · `provider_platform` · Connection Experience** | `lane-a-product-surface` | Product Surface · Provider Platform | PS-01…PS-08 · PP-01…PP-06 · CX-01…CX-02 | `CHANGES REQUESTED` | — | **Rebase required before QE can pin it — 32 commits, 3 to replay over.** `b5b9db6` (Lane B, M13-S09), `bd57c7c` and `b9278c6` (QE). **Migrations already correct** — `0029`/`0030` sit on Lane B's `0028`, renumbered proactively. **Expect conflicts in the registers only**, not in code: Lane B's work is backend tests in a different module. Rebase, re-run the gates, push. **QE pins immediately** | 2026-08-02 |
-| **Lane B** | **M13 — Integrations** *(feature lead)* · **M14a discovery** | `lane-b-commercial-profile` | `integrations` · `timeline` | S01–S09 **promoted** | `ACTIVE` | — | **[B-024](BUGS.md) resolved — coverage 95.69%, the 4-cycle block is broken.** Now scoping M14a. **M13 itself still waits on [C-025](LANE_COORDINATION.md)** | 2026-08-02 |
-| **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | **Cycle 19 promoted (`bd57c7c`). 16 of 19 candidates certified.** Pinning Lane A's batch next | 2026-08-01 |
+| **Lane A** | **TASK-002 · TASK-004 · `provider_platform`** | `lane-a-product-surface` | Product Surface · Provider Platform | PS-01…08 · TS-02 · PP-01 · PP-02 · PP-04 · PP-05 · PP-06 | `IN VALIDATION` | — | **Rebased onto `d758754` and pushed — fourteen slices, the largest unreleased batch.** Migrations renumbered `0027`→`0029` and `0028`→`0030`; Lane B's M13 tables took the earlier pair. **Both modules are now in Implementation Waiting** and every remaining item is a decision, not work — see the two rows below | 2026-08-02 |
+| **Lane A** | — | `lane-a-product-surface` | **Product Surface** — **assigned, and not released** | PS-01…08 · TS-02 built · TS-01, R5-04, responsive suspended | `BLOCKED` — module in **Implementation Waiting** | **[C-024](LANE_COORDINATION.md) · [C-025](LANE_COORDINATION.md) · [C-026](LANE_COORDINATION.md) · [C-008](LANE_COORDINATION.md)** · owner **product owner** · entered waiting **2026-08-02** | **Nine review lenses now converge on coordination items rather than slices**, which is what a mature milestone looks like. Completed work, what is suspended, the resume trigger for each, customer impact, limitations and future opportunities are in [37-product-surface.md](architecture/37-product-surface.md). **Ownership retained, capacity released.** Audited 2026-08-02: none of the four is executable | 2026-08-02 |
+| **Lane A** | — | `lane-a-product-surface` | **`provider_platform`** — **assigned, and not released** | PP-01 · 02 · 04 · 05 · 06 built · PP-03 suspended | `BLOCKED` — module in **Implementation Waiting** | **[C-021](LANE_COORDINATION.md)** · owner **product owner** · entered waiting **2026-08-02** | **Every executable capability inside the accepted architecture is built.** What remains needs a dispatch direction; recorded in [41-provider-platform.md](architecture/41-provider-platform.md). **PP-03 stays suspended** — the module was not out of work, only its next *planned* slice was | 2026-08-02 |
+| **Lane A** | **M14b — Billing, Analytics & Feature Flags** *(implementation initiative, assigned by the product owner)* | `lane-a-product-surface` | **undecided — see [42-billing-and-entitlements.md](architecture/42-billing-and-entitlements.md)** | domain discovery | `BLOCKED` | **[C-200](LANE_COORDINATION.md)** — the bounded context is 🔴 | **Discovery complete, no code.** M14b has two roadmap table rows and no scope section, no module and no bounded context — the same shape as [C-020](LANE_COORDINATION.md) and [C-023](LANE_COORDINATION.md). **It is one module and two integrations, not one and not three**; every route into implementation decides the boundary by implementing it | 2026-08-02 |
+| **Lane B** | **M7 — Timeline** *(implementation initiative, feature lead)* | `lane-b-commercial-profile` | `timeline` | S01–S04a | `IN VALIDATION` | — | **[B-023](BUGS.md) fixed and pushed — re-validation ready.** All four gates green: `tsc` clean, 488 frontend, build, eslint. The four slices are one candidate again | 2026-08-02 |
+| **Lane B** | **M13 — Integrations** *(feature lead)* | `lane-b-commercial-profile` | `integrations` · `timeline` | S03–S08 | `CHANGES REQUESTED` | — | **Third candidate rejected, and it is 0.02% away — [B-024](BUGS.md).** `secrets.py` went **0% → 61%**; coverage moved 94.79% → **94.98%** against a 95% floor. **`timeline/interface/handlers.py` is 0% covered with 11 statements — covering that one file clears the floor.** It is Timeline's event-consumption path, and Timeline is already on `main` | 2026-08-02 |
+| **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | **Cycle 15 promoted (`3ef367d`). 15 of 15 certified.** Watching coverage — four consecutive declines, 0.16 above the floor | 2026-08-01 |
 
 **Which lanes are available is the `Status` column above, and is not restated here** — a sentence beside a table is a second copy of one fact, and it drifted within an hour of being written (§2). **Unclaimed capacity:** lanes C, D and E ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).
 
@@ -86,9 +90,7 @@
 
 **Only lanes appear here — a *lane* that is stuck, not an *item* that is unstartable.** Blocked items live in [`BACKLOG.md`](BACKLOG.md) under `WAITING` and `BLOCKED`.
 
-*No lane is currently blocked.* Lane A holds four slices returned for a rebase — work in hand, not a blocker.
-
-**M13 is *paused*, which is none of the three statuses above and is deliberately not recorded as blocked.** A blocked lane cannot proceed; Lane B can, and has — it holds M14a. What M13 is waiting for is a **HubSpot developer application**, an environmental prerequisite outside any lane's authority, and the module's ownership stays with Lane B rather than being released. The resume conditions are in [41-integrations.md §9](architecture/41-integrations.md), written so that a lane arriving months from now needs no commit history.
+*No lane is currently blocked.* Lane A holds four slices returned for a rebase — work in hand, not a blocker. Lane B is `AVAILABLE`, which is a different thing again: nothing prevents it from claiming, and nothing in the queue is eligible.
 
 ## Recently completed
 
@@ -96,7 +98,6 @@
 
 | Lane | Assignment | Promoted | Commit |
 |---|---|---|---|
-| B | **M13-S09** — the credential store gets tested, and three real defects fall out | 2026-08-02 | `bd57c7c` |
 | B | **M13-S02** — the connections a customer can see, including the broken ones | 2026-08-02 | `3ef367d` |
 | B | **M13-S01** — a customer's connection to their own systems | 2026-08-02 | `e08c7cb` |
 | B | **M7 Timeline S01–S04a** — a seller can see what has happened to an account | 2026-08-02 | `048aeed` · `96bb5c0` · `7cb7fed` · `056a53a` |
