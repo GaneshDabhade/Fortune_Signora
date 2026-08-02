@@ -26,12 +26,29 @@ import { useCreateWorkspace } from '@/lib/query/hooks';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
- * Organization settings.
+ * Organization settings — **and the index of everything an administrator can
+ * configure.**
  *
  * The only screen in M1.5 backed by real data, because Workspace &
  * Tenancy is the only shipped module. It doubles as the proof that the
  * shell, query layer, toasts, and dialog compose against a real API rather
  * than a fixture.
+ *
+ * ### Why every settings page is listed here (CX-01)
+ *
+ * **`/settings` is the only entrance to `/settings/*`.** Navigation is two
+ * entries by design (D38) and neither is a settings child, so a page not
+ * listed on this screen is a page nobody can reach.
+ *
+ * The Connection Center was exactly that: shipped complete — backend, screen,
+ * OAuth flow, disconnect — and **linked from nowhere in the product.** The only
+ * references to `/settings/connections` in the codebase were the two OAuth
+ * redirect helpers *inside the connection flow itself*, so a customer could
+ * reach it only by already being in it. **A closed loop with no door.**
+ *
+ * **The rule this establishes: a settings page ships with its card here, in the
+ * same slice.** Not as a follow-up — a page with no entrance is not shipped,
+ * whatever its own tests say (`43-customer-experience.md`).
  *
  * **The screen says *organization*; the code says `workspace`, and that is
  * deliberate** (ADR-0034). One concept, two vocabularies: a customer's
@@ -41,6 +58,25 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  * because *workspace* is precise about isolation in a way *organization*
  * is not.
  */
+/**
+ * The way out of Settings, and the only way into two of them.
+ *
+ * **A shared shape rather than a shared component**, because it is one page's
+ * repetition and `components/ui` is frozen (§20c) — *"add to the library rather
+ * than around it"* applies to a component the library would benefit from, and a
+ * settings-page link is not one. If a third page needs it, it earns promotion.
+ */
+function SettingsLink({ href, children }: { href: string; children: string }) {
+  return (
+    <Link
+      href={href}
+      className="mt-3 inline-block rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+    >
+      {children}
+    </Link>
+  );
+}
+
 export default function SettingsPage() {
   const { workspaces, activeWorkspace, setActiveWorkspace, isLoading } =
     useWorkspaceContext();
@@ -96,12 +132,20 @@ export default function SettingsPage() {
             Signora needs this before it can tell you anything useful about anyone
             else&apos;s company.
           </p>
-          <Link
-            href="/settings/products"
-            className="mt-3 inline-block rounded text-sm font-medium text-accent underline decoration-border underline-offset-4 transition-colors hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          >
-            Products
-          </Link>
+          <SettingsLink href="/settings/products">Products</SettingsLink>
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Connections</CardTitle>
+        </CardHeader>
+        <CardBody>
+          <p className="text-sm text-content-muted">
+            The systems Signora reads from to work out which accounts deserve your
+            attention. Connect the ones your team already uses.
+          </p>
+          <SettingsLink href="/settings/connections">Connections</SettingsLink>
         </CardBody>
       </Card>
 

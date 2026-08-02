@@ -1847,7 +1847,7 @@ assert set(SignalTypeResponse.model_fields) == {"key", "title"}
 
 ### One finding the audit produced, which is not a coordination item
 
-**Two lanes independently allocated `C-024` and `C-025`.** Lane B's are *Timeline has a surface and nowhere to mount it* and *M13 is not a module*; Lane A's are the two above. **This is the same defect `B-024` exposed**, and QE's identifier-block rule (`CLAUDE.md`, 2026-08-02) now prevents it for future allocations — Lane A allocates from `200+` from here on.
+**Three collisions, not two — `C-024`, `C-025` and `B-019`.** Lane B's `C-024`/`C-025` are *Timeline has a surface and nowhere to mount it* and *M13 is not a module*; Lane A's are the two above. **And [`BUGS.md`](BUGS.md) now holds two `B-019`s** — *the constitution's branch table says two different things about `integration`* and Lane A's *below 768px the product has no navigation at all*, found while writing [43-customer-experience.md](architecture/43-customer-experience.md). **This is the same defect `B-024` exposed**, and QE's identifier-block rule (`CLAUDE.md`, 2026-08-02) now prevents it for future allocations — Lane A allocates from `200+` from here on, starting with [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) and `B-200`.
 
 **It is deliberately not raised as an item.** Nothing is blocked by it, and renumbering an existing identifier is **QE's at merge, only to break a tie, decided by author timestamp** — exactly as the rule states. **Recorded here so QE finds it rather than discovers it**, and so a reader who meets two `C-024`s in the register knows why.
 

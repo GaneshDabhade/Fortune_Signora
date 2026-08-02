@@ -1244,6 +1244,42 @@ tests/components/timeline-feed.test.tsx(80,19): error TS2345: (the same)
 
 ---
 
+### B-200 · Two colour tokens that do not exist, on 44 lines
+
+| | |
+|---|---|
+| **Module** | `integrations` (4 files) · `timeline` (1 file) |
+| **Current assignee** | **Lane B**, which is assigned both modules |
+| **Severity** | 🟡 — **wrong but survivable.** Text renders; it renders at the wrong weight of contrast |
+| **Status** | `OPEN` |
+| **Found** | 2026-08-02, by Lane A during the repository-wide customer experience audit |
+
+**Steps to reproduce.** Open `/settings/connections`. Compare the description under the heading with the equivalent line on `/settings` or `/settings/products`.
+
+**Expected.** Secondary text in the muted content colour, as everywhere else in the product.
+
+**Actual.** It renders in the **primary** content colour, because `text-muted-foreground` resolves to no CSS rule at all and the element simply inherits.
+
+**The cause is a token name that was never defined.** `tailwind.config.ts` declares `content` · `content-muted` · `content-subtle` · `content-inverted`, wired to `--color-content-*` in `globals.css`. **There is no `foreground` colour**, in the config or in Tailwind's own palette — `foreground`/`muted-foreground` is a shadcn convention, not this repository's. An undefined utility generates nothing, so the class is inert.
+
+| File | Uses |
+|---|---|
+| `components/integrations/connect-panel.tsx` | 14 |
+| `components/integrations/disconnect-dialog.tsx` | 9 |
+| `components/timeline/feed.tsx` | 9 |
+| `components/integrations/connection-center.tsx` | 8 |
+| `app/(app)/settings/connections/page.tsx` | 4 |
+
+**Why every gate passed.** `design-tokens.test.tsx` checks for **Tailwind's default palette** — `bg-slate-100`, `text-gray-500` — because that is the failure it was written for: a component *pinning* a colour a theme swap cannot reach. **An undefined token is the opposite defect** — no colour at all — and the check has no way to see it. It also scans `ui`, `shell`, `feedback`, `intelligence`, `(auth)` and `workspace`, and **`integrations` and `timeline` are in neither list.**
+
+> **That is the same gap the check already records finding once**, at M12.3: *"this check scanned `components/` and nothing else, so `app/(auth)` — the first screen every customer sees — had been using `bg-white` since M1.5."* **A rule with a gap in its enforcement is a rule the code eventually finds the gap in**, and it has now happened twice.
+
+**Two fixes, and they are different owners.** The 44 lines are Lane B's, in Lane B's modules. **Strengthening the check so a third instance is impossible is the frontend foundation's**, which has no assignee — recorded here rather than opened as a separate row, because it is the same defect seen from the enforcement side. A check that can only catch one of the two ways a colour goes wrong is worth saying out loud.
+
+**Not fixed by the reporting lane.** Both modules are Lane B's, and *finding a defect is an obligation to report it, never permission to fix it* (`CLAUDE.md` §20e).
+
+---
+
 ---
 
 ## Verified
