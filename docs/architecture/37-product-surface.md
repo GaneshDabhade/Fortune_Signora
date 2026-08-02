@@ -610,3 +610,36 @@ So on an expired account the brief said it **twice in one card, three lines apar
 | **Discoverability** | The decision controls sit at the top, under the account name, and every other section is reference. **Correct for a reader who already knows what they want**; unknown for a first-time reader, and that is the same unknown the six-perspective review recorded |
 | **Workflow continuity** | Served: position in the list, next account by name at the decision, and the decision trail. **Nothing found** |
 | **Operational transparency** | Provenance on narration, catalog-authored limitations, Signora-versus-person on every decision. **Nothing found**, and the same positive result as the AI-trust perspective |
+
+---
+
+## Subtraction review — 2026-08-02
+
+**A deliberately different question: *what can disappear without reducing customer confidence?*** Eleven sections on the brief, each interrogated against five tests — does another section already answer this · can another absorb it · is another now redundant · does it help a decision or merely document a fact · would an experienced seller miss it.
+
+**Conclusion: nothing should be removed today.** One candidate was found and is **not** being acted on, for a reason given below.
+
+| Section | Verdict |
+|---|---|
+| **Back to list** | **Keep.** The sequence and the post-decision offer are *forward*; returning to the list is a different intent and R10-01 was about the absence of forward exits, not the presence of a backward one |
+| **Workflow line** | **Keep — with one observation, below** |
+| **Score arithmetic · why now** | **Keep.** *Why now* is on the brief precisely because R1-01 moved it off the row: *"why did this number move"* is a question somebody asks here and nowhere else |
+| **Momentum · cooling badge** | **Keep.** Already reduced in PS-07 to the one state nothing else reports |
+| **Reading validity** | **Keep, and it was the closest call.** *"Exactly correct until 20 Sep"* documents a fact rather than driving today's decision — but it is **the only statement that the score has a shelf life at all**, which is a trust property rather than a workflow one. Removing it would make the number look permanent |
+| **Posture split** | **Keep.** Its own reasoning already answers this: *"all of this is expansion" is as much a finding as a split is* |
+| **Contested — badge, note, since** | **Keep all three.** A **label** in scan position, an **explanation** that Signora refused to average opposing readings away, and whether it **became** contested or always was. Three different questions, and the note is the only place the trust argument is made. **Contextual reinforcement, not redundancy** |
+| **Narration · validation · research · ledger · decision history · sequence** | **Keep.** Each answers a question no other section does |
+
+### The one candidate, and why it is not being acted on
+
+**The workflow line reads *"Signora is tracking this · Signora suggested this · nobody has taken it yet"*** on a typical account. `tracking` and `automatic` are near-perfectly correlated — the domain is explicit that an automatic qualification *"opens at `tracking`, which commits nobody"* — so on the most common account the middle phrase adds little to the first.
+
+**It is informative in the other three combinations**: a person adding an account by hand, and any account somebody has since acted on.
+
+**PS-03 added that phrase three slices ago, and it was accepted.** Suppressing it now for the common case would be **me re-reading my own copy without new evidence** — and the finding it answers, R1-06, came from a reviewer looking at twelve real briefs. **A wording judgement made by its own author days later is worth less than one made by somebody using the product**, so it is recorded here for the next reviewer rather than acted on.
+
+### Why the answer is *nothing*, and why that is not inertia
+
+**Every section on this page carries a written reason, and most of those reasons were reached by a reviewer with evidence** — R1-01 moved the trigger, R1-04 added the cooling badge, R2-02 promoted a limitation, R9-03 marked contraction, R10-01 added the sequence, R10-02 added the offer. **A page assembled that way is hard to subtract from**, because each addition already survived the question of whether it earned its place.
+
+**The honest risk is the opposite one:** that additions keep passing the *"does this earn its place"* test individually while the page as a whole becomes dense. **That is a judgement no single slice can make and no architect can make by reading**, and it needs somebody who has opened the brief thirty times in a day. Recorded as the standing question for the first design partner review.
