@@ -69,7 +69,34 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
-### B-022 · `make certify` inherits the database environment, and silently measures less when it is absent
+### B-023 · `tsc --noEmit` fails on the Timeline feed tests, and the suite that passes cannot see it
+
+| | |
+|---|---|
+| **Module** | `timeline` — `frontend/tests/components/timeline-feed.test.tsx` |
+| **Current assignee** | **Lane B**, Timeline's feature lead |
+| **Severity** | 🟠 — a stated Completion gate fails on `integration`. **Two characters to fix; it is blocking four finished slices** |
+| **Status** | `OPEN` |
+| **Found** | 2026-08-02, by QE, validating snapshot `7df2073` at lifecycle stage 1 |
+
+**Steps to reproduce.**
+
+```bash
+cd frontend && npx tsc --noEmit
+# tests/components/timeline-feed.test.tsx(79,19): error TS2345:
+#   Argument of type 'HTMLElement | undefined' is not assignable to 'HTMLElement'.
+# tests/components/timeline-feed.test.tsx(80,19): error TS2345: (same)
+```
+
+**Expected.** `tsc --noEmit` clean. It is named in `CLAUDE.md` §20e *Completion* step 2 — *"its module suite, impacted integration tests, `mypy --strict`, `lint-imports`, frontend suite, production build"* — and in *Which gates run when* for both the lane's hand-off and QE's validation.
+
+**Actual.** `screen.getAllByRole('listitem')` returns `HTMLElement[]`, and under `noUncheckedIndexedAccess` the elements `items[0]` and `items[1]` are `HTMLElement | undefined`. `within()` will not take that.
+
+**Fix.** Assert the shape the test already depends on — the two `listitem` elements it just rendered — rather than widening a type. A local `const [first, second] = screen.getAllByRole('listitem')` with an explicit `expect(first).toBeDefined()`, or an index guard, keeps the test honest about what it is asserting.
+
+**Why the other gates missed it, which is the part worth keeping.** **Vitest passed — 488 tests, including these two — and `npm run build` passed.** Vitest transpiles without full type checking, and the Next.js production build type-checks *application* sources rather than the test tree. **So the only gate that can see this class of defect is the one that was run last**, and a lane running its suite and its build would reasonably believe it was green.
+
+**Not a governance proposal, an observation for the record** (governance is frozen, and this has happened once): the lane-side gate list and the order it is run in are what caught this, and they caught it only at QE. If it recurs, the cheap structural answer is that `tsc` runs *before* the suite rather than after, so the fast feedback comes first.
 
 | | |
 |---|---|

@@ -23,7 +23,7 @@
 | **Certification status** | ✅ **CERTIFIED** — [`c3435a03e2aa`](certification/reports/c3435a03e2aa.md), 2026-08-02, bound to migration head **`0025`** and rendering protocol **v2**. **Commit-bound**: the record names `c3435a0`, and `c3435a0` is what was promoted. `make certified ARGS="--audit-main"` proves it across the branch. See §4 |
 | **Branches** | **`main`, `integration` and `lane-qe` at the promoted, certified baseline.** `lane-b-commercial-profile` is at that baseline too. **`lane-a-product-surface` sits ahead with four finished slices** — PS-01, PS-02, PP-01, PP-02 — awaiting one trivial rebase onto the promoted commit; it is the next cycle's stage 1. **QE is the only lane that merges, certifies, promotes and publishes this file** ([CLAUDE.md §20e](CLAUDE.md)). Who is on what: [docs/ACTIVE_ASSIGNMENTS.md](docs/ACTIVE_ASSIGNMENTS.md) · defects: [docs/BUGS.md](docs/BUGS.md) · cross-lane questions: [docs/LANE_COORDINATION.md](docs/LANE_COORDINATION.md) |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
-| **Overall completion** | **~66%** by engineering effort (~205 of ~261–339 ew) — M12.5 closed (five slices) · M12.4 shipped · M9.5 (~3 ew) inserted and **not** closed. **An estimate, and marked as one**; every other figure on this page is measured |
+| **Overall completion** | **~75% promoted** by engineering effort — **~196 of 261 ew** on the low band, **~251 of 339 ew** on the high band. Foundation (M0–M1.4, ~50 ew) · M1.5 → M10 complete · M12 at ~80% (five of six sub-milestones closed, M12.3 open) · M9.5 partial. **A further ~5–7 ew is built and awaiting certification** — M7's four Timeline slices — which would take it to ~77%. **An estimate, and marked as one**; every other figure on this page is measured. **Recomputed at every promotion** from [the roadmap's effort table](IMPLEMENTATION_ROADMAP.md#5b-execution-sequence), never carried forward |
 | **Projected to GA** | ~1.3–1.9 years at 3 engineers · ~2.0–2.8 at 2 · ~3.9–5.8 at 1 (80% capacity) |
 | **Current blockers** | **None blocking promotion — 0 open 🔴.** Eight defects await verification by somebody other than the lane that fixed them; [C-010](docs/LANE_COORDINATION.md) leaves `apps/`, `signora_platform/` and repository process with no assignable lane — and [B-022](docs/BUGS.md), found this cycle, is the fourth defect to land in that gap |
 
@@ -129,13 +129,15 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | — | **M12.5** | **Commercial Profile** — products ✅ · ICP ✅ · committee ✅ · priorities ✅ · target accounts ✅. **The pipeline finally has an input** | ✅ **Complete — 5 of 5** | **2026-08-02** |
 | 2 | **M12.4** | **Research on demand** — ask Signora to look into an account properly | ✅ **Shipped**, verified against a real model | **2026-08-02** |
 | — | M11 | Recommendation Engine | 🟣 **Deferred 2026-07-31** — *not cancelled*; resumes on a product trigger, see §10 | — |
-| 5 | M7 | Timeline | ⏳ Queued | — |
-| 6 | M13 | Integrations — CRM, comms, calendar | ⏳ Queued | — |
+| 5 | **M7** | **Timeline** — domain ✅ · projection ✅ · cursor-paginated read ✅ · seller-readable feed ✅ · mount point ⏳ | 🔵 **In progress — 4 slices built, on `integration`** | — |
+| 6 | **M13** | Integrations — CRM, comms, calendar. **Readiness reviewed 2026-08-02: not a module, and blocked by two ratified rules that conflict over OAuth** ([C-025](docs/LANE_COORDINATION.md)) | 🟠 **Blocked — architecture, not effort** | — |
 | 7 | M14a | Notifications | ⏳ Queued | — |
 | 8 | M14b | Billing, analytics, feature flags | ⏳ Queued | — |
 | 9 | M14.5 | Cloud Infrastructure *(deferred from M1.3B)* | ⏳ Queued | — |
 | 10 | M15 | GA readiness — load, SOC 2, PII, spend governance | ⏳ Queued | — |
 | — | 🎯 | **General Availability** | | |
+
+> **Why this moved from ~66% to ~75% without ~30 ew of work happening.** The previous figure divided a **low-band** numerator (~205 ew) by a **mid-band** denominator (~300 ew), which understates completion by roughly nine points. The bands are now compared like with like — low against low, high against high — and the two agree at ~74–75%. **Most of the movement is method, not progress**, and saying so is the point: a dashboard that silently corrects its own arithmetic is worse than one that was wrong.
 
 **Two foundations are frozen** and consumed rather than modified: `signora_platform/` (§20a) and the frontend foundation (§20c). **`ai_platform/` is frozen as of M10's close (2026-07-31)** — deliberately not after M9, because a port that had only served a single-call workload had never been asked for tool use or resumability ([28-ai-platform.md](docs/architecture/28-ai-platform.md), Condition 2).
 
