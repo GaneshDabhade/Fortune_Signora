@@ -426,6 +426,16 @@ Lane A's call, and the answer is no change. [D38](38-product-design-principles.m
 2. **If yes, where?** *Your business* is currently a settings page, and it is not a setting. A read-only surface for members might belong beside the account brief rather than under settings at all — which is Lane A's shell and routing.
 3. **Or should the API be narrowed instead?** The opposite resolution is legitimate and should be considered rather than assumed away: revoke `member` read on all four and make the profile genuinely administrative. Lane B thinks this is the weaker answer but it is a real option, and leaving the contradiction unresolved is the only wrong outcome.
 
+### Addendum — the situation changed on 2026-08-02, recorded by Lane A
+
+**This item describes the read access as *unreachable*. That was true of the intent and not of the running product.** `GUARDED_ROUTES` did restrict `/settings/*` to `workspace:update`, but `authenticated-shell.tsx` hardcoded **every** signed-in person as `owner`, so **in practice every member could open the commercial profile.**
+
+**TS-02 removed the hardcode**, because a shell that tells everybody they are an owner offers controls the server refuses. The side effect is that this item's finding **stopped being theoretical and became live**: a member is now redirected away from a screen the server would serve them read-only.
+
+**Nothing has been implemented and nothing will be until an option is chosen** — that instruction is unchanged, and this is not an argument for one option over another. It is one fact the decision now rests on: **the cost of leaving C-008 open is no longer zero.**
+
+**Lane A did not fix it, deliberately.** The obvious repair — a `/settings/products` entry in `GUARDED_ROUTES` requiring only membership — would pick option **B or C** by implementation, which is precisely what this item exists to prevent. It would also be incomplete on its own: [`settings/products/page.tsx`](../frontend/app/(app)/settings/products/page.tsx) renders its editors unconditionally, so letting a member in without gating them would replace an inaccessible screen with a screen full of controls that 403 — *a control that goes nowhere costs more trust than an absent one*.
+
 **Why Lane B has not simply fixed it.** `GUARDED_ROUTES` lives in `frontend/lib/state/permissions.ts` — frontend foundation, frozen under §20c — and the destination is Lane A's routing. Neither is Lane B's to change, and the underlying question is a product decision rather than a routing one.
 
 ---

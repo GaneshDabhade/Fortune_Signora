@@ -485,3 +485,37 @@ The fix is not to duplicate the sentence. It moves onto the panel **only when no
 | **The question stops being asked** | The dialog's title changes to the past tense and the form is replaced. A dialog that keeps its question after the question is answered invites a second answer, which the domain would rightly refuse |
 | **`nextInSequence` is exported and shared** | One definition of *next*, read from the same cached ranking. **Two places computing it separately is how a reader gets offered two different "next"s in one visit** (§2) |
 | **Navigation belongs to the page** | The component takes a name and a callback. Reaching for a router inside a presentational control would make every test of a decision mount an app router to assert wording — and `Button` has no `as`, so a styled link would mean restyling a frozen component (§20c) |
+
+---
+
+## Journey review — 2026-08-02
+
+**A different review from the two before it.** The contract review read the code and asked what was promised; the product review read [39-product-review-findings.md](39-product-review-findings.md) and asked what felt weak. **This one traces a customer from one end of a task to the other**, and it finds things that are invisible on any single screen because every screen involved is correct.
+
+**Nine journeys, traced against the running product.** Every claim below was read out of the repository.
+
+| Journey | Where it stops |
+|---|---|
+| **Reviewing an account** | **Nowhere.** List → brief → arithmetic → citations → what to check → decide → next. Complete end to end |
+| **Discovering a new account** | **At the declaration.** A customer names a company to watch and nothing consumes it ([C-021](../LANE_COORDINATION.md)). The screen is honest — it says Signora *has been told*, not that it has *started looking* — which makes this a truthful stop rather than a broken one |
+| **Taking ownership** | **At the second person.** See below |
+| **Collaborating with teammates** | **At the first name.** [C-024](../LANE_COORDINATION.md) |
+| **Understanding what your company sells** | **At the route guard.** [C-008](../LANE_COORDINATION.md), and its premise changed today — see the addendum there |
+| **Returning to previously reviewed work** | **Partly served.** *Decided* accounts are listed below the attention list; accounts opened and left undecided are indistinguishable from accounts never opened ([R10-03](39-product-review-findings.md), needs per-user read state) |
+| **Understanding why Signora concluded something** | **Served, except the Decision Package**, which waits on `reasoning@1` holding a release |
+| **Managing connected systems** | **Deliberately absent.** Customers never configure providers (ruled 2026-08-01), so the absence is the design rather than a gap |
+| **Understanding overall workspace health** | **Not built.** The RevOps question — *is the motion working?* — has no surface. That is M11 in the product roadmap, not a slice |
+
+### Taking ownership stops at the second person
+
+**You can take an account on. You can never hand it to anybody.**
+
+`WorkflowActions` sends `owner_id` in exactly one circumstance — `stage === 'engaged'` and the viewer does not already hold it — so **the only assignment the product can perform is self-assignment.** The API accepts an arbitrary `owner_id`; no screen ever sends one.
+
+**A sales manager cannot give an account to a rep. A rep going on holiday cannot hand theirs over.** The workflow models ownership fully and offers exactly half of it.
+
+**Not raised as its own item, because it is [C-024](../LANE_COORDINATION.md) wearing different clothes**: assigning to somebody means naming them, and nothing in the product can render a person's name. **The two are one decision**, and recording them separately would invite them to be answered separately.
+
+### What this review changes about priority
+
+**Three coordination items now hold six of the nine journeys**, and two of them — C-021 and C-024 — each block more than one. **That is the most useful thing this review produced**: not a new slice, but the observation that the remaining friction is concentrated rather than scattered, and that two rulings would unblock most of it.
