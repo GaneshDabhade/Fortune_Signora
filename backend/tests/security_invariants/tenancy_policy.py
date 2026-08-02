@@ -119,6 +119,19 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # damaging in the platform: it states a company's whole go-to-market
         # position in its own words.
         "icp_declaration",
+        # Commercial Profile (ICP-01), migration 0031. **The same customer
+        # declaration, given an identity.** Four tables because each answers a
+        # question the others must not: `icp_segment` is what every future
+        # citation points at and holds nothing else, `icp_segment_version` is
+        # published content, `icp_segment_product` is which products a segment
+        # buys — versioned with the content — and `icp_segment_state` is the
+        # append-only lifecycle whose rows *are* the audit log. Every one is
+        # customer-authored and unregenerable, on `icp_declaration`'s terms
+        # (ADR-0041).
+        "icp_segment",
+        "icp_segment_version",
+        "icp_segment_product",
+        "icp_segment_state",
         # AI Research Engine (M12.4), migration 0021. **Workflow state**, the
         # same category as `opportunity` — a person asked Signora to spend a
         # model call, and nothing reproduces that. Deliberately not columns on
@@ -282,6 +295,14 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         # Migration 0020, on identical terms: no `UPDATE` grant, `DELETE`
         # granted because erasability is a tenancy property.
         "icp_declaration",
+        # Migration 0031, and the whole aggregate is append-only: content is
+        # superseded, lifecycle is appended, and nothing is edited. `DELETE`
+        # is granted on the same erasability grounds as every other table
+        # here.
+        "icp_segment",
+        "icp_segment_version",
+        "icp_segment_product",
+        "icp_segment_state",
         # A request is written once and its progress is appended, exactly as
         # `opportunity`/`opportunity_state` are — which is the shape migration
         # 0018 committed to when it withheld UPDATE from `research_task`
