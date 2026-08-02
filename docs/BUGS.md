@@ -153,6 +153,19 @@ uv run coverage report --skip-covered --sort=miss | tail -8
 
 **This was predicted, and the prediction is in the record.** Coverage fell 95.57 → 95.37 → 95.19 → 95.16 across four cycles, and cycle 15's Closeout stated the failure mode exactly: *"the next sizeable slice lands the repository below the floor, and a candidate is rejected for coverage rather than for a defect."* **The gate did its job.**
 
+**Second rejection, 2026-08-02 — candidate `a2ca53d`, and nothing moved.** M13-S05, M13-S06 and the M13 module review landed on `integration` in between and **touched no backend file**: the frontend suite grew 511 → 595, the backend stayed at 2460 and coverage stayed at **94.79%**, to the statement.
+
+```
+modules/integrations/infrastructure/secrets.py     34  34   0%   ← unchanged
+modules/integrations/infrastructure/repository.py  43  26  35%   ← unchanged
+modules/timeline/interface/handlers.py             11  11   0%   ← unchanged
+modules/timeline/infrastructure/repository.py      21   9  52%   ← unchanged
+```
+
+**The `tests/integrations/` files are not new.** `test_connection.py` arrived with S01, `test_queries.py` with S02, `test_connect.py` with S04 — all before the first rejection. **No test has been added against any of the four files above since this row was opened.**
+
+**Two candidates have now been rejected for one unfixed defect.** `9ba0ea6` and `a2ca53d`, both abandoned, both correctly. **Nothing on `integration` can certify until these four files are covered**, which is the shared-base pattern again — now at **three occurrences**, counting [B-023](BUGS.md).
+
 **Not to be fixed by lowering the floor**, and not by adding assertions that execute lines without testing behaviour. The two 0% files are the work; the percentage follows.
 
 ### B-025 · A coverage failure is reported as a test failure, and names the wrong gate
