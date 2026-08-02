@@ -111,6 +111,8 @@ git ls-files --eol | awk '{print $1}' | sort | uniq -c
 
 **Why the repository should own this rather than documenting it** (§2): a rule kept by every contributor configuring their client correctly is a rule that will be broken by the first person who does not, and the failure lands on somebody else's machine. **This is convention replaced by enforcement**, which is the substitution the repository already prefers everywhere else.
 
+**Scheduled, not deferred indefinitely** (product owner, 2026-08-02). **Apply during a maintenance cycle when no feature branch is open** — the fix is a content no-op today, but `.gitattributes` changes how git *normalises* on checkout, and landing it while two lanes hold long branches invites merge churn for no benefit. **The board shows when that window is open:** every lane `AVAILABLE`.
+
 **One caveat for whoever implements it.** Adding `.gitattributes` to a repository that is already uniformly LF is a no-op for content — verified above, 824 of 824 text files are already `i/lf` — so **no renormalisation commit is needed and none should be made.** If that ever stops being true, `git add --renormalize .` is the mechanism, and it must be its own commit.
 
 

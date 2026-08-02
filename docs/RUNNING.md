@@ -81,6 +81,40 @@ docker compose -f infra/docker-compose.yml down
 
 **Step 2 is the one people skip.** A backgrounded `next dev` survives closing its terminal, and the next person to run a gate inherits a failure that looks like a defect in their own work.
 
+### Who owns the environment, and when
+
+**Ratified 2026-08-02, product owner.** The two modes need an owner at every moment, or the handover is an assumption two sessions make differently.
+
+```
+   review begins                    review ends                    next review
+        │                                │                              │
+        ▼                                ▼                              ▼
+   ┌─────────────────────┐   ┌──────────────────────────────┐   ┌───────────
+   │  Human Review owns  │   │  Release Engineering owns    │   │  Human …
+   │  the environment    │   │  the environment             │   │
+   └─────────────────────┘   └──────────────────────────────┘   └───────────
+    QE waits. It does not     QE may stop review processes
+    stop a live session.      and reclaim 3000/8000.
+```
+
+| | |
+|---|---|
+| **While a review is active** | **Human Review owns the environment.** Release Engineering waits — `make release-preflight` reports `WAITING`, and that is a correct, expected state rather than a failure |
+| **Once the review concludes** | **Release Engineering owns the environment** until the next review begins. QE performs the transition itself; it is a normal lifecycle step, not an escalation |
+| **The signal** | **The reviewer says the review is complete.** QE never infers it from an idle-looking port — a session paused for lunch looks identical to one that ended |
+
+**The transition back to Release Mode, performed by QE:**
+
+```bash
+# 1 — stop the review processes: the `next dev` on 3000, the `uvicorn` on 8000
+# 2 — confirm, do not assume
+make release-preflight            # expect: READY
+```
+
+**What QE does *not* stop: the development services** (`signora-v2-postgres-1`, `-redis-1`, `-minio-1`). They are `infra/docker-compose.yml`, **Release Engineering needs them** — the QE database `signora_lane_qe` lives in that PostgreSQL and the worker tests use that Redis — and stopping them turns a clean handover into a broken suite. **Only the two foreground review processes belong to the review.**
+
+**Record the transition in the release log** (the Closeout commit), so a later reader can tell a deliberate handover from a session somebody killed.
+
 ### Lanes never collide with either mode
 
 **A lane's ports start at 3300/8300** and are allocated in [§ Running a lane](#running-a-lane). **That table exists to keep this collision limited to the two modes above** — a lane running on its own row can develop right through a review session or a certification run, and neither notices.
