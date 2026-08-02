@@ -4,6 +4,17 @@
 >
 > **Why this file exists.** Open defects had no home. They were split between `39-product-review-findings.md` (a *dated record of reviews*, append-only, and not a feature lane's to edit) and `PROJECT_STATUS.md`'s known-limitations table. Neither can carry a row whose status changes, and a review finding is not the same thing as a defect with an owner and a fix. This file replaces that responsibility rather than adding one.
 
+## Identifier blocks — per lane, from 2026-08-02
+
+**Product owner's direction.** New rows use the opening lane's allocated block, so two lanes can no longer allocate the same number and QE no longer renumbers at merge (which is what [B-017](#b-017--a-lanes-merged-slice-disappeared-from-integration-and-the-backlog-reoffers-it)'s neighbourhood cost once already).
+
+| Lane | Bugs | Coordination | Tasks |
+|---|---|---|---|
+| **Lane B** | `B-3xx` | `C-3xx` | `TASK-3xx` |
+
+**Only Lane B's block has been stated to Lane B.** The blocks for Lane A, QE and the unclaimed lanes are the product owner's to allocate, and **this table is deliberately incomplete rather than guessed** — a lane inventing another lane's range is exactly the collision the scheme removes. Rows numbered below 100 predate the scheme and keep their identifiers permanently; an id is never renumbered.
+
+
 ## How it works
 
 **Any lane opens. The module's current assignee fixes. QE verifies and closes** — never the lane that fixed it.
@@ -68,6 +79,45 @@ Such a row names the code, records **Current assignee: none — not assignable**
 ---
 
 ## Open
+
+### B-301 · Timeline is promoted, wired and consumes nothing — the deployed worker never registers its projection
+
+| | |
+|---|---|
+| **Module** | `timeline` — the defect is in `apps/worker/subscriptions.py`, the composition root |
+| **Current assignee** | **Lane B**, Timeline's feature lead |
+| **Severity** | 🟠 — **a shipped, customer-facing capability that does not work in a deployed environment.** Not 🔴 only because no customer is running a deployed environment yet |
+| **Status** | **`FIXED`** — Lane B, 2026-08-02, in the same slice that found it. **`VERIFIED` is QE's to set** |
+| **Found** | 2026-08-02, by Lane B, auditing its own modules before starting M14a |
+
+**Steps to reproduce.**
+
+```bash
+grep -c "registry.subscribe" backend/apps/worker/subscriptions.py   # 1
+grep -rn "project_to_timeline" backend/apps/ --include=*.py         # no match
+```
+
+**Expected.** A customer opens an account and sees what has happened to it. Timeline projects nine event types, and the deployed worker consumes them.
+
+**Actual.** The deployed worker registered **exactly one** subscription — `ai_research.requested`, the AI Research Engine consuming its own event. **`project_to_timeline` was referenced nowhere outside tests.** The read API is wired, the router is included, the table exists, the component renders — and **nothing ever writes a row**, so an account timeline stays empty forever.
+
+**Why every gate was green.** Timeline's unit tests drive `ProjectEvent` directly; its integration tests drive the handler directly. **A composition root is the one file no module's own suite covers** — each module tests its half and assumes the wiring. There was no test anywhere asserting what the deployed worker subscribes to, which is why 2518 passing tests said nothing about it.
+
+**This is the same class as [B-024](#b-024--the-credential-store-that-must-not-be-readable-has-no-tests-at-all), one level up.** There, fakes accepted what the database would refuse. Here, tests accepted a handler nothing calls. **Both are a suite proving the parts and never the join.**
+
+### Fix — Lane B, 2026-08-02
+
+**Nine subscriptions, one handler, registered from `PROJECTIONS`** rather than a hand-written list — the projection table is the single authoritative statement of what Timeline consumes, and a list beside it would drift the first time a rule was added.
+
+**On the `read_model` pool**, which has been declared in `pools.py` since M1.1 as *"Timeline, Revenue Intelligence Platform — projection updates"* and **had never been used.** High concurrency, short timeout: the right shape for one insert, and it keeps a projection storm off the pool the pipeline itself runs in.
+
+**It does not need [C-012](LANE_COORDINATION.md) answered first, and does not work around it.** Timeline's entry id is derived from `event_id`, so redelivery — or a dead letter replayed months later — derives the same id and `ON CONFLICT DO NOTHING` refuses it. **The handler is idempotent by construction and needs no share of the dispatcher's transaction**, which is the property C-012 is actually about. The wrapper follows the shape `ai_research_engine` established as the repository's first production consumer.
+
+**Regression tests:** `backend/tests/integration/test_worker_subscriptions.py`, and they assert the join in both directions — every event Timeline projects has a consumer, **and** it subscribes to nothing it cannot project (a subscription with no rule wakes a worker to do nothing and returns `False`, which is indistinguishable from working). Plus: the consumer name is the module's own, registration is idempotent, and every subscription routes to a declared pool.
+
+**The general finding, recorded because it will recur:** **the repository has no test that asserts what the deployed worker consumes.** Every module that adds a consumer from here on can ship the same defect, and the file that would catch it is the one no module owns. This test is Timeline's half; **a repository-wide version belongs to QE**, and is raised as [C-301](LANE_COORDINATION.md).
+
+---
 
 ### B-022 · `make certify` inherits the database environment, and silently measures less when it is absent
 

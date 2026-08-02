@@ -112,7 +112,6 @@
 > **Three ids appear twice — `C-024`, `C-025` and now `C-026`** — allocated independently by Lane A and Lane B before the identifier-block rule existed; **renumbering is QE's at merge, by author timestamp** (`CLAUDE.md`). See *Blocker audit* below and [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide), which is what makes it stop.
 >
 > **`C-026` is worth reading twice.** Lane B raised *"the Connection Center is reachable only by typing its URL"* and Lane A shipped that exact fix as **CX-01** the same day, from an independent audit, **without either lane seeing the other's finding.** Two lanes reaching one defect by different routes is the model working; **two lanes reaching one identifier is the model failing**, and it is the same day's evidence for both.
-=======
 | [C-027](#c-027--m14a-notifications--what-was-bought-is-not-what-must-be-built) | M14a — what was bought is not what must be built | Lane B | **Product owner** | `ANSWERED` — all four decisions taken 2026-08-02, [ADR-0040](architecture/adr/0040-notifications.md) proposed | **One 🔴 ratification** — the fifteenth entry in `04-modules.md`, drafted and ready to paste |
 >>>>>>> 603a077 (ADR-0040 proposed — Notifications answers a different question from Attention)
 
@@ -2415,4 +2414,73 @@ Two scenarios were **excluded on principle rather than on effort**, and the reas
 **One finding, reported rather than edited.** [B-003](BUGS.md) still names **Integrator** as its owner — a role abolished on 2026-08-01 and folded into QE. QE corrected the same staleness on C-004 and C-008 in `0632680` and this row was missed. **Lane B has not changed it**: rewriting another row's owner is reconciliation, which is QE's, and a register naming a role that no longer exists is a register nobody can act on.
 
 **Conclusion: Lane B's release path is clear.** Everything owned is either resolved, or resolved and awaiting a status only QE may set.
+
+
+---
+
+## C-301 · Nothing asserts what the deployed worker consumes
+
+| | |
+|---|---|
+| **Decision required** | Whether a repository-wide assertion of the deployed subscription set is built, and by whom |
+| **Participating modules** | `apps/worker/` — a composition root no module's suite covers · every module that will ever add a consumer |
+| **Current assignee(s)** | **QE** — repository-wide automated tests are QE's; lanes own the tests specific to their slices (`CLAUDE.md` §20e) |
+| **Blocking** | **Nothing today.** [B-301](BUGS.md) is fixed and Timeline consumes correctly |
+| **Raised** | 2026-08-02, by Lane B, having just shipped the defect it describes |
+
+**The specific defect is fixed; the class that produced it is not.** [B-301](BUGS.md) — Timeline promoted to `main` with a projection handler the deployed worker never registered — got through **2518 passing tests, a coverage gate, MyPy strict, import-linter, `make smoke` and a full certification cycle.**
+
+**Why none of them could see it.** `apps/worker/subscriptions.py` is a composition root, and **a composition root is the one file no module's own suite covers**: each module tests its own half and assumes the wiring. Timeline's unit tests drive `ProjectEvent` directly and its integration tests drive the handler directly, so both halves were proven and the join was not.
+
+**Lane B has written Timeline's half** — `backend/tests/integration/test_worker_subscriptions.py` asserts that every event Timeline projects has a consumer, that it subscribes to nothing it cannot project, and that every subscription routes to a declared pool.
+
+**What Lane B has deliberately not written is the general one**, and the boundary is the reason:
+
+> **A per-module assertion catches the module that remembered to write it.** The defect is a module *forgetting*, and a test written by the forgetting lane is exactly the one that will be absent.
+
+**What a repository-wide version would assert**, offered as input rather than as a design:
+
+- **Every module with an `interface/handlers.py` has at least one subscription**, or is on a stated list of modules that deliberately consume nothing (Commercial Profile is the head of the pipeline and consumes nothing; that is a fact worth asserting, not an omission).
+- **Every event type in `06-events.md`'s catalog with a declared consumer has a matching subscription** — the catalog names consumers today and nothing checks that they exist.
+- **Every subscription routes to a pool a process actually runs.**
+
+**The second one is the valuable one and the most work**, because `06-events.md` is prose. It is also the only one that would have caught this before Timeline was written rather than after.
+
+**Not blocking.** Recorded so the class does not survive on the memory of the lane that hit it.
+
+---
+
+## C-302 · A notification is per-person, and workspace RLS is not enough
+
+| | |
+|---|---|
+| **Decision required** | Whether a tenant-owned table may carry a **second** RLS predicate scoping rows to `app.user_id` within the workspace |
+| **Participating modules** | `notifications` (proposed) · the Tenant Isolation Policy · [11-tenancy.md](architecture/11-tenancy.md) 🔴 |
+| **Current assignee(s)** | **Product owner** — `11-tenancy.md` and `docs/architecture/01`–`21` are 🔴 |
+| **Blocking** | **N-01's migration**, and nothing before it |
+| **Raised** | 2026-08-02, by Lane B, stress-testing [ADR-0040](architecture/adr/0040-notifications.md) against membership changes |
+
+**Every workspace-owned table in this repository is workspace-scoped and workspace-*shared*.** RLS answers *"may this organization see this row?"*, and within a workspace every member sees everything. That has been correct for every table so far, because every one holds facts about the *organization*.
+
+**A notification holds a fact about a *person***: what they have been told, and whether they have read, dismissed or snoozed it. **Under a workspace-only policy, any member could read any colleague's notifications and their read state** — which is not a tenancy breach between customers, and is still wrong.
+
+**The mechanism already exists and needs no platform change.** `tenant_scoped_session` sets `app.user_id` transaction-locally alongside `app.workspace_id`, and **user-scoped RLS is established precedent**: `workspace` and `membership` have been membership-scoped on `app.user_id` since migration `0001`. So the policy is ordinary:
+
+```sql
+USING (
+  workspace_id  = NULLIF(current_setting('app.workspace_id', true), '')::uuid
+  AND recipient_id = NULLIF(current_setting('app.user_id',   true), '')::uuid
+)
+```
+
+**Why it is a question rather than a decision Lane B takes.** It is *stricter* than the Tenant Isolation Policy and satisfies every check in `tenancy_policy.py` — which asserts *which commands* have policies, never their predicates. But **[11-tenancy.md](architecture/11-tenancy.md) describes a one-key model**, it is 🔴, and *"a lane invented a second tenancy dimension inside a slice"* is precisely the drift the Change Budget exists to stop.
+
+**Two consequences worth deciding with it, because they are the same decision:**
+
+| | |
+|---|---|
+| **A removed member's notifications** | Lane B's position: **rows are retained and become unreadable**, since the policy already denies them and the workspace's own record of what was sent is operational history. **Deleting them would be a lane deciding a data-retention question that [README](../README.md) lists as unowned** — *"data export and account deletion (no owner)"* |
+| **The unread count is per workspace** | Not a product choice. **A cross-workspace aggregate would have to read outside the active workspace context**, which RLS forbids — and a count mixing three organizations is a number nobody can act on. Recorded in ADR-0040 §9 |
+
+**Lane B recommends the policy above**, and will not write the migration until it is ruled on. **N-01 has no other blocker of its own** — it waits on the `04-modules.md` entry (C-027) regardless, and this can be answered in the same pass.
 

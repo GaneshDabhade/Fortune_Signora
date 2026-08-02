@@ -27,7 +27,7 @@ from uuid import UUID
 import httpx
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from apps.worker.pools import AI_RESEARCH
+from apps.worker.pools import AI_RESEARCH, READ_MODEL
 from modules.ai_platform.infrastructure.composition import build_provider_registry
 from modules.ai_platform.infrastructure.prompt_loader import load_prompt_registry
 from modules.ai_platform.infrastructure.repository import SqlInferenceRecorder
@@ -46,6 +46,10 @@ from modules.ai_research_engine.interface.handlers import (
     CONSUMER_NAME as RESEARCH_CONSUMER,
 )
 from modules.ai_research_engine.interface.handlers import run_requested_research
+from modules.timeline.domain.projection import PROJECTIONS
+from modules.timeline.infrastructure.composition import build_project_event
+from modules.timeline.interface.handlers import CONSUMER_NAME as TIMELINE_CONSUMER
+from modules.timeline.interface.handlers import project_to_timeline
 from modules.business_event_engine.infrastructure.composition import (
     build_queries as build_business_event_queries,
 )
@@ -66,6 +70,7 @@ from modules.provider_normalization.infrastructure.claim_reader import SqlClaimR
 from modules.signal_engine.infrastructure.composition import (
     build_queries as build_signal_queries,
 )
+from signora_platform.db import tenant_scoped_session
 from signora_platform.event_bus import (
     EventEnvelope,
     PostgresOutboxEventPublisher,
@@ -75,6 +80,11 @@ from signora_platform.event_bus import (
 #: Read from the domain module rather than written out, so a renamed event
 #: cannot leave a subscription pointing at a string nothing publishes.
 RESEARCH_REQUESTED: str = RESEARCH_REQUESTED_EVENT
+
+#: The identity a projection is attributed to. Timeline's rows carry no actor —
+#: nobody *did* a projection — but `app.user_id` must still be set, because
+#: `tenant_scoped_session` establishes both keys and the platform requires it.
+SYSTEM_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
 
 
 class RuntimeNotInstalled(RuntimeError):
@@ -189,6 +199,25 @@ async def _run_requested_research(envelope: EventEnvelope) -> None:
     )
 
 
+async def _project_to_timeline(envelope: EventEnvelope) -> None:
+    """Timeline's projection, bound to a session at call time.
+
+    **Idempotent without the dispatcher's ledger.** The entry id is derived
+    from `event_id`, so a redelivery — or a dead letter replayed months later —
+    derives the same id and `ON CONFLICT DO NOTHING` refuses it. That is what
+    lets this consumer exist while [C-012] is still open: it needs no share of
+    the dispatcher's transaction, because it cannot write twice.
+    """
+    current = runtime()
+    async with tenant_scoped_session(
+        current.session_factory,
+        workspace_id=envelope.workspace_id,
+        user_id=SYSTEM_USER_ID,
+    ) as session:
+        await project_to_timeline(envelope, project=build_project_event(session))
+        await session.commit()
+
+
 def register() -> None:
     """Register every subscription this deployment runs.
 
@@ -207,6 +236,28 @@ def register() -> None:
         # internal work would let one run starve everything behind it.
         pool=AI_RESEARCH.name,
     )
+
+    # **Nine event types, one handler, one subscription each.** The registry
+    # keys on `(consumer, event_type)`, and the relay needs the triple in order
+    # to know which queue an event fans out to — so a subscription per type is
+    # not repetition, it is the routing table.
+    #
+    # Read from `PROJECTIONS` rather than listed here: the projection table is
+    # the single authoritative statement of what Timeline consumes, and a
+    # hand-written list beside it would be a second copy that drifts the first
+    # time a rule is added.
+    for event_type in PROJECTIONS:
+        registry.subscribe(
+            consumer_name=TIMELINE_CONSUMER,
+            event_type=event_type,
+            handler=_project_to_timeline,
+            # `read_model` — declared in `pools.py` since M1.1 as *"Timeline,
+            # Revenue Intelligence Platform — projection updates"*, and unused
+            # until now. High concurrency and a short timeout, which is the
+            # right shape for one `INSERT ... ON CONFLICT DO NOTHING`, and it
+            # keeps a projection storm off the pool the pipeline runs in.
+            pool=READ_MODEL.name,
+        )
 
 
 register()
