@@ -33,6 +33,7 @@ from modules.provider_platform.domain.events import (
     new_event_id,
 )
 from modules.provider_platform.domain.provider import (
+    ProviderResponse,
     ProviderAdapter,
     ProviderCapability,
     ProviderPayloadInvalidError,
@@ -242,6 +243,8 @@ class RunProviderSync:
             inserted = await self._repository.store_records(records)
             stored += inserted
 
+            self._log_ingestion(sync, response, records=len(records), correlation_id=correlation_id)
+
             high_water = max((r.occurred_at for r in records), default=None)
             sync.record_page(records=inserted, high_water=high_water)
 
@@ -274,6 +277,63 @@ class RunProviderSync:
 
         raise ProviderPayloadInvalidError(
             sync.provider, f"sync exceeded {MAX_PAGES} pages without terminating"
+        )
+
+    def _log_ingestion(
+        self,
+        sync: ProviderSync,
+        response: ProviderResponse,
+        *,
+        records: int,
+        correlation_id: UUID,
+    ) -> None:
+        """Mark every ingested page with where it actually came from.
+
+        **A safety control as much as an observability one**
+        ([20-provider-simulation.md](../../../../docs/architecture/20-provider-simulation.md)):
+        *"if simulated data ever reaches a place it should not, the logs must
+        say so unambiguously and immediately."* The framework's own guard
+        refuses to *activate* outside development; this is the other half —
+        proving, from the record, what a given row was actually built from.
+
+        **The flag is emitted on every line, never only when it is true.** A
+        field that appears only when set makes its absence ambiguous — *real*
+        and *logged before this line existed* look identical — and an operator
+        filtering for genuine data would be trusting a silence.
+
+        **This use case does not know what provenance contains.** It asks the
+        response and spreads the answer. AC-21 confines that knowledge to
+        `domain/provider.py`, and a pipeline that could name the simulator is
+        a pipeline that could branch on it — which is the whole reason the
+        Security Invariant exists.
+
+        **The replay fields travel with it**, because they answer the question
+        the simulation framework exists to answer: *when output changes, what
+        changed?* Scenario, seed, manifest version, generator version, clock
+        and dataset version separate a model change from a prompt change from
+        a quietly-updated payload shape, and **separating them after the fact
+        is impossible.**
+
+        Never in the payload body — that would change its shape and defeat the
+        identical-contract rule that makes simulation worth having.
+        """
+        logger.info(
+            "provider page ingested",
+            extra={
+                "sync_id": str(sync.id),
+                "workspace_id": str(sync.workspace_id),
+                "correlation_id": str(correlation_id),
+                "provider": response.provider.value,
+                "capability": sync.capability.value,
+                "records": records,
+                # **Asked for, never inspected.** This use case does not know
+                # what provenance contains, and must not: AC-21 confines that
+                # knowledge to `domain/provider.py`, and a pipeline able to
+                # name where a payload came from is one able to branch on it.
+                # Enforced by the Security Invariant, which caught this exact
+                # line when the fields were assembled here instead.
+                **response.provenance_fields(),
+            },
         )
 
     async def _fail(

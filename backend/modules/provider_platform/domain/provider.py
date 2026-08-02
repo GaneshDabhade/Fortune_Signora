@@ -186,6 +186,27 @@ class ProviderResponse:
     #: scenario, seed, manifest version, generator version, and clock.
     replay: ReplayContext | None = None
 
+    def provenance_fields(self) -> dict[str, str | int | bool]:
+        """Where this page came from, as log fields.
+
+        **Assembled here because this is the one file permitted to know that
+        simulation exists** (AC-21's approved metadata). The ingestion log is
+        required to mark simulated payloads — *"a safety control as much as an
+        observability one"* — and the use case that writes that line must be
+        able to do so **without naming simulation**, or the pipeline has
+        learned which implementation it received.
+
+        So the caller asks for provenance and gets whatever provenance is.
+        **No branch on `simulated` anywhere**: the flag is emitted as data, and
+        the replay fields are present or absent according to whether a replay
+        context exists — which is a fact about the response, not a decision
+        about behaviour.
+        """
+        fields: dict[str, str | int | bool] = {"simulated": self.simulated}
+        if self.replay is not None:
+            fields.update(self.replay.as_log_fields())
+        return fields
+
 
 @dataclass(frozen=True, slots=True)
 class ReplayContext:

@@ -74,6 +74,7 @@
 | **PP-03** — un-watching stops the spending | [ADR-0036](adr/0036-target-account-contract.md) §6 | **Re-scoped before it started — see below** |
 | **PP-04** — the module can be measured | §17 · [12-scalability.md](12-scalability.md)'s extraction trigger | Built 2026-08-02 |
 | **PP-05** — the platform paces itself | `rate_limit_per_minute`, declared in M2.0 and read by nobody | Built 2026-08-02 |
+| **PP-06** — ingestion says where a payload came from | [20-provider-simulation.md](20-provider-simulation.md), stated three times | Built 2026-08-02 |
 
 > **PP-02 and PP-03 are proposed slices, not registered tasks** (product-owner refinement, 2026-08-02). A feature lane plans its own sequence inside its implementation area; **it does not mint repository task identifiers** — that namespace is registered centrally, so two lanes cannot extend it independently. This table is the plan; [`BACKLOG.md`](../BACKLOG.md) is the register, and only QE writes ids into it.
 
@@ -100,6 +101,24 @@
 **Dispatch happens before the version is recorded.** If recording fails, the event redelivers, the delta is recomputed against the same watermarks and the same companies are dispatched again — wasteful once, and every layer below is idempotent. Recording first and failing to dispatch would lose the work **silently**, and nothing downstream would notice a company that was never fetched.
 
 ## Operational considerations
+
+### Ingestion records its own provenance — PP-06 *(2026-08-02)*
+
+**[20-provider-simulation.md](20-provider-simulation.md) states this three times, and the strongest statement is not about observability:**
+
+> *"Every ingestion log line marks the payload as simulated, names the dataset version, scenario, and seed. **This is a safety control as much as an observability one: if simulated data ever reaches a place it should not, the logs must say so unambiguously and immediately.**"*
+
+**`ProviderResponse.simulated` and `.replay` have carried that since M2.0, `ReplayContext.as_log_fields()` was written to emit it, and nothing had ever called it.** The framework's own guard refuses to *activate* outside development; **this is the other half** — proving from the record what a given row was built from.
+
+| Decision | Why |
+|---|---|
+| **`simulated` on every line, not only simulated ones** | A field that appears only when true makes its absence ambiguous — *not simulated* and *logged before this line existed* look identical, and an operator filtering for real data would be trusting a silence |
+| **The replay fields travel with it** | *"When output changes, what changed?"* Scenario, seed, manifest, generator, clock and dataset separate a model change from a prompt change from a quietly-updated payload shape, and **separating them after the fact is impossible** |
+| **Per page, not per record** | One line per response covers every record in it through `sync_id`; per record would put thousands of identical provenance lines in the way of reading anything |
+| **Never in the payload body** | That would change its shape and defeat the identical-contract rule that makes simulation worth having |
+| **The use case never names simulation** | `ProviderResponse.provenance_fields()` assembles the line's provenance in `domain/provider.py` — **the one file AC-21 permits to know simulation exists**. The use case asks for provenance and spreads the answer without knowing what is in it |
+
+**The Security Invariant caught the first attempt.** Reading `response.simulated` directly in `application/run_sync.py` failed `test_no_new_simulation_knowledge_enters_the_pipeline` — correctly: *a pipeline able to name where a payload came from is one able to branch on it.* **The fix was the code, never the test.** The resulting shape is also the better one, which is the usual outcome when that suite refuses something.
 
 ### The platform paces itself — PP-05 *(2026-08-02)*
 
@@ -166,3 +185,40 @@
 **Recorded before the slice starts rather than at its first commit.** A lane arriving at PP-03 would write the stopping logic, find nothing to stop, and either invent a scheduler or ship a no-op — **and the no-op would be indistinguishable from working code.** Both belong to [C-021](../LANE_COORDINATION.md), which any answer settles.
 
 **PP-02 is what [TASK-014](../BACKLOG.md) and [C-007](../LANE_COORDINATION.md) are blocked on** — the guided first run ends by publishing a declaration nothing consumes, and *"a guided first run is the most prominent place in the product to make a promise."*
+
+---
+
+## Implementation Waiting — declared 2026-08-02
+
+**Every executable capability inside the accepted architecture has been built.** What remains needs an architectural decision, and the module is therefore suspended rather than finished — it is still Lane A's, and it consumes no engineering capacity until [C-021](../LANE_COORDINATION.md) has a direction.
+
+### Completed
+
+| | |
+|---|---|
+| **PP-01** | A watermark belongs to one subject. [B-004](../BUGS.md), migration `0027` |
+| **PP-02** | The target-account consumer — delta against what was read, ordering by declaration version. Migration `0028` |
+| **PP-04** | Latency, throughput and failure-by-kind, which [12-scalability.md](12-scalability.md)'s extraction trigger depended on |
+| **PP-05** | The declared rate limit is honoured instead of discovered by being throttled |
+| **PP-06** | Ingestion records whether a payload was simulated, and its replay provenance |
+
+**Three of those five fulfil contracts the module had declared and never honoured** — `rate_limit_per_minute`, `ProviderResponse.simulated`/`.replay`, and the scaling trigger's inputs. **That pattern is the most useful thing found here**: the gaps were not missing features, they were promises the code was already making.
+
+### Suspended
+
+| | Blocked on | Resume trigger |
+|---|---|---|
+| **PP-02's last wire** — nothing starts a sync | [C-021](../LANE_COORDINATION.md) — an event handler cannot reach a provider adapter, and no module may enqueue ARQ work | A dispatch direction is accepted |
+| **PP-03** — un-watching stops the spending | The same, plus **there is no polling to stop** | The same decision settles both |
+
+### Operational observations, for future milestones rather than current work
+
+**Recorded so they inform planning without becoming work nobody asked for.**
+
+| | |
+|---|---|
+| **Provider quota is per sync, not per provider** | Two concurrent syncs each pace correctly and together exceed the declared rate. Global quota needs shared coordination, distributed state and failure recovery — **a new architectural capability**, not an extension of PP-05 |
+| **Nothing schedules a sync** | No cron, no recurring job, and `run_provider_sync` is registered with no worker. Every sync in this repository's history was an in-process call from a test or seeder |
+| **Fan-out is unbounded by design** | A declaration of *n* companies becomes *n* syncs. Revisit when a declaration exceeds the `provider_sync` pool's job timeout; the largest in existence is twelve |
+| **Retry is the platform's, not the module's** | Transient failures leave the watermark untouched and rely on ARQ above. That is correct today and becomes a question the moment anything schedules syncs, because a retry storm and a schedule interact |
+| **`MAX_PAGES = 500`** | The only bound on one sync's size. With pacing it is now also a bound on duration — 500 pages at 60/min is over eight minutes, which exceeds some pool timeouts. **Not changed here**: no adapter has approached it, and §14 forbids tuning for load nobody has |
