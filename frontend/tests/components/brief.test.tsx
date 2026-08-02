@@ -32,6 +32,7 @@ const validation = vi.hoisted(() => vi.fn());
 const research = vi.hoisted(() => vi.fn());
 const accounts = vi.hoisted(() => vi.fn());
 const identities = vi.hoisted(() => vi.fn());
+const timeline = vi.hoisted(() => vi.fn());
 
 vi.mock('next/navigation', () => ({
   useParams: () => ({ accountId: '22222222-2222-4222-8222-222222222222' }),
@@ -45,6 +46,8 @@ vi.mock('@/lib/state/workspace-provider', () => ({
 }));
 
 vi.mock('@/lib/auth/client', () => ({ useSession: session }));
+
+vi.mock('@/lib/query/hooks/timeline', () => ({ useAccountTimeline: timeline }));
 
 vi.mock('@/lib/query/hooks', () => ({
   useAccountScore: score,
@@ -115,6 +118,14 @@ beforeEach(() => {
   research.mockReturnValue(IDLE);
   accounts.mockReturnValue({ ...IDLE, data: { items: [] } });
   identities.mockReturnValue(IDLE);
+  timeline.mockReturnValue({
+    data: { pages: [{ items: [], next_cursor: null, has_more: false }] },
+    hasNextPage: false,
+    isLoading: false,
+    isFetchingNextPage: false,
+    isError: false,
+    fetchNextPage: vi.fn(),
+  });
 });
 
 describe('the brief and the list say the same thing about the same account — R1-04', () => {
@@ -274,3 +285,88 @@ function notFound(): ApiError {
     correlation_id: '00000000-0000-4000-8000-000000000000',
   });
 }
+
+describe('the account says what has actually happened to it — C-024', () => {
+  // **Timeline's backend, hook and component were complete and mounted
+  // nowhere.** Twenty component tests passed the whole time; none of them
+  // could ask whether any page rendered it. This is that question.
+
+  it('renders the history section on the brief', () => {
+    render(withQuery(<AccountBriefPage />));
+
+    expect(screen.getByRole('heading', { name: 'What has happened' })).toBeVisible();
+  });
+
+  it('shows what the pipeline recorded, in the seller’s words', () => {
+    timeline.mockReturnValue({
+      data: {
+        pages: [
+          {
+            items: [
+              // **The real contract, not a convenient one.** `TimelineEntry`
+              // has no `summary`: the headline comes from the reviewed
+              // catalog in the component and the detail from `detail`. A
+              // fixture that invented a field would assert against a shape
+              // the API cannot produce — which is what PS-07 found in this
+              // very file.
+              {
+                id: 'e1',
+                kind: 'signal_generated',
+                occurred_at: '2026-07-30T09:00:00Z',
+                source_module: 'signal_engine',
+                source_ref: '44444444-4444-4444-8444-444444444444',
+                detail: { signal_type: 'hiring_surge' },
+              },
+            ],
+            next_cursor: null,
+            has_more: false,
+          },
+        ],
+      },
+      hasNextPage: false,
+      isLoading: false,
+      isFetchingNextPage: false,
+      isError: false,
+      fetchNextPage: vi.fn(),
+    });
+
+    render(withQuery(<AccountBriefPage />));
+
+    expect(screen.getByText('New reason to pay attention')).toBeVisible();
+    // `hiring_surge` said aloud — engineering's key never reaches the screen.
+    expect(screen.getByText('Hiring surge')).toBeVisible();
+  });
+
+  it('says the history is empty rather than rendering nothing', () => {
+    // The same rule PS-01 and PS-02 established: an absent section reads as a
+    // feature the customer does not have, which is the defect B-006 was.
+    render(withQuery(<AccountBriefPage />));
+
+    expect(
+      screen.getByText(/Nothing has been recorded about this company yet/i),
+    ).toBeVisible();
+  });
+
+  it('reports a failed history without removing the section', () => {
+    timeline.mockReturnValue({
+      data: undefined,
+      hasNextPage: false,
+      isLoading: false,
+      isFetchingNextPage: false,
+      isError: true,
+      fetchNextPage: vi.fn(),
+    });
+
+    render(withQuery(<AccountBriefPage />));
+
+    expect(screen.getByRole('heading', { name: 'What has happened' })).toBeVisible();
+    expect(screen.getByText(/could not be loaded/i)).toBeVisible();
+  });
+
+  it('sits below the evidence ledger, where the page turns to what occurred', () => {
+    const { container } = render(withQuery(<AccountBriefPage />));
+    const text = container.textContent ?? '';
+
+    expect(text.indexOf('What contributed')).toBeLessThan(text.indexOf('What has happened'));
+  });
+});

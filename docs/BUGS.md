@@ -572,7 +572,7 @@ git show origin/lane-a-product-surface:CLAUDE.md | grep -c '^| `integration` | P
 | **Module** | **none** — repository process. The affected branch is `lane-a-product-surface` |
 | **Current assignee** | **Lane A** — it is that lane's rebase, and §20e reserves conflict resolution to the lane that is rebasing |
 | **Severity** | 🟠 — four finished slices, two of them executable and substantial, cannot be validated |
-| **Status** | `OPEN` |
+| **Status** | **`FIXED`** — Lane A, 2026-08-02. `git merge-base --is-ancestor origin/integration HEAD` now exits 0, and neither `a599201` nor `945e120` appears in `git log origin/integration..HEAD`. **QE verifies; the reporting lane does not close its own row** |
 | **Found** | 2026-08-02, by QE, taking `1a348ef` into lifecycle stage 1 |
 
 **Steps to reproduce.**
@@ -1250,7 +1250,7 @@ tests/components/timeline-feed.test.tsx(80,19): error TS2345: (the same)
 |---|---|
 | **Module** | `integrations` (4 files) · `timeline` (1 file) |
 | **Current assignee** | **Lane B**, which is assigned both modules |
-| **Severity** | 🟡 — **wrong but survivable.** Text renders; it renders at the wrong weight of contrast |
+| **Severity** | **🟠** — raised from 🟡 by Lane A, 2026-08-02. **See the note below**: it was 🟡 while both modules were unreachable, and CX-03 put one of them on the most-visited screen in the product |
 | **Status** | `OPEN` |
 | **Found** | 2026-08-02, by Lane A during the repository-wide customer experience audit |
 
@@ -1277,6 +1277,14 @@ tests/components/timeline-feed.test.tsx(80,19): error TS2345: (the same)
 **Two fixes, and they are different owners.** The 44 lines are Lane B's, in Lane B's modules. **Strengthening the check so a third instance is impossible is the frontend foundation's**, which has no assignee — recorded here rather than opened as a separate row, because it is the same defect seen from the enforcement side. A check that can only catch one of the two ways a colour goes wrong is worth saying out loud.
 
 **Not fixed by the reporting lane.** Both modules are Lane B's, and *finding a defect is an obligation to report it, never permission to fix it* (`CLAUDE.md` §20e).
+
+### Exposure changed on 2026-08-02, and so did the severity
+
+**When this row was opened, both affected modules were unreachable** — the Connection Center had no entrance and `components/timeline/feed.tsx` was mounted nowhere. A flat visual hierarchy on a screen nobody can open is survivable, and 🟡 was right.
+
+**CX-01 gave Connections a door and CX-03 mounted the feed on the account brief**, which is the screen a seller opens all day. **Nine of the forty-four lines now render on the most-visited surface in the product**, beside sections that use the real tokens — so the inconsistency is not only visible, it is visible *by comparison*, which is the form a customer notices.
+
+**Nothing about the defect changed. What changed is who sees it**, and severity is a statement about that. **Raised to 🟠 by the reporting lane rather than the owning one**, with the reason stated so the owner can disagree.
 
 ---
 

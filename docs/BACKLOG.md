@@ -99,15 +99,6 @@
 | **Status** | `IN VALIDATION` — **Lane A**, 2026-08-02. Taken after [TASK-003](#task-003--the-attributes-are-engineerings-words-r11-06) was skipped with its reason recorded |
 | **Notes** | The lane's half of [B-010](BUGS.md). The `RUNNING.md` half is QE's and is done separately. **Do not "fix" it by deleting narrations** — a materialized AI artifact is a historical fact (§2) |
 
-### TASK-015 · `provider_watermark` cannot tell two target accounts apart (B-004)
-
-| | |
-|---|---|
-| **Module** | `provider_platform` |
-| **Slice** | PP-01 — **slice 1 of the target-account consumer** |
-| **Status** | `IN VALIDATION` — **Lane A**, 2026-08-02. Migration **`0029`** — renumbered twice on rebase, first from `0026` when Lane B's timeline table arrived, then from `0027` when M13's connections did. **No test count recorded here**: a lane offers a claim and QE publishes the measurement |
-| **Notes** | **Left `BLOCKED` because its blocker is now being built by the same lane in the same effort.** The row read *"blocked on the consumer — not to be fixed opportunistically, without it the schema change has nothing exercising it."* That condition is **satisfied rather than waived**: [ADR-0036](architecture/adr/0036-target-account-contract.md) names this *"one defect that must be fixed before the consumer is built"*, and PP-02 is what exercises it |
-
 ### TASK-005 · `state-check` learns the backlog
 
 | | |
@@ -139,7 +130,14 @@
 | Id | Task | Module | Blocked on |
 |---|---|---|---|
 | **TASK-014** | [C-007](LANE_COORDINATION.md) — the guided first run | Product Surface | The `target_accounts_changed` consumer in `provider_platform`. The sequencing condition has fired — all five declarations exist — so this is a missing capability, not a missing decision |
+| **TASK-015** | [B-004](BUGS.md) — `provider_watermark` cannot tell two target accounts apart | `provider_platform` | The same consumer. **Not to be fixed opportunistically**: without it, the schema change has nothing exercising it |
 | **TASK-016** | [R9-04 / D5](architecture/39-product-review-findings.md) — what changed since you last looked | Product Surface | Per-user read state, which does not exist. **Trigger unfired** — a design partner saying they cannot tell what is new |
+
+> **`TASK-015` was moved to `READY` by Lane A and is withdrawn, 2026-08-02.** The row is restored exactly as the product owner wrote it. **The reasoning for unblocking it is not withdrawn — only the act of unblocking**, which is a priority decision and not a lane's ([B-019](BUGS.md)).
+>
+> **The fact the decision needs, stated once and not acted on:** the blocker read *"not to be fixed opportunistically — without it the schema change has nothing exercising it."* That condition is now **satisfied rather than waived**: PP-02 is the consumer that exercises it, [ADR-0036](architecture/adr/0036-target-account-contract.md) names this *"one defect that must be fixed before the consumer is built"*, and **both are implemented and with QE** as migrations `0029` and `0030`.
+>
+> **So the code exists whatever this row says.** It travels under PP-01 and PP-02 regardless of which section holds the id, which is why withdrawing costs nothing and unblocks certification immediately. **Ratify it where it stands, or leave it here** — either is correct, and only the product owner may choose.
 
 ## DONE — promoted, removed at the next Closeout
 

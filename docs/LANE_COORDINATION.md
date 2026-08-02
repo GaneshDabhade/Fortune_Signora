@@ -92,6 +92,8 @@
 | [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it) | Timeline has a surface and nowhere to mount it | Lane B | **Lane A** + product owner | `OPEN` | **Nothing in Timeline** — backend and component built; only the mount point |
 | [C-025](#c-025--m13-is-not-a-module-and-its-consumers-do-not-exist-yet) | M13 is not a module, and its consumers do not exist yet | Lane B | **Product owner** | `ANSWERED` — all four decisions taken 2026-08-02. **M13 paused on an environmental dependency, not this item** | **Nothing.** The remaining work needs a HubSpot developer application, not a decision |
 | [C-026 *(Lane B's)*](#c-026--the-connection-center-is-reachable-only-by-typing-its-url) | The Connection Center is reachable only by typing its URL | Lane B | **Lane A** + product owner | **`IMPLEMENTING`** — Lane A shipped it as **CX-01**, 2026-08-02, before reading this row. `CLOSED` is Lane B's | **Nothing.** Settings now carries a Connections card |
+
+| [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it) | Timeline has a surface and nowhere to mount it | Lane B | **Lane A** + product owner | **`IMPLEMENTING`** — Lane A's half delivered 2026-08-02 (**CX-03**). `CLOSED` is Lane B's to set | **Nothing.** The feed is mounted on the account brief |
 | [C-025](#c-025--m13-is-not-a-module-and-its-consumers-do-not-exist-yet) | M13 is not a module, and its consumers do not exist yet | Lane B | **Product owner** | `OPEN` | **M13's credential half** — no tier may run an integration OAuth flow |
 | [C-018](#c-018--nobody-owns-the-customer-facing-name-of-an-attribute) | Nobody owns the customer-facing name of an attribute | Lane A | **Product owner** | `OPEN` | [`TASK-003`](BACKLOG.md), skipped with its reason recorded |
 | [C-019](#c-019--a-claim-is-invisible-to-the-step-meant-to-arbitrate-it) | A claim is invisible to the step meant to arbitrate it | Lane A | **Product owner** + QE | `OPEN` | Nothing — **largely superseded**; see the item |
@@ -956,6 +958,26 @@ Every built module has one, marked *as built*: `22`–`29`, `33`, and `40-commer
 
 **Timeline's feature lead stays with Lane B** through the collaboration: the contract, the component, its behaviour and its acceptance criteria are Timeline's, and Product Surface contributes the mount.
 
+### Lane A's half is delivered — 2026-08-02, slice **CX-03**
+
+**Option A, mounted on the account brief below the evidence ledger**, as Lane B recommended. **Ten lines, as described**: the import, `useAccountTimeline`, and the six props passed through.
+
+| | |
+|---|---|
+| **Where** | `frontend/app/(app)/accounts/[accountId]/page.tsx`, under a *What has happened* heading, **after the ledger and before the sequence** — every section above argues *why this account matters*; this one answers *what has occurred*, which a reader asks last and usually because they are about to decide |
+| **Why not C** | **This item's own reasoning.** A collapsed disclosure would hide the surface that answers *what changed since I last looked* ([R9-04](architecture/39-product-review-findings.md)) |
+| **Why not B** | **[D38](architecture/38-product-design-principles.md) already ruled it out** — navigation is journeys rather than data, which is why *Timeline* stopped being a menu entry |
+| **Tests** | +5 in `tests/components/brief.test.tsx` — that the section renders, that a recorded entry reaches a seller in the catalog's words, that an empty history says so, that a failed one keeps the section, and that it sits below the ledger |
+| **Not touched** | The component, the hook, the endpoint and their 20 tests. **Timeline's feature lead is unchanged** |
+
+**On [ADR-0038](architecture/adr/0038-timeline.md) Q3, stated rather than assumed.** That question asks whether the timeline reaches a customer in M7 or stays read-only infrastructure. **It is not being answered here by implication** — `CLAUDE.md` §2 already answers it: *a slice whose demonstration needs a paragraph of architecture is infrastructure that has not reached a customer*, and ADR-0038 quotes that rule against itself. **What remained was the placement, which is Product Surface's**, and the product owner's direction of 2026-08-02 — *"is another lane waiting for my implementation? complete that work first"* — is why it was done now rather than queued.
+
+**One cost, stated rather than discovered.** The brief is now twelve sections. The subtraction review's standing question — *whether the page as a whole is dense* — gets harder to answer, and [TASK-011](BACKLOG.md) (D20, the hierarchy pass) becomes more valuable rather than less, exactly as Lane B predicted.
+
+**And one defect it made visible:** `feed.tsx` uses `text-muted-foreground`, which is not a token this repository defines ([B-200](BUGS.md)). It was 🟡 while the component was unreachable; **it now renders on the most-visited screen in the product**, and the row is raised to 🟠 with the reasoning attached. **Lane A did not fix it** — the file is Lane B's.
+
+**`CLOSED` is the requesting lane's to set**, and Lane B is the requester.
+
 ---
 
 ## C-025 · M13 is not a module, and its consumers do not exist yet
@@ -1559,6 +1581,17 @@ It is also the failure mode this repository keeps finding in a different coat: [
 | **Status** | `OPEN` |
 | **Blocks** | Nothing being implemented. **It blocks a lane from knowing which rules are in force** |
 | **Raised** | 2026-08-02, on the product owner's ruling the same day |
+
+### What is actually on this branch, measured — 2026-08-02
+
+**So the product owner can rule in one read rather than a diff.**
+
+| | |
+|---|---|
+| **Net change to `CLAUDE.md`** | **+87 / −7**, all of it one section: *Execution ownership ends at `IN VALIDATION`*, with *Continuous execution*, *Two kinds of blocker*, *What continuous execution means for the branch* and *`CHANGES REQUESTED`* |
+| **Is it ratified?** | **Yes, in substance.** Every part of it was directed by the product owner across three messages on 2026-08-02 and is the lifecycle the repository now runs on. **`integration` does not have it** — removing it from this branch would delete governance that is in force |
+| **What was withdrawn** | The duplicate `integration`/`lane-*` rows ([B-019](BUGS.md)), fixed exactly as QE specified: the original `integration` row survives **with its claim-commit exception**, which `certification-guard.py --audit-claims` depends on. And the `BACKLOG.md` half — **`TASK-015` is restored to `BLOCKED`** |
+| **What remains open** | **Only whether these 87 lines are ratified where they stand.** They cannot be re-entered by their owner without being deleted first, and deleting in-force rules to re-add them is worse than ratifying them in place |
 
 **Ruled 2026-08-02:** a feature lane no longer modifies repository governance — `CLAUDE.md`, the execution workflow, lifecycle definitions, governance terminology, repository state legends, the execution board's structure. **A lane may identify an improvement, document the reasoning, open an item and recommend it. QE and the product owner evolve the rules.**
 

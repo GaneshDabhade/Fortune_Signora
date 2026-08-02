@@ -28,6 +28,7 @@ import {
   WorkflowStage,
 } from '@/components/intelligence/opportunity';
 import { WorkflowActions } from '@/components/intelligence/workflow';
+import { AccountHistory } from '@/components/timeline/feed';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { Card, CardBody, EmptyState, SkeletonText } from '@/components/ui';
 import { ApiError } from '@/lib/api/client';
@@ -42,6 +43,7 @@ import {
   useAccountValidation,
   useRequestResearch,
 } from '@/lib/query/hooks';
+import { useAccountTimeline } from '@/lib/query/hooks/timeline';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -110,6 +112,9 @@ export default function AccountBriefPage() {
   );
   const { data: research } = useAccountResearch(workspaceId, accountId);
   const requestResearch = useRequestResearch(workspaceId, accountId);
+  // Paged rather than fetched whole: an account worked for a year has a long
+  // history, and the brief must not wait on all of it to render the rest.
+  const timeline = useAccountTimeline(workspaceId, accountId);
   const evidence = useEvidenceDrawer();
   const { data: identities, isLoading: nameLoading } = useAccountIdentities(workspaceId, [
     accountId,
@@ -308,6 +313,33 @@ export default function AccountBriefPage() {
                 <ContributionList score={score} onOpenEvidence={evidence.open} />
               </CardBody>
             </Card>
+          </section>
+
+          {/* **What has actually happened, under what we think about it.**
+              [C-024](../../../../docs/LANE_COORDINATION.md): Timeline's
+              backend, hook and component were complete and mounted nowhere,
+              so a shipped capability reached no customer. Lane B owns the
+              feature and may not edit this file; Product Surface owns the
+              mount and contributes it. **Below the ledger** because every
+              section above argues *why this account matters* and this one
+              answers *what has occurred* — the question a reader asks last,
+              and usually because they are about to decide.
+
+              **Option A of three, and B was already ruled out**: D38 retired
+              *Timeline* as a menu entry, because navigation is journeys
+              rather than data. C — a collapsed disclosure — was refused for
+              the reason C-024 itself gives: it would hide the one surface
+              that answers *what changed since I last looked* (R9-04). */}
+          <section className="flex flex-col gap-3">
+            <h2 className="text-sm font-semibold text-content">What has happened</h2>
+            <AccountHistory
+              entries={timeline.data?.pages.flatMap((page) => page.items) ?? []}
+              hasMore={timeline.hasNextPage}
+              isLoading={timeline.isLoading}
+              isLoadingMore={timeline.isFetchingNextPage}
+              isError={timeline.isError}
+              onLoadMore={() => void timeline.fetchNextPage()}
+            />
           </section>
 
           {/* **Where the argument ends.** Every line above is Signora's

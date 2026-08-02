@@ -864,8 +864,6 @@ Together these appear in roughly two thirds of all commits. **A lane does not ed
 |---|---|---|
 | `main` | Permanent. **Every commit on it was individually certified** | **QE only**, fast-forwarded to a **certified SHA** |
 | `integration` | Permanent. Where lanes meet. **It keeps moving during certification, deliberately** | **QE**, for all work. **A lane may fast-forward it with a claim-only commit** — that is the arbitration point, and it is the only exception |
-| `lane-*` | **Permanent name, one slice of content.** Reset to `integration` after every merge | Its own session only |
-| `integration` | Permanent. Where lanes meet. **It keeps moving during certification, deliberately** | **QE only.** A lane rebases and pushes; **QE performs the fast-forward** |
 | `lane-*` | **Permanent name.** One slice under construction, plus any earlier slices still `IN VALIDATION`. Reset to `integration` once QE has promoted them | Its own session only |
 
 > **The lane still rebases and still resolves its own conflicts; QE performs the fast-forward.** This is the reading that satisfies both rules at once, and it is not a compromise: **a fast-forward after a clean rebase has no conflicts by construction**, so QE never adjudicates code it did not write, and every arrival on `integration` still passes through one authority. A lane that hands QE a branch which will not fast-forward has not finished step 4.

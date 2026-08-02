@@ -52,12 +52,11 @@
       /  Attention                              /settings  ← owner only
       (every role)                                   │
               │                                      ├─▶ /settings/products     linked
-              ▼                                      └─▶ /settings/connections  NOT LINKED
+              ▼                                      └─▶ /settings/connections  linked  ← CX-01
       /accounts/[accountId]  Brief
-      (reachable only from the list)                       ▲
-                                                            │
-                                              only via the OAuth callback,
-                                              which starts here — a closed loop
+      (reachable only from the list)
+              │
+              └─▶ account history, mounted inline  ← CX-03
 ```
 
 ### Every customer-accessible area, and how it is reached
@@ -68,7 +67,7 @@
 | **Account brief** | `/accounts/[id]` | A row on the attention list · `j`/`k` · the post-decision offer | Every role |
 | **Settings** | `/settings` | Navigation | **Owner only** |
 | **Products** | `/settings/products` | A link on Settings | **Owner only** |
-| **Connection Center** | `/settings/connections` | **Nothing.** Only the OAuth redirect helpers | **Owner only** |
+| **Connection Center** | `/settings/connections` | A card on Settings — **CX-01** | **Owner only** |
 | **Sign-in family** | `/(auth)/*` | Unauthenticated entry, and each other | Signed out |
 
 ### How the modules connect on screen
@@ -87,12 +86,12 @@
 | **Account brief** | `/accounts/[id]` | 8 modules | ✅ | ✅ | ✅ Complete | **Production** |
 | **Settings** | `/settings` | Workspace & Tenancy | ✅ | ✅ | ⚠️ Lists organizations; **does not link Connections** | **Incomplete navigation** |
 | **Products** | `/settings/products` | Commercial Profile | ✅ | ✅ | ✅ Complete for an owner · ❌ unreachable for a member ([C-008](../LANE_COORDINATION.md)) | **Permissions gap** |
-| **Connection Center** | `/settings/connections` | Integrations | ✅ | ✅ | ❌ **No entry point** | **Unreachable** |
+| **Connection Center** | `/settings/connections` | Integrations | ✅ | ✅ | ✅ Complete — **CX-01** | **Production** |
 | **Sign-in · sign-up · forgot · reset · verify** | `/(auth)/*` | Better Auth | ✅ | ✅ | ✅ Complete | **Production** |
 | **Address not found** | *any unmatched URL* | Product Surface | n/a | ✅ **CX-02** | ✅ Complete | **Production** |
 | **Render failure, outside the shell** | *any* | Product Surface | n/a | ✅ **CX-02** | ✅ Complete | **Production** |
 | **Team** | — | Workspace & Tenancy | ✅ endpoint | ❌ | ❌ | **Blocked — [C-024](../LANE_COORDINATION.md)** |
-| **Timeline** | — | Timeline | ✅ endpoint | ✅ **component built** | ❌ **not mounted** | **Blocked — [C-024 (Lane B's)](../LANE_COORDINATION.md)** |
+| **Account history** | on `/accounts/[id]` | Timeline | ✅ | ✅ | ✅ Complete — **CX-03** | **Production** |
 | **Provider health** | — | Provider Platform | ❌ **no router** | ❌ | ❌ | **No HTTP surface at all** |
 | **Billing · plan · usage** | — | *undecided* | ❌ | ❌ | ❌ | **Blocked — [C-200](../LANE_COORDINATION.md)** |
 | **Notifications** | — | *M14a, not started* | ❌ | ❌ | ❌ | **Not started** |
@@ -144,7 +143,6 @@
 | Capability | Endpoint | What is missing | Blocked by |
 |---|---|---|---|
 | **See who is in my organization** | `GET /workspaces/{id}/members` | The whole screen. The hook exists and reaches nothing | **[C-024](../LANE_COORDINATION.md)** — nothing can render a person's name |
-| **See what has happened to an account over time** | `GET /accounts/{id}/timeline` | **Nothing.** Endpoint, hook *and* `components/timeline/feed.tsx` are all built — **no page imports the component** | **[C-024, Lane B's](../LANE_COORDINATION.md)** — a surface with nowhere to mount it |
 | **See connected systems as a list** | `GET /workspaces/{id}/connections` | **No consumer.** The Connection Center reads `/integrations` instead | Not blocked — an observation for the owning lane |
 | **Read the entity graph** | `GET /knowledge-graph` *(1 endpoint)* | No dedicated surface; the brief consumes it indirectly | Not blocked — **no journey asks for one** |
 
@@ -152,7 +150,6 @@
 
 | Capability | Where it lives | What is missing |
 |---|---|---|
-| **Connect a CRM** | `/settings/connections` | **An entrance.** Nothing in the product links to it |
 | **See what my company sells** *(as a seller)* | `/settings/products` | A member-reachable route — **[C-008](../LANE_COORDINATION.md)** |
 
 ### 🔴 Workflow incomplete — the customer starts something that cannot finish
@@ -197,14 +194,14 @@
 | **J3** | Understand why, with evidence | ✅ **Complete** | — |
 | **J4** | Decide, and record why | ✅ **Complete** | — |
 | **J5** | Move to the next decision | ✅ **Complete** (PS-04) | — |
-| **J6** | See an account's history over time | 🔴 **Blocked** | The feed is built and mounted nowhere |
+| **J6** | See an account's history over time | ✅ **Complete** — CX-03 | — |
 | **J7** | Tell Signora who we sell to | ⚠️ **Half** | An owner can declare; **a seller cannot read** |
 | **J8** | Connect our systems | ⚠️ **Half** | Complete once reached; **unreachable** |
 | **J9** | Manage who is on the team | 🔴 **Blocked** | No screen; no way to name a person |
 
-**Five of nine are complete, and they are the five that matter most** — the daily loop of a salesperson is whole. **Four of nine are administrative or contextual, and all four are stopped by something already recorded.**
+**Six of nine are complete.** J6 closed on 2026-08-02 when CX-03 mounted the feed, and J8 closed when CX-01 gave the Connection Center a door.
 
-**Not one of the four is stopped by missing engineering.** J6 and J9 wait on `C-024`; J7 waits on `C-008`; J8 waits on a **link**.
+**The three that remain are each stopped by a decision, not by engineering:** J7 waits on `C-008`, J9 on `C-024`, and the responsive question on `C-026`. **Two of the three were closed by ten lines and a card** — which is the pattern worth carrying: *the gap between a shipped backend and a customer is usually smaller than it looks, and invisible to every test in the repository.*
 
 ---
 
@@ -237,7 +234,7 @@
 |---|---|---|---|---|
 | **CX-01** | **The Connection Center gets an entrance** | **J8** | A whole shipped module a customer could not find. **Backend, screen, OAuth flow and disconnect were all complete** — this was a link and a card on Settings | ✅ **Shipped** |
 | **CX-02** | **The two dead ends stop being Next.js's** | All | A bad address showed *"404 &#124; This page could not be found"* with no product, no theme and no way back; a render error **outside** the authenticated shell blanked the application, because `ErrorBoundary` wraps three regions *inside* it and `(auth)` has none | ✅ **Shipped** |
-| **CX-03** | **Timeline mounts on the brief** | **J6** | An endpoint, a hook and a built component that reach nobody | **[C-024, Lane B's](../LANE_COORDINATION.md)** — the mount point is Lane A's routing decision. **One sentence from executable** |
+| **CX-03** | **Timeline mounts on the brief** | **J6** | An endpoint, a hook and a built component that reached nobody. **Ten lines** | ✅ **Shipped** |
 | **CX-04** | **The signal glossary** | J2 · J3 | Nine words a first-time reader cannot look up. **Built and reverted** | **[C-025](../LANE_COORDINATION.md)** |
 | **CX-05** | **A seller can read the commercial profile** | **J7** | Every AE and SDR, every day | **[C-008](../LANE_COORDINATION.md)** |
 | **CX-06** | **The Team page** | **J9** | An owner cannot see who is in their organization | **[C-024](../LANE_COORDINATION.md)** |
