@@ -71,7 +71,7 @@
 |---|---|---|
 | **PP-01** — a watermark belongs to one subject | [B-004](../BUGS.md), and the precondition [ADR-0036](adr/0036-target-account-contract.md) names | Built 2026-08-02 · [TASK-015](../BACKLOG.md) |
 | **PP-02** — the consumer | The module's first real input | **Built to the composition root; blocked there by [C-021](../LANE_COORDINATION.md)** |
-| **PP-03** — un-watching stops the spending | [ADR-0036](adr/0036-target-account-contract.md) §6 | Planned |
+| **PP-03** — un-watching stops the spending | [ADR-0036](adr/0036-target-account-contract.md) §6 | **Re-scoped before it started — see below** |
 
 > **PP-02 and PP-03 are proposed slices, not registered tasks** (product-owner refinement, 2026-08-02). A feature lane plans its own sequence inside its implementation area; **it does not mint repository task identifiers** — that namespace is registered centrally, so two lanes cannot extend it independently. This table is the plan; [`BACKLOG.md`](../BACKLOG.md) is the register, and only QE writes ids into it.
 
@@ -103,6 +103,12 @@
 
 **The trigger to revisit is a declaration large enough to exceed that pool's job timeout** — not a number chosen now. §14 is explicit that performance work is justified by evidence rather than intuition, and the largest declaration in existence is twelve. **The failure mode is also self-healing**: a timeout dead-letters the event, redelivery recomputes the delta against watermarks that have since advanced, and the remaining work shrinks on every attempt.
 
-**Removal is PP-03 and is not implemented.** Until it is, un-watching a company stops nothing — the declaration shrinks and no watermark changes. Stated here because it is invisible from the code: nothing looks wrong, and the spending simply continues.
+### Nothing polls, and PP-03 was named for stopping it
+
+**`WorkerSettings.functions = [dispatch_event]`, and `run_provider_sync` appears nowhere in `apps/`.** There is no cron, no schedule and no recurring job. A sync happens once, when something calls it — and **nothing calls it.** Every sync that has ever run in this repository ran as a direct in-process call from a test or a seeder.
+
+**So PP-03 — *"un-watching stops the polling"* ([ADR-0036](adr/0036-target-account-contract.md) §6) — is named for something that does not exist.** The half of §6 that is implementable today is already true and needed no code: the consumer only ever dispatches *declared* subjects, so removing one stops it being dispatched, and nothing deletes anything, so *"deletes nothing"* holds by construction.
+
+**Recorded before the slice starts rather than at its first commit.** A lane arriving at PP-03 would write the stopping logic, find nothing to stop, and either invent a scheduler or ship a no-op — **and the no-op would be indistinguishable from working code.** Both belong to [C-021](../LANE_COORDINATION.md), which any answer settles.
 
 **PP-02 is what [TASK-014](../BACKLOG.md) and [C-007](../LANE_COORDINATION.md) are blocked on** — the guided first run ends by publishing a declaration nothing consumes, and *"a guided first run is the most prominent place in the product to make a promise."*

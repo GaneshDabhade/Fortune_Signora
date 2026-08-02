@@ -747,6 +747,27 @@ promoted commit SHA  ==  certified commit SHA
 
 **Anything else is a lane idling with work available, which is a finding.**
 
+#### Two kinds of blocker, and they behave differently
+
+**Ratified 2026-08-02, product owner.** Both stop a slice; **only one stops thinking.**
+
+| | **Implementation blocker** | **Architectural blocker** |
+|---|---|---|
+| **Why** | The architecture exists and something is temporarily unavailable | **No accepted architecture exists for the next step** |
+| **Looks like** | Waiting on another module, another slice, QE, or infrastructure already designed | Runtime composition · platform contracts · shared infrastructure · repository-wide runtime · the execution model |
+| **What happens** | **Resumes automatically** the moment the dependency is satisfied | **Implementation stops. Architecture discussion begins**, and implementation resumes only once a direction is accepted |
+| **Who moves it** | Whoever holds the dependency | The product owner |
+
+**The test is not how big the change is — it is whether anybody has decided.** A dependency on work that is agreed and unbuilt is an implementation blocker however large; a dependency on a decision nobody has made is architectural however small the code would be.
+
+> **A lane recognises which it has hit and does not convert one into the other.** *"I could just add it"* is how an architectural blocker becomes a silent design decision inside a feature slice — and the change that follows is always small, which is exactly why nobody notices it was a decision.
+
+**When raising an architectural blocker, the item carries six things**, because a blocker reported without them costs a second round-trip before anybody can rule on it:
+
+**the problem · the affected modules · the alternatives · a recommendation · the trade-offs · the implementation impact.**
+
+**A lane's recommendation is architectural input and never implementation authority.** Proposing a direction is expected; proceeding on it is not.
+
 **The loop, and it has no branch a lane may add to:**
 
 ```

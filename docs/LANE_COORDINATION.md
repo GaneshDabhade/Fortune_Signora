@@ -1453,7 +1453,8 @@ It is also the failure mode this repository keeps finding in a different coat: [
 | **Requesting lane** | Lane A |
 | **Category** | Composition root · background work · module boundary |
 | **Status** | `OPEN` |
-| **Blocks** | **The last step of PP-02.** Everything above it is built and tested; nothing yet reads a company a customer declared |
+| **Kind** | **Architectural blocker** (`CLAUDE.md` §20e). No accepted architecture exists for the next step, so implementation stops rather than resuming when something frees up |
+| **Blocks** | **The last step of PP-02, and the whole of PP-03.** Everything above it is built and tested; nothing yet reads a company a customer declared |
 | **Raised** | 2026-08-02, while wiring the target-account consumer |
 
 **Everything a lane may build is built.** The delta rule, the version ordering, the state table, the repository, the use case and the event handler are complete, typed and covered by 17 unit tests. What remains is one thing: **how the handler actually starts a sync.**
@@ -1482,6 +1483,33 @@ It is also the failure mode this repository keeps finding in a different coat: [
 **Route B is the architecturally purer answer and it buys a per-company retry**, which is genuinely better. It costs a permanent event type on a bus, for a message that never leaves the module that publishes it — *inter-module communication defaults to events* (§9) is a rule about crossing boundaries, and this crosses none.
 
 **The `SyncDispatcher` port is written so either can be implemented without the use case changing.** That is deliberate: this item asks which adapter to write, not what to redesign.
+
+
+### What was found while wiring it, and it is larger than the wiring
+
+**`run_provider_sync` is registered with no worker.** `apps/worker/main.py` declares `WorkerSettings.functions = [dispatch_event]`, and the task appears nowhere in `apps/`.
+
+> **No provider sync can execute in a deployed system today.** Every sync that has ever run in this repository ran as a direct in-process call from a test or a seeder.
+
+**Nothing is behaving wrongly**, which is why this is a `C-` row and not a `B-` one — no customer path reaches the task, so there is no incorrect behaviour to reproduce. But it moves the boundary of this item: the question is not *"how does a handler reach an adapter"*, it is **"how does a provider sync run at all outside a test"**, and any answer settles both.
+
+### And it re-scopes PP-03 before PP-03 starts
+
+**PP-03 is *"un-watching stops the polling"* ([ADR-0036](architecture/adr/0036-target-account-contract.md) §6). There is no polling.** No cron, no schedule, no recurring job — a sync happens once, when something calls it, and nothing calls it.
+
+**So the half of §6 that is implementable today is already true and needed no code:** the consumer only ever dispatches *declared* subjects, so removing one stops it being dispatched; and nothing deletes anything, so *"deletes nothing"* holds by construction. **The half that is not implementable is the half the slice was named for.**
+
+**Stated now rather than discovered at PP-03's first commit.** A lane arriving at that slice would write the stopping logic, find nothing to stop, and either invent a scheduler or ship a no-op — and the no-op would be indistinguishable from working code.
+
+### Implementation impact
+
+| | |
+|---|---|
+| **Already built and unaffected** | The delta rule, the version ordering, `target_sync_state` and migration `0027`, the repository, `SyncDeclaredTargets`, the event handler, 17 unit tests. **Whichever route is chosen, none of this changes** — that is what `SyncDispatcher` being a port buys |
+| **Route A** | Add the provider registry to `WorkerRuntime`; write a dispatcher that runs syncs inline; register the subscription. **No new event, no catalog change.** Touches `apps/worker/` only |
+| **Route B** | A new event type, its `06-events.md` entry, a second consumer, and a pool decision. **Also needs the task registered**, since the relay enqueues by consumer |
+| **Either way** | `run_provider_sync` must be reachable by a worker, and PP-03 needs re-scoping or a scheduler that does not exist |
+| **Cost of waiting** | [C-007](#c-007--the-guided-first-run-is-a-two-lane-build) and [TASK-014](BACKLOG.md) stay blocked. The guided first run ends by asking a customer which companies to watch, and **the answer still goes nowhere** |
 
 ### A second finding, and it is `CLAUDE.md`'s own text
 
