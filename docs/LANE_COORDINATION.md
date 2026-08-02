@@ -91,6 +91,7 @@
 | [C-020](#c-020--m7-has-no-scope-and-timeline-has-no-design) | M7 has no scope, and Timeline has no design | Lane B | **Product owner** (roadmap 🔴) | `OPEN` | **M7** — [`TASK-017`](BACKLOG.md), `WAITING`. Lane B released it and is `AVAILABLE` |
 | [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it) | Timeline has a surface and nowhere to mount it | Lane B | **Lane A** + product owner | `OPEN` | **Nothing in Timeline** — backend and component built; only the mount point |
 | [C-025](#c-025--m13-is-not-a-module-and-its-consumers-do-not-exist-yet) | M13 is not a module, and its consumers do not exist yet | Lane B | **Product owner** | `ANSWERED` — all four decisions taken 2026-08-02. **M13 paused on an environmental dependency, not this item** | **Nothing.** The remaining work needs a HubSpot developer application, not a decision |
+<<<<<<< HEAD
 | [C-026 *(Lane B's)*](#c-026--the-connection-center-is-reachable-only-by-typing-its-url) | The Connection Center is reachable only by typing its URL | Lane B | **Lane A** + product owner | **`IMPLEMENTING`** — Lane A shipped it as **CX-01**, 2026-08-02, before reading this row. `CLOSED` is Lane B's | **Nothing.** Settings now carries a Connections card |
 
 | [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it) | Timeline has a surface and nowhere to mount it | Lane B | **Lane A** + product owner | **`IMPLEMENTING`** — Lane A's half delivered 2026-08-02 (**CX-03**). `CLOSED` is Lane B's to set | **Nothing.** The feed is mounted on the account brief |
@@ -112,6 +113,10 @@
 > **Three ids appear twice — `C-024`, `C-025` and now `C-026`** — allocated independently by Lane A and Lane B before the identifier-block rule existed; **renumbering is QE's at merge, by author timestamp** (`CLAUDE.md`). See *Blocker audit* below and [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide), which is what makes it stop.
 >
 > **`C-026` is worth reading twice.** Lane B raised *"the Connection Center is reachable only by typing its URL"* and Lane A shipped that exact fix as **CX-01** the same day, from an independent audit, **without either lane seeing the other's finding.** Two lanes reaching one defect by different routes is the model working; **two lanes reaching one identifier is the model failing**, and it is the same day's evidence for both.
+=======
+| [C-026](#c-026--the-connection-center-is-reachable-only-by-typing-its-url) | The Connection Center is reachable only by typing its URL | Lane B | **Lane A** + product owner | `OPEN` | **Nothing in Integrations** — the page is built and tested; only the navigation entry |
+| [C-027](#c-027--m14a-notifications--what-was-bought-is-not-what-must-be-built) | M14a — what was bought is not what must be built | Lane B | **Product owner** | `OPEN` | **M14a's shape.** Three decisions before the first line; a fourth is a boundary Lane B must not draw alone |
+>>>>>>> 3a1bab5 (M14a discovery — what ADR-0017 bought is not what M14a has to build)
 
 ---
 
@@ -2244,4 +2249,127 @@ Alembic's `down_revision` is a linear chain: **a gap is a broken graph, not an o
 *Empty, and that is the honest state.* **C-001** (ratified as [ADR-0036](architecture/adr/0036-target-account-contract.md)) and **C-016** (answered: deferred) carry `ANSWERED` in place above and are the two nearest to closing.
 
 > **This heading used to sit above five open items**, because lanes append at end of file and it had been in the middle since it was introduced. Two tools counted *"items appearing after `## Closed`"* and therefore reported *"3 closed"*, then *"5 closed"*, when the true figure was **0** — which kept `state-check`'s *"this register only grows"* rule silent for every cycle it existed ([B-021](BUGS.md)). **A check whose input is wrong is not a check.**
+
+
+---
+
+## C-027 · M14a Notifications — what was bought is not what must be built
+
+| | |
+|---|---|
+| **Decision required** | Whether Notifications is a bounded context · what Day One is · one boundary Lane B must not draw alone |
+| **Participating modules** | none yet — **that is the finding** · `signora_platform` (frozen) · Revenue Intelligence Platform (not started) |
+| **Current assignee(s)** | **Product owner** |
+| **Blocking** | **M14a's shape.** Not its start — a first slice exists and is named below |
+| **Raised** | 2026-08-02, by Lane B, assigned M14a. **Before any code**, as with M7 and M13 |
+
+**M14a was reviewed the way M7 and M13 were. It is in a third condition, different from both.** M7 had no design. M13 had a ratified architecture that described something other than a module. **M14a has a ratified *purchase decision* that has been read as an architecture, and it is not one.**
+
+### 1 · What exists today: nothing, and precisely nothing
+
+`grep -ri notification` across `backend/` returns **two** hits, and neither is a notification: a comment in the outbox relay about PostgreSQL `LISTEN/NOTIFY`, and `aria-label="Dismiss notification"` on the frontend toast. There is **no module, no table, no event, no port, no type, no route and no screen.**
+
+That is the correct starting point and it is stated so nobody assumes otherwise. What exists is a set of *assumptions*, and they are load-bearing:
+
+| Source | What it says | Status |
+|---|---|---|
+| [ADR-0017](architecture/adr/0017-notifications.md) | **Novu**, for cross-channel delivery orchestration | **Accepted** |
+| [02-principles.md](architecture/02-principles.md) §15 · [09-build-vs-buy.md](architecture/09-build-vs-buy.md) | Notifications are commodity. **Bought, not built** | Ratified |
+| [15-project-structure.md](architecture/15-project-structure.md):39 | The Novu adapter lives in `platform/bought_infra_adapters/` | **A directory that has never existed** |
+| [13-integrations.md](architecture/13-integrations.md):107 | Slack and Teams are **Novu delivery channels**, distinct from and downstream of their use as data sources | Ratified |
+| [04-modules.md](architecture/04-modules.md) | Fourteen modules. **Notifications is not one of them**, and the word does not appear in the file | Ratified |
+
+### 2 · The finding that decides the module question
+
+> **ADR-0017 bought *delivery*. It did not decide *notification*, and the two are different concerns.**
+
+Read what the ADR actually chose: *"templating, channel fallback, user preference management, delivery tracking."* Every one of those is **how a message reaches a person.** None of them answers:
+
+- **should this produce a notification at all?**
+- **who should be told?**
+- **how urgent is it, next to the other eleven?**
+- **has somebody already dealt with it?**
+
+Those are product decisions with a customer-facing vocabulary, and no vendor can take them. **Buying a courier is not the same as deciding what to send.**
+
+So the answer to *"module, platform capability, or part of another module?"* is **all three, split along that line** — and the split is the same shape the repository already uses twice, for providers and for AI:
+
+```
+  what happened            →  Timeline           entity-addressed, immutable, exists
+  what to do about it      →  Recommendation     content, not started
+  who should be told, and
+  have they dealt with it  →  Notifications      person-addressed, mutable  ← M14a
+  how it reaches them      →  Novu               bought, behind a port
+```
+
+**Why it is not part of Timeline**, which is the strongest rival and worth answering directly. Timeline is *immutable by design* — no `UPDATE` grant, a correction is a new entry — and **a notification is mutable by definition**: read, dismissed, snoozed. Folding one into the other destroys the defining property of the one that already ships. They are genuinely projections of the same events; they project to **different addressees with different lifecycles**, and sharing the projection would couple two things that must not be coupled.
+
+**Why it is not part of Recommendation Engine**, which ADR-0017 names as the primary producer: a recommendation is *content*; a notification is *that somebody should be told about it*. The same distinction as delivery, one level up. Also — Recommendation Engine **is not started**, so building M14a inside it is not available in any case.
+
+**Why the adapter does not go where 15-project-structure.md puts it.** `platform/bought_infra_adapters/` has never been built, and `CLAUDE.md` §6 already records this exact mistake happening twice: *"15-project-structure.md placed both the Provider Port and the AI Provider Port in platform packages that were never built, and the implementation put each in its owning module both times."* **This would be the third.** The port belongs to the module that owns the language; `signora_platform/` is frozen (§20a) and a notification port is not platform vocabulary.
+
+### 3 · The design rule this produced, and it is the valuable one
+
+> **"Needs attention" is derived. "Something happened, and have you seen it" is stored. Conflating them is the error M14a is most likely to make**, because a product surface shows them in the same place.
+
+They are two of the repository's already-ratified data categories, and the boundary is exactly where it always is:
+
+| | Derived intelligence | Workflow state |
+|---|---|---|
+| **Example** | *"This credential expires in two days"* · *"this score is contested"* · *"this opportunity has not moved in three weeks"* | *"Your credential expired — seen · dismissed · snoozed"* |
+| **Rebuildable?** | Yes, from current state | **No.** Nothing reproduces whether a person looked at something |
+| **Stored?** | **Never.** A stored copy is stale the moment the world moves | Always |
+
+**A concrete rule follows, and it prevents the commonest failure in the stress list:** *a notification is generated from an **event**, never from a **state**.* Generating one by scanning state produces it again tomorrow, and again the day after — and **the need for "duplicate suppression" is the symptom, not the requirement.** Idempotency on `event_id` handles genuine redelivery; needing *semantic* deduplication means it was modelled from state. This is the least-powerful-author rule reaching notifications: the attention list is computed, and only the *fact that a person was told* is written down.
+
+**A second rule from the same place: a notification holds a reference, never a copy.** *"Your HubSpot credential expired"* must read as resolved once it has been reconnected. A notification carrying a snapshot of the thing it is about becomes a lie the moment the thing changes — and *"notification expiration"* in the stress list is that problem wearing a different name.
+
+### 4 · The stress test, and what it moves out of scope
+
+Run against the scenarios the product owner named. **Most of them belong to the vendor, and saying so is the point of buying one:**
+
+| Ours | Novu's |
+|---|---|
+| Whether a notification exists · who receives it · urgency · read, dismissed, snoozed · what it references | Retries · delivery failure · delayed delivery · quiet hours · digest and batch scheduling · multi-channel fan-out · templating · channel fallback |
+
+**Preferences are split, and the split is not obvious.** *"Which kinds of thing do I want to hear about"* is product vocabulary and ours; *"by which channel, at which times"* is delivery and Novu's. A design that put both in one place would either duplicate Novu's preference model or make our own depend on it.
+
+**Thousands of notifications** is the one scale question with a real answer needed on day one: **one row per recipient, not one row plus N read-states.** Preferences and channels differ per person, and a shared row with a read-state table is the same thing with worse queries and a harder tenancy story. A workspace-wide event across fifty members is fifty rows, which is what every product of this kind does.
+
+**Escalation and audit** are out of Day One and named so they are not rediscovered: escalation needs an ownership model the repository does not have, and delivery attempts are operational history under [ADR-0029](architecture/adr/0029-operational-history-durability.md) rather than a new category.
+
+### 5 · The one thing that constrains the build, and it is not a blocker
+
+**M14a is by construction an event consumer** — it has no other input. So [C-012](#c-012--eventhandler-receives-no-session-so-no-module-handler-is-registered) is directly in its path, and it has been `WAITING` since M3A.
+
+**It does not stop M14a, and Lane B will not report it as though it does.** The deployed worker registers exactly one subscription — `ai_research.requested`, AI Research Engine consuming its own event — and it works by holding a session factory on the worker runtime rather than by taking the dispatcher's session. **A notification handler can be built the same way and made idempotent on `event_id` by construction**, deriving its own identity from the envelope exactly as Timeline's projection does with `uuid5`, so it never needs the dispatcher's ledger.
+
+What C-012 genuinely costs is **the shape of the handler, not its existence** — and that is worth stating rather than treating as a reason to wait.
+
+### 6 · The boundary Lane B must not draw alone
+
+**[37-product-surface.md](architecture/37-product-surface.md):224 puts the attention list — journey J1, *"which accounts deserve my attention today?"* — inside Revenue Intelligence Platform**, and records a live defect in it: the list names accounts by truncated identifier because no module in the ratified graph reaches both workflow and entity names.
+
+**That is the derived half of §3, and it already has an owner.** Lane B will not claim it. But the question has to be answered before either module builds it, because two lanes independently deriving *"what needs attention"* is precisely the duplicated truth the register exists to prevent:
+
+> **Does the attention list belong to Revenue Intelligence Platform, or is it Notifications' derived half with RIP as a consumer?**
+
+Lane B has no position it would defend. RIP's claim is older and J1 is written against it; Notifications' claim is that *"what needs attention"* and *"what have you been told about"* are one customer question answered in two halves, and splitting them across modules means the screen assembles from two sources with two vocabularies.
+
+### 7 · What Lane B recommends
+
+| # | Decision | Why it cannot be a lane's |
+|---|---|---|
+| 1 | **Is Notifications a bounded context?** Lane B's position: **yes**, on §2 — and `04-modules.md` gains a fifteenth entry, which is a 🔴 architecture change | It adds a bounded context. RFC territory |
+| 2 | **Does Day One include a delivered channel, or only in-app?** Lane B's position: **in-app only** | Sequencing, and it decides whether M14.5 is a prerequisite |
+| 3 | **Is Novu still the right purchase for a Day One that delivers nothing?** | Reversing or deferring a ratified ADR |
+| 4 | **Who owns the attention list** — RIP or Notifications? (§6) | A module boundary between two modules, one unbuilt |
+
+**On decision 2, the argument in full, because it decides the milestone's size.** **In-app is the only channel that needs nothing bought.** It is our database, our API and our UI; it requires no Novu instance, no SMTP, no deliverability, no vendor account, and no cloud infrastructure — which matters because [ADR-0027](architecture/adr/0027-local-first-development.md) means every gate is local and M14.5 is three milestones away. **Every other channel needs infrastructure that does not exist yet**, and building against it would repeat exactly the position M13 has just paused in: a capability that cannot be exercised, waiting on an environment.
+
+It is also the honest one. A product that shows *"3 things need your attention"* in the application, and says nothing about email until email actually sends, is telling the truth about what it can do — which is the rule the Connection Center already follows with `connectable: false`.
+
+**The first slice, if decisions 1 and 2 go that way**, is demonstrable to a non-engineer without naming a module: *a seller opens Signora and sees that their CRM connection expired, marks it as dealt with, and it stops asking.* No vendor, no new dependency, no infrastructure, and a real customer capability.
+
+**Lane B has written no M14a code and has created no `modules/notifications/`.**
 
