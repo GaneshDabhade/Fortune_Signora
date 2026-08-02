@@ -119,6 +119,46 @@ class ListInvitations:
         return await self._invitations.list_for_workspace(workspace_id)
 
 
+class ResendInvitation:
+    """Deliver a live invitation again.
+
+    **The same row, and that is the design.** A resend changes nothing about
+    the offer — same address, same role, same expiry — so a new row would make
+    *"I already invited them"* and *"I just invited them"* indistinguishable,
+    and the partial unique index would refuse it anyway.
+
+    **Only while pending.** Re-sending a withdrawn or expired invitation would
+    deliver a link that cannot be used, which is worse than not sending one.
+    """
+
+    def __init__(
+        self,
+        *,
+        workspaces: WorkspaceRepository,
+        invitations: InvitationRepository,
+        delivery: InvitationDelivery,
+    ) -> None:
+        self._workspaces = workspaces
+        self._invitations = invitations
+        self._delivery = delivery
+
+    async def execute(
+        self, workspace_id: UUID, invitation_id: UUID, *, now: datetime
+    ) -> Invitation:
+        invitation = await self._invitations.get(workspace_id, invitation_id)
+        if invitation is None:
+            raise InvitationNotFoundError(invitation_id)
+        # The domain's own refusal, reused rather than re-expressed: `revoke`
+        # and `accept` already require pending, and so does this.
+        invitation.require_pending(now)
+
+        workspace = await self._workspaces.get(workspace_id)
+        if workspace is None:
+            raise WorkspaceNotFoundError(workspace_id)
+        await self._delivery.send(invitation, workspace_name=workspace.name)
+        return invitation
+
+
 class RevokeInvitation:
     def __init__(self, *, invitations: InvitationRepository) -> None:
         self._invitations = invitations
@@ -143,5 +183,6 @@ __all__ = [
     "InviteMember",
     "InviteMemberCommand",
     "ListInvitations",
+    "ResendInvitation",
     "RevokeInvitation",
 ]

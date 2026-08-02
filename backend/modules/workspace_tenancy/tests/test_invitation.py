@@ -28,11 +28,11 @@ WORKSPACE = uuid4()
 ANA = uuid4()
 
 
-def offer(**kw: object) -> Invitation:
+def offer(email: str = "sam@acme.com", role: WorkspaceRole = WorkspaceRole.MEMBER) -> Invitation:
     return Invitation.offer(
         workspace_id=WORKSPACE,
-        email=str(kw.pop("email", "sam@acme.com")),
-        role=WorkspaceRole(kw.pop("role", WorkspaceRole.MEMBER)),
+        email=email,
+        role=role,
         invited_by=ANA,
         now=NOW,
     )

@@ -21,6 +21,7 @@ from modules.workspace_tenancy.application.use_cases import (
     ListWorkspaceMembersInput,
 )
 from modules.workspace_tenancy.application.use_cases.invite_member import InviteMemberCommand
+from modules.workspace_tenancy.application.use_cases.remove_member import RemoveMemberCommand
 from modules.workspace_tenancy.infrastructure.composition import build_use_cases
 from modules.workspace_tenancy.interface.schemas import (
     AddMemberRequest,
@@ -28,6 +29,7 @@ from modules.workspace_tenancy.interface.schemas import (
     InvitationResponse,
     InviteMemberRequest,
     MembershipResponse,
+    RemoveMemberRequest,
     WorkspaceResponse,
 )
 from signora_platform.api import (
@@ -235,6 +237,30 @@ async def invite_member(context: CurrentWorkspace, body: InviteMemberRequest) ->
 
 
 @router.post(
+    "/workspaces/{workspace_id}/invitations/{invitation_id}/resend",
+    response_model=InvitationResponse,
+    summary="Send an invitation again",
+)
+async def resend_invitation(context: CurrentWorkspace, invitation_id: UUID) -> InvitationResponse:
+    """**The same invitation, delivered again.**
+
+    Not a new one: the address, the role and the expiry are unchanged, so a
+    second row would make *"I already invited them"* and *"I just invited
+    them"* indistinguishable — and the live-invitation index would refuse it.
+
+    **Only while it is still waiting.** Re-sending a withdrawn or expired
+    invitation would deliver a link that cannot be used, which is worse than
+    not sending one.
+    """
+    context.authorize(Resource.MEMBER, Action.ADD)
+    now = datetime.now(UTC)
+    invitation = await build_use_cases(context.session).resend_invitation.execute(
+        context.workspace_id, invitation_id, now=now
+    )
+    return InvitationResponse.from_domain(invitation, at=now)
+
+
+@router.post(
     "/workspaces/{workspace_id}/invitations/{invitation_id}/revoke",
     response_model=InvitationResponse,
     summary="Withdraw an invitation",
@@ -256,6 +282,46 @@ async def revoke_invitation(context: CurrentWorkspace, invitation_id: UUID) -> I
         context.workspace_id, invitation_id, now=now
     )
     return InvitationResponse.from_domain(invitation, at=now)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/members/{membership_id}/remove",
+    response_model=MembershipResponse,
+    summary="Remove somebody from this organization",
+)
+async def remove_member(
+    context: CurrentWorkspace, membership_id: UUID, body: RemoveMemberRequest
+) -> MembershipResponse:
+    """*"This person no longer belongs here."*
+
+    A colleague left the company, a contractor's engagement ended, an
+    invitation went to the wrong address, or access had to be withdrawn.
+    **Every one is the same operation and none of them is a deletion** — the
+    membership survives with the moment, the actor and the reason, because
+    decision history, the timeline and every audit question cite it.
+
+    `POST` rather than `DELETE`, and the shape says so: nothing is removed from
+    the database, and the response returns the ended membership rather than
+    `204`.
+
+    **`member:remove` has authorized this since M1** and nothing could perform
+    it. No policy line was added.
+
+    **The last owner is refused**, in the domain rather than here — a check in
+    an interface can be raced by a second tab, and a workspace with nobody who
+    can administer it is unrecoverable without support.
+    """
+    context.authorize(Resource.MEMBER, Action.REMOVE)
+    membership = await build_use_cases(context.session).remove_member.execute(
+        RemoveMemberCommand(
+            workspace_id=context.workspace_id,
+            membership_id=membership_id,
+            removed_by=context.principal.user_id,
+            reason=body.reason,
+        ),
+        now=datetime.now(UTC),
+    )
+    return MembershipResponse.from_domain(membership)
 
 
 __all__ = ["router"]

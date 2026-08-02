@@ -7,9 +7,9 @@ between domain entities and ORM models in both directions.
 
 from uuid import UUID
 
-from sqlalchemy import Select, literal, select, tuple_, update
+from sqlalchemy import Select, func, literal, select, tuple_, update
 
-from modules.workspace_tenancy.domain.entities import Membership, Workspace
+from modules.workspace_tenancy.domain.entities import Membership, Workspace, WorkspaceRole
 from modules.workspace_tenancy.domain.invitation import Invitation
 from modules.workspace_tenancy.infrastructure.models import (
     InvitationModel,
@@ -41,6 +41,9 @@ def _membership_to_domain(model: MembershipModel) -> Membership:
         updated_at=model.updated_at,
         created_by=model.created_by,
         updated_by=model.updated_by,
+        ended_at=model.ended_at,
+        ended_by=model.ended_by,
+        ended_reason=model.ended_reason,
     )
 
 
@@ -113,9 +116,16 @@ class SqlAlchemyMembershipRepository(SqlAlchemyRepository):
         )
 
     async def get(self, workspace_id: UUID, user_id: UUID) -> Membership | None:
+        """The **live** membership, and the filter is security-relevant.
+
+        This is what verifies membership on every request. An ended membership
+        that still resolved here would keep somebody signed in to an
+        organization they had been removed from.
+        """
         stmt = select(MembershipModel).where(
             MembershipModel.workspace_id == workspace_id,
             MembershipModel.user_id == user_id,
+            MembershipModel.ended_at.is_(None),
         )
         model = (await self._session.execute(stmt)).scalar_one_or_none()
         return _membership_to_domain(model) if model is not None else None
@@ -124,12 +134,62 @@ class SqlAlchemyMembershipRepository(SqlAlchemyRepository):
         self, workspace_id: UUID, *, limit: int, after: CursorPosition | None
     ) -> list[Membership]:
         statement = _apply_keyset(
-            select(MembershipModel).where(MembershipModel.workspace_id == workspace_id),
+            select(MembershipModel).where(
+                MembershipModel.workspace_id == workspace_id,
+                # Live only. *"Who is in my organization"* does not include
+                # people who have left — their rows survive for the audit
+                # trail, not for the roster.
+                MembershipModel.ended_at.is_(None),
+            ),
             MembershipModel,
             after,
         ).limit(limit)
         models = (await self._session.execute(statement)).scalars().all()
         return [_membership_to_domain(model) for model in models]
+
+    async def get_by_id(self, workspace_id: UUID, membership_id: UUID) -> Membership | None:
+        stmt = select(MembershipModel).where(
+            MembershipModel.workspace_id == workspace_id,
+            MembershipModel.id == membership_id,
+        )
+        model = (await self._session.execute(stmt)).scalar_one_or_none()
+        return _membership_to_domain(model) if model is not None else None
+
+    async def count_live_owners(self, workspace_id: UUID) -> int:
+        """How many people can still administer this organization.
+
+        **The last-owner invariant spans the whole membership set**, so the
+        aggregate cannot see it. A count rather than a collection: the rule
+        needs a number, and loading every membership to change one is what the
+        two-aggregate split deliberately avoids.
+        """
+        stmt = (
+            select(func.count())
+            .select_from(MembershipModel)
+            .where(
+                MembershipModel.workspace_id == workspace_id,
+                MembershipModel.role == WorkspaceRole.OWNER,
+                MembershipModel.ended_at.is_(None),
+            )
+        )
+        return int((await self._session.execute(stmt)).scalar_one())
+
+    async def end(self, membership: Membership) -> None:
+        stmt = (
+            update(MembershipModel)
+            .where(
+                MembershipModel.workspace_id == membership.workspace_id,
+                MembershipModel.id == membership.id,
+            )
+            .values(
+                ended_at=membership.ended_at,
+                ended_by=membership.ended_by,
+                ended_reason=membership.ended_reason,
+                updated_at=membership.updated_at,
+                updated_by=membership.updated_by,
+            )
+        )
+        await self._session.execute(stmt)
 
 
 class SqlAlchemyInvitationRepository(SqlAlchemyRepository):

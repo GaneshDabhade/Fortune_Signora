@@ -66,6 +66,31 @@ class Workspace:
         return workspace, event
 
 
+class LastOwnerCannotLeaveError(Exception):
+    """The only person who can administer this organization was leaving.
+
+    **Refused in the domain, not in a dialog.** A workspace with no owner is
+    one nobody can administer and nobody can repair without support — and a
+    check in the interface can be raced by a second tab.
+    """
+
+    def __init__(self, workspace_id: UUID) -> None:
+        super().__init__(
+            "This organization would be left with nobody who can administer it. "
+            "Make somebody else an owner first."
+        )
+        self.workspace_id = workspace_id
+
+
+class MembershipAlreadyEndedError(Exception):
+    """Ending something that has already ended would claim an act that changed
+    nothing, and would overwrite the moment it actually happened."""
+
+    def __init__(self, membership_id: UUID) -> None:
+        super().__init__("This person has already been removed from the organization.")
+        self.membership_id = membership_id
+
+
 @dataclass
 class Membership:
     id: UUID
@@ -76,6 +101,46 @@ class Membership:
     updated_at: datetime
     created_by: UUID
     updated_by: UUID
+    #: When this person stopped belonging. **A membership is ended, never
+    #: deleted** — decision history, the timeline and every audit question cite
+    #: it, and removing the row would silently rewrite what a customer already
+    #: read (46-team-management.md, D3).
+    ended_at: datetime | None = None
+    ended_by: UUID | None = None
+    ended_reason: str | None = None
+
+    @property
+    def is_live(self) -> bool:
+        return self.ended_at is None
+
+    def end(
+        self,
+        *,
+        by: UUID,
+        at: datetime,
+        reason: str | None,
+        remaining_owners: int,
+    ) -> None:
+        """Record that this person no longer belongs.
+
+        ``remaining_owners`` counts owners **other than this membership**, and
+        is an argument with no default because the aggregate cannot see them:
+        the last-owner rule spans the whole membership set, so the count is
+        read inside the same transaction and passed in. Making it a required
+        argument is what stops a caller forgetting the invariant exists.
+        """
+        if not self.is_live:
+            raise MembershipAlreadyEndedError(self.id)
+        if self.role is WorkspaceRole.OWNER and remaining_owners == 0:
+            raise LastOwnerCannotLeaveError(self.workspace_id)
+
+        self.ended_at = at
+        self.ended_by = by
+        # Kept verbatim. It is somebody's sentence about a colleague, and a
+        # normalised or truncated version would be the product editing it.
+        self.ended_reason = reason.strip() if reason and reason.strip() else None
+        self.updated_at = at
+        self.updated_by = by
 
     @classmethod
     def create(

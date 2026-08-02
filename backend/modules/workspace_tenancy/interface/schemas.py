@@ -115,3 +115,11 @@ class InvitationResponse(BaseModel):
             created_at=invitation.created_at,
             invited_by=invitation.invited_by,
         )
+
+
+class RemoveMemberRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    #: Why, in the customer's words, and optional — an administrator correcting
+    #: a mistaken invitation should not be made to justify it.
+    reason: str | None = Field(default=None, max_length=500)

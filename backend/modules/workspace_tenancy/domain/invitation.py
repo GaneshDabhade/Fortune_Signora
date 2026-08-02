@@ -156,14 +156,20 @@ class Invitation:
         administrator revoking one would believe they had closed a door that had
         already shut, and the record would claim an act that changed nothing.
         """
-        self._require_pending(at)
+        self.require_pending(at)
         return replace(self, revoked_at=at)
 
     def accept(self, *, at: datetime) -> Invitation:
-        self._require_pending(at)
+        self.require_pending(at)
         return replace(self, accepted_at=at)
 
-    def _require_pending(self, at: datetime) -> None:
+    def require_pending(self, at: datetime) -> None:
+        """Refuse anything a settled invitation cannot do.
+
+        **Public because resending needs it too**, and a use case reaching into
+        a private method would be the boundary leaking rather than the rule
+        being shared.
+        """
         current = self.state(at=at)
         if current is not InvitationState.PENDING:
             raise InvitationNotPendingError(current)

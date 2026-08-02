@@ -145,3 +145,23 @@ export function useRevokeInvitation(workspaceId: string | null) {
       client.invalidateQueries({ queryKey: queryKeys.invitations(workspaceId ?? '') }),
   });
 }
+
+/**
+ * Send a live invitation again.
+ *
+ * **The same row, re-delivered.** Not a new invitation: the address, the role
+ * and the expiry are unchanged, so the list does not grow and the audit trail
+ * still says *invited once*.
+ */
+export function useResendInvitation(workspaceId: string | null) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (invitationId: string) =>
+      apiRequest<Invitation>(
+        `/workspaces/${workspaceId}/invitations/${invitationId}/resend`,
+        { method: 'POST', workspaceId: workspaceId ?? undefined },
+      ),
+    onSuccess: () =>
+      client.invalidateQueries({ queryKey: queryKeys.invitations(workspaceId ?? '') }),
+  });
+}

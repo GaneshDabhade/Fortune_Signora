@@ -19,8 +19,10 @@ from modules.workspace_tenancy.application.use_cases import (
 from modules.workspace_tenancy.application.use_cases.invite_member import (
     InviteMember,
     ListInvitations,
+    ResendInvitation,
     RevokeInvitation,
 )
+from modules.workspace_tenancy.application.use_cases.remove_member import RemoveMember
 from modules.workspace_tenancy.infrastructure.adapters import (
     OutboxEventPublisherAdapter,
     SessionTenantContext,
@@ -46,6 +48,8 @@ class WorkspaceTenancyUseCases:
     invite_member: InviteMember
     list_invitations: ListInvitations
     revoke_invitation: RevokeInvitation
+    remove_member: RemoveMember
+    resend_invitation: ResendInvitation
 
 
 def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
@@ -84,6 +88,12 @@ def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
         ),
         list_invitations=ListInvitations(invitations=invitation_repository),
         revoke_invitation=RevokeInvitation(invitations=invitation_repository),
+        remove_member=RemoveMember(memberships=membership_repository),
+        resend_invitation=ResendInvitation(
+            workspaces=workspace_repository,
+            invitations=invitation_repository,
+            delivery=delivery,
+        ),
     )
 
 

@@ -9,7 +9,7 @@ free of any SQLAlchemy dependency (docs/architecture/15-project-structure.md).
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import DateTime, ForeignKey, String, UniqueConstraint
+from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -42,9 +42,9 @@ class MembershipModel(Base, TimestampMixin, AuditMixin):
     """
 
     __tablename__ = "membership"
-    __table_args__ = (
-        UniqueConstraint("workspace_id", "user_id", name="uq_membership_workspace_user"),
-    )
+    # **The live-membership uniqueness is a partial index in migration 0032.**
+    # SQLAlchemy cannot express a partial unique constraint, and a total one
+    # here would refuse a legitimate re-join after somebody was removed.
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
     workspace_id: Mapped[UUID] = mapped_column(
@@ -66,6 +66,9 @@ class MembershipModel(Base, TimestampMixin, AuditMixin):
         ),
         nullable=False,
     )
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    ended_by: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), nullable=True)
+    ended_reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
 
 class InvitationModel(Base, TimestampMixin, AuditMixin):

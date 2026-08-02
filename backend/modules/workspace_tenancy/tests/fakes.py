@@ -9,7 +9,7 @@ from collections.abc import Sequence
 from typing import Any
 from uuid import UUID
 
-from modules.workspace_tenancy.domain.entities import Membership, Workspace
+from modules.workspace_tenancy.domain.entities import Membership, Workspace, WorkspaceRole
 from signora_platform.pagination import CursorPosition
 
 
@@ -40,20 +40,46 @@ class FakeMembershipRepository:
         self.memberships.append(membership)
 
     async def get(self, workspace_id: UUID, user_id: UUID) -> Membership | None:
+        # **Live only, exactly as the real repository is.** A fake that
+        # resolved an ended membership would let a use-case test pass while the
+        # deployed system kept somebody signed in to an organization they had
+        # been removed from — the class of gap B-024 was.
         return next(
             (
                 m
                 for m in self.memberships
-                if m.workspace_id == workspace_id and m.user_id == user_id
+                if m.workspace_id == workspace_id and m.user_id == user_id and m.is_live
             ),
             None,
         )
+
+    async def get_by_id(self, workspace_id: UUID, membership_id: UUID) -> Membership | None:
+        return next(
+            (
+                m
+                for m in self.memberships
+                if m.workspace_id == workspace_id and m.id == membership_id
+            ),
+            None,
+        )
+
+    async def count_live_owners(self, workspace_id: UUID) -> int:
+        return sum(
+            1
+            for m in self.memberships
+            if m.workspace_id == workspace_id and m.is_live and m.role is WorkspaceRole.OWNER
+        )
+
+    async def end(self, membership: Membership) -> None:
+        # The domain mutated the instance this list already holds, so there is
+        # nothing to write back — asserted rather than assumed.
+        assert membership in self.memberships
 
     async def list_page_for_workspace(
         self, workspace_id: UUID, *, limit: int, after: CursorPosition | None
     ) -> list[Membership]:
         ordered = sorted(
-            (m for m in self.memberships if m.workspace_id == workspace_id),
+            (m for m in self.memberships if m.workspace_id == workspace_id and m.is_live),
             key=lambda m: (m.created_at, m.id),
             reverse=True,
         )

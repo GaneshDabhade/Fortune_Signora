@@ -19,6 +19,7 @@ const workspaceContext = vi.hoisted(() => vi.fn());
 const invitations = vi.hoisted(() => vi.fn());
 const invite = vi.hoisted(() => vi.fn());
 const revoke = vi.hoisted(() => vi.fn());
+const resend = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/state/workspace-provider', () => ({
   useWorkspaceContext: workspaceContext,
@@ -28,6 +29,7 @@ vi.mock('@/lib/query/hooks/team', () => ({
   useInvitations: invitations,
   useInviteMember: () => ({ mutate: invite, isPending: false }),
   useRevokeInvitation: () => ({ mutate: revoke, isPending: false }),
+  useResendInvitation: () => ({ mutate: resend, isPending: false }),
 }));
 
 vi.mock('@/components/feedback/toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
@@ -186,7 +188,7 @@ describe('the words are the customer’s', () => {
 
   it('tells the administrator what sending one does, and that it is reversible', () => {
     render(draw());
-    fireEvent.click(screen.getAllByRole('button', { name: 'Invite a colleague' })[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Invite a colleague' })[0]!);
 
     expect(screen.getByText(/You can withdraw it any time before they accept/)).toBeVisible();
   });
@@ -195,7 +197,7 @@ describe('the words are the customer’s', () => {
 describe('sending an invitation', () => {
   function openDialog() {
     render(draw());
-    fireEvent.click(screen.getAllByRole('button', { name: 'Invite a colleague' })[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Invite a colleague' })[0]!);
     return screen.getByRole('dialog');
   }
 
@@ -235,5 +237,48 @@ describe('it says when it could not load, rather than disappearing', () => {
 
     expect(screen.getByText(/could not be loaded/)).toBeVisible();
     expect(screen.getByRole('heading', { name: 'Invited' })).toBeVisible();
+  });
+});
+
+describe('the banner promised “send it again”, and now there is a control', () => {
+  // **A defect in TM-03a, found by reading its own copy.** The forgotten-
+  // invitation banner offered two actions and the table had one. A control
+  // that goes nowhere costs more trust than an absent one — and here the
+  // product was describing an action it could not perform.
+
+  it('offers Send again on anything still waiting', () => {
+    invitations.mockReturnValue({ ...IDLE, data: [invitation()] });
+
+    render(draw());
+
+    expect(screen.getByRole('button', { name: 'Send again' })).toBeVisible();
+  });
+
+  it('resends the invitation the button belongs to', () => {
+    invitations.mockReturnValue({ ...IDLE, data: [invitation({ id: 'i7' })] });
+
+    render(draw());
+    fireEvent.click(screen.getByRole('button', { name: 'Send again' }));
+
+    expect(resend).toHaveBeenCalledWith('i7', expect.anything());
+  });
+
+  it('does not offer it on a settled invitation', () => {
+    // Re-sending a withdrawn invitation delivers a link that cannot be used,
+    // which is worse than not sending one.
+    invitations.mockReturnValue({ ...IDLE, data: [invitation({ state: 'expired' })] });
+
+    render(draw());
+
+    expect(screen.queryByRole('button', { name: 'Send again' })).toBeNull();
+  });
+
+  it('offers the recoverable action before the deliberate one', () => {
+    invitations.mockReturnValue({ ...IDLE, data: [invitation()] });
+
+    const { container } = render(draw());
+    const text = container.textContent ?? '';
+
+    expect(text.indexOf('Send again')).toBeLessThan(text.indexOf('Withdraw'));
   });
 });

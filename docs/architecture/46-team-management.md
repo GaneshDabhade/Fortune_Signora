@@ -673,3 +673,51 @@ An invitation is **two facts with two owners**, and separating them dissolves mo
 ### Found while building, and not worked around
 
 **`sa.Enum(..., create_type=False)` is ignored inside `create_table`.** Alembic re-issues `CREATE TYPE` and the migration fails against an existing enum; only the dialect's `postgresql.ENUM` honours the flag. **Fixed in the migration with the reason in a comment**, because the next module to reference `workspace_role` will meet it.
+
+
+---
+
+## 17 · TM-02 — a membership ends, 2026-08-02
+
+**`policy.csv` has granted owners `member:remove` since M1 and nothing could perform it.** This is the operation that grant assumed.
+
+### The customer's action, not the technical one
+
+**Somebody leaving the company, a contractor's engagement ending, an invitation sent to the wrong address, access withdrawn after an incident** — every one is *this person no longer belongs here*, and none of them is *delete a row*. The endpoint is `POST …/remove`, the response returns the **ended** membership rather than `204`, and the reason is free text kept verbatim.
+
+**A reason is optional.** An administrator correcting a mistaken invitation should not be made to justify it.
+
+### The four verifications, on migration `0032`
+
+| | |
+|---|---|
+| **Data preservation** | **Additive only** — three nullable columns. The dropped unique constraint is replaced by a partial index that is strictly weaker, so nothing valid became invalid |
+| **Behaviour preservation** | Every existing membership has `ended_at IS NULL` and is live under every new predicate. **Membership verification, the roster and RLS behave exactly as before** |
+| **Capability expansion** | An owner can end a membership, and the record says who, when and why |
+| **Rollback safety** | **Verified down and up while clean.** Once a membership has ended the downgrade **refuses, loudly** — restoring the total constraint would refuse a legitimate re-join, and the only way to force it is to delete audit history. *A migration that silently dropped audit rows to satisfy a constraint would be worse than one that refuses.* **Confirmed by ending a membership and watching it raise** |
+
+### The audit questions it already answers
+
+**Nothing was built for reporting; the facts are simply kept.**
+
+| | |
+|---|---|
+| *Who invited this person?* | `invitation.created_by` — and it never moves |
+| *Who removed them?* | `membership.ended_by` |
+| *Why?* | `membership.ended_reason`, verbatim |
+| *When?* | `membership.ended_at` |
+| *Were they ever re-added? How many times?* | **The partial index makes this answerable**: one live membership per person, and every ended one survives — so the count is the number of rows |
+
+### The pressure point future offboarding will meet, documented not built
+
+**Ending a membership today touches nothing else, and that is correct** — no notifications, assignments, approvals or billing seats exist to cascade to. **When they do, each will want to react to a departure**, and there is no `membership.ended` event on the bus.
+
+**Not published now**, because an event with no consumer is speculative (§6) and [C-012](../LANE_COORDINATION.md) means no module handler is subscribed anyway. **The pressure point is named so the next lane adds one deliberately** rather than discovering the need at slice four.
+
+### A defect in TM-03a, found by reading its own copy
+
+**The forgotten-invitation banner said *"You can send it again, or withdraw it below"* and there was no *Send again* control.** A control that goes nowhere costs more trust than an absent one — and here the product described an action it could not perform.
+
+**Fixed in this slice**: `ResendInvitation` re-delivers **the same row**, and *Send again* sits before *Withdraw* because an administrator chasing a forgotten invitation reaches for the recoverable action first.
+
+**`require_pending` became public** so resend could reuse the domain's own refusal rather than re-express it — a use case reaching into a private method would be the boundary leaking rather than the rule being shared.

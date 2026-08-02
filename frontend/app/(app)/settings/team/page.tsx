@@ -28,6 +28,7 @@ import type { Invitation } from '@/lib/api/types';
 import {
   useInviteMember,
   useInvitations,
+  useResendInvitation,
   useRevokeInvitation,
 } from '@/lib/query/hooks/team';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
@@ -64,6 +65,7 @@ export default function TeamPage() {
   const { data, isLoading, isError } = useInvitations(workspaceId);
   const invite = useInviteMember(workspaceId);
   const revoke = useRevokeInvitation(workspaceId);
+  const resend = useResendInvitation(workspaceId);
   const { toast } = useToast();
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -173,14 +175,36 @@ export default function TeamPage() {
                     </TD>
                     <TD>
                       {one.state === 'pending' ? (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          loading={revoke.isPending}
-                          onClick={() => revoke.mutate(one.id)}
-                        >
-                          Withdraw
-                        </Button>
+                        // **Send again before Withdraw.** The banner above
+                        // offers both, and an administrator chasing a
+                        // forgotten invitation reaches for the recoverable one
+                        // first. Withdrawing is the deliberate second choice.
+                        <div className="flex gap-2">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            loading={resend.isPending}
+                            onClick={() =>
+                              resend.mutate(one.id, {
+                                onSuccess: () =>
+                                  toast({
+                                    tone: 'success',
+                                    message: `Sent again to ${one.invited_email}`,
+                                  }),
+                              })
+                            }
+                          >
+                            Send again
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            loading={revoke.isPending}
+                            onClick={() => revoke.mutate(one.id)}
+                          >
+                            Withdraw
+                          </Button>
+                        </div>
                       ) : null}
                     </TD>
                   </TR>
