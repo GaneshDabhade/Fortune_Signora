@@ -69,6 +69,33 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-021 · The coordination register's `Closed` section holds only open items, and every closed one sits above it
+
+| | |
+|---|---|
+| **Module** | **none** — [`LANE_COORDINATION.md`](LANE_COORDINATION.md) |
+| **Current assignee** | **QE**, at the next cycle's stage-3 reconciliation — the register is QE's to reconcile at merge |
+| **Severity** | 🟠 — two tools report *"3 closed"*, and the true figure is *"0 closed, 2 answered and misfiled"* |
+| **Status** | `OPEN` |
+| **Found** | 2026-08-02, by QE, reading C-020 and noticing it was filed under `Closed` while marked `OPEN` |
+
+**Steps to reproduce.**
+
+```bash
+awk '/^## C-/{i=$0} /^\| \*\*Status\*\*/{print i" -> "$0}' docs/LANE_COORDINATION.md
+python3 infra/kpi.py | grep Coordination      # 18 · 3 closed
+```
+
+**Expected.** Items under `## Closed` are closed. `state-check` and `kpi` both count *"items appearing after the `## Closed` heading"*, so that heading is load-bearing.
+
+**Actual.** The section is inverted. **The three items below `## Closed` — C-015, C-017, C-020 — are all `OPEN`**, including the one blocking all of M7. **The two carrying `ANSWERED` — C-001, ratified as ADR-0036, and C-016 — are above it.** Lanes append new items at end of file, which has been past the heading since it was introduced.
+
+**Consequence beyond the count.** The rule this heading serves is *"a register that only grows has become the discussion log it is not allowed to be"* — and `state-check` only fires that finding when **zero** items are closed. Three phantom closures have kept it silent across every cycle since. **A check whose input is wrong is not a check** (§2).
+
+**Fix.** Move `## Closed` to end of file and relocate C-001 and C-016 beneath it. **Deliberately deferred to the next cycle rather than done now**: Lane A's branch adds 196 lines to this file, and reordering it today would hand that lane a conflict for no gain. It is reconciled where reconciliation belongs — stage 3, with the lane's changes in hand.
+
+---
+
 ### B-020 · `state-check` reads a task id anywhere in a board row, including the explanation of why a lane *cannot* take it
 
 | | |
@@ -119,7 +146,11 @@ git show origin/lane-a-product-surface:CLAUDE.md | grep -c '^| `integration` | P
 
 **Fix.** Keep the original `integration` row verbatim, including the claim-commit exception. Keep the *new* `lane-*` row, which is the one this refinement actually changed. Delete the other two.
 
-**The finding underneath it.** `CLAUDE.md` is 🔴 in the Change Budget and *"Product owner"* in *Shared files have one owner*, and `16896ca`, `f262d2c` and `835388f` wrote 74 lines of it from a feature lane. **The content is not the problem** — it matches what the product owner has since ratified, and *Continuous execution* is a genuine improvement. **The concurrency is:** two sessions editing the constitution on separate branches produced a contradiction that neither could see, and no gate reads that file. **A governance change belongs on one branch at a time**, and if a lane is asked to draft one it should say so and hand the text over rather than commit it.
+**The finding underneath it, and it is larger than the table.** `CLAUDE.md` is 🔴 in the Change Budget and *"Product owner"* in *Shared files have one owner*, and `16896ca`, `f262d2c` and `835388f` wrote 74 lines of it from a feature lane. **The content is not the problem** — it matches what the product owner has since ratified, and *Continuous execution* is a genuine improvement. **The concurrency is:** two sessions editing the constitution on separate branches produced a contradiction that neither could see, and no gate reads that file.
+
+**The same branch does it a second time, in [`BACKLOG.md`](BACKLOG.md).** `f28792d` **inserts two new `READY` tasks** — TASK-018 and TASK-019, PP-02 and PP-03 — and moves TASK-015 out of `BLOCKED`. The rule is explicit: *"a lane never reorders, reprioritizes, removes, or inserts `READY` work without the product owner"*, and *"a lane writes **only** its claim"*. **Again the content looks right**: all three derive from the ratified [ADR-0036](architecture/adr/0036-target-account-contract.md), and TASK-015's unblocking is argued rather than waived — its blocker is being built by the same lane in the same effort.
+
+**Both need the product owner, not QE.** Either the rows are ratified where they stand, or Lane A withdraws them and they are re-entered by their owner. **QE will not decide it**, and will not certify the branch while it is undecided — a lane that can add its own `READY` work has taken priority, however good the work is.
 
 ---
 
