@@ -1679,6 +1679,58 @@ The product owner's own questions make it foundational rather than local: **how 
 
 ---
 
+## C-025 · The catalog explains nine words to nobody
+
+| | |
+|---|---|
+| **Owner** | **Product owner**, with `signal_engine`'s assignee |
+| **Requesting lane** | Lane A |
+| **Category** | Public API contract · product vocabulary |
+| **Status** | `OPEN` |
+| **Blocks** | [R5-04](architecture/39-product-review-findings.md). Nothing else |
+| **Raised** | 2026-08-02, after building the slice and reverting it |
+
+**Both review lenses agree on this one, which is why it is worth a ruling.**
+
+**Contract lens.** `SignalTypeDefinition.why_it_matters` is domain-authored prose in `signals@1.json`, reviewed like code, and asserted non-empty by a Security Invariant *"so the taxonomy cannot grow a type nobody can explain."* **It is served to no customer, anywhere.**
+
+**Product lens.** [R5-04](architecture/39-product-review-findings.md): *"Displacement opportunity* and *Active evaluation* are Signal Catalog terms. A first-time reader meets nine of them with no definition anywhere on the list."* — *(Sales Manager)* **"I'd need to teach these nine words in onboarding. I'd rather the product taught them."**
+
+**Demo test: a design partner asks what a displacement opportunity is, in the first minute of any demo of the list.**
+
+### What stopped it
+
+`tests/integration/test_api_accounts.py::TestTheVocabularyHasOneOwner::test_it_carries_names_and_nothing_else` asserts
+
+```python
+assert set(SignalTypeResponse.model_fields) == {"key", "title"}
+```
+
+**The assertion is exact; its stated reason is narrower.** The docstring says: *"What a hypothesis **proposes**, **cannot prove**, and **how to check it** are per-account questions the validation surface already answers. The same prose in two places means one of them goes stale."*
+
+**`why_it_matters` is none of those three, and the validation surface does not serve it.** Adding it creates no second copy, because there has never been a first — so the *reason* the test documents is not violated, while the *assertion* is.
+
+### Why a lane should not resolve that itself
+
+**The reading that lets the change through is the reading the lane wanted.** That is precisely when it is least trustworthy, so it is put here rather than acted on. Three further reasons:
+
+- It is a **public API response shape**, not an internal detail.
+- The schema's own docstring calls the omission **deliberate** — *"names and nothing else"* — and reversing a stated deliberate choice is not a coding session's (§21).
+- `signal_engine` questions already route to the product owner ([C-005](#c-005--who-owns-the-signal-profile-write-path)).
+
+### The ruling needed, in one sentence
+
+**Does *"the catalog carries names and nothing else"* mean *no prose at all*, or *no prose that duplicates the validation surface*?**
+
+| If | Then |
+|---|---|
+| **No prose at all** | R5-04 is closed as *won't fix*, and the nine words are taught by onboarding rather than by the product. **`why_it_matters` should then be marked as internal-only**, because a reviewed field nobody may ever show is a maintenance cost with no reader |
+| **No *duplicated* prose** | `SignalTypeResponse` gains `why_it_matters`, the test's assertion is narrowed to the three fields its docstring actually names, and the list gets one closed disclosure — *"What do these mean?"* — below it |
+
+**Lane A built the second and reverted it.** It was ~70 lines and every gate passed except that one assertion: catalog endpoint, a `useSignalGlossary` hook sharing the existing request, a `SignalGlossary` disclosure closed by default with the definitions `sr-only` while shut, and 7 component tests. **Not a tooltip per row** — R5-04 calls that *"a wall"* — and the words unedited, because a second phrasing of a definition teaches two things by one name. **It can be restored in minutes if the ruling goes that way.**
+
+---
+
 ## Closed
 
 ## C-016 · Two branch names encode a permanent module assignment that no longer exists
