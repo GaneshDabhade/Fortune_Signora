@@ -106,6 +106,7 @@
 | [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | M14b is three concerns in one roadmap row, and none has a module | Lane A | **Product owner** (bounded context 🔴) | `OPEN` — **architectural** | **The whole of M14b.** [R-01](architecture/16-architecture-risks.md) has been waiting for it at High/High |
 | [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide) | Identifier allocation is still only *unlikely* to collide | Lane A | **QE** + product owner | `OPEN` — **directed by the product owner** | Nothing built. **The repository scaling past three actors without manual reconciliation** |
 | [C-202](#c-202--four-shared-documents-disagree-and-one-disagrees-with-itself) | Four shared documents disagree, and one disagrees with itself | Lane A | **QE** | `OPEN` — **directed by the product owner** | Nothing built. **A cold session trusting any status in the repository** |
+| [C-202b](#c-202b--is-an-invitation-better-auths-or-signoras) | Is an invitation Better Auth's or Signora's? | Lane A | **Product owner** (vendor capability + ADR) | `OPEN` — **architectural** | **Inviting anybody.** Every workspace is permanently whoever created it. **Not the members list** |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
 >
@@ -1760,7 +1761,7 @@ It is also the failure mode this repository keeps finding in a different coat: [
 | **Requesting lane** | Lane A |
 | **Category** | Cross-tier boundary · identity · privacy |
 | **Status** | `OPEN` |
-| **Blocks** | **TS-01, the Team page.** Not TS-02, which shipped without it |
+| **Blocks** | ~~TS-01, the Team page~~ — **narrowed 2026-08-02, see below.** Display names, avatars, AI attribution, audit actors, mentions and notifications |
 | **Raised** | 2026-08-02, during the Team module's readiness review |
 
 **`GET /workspaces/{id}/members` returns `user_id` and `role`. It cannot return a name, and that is correct**: Better Auth is the sole Authentication Authority and runs in Next.js; the Python tier only *verifies* JWTs ([ADR-0026](architecture/adr/0026-jwt-boundary-architecture.md), §13). It has no name to give, and giving it one would put user identity in the tier that must not own it.
@@ -1777,6 +1778,21 @@ It is also the failure mode this repository keeps finding in a different coat: [
 | **A bare id-to-name route lets any session enumerate the user table** | Scoping it to *"ids that share a workspace with the caller"* requires knowing the caller's memberships — which means calling the Python API, which is the BFF again |
 
 **That is a genuine privacy boundary, not a routing detail**, which is why it is here rather than decided in a component.
+
+### Narrowed on evidence — 2026-08-02, and the Team page is no longer waiting on it
+
+**The product owner asked that dependencies be narrowed by evidence rather than another ruling. Team Management's discovery produced one.**
+
+**This item's hard half was never *"can we get a name"* — it was *"which ids may a caller resolve"*, a privacy-scoping question every option had to answer.**
+
+> **An email-addressed invitation removes the question for the Team page.** The membership records **the address the organization typed when it invited them.** Nothing is resolved and nobody is looked up: **the organization already knows, because it supplied it.**
+
+**And the distinction that keeps this inside §13:** an invited address is **an immutable fact about an invitation** — a record of what an administrator did. A display name is **a mutable mirror of somebody's profile**, which is what §13 keeps out of the Python tier and what goes stale. **Recording the first is not owning identity.**
+
+| | |
+|---|---|
+| **No longer blocked by this item** | **TS-01, the Team page.** It can list members with no cross-tier lookup, no BFF and no admin plugin |
+| **Still blocked** | Display names, avatars, AI attribution, audit actors, mentions, notifications. **This remains the highest-leverage item on the board** — it is simply no longer what stops Team Management starting |
 
 ### It is now both halves of team management, and a second journey
 
@@ -2212,6 +2228,56 @@ Alembic's `down_revision` is a linear chain: **a gap is a broken graph, not an o
 | **Cost** | Five deletions and eight five-line headers. **Smaller than one Closeout** |
 | **Risk of not doing it** | A cold session reads `PROJECT_STATUS` first, and it is currently wrong about who is working, whether anything is blocked, and how much is waiting |
 | **Not proposed** | A tool that generates the dashboard. **That is [ADR-0039](architecture/adr/0039-release-engineering-model.md)'s territory**, it is a much larger change, and the five deletions above are worth having whether or not it ever happens |
+
+
+---
+
+## C-202b · Is an invitation Better Auth's or Signora's?
+
+> Numbered from Lane A's block. **Renumber freely** — it is one cycle old and cited nowhere but here.
+
+| | |
+|---|---|
+| **Owner** | **Product owner** — a new vendor capability, and an amendment to [ADR-0010](architecture/adr/0010-identity-and-access.md) |
+| **Requesting lane** | Lane A |
+| **Category** | Build vs buy · cross-tier boundary · authentication |
+| **Status** | `OPEN` |
+| **Kind** | **Architectural blocker.** No accepted architecture exists for the next step |
+| **Blocks** | **Inviting anybody.** Not the members list, which [46-team-management.md](architecture/46-team-management.md) §7 shows is now unblocked |
+| **Raised** | 2026-08-02, at the close of Team Management discovery |
+
+**An organization cannot grow.** `POST /members` takes a `user_id: UUID`, nothing resolves an email to a user, and every workspace is permanently whoever created it.
+
+**Better Auth's `organization` plugin is installed and unused**, and it ships the whole domain — invitations, expiry, limits, membership. **`CLAUDE.md` §13 says auth is bought and never built**, so using it is the default answer and needs saying out loud rather than assumed.
+
+### Why it is not simply "use the plugin"
+
+| | |
+|---|---|
+| Migration `0005` revokes `signora_app` from the `auth` schema | **Membership in the plugin's tables is membership the Python tier cannot read** |
+| §13 requires membership re-verified server-side on every request | **That check reads `membership`.** Moving it out of reach breaks the tenancy model at its root |
+| RLS enforces tenancy on application tables | A vendor's organization table cannot participate |
+
+### The options, and the recommendation
+
+| | | |
+|---|---|---|
+| **A** | Enable the plugin and own membership there | ❌ **Rejected on evidence.** Breaks server-side verification and the RLS root — a tenancy-model change, not a build-vs-buy trade |
+| **B** | Build invitations in `workspace_tenancy` | Keeps one owner for membership, no cross-tier work. ⚠️ **An invitation is addressed to an email that may not be a user, which is identity**, and §13 forbids building that |
+| **C** | **Split at acceptance — recommended.** Better Auth owns the invitation; Signora owns the membership it creates when somebody accepts | **The boundary the repository already draws.** Signora writes no token minting, no expiry, no email-ownership proof and no delivery — the four security-sensitive, entirely commodity parts |
+
+**Costs of C, stated:** enabling a plugin is a **new vendor capability** needing an ADR amendment, and acceptance becomes a two-tier operation whose failure modes must be designed rather than discovered.
+
+### Implementation impact
+
+| | |
+|---|---|
+| **Unblocked either way** | **The members list.** It needs nothing from this item — see the C-024 narrowing below |
+| **If C** | Enable the plugin, design acceptance, add a membership write path from it |
+| **If B** | An `invitation` table with its `tenancy_policy.py` registration, expiry, revocation, delivery, and an email-ownership proof Signora would be writing itself |
+| **Cost of waiting** | **Every workspace stays a single person.** [J10](architecture/43-customer-experience.md) cannot open |
+
+**Full discovery — thirty customer questions, the stress test against the roadmap, and the two weak points — is [46-team-management.md](architecture/46-team-management.md).** Not restated here (§2).
 
 
 ---
