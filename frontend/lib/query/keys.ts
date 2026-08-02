@@ -28,6 +28,9 @@ export const queryKeys = {
   accountOpportunity: (workspaceId: string, accountId: string) =>
     ['workspace', workspaceId, 'accounts', accountId, 'opportunity'] as const,
 
+  accountTimeline: (workspaceId: string, accountId: string) =>
+    ['workspace', workspaceId, 'accounts', accountId, 'timeline'] as const,
+
   accountNarration: (workspaceId: string, accountId: string) =>
     ['workspace', workspaceId, 'accounts', accountId, 'narration'] as const,
 

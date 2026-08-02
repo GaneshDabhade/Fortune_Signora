@@ -706,3 +706,33 @@ export interface DeclareTargetAccounts {
   expected_version: number;
   accounts: TargetAccount[];
 }
+
+/**
+ * What has happened with an account, newest first.
+ *
+ * **`kind` is engineering's word and never reaches a screen.** ADR-0034 puts
+ * the translation at the presentation edge; `components/timeline/feed.tsx`
+ * owns the phrasing a seller reads. The API deliberately sends no rendered
+ * sentence — an entry is immutable, so a stored one could never be improved.
+ */
+export type TimelineEntryKind =
+  | 'observation_recorded'
+  | 'observation_superseded'
+  | 'business_event_detected'
+  | 'business_event_superseded'
+  | 'signal_generated'
+  | 'signal_superseded'
+  | 'buying_score_updated'
+  | 'opportunity_created'
+  | 'opportunity_stage_changed';
+
+export interface TimelineEntry {
+  id: string;
+  kind: TimelineEntryKind;
+  /** When it happened in the domain — never when Signora processed it. */
+  occurred_at: string;
+  source_module: string;
+  source_ref: string;
+  detail: Record<string, unknown>;
+}
+

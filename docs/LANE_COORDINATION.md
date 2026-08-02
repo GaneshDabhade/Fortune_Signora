@@ -60,6 +60,7 @@
 | [C-016](#c-016--two-branch-names-encode-a-permanent-module-assignment-that-no-longer-exists) | Two branch names encode a permanent module assignment that no longer exists | QE | **Product owner** | `OPEN` | Nothing. It misleads every lane that reads `git branch` |
 | [C-017](#c-017--the-onboarding-honesty-principle-has-no-permanent-home) | The onboarding honesty principle has no permanent home | Lane B | **Product owner** + QE | `OPEN` — **ratifiable text ready to paste** as `D39` | Nothing being built. **Every future onboarding flow, wizard and assistant** |
 | [C-020](#c-020--m7-has-no-scope-and-timeline-has-no-design) | M7 has no scope, and Timeline has no design | Lane B | **Product owner** (roadmap 🔴) | `OPEN` | **M7** — [`TASK-017`](BACKLOG.md), `WAITING`. Lane B released it and is `AVAILABLE` |
+| [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it) | Timeline has a surface and nowhere to mount it | Lane B | **Lane A** + product owner | `OPEN` | **Nothing in Timeline** — backend and component built; only the mount point |
 
 ---
 
@@ -894,3 +895,49 @@ Every built module has one, marked *as built*: `22`–`29`, `33`, and `40-commer
 **Lane B offers to draft the Timeline module design** — `41-timeline.md`, on the pattern of [40-commercial-profile.md](architecture/40-commercial-profile.md), which the assigned lane wrote for its own module. **As a proposal for ratification, not as a decision**, and after item 1, because a design written against a scope nobody has agreed is architecture invented by a coding session.
 
 **Lane B will not begin implementation** and has not written a line of `timeline`. The board reads `BLOCKED` with this item named, per §20e: *a lane whose module is blocked stays assigned and the blocker is named*.
+
+---
+
+## C-024 · Timeline has a surface and nowhere to mount it
+
+| | |
+|---|---|
+| **Owner** | **Lane A** (the route) + **product owner** (the placement, [ADR-0038](architecture/adr/0038-timeline.md) Q3) |
+| **Requesting lane** | Lane B — **Timeline's feature lead** |
+| **Category** | Cross-module slice · frontend routing |
+| **Status** | `OPEN` |
+| **Blocks** | **Nothing in Timeline.** The backend and the component are built; only the mount point is missing |
+| **Raised** | 2026-08-02, at the close of M7-S04a |
+
+**Lane B owns Timeline and is not handing the feature over.** The Change Budget's 🟢 tier covers *"the frontend components and routes that serve your slice"*, so the feed component, its query hook and its tests are built and green. **One thing is genuinely another lane's: where the component is rendered.**
+
+`C-024` takes `C-024` rather than `C-021`: Lane A's branch already holds items to `C-023` that have not reached `integration`. Same collision QE renumbered once before, and the reason [C-019](#c-019--a-claim-is-invisible-to-the-step-meant-to-arbitrate-it) exists.
+
+### What is already built and needs nothing from Lane A
+
+| | |
+|---|---|
+| `GET /workspaces/{id}/accounts/{id}/timeline` | Cursor-paginated, Casbin-guarded, `member` and `owner` read |
+| `components/timeline/feed.tsx` | `AccountHistory` — grouped by day, nine kinds translated into a seller's words, empty / error / end-of-history states |
+| `lib/query/hooks/timeline.ts` | `useAccountTimeline` — `useInfiniteQuery` over the opaque cursor |
+| Tests | 20 component tests, and the vocabulary and design-token gates pass |
+
+**The component is a pure presentational one.** It takes `entries`, `hasMore`, three flags and `onLoadMore`, and it renders. Mounting it is roughly ten lines, and none of them are Timeline's to write.
+
+### The question
+
+**Where does an account's history belong?** [ADR-0038](architecture/adr/0038-timeline.md) Q3 left this open and [D38](architecture/38-product-design-principles.md) already ruled that navigation is journeys rather than data — retiring *Timeline* as a menu entry in the process.
+
+| Option | |
+|---|---|
+| **A · On the account brief**, below the evidence | **Lane B's recommendation.** *What has happened* belongs beside *what we think*, and the brief is where a seller already goes to decide about an account. Costs no navigation entry, which is what D38 asked for. `frontend/app/(app)/accounts/[accountId]/page.tsx` — **Lane A's** |
+| **B · Its own route** | Reintroduces the menu entry D38 removed, for a page nobody opens without an account in mind |
+| **C · A disclosure on the brief**, collapsed by default | Cheapest visually; hides the one surface that answers *"what changed since I last looked"*, which is [R9-04](architecture/39-product-review-findings.md) arriving from another direction |
+
+**Lane B recommends A**, and notes it makes the brief long enough that the hierarchy pass ([TASK-011](BACKLOG.md), D20) becomes more valuable rather than less.
+
+### What Lane B is asking Lane A for
+
+**Ten lines in a file Lane B may not edit**, and nothing else — import `AccountHistory`, call `useAccountTimeline`, pass the flags through. **Lane B will write the code and hand it over if that is easier than describing it**; what it will not do is edit `frontend/app/(app)/accounts/[accountId]/page.tsx` directly, because that is Lane A's and the boundary is worth more than the ten lines.
+
+**Timeline's feature lead stays with Lane B** through the collaboration: the contract, the component, its behaviour and its acceptance criteria are Timeline's, and Product Surface contributes the mount.
