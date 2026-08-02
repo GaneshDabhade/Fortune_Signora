@@ -91,7 +91,23 @@
 | [C-020](#c-020--m7-has-no-scope-and-timeline-has-no-design) | M7 has no scope, and Timeline has no design | Lane B | **Product owner** (roadmap 🔴) | `OPEN` | **M7** — [`TASK-017`](BACKLOG.md), `WAITING`. Lane B released it and is `AVAILABLE` |
 | [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it) | Timeline has a surface and nowhere to mount it | Lane B | **Lane A** + product owner | `OPEN` | **Nothing in Timeline** — backend and component built; only the mount point |
 | [C-025](#c-025--m13-is-not-a-module-and-its-consumers-do-not-exist-yet) | M13 is not a module, and its consumers do not exist yet | Lane B | **Product owner** | `ANSWERED` — all four decisions taken 2026-08-02. **M13 paused on an environmental dependency, not this item** | **Nothing.** The remaining work needs a HubSpot developer application, not a decision |
-| [C-026](#c-026--the-connection-center-is-reachable-only-by-typing-its-url) | The Connection Center is reachable only by typing its URL | Lane B | **Lane A** + product owner | `OPEN` | **Nothing in Integrations** — the page is built and tested; only the navigation entry |
+| [C-026 *(Lane B's)*](#c-026--the-connection-center-is-reachable-only-by-typing-its-url) | The Connection Center is reachable only by typing its URL | Lane B | **Lane A** + product owner | **`IMPLEMENTING`** — Lane A shipped it as **CX-01**, 2026-08-02, before reading this row. `CLOSED` is Lane B's | **Nothing.** Settings now carries a Connections card |
+| [C-025](#c-025--m13-is-not-a-module-and-its-consumers-do-not-exist-yet) | M13 is not a module, and its consumers do not exist yet | Lane B | **Product owner** | `OPEN` | **M13's credential half** — no tier may run an integration OAuth flow |
+| [C-018](#c-018--nobody-owns-the-customer-facing-name-of-an-attribute) | Nobody owns the customer-facing name of an attribute | Lane A | **Product owner** | `OPEN` | [`TASK-003`](BACKLOG.md), skipped with its reason recorded |
+| [C-019](#c-019--a-claim-is-invisible-to-the-step-meant-to-arbitrate-it) | A claim is invisible to the step meant to arbitrate it | Lane A | **Product owner** + QE | `OPEN` | Nothing — **largely superseded**; see the item |
+| [C-021](#c-021--an-event-handler-cannot-reach-a-provider-adapter) | An event handler cannot reach a provider adapter | Lane A | **Product owner** | `OPEN` — **architectural** | **PP-02's last wire and all of PP-03.** Also [C-007](#c-007--the-guided-first-run-is-a-two-lane-build) |
+| [C-022](#c-022--governance-belongs-to-qe-and-the-product-owner--and-this-branch-carries-governance-edits) | Governance belongs to QE and the product owner | Lane A | **Product owner** + QE | `OPEN` | Nothing built. **Which rules a lane believes are in force** |
+| [C-023](#c-023--m13-is-ratified-architecture-not-an-executable-milestone) | M13 is ratified architecture, not an executable milestone | Lane A | **Product owner** | `OPEN` | **Overlaps Lane B's C-025 in substance** — two lanes reached it independently |
+| [C-024 *(Lane A's — see the collision note)*](#c-024--nothing-in-the-product-can-render-a-persons-name) | Nothing in the product can render a person's name | Lane A | **Product owner** | `OPEN` — **architectural** | **TS-01, the Team page.** And how *anything* names a user: AI attribution, audit actors, notifications, mentions |
+| [C-025 *(Lane A's — see the collision note)*](#c-025--the-catalog-explains-nine-words-to-nobody) | The catalog explains nine words to nobody | Lane A | **Product owner** + `signal_engine` | `OPEN` | [R5-04](architecture/39-product-review-findings.md). **Built and reverted; one sentence unblocks either outcome** |
+| [C-026](#c-026--is-signora-expected-to-work-on-a-phone) | Is Signora expected to work on a phone? | Lane A | **Product owner** | `OPEN` | [B-019](BUGS.md), and **every responsive decision in Product Surface** |
+| [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | M14b is three concerns in one roadmap row, and none has a module | Lane A | **Product owner** (bounded context 🔴) | `OPEN` — **architectural** | **The whole of M14b.** [R-01](architecture/16-architecture-risks.md) has been waiting for it at High/High |
+
+> **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
+>
+> **Three ids appear twice — `C-024`, `C-025` and now `C-026`** — allocated independently by Lane A and Lane B before the identifier-block rule existed; **renumbering is QE's at merge, by author timestamp** (`CLAUDE.md`). See *Blocker audit* below and [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide), which is what makes it stop.
+>
+> **`C-026` is worth reading twice.** Lane B raised *"the Connection Center is reachable only by typing its URL"* and Lane A shipped that exact fix as **CX-01** the same day, from an independent audit, **without either lane seeing the other's finding.** Two lanes reaching one defect by different routes is the model working; **two lanes reaching one identifier is the model failing**, and it is the same day's evidence for both.
 
 ---
 
@@ -1683,6 +1699,16 @@ The product owner's own questions make it foundational rather than local: **how 
 
 **Lane A recommends A**, with the membership check done in the Python API by adding the caller's own resolved role to an existing response rather than by a new proxy — but the BFF prohibition means even that phrasing needs the product owner, and the privacy scoping is the part no lane should choose alone.
 
+#### New evidence, 2026-08-02 — a Next route that is not a BFF now exists
+
+**Found during the audit below, on `lane-b-commercial-profile`.** M13-S08 shipped `app/api/integrations/[slug]/start` and `.../callback` — Next routes that mint OAuth state, set an `httpOnly` nonce cookie and exchange an authorization code. **Neither proxies the Python API**; each does work that [18-authentication.md](architecture/18-authentication.md) *reserves to this tier*.
+
+**That sharpens option A rather than weakening the prohibition.** The rule the repository is actually keeping is not *"no server code in Next"* — it is **"no route that fetches from the Python API and decorates the result."** A route is legitimate when the concern is the Next tier's to own.
+
+**And identity is exactly such a concern.** [ADR-0026](architecture/adr/0026-jwt-boundary-architecture.md) makes Better Auth the **sole Authentication Authority**, running in Next.js. Resolving a user id to a display name is that authority answering a question about its own records — the same shape as the OAuth flow, not the shape of a BFF.
+
+**What this does not settle, and it is still the whole question:** *which* ids a caller may resolve. Scoping to *"ids that share a workspace with the caller"* still needs the caller's memberships, and where that check runs is the privacy boundary. **The precedent removes an objection to option A; it does not answer A's hard half.**
+
 ### What shipped without it
 
 **TS-02 needed no names**, and is done: the shell resolves the signed-in person's *own* role from the same endpoint, because their id is in the session already. **The dormant capability was half reachable all along** — the half that identifies *you*.
@@ -1774,6 +1800,132 @@ assert set(SignalTypeResponse.model_fields) == {"key", "title"}
 **If desktop-only:** say so, and make the frame say so below the threshold instead of silently dropping the navigation. That is a smaller fix than B-019's, and it turns a broken experience into an honest one.
 
 **Lane A has no recommendation between the two.** Which devices a seller uses is a customer fact, and this lane has never seen one.
+
+---
+
+## Blocker audit — Lane A, 2026-08-02
+
+**Run on the product owner's direction before Lane A left Product Surface**, to confirm that each remaining blocker is correctly classified and that none quietly became executable while other work landed. **Every item was re-read against `origin/integration`, `origin/lane-b-commercial-profile`, `origin/lane-qe` and `origin/main` as they stand today** — not against the state they were raised in.
+
+**Result: none of the five is executable. One gained new evidence; four are unchanged.**
+
+| Item | Kind | Still blocked? | What was checked |
+|---|---|---|---|
+| [C-021](#c-021--an-event-handler-cannot-reach-a-provider-adapter) | **Architectural** | **Yes, unchanged** | `apps/worker/main.py` still declares `functions = [dispatch_event]` on **every** branch, so `run_provider_sync` remains registered with no worker. `WorkerRuntime` still carries no provider registry. Neither route out has been taken by anybody |
+| [C-024](#c-024--nothing-in-the-product-can-render-a-persons-name) | **Architectural** | **Yes — but the analysis moved** | M13-S08 shipped two Next routes that do server work without proxying the Python API. **Recorded above**: it removes an objection to option A and leaves A's privacy scoping untouched. **The decision is still the product owner's** |
+| [C-025](#c-025--the-catalog-explains-nine-words-to-nobody) | **Product** | **Yes, unchanged** | `SignalTypeResponse` still declares `{"key", "title"}`; the Security Invariant still asserts it; `why_it_matters` still reaches no customer. **One sentence unblocks it either way**, and the implementation is written and reverted |
+| [C-026](#c-026--is-signora-expected-to-work-on-a-phone) | **Product** | **Yes, unchanged** | Still no supported viewport in any document. `app-shell.tsx` unchanged on every branch. **Raised the same day; nothing could have moved** |
+| [C-008](#c-008--sellers-cannot-see-what-their-company-sells) | **Product** | **Yes, unchanged** | `frontend/lib/state/permissions.ts` is **byte-identical across all four branches** — the guard, and therefore the contradiction with `policy.csv`, is exactly as described |
+
+### What the audit is asserting, precisely
+
+**That each item is blocked on a *decision nobody has made*, not on work nobody has done.** That is the `CLAUDE.md` §20e test for an architectural blocker, and it is why none of these resumes automatically: there is no dependency to satisfy, only a ruling to make.
+
+**Each unblock condition is one explicit sentence**, and they are deliberately short:
+
+| Item | The sentence that unblocks it |
+|---|---|
+| **C-021** | *"Dispatch works like route A"* — or B |
+| **C-024** | *"Identity resolution lives here, scoped like this"* |
+| **C-025** | *"The catalog carries names and nothing else"* — or *"no prose that duplicates the validation surface"* |
+| **C-026** | *"The supported viewport is X"* |
+| **C-008** | *"Sellers see the commercial profile"* — or not — *"and it lives here"* |
+
+**Four of the five are one sentence away from executable work that is already designed**, and two of them (C-025, C-008) have implementations either written or scoped. **The cost of leaving them open is not idle capacity — Lane A has moved on — it is that the work stays undone while the reasoning behind it is still fresh.**
+
+### Owners re-confirmed
+
+**Checked rather than assumed**, because an item routed to the wrong owner waits exactly as long as one nobody read.
+
+| Item | Owner | Correct because |
+|---|---|---|
+| **C-021** | Product owner | `apps/worker/` has no assignable lane ([C-010](#c-010--no-lane-is-assignable-to-apps-or-signora_platform-and-a-defect-is-sitting-in-one)), and route B needs `06-events.md` — 🔴 |
+| **C-024** | Product owner | A new cross-tier surface with a privacy property. **Not QE's**: nothing is wrong, something is absent |
+| **C-025** | Product owner, with `signal_engine`'s assignee | A public API response shape whose omission is documented as deliberate. `signal_engine` questions already route this way ([C-005](#c-005--who-owns-the-signal-profile-write-path)) |
+| **C-026** | Product owner | Product scope. **No engineering answer exists** — which devices a seller uses is a customer fact |
+| **C-008** | Product owner + QE | The decision is the product owner's; the frozen file (§20c) is QE's to change once a direction exists. **Lane B raised it and Lane B is not the owner** |
+
+### One finding the audit produced, which is not a coordination item
+
+**Two lanes independently allocated `C-024` and `C-025`.** Lane B's are *Timeline has a surface and nowhere to mount it* and *M13 is not a module*; Lane A's are the two above. **This is the same defect `B-024` exposed**, and QE's identifier-block rule (`CLAUDE.md`, 2026-08-02) now prevents it for future allocations — Lane A allocates from `200+` from here on.
+
+**It is deliberately not raised as an item.** Nothing is blocked by it, and renumbering an existing identifier is **QE's at merge, only to break a tie, decided by author timestamp** — exactly as the rule states. **Recorded here so QE finds it rather than discovers it**, and so a reader who meets two `C-024`s in the register knows why.
+
+**A gap the block rule does not cover, stated once and not acted on:** the rule enumerates `B-`, `C-`, `TASK-` and ADR numbers. **Numbered architecture documents are allocated the same way by the same actors** — `40` came from Lane B, `41` and `42` from Lane A — and two lanes writing a module design doc in the same week would collide identically, with git merging both happily. **Not opened as an item**, because nothing is blocked and governance evolves on evidence rather than on possibility (`CLAUDE.md` §20e); recorded for whoever next touches the rule.
+
+---
+
+## C-200 · M14b is three concerns in one roadmap row, and none of them has a module
+
+> **First identifier from Lane A's allocated block (`200+`), per `CLAUDE.md`'s identifier-block rule ratified 2026-08-02.**
+
+| | |
+|---|---|
+| **Owner** | **Product owner** — a new bounded context is 🔴 and needs an ADR |
+| **Requesting lane** | Lane A |
+| **Category** | Bounded context · module boundary · milestone scope |
+| **Status** | `OPEN` |
+| **Kind** | **Architectural blocker** (`CLAUDE.md` §20e). No accepted architecture exists for the next step |
+| **Blocks** | **The whole of M14b.** Every candidate first slice decides the boundary by implementing it |
+| **Raised** | 2026-08-02, at the close of the M14b domain discovery — [42-billing-and-entitlements.md](architecture/42-billing-and-entitlements.md) |
+
+### The problem
+
+**M14b is *"Billing, analytics, feature flags"*, `~3–4 ew`, position 19 — two table rows in [IMPLEMENTATION_ROADMAP.md](../IMPLEMENTATION_ROADMAP.md) and nothing else.** No scope section, no demo scenario, no acceptance criteria, no task ids, no entry condition. Every other milestone in that document has all of them.
+
+**And the roadmap's own justification for splitting M14 asserts something [04-modules.md](architecture/04-modules.md) does not contain:** *"each has its own bounded context, so splitting is more honest than a combined milestone."* **There is no such module.** Thirteen core modules plus Workspace & Tenancy, and none of them owns a plan, an entitlement, a limit or a price.
+
+**Meanwhile [04-modules.md](architecture/04-modules.md) tells Workspace & Tenancy it does *not* own billing state**, while [ADR-0016](architecture/adr/0016-billing.md) says it *"tracks subscription/plan state as a reference to Stripe's subscription object."* **Both readings are defensible. Nobody has chosen.**
+
+### Affected modules
+
+| | How |
+|---|---|
+| **Workspace & Tenancy** | The candidate home under one reading, and explicitly excluded under another. **Its `Workspace` has no lifecycle, no settings and no state today** — only `create` — so there is nothing to hang a plan on either way |
+| **AI Platform** | Owns `ai_inference`, which is **already half of usage-based billing**: per-workspace tokens, latency, retries and outcome on every call since M8, with **no currency column by design** (AC-72). Billing would read it through a port and must not add money to it |
+| **`signora_platform/`** | All three ADRs place their adapter in `backend/platform/bought_infra_adapters/`, **which has never existed** and cannot now be created (§20a). **The third instance** of the pattern §6 records as *learned twice* with the Provider Port and the AI Provider Port |
+| **Every module** | If the plan lands on the tenancy root, **every module that imports the substrate inherits commercial vocabulary** |
+
+### Alternatives
+
+| | What it is | Trade-off |
+|---|---|---|
+| **A — a new bounded context** *(recommended)* | One module owning plan, entitlement, allowance, limit and the Stripe adapter. Flags and analytics stay **bought infrastructure at the edge**, not module members | ✅ Passes every bounded-context test: its own invariants, its own language, an independent lifecycle. ✅ Keeps commercial vocabulary out of the substrate. ❌ **A fifteenth module and a dependency-graph edge — 🔴, needs an ADR** |
+| **B — Workspace & Tenancy absorbs it** | Plan becomes workspace state; ADR-0016's *"tracks a reference"* read literally | ✅ No new module. ❌ **Gives the tenancy root a commercial vocabulary that every module imports** — the substrate-erosion failure §2 names by name. ❌ Forces a payment-processor webhook into the same aggregate as adding a colleague. ❌ Contradicts [04-modules.md](architecture/04-modules.md) as written |
+| **C — split M14b into three milestones** | Billing (a module), analytics (an edge integration), flags (an edge integration) | ✅ **Most honest about what these actually are** — one is a domain and two are SDKs. ✅ Each ships independently. ❌ A roadmap change, and the estimate was written for one |
+| **D — defer M14b entirely** | It is *"not required"* for the simulator and nothing depends on it | ✅ Legitimate: no customer is being billed today. ❌ **[R-01](architecture/16-architecture-risks.md) is High/High and has been waiting for exactly this** — it names a pricing table, a budget owner and an excess policy as its three prerequisites, all three M14b's |
+
+### Recommendation
+
+**A, with C's honesty about the other two.** One module — name is the product owner's — owning **billing and entitlements**. **Flagsmith and PostHog are adopted as bought infrastructure at the edge and are not part of it.**
+
+**The reasoning that decided it, in one line:** *a feature flag answers "is this switched on?", an entitlement answers "is this customer allowed?"* — and **implementing the second as the first would put a customer's commercial rights in a vendor console with no RLS, no `workspace_id` and no audit trail.** That makes *"who changed our plan?"* unanswerable, which is one of the questions the product owner named.
+
+**Full reasoning, the least-powerful-author mapping, the customer-question mapping and the several-years-ahead test are in [42-billing-and-entitlements.md](architecture/42-billing-and-entitlements.md).** Not restated here (§2).
+
+### Trade-offs of the recommendation, stated plainly
+
+| | |
+|---|---|
+| **Costs a fifteenth module** | The architecture has held at fourteen deliberately. This is a real addition and should be resisted unless the tests pass — **they do**, and they are written out rather than asserted |
+| **Costs three new dependencies** | Stripe, PostHog, Flagsmith — all three **already authorised** by accepted ADRs, so this is adoption rather than a new choice |
+| **Leaves one thing unabsorbed, deliberately** | **Enterprise contracts, organization-level billing, resellers and partner licensing all need a billing entity *above* the workspace**, which does not exist anywhere in the architecture. Addable later, but a boundary change rather than an absorption. **Said out loud rather than glossed** |
+| **Does not settle M15** | M15 already claims *spend governance*. Whether the ceiling is M14b's or M15's needs a sentence either way |
+
+### Implementation impact
+
+| | |
+|---|---|
+| **Already built and reusable whatever is decided** | `ai_inference` — per-workspace usage, RLS-enforced, no currency, since M8. **The measurement half of usage billing exists and is correct** |
+| **If A** | A module, a `plan` table with its `tenancy_policy.py` registration, a Stripe adapter in the owning module, derived entitlements, a plan-change record, and a settings surface. **~3–4 ew is plausible for the plan-and-entitlement half; it does not include analytics or flags** |
+| **If B** | Reverses a ratified line in [04-modules.md](architecture/04-modules.md) and reshapes the tenancy root |
+| **If C** | The billing half proceeds as A; the two integrations become their own small milestones |
+| **If D** | Nothing is built and **R-01 stays unmitigated at High/High**, which should be an explicit acceptance rather than a side effect |
+| **Cost of waiting** | **Lane A has moved on and is not idle** — this blocks the milestone, not the lane. What it costs is that the discovery is fresh now and will need re-reading later |
+
+### One decision that is not a lane's and is not asked for here
+
+**What Signora charges for.** The architecture above is deliberately indifferent to it — seats, usage, tiers and hybrids are all the same shape — and this lane has no standing to propose a pricing model.
 
 ---
 

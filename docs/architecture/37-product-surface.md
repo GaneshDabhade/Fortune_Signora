@@ -643,3 +643,60 @@ So on an expired account the brief said it **twice in one card, three lines apar
 **Every section on this page carries a written reason, and most of those reasons were reached by a reviewer with evidence** — R1-01 moved the trigger, R1-04 added the cooling badge, R2-02 promoted a limitation, R9-03 marked contraction, R10-01 added the sequence, R10-02 added the offer. **A page assembled that way is hard to subtract from**, because each addition already survived the question of whether it earned its place.
 
 **The honest risk is the opposite one:** that additions keep passing the *"does this earn its place"* test individually while the page as a whole becomes dense. **That is a judgement no single slice can make and no architect can make by reading**, and it needs somebody who has opened the brief thirty times in a day. Recorded as the standing question for the first design partner review.
+
+---
+
+## Product Surface — Implementation Waiting, declared 2026-08-02
+
+**Nine slices shipped, nine reviews run, and the reviews have stopped finding work.** The module is suspended rather than finished: it remains Lane A's, and it consumes no engineering capacity until the coordination items below have directions.
+
+> **Why this record exists.** Under rotating assignment the lane that implements the next slice of this module is usually not the one that implemented the last (`CLAUDE.md` §20e), and it inherits this document and nothing else. **Somebody returning in six months should be able to read why the module paused without reading commit history.**
+
+### What was completed
+
+| | What a customer got |
+|---|---|
+| **PS-01** | An account with nothing live says so, instead of rendering two different states as one blank space |
+| **PS-02** | Three narration states that were one blank space — including *narrated against evidence that no longer resolves* |
+| **PS-03** | The brief says who put this account in front of you — Signora, or a colleague |
+| **PS-04** | A decision is the end of the visit: recording one offers the next account rather than dropping you back where you were |
+| **PS-05** | The account remembers what was decided about it, and why — the one record in Signora nothing can recompute |
+| **PS-06** | An empty attention list says *why* it is empty: nothing declared, or nothing qualifying |
+| **PS-07** | The same fact stops being said twice on one screen |
+| **PS-08** | The keyboard shortcuts say they exist |
+| **TS-02** | The product stops telling every signed-in person they are an owner |
+
+**A pattern worth carrying forward, because it produced four of the nine.** PS-03, PS-05, TS-02 and (in Provider Platform) PP-04/05/06 were all **declared-but-unfulfilled contracts** — a field on the wire that no screen read, a role hardcoded behind a stale `TODO`, a rate limit nobody honoured. **The gaps were not missing features; they were promises the code was already making.** That seam is now **exhausted** in this module: every field on the account, opportunity and members responses is either rendered or deliberately not.
+
+### What is waiting, and on what
+
+| | Blocked on | Resume trigger | Customer impact while waiting |
+|---|---|---|---|
+| **TS-01 — the Team page** | [C-024](../LANE_COORDINATION.md) — nothing in the product can render a person's name | An identity-resolution direction is accepted | **An owner cannot see who is in their organization by name.** The page would render UUIDs, which is not a product |
+| **R5-04 — the signal glossary** | [C-025](../LANE_COORDINATION.md) — does *"the catalog carries names and nothing else"* mean no prose, or no *duplicated* prose? | Either ruling; both are executable | Nine Signal Catalog terms meet a first-time reader with **no definition anywhere in the product**. Built and reverted; restorable in minutes |
+| **A seller reading the commercial profile** | [C-008](../LANE_COORDINATION.md) — should members see it, and where? | An option is chosen | **Every AE and SDR, every day**, cannot see the ICP an account is meant to match or the buying committee they are selling into. **The cost stopped being theoretical when TS-02 shipped** — see that item's addendum |
+| **Every responsive decision** | [C-026](../LANE_COORDINATION.md) — is Signora expected to work on a phone? | A supported viewport is stated | **Below 768px there is no navigation at all** ([B-019](../BUGS.md)). A signed-in customer on a phone cannot reach Settings |
+| **The guided first run** | [C-007](../LANE_COORDINATION.md), which is itself blocked on [C-021](../LANE_COORDINATION.md) | Provider Platform can start a sync | The onboarding flow would end by asking which companies to watch, and **the answer would go nowhere** |
+| **Customer-facing attribute names** | [C-018](../LANE_COORDINATION.md) — nobody owns them, and every available implementation contradicts something already ratified | An owner is named | Engineering's words reach a customer's screen ([R11-06](39-product-review-findings.md)) |
+
+**Five of the six are product or architectural decisions.** None is waiting on engineering capacity, and **none can be worked around without deciding it by implementation** — which is what each item exists to prevent.
+
+### Known limitations, stated rather than discovered later
+
+| | |
+|---|---|
+| **The brief is eleven sections and has never been reviewed by somebody who opens it thirty times a day** | The subtraction review's standing question. Each section earned its place individually; whether the page as a whole is dense is a judgement no single slice can make |
+| **`j`/`k` keycaps are hidden below `sm`** | A responsive assumption made in C-026's absence — the smallest one available, and flagged rather than left to pass as a decision |
+| **The workflow line's middle phrase is near-redundant on the commonest account** | Found by the subtraction review, deliberately not acted on: it would be the author re-reading their own copy days later, against a finding a reviewer reached from twelve real briefs |
+| **No accessibility or performance testing exists anywhere** | [C-014](../LANE_COORDINATION.md), QE's and unbuilt. Every slice here was checked by hand against roles and accessible names; **none was checked by a tool** |
+
+### Future implementation opportunities, for whoever returns
+
+**Recorded so they inform planning without becoming work nobody asked for.**
+
+| | |
+|---|---|
+| **The demo test is the useful filter** | *"Would a design partner notice this in the first minute?"* found PS-04, PS-06 and R5-04. It is a better generator of work than a contract audit now that the contract seam is exhausted |
+| **The next real finding will come from usage, not from reading** | Nine review lenses now converge on coordination items rather than slices. **That is the signal the module is mature, not that reviewing failed** — the class of defect that remains is the class only a design partner produces |
+| **Responsive is a milestone if the answer to C-026 is *mobile*** | Every screen needs a pass, the brief's eleven sections need an order that survives one column, and the shell needs a navigation pattern that does not exist |
+| **Identity unlocks more than the Team page** | C-024's answer also decides how AI-generated work names a responsible user, how audit history represents actors, and how notifications know who to reach. **It is the highest-leverage of the five** |
