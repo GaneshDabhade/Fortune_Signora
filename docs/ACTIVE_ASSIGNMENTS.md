@@ -63,7 +63,7 @@
 
 ---
 
-## Current — as of 2026-08-02, `e07f3f9`
+## Current — as of 2026-08-02, `c3e519a`
 
 | Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Started |
 |---|---|---|---|---|---|---|---|---|
@@ -100,6 +100,7 @@
 | QE | The Task Claim Protocol, and permanent task ids | 2026-08-02 | `7b91948` |
 | QE | Claim visibility, KPI tooling, and two dead checks made live | 2026-08-02 | `e1d2fa6` |
 | B | TASK-001 — three QE fixes verified, two new defects found | 2026-08-02 | `a062adf` |
+| QE | B-015 and B-016 fixed; governance declared stable | 2026-08-02 | `c3e519a` |
 | B | M12.5 slice 5 — target accounts. **M12.5 complete** | 2026-08-02 | `3f4e988` |
 | A | M12.4 — research on demand | 2026-08-02 | `c1f5985` |
 | A | R4-02 · R4-03 — the words the product uses when it refuses you | 2026-08-02 | `bdb014f` |
