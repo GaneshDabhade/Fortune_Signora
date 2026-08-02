@@ -209,6 +209,21 @@ Four capabilities the architecture already treats as QE's, of which two exist. *
 
 **A rejected candidate is never patched into passing.** There is no such thing as a candidate that certified on its second attempt — the second attempt is a different snapshot, with a different SHA and its own record. **This is what makes "every commit on `main` was individually certified" a fact rather than a claim**, and it is why B-022's discarded manifest entry was discarded rather than annotated.
 
+### Observation — QE's own commits are the commonest cause of a lane rebase
+
+**Counted, 2026-08-02, across cycles 16–19.** Four times a lane branch has failed to fast-forward, and in **three** of them the divergence was created by a QE commit landing on `integration` while the lane had work in flight — governance, tooling and Closeout, none of it urgent.
+
+| Occasion | What the lane had to replay | Whose |
+|---|---|---|
+| Lane A, cycle 17 | 2 ADR commits | **QE** |
+| Lane B, cycle 19 | 1 tooling commit | **QE** — *resolved by QE rebasing its own commit onto the lane's, which cost nothing* |
+| Lane A, cycle 19 | 3 commits, **2 of them QE's** | Mixed |
+| Lane A, cycle 16 | Lane B's pre-rebase claim commits | Lane B ([B-018](BUGS.md)) |
+
+**This meets the repeated-observation bar and is recorded rather than acted on**, because the obvious fix is cheap and unproven: **QE holds non-urgent governance and tooling commits until immediately after a promotion**, when every lane rebases anyway, instead of pushing them mid-cycle. **It costs QE nothing and removes a rebase from somebody else's day.**
+
+**What is not proposed:** QE rebasing lanes' branches. That crosses the line the rule exists to draw, and the one time it was legitimate — cycle 19 — it was legitimate precisely because the commit being moved was QE's own.
+
 ### Reporting a rejection — three statements, never one
 
 **Ratified 2026-08-02, product owner.** *"Candidate abandoned"* reads as *"the implementation was rejected"*, and it never means that. **The snapshot and the work have different lifecycles and must be reported separately.**

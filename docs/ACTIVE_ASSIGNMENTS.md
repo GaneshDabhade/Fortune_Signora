@@ -68,7 +68,7 @@
 
 | Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Started |
 |---|---|---|---|---|---|---|---|---|
-| **Lane A** | **TASK-002 · TASK-004 · `provider_platform` · Connection Experience** | `lane-a-product-surface` | Product Surface · Provider Platform | PS-01…PS-08 · PP-01…PP-06 · CX-01…CX-02 | `IN VALIDATION` | — | **32 commits, 15 slices, never validated — the next Release Candidate.** QE pins immediately | 2026-08-02 |
+| **Lane A** | **TASK-002 · TASK-004 · `provider_platform` · Connection Experience** | `lane-a-product-surface` | Product Surface · Provider Platform | PS-01…PS-08 · PP-01…PP-06 · CX-01…CX-02 | `CHANGES REQUESTED` | — | **Rebase required before QE can pin it — 32 commits, 3 to replay over.** `b5b9db6` (Lane B, M13-S09), `bd57c7c` and `b9278c6` (QE). **Migrations already correct** — `0029`/`0030` sit on Lane B's `0028`, renumbered proactively. **Expect conflicts in the registers only**, not in code: Lane B's work is backend tests in a different module. Rebase, re-run the gates, push. **QE pins immediately** | 2026-08-02 |
 | **Lane B** | **M13 — Integrations** *(feature lead)* · **M14a discovery** | `lane-b-commercial-profile` | `integrations` · `timeline` | S01–S09 **promoted** | `ACTIVE` | — | **[B-024](BUGS.md) resolved — coverage 95.69%, the 4-cycle block is broken.** Now scoping M14a. **M13 itself still waits on [C-025](LANE_COORDINATION.md)** | 2026-08-02 |
 | **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | **Cycle 19 promoted (`bd57c7c`). 16 of 19 candidates certified.** Pinning Lane A's batch next | 2026-08-01 |
 
