@@ -65,9 +65,38 @@ def _migration_head() -> str | None:
 
 
 def _runs() -> list[dict[str, object]]:
-    if not MANIFEST.exists():
-        return []
-    return json.loads(MANIFEST.read_text()).get("runs") or []
+    """Every certification run this repository holds, from wherever it holds it.
+
+    **A commit never contains its own certificate**: the record naming commit `C`
+    is written after `C` exists, so it lands in a later commit — usually on
+    `integration`, reaching `main` only at Closeout. Reading the working tree
+    alone therefore reports a freshly promoted commit as uncertified for exactly
+    as long as it takes to write the records, which is the window in which
+    somebody would most want to ask.
+
+    So the manifest is read from the tree **and** from every ref that has one,
+    and the runs are unioned on their commit. This cannot invent a certification
+    — every run still carries its own gates, and `_satisfied` re-derives the
+    verdict from them.
+    """
+    sources: list[str] = []
+    if MANIFEST.exists():
+        sources.append(MANIFEST.read_text())
+    for ref in ("main", "integration", "HEAD"):
+        content = _git("show", f"{ref}:certification/manifest.json")
+        if content:
+            sources.append(content)
+
+    seen: dict[str, dict[str, object]] = {}
+    for source in sources:
+        try:
+            runs = json.loads(source).get("runs") or []
+        except json.JSONDecodeError:
+            continue
+        for run in runs:
+            key = f"{run.get('commit')}|{run.get('certified_at')}"
+            seen.setdefault(key, run)
+    return list(seen.values())
 
 
 def _satisfied(run: dict[str, object]) -> tuple[bool, list[str]]:
@@ -88,6 +117,17 @@ def _satisfied(run: dict[str, object]) -> tuple[bool, list[str]]:
     return not failures, failures
 
 
+def _is_ancestor(candidate: str, descendant: str) -> bool:
+    return (
+        subprocess.run(
+            ["git", "merge-base", "--is-ancestor", candidate, descendant],
+            cwd=REPO_ROOT,
+            capture_output=True,
+        ).returncode
+        == 0
+    )
+
+
 def _is_closeout(commit: str) -> tuple[bool, list[str]]:
     """Whether a commit changes nothing executable.
 
@@ -105,15 +145,33 @@ def _is_closeout(commit: str) -> tuple[bool, list[str]]:
 
 
 def _audit_main() -> int:
-    """Every commit on `main` since the rule: certified, or verifiably docs-only."""
+    """Every commit on `main` since the rule reached it inside a certified snapshot.
+
+    **A promotion fast-forwards to a certified commit, and its ancestors arrive
+    with it.** Those ancestors were never *individually* certified and never can
+    be: they are intermediate states of a snapshot whose tip is what the gates
+    ran against. What the rule actually guarantees, and what this checks, is that
+    **no commit reaches `main` except inside a certified snapshot** — every one is
+    an ancestor of a certified commit that is itself on `main`.
+
+    The distinction matters because the weaker reading is the one that lets an
+    uncertified commit through: a lane pushing after the snapshot produces a
+    commit that is an ancestor of *nothing* certified, and that is exactly what
+    gets reported here.
+    """
     commits = _git("rev-list", "--reverse", f"{RULE_RATIFIED_AT}..main").splitlines()
-    certified = {str(run.get("commit", "")) for run in _runs() if _satisfied(run)[0]}
+    certified_all = {str(run.get("commit", "")) for run in _runs() if _satisfied(run)[0]}
+    # Only certified commits that were actually promoted can vouch for anything.
+    certified_on_main = [c for c in certified_all if c and _is_ancestor(c, "main")]
 
     violations: list[tuple[str, str, list[str]]] = []
-    counts = {"certified": 0, "closeout": 0}
+    counts = {"certified": 0, "in_snapshot": 0, "closeout": 0}
     for commit in commits:
-        if commit in certified:
+        if commit in certified_all:
             counts["certified"] += 1
+            continue
+        if any(_is_ancestor(commit, tip) for tip in certified_on_main):
+            counts["in_snapshot"] += 1
             continue
         closeout, offending = _is_closeout(commit)
         if closeout:
@@ -127,13 +185,13 @@ def _audit_main() -> int:
         return 0
 
     print(f"audit — {len(commits)} commit(s) on `main` since the rule was ratified\n")
-    print(f"  {counts['certified']} certified")
-    print(f"  {counts['closeout']} Closeout, changing nothing executable")
+    print(f"  {counts['certified']} certified — a promotion target")
+    print(f"  {counts['in_snapshot']} inside a certified snapshot — an ancestor of one")
+    print(f"  {counts['closeout']} Closeout — changing nothing executable")
 
     if not violations:
         print(
-            "\nEvery commit on `main` was either individually certified or changes no\n"
-            "executable code. The guarantee holds."
+            "\nNo commit reached `main` outside a certified snapshot. The guarantee holds."
         )
         return 0
 
@@ -142,6 +200,10 @@ def _audit_main() -> int:
         print(f"  · {short}  {subject}")
         for path in offending[:5]:
             print(f"      changed {path}")
+    print(
+        "\n  Each of these is neither a certified commit, nor an ancestor of one on\n"
+        "  `main`, nor a Closeout. Something reached `main` without a gate."
+    )
     return 1
 
 

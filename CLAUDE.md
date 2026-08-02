@@ -539,7 +539,11 @@ promoted commit SHA  ==  certified commit SHA
 
 **So the guarantee is stated exactly, and enforced exactly:**
 
-> **Every commit on `main` was either individually certified, or is a Closeout commit that provably changes nothing executable.**
+> **No commit reaches `main` except inside a certified snapshot.**
+>
+> Every commit on `main` is **the certified commit itself**, **an ancestor of one that was promoted**, or **a Closeout commit that provably changes nothing executable.**
+
+**The middle case is not a loophole; it is what a fast-forward does.** Promotion moves `main` to the certified SHA and its ancestors arrive with it — they are intermediate states of the snapshot whose *tip* the gates ran against, and they can never be individually certified because they were never individually a candidate. **What the rule forbids is a commit that is an ancestor of nothing certified**, which is precisely what a lane pushing after the snapshot produces, and precisely what the audit reports.
 
 **Provably, not by assertion.** `infra/certification-guard.py --audit-main` walks every commit on `main` since ratification and checks *paths, not commit messages* — a commit calling itself a Closeout while touching `backend/` is refused. A Closeout commit may touch **documents and certification records only.**
 
