@@ -516,6 +516,26 @@ The fix is not to duplicate the sentence. It moves onto the panel **only when no
 
 **Not raised as its own item, because it is [C-024](../LANE_COORDINATION.md) wearing different clothes**: assigning to somebody means naming them, and nothing in the product can render a person's name. **The two are one decision**, and recording them separately would invite them to be answered separately.
 
+### PS-05 — the account remembers what was decided, and why *(2026-08-02)*
+
+**Found by the journey review, and it is the one place the review found where the product knew something and did not say it.**
+
+`AccountOpportunity.history` has travelled on every brief since M12.1 and **no screen has ever read it.** Each entry carries the stage, who decided, **why**, and when — *"Every workflow state in order, oldest first. Append-only and never rewritten — the status is the audit trail rather than something kept beside it."*
+
+**It is the one record in Signora that nothing can reproduce.** Every score, signal, narration and finding can be recomputed from evidence; a decision cannot.
+
+**The question it answers is *"what happened here before me?"*** A seller opening an account a colleague worked last month saw the current stage and nothing else — not that it was taken on and given up, not why. And when the colleague is themselves: a rep who dismissed an account in March and finds it back in June should not have to remember their own reasoning. **That is the effort this removes.**
+
+| Decision | Why |
+|---|---|
+| **The reason leads; the stage follows** | *"Wrong segment — they're SMB"* is the record. The stage is how the product filed it, and leading with vocabulary would read as a status log rather than a colleague's note |
+| **Rendered in the order it arrived** | The screen does not re-sort — the ledger's rule, for a stronger reason here: **a trail reordered by a browser can disagree with the record it claims to show** |
+| **Nobody is named** | `decided_by` is an identifier. *"Somebody here"* is the truthful form, the same wording the workflow line has used since **D23**. When [C-024](../LANE_COORDINATION.md) settles identity this reads it and **nothing else changes** |
+| **Signora's own entry says Signora** | `decided_by` is null on exactly one entry — *the one state Signora may author*. Calling that *"somebody"* would blur the distinction the product rests on |
+| **Silent below one real decision** | Every account has an opening entry, so a section rendered for that alone would appear on every brief carrying nothing — which is what made the workflow line furniture (R1-06) |
+
+**It needed no architecture.** The data was on the wire, and D23 had already established how to speak about a person the product cannot name — which is why this was buildable while collaboration itself is not.
+
 ### What this review changes about priority
 
 **Three coordination items now hold six of the nine journeys**, and two of them — C-021 and C-024 — each block more than one. **That is the most useful thing this review produced**: not a new slice, but the observation that the remaining friction is concentrated rather than scattered, and that two rulings would unblock most of it.

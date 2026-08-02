@@ -16,6 +16,7 @@ import {
   ScoreArithmetic,
 } from '@/components/intelligence/contributions';
 import { EntityName } from '@/components/intelligence/entity-name';
+import { DecisionHistory } from '@/components/intelligence/decision-history';
 import { EvidenceDrawer, useEvidenceDrawer } from '@/components/intelligence/evidence';
 import { NarrativeBlock } from '@/components/intelligence/narration';
 import { ResearchPanel } from '@/components/intelligence/research';
@@ -274,6 +275,16 @@ export default function AccountBriefPage() {
             onRequest={() => requestResearch.mutate()}
             isRequesting={requestResearch.isPending}
           />
+
+          {/* **After the reasoning, before the evidence.** Somebody asking
+              what happened here before them is asking a different question
+              from *why does this score say what it says* — and usually asking
+              it because they are about to decide something themselves. It
+              sits where the page turns from Signora's argument to the record
+              of what people did with it. */}
+          {opportunity ? (
+            <DecisionHistory opportunity={opportunity} viewerId={viewerId} />
+          ) : null}
 
           <section className="flex flex-col gap-3">
             <h2 className="text-sm font-semibold text-content">What contributed</h2>
