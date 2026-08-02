@@ -637,6 +637,27 @@ promoted commit SHA  ==  certified commit SHA
 
 **Losing a race costs one commit and no code.** That is the entire point of the ordering, and it is why the protocol reads as more ceremony than it costs.
 
+### Governance is stable; it evolves reactively
+
+**Ratified 2026-08-02, product owner, and it binds this file as much as any other.**
+
+**The model is now sufficient for scaling**: certification, promotion, task claiming, repository state and validation are all deterministic. **What the repository is short of is product, not process.**
+
+> **The order of work is: build product functionality · observe real execution · improve governance only when execution reveals an actual bottleneck.**
+
+**Change governance only when one of these is true:**
+
+| | |
+|---|---|
+| **A real defect exposed a weakness** | Something broke, or a check failed to catch something it should have |
+| **Multiple lanes hit the same friction** | One lane's inconvenience is not evidence; two lanes' is |
+| **Determinism is threatened** | A result could differ between two runs, or between two readers |
+| **Automation can replace manual judgement** | A rule kept by discipline can be kept by a machine instead |
+
+**Do not redesign a stable process without evidence, and do not add a refinement because one is possible.** Every rule here costs a cold session reading time and a lane compliance effort, and the repository is now past the point where more process buys more safety.
+
+**Treat governance as infrastructure and implementation as the primary driver of value.** The repository's success is measured by engineering throughput, feature completion, repository quality and certification reliability — **never by the number of governance refinements introduced.**
+
 ### The Change Budget
 
 Every slice knows what it may touch before it starts.
