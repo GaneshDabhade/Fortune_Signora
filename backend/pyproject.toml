@@ -124,6 +124,7 @@ containers = [
     "modules.ai_reasoning_engine",
     "modules.ai_research_engine",
     "modules.timeline",
+    "modules.integrations",
 ]
 layers = [
     # Optional and topmost. `evaluation/` is the harness plus each consuming
@@ -718,6 +719,60 @@ forbidden_modules = [
     "modules.ai_platform",
     "modules.ai_reasoning_engine",
     "modules.ai_research_engine",
+]
+
+# The ownership ruling of 2026-08-02, made physical.
+#
+# A Connected Account is a business relationship with a customer's own system:
+# it exists before synchronization, while paused, after revocation, and even if
+# synchronization never happens. So the module that *synchronizes* consumes it,
+# and this module owns it — which only stays true if the dependency cannot run
+# the other way. `integrations` importing `provider_platform` would make the
+# relationship a fact about syncing it, which is the inversion this refuses.
+[[tool.importlinter.contracts]]
+name = "integrations owns connections; it never depends on what synchronizes them"
+type = "forbidden"
+source_modules = ["modules.integrations"]
+forbidden_modules = [
+    "modules.provider_platform",
+    "modules.provider_normalization",
+    "modules.knowledge_graph",
+    "modules.observation_engine",
+    "modules.business_event_engine",
+    "modules.signal_engine",
+    "modules.buying_score_engine",
+    "modules.opportunity_engine",
+    "modules.commercial_profile",
+    "modules.timeline",
+    "modules.ai_platform",
+    "modules.ai_reasoning_engine",
+    "modules.ai_research_engine",
+]
+
+[[tool.importlinter.contracts]]
+name = "other modules reach integrations only through public/"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "modules.provider_platform",
+    "modules.provider_normalization",
+    "modules.knowledge_graph",
+    "modules.observation_engine",
+    "modules.business_event_engine",
+    "modules.signal_engine",
+    "modules.buying_score_engine",
+    "modules.opportunity_engine",
+    "modules.commercial_profile",
+    "modules.timeline",
+    "modules.ai_platform",
+    "modules.ai_reasoning_engine",
+    "modules.ai_research_engine",
+]
+forbidden_modules = [
+    "modules.integrations.domain",
+    "modules.integrations.application",
+    "modules.integrations.infrastructure",
+    "modules.integrations.interface",
 ]
 
 [[tool.importlinter.contracts]]

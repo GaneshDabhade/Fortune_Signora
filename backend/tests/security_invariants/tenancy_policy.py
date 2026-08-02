@@ -146,6 +146,15 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # forced-RLS — a projection of workspace-scoped facts is workspace-
         # scoped, and being rebuildable is not an isolation argument.
         "timeline_entry",
+        # Integrations (M13 slice 1), migration 0027. **The customer's own
+        # systems**, as opposed to Signora's suppliers — a distinction
+        # `04-modules.md` calls permanent. `integration_grant` holds a
+        # `secret_ref` and never secret material: a token in a replicated,
+        # backed-up table is an incident, and the vault arrives behind a port.
+        # A leak of `connected_account` alone would tell a competitor which
+        # systems a company runs.
+        "connected_account",
+        "integration_grant",
     }
 )
 
