@@ -141,7 +141,7 @@
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
 | [C-001](#c-001--the-target-account-contract) | The target-account contract — this module's first edge | Lane B | **Lane A** | `ANSWERED` → **[ADR-0036](architecture/adr/0036-target-account-contract.md)** | **Nothing. Slice 5 may begin.** `CLOSED` when both lanes have built it |
-| [C-303](#c-303--an-icp-is-not-an-addressable-thing-and-every-verb-the-brief-asks-for-needs-one) | An ICP is not an addressable thing, and every verb the brief asks for needs one | Lane B | **Product owner** | `OPEN` | **All ICP Management implementation.** One aggregate decision, one product question underneath it |
+| [C-303](#c-303--an-icp-is-not-an-addressable-thing-and-every-verb-the-brief-asks-for-needs-one) | An ICP is not an addressable thing, and every verb the brief asks for needs one | Lane B | **Product owner** | `ANSWERED` — ICP stays in Commercial Profile (2026-08-02). **The aggregate is [ADR-0041](architecture/adr/0041-icp-aggregate.md), proposed** | **Implementation, on ADR-0041's ratification** |
 | [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) | A notification is per-person, and workspace RLS is not enough | Lane B | **Product owner** (tenancy 🔴) | `OPEN` | **M14a N-01's migration.** The pattern exists; the ruling does not |
 | [C-301](#c-301--nothing-asserts-what-the-deployed-worker-consumes) | Nothing asserts what the deployed worker consumes | Lane B | **QE** | `OPEN` | **Nothing today.** Every future consumer can ship [B-301](BUGS.md) again |
 | [C-002](#c-002--customer-language-has-no-anticorruption-layer) | Customer language has no anticorruption layer | Lane B | **Product owner** (ADR) | `OPEN` | Anything that matches an account against an ICP |
@@ -3060,4 +3060,27 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 | **Seed data** | Through the existing declaration path, never by inserting rows |
 | **Demo scenario** | *"We sell Revenue Cloud to two different kinds of company, and Signora knows which one is which"* |
 | **Performance** | The first list in this module that can be long. Cursor pagination, no `COUNT` |
+
+
+### Resolution — product owner 2026-08-02, and a reversal Lane B made against itself
+
+**The product owner answered the boundary question and asked one more:** *is Product the strongest aggregate root for ICP ownership?* — with the instruction to **challenge Lane B's own recommendation** rather than defend it.
+
+**It did not survive.** The reversal, the evidence and the answer are in **[ADR-0041](architecture/adr/0041-icp-aggregate.md)**, proposed. In short:
+
+| | |
+|---|---|
+| **The boundary** | **ICP stays inside Commercial Profile.** Ruled by the product owner on the evidence in §4 |
+| **Product as anchor** | **Confirmed**, and for a reason the challenge sharpened: Product is the only one of *product · offering · bundle · family · motion* that already exists as a reviewed, identified thing. **The correction is to cardinality, not to ownership** |
+| **The recommendation** | **Reversed from B to E** — an ICP names **one or more** products, never zero |
+
+**Where §3's reasoning broke, stated plainly rather than quietly corrected.** Option C was written as *"product is one criterion among many (**0..n**)"* and rejected because *"an ICP naming no product is 'companies we like'"*. **That rejects the `0` and was applied to the `n`.** Nothing about letting an ICP name three products requires letting it name none.
+
+**The product owner's own example is B's strongest counter-example.** Revenue Cloud + CPQ + Billing sold as one offering to one segment is **three identical ICPs under B**, maintained by hand, and **they drift the first time somebody edits one.** Duplicated truth is this repository's most-cited failure mode, and B does not merely permit it — it makes it the only way to express a common commercial arrangement.
+
+**E is a strict superset of B with no added optionality**, and **the migration is identical under both** — each existing `ProductIcp` becomes one `Icp` naming one product, 1:1. So the choice costs nothing to get right and a live data migration to get wrong.
+
+**One requirement is challenged rather than designed:** **`default` may have no job in a multi-ICP world.** If Signora acts on every `active` ICP, *"which is default"* never needs answering and the field is a leftover from the model being replaced. **Not implemented in Day One unless a customer question is named that `active` cannot answer** — ADR-0041 §3.
+
+**This item is `ANSWERED`. Implementation begins on ADR-0041's ratification**, which is the one thing outstanding.
 
