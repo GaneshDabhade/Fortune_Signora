@@ -19,8 +19,8 @@
 | **Current phase** | **Product implementation** — the pipeline is built; the surface is being exposed |
 | **Last completed milestone** | **M12.5 — Commercial Profile**, all five slices promoted 2026-08-02. The head of the pipeline now exists |
 | **Current milestones** | **M12.3 — the product surface.** The brief's hierarchy (D20) remains; **R2-01 shipped this cycle**. *(Decision Package still deferred until `reasoning@1` is released — see §7)* |
-| **`main` at** | **`e1d2fa6`** — *The claim went where nobody was looking*. **The certified commit itself**, promoted by SHA and checked after the merge |
-| **Certification status** | ✅ **CERTIFIED** — [`e1d2fa6d11f4`](certification/reports/e1d2fa6d11f4.md), 2026-08-02, bound to migration head **`0025`** and rendering protocol **v2**. **Commit-bound**: the record names `e1d2fa6`, and `e1d2fa6` is what was promoted. `make certified ARGS="--audit-main"` proves it across the branch. See §4 |
+| **`main` at** | **`e07f3f9`** — *Closeout diverges integration every cycle*. **The certified commit itself**, promoted by SHA and checked after the merge |
+| **Certification status** | ✅ **CERTIFIED** — [`e07f3f989e0b`](certification/reports/e07f3f989e0b.md), 2026-08-02, bound to migration head **`0025`** and rendering protocol **v2**. **Commit-bound**: the record names `e07f3f9`, and `e07f3f9` is what was promoted. `make certified ARGS="--audit-main"` proves it across the branch. See §4 |
 | **Branches** | **`main` and `lane-qe` at the promoted, certified baseline.** `integration` sits **one slice ahead** — Lane A's R2-01 landed while QE was measuring `main`; it is validated by its own lane, **not yet by QE**, and is the next cycle's stage 1. Both feature lane branches are synchronized to `integration`. **QE is the only lane that merges, certifies, promotes and publishes this file** ([CLAUDE.md §20e](CLAUDE.md)). Who is on what: [docs/ACTIVE_ASSIGNMENTS.md](docs/ACTIVE_ASSIGNMENTS.md) · defects: [docs/BUGS.md](docs/BUGS.md) · cross-lane questions: [docs/LANE_COORDINATION.md](docs/LANE_COORDINATION.md) |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
 | **Overall completion** | **~66%** by engineering effort (~205 of ~261–339 ew) — M12.5 closed (five slices) · M12.4 shipped · M9.5 (~3 ew) inserted and **not** closed. **An estimate, and marked as one**; every other figure on this page is measured |
@@ -37,41 +37,35 @@ They can also **follow any ledger line to the provider readings beneath it**, an
 
 ---
 
-## 1b · Release summary — 2026-08-02, cycle 5
+## 1b · Release summary — 2026-08-02, cycle 6
 
-**Derived from the promoted commit `e1d2fa6`.** Two commits since `7b91948`, one of them a lane claim.
+**Derived from the promoted commit `e07f3f9`.** Three commits since `e1d2fa6`, two of them Lane B's.
 
-### The claim protocol was arbitrating where nobody could see
+### Three QE fixes verified, by somebody other than QE
 
-**Both lanes ran the Task Claim Protocol exactly as written, and it still did not arbitrate.** Lane B's claim on TASK-001 reached `integration`; Lane A's claim on TASK-002 did not, because step 7 said *push the lane branch* and **nobody pulls another lane's branch.** The queue read TASK-002 as free while Lane A was building it, and the third lane to start would have duplicated the work.
+**Lane B claimed [TASK-001](docs/BACKLOG.md) and closed it.** [B-009](docs/BUGS.md), [B-013](docs/BUGS.md) and [B-014](docs/BUGS.md) are `VERIFIED` — each reproduced from a clean shell, from the original steps, **never from the diff**. B-013's verification was a full `make smoke` run, because the bug names smoke as its own regression test.
 
-**The claim now goes to `integration`** — the one ref every lane pulls at startup. It is the single thing a feature lane may push there, bounded tightly enough for a machine to check: **a claim commit touches `ACTIVE_ASSIGNMENTS.md` and `BACKLOG.md` and nothing else**, enforced by `make certified ARGS="--audit-claims"`.
-
-### Not every advance of `integration` deserves a cycle
-
-`make certified ARGS="--next-cycle"` answers *is there anything to certify?* rather than *has the branch moved?* **A claim changes two registers and nothing a gate can fail on**; certifying it alone spends a full gate run proving a markdown table is still true, which is how a team learns to skip cycles.
-
-### The KPI panel found two defects on its first run
+### And the verification found two more, both QE's
 
 | | |
 |---|---|
-| **`state-check`'s blocking rule could never fire** | It asked whether a 🔴 appeared above the Verified section while excluding the legend row — **and the legend is always there.** The one rule that stops a promotion had never been checked. Now parsed per row: 🔴 **and** unresolved, with the **first** marker in a severity cell treated as operative, because the register writes conditional severities |
-| **`BUGS.md` was structurally corrupt on `main`** | Since `f669172` — QE's own reconciliation script stranded an old copy of B-004's header, leaving a table separator with no header above it. **It survived four certifications, because gates read code and nothing read documents.** Both the corruption and the blind spot are fixed |
+| **[B-015](docs/BUGS.md)** 🟠 | **The certification audit passed vacuously in every lane's clone.** `RULE_RATIFIED_AT` is a fixed SHA, and where a clone does not contain it, `rev-list` returns nothing and the audit reported success **having examined zero commits.** A check written to enforce *"a guard that cannot fail is documentation pretending to be code"* had become one. It now refuses to answer rather than answering vacuously |
+| **[B-016](docs/BUGS.md)** 🟡 | **The documented startup command read a key file nothing creates.** `SIGNORA_JWT_PUBLIC_KEY="$(cat .dev-keys/public.pem)"` set the variable to empty and the API started anyway, surfacing later as *"signed in, every screen empty, everything 401s"*. The line is gone; `.gitignore` gains `*.pem` and `.dev-keys/` |
 
-**And the two tools disagreed about what "blocking" meant**, which is how the dead check went unnoticed. The parsing moved to `infra/registers.py`, so there is one answer.
+> **Both are fixed and neither may be closed by QE** — which is the rule that produced them in the first place. **The lane doing the verifying is where the leverage is:** three fixes verified, two new defects found, all five in code QE owns.
 
-### Bugs fixed
+### Governance
 
-None. **[TASK-001](docs/BACKLOG.md) is claimed by Lane B** — verification of [B-009](docs/BUGS.md), [B-013](docs/BUGS.md) and [B-014](docs/BUGS.md) is in progress.
+**Closeout diverges `integration` from `main` every cycle by construction** — Closeout commits land on `main` and never on `integration`. The checklist said to leave `integration` alone if it was ahead, which described a situation that cannot occur. **Stage 6 now rebases `integration` onto `main`, always.**
 
 ### Remaining blockers
 
-1. **[TASK-006](docs/BACKLOG.md)** ([C-010](docs/LANE_COORDINATION.md)) — no lane assignable to `apps/`, `signora_platform/` or repository process. **Four defects sit there.**
-2. **[TASK-013](docs/BACKLOG.md)** — `reasoning@1` has no released model; the Decision Package would refuse at runtime (§7).
+1. **[TASK-006](docs/BACKLOG.md)** ([C-010](docs/LANE_COORDINATION.md)) — no lane assignable to `apps/`, `signora_platform/` or repository process. **[B-015](docs/BUGS.md) is the fifth defect to land there.**
+2. **[TASK-013](docs/BACKLOG.md)** — `reasoning@1` has no released model (§7).
 
 ### Recommended next work
 
-**[`docs/BACKLOG.md`](docs/BACKLOG.md), in order.** TASK-001 and TASK-002 are claimed; three `READY` tasks remain. The two `WAITING` decisions at the top are the product owner's.
+**[`docs/BACKLOG.md`](docs/BACKLOG.md).** TASK-001 is `DONE`; TASK-002 and TASK-004 are claimed by Lane A. The `WAITING` decisions at the top remain the product owner's, and [C-010](docs/LANE_COORDINATION.md) has now absorbed five defects.
 
 ---
 
@@ -82,7 +76,7 @@ None. **[TASK-001](docs/BACKLOG.md) is claimed by Lane B** — verification of [
 | Lane | Assignment | Status |
 |---|---|---|
 | Lane A | **TASK-002** — an account with nothing live says nothing at all | `CLAIMED`, building |
-| Lane B | **TASK-001** — verify the three fixes QE may not close | `CLAIMED`, building |
+| Lane B | — | `AVAILABLE`. TASK-001 complete and promoted |
 | QE | Repository lifecycle and governance | `ACTIVE` — permanent. **Schedules nothing, and its turn begins when work returns to `integration`** |
 
 **Nothing is blocked.** [C-011](docs/LANE_COORDINATION.md) holds one finding inside Lane A's slice (R9-03) without stopping it; [C-012](docs/LANE_COORDINATION.md) and [C-013](docs/LANE_COORDINATION.md) wait on RFCs queued since M3A and block nothing today.
@@ -312,9 +306,9 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`e1d2fa6d11f4`](certification/reports/e1d2fa6d11f4.md) · 2026-08-02 · ✅ CERTIFIED**
+**Latest certification — [`e07f3f989e0b`](certification/reports/e07f3f989e0b.md) · 2026-08-02 · ✅ CERTIFIED**
 
-**Certified commit `e1d2fa6` · promoted commit `e1d2fa6`.** Identical, checked after the merge and re-checked by `make certified`.
+**Certified commit `e07f3f9` · promoted commit `e07f3f9`.** Identical, checked after the merge and re-checked by `make certified`.
 
 | Gate | Recorded |
 |---|---|
@@ -323,7 +317,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | **Security Invariants** | **354**, each proven to fail when its guarantee is removed |
 | **import-linter** | **31 kept**, 0 broken |
 | **MyPy** | strict, clean over **547 files** |
-| **`make smoke`** | **24 stages in 130s**, fresh images, clean teardown |
+| **`make smoke`** | **24 stages in 126s**, fresh images, clean teardown |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0025`** · scenario set `0cf6b2c581e4` · working tree clean · `research_planning@2` and `research_synthesis@2` released for `llama3.1:8b`.
@@ -358,14 +352,14 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Indicator | Value |
 |---|---|
 | **Certification** | |
-| Certification cycles | 8 |
-| Certified | 8 of 8 |
-| Mean time to certify (last 5) | 7.8 min |
-| Mean smoke duration | 121.0 s |
-| Mean certify → Ready (last 5) | 1.6 min |
+| Certification cycles | 9 |
+| Certified | 9 of 9 |
+| Mean time to certify (last 5) | 6.3 min |
+| Mean smoke duration | 121.6 s |
+| Mean certify → Ready (last 5) | 1.1 min |
 | **Defects and queues** | |
-| Open bugs | 6 open · 6 fixed awaiting verification · 1 verified · 1 won't fix |
-| Bugs by severity | 🔴 1 · 🟠 7 · 🟡 5 |
+| Open bugs | 8 open · 6 fixed awaiting verification · 4 verified · 1 won't fix |
+| Bugs by severity | 🔴 1 · 🟠 8 · 🟡 6 |
 | Open 🔴 (blocks promotion) | 0 |
 | Coordination items | 17 · 2 closed |
 | Backlog | 16 tasks · 5 READY · 11 WAITING/BLOCKED · 3 claimed |
