@@ -29,11 +29,19 @@
 |---|---|
 | `READY` | **Claimable now.** Every input exists, no decision is outstanding, nobody holds it |
 | `CLAIMED` | A lane holds it. The lane is named here, and [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) carries the detail |
+| `IN VALIDATION` | **Implemented and pushed.** Set by the implementing lane, the moment the work exists as commits QE can take |
+| `VERIFIED` · `CERTIFIED` · `PROMOTED` | QE's stages, and **only QE's** — validation passed, `make certify` passed, `main` fast-forwarded |
 | `WAITING` | Needs a **decision** from the product owner or another lane. **Named, always** |
 | `BLOCKED` | Needs a **capability** that does not exist yet. **The capability is named** |
 | `DONE` | Promoted to `main`. Removed at the next Closeout |
 
 **`WAITING` and `BLOCKED` differ in who unblocks them**: one needs somebody to answer, the other needs somebody to build. A task nobody can move in either direction is a finding, not a backlog row.
+
+> **The lane owns execution state; QE owns everything after it** (product-owner refinement, 2026-08-02). A lane moves its own task `CLAIMED` → `IN VALIDATION` when it pushes, and **stops there**. QE moves it through `VERIFIED` → `CERTIFIED` → `PROMOTED` → `DONE`.
+>
+> **The point is that no state is nobody's.** Under the previous reading QE updated the execution status of work it did not write, which is bookkeeping rather than judgement — and a status nobody is clearly responsible for is the one that goes stale.
+>
+> **The canonical statement belongs in `CLAUDE.md` §20e, which is the product owner's to write.** This legend records the states so the file does not assert one it never defined; it does not replace that.
 
 ## What a lane may and may not do here
 
@@ -66,7 +74,7 @@
 |---|---|
 | **Module** | Product Surface |
 | **Slice** | PS-01 |
-| **Status** | `CLAIMED` — **Lane A**, 2026-08-02 |
+| **Status** | `IN VALIDATION` — **Lane A**, 2026-08-02. Pushed at `102378c` on `lane-a-product-surface` |
 | **Notes** | 🟡. Overlaps R1-04 — read both before starting |
 | **On claiming** | **R1-04 is 🟠, unimplemented, and is the same plumbing.** The brief receives `evidence` on the opportunity response and renders `is_current` only, so *cooling* never reaches it — and R2-03 cannot be answered without the brief learning the same fact. Lane A will surface evidence state on the brief once and let both findings read it, rather than adding a second path for the second finding. **The task is not being rewritten**: R1-04 has no id, and inserting `READY` scope is the product owner's. If the overlap should instead be a separate task, say so and the R1-04 half is reported rather than shipped |
 
