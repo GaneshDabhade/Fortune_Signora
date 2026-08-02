@@ -391,7 +391,7 @@ The five declarations are **not settings** — they are the condition of the pip
 
 #### *Your business* under Settings — **it stays, and moving it would not fix what C-008 names**
 
-Lane A's call, and the answer is no change. [D38](38-product-design-principles.md) settled that navigation is **journeys, not data**, and reduced six entries to two by that rule. *Your business* is **authoring** — done once, revisited when something changes, and never part of a seller's morning. Settings is exactly where a thing like that belongs, and promoting it would put a page nobody opens daily beside the one page they open every day.
+Lane A's call, and the answer is no change. [D38](architecture/38-product-design-principles.md) settled that navigation is **journeys, not data**, and reduced six entries to two by that rule. *Your business* is **authoring** — done once, revisited when something changes, and never part of a seller's morning. Settings is exactly where a thing like that belongs, and promoting it would put a page nobody opens daily beside the one page they open every day.
 
 **But C-008 is right, and it is a different fix.** *"Sellers cannot see what their company sells"* is not a symptom of the authoring page being in the wrong place — it is a symptom of **the declarations never reaching the surfaces where they would matter.** Which products an account is a fit for belongs on the **account brief**, beside the evidence; the buying committee belongs where contacts appear. Moving a settings entry into the sidebar would satisfy neither, and would leave the seller opening a configuration screen to answer a question they had while reading about an account.
 
@@ -866,7 +866,7 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 >
 > **Completion of the prerequisite implementation is not sufficient.** That is the distinction that was missed: a flow's *steps* existing and a flow's *outcome* existing are different conditions, and the second is the one a customer experiences. A guided setup whose five steps all work, and which ends by saying monitoring has begun when nothing consumes the declaration, has completed every step and told the truth at none of them.
 >
-> **Found in [C-007](../LANE_COORDINATION.md#c-007--the-guided-first-run-is-a-two-lane-build), 2026-08-02.** Both lanes agreed the guided first run was unblocked once M12.5 shipped all five declarations. It was not: the last step publishes `commercial_profile.target_accounts_changed`, no consumer exists, and the flow's ending would have been an assertion the platform could not keep. **The flow waits for the capability, not for the milestone.**
+> **Found in [C-007](#c-007--the-guided-first-run-is-a-two-lane-build), 2026-08-02.** Both lanes agreed the guided first run was unblocked once M12.5 shipped all five declarations. It was not: the last step publishes `commercial_profile.target_accounts_changed`, no consumer exists, and the flow's ending would have been an assertion the platform could not keep. **The flow waits for the capability, not for the milestone.**
 >
 > **The test, deliberately about the ending rather than the steps:** *at the moment this surface finishes, what has it told the customer will now happen — and can the repository do that today?* If the answer is no, the surface either says something smaller and true, or it waits.
 >
@@ -2407,7 +2407,7 @@ Two scenarios were **excluded on principle rather than on effort**, and the reas
 | **Coordination items Lane B raised** | **Fourteen. None closeable today.** [C-001](#c-001--the-target-account-contract) is the only one whose closure is Lane B's to perform, and its condition is not met: it closes when *both* lanes have implemented, and `provider_platform` still contains no `target_accounts_changed` consumer while [B-004](BUGS.md) remains `OPEN`. **Left open, correctly** |
 | **Backlog** | [TASK-001](BACKLOG.md) and [TASK-005](BACKLOG.md) are complete and `READY FOR QE`. `DONE` is QE's at promotion |
 | **QE feedback** | None outstanding against Lane B. The cycle-18 `CHANGES REQUESTED` was B-024, resolved in M13-S09 and **promoted** at `bd57c7c` |
-| **Documentation** | [41-integrations.md](architecture/41-integrations.md) created at the M13 pause; [ADR-0040](architecture/adr/0040-notifications.md) proposed. No module Lane B holds has documentation lagging its implementation |
+| **Documentation** | [44-integrations.md](architecture/44-integrations.md) created at the M13 pause; [ADR-0040](architecture/adr/0040-notifications.md) proposed. No module Lane B holds has documentation lagging its implementation |
 
 **Deliberately not duplicated:** QE reviewed all fourteen product-owner dependencies individually earlier the same session (`0632680`) and closed two. **Re-running that review would be a second opinion nobody asked for**, and the register's value is that one authority reconciles it.
 
@@ -2446,6 +2446,32 @@ Two scenarios were **excluded on principle rather than on effort**, and the reas
 
 **The second one is the valuable one and the most work**, because `06-events.md` is prose. It is also the only one that would have caught this before Timeline was written rather than after.
 
+### Concrete validation rules, as QE would implement them
+
+**Offered as a specification rather than a design.** Each is stated as a property with the failure it catches, because a rule whose failure mode is unstated is a rule nobody can judge.
+
+| # | Assertion | The defect it catches | Cost |
+|---|---|---|---|
+| **V1** | **Every subscription routes to a pool a process runs.** `registry.pools()` ⊆ `POOLS` | An event relayed, queued, and never picked up. Silent — the outbox marks it relayed | Trivial. **Already written** in `test_worker_subscriptions.py`, and QE may lift it |
+| **V2** | **Every module with an `interface/handlers.py` has at least one subscription**, or appears on an explicit `CONSUMES_NOTHING` list | **Exactly B-301.** A handler written, tested and never registered | Small. The list is the interesting part — it makes *"Commercial Profile consumes nothing"* an asserted fact rather than an omission |
+| **V3** | **Every consumer named in `06-events.md`'s catalog has a matching subscription** | The catalog says Timeline consumes `observation.recorded`; nothing checked that it did. **This would have failed the day the catalog named Timeline** — before the module existed | **The most work and the most valuable.** `06-events.md` is a prose table; either it grows a machine-readable form, or the check parses it |
+| **V4** | **Every subscribed event type is one some module publishes** | A subscription to a renamed or removed event — a worker waking for something that will never arrive | Small, and it is V3 read backwards |
+
+**V2 is the one that would have caught B-301**, and V3 is the one that would have caught it *earliest*. **V1 is free today.**
+
+**A deliberate non-recommendation:** *"every published event has a consumer"* must **not** be asserted. Publishing before anyone consumes is how this pipeline was built, `for_event_type` documents an empty list as a normal outcome, and a check demanding consumers would push lanes into writing empty handlers to satisfy it.
+
+### Ownership, reconciled
+
+**QE's `e7ec943` and this item disagreed and both were partly right.** QE recorded the durable fix as belonging to *"whoever owns `apps/`"* — [C-010](#c-010--no-lane-is-assignable-to-apps-or-signora_platform-and-a-defect-is-sitting-in-one)'s unassigned gap, its seventh defect. This item assigned it to QE. **The split is:**
+
+| | |
+|---|---|
+| **The assertion** — a repository-wide test | **QE.** §20e: *"QE creates, maintains, extends and retires repository-wide automated tests"* |
+| **Any production change in `apps/`** that a failing assertion demands | **Unassigned — [C-010](#c-010--no-lane-is-assignable-to-apps-or-signora_platform-and-a-defect-is-sitting-in-one).** A failing check with nobody able to fix what it reports is a check that will be skipped |
+
+**Both are needed, and V1–V4 need only the first.** They assert wiring that lanes write; a lane adding a subscription is already permitted to (§20a).
+
 **Not blocking.** Recorded so the class does not survive on the memory of the lane that hit it.
 
 ---
@@ -2482,5 +2508,20 @@ USING (
 | **A removed member's notifications** | Lane B's position: **rows are retained and become unreadable**, since the policy already denies them and the workspace's own record of what was sent is operational history. **Deleting them would be a lane deciding a data-retention question that [README](../README.md) lists as unowned** — *"data export and account deletion (no owner)"* |
 | **The unread count is per workspace** | Not a product choice. **A cross-workspace aggregate would have to read outside the active workspace context**, which RLS forbids — and a count mixing three organizations is a number nobody can act on. Recorded in ADR-0040 §9 |
 
-**Lane B recommends the policy above**, and will not write the migration until it is ruled on. **N-01 has no other blocker of its own** — it waits on the `04-modules.md` entry (C-027) regardless, and this can be answered in the same pass.
+### The alternatives, and what each one costs
+
+**Four ways to make a per-person row safe. Only one is recommended, and the other three are recorded because rejecting them silently would leave the ruling looking narrower than it is.**
+
+| | Approach | Consequence |
+|---|---|---|
+| **A** ✅ | **Second RLS predicate on `app.user_id`** | **Enforced by the database, which is the only place tenancy is ever enforced here.** A forgotten `WHERE recipient_id = …` in a repository method is refused rather than shipped. Costs: `11-tenancy.md` describes a one-key model and must say so, and the Tenant Isolation Policy gains a second dimension to reason about. **Uses only existing primitives** — no platform change, no new grant, no migration pattern that does not already exist in `0001` |
+| **B** | **Application-level filtering only** — RLS stays workspace-scoped, every query adds `recipient_id` | **Rejected.** §8 is explicit that application filtering is *defence in depth beside* RLS, never instead of it. One missed `WHERE` exposes a colleague's read state, and nothing structural refuses it. This is the option that looks cheapest and is the one the repository has spent four milestones designing against |
+| **C** | **A separate `notification_recipient` table** carrying read state, workspace-scoped, with per-user rows | **Does not solve it.** The read-state rows are still workspace-scoped, so the same exposure exists one table further away — and it costs the join and the *"one row per recipient"* simplification (ADR-0040 §5) for nothing |
+| **D** | **Per-user database roles or a session-scoped view** | **Rejected as disproportionate.** It would make tenancy depend on connection identity rather than transaction context, which contradicts the pooling model the whole application is built on, and `signora_platform/` is frozen |
+
+**The rule that decides it:** *types should make incorrect architecture impossible*, applied to data. **B and C leave a violation as ordinary code that happens to be wrong; A makes it unrepresentable.**
+
+**What "no ruling" costs, stated plainly.** N-01 cannot ship a table. There is no partial version — a notification table without the right policy is one that would have to be migrated later under real customer data, and a migration that tightens RLS on a populated table is exactly the change nobody wants to make in production.
+
+**Lane B recommends A**, and will not write the migration until it is ruled on. **N-01 has no other blocker of its own** — it waits on the `04-modules.md` entry (C-027) regardless, and both can be answered in one pass.
 

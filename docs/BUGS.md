@@ -115,7 +115,7 @@ grep -rn "project_to_timeline" backend/apps/ --include=*.py         # no match
 
 **Regression tests:** `backend/tests/integration/test_worker_subscriptions.py`, and they assert the join in both directions — every event Timeline projects has a consumer, **and** it subscribes to nothing it cannot project (a subscription with no rule wakes a worker to do nothing and returns `False`, which is indistinguishable from working). Plus: the consumer name is the module's own, registration is idempotent, and every subscription routes to a declared pool.
 
-**The general finding, recorded because it will recur:** **the repository has no test that asserts what the deployed worker consumes.** Every module that adds a consumer from here on can ship the same defect, and the file that would catch it is the one no module owns. This test is Timeline's half; **a repository-wide version belongs to QE**, and is raised as [C-301](LANE_COORDINATION.md).
+**The general finding, recorded because it will recur:** **the repository has no test that asserts what the deployed worker consumes.** Every module that adds a consumer from here on can ship the same defect, and the file that would catch it is the one no module owns. This test is Timeline's half; **a repository-wide version belongs to QE**, and is raised as [C-301](LANE_COORDINATION.md) with four concrete validation rules. **The lesson is written into the module's design document** — [45-timeline.md §4](architecture/45-timeline.md) — so the next lane assigned Timeline reads it where entries are explained rather than in a bug register.
 
 ---
 
