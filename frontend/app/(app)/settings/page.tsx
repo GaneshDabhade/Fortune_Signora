@@ -138,6 +138,19 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
+          <CardTitle>Your team</CardTitle>
+        </CardHeader>
+        <CardBody>
+          <p className="text-sm text-content-muted">
+            Everyone who can see this organization&apos;s accounts, and everyone on
+            their way in. Invite a colleague, or withdraw an invitation.
+          </p>
+          <SettingsLink href="/settings/team">Your team</SettingsLink>
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Connections</CardTitle>
         </CardHeader>
         <CardBody>

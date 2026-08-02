@@ -17,6 +17,7 @@ from modules.workspace_tenancy.domain.entities import (
     Workspace,
     WorkspaceRole,
 )
+from modules.workspace_tenancy.domain.invitation import Invitation, InvitationState
 
 
 class CreateWorkspaceRequest(BaseModel):
@@ -67,4 +68,50 @@ class MembershipResponse(BaseModel):
             user_id=membership.user_id,
             role=membership.role,
             created_at=membership.created_at,
+        )
+
+
+class InviteMemberRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    #: As the customer typed it. Normalized by the domain — the one place an
+    #: address is put into the form the unique index and acceptance compare.
+    email: str
+    role: WorkspaceRole
+
+
+class InvitationResponse(BaseModel):
+    """An offer, as an administrator reads it.
+
+    **`state` is computed and sent, not stored.** The browser must not derive it
+    from `expires_at`, because two clocks would disagree and the one that
+    matters is the server's — the same reason `evidence_state` travels on the
+    wire rather than being recomputed on the client.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID
+    workspace_id: UUID
+    invited_email: str
+    role: WorkspaceRole
+    state: InvitationState
+    expires_at: datetime
+    created_at: datetime
+    #: Who offered it. An identifier rather than a name, for the reason the
+    #: members list has the same shape (C-203) — and it never changes, because
+    #: the inviter is provenance rather than an owner.
+    invited_by: UUID
+
+    @classmethod
+    def from_domain(cls, invitation: Invitation, *, at: datetime) -> "InvitationResponse":
+        return cls(
+            id=invitation.id,
+            workspace_id=invitation.workspace_id,
+            invited_email=invitation.invited_email,
+            role=invitation.role,
+            state=invitation.state(at=at),
+            expires_at=invitation.expires_at,
+            created_at=invitation.created_at,
+            invited_by=invitation.invited_by,
         )

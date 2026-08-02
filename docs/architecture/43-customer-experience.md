@@ -293,6 +293,7 @@
 | **CX-06** | **The Team page** | **J9** | An owner cannot see who is in their organization | **[C-024](../LANE_COORDINATION.md)** |
 | **CX-07** | **Responsive shell and screens** | All | The product on a device other than a laptop | **[C-026](../LANE_COORDINATION.md)** |
 | **CX-08** | **Target accounts actually get watched** | J7 | The one place the product accepts an instruction and does nothing with it | **[C-021](../LANE_COORDINATION.md)** |
+| **TM-03a** | **An organization can grow** | **J10** | Every workspace was permanently whoever created it. Invite · list · withdraw, with a Team card on Settings | ✅ **Shipped** |
 
 > **CX-01 and CX-02 are shipped.** Everything below them is a decision away, and each decision is already recorded.
 >

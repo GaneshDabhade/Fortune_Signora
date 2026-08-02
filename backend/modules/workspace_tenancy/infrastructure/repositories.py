@@ -7,10 +7,15 @@ between domain entities and ORM models in both directions.
 
 from uuid import UUID
 
-from sqlalchemy import Select, literal, select, tuple_
+from sqlalchemy import Select, literal, select, tuple_, update
 
 from modules.workspace_tenancy.domain.entities import Membership, Workspace
-from modules.workspace_tenancy.infrastructure.models import MembershipModel, WorkspaceModel
+from modules.workspace_tenancy.domain.invitation import Invitation
+from modules.workspace_tenancy.infrastructure.models import (
+    InvitationModel,
+    MembershipModel,
+    WorkspaceModel,
+)
 from signora_platform.db import SqlAlchemyRepository
 from signora_platform.pagination import CursorPosition
 
@@ -127,4 +132,104 @@ class SqlAlchemyMembershipRepository(SqlAlchemyRepository):
         return [_membership_to_domain(model) for model in models]
 
 
-__all__ = ["SqlAlchemyMembershipRepository", "SqlAlchemyWorkspaceRepository"]
+class SqlAlchemyInvitationRepository(SqlAlchemyRepository):
+    """Persistence for offers of membership.
+
+    **No `update` method that takes arbitrary fields.** `settle` writes exactly
+    the two timestamps the domain can produce, so an invitation cannot be edited
+    through this seam even by accident — the domain's immutability is only real
+    if the repository cannot undo it.
+    """
+
+    async def add(self, invitation: Invitation) -> None:
+        await self._add(
+            InvitationModel(
+                id=invitation.id,
+                workspace_id=invitation.workspace_id,
+                invited_email=invitation.invited_email,
+                role=invitation.role,
+                expires_at=invitation.expires_at,
+                accepted_at=invitation.accepted_at,
+                revoked_at=invitation.revoked_at,
+                created_at=invitation.created_at,
+                updated_at=invitation.created_at,
+                created_by=invitation.invited_by,
+                updated_by=invitation.invited_by,
+            )
+        )
+
+    async def get(self, workspace_id: UUID, invitation_id: UUID) -> Invitation | None:
+        stmt = select(InvitationModel).where(
+            InvitationModel.workspace_id == workspace_id,
+            InvitationModel.id == invitation_id,
+        )
+        model = (await self._session.execute(stmt)).scalar_one_or_none()
+        return _invitation_to_domain(model) if model is not None else None
+
+    async def find_live(self, workspace_id: UUID, email: str) -> Invitation | None:
+        """The one invitation that would collide with a new offer.
+
+        **Matches the partial unique index exactly.** If these two ever disagree
+        the index wins and the customer sees a database error instead of the
+        sentence this lookup exists to produce.
+        """
+        stmt = select(InvitationModel).where(
+            InvitationModel.workspace_id == workspace_id,
+            InvitationModel.invited_email == email,
+            InvitationModel.accepted_at.is_(None),
+            InvitationModel.revoked_at.is_(None),
+        )
+        model = (await self._session.execute(stmt)).scalar_one_or_none()
+        return _invitation_to_domain(model) if model is not None else None
+
+    async def list_for_workspace(self, workspace_id: UUID) -> list[Invitation]:
+        """Every invitation, in every state, newest first.
+
+        **Not paginated, and it matches `list_connections`' reasoning**: an
+        organization sends a handful of invitations, not thousands, and a cursor
+        over a list that fits on one screen is ceremony. If that stops being
+        true it becomes a collection like any other (19-api-conventions.md).
+        """
+        stmt = (
+            select(InvitationModel)
+            .where(InvitationModel.workspace_id == workspace_id)
+            .order_by(InvitationModel.created_at.desc())
+        )
+        models = (await self._session.execute(stmt)).scalars().all()
+        return [_invitation_to_domain(model) for model in models]
+
+    async def settle(self, invitation: Invitation) -> None:
+        stmt = (
+            update(InvitationModel)
+            .where(
+                InvitationModel.workspace_id == invitation.workspace_id,
+                InvitationModel.id == invitation.id,
+            )
+            .values(
+                accepted_at=invitation.accepted_at,
+                revoked_at=invitation.revoked_at,
+                updated_by=invitation.invited_by,
+            )
+        )
+        await self._session.execute(stmt)
+
+
+def _invitation_to_domain(model: InvitationModel) -> Invitation:
+    return Invitation(
+        id=model.id,
+        workspace_id=model.workspace_id,
+        invited_email=model.invited_email,
+        role=model.role,
+        expires_at=model.expires_at,
+        invited_by=model.created_by,
+        created_at=model.created_at,
+        accepted_at=model.accepted_at,
+        revoked_at=model.revoked_at,
+    )
+
+
+__all__ = [
+    "SqlAlchemyInvitationRepository",
+    "SqlAlchemyMembershipRepository",
+    "SqlAlchemyWorkspaceRepository",
+]

@@ -48,6 +48,11 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         "raw_provider_record",
         # Provider Platform's target-account consumer (PP-02), migration 0030.
         "target_sync_state",
+        # Workspace & Tenancy — an organization can grow (TM-03a), migration
+        # 0031. **Tenant-owned like `membership`**, and the one table whose
+        # legitimate reader is, at acceptance, not yet in the tenant — which is
+        # C-208 and is why acceptance is not built here.
+        "invitation",
         # Provider Normalization (M2.2), migration 0008.
         "claim",
         "normalization_outcome",

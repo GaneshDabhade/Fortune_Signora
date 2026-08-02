@@ -16,10 +16,10 @@
  * resolving one required an endpoint that does not exist.
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { apiRequest } from '@/lib/api/client';
-import type { CursorPage, Membership } from '@/lib/api/types';
+import type { CursorPage, Invitation, Membership } from '@/lib/api/types';
 import { queryKeys } from '@/lib/query/keys';
 import type { WorkspaceRole } from '@/lib/state/permissions';
 
@@ -87,4 +87,61 @@ export function useViewerRole(workspaceId: string | null, viewerId: string | nul
 
   const mine = data.items.find((member) => member.user_id === viewerId);
   return { role: mine?.role ?? null, resolved: true };
+}
+
+/**
+ * Who has been invited, and what became of it.
+ *
+ * **Every state, including the settled ones.** An expired invitation is what
+ * tells an administrator that somebody was invited and never arrived; a list
+ * that quietly omitted it would leave them believing a colleague had access.
+ *
+ * **Not paginated**, matching the endpoint: an organization sends a handful of
+ * these, not thousands.
+ */
+export function useInvitations(workspaceId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.invitations(workspaceId ?? ''),
+    queryFn: () =>
+      apiRequest<Invitation[]>(`/workspaces/${workspaceId}/invitations`, {
+        workspaceId: workspaceId ?? undefined,
+      }),
+    enabled: workspaceId !== null,
+  });
+}
+
+/**
+ * Invite a colleague.
+ *
+ * **No optimistic update.** An invitation spends nothing and breaks nothing,
+ * but showing it as sent before the server agrees would tell an administrator
+ * a colleague had been contacted when the address may have been refused as a
+ * duplicate. The list is refetched instead.
+ */
+export function useInviteMember(workspaceId: string | null) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { email: string; role: 'owner' | 'member' }) =>
+      apiRequest<Invitation>(`/workspaces/${workspaceId}/invitations`, {
+        method: 'POST',
+        body: input,
+        workspaceId: workspaceId ?? undefined,
+      }),
+    onSuccess: () =>
+      client.invalidateQueries({ queryKey: queryKeys.invitations(workspaceId ?? '') }),
+  });
+}
+
+/** Withdraw an offer. `POST` rather than `DELETE`: nothing is deleted. */
+export function useRevokeInvitation(workspaceId: string | null) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (invitationId: string) =>
+      apiRequest<Invitation>(
+        `/workspaces/${workspaceId}/invitations/${invitationId}/revoke`,
+        { method: 'POST', workspaceId: workspaceId ?? undefined },
+      ),
+    onSuccess: () =>
+      client.invalidateQueries({ queryKey: queryKeys.invitations(workspaceId ?? '') }),
+  });
 }

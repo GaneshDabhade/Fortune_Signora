@@ -10,6 +10,7 @@ from typing import Any, Protocol
 from uuid import UUID
 
 from modules.workspace_tenancy.domain.entities import Membership, Workspace
+from modules.workspace_tenancy.domain.invitation import Invitation
 from signora_platform.pagination import CursorPosition
 
 
@@ -59,3 +60,29 @@ class EventPublisher(Protocol):
     """
 
     async def publish(self, events: Sequence[Any], *, correlation_id: UUID) -> None: ...
+
+
+class InvitationRepository(Protocol):
+    async def add(self, invitation: Invitation) -> None: ...
+    async def get(self, workspace_id: UUID, invitation_id: UUID) -> Invitation | None: ...
+    async def find_live(self, workspace_id: UUID, email: str) -> Invitation | None: ...
+    async def list_for_workspace(self, workspace_id: UUID) -> list[Invitation]: ...
+    async def settle(self, invitation: Invitation) -> None: ...
+
+
+class InvitationDelivery(Protocol):
+    """How an invitation leaves the process.
+
+    **A port with one adapter today, and it is deliberate rather than
+    speculative.** `lib/auth/email.ts` made the same call for verification links
+    and its reasoning applies unchanged: the *business* workflow — offer,
+    revoke, accept — is identical whoever carries the message, and if delivery
+    turns out to belong to Notifications (M14a) only the adapter moves.
+
+    **It cannot fail the invitation.** An offer that was recorded and not
+    delivered is recoverable by resending; an offer that was refused because a
+    mail server was briefly unreachable is a customer repeating themselves for
+    no reason.
+    """
+
+    async def send(self, invitation: Invitation, *, workspace_name: str) -> None: ...

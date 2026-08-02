@@ -634,3 +634,42 @@ An invitation is **two facts with two owners**, and separating them dissolves mo
 > **A generalized aggregate would carry a nullable email, a nullable target user, a nullable role and a nullable expiry — and a nullable column is a state the type cannot refuse.** That is directly against *types should make incorrect architecture impossible* (§2), and it would buy reuse of a table at the cost of every invariant the type currently enforces.
 
 **Invitation stays, and the trigger for revisiting is stated: a third pending relationship with the same shape** — email-addressed, expiring, delivered. **Two is a coincidence; three is a pattern.**
+
+
+---
+
+## 16 · TM-03a — as built, 2026-08-02
+
+**An organization can grow.** Until this shipped, every workspace was permanently whoever created it.
+
+| | |
+|---|---|
+| **Customer capability** | An administrator invites a colleague by email, sees every invitation in every state, and withdraws one. Reached from **Settings → Your team** |
+| **Migration** | `0031` — `invitation`, RLS enabled and forced, registered in `tenancy_policy.py`, **reversible** (verified down and up) |
+| **The partial index** | `uq_invitation_live_email` on `(workspace_id, invited_email) WHERE accepted_at IS NULL AND revoked_at IS NULL`. **The design, not an optimisation** — it makes *resend is the same row* and *a change is revoke-and-create* unrepresentable to violate |
+| **Authorization** | **No policy line added.** `member:add` · `member:read` · `member:remove` already described these operations, because an invitation is a deferred membership (§14) |
+| **Delivery** | A port with a console adapter, mirroring `lib/auth/email.ts`. **It cannot fail the invitation** — an offer recorded and undelivered is recoverable by resending; one refused because a mail server blinked makes a customer repeat themselves |
+| **Tests** | **+26 domain, +15 component.** Backend 2594, frontend 717 |
+
+### What was reused rather than built
+
+| | |
+|---|---|
+| `policy.csv`'s three grants | **Unchanged.** The authorization for this capability has existed since M1 |
+| The `workspace_role` enum, migration `0001` | The invitation's role column is the same type — `create_type=False` |
+| `membership`'s `ON DELETE CASCADE` shape | Copied exactly, for the same reason |
+| `SqlAlchemyRepository`, `CurrentWorkspace`, `build_use_cases`, the error envelope | Untouched |
+| `Table` · `Dialog` · `Badge` · `EmptyState` · `Select` · `Input` · `Button` · `SkeletonText` · `useToast` | **Nothing new in `components/ui`** |
+| CX-01's Settings card pattern | A third card, identical in shape |
+| `tests/components/settings-index.test.tsx` | **Caught the new route automatically** — the census asserts every `/settings/*` has a link, and it went from 6 tests to 7 without being edited |
+
+### Two things deliberately absent from the screen
+
+| | |
+|---|---|
+| **The list of people** | `GET /members` carries no address. Rendering UUIDs would be a table of identifiers pretending to be a team, so **the section is absent rather than wrong.** It arrives when memberships created by acceptance carry the address the organization typed |
+| **Accepting** | [C-208](../LANE_COORDINATION.md). Every administrator operation here is workspace-scoped and needed none of it |
+
+### Found while building, and not worked around
+
+**`sa.Enum(..., create_type=False)` is ignored inside `create_table`.** Alembic re-issues `CREATE TYPE` and the migration fails against an existing enum; only the dialect's `postgresql.ENUM` honours the flag. **Fixed in the migration with the reason in a comment**, because the next module to reference `workspace_role` will meet it.

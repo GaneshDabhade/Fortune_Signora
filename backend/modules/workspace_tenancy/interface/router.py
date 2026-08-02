@@ -7,7 +7,9 @@ membership verification, and RLS context is established by the dependency
 chain before a handler runs (18-authentication.md).
 """
 
+from datetime import UTC, datetime
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Query, Request, status
 
@@ -18,10 +20,13 @@ from modules.workspace_tenancy.application.use_cases import (
     ListUserWorkspacesInput,
     ListWorkspaceMembersInput,
 )
+from modules.workspace_tenancy.application.use_cases.invite_member import InviteMemberCommand
 from modules.workspace_tenancy.infrastructure.composition import build_use_cases
 from modules.workspace_tenancy.interface.schemas import (
     AddMemberRequest,
     CreateWorkspaceRequest,
+    InvitationResponse,
+    InviteMemberRequest,
     MembershipResponse,
     WorkspaceResponse,
 )
@@ -165,6 +170,92 @@ async def add_member(
         correlation_id=correlation_id_of(request),
     )
     return MembershipResponse.from_domain(membership)
+
+
+@router.get(
+    "/workspaces/{workspace_id}/invitations",
+    response_model=list[InvitationResponse],
+    summary="Who has been invited, and what became of it",
+)
+async def list_invitations(context: CurrentWorkspace) -> list[InvitationResponse]:
+    """*"Who is on their way in, and did anybody not come?"*
+
+    **Every invitation in every state, newest first — including the settled
+    ones.** An expired invitation is what tells an administrator somebody was
+    invited and never arrived, and a list that quietly omitted it would leave
+    them believing a colleague had access.
+
+    **`member:read` authorizes it, and no new grant was needed.** An invitation
+    is a deferred membership, and the policy has described reading members since
+    M1 — see [46-team-management.md](../../../../docs/architecture/46-team-management.md) §14.
+
+    **Not paginated**, on the same reasoning as the connections list: an
+    organization sends a handful of these, not thousands.
+    """
+    context.authorize(Resource.MEMBER, Action.READ)
+    now = datetime.now(UTC)
+    invitations = await build_use_cases(context.session).list_invitations.execute(
+        context.workspace_id
+    )
+    return [InvitationResponse.from_domain(i, at=now) for i in invitations]
+
+
+@router.post(
+    "/workspaces/{workspace_id}/invitations",
+    status_code=status.HTTP_201_CREATED,
+    response_model=InvitationResponse,
+    summary="Invite a colleague",
+)
+async def invite_member(context: CurrentWorkspace, body: InviteMemberRequest) -> InvitationResponse:
+    """**The operation that lets an organization grow.**
+
+    Until this existed a workspace was permanently whoever created it:
+    `POST /members` takes a `user_id`, and nothing resolves an address to one.
+
+    **Addressed to an email, not a user.** A customer knows a colleague's
+    address and must not be asked whether they already have a Signora account,
+    how they sign in, or what their identifier is.
+
+    **`member:add` authorizes it.** Inviting *is* adding a member, deferred —
+    which is why no policy line was added. Recorded as *sufficient rather than
+    fundamental*: the day a role may invite but not remove, the two separate.
+    """
+    context.authorize(Resource.MEMBER, Action.ADD)
+    now = datetime.now(UTC)
+    invitation = await build_use_cases(context.session).invite_member.execute(
+        InviteMemberCommand(
+            workspace_id=context.workspace_id,
+            email=body.email,
+            role=body.role,
+            invited_by=context.principal.user_id,
+        ),
+        now=now,
+    )
+    return InvitationResponse.from_domain(invitation, at=now)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/invitations/{invitation_id}/revoke",
+    response_model=InvitationResponse,
+    summary="Withdraw an invitation",
+)
+async def revoke_invitation(context: CurrentWorkspace, invitation_id: UUID) -> InvitationResponse:
+    """**Withdraws an offer nobody has acted on.**
+
+    `POST` rather than `DELETE`, because nothing is deleted: the row survives
+    with the moment it was withdrawn, which is what makes *"we invited them and
+    changed our minds"* readable later.
+
+    **Revocation always wins over an email already opened**, because state is
+    checked when somebody accepts and never when the message was sent. There is
+    no window.
+    """
+    context.authorize(Resource.MEMBER, Action.REMOVE)
+    now = datetime.now(UTC)
+    invitation = await build_use_cases(context.session).revoke_invitation.execute(
+        context.workspace_id, invitation_id, now=now
+    )
+    return InvitationResponse.from_domain(invitation, at=now)
 
 
 __all__ = ["router"]

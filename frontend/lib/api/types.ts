@@ -22,6 +22,25 @@ export interface Membership {
   created_at: string;
 }
 
+/**
+ * An offer of membership, addressed to an email that may not be a user yet.
+ *
+ * **`state` is sent, not derived.** The browser must not compute it from
+ * `expires_at`: two clocks would disagree and the one that matters is the
+ * server's — the same reason evidence state travels on the wire.
+ */
+export interface Invitation {
+  id: string;
+  workspace_id: string;
+  invited_email: string;
+  role: 'owner' | 'member';
+  state: 'pending' | 'accepted' | 'revoked' | 'expired';
+  expires_at: string;
+  created_at: string;
+  /** Provenance, never an owner — it does not move when the inviter leaves. */
+  invited_by: string;
+}
+
 /** The cursor-page envelope every collection endpoint returns. */
 export interface CursorPage<T> {
   items: T[];

@@ -16,15 +16,23 @@ from modules.workspace_tenancy.application.use_cases import (
     ListUserWorkspacesUseCase,
     ListWorkspaceMembersUseCase,
 )
+from modules.workspace_tenancy.application.use_cases.invite_member import (
+    InviteMember,
+    ListInvitations,
+    RevokeInvitation,
+)
 from modules.workspace_tenancy.infrastructure.adapters import (
     OutboxEventPublisherAdapter,
     SessionTenantContext,
 )
+from modules.workspace_tenancy.infrastructure.delivery import ConsoleInvitationDelivery
 from modules.workspace_tenancy.infrastructure.query_service import WorkspaceQueryService
 from modules.workspace_tenancy.infrastructure.repositories import (
+    SqlAlchemyInvitationRepository,
     SqlAlchemyMembershipRepository,
     SqlAlchemyWorkspaceRepository,
 )
+from modules.workspace_tenancy.infrastructure.settings import load_tenancy_settings
 from signora_platform.event_bus import PostgresOutboxEventPublisher
 
 
@@ -35,12 +43,19 @@ class WorkspaceTenancyUseCases:
     get_workspace: GetWorkspaceUseCase
     list_workspace_members: ListWorkspaceMembersUseCase
     list_user_workspaces: ListUserWorkspacesUseCase
+    invite_member: InviteMember
+    list_invitations: ListInvitations
+    revoke_invitation: RevokeInvitation
 
 
 def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
     workspace_repository = SqlAlchemyWorkspaceRepository(session)
     membership_repository = SqlAlchemyMembershipRepository(session)
+    invitation_repository = SqlAlchemyInvitationRepository(session)
     tenant_context = SessionTenantContext(session)
+    # **Constructed here, at the composition root**, from the module's own
+    # settings rather than from `os.environ` anywhere downstream (§6, §20b).
+    delivery = ConsoleInvitationDelivery(app_url=load_tenancy_settings().app_url)
     event_publisher = OutboxEventPublisherAdapter(session, delegate=PostgresOutboxEventPublisher())
 
     return WorkspaceTenancyUseCases(
@@ -61,6 +76,14 @@ def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
             membership_repository=membership_repository,
         ),
         list_user_workspaces=ListUserWorkspacesUseCase(workspace_repository=workspace_repository),
+        invite_member=InviteMember(
+            workspaces=workspace_repository,
+            memberships=membership_repository,
+            invitations=invitation_repository,
+            delivery=delivery,
+        ),
+        list_invitations=ListInvitations(invitations=invitation_repository),
+        revoke_invitation=RevokeInvitation(invitations=invitation_repository),
     )
 
 
