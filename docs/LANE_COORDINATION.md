@@ -59,6 +59,7 @@
 | [C-014](#c-014--accessibility-and-performance-testing-are-qes-and-neither-exists) | Accessibility and performance testing are QE's, and neither exists | QE | **Product owner** (a milestone number) | `OPEN` | Nothing. **§20c already treats an accessibility issue as a defect class** |
 | [C-016](#c-016--two-branch-names-encode-a-permanent-module-assignment-that-no-longer-exists) | Two branch names encode a permanent module assignment that no longer exists | QE | **Product owner** | `OPEN` | Nothing. It misleads every lane that reads `git branch` |
 | [C-017](#c-017--the-onboarding-honesty-principle-has-no-permanent-home) | The onboarding honesty principle has no permanent home | Lane B | **Product owner** + QE | `OPEN` — **ratifiable text ready to paste** as `D39` | Nothing being built. **Every future onboarding flow, wizard and assistant** |
+| [C-020](#c-020--m7-has-no-scope-and-timeline-has-no-design) | M7 has no scope, and Timeline has no design | Lane B | **Product owner** (roadmap 🔴) | `OPEN` | **M7 entirely.** Lane B is assigned and cannot begin |
 
 ---
 
@@ -796,3 +797,65 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 > **Applied already, in the opposite direction.** The target-accounts screen says Signora **has been told** and does not say it has **started looking**, enforced by a test rather than by good intentions (`4d5f19f`). D39 generalises what that one screen did to every surface that ends with a promise.
 >
 > **This is the product-facing form of a rule the engineering constitution already states** — *the repository itself should always tell the truth* (`CLAUDE.md` §2). §2 governs what the repository asserts to an **engineer**; D39 governs what the product asserts to a **customer**, and the second is the one that costs trust.
+
+---
+
+## C-020 · M7 has no scope, and Timeline has no design
+
+| | |
+|---|---|
+| **Owner** | **Product owner** — the roadmap and `docs/architecture/01`–`21` are 🔴 |
+| **Requesting lane** | Lane B, assigned M7 on 2026-08-02 |
+| **Category** | Milestone definition · module design · infrastructure dependency |
+| **Status** | `OPEN` |
+| **Blocks** | **M7 entirely.** Lane B is assigned and cannot begin |
+| **Raised** | 2026-08-02, during the startup workflow for the M7 module assignment, **before any code** |
+
+**Lane B is assigned M7 and has completed the startup workflow. Implementation cannot begin, and the reason is not a dependency on another lane — it is that nobody has written down what M7 is.**
+
+### 1 · There is no M7 milestone definition
+
+[IMPLEMENTATION_ROADMAP.md §6](../IMPLEMENTATION_ROADMAP.md) opens: *"Every milestone specifies: Scope · Simulator Requirement · Demo Scenario · **Demo Checklist** · User-Visible Outcome · Definition of Done · Rollback Strategy · Operational Readiness Checklist"*, and then: **"A milestone is not complete until its Demo Checklist passes."**
+
+**§6 has no M7 entry.** It defines M0, M1.1, M1.2, M1.3A, M1.4, M1.5, M2.1, M2.2, M3A, M3B and M14.5 — every milestone that has been built. M7 exists as **two table rows**: position 15 in the execution sequence, *Timeline, ~6–8 ew*, and a build-matrix row reading *"✅ Required · Timeline entries"*.
+
+**So there is no Demo Checklist for M7 to pass**, which by the roadmap's own rule makes the milestone uncompletable rather than merely undefined.
+
+### 2 · There is no Timeline module design document
+
+Every built module has one, marked *as built*: `22`–`29`, `33`, and `40-commercial-profile.md`. **Timeline has five lines in [04-modules.md:395](architecture/04-modules.md)** — Owns, Does Not Own, Core Concepts, Key Consumed Events — and nothing else.
+
+`CLAUDE.md` §12 requires reading the relevant design before implementing anything non-trivial, and §21 forbids inventing architecture where the set does not cover a situation. **Both point the same way here.**
+
+### 3 · Meilisearch is ratified for exactly this module and provisioned nowhere
+
+[ADR-0008](architecture/adr/0008-search-and-vector-retrieval.md) selects Meilisearch **on Timeline's behalf specifically** — *"materially better out-of-the-box for the kind of sales-user-facing search Timeline needs"* — and [04-modules.md:399](architecture/04-modules.md) puts the timeline query API *"backed by Meilisearch"*.
+
+**It is in no compose file, no `make smoke` stage, and no Settings object.** `make smoke` runs 24 stages and stands up none of it. Standing up a new backing service is 🔴 infrastructure, not a slice's incidental setup, and the Infrastructure Contract (§20b) governs how it attaches.
+
+**A question that belongs with the answer:** is Meilisearch required *for M7*, or is it the eventual shape with a Postgres-backed first slice? ADR-0008 rules the technology; it does not schedule it, and nothing else does either.
+
+### 4 · Two of Timeline's five named consumed events come from a module that does not exist
+
+[04-modules.md:423](architecture/04-modules.md) lists `opportunity.created`, `opportunity.stage_changed`, `ai_reasoning.completed`, **`recommendation.created`, `recommendation.status_changed`**. [05-module-dependencies.md:72](architecture/05-module-dependencies.md) lists Recommendation Engine among Timeline's six upstreams.
+
+**Recommendation Engine is *Not started*** ([README.md:73](../README.md)). Timeline can be built against the three that exist, but *which* events M7 covers is a scope decision, and scope is what item 1 says is missing.
+
+### 5 · C-012, stated precisely rather than as a blocker it is not
+
+[C-012](#c-012--eventhandler-receives-no-session-so-no-module-handler-is-registered) says no module handler is registered and **the deployed worker consumes nothing**. Timeline is a *pure projection* — it has no input except consumed events — so it is the module where this bites hardest.
+
+**But it does not uniquely block M7.** Every existing module has the same condition, and the pipeline is exercised end to end through its real handlers in the integration suite and `make smoke`. Timeline can be built and proven the same way the other thirteen were. **Recorded so nobody reads it as M7's blocker** — the blockers are items 1 and 2, and C-012's own text already forbids working around it inside a product milestone.
+
+### What Lane B proposes
+
+**Two decisions, and Lane B can do most of the work once they are made.**
+
+| # | Decision | Whose |
+|---|---|---|
+| 1 | **The M7 milestone definition** — scope, demo scenario, demo checklist, user-visible outcome | **Product owner.** §6 is the roadmap, 🔴 |
+| 2 | **Meilisearch now, or Postgres first with Meilisearch on a stated trigger** | **Product owner** — infrastructure and ADR-0008's scheduling |
+
+**Lane B offers to draft the Timeline module design** — `41-timeline.md`, on the pattern of [40-commercial-profile.md](architecture/40-commercial-profile.md), which the assigned lane wrote for its own module. **As a proposal for ratification, not as a decision**, and after item 1, because a design written against a scope nobody has agreed is architecture invented by a coding session.
+
+**Lane B will not begin implementation** and has not written a line of `timeline`. The board reads `BLOCKED` with this item named, per §20e: *a lane whose module is blocked stays assigned and the blocker is named*.

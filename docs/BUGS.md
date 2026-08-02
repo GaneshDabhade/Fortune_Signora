@@ -69,6 +69,39 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-017 · A lane's merged slice disappeared from `integration`, and the backlog reoffers it
+
+| | |
+|---|---|
+| **Module** | **none** — repository process |
+| **Current assignee** | **none — not assignable.** [C-010](LANE_COORDINATION.md) |
+| **Severity** | 🟠 — work was lost from the integration line, and the queue now offers a task that was built |
+| **Status** | `OPEN` |
+| **Found** | 2026-08-02, by Lane B, on the startup workflow for its next assignment |
+
+**Steps to reproduce.** On `integration` at `f80f57d`:
+
+```bash
+git merge-base --is-ancestor 9c32daa origin/integration   # exit 1
+grep -c "5d — the collision" infra/state-check.py          # 0
+ls backend/tests/test_claim_collisions.py                  # No such file
+```
+
+**Expected.** `9c32daa` — *TASK-005, state-check reads the claims that have not merged yet* — was committed, pushed to `lane-b-commercial-profile`, and fast-forwarded onto `integration` (`c8a16c0..9c32daa`). It should be on `integration` or deliberately superseded with that recorded.
+
+**Actual.** It is on neither. `integration` was rebuilt: Lane B's two TASK-001 commits were **rebased** and survive as `a062adf` and `cc9a320`, and the **two TASK-005 commits were dropped** — the claim (`626e343`) and the implementation (`9c32daa`). Nothing records the decision.
+
+**Nothing is unrecoverable.** `9c32daa` is intact on `origin/lane-b-commercial-profile` and, incidentally, on `origin/lane-a-product-surface`, which rebased onto it.
+
+**Why it is worth a row rather than a shrug.** [`BACKLOG.md`](BACKLOG.md) now reads `TASK-005 · READY`, with the note *"what remains is the id-level checking"* — **which is what `9c32daa` implemented, with twelve tests.** The next lane to run the Task Claim Protocol will claim it and build it again. That is the duplicate implementation the protocol exists to prevent, arriving through the register instead of through a race.
+
+**It may well have been deliberate, and that is the point.** QE's `e1d2fa6` fixed the same problem better — claims now go to `integration`, which is the option Lane B recommended first in its own C-019 — and with claims in one place a cross-branch detector is largely redundant. **If TASK-005 was superseded, the defect is only that nothing says so**: a lane cannot tell a supersession from a lost commit, and the two call for opposite responses.
+
+**For whoever takes it.** Decide TASK-005's real state and record it: `DONE` (superseded, with `e1d2fa6` named), or `READY` with `9c32daa` cherry-picked back, or `READY` with its note corrected so it no longer asks for work that exists. **Also worth a rule:** when a Closeout rebuild drops a lane's commit, the drop is named in the Closeout message — the rebuild is legitimate, the silence is not.
+
+---
+
+
 ### B-015 · The certification audit passes vacuously in every lane's clone
 
 | | |

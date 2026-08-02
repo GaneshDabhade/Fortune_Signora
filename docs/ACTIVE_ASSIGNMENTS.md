@@ -63,12 +63,12 @@
 
 ---
 
-## Current — as of 2026-08-02, `c3e519a`
+## Current — as of 2026-08-02, `e07f3f9`
 
 | Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Started |
 |---|---|---|---|---|---|---|---|---|
 | **Lane A** | — | `lane-a-product-surface` | — | — | `AVAILABLE` | — | **Run the Task Claim Protocol.** Nobody will assign it; the queue is open | — |
-| **Lane B** | — | `lane-b-commercial-profile` | — | — | `AVAILABLE` | — | **Run the Task Claim Protocol.** TASK-001 promoted at `e07f3f9` | — |
+| **Lane B** | **M7 — Timeline** *(module assignment)* | `lane-b-commercial-profile` | `timeline` | — | `BLOCKED` | **[C-020](LANE_COORDINATION.md)** — M7 has no milestone definition and no module design; Meilisearch is ratified for it and provisioned nowhere | **Product owner to rule on [C-020](LANE_COORDINATION.md).** Startup workflow complete; implementation cannot begin without a scope nobody has written. Lane B has offered to draft the design for ratification | 2026-08-02 |
 | **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | Idle until a lane pushes work to `integration`. **QE's turn begins there** | 2026-08-01 |
 
 **Which lanes are available is the `Status` column above, and is not restated here** — a sentence beside a table is a second copy of one fact, and it drifted within an hour of being written (§2). **Unclaimed capacity:** lanes C, D and E ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).
@@ -100,7 +100,6 @@
 | QE | The Task Claim Protocol, and permanent task ids | 2026-08-02 | `7b91948` |
 | QE | Claim visibility, KPI tooling, and two dead checks made live | 2026-08-02 | `e1d2fa6` |
 | B | TASK-001 — three QE fixes verified, two new defects found | 2026-08-02 | `a062adf` |
-| QE | B-015 and B-016 fixed; governance declared stable | 2026-08-02 | `c3e519a` |
 | B | M12.5 slice 5 — target accounts. **M12.5 complete** | 2026-08-02 | `3f4e988` |
 | A | M12.4 — research on demand | 2026-08-02 | `c1f5985` |
 | A | R4-02 · R4-03 — the words the product uses when it refuses you | 2026-08-02 | `bdb014f` |
