@@ -14,11 +14,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from time import perf_counter_ns
 from uuid import UUID, uuid4
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from modules.provider_platform.application.ports import SyncRepository
+from modules.provider_platform.application.ports import (
+    NoSyncReporter,
+    SyncReporter,
+    SyncRepository,
+)
 from modules.provider_platform.domain.events import (
     ProviderRecordReceived,
     ProviderSyncCompleted,
@@ -74,10 +79,15 @@ class RunProviderSync:
         repository: SyncRepository,
         publisher: EventPublisher,
         session: AsyncSession,
+        reporter: SyncReporter | None = None,
     ) -> None:
         self._adapter = adapter
         self._repository = repository
         self._publisher = publisher
+        # **A null reporter rather than an optional one.** Every call site
+        # would otherwise carry the same `if self._reporter is not None`, and
+        # the branch that skips recording is the branch nothing exercises.
+        self._reporter = reporter or NoSyncReporter()
         # The session is injected rather than reached for through the
         # repository: publication must happen in the *same* transaction as
         # the state change that caused it, and that is a property of this
@@ -89,6 +99,10 @@ class RunProviderSync:
     ) -> RunProviderSyncResult:
         descriptor = self._adapter.describe()
         now = datetime.now(UTC)
+        # **Monotonic, not wall clock.** A duration read from `datetime` goes
+        # negative across an NTP step, and a negative latency in a histogram
+        # is worse than a missing one — it is believed.
+        started = perf_counter_ns()
 
         sync = ProviderSync.start(
             workspace_id=request.workspace_id,
@@ -121,11 +135,17 @@ class RunProviderSync:
             # The watermark is deliberately untouched, so a later run
             # resumes from the same place rather than re-reading from the
             # beginning or — worse — skipping what this run did not reach.
-            return await self._fail(sync, SyncFailureKind.TRANSIENT, str(exc), correlation_id)
+            return await self._fail(
+                sync, SyncFailureKind.TRANSIENT, str(exc), correlation_id, started=started
+            )
         except ProviderPayloadInvalidError as exc:
-            return await self._fail(sync, SyncFailureKind.CONTRACT, str(exc), correlation_id)
+            return await self._fail(
+                sync, SyncFailureKind.CONTRACT, str(exc), correlation_id, started=started
+            )
         except ProviderPermanentError as exc:
-            return await self._fail(sync, SyncFailureKind.PERMANENT, str(exc), correlation_id)
+            return await self._fail(
+                sync, SyncFailureKind.PERMANENT, str(exc), correlation_id, started=started
+            )
 
         sync.complete(now=datetime.now(UTC))
         await self._repository.save(sync)
@@ -147,6 +167,15 @@ class RunProviderSync:
             correlation_id=correlation_id,
         )
 
+        self._reporter.sync_completed(
+            provider=sync.provider,
+            duration_ms=_elapsed_ms(started),
+            # **Received, not stored.** Storage deduplicates, so `stored` is a
+            # measure of novelty and this is a measure of volume — and the
+            # scaling trigger this feeds is about how much a provider is being
+            # asked for, not how much of it turned out to be new.
+            records=sync.records_received,
+        )
         return RunProviderSyncResult(sync=sync, records_stored=stored)
 
     async def _drain(
@@ -225,7 +254,13 @@ class RunProviderSync:
         )
 
     async def _fail(
-        self, sync: ProviderSync, kind: SyncFailureKind, message: str, correlation_id: UUID
+        self,
+        sync: ProviderSync,
+        kind: SyncFailureKind,
+        message: str,
+        correlation_id: UUID,
+        *,
+        started: int,
     ) -> RunProviderSyncResult:
         sync.fail(kind=kind, message=message, now=datetime.now(UTC))
         await self._repository.save(sync)
@@ -246,6 +281,12 @@ class RunProviderSync:
             "provider sync failed",
             extra={"sync_id": str(sync.id), "provider": sync.provider.value, "kind": kind.value},
         )
+        # **Reported after the state is durable.** A metric emitted before the
+        # row was saved would describe a failure the database never recorded,
+        # and the two would disagree in the one direction nobody checks.
+        self._reporter.sync_failed(
+            provider=sync.provider, kind=kind, duration_ms=_elapsed_ms(started)
+        )
         return RunProviderSyncResult(sync=sync, records_stored=sync.records_received)
 
     async def _publish(self, event: object, *, correlation_id: UUID) -> None:
@@ -255,3 +296,7 @@ class RunProviderSync:
             producer_module="provider_platform",
             correlation_id=correlation_id,
         )
+
+
+def _elapsed_ms(started: int) -> int:
+    return (perf_counter_ns() - started) // 1_000_000

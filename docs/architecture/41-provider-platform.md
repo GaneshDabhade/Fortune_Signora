@@ -72,6 +72,7 @@
 | **PP-01** — a watermark belongs to one subject | [B-004](../BUGS.md), and the precondition [ADR-0036](adr/0036-target-account-contract.md) names | Built 2026-08-02 · [TASK-015](../BACKLOG.md) |
 | **PP-02** — the consumer | The module's first real input | **Built to the composition root; blocked there by [C-021](../LANE_COORDINATION.md)** |
 | **PP-03** — un-watching stops the spending | [ADR-0036](adr/0036-target-account-contract.md) §6 | **Re-scoped before it started — see below** |
+| **PP-04** — the module can be measured | §17 · [12-scalability.md](12-scalability.md)'s extraction trigger | Built 2026-08-02 |
 
 > **PP-02 and PP-03 are proposed slices, not registered tasks** (product-owner refinement, 2026-08-02). A feature lane plans its own sequence inside its implementation area; **it does not mint repository task identifiers** — that namespace is registered centrally, so two lanes cannot extend it independently. This table is the plan; [`BACKLOG.md`](../BACKLOG.md) is the register, and only QE writes ids into it.
 
@@ -98,6 +99,34 @@
 **Dispatch happens before the version is recorded.** If recording fails, the event redelivers, the delta is recomputed against the same watermarks and the same companies are dispatched again — wasteful once, and every layer below is idempotent. Recording first and failing to dispatch would lose the work **silently**, and nothing downstream would notice a company that was never fetched.
 
 ## Operational considerations
+
+### The module emits metrics — PP-04 *(2026-08-02)*
+
+**Built while PP-03 waits on [C-021](../LANE_COORDINATION.md), because the module was not out of executable work — only its next planned slice was.**
+
+**[12-scalability.md](12-scalability.md) states this module's extraction trigger:** *"if provider count and polling volume grow to the point where its scheduling/quota logic needs an independent deployment and on-call surface."* **That trigger was unmeasurable.** §17 exists for exactly this: stage latency, throughput and error rate are instrumented *because* the scaling triggers depend on them.
+
+#### Why counters, when every sync is already a row
+
+**`provider_sync` cannot answer a platform-wide question.** It is workspace-owned with forced RLS and every runtime identity is scoped to one workspace — permanently, by design. So *"what is the failure rate right now"* and *"is polling volume growing"* would require reading across every tenant, which is what the tenancy model exists to prevent.
+
+**Not a duplicated truth** (§2): the row records what happened to **one workspace's sync**; the instrument records how **the platform** is behaving. Only one of them is readable by an operator, and only the other can be shown to a customer.
+
+| Instrument | The decision it serves |
+|---|---|
+| `signora.provider.sync_duration_ms` | Latency, for the extraction trigger. **Recorded on failure too** — a sync that failed after four minutes and one that failed instantly are different incidents, and a series that excluded failures would look healthiest exactly when a provider started timing out |
+| `signora.provider.records_received` | Throughput. **Received, not stored**: storage deduplicates, so stored measures novelty and the trigger is about how much a provider is being *asked* for |
+| `signora.provider.sync_failures` | Error rate, attributed by `SyncFailureKind`. **`CONTRACT` is the sharp one** — a provider's payload stopped matching the adapter, which is an integration silently dropping data rather than one that is down. Today the first sign would be a customer asking why an account went quiet |
+
+**Provider is an attribute, never a metric name.** A metric per vendor makes *"is polling volume growing"* a query nobody can write without knowing the vendor list, and the vendor list changes.
+
+#### Two decisions inside it worth keeping
+
+**The reporter is a port in `application/`, and only the adapter knows OpenTelemetry exists.** The use case states what happened; whether that becomes a histogram, a log line or nothing belongs to the composition root.
+
+**Silence is the thing you have to ask for.** `build_run_sync` defaults to the real reporter and the null one is explicit — an observability gap is invisible by construction, so the default must not be the one that hides it. And a **null object rather than an optional reporter**: a `None` check at every call site is one behaviour duplicated at each of them, and the skip branch is the one nothing exercises.
+
+**Nothing here is a spend figure.** Operational facts and commercial policy stay separate (§10) — cost is applied at reporting time over these counts, never written beside them.
 
 **Fan-out is the known scaling question, and it is deliberately not designed for yet.** A declaration of *n* companies becomes *n* syncs. Under the recommended dispatch (C-021, route A) they run in one handler invocation on the `provider_sync` pool.
 

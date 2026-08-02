@@ -19,6 +19,7 @@ from modules.provider_platform.domain.sync import (
     RawProviderRecord,
     SyncWatermark,
 )
+from modules.provider_platform.domain.sync import SyncFailureKind
 from modules.provider_platform.domain.targets import TargetSyncState
 
 
@@ -74,3 +75,45 @@ class TargetSyncStateRepository(Protocol):
         fetched, and re-declared would look like *"no change"*.
         """
         ...
+
+
+class SyncReporter(Protocol):
+    """What `RunProviderSync` tells monitoring, and nothing more.
+
+    **A port, not an infrastructure type.** The use case states what happened;
+    whether that becomes an OpenTelemetry histogram, a log line or nothing at
+    all belongs to the composition root. Its signature therefore never names a
+    vendor library.
+
+    **Why metrics at all, when every sync is already a row.** `provider_sync`
+    is workspace-owned with forced RLS, so *"what is the failure rate across
+    the platform right now"* cannot be answered from it without reading across
+    every tenant — which the tenancy model exists to prevent. The row is what
+    happened to one workspace; these are how the platform is behaving.
+    """
+
+    def sync_completed(
+        self, *, provider: ProviderName, duration_ms: int, records: int
+    ) -> None: ...
+
+    def sync_failed(
+        self, *, provider: ProviderName, kind: SyncFailureKind, duration_ms: int
+    ) -> None: ...
+
+
+class NoSyncReporter:
+    """Records nothing, and is the default.
+
+    **So the use case never carries an optional reporter.** A `None` check at
+    every call site is one behaviour duplicated at each of them, and the branch
+    that skips recording is a branch nothing exercises — which is how a metric
+    quietly stops being emitted without any test noticing.
+    """
+
+    def sync_completed(self, *, provider: ProviderName, duration_ms: int, records: int) -> None:
+        return None
+
+    def sync_failed(
+        self, *, provider: ProviderName, kind: SyncFailureKind, duration_ms: int
+    ) -> None:
+        return None
