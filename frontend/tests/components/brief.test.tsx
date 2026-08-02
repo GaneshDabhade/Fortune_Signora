@@ -145,7 +145,18 @@ describe('the brief and the list say the same thing about the same account — R
     expect(screen.queryByText('Evidence current')).toBeNull();
   });
 
-  it('marks an account whose evidence has expired', () => {
+  it('does not repeat "expired" when the reading already says so', () => {
+    // **`is_current: false` implies `evidence: 'stale'`** — one derivation
+    // read from the score, the other from the opportunity — so the badge and
+    // `ReadingValidity` three lines below were stating one fact twice. The
+    // sentence states it better: it names the date.
+    //
+    // **This test previously asserted an unreachable state.** Its fixture
+    // paired `stale` with `is_current: true`, which the pipeline cannot
+    // produce: `evidence_state` is only `stale` when the score is absent or
+    // past its validity, and a brief showing an `AccountScore` with
+    // `is_current: true` is neither. It passed, and asserted nothing.
+    score.mockReturnValue({ ...IDLE, data: { ...SCORE, is_current: false } });
     opportunity.mockReturnValue({
       ...IDLE,
       data: committed({ evidence: 'stale', score: null, score_change_since_open: null }),
@@ -153,7 +164,17 @@ describe('the brief and the list say the same thing about the same account — R
 
     render(withQuery(<AccountBriefPage />));
 
-    expect(screen.getByText('Evidence expired')).toBeVisible();
+    expect(screen.queryByText('Evidence expired')).toBeNull();
+    expect(screen.getByText(/This reading expired/)).toBeVisible();
+  });
+
+  it('still marks a cooling account, which nothing else says', () => {
+    // The badge's whole remaining job. `cooling` is derived from the drop
+    // since the opportunity opened, and no other element on this page knows
+    // it — which is why R1-04 put it here in the first place.
+    render(withQuery(<AccountBriefPage />));
+
+    expect(screen.getByText('Cooling')).toBeVisible();
   });
 
   it('says nothing about evidence on an account nobody has taken on', () => {

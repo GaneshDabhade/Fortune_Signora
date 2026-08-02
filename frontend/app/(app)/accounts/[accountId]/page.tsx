@@ -217,7 +217,22 @@ export default function AccountBriefPage() {
               {opportunity ? (
                 <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-border pt-3">
                   <OpportunityMomentum opportunity={opportunity} />
-                  <EvidenceHealth evidence={opportunity.evidence} />
+                  {/* **Only when something else is not already saying it.**
+                      `is_current: false` implies `evidence: 'stale'` — the
+                      same derivation, one from the score and one from the
+                      opportunity — so on an expired account the badge and
+                      `ReadingValidity` three lines below stated one fact
+                      twice, and the sentence states it better: it names the
+                      date and explains the reading is shown as it stood.
+
+                      What the badge alone can say is **cooling**, which no
+                      other element on this page knows. Restricting it to that
+                      is the rule the component already applies to `current`
+                      — *"everything is fine" is noise that trains people to
+                      stop reading badges*. */}
+                  {score.is_current ? (
+                    <EvidenceHealth evidence={opportunity.evidence} />
+                  ) : null}
                 </div>
               ) : null}
 

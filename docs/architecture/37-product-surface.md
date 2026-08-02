@@ -580,3 +580,33 @@ The fix is not to duplicate the sentence. It moves onto the panel **only when no
 | **[C-025](../LANE_COORDINATION.md)** — the Signal Catalog's purpose | Understanding Signora's vocabulary | **Nine terms on the first screen with no definition anywhere** | **Onboarding** | R5-04, already built and reverted, ~70 lines |
 
 > **C-024 and C-021 are the two that matter.** Between them they hold five journeys, three product areas, and every collaboration capability the roadmap has ahead of it. **C-008 and C-025 are each one slice behind a one-sentence ruling.**
+
+---
+
+## Long-term review — 2026-08-02
+
+**A different question from the journey review.** Not *where does a workflow stop*, but *what does this page become after six months and thirty visits a day*. The brief is now eleven sections; that is the thing worth watching.
+
+### PS-07 — the same fact stops being said twice
+
+**`is_current: false` implies `evidence: 'stale'`.** One derivation is read from the score, the other from the opportunity, and they cannot disagree: `evidence_state` is `stale` exactly when the score is absent or past its validity, which is what `is_current` reports.
+
+So on an expired account the brief said it **twice in one card, three lines apart** — the badge saying *"Evidence expired"*, and `ReadingValidity` saying *"This reading expired on 20 Sep 2026. It is shown as it stood — nothing has replaced it yet."*
+
+**The sentence is the better of the two**: it names the date and explains that the reading is preserved rather than broken. **The badge's remaining job is `cooling`**, which no other element on the page knows — and restricting it to that is the rule the component already applies to `current`: *"everything is fine" is noise that trains people to stop reading badges.*
+
+**Introduced by PS-01 and removed here.** R1-04 was right that the brief had to say *cooling*; carrying `stale` along with it was the part that did not earn its place.
+
+#### A test that had stopped asserting anything
+
+`brief.test.tsx` asserted the badge appeared for an expired account — with a fixture pairing `evidence: 'stale'` and `is_current: true`. **The pipeline cannot produce that pair.** The test passed throughout and asserted nothing: a guard that cannot fail, in test form. It now sets the state that actually occurs and asserts the fact is stated **once**.
+
+### What else the lens found, and did not act on
+
+| Lens | Observation |
+|---|---|
+| **Information density** | **Eleven sections on the brief**, and every one earns its place today. **This is the thing to watch, not to fix** — the next slice that adds a twelfth should be asked whether something can go, and that question needs somebody who has used it daily, not an architect reading it |
+| **Repeated information** | One more instance, deliberately kept: the *"Before you act"* empty state also says the evidence expired. **Different section, different question** — *why is there nothing to check* — and a reader can arrive there without reading the score card. Recorded so a future reviewer knows it was considered rather than missed |
+| **Discoverability** | The decision controls sit at the top, under the account name, and every other section is reference. **Correct for a reader who already knows what they want**; unknown for a first-time reader, and that is the same unknown the six-perspective review recorded |
+| **Workflow continuity** | Served: position in the list, next account by name at the decision, and the decision trail. **Nothing found** |
+| **Operational transparency** | Provenance on narration, catalog-authored limitations, Signora-versus-person on every decision. **Nothing found**, and the same positive result as the AI-trust perspective |
