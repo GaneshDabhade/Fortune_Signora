@@ -107,6 +107,20 @@ audit — no commit has been promoted since the rule was ratified.
 
 **Not fixed here.** `infra/` has no assignable lane ([C-010](LANE_COORDINATION.md)) and Lane B is verifying, not fixing. Reported rather than repaired, which is the correct alternative to touching another owner's file.
 
+### A second site, found 2026-08-02 under [TASK-005](BACKLOG.md)
+
+**`infra/state-check.py:96` has the same line.** `main_sha = _git("rev-parse", "--short=7", "main")` resolves the local ref, and every check built on it inherits the staleness. **It is not silent here — it is worse: it produces a confident false finding.**
+
+```
+·  PROJECT_STATUS.md names `f996a42`, which predates the latest certification
+   (7b91948). The dashboard describes a repository that has since been certified
+   at a later commit.
+```
+
+`f996a42` is this clone's stale local `main`. The dashboard is fine; the newest commit it names that is *reachable from the ref the script chose* is 35 commits old. **A lane running the documented Closeout check is told a governance document is stale when it is not**, which spends attention and teaches the reader to discount the tool.
+
+**Same root cause, same one-line fix, and it should be taken with the first** — the two files are the only places the repository resolves `main` by bare ref name. **Not fixed under TASK-005:** that task is *"`state-check` learns the backlog"*, and widening a `READY` task's scope is the product owner's, not a lane's.
+
 ---
 
 ### B-016 · The documented startup command reads a key file nothing creates

@@ -77,6 +77,71 @@ def _newest_named_commit(text: str, head: str) -> str | None:
     return newest
 
 
+HOLDING_STATUSES = ("CLAIMED", "ACTIVE", "IN VALIDATION")
+
+
+def _backlog_claims(backlog: str) -> dict[str, str]:
+    """`{task id: lane}` for every task a backlog says somebody is holding.
+
+    Parsed per `### TASK-nnn` block rather than line by line, because a lane's
+    claim note frequently names *other* tasks — the reason it passed them over —
+    and a scan that saw only `TASK-nnn` near `Lane X` would read those as claims.
+    """
+    claims: dict[str, str] = {}
+    for block in re.split(r"^### TASK-", backlog, flags=re.M)[1:]:
+        task = re.match(r"(\d+)", block)
+        status = re.search(r"\|\s*\*\*Status\*\*\s*\|(.*)", block)
+        if task is None or status is None:
+            continue
+        row = status.group(1)
+        if not any(f"`{state}`" in row for state in HOLDING_STATUSES):
+            continue
+        lane = re.search(r"\*\*(Lane [A-Z]|QE)\*\*", row)
+        if lane is not None:
+            claims[task.group(1)] = lane.group(1)
+    return claims
+
+
+def _board_claims(assignments: str) -> dict[str, set[str]]:
+    """`{task id: lanes}` from the board's *Current* section only.
+
+    Scoped the same way check 3 is, and for the same reason: *Recently completed*
+    names tasks that have shipped, and counting those as live claims would make
+    every finished task look contested forever.
+    """
+    if "## Current" not in assignments:
+        return {}
+    current = assignments.split("## Current", 1)[1].split("\n## ", 1)[0]
+    claims: dict[str, set[str]] = {}
+    for row in current.splitlines():
+        if not row.startswith("| ") or "TASK-" not in row:
+            continue
+        cells = row.split("|")
+        lane = cells[1].strip().strip("*")
+        if not lane.startswith("Lane") and lane != "QE":
+            continue
+        # The task cell only. A `Next action` may reference another task.
+        for task in re.findall(r"\bTASK-(\d+)\b", cells[2] if len(cells) > 2 else ""):
+            claims.setdefault(task, set()).add(lane)
+    return claims
+
+
+def _lane_branches() -> list[str]:
+    """Every lane's published branch, from local remote-tracking refs.
+
+    **No network.** These refs are whatever the last `git fetch` left behind, so
+    the check is only as current as the caller's fetch — which is stated in the
+    finding rather than hidden, because a stale answer presented as a fresh one
+    is worse than no answer.
+    """
+    refs = _git("for-each-ref", "--format=%(refname:short)", "refs/remotes/origin/lane-*")
+    return [ref for ref in refs.splitlines() if ref]
+
+
+def _file_at(ref: str, relative: str) -> str:
+    return _git("show", f"{ref}:{relative}")
+
+
 def _latest_certification() -> dict[str, object] | None:
     manifest = REPO_ROOT / "certification" / "manifest.json"
     if not manifest.exists():
@@ -235,11 +300,74 @@ def main() -> int:
                 f"which BACKLOG.md does not define. A claim must refer to a task that exists."
             )
 
+        # (c) the backlog and the board must name the same holder.
+        #
+        # Two files record one claim, so they can disagree — and the disagreement
+        # is not cosmetic: a lane reading the backlog and a lane reading the board
+        # would reach different conclusions about whether a task is free.
+        board_here = _board_claims(assignments)
+        for task, lane in _backlog_claims(backlog).items():
+            holders = board_here.get(task, set())
+            if not holders:
+                findings.append(
+                    f"BACKLOG.md says {lane} holds TASK-{task}; ACTIVE_ASSIGNMENTS.md "
+                    f"has no row for it. A claim is recorded in both, and a lane "
+                    f"reading only the board would take work somebody else holds."
+                )
+            elif lane not in holders:
+                findings.append(
+                    f"BACKLOG.md says {lane} holds TASK-{task}; the board says "
+                    f"{' and '.join(sorted(holders))}. One of the two is wrong."
+                )
+
         if not contested and not unknown:
             ready = len(re.findall(r"^### TASK-\d+", backlog, re.M))
             notes.append(
                 f"Backlog: {len(known)} task(s), {ready} READY, no task claimed twice."
             )
+
+    # 5d — the collision the protocol actually loses to, and the one 5c cannot see.
+    #
+    # **A claim lives on the claiming lane's branch until it merges.** Protocol
+    # step 8 pulls `integration` and looks at what came back, so two lanes can each
+    # push a claim, each see an unchanged `integration`, and each conclude they
+    # were first. By the time both claims are in one file, somebody has already
+    # reconciled them — which is why 5c, reading one working tree, can only ever
+    # report a race that is already over.
+    #
+    # Found the hard way: Lane B claimed TASK-002 on 2026-08-02 and discovered
+    # Lane A holding it only by reading their branch by hand (C-019).
+    #
+    # This reads every lane's published backlog instead. It is advisory like
+    # everything else here — the protocol decides who abandons, not this script.
+    branches = _lane_branches()
+    if branches:
+        across: dict[str, dict[str, str]] = {}
+        for ref in branches:
+            published = _file_at(ref, "docs/BACKLOG.md")
+            if not published:
+                continue
+            for task, lane in _backlog_claims(published).items():
+                across.setdefault(task, {})[lane] = ref
+
+        collisions = {t: holders for t, holders in across.items() if len(holders) > 1}
+        for task, holders in sorted(collisions.items()):
+            who = ", ".join(f"{lane} ({ref})" for lane, ref in sorted(holders.items()))
+            findings.append(
+                f"TASK-{task} is claimed on more than one lane branch: {who}. "
+                f"The Task Claim Protocol requires the later claim to be abandoned "
+                f"— step 9, and the lane that pushed second is the one that drops it."
+            )
+        if not collisions:
+            notes.append(
+                f"No task claimed on two lane branches ({len(branches)} branch(es) "
+                f"read from remote-tracking refs — as current as the last fetch)."
+            )
+    else:
+        notes.append(
+            "No lane branches in remote-tracking refs; cross-branch claim check "
+            "skipped. Run `git fetch origin` for it to mean anything."
+        )
 
     # 6 — a coordination register that only grows has become a discussion log.
     opened = len(re.findall(r"^#{2,3} C-\d+", coordination, re.M))

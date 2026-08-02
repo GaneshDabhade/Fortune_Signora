@@ -59,6 +59,7 @@
 | [C-014](#c-014--accessibility-and-performance-testing-are-qes-and-neither-exists) | Accessibility and performance testing are QE's, and neither exists | QE | **Product owner** (a milestone number) | `OPEN` | Nothing. **§20c already treats an accessibility issue as a defect class** |
 | [C-016](#c-016--two-branch-names-encode-a-permanent-module-assignment-that-no-longer-exists) | Two branch names encode a permanent module assignment that no longer exists | QE | **Product owner** | `OPEN` | Nothing. It misleads every lane that reads `git branch` |
 | [C-017](#c-017--the-onboarding-honesty-principle-has-no-permanent-home) | The onboarding honesty principle has no permanent home | Lane B | **Product owner** + QE | `OPEN` — **ratifiable text ready to paste** as `D39` | Nothing being built. **Every future onboarding flow, wizard and assistant** |
+| [C-019](#c-019--a-claim-is-invisible-to-the-step-meant-to-arbitrate-it) | A claim is invisible to the step meant to arbitrate it | Lane B | **Product owner** (§20e) | `OPEN` — **it has already happened once** | Nothing. Every concurrent claim, and `C-` id allocation with it |
 
 ---
 
@@ -796,3 +797,46 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 > **Applied already, in the opposite direction.** The target-accounts screen says Signora **has been told** and does not say it has **started looking**, enforced by a test rather than by good intentions (`4d5f19f`). D39 generalises what that one screen did to every surface that ends with a promise.
 >
 > **This is the product-facing form of a rule the engineering constitution already states** — *the repository itself should always tell the truth* (`CLAUDE.md` §2). §2 governs what the repository asserts to an **engineer**; D39 governs what the product asserts to a **customer**, and the second is the one that costs trust.
+
+---
+
+## C-019 · A claim is invisible to the step meant to arbitrate it
+
+| | |
+|---|---|
+| **Owner** | **Product owner** — the Task Claim Protocol is `CLAUDE.md` §20e, governance |
+| **Requesting lane** | Lane B |
+| **Category** | Repository process · the claim protocol |
+| **Status** | `OPEN` |
+| **Blocks** | Nothing. **It has already happened once**, and it will happen again on every concurrent claim |
+| **Raised** | 2026-08-02, by Lane B, immediately after losing a race the protocol did not detect |
+
+**Step 7 publishes the claim to the lane's own branch. Step 8 looks at `integration`.** Those are different places, and nothing merges the first into the second before step 9 has to decide.
+
+> **A lane can complete all ten steps, see `integration` unchanged, and be second.**
+
+**What happened, on the protocol's first genuinely concurrent use.** Lane B claimed `TASK-002`, pushed to `lane-b-commercial-profile`, and ran step 8: `git pull --rebase origin integration` returned *"up to date"* and `BACKLOG.md` on `integration` still read `READY`. By the letter of the protocol the claim was first. **It was not** — Lane A already held `TASK-002` at `IN VALIDATION` on `lane-a-product-surface`, and had moved on to `TASK-004`. Lane B found this only by reading Lane A's branch directly, which no step asks for.
+
+**The claim was abandoned per step 9 and cost one commit and no code**, exactly as the design intends. The ordering worked. **The detection did not.**
+
+### Why this is not simply "Lane B should have looked harder"
+
+**Both lanes behaved correctly.** Neither published to `integration`; nothing in the protocol says to. The failure is that *"look at what came back"* names a place a claim is not yet in — and a rule whose correct execution still permits the outcome it prevents is the rule that needs changing, not the operator.
+
+It is also the failure mode this repository keeps finding in a different coat: [B-015](BUGS.md) is a guard reporting success while examining a ref that holds none of the relevant history. **Same shape, one level up** — the check is pointed somewhere the fact is not.
+
+### Three candidate resolutions, and Lane B's position
+
+| | What it costs | What it fixes |
+|---|---|---|
+| **A · Step 7 pushes the claim to `integration` too** | The claim commit merges immediately, before any implementation. Two extra commands | Makes `integration` the single place a claim exists, so step 8's question is answerable there. **Lane B has been doing this since `TASK-001`** — not as a decision, but because it seemed obviously right, which is its own small finding |
+| **B · Step 8 reads every lane branch** | Step 8 becomes `git fetch` plus a scan across `refs/remotes/origin/lane-*` | Detects the collision without changing where claims live. **This is what [TASK-005](BACKLOG.md) now implements**, and it works — but it is a *detector*, and it runs when somebody runs it |
+| **C · Both** | Nothing beyond A and B | A prevents the ambiguity; B catches the case where a lane forgets. Belt and braces on a rule whose whole purpose is arbitration |
+
+**Lane B recommends C, and would take A first if only one is wanted.** B is already built and shipping in TASK-005; it makes the collision *findable*, which is worth having regardless. But a detector that runs at Closeout finds a race hours after both lanes have written code, and A is what stops the race being possible at all — it costs two commands and makes step 8's answer mean what step 8 claims it means.
+
+**The question.** Does the protocol change, and to which of the three? **Lane B will not amend `CLAUDE.md` §20e** — it is the product owner's file and this is governance, not tooling.
+
+### Ids collided too, in the same hour, and it is the same root cause
+
+**Lane A opened `C-018` on its branch while Lane B was reading `integration`, where the highest was `C-017`.** Lane B has taken `C-019` rather than `C-018` — having seen Lane A's branch — but a lane that only read `integration` would have allocated `C-018` twice. **QE has already had to renumber this register once for exactly this reason.** Whatever resolves the claim race should resolve id allocation with it: both are *"two lanes writing to a shared namespace on branches neither can see."*
