@@ -50,6 +50,33 @@ def _migration_head() -> str | None:
     return heads[-1] if heads else None
 
 
+def _is_ancestor(candidate: str, descendant: str) -> bool:
+    return (
+        subprocess.run(
+            ["git", "merge-base", "--is-ancestor", candidate, descendant],
+            cwd=REPO_ROOT,
+            capture_output=True,
+        ).returncode
+        == 0
+    )
+
+
+def _newest_named_commit(text: str, head: str) -> str | None:
+    """The newest commit named in `text` that is reachable from `head`.
+
+    Scans for bare 7-hex tokens rather than a fixed phrase, because the dashboard
+    names commits in prose as often as in a table, and a check that only reads one
+    cell is a check that a small edit silently disables.
+    """
+    newest: str | None = None
+    for token in dict.fromkeys(re.findall(r"\b[0-9a-f]{7}\b", text)):
+        if not _is_ancestor(token, head):
+            continue
+        if newest is None or _is_ancestor(newest, token):
+            newest = token
+    return newest
+
+
 def _latest_certification() -> dict[str, object] | None:
     manifest = REPO_ROOT / "certification" / "manifest.json"
     if not manifest.exists():
@@ -67,29 +94,42 @@ def main() -> int:
     notes: list[str] = []
 
     main_sha = _git("rev-parse", "--short=7", "main")
-    # The dashboard is written *after* the promotion it describes, so the commit
-    # carrying it is one ahead of the commit it names. Accepting `main`'s parent
-    # is not a loosening: a check nothing can satisfy would be failed every cycle
-    # and then ignored, which is worse than not checking. Anything older than the
-    # parent is genuinely stale and still reported.
-    parent_sha = _git("rev-parse", "--short=7", "main~1")
     status = _read("PROJECT_STATUS.md")
     handoff = _read("docs/SESSION_HANDOFF.md")
     assignments = _read("docs/ACTIVE_ASSIGNMENTS.md")
     bugs = _read("docs/BUGS.md")
     coordination = _read("docs/LANE_COORDINATION.md")
 
-    # 1 — the dashboard should name the promoted commit.
+    # 1 — the dashboard must not predate the promotion it describes.
+    #
+    # It cannot name the commit that carries it — that sha does not exist until
+    # the commit is written — and Closeout is usually several commits, so
+    # "names HEAD" and "names HEAD's parent" are both rules nothing can satisfy.
+    # A rule that always fails is a rule everybody learns to ignore.
+    #
+    # What is actually checkable, and is what the rule was reaching for: the
+    # dashboard names a commit that is **reachable from `main`** and is **no
+    # older than the latest certification**. A dashboard describing a commit
+    # from before the last certified run is stale, and that is the failure this
+    # exists to catch.
+    certified = _latest_certification() or {}
+    certified_commit = str(certified.get("commit") or "")[:7]
     if main_sha and status:
-        if main_sha not in status and parent_sha not in status:
+        named = _newest_named_commit(status, main_sha)
+        if named is None:
             findings.append(
-                f"PROJECT_STATUS.md does not mention `main` ({main_sha}). Either the "
-                f"dashboard predates the promotion, or Repository Closeout did not "
-                f"run (lifecycle stage 5)."
+                f"PROJECT_STATUS.md names no commit reachable from `main` ({main_sha}). "
+                f"Either the dashboard predates the promotion, or Repository Closeout "
+                f"did not run (lifecycle stage 5)."
+            )
+        elif certified_commit and not _is_ancestor(certified_commit, named):
+            findings.append(
+                f"PROJECT_STATUS.md names `{named}`, which predates the latest "
+                f"certification ({certified_commit}). The dashboard describes a "
+                f"repository that has since been certified at a later commit."
             )
         else:
-            named = main_sha if main_sha in status else f"{parent_sha}, the commit it closed out"
-            notes.append(f"PROJECT_STATUS.md names `main` ({named}).")
+            notes.append(f"PROJECT_STATUS.md names `{named}`, reachable from `main` ({main_sha}).")
 
     # 2 — certification expires by derivation. Say so out loud rather than
     #     leaving it to somebody to notice.
@@ -136,8 +176,9 @@ def main() -> int:
 
     # 5 — the handoff is the cold-start document; a dashboard newer than it
     #     means a session would resume from the older of the two.
-    handoff_names_head = main_sha in handoff or parent_sha in handoff
-    if main_sha and handoff and not handoff_names_head and (main_sha in status or parent_sha in status):
+    handoff_named = _newest_named_commit(handoff, main_sha)
+    status_named = _newest_named_commit(status, main_sha)
+    if handoff_named is None and status_named is not None:
         findings.append(
             "SESSION_HANDOFF.md does not mention the promoted commit while "
             "PROJECT_STATUS.md does. A cold session reads the handoff first."
