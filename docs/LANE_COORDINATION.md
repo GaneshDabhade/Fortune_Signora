@@ -58,6 +58,7 @@
 | [C-013](#c-013--publishableevent-cannot-be-satisfied-by-a-frozen-dataclass) | `PublishableEvent` cannot be satisfied by a frozen dataclass | QE | **Product owner** (platform §20a) | `WAITING` — RFC queued since M3A | Nothing today; every new event pays the workaround |
 | [C-014](#c-014--accessibility-and-performance-testing-are-qes-and-neither-exists) | Accessibility and performance testing are QE's, and neither exists | QE | **Product owner** (a milestone number) | `OPEN` | Nothing. **§20c already treats an accessibility issue as a defect class** |
 | [C-016](#c-016--two-branch-names-encode-a-permanent-module-assignment-that-no-longer-exists) | Two branch names encode a permanent module assignment that no longer exists | QE | **Product owner** | `OPEN` | Nothing. It misleads every lane that reads `git branch` |
+| [C-017](#c-017--the-onboarding-honesty-principle-has-no-permanent-home) | The onboarding honesty principle has no permanent home | Lane B | **Product owner** + QE | `OPEN` — **ratifiable text ready to paste** as `D39` | Nothing being built. **Every future onboarding flow, wizard and assistant** |
 
 ---
 
@@ -751,3 +752,47 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 
 
 ---
+## C-017 · The onboarding honesty principle has no permanent home
+
+| | |
+|---|---|
+| **Owner** | **Product owner** (ratification) + **QE** (the file) |
+| **Requesting lane** | Lane B |
+| **Category** | Product design principle · cross-cutting |
+| **Status** | `OPEN` — **text ready to paste.** Lane B may not place it |
+| **Blocks** | Nothing being built. **Every future onboarding flow, guided setup, wizard and assistant** |
+| **Raised** | 2026-08-02, on the product owner's direction to formalize the distinction found in [C-007](#c-007--the-guided-first-run-is-a-two-lane-build) |
+
+**The principle was ruled on inside C-007 and currently lives there**, which is the wrong home by this register's own rule: *a decision that outlives the question belongs in the architecture and not in a working register.* [C-009's proposal moved to ADR-0037](architecture/adr/0037-failure-categories.md) for exactly this reason. This one has the same problem — **a permanent principle discoverable only by reading a closed negotiation about one first-run flow will not be found by whoever designs the next wizard.**
+
+**Lane B cannot place it.** [38-product-design-principles.md](architecture/38-product-design-principles.md) is not a feature lane's, and an ADR is 🔴.
+
+### The recommendation
+
+| | |
+|---|---|
+| **The opportunity** | One entry in the design-principles record, ratified, so every future guided surface inherits the rule instead of rediscovering it |
+| **Why it matters** | It was **not** obvious. Two lanes agreed a sequencing condition, both wrote it as *"after slice 5"*, and both were wrong the same way — the prerequisite steps existing is not the advertised outcome existing. A rule two careful lanes missed once will be missed again |
+| **Expected value** | Preventive and cheap: a paragraph that governs onboarding, guided setup, wizards, assistants, and any surface ending in a promise. **The failure it prevents is the expensive kind** — a customer completes setup, is told monitoring has begun, and nothing happens. Nobody files that as a bug; they just stop trusting the product |
+| **Dependencies** | None. It describes existing behaviour and forbids a future one; nothing must be built first |
+| **Suggested sequencing** | **Before C-007 is scheduled**, so the flow is designed against a ratified rule rather than a recollection of this exchange. It does not wait for the consumer |
+
+**This is a recommendation, not a commitment.** Lane B is `AVAILABLE` and claims nothing here.
+
+### Ready to paste — proposed `D39`
+
+*Ids in [38-product-design-principles.md](architecture/38-product-design-principles.md) run to `D38`, so `D39` is next in sequence. The number is not Lane B's to assign.*
+
+> ## D39 — a surface never advertises a capability the system cannot execute *(2026-08-02)*
+>
+> **A feature must not advertise a capability the repository cannot yet perform**, and an onboarding workflow finishes only when the capability it advertises genuinely exists.
+>
+> **Completion of the prerequisite implementation is not sufficient.** That is the distinction that was missed: a flow's *steps* existing and a flow's *outcome* existing are different conditions, and the second is the one a customer experiences. A guided setup whose five steps all work, and which ends by saying monitoring has begun when nothing consumes the declaration, has completed every step and told the truth at none of them.
+>
+> **Found in [C-007](../LANE_COORDINATION.md#c-007--the-guided-first-run-is-a-two-lane-build), 2026-08-02.** Both lanes agreed the guided first run was unblocked once M12.5 shipped all five declarations. It was not: the last step publishes `commercial_profile.target_accounts_changed`, no consumer exists, and the flow's ending would have been an assertion the platform could not keep. **The flow waits for the capability, not for the milestone.**
+>
+> **The test, deliberately about the ending rather than the steps:** *at the moment this surface finishes, what has it told the customer will now happen — and can the repository do that today?* If the answer is no, the surface either says something smaller and true, or it waits.
+>
+> **Applied already, in the opposite direction.** The target-accounts screen says Signora **has been told** and does not say it has **started looking**, enforced by a test rather than by good intentions (`4d5f19f`). D39 generalises what that one screen did to every surface that ends with a promise.
+>
+> **This is the product-facing form of a rule the engineering constitution already states** — *the repository itself should always tell the truth* (`CLAUDE.md` §2). §2 governs what the repository asserts to an **engineer**; D39 governs what the product asserts to a **customer**, and the second is the one that costs trust.
