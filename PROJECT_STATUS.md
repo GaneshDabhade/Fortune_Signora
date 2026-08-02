@@ -19,8 +19,8 @@
 | **Current phase** | **Product implementation** — the pipeline is built; the surface is being exposed |
 | **Last completed milestone** | **M12.5 — Commercial Profile**, all five slices promoted 2026-08-02. The head of the pipeline now exists |
 | **Current milestones** | **M12.3 — the product surface.** The brief's hierarchy (D20) remains; **R2-01 shipped this cycle**. *(Decision Package still deferred until `reasoning@1` is released — see §7)* |
-| **`main` at** | **`c3e519a`** — *Governance is stable now, and says so*. **The certified commit itself**, promoted by SHA and checked after the merge |
-| **Certification status** | ✅ **CERTIFIED** — [`c3e519a2f2df`](certification/reports/c3e519a2f2df.md), 2026-08-02, bound to migration head **`0025`** and rendering protocol **v2**. **Commit-bound**: the record names `c3e519a`, and `c3e519a` is what was promoted. `make certified ARGS="--audit-main"` proves it across the branch. See §4 |
+| **`main` at** | **`0e5a64b`** — *A cycle is warranted by executable change*. **The certified commit itself**, promoted by SHA and checked after the merge |
+| **Certification status** | ✅ **CERTIFIED** — [`0e5a64b791d8`](certification/reports/0e5a64b791d8.md), 2026-08-02, bound to migration head **`0025`** and rendering protocol **v2**. **Commit-bound**: the record names `0e5a64b`, and `0e5a64b` is what was promoted. `make certified ARGS="--audit-main"` proves it across the branch. See §4 |
 | **Branches** | **`main` and `lane-qe` at the promoted, certified baseline.** `integration` sits **one slice ahead** — Lane A's R2-01 landed while QE was measuring `main`; it is validated by its own lane, **not yet by QE**, and is the next cycle's stage 1. Both feature lane branches are synchronized to `integration`. **QE is the only lane that merges, certifies, promotes and publishes this file** ([CLAUDE.md §20e](CLAUDE.md)). Who is on what: [docs/ACTIVE_ASSIGNMENTS.md](docs/ACTIVE_ASSIGNMENTS.md) · defects: [docs/BUGS.md](docs/BUGS.md) · cross-lane questions: [docs/LANE_COORDINATION.md](docs/LANE_COORDINATION.md) |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
 | **Overall completion** | **~66%** by engineering effort (~205 of ~261–339 ew) — M12.5 closed (five slices) · M12.4 shipped · M9.5 (~3 ew) inserted and **not** closed. **An estimate, and marked as one**; every other figure on this page is measured |
@@ -37,39 +37,41 @@ They can also **follow any ledger line to the provider readings beneath it**, an
 
 ---
 
-## 1b · Release summary — 2026-08-02, cycle 7
+## 1b · Release summary — 2026-08-02, cycle 8
 
-**Derived from the promoted commit `c3e519a`.** Three commits since `e07f3f9`, all QE's.
+**Derived from the promoted commit `0e5a64b`.** Four commits since `c3e519a`, one executable and three that rode with it.
 
-### Governance is now stable, and the constitution says so
+### Certification scope is now ratified
 
-**Ratified by the product owner and written into `CLAUDE.md` §20e.** Ten governance refinements landed today, each justified by a defect the one before it exposed — **and that sequence terminates.** Certification, promotion, claiming, repository state and validation are deterministic; **what the repository is short of is product, not process.**
+**A cycle is warranted by executable change, not by movement** (`CLAUDE.md` §20e). Production code, infrastructure, migrations, tooling and architectural behaviour earn one; **documentation, claims, planning and board maintenance accumulate** until they accompany executable work.
 
-> **The order of work is now: build product functionality · observe real execution · improve governance only when execution reveals an actual bottleneck.** Governance changes when a real defect exposes a weakness, when two lanes hit the same friction, when determinism is threatened, or when a machine can take over a judgement. **Otherwise it does not change.**
+**This began as an observation held back last cycle** — `--next-cycle` would have triggered a full gate run for three documentation commits, because it asked whether a commit was a *claim* rather than whether it changed anything. It was recorded rather than fixed, and the product owner ratified the policy instead. **That is the reactive model working in the direction it was designed to.**
 
-**The repository's success is measured by engineering throughput, feature completion, repository quality and certification reliability — never by the number of governance refinements introduced.**
+**Recorded with it:** observations found during certification do not expand its scope. Unless one blocks, it goes to the backlog.
 
-### Two QE-owned defects fixed
+### The queue now reports its own depth
+
+**`Queue depth (claimable now)`** — READY tasks nobody has claimed. **When it reaches zero, a lane with nothing to take reaches for work that has no task id and no agreed scope**, which is exactly how Lane B ended up holding M7. It measures the queue and never the plan.
+
+### Repository throughput — the limiting factor is planning, not process
 
 | | |
 |---|---|
-| [B-015](docs/BUGS.md) | **The certification audit passed vacuously** in any clone lacking the baseline commit. It now refuses to answer rather than answering falsely. Proven by pointing the baseline at a nonexistent commit |
-| [B-016](docs/BUGS.md) | **The documented startup command read a key file nothing creates**, silently emptying the signing key. The line is gone; `.gitignore` gains `*.pem` and `.dev-keys/` |
+| **Lane A** | **TASK-002 and TASK-004 are complete and `IN VALIDATION`** on `lane-a-product-surface`. Two product slices finished and awaiting QE |
+| **Lane B** | **`AVAILABLE`, and rescanned the queue finding nothing eligible.** It released M7 to `WAITING` on [C-020](docs/LANE_COORDINATION.md) rather than proceeding without a scope — **correct behaviour, and an idle lane** |
+| **QE** | Idle between cycles, which is the resting state |
 
-**Both were found by Lane B while verifying QE's earlier fixes**, which is the argument for the rule that a fix is never closed by its author.
-
-### And QE withdrew a change it should not have made
-
-**`state-check` is TASK-005, claimed by Lane B, and QE edited it anyway** while chasing a false positive — feature implementation inside another lane's claim, two turns after tightening the protocol that arbitrates claims. **The change was withdrawn**; Lane B's implementation is the better one, parsing per task block rather than per line. The observation was handed over rather than acted on.
+> **A lane is idle for want of defined work, not for want of governance.** M7 has no milestone definition, no agreed scope, no module design and no infrastructure sequencing — all product-owner responsibilities, and **QE is deliberately not compensating for them.**
 
 ### Remaining blockers
 
-1. **[TASK-006](docs/BACKLOG.md)** ([C-010](docs/LANE_COORDINATION.md)) — **five defects have now landed in code no lane may touch.** Awaiting product-owner direction on permanent ownership; **no temporary ownership is being created.**
-2. **[TASK-013](docs/BACKLOG.md)** — `reasoning@1` has no released model (§7).
+1. **[C-020](docs/LANE_COORDINATION.md)** — M7 Timeline has no scope. **It is idling a lane today.**
+2. **[TASK-006](docs/BACKLOG.md)** ([C-010](docs/LANE_COORDINATION.md)) — five defects in code no lane may touch.
+3. **[TASK-013](docs/BACKLOG.md)** — `reasoning@1` has no released model (§7).
 
 ### Recommended next work
 
-**Product.** Lane A holds TASK-002 and TASK-004 with PS-01 and PS-02 built; Lane B holds TASK-005. Three `READY` tasks remain in [`docs/BACKLOG.md`](docs/BACKLOG.md). **The governance work is done until execution says otherwise.**
+**QE's next action is Lane A's two finished slices.** After that, the constraint is supply: **the queue holds four claimable tasks and one idle lane could not use any of them.**
 
 ---
 
@@ -80,7 +82,7 @@ They can also **follow any ledger line to the provider readings beneath it**, an
 | Lane | Assignment | Status |
 |---|---|---|
 | Lane A | **TASK-002** — an account with nothing live says nothing at all | `CLAIMED`, building |
-| Lane B | — | `AVAILABLE`. TASK-001 complete and promoted |
+| Lane B | — | `AVAILABLE`, **and blocked on supply** — rescanned the queue, nothing eligible |
 | QE | Repository lifecycle and governance | `ACTIVE` — permanent. **Schedules nothing, and its turn begins when work returns to `integration`** |
 
 **Nothing is blocked.** [C-011](docs/LANE_COORDINATION.md) holds one finding inside Lane A's slice (R9-03) without stopping it; [C-012](docs/LANE_COORDINATION.md) and [C-013](docs/LANE_COORDINATION.md) wait on RFCs queued since M3A and block nothing today.
@@ -310,9 +312,9 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`c3e519a2f2df`](certification/reports/c3e519a2f2df.md) · 2026-08-02 · ✅ CERTIFIED**
+**Latest certification — [`0e5a64b791d8`](certification/reports/0e5a64b791d8.md) · 2026-08-02 · ✅ CERTIFIED**
 
-**Certified commit `c3e519a` · promoted commit `c3e519a`.** Identical, checked after the merge and re-checked by `make certified`.
+**Certified commit `0e5a64b` · promoted commit `0e5a64b`.** Identical, checked after the merge and re-checked by `make certified`.
 
 | Gate | Recorded |
 |---|---|
@@ -321,7 +323,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | **Security Invariants** | **354**, each proven to fail when its guarantee is removed |
 | **import-linter** | **31 kept**, 0 broken |
 | **MyPy** | strict, clean over **547 files** |
-| **`make smoke`** | **24 stages in 120s**, fresh images, clean teardown |
+| **`make smoke`** | **24 stages in 122s**, fresh images, clean teardown |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0025`** · scenario set `0cf6b2c581e4` · working tree clean · `research_planning@2` and `research_synthesis@2` released for `llama3.1:8b`.
@@ -356,17 +358,18 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Indicator | Value |
 |---|---|
 | **Certification** | |
-| Certification cycles | 10 |
-| Certified | 10 of 10 |
-| Mean time to certify (last 5) | 6.4 min |
-| Mean smoke duration | 121.4 s |
-| Mean certify → Ready (last 5) | 1.6 min |
+| Certification cycles | 11 |
+| Certified | 11 of 11 |
+| Mean time to certify (last 5) | 6.5 min |
+| Mean smoke duration | 121.5 s |
+| Mean certify → Ready (last 5) | 1.5 min |
 | **Defects and queues** | |
-| Open bugs | 6 open · 8 fixed awaiting verification · 4 verified · 1 won't fix |
-| Bugs by severity | 🔴 1 · 🟠 8 · 🟡 6 |
+| Queue depth (claimable now) | 4 — a lane with none reaches for undefined work |
+| Open bugs | 7 open · 8 fixed awaiting verification · 4 verified · 1 won't fix |
+| Bugs by severity | 🔴 1 · 🟠 9 · 🟡 6 |
 | Open 🔴 (blocks promotion) | 0 |
-| Coordination items | 17 · 2 closed |
-| Backlog | 16 tasks · 5 READY · 11 WAITING/BLOCKED · 3 claimed |
+| Coordination items | 18 · 3 closed |
+| Backlog | 17 tasks · 5 READY · 12 WAITING/BLOCKED · 3 claimed |
 | **Automation** | |
 | Governance checks, executable | 21 |
 | Security Invariant files | 6 |

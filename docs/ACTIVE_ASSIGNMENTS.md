@@ -67,7 +67,7 @@
 
 | Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Started |
 |---|---|---|---|---|---|---|---|---|
-| **Lane A** | — | `lane-a-product-surface` | — | — | `AVAILABLE` | — | **Run the Task Claim Protocol.** Nobody will assign it; the queue is open | — |
+| **Lane A** | **TASK-002 · TASK-004** | `lane-a-product-surface` | Product Surface | PS-01 · PS-02 | `IN VALIDATION` | — | **QE to validate** — both pushed and finished. *Reconciled by QE from the lane branch; the claims never reached `integration`* | 2026-08-02 |
 | **Lane B** | — | `lane-b-commercial-profile` | — | — | `AVAILABLE` | — | **Rescanned the queue; nothing is eligible.** M7 released to `WAITING` on [C-020](LANE_COORDINATION.md) — not begun, so not `BLOCKED`. [TASK-002](BACKLOG.md) and [TASK-004](BACKLOG.md) read `READY` here but Lane A holds both on its branch; [TASK-003](BACKLOG.md) is blocked by `C-018`; [TASK-005](BACKLOG.md)'s intent is already satisfied ([B-017](BUGS.md)). **Free the moment any of those is reconciled** | — |
 | **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | Idle until a lane pushes work to `integration`. **QE's turn begins there** | 2026-08-01 |
 
