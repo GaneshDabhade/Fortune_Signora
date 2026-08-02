@@ -266,6 +266,21 @@ def _audit_main() -> int:
     commit that is an ancestor of *nothing* certified, and that is exactly what
     gets reported here.
     """
+    # **The audit must never pass by seeing nothing.** `RULE_RATIFIED_AT` is a
+    # fixed SHA, and in a clone that does not contain it — a shallow clone, a lane
+    # that has not fetched, a fork — `rev-list` returns empty and this reported
+    # success while examining zero commits (B-015). A check that cannot fail is
+    # documentation pretending to be code (§2), and this one was written to
+    # enforce exactly that principle.
+    if not _git("cat-file", "-t", f"{RULE_RATIFIED_AT}^{{commit}}") == "commit":
+        print(
+            f"CANNOT AUDIT — this clone does not contain the baseline commit "
+            f"{RULE_RATIFIED_AT[:7]}.\n\n"
+            "  The guarantee is unverified here, which is not the same as held.\n"
+            "  `git fetch origin main` and run it again."
+        )
+        return 2
+
     commits = _git("rev-list", "--reverse", f"{RULE_RATIFIED_AT}..main").splitlines()
     certified_all = {str(run.get("commit", "")) for run in _runs() if _satisfied(run)[0]}
     # Only certified commits that were actually promoted can vouch for anything.

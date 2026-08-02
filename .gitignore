@@ -36,3 +36,8 @@ blob-report/
 coverage.xml
 htmlcov/
 .env.prod-local
+
+# Private keys, wherever somebody puts them. Nothing in this repository creates
+# .dev-keys/, but RUNNING.md once told a reader to (B-016) and one did.
+*.pem
+.dev-keys/

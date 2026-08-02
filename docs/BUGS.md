@@ -76,7 +76,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | **none** — repository process, `infra/certification-guard.py` |
 | **Current assignee** | **none — not assignable.** [C-010](LANE_COORDINATION.md), and this is a fifth defect in that gap |
 | **Severity** | 🟠 — **the audit reports success while examining nothing.** No history is wrong today; the check that would notice is inert wherever a lane runs it |
-| **Status** | `OPEN` |
+| **Status** | **`FIXED`** — QE, 2026-08-02. **Awaiting verification by somebody other than QE** |
 | **Found** | `a9cc204`, by Lane B while verifying [B-014](#b-014--two-commits-reached-main-outside-certification-and-nothing-noticed) under [TASK-001](BACKLOG.md) |
 
 **Steps to reproduce.** From any feature lane's clone, on a lane branch:
@@ -116,7 +116,7 @@ audit — no commit has been promoted since the rule was ratified.
 | **Module** | repository documentation — [`docs/RUNNING.md:54`](RUNNING.md) |
 | **Current assignee** | **QE** — `RUNNING.md` is QE's (`CLAUDE.md` §20e) |
 | **Severity** | 🟡 — the API still starts; the key is silently empty, and the symptom appears later as *"signed in, every screen empty, everything 401s"* |
-| **Status** | `OPEN` |
+| **Status** | **`FIXED`** — QE, 2026-08-02. **Awaiting verification by somebody other than QE** |
 | **Found** | `a9cc204`, by Lane B while verifying [B-009](#b-009--the-documented-command-for-starting-the-api-cannot-start-the-api) under [TASK-001](BACKLOG.md) |
 
 **Steps to reproduce.** From a fresh clone, follow [`RUNNING.md`](RUNNING.md) exactly: `cp backend/.env.example backend/.env`, `npm install`, `npm run keys:generate`, `make demo`. Then copy the documented backend command, which contains:
@@ -134,6 +134,8 @@ SIGNORA_JWT_PUBLIC_KEY="$(cat .dev-keys/public.pem)" \
 **The sharp edge, and it is stated as an inference rather than a measurement.** The reader has just pasted the correct key into `backend/.env`. An environment variable set on the command line takes precedence over a `.env` value in pydantic-settings, so **the documented command plausibly overrides a correctly configured key with an empty one** — turning a working setup into the 401 symptom that [`RUNNING.md:203`](RUNNING.md) already has a troubleshooting row for. **Lane B did not verify the override**, only that the file is absent and the variable ends up empty. Confirming it is the fix's first step.
 
 **The fix, for whoever takes it.** Delete the `SIGNORA_JWT_PUBLIC_KEY` line from the command block — the key is already in `backend/.env` by then, which is the mechanism `keys:generate` actually implements. **Same class as [B-009](#b-009--the-documented-command-for-starting-the-api-cannot-start-the-api), in the same command block:** *"every command below is copy-pasteable from a fresh clone"*, and one line of it is not.
+
+**Fixed 2026-08-02.** The line is gone from the command block, with a comment beside it saying why it is absent — the key reaches the backend through `backend/.env`, which is the mechanism `keys:generate` actually implements. **`.gitignore` gains `*.pem` and `.dev-keys/`** so that a reader who creates the directory by hand, as Lane B did while verifying, cannot commit a private key. **Lane B's inference about the override was not tested by QE either**, and the fix does not depend on it: a variable read from a file that does not exist is wrong regardless of precedence.
 
 **A second, smaller note for the same fix.** `.gitignore` covers `.env` and `.env.*` but has **no entry for `.dev-keys/` or `*.pem`**. Nothing creates that directory today, so nothing is at risk — but a reader who takes the command literally and creates it by hand, as Lane B did while verifying, ends up with an **RSA private key as an untracked, unignored file**. If the command block keeps any reference to a key directory, the ignore rule belongs with it (`CLAUDE.md` §13).
 

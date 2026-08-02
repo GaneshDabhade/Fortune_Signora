@@ -49,9 +49,12 @@ Then start the two processes and open the product:
 
 ```bash
 # backend
+# SIGNORA_JWT_PUBLIC_KEY is not set here: `npm run keys:generate` printed it and
+# you pasted it into backend/.env two steps ago. Setting it on the command line
+# would override that value — and it used to be set from a .dev-keys/ file that
+# nothing in this repository has ever created, which silently emptied it (B-016).
 cd backend && SIGNORA_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5432/signora \
   SIGNORA_REDIS_URL=redis://localhost:6379/0 \
-  SIGNORA_JWT_PUBLIC_KEY="$(cat .dev-keys/public.pem)" \
   SIGNORA_JWT_ISSUER=http://localhost:3000 \
   SIGNORA_JWT_AUDIENCE=signora-api \
   uv run uvicorn apps.api.main:create_app --factory --reload --port 8000
