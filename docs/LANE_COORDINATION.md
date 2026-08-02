@@ -820,7 +820,13 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 
 **§6 has no M7 entry.** It defines M0, M1.1, M1.2, M1.3A, M1.4, M1.5, M2.1, M2.2, M3A, M3B and M14.5 — every milestone that has been built. M7 exists as **two table rows**: position 15 in the execution sequence, *Timeline, ~6–8 ew*, and a build-matrix row reading *"✅ Required · Timeline entries"*.
 
-**So there is no Demo Checklist for M7 to pass**, which by the roadmap's own rule makes the milestone uncompletable rather than merely undefined.
+**So there is no Demo Checklist for M7 to pass.**
+
+> **Corrected 2026-08-02, before the product owner acted on it.** This item first presented the missing §6 entry as M7's disqualifier. **It is not — it is the repository's normal practice.** §6 defines only `M0`, `M1.1`, `M1.2`, `M1.3A`, `M2.0`, `M2.1` and `M3A`. **`M4`, `M5A`, `M5B`, `M6`, `M8`, `M9`, `M10` and every `M12.x` were built without one**, which is nine of the last ten milestones. §6 stopped being maintained after `M3A` and nothing has depended on it since.
+>
+> **What those milestones had instead is item 2: a module design document.** `22`–`29`, `33` and `40` — one per module, written as the module was built, and for `commercial_profile` written by the assigned lane alongside [ADR-0035](architecture/adr/0035-commercial-profile.md). **That is the real gap and the real precedent**, and it makes M7 considerably more startable than this item originally implied: the path is a design drafted for ratification, then implementation — not a roadmap section nobody has written since M3A.
+>
+> Left standing rather than deleted, because a §6 that claims *"every milestone specifies"* while nine did not is a **separate** defect about the roadmap telling the truth (§2), and it belongs to the product owner either way.
 
 ### 2 · There is no Timeline module design document
 
@@ -856,6 +862,9 @@ Every built module has one, marked *as built*: `22`–`29`, `33`, and `40-commer
 |---|---|---|
 | 1 | **The M7 milestone definition** — scope, demo scenario, demo checklist, user-visible outcome | **Product owner.** §6 is the roadmap, 🔴 |
 | 2 | **Meilisearch now, or Postgres first with Meilisearch on a stated trigger** | **Product owner** — infrastructure and ADR-0008's scheduling |
+| 3 | **Which events M7 covers**, given Recommendation Engine is deferred and supplies two of the five | **Product owner** |
+
+**The precedent this follows, now that the correction above is recorded.** `commercial_profile` began the same way: no design document, a bounded context named in `04-modules.md`, and an assigned lane. It became [ADR-0035](architecture/adr/0035-commercial-profile.md) plus [40-commercial-profile.md](architecture/40-commercial-profile.md), **ratified before slice 1**, and five slices followed without a §6 entry. **M7 can take exactly that route** — and it is the only route that does not have a coding session inventing a bounded context's scope.
 
 **Lane B offers to draft the Timeline module design** — `41-timeline.md`, on the pattern of [40-commercial-profile.md](architecture/40-commercial-profile.md), which the assigned lane wrote for its own module. **As a proposal for ratification, not as a decision**, and after item 1, because a design written against a scope nobody has agreed is architecture invented by a coding session.
 
