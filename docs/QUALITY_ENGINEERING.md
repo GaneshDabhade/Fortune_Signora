@@ -365,6 +365,29 @@ run 2, nothing else touching the repo    2563 passed, 0 failed, 95.52%
 
 ---
 
+## 10b · The composition root is the gap every module's suite leaves
+
+**Found by Lane B, 2026-08-02, in code QE had certified and promoted four times** ([B-301](BUGS.md)).
+
+**Timeline shipped complete and consumed nothing.** Domain, projection, repository, read API, router, table, component, tests — all promoted, all green — and **`project_to_timeline` was referenced nowhere in `apps/`.** The deployed worker never subscribed to it, so an account timeline would have stayed empty forever.
+
+**Why 2563 tests said nothing.** Unit tests drive the projection directly. Integration tests drive the handler directly. **A composition root is the one file no module's own suite covers**, because each module tests its half and assumes the wiring. **The join is nobody's unit.**
+
+> **QE validated four slices of this module and did not check what the deployed worker subscribes to.** That is a gap in QE's method, not in the lane's — the lane's tests were correct about the lane's code.
+
+**What to check, and it is cheap:**
+
+```bash
+grep -c "registry.subscribe" backend/apps/worker/subscriptions.py
+# then: does every module that publishes a projection appear?
+```
+
+**The durable answer is a test, not a habit** — an assertion that every module declaring a projection is subscribed by the deployed worker. **That belongs to whoever owns `apps/`**, which is [C-010](LANE_COORDINATION.md)'s unassigned gap, and is now the seventh defect to land there.
+
+**Same class as [B-024](BUGS.md), one level up.** There, fakes accepted what the database would refuse. Here, tests accepted a handler nothing calls. **Both are a suite proving the parts and never the join.**
+
+---
+
 ## 11 · Duplicate findings — when two lanes discover the same thing
 
 **Ratified 2026-08-02, product owner.** Numeric collisions were solved by block allocation. **This is the other half: two lanes independently discovering one issue and giving it two identifiers.** That is not a communication failure — under `CLAUDE.md` §20e lanes *cannot* see each other's uncommitted registers, so **independent rediscovery is a designed property, not a mistake.**

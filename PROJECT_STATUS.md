@@ -63,11 +63,15 @@
 | **Research on demand** | ✅ | ✅ | ✅ | ✅ | ✅ | |
 | **Connected systems** | ✅ | ✅ | **✅** | ✅ | ⚠️ | **Now reachable — CX-01 gave the Connection Center a door.** No OAuth flow yet ([C-025](docs/LANE_COORDINATION.md)) |
 | **Provider ingestion** | ✅ | — | — | ✅ | ✅ | **Six slices promoted**: per-account watermarks, self-pacing, measurable, says where a payload came from |
-| **Account history** *(Timeline)* | ✅ | ✅ | ❌ | ❌ | ❌ | **Still mounted nowhere** — [C-024](docs/LANE_COORDINATION.md). **The one capability built and unreachable** |
+| **Account history** *(Timeline)* | ⚠️ | ✅ | ❌ | ❌ | ❌ | **Corrected 2026-08-02.** This row read Backend ✅ and was wrong: **the deployed worker never subscribed to Timeline's projection**, so nothing ever wrote a row ([B-301](docs/BUGS.md), found by Lane B, fixed by Lane B, awaiting QE verification). Mounting it ([C-024](docs/LANE_COORDINATION.md)) would have produced a permanently empty feed |
 | **Decision Package** | ✅ | ✅ | ⚠️ | ❌ | ❌ | 🔴 `reasoning@1` has no released model |
 | **Recommendations · notifications · billing** | — | — | — | — | — | M11 deferred · M14a/b not started |
 
-> **Two capabilities were complete and unreachable last cycle. One of them is fixed** — CX-01 gave the Connection Center a navigation entry. **Timeline is the last one**, and it is still ten lines away.
+> **Two capabilities were complete and unreachable last cycle. One of them is fixed** — CX-01 gave the Connection Center a navigation entry.
+>
+> **Timeline was not "ten lines away", and this dashboard said it was.** [B-301](docs/BUGS.md) — raised by Lane B while auditing its own modules — found that the deployed worker consumed **nothing**: the read API was wired, the router included, the table created and the component rendering, and **no subscription ever wrote a row.** Mounting the feed would have shipped a screen that is empty forever.
+>
+> **QE certified and promoted four Timeline slices without noticing.** Every gate was green because a composition root is the one file no module's own suite covers — each module tests its half and assumes the join. **2563 passing tests said nothing about what the deployed worker subscribes to.**
 
 ---
 
