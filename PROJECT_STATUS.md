@@ -12,23 +12,23 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `e5a266d`, 2026-08-02.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `2262bb5`, 2026-08-02.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`e5a266d`** — the certified commit itself |
-| **`integration`** | `e5a266d` — level with `main` |
-| **Release candidate** | **None pinned.** Cycle 21 promoted **35 commits** — the largest batch shipped |
-| **Certification** | ✅ [`e5a266d17203`](certification/reports/e5a266d17203.md) · migration head **`0030`** · protocol **v2** |
+| **`main`** | **`2262bb5`** — the certified commit itself |
+| **`integration`** | `2262bb5` — level with `main`. Lane A holds work ahead |
+| **Release candidate** | **None pinned.** Cycle 22 promoted Lane B's 8 commits, **including the B-301 fix** |
+| **Certification** | ✅ [`2262bb566b84`](certification/reports/2262bb566b84.md) · migration head **`0030`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **109 commits, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
-| **Implementation waiting** | **0 commits.** Both lanes level with `main` for the first time in this repository's history |
+| **Implementation waiting** | **Lane A only.** Lane B level with `main` |
 | **Validation queue** | Empty |
-| **Customer value this cycle** | ✅ **Yes, substantially** — eight product-surface slices and six provider-platform slices reached customers at once |
+| **Customer value this cycle** | ✅ **Yes — reliability.** Timeline now consumes what it projects; a capability that shipped complete and inert now works |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one |
 
-**Repository health:** 2563 backend tests · **95.52% coverage** *(floor 95)* · 701 frontend tests · 360 Security Invariants · mypy strict over 613 files · 34 import-linter contracts · migrations `0000`–`0030` reversible · 17 modules · 39 ADRs · 46 architecture documents.
+**Repository health:** 2568 backend tests · **95.51% coverage** *(floor 95)* · 701 frontend tests · 360 Security Invariants · mypy strict over 614 files · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · 17 modules · 39 ADRs.
 
 ---
 
@@ -63,7 +63,7 @@
 | **Research on demand** | ✅ | ✅ | ✅ | ✅ | ✅ | |
 | **Connected systems** | ✅ | ✅ | **✅** | ✅ | ⚠️ | **Now reachable — CX-01 gave the Connection Center a door.** No OAuth flow yet ([C-025](docs/LANE_COORDINATION.md)) |
 | **Provider ingestion** | ✅ | — | — | ✅ | ✅ | **Six slices promoted**: per-account watermarks, self-pacing, measurable, says where a payload came from |
-| **Account history** *(Timeline)* | ⚠️ | ✅ | ❌ | ❌ | ❌ | **Corrected 2026-08-02.** This row read Backend ✅ and was wrong: **the deployed worker never subscribed to Timeline's projection**, so nothing ever wrote a row ([B-301](docs/BUGS.md), found by Lane B, fixed by Lane B, awaiting QE verification). Mounting it ([C-024](docs/LANE_COORDINATION.md)) would have produced a permanently empty feed |
+| **Account history** *(Timeline)* | ✅ | ✅ | ❌ | ❌ | ❌ | **Backend now genuinely works** — [B-301](docs/BUGS.md) fixed and promoted; nine subscriptions registered from the projection table, and `make runtime-composition` reads **0 unexpected**. **Still mounted nowhere** — [C-024](docs/LANE_COORDINATION.md) is now the only thing between this and a customer |
 | **Decision Package** | ✅ | ✅ | ⚠️ | ❌ | ❌ | 🔴 `reasoning@1` has no released model |
 | **Recommendations · notifications · billing** | — | — | — | — | — | M11 deferred · M14a/b not started |
 
@@ -90,43 +90,49 @@
 
 ---
 
-## 1d · Release summary — 2026-08-02, cycle 21
+## 1d · Release summary — 2026-08-02, cycle 22
 
-**Derived from the promoted commit `e5a266d`. 35 commits — the largest batch this repository has promoted.**
+**Derived from the promoted commit `2262bb5`.** Lane B's 8 commits.
 
-### What a customer gained
+### A capability that shipped complete and inert now works
 
-**Eight product-surface slices and six provider-platform slices at once.** The brief now says **who put an account in front of you**, stops saying the same fact twice, explains an empty list rather than showing nothing, and **the account remembers what was decided and why**. **The Connection Center became reachable** — it had a screen and no door. Underneath, ingestion **paces itself instead of being throttled**, **says where a payload actually came from**, and **can be measured**.
+**[B-301](docs/BUGS.md) fixed and promoted.** Timeline was built, tested, promoted across four slices — **and the deployed worker never subscribed to its projection**, so an account timeline would have stayed empty forever. Nine subscriptions now register from the projection table itself, rather than a hand-written list that would drift the first time a rule was added.
 
-### Both lanes are level with `main`
+**The check caught it and then confirmed the fix**, in the same day:
 
-**Implementation-waiting is zero for the first time.** It stood at 34 commits one cycle ago and 32 the cycle before. **Every finished slice has either shipped or is one product decision from shipping.**
+```
+                          before   after
+Runtime wired                  1       2
+Unexpected missing wiring      1       0   ← the line that matters
+```
 
-### The merge produced seven identifier collisions
+**This is not new customer capability. It is customer *reliability*** — and the distinction belongs in the record, because a cycle that fixes something already claimed as shipped is easy to report as progress twice.
 
-Exactly the class Lane A's `C-201` predicted: **B-017, B-018, B-019, C-024, C-025, C-026** each named two findings, and **architecture document 41** was claimed by two files. All resolved by renumbering the later claim into the allocating lane's block; **nothing deleted, every move annotated**. The check that caught the document collision was added an hour before it fired.
-
-### QE caused a 158-test failure and nearly misattributed it
-
-**The first validation run reported 158 failures against Lane A's batch.** They were not Lane A's: **QE was renaming a file and rewriting registers while pytest ran against that tree.** The failing test passed alone in 1.8s; the clean run passed **2563 of 2563**. Recorded as [`QUALITY_ENGINEERING.md` §10a](docs/QUALITY_ENGINEERING.md) — **once a candidate is pinned, the tree is frozen until the gate reports.**
-
-### Repository Health
+### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Release cadence** | **Strong** — 2 promotions in 2 cycles after a 4-cycle block |
-| **Candidate outcomes** | Cycle 21: **2 pinned** (`e70dd60` superseded by `e5a266d`), **1 certified, 0 rejected.** Cumulative **21 pinned · 17 certified · 3 rejected** |
-| **Coverage trend** | 94.79 → 95.69 → **95.52.** Above floor; **2 files never executed** (8 statements) |
-| **Blocking Quality Defects** | **0** |
-| **Blocking dependencies** | **4**, unchanged — **3 need the product owner** |
-| **Lane velocity** | **Both level with `main`.** Zero implementation-waiting |
-| **Implementation vs promotion** | ✅ **Balanced for the first time** |
-| **Process compliance** | Clean. 109 commits on `main`, none outside a certified snapshot |
-| **Customer value** | ✅ **Yes, substantially** |
+| **Technical** | 2568 tests · **95.51%** · 360 invariants · 614 files typed · 34 contracts. Stable |
+| **Release** | **2 promotions in 2 cycles.** Cadence recovered from the 4-cycle block |
+| **Architecture** | **Runtime composition 2 of 2 expected, 0 unexpected** — first cycle this has been measurable |
+| **Dependency** | 21 items, 2 closed. **[C-024](docs/LANE_COORDINATION.md), [C-025](docs/LANE_COORDINATION.md), [C-020](docs/LANE_COORDINATION.md) and [C-010](docs/LANE_COORDINATION.md) have not moved in 3+ cycles — escalated below** |
+| **Customer Value** | **Reliability, not capability.** Lane B's cycle. **QE contributed measurement, not product** |
+| **Process** | Clean. Every promotion followed the lifecycle; no gate skipped or overridden |
+
+### ⚠️ Three-cycle escalation
+
+**Four dependencies have sat in `Waiting for Decision` for three or more cycles.** Escalated per the policy — **not because they became urgent, but because a stagnant dependency is silently reclassified as normal.**
+
+| Item | Stage | Cycles | The one action |
+|---|---|---|---|
+| **[C-024](docs/LANE_COORDINATION.md)** | Waiting for Decision | **4** | **Choose where the Timeline feed mounts.** Now the *only* thing between a working capability and a customer |
+| **[C-025](docs/LANE_COORDINATION.md)** | Waiting for Decision | **4** | Rule which tier may run an OAuth flow |
+| **[C-020](docs/LANE_COORDINATION.md)** | Waiting for Decision | **5** | Ratify, amend or reject [ADR-0038](docs/architecture/adr/0038-timeline.md) |
+| **[C-010](docs/LANE_COORDINATION.md)** | Waiting for Decision | **6+** | Assign an owner to the six areas. **Seven defects have landed here** |
 
 ### Recommended next work
 
-**[C-024](docs/LANE_COORDINATION.md).** With both lanes level and nothing waiting on QE, **the single highest-value action in the repository is a placement decision worth ten lines of code** — it makes a fully built, fully tested, already-promoted capability reachable.
+**[C-024](docs/LANE_COORDINATION.md), and it is now sharper than it was.** Timeline's backend genuinely works for the first time. **Ten lines of routing separate a fully working capability from a customer**, and every other blocker on this page is larger.
 
 ---
 

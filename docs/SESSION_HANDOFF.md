@@ -5,7 +5,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-02 · **`main` at `e5a266d`** · ✅ **CERTIFIED, and commit-bound**
+> **As of:** 2026-08-02 · **`main` at `2262bb5`** · ✅ **CERTIFIED, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
@@ -19,11 +19,11 @@
 | **Also shipped** | **M12.4 research on demand**, verified against a real model |
 | **Inserted, and open** | **M9.5 Evidence Citation Protocol** (ADR-0031). Steps A–D landed; **Step F is incomplete** |
 | **Current** | **M12.3 evidence and actions** (D20 remains) · **M7 Timeline — four slices promoted, mount point open** ([C-024](LANE_COORDINATION.md)) |
-| **Head at handoff** | **`e5a266d`** — **the certified commit itself.** Promotion is by SHA, never by branch (`CLAUDE.md` §20e) |
-| **Latest certification** | ✅ [`e5a266d17203`](../certification/reports/e5a266d17203.md) — **CERTIFIED 2026-08-02**, bound to commit `e5a266d`, migration head `0030`, protocol v2. **Certified commit == promoted commit**, checked by `make certified` |
+| **Head at handoff** | **`2262bb5`** — **the certified commit itself.** Promotion is by SHA, never by branch (`CLAUDE.md` §20e) |
+| **Latest certification** | ✅ [`2262bb566b84`](../certification/reports/2262bb566b84.md) — **CERTIFIED 2026-08-02**, bound to commit `2262bb5`, migration head `0030`, protocol v2. **Certified commit == promoted commit**, checked by `make certified` |
 | **Phase** | **Product implementation.** Ten pipeline stages built and frozen behind them; the surface is being exposed |
 | **Overall completion** | **~66%** by engineering effort — see [PROJECT_STATUS.md](../PROJECT_STATUS.md) |
-| **Branch** | `main` at the certified commit `e5a266d`. **Before starting a slice, compare `integration` against the certified SHA** — differ means a cycle is available and its input is exactly the commits between them; identical means nothing is awaiting certification. There is never any ambiguity about it |
+| **Branch** | `main` at the certified commit `2262bb5`. **Before starting a slice, compare `integration` against the certified SHA** — differ means a cycle is available and its input is exactly the commits between them; identical means nothing is awaiting certification. There is never any ambiguity about it |
 
 **🔴 Read this before anything else:** **`reasoning@1` has no released model.** M9.5 moved the rendering protocol to v2, which withdrew every protocol-1 release by derivation. `explanation_narration@1`, `research_planning@2` and `research_synthesis@2` re-earned theirs; `reasoning@1` did not — `granite3.3:2b` refuses under protocol 2 and `llama3.1:8b` is UNMEASURABLE on this hardware. **The Decision Package stage would refuse in production.** Do not tune the prompt, the delimiter, the schema or the timeout to make it pass.
 
@@ -43,7 +43,7 @@
 
 | | |
 |---|---|
-| **Certification** | ✅ **CERTIFIED** — [`e5a266d17203`](../certification/reports/e5a266d17203.md), bound to **commit `e5a266d`** and migration head `0030`. It expires by derivation the moment a migration, a prompt release, the rendering protocol or the scenario set changes. **`make certified ARGS="--audit-main"` proves the guarantee across the whole branch** |
+| **Certification** | ✅ **CERTIFIED** — [`2262bb566b84`](../certification/reports/2262bb566b84.md), bound to **commit `2262bb5`** and migration head `0030`. It expires by derivation the moment a migration, a prompt release, the rendering protocol or the scenario set changes. **`make certified ARGS="--audit-main"` proves the guarantee across the whole branch** |
 | **Active lanes** | [ACTIVE_ASSIGNMENTS.md](ACTIVE_ASSIGNMENTS.md) — the execution board. **Both feature lanes are `AVAILABLE`**: Lane A finished R2-01 and Lane B finished M12.5. **Both are building**: Lane A holds TASK-002, Lane B holds TASK-001. **A claim is pushed to `integration`**, which is the ref every lane pulls — pushing it only to a lane branch is how the protocol failed to arbitrate on its first day |
 | **Open blockers** | [C-010](LANE_COORDINATION.md) — no lane is assignable to `apps/`, `signora_platform/` or repository process. **Three defects landed in that gap this cycle** ([B-007](BUGS.md), [B-012](BUGS.md), [B-013](BUGS.md)); the last was fixed only because the product owner directed QE to touch it. [C-012](LANE_COORDINATION.md)/[C-013](LANE_COORDINATION.md) wait on RFCs queued since M3A |
 | **Open defects** | [BUGS.md](BUGS.md) — **0 open 🔴.** Seven rows are `FIXED` awaiting verification, and **[B-009](BUGS.md), [B-013](BUGS.md) and [B-014](BUGS.md) may not be closed by QE**, which fixed them |

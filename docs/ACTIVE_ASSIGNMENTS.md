@@ -64,13 +64,13 @@
 
 ---
 
-## Current — as of 2026-08-02, `e5a266d`
+## Current — as of 2026-08-02, `2262bb5`
 
 | Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Started |
 |---|---|---|---|---|---|---|---|---|
-| **Lane A** | — | `lane-a-product-surface` | Product Surface · Provider Platform | **All promoted** | `AVAILABLE` | — | **35 commits promoted — PS-01…PS-08, PP-01…PP-06, CX-01, CX-02.** Claim from [`BACKLOG.md`](BACKLOG.md) | — |
-| **Lane B** | **M14a — Notifications** *(discovery)* | `lane-b-commercial-profile` | `timeline` · `integrations` · `notifications` *(proposed)* | discovery · Timeline design doc | `ACTIVE` | — | **M14a N-01 is blocked on two rulings** — the fifteenth entry in `04-modules.md` ([ADR-0040](architecture/adr/0040-notifications.md) §10) and [C-302](LANE_COORDINATION.md). **M13 and M7 promoted**; both blocked on decisions ([C-024](LANE_COORDINATION.md), [C-025](LANE_COORDINATION.md), [C-026](LANE_COORDINATION.md)). Closing Timeline's §12 documentation debt, then **READY FOR NEW ASSIGNMENT** | 2026-08-02 |
-| **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | **Cycle 21 promoted (`e5a266d`). 21 candidates pinned, 17 certified.** No candidate waiting | 2026-08-01 |
+| **Lane A** | **Team Management** *(discovery)* · earlier slices | `lane-a-product-surface` | Product Surface | discovery | `IN VALIDATION` | — | **Next Release Candidate.** Did not fast-forward after Lane B; rebase and push | 2026-08-02 |
+| **Lane B** | **M14a — Notifications** *(discovery)* | `lane-b-commercial-profile` | `timeline` · `integrations` | **all promoted** | `ACTIVE` | — | **[B-301](BUGS.md) fixed and promoted — runtime composition 0 unexpected.** Timeline design doc delivered. M13 and M7 both wait on product decisions | 2026-08-02 |
+| **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | **Cycle 22 promoted (`2262bb5`). 22 pinned, 18 certified.** Lane A next | 2026-08-01 |
 
 **Which lanes are available is the `Status` column above, and is not restated here** — a sentence beside a table is a second copy of one fact, and it drifted within an hour of being written (§2). **Unclaimed capacity:** lanes C, D and E ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).
 
@@ -94,6 +94,7 @@
 
 | Lane | Assignment | Promoted | Commit |
 |---|---|---|---|
+| B | **B-301** — Timeline consumes what it projects · Timeline design doc | 2026-08-02 | `2262bb5` |
 | A | **PS-01…PS-08 · PP-01…PP-06 · CX-01 · CX-02** — the product surface and provider platform batch | 2026-08-02 | `e5a266d` |
 | B | **M13-S02** — the connections a customer can see, including the broken ones | 2026-08-02 | `3ef367d` |
 | B | **M13-S01** — a customer's connection to their own systems | 2026-08-02 | `e08c7cb` |
