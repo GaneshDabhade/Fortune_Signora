@@ -1186,6 +1186,38 @@ ModuleNotFoundError: No module named 'httpx'
 
 ---
 
+### B-018 · `tsc --noEmit` fails on `integration`
+
+| | |
+|---|---|
+| **Module** | `timeline` (frontend tests) — `frontend/tests/components/timeline-feed.test.tsx` |
+| **Current assignee** | **Lane B** — it holds `timeline` |
+| **Severity** | 🟠 — **a lane gate is red on `integration`.** Every lane that rebases inherits it, and the honest response to a failing gate you did not cause is hard to distinguish from ignoring one you did |
+| **Status** | `OPEN` |
+| **Found** | `4714496`, by Lane A while type-checking the Team slice |
+
+**Steps to reproduce.** From `integration`, `cd frontend && npx tsc --noEmit`.
+
+**Expected.** Clean. `tsc` is a lane gate (`CLAUDE.md` §20e, *Lane → QE*).
+
+**Actual.**
+
+```
+tests/components/timeline-feed.test.tsx(79,19): error TS2345:
+  Argument of type 'HTMLElement | undefined' is not assignable to parameter of type 'HTMLElement'.
+tests/components/timeline-feed.test.tsx(80,19): error TS2345: (the same)
+```
+
+**Confirmed not caused by the reporting lane.** Reproduced with Lane A's own new file stashed out; both errors remain.
+
+**Why it matters beyond two lines.** The frontend suite passes — 521 tests green — so nothing *fails*, and a lane running only `vitest` would never see it. **A type gate that is already red is a gate that stops being read**, which is the same defect class as an audit that passes vacuously ([B-015](#b-015--the-certification-audit-passes-vacuously-in-every-lanes-clone)).
+
+**Not fixed here.** `timeline` is Lane B's, and finding a defect outside your assignment is an obligation to report it rather than permission to fix it (§20e).
+
+---
+
+---
+
 ## Verified
 
 ### B-001 · `signal_profile` reads the wrong row as "current"

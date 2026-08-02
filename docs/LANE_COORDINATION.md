@@ -1632,6 +1632,53 @@ It is also the failure mode this repository keeps finding in a different coat: [
 
 ---
 
+## C-024 · Nothing in the product can render a person's name
+
+| | |
+|---|---|
+| **Owner** | **Product owner** — it is a new cross-tier surface with a privacy property |
+| **Requesting lane** | Lane A |
+| **Category** | Cross-tier boundary · identity · privacy |
+| **Status** | `OPEN` |
+| **Blocks** | **TS-01, the Team page.** Not TS-02, which shipped without it |
+| **Raised** | 2026-08-02, during the Team module's readiness review |
+
+**`GET /workspaces/{id}/members` returns `user_id` and `role`. It cannot return a name, and that is correct**: Better Auth is the sole Authentication Authority and runs in Next.js; the Python tier only *verifies* JWTs ([ADR-0026](architecture/adr/0026-jwt-boundary-architecture.md), §13). It has no name to give, and giving it one would put user identity in the tier that must not own it.
+
+**So a team page today can render UUIDs.** That is not a product feature.
+
+### Why this is not a frontend decision
+
+**The obvious fix is a Next.js route that resolves ids to names from Better Auth's own pool** — `getAuthPool()` is already exported and already used. Two things stop a lane doing it unasked:
+
+| | |
+|---|---|
+| **[37-product-surface.md](architecture/37-product-surface.md) forbids a BFF by name** | *"No new platform capability. Not a BFF, not a cache, not a search index."* A route that calls the Python API and decorates the result is exactly that |
+| **A bare id-to-name route lets any session enumerate the user table** | Scoping it to *"ids that share a workspace with the caller"* requires knowing the caller's memberships — which means calling the Python API, which is the BFF again |
+
+**That is a genuine privacy boundary, not a routing detail**, which is why it is here rather than decided in a component.
+
+### It is bigger than one page
+
+The product owner's own questions make it foundational rather than local: **how AI-generated work identifies the responsible user · how audit history represents actors · how notifications know who to reach · how mentions and approvals attach to people.** Every one needs the same answer, and **answering it inside the Team page would be deciding it for all of them by accident.**
+
+### Options, with the trade-off each carries
+
+| | What it is | Cost |
+|---|---|---|
+| **A** — a Next route resolving *only* ids the caller shares a workspace with | Correct scoping, and the answer reusable everywhere | Needs the caller's memberships, so it either calls the API (BFF) or reads `membership` directly from the auth pool — **which crosses a module boundary** |
+| **B** — the Python API returns a display name it stores at membership time | One request, no new tier surface | **Puts user identity in the Python tier**, which §13 forbids, and it goes stale the moment somebody changes their name |
+| **C** — Better Auth's admin plugin, scoped by an explicit allow-list of ids | Uses a supported vendor API rather than raw SQL | Still needs the scoping answer from A, and enables an admin surface for one read |
+| **D** — the members response carries the *caller's* email only; others stay anonymous | Ships today, breaks nothing | **A team page that names one person is not a team page** |
+
+**Lane A recommends A**, with the membership check done in the Python API by adding the caller's own resolved role to an existing response rather than by a new proxy — but the BFF prohibition means even that phrasing needs the product owner, and the privacy scoping is the part no lane should choose alone.
+
+### What shipped without it
+
+**TS-02 needed no names**, and is done: the shell resolves the signed-in person's *own* role from the same endpoint, because their id is in the session already. **The dormant capability was half reachable all along** — the half that identifies *you*.
+
+---
+
 ## Closed
 
 ## C-016 · Two branch names encode a permanent module assignment that no longer exists
