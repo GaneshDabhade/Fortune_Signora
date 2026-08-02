@@ -186,7 +186,16 @@ def release_kpis() -> dict[str, str]:
 
     rate = f"{100 * len(passing) / len(runs):.0f}%" if runs else "—"
     return {
-        "Certification success rate": f"{rate} ({len(passing)} of {len(runs)} runs)",
+        # **Named precisely, because the obvious name would lie.** This counts
+        # `make certify` runs, and a candidate rejected at *validation* never
+        # reaches one — so three rejected candidates during a four-cycle block
+        # left this reading 100%. It is a true statement about certification and
+        # a false impression of release health, which is the worse of the two.
+        # **Candidate outcomes are a judgement line in Repository Health**
+        # (QUALITY_ENGINEERING §10), not a figure this file can derive: nothing
+        # machine-readable records a validation rejection.
+        "Certification run success rate": f"{rate} ({len(passing)} of {len(runs)} runs)",
+        "  ↳ excludes": "candidates rejected at validation — see Repository Health",
         "Commits per release": (
             f"mean {sum(batches) / len(batches):.1f}, median "
             f"{sorted(batches)[len(batches) // 2]}, range {min(batches)}–{max(batches)}"

@@ -302,6 +302,7 @@ Four capabilities the architecture already treats as QE's, of which two exist. *
 |---|---|---|
 | 1 | **Release status** | The promoted SHA, and what shipped in customer words |
 | 2 | **Certification status** | `make certified` — the record, not a recollection |
+| 2b | **Candidate outcomes this cycle** | **A judgement line, and it must be written.** How many candidates were pinned, how many certified, how many rejected and at which stage. **`make kpi` cannot derive this**: its success rate counts `make certify` runs, and a candidate rejected at *validation* never reaches one — three rejections left it reading **100%** during a four-cycle block |
 | 3 | **Open bugs** | `make kpi` — count, severities, and how many await verification |
 | 4 | **Critical blockers** | Unresolved 🔴, plus anything blocking promotion |
 | 5 | **Dependency health** | `C-` open vs closed, and **any item open across multiple cycles, with why** |
