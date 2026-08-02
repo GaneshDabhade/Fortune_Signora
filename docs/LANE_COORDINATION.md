@@ -610,7 +610,11 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 
 **Implementation impact.** Two shapes of answer, genuinely different in cost. **Assign the area to a lane on demand** — a temporary assignment like any other, with §20a's freeze rules still binding and an RFC still required for an interface change; the fix moves at slice speed. Or **route every such defect through the RFC process**, and accept that platform fixes move at RFC speed. B-003 is currently the only instance, so the cost of the second is one open row.
 
-**Final decision.** —
+**Final decision — 2026-08-02, and it became architecture rather than an instruction.** The register asked a lane to move off two ports. What shipped instead answers the question the item was really about: **[`RUNNING.md` § Two operating modes](RUNNING.md)** names **Human Review Mode** and **QE Release Mode**, states that they are mutually exclusive, and **`infra/release-preflight.py`** detects the collision in under a second and classifies it — `WAITING` for a live review session, which is *an environment state, not a repository failure*.
+
+**The complaint this item actually recorded was the silence**, not the ports: *"`make smoke` can fail with 'stack did not reach healthy' … with nothing in the output saying so."* **`make smoke` now depends on the preflight**, so that failure mode no longer exists — the run refuses immediately and says which mode is active. The ports themselves are free, and lanes have their own block at 3300/8300 and above.
+
+**Closed by QE, which raised it.**
 
 **Recorded in.** —
 
@@ -749,33 +753,7 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 
 ---
 
-## Closed
 
-## C-015 · Ports 3000 and 8000 now belong to human review
-
-| | |
-|---|---|
-| **Decision required** | None — an action to be taken by the lane currently holding those ports |
-| **Participating modules** | none — environment |
-| **Current assignee(s)** | the lane running on 3000/8000 |
-| **Blocking** | `make smoke`, intermittently and without saying so |
-| **Status** | `OPEN` |
-
-**Current positions.** The allocation convention now reserves **3000/8000 for human product review on `main`** ([`RUNNING.md` § Running a lane](RUNNING.md#running-a-lane)). A lane is still holding them.
-
-**Implementation impact.** Until it moves, `make smoke` can fail with *"stack did not reach healthy"* because a lane's dev server holds a port, with nothing in the output saying so ([B-002](BUGS.md)). Move to the assigned block and update `frontend/.env.local` and the API command.
-
-**Final decision.** —
-
-**Recorded in.** —
-
----
-
-**Closed 2026-08-02.** Implemented in [`RUNNING.md` § Running a lane](RUNNING.md#running-a-lane): human review holds 3000/8000, Lane A moved to 3300/8300, and every lane's block of 100 is recorded there. The item is kept rather than deleted because the allocation it settled is the kind a future lane will otherwise re-litigate.
-
-
-
----
 ## C-017 · The onboarding honesty principle has no permanent home
 
 | | |
@@ -1331,3 +1309,40 @@ The model is now four: **Integration (catalog) · Connected Account · Grant · 
 #### Freeze recommendation
 
 **Additional scenarios stopped changing the architecture after mTLS.** Every mechanism after it either passed unchanged or confirmed a rule already stated. **Lane B recommends freezing this model** — four concepts, three separated capabilities, two lifecycles, capability-first resolution, and the credential bound per connected account — and beginning slice 1 on the product owner's OAuth ruling.
+
+---
+
+## Closed
+
+## C-015 · Ports 3000 and 8000 now belong to human review
+
+| | |
+|---|---|
+| **Decision required** | None — an action to be taken by the lane currently holding those ports |
+| **Participating modules** | none — environment |
+| **Current assignee(s)** | the lane running on 3000/8000 |
+| **Blocking** | `make smoke`, intermittently and without saying so |
+| **Status** | **`ANSWERED`** — QE, 2026-08-02 |
+
+**Current positions.** The allocation convention now reserves **3000/8000 for human product review on `main`** ([`RUNNING.md` § Running a lane](RUNNING.md#running-a-lane)). A lane is still holding them.
+
+**Implementation impact.** Until it moves, `make smoke` can fail with *"stack did not reach healthy"* because a lane's dev server holds a port, with nothing in the output saying so ([B-002](BUGS.md)). Move to the assigned block and update `frontend/.env.local` and the API command.
+
+**Final decision.** —
+
+**Recorded in.** —
+
+---
+
+**Closed 2026-08-02.** Implemented in [`RUNNING.md` § Running a lane](RUNNING.md#running-a-lane): human review holds 3000/8000, Lane A moved to 3300/8300, and every lane's block of 100 is recorded there. The item is kept rather than deleted because the allocation it settled is the kind a future lane will otherwise re-litigate.
+
+
+
+---
+
+---
+
+*Empty, and that is the honest state.* **C-001** (ratified as [ADR-0036](architecture/adr/0036-target-account-contract.md)) and **C-016** (answered: deferred) carry `ANSWERED` in place above and are the two nearest to closing.
+
+> **This heading used to sit above five open items**, because lanes append at end of file and it had been in the middle since it was introduced. Two tools counted *"items appearing after `## Closed`"* and therefore reported *"3 closed"*, then *"5 closed"*, when the true figure was **0** — which kept `state-check`'s *"this register only grows"* rule silent for every cycle it existed ([B-021](BUGS.md)). **A check whose input is wrong is not a check.**
+

@@ -69,6 +69,54 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-022 · `make certify` inherits the database environment, and silently measures less when it is absent
+
+| | |
+|---|---|
+| **Module** | Repository tooling — `Makefile`, the `certify` target |
+| **Current assignee** | **none — not assignable.** [C-010](LANE_COORDINATION.md), and the fourth defect to land in that gap |
+| **Severity** | 🟠 — the gate reports a number that looks like a regression and is actually a misconfiguration. **It does not fail; it under-measures** |
+| **Status** | `OPEN` |
+| **Found** | 2026-08-02, by QE, certifying `c3435a0` — it cost two full gate runs before the cause was clear |
+
+**Steps to reproduce.** From a shell without the lane database variables:
+
+```bash
+make certify
+#   pytest              2238 passed          ← 110 fewer than the suite has
+#   coverage            94.34%               ← below the 95% floor
+#   security-invariants 337 invariants       ← 17 fewer
+#   scenario            164 assertions       ← 15 fewer
+#   NOT CERTIFIED
+```
+
+Then, same commit, same tree, with the three variables [`RUNNING.md`](RUNNING.md#running-a-lane) requires:
+
+```bash
+export SIGNORA_TEST_APP_DATABASE_URL=… SIGNORA_TEST_ADMIN_DATABASE_URL=… SIGNORA_DATABASE_URL=…
+make certify
+#   pytest 2348 · coverage 95.57% · 354 invariants · 179 assertions · CERTIFIED
+```
+
+**Expected.** A gate either runs or refuses to run. **`make certify` has no options, deliberately** (§20e) — *"a mode that skipped a gate would produce a run that cannot certify, and a command whose convenient path yields worthless evidence teaches people to use it."* An environment that silently deselects 110 tests is exactly that mode, arrived at by omission.
+
+**Actual.** The target is `cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.certification` — it sets one variable and inherits three. Without them the database-backed tests deselect, and **every gate reports a smaller, plausible number.** Nothing says *"the database was not reachable"*; it says `NOT CERTIFIED · coverage 94.34% is below 95.0%`, which reads as a coverage regression somebody introduced.
+
+**Why it is worth a row rather than a note to self.** This is the failure mode §2 names directly: **the repository asserted something untrue about itself, in the one artifact whose entire purpose is being trustworthy.** The misconfigured run wrote a manifest entry recording `commit c3435a0 · coverage 94.34 · tree_clean true` — a measurement of a broken instrument, indistinguishable to every future reader from a measurement of the repository. That entry was discarded and this row is what replaces it; **the finding is durable, the false number is not.**
+
+**And the part that makes this worth acting on rather than re-documenting.** [`REPOSITORY_RELEASE_CHECKLIST.md`](REPOSITORY_RELEASE_CHECKLIST.md) **already carries the warning**, in bold, directly above the `make certify` line, with measured evidence from earlier the same day: *"the same commit certified 2223/94.36% against the shared default and 2325/95.59% against the lane's own database. A gate pointed at the wrong database is not a gate."*
+
+**QE read that checklist, wrote that warning, and still ran the gate wrong** — because the variables were exported in one shell and `make certify` was invoked from another. **A rule that its own author violates within hours, while looking at it, is not a rule that needs restating; it is a rule that needs replacing with a check.** The fix is a preflight in the target, not a stronger sentence in the runbook.
+
+**Fix.** Make the target fail loudly when the variables are absent, rather than proceeding with a partial selection — a preflight that asserts reachability and exits non-zero with the missing variable named. **Do not fix it by hardcoding a lane's database into the `Makefile`**: the file is shared, and every lane has its own (`RUNNING.md` § *Running a lane*).
+
+**Second-order finding, and the more interesting one.** The first run left `certification/manifest.json` modified, which made the tree dirty, which failed the *next* run's cleanliness check — so one misconfiguration cost two runs rather than one. **The certification record lives in the tree it certifies.** That is precisely the assumption [ADR-0039](architecture/adr/0039-release-engineering-model.md) §II-3.2 identifies as the root of the divergence chain, arriving here as an ordinary operational nuisance. **It is evidence for that ADR, not a reason to act on it** — recorded and left alone, per the governance bar.
+
+**Recovered 2026-08-02, by an audit of the register.** This row was written at Closeout `7a08922`, reached `main`, and then **vanished from both branches** — removed without record when `integration` was rebased in the following cycle. **Nobody noticed; an audit found it.** That is the point: a defect that leaves the register is indistinguishable from one that was never reported. Same failure mode as [B-017](BUGS.md), now applied to the register that exists to prevent it.
+
+---
+
+
 ### B-026 · The repository does not own its line endings, and depends on every contributor's git config
 
 | | |
@@ -166,6 +214,20 @@ modules/timeline/infrastructure/repository.py      21   9  52%   ← unchanged
 
 **Two candidates have now been rejected for one unfixed defect.** `9ba0ea6` and `a2ca53d`, both abandoned, both correctly. **Nothing on `integration` can certify until these four files are covered**, which is the shared-base pattern again — now at **three occurrences**, counting [B-023](BUGS.md).
 
+### Escalation — 2026-08-02
+
+**This defect has now blocked two consecutive certification cycles and is a repository bottleneck.**
+
+| | |
+|---|---|
+| **Cycles blocked** | **2** — cycle 16 (`9ba0ea6`) and cycle 17 (`a2ca53d`), both rejected and abandoned |
+| **Work waiting** | **9 commits on `integration`** cannot promote · **25 commits on `lane-a-product-surface`** sit behind the same base, **none of which touch `integrations` or `timeline`** |
+| **Owner** | **Lane B**, feature lead for both modules |
+| **Progress** | **None measurable.** Between the two rejections Lane B shipped M13-S05, M13-S06 and the M13 module review — **all frontend and documentation, no backend file touched.** The four named files are unchanged to the statement |
+| **Is it a bottleneck?** | **Yes.** Two lanes' finished work is unreleasable, and the repository has not promoted since `3451f8b` |
+
+**Recorded, not editorialised.** Lane B may have reasons for the sequencing that QE cannot see, and finding a defect outside one's assignment is an obligation to report rather than a licence to prioritise somebody else's queue. **What QE will not do is normalise the repetition:** a second identical rejection is reported as an escalation, not as *"candidate rejected again."*
+
 **Not to be fixed by lowering the floor**, and not by adding assertions that execute lines without testing behaviour. The two 0% files are the work; the percentage follows.
 
 ### B-025 · A coverage failure is reported as a test failure, and names the wrong gate
@@ -199,7 +261,7 @@ Why this run does not certify
 **Fix.** Either run coverage as its own gate and drop `--cov-fail-under` from the pytest invocation, or report the pytest gate as passed-with-coverage-short. **Do not merely reword the message**: the gate is currently wrong about which component failed, not just unclear.
 
 
-### B-024 · The connect screen promises a disconnect that does not exist
+### B-027 · The connect screen promises a disconnect that does not exist
 
 | | |
 |---|---|
@@ -364,7 +426,7 @@ make certify
 | **Module** | **none** — [`LANE_COORDINATION.md`](LANE_COORDINATION.md) |
 | **Current assignee** | **QE**, at the next cycle's stage-3 reconciliation — the register is QE's to reconcile at merge |
 | **Severity** | 🟠 — two tools report *"3 closed"*, and the true figure is *"0 closed, 2 answered and misfiled"* |
-| **Status** | `OPEN` |
+| **Status** | **`FIXED`** — QE, 2026-08-02. By the time it was fixed the heading sat above **five** open items, not three. **Awaiting verification by a lane other than QE** |
 | **Found** | 2026-08-02, by QE, reading C-020 and noticing it was filed under `Closed` while marked `OPEN` |
 
 **Steps to reproduce.**
@@ -418,7 +480,7 @@ python3 infra/state-check.py
 | **Module** | **none** — `CLAUDE.md`, on `lane-a-product-surface` only. It has not reached `main` |
 | **Current assignee** | **Lane A**, to remove during the B-018 rebase — it is that lane's edit |
 | **Severity** | 🟠 — a governing rule that contradicts itself is followed differently by two readers |
-| **Status** | `OPEN` |
+| **Status** | **`VERIFIED`** — QE, 2026-08-02, reproduced from the original steps rather than the diff: the duplicate row is gone and the survivor is the correct one, retaining the claim-commit exception. **The `BACKLOG.md` half remains the product owner's** |
 | **Found** | 2026-08-02, by QE, reading `16896ca` during validation |
 
 **Steps to reproduce.**
