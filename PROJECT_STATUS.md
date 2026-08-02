@@ -19,8 +19,8 @@
 | **Current phase** | **Product implementation** — the pipeline is built; the surface is being exposed |
 | **Last completed milestone** | **M12.5 — Commercial Profile**, all five slices promoted 2026-08-02. The head of the pipeline now exists |
 | **Current milestones** | **M12.3 — the product surface.** The brief's hierarchy (D20) remains; **R2-01 shipped this cycle**. *(Decision Package still deferred until `reasoning@1` is released — see §7)* |
-| **`main` at** | **`3e36da9`** — *Nobody assigns; lanes pull*. **The certified commit itself**, promoted by SHA and checked after the merge |
-| **Certification status** | ✅ **CERTIFIED** — [`3e36da9ff0ae`](certification/reports/3e36da9ff0ae.md), 2026-08-02, bound to migration head **`0025`** and rendering protocol **v2**. **Commit-bound**: the record names `3e36da9`, and `3e36da9` is what was promoted. `make certified ARGS="--audit-main"` proves it across the branch. See §4 |
+| **`main` at** | **`7b91948`** — *A claim is a commit that lands*. **The certified commit itself**, promoted by SHA and checked after the merge |
+| **Certification status** | ✅ **CERTIFIED** — [`7b919480b650`](certification/reports/7b919480b650.md), 2026-08-02, bound to migration head **`0025`** and rendering protocol **v2**. **Commit-bound**: the record names `7b91948`, and `7b91948` is what was promoted. `make certified ARGS="--audit-main"` proves it across the branch. See §4 |
 | **Branches** | **`main` and `lane-qe` at the promoted, certified baseline.** `integration` sits **one slice ahead** — Lane A's R2-01 landed while QE was measuring `main`; it is validated by its own lane, **not yet by QE**, and is the next cycle's stage 1. Both feature lane branches are synchronized to `integration`. **QE is the only lane that merges, certifies, promotes and publishes this file** ([CLAUDE.md §20e](CLAUDE.md)). Who is on what: [docs/ACTIVE_ASSIGNMENTS.md](docs/ACTIVE_ASSIGNMENTS.md) · defects: [docs/BUGS.md](docs/BUGS.md) · cross-lane questions: [docs/LANE_COORDINATION.md](docs/LANE_COORDINATION.md) |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
 | **Overall completion** | **~66%** by engineering effort (~205 of ~261–339 ew) — M12.5 closed (five slices) · M12.4 shipped · M9.5 (~3 ew) inserted and **not** closed. **An estimate, and marked as one**; every other figure on this page is measured |
@@ -37,43 +37,44 @@ They can also **follow any ledger line to the provider readings beneath it**, an
 
 ---
 
-## 1b · Release summary — 2026-08-02, cycle 3
+## 1b · Release summary — 2026-08-02, cycle 4
 
-**Derived from the promoted commit `3e36da9`.** One commit since `624f770`.
+**Derived from the promoted commit `7b91948`.** One commit since `3e36da9`.
 
-### Governance — planning, execution and release are now three roles
+### Governance — claiming work is now atomic
 
-**Work allocation moved from QE to a pull model** (`CLAUDE.md` §20e, *Nobody assigns; lanes pull*). QE had five responsibilities; four of them are judgements about the repository as a whole and belong together. **Scheduling is not one of them** — it is a product decision, and routing it through QE meant an idle lane waited for the session that was busy certifying. **Every additional lane increased the wait rather than the throughput**, which is the opposite of what lanes are for.
+**The Task Claim Protocol** (`CLAUDE.md` §20e). Pull-based allocation introduced a race that push-based allocation did not have: two `AVAILABLE` lanes read the same queue at the same moment and both start building. **A claim is therefore a standalone commit, pushed, and confirmed by a pull** — arbitrated by push order, which is the one thing here that is already atomic.
 
-| Role | Owns |
+| Step | Why it is in that order |
 |---|---|
-| **Product owner** | Priority — [`docs/BACKLOG.md`](docs/BACKLOG.md), the `READY` queue |
-| **Feature lanes** | Execution — claim the top item you can take, record it, build |
-| **QE** | Quality and release — validate, certify, integrate, promote, close out, declare. **Never schedules** |
+| The claim is **alone in its commit** | Mixed into an implementation commit it cannot land first, so it arbitrates nothing. Alone, it costs one `reset` to abandon |
+| **Push, then pull again** | A push proves the claim was written, never that it was *first*. A lane that pushes and starts building has not run the protocol |
+| **No production code until step 10** | Code written before a successful claim is code that may be thrown away — the waste the protocol prevents |
 
-**A lane claims only a `READY` item, writes the claim before the first line of code, and never reorders the queue.** `WAITING` needs somebody to answer; `BLOCKED` needs somebody to build; the distinction decides who unblocks it.
+**Every task now carries a permanent `TASK-nnn`** — brought forward from the product owner's recommendation, because *"two lanes claimed the same task"* has to be a fact a machine can check rather than a comparison of two sentences. [`BACKLOG.md`](docs/BACKLOG.md) holds `TASK-001`…`TASK-016` with module and slice; [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) references ids and records execution only — who, which task, which branch, what status.
 
-**Certification is unchanged and remains commit-bound.** This cycle certified `3e36da9` and promoted `3e36da9`.
+**`state-check` catches both failure modes**, and both were proven to fail before being trusted: a task claimed by two lanes, and a board row naming a task the backlog never defined.
 
 ### Bugs fixed
 
-None this cycle. **Verification of [B-009](docs/BUGS.md), [B-013](docs/BUGS.md) and [B-014](docs/BUGS.md) is now the top `READY` backlog item** — all three were fixed by QE, which may not close its own fixes.
+None this cycle. **[TASK-001](docs/BACKLOG.md) — verifying [B-009](docs/BUGS.md), [B-013](docs/BUGS.md) and [B-014](docs/BUGS.md) — is the top `READY` task**, and deliberately not QE's.
 
 ### Architectural decisions introduced
 
 | | |
 |---|---|
-| `CLAUDE.md` §20e | **Nobody assigns; lanes pull** — the backlog, the claim rules, and the three-role separation |
+| `CLAUDE.md` §20e | **The Task Claim Protocol** — ten steps, atomic by push order, no code before a confirmed claim |
+| Permanent task ids | `TASK-nnn` across the backlog, the board, and every reference to work |
 
 ### Remaining blockers
 
-1. **[C-010](docs/LANE_COORDINATION.md)** — `apps/`, `signora_platform/` and repository process have no assignable lane. **Four defects now sit there**, and it is the top `WAITING` item.
-2. **`reasoning@1` has no released model**, so the Decision Package would refuse at runtime (§7).
-3. **Seven defects `FIXED` awaiting verification**, five by somebody other than QE.
+1. **[TASK-006](docs/BACKLOG.md)** ([C-010](docs/LANE_COORDINATION.md)) — `apps/`, `signora_platform/` and repository process have no assignable lane. **Four defects sit there.** The highest-value decision available.
+2. **[TASK-013](docs/BACKLOG.md)** — `reasoning@1` has no released model; the Decision Package would refuse at runtime (§7).
+3. **Seven defects `FIXED` awaiting verification** — five by somebody other than QE.
 
 ### Recommended next work
 
-**It is a queue now, not a paragraph:** [`docs/BACKLOG.md`](docs/BACKLOG.md), in order. The product owner's two decisions at the top of `WAITING` — [C-010](docs/LANE_COORDINATION.md) and [C-008](docs/LANE_COORDINATION.md) — unblock more than anything a lane could pick up unaided.
+**[`docs/BACKLOG.md`](docs/BACKLOG.md), in order.** Five `READY` tasks, claimable now by either idle lane without asking anybody. The two `WAITING` decisions at the top — [TASK-006](docs/BACKLOG.md) and [TASK-007](docs/BACKLOG.md) — are the product owner's, and unblock more than anything a lane can pick up unaided.
 
 ---
 
@@ -83,9 +84,9 @@ None this cycle. **Verification of [B-009](docs/BUGS.md), [B-013](docs/BUGS.md) 
 
 | Lane | Assignment | Status |
 |---|---|---|
-| Lane A | — | `AVAILABLE`. **Claims from [BACKLOG.md](docs/BACKLOG.md)**; waiting on nobody |
-| Lane B | — | `AVAILABLE`. **Claims from [BACKLOG.md](docs/BACKLOG.md)**; waiting on nobody |
-| QE | Repository lifecycle and governance | `ACTIVE` — permanent, and **schedules nothing** |
+| Lane A | — | `AVAILABLE`. **Runs the Task Claim Protocol**; waiting on nobody |
+| Lane B | — | `AVAILABLE`. **Runs the Task Claim Protocol**; waiting on nobody |
+| QE | Repository lifecycle and governance | `ACTIVE` — permanent. **Schedules nothing, and its turn begins when work returns to `integration`** |
 
 **Nothing is blocked.** [C-011](docs/LANE_COORDINATION.md) holds one finding inside Lane A's slice (R9-03) without stopping it; [C-012](docs/LANE_COORDINATION.md) and [C-013](docs/LANE_COORDINATION.md) wait on RFCs queued since M3A and block nothing today.
 
@@ -314,9 +315,9 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`3e36da9ff0ae`](certification/reports/3e36da9ff0ae.md) · 2026-08-02 · ✅ CERTIFIED**
+**Latest certification — [`7b919480b650`](certification/reports/7b919480b650.md) · 2026-08-02 · ✅ CERTIFIED**
 
-**Certified commit `3e36da9` · promoted commit `3e36da9`.** Identical, checked after the merge and re-checked by `make certified`.
+**Certified commit `7b91948` · promoted commit `7b91948`.** Identical, checked after the merge and re-checked by `make certified`.
 
 | Gate | Recorded |
 |---|---|
@@ -325,7 +326,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | **Security Invariants** | **354**, each proven to fail when its guarantee is removed |
 | **import-linter** | **31 kept**, 0 broken |
 | **MyPy** | strict, clean over **547 files** |
-| **`make smoke`** | **24 stages in 114s**, fresh images, clean teardown |
+| **`make smoke`** | **24 stages in 118s**, fresh images, clean teardown |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0025`** · scenario set `0cf6b2c581e4` · working tree clean · `research_planning@2` and `research_synthesis@2` released for `llama3.1:8b`.

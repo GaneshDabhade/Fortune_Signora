@@ -63,7 +63,7 @@
 
 ---
 
-## Current — as of 2026-08-02, `3e36da9`
+## Current — as of 2026-08-02, `7b91948`
 
 | Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Started |
 |---|---|---|---|---|---|---|---|---|
@@ -97,6 +97,7 @@
 | A | R2-01 — the guidance says what it is pointing at, and ADR-0037 | 2026-08-02 | `efaa987` |
 | QE | Certification binds to an immutable commit, enforced by `certification-guard.py` | 2026-08-02 | `1bbee30` · `624f770` |
 | QE | Pull-based work allocation — the backlog, and QE out of scheduling | 2026-08-02 | `3e36da9` |
+| QE | The Task Claim Protocol, and permanent task ids | 2026-08-02 | `7b91948` |
 | B | M12.5 slice 5 — target accounts. **M12.5 complete** | 2026-08-02 | `3f4e988` |
 | A | M12.4 — research on demand | 2026-08-02 | `c1f5985` |
 | A | R4-02 · R4-03 — the words the product uses when it refuses you | 2026-08-02 | `bdb014f` |
