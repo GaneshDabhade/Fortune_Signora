@@ -273,3 +273,37 @@ Four capabilities the architecture already treats as QE's, of which two exist. *
 **The working rule, until evidence changes it:** *take whatever is on `integration` when the cycle opens.* Do not hold executable work back to make a batch bigger; do not split what has already arrived to make candidates smaller. **Both are ceremony, and neither is what is costing time.**
 
 **Rollback** is deliberately absent from this analysis: `main` has never been rolled back, there is no released version to roll back to ([ADR-0027](architecture/adr/0027-local-first-development.md)), and reasoning about it now would be speculative design. It becomes a real question at M14.5.
+
+---
+
+## 10 · Repository Health — the Closeout section
+
+**Ratified 2026-08-02, product owner.** **Every Repository Closeout carries this section**, in `PROJECT_STATUS.md`, in this order. It exists so repository health can be read at a glance rather than reconstructed.
+
+| # | Line | Where it comes from |
+|---|---|---|
+| 1 | **Release status** | The promoted SHA, and what shipped in customer words |
+| 2 | **Certification status** | `make certified` — the record, not a recollection |
+| 3 | **Open bugs** | `make kpi` — count, severities, and how many await verification |
+| 4 | **Critical blockers** | Unresolved 🔴, plus anything blocking promotion |
+| 5 | **Dependency health** | `C-` open vs closed, and **any item open across multiple cycles, with why** |
+| 6 | **Lane utilization** | Who is building, who is blocked, **and whether a blocked lane has executable work it owns** |
+| 7 | **Milestone progress** | Which milestone, which slices closed, what remains |
+| 8 | **Repository process compliance** | Did every merge follow the lifecycle? Was any gate skipped? |
+| 9 | **Governance compliance** | `state-check` findings, and whether any were left standing deliberately |
+| 10 | **Architecture health** | Frozen boundaries intact · module count · `lint-imports` contracts |
+| 11 | **Product alignment** | **Once per cycle:** is the promoted work moving a customer capability, or only the substrate? |
+| 12 | **Technical debt trend** | Coverage direction, open-defect direction, register direction — **trend, not snapshot** |
+| 13 | **Overall project risk** | One sentence. The thing most likely to hurt, named |
+
+> **Derive every line that can be derived.** Lines 2, 3, 5, 9 and 10 come from `make certified`, `make kpi` and `make state-check` and are never typed from memory. Lines 6, 8, 11 and 13 are judgements, and are the reason a person still writes this section.
+
+**A line with nothing to say says "nothing changed" and moves on.** The section is a health check, not an essay — if it grows past a screen it has stopped being readable at a glance, which was its only purpose.
+
+### Product alignment — the once-per-cycle question
+
+**Not an architectural review.** Nine questions, answered briefly, and only where the answer moved:
+
+*Are we still solving the original product problem? · Are milestones still aligned with the product vision? · Has architecture drifted? · Has implementation drifted? · Are we optimising local work while missing strategic goals? · Are customer-facing capabilities progressing in the intended order? · Are technical improvements outweighing customer value? · Are we accumulating unnecessary complexity? · Are governance rules still serving the repository?*
+
+**The one worth asking every time is the seventh.** A repository whose recent promotions are all tooling, governance and process is a repository optimising itself, and it will not notice from the inside — every individual change will have been justified.

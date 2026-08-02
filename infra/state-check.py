@@ -352,6 +352,49 @@ def main() -> int:
                 f"row above it. Usually the residue of a merge that split a section."
             )
 
+    # 5e — identifier collisions, across every class a lane can allocate.
+    #
+    # B-024 was allocated twice, seven minutes apart, by two lanes on separate
+    # branches. Neither push conflicted because they edited different regions of
+    # one file and git merged them happily. **Ranges make it impossible; this
+    # makes it visible** — defence in depth, because a lane can still fat-finger
+    # a number inside its own block.
+    identifier_classes = {
+        "B-": (bugs, r"^### (B-\d+)"),
+        "C-": (coordination, r"^#{2,3} (C-\d+)"),
+        "TASK-": (backlog, r"^### (TASK-\d+)"),
+    }
+    for label, (text, pattern) in identifier_classes.items():
+        found = re.findall(pattern, text, re.M)
+        duplicated = sorted({i for i in found if found.count(i) > 1})
+        if duplicated:
+            findings.append(
+                f"{label} identifiers are allocated twice: {', '.join(duplicated)}. "
+                f"Two rows under one id is two defects nobody can refer to separately "
+                f"(CLAUDE.md §20e, identifier allocation)."
+            )
+        elif found:
+            notes.append(f"{label} identifiers: {len(found)} allocated, none duplicated.")
+
+    # ADR numbers are a filename rather than a heading, and more than one actor
+    # creates them — 0036 and 0037 by Lane A, 0038 by Lane B, 0039 by QE. Two
+    # lanes choosing the same number produce two *differently named* files, which
+    # git merges without complaint.
+    adr_dir = REPO_ROOT / "docs" / "architecture" / "adr"
+    if adr_dir.is_dir():
+        numbers: dict[str, list[str]] = {}
+        for path in adr_dir.glob("[0-9]*.md"):
+            numbers.setdefault(path.name.split("-")[0], []).append(path.name)
+        clashing = {n: f for n, f in numbers.items() if len(f) > 1}
+        for number, files in sorted(clashing.items()):
+            findings.append(
+                f"ADR-{number} is claimed by {len(files)} files: {', '.join(sorted(files))}. "
+                f"An ADR number is its identity; two files sharing one make every "
+                f"citation ambiguous."
+            )
+        if not clashing and numbers:
+            notes.append(f"ADR numbers: {len(numbers)} allocated, none duplicated.")
+
     # 6 — a coordination register that only grows has become a discussion log.
     opened = len(re.findall(r"^#{2,3} C-\d+", coordination, re.M))
     closed = 0

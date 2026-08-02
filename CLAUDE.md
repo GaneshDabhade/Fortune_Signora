@@ -986,6 +986,35 @@ It compares what the governance documents *say* against what git, the migrations
 
 **QE may write a test in any module's suite** — that is its job — but may not change that module's production code. A failing test it adds is a bug report in executable form, and the module's current assignee makes it pass.
 
+### Identifiers are allocated from a block, never from the highest number seen
+
+**Ratified 2026-08-02, product owner, after `B-024` was allocated twice — seven minutes apart, by two lanes, on separate branches.** Neither push conflicted: they edited different regions of one file and git merged them happily. **Nothing was careless.** Both lanes read the register, both saw `B-023` as the highest, both took the next number. **The allocation model was the defect.**
+
+> **A lane allocates only from its own block. Two lanes therefore cannot choose the same number — not "are unlikely to", cannot.**
+
+| Actor | `B-` bugs | `C-` coordination | `TASK-` | ADR |
+|---|---|---|---|---|
+| **Historic** — allocated before this rule | `001`–`099` | `001`–`099` | `001`–`099` | `0001`–`0099` |
+| **QE** | `100`+ | `100`+ | — *(QE writes nothing in the backlog)* | `0100`+ |
+| **Lane A** | `200`+ | `200`+ | `200`+ | `0200`+ |
+| **Lane B** | `300`+ | `300`+ | `300`+ | `0300`+ |
+| **Lane C** | `400`+ | `400`+ | `400`+ | `0400`+ |
+| **Lane D** | `500`+ | `500`+ | `500`+ | `0500`+ |
+| **Lane E** | `600`+ | `600`+ | `600`+ | `0600`+ |
+| **Product owner** | `900`+ | `900`+ | `900`+ | `0900`+ |
+
+**Within your block, take the next free number.** Across blocks, nobody needs to look at anybody else.
+
+**Why blocks rather than the alternatives.** A central allocator recreates the bottleneck that scheduling was moved out of QE to remove. A leased or ledger-based scheme makes a collision *detectable* — it still has to be resolved by hand, and the lane still has to get the resolution right. **A block makes it unrepresentable**, which is the standard §2 already prefers: *"a violation that is unrepresentable over one that is merely discouraged."* It is also the boring, proven answer — IANA, MAC addresses, database sequence caching and per-node CIDR allocation are all the same idea.
+
+**Chronological traceability is not lost.** It never lived in the number: every row carries `Found`, and `git log` carries the rest. **`B-301` after `B-105` is not out of order; it is a different allocator.**
+
+**Enforced twice.** `infra/state-check.py` refuses a duplicate in any class — `B-`, `C-`, `TASK-` and ADR filenames — so a fat-finger *inside* a block is caught even though a collision *across* blocks is impossible. **The range prevents; the check detects.**
+
+**Migrations are deliberately exempt**, and are the one identifier that must stay dense: Alembic's `down_revision` is a linear chain, so a gap is not a cosmetic oddity but a broken migration graph. **The existing practice is correct and stays** — a lane that finds its number taken renumbers on rebase and says so in the commit message, as Lane A did twice for `0026`. **The chain is the identity; the filename follows it.**
+
+**Renumbering an existing identifier is QE's, at merge, and only to break a tie** — the later claim moves, decided by author timestamp. This should now never occur.
+
 ### Bugs
 
 **One register: [`docs/BUGS.md`](docs/BUGS.md).** Not a file per bug, not an issue tracker, not scattered TODOs.
