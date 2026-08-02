@@ -19,7 +19,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from modules.provider_platform.application.ports import NoSyncReporter
+from modules.provider_platform.application.ports import NoPacer, NoSyncReporter
 from modules.provider_platform.application.run_sync import (
     RunProviderSync,
     RunProviderSyncInput,
@@ -142,6 +142,8 @@ def _use_case(adapter: StubAdapter, reporter: object) -> RunProviderSync:
         publisher=NullPublisher(),  # type: ignore[arg-type]
         session=NullSession(),  # type: ignore[arg-type]
         reporter=reporter,  # type: ignore[arg-type]
+        # These assert what was measured, not how long it took.
+        pacer=NoPacer(),
     )
 
 

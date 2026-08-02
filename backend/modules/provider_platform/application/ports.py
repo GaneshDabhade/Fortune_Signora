@@ -117,3 +117,27 @@ class NoSyncReporter:
         self, *, provider: ProviderName, kind: SyncFailureKind, duration_ms: int
     ) -> None:
         return None
+
+
+class Pacer(Protocol):
+    """Waits. Nothing else.
+
+    **A port so the waiting is injectable and the arithmetic is not.** How long
+    to wait is a domain question (`RequestPace`); *actually* waiting is the one
+    part that must not happen in a test, and separating them is what lets the
+    pacing be asserted rather than timed.
+    """
+
+    async def wait(self, seconds: float) -> None: ...
+
+
+class NoPacer:
+    """Waits for nothing.
+
+    **Not the production default.** Injected by tests, so a suite asserts the
+    intervals that were *requested* instead of spending them — a test that
+    slept for real would be measuring `asyncio`, and slowly.
+    """
+
+    async def wait(self, seconds: float) -> None:
+        return None

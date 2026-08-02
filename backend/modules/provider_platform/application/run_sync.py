@@ -21,6 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.provider_platform.application.ports import (
     NoSyncReporter,
+    Pacer,
     SyncReporter,
     SyncRepository,
 )
@@ -39,6 +40,7 @@ from modules.provider_platform.domain.provider import (
     ProviderRequest,
     ProviderTransientError,
 )
+from modules.provider_platform.domain.pacing import RequestPace
 from modules.provider_platform.domain.sync import (
     ProviderSync,
     RawProviderRecord,
@@ -79,6 +81,7 @@ class RunProviderSync:
         repository: SyncRepository,
         publisher: EventPublisher,
         session: AsyncSession,
+        pacer: Pacer,
         reporter: SyncReporter | None = None,
     ) -> None:
         self._adapter = adapter
@@ -88,6 +91,10 @@ class RunProviderSync:
         # would otherwise carry the same `if self._reporter is not None`, and
         # the branch that skips recording is the branch nothing exercises.
         self._reporter = reporter or NoSyncReporter()
+        # **Required rather than defaulted.** A pacer that could be omitted
+        # would be omitted, and the failure — a burst that exhausts a quota —
+        # looks exactly like a provider being unreliable.
+        self._pacer = pacer
         # The session is injected rather than reached for through the
         # repository: publication must happen in the *same* transaction as
         # the state change that caused it, and that is a property of this
@@ -130,7 +137,13 @@ class RunProviderSync:
 
         stored = 0
         try:
-            stored = await self._drain(sync, request, since=since, correlation_id=correlation_id)
+            stored = await self._drain(
+                sync,
+                request,
+                since=since,
+                correlation_id=correlation_id,
+                pace=RequestPace(descriptor.rate_limit_per_minute),
+            )
         except ProviderTransientError as exc:
             # The watermark is deliberately untouched, so a later run
             # resumes from the same place rather than re-reading from the
@@ -185,11 +198,21 @@ class RunProviderSync:
         *,
         since: datetime | None,
         correlation_id: UUID,
+        pace: RequestPace,
     ) -> int:
         cursor: str | None = None
         stored = 0
+        fetched_at = perf_counter_ns()
 
-        for _ in range(MAX_PAGES):
+        for page in range(MAX_PAGES):
+            # **Paced before the request, and never before the first.** The
+            # first page of a sync follows nothing this loop issued; delaying
+            # it would add latency to every sync in exchange for spacing that
+            # is already there.
+            if page > 0:
+                await self._pacer.wait(pace.delay_after(_elapsed_seconds(fetched_at)))
+
+            fetched_at = perf_counter_ns()
             response = await self._adapter.fetch(
                 ProviderRequest(
                     capability=request.capability,
@@ -300,3 +323,7 @@ class RunProviderSync:
 
 def _elapsed_ms(started: int) -> int:
     return (perf_counter_ns() - started) // 1_000_000
+
+
+def _elapsed_seconds(started: int) -> float:
+    return (perf_counter_ns() - started) / 1_000_000_000

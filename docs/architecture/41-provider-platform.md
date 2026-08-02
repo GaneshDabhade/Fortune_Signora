@@ -73,6 +73,7 @@
 | **PP-02** — the consumer | The module's first real input | **Built to the composition root; blocked there by [C-021](../LANE_COORDINATION.md)** |
 | **PP-03** — un-watching stops the spending | [ADR-0036](adr/0036-target-account-contract.md) §6 | **Re-scoped before it started — see below** |
 | **PP-04** — the module can be measured | §17 · [12-scalability.md](12-scalability.md)'s extraction trigger | Built 2026-08-02 |
+| **PP-05** — the platform paces itself | `rate_limit_per_minute`, declared in M2.0 and read by nobody | Built 2026-08-02 |
 
 > **PP-02 and PP-03 are proposed slices, not registered tasks** (product-owner refinement, 2026-08-02). A feature lane plans its own sequence inside its implementation area; **it does not mint repository task identifiers** — that namespace is registered centrally, so two lanes cannot extend it independently. This table is the plan; [`BACKLOG.md`](../BACKLOG.md) is the register, and only QE writes ids into it.
 
@@ -99,6 +100,30 @@
 **Dispatch happens before the version is recorded.** If recording fails, the event redelivers, the delta is recomputed against the same watermarks and the same companies are dispatched again — wasteful once, and every layer below is idempotent. Recording first and failing to dispatch would lose the work **silently**, and nothing downstream would notice a company that was never fetched.
 
 ## Operational considerations
+
+### The platform paces itself — PP-05 *(2026-08-02)*
+
+**`ProviderDescriptor.rate_limit_per_minute` was declared in M2.0 and read by nothing in production.** Its own docstring states the purpose — *"declared so the platform can pace itself rather than discovering the limit by being throttled"* — and the contract suite asserts every adapter declares one or explicitly declares none. The declaration was honoured by nobody.
+
+**What that cost is not politeness.** `_drain` fetches up to `MAX_PAGES` — five hundred — back to back, as fast as the network allows. Against an adapter declaring sixty requests a minute, one sync can spend the whole quota in seconds and then receive `ProviderRateLimitedError`, which is **transient**: the sync fails, the watermark is deliberately left untouched, and the retry runs against a quota that is still exhausted. **The pages already fetched survive. The requests that bought them are spent twice.**
+
+| Decision | Why |
+|---|---|
+| **No declared limit means no waiting** | Never a default rate. Inventing one for a provider that stated none would slow every sync to a speed nobody asked for — and the contract suite permits declaring none |
+| **The first page is never delayed** | It follows nothing this loop issued. Pacing it would add latency to every sync in exchange for spacing that is already there |
+| **Elapsed time counts against the interval** | A provider that took two seconds has already spent two seconds of its own spacing; waiting the full interval on top punishes a slow provider twice |
+| **A declared limit of zero is refused** | *"Never ask"* is not a rate limit — it is a disabled provider, and that is a different decision made somewhere else |
+| **The waiting is a port; the arithmetic is not** | `RequestPace` is domain and asserted directly; `AsyncioPacer` is the one line that cannot be. **A test that slept for real would be measuring `asyncio`**, slowly, and would still not prove the arithmetic |
+
+**`asyncio.sleep`, never a blocking wait.** A paced sync must not hold a worker's event loop while it waits, or one throttled provider would stall every other sync sharing the pool.
+
+#### What this deliberately does not solve
+
+**Pacing is per sync, not per provider.** Two syncs running concurrently against the same provider each pace themselves correctly and **together exceed the declared rate.**
+
+**Fixing that needs shared quota state** — a counter in Redis or a row every sync contends on — which is a different architectural decision from *"honour a number the adapter already declares"*, and one with its own failure modes. **Not built, and not disguised as built.** What ships here bounds a single sync from five hundred requests in seconds to the declared rate, which is a strict improvement over nothing; it does not make the limit a platform-wide guarantee.
+
+**The trigger to revisit** is more than one concurrent sync per provider per workspace, which nothing schedules today — the same absence that re-scoped PP-03.
 
 ### The module emits metrics — PP-04 *(2026-08-02)*
 
