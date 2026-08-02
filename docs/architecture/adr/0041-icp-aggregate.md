@@ -131,7 +131,7 @@ An ICP spanning three products cannot be *"the default"* for one of them and not
 | Module | Effect | B vs E |
 |---|---|---|
 | **Target Accounts** | Eventually *"we watch this account because of the EMEA ICP"* — a citation from a named list to a named segment | Same |
-| **Provider Platform** | **The largest future consumer.** Discovery — *"find companies matching this ICP"* — cites one ICP id. Ownership boundaries stay exactly as [ADR-0036](0036-target-account-contract.md) fixed them | Same |
+| **Provider Platform** | **Consumer** | **The largest future consumer.** Discovery — *"find companies matching this ICP"* — cites one ICP id. Ownership boundaries stay exactly as [ADR-0036](0036-target-account-contract.md) fixed them | Same |
 | **Knowledge Graph** | Matching needs an anticorruption layer between the customer's words and canonical values — **[C-002](../../LANE_COORDINATION.md), still open.** Nothing here pre-solves it | Same |
 | **Signal Engine** | Relevance could vary per segment — *"funding rounds matter for enterprise, hiring for mid-market"*. **Per-ICP `signal_profile` scoping** | Same |
 | **Buying Score** | A scoring model per segment. **Never per ICP-and-product**, which B would invite | **E cleaner** |
@@ -259,27 +259,144 @@ icp_version_product   icp_version_id · product_id            ← versioned with
 
 **The practical rule QE needs:** **the migration is reversible until the first customer uses the capability it enables.** A rollback plan measured in hours is real; one measured in days is not. **Stated before implementation rather than discovered during it.**
 
+## The publication-bound invariant, and it is not new
+
+**The product owner asked for this to be documented as reusable. It is more reusable than expected — the repository already enforces it somewhere else, and nobody had noticed the two were the same rule.**
+
+> **A draft exists for a human. A published artefact exists for the platform. If the platform cannot execute against it, it must not be publishable.**
+
+**The second instance is the Prompt Registry.** `CLAUDE.md` §10: *"A prompt is not 'released' until it has been evaluated against the supported `(model, dataset)` combinations, and it may never be used with a pairing absent from that record."* A prompt may be written, revised and read at any time; **it may not be *released* until the platform can demonstrably execute it.**
+
+**Identical shape, different module:**
+
+| | Prompt Registry | ICP |
+|---|---|---|
+| **Freely created** | any version | a draft |
+| **Gate** | evaluated against every supported pairing | names at least one product |
+| **Why the gate** | the platform cannot demonstrate it works | the platform cannot act on it |
+| **What the gate is *not*** | a quality judgement — `REFUSED` is a legitimate outcome | a judgement about the segment — a broad ICP is never refused |
+
+**The last row is the part worth carrying.** In both cases the gate asks *"can the platform execute against this?"* and never *"is this good?"* — which is what keeps it from becoming a validation rule that judges the customer's business.
+
+**Where it will recur:** signal profiles, playbooks, automation rules, campaigns, notification rules — anything a customer authors that the platform then acts on unattended. **Its permanent home is `CLAUDE.md` §2 if the product owner wants it; a lane does not write governance.** Stated here so the two existing instances are visibly one rule rather than two coincidences.
+
+## Amendment 2 — 2026-08-02, challenging the version model
+
+**Nine scenarios. Eight are absorbed; one breaks it, and the fix is a shape this repository already ships.**
+
+### The break: a draft is not a version
+
+*"Deleting Draft Version 7"* is the scenario that does not work, and the reason is that **the phrase contains a category error the model would otherwise inherit.**
+
+If a draft is a version, an abandoned one leaves either a hole in the sequence or a version that was never a statement — **and the whole value of an immutable version chain is that every entry is something the customer actually declared.** A discarded draft is not.
+
+> **Versions are published statements. A draft is not a version.**
+
+| | |
+|---|---|
+| **`icp_version`** | **Only ever published content.** Immutable, sequential, and every row is something a customer said out loud |
+| **A pending draft** | **Mutable working state**, at most one per ICP, deleted freely because it was never a statement. Publishing it **mints the next version** |
+
+**This also fixes a state clash the earlier sketch had.** A published ICP being edited is not *"in draft"* — it is published, with a pending draft. So `state` describes the ICP's lifecycle and the pending draft is independent of it:
+
+| Situation | `state` | Versions | Pending draft |
+|---|---|---|---|
+| Just created, never published | `draft` | none | yes |
+| Live | `published` | 1..n | no |
+| Live, being edited | `published` | 1..n | **yes** |
+| Retired | `archived` | 1..n | no |
+
+**And it answers the AI scenarios without a new concept**, which is the visionary challenge's real question: **an AI proposal is a pending draft with provenance**, and *"customer rejects version 9"* is discarding a draft. Nothing published, nothing to roll back, no approval state required for the simple case.
+
+### The second correction: state is a transition log, not a column
+
+*"Archiving Version 6"* is the other category error — **you archive an ICP, never a version.** State belongs to identity. But a mutable `state` column answers *"is it archived?"* and loses *"who archived it, and when?"*, which is exactly what the product owner's audit question asks for.
+
+**The repository has already solved this**, in Opportunity Engine: `opportunity_state` is append-only, each row a *complete* statement rather than a delta, so **the status is the audit log rather than something kept beside it.**
+
+```
+icp                   identity — what everything cites, forever
+icp_version           published content, immutable, sequential
+icp_version_product   the product relationship, versioned with the content
+icp_state             append-only transitions, each naming its actor
+```
+
+**`state` is therefore derived from the latest transition, never stored** — the same rule that makes `evidence_state` derived and release derived from evaluations. **And *created by · published by · archived by* all fall out with no extra fields:** authorship of a version is `icp_version.created_by`, and every state change names its actor by construction.
+
+### Downstream citations name both
+
+*"Publishing Version 2 while Version 1 still drives active opportunities"* is the scenario that decides what a consumer stores.
+
+> **A citation is `(icp_id, icp_version_id)`.** Identity alone loses *which definition* produced the opportunity; version alone loses *which segment it belongs to*. Both, always — the same shape as an evidence citation.
+
+**Rollback is a new version, never a re-pointer.** *"Go back to version 1"* publishes version *n+1* whose content equals version 1's and which records what it was restored from. **Re-pointing at version 1 would erase the fact that on 3 March somebody chose to go back**, and that is a decision a customer is entitled to see.
+
+### The remaining scenarios
+
+| Scenario | Answer |
+|---|---|
+| **Compare v4 with v2** | A read over immutable rows. No model change |
+| **Restore v5** | Rollback — a new version. Same as above |
+| **Two users editing one draft** | **Optimistic concurrency on the draft**, the `expected_version` pattern `DeclareIcp` already uses. Per-user drafts are speculative and deferred |
+| **Approval workflows** | `pending_review` is one more transition in `icp_state`, and its approver is the actor on the row. **Absorbed; not built** |
+
+### Lifecycle — where each concept lands
+
+**Day One:** draft · published · archived · duplicate · version history · customer-authored.
+
+| Concept | Where it goes | Structural change? |
+|---|---|---|
+| **Deprecated · locked · pending review · needs attention** | Transitions in `icp_state` | **None** |
+| **Imported · template · AI-generated · AI-suggested · customer-modified** | **Provenance on a version or a draft.** Not lifecycles — *how the content arrived* | **None** |
+| **Duplicated** | A new ICP whose first version records its source | **None** |
+| **Merged · split** | New ICPs whose first version names its predecessors. **The `supersedes` chain already expresses it** | **None** |
+| **Copied / shared across workspaces** | **Needs tenancy work this repository has not done.** A template belonging to no workspace is a different tenancy shape | **Out of scope, not deferred** |
+
+### Future relationships — where the pressure actually is
+
+**Asked: does E absorb capabilities, packages, plans, entitlements, markets, regions, business units, industries, competitors, partners, buying motions, sales plays and campaigns?**
+
+**The answer is that most of them point the wrong way.** Sorting them reveals three groups and only one touches this aggregate:
+
+| Group | Examples | Effect on the aggregate |
+|---|---|---|
+| **Things we sell** | capabilities · packages · plans · entitlements | **Another join off `icp_version`.** The aggregate does not change — this is the axis E was widened along, and widening it again costs a table |
+| **Things that describe the buyer** | industries · markets · regions · business units | **Already criteria**, and free text today. **The pressure point:** `markets`/`regions` overlap `countries`, and adding them as *relationships* while `countries` stays a criterion would be two representations of one fact. **Resolve by widening criteria, never by adding a join** |
+| **Things that consume an ICP** | competitors · partners · buying motions · sales plays · campaigns | **They cite the ICP; the ICP does not know them.** They need identity — which E provides — and nothing else. A campaign naming an ICP is the campaign's foreign key |
+
+> **The one real pressure point is the second group**, and it is a criteria-modelling question rather than an aggregate question. **Noticed now so nobody adds `icp_version_region` beside a `countries` list.**
+
+### Ownership — deliberately not modelled
+
+**Authors and approvers are answered by the shape above; owners are not, and should not be.**
+
+*Created by* is `icp_version.created_by`. *Published by* and *archived by* are actors on `icp_state` rows. **All three exist without a field being added.**
+
+**An `owner_id` is different, and Day One does not have one.** Ownership only means something if it *grants* something, and authorization in this repository is Casbin over workspace roles — **a field that grants nothing is decoration, and a permission model that lives on a row rather than in the policy is a second authorization system.** If per-ICP permissions are ever wanted, that is a Casbin question first.
+
 ### The downstream map — simplify · complicate · neutral
 
 **One verdict per module, so accidental coupling is visible before it is built.** Read against Option B, since that is the alternative.
 
-| Module | Verdict | Why |
-|---|---|---|
-| **Target Accounts** | **Neutral** | A named list of companies. Eventually cites an ICP id; identity is what it needs, and both options give it |
-| **Provider Platform** | **Neutral** | **The largest future consumer** — discovery cites one ICP id. [ADR-0036](0036-target-account-contract.md)'s four ownership boundaries are untouched |
-| **Provider Normalization** | **Neutral** | Never sees an ICP |
-| **Knowledge Graph** | **Neutral** | Matching needs an anticorruption layer between the customer's words and canonical values — **[C-002](../../LANE_COORDINATION.md), open.** Neither option pre-solves it |
-| **Observation · Business Event Engine** | **Neutral** | Upstream of any ICP use |
-| **Signal Engine** | **Simplifies** | Per-segment relevance — *"funding rounds matter for enterprise, hiring for mid-market"* — is **one profile per segment**. Under B it is one per segment **per product**, and the three copies of a bundled segment need three |
-| **Buying Score** | **Simplifies** | A scoring model per segment, never per segment-and-product |
-| **Opportunity Engine** | **Neutral** | Records human commitment; cites identity if anything |
-| **Timeline** | **Neutral** | Projects events; an ICP change would be one more rule |
-| **Notifications** | **Simplifies** | *"Your EMEA segment matched nothing in 30 days"* fires **once**. Under B, three times for one segment — and [ADR-0040](0040-notifications.md) forbids semantic deduplication, so nothing would collapse them |
-| **AI prompts / Recommendations** | **Simplifies materially** | An ICP becomes prompt context. **A three-product segment is one coherent paragraph; three near-identical ICPs are three, and a model cannot tell they are one segment.** Under B the prompt either repeats itself or the assembler has to *infer* that three ICPs are the same — inference the platform already knows deterministically, which §10 of `CLAUDE.md` forbids |
-| **Analytics / effectiveness** | **Simplifies materially** | *"Which segment converts?"* is per-ICP under both. *"Which product converts?"* is **one join under E**, and under B is only answerable by grouping ICPs that happen to look alike — a heuristic over customer text |
-| **Billing / entitlements** | **Simplifies** | *"How many ICPs?"* as a limit is fair under E. **Under B a bundled customer burns three for one segment** — charging for a modelling artefact |
-| **Feature flags** | **Neutral** | No relationship |
-| **Revenue Intelligence Platform** | **Neutral, with one caution** | It composes; it must **read** ICPs through a port and never derive effectiveness inside Commercial Profile. **The boundary test enforces the second half** |
+| Module | Role | Verdict | Why |
+|---|---|---|---|
+| **Target Accounts** | **Reference** | **Neutral** | A named list of companies. Eventually cites an ICP id; identity is what it needs, and both options give it |
+| **Provider Platform** | **Consumer** | **Neutral** | **The largest future consumer** — discovery cites one ICP id. [ADR-0036](0036-target-account-contract.md)'s four ownership boundaries are untouched |
+| **Provider Normalization** | **—** | **Neutral** | Never sees an ICP |
+| **Knowledge Graph** | **Reference** | **Neutral** | Matching needs an anticorruption layer between the customer's words and canonical values — **[C-002](../../LANE_COORDINATION.md), open.** Neither option pre-solves it |
+| **Observation · Business Event Engine** | **—** | **Neutral** | Upstream of any ICP use |
+| **Signal Engine** | **Consumer** | **Simplifies** | Per-segment relevance — *"funding rounds matter for enterprise, hiring for mid-market"* — is **one profile per segment**. Under B it is one per segment **per product**, and the three copies of a bundled segment need three |
+| **Buying Score** | **Consumer** | **Simplifies** | A scoring model per segment, never per segment-and-product |
+| **Opportunity Engine** | **Reference** | **Neutral** | Records human commitment; cites identity if anything |
+| **Timeline** | **Observer** | **Neutral** | Projects events; an ICP change would be one more rule |
+| **Notifications** | **Observer** | **Simplifies** | *"Your EMEA segment matched nothing in 30 days"* fires **once**. Under B, three times for one segment — and [ADR-0040](0040-notifications.md) forbids semantic deduplication, so nothing would collapse them |
+| **AI prompts / Recommendations** | **Consumer** | **Simplifies materially** | An ICP becomes prompt context. **A three-product segment is one coherent paragraph; three near-identical ICPs are three, and a model cannot tell they are one segment.** Under B the prompt either repeats itself or the assembler has to *infer* that three ICPs are the same — inference the platform already knows deterministically, which §10 of `CLAUDE.md` forbids |
+| **Analytics / effectiveness** | **Observer** | **Simplifies materially** | *"Which segment converts?"* is per-ICP under both. *"Which product converts?"* is **one join under E**, and under B is only answerable by grouping ICPs that happen to look alike — a heuristic over customer text |
+| **Billing / entitlements** | **Observer** | **Simplifies** | *"How many ICPs?"* as a limit is fair under E. **Under B a bundled customer burns three for one segment** — charging for a modelling artefact |
+| **Feature flags** | **—** | **Neutral** | No relationship |
+| **Revenue Intelligence Platform** | **Consumer** | **Neutral, with one caution** | It composes; it must **read** ICPs through a port and never derive effectiveness inside Commercial Profile. **The boundary test enforces the second half** |
+
+**Commercial Profile is the sole `Owner`; nothing else may write an ICP.** `Consumer` reads to act, `Reference` cites without acting, `Observer` measures or reports. **The map's real use is that no module appears twice** — the moment one is both `Owner` and something else, ownership has leaked.
 
 **Nothing is complicated by E.** Five simplify, ten are neutral, and the three marked *materially* are the ones where B would have forced a heuristic — and **a heuristic over customer-typed text is the shape of every duplicated-truth defect this repository has fixed.**
 

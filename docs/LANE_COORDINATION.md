@@ -141,7 +141,7 @@
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
 | [C-001](#c-001--the-target-account-contract) | The target-account contract — this module's first edge | Lane B | **Lane A** | `ANSWERED` → **[ADR-0036](architecture/adr/0036-target-account-contract.md)** | **Nothing. Slice 5 may begin.** `CLOSED` when both lanes have built it |
-| [C-304](#c-304--a-standing-review-question-that-has-already-paid-for-itself) | A standing review question that has already paid for itself | Lane B | **Product owner** | `OPEN` | **Nothing.** A one-line addition to the review practice, wherever it belongs |
+| [C-304](#c-304--a-standing-review-question-that-has-already-paid-for-itself) | A standing review question that has already paid for itself | Lane B | **Product owner** | `OPEN` — **challenged and sharpened 2026-08-02.** It produces noise in the general form; the narrow one survives | **Nothing.** One line of review practice, wherever it belongs |
 | [C-303](#c-303--an-icp-is-not-an-addressable-thing-and-every-verb-the-brief-asks-for-needs-one) | An ICP is not an addressable thing, and every verb the brief asks for needs one | Lane B | **Product owner** | `ANSWERED` — ICP stays in Commercial Profile (2026-08-02). **The aggregate is [ADR-0041](architecture/adr/0041-icp-aggregate.md), proposed** | **Implementation, on ADR-0041's ratification** |
 | [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) | A notification is per-person, and workspace RLS is not enough | Lane B | **Product owner** (tenancy 🔴) | `OPEN` | **M14a N-01's migration.** The pattern exists; the ruling does not |
 | [C-301](#c-301--nothing-asserts-what-the-deployed-worker-consumes) | Nothing asserts what the deployed worker consumes | Lane B | **QE** | `OPEN` | **Nothing today.** Every future consumer can ship [B-301](BUGS.md) again |
@@ -3164,4 +3164,31 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 **Why it is worth a rule rather than a habit.** The failure is invisible from inside: the reasoning is *locally valid* at every step, and the rejected option is never revisited because it has been dealt with. **Nothing in a review naturally re-opens a closed option** — which is why it took an explicit instruction to argue against a recorded recommendation to find it.
 
 **Lane B has not added it to `CLAUDE.md`.** Governance is the product owner's, and §20e is explicit that a repository-wide rule belongs there rather than in the document that happened to prompt it. **This is the same shape as [C-017](#c-017--the-onboarding-honesty-principle-has-no-permanent-home)** — ratifiable text, awaiting placement.
+
+
+### C-304 challenged — it produces noise, and the noise is nameable
+
+**Asked to find where the question costs more than it returns, before proposing it as a permanent rule. It does, in one identifiable case, and the fix sharpens the rule rather than weakening it.**
+
+**Where it is noise: an option rejected on a *whole-option* property.**
+
+> *"Rejected: a second datastore for the read model."* · *"Rejected: a new dependency."* · *"Rejected: it modifies frozen platform internals."*
+
+**Nothing here has characteristics to separate.** Asking *"does the reason reject the whole option or one characteristic?"* returns *"the whole option"* every time, and the cost is a paragraph in every ADR proving a negative. **A review question that fires on every rejection and finds something in one of twenty is a check people learn to skip** — which is worse than not having it, because the twentieth is the one that mattered.
+
+**Where it earns its cost, and the trigger is textual:**
+
+> **Apply it when the rejected option's own description contains a quantifier, an optionality, or a compound** — `0..n` · *optional* · *several* · *up to* · *either…or* · *and/or*.
+
+**Those are exactly the descriptions where a reason can attach to one end and be read as attaching to both**, and the failure it caught is the archetype: Option C was written *"product is one criterion among many (**0..n**)"* and rejected because *"an ICP naming no product is 'companies we like'"* — **a reason about the `0`, applied to the `n`.**
+
+**A second property worth stating:** the question is only worth asking about an option that was **described by the person rejecting it**. When an option arrives already worded by somebody else, the wording is evidence rather than a summary, and re-parsing it is second-guessing rather than review.
+
+> **Sharpened rule, and Lane B's recommendation for adoption:**
+>
+> **When you reject an option you yourself described, and your description contains a quantifier or an optionality, check which part of it your reason actually rejects.**
+
+**That fires rarely, and every time it fires the failure is possible.** It survives the challenge in this form and does not survive in the general one.
+
+**Still the product owner's to place.** `CLAUDE.md` is governance.
 
