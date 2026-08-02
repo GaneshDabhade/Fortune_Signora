@@ -17,7 +17,7 @@
 | | |
 |---|---|
 | **Backend HTTP endpoints** | **31**, across **11 modules** |
-| **Application screens** | **5** — one attention list, one account brief, three settings pages *(plus the five sign-in screens)* |
+| **Navigable application screens** | **5** — one attention list, one account brief, three settings pages *(plus five sign-in screens, and two dead-end states added by CX-02)* |
 | **Screens a `member` can reach** | **2** |
 
 > **A signed-in salesperson who is not an owner can reach the attention list and an account brief. Nothing else.** Settings, Products, and the Connection Center are all behind `workspace:update`, and the navigation has exactly two entries — one of which is the guarded one.
@@ -89,6 +89,8 @@
 | **Products** | `/settings/products` | Commercial Profile | ✅ | ✅ | ✅ Complete for an owner · ❌ unreachable for a member ([C-008](../LANE_COORDINATION.md)) | **Permissions gap** |
 | **Connection Center** | `/settings/connections` | Integrations | ✅ | ✅ | ❌ **No entry point** | **Unreachable** |
 | **Sign-in · sign-up · forgot · reset · verify** | `/(auth)/*` | Better Auth | ✅ | ✅ | ✅ Complete | **Production** |
+| **Address not found** | *any unmatched URL* | Product Surface | n/a | ✅ **CX-02** | ✅ Complete | **Production** |
+| **Render failure, outside the shell** | *any* | Product Surface | n/a | ✅ **CX-02** | ✅ Complete | **Production** |
 | **Team** | — | Workspace & Tenancy | ✅ endpoint | ❌ | ❌ | **Blocked — [C-024](../LANE_COORDINATION.md)** |
 | **Timeline** | — | Timeline | ✅ endpoint | ✅ **component built** | ❌ **not mounted** | **Blocked — [C-024 (Lane B's)](../LANE_COORDINATION.md)** |
 | **Provider health** | — | Provider Platform | ❌ **no router** | ❌ | ❌ | **No HTTP surface at all** |
@@ -233,8 +235,8 @@
 
 | # | Slice | Journey | Unlocks | Blocked? |
 |---|---|---|---|---|
-| **CX-01** | **The Connection Center gets an entrance** | **J8** | A whole shipped module a customer cannot currently find. **Backend, screen, OAuth flow and disconnect are all complete** — this is a link and a card on Settings | **No.** Executable today |
-| **CX-02** | **Settings becomes an index of what an administrator can do** | J7 · J8 · J9 | Today it lists organizations and links one page. It should say what is configurable and what is not yet | **No** |
+| **CX-01** | **The Connection Center gets an entrance** | **J8** | A whole shipped module a customer could not find. **Backend, screen, OAuth flow and disconnect were all complete** — this was a link and a card on Settings | ✅ **Shipped** |
+| **CX-02** | **The two dead ends stop being Next.js's** | All | A bad address showed *"404 &#124; This page could not be found"* with no product, no theme and no way back; a render error **outside** the authenticated shell blanked the application, because `ErrorBoundary` wraps three regions *inside* it and `(auth)` has none | ✅ **Shipped** |
 | **CX-03** | **Timeline mounts on the brief** | **J6** | An endpoint, a hook and a built component that reach nobody | **[C-024, Lane B's](../LANE_COORDINATION.md)** — the mount point is Lane A's routing decision. **One sentence from executable** |
 | **CX-04** | **The signal glossary** | J2 · J3 | Nine words a first-time reader cannot look up. **Built and reverted** | **[C-025](../LANE_COORDINATION.md)** |
 | **CX-05** | **A seller can read the commercial profile** | **J7** | Every AE and SDR, every day | **[C-008](../LANE_COORDINATION.md)** |
@@ -242,7 +244,9 @@
 | **CX-07** | **Responsive shell and screens** | All | The product on a device other than a laptop | **[C-026](../LANE_COORDINATION.md)** |
 | **CX-08** | **Target accounts actually get watched** | J7 | The one place the product accepts an instruction and does nothing with it | **[C-021](../LANE_COORDINATION.md)** |
 
-> **CX-01 and CX-02 are executable today and unlock two shipped modules between them.** Everything below them is a decision away, and each decision is already recorded.
+> **CX-01 and CX-02 are shipped.** Everything below them is a decision away, and each decision is already recorded.
+>
+> **What the two had in common is worth naming, because it is how the next one will be found.** Neither was a missing feature. One was a complete module with no entrance; the other was two screens the framework supplied and the product never claimed. **Both were invisible to every test in the repository**, because a test asks *does this render correctly* and neither failure was about rendering — one was about reachability, the other about a file that did not exist. **The audit found them; no suite could have.**
 
 **What is deliberately not on this list:** a Provider health screen, a RevOps dashboard, a notifications centre and a recommendations surface. **Three have no backend and one has no journey** — building any of them would be a new capability rather than the completion of an existing one, and that is the product owner's to schedule.
 

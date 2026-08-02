@@ -76,7 +76,7 @@
 |---|---|
 | **Module** | Product Surface |
 | **Slice** | PS-01 |
-| **Status** | `IN VALIDATION` — **Lane A**, 2026-08-02. Pushed at `102378c` on `lane-a-product-surface` |
+| **Status** | `IN VALIDATION` — **Lane A**, 2026-08-02, on `lane-a-product-surface`. **No SHA recorded here**: the branch rebases onto `integration` before every hand-off, so a commit hash written into this row is stale the next time it moves ([C-202](LANE_COORDINATION.md)) |
 | **Notes** | 🟡. Overlaps R1-04 — read both before starting |
 | **On claiming** | **R1-04 is 🟠, unimplemented, and is the same plumbing.** The brief receives `evidence` on the opportunity response and renders `is_current` only, so *cooling* never reaches it — and R2-03 cannot be answered without the brief learning the same fact. Lane A will surface evidence state on the brief once and let both findings read it, rather than adding a second path for the second finding. **The task is not being rewritten**: R1-04 has no id, and inserting `READY` scope is the product owner's. If the overlap should instead be a separate task, say so and the R1-04 half is reported rather than shipped |
 
@@ -105,7 +105,7 @@
 |---|---|
 | **Module** | `provider_platform` |
 | **Slice** | PP-01 — **slice 1 of the target-account consumer** |
-| **Status** | `IN VALIDATION` — **Lane A**, 2026-08-02. Migration `0026`; 907 backend tests pass |
+| **Status** | `IN VALIDATION` — **Lane A**, 2026-08-02. Migration **`0029`** — renumbered twice on rebase, first from `0026` when Lane B's timeline table arrived, then from `0027` when M13's connections did. **No test count recorded here**: a lane offers a claim and QE publishes the measurement |
 | **Notes** | **Left `BLOCKED` because its blocker is now being built by the same lane in the same effort.** The row read *"blocked on the consumer — not to be fixed opportunistically, without it the schema change has nothing exercising it."* That condition is **satisfied rather than waived**: [ADR-0036](architecture/adr/0036-target-account-contract.md) names this *"one defect that must be fixed before the consumer is built"*, and PP-02 is what exercises it |
 
 ### TASK-005 · `state-check` learns the backlog

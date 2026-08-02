@@ -102,6 +102,8 @@
 | [C-025 *(Lane A's — see the collision note)*](#c-025--the-catalog-explains-nine-words-to-nobody) | The catalog explains nine words to nobody | Lane A | **Product owner** + `signal_engine` | `OPEN` | [R5-04](architecture/39-product-review-findings.md). **Built and reverted; one sentence unblocks either outcome** |
 | [C-026](#c-026--is-signora-expected-to-work-on-a-phone) | Is Signora expected to work on a phone? | Lane A | **Product owner** | `OPEN` | [B-019](BUGS.md), and **every responsive decision in Product Surface** |
 | [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | M14b is three concerns in one roadmap row, and none has a module | Lane A | **Product owner** (bounded context 🔴) | `OPEN` — **architectural** | **The whole of M14b.** [R-01](architecture/16-architecture-risks.md) has been waiting for it at High/High |
+| [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide) | Identifier allocation is still only *unlikely* to collide | Lane A | **QE** + product owner | `OPEN` — **directed by the product owner** | Nothing built. **The repository scaling past three actors without manual reconciliation** |
+| [C-202](#c-202--four-shared-documents-disagree-and-one-disagrees-with-itself) | Four shared documents disagree, and one disagrees with itself | Lane A | **QE** | `OPEN` — **directed by the product owner** | Nothing built. **A cold session trusting any status in the repository** |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
 >
@@ -1926,6 +1928,187 @@ assert set(SignalTypeResponse.model_fields) == {"key", "title"}
 ### One decision that is not a lane's and is not asked for here
 
 **What Signora charges for.** The architecture above is deliberately indifferent to it — seats, usage, tiers and hybrids are all the same shape — and this lane has no standing to propose a pricing model.
+
+---
+
+## C-201 · Identifier allocation is still only *unlikely* to collide
+
+| | |
+|---|---|
+| **Owner** | **QE** (the rules and the tooling) + **product owner** (ratification) |
+| **Requesting lane** | Lane A |
+| **Category** | Repository governance · identifier allocation |
+| **Status** | `OPEN` — **directed by the product owner, 2026-08-02**, not self-generated |
+| **Blocks** | Nothing being implemented. **It blocks the repository from scaling past three actors without manual reconciliation** |
+| **Raised** | 2026-08-02, after the third collision |
+
+**The product owner's bar, verbatim:** *"If two lanes work completely offline for a week, they should still be unable to produce conflicting identifiers."* **Not unlikely. Unable.**
+
+### Three collisions, and the third was found by accident
+
+| # | Ids | How |
+|---|---|---|
+| 1 | `C-001`…`C-009` | Two lanes on separate baselines, reconciled by QE at merge |
+| 2 | `B-024` | Two lanes, seven minutes apart. **Neither push conflicted** — different regions of one file, git merged them happily |
+| 3 | **`C-024` · `C-025` · `B-019`** | Lane A and Lane B, independently. **Found while writing an unrelated document**, which is the part that matters: nothing reported it |
+
+**Nothing was careless in any of the three.** Every lane read the register, saw the highest number, and took the next one. **The allocation model is the defect**, which QE already concluded — and the block rule that followed is a real improvement that does not yet reach the stated bar.
+
+### Where blocks still leave a collision possible
+
+**Not hypothetical objections — each is reachable from today's rules as written.**
+
+| # | Hole | Why it is open |
+|---|---|---|
+| **1** | **Numbered architecture documents are not covered** | The rule enumerates `B-`, `C-`, `TASK-` and ADR. **`40` came from Lane B; `41`, `42`, `43` from Lane A.** Two lanes writing a module design doc in one week produce two different filenames — **git merges both without a word**, which is defect #2 exactly |
+| **2** | **A block is finite** | 100 ids per actor. Small, and *"impossible"* does not admit a bound |
+| **3** | **A sixth actor has no block** | The table stops at Lane E. A new lane needs a governance edit before it may open a bug — **which reintroduces the coordination bottleneck blocks were adopted to remove** |
+| **4** | **Nothing prevents; one thing detects** | `state-check.py` finds duplicates **at Closeout**, after both lanes have written, pushed and been merged. **Detection is not prevention**, and detection *after* merge is reconciliation work for QE |
+| **5** | **The block must be looked up** | *"Which block am I?"* is human memory consulting a table in a 1,100-line file. **The rule replaces one act of memory with another** |
+
+### The property that would actually close it
+
+> **Two actors that cannot communicate can only produce disjoint identifier sets if each set is determined by something only that actor has. Offline, the one thing an actor has is its own identity.**
+>
+> **Therefore: every shared identifier must contain its allocator's identity. Everything else is coordination wearing a different hat.**
+
+**Blocks satisfy this weakly** — identity is encoded *implicitly*, as a numeric range, which is why it is finite, needs a lookup, and needs a governance edit to extend. **Making the identity explicit removes all three at once.**
+
+### Recommendation — two mechanisms, chosen by what the number is *for*
+
+**The classes are not alike, and one rule for all of them is what produced holes 1 and 2.**
+
+#### A · Where the number is a shared counter → **prefix it with the allocator**
+
+`B-A12` · `C-B03` · `TASK-A07` · `ADR-A041`. Read *"bug 12, from Lane A."*
+
+| | |
+|---|---|
+| **Collision** | **Impossible.** Two allocators cannot share a prefix, and **one lane is one session at a time** — an invariant `CLAUDE.md` §20e already enforces, so each namespace has exactly one writer |
+| **Offline for a week** | Safe, indefinitely. Nothing is shared |
+| **A new actor** | Needs **nothing**. Its letter is already allocated by [`RUNNING.md`](RUNNING.md#running-a-lane)'s environment table — one row, one lane, already unique |
+| **Lookup** | **None.** You know which lane you are; that is the whole input |
+| **Readability** | **Better than today.** `B-A12` says who found it. `B-217` says so too, but only to somebody holding the table |
+| **Ordering** | Chronology was never in the number, and QE already said so: *"every row carries `Found`, and `git log` carries the rest"* |
+
+#### B · Where the number carries no meaning → **delete it, and let the path be the identity**
+
+**Documents `30`+ are numbered by arrival order and nothing else.** `43-customer-experience.md` is not *"after"* `42` in any sense a reader uses. **The number is a shared counter bought at the price of a collision class — and it buys nothing.**
+
+**Drop it for that family** — `customer-experience.md`, `product-surface.md` — and **git enforces uniqueness for free**: two lanes creating one path is an add/add conflict git **cannot** auto-merge. It is the only mechanism in this list that needs no rule at all.
+
+> **This is the repository's own proven pattern, and [ADR-0039](architecture/adr/0039-release-engineering-model.md) RC-4 already names it:** *"`docs/architecture/adr/` is one file per record, written by every lane, and has produced zero merge conflicts and zero structural corruption in 39 records."*
+
+**`01`–`29` keep their numbers.** There the number *is* meaning — `01`–`21` is the architecture in reading order, `22`–`29` is one per module — and that family is closed rather than growing.
+
+#### C · Migrations stay exempt, and gain a check
+
+Alembic's `down_revision` is a linear chain: **a gap is a broken graph, not an oddity.** Renumber-on-rebase is correct and stays. **What is missing is that it is remembered rather than enforced** — three collisions, three manual renumbers, and the third was caught because `alembic upgrade head` refused.
+
+**A check that refuses two revisions sharing a `down_revision` turns a late failure into an immediate one.** Cheap, and it is the one class where prevention genuinely cannot work.
+
+#### D · Detection stays, as a backstop and not as the mechanism
+
+`state-check.py` keeps its duplicate check and gains the classes it misses. **Add one assertion it cannot make today: that every id's prefix matches an actor in the registry** — which catches a typo inside a namespace, the only failure A leaves.
+
+### Trade-offs, stated rather than glossed
+
+| | |
+|---|---|
+| **A rename touches every reference** | ~19 `TASK-`, ~30 `C-`, ~30 `B-`, 39 ADRs, and hundreds of links. **The real cost, and it grows every day this waits** |
+| **`ADR-A041` breaks a near-universal convention** | ADR numbering is a recognised idiom. **A block may genuinely be the better answer for ADRs alone** — they are rare, and QE could hold the only pen |
+| **Existing ids should not be rewritten** | They are cited in commit messages, which are immutable. **Prefix new ids; leave promoted ones alone** — the register carries both forms, which is ugly and honest |
+| **B changes filenames referenced by ~848 links** | [`REPOSITORY_ARCHITECTURE_PROPOSAL.md`](REPOSITORY_ARCHITECTURE_PROPOSAL.md) measured them, and its finding #1 is that **nothing verifies a link resolves.** B should not ship before that check does |
+
+### Implementation impact
+
+| | |
+|---|---|
+| **Governance** | `CLAUDE.md`'s identifier section is replaced. **QE's and the product owner's** — this lane does not edit it ([C-022](#c-022--governance-belongs-to-qe-and-the-product-owner--and-this-branch-carries-governance-edits)), which is why this is a proposal with the reasoning attached rather than a diff |
+| **Tooling** | `state-check.py` — three checks: duplicate ids per class · prefix resolves to a known actor · no two migrations share a `down_revision`. **QE's file** |
+| **Migration** | Prefix new ids from ratification. **Do not rewrite history** |
+| **Cost of waiting** | Every cycle, QE reconciles by hand. **Three collisions in two days with three actors**; the rate is quadratic in actors, and lanes C, D and E are already reserved |
+
+### What this confirms rather than discovers
+
+**[ADR-0039](architecture/adr/0039-release-engineering-model.md) RC-4 already diagnosed this**, and listed *"id collisions requiring QE to renumber `B-` and `C-` rows at merge"* as one of three symptoms of one cause. **That ADR is deliberately `Proposed` and waiting on an evidence bar:** an *observed*, *repeated* bottleneck.
+
+> **Three collisions in two days, the third found only by accident, is that bar being met.** The first question `CLAUDE.md` §20e asks is whether the north star already contains the answer **before a new one is invented** — and for the register's structure it does. **This item adds the half ADR-0039 does not solve:** one file per record removes structural corruption and rebase loss, and **leaves id collision exactly where it was**, because two differently-named files never conflict.
+
+---
+
+## C-202 · Four shared documents disagree, and one disagrees with itself
+
+| | |
+|---|---|
+| **Owner** | **QE** — every document below is QE's to write |
+| **Requesting lane** | Lane A |
+| **Category** | Shared-document governance · dashboard consistency |
+| **Status** | `OPEN` — **directed by the product owner, 2026-08-02** |
+| **Blocks** | Nothing being implemented. **It blocks a cold session from trusting any status in the repository** |
+| **Raised** | 2026-08-02, during the cross-check the product owner asked for |
+
+**The stated requirement:** *"The same work item should never appear with different states in different documents. The repository should have exactly one truth for every status."*
+
+### Measured, at `origin/integration` — five disagreements
+
+| # | Fact | `PROJECT_STATUS.md` says | The authoritative record says |
+|---|---|---|---|
+| **1** | **Lane B's assignment** | *"Lane B — `AVAILABLE`"* | [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md): **two rows** — M7 Timeline `IN VALIDATION`, M13 Integrations `CHANGES REQUESTED` |
+| **2** | **Whether anything is blocked** | *"**Nothing is blocked.**"* | The board carries **three `BLOCKED` rows** and one `CHANGES REQUESTED` |
+| **3** | **Lane A's batch** | §1c: *"PS-01, PS-02, PP-01, PP-02 — **four** slices"* | §1b of the **same file**: *"Lane A's batch is now **eight** slices"* — **and then lists nine** |
+| **4** | **M10** | §2: **✅ Complete 2026-07-31** | §6 of the **same file**: AI Research Engine *"🔵 **In progress** — M10"* |
+| **5** | **Lane A's branch contents** | *"sits ahead with **four** finished slices"* | The branch holds **fifteen** |
+
+**Two of the five are a document contradicting itself in the same session.** That is the strongest available evidence that the cause is structural rather than anybody's care.
+
+### The cause, and it is one line of that file's own prose
+
+`PROJECT_STATUS.md` §1c says it plainly:
+
+> *"Authoritative record: `ACTIVE_ASSIGNMENTS.md` — the execution board. **Summarised here** because a dashboard that cannot say who is working is not a dashboard."*
+
+**A summary of another document is a stored copy of a derivable fact**, and `CLAUDE.md` §2 already rules on those: *"truth has exactly one authoritative representation; everything else derives from it… a stored copy of a derivable fact is a defect waiting for the two to disagree."*
+
+**It has waited two days.** [ADR-0039](architecture/adr/0039-release-engineering-model.md) RC-7 names this exactly — *"the dashboard is a stored copy of a derivable fact"* — so this is a second confirmation of the same north star from a different direction.
+
+**And #5 is a different defect worth separating.** `PROJECT_STATUS` is *"always representing `main`"*, measured at Closeout — correct and deliberate. **But a lane branch is not `main`, and moves on a different clock.** A dashboard that describes `lane-a-product-surface` has taken on a fact it structurally cannot keep true. **The fix is not a better number; it is not carrying that fact.**
+
+### What each shared document should state about itself
+
+**The product owner asked for ownership, timing, section ownership, what is generated and what needs review. None of the eight shared documents states any of it today**, and a reader cannot tell a hand-maintained section from a measured one — which is exactly how #3 and #4 survive review.
+
+**Recommendation: a five-line header on each, and nothing more elaborate.**
+
+| | |
+|---|---|
+| **Who writes it** | One actor. Where two do, name the sections |
+| **When** | The trigger, not a cadence — *"at Closeout"*, *"when a lane claims"* |
+| **Which sections are measured** | **Read from the repository, never typed.** Test counts, coverage, `HEAD`, migration head |
+| **Which sections are judgement** | Written by hand and reviewed by a person |
+| **What it must never contain** | **The one that would have prevented all five:** a fact whose authoritative home is another document |
+
+### Recommendation on the specific five
+
+| | |
+|---|---|
+| **§1c *Active work*** | **Delete the table; keep the link.** It restates the board and can only ever lag it. *"Who is working"* is one `ACTIVE_ASSIGNMENTS.md` away, and a dashboard that links is not a dashboard that cannot answer |
+| **§1b *Recommended next work*** | Stop naming slice counts. **They are a lane's fact, on a lane's clock** |
+| **§6 *Current AI architecture*** | Derive milestone state from §2 or drop the column. **Two states for M10 in one file is the whole finding** |
+| **Branch descriptions** | **Remove.** `PROJECT_STATUS` describes `main`; a branch is not `main` |
+| ***"Nothing is blocked"*** | Derive from the board, or say nothing. **A blanket claim about a multi-writer record is a claim that will be wrong within a day** |
+
+> **Every one of the five recommendations deletes something.** That is deliberate, and it is the shape the answer takes: **the dashboard is not wrong because it is under-maintained — it is wrong because it stores facts it does not own.** A rule requiring more diligence would fail the same way in a week.
+
+### Implementation impact
+
+| | |
+|---|---|
+| **Whose** | **QE's, entirely.** All eight shared documents are QE's or the product owner's to write |
+| **Cost** | Five deletions and eight five-line headers. **Smaller than one Closeout** |
+| **Risk of not doing it** | A cold session reads `PROJECT_STATUS` first, and it is currently wrong about who is working, whether anything is blocked, and how much is waiting |
+| **Not proposed** | A tool that generates the dashboard. **That is [ADR-0039](architecture/adr/0039-release-engineering-model.md)'s territory**, it is a much larger change, and the five deletions above are worth having whether or not it ever happens |
+
 
 ---
 
