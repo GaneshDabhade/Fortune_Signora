@@ -12,7 +12,15 @@
 
 > **An unticked box is not a failure — an untrue tick is.** The next session trusts this file the way it trusts a test result, which is exactly why a box ticked for work that was not done is worse than having no checklist at all.
 
-**Every stage must complete before the next begins.** The order is not a suggestion: certification before integration is what makes the certified tree and the promoted tree the same tree, and Closeout before Repository Ready is what stops the repository describing a state it has left.
+**Every stage must complete before the next begins.** The order is not a suggestion: certification before integration is what makes the certified commit and the promoted commit the same commit, and Closeout before Repository Ready is what stops the repository describing a state it has left.
+
+> ## The cycle is pinned to one commit
+>
+> **Take the Certification Snapshot at stage 0 and export `CERT_SHA`. Every command below uses it.** Not `integration`, not `HEAD`, not "the branch" — **the SHA**.
+>
+> **`integration` will keep moving while you work, and that is correct.** Lanes go on merging; everything that lands after the snapshot belongs to the **next** cycle, automatically. **Never re-point a cycle at a newer commit** — a run half-measured at two commits describes a repository that never existed, and the fix is to restart the cycle, not to reconcile the halves.
+>
+> **The promotion is `git merge --ff-only $CERT_SHA`.** Promoting `integration` by name is the defect this whole rule exists to prevent.
 
 **If a gate fails, the cycle stops there.** Record the failure, open the `B-nnn` row, return the branch to its lane. There is no partial promotion, no expedited path, and no manual override.
 
@@ -25,7 +33,7 @@
 | 1 | Validate feature lanes | No — judgement; findings become bug rows |
 | 2 | Execute repository-wide certification | **Yes** |
 | 3 | Integrate validated work into `integration` | Yes |
-| 4 | Promote `integration` to `main` | **Yes** |
+| 4 | Promote **the certified commit** to `main` | **Yes** |
 | 5 | Execute Repository Closeout | Yes |
 | 6 | Synchronize repository branches | Yes |
 | 7 | Declare Repository Ready | Yes |
@@ -45,11 +53,38 @@ git checkout <lane-branch> && git pull --ff-only
 git merge-base --is-ancestor integration HEAD && echo "rebased: will fast-forward"
 ```
 
+### Take the Certification Snapshot
+
+```bash
+git checkout integration && git merge --ff-only <lane-branch>
+
+export CERT_SHA=$(git rev-parse HEAD)          # the certified commit. It does not change again.
+export CERT_STARTED=$(date -u +%FT%TZ)
+export CERT_MIGRATION_HEAD=$(ls backend/migrations/versions/[0-9]*.py | tail -1 | grep -oP '\d{4}')
+
+echo "snapshot  $CERT_SHA  at $CERT_STARTED  migration head $CERT_MIGRATION_HEAD"
+```
+
+- [ ] **`integration` commit SHA** pinned as `CERT_SHA` — the full SHA, not an abbreviation
+- [ ] **Start time** recorded
+- [ ] **Migration head** recorded
+- [ ] **Active milestone** named
+- [ ] **Repository metrics** will be measured at this commit **and no other**
+- [ ] **Certification identifier** — the record `make certify` writes for this SHA
+
+> **If anything about the snapshot changes, the cycle restarts.** That is cheaper than a record nobody can trust, and far cheaper than an uncertified commit on `main`.
+
 ---
 
 ## Stage 1 · Validate feature lanes
 
-**Runs on the rebased lane branch — the exact tree that will become `integration` and then `main`.** Nothing here is optional, and a partial run is not a run.
+**Runs at `$CERT_SHA` — the exact commit that will be promoted.** Confirm it before starting, and again if anything interrupts you:
+
+```bash
+[ "$(git rev-parse HEAD)" = "$CERT_SHA" ] || echo "WRONG COMMIT — restart the cycle at the snapshot"
+```
+
+Nothing here is optional, and a partial run is not a run.
 
 ```bash
 # the frontend must be installed, or six backend tests skip and the run still exits green
@@ -120,24 +155,29 @@ make dr
 
 ## Stage 3 · Integrate validated work into `integration`
 
-```bash
-git checkout integration && git merge --ff-only <lane-branch>
-```
+**The fast-forward happened at stage 0, when the snapshot was taken** — `$CERT_SHA` *is* an `integration` commit. What remains here is the reconciliation that integration means:
 
-- [ ] Fast-forward succeeded — **a branch that will not fast-forward goes back to its lane**; QE never resolves another lane's conflicts
+- [ ] `$CERT_SHA` is on `integration`'s history — **a branch that would not fast-forward went back to its lane at stage 0**; QE never resolves another lane's conflicts
 - [ ] [BUGS.md](BUGS.md) reconciled — ids unique, statuses match what the slice actually did
 - [ ] [LANE_COORDINATION.md](LANE_COORDINATION.md) reconciled against every handoff's `Coordination` field
 - [ ] Findings folded into `docs/architecture/38` and `39`
 
 ---
 
-## Stage 4 · Promote `integration` to `main`
+## Stage 4 · Promote the certified commit to `main`
 
 ```bash
-git checkout main && git merge --ff-only integration
+make certified ARGS="$CERT_SHA"                     # refuses if this commit is not certified
+git checkout main && git merge --ff-only "$CERT_SHA"
+
+[ "$(git rev-parse HEAD)" = "$CERT_SHA" ] || echo "ABORT — promoted != certified"
 ```
 
-- [ ] `main` fast-forwarded
+- [ ] **`make certified ARGS="$CERT_SHA"` returned CERTIFIED** — it exits non-zero otherwise, and a non-zero exit ends the cycle
+- [ ] `main` fast-forwarded **to `$CERT_SHA`**, not to `integration`
+- [ ] **`promoted == certified`, verified after the merge.** If they differ, the promotion is aborted and `main` is reset to where it was
+
+> **`integration` may well have advanced by now.** Ignore it. Those commits are the next cycle's input and will be certified on their own.
 
 > **Certification passed, so this happens.** No approval is sought, none is required, and **no waiting state exists between stage 2 and here.** A pause for judgement would mean the gates did not decide.
 >
@@ -147,7 +187,11 @@ git checkout main && git merge --ff-only integration
 
 ## Stage 5 · Execute Repository Closeout
 
-**Mandatory. Eleven activities, in order. Every figure measured from the promoted commit — nothing copied from a lane's report.**
+**Mandatory. Eleven activities, in order. Every figure measured from `$CERT_SHA` — the promoted commit, never a newer `integration` head, and nothing copied from a lane's report.**
+
+```bash
+git checkout main && [ "$(git rev-parse HEAD)" = "$CERT_SHA" ] && echo "closing out the promoted commit"
+```
 
 ### First, measure
 
@@ -178,6 +222,8 @@ git log --grep="Slice-Handoff" main~10..main  # what the lanes reported
 
 ### Then write the records
 
+> **A Closeout commit may touch documents and certification records only.** It cannot be certified — a record cannot contain its own commit hash — so the exception is bounded and **checked**: `make certified ARGS="--audit-main"` fails if a Closeout commit changed anything executable. **`infra/` is not documentation**; if a gate needs fixing, that is a slice, not a Closeout ([B-014](BUGS.md)).
+
 - [ ] **1 · `PROJECT_STATUS.md`** — repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed · recommended next work. **Concise, always representing `main`**
 - [ ] **2 · [`SESSION_HANDOFF.md`](SESSION_HANDOFF.md)** — current repository state · certification state · active lanes · open blockers · pending work · recommendations. **Not a second dashboard**
 - [ ] **3 · [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md)** — promoted assignments marked `COMPLETE` **and removed**; lanes returned to `AVAILABLE`; no stale rows
@@ -193,17 +239,22 @@ git log --grep="Slice-Handoff" main~10..main  # what the lanes reported
 ## Stage 6 · Synchronize repository branches
 
 ```bash
-git checkout integration && git merge --ff-only main
+# `integration` is ahead of `main` whenever a lane merged during certification.
+# That is the normal resting state now, and it is not something to correct.
+git merge-base --is-ancestor main integration \
+  && echo "integration is ahead — those commits are the next cycle's input; leave it" \
+  || git checkout integration && git merge --ff-only main
+
 # idle lanes only — a lane mid-slice is left alone
 for lane in <idle-lane-branches>; do
-  git checkout "$lane" && git merge --ff-only main
+  git checkout "$lane" && git merge --ff-only integration
 done
 git checkout main
-git branch -v                 # every synchronized branch at one commit
+git branch -v
 git push origin main integration <idle-lane-branches>
 ```
 
-- [ ] **10 · `integration` fast-forwarded to `main`**
+- [ ] **10 · `integration` reconciled** — fast-forwarded to `main` if it lagged; **left alone if it is ahead**, because those commits await their own certification
 - [ ] **Every idle lane** fast-forwarded
 - [ ] **Every lane in active development left untouched** — it rebases at the start of its next slice, and moving it underneath would rewrite work in progress
 - [ ] `git branch -v` verified: every synchronized branch shares the promoted baseline
@@ -214,9 +265,18 @@ git push origin main integration <idle-lane-branches>
 ## Stage 7 · Declare Repository Ready
 
 ```bash
-python3 infra/state-check.py      # advisory: do the documents agree with the repository?
+make certified                                # is `main`'s head certified, or a checked Closeout?
+make certified ARGS="--audit-main"            # the guarantee, across every commit since ratification
+python3 infra/state-check.py                  # advisory: do the documents agree with the repository?
+
+# what is waiting for the next cycle, and there is never any doubt:
+git rev-parse --short integration
+git log --oneline "$CERT_SHA"..integration
 ```
 
+- [ ] **`make certified` confirms `main`** — certified, or a Closeout commit that provably changes nothing executable
+- [ ] **`make certified ARGS="--audit-main"` reports zero violations** — *every* commit on `main` since ratification, not just the head
+- [ ] **The next cycle's input is identified** — `integration` versus the certified SHA. Differ → a cycle is available, and its input is exactly the commits between them. Identical → nothing is awaiting certification
 - [ ] `state-check` run and every finding resolved or consciously accepted — **it reports, it never repairs, and each finding has more than one correct resolution**
 - [ ] Every box above is ticked, and every tick is true
 - [ ] **11 · Repository Ready declared**
@@ -237,15 +297,17 @@ python3 infra/state-check.py      # advisory: do the documents agree with the re
 ## The one-page version
 
 ```
-0  stack up · prerequisites installed · lane rebased
+0  snapshot     CERT_SHA=$(git rev-parse HEAD)          on integration, after the ff
 1  validate     pytest --cov · invariants · mypy · lint-imports · frontend · smoke · use it
-2  certify      make certify · migration reversibility · make dr
-3  integrate    git merge --ff-only <lane-branch>       into integration
-4  promote      git merge --ff-only integration         into main
-5  close out    measure → PROJECT_STATUS · SESSION_HANDOFF · ACTIVE_ASSIGNMENTS
+2  certify      make certify · migration reversibility · make dr        at $CERT_SHA
+3  integrate    $CERT_SHA is already on integration; reconcile the registers
+4  promote      make certified ARGS="$CERT_SHA"
+                git merge --ff-only $CERT_SHA           into main — never `integration`
+5  close out    measure at $CERT_SHA → PROJECT_STATUS · SESSION_HANDOFF · ACTIVE_ASSIGNMENTS
                 → certification · metrics · milestone · roadmap · health · release summary
-6  synchronize  integration + idle lanes → main         active lanes untouched
-7  declare      state-check → Repository Ready
+6  synchronize  integration + idle lanes                 active lanes untouched
+7  declare      make certified · --audit-main · state-check → Repository Ready
+                then: integration vs certified → the next cycle's input
 ```
 
 **Stopping at 2 or at 4 is an incomplete repository cycle**, not a finished one with paperwork outstanding.

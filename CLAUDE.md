@@ -421,7 +421,7 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 | **Removing an operational blocker** | §20e *QE removes its own blockers* | [`docs/RUNNING.md`](docs/RUNNING.md) — the prerequisites |
 | **Promotion workflow** | §20e *Completion* | [`docs/QUALITY_ENGINEERING.md`](docs/QUALITY_ENGINEERING.md) |
 | **Slice Handoff** | §20e *The Slice Handoff* | the commit message |
-| **Repository certification** | §20e *Certification* | [ADR-0032](docs/architecture/adr/0032-release-certification.md) · `make certify` |
+| **Repository certification** | §20e *Certification* · *Certification is attached to a commit* | [ADR-0032](docs/architecture/adr/0032-release-certification.md) · `make certify` · `infra/certification-guard.py` |
 | **Repository state and metrics** | §20e *Repository state, and the assignment board* | `PROJECT_STATUS.md` · [`SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) |
 | **Release summary** | §20e *Repository Closeout* | `PROJECT_STATUS.md` |
 | **Repository Closeout** | §20e *Repository Closeout* + its checklist | [`docs/QUALITY_ENGINEERING.md`](docs/QUALITY_ENGINEERING.md) — the playbook |
@@ -473,16 +473,85 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 | # | Stage | What it is | Deterministic? |
 |---|---|---|---|
 | **1** | **Validate feature lanes** | Repository-wide functional · API · integration · end-to-end · Security Invariants · coverage · regression · accessibility · performance · exploratory use of the product · product review. QE **creates, maintains, extends and retires** repository-wide automated tests; **lanes own the tests specific to the slices they implement** | No — judgement, and findings become `B-nnn` rows |
-| **2** | **Execute repository-wide certification** | `make certify` · migration reversibility · `make dr` ([ADR-0032](docs/architecture/adr/0032-release-certification.md)) against the validated tree | **Yes.** The gates are the decision |
+| **2** | **Execute repository-wide certification** | `make certify` · migration reversibility · `make dr` ([ADR-0032](docs/architecture/adr/0032-release-certification.md)) **against the pinned commit from the Certification Snapshot** | **Yes.** The gates are the decision |
 | **3** | **Integrate validated work into `integration`** | Fast-forward only. Reconcile [`BUGS.md`](docs/BUGS.md) and [`LANE_COORDINATION.md`](docs/LANE_COORDINATION.md), verify the Slice Handoff's claims, fold findings into `38`/`39`. **A branch that will not fast-forward is returned to its lane** | Yes — `--ff-only` succeeds or it does not |
-| **4** | **Promote `integration` to `main`** | Fast-forward. **Certification passed, so this happens** — no approval is sought, none is required, and no waiting state exists between the two | **Yes** |
+| **4** | **Promote the certified commit to `main`** | `git merge --ff-only <certified-sha>` — **never `integration`**, whose head may have moved. **Certification passed, so this happens**: no approval, and no waiting state between stages 2 and 4 | **Yes** |
 | **5** | **Execute Repository Closeout** | The eleven mandatory activities below, in order, **every one measured from the promoted repository** | Yes — the checklist is complete or it is not |
 | **6** | **Synchronize repository branches** | Fast-forward `integration` and **every idle lane**. **A lane in active development is never touched** | Yes |
 | **7** | **Declare Repository Ready** | The next development cycle may begin. **Not before** | Yes |
 
 > **The repository is not ready until all seven have completed successfully. Stopping after certification, or after promotion, is an incomplete repository cycle** — not a finished one with paperwork outstanding. A cycle that ends at stage 4 leaves the repository asserting a state that is no longer true, which is the defect class §2 exists to prevent.
 
-**Why certification precedes integration, and why that is still the same tree.** Stage 2 certifies the **rebased, validated lane branch** — and because every subsequent advance is a **fast-forward**, `integration` and then `main` come to point at **that exact commit**. The certified tree, the integrated tree and the promoted tree are bit-identical by construction, so one certification record covers all three and `is_certified` keeps reading true across the promotion. **The invariant this depends on is fast-forward-only** (below): the moment a merge commit or a further rebase changes the tree after stage 2, the record no longer describes what shipped and **certification is re-cut before stage 3 continues.**
+### Certification is attached to a commit, never to a branch
+
+**Ratified 2026-08-02, product owner. This is the repository's central release guarantee:**
+
+> **Every commit on `main` was itself certified, by the repository-wide certification process, before it was promoted.**
+>
+> Not *"a nearby `integration` state passed"*. Not *"the branch was green around then"*. **That commit, individually.**
+
+**A branch is a moving pointer; a certification is a statement about an immutable tree.** Binding one to the other means the thing certified and the thing shipped are only accidentally the same — and they stop being the same the first time a lane pushes while QE is measuring. That is not a hypothetical: it happened during the cycle that produced this rule, and only luck kept the two identical.
+
+#### The Certification Snapshot
+
+**Every cycle opens by taking one, before any gate runs:**
+
+| Field | What |
+|---|---|
+| **`integration` commit SHA** | The **full** SHA. This is *the* certified commit, and everything below is measured against it |
+| **Certification start time** | When the snapshot was taken |
+| **Migration head** | At that commit |
+| **Repository metrics** | Measured at that commit, and nowhere else |
+| **Active milestone** | What the cycle is closing |
+| **Certification identifier** | The record the run writes |
+
+**Every measurement in the cycle derives from that one snapshot. If the snapshot changes, certification restarts** — a cycle cannot be half-measured at one commit and half at another, because the resulting record describes a repository that never existed.
+
+#### `integration` keeps moving, and that is fine
+
+**Feature lanes go on merging while QE certifies. QE never chases the head.**
+
+```
+integration   A ─▶ B ─▶ C ─▶ D ─▶ E ─▶ F
+                        ▲     └──────────┘
+                        │      the next cycle's input
+              certification begins at C
+                        │
+                        ▼
+              C passes  ─▶  promote C            ← never D, E or F
+```
+
+**QE certifies `C` and promotes `C`.** `D`, `E` and `F` belong to the **next** cycle automatically, by virtue of arriving after the snapshot. **Continuous development never invalidates an in-progress certification**, and an in-progress certification never blocks a lane from merging.
+
+#### The promotion equality rule
+
+```
+promoted commit SHA  ==  certified commit SHA
+```
+
+**These are identical or the promotion is aborted.** There is no tolerance, no *"but nothing important landed since"*, and no re-reading of a record against a different commit. **Promotion is `git merge --ff-only <certified-sha>` — never `git merge --ff-only integration`**, because the second one promotes whatever the branch happens to point at when the command runs.
+
+**Enforced, not documented:** `python3 infra/certification-guard.py` refuses a promotion whose target is not a certified commit, and `infra/state-check.py` re-checks it at Closeout. **A guard that cannot fail is documentation pretending to be code** (§2).
+
+#### The one bounded exception, and it is checked
+
+**A Closeout commit cannot be certified**, and no amount of discipline changes that: **a certification record cannot contain its own commit hash**, so the commit that *writes* the record is always created after the run it records. Pretending otherwise would make the invariant false in a way nobody could see.
+
+**So the guarantee is stated exactly, and enforced exactly:**
+
+> **Every commit on `main` was either individually certified, or is a Closeout commit that provably changes nothing executable.**
+
+**Provably, not by assertion.** `infra/certification-guard.py --audit-main` walks every commit on `main` since ratification and checks *paths, not commit messages* — a commit calling itself a Closeout while touching `backend/` is refused. A Closeout commit may touch **documents and certification records only.**
+
+**`infra/` is deliberately not in that set.** `smoke.sh`, `disaster-recovery.sh`, `state-check.py` and the compose files decide whether a gate passes, so changing one changes what certification means. **Fixing a gate is a slice, not a Closeout** — found the hard way, as [B-014](docs/BUGS.md), by running the audit against the two commits QE had just written.
+
+#### Everything downstream uses the promoted commit
+
+**Repository Closeout operates on the promoted commit and never on a newer `integration` head.** `PROJECT_STATUS.md`, [`SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md), [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md), repository metrics, certification metrics, milestone progress and roadmap progress **all describe that one commit.** A dashboard mixing figures from the promoted commit with figures from a later one describes no repository at all.
+
+#### The next cycle is never ambiguous
+
+**Immediately after Repository Ready, QE compares the latest `integration` SHA with the latest certified SHA.** Differ → **a new certification cycle is available, and its input is exactly the commits in between.** Identical → there is nothing to certify. **There is never a question about which repository state is awaiting certification**, which is the property the whole rule exists to produce.
 
 ### QE removes its own blockers
 
@@ -556,7 +625,7 @@ Together these appear in roughly two thirds of all commits. **A lane does not ed
 
 > **Promotion is deterministic, and it is not an approval.**
 >
-> **Every required gate passes → `integration` is promoted to `main`.** No further sign-off is sought, none is required, and **no separate approval workflow may be introduced.** The gates *are* the decision — the same principle as *"a green local run is the decision, not a preview of one"* (§20c-2).
+> **Every required gate passes → the certified commit is promoted to `main`.** No further sign-off is sought, none is required, and **no separate approval workflow may be introduced.** The gates *are* the decision — the same principle as *"a green local run is the decision, not a preview of one"* (§20c-2).
 >
 > **Any required gate fails → promotion does not occur.** There is no partial promotion and no expedited path.
 >
@@ -564,8 +633,8 @@ Together these appear in roughly two thirds of all commits. **A lane does not ed
 
 | Branch | Lifetime | Who moves it |
 |---|---|---|
-| `main` | Permanent. **Always certifiable** | **QE only**, fast-forwarded from `integration` |
-| `integration` | Permanent. Where lanes meet and QE tests | **QE only.** A lane rebases and pushes; **QE performs the fast-forward** |
+| `main` | Permanent. **Every commit on it was individually certified** | **QE only**, fast-forwarded to a **certified SHA** |
+| `integration` | Permanent. Where lanes meet. **It keeps moving during certification, deliberately** | **QE only.** A lane rebases and pushes; **QE performs the fast-forward** |
 | `lane-*` | **Permanent name, one slice of content.** Reset to `integration` after every merge | Its own session only |
 
 > **The lane still rebases and still resolves its own conflicts; QE performs the fast-forward.** This is the reading that satisfies both rules at once, and it is not a compromise: **a fast-forward after a clean rebase has no conflicts by construction**, so QE never adjudicates code it did not write, and every arrival on `integration` still passes through one authority. A lane that hands QE a branch which will not fast-forward has not finished step 4.
@@ -574,7 +643,7 @@ Together these appear in roughly two thirds of all commits. **A lane does not ed
 
 - **Branch content lives one slice — two days maximum.** A lane branch carrying more than one slice is a finding.
 - **Rebase, never merge, onto `integration`.** Rebase freely: nobody else has your lane branch.
-- **Fast-forward only, everywhere.** No merge commits. `main` advances only from `integration`, so `main` is always an ancestor of it and the fast-forward always succeeds. Three reasons this is not taste: Alembic's chain is linear, the records are append-only narratives, and a linear history is the only one where *what was true when* is readable.
+- **Fast-forward only, everywhere.** No merge commits. `main` advances only to a **certified commit on `integration`'s history**, so `main` is always an ancestor of it and the fast-forward always succeeds. Three reasons this is not taste: Alembic's chain is linear, the records are append-only narratives, and a linear history is the only one where *what was true when* is readable.
 - **The gates are the review.** Full local gates on the rebased branch before QE fast-forwards it.
 - **Conflicts are resolved by the lane that is rebasing**, never by QE — the lane knows what its change meant. A conflict in a 🔴 file means the lane was outside its budget; stop and raise it.
 - **Commit messages keep the existing form:** `M12.5 — <what changed, in product language>`. Not Conventional Commits — `git log --oneline` is a changelog a cold session reads. **The last commit of a slice also carries a Slice Handoff** (below).
@@ -629,10 +698,10 @@ Three sequences. **Every step names who does it.**
 | 5 | **Write the Slice Handoff** | Lane | In the final commit message. **See below — this is what QE writes the project status from** |
 | 6 | **Push the lane branch and tell QE** | Lane | `git push origin <lane-branch>`. **Backup, not a trigger** — a push stores the repository and starts nothing (§20c-2). QE does not poll |
 | 7 | **Validate** — *lifecycle 1* | **QE** | Repository-wide backend suite · frontend suite · Security Invariants · coverage gate · `make smoke` · **exploratory use of the product** · product review, run on the lane's rebased branch. Defects become `B-nnn` rows |
-| 8 | **Certify** — *lifecycle 2* | **QE** | `make certify`, migration reversibility, `make dr` ([ADR-0032](docs/architecture/adr/0032-release-certification.md)). **The tree certified here is the tree promoted at step 10**, because everything after this is a fast-forward |
+| 8 | **Certify** — *lifecycle 2* | **QE** | `make certify`, migration reversibility, `make dr` ([ADR-0032](docs/architecture/adr/0032-release-certification.md)), **all against the pinned SHA**. **The commit certified here is the commit promoted at step 10** — identical, or the promotion aborts |
 | 9 | **Integrate** — *lifecycle 3* | **QE** | `--ff-only` into `integration`. A branch that will not fast-forward goes back to the lane at step 3. Reconcile the registers; verify the Slice Handoff's claims |
-| 10 | **Promote** — *lifecycle 4* | **QE** | Fast-forward `main` from `integration`. **Certification passed, so this happens** — no approval, no pause, no waiting state |
-| 11 | **Repository Closeout** — *lifecycle 5* | **QE** | **Mandatory, never optional.** The eleven activities in *Repository Closeout* below, in order, **every figure measured from the promoted commit** — never copied from a lane's report. Includes the release summary |
+| 10 | **Promote** — *lifecycle 4* | **QE** | `git merge --ff-only <certified-sha>` into `main`, after `infra/certification-guard.py` confirms that SHA is certified. **Certification passed, so this happens** — no approval, no pause, no waiting state |
+| 11 | **Repository Closeout** — *lifecycle 5* | **QE** | **Mandatory, never optional.** The eleven activities in *Repository Closeout* below, in order, **every figure measured from the promoted commit** — never from a lane's report and never from a newer `integration` head. Includes the release summary |
 | 12 | **Synchronize the branches** — *lifecycle 6* | **QE** | Fast-forward `integration` to `main` if it lags · fast-forward **every idle lane branch** · **leave lanes in active development alone** — they rebase at the start of their next slice. Verify every branch shares the promoted baseline |
 | 13 | **Assign the next work** | **QE** | Mark completed assignments `COMPLETE`, then **remove them** — no lane stays assigned to work that has reached `main`. Return the lane to `AVAILABLE`; allocate idle lanes |
 | 14 | **Declare Repository Ready** — *lifecycle 7* | **QE** | Only once [`REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md) is complete. The next development cycle may begin. **Not before** |
@@ -759,8 +828,8 @@ It compares what the governance documents *say* against what git, the migrations
 | **During a slice** | Impacted suites only · `mypy` · `tsc` · `eslint` | Unchanged policy. Speed is the point |
 | **Lane → QE** | The lane's full module suite · impacted integration tests · `lint-imports` · `mypy --strict` · frontend suite · production build | The lane proves its own slice |
 | **Lifecycle 1 — validation, by QE** | **Everything**: full backend suite with the coverage gate · Security Invariants · frontend suite · `make smoke` · exploratory use of the product | The only place merged code is exercised together |
-| **Lifecycle 2 — certification, by QE** | `make certify` · migration reversibility · `make dr` | ADR-0032. **The last gate before anything moves** |
-| **Lifecycle 3–4 — integrate, promote** | Nothing new — QE has just run all of it on this exact tree | Fast-forward, not re-verification |
+| **Lifecycle 2 — certification, by QE** | `make certify` · migration reversibility · `make dr`, **at the pinned SHA** | ADR-0032. **The last gate before anything moves** |
+| **Lifecycle 3–4 — integrate, promote** | `infra/certification-guard.py` — **is this exact commit certified?** | The only thing standing between an uncertified commit and `main` |
 | **Lifecycle 5–7 — closeout, sync, declare** | `python3 infra/state-check.py` (advisory) | Agreement between the documents and the repository |
 
 **`make smoke` binds the human-review ports (3000 and 8000)**, so the review stack and every lane's dev server must be stopped before it runs. That is why it belongs to QE rather than to a lane. **The step-by-step runbook for QE's validation pass is [`docs/QUALITY_ENGINEERING.md`](docs/QUALITY_ENGINEERING.md); the runbook for the whole cycle is [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md).**
@@ -818,7 +887,7 @@ Coordination  →  Agreement  →  Implementation  →  ADR  →  Coordination c
 
 **Certification is deterministic, and it is a record rather than an opinion.** It states that a specific commit satisfied specific guarantees under specific conditions ([ADR-0032](docs/architecture/adr/0032-release-certification.md)); nothing in the system can *declare* a version certified, exactly as nothing can declare a prompt released.
 
-**QE certifies, immediately before promoting.** The gates are the decision: **if certification succeeds, promotion occurs, and no further approval is sought or required.** Equally — **a failing gate is never overridden, and the sequence is never shortened because a slice looks small.** QE's authority is to run the gates faithfully and act on the result, not to judge whether the result matters.
+**QE certifies a commit, immediately before promoting that same commit.** The gates are the decision: **if certification succeeds, promotion occurs, and no further approval is sought or required.** Equally — **a failing gate is never overridden, and the sequence is never shortened because a slice looks small.** QE's authority is to run the gates faithfully and act on the result, not to judge whether the result matters.
 
 **Certification refreshes the measurements.** Whenever QE certifies, every repository figure that has moved is re-read and republished — pytest totals, frontend totals, Security Invariants, MyPy statistics, import-linter contracts, coverage, smoke status, migration head, the certification manifest. **A stale measurement surviving a successful certification is the defect certification exists to remove**, and it is how a dashboard starts describing a repository that no longer exists.
 
@@ -870,6 +939,7 @@ Everything else in §20d is unchanged, and **strict milestone ownership matters 
 - Implement a future milestone's functionality to satisfy the current milestone's demonstration, or begin a milestone before `PROJECT_STATUS.md` reflects the previous one (§20d).
 - Create, re-enable, or extend any CI/CD, publishing, scheduling, or remote-execution automation, or add a `push:`/`pull_request:`/`schedule:` trigger to a retained workflow (§20c-2).
 - Leave the repository asserting something that is not true of it — a live-looking disabled workflow, a gate that no longer runs, a dashboard describing the previous milestone (§2). Equally: rewrite a dated record of what was true then to match what is true now.
+- **Promote a commit that was not itself certified.** Certification binds to an immutable commit; promotion promotes **that** commit, never `integration`'s current head, and `promoted == certified` or the promotion aborts (§20e). Equally: never re-read a certification record against a different commit, and never restart a cycle's measurements at a newer one.
 - Declare a repository cycle finished before all seven lifecycle stages have completed. **Stopping at certification, or at promotion, is an incomplete cycle** — Repository Closeout is mandatory, and Repository Ready is declared only from a complete [`REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md) (§20e).
 - Leave a documented prerequisite uninstalled and a gate consequently unrun, where installing it was within authority (§20e, *QE removes its own blockers*). Equally: install a **new project dependency** without an ADR, or change the environment until a failing gate passes.
 

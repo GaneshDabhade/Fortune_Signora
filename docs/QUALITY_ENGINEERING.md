@@ -54,11 +54,11 @@ Every hit must resolve from `SIGNORA_TEST_APP_DATABASE_URL`, `SIGNORA_TEST_ADMIN
 
 ## 2 · The validation pass — method, not sequence
 
-**Lifecycle stage 1.** It runs on the lane's **rebased branch** — the exact tree that certification will bind to and that `integration` and `main` will fast-forward onto. Nothing here is optional, and a partial run is not a run.
+**Lifecycle stage 1.** It runs at **`$CERT_SHA`** — the commit pinned by the Certification Snapshot, which is the commit certification binds to and the commit `main` will be fast-forwarded to. Nothing here is optional, and a partial run is not a run.
 
 > **The commands, in order, with the tick-boxes, are [`REPOSITORY_RELEASE_CHECKLIST.md`](REPOSITORY_RELEASE_CHECKLIST.md) stage 1.** This section is what a green result *means*, which no checklist can carry.
 
-**Why the rebased branch and not a tree assembled later:** merged code is a different program from either branch that produced it, so validation has to run on the merged result — and after a clean rebase, the lane's tip **is** that result. Fast-forwarding afterwards moves a pointer, not a program.
+**Why a pinned commit and not a branch:** merged code is a different program from either branch that produced it, so validation has to run on the merged result — and a branch is a moving pointer, so *"the merged result"* is only a fact about one commit. **`integration` will advance while you measure; let it.** Everything that lands after the snapshot is the next cycle's input, and chasing it is how a cycle ends up half-measured at two commits (`CLAUDE.md` §20e).
 
 **`doc-drift` is advisory and stays advisory.** It reports whether a module's design doc changed when its production code did — **never whether what the doc says is true**, which no script can see. A finding goes back to the lane as a question, never to the promotion as a blocker: treating it as a gate would make a green run mean *"the documentation is fine"*, which it cannot mean.
 
@@ -173,6 +173,7 @@ Four capabilities the architecture already treats as QE's, of which two exist. *
 
 - Build a customer feature, or change any module's production code — **including while integrating**.
 - **Promote with a gate unrun**, or shorten the sequence because a slice looks small (§20e, *Repository certification*).
+- **Promote a commit that was not itself certified** — `git merge --ff-only integration` instead of the certified SHA, or re-pointing a cycle at a newer commit part-way through (§20e, *Certification is attached to a commit*). `infra/certification-guard.py` refuses it; do not route around the refusal.
 - Resolve another lane's rebase conflict. Hand the branch back; the lane knows what its change meant.
 - Close a bug it fixed itself, or verify a fix by reading the diff instead of reproducing the original steps.
 - Delete, skip or weaken a Security Invariant, a governance test, or a coverage gate to make a run green.

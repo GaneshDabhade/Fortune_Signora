@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: smoke smoke-keep dr up down test certify doc-drift state-check demo demo-seed demo-users demo-narrate eval eval-reasoning eval-research
+.PHONY: smoke smoke-keep dr up down test certify certified doc-drift state-check demo demo-seed demo-users demo-narrate eval eval-reasoning eval-research
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
 # The executable bit is filesystem state, not repository state, and it does
@@ -117,6 +117,19 @@ demo-narrate:
 ##     make doc-drift ARGS="--strict"
 doc-drift:
 	@python3 ./infra/doc-drift.py $(ARGS)
+
+## Gate, not advisory: may this commit be promoted? (CLAUDE.md §20e)
+##
+## Certification binds to an immutable commit; promotion promotes that commit and
+## no other. This refuses anything else, and exits non-zero when it does — the
+## rule cannot be kept by care alone, because `git merge --ff-only integration`
+## promotes whatever the branch points at when the command runs.
+##
+##     make certified                       # is `main`'s head certified?
+##     make certified ARGS="<sha>"          # may this commit be promoted?
+##     make certified ARGS="--audit-main"   # the guarantee, across the branch
+certified:
+	@python3 ./infra/certification-guard.py $(ARGS)
 
 ## Advisory: do the governance documents agree with the repository?
 ## Run at Repository Closeout, before declaring Repository Ready (CLAUDE.md

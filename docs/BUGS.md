@@ -363,6 +363,30 @@ Three sites: `docs/RUNNING.md:41`, `docs/RUNNING.md:153`, `Makefile:80`. `README
 
 ---
 
+### B-014 · Two commits reached `main` outside certification, and nothing noticed
+
+| | |
+|---|---|
+| **Module** | **none** — repository process |
+| **Current assignee** | **none — not assignable.** [C-010](LANE_COORDINATION.md) |
+| **Severity** | 🟡 — the changes were small, reviewed and correct; **the process gap is the defect** |
+| **Status** | `FIXED` — the rule that prevents it was ratified 2026-08-02 and is enforced by `infra/certification-guard.py`. **Awaiting verification by someone other than QE** |
+| **Found** | `e44819b`, by `certification-guard.py --audit-main` on its first run — **against the commits QE had just written** |
+
+**Steps to reproduce.** `python3 infra/certification-guard.py --audit-main`, with `RULE_RATIFIED_AT` set to the certified commit `f669172`.
+
+**Expected.** Every commit on `main` is certified, or changes nothing executable.
+
+**Actual.** Two Closeout commits — `b5cc283` and `e44819b` — each modified `infra/state-check.py`, which is executable code, while carrying a Closeout message. **They were promoted without passing through certification at all**, because Closeout runs after promotion by design.
+
+**Why it happened, and why it is worth a row.** The commit-binding rule did not exist when they were written; under the previous reading, certification bound to a *tree* and Closeout was documentation. `state-check.py` was edited during Closeout because that is when its defect was found, which felt like documentation work and was not. **A repository-wide gate is exactly the kind of thing that gets edited at the moment it is being used**, so this will recur unless something refuses it.
+
+**The fix is the rule.** `CLAUDE.md` §20e now binds certification to an immutable commit, and `certification-guard.py --audit-main` proves that every commit on `main` since ratification is either certified or **verifiably** docs-only — a fact about paths, not about the commit message. `infra/` is deliberately **not** in the permitted set: `smoke.sh`, `disaster-recovery.sh` and the compose files decide whether a gate passes.
+
+**For whoever verifies it.** Run the audit; it must report zero violations. Then edit `infra/state-check.py`, commit it to `main` with a Closeout message, and confirm the audit refuses it. **A guard that cannot fail is documentation pretending to be code**, and this one was written by finding a real violation on its first run.
+
+---
+
 ### B-013 · The worker and the relay cannot start from a production image
 
 | | |
