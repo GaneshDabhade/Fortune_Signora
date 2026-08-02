@@ -736,3 +736,38 @@ export interface TimelineEntry {
   detail: Record<string, unknown>;
 }
 
+/**
+ * A system Signora understands, and what an organization has of it.
+ *
+ * `integration` and `capabilities` are engineering's words; the Connection
+ * Center supplies the customer's. The API sends no rendered prose, so improving
+ * a sentence is a deploy rather than a migration.
+ */
+export type IntegrationCapability =
+  | 'crm_activity'
+  | 'meetings'
+  | 'email_engagement'
+  | 'message_delivery';
+
+export type ConnectionAttention = 'none' | 'soon' | 'now';
+
+export interface Connection {
+  id: string;
+  integration: string;
+  label: string;
+  state: string;
+  connected_at: string | null;
+  attention: ConnectionAttention;
+  reason: string | null;
+}
+
+export interface IntegrationSystem {
+  integration: string;
+  capabilities: IntegrationCapability[];
+  connectable: boolean;
+  /** At least one connection Signora can currently use — not merely present. */
+  working: boolean;
+  needs_attention: boolean;
+  connections: Connection[];
+}
+

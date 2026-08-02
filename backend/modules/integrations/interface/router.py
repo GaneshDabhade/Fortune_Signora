@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 from fastapi import APIRouter
 
 from apps.api.composition.integrations import IntegrationRead
-from modules.integrations.interface.schemas import ConnectionResponse
+from modules.integrations.interface.schemas import ConnectionResponse, SystemResponse
 from signora_platform.api import CurrentWorkspace
 from signora_platform.authorization import Action, Resource
 
@@ -43,3 +43,35 @@ async def list_connections(
     context.authorize(Resource.INTEGRATION, Action.READ)
     views = await queries.connections(context.workspace_id, at=datetime.now(UTC))
     return [ConnectionResponse.from_domain(view) for view in views]
+
+
+@router.get(
+    "/workspaces/{workspace_id}/integrations",
+    response_model=list[SystemResponse],
+    summary="What Signora can connect to, and what you have connected",
+)
+async def list_systems(
+    context: CurrentWorkspace,
+    queries: IntegrationRead,
+) -> list[SystemResponse]:
+    """*"Can I trust that Signora is connected to the systems that run my
+    business, and if not, what do I need to do?"*
+
+    Every system Signora understands — **including the ones you have not
+    connected**, because a screen built only from what somebody already did
+    cannot answer *"what are we missing?"*
+
+    Each row says what connecting it gives you, whether it is working now, and
+    whether anything needs doing. **`working` is not the same as having a
+    connection**: a connection whose permission was withdrawn is still a
+    connection, and answering *"is my CRM connected?"* with *yes* would be the
+    worst thing this screen could say.
+
+    **Capabilities listed are only ones Signora can act on today.** Anything
+    waiting on work that does not exist is absent rather than shown greyed out
+    — advertising a capability the platform cannot execute is a promise the
+    product cannot keep.
+    """
+    context.authorize(Resource.INTEGRATION, Action.READ)
+    systems = await queries.systems(context.workspace_id, at=datetime.now(UTC))
+    return [SystemResponse.from_domain(system) for system in systems]

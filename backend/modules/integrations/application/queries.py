@@ -8,6 +8,7 @@ from enum import StrEnum
 from uuid import UUID
 
 from modules.integrations.application.ports import ConnectedAccountRepository, GrantStore
+from modules.integrations.domain.catalog import CATALOG, Capability, entry_for
 from modules.integrations.domain.connection import ConnectedAccount, ConnectionState
 
 
@@ -50,6 +51,42 @@ class ConnectionView:
     reason: str | None
 
 
+@dataclass(frozen=True, slots=True)
+class SystemView:
+    """One system Signora understands, and what this organization has of it.
+
+    **The Connection Center's unit, and deliberately not "a connection".** The
+    question a customer opens this screen with is *"is my CRM connected?"*, not
+    *"list my connections"* — and a system with none is the row that most needs
+    to appear.
+    """
+
+    integration: str
+    #: What this system gives Signora **that the platform can act on today**.
+    #: A capability waiting on an unbuilt module is absent rather than greyed:
+    #: a promise the product cannot keep is worse than a shorter list.
+    capabilities: tuple[Capability, ...]
+    connectable: bool
+    connections: tuple[ConnectionView, ...]
+
+    @property
+    def needs_attention(self) -> bool:
+        return any(c.attention is not Attention.NONE for c in self.connections)
+
+    @property
+    def is_working(self) -> bool:
+        """At least one connection Signora can currently use.
+
+        **Not "has a connection"** — a revoked Salesforce is a connection, and
+        answering *"is my CRM connected?"* with *yes* would be the screen's
+        worst possible lie.
+        """
+        return any(
+            c.state in {ConnectionState.CONNECTED, ConnectionState.VALIDATED}
+            for c in self.connections
+        )
+
+
 #: How long before an expiry is worth warning about. **A product decision with
 #: a number attached**: soon enough that a customer can act, far enough that the
 #: warning is not permanent. Deliberately not configurable — a per-workspace
@@ -86,6 +123,37 @@ class IntegrationQueries:
                 )
             )
         return views
+
+    async def systems(self, workspace_id: UUID, *, at: datetime) -> list[SystemView]:
+        """Every system Signora understands, with what this organization has.
+
+        **Catalog-first rather than connection-first.** A screen built from
+        connections can only show what somebody already did; this one also
+        answers *"what could we connect, and what would it give us?"* — and it
+        keeps a system a customer has never touched visible instead of absent.
+        """
+        by_integration: dict[str, list[ConnectionView]] = {}
+        for view in await self.connections(workspace_id, at=at):
+            by_integration.setdefault(view.integration, []).append(view)
+
+        systems = [
+            SystemView(
+                integration=entry.slug,
+                capabilities=entry.live_capabilities,
+                connectable=entry.connectable,
+                connections=tuple(by_integration.pop(entry.slug, [])),
+            )
+            for entry in CATALOG.values()
+        ]
+        # A connection whose catalog entry was withdrawn still belongs to the
+        # customer and must not vanish from their screen.
+        systems.extend(
+            SystemView(
+                integration=slug, capabilities=(), connectable=False, connections=tuple(views)
+            )
+            for slug, views in by_integration.items()
+        )
+        return systems
 
 
 def _attention(

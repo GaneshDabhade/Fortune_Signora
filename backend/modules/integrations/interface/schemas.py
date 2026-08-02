@@ -12,7 +12,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from modules.integrations.application.queries import ConnectionView
+from modules.integrations.application.queries import ConnectionView, SystemView
 
 
 class ConnectionResponse(BaseModel):
@@ -61,4 +61,46 @@ class ConnectionResponse(BaseModel):
             connected_at=view.connected_at,
             attention=view.attention.value,
             reason=view.reason,
+        )
+
+
+class SystemResponse(BaseModel):
+    """One system, and what this organization has of it."""
+
+    model_config = ConfigDict(frozen=True)
+
+    integration: str = Field(
+        description="Stable slug. Clients supply the name and the icon."
+    )
+    capabilities: list[str] = Field(
+        description=(
+            "What connecting this gives Signora, limited to what the platform "
+            "can act on today. A capability waiting on unbuilt work is absent "
+            "rather than listed as unavailable — the product does not advertise "
+            "what it cannot do."
+        )
+    )
+    connectable: bool = Field(
+        description="Whether it can be connected right now."
+    )
+    working: bool = Field(
+        description=(
+            "Whether at least one connection is usable. Not the same as having "
+            "a connection: a revoked one is a connection."
+        )
+    )
+    needs_attention: bool = Field(
+        description="Whether any connection needs the customer to act."
+    )
+    connections: list[ConnectionResponse]
+
+    @classmethod
+    def from_domain(cls, view: SystemView) -> SystemResponse:
+        return cls(
+            integration=view.integration,
+            capabilities=[c.value for c in view.capabilities],
+            connectable=view.connectable,
+            working=view.is_working,
+            needs_attention=view.needs_attention,
+            connections=[ConnectionResponse.from_domain(c) for c in view.connections],
         )
