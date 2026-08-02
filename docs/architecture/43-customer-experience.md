@@ -6,7 +6,7 @@
 >
 > **It is a living document.** Every figure was read out of the repository at the commit named below, and every one is re-measurable. **When a status here disagrees with the code, the code is right and this is a defect** (`CLAUDE.md` §2).
 
-**Measured at `origin/integration` = `11280f0`, 2026-08-02.** Frontend routes from `frontend/app/`, endpoints from `backend/modules/*/interface/router.py`, mounts from `backend/apps/api/main.py`, guards from `frontend/lib/state/permissions.ts`, navigation from `frontend/components/shell/navigation.tsx`.
+**Re-measured at `origin/integration` = `0632680`, 2026-08-02**, after CX-01, CX-02 and CX-03. *(First measured at `11280f0`; endpoints and modules unchanged, screens and reachability changed.)* Frontend routes from `frontend/app/`, endpoints from `backend/modules/*/interface/router.py`, mounts from `backend/apps/api/main.py`, guards from `frontend/lib/state/permissions.ts`, navigation from `frontend/components/shell/navigation.tsx`.
 
 ---
 
@@ -18,7 +18,7 @@
 |---|---|
 | **Backend HTTP endpoints** | **31**, across **11 modules** |
 | **Navigable application screens** | **5** — one attention list, one account brief, three settings pages *(plus five sign-in screens, and two dead-end states added by CX-02)* |
-| **Screens a `member` can reach** | **2** |
+| **Screens a `member` can reach** | **2** — unchanged by CX-01/02/03, and the number that still matters most |
 
 > **A signed-in salesperson who is not an owner can reach the attention list and an account brief. Nothing else.** Settings, Products, and the Connection Center are all behind `workspace:update`, and the navigation has exactly two entries — one of which is the guarded one.
 
@@ -160,6 +160,20 @@
 | **Guided first run** | Ends by asking which companies to watch; the answer goes nowhere | [C-007](../LANE_COORDINATION.md) → [C-021](../LANE_COORDINATION.md) |
 | **Use Signora on a phone** | No navigation below 768px | **[C-026](../LANE_COORDINATION.md)** · [B-019](../BUGS.md) |
 
+### The measurement behind all of the above — 2026-08-02
+
+**Every endpoint in the repository, checked against whether the frontend issues a request for it.** Mechanical, repeatable, and the check that found CX-01 and CX-03.
+
+| | |
+|---|---|
+| **Endpoints** | **31**, across 11 modules |
+| **Requested by the frontend** | **30** |
+| **Not requested** | **1** — `GET /workspaces/{id}/connections` |
+
+**The one is not a gap.** `/integrations` returns the catalog *and* what is connected; `/connections` returns only the latter. The Connection Center reads the superset, which is the correct choice. **Recorded as an observation for the owning lane, not opened as a defect** — an endpoint may legitimately outlive its first consumer.
+
+> **A request is not a screen, and this is where the check stops being mechanical.** Two endpoints are *requested* and still reach no customer: `GET /members` is fetched only so the shell can resolve **your own** role (TS-02), and its list is rendered nowhere. **Automation can tell you a route is called. Only reading the pages tells you whether anybody sees the answer.**
+
 ### ⚫ No backend at all — not this document's gap, recorded for completeness
 
 **Provider Platform · Provider Normalization · Observation Engine · AI Reasoning Engine have no HTTP router.** For the three pipeline modules that is correct — they are event-driven and a customer has no business calling them. **Provider Platform is the one worth noting**: `provider.health_changed` is published, `12-scalability.md` depends on its metrics, and **there is no way for anybody to see whether a provider is healthy.**
@@ -170,7 +184,7 @@
 
 ## 4 · Workflow Mapping
 
-**Nine journeys, and where each one currently stops.**
+**Ten journeys, and where each one currently stops.** *(J10 was missed in the first pass — the audit looked at reading capabilities and not at writing ones. Recorded rather than quietly added.)*
 
 ```
   ✅ Sign in ──▶ ✅ Attention ──▶ ✅ Account Brief ──▶ ✅ Decision ──▶ ✅ Next account
@@ -197,11 +211,14 @@
 | **J6** | See an account's history over time | ✅ **Complete** — CX-03 | — |
 | **J7** | Tell Signora who we sell to | ⚠️ **Half** | An owner can declare; **a seller cannot read** |
 | **J8** | Connect our systems | ⚠️ **Half** | Complete once reached; **unreachable** |
-| **J9** | Manage who is on the team | 🔴 **Blocked** | No screen; no way to name a person |
+| **J9** | See who is on the team | 🔴 **Blocked** | No screen; no way to name a person |
+| **J10** | **Invite a colleague** | 🔴 **Blocked** | **`POST /members` takes a `user_id: UUID`.** A customer cannot type one, and resolving an email to a user is Better Auth's, in the Next tier — **[C-024](../LANE_COORDINATION.md) again, from the write side** |
 
-**Six of nine are complete.** J6 closed on 2026-08-02 when CX-03 mounted the feed, and J8 closed when CX-01 gave the Connection Center a door.
+**Six of ten are complete.** J6 closed on 2026-08-02 when CX-03 mounted the feed, and J8 closed when CX-01 gave the Connection Center a door.
 
-**The three that remain are each stopped by a decision, not by engineering:** J7 waits on `C-008`, J9 on `C-024`, and the responsive question on `C-026`. **Two of the three were closed by ten lines and a card** — which is the pattern worth carrying: *the gap between a shipped backend and a customer is usually smaller than it looks, and invisible to every test in the repository.*
+**The four that remain are each stopped by a decision, not by engineering:** J7 waits on `C-008`, **J9 and J10 both on `C-024`**, and the responsive question on `C-026`. **C-024 now holds two journeys and both halves of team management** — reading who is there, and adding anybody — which makes it the highest-leverage decision on this page.
+
+**Two of the six were closed by ten lines and a card**, which is the pattern worth carrying: *the gap between a shipped backend and a customer is usually smaller than it looks, and invisible to every test in the repository.*
 
 ---
 

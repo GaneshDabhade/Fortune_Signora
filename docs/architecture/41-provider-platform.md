@@ -32,7 +32,7 @@
 
 **`subject` is part of the identity, not a label on it.** `SyncWatermark` gives it no default: a watermark that cannot name its account **is** the defect, so the type refuses to construct one, and `get_watermark` requires it rather than accepting `None`. A caller that could omit it would get another account's position — silently, which is the property that made the original bug expensive.
 
-**Rows written before the column keep an empty subject** (migration `0026`). Which account an old position belongs to is not recoverable, and inventing an attribution would be worse than admitting none. An empty subject matches no real one, so those rows are inert and the first sync of each subject requests a full snapshot — **which is what an absent watermark already means**, so nothing new exists to handle it.
+**Rows written before the column keep an empty subject** (migration `0029`). Which account an old position belongs to is not recoverable, and inventing an attribution would be worse than admitting none. An empty subject matches no real one, so those rows are inert and the first sync of each subject requests a full snapshot — **which is what an absent watermark already means**, so nothing new exists to handle it.
 
 **The downgrade discards watermarks and says so.** Narrowing the constraint means collapsing many rows into one and there is no correct choice of which to keep; it keeps the furthest-advanced position, which is safe for the *constraint* and unsafe for *coverage*. Recorded in the migration rather than left for someone to discover — the honest recovery afterwards is to reset the affected watermarks, which destroys no history because syncs and raw records are separate tables.
 

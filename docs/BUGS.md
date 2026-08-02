@@ -831,7 +831,7 @@ export SIGNORA_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_d
 | **Owner lane** | **Lane A** |
 | **Affected module** | `provider_platform` — `provider_watermark`, migration `0007` |
 | **Severity** | 🟠 unreachable today · 🔴 the moment a workspace watches two accounts |
-| **Status** | `OPEN` |
+| **Status** | **`FIXED`** — Lane A, **PP-01**, migration `0029` (renumbered twice on rebase, from `0026` then `0027`). `subject` joined the unique constraint and the lookup; **PP-02 built the consumer in the same effort**, so the *Fix belongs to* condition below was satisfied rather than waived. **QE verifies** |
 | **Found** | `f6b6a41`, while answering [`C-001`](LANE_COORDINATION.md#c-001--the-target-account-contract) |
 | **Fix belongs to** | The slice that builds the `target_accounts_changed` consumer. **Not to be fixed opportunistically** — the consumer is what makes it reachable, and fixing one without the other leaves a schema change nothing exercises |
 
@@ -1074,6 +1074,10 @@ Three sites: `docs/RUNNING.md:41`, `docs/RUNNING.md:153`, `Makefile:80`. `README
 1. **Say so.** `demo-narrate` must follow *every* `demo-seed`, not just the first. That is a `RUNNING.md` line, and QE's to write.
 2. **The brief should distinguish *not narrated yet* from *narrated against evidence that no longer resolves***. The dialog already refuses to present today's facts as the ones the model saw ([D42](architecture/39-product-review-findings.md)); this is the same honesty one level up, and it is Lane A's.
 3. **Do not "fix" it by deleting narrations.** A materialized AI artifact is a historical fact and is immutable (`CLAUDE.md` §2). The residue is a seeding question, not a retention one.
+
+**Piece 2 is delivered — Lane A, `PS-02`, 2026-08-02.** `NarrativeBlock` now separates three states that were one blank space: **never written** (`notNarrated`, a 404 answered as an answer), **the request failed** (`isError`), and **narrated against evidence that no longer resolves** (`stranded` — `evidence_unchanged` false with no facts resolving), which is the state this row describes. In the third, the explanation moves onto the panel itself, because every citation renders as a plain count rather than a button and **the dialog that would explain why has no way to be opened**.
+
+**Pieces 1 and 3 remain QE's**, and the row stays `OPEN` for them. **A lane closing a row on the strength of its own half is how a half-fixed defect gets forgotten.**
 
 ---
 

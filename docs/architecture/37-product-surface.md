@@ -700,3 +700,37 @@ So on an expired account the brief said it **twice in one card, three lines apar
 | **The next real finding will come from usage, not from reading** | Nine review lenses now converge on coordination items rather than slices. **That is the signal the module is mature, not that reviewing failed** — the class of defect that remains is the class only a design partner produces |
 | **Responsive is a milestone if the answer to C-026 is *mobile*** | Every screen needs a pass, the brief's eleven sections need an order that survives one column, and the shell needs a navigation pattern that does not exist |
 | **Identity unlocks more than the Team page** | C-024's answer also decides how AI-generated work names a responsible user, how audit history represents actors, and how notifications know who to reach. **It is the highest-leverage of the five** |
+
+---
+
+## Implementation Waiting ended — 2026-08-02, the same day it was declared
+
+**The record above stands as what was true when it was written, and it is not being rewritten** (`CLAUDE.md` §2: *correct a claim about the present; date a record of the past*). **What follows is the correction.**
+
+**Product Surface was suspended after nine review lenses converged on coordination items rather than slices.** That conclusion was right about the lenses and **wrong about the module**, and the product owner's redirection the same day is what showed why:
+
+> *"The repository contains considerably more functionality than the application currently exposes."*
+
+**Every lens applied up to that point looked at screens that exist.** Contract, journey, product, production-UI, long-term, subtraction, workflow, trust and responsive reviews all ask *is what is here correct?* — and by then it largely was. **None of them could see a capability that has no screen at all**, because there was nothing to review.
+
+**The lens that was missing was the repository, not the surface.** A capability audit — 31 endpoints against 5 screens — found three slices in an afternoon, and none was cosmetic:
+
+| | What it exposed |
+|---|---|
+| **CX-01** | A **complete module** — Integrations: backend, screen, OAuth, disconnect — that **nothing in the product linked to** |
+| **CX-02** | The two pages a customer meets when something goes wrong, which the framework was supplying and the product had never claimed |
+| **CX-03** | Timeline's endpoint, hook and component, **all built, mounted nowhere** ([C-024](../LANE_COORDINATION.md)) |
+
+**The distinguishing property, and it is what makes the lens reusable:** every one was **invisible to every test in the repository.** Twenty component tests covered `feed.tsx` and not one could ask whether any page rendered it. A test asks *does this behave correctly*; **none of these was a behaviour defect.** They were absences of reachability, and only an audit that starts from the backlog of *capabilities* rather than the inventory of *screens* finds them.
+
+### What this changes about when a module may be declared waiting
+
+> **A module is not exhausted when reviews of its existing screens stop finding work. It is exhausted when every capability the repository has built is reachable through it.**
+
+**The first test was the one applied on 2026-08-02, and it retired the module two initiatives early.** Product Surface is the layer through which everything else becomes a product, so its work is bounded by *what the repository has built*, not by *what it has already drawn*.
+
+**Recorded here rather than in the module's status line**, because the mistake is more useful than the correction: the reviews were rigorous, converged honestly, and were measuring the wrong surface. **A conclusion reached carefully from the wrong frame still reads as a finished module.**
+
+### Where the work is tracked now
+
+**[43-customer-experience.md](43-customer-experience.md) is the driver** — the navigation map, screen inventory, capability mapping, the nine journeys and the CX roadmap. **This document remains Product Surface's design record**; the blueprint is what says which slice comes next.

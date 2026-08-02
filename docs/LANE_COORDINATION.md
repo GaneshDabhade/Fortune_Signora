@@ -1759,6 +1759,14 @@ It is also the failure mode this repository keeps finding in a different coat: [
 
 **That is a genuine privacy boundary, not a routing detail**, which is why it is here rather than decided in a component.
 
+### It is now both halves of team management, and a second journey
+
+**Measured 2026-08-02, during the repository-wide capability audit.** This item was raised against **reading** a team. It also blocks **writing** one, and that had not been said:
+
+**`POST /workspaces/{id}/members` takes `user_id: UUID`.** A customer cannot type a UUID, and resolving an email to a user is Better Auth's — in the Next tier, behind exactly the boundary this item is about. **So there is no way to invite a colleague either**, and the endpoint has no UI at all.
+
+> **An organization cannot grow.** Every workspace is permanently whoever created it, unless somebody inserts a membership row by hand. That is a larger consequence than a page rendering UUIDs, and it is the same decision.
+
 ### It is bigger than one page
 
 The product owner's own questions make it foundational rather than local: **how AI-generated work identifies the responsible user · how audit history represents actors · how notifications know who to reach · how mentions and approvals attach to people.** Every one needs the same answer, and **answering it inside the Team page would be deciding it for all of them by accident.**
