@@ -141,6 +141,7 @@
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
 | [C-001](#c-001--the-target-account-contract) | The target-account contract — this module's first edge | Lane B | **Lane A** | `ANSWERED` → **[ADR-0036](architecture/adr/0036-target-account-contract.md)** | **Nothing. Slice 5 may begin.** `CLOSED` when both lanes have built it |
+| [C-305](#c-305--two-principles-that-outgrew-the-adr-that-found-them) | Two principles that outgrew the ADR that found them | Lane B | **Product owner** | `OPEN` | **Nothing.** Both are already applied in two modules each; this is placement |
 | [C-304](#c-304--a-standing-review-question-that-has-already-paid-for-itself) | A standing review question that has already paid for itself | Lane B | **Product owner** | `OPEN` — **challenged and sharpened 2026-08-02.** It produces noise in the general form; the narrow one survives | **Nothing.** One line of review practice, wherever it belongs |
 | [C-303](#c-303--an-icp-is-not-an-addressable-thing-and-every-verb-the-brief-asks-for-needs-one) | An ICP is not an addressable thing, and every verb the brief asks for needs one | Lane B | **Product owner** | `ANSWERED` — ICP stays in Commercial Profile (2026-08-02). **The aggregate is [ADR-0041](architecture/adr/0041-icp-aggregate.md), proposed** | **Implementation, on ADR-0041's ratification** |
 | [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) | A notification is per-person, and workspace RLS is not enough | Lane B | **Product owner** (tenancy 🔴) | `OPEN` | **M14a N-01's migration.** The pattern exists; the ruling does not |
@@ -3166,7 +3167,7 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 **Lane B has not added it to `CLAUDE.md`.** Governance is the product owner's, and §20e is explicit that a repository-wide rule belongs there rather than in the document that happened to prompt it. **This is the same shape as [C-017](#c-017--the-onboarding-honesty-principle-has-no-permanent-home)** — ratifiable text, awaiting placement.
 
 
-### C-304 challenged — it produces noise, and the noise is nameable
+### Challenged, on the product owner's direction — it produces noise, and the noise is nameable
 
 **Asked to find where the question costs more than it returns, before proposing it as a permanent rule. It does, in one identifiable case, and the fix sharpens the rule rather than weakening it.**
 
@@ -3191,4 +3192,54 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 **That fires rarely, and every time it fires the failure is possible.** It survives the challenge in this form and does not survive in the general one.
 
 **Still the product owner's to place.** `CLAUDE.md` is governance.
+
+
+---
+
+## C-305 · Two principles that outgrew the ADR that found them
+
+| | |
+|---|---|
+| **Decision required** | Whether two rules discovered in [ADR-0041](architecture/adr/0041-icp-aggregate.md) become repository principles, and where they live |
+| **Participating modules** | `commercial_profile` · `ai_platform` · `opportunity_engine` · `notifications` *(proposed)* — **each already exhibits one or both** |
+| **Current assignee(s)** | **Product owner** — `CLAUDE.md` §2 is governance |
+| **Blocking** | **Nothing.** Both are being applied; this decides whether they are named |
+| **Raised** | 2026-08-02, by Lane B, at the product owner's direction |
+
+**Neither was invented. Both were *found* — each already enforced in a module that had never described it as a rule**, which is the evidence that they are repository principles rather than ICP details.
+
+### 1 · Immutable versions record decisions, not editing
+
+> **A version is something the customer intentionally published. Not something they typed.**
+>
+> Editing produces a draft. **Publishing produces a version.** A discarded draft leaves no trace, because nothing was ever said.
+
+**Already true in the AI Platform**, which nobody wrote down: a prompt version is immutable and a released one may never be edited — *"a change is a new version, never an edit, because editing one silently invalidates every result that claims it."* **The same sentence describes an ICP.**
+
+**What it buys, and it is more than tidiness:** AI-assisted generation, collaborative editing, approvals, comments and review workflows all become **operations on drafts**, and none of them pollutes published history. **A model that treats every keystroke as a version cannot support any of them without a cleanup process** — and a cleanup process over an immutable chain is a contradiction.
+
+**Where it will recur:** Prompt Registry (already) · signal definitions · buying committee definitions · playbooks · email and notification templates · automation rules · AI agents.
+
+### 2 · Execution invariants are enforced at publication, not at creation
+
+> **An object may exist in an editable state without satisfying the invariants that make it executable. Those invariants are checked when it is published.**
+
+**Two independent instances, and neither knew about the other:**
+
+| | Freely created | Gate at publication | Why the gate |
+|---|---|---|---|
+| **Prompt Registry** | any version | evaluated against every supported `(model, dataset)` | the platform cannot demonstrate it works |
+| **ICP** | a draft | **≥ 1 product** | the platform cannot act on it |
+
+**The third column is the part that matters most.** In both cases the gate asks *"can the platform execute against this?"* and **never *"is this good?"*** — which is what stops it becoming a validation rule that judges the customer's business. `REFUSED` is a legitimate prompt-evaluation outcome; **a broad ICP is never refused.**
+
+**The corollary is a product rule as much as an engineering one:** *a draft exists for a human; a published artefact exists for the platform.* Friction at creation is a cost paid at the worst possible moment — first use — and moving it to publication costs nothing, because publication is when the customer has decided.
+
+**Where it will recur:** billing plans · feature flag rules · notification rules · automation and workflow definitions · AI playbooks.
+
+### What Lane B is asking for
+
+**Placement, not agreement** — both are already applied in the code. If they belong in `CLAUDE.md` §2, the text above is ready. If they belong in a module document each, that is equally fine and this item closes.
+
+**What Lane B will not do is add them itself.** A repository-wide rule belongs in the governance document rather than in whichever ADR happened to find it — §20e is explicit, and **a principle discovered inside an ICP ADR that lives only there will be rediscovered by the next module that needs it.**
 

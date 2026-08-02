@@ -400,6 +400,130 @@ icp_state             append-only transitions, each naming its actor
 
 **Nothing is complicated by E.** Five simplify, ten are neutral, and the three marked *materially* are the ones where B would have forced a heuristic — and **a heuristic over customer-typed text is the shape of every duplicated-truth defect this repository has fixed.**
 
+## Amendment 3 — 2026-08-02, the final challenges before ratification
+
+### Is *ICP* even the aggregate? — challenged, and it survives
+
+**Assume it is wrong. Six candidates were tested against the one question that matters: *does the name describe exactly what the aggregate holds?***
+
+| Candidate | Verdict |
+|---|---|
+| **Commercial Strategy** · **Revenue Strategy** | **Too large, and dangerously so.** A commercial strategy includes pricing, channel, messaging and quota. **The first person to add pricing to an aggregate called *Commercial Strategy* would be right to** — and the module's invariant (*it records; it computes nothing*) would then be defending a surface four times the size |
+| **Customer Segment** | **Too broad in the wrong direction.** A segment includes *existing* customers, churned ones, and segments nobody sells to. This aggregate is specifically *"the kind of company we want to find and sell to"* |
+| **Buyer Definition** | **Collides inside this module.** A **Buying Committee** is already a definition of buyers, and it is a separate aggregate. Two things named *buyer definition* is the duplicated-language failure `04-modules.md` forbids |
+| **Market Definition** · **GTM Segment** | Real vocabulary, but **marketing's** rather than the seller's, and both are containers that would attract channel and campaign |
+| **ICP** ✅ | **Survives** |
+
+**The decisive evidence is that ICP is not our word.** [ADR-0034](0034-ubiquitous-language.md)'s test is *"would a salesperson use this word unprompted to describe their own job?"* — and *"what's our ICP?"* is standard RevOps vocabulary that predates Signora by decades. **It is a business concept, not UI terminology**, which is exactly what the challenge was checking for. Like `Signal` and `Opportunity`, it is deliberately identical on both sides of the vocabulary boundary.
+
+**It also survives the shape change:** *"our ICP for Revenue Cloud and CPQ is mid-market fintech"* is a sentence a seller says without effort.
+
+> **The trigger that would change the answer, stated so it is checkable:** if this aggregate ever grows **pricing, messaging, channel or quota**, it has stopped being an ICP and become a Commercial Strategy — and it should be renamed rather than quietly widened.
+
+### Competing drafts — the model assumed one, and that assumption is safe
+
+**Amendment 2 said *"at most one pending draft per ICP"*. That was an assumption rather than a decision**, and the product owner's scenario is the one that tests it: AI proposes v11, marketing v12, sales v13, and the customer compares before publishing one.
+
+**The pressure point is exactly one uniqueness constraint** — `unique(icp_id)` on the draft. Removing it, plus an author and a label on each draft, admits competing drafts. **Nothing else moves**: versions are numbered by *publication*, not by draft creation, so two drafts publishing in sequence produce *n+1* and *n+2* with no conflict.
+
+**Day One keeps the single draft, and the reason is a migration property rather than a preference:**
+
+> **Dropping a uniqueness constraint is additive. Adding one later is destructive** — it requires deciding which of several existing drafts survives.
+
+So starting narrow costs nothing and starting wide cannot be undone. **The constraint is the pressure point, it is one line, and it is reversible in the safe direction.**
+
+### Every operation is one of two verbs
+
+**Checked against the product owner's list — restore · duplicate · clone · fork · template · marketplace — and they split cleanly:**
+
+| | Verb | Operations |
+|---|---|---|
+| **Content** | **Create draft → publish** | duplicate · clone · fork · from template · from marketplace · rollback · ordinary editing |
+| **Lifecycle** | **Append a state transition** | publish · archive · **restore** · deprecate · approve |
+
+**Restore is the one that does *not* fit the first verb**, and noticing that is the point: restoring an archived ICP changes no content, so making it a new version would record a decision the customer did not make. **It is a transition.**
+
+> **Two verbs, and every operation named so far is one or the other.** That is the elegance the product owner suspected, and it is why the future lifecycle concepts in Amendment 2 need no structural change.
+
+### Taxonomy evolution — the pressure is vocabulary, not versioning
+
+**Asked whether criteria should become versioned entities. They should not, and the real pressure has a name already.**
+
+Of the future criteria named — partner ecosystems, cloud providers, technology stack, competitors, compliance, sales motion, maturity, business model, **funding stage**, **hiring pattern**, AI readiness — **several are already controlled vocabulary elsewhere.** Funding stage and hiring pattern are Business Event Engine taxonomy; technology stack is something providers report and Provider Normalization normalizes.
+
+**That is exactly the wall revenue band already hit**, and this module already recorded the answer: declaring one *as a controlled value* would mean either importing a pipeline module — forbidden by contract — or defining a second copy, which *truth has exactly one authoritative representation* forbids more firmly.
+
+> **Criteria stay value objects inside a version. The pressure is not that criteria need versioning; it is that this module cannot reference canonical vocabulary without importing it — and that is [C-002](../../LANE_COORDINATION.md), open since M12.5.**
+
+**Every new criterion drawn from a controlled vocabulary hits C-002.** Versioning criteria would not help and would add an aggregate nobody asked for.
+
+### Diff and comparison — no metadata needed, and one pressure point
+
+**A version stores complete content, not a delta** — the same choice `opportunity_state` makes, and for the same reason. **So a diff between any two versions is computable from the rows themselves.** History, visual comparison and an AI summary are all reads. **No metadata is required today, and none is added.**
+
+**What is *not* computable is *why*.** A diff shows *"insurance"* was added to industries; it cannot say *"because we acquired an insurance book."*
+
+**A `reason` on a version is the obvious candidate and is deliberately not added.** `opportunity_state` requires one because a **human moved a deal** — a materially higher-stakes act than editing a description, and a required reason on every publish is friction that produces *"update"* a hundred times. **The pressure point, recorded rather than pre-solved: when change approval ships, the approver's reason is genuinely needed, and that is when it earns its place** — on the transition, where `opportunity_state` already puts it.
+
+### Where append-only state stops being worth it
+
+**Asked whether every aggregate should evolve toward append-only transitions. No — and the boundary is a question, not a list:**
+
+> **Is the transition itself a fact somebody may later have to justify?**
+
+| Yes — append-only | No — a column is correct |
+|---|---|
+| **Opportunity** (a human committed) · **ICP** (a commercial decision) · **Prompt release** (already effectively this) · **Contract** · **Workflow approval** | **Feature flag** (operational, flipped often, nobody asks who) · **Notification read state** (flips constantly; *"who marked this read"* has no asker beyond its current value) |
+
+**The counter-example is in Lane B's own recent work and is consistent:** [ADR-0040](0040-notifications.md) specifies `read_at` as an **updatable column**, not a transition log. **That is correct by this rule**, and it is worth having checked rather than assumed.
+
+**The cost of getting it wrong in the expensive direction is a table that grows without being read.** Append-only is not free, and *"audit everything"* is how a repository acquires history nobody queries.
+
+### The five-year view — one pressure point, and it is not this aggregate
+
+**Hundreds of ICPs, AI-generated ones, shared libraries, organization and industry templates, marketplace templates, regional adaptations, experiments, archived history.**
+
+| | Holds? |
+|---|---|
+| **Identity / version split** | **Holds.** It gets stronger with scale — every citation stays resolvable across any number of revisions |
+| **Publication** | **Holds**, and gets more valuable: a marketplace template that could not be *published* would be uncheckable |
+| **Aggregate boundaries** | **Hold — except one.** See below |
+| **Search** | **Free-text criteria at hundreds is a text search**, which is ADR-0008's Meilisearch and **the same trigger Timeline recorded**: the first customer who searches rather than scrolls |
+| **Analytics** | **Correct, because citations name `(icp_id, icp_version_id)`.** Without the version, a report would silently re-describe history |
+| **Permissions** | **Simple — until sharing** |
+
+> **The single five-year pressure point: a shared, template or marketplace ICP belongs to no workspace, and every table in this repository is workspace-scoped with forced RLS.**
+
+**That is a tenancy question, not an ICP one** — the same family as [C-302](../../LANE_COORDINATION.md), and it would need a decision about workspace-less rows before any of shared libraries, org templates or a marketplace could exist. **Recorded as the boundary that would move, and it is not this aggregate's.**
+
+### The lifecycle, stated completely
+
+**Recorded here rather than in a new document**: [40-commercial-profile.md](../40-commercial-profile.md) describes **what is built**, and none of this is. It moves there at implementation.
+
+**States** — derived from the latest `icp_state` row, never stored:
+
+```
+              ┌──────────── restore ────────────┐
+              │                                 │
+  (created) ──▶ draft ──publish──▶ published ──archive──▶ archived
+                  │                    │  ▲
+                  └── discard ─────────┘  └── publish (new version)
+```
+
+| Transition | Actor | Invariant enforced |
+|---|---|---|
+| **create** | customer | belongs to a workspace |
+| **publish** | customer | **≥ 1 product**, ≥ 1 criterion, every product in the current catalog |
+| **publish again** | customer | same, and mints version *n+1* naming its predecessor |
+| **rollback** | customer | a **new version** whose content equals an earlier one and records its source |
+| **archive** | customer | reversible; content untouched |
+| **restore** | customer | a transition, **never a version** |
+| **discard draft** | customer | only a draft; nothing published is ever deleted |
+
+**Deletion policy: there is none, and that is deliberate.** An ICP is why Signora found what it found; deleting it makes the evidence unexplainable. **Archive is the answer, and it is reversible.** Workspace-level erasure remains the repository's unowned *data export and account deletion* capability.
+
+**Migration behaviour:** each existing `ProductIcp` becomes one `Icp`, one `icp_version` (published), one `icp_version_product`, and one `icp_state` row recording publication attributed to the original declaration's author. **1:1, deterministic, no heuristics.**
+
 ## Alternatives considered
 
 | | | |
