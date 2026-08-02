@@ -56,7 +56,7 @@
 |---|---|
 | **Module** | Repository — `apps/`, documentation, process |
 | **Slice** | one slice |
-| **Status** | `CLAIMED` — **Lane B**, 2026-08-02 |
+| **Status** | `CLAIMED` — **Lane B**, 2026-08-02. **Complete and `READY FOR QE`** — `DONE` is QE's to set at promotion |
 | **Notes** | **Explicitly not QE's.** [B-009](BUGS.md), [B-013](BUGS.md) and [B-014](BUGS.md) were all fixed by QE, which may not verify its own work. Reproduce each from a clean shell, from the original steps, **never from the diff**. Small, and it retires three rows |
 | **On claiming** | **A fourth row is in the same condition and is not in this task's scope as written: [B-012](BUGS.md) is `FIXED` and awaiting verification by someone other than QE.** Lane B will verify it alongside the three and say so, but is **not** rewriting the task — inserting scope into a `READY` task is the product owner's, not a lane's. If that is unwanted, the fourth verification is reported and B-012's status is left alone |
 
