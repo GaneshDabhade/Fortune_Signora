@@ -206,7 +206,7 @@ Why this run does not certify
 | **Module** | `integrations` — `frontend/components/integrations/connect-panel.tsx` |
 | **Current assignee** | **Lane B**, M13's owner |
 | **Severity** | 🟠 — **the product asserts a capability it does not have**, to a customer who is deciding whether to trust it with their CRM |
-| **Status** | `OPEN` |
+| **Status** | **`FIXED`** — Lane B, 2026-08-02. Disconnect is a lifecycle, not a button; all three gaps closed. **`VERIFIED` is QE's** |
 | **Found** | 2026-08-02, by Lane B, in M13's end-to-end module review — **in its own slice** |
 
 **Steps to reproduce.** Open the connect panel for any system. Read the section headed *If you change your mind*:
@@ -226,6 +226,33 @@ Why this run does not certify
 **`SecretUndecryptable` is raised and never caught.** A rotated or wrong key surfaces as an unhandled exception rather than as a connection a customer is told to reconnect.
 
 **The fix, for whoever takes it — which is Lane B.** A `DisconnectSystem` use case transitioning to `DISCONNECTED`, revoking the grant, calling `purge_for`, and an endpoint plus a control behind it. **The copy is not the thing to change**: the promise is the right promise, and the product should keep it.
+
+### Fix — Lane B, 2026-08-02
+
+**The copy was not changed.** The promise was right; the software now keeps it.
+
+| | |
+|---|---|
+| **Verification performed** | The disconnect lifecycle against the conditions that make it matter, not the path where everything works |
+| **Result** | **`PASS`** — 436 tests including the full Security Invariants suite, 76 of them this module's |
+| **Commands executed** | `pytest tests/security_invariants tests/integrations` · `mypy --strict` · `lint-imports` · OpenAPI route check |
+| **Lifecycle** | **Not advanced.** `VERIFIED` is QE's |
+
+**Three rules, each because the obvious implementation gets it wrong.**
+
+**A vendor cannot block a disconnect.** Revocation is attempted, its failure recorded, never propagated. Withdrawing access is what somebody does *in a hurry* — a disconnect that failed because HubSpot was down would hold a security action hostage to the system it protects them from. Tested with a revoker that raises.
+
+**Material is destroyed, not orphaned.** `purge_for` is called unconditionally, so *"Signora can no longer read from this"* is true rather than believed.
+
+**It is idempotent.** A second disconnect is a customer clicking twice; it changes nothing and does not move the first one's record.
+
+**`NoRevoker` reports failure rather than success**, because claiming a revocation that never happened would tell a customer their access was withdrawn at the vendor while the credential is still live there — the more dangerous of the two lies. The response carries `revoked_at_provider` so the screen can say so.
+
+**`SecretUndecryptable` now subclasses `SecretNotFound`**, and resolution raises `CredentialUnreadable`. A rotated key and a purged secret are the same fact above the adapter — *this connection has to be made again* — which is something a customer can act on, unlike a stack trace.
+
+### A lifecycle gap the fix's own tests found
+
+**An abandoned half-finished connection could not be disconnected.** `AUTHORIZING` permitted only `CONNECTED` and `NOT_CONNECTED`, so a customer who closed the tab mid-flow had a row reading *Not finished* that nothing could clear. Found by a parameterised test asserting every state can be left, not by reading the table — **which is the argument for that test existing.**
 
 ---
 

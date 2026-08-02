@@ -34,3 +34,4 @@ p, owner, *, timeline, read
 p, member, *, timeline, read
 p, owner, *, integration, read
 p, member, *, integration, read
+p, owner, *, integration, update

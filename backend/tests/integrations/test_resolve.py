@@ -10,6 +10,7 @@ import pytest
 from modules.integrations.application.ports import SecretNotFound
 from modules.integrations.application.resolve import (
     ConnectionUnusable,
+    CredentialUnreadable,
     ExecutionContext,
     ResolveExecutionContext,
 )
@@ -231,10 +232,15 @@ class TestResolution:
 
     @pytest.mark.asyncio
     async def test_a_purged_secret_surfaces_rather_than_resolving_empty(self) -> None:
-        """A grant row can outlive its material when a vault entry is purged at
-        offboarding. Resolving to nothing would call a vendor unauthenticated."""
+        """A grant row can outlive its material when a purge runs at
+        offboarding. Resolving to nothing would call a vendor unauthenticated.
+
+        **Surfaced as `CredentialUnreadable`, not as the storage failure.** A
+        rotated key and a purged secret are the same fact above the adapter —
+        this connection has to be made again — and a customer can act on that.
+        """
         account = _account()
-        with pytest.raises(SecretNotFound):
+        with pytest.raises(CredentialUnreadable):
             await _resolver(account, _grant(account), secrets_hold=False).execute(
                 WORKSPACE, account.id, at=NOW
             )

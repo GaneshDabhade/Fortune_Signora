@@ -99,5 +99,12 @@ class EncryptedSecretStore:
         )
 
 
-class SecretUndecryptable(Exception):
-    """Material exists and the configured key cannot read it."""
+class SecretUndecryptable(SecretNotFound):
+    """Material exists and the configured key cannot read it.
+
+    **A subclass, so a caller handling *"this credential cannot be used"* handles
+    both without knowing which.** A rotated key and a purged secret are the same
+    fact to everything above the adapter: the connection must be made again.
+    The distinct type survives for the log line, where the difference is the
+    whole diagnosis.
+    """

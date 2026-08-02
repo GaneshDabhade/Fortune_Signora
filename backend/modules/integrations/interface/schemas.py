@@ -12,6 +12,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from modules.integrations.application.disconnect import DisconnectResult
 from modules.integrations.application.queries import ConnectionView, SystemView
 
 
@@ -103,4 +104,30 @@ class SystemResponse(BaseModel):
             working=view.is_working,
             needs_attention=view.needs_attention,
             connections=[ConnectionResponse.from_domain(c) for c in view.connections],
+        )
+
+
+class DisconnectResponse(BaseModel):
+    """What happened when a customer disconnected a system."""
+
+    model_config = ConfigDict(frozen=True)
+
+    state: str = Field(description="Where the connection is now.")
+    revoked_at_provider: bool = Field(
+        description=(
+            "Whether the other system was told. When false, Signora has stopped "
+            "reading and the customer may still want to remove Signora on that "
+            "system's side — which the screen says rather than implying."
+        )
+    )
+    already_disconnected: bool = Field(
+        description="Whether it was already disconnected. Not an error."
+    )
+
+    @classmethod
+    def from_domain(cls, result: DisconnectResult) -> DisconnectResponse:
+        return cls(
+            state=result.account.state.value,
+            revoked_at_provider=result.revoked_at_provider,
+            already_disconnected=result.already_disconnected,
         )

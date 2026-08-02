@@ -8,8 +8,15 @@ from typing import Annotated
 
 from fastapi import Depends
 
+from functools import lru_cache
+
+from modules.integrations.application.disconnect import DisconnectSystem
 from modules.integrations.application.queries import IntegrationQueries
-from modules.integrations.infrastructure.composition import build_integration_queries
+from modules.integrations.infrastructure.composition import (
+    build_disconnect_system,
+    build_integration_queries,
+)
+from modules.integrations.infrastructure.settings import IntegrationSettings
 from signora_platform.api import CurrentWorkspace
 
 
@@ -18,3 +25,17 @@ def integration_queries(context: CurrentWorkspace) -> IntegrationQueries:
 
 
 IntegrationRead = Annotated[IntegrationQueries, Depends(integration_queries)]
+
+
+@lru_cache(maxsize=1)
+def _settings() -> IntegrationSettings:
+    """Constructed once, at the composition root, and injected — never read
+    from the environment inside the module (§6, §20b)."""
+    return IntegrationSettings()
+
+
+def disconnect_system(context: CurrentWorkspace) -> DisconnectSystem:
+    return build_disconnect_system(context.session, _settings())
+
+
+IntegrationDisconnect = Annotated[DisconnectSystem, Depends(disconnect_system)]

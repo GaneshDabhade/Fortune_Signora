@@ -89,8 +89,16 @@ class ConnectionTransitionError(RuntimeError):
 #: rather than by whichever branch happened to be written.
 _ALLOWED: dict[ConnectionState, frozenset[ConnectionState]] = {
     ConnectionState.NOT_CONNECTED: frozenset({ConnectionState.AUTHORIZING}),
+    # `DISCONNECTED` included because a customer who abandoned a half-finished
+    # connection must be able to remove it. Without it the Connection Center
+    # shows a row reading *Not finished* that nothing can clear — found by a
+    # disconnect test rather than by reading this table.
     ConnectionState.AUTHORIZING: frozenset(
-        {ConnectionState.CONNECTED, ConnectionState.NOT_CONNECTED}
+        {
+            ConnectionState.CONNECTED,
+            ConnectionState.NOT_CONNECTED,
+            ConnectionState.DISCONNECTED,
+        }
     ),
     ConnectionState.CONNECTED: frozenset(
         {

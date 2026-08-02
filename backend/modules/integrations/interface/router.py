@@ -6,8 +6,14 @@ from datetime import UTC, datetime
 
 from fastapi import APIRouter
 
-from apps.api.composition.integrations import IntegrationRead
-from modules.integrations.interface.schemas import ConnectionResponse, SystemResponse
+from uuid import UUID
+
+from apps.api.composition.integrations import IntegrationDisconnect, IntegrationRead
+from modules.integrations.interface.schemas import (
+    ConnectionResponse,
+    DisconnectResponse,
+    SystemResponse,
+)
 from signora_platform.api import CurrentWorkspace
 from signora_platform.authorization import Action, Resource
 
@@ -75,3 +81,33 @@ async def list_systems(
     context.authorize(Resource.INTEGRATION, Action.READ)
     systems = await queries.systems(context.workspace_id, at=datetime.now(UTC))
     return [SystemResponse.from_domain(system) for system in systems]
+
+
+@router.post(
+    "/workspaces/{workspace_id}/connections/{connection_id}/disconnect",
+    response_model=DisconnectResponse,
+    summary="Stop using a connected system",
+)
+async def disconnect(
+    connection_id: UUID,
+    context: CurrentWorkspace,
+    disconnector: IntegrationDisconnect,
+) -> DisconnectResponse:
+    """*"Stop reading from this."*
+
+    **Always succeeds locally, even when the other system is unreachable.**
+    Withdrawing access is exactly what somebody does in a hurry, and a
+    disconnect that failed because the vendor was down would hold a security
+    action hostage to the system it protects them from.
+
+    The credential is destroyed rather than forgotten — after this, Signora has
+    nothing left to read with.
+
+    **Idempotent.** Disconnecting something already disconnected is a customer
+    clicking twice, and it changes nothing.
+    """
+    context.authorize(Resource.INTEGRATION, Action.UPDATE)
+    result = await disconnector.execute(
+        context.workspace_id, connection_id, at=datetime.now(UTC)
+    )
+    return DisconnectResponse.from_domain(result)

@@ -9,10 +9,26 @@ from uuid import UUID
 from modules.integrations.application.ports import (
     ConnectedAccountRepository,
     GrantStore,
+    SecretNotFound,
     SecretStore,
 )
 from modules.integrations.domain.connection import ConnectedAccount, ConnectionState
 from modules.integrations.domain.grant import Credential
+
+
+class CredentialUnreadable(Exception):
+    """The credential exists and cannot be read.
+
+    **An operational state, not a crash.** A rotated or wrong encryption key,
+    or material purged while a grant survived, are indistinguishable here and
+    mean the same thing to a customer: this connection has to be made again. A
+    stack trace tells them nothing they can act on; *"reconnect"* tells them
+    everything.
+
+    Distinct from `ConnectionUnusable` because the connection's *state* is
+    fine — it is the material behind it that is not, and reporting it as a
+    revoked or expired connection would be describing the wrong thing.
+    """
 
 
 class ConnectionUnusable(Exception):
@@ -106,13 +122,21 @@ class ResolveExecutionContext:
         # one is refreshed and the other needs the customer back.
         grant.check_usable(at=at)
 
+        try:
+            credential = await self._secrets.resolve(grant.secret_ref)
+        except SecretNotFound as exc:
+            # A grant outliving its material. Reported as unreadable rather
+            # than propagated, so it reaches a customer as *reconnect* instead
+            # of as an unhandled exception in a worker log.
+            raise CredentialUnreadable(str(exc)) from exc
+
         return ExecutionContext(
             workspace_id=workspace_id,
             connected_account_id=connected_account_id,
             integration=account.integration,
             endpoint=account.endpoint,
             scopes=grant.scopes,
-            credential=await self._secrets.resolve(grant.secret_ref),
+            credential=credential,
         )
 
     @staticmethod
