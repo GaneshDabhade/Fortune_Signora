@@ -249,11 +249,10 @@ git log --grep="Slice-Handoff" main~10..main  # what the lanes reported
 ## Stage 6 · Synchronize repository branches
 
 ```bash
-# `integration` is ahead of `main` whenever a lane merged during certification.
-# That is the normal resting state now, and it is not something to correct.
-git merge-base --is-ancestor main integration \
-  && echo "integration is ahead — those commits are the next cycle's input; leave it" \
-  || git checkout integration && git merge --ff-only main
+# `integration` and `main` diverge every cycle by construction: Closeout commits
+# land on `main` and never on `integration`. So `integration` is rebased onto the
+# promoted commit — replaying whatever arrived during certification on top of it.
+git checkout integration && git rebase main
 
 # idle lanes only — a lane mid-slice is left alone
 for lane in <idle-lane-branches>; do
@@ -264,7 +263,7 @@ git branch -v
 git push origin main integration <idle-lane-branches>
 ```
 
-- [ ] **10 · `integration` reconciled** — fast-forwarded to `main` if it lagged; **left alone if it is ahead**, because those commits await their own certification
+- [ ] **10 · `integration` rebased onto `main`** — the commits that arrived during certification are replayed on top of the promoted commit, and they remain the next cycle's input. **This is not optional**: Closeout always puts a commit on `main` that `integration` lacks, so without it the next promotion cannot fast-forward
 - [ ] **Every idle lane** fast-forwarded
 - [ ] **Every lane in active development left untouched** — it rebases at the start of its next slice, and moving it underneath would rewrite work in progress
 - [ ] `git branch -v` verified: every synchronized branch shares the promoted baseline

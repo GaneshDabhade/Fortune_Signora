@@ -867,7 +867,7 @@ Slice-Handoff:
 | 7 | **Refresh roadmap progress** | Against [`IMPLEMENTATION_ROADMAP.md`](IMPLEMENTATION_ROADMAP.md). *Scope* is the product owner's; *progress* is QE's |
 | 8 | **Refresh repository health** | Gate status, open defects by severity, coordination register size, technical debt |
 | 9 | **Publish the release summary** | Features delivered · bugs fixed · ADRs accepted · migrations · architectural changes · metrics · remaining blockers · recommended next work. **A section of `PROJECT_STATUS.md`, not a new document** |
-| 10 | **Synchronize idle branches** | *Lifecycle stage 6.* Fast-forward `integration` and **every idle lane**. **A lane in active development is not touched** — it rebases at the start of its next slice, and moving it underneath would rewrite work in progress |
+| 10 | **Synchronize branches** | *Lifecycle stage 6.* **Rebase `integration` onto `main`, always.** Closeout commits land on `main` and never on `integration`, so **every cycle diverges the two by construction** — leaving `integration` alone means the next promotion cannot fast-forward. Replay whatever arrived during the cycle on top of the promoted commit, then fast-forward **every idle lane**. **A lane in active development is not touched**; it rebases at its next Startup, which its Startup already requires |
 | 11 | **Declare Repository Ready** | *Lifecycle stage 7.* Only once [`REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md) is complete |
 
 > **Every one of these is derived from the promoted repository. Nothing is ever copied from a feature lane's report.** QE's measurements are authoritative precisely because they are taken from the integrated repository after certification, and **a lane has never seen that repository.**
