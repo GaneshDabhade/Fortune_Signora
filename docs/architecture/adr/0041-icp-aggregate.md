@@ -175,6 +175,114 @@ icp_product    icp_id · product_id                      ← the join E needs an
 
 ---
 
+## Amendment — 2026-08-02, after challenging Option E on the same terms
+
+**Option E was challenged the way Option B was. It survives, and two things in the decision above are wrong as written.** Both are corrected here rather than edited into §1, so the reasoning that produced them stays readable.
+
+### The identity test, and what it actually proves
+
+> **"If Products were removed from the repository tomorrow, would an ICP still make sense?"**
+
+**Yes.** *"Mid-market fintech in the US and UK, 100–1000 employees"* is a coherent, complete description of a customer segment — it is what a company puts in a strategy deck, and it needs no product to be understood.
+
+**So Product is a relationship, not part of identity.** Option E is confirmed by the product owner's own test, from evidence rather than intuition.
+
+**But the test also shows §1 justified the `1..n` rule wrongly.** §1 argued that an ICP must name a product because otherwise it is *"companies we like"* — an **identity** argument. The identity test disproves it: the concept stands on its own.
+
+> **The real reason for `≥ 1` is actionability, not identity.** Signora exists to find accounts that will buy **something the customer sells**. An ICP naming no product cannot be acted on by any consumer — discovery cannot prioritise, scoring cannot attribute, analytics cannot answer *"which product converts?"*
+>
+> **That is an invariant about usefulness, and usefulness is a property of a *published* ICP, not of a draft.**
+
+**Correction 1 — the rule binds at publication, not at creation.**
+
+| State | Products |
+|---|---|
+| **Draft** | **May be empty.** A draft is incomplete by definition, and refusing to save one until a product is chosen is friction at exactly the moment of first value |
+| **Published / archived** | **`≥ 1`, always** |
+
+This also retires the argument §2 used against Option C. C's real appeal was *"don't force a product choice up front"* — and this gives that, without giving up the invariant where it matters.
+
+### Correction 2 — identity and version are separate rows
+
+§1 sketched `version` and `supersedes` on the `Icp` itself, carrying the existing `IcpDeclaration` shape forward. **That does not work once an ICP has a stable identity**, and the scenario that breaks it is the product owner's:
+
+> *"If Product A is sunset, should historical opportunities still reference the same ICP?"*
+
+**They must** — a citation from an opportunity, a signal or an analytics row points at *the ICP*, not at version 7 of it. If the versioned row **is** the ICP, every revision mints a new id and every citation ever made becomes unresolvable.
+
+```
+icp           id · workspace_id · state · created_at/by      ← stable. What everything cites
+icp_version   id · icp_id · version · name · criteria ·
+              supersedes · created_at/by                     ← immutable content
+icp_version_product   icp_version_id · product_id            ← versioned with the content
+```
+
+**The product set is content, not identity**, which answers *"should product relationships be versioned?"* — **yes, and the join hangs off the version.** *"We added CPQ to this segment in March"* is a fact about a moment, and it is recoverable.
+
+**`state` is on the identity row and is the one updatable thing** — the same split ADR-0040 draws for notifications, enforced by granting `UPDATE` on that column and no other. **Name is content**, so a rename is a revision: a customer renaming *"EMEA Enterprise"* to *"Europe Enterprise"* made a statement, and the previous one stays citable.
+
+### The rest of the challenge, answered
+
+| Scenario | Answer |
+|---|---|
+| **Can one ICP become the whole market?** | **Yes, and it must stay possible.** Recorded as the named risk in *Consequences*. **Never refused by validation** — refusing a broad ICP is this module judging the world |
+| **Can it reference every product?** | Yes. **Bounded naturally by the catalog**; no arbitrary limit. `MAX_CRITERIA` guards typed text, and products are *selected*, so a typo guard has no job here |
+| **Product removed from the catalog** | **The reference is immutable content and is kept.** The screen resolves it against the current catalog and says one is missing — which is **`keptForCatalog` and `DroppedWithTheirProduct`, already built for [B-005](../../BUGS.md)**. Same rule as *"store the fact, resolve the subject"* (ADR-0040 §2). **A published ICP whose every product is gone is unactionable, and the product says so rather than silently deactivating it** |
+| **Product split** (Revenue Cloud → Pro + Standard) | **No concept needed.** Two catalog additions, one removal, and the customer revises the ICP. The aggregate absorbs it |
+| **Products merged** | Same — a revision |
+| **Product sunset, historical citations** | **Answered by correction 2.** Citations point at identity; content changes underneath them |
+| **Products in different business units** | Structurally possible. **The repository has no business-unit concept**, so it is not ICP's to model. Recorded rather than designed around |
+
+### Lifecycle — what Day One carries, and what the aggregate absorbs later
+
+**Day One:** draft · published · archived · duplicate · version history · customer-authored.
+
+**Absorbed without a structural change**, and each named so nobody builds it early:
+
+| | |
+|---|---|
+| **Deprecated** | Another `state` value |
+| **Merged · split** | Operations producing new ICPs whose first version names its predecessors. **The `supersedes` chain already expresses it** |
+| **Imported · template-based · AI-generated** | **Provenance on a version**, not new lifecycles. AI-authored content additionally needs [ADR-0031](0031-evidence-citation-protocol.md)'s citation discipline before it ships |
+| **Shared · copied across workspaces** | **Needs tenancy work this repository has not done.** A template with no workspace is a different tenancy shape, and it is out of scope rather than deferred |
+
+### Migration reversibility — where it ends, exactly
+
+**Forward is mechanical**: each `ProductIcp` becomes one `Icp` + one `icp_version` + one `icp_version_product`, named from its product. No interpretation, no heuristics.
+
+> **Reverse is exact until the first write in the new shape, and ambiguous immediately after.**
+
+| | |
+|---|---|
+| **Reversible without loss** | Every `Icp` whose current version names **exactly one** product, where **no product is named by two ICPs** |
+| **Ambiguity begins** | The moment a customer creates a **multi-product ICP** (which `ProductIcp` cannot hold) or a **second ICP for one product** (which `IcpDeclaration.__post_init__` refuses). **Neither is representable in the old model, so a reverse migration would have to discard or merge — and both are lossy** |
+
+**The practical rule QE needs:** **the migration is reversible until the first customer uses the capability it enables.** A rollback plan measured in hours is real; one measured in days is not. **Stated before implementation rather than discovered during it.**
+
+### The downstream map — simplify · complicate · neutral
+
+**One verdict per module, so accidental coupling is visible before it is built.** Read against Option B, since that is the alternative.
+
+| Module | Verdict | Why |
+|---|---|---|
+| **Target Accounts** | **Neutral** | A named list of companies. Eventually cites an ICP id; identity is what it needs, and both options give it |
+| **Provider Platform** | **Neutral** | **The largest future consumer** — discovery cites one ICP id. [ADR-0036](0036-target-account-contract.md)'s four ownership boundaries are untouched |
+| **Provider Normalization** | **Neutral** | Never sees an ICP |
+| **Knowledge Graph** | **Neutral** | Matching needs an anticorruption layer between the customer's words and canonical values — **[C-002](../../LANE_COORDINATION.md), open.** Neither option pre-solves it |
+| **Observation · Business Event Engine** | **Neutral** | Upstream of any ICP use |
+| **Signal Engine** | **Simplifies** | Per-segment relevance — *"funding rounds matter for enterprise, hiring for mid-market"* — is **one profile per segment**. Under B it is one per segment **per product**, and the three copies of a bundled segment need three |
+| **Buying Score** | **Simplifies** | A scoring model per segment, never per segment-and-product |
+| **Opportunity Engine** | **Neutral** | Records human commitment; cites identity if anything |
+| **Timeline** | **Neutral** | Projects events; an ICP change would be one more rule |
+| **Notifications** | **Simplifies** | *"Your EMEA segment matched nothing in 30 days"* fires **once**. Under B, three times for one segment — and [ADR-0040](0040-notifications.md) forbids semantic deduplication, so nothing would collapse them |
+| **AI prompts / Recommendations** | **Simplifies materially** | An ICP becomes prompt context. **A three-product segment is one coherent paragraph; three near-identical ICPs are three, and a model cannot tell they are one segment.** Under B the prompt either repeats itself or the assembler has to *infer* that three ICPs are the same — inference the platform already knows deterministically, which §10 of `CLAUDE.md` forbids |
+| **Analytics / effectiveness** | **Simplifies materially** | *"Which segment converts?"* is per-ICP under both. *"Which product converts?"* is **one join under E**, and under B is only answerable by grouping ICPs that happen to look alike — a heuristic over customer text |
+| **Billing / entitlements** | **Simplifies** | *"How many ICPs?"* as a limit is fair under E. **Under B a bundled customer burns three for one segment** — charging for a modelling artefact |
+| **Feature flags** | **Neutral** | No relationship |
+| **Revenue Intelligence Platform** | **Neutral, with one caution** | It composes; it must **read** ICPs through a port and never derive effectiveness inside Commercial Profile. **The boundary test enforces the second half** |
+
+**Nothing is complicated by E.** Five simplify, ten are neutral, and the three marked *materially* are the ones where B would have forced a heuristic — and **a heuristic over customer-typed text is the shape of every duplicated-truth defect this repository has fixed.**
+
 ## Alternatives considered
 
 | | | |

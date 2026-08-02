@@ -141,6 +141,7 @@
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
 | [C-001](#c-001--the-target-account-contract) | The target-account contract — this module's first edge | Lane B | **Lane A** | `ANSWERED` → **[ADR-0036](architecture/adr/0036-target-account-contract.md)** | **Nothing. Slice 5 may begin.** `CLOSED` when both lanes have built it |
+| [C-304](#c-304--a-standing-review-question-that-has-already-paid-for-itself) | A standing review question that has already paid for itself | Lane B | **Product owner** | `OPEN` | **Nothing.** A one-line addition to the review practice, wherever it belongs |
 | [C-303](#c-303--an-icp-is-not-an-addressable-thing-and-every-verb-the-brief-asks-for-needs-one) | An ICP is not an addressable thing, and every verb the brief asks for needs one | Lane B | **Product owner** | `ANSWERED` — ICP stays in Commercial Profile (2026-08-02). **The aggregate is [ADR-0041](architecture/adr/0041-icp-aggregate.md), proposed** | **Implementation, on ADR-0041's ratification** |
 | [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) | A notification is per-person, and workspace RLS is not enough | Lane B | **Product owner** (tenancy 🔴) | `OPEN` | **M14a N-01's migration.** The pattern exists; the ruling does not |
 | [C-301](#c-301--nothing-asserts-what-the-deployed-worker-consumes) | Nothing asserts what the deployed worker consumes | Lane B | **QE** | `OPEN` | **Nothing today.** Every future consumer can ship [B-301](BUGS.md) again |
@@ -3083,4 +3084,84 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 **One requirement is challenged rather than designed:** **`default` may have no job in a multi-ICP world.** If Signora acts on every `active` ICP, *"which is default"* never needs answering and the field is a leftover from the model being replaced. **Not implemented in Day One unless a customer question is named that `active` cannot answer** — ADR-0041 §3.
 
 **This item is `ANSWERED`. Implementation begins on ADR-0041's ratification**, which is the one thing outstanding.
+
+
+### 7 · The ICP customer experience, designed before any code
+
+**Designed for fifty, so one does not need redesigning into fifty.** [ADR-0041](architecture/adr/0041-icp-aggregate.md) holds the architecture; this holds what a customer does. Neither encodes an assumption the ADR has not settled.
+
+#### The screen that does not exist today
+
+**There is no ICP list.** Today an ICP is reachable only through a per-product editor inside *Settings → Products*, so *"show me everything we've said about who buys from us"* has no page. **That page is slice 1**, and it is the whole reason this feels like a capability rather than a form.
+
+| State | What the customer sees |
+|---|---|
+| **None yet** | *"You haven't described who buys from you yet."* One action. **Not an apology for empty data** — a statement about what to do next |
+| **One** | The list still, never a special case. **A one-item list that becomes a different screen at two items is a redesign the customer performs on our behalf** |
+| **Fifty** | Search, filter by product and state, sort by name or last change. **Cursor-paginated — no `COUNT`, no offset** |
+| **Loading · failing** | The foundation's states, unmodified (§20c) |
+
+#### The journeys, in the customer's words
+
+| | Question | Behaviour |
+|---|---|---|
+| **JI1** | *"Who do we sell to?"* | The list. Product chips, state, when it last changed |
+| **JI2** | *"We sell this to two very different kinds of company."* | A second ICP for the same product — **the sentence today's model refuses** |
+| **JI3** | *"Start from EMEA and change the country."* | **Duplicate.** How a real second ICP actually gets written, and it opens as a **draft** |
+| **JI4** | *"We don't sell into that market any more."* | **Archive, never delete.** Everything Signora found under it was found *because of* it; deleting the reason leaves the evidence unexplainable |
+| **JI5** | *"Bring it back."* | Restore. Archiving is reversible or it is deletion with a nicer word |
+| **JI6** | *"What changed, and who?"* | Version history — **already true today** and inherited unchanged |
+| **JI7** | *"Is this too broad?"* | **Deliberately unanswered.** It needs matching, matching needs [C-002](#c-002--customer-language-has-no-anticorruption-layer), and answering it before then would be the product asserting what it cannot compute — the Connection Center's `connectable: false` rule |
+
+#### Decisions the design takes now, so slices do not re-take them
+
+**Editing is an editor, not a wizard.** A wizard suits a thing done once; an ICP is revisited. **Duplicate-then-edit is the shape of the second one**, which is why JI3 exists rather than a template gallery.
+
+**A draft is where an ICP is incomplete** — and it is what lets [ADR-0041](architecture/adr/0041-icp-aggregate.md)'s `≥1 product` rule bind at publication instead of blocking the first keystroke.
+
+**Save behaviour changes, and the reason is recorded.** The current editor saves every change immediately, correctly, because the whole workspace declaration is one version. **Under a per-ICP aggregate a draft has an obvious boundary**, so editing a draft is buffered and publishing is the commit — while **editing a published ICP still writes a version per change**, because that is a statement already made.
+
+**Bulk operations are archive and restore only.** No bulk delete: a destructive action across an unseen selection is the one place a confirmation genuinely cannot inform.
+
+**Compare is deferred, and named.** *"How do these two differ?"* is real, and it is a reading of two versions rather than a new concept. It waits until customers have enough ICPs to need it.
+
+**AI assistance is a source, never a state** — an ICP drafted by a model is an ordinary draft with provenance, and it never publishes itself.
+
+**Accessibility, per §20c:** the list is a list; every row action is reachable and labelled **per ICP** — *"Archive Mid-market Fintech"*, not *"Archive"* — because fifty identical labels are unusable to a screen reader. Nothing depends on hover. Design tokens only.
+
+#### QE impact — stated before implementation
+
+| | |
+|---|---|
+| **New APIs** | An ICP collection, per-ICP resources, publish/archive/restore. **`GET`/`PUT /workspaces/{id}/icp` keeps working** |
+| **Migration** | **The module's first move of customer data.** Reversibility ends at the first multi-product ICP or second ICP for one product — [ADR-0041](architecture/adr/0041-icp-aggregate.md), *Migration reversibility* |
+| **Regression** | `test_api_icp.py` (19) · `test_icp.py` (32) · `icp.test.tsx` (18) · `your-business.test.tsx` · `test_boundary.py` · `tenancy_policy.py` |
+| **E2E** | Create → publish → duplicate → archive → restore, and *"two ICPs for one product"* |
+| **Seed data** | Through the declaration path. **Never inserted rows** |
+| **Visual regression** | Three new states — empty, one, many |
+| **Performance** | The module's first list that can be long. Cursor pagination, no `COUNT` |
+| **Demo** | *"We sell Revenue Cloud to two different kinds of company, and Signora knows which is which."* |
+
+
+---
+
+## C-304 · A standing review question that has already paid for itself
+
+| | |
+|---|---|
+| **Decision required** | Where a repository-wide review question belongs, and whether it is adopted |
+| **Participating modules** | none — review practice |
+| **Current assignee(s)** | **Product owner** — `CLAUDE.md` is theirs, and a review practice is governance |
+| **Blocking** | **Nothing** |
+| **Raised** | 2026-08-02, by Lane B, at the product owner's suggestion after it caught a real error |
+
+**The question, ready to adopt:**
+
+> **When rejecting a design option, ask whether the stated reason rejects the entire option or only one characteristic of it.**
+
+**It has already paid for itself once, in the cycle that produced it.** [C-303](#c-303--an-icp-is-not-an-addressable-thing-and-every-verb-the-brief-asks-for-needs-one) §3 rejected an option described as *"product is one criterion among many (**0..n**)"* because *"an ICP naming no product is 'companies we like'"*. **That reason rejects the `0` and says nothing about the `n`** — and the conflation carried a recommendation for six hours that would have forced every customer with a bundled offering to maintain three copies of one description ([ADR-0041](architecture/adr/0041-icp-aggregate.md) §2).
+
+**Why it is worth a rule rather than a habit.** The failure is invisible from inside: the reasoning is *locally valid* at every step, and the rejected option is never revisited because it has been dealt with. **Nothing in a review naturally re-opens a closed option** — which is why it took an explicit instruction to argue against a recorded recommendation to find it.
+
+**Lane B has not added it to `CLAUDE.md`.** Governance is the product owner's, and §20e is explicit that a repository-wide rule belongs there rather than in the document that happened to prompt it. **This is the same shape as [C-017](#c-017--the-onboarding-honesty-principle-has-no-permanent-home)** — ratifiable text, awaiting placement.
 
