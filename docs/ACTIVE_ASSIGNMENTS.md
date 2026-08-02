@@ -64,15 +64,13 @@
 
 ---
 
-## Current — as of 2026-08-02, `3451f8b`
+## Current — as of 2026-08-02, `bd57c7c`
 
 | Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Started |
 |---|---|---|---|---|---|---|---|---|
-| **Lane A** | **TASK-002 · TASK-004 · `provider_platform`** | `lane-a-product-surface` | Product Surface · Provider Platform | PS-01 · PS-02 · PS-03 · PS-04 · PP-01 · PP-02 · PP-04 · PP-05 · PP-06 | `IN VALIDATION` | — | **The largest unreleased batch, and ready longest.** Rebase onto the promoted `3ef367d` and push; QE pins on arrival | 2026-08-02 |
-| **Lane B** | **M7 — Timeline** *(implementation initiative, feature lead)* | `lane-b-commercial-profile` | `timeline` | S01–S04a | `IN VALIDATION` | — | **[B-023](BUGS.md) fixed and pushed — re-validation ready.** All four gates green: `tsc` clean, 488 frontend, build, eslint. The four slices are one candidate again | 2026-08-02 |
-| **Lane B** | **M13 — Integrations** *(implementation initiative)* | `lane-b-commercial-profile` | `integrations` | S01–S09 | `IN VALIDATION` | — | **Complete and paused, ownership retained.** S09 closes [B-024](BUGS.md): 2518 backend, coverage **95.69%**, the four named files at 100%, and **three real defects** came out from under them. Design doc written — [41-integrations.md](architecture/41-integrations.md). **What remains is a HubSpot developer application, not product work** | 2026-08-02 |
-| **Lane B** | **M14a — Notifications** *(implementation initiative)* | `lane-b-commercial-profile` | *(to be determined — see below)* | domain discovery | `ACTIVE` | — | **Assigned by the product owner, 2026-08-02.** Discovery before code, as with M7 and M13: whether Notifications is a bounded context, a platform capability or part of another module is **the first question**, not an assumption. No `modules/notifications/` exists and none will be created before that is answered | 2026-08-02 |
-| **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | **Cycle 15 promoted (`3ef367d`). 15 of 15 certified.** Watching coverage — four consecutive declines, 0.16 above the floor | 2026-08-01 |
+| **Lane A** | **TASK-002 · TASK-004 · `provider_platform` · Connection Experience** | `lane-a-product-surface` | Product Surface · Provider Platform | PS-01…PS-08 · PP-01…PP-06 · CX-01…CX-02 | `IN VALIDATION` | — | **32 commits, 15 slices, never validated — the next Release Candidate.** QE pins immediately | 2026-08-02 |
+| **Lane B** | **M13 — Integrations** *(feature lead)* · **M14a discovery** | `lane-b-commercial-profile` | `integrations` · `timeline` | S01–S09 **promoted** | `ACTIVE` | — | **[B-024](BUGS.md) resolved — coverage 95.69%, the 4-cycle block is broken.** Now scoping M14a. **M13 itself still waits on [C-025](LANE_COORDINATION.md)** | 2026-08-02 |
+| **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | **Cycle 19 promoted (`bd57c7c`). 16 of 19 candidates certified.** Pinning Lane A's batch next | 2026-08-01 |
 
 **Which lanes are available is the `Status` column above, and is not restated here** — a sentence beside a table is a second copy of one fact, and it drifted within an hour of being written (§2). **Unclaimed capacity:** lanes C, D and E ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).
 
@@ -98,6 +96,7 @@
 
 | Lane | Assignment | Promoted | Commit |
 |---|---|---|---|
+| B | **M13-S09** — the credential store gets tested, and three real defects fall out | 2026-08-02 | `bd57c7c` |
 | B | **M13-S02** — the connections a customer can see, including the broken ones | 2026-08-02 | `3ef367d` |
 | B | **M13-S01** — a customer's connection to their own systems | 2026-08-02 | `e08c7cb` |
 | B | **M7 Timeline S01–S04a** — a seller can see what has happened to an account | 2026-08-02 | `048aeed` · `96bb5c0` · `7cb7fed` · `056a53a` |
