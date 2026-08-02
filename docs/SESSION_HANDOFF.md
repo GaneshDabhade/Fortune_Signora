@@ -5,7 +5,7 @@
 > **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
 >
 > **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
-> **As of:** 2026-08-02 · **`main` at `2262bb5`** · ✅ **CERTIFIED, and commit-bound**
+> **As of:** 2026-08-02 · **`main` at `1e269f5`** · ✅ **CERTIFIED, and commit-bound**
 >
 > Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
@@ -18,12 +18,13 @@
 | **Last completed** | **M12.5 Commercial Profile** — all five slices promoted 2026-08-02. *A customer declares what they sell, who buys it, who agrees, what they are pushing, and which companies they are going after.* **The pipeline finally has an input** |
 | **Also shipped** | **M12.4 research on demand**, verified against a real model |
 | **Inserted, and open** | **M9.5 Evidence Citation Protocol** (ADR-0031). Steps A–D landed; **Step F is incomplete** |
-| **Current** | **M12.3 evidence and actions** (D20 remains) · **M7 Timeline — four slices promoted, mount point open** ([C-024](LANE_COORDINATION.md)) |
-| **Head at handoff** | **`2262bb5`** — **the certified commit itself.** Promotion is by SHA, never by branch (`CLAUDE.md` §20e) |
-| **Latest certification** | ✅ [`2262bb566b84`](../certification/reports/2262bb566b84.md) — **CERTIFIED 2026-08-02**, bound to commit `2262bb5`, migration head `0030`, protocol v2. **Certified commit == promoted commit**, checked by `make certified` |
+| **Current** | **M12.3 evidence and actions** (D20 remains) · **M7 Timeline — backend proven live this cycle, mount point still open** ([C-024](LANE_COORDINATION.md)) |
+| **⚠️ Both lanes are in discovery** | **Neither can produce code.** Five separate rulings are outstanding, all the product owner's. Cycle 23 promoted eight documentation commits and one governance fix — **no customer-visible change.** [PROJECT_STATUS.md §1c](../PROJECT_STATUS.md) has the list and the single action each needs |
+| **Head at handoff** | **`1e269f5`** — **the certified commit itself.** Promotion is by SHA, never by branch (`CLAUDE.md` §20e) |
+| **Latest certification** | ✅ [`1e269f5c8499`](../certification/reports/1e269f5c8499.md) — **CERTIFIED 2026-08-02**, bound to commit `1e269f5`, migration head `0030`, protocol v2. **Certified commit == promoted commit**, checked by `make certified` |
 | **Phase** | **Product implementation.** Ten pipeline stages built and frozen behind them; the surface is being exposed |
-| **Overall completion** | **~66%** by engineering effort — see [PROJECT_STATUS.md](../PROJECT_STATUS.md) |
-| **Branch** | `main` at the certified commit `2262bb5`. **Before starting a slice, compare `integration` against the certified SHA** — differ means a cycle is available and its input is exactly the commits between them; identical means nothing is awaiting certification. There is never any ambiguity about it |
+| **Overall completion** | **~81%** by engineering effort — see [PROJECT_STATUS.md](../PROJECT_STATUS.md), which is authoritative |
+| **Branch** | `main` at the certified commit `1e269f5`. **Before starting a slice, compare `integration` against the certified SHA** — differ means a cycle is available and its input is exactly the commits between them; identical means nothing is awaiting certification. There is never any ambiguity about it |
 
 **🔴 Read this before anything else:** **`reasoning@1` has no released model.** M9.5 moved the rendering protocol to v2, which withdrew every protocol-1 release by derivation. `explanation_narration@1`, `research_planning@2` and `research_synthesis@2` re-earned theirs; `reasoning@1` did not — `granite3.3:2b` refuses under protocol 2 and `llama3.1:8b` is UNMEASURABLE on this hardware. **The Decision Package stage would refuse in production.** Do not tune the prompt, the delimiter, the schema or the timeout to make it pass.
 
@@ -33,7 +34,7 @@
 
 **🟢 Sign-in works now, and did not before.** Better Auth's tables had never been created by anything in the repository, and the `after` hook broke every completed auth request — two defects each hiding the other, invisible because no authentication request had ever finished. Run **`cd frontend && npm run auth:migrate`** once on any clone, then register at `/sign-up`; the verification link is written to the dev server's stdout. **A third defect sat behind those two**: Better Auth's default id is a nanoid and the Python verifier requires a UUID, so every API call from a real signed-in user would have 401'd. Fixed with Better Auth's own `generateId` hook — the *function* form, because `'uuid'` resolves to a column default that inserts null on tables created before it. See [ADR-0033](architecture/adr/0033-authentication-methods.md) and `docs/RUNNING.md`.
 
-**Recent commits:** `e5a266d` **35 commits — Lane A's product surface and provider platform batch** · `b9278c6` closeout `bd57c7c` · `bd57c7c` **M13-S09 — the credential store gets tested** · `3ef367d` M13-S02 the connections a customer can see · `e08c7cb` **M13-S01 — a customer's connection to their own systems** · `056a53a` **M7-S04a — the history a seller can read** · `c3435a0` ADR-0039 accepted as direction · `1bbee30` **certification binds to a commit** · `3f4e988` **M12.5 — the pipeline finally has an input**
+**Recent commits:** `1e269f5` **[B-100](BUGS.md) — a rebase moved the board back seven cycles, and no gate could see it** · `cb5cd33` Lane A's Team Management discovery (documentation only) · `4ebe68c` closeout `2262bb5` · `2262bb5` **[B-301](BUGS.md) — Timeline consumes what it projects** · `e5a266d` **35 commits — Lane A's product surface and provider platform batch** · `b9278c6` closeout `bd57c7c` · `bd57c7c` **M13-S09 — the credential store gets tested** · `3ef367d` M13-S02 the connections a customer can see · `e08c7cb` **M13-S01 — a customer's connection to their own systems** · `056a53a` **M7-S04a — the history a seller can read** · `c3435a0` ADR-0039 accepted as direction · `1bbee30` **certification binds to a commit** · `3f4e988` **M12.5 — the pipeline finally has an input**
 
 **Where everything now lives.** Five registers, one responsibility each, and a session should read all five before its first slice: [BACKLOG.md](BACKLOG.md) *what is available to claim* · [BUGS.md](BUGS.md) *what is wrong* · [LANE_COORDINATION.md](LANE_COORDINATION.md) *what one lane needs from another* · [ACTIVE_ASSIGNMENTS.md](ACTIVE_ASSIGNMENTS.md) *who is doing what* · [RUNNING.md](RUNNING.md) *which ports and database are yours*. The rules governing all of them are `CLAUDE.md` §20e; how QE operates them is [QUALITY_ENGINEERING.md](QUALITY_ENGINEERING.md), and the cycle itself is [REPOSITORY_RELEASE_CHECKLIST.md](REPOSITORY_RELEASE_CHECKLIST.md).
 
