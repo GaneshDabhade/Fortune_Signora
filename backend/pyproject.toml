@@ -22,6 +22,11 @@ dependencies = [
     "opentelemetry-instrumentation-fastapi>=0.50b0",
     "opentelemetry-instrumentation-sqlalchemy>=0.50b0",
     "sentry-sdk>=2.19",
+    # Runtime, not test tooling: apps/worker/main.py and apps/worker/subscriptions.py
+    # import it at module scope, as does every AI Platform adapter. It was filed under
+    # `dev` and the production image installs `--no-dev`, so the worker and relay
+    # crash-looped (B-013).
+    "httpx>=0.27",
 ]
 
 [dependency-groups]
@@ -32,7 +37,6 @@ dev = [
     "pytest-asyncio>=0.24",
     "pytest-mock>=3.14",
     "pytest-cov>=6.0",
-    "httpx>=0.27",
     "pre-commit>=4.0",
     "import-linter>=2.1",
     "asyncpg-stubs>=0.30",

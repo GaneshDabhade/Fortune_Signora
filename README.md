@@ -15,8 +15,11 @@ A modular monolith: Python 3.13 · FastAPI · PostgreSQL 17 · SQLAlchemy 2.x as
 | 1 | **[`CLAUDE.md`](CLAUDE.md)** | The engineering constitution. **Binding, not advisory.** Read §20e before touching anything if you are working in a lane |
 | 2 | **[`docs/architecture/21-intelligence-pipeline.md`](docs/architecture/21-intelligence-pipeline.md)** | How a fact travels from raw payload to conclusion, and what each stage may *not* do |
 | 3 | **[`PROJECT_STATUS.md`](PROJECT_STATUS.md)** | Where the project actually is, and **what is currently broken** |
-| — | [`docs/BUGS.md`](docs/BUGS.md) | Open defects, with an owner each. QE opens; the owning lane fixes |
-| 4 | Your module's design doc | `docs/architecture/22`–`29`, or the manifest in [`04-modules.md`](docs/architecture/04-modules.md) |
+| — | [`docs/BUGS.md`](docs/BUGS.md) | Open defects, each against a module. **Any lane opens; the module's current assignee fixes; QE verifies.** Read it before every slice |
+| — | [`docs/LANE_COORDINATION.md`](docs/LANE_COORDINATION.md) | **What one lane needs from another**, and what is waiting on a decision. Read it before every slice — this is where an assumption gets caught before it becomes architecture |
+| — | [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) | **The execution board** — who is doing what right now, on which module, at which slice, blocked by what, and what happens next |
+| — | [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md) | **QE only.** The seven-stage repository cycle — validate · certify · integrate · promote · close out · synchronize · declare — with every command and tick-box |
+| 4 | **Your assigned module's design doc** | `docs/architecture/22`–`29`, or the manifest in [`04-modules.md`](docs/architecture/04-modules.md). **Under rotating assignment this is your only inherited context** |
 
 **Then**: [`docs/RUNNING.md`](docs/RUNNING.md) to run it.
 
@@ -47,45 +50,57 @@ docs/architecture/adr/        36 decisions. Never edited; a reversal is a new AD
 
 ## Module registry
 
-**The control tower for parallel development.** One row per module, edited only by the lane that owns it.
+**What exists, and what state it is in.** Modules are **permanent architectural boundaries**; this table describes them and nothing about who is working on them.
 
-| Module | Lane | Status | Frozen |
+> **Who is assigned to what is in [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md)** — the single authoritative record of execution state, written by QE after every promotion. It is deliberately **not** repeated here: a lane assignment changes weekly and a module does not, and two tables stating one fact eventually disagree.
+
+| Module | Status | Frozen | Design doc |
 |---|---|---|---|
-| `workspace_tenancy` | A | ✅ Built | — |
-| `commercial_profile` | **B** | 🔵 Slice 1 of 5 | — |
-| `provider_platform` · `provider_normalization` | A | ✅ Built | — |
-| `knowledge_graph` · `observation_engine` | A | ✅ Built | — |
-| `business_event_engine` · `signal_engine` · `buying_score_engine` | A | ✅ Built | — |
-| `opportunity_engine` | A | ✅ Built | — |
-| `ai_platform` | A | ✅ Built | 🔒 since M10 |
-| `ai_reasoning_engine` | A | 🔴 **`reasoning@1` unreleased** — would refuse at runtime | — |
-| `ai_research_engine` | A | ✅ Built · no HTTP entry point yet | — |
-| `signora_platform` | Integrator | ✅ Built | 🔒 §20a |
-| Frontend foundation | Integrator | ✅ Built | 🔒 §20c |
-| Test suites · Playground · reviews · [`BUGS.md`](docs/BUGS.md) | **QE** | ✅ Built | — |
-| Recommendation Engine · Timeline · Revenue Intelligence Platform | — | ⏳ Not started | — |
+| `workspace_tenancy` | ✅ Built | — | [`04-modules.md`](docs/architecture/04-modules.md) |
+| `commercial_profile` | 🔵 Slice 1 of 5 | — | [ADR-0035](docs/architecture/adr/0035-commercial-profile.md) |
+| `provider_platform` · `provider_normalization` | ✅ Built | — | [`20`](docs/architecture/20-provider-simulation.md) · [`34`](docs/architecture/34-knowledge-contract.md) |
+| `knowledge_graph` · `observation_engine` | ✅ Built | — | [`22`](docs/architecture/22-knowledge-graph.md) · [`23`](docs/architecture/23-observation-engine.md) |
+| `business_event_engine` · `signal_engine` · `buying_score_engine` | ✅ Built | — | [`24`](docs/architecture/24-business-event-engine.md) · [`25`](docs/architecture/25-signal-engine.md) · [`26`](docs/architecture/26-buying-score-engine.md) |
+| `opportunity_engine` | ✅ Built | — | [`27`](docs/architecture/27-opportunity-engine.md) |
+| `ai_platform` | ✅ Built | 🔒 since M10 | [`28`](docs/architecture/28-ai-platform.md) |
+| `ai_reasoning_engine` | 🔴 **`reasoning@1` unreleased** — would refuse at runtime | — | [`29`](docs/architecture/29-ai-reasoning-engine.md) |
+| `ai_research_engine` | ✅ Built · no HTTP entry point yet | — | [`33`](docs/architecture/33-ai-research-engine-scope.md) |
+| The product surface — pipeline `interface/` layers, `frontend/app/(app)/` | 🔵 In progress | — | [`37`](docs/architecture/37-product-surface.md) · [`38`](docs/architecture/38-product-design-principles.md) |
+| `signora_platform` | ✅ Built | 🔒 §20a | **Not assignable** — [C-010](docs/LANE_COORDINATION.md) |
+| Frontend foundation | ✅ Built | 🔒 §20c | **Not assignable** — [C-010](docs/LANE_COORDINATION.md) |
+| Test suites · Playground · reviews · integration · promotion | ✅ Built | — | [`QUALITY_ENGINEERING.md`](docs/QUALITY_ENGINEERING.md) — **QE, permanently** |
+| Recommendation Engine · Timeline · Revenue Intelligence Platform | ⏳ Not started | — | — |
+
+**The design doc column is load-bearing.** Under rotating assignment it is the next lane's only inherited context, and a slice is not complete until it is true (`CLAUDE.md` §12).
 
 **Unowned capabilities**, recorded so they stop disappearing: attribute resolution projection *(Knowledge Graph, needs a slice)* · company discovery *(future context — trigger: a provider adapter with company search)* · deprioritization intelligence *(owner exists, no milestone)* · the RevOps surface *(RIP owns it, no journey defined)* · data export and account deletion *(no owner)*.
 
 ## Parallel development
 
-Three lanes, governed by **[`CLAUDE.md` §20e](CLAUDE.md)** — read it before starting a lane.
+Governed by **[`CLAUDE.md` §20e](CLAUDE.md)** — read it before starting a lane.
 
-| Lane | Branch | Owns |
+**A lane is a temporary execution resource, not an owner.** It is assigned one slice inside one module at a time, and the assignment rotates while the architecture does not. **Current assignments: [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md).** Branch names are historical and do not imply a permanent module ([C-009](docs/LANE_COORDINATION.md)).
+
+| Lane | Branch | Builds features? |
 |---|---|---|
-| **A — Product Surface** | `lane-a-product-surface` | The pipeline's interface layers, the attention list, the account brief |
-| **B — Commercial Profile** | `lane-b-commercial-profile` | `modules/commercial_profile/**`, `/settings/products` |
-| **QE — Quality Engineering** | `lane-qe` | Tests, Playground validation, product reviews, [`docs/BUGS.md`](docs/BUGS.md). **Builds no features** |
+| **Lane A** | `lane-a-product-surface` | Yes — one assigned slice at a time |
+| **Lane B** | `lane-b-commercial-profile` | Yes — one assigned slice at a time |
+| **QE — Quality Engineering & Integration** | `lane-qe`, `integration`, `main` | **No.** Validation · certification · integration · promotion, and the repository-state records |
 
 ```
-lane-a ─┐
-lane-b ─┼─▶ integration ─▶ QE validates ─▶ main ─▶ certify ─▶ release
-lane-qe ┘
+Feature Lane ─▶ integration ─▶ QE validation ─▶ QE certification ─▶ QE promotion ─▶ main
+                               └──────── QE is the only lane that does these ────────┘
 ```
 
-**The rules in one paragraph.** One session per lane, one lane per module. A lane branch is permanent by name and carries **one slice at a time** — two days maximum, then rebase and **fast-forward into `integration`**. Every slice declares its **Change Budget** (🟢 your module · 🟠 announce it · 🔴 product owner + ADR · ⚫ never). **Shared documents have one owner** — a lane does not edit `PROJECT_STATUS.md`, `SESSION_HANDOFF.md`, `RUNNING.md`, the roadmaps, or `38`/`39`; it reports findings in its commit message and its module doc. **QE reports bugs; feature lanes fix them; QE verifies.** **Touching a file outside your budget is a finding to raise, not a change to make.**
+**Feature lanes build. QE validates, certifies, integrates and promotes.** No feature lane pushes to `main`; no feature lane bypasses QE. QE builds no customer feature, which is what qualifies it to hold the merge — and **promotion is deterministic: if certification passes, it happens.**
 
-**Each lane needs its own database and ports.** See [`docs/RUNNING.md`](docs/RUNNING.md#running-a-lane).
+**The workflow is defined in exactly one place: [`CLAUDE.md` §20e](CLAUDE.md).** Startup, slice, completion; who owns each stage; which gates run when; the **Slice Handoff** every lane writes so QE can publish an accurate project status. Nothing here restates it, deliberately: a workflow described in two places is a workflow that will disagree with itself.
+
+**The startup sequence is mandatory and every lane runs it every session:** sync with `integration` · read [`BUGS.md`](docs/BUGS.md) and take the rows assigned to you · read [`LANE_COORDINATION.md`](docs/LANE_COORDINATION.md) · use only the environment [`RUNNING.md`](docs/RUNNING.md#running-a-lane) assigns you · confirm your assignment, its boundaries and its dependencies · `git log integration..HEAD`. **Then** write code.
+
+**Each lane's ports, database and Redis index are allocated by the permanent convention in [`docs/RUNNING.md` § Running a lane](docs/RUNNING.md#running-a-lane).** No lane invents ports; no lane shares a database; **3000/8000 belong to human review on `main`.**
+
+**How QE does its half** — the validation pass, the review method, the isolation audit — is [`docs/QUALITY_ENGINEERING.md`](docs/QUALITY_ENGINEERING.md).
 
 ## How we work
 
@@ -93,7 +108,7 @@ lane-qe ┘
 
 **No change ships without tests.** Domain logic is unit-tested against fakes; integration tests use a real database and the least-privileged role. Failure paths are not optional. **Run only the impacted suites during a slice**; repository-wide gates are milestone gates.
 
-**Every guarantee is enforced, not documented.** 327 Security Invariants · 31 import-linter contracts · `mypy --strict` · a design-token test · a no-mock-data test · a vocabulary test. *A guard that cannot fail is documentation pretending to be code.*
+**Every guarantee is enforced, not documented.** 328 Security Invariants · 31 import-linter contracts · `mypy --strict` · a design-token test · a no-mock-data test · a vocabulary test. *A guard that cannot fail is documentation pretending to be code.*
 
 **All verification is local** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). **A `git push` stores the repository and triggers nothing.** Do not create CI/CD.
 

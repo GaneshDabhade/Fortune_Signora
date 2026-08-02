@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: smoke smoke-keep dr up down test certify demo demo-seed demo-users demo-narrate eval eval-reasoning eval-research
+.PHONY: smoke smoke-keep dr up down test certify doc-drift state-check demo demo-seed demo-users demo-narrate eval eval-reasoning eval-research
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
 # The executable bit is filesystem state, not repository state, and it does
@@ -77,7 +77,7 @@ demo:
 	@$(MAKE) demo-users
 	@$(MAKE) demo-seed
 	@echo ""
-	@echo "  backend   cd backend && uv run uvicorn apps.api.main:app --reload --port 8000"
+	@echo "  backend   cd backend && uv run uvicorn apps.api.main:create_app --factory --reload --port 8000"
 	@echo "  frontend  cd frontend && npm run dev"
 	@echo "  then      http://localhost:3000 — sign in as dana.reyes@northwind.example"
 	@echo "  password  see docs/RUNNING.md"
@@ -102,6 +102,28 @@ demo-users:
 ## configured model this refuses, exactly as production would.
 demo-narrate:
 	@cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.playground.narrate
+
+## Advisory: did a slice change production code without updating its module's
+## documentation? (CLAUDE.md §12)
+##
+## Deliberately advisory — it exits 0 unless given --strict. It sees whether a
+## file changed, never whether what it says is true, and a check that claimed
+## otherwise would be worse than none: a passing run would be read as "the docs
+## are fine". QE runs it during validation and raises what it finds with the
+## lane; it does not gate a promotion.
+##
+##     make doc-drift                       # integration..HEAD
+##     make doc-drift ARGS="main..HEAD"
+##     make doc-drift ARGS="--strict"
+doc-drift:
+	@python3 ./infra/doc-drift.py $(ARGS)
+
+## Advisory: do the governance documents agree with the repository?
+## Run at Repository Closeout, before declaring Repository Ready (CLAUDE.md
+## §20e). Reports; never repairs — each inconsistency it finds has more than
+## one correct resolution, and choosing between them is a governance decision.
+state-check:
+	@python3 ./infra/state-check.py $(ARGS)
 
 ## Release Certification (ADR-0032). Runs every gate, then records what happened
 ## as durable repository evidence in `certification/manifest.json`.

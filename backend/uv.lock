@@ -1473,6 +1473,7 @@ dependencies = [
     { name = "casbin" },
     { name = "cryptography" },
     { name = "fastapi" },
+    { name = "httpx" },
     { name = "opentelemetry-api" },
     { name = "opentelemetry-exporter-otlp-proto-http" },
     { name = "opentelemetry-instrumentation-fastapi" },
@@ -1490,7 +1491,6 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "asyncpg-stubs" },
-    { name = "httpx" },
     { name = "import-linter" },
     { name = "mypy" },
     { name = "pre-commit" },
@@ -1509,6 +1509,7 @@ requires-dist = [
     { name = "casbin", specifier = ">=1.36" },
     { name = "cryptography", specifier = ">=44.0" },
     { name = "fastapi", specifier = ">=0.115" },
+    { name = "httpx", specifier = ">=0.27" },
     { name = "opentelemetry-api", specifier = ">=1.29" },
     { name = "opentelemetry-exporter-otlp-proto-http", specifier = ">=1.29" },
     { name = "opentelemetry-instrumentation-fastapi", specifier = ">=0.50b0" },
@@ -1526,7 +1527,6 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "asyncpg-stubs", specifier = ">=0.30" },
-    { name = "httpx", specifier = ">=0.27" },
     { name = "import-linter", specifier = ">=2.1" },
     { name = "mypy", specifier = ">=1.13" },
     { name = "pre-commit", specifier = ">=4.0" },

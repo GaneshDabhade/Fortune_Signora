@@ -178,6 +178,13 @@ Claude must:
 - Every technology/vendor choice referenced in `docs/architecture/08-technology-stack.md` has a corresponding ADR in `docs/architecture/adr/` recording why. Adopting a new dependency, vendor, or technology — or reversing an existing choice — requires a new ADR following the template in `docs/architecture/adr/README.md`, not a silent substitution in a PR.
 - Documentation drift (code and docs disagreeing) is treated as a bug and fixed as part of whatever change is touching that area, not left for someone else.
 - Do not create new documentation files beyond what the architecture set and task explicitly call for. Do not produce planning or summary documents unless asked.
+- **Documentation is part of the implementation, not a follow-up to it** (ratified 2026-08-01). **A slice is not complete until the implementation, its tests, and its module's documentation are consistent with each other.** Two of the three passing is an unfinished slice, not a finished one with paperwork outstanding.
+
+  **The reason is rotation.** Lanes are temporary execution resources and modules are permanent boundaries (§20e), so **the lane that implements the next slice of a module is usually not the one that implemented the last.** It inherits the module's design doc, its ADRs and the Slice Handoff — and nothing else. Under permanent ownership a drifted design doc was an inconvenience a session could work around from memory; under rotation **it is the mechanism by which the next assignee is actively misled**, and it will be believed, because there is nothing else to believe.
+
+  The test to apply before calling a slice done: **could a lane that has never seen this module continue the work without reading commit history?** If the answer needs *"well, you'd have to know that…"*, the missing sentence belongs in the module's design doc before the slice closes.
+
+  This is not a licence to write more documents (§12 above still binds). It is a requirement that the ones that exist stay true.
 
 ## 13. Security Standards
 
@@ -241,6 +248,7 @@ A task is done only when all of the following are true:
 - The implementation satisfies the stated requirement, scoped to that requirement — nothing more, nothing speculative.
 - It complies with every applicable rule in this document and the referenced architecture documents.
 - Tests are written, passing, and cover meaningful failure paths, not only the golden path.
+- **Implementation, tests and the module's documentation are consistent** — a slice with two of the three is unfinished (§12). **A different lane could continue the work without reading commit history.**
 - Any affected `docs/architecture/` document is updated in the same change.
 - No module boundary, tenancy, security, or event-contract rule has been bypassed, worked around, or silently weakened.
 - The change has been reviewed against the checklist in §18.
@@ -388,16 +396,103 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 
 **Binding from 2026-08-01.** Signora is worked by more than one session at a time. This section is what makes that safe; it changes no architecture, and every freeze, boundary and gate above binds unchanged — **they matter more, not less.**
 
-### The lanes
+### The rulebook, and where each rule lives
 
-| Lane | Branch | Owns | Builds features? |
+> **This file is the repository's operating system. It states the rules; it does not carry the procedures.**
+>
+> **`CLAUDE.md` answers *"what are the rules?"* Every other document answers *"how do I perform this responsibility?"*** Where another document owns operational content, this one **references** it and never restates it — a rule written in two places is a rule that will eventually contradict itself, and the copy nobody is maintaining is the one somebody will read.
+
+| Rule area | Stated here | Performed in |
+|---|---|---|
+| **Engineering principles** | §2 · §3 | — |
+| **Testing rules** | §11 | [`backend/tests/README.md`](backend/tests/README.md) · [`frontend/tests/README.md`](frontend/tests/README.md) |
+| **Documentation rules** | §12 | the owning document itself |
+| **Definition of Done · slice completion** | §19 · §20e *Completion* | — |
+| **Change Budget** | §20e | — |
+| **Lane assignment** | §20e *Modules are permanent* | [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) — **the execution board** |
+| **Startup workflow** | §20e *Startup* | — |
+| **Cross-lane communication** | §20e *The slice* | [`docs/LANE_COORDINATION.md`](docs/LANE_COORDINATION.md) |
+| **Bug reporting** | §20e *Bugs* | [`docs/BUGS.md`](docs/BUGS.md) |
+| **Coordination items** | §20e *Coordination* | [`docs/LANE_COORDINATION.md`](docs/LANE_COORDINATION.md) |
+| **Environments** | §20e *Startup* step 6 | [`docs/RUNNING.md`](docs/RUNNING.md#running-a-lane) — **the allocation table** |
+| **Test data policy** | §20e *Test data* | [`20-provider-simulation.md`](docs/architecture/20-provider-simulation.md) |
+| **QE responsibilities** | §20e *The QE lifecycle* | [`docs/QUALITY_ENGINEERING.md`](docs/QUALITY_ENGINEERING.md) |
+| **The repository cycle, end to end** | §20e *The QE lifecycle* | [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md) — **the runbook** |
+| **Removing an operational blocker** | §20e *QE removes its own blockers* | [`docs/RUNNING.md`](docs/RUNNING.md) — the prerequisites |
+| **Promotion workflow** | §20e *Completion* | [`docs/QUALITY_ENGINEERING.md`](docs/QUALITY_ENGINEERING.md) |
+| **Slice Handoff** | §20e *The Slice Handoff* | the commit message |
+| **Repository certification** | §20e *Certification* | [ADR-0032](docs/architecture/adr/0032-release-certification.md) · `make certify` |
+| **Repository state and metrics** | §20e *Repository state, and the assignment board* | `PROJECT_STATUS.md` · [`SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) |
+| **Release summary** | §20e *Repository Closeout* | `PROJECT_STATUS.md` |
+| **Repository Closeout** | §20e *Repository Closeout* + its checklist | [`docs/QUALITY_ENGINEERING.md`](docs/QUALITY_ENGINEERING.md) — the playbook |
+| **Repository state validation** | §20e *Repository State Validation* | `infra/state-check.py` |
+| **Assignment board** | §20e *Repository state, and the assignment board* | [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) |
+| **Branch synchronization** | §20e *Completion* step 12 | — |
+
+**When a new repository-wide rule is needed, it belongs here** — not in the document that happened to prompt it. When a *procedure* is needed, it belongs in the document that owns the responsibility, and this table gains a row.
+
+### Modules are permanent. Lanes are not.
+
+**Parallel development exists to increase implementation velocity and to do nothing else.** It does not change the architecture, it does not change module boundaries, and it does not decentralize product decisions.
+
+> **A module is a permanent architectural boundary. A lane is a temporary execution resource.**
+>
+> **A lane never owns a module. A lane is *assigned* an implementation slice inside one**, and the assignment changes while the architecture does not.
+
+```
+             Today                    Tomorrow                 Next week
+  Lane 2  →  Commercial Profile   →   Timeline             →   Provider Platform
+             slice 4                  slice 2                  slice 5
+```
+
+**Say *current assignee*, not *owner*, whenever the subject is active development work.** *Owner* is reserved for what genuinely does not move: the module that owns a table, an event, a bounded context, a piece of vocabulary. Confusing the two is how a temporary allocation starts to read like an architectural fact — and how the next lane assigned to that module believes it inherited a boundary that was only ever a rota.
+
+**The invariant that makes it safe is unchanged:** *one session per lane, and* **one assignee per module at a time.** If a lane needs a change inside a module it is not assigned, that is a **finding to raise, never a change to make** — [`LANE_COORDINATION.md`](docs/LANE_COORDINATION.md) if it is a dependency, [`BUGS.md`](docs/BUGS.md) if it is a defect.
+
+**Current assignments live in [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md)**, the execution board — the one place they are recorded, and the first thing a session reads after this file. This document says how assignment works; it deliberately names no assignee, because it would be wrong within a week. [`README.md`](README.md)'s module registry describes what modules *are*, and deliberately does not repeat who is on them.
+
+> **Rotation makes the repository's documentation load-bearing in a way fixed ownership never did.** Under permanent ownership the context of a module lived in one long-running session. Under rotation the lane arriving at *Timeline slice 2* has none of the context the lane that built slice 1 had, and **the only continuity is what was written down** — the module's design doc, its ADRs, and the Slice Handoff. A design doc that has drifted was previously an inconvenience; it is now the mechanism by which the next assignee is misled.
+
+| Lane | Builds features? | Notes |
+|---|---|---|
+| **Implementation lanes** | Yes | Assigned one slice inside one module at a time. Branch: `lane-*`, permanent by name, one slice of content |
+| **QE — Quality Engineering & Integration** | **No** | **One lifecycle, seven stages, below.** Holds `lane-qe`, **`integration` and `main`** |
+
+**QE is the one permanent assignment**, because its responsibility is the repository rather than any module in it.
+
+> **The Integrator was a fourth role and is now QE's responsibility** (2026-08-01, product owner). It was never a separate session; describing it as one meant every merge, certification and status update was owned by nobody in particular. **QE validates, certifies, integrates, promotes, closes out, synchronizes and declares** — one sequence performed by one lane.
+>
+> **This reversed a separation this document asserted earlier the same day** — *"QE's authority is to withhold approval, not to promote, because a role that both judges the work and ships it can always ship it."* The reversal is deliberate and the reasoning replaces it: **the conflict of interest that argument protected against requires something to rush, and QE has nothing to ship.** QE builds no customer feature, owns no milestone of product scope, and gains nothing from a promotion. What it gains is that **one authority runs the same gates in the same order every time**, which is worth more here than a separation whose only holder had no independent work of its own.
+>
+> **What still constrains QE is the gate, not another role:** the lifecycle below is not QE's to shorten, and **QE never manually overrides a failing gate.**
+
+### The QE lifecycle
+
+**QE's responsibility is not repository testing. It is the complete repository lifecycle** (ratified 2026-08-02, product owner). **Seven stages, always in this order:**
+
+| # | Stage | What it is | Deterministic? |
 |---|---|---|---|
-| **A — Product Surface** | `lane-a-product-surface` | The pipeline's `interface/` layers · `frontend/app/(app)/` except `settings/products` · `frontend/components/intelligence/` | Yes |
-| **B — Commercial Profile** | `lane-b-commercial-profile` | `modules/commercial_profile/**` · `apps/api/composition/products.py` · `frontend/components/commercial/` · `frontend/app/(app)/settings/products/` · `frontend/lib/query/hooks/commercial.ts` | Yes |
-| **QE — Quality Engineering** | `lane-qe` | `backend/tests/**` except a module's own suite · `frontend/tests/**` except a lane's own component tests · `docs/BUGS.md` · Playground scenarios · product reviews | **No** |
-| **Integrator** | `integration`, `main` | Merges, shared documents, certification, release | No |
+| **1** | **Validate feature lanes** | Repository-wide functional · API · integration · end-to-end · Security Invariants · coverage · regression · accessibility · performance · exploratory use of the product · product review. QE **creates, maintains, extends and retires** repository-wide automated tests; **lanes own the tests specific to the slices they implement** | No — judgement, and findings become `B-nnn` rows |
+| **2** | **Execute repository-wide certification** | `make certify` · migration reversibility · `make dr` ([ADR-0032](docs/architecture/adr/0032-release-certification.md)) against the validated tree | **Yes.** The gates are the decision |
+| **3** | **Integrate validated work into `integration`** | Fast-forward only. Reconcile [`BUGS.md`](docs/BUGS.md) and [`LANE_COORDINATION.md`](docs/LANE_COORDINATION.md), verify the Slice Handoff's claims, fold findings into `38`/`39`. **A branch that will not fast-forward is returned to its lane** | Yes — `--ff-only` succeeds or it does not |
+| **4** | **Promote `integration` to `main`** | Fast-forward. **Certification passed, so this happens** — no approval is sought, none is required, and no waiting state exists between the two | **Yes** |
+| **5** | **Execute Repository Closeout** | The eleven mandatory activities below, in order, **every one measured from the promoted repository** | Yes — the checklist is complete or it is not |
+| **6** | **Synchronize repository branches** | Fast-forward `integration` and **every idle lane**. **A lane in active development is never touched** | Yes |
+| **7** | **Declare Repository Ready** | The next development cycle may begin. **Not before** | Yes |
 
-**One session per lane. One lane per module.** A module has exactly one implementation owner; if a lane needs a change inside another lane's module, that is a **finding to raise, never a change to make.**
+> **The repository is not ready until all seven have completed successfully. Stopping after certification, or after promotion, is an incomplete repository cycle** — not a finished one with paperwork outstanding. A cycle that ends at stage 4 leaves the repository asserting a state that is no longer true, which is the defect class §2 exists to prevent.
+
+**Why certification precedes integration, and why that is still the same tree.** Stage 2 certifies the **rebased, validated lane branch** — and because every subsequent advance is a **fast-forward**, `integration` and then `main` come to point at **that exact commit**. The certified tree, the integrated tree and the promoted tree are bit-identical by construction, so one certification record covers all three and `is_certified` keeps reading true across the promotion. **The invariant this depends on is fast-forward-only** (below): the moment a merge commit or a further rebase changes the tree after stage 2, the record no longer describes what shipped and **certification is re-cut before stage 3 continues.**
+
+### QE removes its own blockers
+
+**Ratified 2026-08-02, product owner.** A gate that cannot run is not a gate, and under [ADR-0027](docs/architecture/adr/0027-local-first-development.md) the local run is the *only* run — so a missing local tool is a missing guarantee, not an inconvenience.
+
+**When the repository's documented prerequisites are not installed and installing them is within QE's authority, QE installs and configures them rather than stopping the workflow.** `make`, `build-essential`, Docker, Docker Compose, and anything else [`RUNNING.md`](docs/RUNNING.md) lists as required.
+
+**Escalate only when installation is genuinely blocked** — operating-system permissions, organizational policy, or an unavailable dependency. **"It needed installing" is not a reason to leave a gate unrun**, and a workstation gap must never be recorded as a repository defect ([B-011](docs/BUGS.md) is the worked example of both halves).
+
+**What this does not license:** installing a *new project dependency* (🔴, §6 — that needs an ADR), changing what the repository requires, or working around a failing gate by changing the environment until it passes. **The authority is to make the documented gate runnable, never to make it pass.**
 
 ### The Change Budget
 
@@ -405,10 +500,10 @@ Every slice knows what it may touch before it starts.
 
 | Tier | Contains | Authority |
 |---|---|---|
-| 🟢 **Green** | Your own module's `domain`/`application`/`infrastructure`/`interface` · its tests · its design doc · your own frontend components and routes · a bug fix inside your module | Lane, freely |
-| 🟠 **Amber** | Your module's `public/` · a new table (**with its `tenancy_policy.py` registration**) · a new event (**with its `06-events.md` entry**) · a new endpoint · a new component in `components/ui` · a migration | Lane — **announce it in the commit message** |
+| 🟢 **Green** | **Your assigned module's** `domain`/`application`/`infrastructure`/`interface` · its tests · its design doc · the frontend components and routes that serve your slice · a bug fix inside it | Lane, freely |
+| 🟠 **Amber** | Your assigned module's `public/` · a new table (**with its `tenancy_policy.py` registration**) · a new event (**with its `06-events.md` entry**) · a new endpoint · a new component in `components/ui` · a migration | Lane — **announce it in the commit message** |
 | 🔴 **Red** | `signora_platform/**` · the frontend foundation (`components/ui`, `lib/query`, `lib/state`, shell) · a new module or bounded context · a new cross-module dependency · a new dependency · `docs/architecture/01`–`21` · `adr/` · any frozen decision · the roadmap | **Product owner + ADR** |
-| ⚫ **Black** | Rename an API · move architecture · rewrite documentation · refactor another lane's module · weaken or delete a Security Invariant · rewrite a dated record · create CI/CD (§20c-2) | Never |
+| ⚫ **Black** | Rename an API · move architecture · rewrite documentation · **refactor a module you are not assigned** · weaken or delete a Security Invariant · rewrite a dated record · create CI/CD (§20c-2) | Never |
 
 **Touching a file outside your budget is a finding to raise, not a change to make.** The same discipline as §20a, applied to the whole repository.
 
@@ -416,101 +511,338 @@ Every slice knows what it may touch before it starts.
 
 Together these appear in roughly two thirds of all commits. **A lane does not edit them.**
 
-| File | Owner |
-|---|---|
-| `PROJECT_STATUS.md` · `docs/SESSION_HANDOFF.md` · `docs/RUNNING.md` · the roadmaps | **Integrator**, at merge |
-| `docs/architecture/38-product-design-principles.md` · `39-product-review-findings.md` | **Integrator**, at merge |
-| `docs/BUGS.md` | **QE** — the only lane that opens and closes rows; a feature lane edits only the `Status` of a bug it has fixed |
-| `CLAUDE.md` · `PRODUCT_DIFFERENTIATORS.md` | Product owner |
-| `apps/api/main.py` · `pyproject.toml` contracts · `tenancy_policy.py` · `policy.csv` · `lib/api/types.ts` · `lib/query/keys.ts` | Any lane — **append-only, one line, alphabetical where a list exists** |
+**One responsibility each. If information already has an authoritative home, reference it — never copy it.**
 
-**A lane reports its findings in its commit message and its own module's design doc.** The integrator folds them into the shared records at merge. That reduces narrative-document conflicts to zero rather than managing them.
-
-### Branches and merge order
-
-```
-lane-a-product-surface ─┐
-lane-b-commercial-profile ─┼─▶ integration ─▶ QE validates ─▶ main ─▶ certify ─▶ release
-lane-qe ────────────────┘
-```
-
-| Branch | Lifetime | Who merges into it |
+| File | Its one responsibility | Who writes it |
 |---|---|---|
-| `main` | Permanent. **Always certifiable** | Integrator, from `integration` only |
-| `integration` | Permanent. Where lanes meet and QE tests | Each lane, its own slice |
+| `CLAUDE.md` | **Repository governance** | Product owner |
+| [`docs/RUNNING.md`](docs/RUNNING.md) | **Development environments** — ports, databases, Redis indices, variables | **QE** |
+| [`docs/BUGS.md`](docs/BUGS.md) | **The defect register** | **Any lane opens. The module's current assignee fixes. Only QE sets `VERIFIED`** |
+| [`docs/LANE_COORDINATION.md`](docs/LANE_COORDINATION.md) | **Cross-lane coordination** — dependencies and pending contracts, nothing else | **Any lane opens. The named owner answers. The requesting lane closes** |
+| [`docs/QUALITY_ENGINEERING.md`](docs/QUALITY_ENGINEERING.md) | **QE's operating procedure** — how the lane validates, reviews and reports | **QE** |
+| [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md) | **The lifecycle runbook** — every command and tick-box from validation to Repository Ready | **QE** |
+| `PROJECT_STATUS.md` | **The executive dashboard** — *"where are we?"*, measured | **QE**, at Closeout |
+| [`docs/SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) | **Operational context** — *"what should the next session know?"* | **QE**, at Closeout |
+| [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) | **The execution board** — *"who is doing what, right now?"* | **QE**, at Closeout |
+| `docs/architecture/38` · `39` | Design decisions · review findings | **QE**, at merge |
+| The roadmaps | *Scope* is the product owner's · *progress* is QE's | Both, as marked |
+| `PRODUCT_DIFFERENTIATORS.md` | Product strategy | Product owner |
+| `apps/api/main.py` · `pyproject.toml` contracts · `tenancy_policy.py` · `policy.csv` · `lib/api/types.ts` · `lib/query/keys.ts` | Registries every lane extends | Any lane — **append-only, one line, alphabetical where a list exists** |
+
+**Two registers are deliberately writable by every lane** — `BUGS.md` and `LANE_COORDINATION.md` — because a defect nobody may record and a dependency nobody may raise are the two failures that cost most. Both are **append-only with allocated ids**, so a conflict is two lanes claiming one number and QE renumbers the later at merge.
+
+**A lane reports its findings in its commit message and its own module's design doc.** QE folds them into the shared records at merge. That reduces narrative-document conflicts to zero rather than managing them — **which only works if the commit message actually carries them**, hence the Slice Handoff below.
+
+### Branches and promotion — the canonical workflow
+
+> **This section is the single authoritative statement of how work moves through the repository.** [`README.md`](README.md) and [`docs/QUALITY_ENGINEERING.md`](docs/QUALITY_ENGINEERING.md) point here and must not restate it. Where any other document disagrees with this one, this one is right and the other is a defect.
+
+```
+  the lane                              QE — one lifecycle, seven stages, in order
+  ────────                              ──────────────────────────────────────────
+
+  feature      ─▶  lane      ─▶  1 validate  ─▶  2 certify  ─▶  3 integrate  ─▶  4 promote
+  development      validation     the lanes       the tree       into              to main
+                                                                 integration          │
+                                                                                      ▼
+        7 Repository Ready  ◀──  6 synchronize branches  ◀──  5 Repository Closeout
+```
+
+**Nine stages, two of them the lane's and seven QE's, and a development cycle is complete only when every one has finished — not at promotion.** Stage 5 is **Repository Closeout**, and it is not administration: future development reads the repository's account of itself, and a dashboard describing an earlier state is a defect of the same class as a workflow that looks live (§2).
+
+**That is the normal engineering process, end to end.** It does not stop at certification, it does not stop at promotion, and **there is no manual step inside it.** **Human product review happens on `main`, after stage 7 — it reviews what has shipped and never gates the shipping**, because a gate a person holds is not a deterministic gate.
+
+**Two roles, and one direction.** Feature lanes create value; **QE is the only lane that may merge, certify, promote, or write what the repository says about itself.** No feature lane pushes to `main`. No feature lane bypasses QE.
+
+> **Promotion is deterministic, and it is not an approval.**
+>
+> **Every required gate passes → `integration` is promoted to `main`.** No further sign-off is sought, none is required, and **no separate approval workflow may be introduced.** The gates *are* the decision — the same principle as *"a green local run is the decision, not a preview of one"* (§20c-2).
+>
+> **Any required gate fails → promotion does not occur.** There is no partial promotion and no expedited path.
+>
+> **There is never an intermediate manual decision between successful certification and promotion.** A pause for judgement there would mean the gates did not decide, which makes every prior claim about determinism false. What QE cannot do is promote with a gate unrun, override a failing one, or shorten the sequence because a slice looks small. **The authority is to run the gates faithfully and act on the result**, not to judge whether the result matters.
+
+| Branch | Lifetime | Who moves it |
+|---|---|---|
+| `main` | Permanent. **Always certifiable** | **QE only**, fast-forwarded from `integration` |
+| `integration` | Permanent. Where lanes meet and QE tests | **QE only.** A lane rebases and pushes; **QE performs the fast-forward** |
 | `lane-*` | **Permanent name, one slice of content.** Reset to `integration` after every merge | Its own session only |
+
+> **The lane still rebases and still resolves its own conflicts; QE performs the fast-forward.** This is the reading that satisfies both rules at once, and it is not a compromise: **a fast-forward after a clean rebase has no conflicts by construction**, so QE never adjudicates code it did not write, and every arrival on `integration` still passes through one authority. A lane that hands QE a branch which will not fast-forward has not finished step 4.
 
 **Rules, and they are short:**
 
 - **Branch content lives one slice — two days maximum.** A lane branch carrying more than one slice is a finding.
 - **Rebase, never merge, onto `integration`.** Rebase freely: nobody else has your lane branch.
 - **Fast-forward only, everywhere.** No merge commits. `main` advances only from `integration`, so `main` is always an ancestor of it and the fast-forward always succeeds. Three reasons this is not taste: Alembic's chain is linear, the records are append-only narratives, and a linear history is the only one where *what was true when* is readable.
-- **The gates are the review.** Full local gates on the rebased branch before it merges to `integration`.
-- **Conflicts are resolved by the lane that is rebasing**, never by the integrator — the lane knows what its change meant. A conflict in a 🔴 file means the lane was outside its budget; stop and raise it.
-- **Commit messages keep the existing form:** `M12.5 — <what changed, in product language>`. Not Conventional Commits — `git log --oneline` is a changelog a cold session reads.
+- **The gates are the review.** Full local gates on the rebased branch before QE fast-forwards it.
+- **Conflicts are resolved by the lane that is rebasing**, never by QE — the lane knows what its change meant. A conflict in a 🔴 file means the lane was outside its budget; stop and raise it.
+- **Commit messages keep the existing form:** `M12.5 — <what changed, in product language>`. Not Conventional Commits — `git log --oneline` is a changelog a cold session reads. **The last commit of a slice also carries a Slice Handoff** (below).
+- **QE never develops a customer feature while integrating.** Validate · certify · integrate · promote · close out · synchronize · declare — in that order, and nothing else in between.
 
-### The canonical merge flow
+**Every lane's ports, database and Redis index are allocated by the permanent convention in [`docs/RUNNING.md` § Running a lane](docs/RUNNING.md#running-a-lane). No lane invents ports and no lane shares a database.** That table is the one place allocations are recorded; adding a lane means claiming its row there, not choosing numbers.
 
-Seven steps. **Every one names who does it**, because an unowned step is where parallel work stalls.
+### A lane's day — startup, slice, completion
+
+Three sequences. **Every step names who does it.**
+
+#### 1 · Startup — before any implementation, every time
+
+**Mandatory. A lane that skips it is building on a base QE has already reported defects against.**
+
+| # | Step | What |
+|---|---|---|
+| 1 | **Pull `integration`** | `git checkout integration && git pull origin integration`. **No implementation begins from a stale `integration`** |
+| 2 | **Rebase the lane branch** | `git checkout <lane-branch> && git rebase integration`. Resolve your own conflicts |
+| 3 | **Read [`docs/BUGS.md`](docs/BUGS.md)** | Every `OPEN` and `FIXING` row, not only those assigned to you — a defect in a module you depend on may be about to block you |
+| 4 | **Take the rows assigned to your lane** | If one belongs naturally to today's work, **fix it first, with a regression test**. If it is deferred, **record the reason in the commit message**. Never silently ignore an assigned bug |
+| 5 | **Read [`docs/LANE_COORDINATION.md`](docs/LANE_COORDINATION.md)** | **Every open item, not only your own.** Another lane's pending contract change is something to discover now, not at merge |
+| 6 | **Read [`docs/RUNNING.md`](docs/RUNNING.md#running-a-lane)** | Use **only** your assigned ports, PostgreSQL database, Redis index and environment variables. **Never invent a local convention** — that table is authoritative |
+| 7 | **Confirm your assignment** | Milestone · slice · **the module you are assigned and its architectural boundaries** · what it depends on · which coordination items touch it |
+| 8 | **Read your own uncommitted history** | `git log integration..HEAD` — what is already on this branch that you have forgotten, or that a previous session left |
+| 9 | **Only then begin the slice** | |
+
+> **Assigned defects are the front of the backlog, not the back.** QE validates every merge, so a lane that starts new work while carrying open rows accumulates them faster than it retires them — and the rows that survive longest are always the ones a customer would hit. Rows are retired the way *Bugs* below requires.
+>
+> **Silence reads as *nobody looked*.** A deferral with a stated reason is a decision; an unmentioned row is an omission.
+
+#### 2 · The slice
+
+| # | Step | What |
+|---|---|---|
+| 1 | **Declare the Change Budget** | 🟢 freely · 🟠 announce in the commit message · 🔴 stop and raise · ⚫ never |
+| 2 | **Implement, with tests** | The golden path *and* the realistic failure modes (§11) |
+| 3 | **Run the impacted gates only** | Your module suite · `mypy` · `tsc` · `eslint`. Speed is the point during a slice |
+
+**When the work turns out to depend on another module, never continue on an assumption — do not guess, do not infer, do not implement one.** Open or update an item in [`docs/LANE_COORDINATION.md`](docs/LANE_COORDINATION.md), name that module's current assignee in the implementation report, and **wait for agreement whenever the dependency touches architecture or a public contract** — an API, an event payload, a read or write port, a schema, a module boundary.
+
+> **Architecture is agreed explicitly or it is inferred, and inferred architecture is two lanes shipping incompatible halves of one contract.** A lane may proceed past an open item only where proceeding encodes no assumption about the answer.
+
+#### 3 · Completion
 
 | # | Step | Who | What |
 |---|---|---|---|
-| 1 | **Slice** | Lane | Declare the Change Budget, implement, write tests |
-| 2 | **Impacted tests** | Lane | Its module suite, impacted integration tests, `mypy --strict`, `lint-imports`, frontend suite, production build |
-| 3 | **Push the lane branch** | Lane | `git push origin lane-<x>`. **Backup, not a trigger** — a push stores the repository and starts nothing (§20c-2) |
-| 4 | **Rebase and merge to `integration`** | Lane | `git pull --rebase origin integration`, re-run gates, then `--ff-only`. **The lane resolves its own conflicts** |
-| 5 | **QE validation** | **QE** | Full backend suite with the coverage gate · Security Invariants · `make smoke` · **exploratory use of the product**. Defects become `B-nnn` rows |
-| 6 | **Certification** *(when applicable)* | Integrator | Milestone boundaries only: `make certify`, migration reversibility, `make dr` (ADR-0032) |
-| 7 | **Fast-forward to `main`** | Integrator | Promotion, not re-verification — QE has already run everything. Then folds lane findings into the shared records |
+| 1 | **Complete the slice** | Lane | **Implementation, tests and the module's documentation, consistent** — a slice with two of the three is unfinished (§12) |
+| 2 | **Run the impacted tests** | Lane | Its module suite, impacted integration tests, `mypy --strict`, `lint-imports`, frontend suite, production build |
+| 3 | **Rebase onto `integration`** | Lane | `git pull --rebase origin integration`. **The lane resolves its own conflicts** |
+| 4 | **Re-run the gates on the rebased branch** | Lane | Rebasing changes the program. The gates that passed before it were never run on what is about to merge |
+| 5 | **Write the Slice Handoff** | Lane | In the final commit message. **See below — this is what QE writes the project status from** |
+| 6 | **Push the lane branch and tell QE** | Lane | `git push origin <lane-branch>`. **Backup, not a trigger** — a push stores the repository and starts nothing (§20c-2). QE does not poll |
+| 7 | **Validate** — *lifecycle 1* | **QE** | Repository-wide backend suite · frontend suite · Security Invariants · coverage gate · `make smoke` · **exploratory use of the product** · product review, run on the lane's rebased branch. Defects become `B-nnn` rows |
+| 8 | **Certify** — *lifecycle 2* | **QE** | `make certify`, migration reversibility, `make dr` ([ADR-0032](docs/architecture/adr/0032-release-certification.md)). **The tree certified here is the tree promoted at step 10**, because everything after this is a fast-forward |
+| 9 | **Integrate** — *lifecycle 3* | **QE** | `--ff-only` into `integration`. A branch that will not fast-forward goes back to the lane at step 3. Reconcile the registers; verify the Slice Handoff's claims |
+| 10 | **Promote** — *lifecycle 4* | **QE** | Fast-forward `main` from `integration`. **Certification passed, so this happens** — no approval, no pause, no waiting state |
+| 11 | **Repository Closeout** — *lifecycle 5* | **QE** | **Mandatory, never optional.** The eleven activities in *Repository Closeout* below, in order, **every figure measured from the promoted commit** — never copied from a lane's report. Includes the release summary |
+| 12 | **Synchronize the branches** — *lifecycle 6* | **QE** | Fast-forward `integration` to `main` if it lags · fast-forward **every idle lane branch** · **leave lanes in active development alone** — they rebase at the start of their next slice. Verify every branch shares the promoted baseline |
+| 13 | **Assign the next work** | **QE** | Mark completed assignments `COMPLETE`, then **remove them** — no lane stays assigned to work that has reached `main`. Return the lane to `AVAILABLE`; allocate idle lanes |
+| 14 | **Declare Repository Ready** — *lifecycle 7* | **QE** | Only once [`REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md) is complete. The next development cycle may begin. **Not before** |
+| 15 | **Human product review** | Product owner | On `main`, in the demo environment (3000/8000). **No frontend screen is complete until a human has reviewed it there** (§2). **After Repository Ready, never gating it** |
+| 16 | **Release** | — | Deferred to M14.5. There is no release today ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)) |
 
 **`integration` never fast-forwards to `main` with an open 🔴 bug.** That is the one blocking rule; 🟠 and below are the product owner's call.
 
-**A lane resets its branch to `integration` after step 7** and starts the next slice from there.
+**A lane resets its branch to `integration` once QE confirms the promotion**, and starts the next slice from there.
 
-**When the integrator commits directly to `main`** — governance, a shared document, a milestone record — **it fast-forwards `integration` and every idle lane branch in the same action.** Found by rehearsing this flow rather than by reading it: the first governance commit landed on `main` and left `integration` and two lanes a commit behind, which would have made the next lane rebase onto a stale base and re-do the merge. **Five branches at one commit is the resting state**, and anything else is a signal.
+### Repository state, and the assignment board
+
+> **Feature lanes do not maintain repository-wide state.** A lane maintains **its module's documentation, its Slice Handoff, and its rows in [`BUGS.md`](docs/BUGS.md), [`LANE_COORDINATION.md`](docs/LANE_COORDINATION.md) and [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md)**. **Everything describing the repository as a whole is QE's, exclusively** — `PROJECT_STATUS.md`, `SESSION_HANDOFF.md`, repository health, certification status, roadmap and milestone progress, completed slices, repository statistics, overall completion.
+>
+> **The reason is not authority; it is arithmetic.** A lane can only report what it did. Repository-wide state is a property of everything merged together, which only the session that ran the gates on `main` has ever seen. **A dashboard assembled from lane reports is a sum of intentions.**
+
+**QE writes these, immediately after promoting, measured from `main`.**
+
+| Record | The one question it answers | What it must contain |
+|---|---|---|
+| `PROJECT_STATUS.md` | **"Where are we?"** — the **executive dashboard**, not an engineering journal | Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work. **Concise, and always representing `main`.** Historical implementation detail belongs to the architecture records and `git log`, not here |
+| [`docs/SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) | **"What should the next session know?"** — operational context | Current repository state · current certification state · active lanes · open blockers · pending work · repository recommendations. **It must not duplicate the dashboard**; where a figure is the dashboard's, it references rather than restates |
+| [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) | **"Who is doing what, right now?"** — the **execution board** | Which lane · which module · which milestone · which slice · status · blockers · dependencies · **expected next action**. Completed assignments marked `COMPLETE`, **then removed**, and the lane returned to `AVAILABLE`. **No lane may remain assigned to work that has reached `main`, and no stale assignment is left behind** |
+
+**Every figure in all three is read from the promoted commit** — the test count from a run, coverage from the gate, `HEAD` from git. **Never copied from a lane's report.**
+
+> **Three documents, three questions, no overlap.** If the same sentence would be true in two of them, it belongs in one and is referenced from the other (§2, *truth has exactly one authoritative representation*). This is the one-responsibility rule applied to the records that describe the repository itself, and it is the rule most easily lost — because restating a figure is always easier than linking to it.
+
+**A lane's Slice Handoff is input to these records; it is never the record.** A lane offers a claim, QE publishes a measurement, and where they differ the measurement is what ships.
+
+> **This is the whole reason the roles merged.** The lane that ran the gates is the only one that saw the numbers, and a status document written by anybody else is a transcription of somebody's intent.
+
+**`ACTIVE_ASSIGNMENTS.md` is the single authoritative record of execution state.** [`README.md`](README.md)'s module registry deliberately does not repeat it: a module is permanent and an assignment is weekly, and two tables stating one fact eventually disagree (§2, *truth has exactly one authoritative representation*).
+
+**When QE commits directly to `main`** — governance, a shared document, a milestone record — **it fast-forwards `integration` and every idle lane branch in the same action.** Found by rehearsing this flow rather than by reading it: the first governance commit landed on `main` and left `integration` and two lanes a commit behind, which would have made the next lane rebase onto a stale base and re-do the merge. **Every branch at one commit is the resting state**, and anything else is a signal.
+
+#### The Slice Handoff
+
+**Two readers, and neither was in the room when the slice was built.** QE writes the project status and would otherwise reconstruct the milestone, the scope and the limitations from a diff — which is how a status document starts describing what a lane *intended*. **And the next lane assigned to that module inherits nothing else**: under rotating assignment the handoff plus the module's design doc *are* the continuity, so `Limitations` and `Coordination` are being written for a session that does not exist yet.
+
+**So the last commit of every slice carries a `Slice-Handoff` block.** In the commit message, not a file: a shared queue file would conflict between lanes, and a commit message travels with the change forever and is greppable — `git log --grep="Slice-Handoff"`.
+
+```
+M12.6 — the ICP declaration
+
+<the usual body: what changed and why, in product language>
+
+Slice-Handoff:
+  Milestone:     M12.6 — slice 2 of 5
+  Lane:          B — Commercial Profile
+  Delivered:     A customer can declare which kind of company buys each
+                 product, versioned the way the catalog is.
+  Demo:          Settings → Products → an ICP on any product row
+  Budget:        green modules/commercial_profile/**
+                 amber migration 0021, table icp_declaration
+                       (registered in tenancy_policy.py)
+  Tests:         +34 in tests/commercial_profile; lane suite green
+  Bugs:          fixes B-001 (regression test in signal_engine suite)
+                 defers B-007 — needs Lane A's resolution slice first
+  Coordination:  opened C-009 (ICP→product read port, owner Lane A)
+                 closed  C-006 — milestone assigned, see ADR-0036
+  Docs:          27-opportunity-engine.md updated for the new stage;
+                 ADR-0035 amended; 06-events.md +1 event
+  Limitations:   ICP is declared; nothing consumes it yet
+  Findings:      none
+```
+
+**Every field is required; `none` is a valid value and silence is not.** `Delivered` and `Demo` are written **in the customer's vocabulary** (§4, ADR-0034) — they become the sentence a non-engineer reads in `PROJECT_STATUS.md`, and a line naming a module, a table or a port has not described a product slice.
+
+**`Docs` names what a lane arriving cold would need**, and QE checks it is not empty on a slice that changed behaviour — under rotation the module's design doc is the next assignee's only inherited context (§12). **`Bugs` must account for every row against the module**, fixed or deferred with its reason (Startup step 4). **`Coordination` names every item the slice opened or closed** — QE audits the register against it, because an item closed in a commit but left `OPEN` in the file is worse than one that was never raised. **`Limitations` is where a lane states what it knowingly left undone** — QE reports it as a known limitation rather than discovering it as a defect three slices later.
+
+> **The handoff is input, never the record.** QE measures every figure from the promoted commit. A lane that reports a test count is offering a claim; QE publishes a measurement.
+
+### Repository Closeout
+
+**Repository Closeout is a mandatory engineering phase, never optional** (ratified 2026-08-02, product owner). It is lifecycle stage 5, it runs immediately after every successful promotion, and **the repository is not ready for the next cycle until all of it has finished.**
+
+**Eleven activities, in this order:**
+
+| # | Activity | What it means |
+|---|---|---|
+| 1 | **Refresh `PROJECT_STATUS.md`** | The executive dashboard — repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed · recommended next work |
+| 2 | **Refresh [`SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md)** | The operational context the next session needs — and **not a second copy of the dashboard** |
+| 3 | **Refresh [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md)** | Completed assignments marked `COMPLETE` **and then removed**; the lane returned to `AVAILABLE`; new assignments recorded **only once formally allocated** |
+| 4 | **Refresh certification state** | The record is current for the promoted commit. A fast-forward promotes the tree that was certified, so it carries over — **if anything changed the conditions it names, it is re-cut here** |
+| 5 | **Refresh repository metrics** | Every figure in *Repository metrics* below, **re-measured** |
+| 6 | **Refresh milestone progress** | Which milestone, which slices closed, what remains |
+| 7 | **Refresh roadmap progress** | Against [`IMPLEMENTATION_ROADMAP.md`](IMPLEMENTATION_ROADMAP.md). *Scope* is the product owner's; *progress* is QE's |
+| 8 | **Refresh repository health** | Gate status, open defects by severity, coordination register size, technical debt |
+| 9 | **Publish the release summary** | Features delivered · bugs fixed · ADRs accepted · migrations · architectural changes · metrics · remaining blockers · recommended next work. **A section of `PROJECT_STATUS.md`, not a new document** |
+| 10 | **Synchronize idle branches** | *Lifecycle stage 6.* Fast-forward `integration` and **every idle lane**. **A lane in active development is not touched** — it rebases at the start of its next slice, and moving it underneath would rewrite work in progress |
+| 11 | **Declare Repository Ready** | *Lifecycle stage 7.* Only once [`REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md) is complete |
+
+> **Every one of these is derived from the promoted repository. Nothing is ever copied from a feature lane's report.** QE's measurements are authoritative precisely because they are taken from the integrated repository after certification, and **a lane has never seen that repository.**
+
+**The step-by-step runbook — every command, in order — is [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md).** This section states *what must happen*; that document is *how QE performs it*, and it carries the tick-boxes. They are deliberately not both: a checklist in two places is a checklist that will disagree with itself.
+
+> **The checklist exists to prevent omissions, not to document intent.** Ticking an item that was not done is worse than having no checklist, because the next session trusts it. **An unticked box is not a failure — an untrue tick is.**
+
+### Repository metrics
+
+**Every promotion re-measures. Previous measurements are never reused.**
+
+| | |
+|---|---|
+| **Re-measured every time** | pytest totals · frontend totals · Security Invariants · `mypy --strict` · `lint-imports` contracts · coverage · `make smoke` status · certification status · migration head · architecture metrics (modules, ADRs, documents) |
+
+> **Repository metrics are measured. They are never transcribed.** A figure carried forward from the last cycle describes a repository that no longer exists, and it is indistinguishable — to every future reader — from one that was taken today.
+
+### Repository State Validation
+
+**Advisory, run before declaring Repository Ready:** `python3 infra/state-check.py`.
+
+It compares what the governance documents *say* against what git, the migrations directory and the certification manifest *are* — the dashboard against `main`'s commit, the certification conditions against the migration head, the assignment board against its own rules, the bug register's blocking rule, the handoff against the dashboard, the coordination register against its own shrink expectation.
+
+**It reports and never repairs.** Every inconsistency it finds has more than one correct resolution — a stale dashboard might need updating, or the promotion might not have finished — and **choosing between them is a governance decision, not a script's.**
+
+**It checks agreement, never quality.** That `PROJECT_STATUS.md` names the right commit says nothing about whether what it says is true.
 
 ### Which gates run when
 
 | Moment | Runs | Why |
 |---|---|---|
 | **During a slice** | Impacted suites only · `mypy` · `tsc` · `eslint` | Unchanged policy. Speed is the point |
-| **Lane → `integration`** | The lane's full module suite · impacted integration tests · `lint-imports` · `mypy --strict` · frontend suite · production build | The lane proves its own slice |
-| **On `integration`, by QE** | **Everything**: full backend suite with the coverage gate · Security Invariants · `make smoke` · exploratory use of the product | The only place merged code is exercised together |
-| **`integration` → `main`** | Nothing new — QE has already run it | Promotion, not re-verification |
-| **Milestone close** | `make certify` · migration reversibility · `make dr` | ADR-0032 |
+| **Lane → QE** | The lane's full module suite · impacted integration tests · `lint-imports` · `mypy --strict` · frontend suite · production build | The lane proves its own slice |
+| **Lifecycle 1 — validation, by QE** | **Everything**: full backend suite with the coverage gate · Security Invariants · frontend suite · `make smoke` · exploratory use of the product | The only place merged code is exercised together |
+| **Lifecycle 2 — certification, by QE** | `make certify` · migration reversibility · `make dr` | ADR-0032. **The last gate before anything moves** |
+| **Lifecycle 3–4 — integrate, promote** | Nothing new — QE has just run all of it on this exact tree | Fast-forward, not re-verification |
+| **Lifecycle 5–7 — closeout, sync, declare** | `python3 infra/state-check.py` (advisory) | Agreement between the documents and the repository |
 
-**`make smoke` binds ports 3000 and 8000**, so every lane's dev server must be stopped before it runs. That is why it belongs to QE on `integration` rather than to a lane.
+**`make smoke` binds the human-review ports (3000 and 8000)**, so the review stack and every lane's dev server must be stopped before it runs. That is why it belongs to QE rather than to a lane. **The step-by-step runbook for QE's validation pass is [`docs/QUALITY_ENGINEERING.md`](docs/QUALITY_ENGINEERING.md); the runbook for the whole cycle is [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md).**
 
-### Quality Engineering
+### Quality Engineering and Integration
 
-**QE builds no production feature.** It owns functional, API, end-to-end, security, performance and accessibility testing, Playground validation, product reviews, regression, and certification support.
+**QE builds no customer feature.** Its remit is the repository lifecycle above, and the first stage is what qualifies it for the rest.
 
-> **QE reports bugs. Feature lanes fix them.** A QE session that fixes a defect in a feature lane's module has become a second implementation stream with no owner, and the module's owner no longer knows what their module does.
+**Quality Engineering** — every shared test suite · functional, API, integration, end-to-end, security, regression, performance and accessibility testing · the Security Invariants · exploratory testing · product and UX review · Playground quality · certification. **Expand these incrementally, and only when a capability can provide value immediately: never build an empty framework because it may be needed one day.** Two of those responsibilities — performance and accessibility — are **owned and not yet built**, recorded as [C-014](docs/LANE_COORDINATION.md) rather than stubbed.
+
+**Integration Authority** — the only lane that may merge a validated branch into `integration`, run repository-wide certification, validate milestone completion, promote to `main`, update the repository-wide status documents, **publish measured repository statistics**, and **declare Repository Ready**.
+
+> **QE reports bugs. Feature lanes fix them.** A QE session that fixes a defect in a feature lane's module has become a second implementation stream with no owner, and the module's owner no longer knows what their module does. **Integrating is not implementing** — the same rule binds QE while it holds the merge.
 
 **Why a lane rather than a phase:** every defect that has mattered in this project was found by *using* the product, not by the suite. 2046 tests found none of R4-01, R6-01–04, R7-01–03, R10-01 or R12-01. A lane whose whole job is to use the product is the only mechanism that finds that class reliably, and a lane finds it continuously rather than when somebody remembers.
 
-**QE may write tests in another lane's module suite** — that is its job — but may not change that module's production code. A failing test it adds is a bug report in executable form, and the owning lane makes it pass.
+**QE may write a test in any module's suite** — that is its job — but may not change that module's production code. A failing test it adds is a bug report in executable form, and the module's current assignee makes it pass.
 
 ### Bugs
 
 **One register: [`docs/BUGS.md`](docs/BUGS.md).** Not a file per bug, not an issue tracker, not scattered TODOs.
 
-Every row carries: **ID · Title · Owner lane · Severity · Status · Commit found · Steps · Expected · Actual.**
+Every row carries: **ID · Title · Module · Current assignee · Severity · Status · Commit found · Steps · Expected · Actual.** **A defect belongs to a module; whoever is currently assigned that module fixes it.**
 
 | | |
 |---|---|
-| **Opens a bug** | QE, or any lane that finds one outside its own budget |
-| **Fixes it** | The **owning lane** — the lane that owns the module the defect is in |
+| **Opens a bug** | **Every lane, not only QE.** Reporting is a universal duty |
+| **Fixes it** | The lane **currently assigned** the module the defect is in |
 | **Verifies and closes** | **QE**, never the lane that fixed it |
 | **Severity** | 🔴 blocks a milestone · 🟠 wrong behaviour a customer would hit · 🟡 wrong but survivable · 🟢 cosmetic |
 
-**A bug fixed without a regression test is not fixed** (§11). The test belongs in the owning module's suite and is written by the lane that fixes it.
+**Finding a defect outside your assignment is not permission to fix it — it is an obligation to report it.** Finding a bug never grants implementation ownership. Open the row with every field above filled, then **carry on inside your Change Budget**. Do not fix it, do not work around it silently, and do not leave it in a comment or a commit message where nothing tracks it.
+
+> **No defect disappears because the lane that found it could not fix it.** That is the single failure the register exists to prevent, and it is the one a busy lane commits by accident.
+
+**A bug fixed without a regression test is not fixed** (§11). The test belongs in the **affected module's** suite and is written by the lane that fixes it — so it survives the next reassignment.
+
+### Coordination
+
+**One register: [`docs/LANE_COORDINATION.md`](docs/LANE_COORDINATION.md).** It exists to stop two lanes independently encoding contradictory architectural assumptions, and it does nothing else — it is not a roadmap, not a bug tracker, not an ADR, and **not a discussion log**.
+
+**An item exists only when another module's assignee or the product owner must answer something before implementation can safely continue.** If you can proceed without encoding an assumption about the answer, you do not need an item. If the answer would change a public contract, a schema, an event payload or a module boundary, **you may not proceed** — that is the whole case the register serves.
+
+**Every lane reads every open item before beginning a slice** (*Startup* step 5), and a Slice Handoff names the items it opened and closed.
+
+```
+Coordination  →  Agreement  →  Implementation  →  ADR  →  Coordination closed
+```
+
+> **A coordination item is a temporary implementation question on its way to becoming permanent architecture.** The register should therefore **shrink** over time. A row open for months is either a decision nobody will make or a question that was never really blocking — **both are findings**, and a register that only grows has become the discussion log it is not allowed to be.
+
+**A defect is not a dependency.** Something behaving wrongly today is a `B-` row; something not yet built or agreed is a `C-` row.
+
+### Repository certification
+
+**Certification is deterministic, and it is a record rather than an opinion.** It states that a specific commit satisfied specific guarantees under specific conditions ([ADR-0032](docs/architecture/adr/0032-release-certification.md)); nothing in the system can *declare* a version certified, exactly as nothing can declare a prompt released.
+
+**QE certifies, immediately before promoting.** The gates are the decision: **if certification succeeds, promotion occurs, and no further approval is sought or required.** Equally — **a failing gate is never overridden, and the sequence is never shortened because a slice looks small.** QE's authority is to run the gates faithfully and act on the result, not to judge whether the result matters.
+
+**Certification refreshes the measurements.** Whenever QE certifies, every repository figure that has moved is re-read and republished — pytest totals, frontend totals, Security Invariants, MyPy statistics, import-linter contracts, coverage, smoke status, migration head, the certification manifest. **A stale measurement surviving a successful certification is the defect certification exists to remove**, and it is how a dashboard starts describing a repository that no longer exists.
+
+**A certification expires by derivation, not by decision.** Change the rendering protocol, re-release a prompt, add a migration or edit a scenario and the recorded run stops describing the repository: `is_certified` reads false on its own. **Nothing can be marked certified by hand.**
+
+**`make certify` has no options**, deliberately: a mode that skipped a gate would produce a run that cannot certify, and a command whose convenient path yields worthless evidence teaches people to use it.
+
+### Test data enters the way a customer's data enters
+
+**A lane may create whatever data its slice needs to be validated. It may not create it by a route a customer does not have.**
+
+Never: insert rows directly into production tables · bypass a business rule, Better Auth, authorization, or an API · disable validation · add a development-only shortcut. Data arriving by a private door proves the door, not the product — and every guarantee the pipeline makes about that row is unproven for it.
+
+**The only approved doors are the Playground, the Provider Simulation Framework, and the approved infrastructure seeders** — and the architectural principles still bind inside them: the simulator behaves exactly like a production provider, never bypasses the Provider Port, and holds no privileged downstream knowledge ([20-provider-simulation.md](docs/architecture/20-provider-simulation.md)).
+
+> **If realistic data is hard to generate, improve the simulation. Never weaken the product to make data easy.** The difficulty is usually the product telling you something true about a path a customer will also find hard.
 
 ### Concurrent milestones — amending §20d
 
 §20d requires `PROJECT_STATUS.md` to reflect the previous milestone before the next begins, and [IMPLEMENTATION_ROADMAP.md §1](IMPLEMENTATION_ROADMAP.md) recorded *sequential single-stream execution*. **Both were written for one session and are amended here, as a Category 1 sequencing change.**
 
 > **Lanes may run concurrent milestones. The rule now binds per lane:** a lane does not begin its next milestone until `PROJECT_STATUS.md` reflects the previous one **of that lane**. The dependency graph still governs order — a lane may not start work whose inputs another lane has not shipped.
+
+**QE writes that record, after promotion** (see *Repository state* above). So a lane's gate on starting its next milestone is *QE has promoted and published*, not *I finished locally* — which is the same rule §20d always meant, now with a named author.
 
 Everything else in §20d is unchanged, and **strict milestone ownership matters more, not less**: a lane must never implement another lane's functionality to satisfy its own demonstration.
 
@@ -538,6 +870,8 @@ Everything else in §20d is unchanged, and **strict milestone ownership matters 
 - Implement a future milestone's functionality to satisfy the current milestone's demonstration, or begin a milestone before `PROJECT_STATUS.md` reflects the previous one (§20d).
 - Create, re-enable, or extend any CI/CD, publishing, scheduling, or remote-execution automation, or add a `push:`/`pull_request:`/`schedule:` trigger to a retained workflow (§20c-2).
 - Leave the repository asserting something that is not true of it — a live-looking disabled workflow, a gate that no longer runs, a dashboard describing the previous milestone (§2). Equally: rewrite a dated record of what was true then to match what is true now.
+- Declare a repository cycle finished before all seven lifecycle stages have completed. **Stopping at certification, or at promotion, is an incomplete cycle** — Repository Closeout is mandatory, and Repository Ready is declared only from a complete [`REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md) (§20e).
+- Leave a documented prerequisite uninstalled and a gate consequently unrun, where installing it was within authority (§20e, *QE removes its own blockers*). Equally: install a **new project dependency** without an ADR, or change the environment until a failing gate passes.
 
 ### When implementing, Claude must always
 

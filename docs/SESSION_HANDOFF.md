@@ -1,10 +1,13 @@
-# Session Handoff — end of M6
+# Session Handoff
 
-> **Purpose:** start the next engineering session immediately, without reconstructing context.
-> **Authoritative continuation point.** Updated at every milestone boundary.
-> **As of:** 2026-07-29 · branch `main`
+> **This file answers one question: *"what should the next session know?"*** Current repository state · current certification state · active lanes · open blockers · pending work · repository recommendations.
 >
-> Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) §1–9 for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
+> **[PROJECT_STATUS.md](../PROJECT_STATUS.md) answers a different one — *"where are we?"*** Milestone progress, completion percentage, repository health and every measured figure live there and are **not repeated here** (`CLAUDE.md` §20e). Where this file needs a number, it links.
+>
+> **Authoritative continuation point.** Written by **QE at Repository Closeout**, after every promotion — a feature lane never edits it.
+> **As of:** 2026-08-01 · **`main` at `f996a42`**
+>
+> Read this first. Then **[21-intelligence-pipeline.md](architecture/21-intelligence-pipeline.md)** — the flagship reference for how information moves through Signora — then [PROJECT_STATUS.md](../PROJECT_STATUS.md) for the dashboard, and [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md#5b-execution-sequence) for the execution order. Everything else is reference.
 
 ---
 
@@ -16,8 +19,8 @@
 | **Inserted, and open** | **M9.5 Evidence Citation Protocol** (ADR-0031). Steps A–D landed; **Step F is incomplete** |
 | **Last completed** | **M12.2 the account brief** — closed 2026-08-01. Identity, score breakdown, commitment and narration; the Decision Package is *blocked*, not skipped |
 | **Current** | **M12.3 evidence and actions.** *What to check*, *ledger citations*, *stage transitions and assignment* and *the list's why* shipped; narration citations and the list's hierarchy (D20) remain |
-| **Head at handoff** | see `git log` — M12.3 *moving through the list* (**D41**) |
-| **Latest certification** | [`d954c930`](../certification/reports/d954c930319a.md) — CERTIFIED, 2026-07-31 |
+| **Head at handoff** | **`f996a42`** — *Record the rule the merge rehearsal exposed* |
+| **Latest certification** | [`d954c930`](../certification/reports/d954c930319a.md) — certified 2026-07-31, and **now expired by derivation**: it is bound to migration head `0018` and `main` is at `0019`. **`make certify` is the next action on this repository** |
 | **Phase** | **Product implementation.** Ten pipeline stages built and frozen behind them; the surface is being exposed. |
 | **Overall completion** | **~60%** by engineering effort (~187 of ~261–339 ew) |
 | **Completed milestones** | M0 · M1.1 · M1.2 · M1.3A · M1.4 · M1.5 · M2.0 · M2.1 · M2.2 · M3A · M3B · M4 · M5A · M5B · M6 · M8 · M9 · **M10** |
@@ -31,22 +34,22 @@
 
 **🟢 Sign-in works now, and did not before.** Better Auth's tables had never been created by anything in the repository, and the `after` hook broke every completed auth request — two defects each hiding the other, invisible because no authentication request had ever finished. Run **`cd frontend && npm run auth:migrate`** once on any clone, then register at `/sign-up`; the verification link is written to the dev server's stdout. **A third defect sat behind those two**: Better Auth's default id is a nanoid and the Python verifier requires a UUID, so every API call from a real signed-in user would have 401'd. Fixed with Better Auth's own `generateId` hook — the *function* form, because `'uuid'` resolves to a column default that inserts null on tables created before it. See [ADR-0033](architecture/adr/0033-authentication-methods.md) and `docs/RUNNING.md`.
 
-**Recent commits:** `d954c93` the first business screen · `d08f8d7` the first customer endpoint · `22cafac` the attention list read path · `0cc82c6` product surface roadmap · `0c6d144` certification cites itself
+**Recent commits:** `f996a42` the merge rehearsal's rule · `2da8bd4` three lanes and a bug register · `1ae600d` **M12.5 — the head of the pipeline finally exists** · `cf99a07` the customer says organization · `4b23ffa` the citation opens
 
-### Health
+**Where everything now lives.** Four registers, one responsibility each, and a session should read all four before its first slice: [BUGS.md](BUGS.md) *what is wrong* · [LANE_COORDINATION.md](LANE_COORDINATION.md) *what one lane needs from another* · [ACTIVE_ASSIGNMENTS.md](ACTIVE_ASSIGNMENTS.md) *who is doing what* · [RUNNING.md](RUNNING.md) *which ports and database are yours*. The rules governing all of them are `CLAUDE.md` §20e; how QE operates them is [QUALITY_ENGINEERING.md](QUALITY_ENGINEERING.md).
 
-| Indicator | Value |
+### What a session needs operationally
+
+**Every measured figure — test counts, coverage, invariants, contracts, migrations — is in [PROJECT_STATUS.md §4](../PROJECT_STATUS.md).** It is deliberately not duplicated here: two copies of one measurement eventually disagree, and the copy nobody re-measures is the one somebody reads.
+
+| | |
 |---|---|
-| Backend tests | **1992 passing**, 0 failing, 0 skipped *(measured 2026-08-01, M12.3 decision slice)* |
-| Frontend tests | **310 passing** |
-| Backend coverage | gate **≥95%** · currently **95.61%** |
-| Security invariants | **325 / 325**, each proven to fail when its guarantee is removed |
-| import-linter contracts | **29 kept, 0 broken** |
-| `make smoke` | ✅ **21 stages**, 40 checks, 84–203s — includes the cross-tier JWT contract (15b) since 2026-07-29 |
-| Migrations | 0000–0018, all reversible |
-| mypy strict | Clean, **486 files** |
-| Open production bugs | **0** |
-| Technical debt | **0 outstanding** · **2 platform findings raised** (§5) |
+| **Certification** | 🟠 **Expired by derivation** — the record is bound to migration head `0018` and the repository is at `0019`. `is_certified` reads false on its own. **`make certify` is the next action on this repository** |
+| **Active lanes** | [ACTIVE_ASSIGNMENTS.md](ACTIVE_ASSIGNMENTS.md) — the execution board, and the only authoritative answer to *who is doing what* |
+| **Open blockers** | [C-010](LANE_COORDINATION.md) no assignee exists for `apps/`/platform code, which blocks [B-007](BUGS.md) and [B-012](BUGS.md) · [C-011](LANE_COORDINATION.md) holds R9-03 inside Lane A's slice · [C-012](LANE_COORDINATION.md)/[C-013](LANE_COORDINATION.md) waiting on RFCs queued since M3A |
+| **Open defects** | [BUGS.md](BUGS.md) — **0 🔴**, so nothing blocks promotion. [B-009](BUGS.md) is `FIXED` and needs verification **by someone other than QE** |
+| **Pending work** | M12.3 list hierarchy (D20) · M12.4 research on demand · M12.5 slices 2–5 · **M9.5 Step F** · `reasoning@1` has no released model (below) |
+| **Tooling** | `make` was absent from this workstation and was installed 2026-08-02 ([B-011](BUGS.md), [RUNNING.md](RUNNING.md)). **A missing prerequisite is installed, not worked around** (`CLAUDE.md` §20e) |
 
 **Local prerequisites:** Docker · `uv` on `PATH` (`~/.local/bin`) · Postgres and Redis via `infra/docker-compose.yml`. Tests need `SIGNORA_DATABASE_URL` (migration identity) and `SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1` — the suite truncates every table, and the flag is a deliberate guard.
 
@@ -362,6 +365,7 @@ Slices 3–5 follow: buying-committee role templates, business priorities, and t
 
 | Date | Change |
 |---|---|
+| 2026-08-01 | v25 — **QE becomes Quality Engineering and Integration**, and this file passes to it. Repository state is now written at **Repository Closeout**, after every promotion, **measured from `main`** rather than assembled from lane reports. Two registers added — [ACTIVE_ASSIGNMENTS.md](ACTIVE_ASSIGNMENTS.md) (who is executing what) and [LANE_COORDINATION.md](LANE_COORDINATION.md) (what one lane needs from another) — and *lane* was separated from *module*: **a module is a permanent architectural boundary, a lane is a temporary execution resource**, so this file and every other now say *current assignee* rather than *owner*. **§1 had been seven commits stale**, missing M12.5's entire module, ADR-0034 and ADR-0035; the figures above are re-measured. **The repository is uncertified by derivation** — the record is bound to migration head `0018` and `main` is at `0019`, which nothing had noticed because the dashboard stopped before M12.5 landed. |
 | 2026-08-01 | v24 — **The repository is parallel-development ready.** Four blockers fixed, no architecture changed. **(1)** `CLAUDE.md`'s preamble defined the architecture as documents `01`–`17`; there are **39 numbered documents and 36 ADRs**, so a cold session could not see every module design or the entire product-surface design — harmless with one session holding the tree in context, a correctness defect with two. Corrected, with the three document groups named. **(2)** `tests/conftest.py` resolved the target database from **plain constants**, and the `SIGNORA_TEST_APP_DATABASE_URL` override reached only two fixtures — every API integration test constructed `Settings(database_url=DEFAULT_APP_DATABASE_URL)` directly and went to the shared database regardless. Two lanes running `pytest` would have truncated each other's rows mid-run. Now resolved once, from the environment, so all twelve call sites inherit isolation; **proven by running 33 tests against `signora_lane_b` and confirming `signora` was untouched.** **(3)** `CLAUDE.md` **§20e** added — lanes, Change Budget (🟢🟠🔴⚫), shared-file ownership, git and merge protocol, and migration ownership. **(4)** `README.md` was **17 bytes**; it is now the entry point, with the read-first ordering and the **module registry** that answers *who owns this module right now* in one second. Two documents contradicted two lanes and were amended as Category 1 sequencing changes: `IMPLEMENTATION_ROADMAP.md §1` (*sequential single-stream execution*) and `CLAUDE.md §20d`, whose milestone rule now binds **per lane**. **Deliberately not done:** merging `SESSION_HANDOFF` into `PROJECT_STATUS` and splitting `38`/`39` — assigning them a single owner achieves the same conflict reduction for none of the churn. |
 | 2026-08-01 | v23 — **M12.5 slice 1: `commercial_profile`, the head of the pipeline.** [ADR-0035](architecture/adr/0035-commercial-profile.md) ratified and the fourteenth module built — **the first with no upstream dependency**, and the answer to a gap that has existed since M2.1: `RunProviderSync` takes a `subject` and nothing has ever supplied one. Signora had thirteen modules that process companies and no bounded context saying *which*. Four ownerless capabilities (products, ICP, buying committee, target accounts) turned out to be facets of one question the roadmap treated as four gaps. **The boundary is one line — it records; it computes nothing, resolves nothing, calls no provider** — and two import-linter contracts enforce it rather than documenting it. Slice 1 is the **product catalog**: versioned, immutable, superseded, with a product identity that outlives the catalog containing it, saved whole with `expected_version` so a concurrent save is a 409 rather than a silent overwrite. **Two findings from building it.** `signal_profile` reads `WHERE supersedes IS NULL` for "current", which on an immutable table is the **first** version permanently — latent only because nothing has ever written a second profile, and reachable the moment the profile gets a write API (slice 2/4). And the **Security Invariants refused the first migration** for withholding `DELETE`: erasability is a tenancy property, not a statement about what a row means, and immutability belongs in the application. **ICP is smaller than five documents claim** — the product owner's provider ruling decided the ownership half of the resolution policy, and `select_name` already ships the mechanism, so what remains is a Knowledge Graph slice rather than a milestone. |
 | 2026-08-01 | v22 — **ADR-0034: the product's ubiquitous language, and the audit that forced it.** *Workspace* is Signora's word for a tenant and had become **the word the product said to a customer**, because nothing had ever written down that it should not — *"Organization" appears nowhere in the repository*, so an engineer reaching for the right word found the only one available. Every new account read *"You are not in a workspace yet"*; the new-organization dialog **explained Row-Level Security to a salesperson**; the header's accessible name said *workspace*, making a screen-reader user the only customer told the internal term. **And a password sign-in redirected to `/workspaces`, a route that has never existed** — every password sign-in for three slices landed on the not-found page, missed by 2312 tests because nothing asserted where a successful sign-in goes. **The leak and the dead route were the same defect**: the code was reasoning about tenancy while the product needed a destination. **Enforced rather than documented** — `vocabulary.test.tsx` scans user-visible strings, forbids a route path named after an internal concept, asserts every `router.push` resolves to a real page, and **found a leak the manual audit had missed on its first run** (*"every business event should cite what produced it"*, in an error message). **Nothing renamed inward**: `workspace_id`, RLS, API paths, the JWT claim, modules and architecture documents all keep the internal name. **CLAUDE.md §4 extended** — it governed the language between engineers and was silent on the language between the product and its customer. **Second consistency pass** found three more capabilities entering through a Demo Scenario rather than a Scope entry: deprioritization intelligence (a governing differentiator in zero milestones) and **the RevOps surface** (Job 7 — the economic buyer has no screen in the product surface design, whose six journeys are all a seller's). **Four confirmed instances**, now the dominant way capability leaves this roadmap. |

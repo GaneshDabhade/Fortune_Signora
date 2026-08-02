@@ -1,73 +1,107 @@
-# Active assignments
+# Active assignments — the execution board
 
-> **What each lane is working on right now.** Not a roadmap and not a backlog — a claim board, so two lanes cannot start the same slice.
+> **The repository's current execution state, and the only authoritative record of it.** Established 2026-08-01; became **the execution board** on 2026-08-02, on the product owner's direction.
 >
-> **Created 2026-08-02 by Lane A**, on the product owner's direction: *"Claim the next available task before beginning implementation. Update `ACTIVE_ASSIGNMENTS.md` immediately so no other lane starts the same work."* The file did not exist on any branch.
->
-> **Its steward is the integrator**, on the same terms as [`LANE_COORDINATION.md`](LANE_COORDINATION.md) — a lane edits only its own row. The format below is a first proposal and the integrator should change it freely; what matters is that a claim is visible before work starts, not that the table looks like this.
+> **Written by QE at Repository Closeout, after every promotion** (`CLAUDE.md` §20e). A lane reads it; it does not write it. If this file and any other document disagree about who is implementing what, **this file is right and the other is a defect.**
 
-## How it works
+## The eight questions it answers
 
-**Claim before you build.** A lane reads this file during the startup sequence, alongside [`BUGS.md`](BUGS.md) and [`LANE_COORDINATION.md`](LANE_COORDINATION.md), and writes its row **before** the first line of implementation — not at the end with the slice.
+**Every row answers all eight. A row that cannot is incomplete, not brief.**
 
-**A lane edits only its own row.** Adding somebody else's claim, or clearing one, is the integrator's.
+| | |
+|---|---|
+| **Which lane is currently working?** | The `Lane` column |
+| **Which module is currently assigned?** | The `Module` column — **the permanent boundary**, never a lane's property |
+| **Which milestone?** | The `Milestone` column |
+| **Which slice?** | The `Slice` column — *slice 2 of 5*, not *the module* |
+| **Current status?** | The `Status` column, from the table below |
+| **Blockers?** | The `Blocked by` column — **named, never implied**. `—` means genuinely none |
+| **Dependencies?** | The `Depends on` column — the `C-` items and lane outputs this slice waits on |
+| **Expected next action?** | The `Next action` column — **what happens next and who does it**, so a cold session knows where to pick up |
 
-> **Unblocked is not assigned.** A task nobody has claimed is available; a task nobody has claimed is *not* yours until you have claimed it. That distinction is the whole point of the file.
+## What it is, and what it is not
 
-**A claim ends when the slice merges to `integration`.** The row moves to *Recently completed*, which exists so a lane returning after a break can see what changed without reading the log.
+**A lane is a temporary execution resource; a module is a permanent architectural boundary** (`CLAUDE.md` §20e). This file records the *temporary* half — who is executing what, right now — and nothing about architecture.
+
+| | |
+|---|---|
+| **This file** | *Which lane is doing what today.* Lane-centric. Cleared as work promotes |
+| [`README.md`](../README.md) module registry | *What modules exist*, their status, what is frozen. Module-centric. Permanent |
+| [`PROJECT_STATUS.md`](../PROJECT_STATUS.md) | *Where the project is.* Measured, historical |
+| [`LANE_COORDINATION.md`](LANE_COORDINATION.md) | *What one lane needs from another* |
+| [`BUGS.md`](BUGS.md) | *What is wrong* |
+
+**An idle lane has a row here. A module with no assignee does not.** That asymmetry is the point: this file answers *"who is free?"*, which a module-centric table structurally cannot.
+
+## The rules
+
+- **QE assigns.** A lane does not claim work, and does not carry work forward into a new slice without an assignment.
+- **One active assignment per lane. One assignee per module.** Both directions, at all times.
+- **When a lane finishes a slice: mark it `COMPLETE`, return the lane to `AVAILABLE`, and remove the completed row.** A row describing work already on `main` is the defect this file exists to prevent — **no lane may remain assigned to work that has shipped, and no stale assignment is left behind.**
+- **A row is a slice, not a milestone.** *Commercial Profile — slice 2* is an assignment; *Commercial Profile* is not.
+- **`Started` is when the assignment was made**, not when the branch was created.
+- **A lane whose module is blocked stays assigned** and the blocker is named — that is a fact about execution state, and hiding it makes the lane look idle when it is stuck.
+- **Every row states its expected next action.** A board that says what is happening but not what happens next leaves a cold session to infer it, and an inferred next action is how two lanes do the same thing.
 
 | Status | Meaning |
 |---|---|
-| `CLAIMED` | A lane has taken it and is building |
-| `BLOCKED` | Claimed, and waiting on a coordination item or another lane |
-| `PAUSED` | Claimed, and set down deliberately. The reason is stated |
+| `ASSIGNED` | Allocated, not yet started |
+| `ACTIVE` | Being implemented |
+| `BLOCKED` | Waiting on a `C-` item or a dependency. **Name it** |
+| `IN VALIDATION` | Handed to QE — **committed and pushed**, in the lifecycle, not yet promoted |
+| `COMPLETE` | Promoted to `main`. **Marked, then removed, and the lane returned to `AVAILABLE`** |
+| `AVAILABLE` | No assignment. **Free to be allocated** |
+
+> **`IN VALIDATION` means the work exists as commits QE can take.** Uncommitted work in a session's working tree is `ACTIVE`, whatever stage it feels like it has reached — **the board describes the repository, not an intention.** This distinction was added on 2026-08-02 after this file recorded QE's own governance slice as `IN VALIDATION` while it was still entirely uncommitted.
 
 ---
 
-## Claimed now
+## Current — as of 2026-08-02
 
-| Lane | Module | Slice | Status | Since | Notes |
-|---|---|---|---|---|---|
-| **A** | `signal_engine` · `opportunity_engine` (Product Surface) | **R2-01** — two accounts get identical guidance | `CLAIMED` | 2026-08-02 | Named by the product owner as the strongest remaining candidate |
-| **B** | `commercial_profile` | M12.5 slice 5 — target accounts | — | — | Unblocked by [ADR-0036](architecture/adr/0036-target-account-contract.md); not recorded here by Lane A |
-| **QE** | — | Verification of `B-001`, `B-005`, `B-006` | — | — | Not recorded here by Lane A |
+| Lane | Assignment | Module | Milestone | Slice | Status | Blocked by | Depends on | Next action | Started |
+|---|---|---|---|---|---|---|---|---|---|
+| **Lane A** | Two accounts get identical guidance (**R2-01**) | `signal_engine` · `opportunity_engine` | product surface | R2-01 | `ACTIVE` | — | — | Lane implements; **rebase onto the reconciled `integration` first** | 2026-08-02 |
+| **Lane B** | Target accounts | `commercial_profile` | M12.5 | slice 5 of 5 | `ACTIVE` | — | [C-001](LANE_COORDINATION.md) answered by [ADR-0036](architecture/adr/0036-target-account-contract.md) | Lane implements; **rebase onto the reconciled `integration` first** | 2026-08-02 |
+| **QE** | Repository lifecycle and governance | — (the repository) | — | governance slice | `ACTIVE` | — | — | Run the seven-stage lifecycle ([checklist](REPOSITORY_RELEASE_CHECKLIST.md)) | 2026-08-01 |
 
-> **Lane A has filled in only its own row.** The other two are shown greyed for context and should be written by their own lanes or by the integrator — a lane claiming on another lane's behalf is exactly the confusion this file prevents.
+**Available lanes:** none. **Unassigned capacity:** lanes C, D and E are unclaimed ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).
 
----
+**QE's assignment is permanent** and is never removed — it is the one row that outlives its own completion, because the responsibility is the repository rather than a slice inside it.
 
-## Available, unclaimed
+> **This file changed hands on 2026-08-02.** Lane A created it the same day as a **claim board** — a lane wrote its own row before starting, so two lanes could not take the same slice. The product owner has since made it **QE's, written at Repository Closeout**, and given it eight questions to answer per row. **The change is who writes it, not what it is for**, and the claim it prevents is the same one.
 
-Highest value first, as assessed at the last product review. **Claim before starting.**
+## Unassigned work, highest value first
 
-| Item | Where | Why it is not claimed |
+**Available to allocate — but a lane does not claim; QE assigns** (`CLAUDE.md` §20e).
+
+| Item | Where | Note |
 |---|---|---|
 | **R2-03** — an account with nothing live says nothing at all | Product Surface | 🟡, and overlaps R1-04 |
 | **R11-06** — the attributes are engineering's words | Knowledge Graph | 🟡 |
 | **R9-04 / D5** — what changed since you last looked | Product Surface | Needs per-user read state. **Trigger unfired** — a design partner saying they cannot tell what is new |
-| **The brief's hierarchy pass** | Product Surface | **Deliberately not available to a lane.** A collaborative product-design activity that needs a seller present |
-
----
+| **The brief's hierarchy pass** | Product Surface | **Not allocatable to a lane.** A collaborative product-design activity that needs a seller present |
+| **Verification of [B-009](BUGS.md)** | Repository documentation | **Not QE's** — QE wrote the fix, so somebody else reproduces it from a clean shell |
 
 ## Blocked, and on what
 
 | Item | Lane | Blocked on |
 |---|---|---|
-| **B-004** — `provider_watermark` cannot tell two target accounts apart | A | Lane B's M12.5 slice 5. The consumer is what makes it reachable, and the product owner directed it is not to be fixed opportunistically |
-| **C-005 implementation** — the signal-profile write path | A | The product owner's ruling on *whether* a customer should author relevance at all. Ownership is answered; sequencing is not |
-| **C-007 implementation** — the guided first run | A | M12.5 slice 5 |
-| **C-009** — an internal fault reaches a customer as a `422` | A | The product owner. A `signora_platform/` change under §20a, with a full proposal recorded |
-
----
+| [B-004](BUGS.md) — `provider_watermark` cannot tell two target accounts apart | A | Lane B's M12.5 slice 5. **Not to be fixed opportunistically** — the consumer is what makes it reachable |
+| [C-005](LANE_COORDINATION.md) implementation — the signal-profile write path | A | The product owner's ruling on *whether* a customer should author relevance at all. Ownership is answered; sequencing is not |
+| [C-007](LANE_COORDINATION.md) implementation — the guided first run | A | M12.5 slice 5 |
+| [C-009](LANE_COORDINATION.md) — an internal fault reaches a customer as a `422` | A | The product owner. A `signora_platform/` change under §20a, with a full proposal recorded |
+| [B-007](BUGS.md) · [B-012](BUGS.md) | **nobody** | [C-010](LANE_COORDINATION.md) — no lane is assignable to `apps/` or repository process |
 
 ## Recently completed
 
-| Slice | Lane | Merged |
-|---|---|---|
-| R4-02 · R4-03 — the words the product uses when it refuses you | A | `e1a34a6` |
-| B-005 · B-006 — the two defects a customer would have hit | B | `a440fad` |
-| R2-02 · R3-01 — saying what the evidence cannot support | A | `64d9f2e` |
-| ADR-0036 — the contract leaves the register and becomes architecture | A | `7fd512b` |
-| R4-04 — a decision you can undo | A | `fba0647` |
-| B-001 — `supersedes IS NULL` was never currency | A | `c0bef97` |
-| M12.4 — research on demand | A | `c1f5985` |
+**Removed once the next assignment is made**, so this section stays short by construction. History belongs to [`PROJECT_STATUS.md`](../PROJECT_STATUS.md) and `git log`, not here.
+
+| Lane | Assignment | Promoted | Commit |
+|---|---|---|---|
+| A | M12.4 — research on demand | 2026-08-02 | `c1f5985` |
+| A | R4-02 · R4-03 — the words the product uses when it refuses you | 2026-08-02 | `bdb014f` |
+| A | R2-02 · R3-01 — saying what the evidence cannot support | 2026-08-02 | `64d9f2e` |
+| A | R4-04 — a decision you can undo | 2026-08-02 | `fba0647` |
+| A | B-001 — `supersedes IS NULL` was never currency | 2026-08-02 | `c0bef97` |
+| B | M12.5 slices 2–4 — ICP, buying committee, business priorities | 2026-08-02 | `30e66d0` · `960b604` · `3931b3c` |
+| B | B-005 · B-006 — the two defects a customer would have hit | 2026-08-02 | `a440fad` |

@@ -9,9 +9,25 @@
 | **Docker** | for PostgreSQL and Redis |
 | **[uv](https://docs.astral.sh/uv/)** | Python toolchain — the backend is never run with bare `python` |
 | **Node 20+ / npm** | frontend |
+| **`make`** | **every gate in this repository is invoked through it** — `make demo`, `make smoke`, `make test`, `make certify`, `make dr`. `sudo apt-get install make` (or `build-essential`) |
 | **Ollama** *(optional)* | only for `make eval*`. **The app itself never calls a model.** |
 
 Everything runs locally. There is no cloud environment and no remote gate ([ADR-0027](architecture/adr/0027-local-first-development.md)).
+
+> **`make` matters more here than in most repositories.** Because the local run is the only run, a workstation without it cannot execute a single quality gate — and the Milestone Definition of Done (`CLAUDE.md` §19) contains steps nobody on that machine can perform. **Check it before your first slice:** `make --version`.
+>
+> **Install it rather than working around it** (`CLAUDE.md` §20e, *QE removes its own blockers*). A missing gate runner is a missing gate, not an inconvenience.
+>
+> **Without `sudo`, this works and needs no root:**
+>
+> ```bash
+> apt-get download make                      # no root required
+> dpkg -x make_*.deb /tmp/make-extract
+> mkdir -p ~/.local/bin && cp /tmp/make-extract/usr/bin/make ~/.local/bin/
+> make --version                             # ~/.local/bin is already on PATH for uv
+> ```
+>
+> **Done on this workstation 2026-08-02**, which is how [B-011](BUGS.md) was closed. `bash infra/smoke.sh` also still works directly — which is exactly why the Makefile invokes its scripts that way — but it is the fallback, not the answer.
 
 ---
 
@@ -38,7 +54,7 @@ cd backend && SIGNORA_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_
   SIGNORA_JWT_PUBLIC_KEY="$(cat .dev-keys/public.pem)" \
   SIGNORA_JWT_ISSUER=http://localhost:3000 \
   SIGNORA_JWT_AUDIENCE=signora-api \
-  uv run uvicorn apps.api.main:app --reload --port 8000
+  uv run uvicorn apps.api.main:create_app --factory --reload --port 8000
 
 # frontend
 cd frontend && npm run dev
@@ -111,9 +127,29 @@ Both halves or neither — a half-configured provider renders a button that fail
 
 Three development lanes work the same repository at once (`CLAUDE.md` §20e). **Separate clones isolate the code; they do not isolate the database or the ports** — and a second `pytest` run against the shared database truncates another lane's rows mid-test, producing failures nobody can reproduce.
 
-Three things per lane, all environment variables. **Substitute your lane's row from the table in step 3.**
+### The allocation convention — permanent
 
-**1 — its own database**, once. **All three already exist and are migrated to head**, so this is only needed for a lane added later:
+**This table is the only place a lane's ports, database and Redis index are recorded.** No lane invents ports; no lane shares a database. **Adding a lane means claiming the next row here**, in the same change that creates the branch — not choosing numbers and telling nobody.
+
+| Environment | Branch | Web | API | Database | Redis DB |
+|---|---|---|---|---|---|
+| **Human review** | `main` | **3000** | **8000** | `signora` | 0 |
+| **QE** | `lane-qe` | 3200 | 8200 | `signora_lane_qe` | 1 |
+| **Lane A — Product Surface** | `lane-a-product-surface` | 3300 | 8300 | `signora_lane_a` | 2 |
+| **Lane B — Commercial Profile** | `lane-b-commercial-profile` | 3400 | 8400 | `signora_lane_b` | 3 |
+| **Lane C** | `lane-c-<name>` | 3500 | 8500 | `signora_lane_c` | 4 |
+| **Lane D** | *unclaimed* | 3600 | 8600 | `signora_lane_d` | 5 |
+| **Lane E** | *unclaimed* | 3700 | 8700 | `signora_lane_e` | 6 |
+
+**The rule generating it:** web `3000 + 100n`, API `8000 + 100n`, database `signora_lane_<letter>`, Redis logical index `n`. One block of 100 per environment, so nothing collides and the arithmetic is obvious from any one row.
+
+> **3000 and 8000 belong to human review on `main`, and to no lane.** This is a change, ratified 2026-08-01: Lane A previously held them, which put a feature lane and the product owner's demo stack on the same two ports. **Lane A moves to 3300/8300** and must update its `frontend/.env.local` and its API command. It also removes an ambiguity in `make smoke`, which binds 3000 and 8000 and could previously fail because of a *lane's* dev server without anything saying so ([B-002](BUGS.md)).
+
+> **One Postgres, one Redis, many databases.** There is no second stack — Postgres holds as many databases as there are lanes, Redis distinguishes them by logical index, and nothing in the test path touches Redis today. The Redis column exists so that the first lane whose work does touch it is not the one that has to invent the scheme.
+
+Three things per lane, all environment variables. **Substitute your lane's row from the table above.**
+
+**1 — its own database**, once. **The first four already exist and are migrated to head**, so this is only needed for a lane added later:
 
 ```bash
 cd backend
@@ -129,35 +165,31 @@ SIGNORA_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:5432/signora
   uv run alembic upgrade head
 ```
 
-**2 — point the tests at it.** In that lane's shell or `backend/.env`:
+**2 — point the tests at it.** **Three variables, and all three must be exported into the shell** — `backend/.env` is not enough:
 
 ```bash
 export SIGNORA_TEST_APP_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5432/signora_lane_b
 export SIGNORA_TEST_ADMIN_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:5432/signora_lane_b
+export SIGNORA_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:5432/signora_lane_b
+export SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1
 ```
 
-**Every test path honours these** — the fixtures, the API integration clients and the seeders all resolve the URL from one place in `tests/conftest.py`. **Verify before your first slice:** run any integration test and confirm rows moved in your database and not in `signora`.
+**Every test path honours the first two** — the fixtures, the API integration clients and the seeders all resolve the URL from one place in `tests/conftest.py`.
 
-**3 — its own ports and database.** One block of 100 per lane, so nothing collides:
+**The third is the one that catches people out.** `migrations/env.py` reads `SIGNORA_DATABASE_URL` from `os.environ` directly and never sees `backend/.env`, so a lane that sets only the first two gets three failures in `tests/integration/test_migration_runner.py` whose message — *"SIGNORA_DATABASE_URL must be set to run migrations"* — reads like a broken schema. Worse, set it to a *different* database and the migration runner locks one and migrates the other. That is [B-007](BUGS.md), and it is open — the documentation half is [B-003](BUGS.md).
 
-| Lane | Branch | Web | API | Test database |
-|---|---|---|---|---|
-| A — Product Surface | `lane-a-product-surface` | 3000 | 8000 | `signora_lane_a` |
-| B — Commercial Profile | `lane-b-commercial-profile` | 3100 | 8100 | `signora_lane_b` |
-| QE | `lane-qe` | 3200 | 8200 | `signora_lane_qe` |
+**Verify before your first slice**, and do it by auditing rather than by watching row counts: `grep -rn "postgresql" --include=*.py backend/tests backend/apps backend/migrations | grep -v .venv`. Every hit must resolve from one of the variables above or be a deliberately unreachable address. **Differencing the other lanes' databases proves nothing** — they are written concurrently by their own sessions. Only `signora` must be provably untouched.
 
-
+**3 — its own ports.** From the allocation table above:
 
 ```bash
-cd frontend && npm run dev -- --port 3100
-cd backend && uv run uvicorn apps.api.main:app --reload --port 8100
+cd frontend && npm run dev -- --port 3400
+cd backend && uv run uvicorn apps.api.main:create_app --factory --reload --port 8400
 ```
 
 Set `SIGNORA_API_URL` and `BETTER_AUTH_URL` to that lane's ports in its `frontend/.env.local`.
 
-**One Postgres, one Redis, many databases.** There is no second stack — Postgres holds as many databases as there are lanes, and nothing in the test path touches Redis today.
-
-> **`make smoke` binds ports 3000 and 8000.** It cannot run while any dev server holds them — stop **every** lane's dev server first. Worth knowing before a milestone gate, because the failure reads as *"stack did not reach healthy"* rather than *"a port is in use"*.
+> **`make smoke` binds 3000 and 8000** — the human-review ports. It cannot run while anything holds them: stop the review stack **and** every lane's dev server first. Worth knowing before a milestone gate, because the failure reads as *"stack did not reach healthy"* rather than *"a port is in use"* ([B-002](BUGS.md)).
 
 > **The Playground lives in `signora`, and no lane's tests may target it.** That is the whole point of steps 1 and 2: it is the database `make demo-seed` fills and the one you review the product in.
 

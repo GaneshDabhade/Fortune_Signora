@@ -32,6 +32,11 @@
 
 **A lane reads this before starting a slice**, alongside [`BUGS.md`](BUGS.md) and [`RUNNING.md`](RUNNING.md).
 
+
+> **Two lanes allocated `C-001`…`C-009` independently on 2026-08-02**, while the repository ran on two baselines. The items promoted to `main` keep their numbers; **QE renumbered the later set** — `lane-qe`'s C-001 → [C-010](#c-010--no-lane-is-assignable-to-apps-or-signora_platform-and-a-defect-is-sitting-in-one), C-003 → C-011, C-004 → C-012, C-005 → C-013, C-007 → C-014, C-008 → C-015, C-009 → C-016.
+>
+> **Two were dropped rather than renumbered, because they had already been answered:** *the target-account list gives Provider Platform the subject it has never had* is [C-001](#c-001--the-target-account-contract), answered by [ADR-0036](architecture/adr/0036-target-account-contract.md); and *ICP is named in five documents and owned by no milestone* was answered by M12.5 shipping it. **An id, once promoted, is never reused for a different question.**
+
 ---
 
 ## What is waiting
@@ -41,12 +46,18 @@
 | [C-001](#c-001--the-target-account-contract) | The target-account contract — this module's first edge | Lane B | **Lane A** | `ANSWERED` → **[ADR-0036](architecture/adr/0036-target-account-contract.md)** | **Nothing. Slice 5 may begin.** `CLOSED` when both lanes have built it |
 | [C-002](#c-002--customer-language-has-no-anticorruption-layer) | Customer language has no anticorruption layer | Lane B | **Product owner** (ADR) | `OPEN` | Anything that matches an account against an ICP |
 | [C-003](#c-003--three-wire-codes-for-one-condition) | Three wire codes for one condition | Lane B | **Product owner** | `OPEN` | Nothing. **It stopped growing** — slice 5 cites no product |
-| [C-004](#c-004--shared-documents-lag-commercial-profile) | Shared documents lag Commercial Profile | Lane B | **Integrator** | `OPEN` | Nothing today; a cold session reads a stale manifest |
+| [C-004](#c-004--shared-documents-lag-commercial-profile) | Shared documents lag Commercial Profile | Lane B | **QE** | `OPEN` | Nothing today; a cold session reads a stale manifest |
 | [C-005](#c-005--who-owns-the-signal-profile-write-path) | Who owns the signal-profile write path | Lane B | **Product owner** / Lane A | `ANSWERED` — ownership. **Sequencing still the product owner's** | The first customer-editable relevance profile |
 | [C-006](#c-006--which-lane-owns-test_api_modulepy) | Which lane owns `test_api_<module>.py` | Lane B | **Product owner** | `OPEN` | Nothing — a standing ambiguity in §20e |
 | [C-007](#c-007--the-guided-first-run-is-a-two-lane-build) | The guided first run is a two-lane build | Lane B | Lane A + **product owner** | `ANSWERED` — routing and navigation. **Sequencing still the product owner's** | Sequencing after M12.5 slice 5 |
-| [C-008](#c-008--sellers-cannot-see-what-their-company-sells) | Sellers cannot see what their company sells | Lane B | **Product owner** + Integrator | `OPEN` | Nothing today. Every AE and SDR, every day |
+| [C-008](#c-008--sellers-cannot-see-what-their-company-sells) | Sellers cannot see what their company sells | Lane B | **Product owner** + QE | `OPEN` | Nothing today. Every AE and SDR, every day |
 | [C-009](#c-009--an-internal-fault-reaches-a-customer-as-a-422) | An internal fault reaches a customer as a `422` | Lane A | **Product owner** (platform §20a) | `OPEN` | Nothing today. Splitting the error hierarchy in any module |
+| [C-010](#c-010--no-lane-is-assignable-to-apps-or-signora_platform-and-a-defect-is-sitting-in-one) | No lane is assignable to `apps/` or `signora_platform/` | QE | **Product owner** | `OPEN` | [B-007](BUGS.md) and [B-012](BUGS.md) sit in exactly this gap |
+| [C-011](#c-011--a-contraction-risk-reads-like-a-small-opportunity-on-the-attention-list) | A contraction risk reads like a small opportunity on the attention list | QE | **Product owner** | `OPEN` | R9-03 only. The rest of the surface proceeds |
+| [C-012](#c-012--eventhandler-receives-no-session-so-no-module-handler-is-registered) | `EventHandler` receives no session, so no module handler is registered | QE | **Product owner** (platform §20a) | `WAITING` — RFC queued since M3A | Every module that wants to consume an event |
+| [C-013](#c-013--publishableevent-cannot-be-satisfied-by-a-frozen-dataclass) | `PublishableEvent` cannot be satisfied by a frozen dataclass | QE | **Product owner** (platform §20a) | `WAITING` — RFC queued since M3A | Nothing today; every new event pays the workaround |
+| [C-014](#c-014--accessibility-and-performance-testing-are-qes-and-neither-exists) | Accessibility and performance testing are QE's, and neither exists | QE | **Product owner** (a milestone number) | `OPEN` | Nothing. **§20c already treats an accessibility issue as a defect class** |
+| [C-016](#c-016--two-branch-names-encode-a-permanent-module-assignment-that-no-longer-exists) | Two branch names encode a permanent module assignment that no longer exists | QE | **Product owner** | `OPEN` | Nothing. It misleads every lane that reads `git branch` |
 
 ---
 
@@ -349,11 +360,6 @@ Lane A's call, and the answer is no change. [D38](38-product-design-principles.m
 
 ---
 
-## Closed
-
-*None yet.*
-
-
 ---
 
 ## C-009 · An internal fault reaches a customer as a `422`
@@ -472,3 +478,167 @@ Identifiers therefore move **out of messages and into log fields** rather than b
 **Unlocks:** each module splits its own hierarchy inside its own budget · the invariant added in `e1a34a6` narrows from *"no mapped message may name an identifier"* to *"no **customer** message may"*, which is stronger, because a `PlatformError` would then be free to say everything an engineer needs · error dashboards separate *customers being refused* from *Signora being wrong*, which are currently one number.
 
 **Costs:** every module reclassifies its exceptions once — mechanical, and the invariant will find any that are missed · two new response codes for clients to know about, both already implied by the status codes · QE gains a real assertion it cannot make today: **no `5xx` response may contain a domain sentence.**
+
+---
+
+---
+
+## C-010 · No lane is assignable to `apps/` or `signora_platform/`, and a defect is sitting in one
+
+| | |
+|---|---|
+| **Decision required** | How is code that belongs to no module assigned when it needs a fix? |
+| **Participating modules** | none — `signora_platform/` (frozen, §20a) · `apps/` (composition root) · the frontend foundation (frozen, §20c) |
+| **Current assignee(s)** | **Product owner** to answer · QE waiting |
+| **Blocking** | [B-003](BUGS.md), which currently has no route to a fix |
+| **Status** | `OPEN` |
+
+**Current positions.** QE's position is that this is a structural gap rather than a missing decision: every other defect resolves to a module, and a module resolves to a current assignee, but this code is deliberately outside the module structure. Absent an answer QE will leave such rows unassigned indefinitely, which is honest and useless.
+
+**Implementation impact.** Two shapes of answer, genuinely different in cost. **Assign the area to a lane on demand** — a temporary assignment like any other, with §20a's freeze rules still binding and an RFC still required for an interface change; the fix moves at slice speed. Or **route every such defect through the RFC process**, and accept that platform fixes move at RFC speed. B-003 is currently the only instance, so the cost of the second is one open row.
+
+**Final decision.** —
+
+**Recorded in.** —
+
+---
+
+---
+
+## C-011 · A contraction risk reads like a small opportunity on the attention list
+
+| | |
+|---|---|
+| **Decision required** | Whether and how posture is shown on an attention row |
+| **Participating modules** | `buying_score_engine` (owns posture) · the product surface |
+| **Current assignee(s)** | **Product owner** to answer · the product-surface assignee waiting |
+| **Blocking** | R9-03 |
+| **Status** | `OPEN` |
+
+**Current positions.** *Attention is unsigned for every posture and opposing readings never net* holds inside the score, but does not reach the row: a contraction risk currently presents like a low-scoring opportunity, and the two mean opposite things to a CRO scanning a list. The implementing lane's recorded instruction is **do not implement without the ruling**.
+
+**Implementation impact.** A product judgement, not an implementation detail — which is why it has waited rather than been solved locally. Carried from [`SESSION_HANDOFF.md`](SESSION_HANDOFF.md) §7, which had no register to put it in.
+
+**Final decision.** —
+
+**Recorded in.** —
+
+---
+
+---
+
+## C-012 · `EventHandler` receives no session, so no module handler is registered
+
+| | |
+|---|---|
+| **Decision required** | How a handler participates in the dispatcher's transaction — RFC required (§20a) |
+| **Participating modules** | `signora_platform` (frozen) · every module that publishes |
+| **Current assignee(s)** | **Product owner** — RFC |
+| **Blocking** | The deployed worker consumes nothing; M5B's staleness sweep is unscheduled |
+| **Status** | `WAITING` |
+
+**Current positions.** A handler must work in the *same transaction* as the dispatcher's idempotency claim; the registry's signature is `(envelope) -> None`. The pipeline is exercised end to end through its real handlers in the integration suite and `make smoke`, **so every gate is green while the deployed worker consumes nothing** — the reason this has survived since M3A.
+
+**Implementation impact.** Any module milestone that needs live event consumption. **Not to be worked around inside a product milestone**, which is how it would become permanent.
+
+**Final decision.** —
+
+**Recorded in.** —
+
+---
+
+---
+
+## C-013 · `PublishableEvent` cannot be satisfied by a frozen dataclass
+
+| | |
+|---|---|
+| **Decision required** | Protocol shape versus immutability — RFC required (§20a) |
+| **Participating modules** | `signora_platform` (frozen) · eight publishing modules |
+| **Current assignee(s)** | **Product owner** — RFC |
+| **Blocking** | nothing; eight modules carry a `# type: ignore` at their publish site |
+| **Status** | `WAITING` |
+
+**Current positions.** Small, contained, identical in every module — which is exactly why it has survived eight milestones. Queued alongside [C-012](#c-004--eventhandler-receives-no-session-so-no-module-handler-is-registered) because both touch the same frozen surface and should be decided together.
+
+**Implementation impact.** Cosmetic today. The cost is that a `# type: ignore` in eight places trains people to add a ninth.
+
+**Final decision.** —
+
+**Recorded in.** —
+
+---
+
+---
+
+## C-014 · Accessibility and performance testing are QE's, and neither exists
+
+| | |
+|---|---|
+| **Decision required** | Milestone numbers for two responsibilities QE already holds |
+| **Participating modules** | none — repository-wide |
+| **Current assignee(s)** | **Product owner** · QE waiting |
+| **Blocking** | nothing today |
+| **Status** | `OPEN` |
+
+**Current positions.** §20c treats an accessibility issue as a **defect class** — a missing label, an unreachable control, a lost focus state — and nothing in the repository tests for one. Performance testing was deferred by [`20-provider-simulation.md`](architecture/20-provider-simulation.md) until there was a pipeline to benchmark; there now is one, and R-09 was measured by hand. **QE will not build either as an empty framework**, so both stay at zero until scheduled.
+
+**Implementation impact.** The gap between how seriously the architecture takes accessibility and how much of it is enforced is currently the largest in the repository.
+
+**Final decision.** —
+
+**Recorded in.** —
+
+---
+
+---
+
+## C-016 · Two branch names encode a permanent module assignment that no longer exists
+
+| | |
+|---|---|
+| **Decision required** | Whether to rename `lane-a-product-surface` and `lane-b-commercial-profile`, and when |
+| **Participating modules** | none — repository convention |
+| **Current assignee(s)** | **Product owner** — **answered 2026-08-01** |
+| **Blocking** | nothing |
+| **Status** | `ANSWERED` — deferred, deliberately |
+
+**Current positions.** Both branch names name a module. Under the assignment model ratified 2026-08-01 **a lane is a temporary execution resource and never permanently holds a module**, so within one rotation those names describe work the branch is not doing. QE's position was that `lane-a` / `lane-b` is the correct form, with the module in the Slice Handoff rather than in a ref.
+
+**Implementation impact.** Cheap in isolation, and it is *the* naming a cold session reads first — but the branches exist on `origin` and in two live clones, so renaming mid-slice breaks both.
+
+**Final decision.** **Product owner, 2026-08-01: do not rename now — the migration cost outweighs the benefit.** The current names may stand **until a natural repository restructuring occurs**, at which point this recommendation is taken up. The row stays `ANSWERED` rather than `CLOSED` because the recommendation outlives the decision: closing it would delete the reasoning that the next restructuring needs.
+
+**Recorded in.** This row, deliberately. **A row kept open as a standing recommendation is the one case where the register does not shrink** — and it is recorded as such so it is not mistaken for a stalled item.
+
+---
+
+---
+
+## Closed
+
+## C-015 · Ports 3000 and 8000 now belong to human review
+
+| | |
+|---|---|
+| **Decision required** | None — an action to be taken by the lane currently holding those ports |
+| **Participating modules** | none — environment |
+| **Current assignee(s)** | the lane running on 3000/8000 |
+| **Blocking** | `make smoke`, intermittently and without saying so |
+| **Status** | `OPEN` |
+
+**Current positions.** The allocation convention now reserves **3000/8000 for human product review on `main`** ([`RUNNING.md` § Running a lane](RUNNING.md#running-a-lane)). A lane is still holding them.
+
+**Implementation impact.** Until it moves, `make smoke` can fail with *"stack did not reach healthy"* because a lane's dev server holds a port, with nothing in the output saying so ([B-002](BUGS.md)). Move to the assigned block and update `frontend/.env.local` and the API command.
+
+**Final decision.** —
+
+**Recorded in.** —
+
+---
+
+**Closed 2026-08-02.** Implemented in [`RUNNING.md` § Running a lane](RUNNING.md#running-a-lane): human review holds 3000/8000, Lane A moved to 3300/8300, and every lane's block of 100 is recorded there. The item is kept rather than deleted because the allocation it settled is the kind a future lane will otherwise re-litigate.
+
+
+
+---
