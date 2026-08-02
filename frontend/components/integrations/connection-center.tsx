@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, Card, CardBody, CardHeader, CardTitle } from '@/components/ui';
+import { Badge, Button, Card, CardBody, CardHeader, CardTitle } from '@/components/ui';
 import type {
   Connection,
   ConnectionAttention,
@@ -93,10 +93,15 @@ export function ConnectionCenter({
   systems,
   isLoading,
   isError,
+  onDisconnect,
 }: {
   systems: readonly IntegrationSystem[];
   isLoading: boolean;
   isError: boolean;
+  /** Absent for a reader who cannot disconnect — the control is not rendered
+   * rather than rendered disabled. A disabled button invites somebody to
+   * discover they lack permission by pressing it. */
+  onDisconnect?: (connection: Connection) => void;
 }) {
   if (isError) {
     return (
@@ -126,7 +131,7 @@ export function ConnectionCenter({
       <ul className="flex flex-col gap-4">
         {systems.map((system) => (
           <li key={system.integration}>
-            <SystemCard system={system} />
+            <SystemCard system={system} onDisconnect={onDisconnect} />
           </li>
         ))}
       </ul>
@@ -134,7 +139,13 @@ export function ConnectionCenter({
   );
 }
 
-function SystemCard({ system }: { system: IntegrationSystem }) {
+function SystemCard({
+  system,
+  onDisconnect,
+}: {
+  system: IntegrationSystem;
+  onDisconnect?: (connection: Connection) => void;
+}) {
   return (
     <Card>
       <CardHeader>
@@ -160,7 +171,11 @@ function SystemCard({ system }: { system: IntegrationSystem }) {
           )}
 
           {system.connections.map((connection) => (
-            <ConnectionRow key={connection.id} connection={connection} />
+            <ConnectionRow
+              key={connection.id}
+              connection={connection}
+              onDisconnect={onDisconnect}
+            />
           ))}
 
           {system.connections.length === 0 && !system.connectable ? (
@@ -181,15 +196,35 @@ function StatusBadge({ system }: { system: IntegrationSystem }) {
   return <Badge tone="neutral">Not connected</Badge>;
 }
 
-function ConnectionRow({ connection }: { connection: Connection }) {
+function ConnectionRow({
+  connection,
+  onDisconnect,
+}: {
+  connection: Connection;
+  onDisconnect?: (connection: Connection) => void;
+}) {
   const reason = connection.reason ? ATTENTION_REASON[connection.reason] : null;
+  // Already disconnected: nothing to withdraw, and offering the control again
+  // would invite a customer to fix something that is not broken.
+  const canDisconnect = onDisconnect && connection.state !== 'disconnected';
   return (
     <div className="flex flex-col gap-0.5 border-l-2 border-border pl-3">
       <div className="flex items-baseline justify-between gap-3">
         <span className="text-sm text-foreground">{connection.label}</span>
-        <Badge tone={attentionTone(connection.attention)}>
-          {CONNECTION_STATE[connection.state] ?? connection.state}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge tone={attentionTone(connection.attention)}>
+            {CONNECTION_STATE[connection.state] ?? connection.state}
+          </Badge>
+          {canDisconnect ? (
+            <Button
+              variant="ghost"
+              onClick={() => onDisconnect(connection)}
+              aria-label={`Disconnect ${connection.label}`}
+            >
+              Disconnect
+            </Button>
+          ) : null}
+        </div>
       </div>
       {reason ? <span className="text-xs text-muted-foreground">{reason}</span> : null}
     </div>

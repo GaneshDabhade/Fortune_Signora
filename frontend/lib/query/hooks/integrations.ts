@@ -7,7 +7,7 @@
  * the frozen foundation rather than a change to it (§20c).
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { apiRequest } from '@/lib/api/client';
 import type { IntegrationSystem } from '@/lib/api/types';
@@ -24,5 +24,38 @@ export function useIntegrations(workspaceId: string | null) {
     queryKey: queryKeys.integrations(workspaceId ?? ''),
     enabled: Boolean(workspaceId),
     queryFn: () => apiRequest<IntegrationSystem[]>(`/workspaces/${workspaceId}/integrations`),
+  });
+}
+
+export interface DisconnectResult {
+  state: string;
+  /** Whether the other system was told. False means the customer may still
+   * want to remove Signora on that system's side, which the screen says. */
+  revoked_at_provider: boolean;
+  already_disconnected: boolean;
+}
+
+/**
+ * Stop using a connected system.
+ *
+ * **No optimistic update.** Disconnecting is a security action, and showing it
+ * as done before the server agrees would tell somebody their access was
+ * withdrawn while it might not have been. The list is refetched instead — the
+ * extra round trip costs a moment and buys a screen that is never wrong about
+ * this.
+ */
+export function useDisconnect(workspaceId: string | null) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (connectionId: string) =>
+      apiRequest<DisconnectResult>(
+        `/workspaces/${workspaceId}/connections/${connectionId}/disconnect`,
+        { method: 'POST' },
+      ),
+    onSuccess: () => {
+      void client.invalidateQueries({
+        queryKey: queryKeys.integrations(workspaceId ?? ''),
+      });
+    },
   });
 }
