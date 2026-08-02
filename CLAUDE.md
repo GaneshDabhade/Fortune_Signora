@@ -428,6 +428,7 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 | **Change Budget** | §20e | — |
 | **Work allocation** | §20e *Nobody assigns; lanes pull* | [`docs/BACKLOG.md`](docs/BACKLOG.md) — **the READY queue**, prioritized by the product owner |
 | **Claiming a task** | §20e *The Task Claim Protocol* | the claim commit itself — **atomic, because a push is** |
+| **Task lifecycle states · who sets each** | §20e *Execution ownership ends at `IN VALIDATION`* | [`docs/BACKLOG.md`](docs/BACKLOG.md) · [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) — the two legends |
 | **Lane assignment** | §20e *Modules are permanent* | [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) — **the execution board**, written by the claiming lane |
 | **Implementation area vs integration cadence** | §20e *Implementation ownership and integration cadence are independent* | — |
 | **Startup workflow** | §20e *Startup* | — |
@@ -475,7 +476,7 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 
 | Lane | Builds features? | Notes |
 |---|---|---|
-| **Implementation lanes** | Yes | Assigned one slice inside one module at a time. Branch: `lane-*`, permanent by name, one slice of content |
+| **Implementation lanes** | Yes | **Implementing one slice at a time**, claimed from the backlog. Earlier slices may still be with QE — a lane never idles waiting for validation. Branch: `lane-*`, permanent by name |
 | **QE — Quality Engineering & Integration** | **No** | **One lifecycle, seven stages, below.** Holds `lane-qe`, **`integration` and `main`** |
 
 **QE is the one permanent assignment**, because its responsibility is the repository rather than any module in it.
@@ -716,6 +717,46 @@ promoted commit SHA  ==  certified commit SHA
 **Do not redesign a stable process without evidence, and do not add a refinement because one is possible.** Every rule here costs a cold session reading time and a lane compliance effort, and the repository is now past the point where more process buys more safety.
 
 **Treat governance as infrastructure and implementation as the primary driver of value.** The repository's success is measured by engineering throughput, feature completion, repository quality and certification reliability — **never by the number of governance refinements introduced.**
+### Execution ownership ends at `IN VALIDATION`
+
+**Ratified 2026-08-02, product owner.** Two refinements on one day, and they are one idea: **every lifecycle state has exactly one owner, and a lane's ownership stops the moment the work becomes something QE can take.**
+
+| State | Set by | Means |
+|---|---|---|
+| `READY` | Product owner | Claimable |
+| `CLAIMED` | **The lane**, by the Task Claim Protocol | It is yours; implementation may begin |
+| `IN VALIDATION` | **The lane**, the moment it pushes | Implementation, tests, module documentation and Slice Handoff are all complete. **The lane's responsibility for this task has ended** |
+| `CHANGES REQUESTED` | **QE**, during validation | Something did not hold. Returned to the implementing lane, with the corrections named |
+| `VERIFIED` · `CERTIFIED` · `PROMOTED` · `DONE` | **QE, exclusively** | Validation passed · `make certify` passed · `main` fast-forwarded · closed out. **A feature lane never writes one of these** |
+
+**QE does not update the execution status of work it did not write, and a lane does not update the repository's judgement of it.** The previous arrangement had QE setting a lane's execution state, which is bookkeeping rather than judgement — and **a state nobody is clearly responsible for is the one that goes stale.**
+
+#### Continuous execution — a lane never idles waiting for QE
+
+> **The moment a lane sets `IN VALIDATION`, it returns to [`BACKLOG.md`](docs/BACKLOG.md) and claims the next `READY` task.** It does not wait for validation, certification, promotion, Closeout, or Repository Ready.
+
+**Waiting serializes exactly the parallelism lanes exist to create.** A lane blocked on certification is idle engineering capacity, and the cost grows with every lane added — which is the same arithmetic that moved scheduling out of QE earlier the same day. **Repository quality is preserved by the gates, not by making people wait for them.**
+
+**Only four things stop a lane claiming again:**
+
+1. **No `READY` task exists.**
+2. **A higher-priority task has been explicitly assigned** by the product owner.
+3. **An architectural dependency blocks implementation** — a [`C-`](docs/LANE_COORDINATION.md) item whose answer the work would have to assume.
+4. **QE has returned one of this lane's tasks as `CHANGES REQUESTED`** and it must be addressed first.
+
+**Anything else is a lane idling with work available, which is a finding.**
+
+#### What continuous execution means for the branch
+
+**A lane branch may carry more than one slice — but only when every earlier one is `IN VALIDATION`.** The rule it refines is unchanged in intent: *one slice being written at a time*. Two slices simultaneously **under construction** on one branch is still a finding, because neither can be validated without the other.
+
+**Rebase, gate and push each slice as it completes**, exactly as before. QE takes the branch as it stands; stacked slices are validated together, and a `CHANGES REQUESTED` on the earlier one is fixed in place rather than by unwinding the later.
+
+#### `CHANGES REQUESTED` — the feedback path
+
+**QE names the corrections; the implementing lane makes them.** *"QE reports bugs, feature lanes fix them"* is unchanged — this is that rule with a state attached, so a returned slice cannot be mistaken for one nobody looked at.
+
+**The lane pauses its current work only if it must.** It addresses what was asked, re-runs its gates, pushes, and returns the task to `IN VALIDATION`. **A returned slice is a normal engineering loop, not a stop.**
 
 ### The Change Budget
 
@@ -791,12 +832,14 @@ Together these appear in roughly two thirds of all commits. **A lane does not ed
 | `main` | Permanent. **Every commit on it was individually certified** | **QE only**, fast-forwarded to a **certified SHA** |
 | `integration` | Permanent. Where lanes meet. **It keeps moving during certification, deliberately** | **QE**, for all work. **A lane may fast-forward it with a claim-only commit** — that is the arbitration point, and it is the only exception |
 | `lane-*` | **Permanent name, one slice of content.** Reset to `integration` after every merge | Its own session only |
+| `integration` | Permanent. Where lanes meet. **It keeps moving during certification, deliberately** | **QE only.** A lane rebases and pushes; **QE performs the fast-forward** |
+| `lane-*` | **Permanent name.** One slice under construction, plus any earlier slices still `IN VALIDATION`. Reset to `integration` once QE has promoted them | Its own session only |
 
 > **The lane still rebases and still resolves its own conflicts; QE performs the fast-forward.** This is the reading that satisfies both rules at once, and it is not a compromise: **a fast-forward after a clean rebase has no conflicts by construction**, so QE never adjudicates code it did not write, and every arrival on `integration` still passes through one authority. A lane that hands QE a branch which will not fast-forward has not finished step 4.
 
 **Rules, and they are short:**
 
-- **Branch content lives one slice — two days maximum.** A lane branch carrying more than one slice is a finding.
+- **A slice lives two days maximum.** A branch may carry more than one **only when the earlier ones are `IN VALIDATION`** — waiting for QE is not a reason to stop working (*Continuous execution*). **Two slices under construction at once is still a finding.**
 - **Rebase, never merge, onto `integration`.** Rebase freely: nobody else has your lane branch.
 - **Fast-forward only, everywhere.** No merge commits. `main` advances only to a **certified commit on `integration`'s history**, so `main` is always an ancestor of it and the fast-forward always succeeds. Three reasons this is not taste: Alembic's chain is linear, the records are append-only narratives, and a linear history is the only one where *what was true when* is readable.
 - **The gates are the review.** Full local gates on the rebased branch before QE fast-forwards it.
@@ -852,7 +895,9 @@ Three sequences. **Every step names who does it.**
 | 4 | **Re-run the gates on the rebased branch** | Lane | Rebasing changes the program. The gates that passed before it were never run on what is about to merge |
 | 5 | **Write the Slice Handoff** | Lane | In the final commit message. **See below — this is what QE writes the project status from** |
 | 6 | **Push the lane branch and tell QE** | Lane | `git push origin <lane-branch>`. **Backup, not a trigger** — a push stores the repository and starts nothing (§20c-2). QE does not poll |
-| 7 | **Validate** — *lifecycle 1* | **QE** | Repository-wide backend suite · frontend suite · Security Invariants · coverage gate · `make smoke` · **exploratory use of the product** · product review, run on the lane's rebased branch. Defects become `B-nnn` rows |
+| 6a | **Set `IN VALIDATION`** | Lane | In [`BACKLOG.md`](docs/BACKLOG.md) and its own board row. **The lane's responsibility for this task ends here** |
+| 6b | **Claim the next `READY` task** | Lane | Immediately, by the Task Claim Protocol. **Do not wait for anything below this line** — only the four conditions in *Continuous execution* stop a lane claiming again |
+| 7 | **Validate** — *lifecycle 1* | **QE** | Repository-wide backend suite · frontend suite · Security Invariants · coverage gate · `make smoke` · **exploratory use of the product** · product review, run on the lane's rebased branch. Defects become `B-nnn` rows. **Passing sets `VERIFIED`; failing sets `CHANGES REQUESTED` and returns the task to the implementing lane with the corrections named** |
 | 8 | **Certify** — *lifecycle 2* | **QE** | `make certify`, migration reversibility, `make dr` ([ADR-0032](docs/architecture/adr/0032-release-certification.md)), **all against the pinned SHA**. **The commit certified here is the commit promoted at step 10** — identical, or the promotion aborts |
 | 9 | **Integrate** — *lifecycle 3* | **QE** | `--ff-only` into `integration`. A branch that will not fast-forward goes back to the lane at step 3. Reconcile the registers; verify the Slice Handoff's claims |
 | 10 | **Promote** — *lifecycle 4* | **QE** | `git merge --ff-only <certified-sha>` into `main`, after `infra/certification-guard.py` confirms that SHA is certified. **Certification passed, so this happens** — no approval, no pause, no waiting state |
@@ -865,7 +910,7 @@ Three sequences. **Every step names who does it.**
 
 **`integration` never fast-forwards to `main` with an open 🔴 bug.** That is the one blocking rule; 🟠 and below are the product owner's call.
 
-**A lane resets its branch to `integration` once QE confirms the promotion**, and starts the next slice from there.
+**A lane resets its branch to `integration` once QE confirms the promotion.** That is *housekeeping*, not a gate: **the next slice began at step 6b**, and by the time promotion lands the lane is usually several commits into it. A lane whose branch still holds unpromoted work simply rebases at its next slice boundary, exactly as it always has.
 
 ### Repository state, and the assignment board
 
@@ -1102,9 +1147,11 @@ Never: insert rows directly into production tables · bypass a business rule, Be
 
 §20d requires `PROJECT_STATUS.md` to reflect the previous milestone before the next begins, and [IMPLEMENTATION_ROADMAP.md §1](IMPLEMENTATION_ROADMAP.md) recorded *sequential single-stream execution*. **Both were written for one session and are amended here, as a Category 1 sequencing change.**
 
-> **Lanes may run concurrent milestones. The rule now binds per lane:** a lane does not begin its next milestone until `PROJECT_STATUS.md` reflects the previous one **of that lane**. The dependency graph still governs order — a lane may not start work whose inputs another lane has not shipped.
+> **Lanes may run concurrent milestones.** The dependency graph still governs order — a lane may not start work whose inputs another lane has not shipped.
 
-**QE writes that record, after promotion** (see *Repository state* above). So a lane's gate on starting its next milestone is *QE has promoted and published*, not *I finished locally* — which is the same rule §20d always meant, now with a named author.
+**Amended again, 2026-08-02.** This paragraph said *a lane does not begin its next milestone until `PROJECT_STATUS.md` reflects the previous one of that lane*, making a lane's next slice wait on QE's Closeout. **That is exactly the idle capacity *Continuous execution* removes**, and the rule is withdrawn: **a lane claims its next `READY` task the moment it sets `IN VALIDATION`**, whatever the dashboard currently says.
+
+**What §20d actually protects survives intact**, and it was never the waiting: `PROJECT_STATUS.md` must describe the promoted repository rather than a lane's intentions, and **QE alone writes it, measured from `main`**. A lane starting its next slice changes nothing about that — it is not the author of that record and never was.
 
 Everything else in §20d is unchanged, and **strict milestone ownership matters more, not less**: a lane must never implement another lane's functionality to satisfy its own demonstration.
 
