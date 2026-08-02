@@ -22,6 +22,7 @@ import {
   useSignalCatalog,
 } from '@/lib/query/hooks';
 import { useSession } from '@/lib/auth/client';
+import { useTargetAccounts } from '@/lib/query/hooks/commercial';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -64,6 +65,10 @@ export default function AttentionPage() {
   // versioned artifact, held for the session, and it parallelises with the
   // other two rather than following them.
   const { data: catalog } = useSignalCatalog(activeWorkspace?.id ?? null);
+  // **Only to explain an empty list.** Every seller may read the declaration
+  // (`policy.csv` grants `member` read on `target_account`), so this asks a
+  // question the caller is always permitted to ask.
+  const { data: targets } = useTargetAccounts(activeWorkspace?.id ?? null);
   // Only so a row can say *yours* rather than *taken*. Never an authorization
   // decision — Casbin on the server is that, and always.
   const { data: session } = useSession();
@@ -98,7 +103,13 @@ export default function AttentionPage() {
       {!workspacesLoading && activeWorkspace === null ? <NoWorkspace /> : null}
       {isLoading ? <Loading /> : null}
       {isError ? <Unavailable /> : null}
-      {data && data.items.length === 0 ? <Quiet /> : null}
+      {/* `undefined` while the declaration is still loading, which keeps the
+          established wording rather than guessing — announcing *"nobody has
+          told Signora anything"* to a workspace that has is the confident
+          wrong answer this page already refuses elsewhere. */}
+      {data && data.items.length === 0 ? (
+        <Quiet declared={targets === undefined ? undefined : targets.version > 0} />
+      ) : null}
       {data && data.items.length > 0 ? (
         <ol className="flex flex-col gap-2">
           {data.items.map((account) => (
@@ -222,7 +233,38 @@ function Loading() {
  * would put an account here, so the absence is informative rather than
  * ambiguous.
  */
-function Quiet() {
+/**
+ * The list is empty, and **why** it is empty.
+ *
+ * **One sentence used to cover two very different situations.** *"Nothing
+ * needs your attention"* is true of a workspace Signora has been watching for
+ * weeks and found nothing hot in today. It is **not** true of a workspace that
+ * has never told Signora which companies to watch — there, the product was
+ * reporting an empty *result* where the truth was an empty *input*, and a new
+ * customer reading it would reasonably conclude Signora had looked.
+ *
+ * **The product already knows which it is**: a target account list at version
+ * 0 has never been declared. Asking the customer to work that out from an
+ * empty screen is exactly the effort this surface exists to remove.
+ *
+ * **It says what is true and stops there.** No button, no *"get started"*, no
+ * promise about what happens after declaring — the guided first run is
+ * [C-007](../../../docs/LANE_COORDINATION.md) and is deliberately not
+ * scheduled, and a call to action here would answer part of it by accident.
+ * An owner already has Settings in the navigation; a member cannot declare
+ * one, so a control offering it would be a control they cannot use.
+ */
+function Quiet({ declared }: { declared: boolean | undefined }) {
+  if (declared === false) {
+    return (
+      <EmptyState
+        icon={LineChart}
+        title="Signora does not know which companies to watch yet"
+        description="Your accounts appear here once you tell Signora which companies matter to you. Until then there is nothing for it to look at — this list is empty because it has not been asked, not because it found nothing."
+      />
+    );
+  }
+
   return (
     <EmptyState
       icon={LineChart}

@@ -18,9 +18,14 @@ const accounts = vi.hoisted(() => vi.fn());
 const identities = vi.hoisted(() => vi.fn());
 const catalog = vi.hoisted(() => vi.fn());
 const decided = vi.hoisted(() => vi.fn());
+const targets = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/state/workspace-provider', () => ({
   useWorkspaceContext: workspaceContext,
+}));
+
+vi.mock('@/lib/query/hooks/commercial', () => ({
+  useTargetAccounts: targets,
 }));
 
 vi.mock('@/lib/query/hooks', () => ({
@@ -50,6 +55,9 @@ beforeEach(() => {
   // assertion (*a heading and nothing else is a bug*) meaningful.
   decided.mockReturnValue(IDLE);
   catalog.mockReturnValue(IDLE);
+  // No declaration loaded: the empty state keeps its established wording
+  // rather than guessing, which is the case this screen is about.
+  targets.mockReturnValue(IDLE);
 });
 
 describe('a signed-in reader who belongs to no organization', () => {
@@ -111,5 +119,72 @@ describe('a signed-in reader who belongs to no organization', () => {
     );
 
     expect(body.trim().length).toBeGreaterThan(0);
+  });
+});
+
+describe('an empty list says why it is empty', () => {
+  // **One sentence used to cover two different situations.** "Nothing needs
+  // your attention" is true of a workspace Signora has watched for weeks. It
+  // is not true of one that has never been told which companies to watch —
+  // there the product reported an empty *result* where the truth was an empty
+  // *input*, and a new customer would reasonably conclude Signora had looked.
+
+  beforeEach(() => {
+    workspaceContext.mockReturnValue({
+      workspaces: [{ id: 'w1', name: 'Acme' }],
+      activeWorkspace: { id: 'w1', name: 'Acme' },
+      isLoading: false,
+    });
+    accounts.mockReturnValue({ ...IDLE, data: { items: [], next_cursor: null, has_more: false } });
+  });
+
+  it('tells a new organization that nobody has asked Signora anything', () => {
+    targets.mockReturnValue({ ...IDLE, data: { version: 0, accounts: [], updated_at: null, updated_by: null } });
+
+    render(withQuery(<AttentionPage />));
+
+    expect(screen.getByText(/does not know which companies to watch/i)).toBeInTheDocument();
+  });
+
+  it('says it is empty because it was not asked, not because it found nothing', () => {
+    targets.mockReturnValue({ ...IDLE, data: { version: 0, accounts: [], updated_at: null, updated_by: null } });
+
+    render(withQuery(<AttentionPage />));
+
+    expect(screen.getByText(/not because it found nothing/i)).toBeInTheDocument();
+  });
+
+  it('keeps the established wording once companies have been declared', () => {
+    // A workspace that is being watched and has nothing hot today is the case
+    // the original sentence was written for, and it stays.
+    targets.mockReturnValue({
+      ...IDLE,
+      data: { version: 3, accounts: [{ id: 'a', name: 'Initech' }], updated_at: '2026-08-01T09:00:00Z', updated_by: 'u1' },
+    });
+
+    render(withQuery(<AttentionPage />));
+
+    expect(screen.getByText('Nothing needs your attention')).toBeInTheDocument();
+  });
+
+  it('does not guess while the declaration is still loading', () => {
+    // Announcing "nobody has told Signora anything" to a workspace that has is
+    // the confident wrong answer this page refuses everywhere else.
+    targets.mockReturnValue(IDLE);
+
+    render(withQuery(<AttentionPage />));
+
+    expect(screen.getByText('Nothing needs your attention')).toBeInTheDocument();
+  });
+
+  it('offers no control, because the reader may not be able to use one', () => {
+    // The guided first run is C-007 and is deliberately unscheduled; a call to
+    // action here would answer part of it by accident. An owner has Settings
+    // in the navigation, and a member cannot declare a watch list at all.
+    targets.mockReturnValue({ ...IDLE, data: { version: 0, accounts: [], updated_at: null, updated_by: null } });
+
+    render(withQuery(<AttentionPage />));
+
+    expect(screen.queryByRole('link', { name: /settings/i })).toBeNull();
   });
 });

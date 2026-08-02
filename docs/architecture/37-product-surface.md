@@ -539,3 +539,44 @@ The fix is not to duplicate the sentence. It moves onto the panel **only when no
 ### What this review changes about priority
 
 **Three coordination items now hold six of the nine journeys**, and two of them — C-021 and C-024 — each block more than one. **That is the most useful thing this review produced**: not a new slice, but the observation that the remaining friction is concentrated rather than scattered, and that two rulings would unblock most of it.
+
+---
+
+## Usability review — six perspectives, 2026-08-02
+
+**Traced against the running product, not imagined.** One executable slice, and the rest concentrated on the same four decisions.
+
+| Perspective | State |
+|---|---|
+| **First-time customer** | **One slice found and shipped — PS-06 below.** The rest is [C-007](../LANE_COORDINATION.md), deliberately unscheduled |
+| **Daily workflow** | **Served.** List → brief → citations → decide → next, with position, provenance and now a decision trail. This is the journey the product does well |
+| **Manager** | **Not served.** A manager cannot see who holds what without opening every account, and cannot see a person's name at all ([C-024](../LANE_COORDINATION.md)) |
+| **Administrator** | **Barely served.** Create an organization, rename nothing, see no members, monitor nothing. [C-024](../LANE_COORDINATION.md) and [C-008](../LANE_COORDINATION.md) |
+| **AI trust** | **Served, and it is the product's strongest surface.** Provenance on every narration, limitations the catalog authored, *Signora suggested this* versus *somebody here added it*, and a decision trail that says which entry Signora may author. **No perspective found a place where inference is presented as fact** |
+| **Long-running usage** | **Unknown, and stated as unknown.** The brief is eight sections and grows with each slice; whether that becomes clutter needs somebody who has used it for months, which nobody has |
+
+### PS-06 — an empty list says why it is empty *(2026-08-02)*
+
+**One sentence covered two situations that are not alike.** *"Nothing needs your attention"* is true of a workspace Signora has watched for weeks and found nothing hot in today. It is **not** true of one that has never been told which companies to watch.
+
+**There the product reported an empty *result* where the truth was an empty *input*** — and a new customer would reasonably conclude Signora had looked and found nothing. **The product already knew**: a target account list at version 0 has never been declared.
+
+| Decision | Why |
+|---|---|
+| **It says what is true and stops** | No button, no *"get started"*, no promise about what happens after declaring. The guided first run is [C-007](../LANE_COORDINATION.md) and a call to action here would answer part of it by accident |
+| **No control, deliberately** | An owner already has Settings in the navigation; **a member cannot declare a watch list at all**, so a control offering it would be one they cannot use |
+| **Silent while the declaration loads** | Announcing *"nobody has told Signora anything"* to a workspace that has is the confident wrong answer this page refuses everywhere else |
+| **Reading it is always permitted** | `policy.csv` grants `member` read on `target_account`, so the question the empty state asks is one every caller may ask |
+
+## Architectural concentration — which decisions hold which journeys
+
+**Recorded so architectural work can be prioritized by customer impact rather than by implementation convenience.**
+
+| Decision | Journeys held | Customer value unavailable | Affects | Slices unblocked |
+|---|---|---|---|---|
+| **[C-024](../LANE_COORDINATION.md)** — identity resolution | Collaborating · taking ownership beyond yourself · manager view · administration | **Nobody can be named anywhere in the product.** No team list, no reassignment, no *"Priya dismissed this"* | **Collaboration · administration · daily use** | **TS-01**, assignment, manager view, and every future mention, comment, notification and audit actor |
+| **[C-021](../LANE_COORDINATION.md)** — provider dispatch | Discovering a new account · first run | **A customer names a company to watch and nothing looks at it.** The head of the pipeline is connected to nothing | **Onboarding · trust** | PP-02's last wire, PP-03, [C-007](../LANE_COORDINATION.md)'s guided first run |
+| **[C-008](../LANE_COORDINATION.md)** — who may read the commercial profile | Understanding what your company sells | **A seller cannot see the ideal customer they are selling against.** Live since TS-02 removed the hardcoded owner | **Daily use · trust** | One route guard and a read-only mode on one screen |
+| **[C-025](../LANE_COORDINATION.md)** — the Signal Catalog's purpose | Understanding Signora's vocabulary | **Nine terms on the first screen with no definition anywhere** | **Onboarding** | R5-04, already built and reverted, ~70 lines |
+
+> **C-024 and C-021 are the two that matter.** Between them they hold five journeys, three product areas, and every collaboration capability the roadmap has ahead of it. **C-008 and C-025 are each one slice behind a one-sentence ruling.**
