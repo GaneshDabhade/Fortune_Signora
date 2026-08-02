@@ -342,3 +342,69 @@ Four capabilities the architecture already treats as QE's, of which two exist. *
 *Are we still solving the original product problem? · Are milestones still aligned with the product vision? · Has architecture drifted? · Has implementation drifted? · Are we optimising local work while missing strategic goals? · Are customer-facing capabilities progressing in the intended order? · Are technical improvements outweighing customer value? · Are we accumulating unnecessary complexity? · Are governance rules still serving the repository?*
 
 **The one worth asking every time is the seventh.** A repository whose recent promotions are all tooling, governance and process is a repository optimising itself, and it will not notice from the inside — every individual change will have been justified.
+
+---
+
+## 10a · Never edit the working tree while a gate is running
+
+**Learned expensively, 2026-08-02, candidate `e70dd60`.**
+
+**The full backend suite reported 158 failures.** The obvious reading was a regression in the 34-commit batch under validation. It was not: **QE was renaming an architecture document, rewriting two registers with `sed`, and editing `infra/state-check.py` — while pytest was running against that same working tree.**
+
+```
+run 1, tree being edited underneath it   158 failed, 2405 passed
+one failing test, alone                  1 passed in 1.82s
+run 2, nothing else touching the repo    2563 passed, 0 failed, 95.52%
+```
+
+**A gate reads the tree it is given. Changing that tree mid-run makes the result describe neither the before nor the after.**
+
+> **The rule: once a candidate is pinned, the working tree is frozen until the gate reports.** Register reconciliation, renames, tooling edits and documentation all wait. **None of them is urgent enough to spend a four-minute gate run and risk attributing a self-inflicted failure to a lane** — which is what nearly happened here, against a batch whose real result was clean.
+
+**This is the same principle certification already enforces through `tree_is_clean`**, arriving one stage earlier. Certification refuses a dirty tree because the record must describe a stored tree; **validation should refuse a *moving* one for the same reason.**
+
+---
+
+## 11 · Duplicate findings — when two lanes discover the same thing
+
+**Ratified 2026-08-02, product owner.** Numeric collisions were solved by block allocation. **This is the other half: two lanes independently discovering one issue and giving it two identifiers.** That is not a communication failure — under `CLAUDE.md` §20e lanes *cannot* see each other's uncommitted registers, so **independent rediscovery is a designed property, not a mistake.**
+
+> **The repository must never lose the second discovery. It routinely carries evidence the first did not.**
+
+### What the industry does, and what carries over
+
+| Model | Mechanism | Adopted? |
+|---|---|---|
+| **CVE / MITRE** | An id is **never reused and never deleted**. A duplicate is marked `REJECT` **pointing at the survivor**, and stays forever so old citations resolve | **Yes — the core of this process** |
+| **Debian BTS** | `merge` — bugs keep separate ids but share state, so a change to one updates all | **Partly.** The idea that *both ids stay live* is right; shared mutable state is not, here |
+| **Bugzilla / Jira** | `DUPLICATE` resolution with a `duplicate_of` field; comments migrate to the canonical | **Yes** — the field and the evidence migration |
+| **GitHub** | *"Duplicate of #N"*, closed, backlinks preserved and navigable | **Yes** — the backlink |
+| **Gerrit / kernel** | `Change-Id` and `v2`/`v3` supersession make one change identifiable across rewrites | **Already proposed** — [ADR-0039](architecture/adr/0039-release-engineering-model.md) §A1 |
+
+**The principle all five share: an identifier is a permanent citation, so it is retired rather than removed.** Commit messages are immutable, and a `B-` id inside one is a reference that must keep resolving forever.
+
+### The process
+
+| # | Step | Who |
+|---|---|---|
+| **1 · Detected** | **At integration.** QE fast-forwards both lanes' registers and is the only actor that sees both. **Exact-id collisions are mechanical** (`state-check`); **semantic ones are read.** A lane that suspects it has rediscovered something raises it rather than assuming | **QE**, at lifecycle stage 3 |
+| **2 · Decided** | Two findings are duplicates when **the same change would resolve both**. Different symptoms of one cause are duplicates; the same symptom from two causes is not | **QE** |
+| **3 · Canonical chosen** | **The earlier `Found` timestamp wins** — not the lower number, not the better write-up. Mechanical, and it cannot be argued with | **QE** |
+| **4 · Alias retired** | The later id becomes `DUPLICATE OF <canonical>` and **stays in the register permanently**, with its full original text. **Never deleted, never renumbered** | **QE** |
+| **5 · Evidence merged** | **The alias's distinct evidence moves into the canonical** — reproduction, affected modules, the technique that found it. **This step is the reason the process exists**; skipping it loses exactly what the second discovery added | **QE** |
+| **6 · Ownership preserved** | The canonical records **both** discoverers. **An independent confirmation is a stronger signal than a single report**, and the register should say so rather than erase it | **QE** |
+| **7 · Metrics** | **Only canonicals are counted.** Aliases are excluded from open-defect counts and trends | `kpi.py` |
+
+### Traceability — what a finding carries
+
+**Every field that has a value; `none` is a value and silence is not.**
+
+`Found by` · `Confirmed by` *(independent rediscoveries)* · `Owned by` · `Implemented by` · `Verified by` · `Promoted in` *(SHA)* · `Resolved by` · `Superseded by` · `Merged into` · `Duplicate of` · `Customer impact` · `Affected modules` · `Affected milestones` · `Blocking status`.
+
+> **`Confirmed by` is the field this process adds, and the one worth arguing for.** Two lanes finding one defect by two different techniques is **evidence about severity**, and every model in the table above throws that signal away by closing the second report. Here it is recorded on the survivor.
+
+### What this deliberately does not do
+
+**It does not try to detect semantic duplicates mechanically.** Two findings phrased differently about one cause cannot be matched by string comparison, and **a checker that claimed to would be Decorative Logic** (§2) — it would pass while missing exactly the cases that matter. **The mechanical part is exact-id collision; the judgement is QE's at merge, which is the one moment both registers are visible.**
+
+**It does not merge state.** Debian's shared-state merge is right for a live tracker with thousands of contributors; here it would mean editing an alias and expecting a canonical to change. **A retired alias is frozen** — its text is the historical record of what that lane saw.

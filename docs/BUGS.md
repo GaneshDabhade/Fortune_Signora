@@ -289,7 +289,7 @@ Required test coverage of 95.0% reached. Total coverage: 95.69%     (was 94.79%,
 
 `mypy --strict` clean · `lint-imports` 34 kept, 0 broken · frontend `tsc` clean, 616 tests.
 
-**The general lesson, recorded because it will recur:** a fake that reimplements a rule can only ever agree with itself. Where the rule lives in the database — a constraint, an ordering, a keyset predicate, RLS — the test has to be there too. Written up in [41-integrations.md §10](architecture/41-integrations.md).
+**The general lesson, recorded because it will recur:** a fake that reimplements a rule can only ever agree with itself. Where the rule lives in the database — a constraint, an ordering, a keyset predicate, RLS — the test has to be there too. Written up in [44-integrations.md §10](architecture/44-integrations.md).
 
 ### B-025 · A coverage failure is reported as a test failure, and names the wrong gate
 
@@ -1155,7 +1155,9 @@ ModuleNotFoundError: No module named 'httpx'
 
 ---
 
-### B-017 · `state-check` reads the history table as a second claim
+### B-201 · `state-check` reads the history table as a second claim
+
+> **Renumbered from `B-017` by QE at merge, 2026-08-02.** `B-017` was already allocated to a different finding; the later claim moves, and Lane A's block is `200`+ (`CLAUDE.md` §20e). **The original `B-017` is untouched.**
 
 | | |
 |---|---|
@@ -1186,7 +1188,9 @@ ModuleNotFoundError: No module named 'httpx'
 
 ---
 
-### B-018 · `tsc --noEmit` fails on `integration`
+### B-202 · `tsc --noEmit` fails on `integration`
+
+> **Renumbered from `B-018` by QE at merge, 2026-08-02.** `B-018` was already allocated to a different finding; the later claim moves, and Lane A's block is `200`+ (`CLAUDE.md` §20e). **The original `B-018` is untouched.**
 
 | | |
 |---|---|
@@ -1218,7 +1222,9 @@ tests/components/timeline-feed.test.tsx(80,19): error TS2345: (the same)
 
 ---
 
-### B-019 · Below 768px the product has no navigation at all
+### B-203 · Below 768px the product has no navigation at all
+
+> **Renumbered from `B-019` by QE at merge, 2026-08-02.** `B-019` was already allocated to a different finding; the later claim moves, and Lane A's block is `200`+ (`CLAUDE.md` §20e). **The original `B-019` is untouched.**
 
 | | |
 |---|---|

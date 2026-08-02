@@ -1382,7 +1382,7 @@ The model is now four: **Integration (catalog) · Connected Account · Grant · 
 
 **What remains is a HubSpot developer application** — a client id, a client secret, and a registered redirect URI. Without them nothing can complete a real handshake, and the product says so rather than pretending: every catalog entry reports `connectable: false`, the callback route returns `provider_unavailable` rather than a stub, and **nothing simulates a completed connection.**
 
-**The resume conditions are written down** — [41-integrations.md §9](architecture/41-integrations.md) — in enough detail that a lane arriving months from now needs no commit history. The short version: supply the credentials, implement the token exchange at the one place that returns `provider_unavailable`, call `ConnectSystem`, and flip `connectable` **only after a real handshake succeeds.** Everything else exists and is tested.
+**The resume conditions are written down** — [44-integrations.md §9](architecture/44-integrations.md) — in enough detail that a lane arriving months from now needs no commit history. The short version: supply the credentials, implement the token exchange at the one place that returns `provider_unavailable`, call `ConnectSystem`, and flip `connectable` **only after a real handshake succeeds.** Everything else exists and is tested.
 
 **Left `ANSWERED` rather than `CLOSED`** because the register's own rule is that an item closes when the work it was blocking is implemented, and the last step of that work has not run. It blocks nothing in the meantime.
 
@@ -1693,7 +1693,9 @@ It is also the failure mode this repository keeps finding in a different coat: [
 
 ---
 
-## C-024 · Nothing in the product can render a person's name
+## C-203 · Nothing in the product can render a person's name
+
+> **Renumbered from `C-024` by QE at merge, 2026-08-02.** `C-024` was already allocated to a different finding; the later claim moves, and Lane A's block is `200`+ (`CLAUDE.md` §20e). **The original `C-024` is untouched.**
 
 | | |
 |---|---|
@@ -1750,7 +1752,9 @@ The product owner's own questions make it foundational rather than local: **how 
 
 ---
 
-## C-025 · The catalog explains nine words to nobody
+## C-204 · The catalog explains nine words to nobody
+
+> **Renumbered from `C-025` by QE at merge, 2026-08-02.** `C-025` was already allocated to a different finding; the later claim moves, and Lane A's block is `200`+ (`CLAUDE.md` §20e). **The original `C-025` is untouched.**
 
 | | |
 |---|---|
@@ -1802,7 +1806,9 @@ assert set(SignalTypeResponse.model_fields) == {"key", "title"}
 
 ---
 
-## C-026 · Is Signora expected to work on a phone?
+## C-205 · Is Signora expected to work on a phone?
+
+> **Renumbered from `C-026` by QE at merge, 2026-08-02.** `C-026` was already allocated to a different finding; the later claim moves, and Lane A's block is `200`+ (`CLAUDE.md` §20e). **The original `C-026` is untouched.**
 
 | | |
 |---|---|

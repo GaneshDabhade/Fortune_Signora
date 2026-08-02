@@ -395,6 +395,27 @@ def main() -> int:
         if not clashing and numbers:
             notes.append(f"ADR numbers: {len(numbers)} allocated, none duplicated.")
 
+    # 5f — numbered architecture documents, the class the block rule missed.
+    #
+    # Found by Lane A (C-201): `40` came from Lane B, `41`-`43` from Lane A, and
+    # two lanes writing a module design in one week produce two *differently
+    # named* files that git merges without a word. The block rule enumerated
+    # B-, C-, TASK- and ADR, and stopped there.
+    arch_dir = REPO_ROOT / "docs" / "architecture"
+    if arch_dir.is_dir():
+        numbered: dict[str, list[str]] = {}
+        for path in arch_dir.glob("[0-9]*.md"):
+            numbered.setdefault(path.name.split("-")[0], []).append(path.name)
+        clashes = {n: f for n, f in numbered.items() if len(f) > 1}
+        for number, files in sorted(clashes.items()):
+            findings.append(
+                f"Architecture document {number} is claimed by {len(files)} files: "
+                f"{', '.join(sorted(files))}. Two lanes numbered independently and git "
+                f"merged both — the collision class C-201 names."
+            )
+        if not clashes and numbered:
+            notes.append(f"Architecture documents: {len(numbered)} numbered, none duplicated.")
+
     # 6 — a coordination register that only grows has become a discussion log.
     opened = len(re.findall(r"^#{2,3} C-\d+", coordination, re.M))
     closed = 0
