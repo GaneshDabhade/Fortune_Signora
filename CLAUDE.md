@@ -747,6 +747,17 @@ promoted commit SHA  ==  certified commit SHA
 
 **Anything else is a lane idling with work available, which is a finding.**
 
+**The loop, and it has no branch a lane may add to:**
+
+```
+  implement  ─▶  IN VALIDATION  ─▶  rescan BACKLOG.md  ─┬─▶  READY exists  ─▶  claim  ─▶  implement
+                                                        └─▶  none          ─▶  AVAILABLE, and wait
+```
+
+**A lane never invents work · never reprioritizes · never reopens completed work · never waits for permission while `READY` work exists.** And the symmetric rule, which matters just as much: **a lane never begins work when no `READY` task exists.** Both halves protect the same thing — **the product owner owns priority**, and a lane that manufactures its own next task has taken it, however useful the task looked.
+
+**`AVAILABLE` with an empty queue is a correct repository state, not a stalled one** (ratified 2026-08-02, product owner). The remaining work is being implemented, awaiting QE, blocked, or awaiting a decision — and **each of those has an owner who is not this lane.** Saying so and stopping is the honest report; finding something to do is not.
+
 #### What continuous execution means for the branch
 
 **A lane branch may carry more than one slice — but only when every earlier one is `IN VALIDATION`.** The rule it refines is unchanged in intent: *one slice being written at a time*. Two slices simultaneously **under construction** on one branch is still a finding, because neither can be validated without the other.

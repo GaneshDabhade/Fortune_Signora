@@ -1155,6 +1155,37 @@ ModuleNotFoundError: No module named 'httpx'
 
 ---
 
+### B-017 · `state-check` reads the history table as a second claim
+
+| | |
+|---|---|
+| **Module** | Repository tooling — `infra/state-check.py` |
+| **Current assignee** | **Lane B** — it holds [TASK-005](BACKLOG.md), which added this check and is `IN VALIDATION` |
+| **Severity** | 🟡 — advisory output only; nothing is blocked. **But it is a false positive that now fires on every completed task**, and an advisory nobody believes is worse than none |
+| **Status** | `OPEN` |
+| **Found** | `bff371b`, by Lane A while rescanning the backlog after TASK-004 |
+
+**Steps to reproduce.** Have one task appear both in `ACTIVE_ASSIGNMENTS.md`'s **Current** table and in its **Recently completed** table. Run `python3 infra/state-check.py`.
+
+**Expected.** Nothing. One lane holds the task; the second mention is history, and the two tables are different sections with different meanings.
+
+**Actual.**
+
+```
+  ·  TASK-001 is claimed by B and Lane B at once. The Task Claim Protocol
+     requires the later claim to be abandoned (CLAUDE.md §20e).
+```
+
+**Why.** `board_rows` selects **every** line in the file starting `| ` that contains `TASK-`, so it reads *Recently completed* as claims. The two tables also spell the lane differently — `Lane B` in Current, `B` in Recently completed — so the same lane compares unequal and looks like two lanes racing.
+
+**Why it matters.** The check exists to make *"two lanes claimed one task"* a fact a machine can decide. **It now reports that fact falsely, on the most ordinary state the board has** — a task that was completed. The next real collision will arrive in a report that already contains one, and it will be read as more noise.
+
+**For whoever takes it.** Scope the scan to the **Current** section, the way [`state-check.py`'s handoff check is already scoped](../infra/state-check.py) — *"scoped to the `Current` section deliberately"* is a comment that file already carries about a different check. **Do not fix it by renaming the column in one of the tables**: the section a row is in is what decides its meaning, and matching on lane spelling would leave the check reading history as intent.
+
+---
+
+---
+
 ## Verified
 
 ### B-001 · `signal_profile` reads the wrong row as "current"
