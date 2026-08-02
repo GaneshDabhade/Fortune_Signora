@@ -39,6 +39,35 @@
 
 ---
 
+## Product Owner dependencies — classified 2026-08-02
+
+**Reviewed individually, at the product owner's direction, on the premise that not all of them still need a decision.** Four categories: **already answered · derivable · genuinely yours · obsolete.**
+
+| Item | Category | Why | What it needs |
+|---|---|---|---|
+| **[C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it)** | **3 — yours** | **The highest-value item on this page.** Timeline is built, tested and promoted; no customer can open it | **Placement only.** Options A/B/C stated, recommendation given. Then ~10 lines in Lane A's route |
+| **[C-025](#c-025--m13-is-not-a-module-and-its-consumers-do-not-exist)** | **3 — yours** | Two ratified rules conflict over which tier may run an OAuth flow. **Not derivable: resolving it means amending one of them** | A ruling, then an ADR |
+| **[C-010](#c-010--no-lane-is-assignable-to-apps-or-signora_platform-and-a-defect-is-sitting-in-one)** | **3 — yours** | **Six defects have now landed in this gap** — B-007, B-012, B-013, B-014, B-022, B-025 | An assignment rule for code owned by no module |
+| **[C-020](#c-020--m7-has-no-scope-and-timeline-has-no-design)** | **3 — yours** | M7's remaining scope. [ADR-0038](architecture/adr/0038-timeline.md) proposed, four open questions | Ratify, amend or reject the ADR |
+| **[C-009](#c-009--an-internal-fault-reaches-a-customer-as-a-422)** | **3 — yours** | Changes `signora_platform/`, frozen under §20a | RFC + ADR. Full proposal already recorded |
+| **[C-008](#c-008--sellers-cannot-see-what-their-company-sells)** | **3 — yours** | A product decision about who sees the commercial profile, with four options | Choose A/B/C/D |
+| **[C-006](#c-006--which-lane-owns-test_api_module_py)** | **3 — yours, explicitly** | **You ruled on 2026-08-02 that it stays open** and is not to be settled inside a slice | A governance ruling, when you choose |
+| **[C-002](#c-002--customer-language-has-no-anticorruption-layer)** · **[C-003](#c-003--three-wire-codes-for-one-condition)** · **[C-005](#c-005--who-owns-the-signal-profile-write-path)** · **[C-007](#c-007--the-guided-first-run-is-a-two-lane-build)** · **[C-011](#c-011--a-contraction-risk-reads-like-a-small-opportunity-on-the-attention-list)** · **[C-017](#c-017--the-onboarding-honesty-principle-has-no-permanent-home)** | **3 — yours** | Each changes product behaviour, architecture or customer experience | Stated in each item |
+| **[C-012](#c-012--eventhandler-receives-no-session-so-no-module-handler-is-registered)** · **[C-013](#c-013--publishableevent-cannot-be-satisfied-by-a-frozen-dataclass)** | **3 — yours** | Platform-frozen; RFCs queued since M3A | RFC. **C-012 blocks the deployed worker consuming anything** |
+| **[C-014](#c-014--accessibility-and-performance-testing-are-qes-and-neither-exists)** | **3 — yours**, low urgency | Milestone numbers for two QE capabilities | A roadmap slot |
+| **[C-004](#c-004--shared-documents-lag-commercial-profile)** | **2 — derivable, with one ruling** | The edits are **factual corrections recording what was built**, not architectural decisions. §12 makes drift a bug and §2 makes repository truth binding — **but `01`–`21` is 🔴, which admits no carve-out for drift** | **One ruling: may QE correct factual drift in `01`–`21`?** If yes, QE does it and this closes permanently |
+| **[C-015](#c-015--ports-3000-and-8000-now-belong-to-human-review)** | **1 — answered** | ✅ **Closed this session.** The release preflight answers it | — |
+| **[C-016](#c-016--two-branch-names-encode-a-permanent-module-assignment-that-no-longer-exists)** | **1 — answered** | ✅ **Closed.** Deferred deliberately | — |
+| **[C-001](#c-001--the-target-account-contract)** | **1 — answered** | Ratified as [ADR-0036](architecture/adr/0036-target-account-contract.md) | Move to Closed at the next reconciliation |
+
+> **No item was found obsolete, and none was closed on QE's own authority beyond the two above.** The temptation in an exercise like this is to clear the board by reinterpreting decisions as derivable. **Eleven of fourteen genuinely need you** — and saying so is more useful than a shorter list.
+
+**One reassignment made:** [C-004](#c-004--shared-documents-lag-commercial-profile) and [C-008](#c-008--sellers-cannot-see-what-their-company-sells) named **Integrator** as an owner. **That role was abolished on 2026-08-01** and folded into QE; both now name QE for the half that was the Integrator's.
+
+**If you answer only one, answer [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it).** It is the smallest item here and the only one standing between a fully built capability and a customer using it.
+
+---
+
 ## What is waiting
 
 | Id | What | Requester | Owner | Status | Blocks |
@@ -218,7 +247,7 @@ Provider Normalization is an **anticorruption layer for vendor vocabulary** — 
 
 | | |
 |---|---|
-| **Owner** | **Integrator** |
+| **Owner** | **QE** — *reassigned 2026-08-02: the Integrator role was abolished on 2026-08-01 and folded into QE (`CLAUDE.md` §20e)* |
 | **Requesting lane** | Lane B |
 | **Category** | Architecture documentation |
 | **Status** | `OPEN` |
@@ -380,7 +409,7 @@ Lane A's call, and the answer is no change. [D38](38-product-design-principles.m
 
 | | |
 |---|---|
-| **Owner** | **Product owner** (the decision) + **Integrator** (the frozen foundation) |
+| **Owner** | **Product owner** (the decision) + **QE** (the frozen foundation) — *Integrator reassigned 2026-08-02, role abolished* |
 | **Requesting lane** | Lane B |
 | **Category** | Product decision · frontend foundation |
 | **Status** | `OPEN` |
@@ -731,29 +760,6 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 ---
 
 ---
-
-## C-016 · Two branch names encode a permanent module assignment that no longer exists
-
-| | |
-|---|---|
-| **Decision required** | Whether to rename `lane-a-product-surface` and `lane-b-commercial-profile`, and when |
-| **Participating modules** | none — repository convention |
-| **Current assignee(s)** | **Product owner** — **answered 2026-08-01** |
-| **Blocking** | nothing |
-| **Status** | `ANSWERED` — deferred, deliberately |
-
-**Current positions.** Both branch names name a module. Under the assignment model ratified 2026-08-01 **a lane is a temporary execution resource and never permanently holds a module**, so within one rotation those names describe work the branch is not doing. QE's position was that `lane-a` / `lane-b` is the correct form, with the module in the Slice Handoff rather than in a ref.
-
-**Implementation impact.** Cheap in isolation, and it is *the* naming a cold session reads first — but the branches exist on `origin` and in two live clones, so renaming mid-slice breaks both.
-
-**Final decision.** **Product owner, 2026-08-01: do not rename now — the migration cost outweighs the benefit.** The current names may stand **until a natural repository restructuring occurs**, at which point this recommendation is taken up. The row stays `ANSWERED` rather than `CLOSED` because the recommendation outlives the decision: closing it would delete the reasoning that the next restructuring needs.
-
-**Recorded in.** This row, deliberately. **A row kept open as a standing recommendation is the one case where the register does not shrink** — and it is recorded as such so it is not mistaken for a stalled item.
-
----
-
----
-
 
 ## C-017 · The onboarding honesty principle has no permanent home
 
@@ -1353,6 +1359,30 @@ The model is now four: **Integration (catalog) · Connected Account · Grant · 
 ---
 
 ## Closed
+
+## C-016 · Two branch names encode a permanent module assignment that no longer exists
+
+| | |
+|---|---|
+| **Decision required** | Whether to rename `lane-a-product-surface` and `lane-b-commercial-profile`, and when |
+| **Participating modules** | none — repository convention |
+| **Current assignee(s)** | **Product owner** — **answered 2026-08-01** |
+| **Blocking** | nothing |
+| **Status** | `ANSWERED` — deferred, deliberately |
+
+**Current positions.** Both branch names name a module. Under the assignment model ratified 2026-08-01 **a lane is a temporary execution resource and never permanently holds a module**, so within one rotation those names describe work the branch is not doing. QE's position was that `lane-a` / `lane-b` is the correct form, with the module in the Slice Handoff rather than in a ref.
+
+**Implementation impact.** Cheap in isolation, and it is *the* naming a cold session reads first — but the branches exist on `origin` and in two live clones, so renaming mid-slice breaks both.
+
+**Final decision.** **Product owner, 2026-08-01: do not rename now — the migration cost outweighs the benefit.** The current names may stand **until a natural repository restructuring occurs**, at which point this recommendation is taken up. The row stays `ANSWERED` rather than `CLOSED` because the recommendation outlives the decision: closing it would delete the reasoning that the next restructuring needs.
+
+**Recorded in.** This row, deliberately. **A row kept open as a standing recommendation is the one case where the register does not shrink** — and it is recorded as such so it is not mistaken for a stalled item.
+
+---
+
+---
+
+---
 
 ## C-015 · Ports 3000 and 8000 now belong to human review
 
