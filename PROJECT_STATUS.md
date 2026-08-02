@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `c3435a0`, 2026-08-02.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `2e70b0e`, 2026-08-02.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -19,11 +19,11 @@
 | **Current phase** | **Product implementation** — the pipeline is built; the surface is being exposed |
 | **Last completed milestone** | **M12.5 — Commercial Profile**, all five slices promoted 2026-08-02. The head of the pipeline now exists |
 | **Current milestones** | **M12.3 — the product surface.** The brief's hierarchy (D20) remains; **R2-01 shipped this cycle**. *(Decision Package still deferred until `reasoning@1` is released — see §7)* |
-| **`main` at** | **`c3435a0`** — *ADR-0039 records the decision the product owner actually made*. **The certified commit itself**, promoted by SHA and checked after the merge |
-| **Certification status** | ✅ **CERTIFIED** — [`c3435a03e2aa`](certification/reports/c3435a03e2aa.md), 2026-08-02, bound to migration head **`0025`** and rendering protocol **v2**. **Commit-bound**: the record names `c3435a0`, and `c3435a0` is what was promoted. `make certified ARGS="--audit-main"` proves it across the branch. See §4 |
+| **`main` at** | **`2e70b0e`** — *B-023 — a guard that narrows*. **M7 Timeline reached `main` in this promotion.** **The certified commit itself**, promoted by SHA and checked after the merge |
+| **Certification status** | ✅ **CERTIFIED** — [`2e70b0e2326a`](certification/reports/2e70b0e2326a.md), 2026-08-02, bound to migration head **`0026`** and rendering protocol **v2**. **Commit-bound**: the record names `2e70b0e`, and `2e70b0e` is what was promoted. `make certified ARGS="--audit-main"` proves it across the branch. See §4 |
 | **Branches** | **`main`, `integration` and `lane-qe` at the promoted, certified baseline.** `lane-b-commercial-profile` is at that baseline too. **`lane-a-product-surface` sits ahead with four finished slices** — PS-01, PS-02, PP-01, PP-02 — awaiting one trivial rebase onto the promoted commit; it is the next cycle's stage 1. **QE is the only lane that merges, certifies, promotes and publishes this file** ([CLAUDE.md §20e](CLAUDE.md)). Who is on what: [docs/ACTIVE_ASSIGNMENTS.md](docs/ACTIVE_ASSIGNMENTS.md) · defects: [docs/BUGS.md](docs/BUGS.md) · cross-lane questions: [docs/LANE_COORDINATION.md](docs/LANE_COORDINATION.md) |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
-| **Overall completion** | **~75% promoted** by engineering effort — **~196 of 261 ew** on the low band, **~251 of 339 ew** on the high band. Foundation (M0–M1.4, ~50 ew) · M1.5 → M10 complete · M12 at ~80% (five of six sub-milestones closed, M12.3 open) · M9.5 partial. **A further ~5–7 ew is built and awaiting certification** — M7's four Timeline slices — which would take it to ~77%. **An estimate, and marked as one**; every other figure on this page is measured. **Recomputed at every promotion** from [the roadmap's effort table](IMPLEMENTATION_ROADMAP.md#5b-execution-sequence), never carried forward |
+| **Overall completion** | **~77% promoted** by engineering effort — **~202 of 261 ew** on the low band, **~258 of 339 ew** on the high band. Foundation (M0–M1.4, ~50 ew) · M1.5 → M10 complete · **M7 at ~90% and on `main`** (mount point outstanding, [C-024](docs/LANE_COORDINATION.md)) · M12 at ~80% · M9.5 partial. **An estimate, and marked as one**; every other figure on this page is measured. **Recomputed at every promotion** from [the roadmap's effort table](IMPLEMENTATION_ROADMAP.md#5b-execution-sequence), never carried forward |
 | **Projected to GA** | ~1.3–1.9 years at 3 engineers · ~2.0–2.8 at 2 · ~3.9–5.8 at 1 (80% capacity) |
 | **Current blockers** | **None blocking promotion — 0 open 🔴.** Eight defects await verification by somebody other than the lane that fixed them; [C-010](docs/LANE_COORDINATION.md) leaves `apps/`, `signora_platform/` and repository process with no assignable lane — and [B-022](docs/BUGS.md), found this cycle, is the fourth defect to land in that gap |
 
@@ -37,49 +37,46 @@ They can also **follow any ledger line to the provider readings beneath it**, an
 
 ---
 
-## 1b · Release summary — 2026-08-02, cycle 12
+## 1b · Release summary — 2026-08-02, cycle 13
 
-**Derived from the promoted commit `c3435a0`.** Nine commits since `5352886`: **one executable**, and eight documentation and governance commits that had accumulated behind it.
+**Derived from the promoted commit `2e70b0e`.** Twelve commits since `c3435a0`: **six executable**, six documentation.
 
-### Governance is now frozen, and this is the cycle that says so
+### A seller can now see what has happened to an account
 
-**The product owner closed governance evolution on 2026-08-02.** Lifecycle stages, task assignment, branch strategy, certification and repository execution are no longer to be redesigned. **Governance now evolves exactly like product functionality** — on observed, repeated evidence — and a proposal must clear five bars before implementation is even considered: it addresses a bottleneck seen in normal execution · the bottleneck recurred · the fix *simplifies* the repository · throughput is preserved · it serves the product rather than the process.
-
-**[ADR-0039](docs/architecture/adr/0039-release-engineering-model.md) is accepted as the long-term Release Engineering direction and stays `Proposed` on purpose.** It is a north star, not a queue: when a bottleneck appears, the first question is whether it already contains the answer, before a new one is invented. **No implementation begins from it automatically.**
-
-### What shipped
+**M7 Timeline reached `main`** — four slices, built by Lane B in a single continuous run:
 
 | | |
 |---|---|
-| **Executable** | **`state-check` learns the claims** (Lane B, TASK-005 in part). The two registers must now name the same holder — a board row and a backlog row that disagree about who holds a task is caught mechanically rather than read |
-| **Design** | **ADR-0038** — Timeline gets a design before it gets code (Lane B). **ADR-0039 Parts I and II** — the release engineering review |
-| **Recovered** | **365 lines of implementation that had left the repository.** `9c32daa` — TASK-005's original slice, a 177-line test file and 128 lines of `state-check.py` — was reachable from no branch and would have gone at the next `git gc`. Preserved as the pushed tag **`salvage/B-017-task-005`**, which asserts nothing about whether the work should return, only that the question can still be answered |
+| **What a customer gets** | On any account, **the history of what has actually happened to it** — grouped by day, one stable page at a time, in a seller's words rather than the pipeline's. Nine internal event types become one readable feed |
+| **How to see it** | Not yet mountable — the component and its API are built and tested; **where it renders is Lane A's route** ([C-024](docs/LANE_COORDINATION.md)). This is the honest limitation, not a defect |
+| **Underneath** | New `timeline` module · migration `0026` · cursor-paginated Casbin-guarded endpoint · `Resource.TIMELINE` registered as a *use* of the platform, not a change to it |
 
-### Defects found this cycle
+### The first candidate this repository rejected
 
-**Four opened, none blocking.** [B-018](docs/BUGS.md) — a lane branch carrying another lane's pre-rebase commits, since fixed by the lane. [B-019](docs/BUGS.md) — the constitution's branch table said two different things about `integration`, and a feature lane had written 74 lines of it. [B-020](docs/BUGS.md) — `state-check` read a task id anywhere in a board row, firing on the one arrangement it should read as correct. [B-021](docs/BUGS.md) — the coordination register's `Closed` section held only *open* items, so two tools reported *"3 closed"* when the truth was **0**.
+**Cycle 13 was pinned twice.** The first candidate (`7df2073`) failed validation on [B-023](docs/BUGS.md) — two `tsc` errors in a Timeline test file. Vitest passed, the production build passed; **only the typecheck could see it.**
 
-**And one found by certifying:** [B-022](docs/BUGS.md) — **`make certify` inherits the database environment and silently measures less when it is absent.** Run without the three variables `RUNNING.md` requires, every gate reports a smaller, plausible number — 2238 tests instead of 2348, coverage 94.34% instead of 95.57% — and the failure reads as a coverage regression rather than a misconfiguration. **The misconfigured run wrote a manifest entry claiming `c3435a0` had 94.34% coverage.** That entry was discarded and the row replaces it: the finding is durable, the false number is not.
+**It was not patched into passing.** The fix produced a **new** candidate at a **new** SHA with its own certification record, which is what makes *"every commit on `main` was individually certified"* a fact rather than a claim.
 
-### Repository throughput — the constraint is still supply
+**And it blocked more than itself.** The defect sat on `integration`, so **17 Lane A commits — none touching Timeline — could not certify either.** Stated precisely: the issue is not that a defect entered `integration`, it is that **`integration` accepts executable work before repository-level quality is established.** One occurrence; measured, not acted on ([`QUALITY_ENGINEERING.md`](docs/QUALITY_ENGINEERING.md) §7).
 
-| | |
-|---|---|
-| **Lane A** | **Four finished slices** — PS-01, PS-02 (Product Surface) and PP-01, PP-02 (Provider Platform), including migrations `0026` and `0027`. **Awaiting one trivial rebase**, then next cycle's stage 1 |
-| **Lane B** | Delivered ADR-0038 and part of TASK-005 rather than idling. **Now at the promoted baseline** |
-| **QE** | Twelve cycles, twelve certified |
+### Release engineering became a defined thing
 
-> **Both lanes worked continuously through a cycle in which QE spent most of its time on architecture review.** That is the implementation-ownership refinement doing exactly what it was ratified for.
+**The Release Candidate** now has a definition — one immutable snapshot, one validation target, one certification decision, one promotion decision, one audit record — along with a **failure classification** (seven classes, derived not hand-recorded) and a **batching policy grounded in measurement**: certification cost is fixed at ~6–10 minutes regardless of batch size, so batch size is not the lever. **Take whatever is on `integration` when the cycle opens.**
+
+### Defects
+
+**[B-022](docs/BUGS.md)** — `make certify` inherits the database environment and silently under-measures without it. **[B-023](docs/BUGS.md)** — fixed by Lane B with a narrowing guard rather than a cast, and the fix carries its own explanation.
 
 ### Remaining blockers
 
-1. **[C-020](docs/LANE_COORDINATION.md)** — M7 Timeline has no scope. **ADR-0038 now proposes the design; the decision is the product owner's.**
-2. **[TASK-006](docs/BACKLOG.md)** ([C-010](docs/LANE_COORDINATION.md)) — six defects in code no lane may touch, now including [B-022](docs/BUGS.md).
-3. **[TASK-013](docs/BACKLOG.md)** — `reasoning@1` has no released model (§7).
+1. **[C-024](docs/LANE_COORDINATION.md)** — Timeline's feed has nowhere to mount. **Ten lines in Lane A's brief page**, and a product decision about placement.
+2. **[C-020](docs/LANE_COORDINATION.md)** / **[C-025](docs/LANE_COORDINATION.md)** — M7's remaining scope and M13's OAuth conflict, both product-owner decisions.
+3. **[TASK-006](docs/BACKLOG.md)** ([C-010](docs/LANE_COORDINATION.md)) — defects in code no lane may touch.
+4. **[TASK-013](docs/BACKLOG.md)** — `reasoning@1` has no released model (§7).
 
 ### Recommended next work
 
-**Lane A's four slices, as one cycle** — they are executable, finished, and carry the first migrations since `0025`. **After that the constraint is unchanged: three claimable tasks, and the decisions in the blocker list above are worth more than any of them.**
+**Lane A's 17 commits are the next Release Candidate** — PS-01, PS-02, PP-01, PP-02, PP-04, PP-05, PP-06 — and they have been ready for some time. **Nothing else is waiting on anything QE holds.**
 
 ---
 
@@ -129,7 +126,7 @@ Execution order is authoritative; milestone IDs are stable labels and deliberate
 | — | **M12.5** | **Commercial Profile** — products ✅ · ICP ✅ · committee ✅ · priorities ✅ · target accounts ✅. **The pipeline finally has an input** | ✅ **Complete — 5 of 5** | **2026-08-02** |
 | 2 | **M12.4** | **Research on demand** — ask Signora to look into an account properly | ✅ **Shipped**, verified against a real model | **2026-08-02** |
 | — | M11 | Recommendation Engine | 🟣 **Deferred 2026-07-31** — *not cancelled*; resumes on a product trigger, see §10 | — |
-| 5 | **M7** | **Timeline** — domain ✅ · projection ✅ · cursor-paginated read ✅ · seller-readable feed ✅ · mount point ⏳ | 🔵 **In progress — 4 slices built, on `integration`** | — |
+| 5 | **M7** | **Timeline** — domain ✅ · projection ✅ · cursor-paginated read ✅ · seller-readable feed ✅ · mount point ⏳ ([C-024](docs/LANE_COORDINATION.md)) | 🔵 **In progress — 4 slices promoted to `main` 2026-08-02** | — |
 | 6 | **M13** | Integrations — CRM, comms, calendar. **Readiness reviewed 2026-08-02: not a module, and blocked by two ratified rules that conflict over OAuth** ([C-025](docs/LANE_COORDINATION.md)) | 🟠 **Blocked — architecture, not effort** | — |
 | 7 | M14a | Notifications | ⏳ Queued | — |
 | 8 | M14b | Billing, analytics, feature flags | ⏳ Queued | — |
@@ -322,29 +319,29 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`c3435a03e2aa`](certification/reports/c3435a03e2aa.md) · 2026-08-02 · ✅ CERTIFIED**
+**Latest certification — [`2e70b0e2326a`](certification/reports/2e70b0e2326a.md) · 2026-08-02 · ✅ CERTIFIED**
 
-**Certified commit `c3435a0` · promoted commit `c3435a0`.** Identical, checked after the merge and re-checked by `make certified`.
+**Certified commit `2e70b0e` · promoted commit `2e70b0e`.** Identical, checked after the merge and re-checked by `make certified`.
 
 | Gate | Recorded |
 |---|---|
-| **pytest** | **2348 passed** |
-| **coverage** | **95.57%** *(floor 95%)* |
-| **Security Invariants** | **354**, each proven to fail when its guarantee is removed |
-| **import-linter** | **31 kept**, 0 broken |
-| **MyPy** | strict, clean over **548 files** |
-| **`make smoke`** | **24 stages in 140s**, fresh images, clean teardown |
+| **pytest** | **2397 passed** |
+| **coverage** | **95.37%** *(floor 95%)* |
+| **Security Invariants** | **357**, each proven to fail when its guarantee is removed |
+| **import-linter** | **32 kept**, 0 broken |
+| **MyPy** | strict, clean over **570 files** |
+| **`make smoke`** | **24 stages in 4830s** — a heavily loaded workstation, not a regression; the gate passed every stage |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
-**Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0025`** · scenario set `0cf6b2c581e4` · working tree clean · `research_planning@2` and `research_synthesis@2` released for `llama3.1:8b`.
+**Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0026`** · scenario set `0cf6b2c581e4` · working tree clean · `research_planning@2` and `research_synthesis@2` released for `llama3.1:8b`.
 
-**Also verified this cycle, and not yet certification gates:** frontend **468 tests** across 29 files, typecheck, lint and production build · **migration reversibility to base and back** · **`make dr`** — every component restarted, nothing lost, 354 invariants re-run against the restarted stack.
+**Also verified this cycle, and not yet certification gates:** frontend **488 tests** across 30 files, typecheck, lint and production build · **migration reversibility to base and back** · **`make dr`** — every component restarted, nothing lost, 357 invariants re-run against the restarted stack.
 
 | Indicator | Value | Target |
 |---|---|---|
-| **Frontend tests** | **468 passing**, 0 failing, 0 skipped | 0 skipped |
-| **Modules** | **15** · **42** numbered architecture documents · **39** ADRs | — |
-| **Migrations** | **`0000`–`0025`**, additive and reversible | — |
+| **Frontend tests** | **488 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Modules** | **16** · **42** numbered architecture documents · **39** ADRs | — |
+| **Migrations** | **`0000`–`0026`**, additive and reversible — verified to base and back this cycle | — |
 | **Architecture drift** | **0** — no ratified ADR reversed | trending to 0 |
 | **Open defects** | **14 rows: 6 `OPEN`** (2 🟠 reachable · 1 🟠 latent · 3 🟡) · **7 `FIXED` awaiting verification** · 1 `WONTFIX` · **0 open 🔴** ([docs/BUGS.md](docs/BUGS.md)) | 0 🔴 |
 | **Coordination items** | **17** — 1 `CLOSED`, the rest open or waiting ([docs/LANE_COORDINATION.md](docs/LANE_COORDINATION.md)) | shrinking |

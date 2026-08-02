@@ -64,14 +64,14 @@
 
 ---
 
-## Current — as of 2026-08-02, `c3435a0`
+## Current — as of 2026-08-02, `2e70b0e`
 
 | Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Started |
 |---|---|---|---|---|---|---|---|---|
-| **Lane A** | **TASK-002 · TASK-004 · provider_platform** | `lane-a-product-surface` | Product Surface · Provider Platform | PS-01 · PS-02 · PP-01 · PP-02 | `IN VALIDATION` | — | **[B-018](BUGS.md) is fixed — the branch rebased and dropped Lane B's two commits.** It now sits **three commits behind** `integration`, and **that is QE's doing, not the lane's**: three ADR commits landed while the lane was rebasing. **The rebase is trivially clean** — they touch only `docs/architecture/adr/`, which this branch does not. Rebase onto the promoted `c3435a0`, re-run the gates, push. **Next cycle's stage 1** | 2026-08-02 |
-| **Lane B** | **M7 — Timeline** *(implementation initiative, feature lead)* | `lane-b-commercial-profile` | `timeline` | S01–S04a | `IN VALIDATION` | — | **[B-023](BUGS.md) fixed and pushed — re-validation ready.** All four gates green: `tsc` clean, 488 frontend, build, eslint. The four slices are one candidate again | 2026-08-02 |
-| **Lane B** | **M13 — Integrations** *(implementation initiative)* | `lane-b-commercial-profile` | *(see [C-025](LANE_COORDINATION.md))* | readiness review | `WAITING` | **[C-025](LANE_COORDINATION.md)** — four decisions, one of them a conflict between two ratified rules | **Readiness review complete, no code written.** M13 is a capability across consuming modules rather than a fifteenth module, and no tier may currently run an integration OAuth flow | 2026-08-02 |
-| **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | **Cycle 12 promoted (`c3435a0`). Cycle 13 validated at `7df2073` and did not certify** — [B-023](BUGS.md). Re-validates the moment Lane B pushes the fix; Lane A's four slices follow | 2026-08-01 |
+| **Lane A** | **TASK-002 · TASK-004 · `provider_platform`** | `lane-a-product-surface` | Product Surface · Provider Platform | PS-01 · PS-02 · PP-01 · PP-02 · PP-04 · PP-05 · PP-06 | `IN VALIDATION` | — | **The next Release Candidate.** Rebase onto the promoted `2e70b0e` and push; QE pins immediately. **17 commits, ready for some time** | 2026-08-02 |
+| **Lane B** | **M7 — Timeline** *(feature lead)* | `lane-b-commercial-profile` | `timeline` | S01–S04a **promoted** | `BLOCKED` | [C-024](LANE_COORDINATION.md) — the feed has nowhere to mount, and the route is Lane A's | **Product decision on placement**, then ten lines in Lane A's brief page. [B-023](BUGS.md) fixed with a narrowing guard | 2026-08-02 |
+| **Lane B** | **M13 — Integrations** | `lane-b-commercial-profile` | *(not a module — [C-025](LANE_COORDINATION.md))* | readiness | `WAITING` | Two ratified rules conflict over OAuth | **Product decision.** The review is accepted; the blocker is architectural | 2026-08-02 |
+| **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | **Cycle 13 promoted (`2e70b0e`). 13 of 13 certified.** Next candidate is Lane A's, on push | 2026-08-01 |
 
 **Which lanes are available is the `Status` column above, and is not restated here** — a sentence beside a table is a second copy of one fact, and it drifted within an hour of being written (§2). **Unclaimed capacity:** lanes C, D and E ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).
 
@@ -95,6 +95,8 @@
 
 | Lane | Assignment | Promoted | Commit |
 |---|---|---|---|
+| B | **M7 Timeline S01–S04a** — a seller can see what has happened to an account | 2026-08-02 | `048aeed` · `96bb5c0` · `7cb7fed` · `056a53a` |
+| B | B-023 — a guard that narrows, and the gate that caught it | 2026-08-02 | `2e70b0e` |
 | B | **TASK-005** — `state-check` learns the claims; the two registers must name the same holder | 2026-08-02 | `8da47b5` |
 | B | ADR-0038 proposed — Timeline gets a design before it gets code | 2026-08-02 | `ffaeccb` · `e86b129` |
 | QE | **ADR-0039** — the release engineering review, Parts I and II. *Accepted as direction, stays `Proposed`* | 2026-08-02 | `b1fd829` · `121cc76` · `c3435a0` |
