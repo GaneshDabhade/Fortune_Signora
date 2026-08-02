@@ -91,7 +91,6 @@
 | [C-020](#c-020--m7-has-no-scope-and-timeline-has-no-design) | M7 has no scope, and Timeline has no design | Lane B | **Product owner** (roadmap 🔴) | `OPEN` | **M7** — [`TASK-017`](BACKLOG.md), `WAITING`. Lane B released it and is `AVAILABLE` |
 | [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it) | Timeline has a surface and nowhere to mount it | Lane B | **Lane A** + product owner | `OPEN` | **Nothing in Timeline** — backend and component built; only the mount point |
 | [C-025](#c-025--m13-is-not-a-module-and-its-consumers-do-not-exist-yet) | M13 is not a module, and its consumers do not exist yet | Lane B | **Product owner** | `ANSWERED` — all four decisions taken 2026-08-02. **M13 paused on an environmental dependency, not this item** | **Nothing.** The remaining work needs a HubSpot developer application, not a decision |
-<<<<<<< HEAD
 | [C-026 *(Lane B's)*](#c-026--the-connection-center-is-reachable-only-by-typing-its-url) | The Connection Center is reachable only by typing its URL | Lane B | **Lane A** + product owner | **`IMPLEMENTING`** — Lane A shipped it as **CX-01**, 2026-08-02, before reading this row. `CLOSED` is Lane B's | **Nothing.** Settings now carries a Connections card |
 
 | [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it) | Timeline has a surface and nowhere to mount it | Lane B | **Lane A** + product owner | **`IMPLEMENTING`** — Lane A's half delivered 2026-08-02 (**CX-03**). `CLOSED` is Lane B's to set | **Nothing.** The feed is mounted on the account brief |
@@ -114,9 +113,8 @@
 >
 > **`C-026` is worth reading twice.** Lane B raised *"the Connection Center is reachable only by typing its URL"* and Lane A shipped that exact fix as **CX-01** the same day, from an independent audit, **without either lane seeing the other's finding.** Two lanes reaching one defect by different routes is the model working; **two lanes reaching one identifier is the model failing**, and it is the same day's evidence for both.
 =======
-| [C-026](#c-026--the-connection-center-is-reachable-only-by-typing-its-url) | The Connection Center is reachable only by typing its URL | Lane B | **Lane A** + product owner | `OPEN` | **Nothing in Integrations** — the page is built and tested; only the navigation entry |
-| [C-027](#c-027--m14a-notifications--what-was-bought-is-not-what-must-be-built) | M14a — what was bought is not what must be built | Lane B | **Product owner** | `OPEN` | **M14a's shape.** Three decisions before the first line; a fourth is a boundary Lane B must not draw alone |
->>>>>>> 3a1bab5 (M14a discovery — what ADR-0017 bought is not what M14a has to build)
+| [C-027](#c-027--m14a-notifications--what-was-bought-is-not-what-must-be-built) | M14a — what was bought is not what must be built | Lane B | **Product owner** | `ANSWERED` — all four decisions taken 2026-08-02, [ADR-0040](architecture/adr/0040-notifications.md) proposed | **One 🔴 ratification** — the fifteenth entry in `04-modules.md`, drafted and ready to paste |
+>>>>>>> 603a077 (ADR-0040 proposed — Notifications answers a different question from Attention)
 
 ---
 
@@ -2372,4 +2370,29 @@ It is also the honest one. A product that shows *"3 things need your attention"*
 **The first slice, if decisions 1 and 2 go that way**, is demonstrable to a non-engineer without naming a module: *a seller opens Signora and sees that their CRM connection expired, marks it as dealt with, and it stops asking.* No vendor, no new dependency, no infrastructure, and a real customer capability.
 
 **Lane B has written no M14a code and has created no `modules/notifications/`.**
+
+
+### Resolution — product owner, 2026-08-02. All four answered, and the fourth was the important one.
+
+| # | Question | Decision |
+|---|---|---|
+| 1 | **Is Notifications a bounded context?** | **Yes.** Proposed as [ADR-0040](architecture/adr/0040-notifications.md) with the `04-modules.md` entry drafted ready to ratify — that entry is 🔴 and remains the product owner's to make |
+| 2 | **Day One scope** | **In-app only.** Unread/read · acknowledge/dismiss · event-driven · idempotent · workspace- and user-scoped · history · preferences only where immediately required. **No email, SMS, push, Slack or Teams** |
+| 3 | **Is Novu still right?** | **Not reversed, and unused on Day One.** *"Build an excellent notification center before introducing delivery channels. Channels plug into a mature notification domain rather than define it"* |
+| 4 | **Who owns the attention list?** | **Revenue Intelligence Platform keeps it, and the two are different products.** *"Attention answers 'what currently requires my attention?'. Notifications answer 'what changed since I last looked?' Do not let them converge"* |
+
+**Decision 4 settles the boundary Lane B declined to draw**, and it does more than assign a module: it names the *reason* they are different, which is what makes the separation enforceable rather than remembered. Recorded as a permanent principle in ADR-0040 §2, along with the two rules that follow from it — **a notification is generated from an event, never from a state**, and **it records a fact in the past tense while referencing its subject live.**
+
+**The stress test the product owner asked for ran against all nineteen scenarios before any code.** Four changed the design and are recorded in ADR-0040 rather than here:
+
+| Scenario | What it changed |
+|---|---|
+| **Imported historical data** | The rule in §6 — *nothing is notified about a moment the recipient could not have acted on*. Without it a provider backfill notifies every member about a year of history at once. **Derived at generation time, never a flag a producer must remember**, because a producer-set flag is a hidden input and the module doing the backfill is the one that forgets it |
+| **Deleted source objects** | Corrected Lane B's own earlier phrasing. *"Reference, never copy"* was too strong: it makes a notification about a deleted object unreadable. The rule is **store the fact, resolve the subject** — the fact is past tense and never goes stale, the affordance exists only while the subject does |
+| **Priority vs severity** | They are different and only one belongs here. **Severity is a property of the event; priority is a property of the recipient's situation** and is Attention's. A module permitted to rank becomes a second scoring engine |
+| **Snoozing** | Needs no scheduler at all. `snoozed_until` evaluated at read time, because an in-app center is pull-based — **a benefit of the Day One scope rather than a constraint of it** |
+
+Two scenarios were **excluded on principle rather than on effort**, and the reasons are in ADR-0040: **reminders** (*"you still haven't dealt with this"* is generated from a state, which the ratified rule forbids — and what a reminder reaches for is the Attention surface, which answers it correctly by construction) and **reassignment** (assigning a notification to somebody else is a work-assignment concept and no module owns one; a notification is **addressed**, not owned).
+
+**Status: `ANSWERED`. What remains before implementation is one 🔴 ratification** — the fifteenth entry in [04-modules.md](architecture/04-modules.md), drafted in ADR-0040 §10 and a paste away. **Lane B will not add it**; a lane writing itself a new bounded context is the one change ⚫ forbids outright.
 

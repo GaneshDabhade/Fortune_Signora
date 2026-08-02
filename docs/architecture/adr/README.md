@@ -61,6 +61,7 @@ Every ADR follows this structure:
 | [0037](0037-failure-categories.md) | **Proposed, not accepted.** Failure categories — `CustomerError` vs `PlatformError`, and the rule that an internal fault must never reach a customer as a business error |
 | [0038](0038-timeline.md) | **Proposed, not accepted.** Timeline — the module's design, ahead of its implementation |
 | [0039](0039-release-engineering-model.md) | **Proposed, not accepted.** Release Engineering — the integration model becomes architecture. **Part I**: change identity, immutable validation targets, merge over rebase, one file per record. **Part II**: the same question from first principles — claims as refs, proofs as notes, and whether a permanent integration branch should exist at all |
+| [0040](0040-notifications.md) | **Proposed, not accepted.** Notifications — *what changed since I last looked*. The bounded context ADR-0017 did not decide: **delivery was bought, notification was not**. Attention is derived and never stored; a notification is workflow state and cannot be derived — **they are different products and must never converge** |
 | [0036](0036-target-account-contract.md) | The Target Account Contract — the first Customer–Supplier edge, and four permanent ownership boundaries: **Commercial Profile owns intent, Provider Platform owns synchronization, Knowledge Graph owns understanding, Signal Engine owns intelligence** |
 
 ## How to Propose a New ADR

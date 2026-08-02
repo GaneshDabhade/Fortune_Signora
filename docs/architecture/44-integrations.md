@@ -223,7 +223,23 @@ The callback route deliberately returns `provider_unavailable` rather than a stu
 
 ---
 
-## 10 · The tests, and what each layer is for
+## 10 · Recorded direction — the next question is confidence, not connection
+
+**Product owner, 2026-08-02, recorded rather than implemented.**
+
+> **Customers do not care about connections. They care about confidence.**
+
+Everything in §6 answers *is it connected?* The questions a customer actually has are one level above it:
+
+*Can I trust this connection? · Is my CRM actually healthy? · Is Signora receiving fresh data? · Is anything silently failing? · Has anything changed recently? · Will this affect my recommendations? · What business capability is degraded because of this?*
+
+**None of those is answerable by this module alone, and that is the point of writing them down here.** *Fresh data* and *silently failing* are facts about **synchronization**, which is Provider Platform's; *has anything changed* is **Timeline's**; *will this affect my recommendations* crosses into the intelligence pipeline. A connections screen that tried to answer them would be this module deriving judgements it has no evidence for — the same error `Attention` was carefully kept away from by deriving only from the connection and its grant.
+
+**What this module can honestly contribute is the input, not the verdict:** the connection's state, its grant's lifetime, and eventually the result of a real call — which is exactly what `VALIDATED` was reserved for and what nothing yet produces.
+
+**The trigger to revisit** is the first consumer: when Provider Platform synchronizes through a Connected Account, *"is Signora receiving fresh data?"* becomes answerable from a watermark it already owns, and the composition of the two into one confidence answer is a design question for whichever module owns that screen. **It is not a reason to add a field here first.**
+
+## 11 · The tests, and what each layer is for
 
 Domain and application against **fakes**; infrastructure and interface against **real PostgreSQL as `signora_app`**. The split matters more here than usual, and B-024 is the worked example: every repository was exercised only through doubles, **the doubles accepted a `ConnectedAccount` the database would not** — `created_by` and `updated_by` are `NOT NULL` and nothing supplied them — and every insert would have failed the first time a customer connected anything, with a green suite throughout.
 
