@@ -842,11 +842,15 @@ Every built module has one, marked *as built*: `22`–`29`, `33`, and `40-commer
 
 **A question that belongs with the answer:** is Meilisearch required *for M7*, or is it the eventual shape with a Postgres-backed first slice? ADR-0008 rules the technology; it does not schedule it, and nothing else does either.
 
-### 4 · Two of Timeline's five named consumed events come from a module that does not exist
+### 4 · One of Timeline's seven consumed events comes from a deferred module
 
-[04-modules.md:423](architecture/04-modules.md) lists `opportunity.created`, `opportunity.stage_changed`, `ai_reasoning.completed`, **`recommendation.created`, `recommendation.status_changed`**. [05-module-dependencies.md:72](architecture/05-module-dependencies.md) lists Recommendation Engine among Timeline's six upstreams.
+> **Corrected 2026-08-02, alongside this item's other correction.** This finding originally read *"two of Timeline's five named consumed events come from a module that does not exist"* and cited `04-modules.md:423`. **That line is the Revenue Intelligence Platform's entry, not Timeline's** — Lane B attributed a neighbouring module's consumed-event list to Timeline. The real position is materially better.
 
-**Recommendation Engine is *Not started*** ([README.md:73](../README.md)). Timeline can be built against the three that exist, but *which* events M7 covers is a scope decision, and scope is what item 1 says is missing.
+[04-modules.md](architecture/04-modules.md), the **Timeline** entry, names seven: `observation.recorded`, `business_event.detected`, `signal.generated`, `buying_score.updated`, `opportunity.created`, `opportunity.stage_changed`, `recommendation.created`. [06-events.md](architecture/06-events.md) additionally lists Timeline as a consumer of the three supersession events — `observation.superseded`, `business_event.superseded`, `signal.superseded`.
+
+**Six of the seven are published by modules that are built and running in the pipeline today.** Only `recommendation.created` comes from Recommendation Engine, which is **Deferred** rather than cancelled (2026-07-31).
+
+**So this is a small scope question rather than a structural one:** does M7 ship the six and add the seventh when M11 resumes? **Lane B's position is yes** — and that a projection which cannot tolerate a new entry kind arriving later is the wrong design regardless. Still the product owner's to confirm.
 
 ### 5 · C-012, stated precisely rather than as a blocker it is not
 
