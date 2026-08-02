@@ -69,6 +69,51 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-022 · `make certify` inherits the database environment, and silently measures less when it is absent
+
+| | |
+|---|---|
+| **Module** | Repository tooling — `Makefile`, the `certify` target |
+| **Current assignee** | **none — not assignable.** [C-010](LANE_COORDINATION.md), and the fourth defect to land in that gap |
+| **Severity** | 🟠 — the gate reports a number that looks like a regression and is actually a misconfiguration. **It does not fail; it under-measures** |
+| **Status** | `OPEN` |
+| **Found** | 2026-08-02, by QE, certifying `c3435a0` — it cost two full gate runs before the cause was clear |
+
+**Steps to reproduce.** From a shell without the lane database variables:
+
+```bash
+make certify
+#   pytest              2238 passed          ← 110 fewer than the suite has
+#   coverage            94.34%               ← below the 95% floor
+#   security-invariants 337 invariants       ← 17 fewer
+#   scenario            164 assertions       ← 15 fewer
+#   NOT CERTIFIED
+```
+
+Then, same commit, same tree, with the three variables [`RUNNING.md`](RUNNING.md#running-a-lane) requires:
+
+```bash
+export SIGNORA_TEST_APP_DATABASE_URL=… SIGNORA_TEST_ADMIN_DATABASE_URL=… SIGNORA_DATABASE_URL=…
+make certify
+#   pytest 2348 · coverage 95.57% · 354 invariants · 179 assertions · CERTIFIED
+```
+
+**Expected.** A gate either runs or refuses to run. **`make certify` has no options, deliberately** (§20e) — *"a mode that skipped a gate would produce a run that cannot certify, and a command whose convenient path yields worthless evidence teaches people to use it."* An environment that silently deselects 110 tests is exactly that mode, arrived at by omission.
+
+**Actual.** The target is `cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.certification` — it sets one variable and inherits three. Without them the database-backed tests deselect, and **every gate reports a smaller, plausible number.** Nothing says *"the database was not reachable"*; it says `NOT CERTIFIED · coverage 94.34% is below 95.0%`, which reads as a coverage regression somebody introduced.
+
+**Why it is worth a row rather than a note to self.** This is the failure mode §2 names directly: **the repository asserted something untrue about itself, in the one artifact whose entire purpose is being trustworthy.** The misconfigured run wrote a manifest entry recording `commit c3435a0 · coverage 94.34 · tree_clean true` — a measurement of a broken instrument, indistinguishable to every future reader from a measurement of the repository. That entry was discarded and this row is what replaces it; **the finding is durable, the false number is not.**
+
+**And the part that makes this worth acting on rather than re-documenting.** [`REPOSITORY_RELEASE_CHECKLIST.md`](REPOSITORY_RELEASE_CHECKLIST.md) **already carries the warning**, in bold, directly above the `make certify` line, with measured evidence from earlier the same day: *"the same commit certified 2223/94.36% against the shared default and 2325/95.59% against the lane's own database. A gate pointed at the wrong database is not a gate."*
+
+**QE read that checklist, wrote that warning, and still ran the gate wrong** — because the variables were exported in one shell and `make certify` was invoked from another. **A rule that its own author violates within hours, while looking at it, is not a rule that needs restating; it is a rule that needs replacing with a check.** The fix is a preflight in the target, not a stronger sentence in the runbook.
+
+**Fix.** Make the target fail loudly when the variables are absent, rather than proceeding with a partial selection — a preflight that asserts reachability and exits non-zero with the missing variable named. **Do not fix it by hardcoding a lane's database into the `Makefile`**: the file is shared, and every lane has its own (`RUNNING.md` § *Running a lane*).
+
+**Second-order finding, and the more interesting one.** The first run left `certification/manifest.json` modified, which made the tree dirty, which failed the *next* run's cleanliness check — so one misconfiguration cost two runs rather than one. **The certification record lives in the tree it certifies.** That is precisely the assumption [ADR-0039](architecture/adr/0039-release-engineering-model.md) §II-3.2 identifies as the root of the divergence chain, arriving here as an ordinary operational nuisance. **It is evidence for that ADR, not a reason to act on it** — recorded and left alone, per the governance bar.
+
+---
+
 ### B-021 · The coordination register's `Closed` section holds only open items, and every closed one sits above it
 
 | | |

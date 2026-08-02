@@ -64,14 +64,13 @@
 
 ---
 
-## Current — as of 2026-08-02, `5352886`
+## Current — as of 2026-08-02, `c3435a0`
 
 | Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Started |
 |---|---|---|---|---|---|---|---|---|
-| **Lane A** | **TASK-002 · TASK-004 · provider_platform** | `lane-a-product-surface` | Product Surface · Provider Platform | PS-01 · PS-02 · PP-01 · PP-02 | `CHANGES REQUESTED` | — | **The branch will not fast-forward onto `integration`, and the rebase conflicts — returned unvalidated.** [B-018](BUGS.md) names the cause and the fix. Rebase, re-run the gates, push, set `IN VALIDATION` again. **The implementation area stays with Lane A** | 2026-08-02 |
+| **Lane A** | **TASK-002 · TASK-004 · provider_platform** | `lane-a-product-surface` | Product Surface · Provider Platform | PS-01 · PS-02 · PP-01 · PP-02 | `IN VALIDATION` | — | **[B-018](BUGS.md) is fixed — the branch rebased and dropped Lane B's two commits.** It now sits **three commits behind** `integration`, and **that is QE's doing, not the lane's**: three ADR commits landed while the lane was rebasing. **The rebase is trivially clean** — they touch only `docs/architecture/adr/`, which this branch does not. Rebase onto the promoted `c3435a0`, re-run the gates, push. **Next cycle's stage 1** | 2026-08-02 |
 | **Lane B** | **M7 — Timeline** *(retained)* | `lane-b-commercial-profile` | `timeline` | design | `WAITING` | **Architecture, not a dependency** — [ADR-0038](architecture/adr/0038-timeline.md) unratified, four open questions | **Product decision.** Ownership retained while Lane B builds elsewhere | 2026-08-02 |
-| **Lane B** | **[TASK-005](BACKLOG.md#task-005--state-check-learns-the-backlog)** | `lane-b-commercial-profile` | Repository tooling — `infra/` | one slice | `IN VALIDATION` | — | **READY FOR QE.** Check 5c(c) — the two registers must name the same holder — plus 16 tests. **It found a live disagreement on its first run:** `TASK-001` reads `CLAIMED` in the backlog with no board row | 2026-08-02 |
-| **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | **Waiting on Lane A's rebase.** Nothing is at `IN VALIDATION`, and `integration` carries documentation only — no cycle is warranted (§20e) | 2026-08-01 |
+| **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | **Cycle 12 promoted and closed out.** Next: Lane A's four slices, once rebased. Governance is frozen — observations are recorded, not acted on | 2026-08-01 |
 
 **Which lanes are available is the `Status` column above, and is not restated here** — a sentence beside a table is a second copy of one fact, and it drifted within an hour of being written (§2). **Unclaimed capacity:** lanes C, D and E ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).
 
@@ -95,6 +94,9 @@
 
 | Lane | Assignment | Promoted | Commit |
 |---|---|---|---|
+| B | **TASK-005** — `state-check` learns the claims; the two registers must name the same holder | 2026-08-02 | `8da47b5` |
+| B | ADR-0038 proposed — Timeline gets a design before it gets code | 2026-08-02 | `ffaeccb` · `e86b129` |
+| QE | **ADR-0039** — the release engineering review, Parts I and II. *Accepted as direction, stays `Proposed`* | 2026-08-02 | `b1fd829` · `121cc76` · `c3435a0` |
 | QE | The repository operating model, certification `f6691728aaf9`, and B-013 | 2026-08-02 | `f669172` · `6aadea9` |
 | A | R2-01 — the guidance says what it is pointing at, and ADR-0037 | 2026-08-02 | `efaa987` |
 | QE | Certification binds to an immutable commit, enforced by `certification-guard.py` | 2026-08-02 | `1bbee30` · `624f770` |
