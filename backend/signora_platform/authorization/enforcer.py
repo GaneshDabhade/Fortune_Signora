@@ -72,6 +72,12 @@ class Resource(StrEnum):
     #: everything that has *happened* to it are different grants, and a feed is
     #: the surface most likely to want a narrower one later.
     TIMELINE = "timeline"
+    #: Registered by M13, on the same terms as every member above — a *use* of
+    #: the platform, not a change to it (§20a). Its own resource because a
+    #: connection to a customer's *own* Salesforce is a different grant from
+    #: anything Signora supplies: seeing which systems are connected is
+    #: everyday, and connecting one spends a credential and is administrative.
+    INTEGRATION = "integration"
 
 
 class Action(StrEnum):

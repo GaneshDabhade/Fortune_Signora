@@ -27,6 +27,7 @@ from modules.commercial_profile.interface.errors import (
     ERROR_MAPPING as COMMERCIAL_PROFILE_ERRORS,
 )
 from modules.commercial_profile.interface.router import router as products_router
+from modules.integrations.interface.router import router as integrations_router
 from modules.timeline.interface.router import router as timeline_router
 from modules.knowledge_graph.interface.router import router as knowledge_graph_router
 from modules.signal_engine.interface.router import router as validation_router
@@ -148,6 +149,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(products_router)
     app.include_router(research_router)
     app.include_router(timeline_router)
+    app.include_router(integrations_router)
 
     @app.get("/health", response_model=HealthResponse, tags=["operations"])
     async def health() -> HealthResponse:
