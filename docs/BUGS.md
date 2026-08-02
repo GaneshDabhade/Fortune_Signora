@@ -214,6 +214,21 @@ modules/timeline/infrastructure/repository.py      21   9  52%   ← unchanged
 
 **Two candidates have now been rejected for one unfixed defect.** `9ba0ea6` and `a2ca53d`, both abandoned, both correctly. **Nothing on `integration` can certify until these four files are covered**, which is the shared-base pattern again — now at **three occurrences**, counting [B-023](BUGS.md).
 
+### Third rejection, and it is 0.02% away — 2026-08-02, candidate `d758754`
+
+**Real progress, and the number says so.** `secrets.py` went **0% → 61%** (34 missed → 12); the suite grew 2460 → 2476; coverage moved **94.79% → 94.98%**. Lane B did the work this row asked for.
+
+**It is short by 0.02 percentage points — roughly three statements.** Two files carry what remains:
+
+| File | Cover | Missed | |
+|---|---|---|---|
+| `modules/timeline/interface/handlers.py` | **0%** | **11** | **Covering this file alone clears the floor with room to spare** |
+| `modules/integrations/infrastructure/repository.py` | 35% | 26 | The larger gap, and not needed to certify |
+
+**`timeline/interface/handlers.py` is the recommendation, and not because it is the cheapest.** It is the module's **event-consumption path** — the route by which every entry Timeline will ever hold arrives. **It has never been executed by a test**, and Timeline is already promoted and on `main`.
+
+**Three candidates now rejected on this row** — `9ba0ea6`, `a2ca53d`, `d758754` — all abandoned, all correctly. **The trend is toward resolution rather than away from it**, which is why this is a progress note rather than a second escalation.
+
 ### Escalation — 2026-08-02
 
 **This defect has now blocked two consecutive certification cycles and is a repository bottleneck.**
