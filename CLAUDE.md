@@ -410,6 +410,7 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 | **Definition of Done · slice completion** | §19 · §20e *Completion* | — |
 | **Change Budget** | §20e | — |
 | **Work allocation** | §20e *Nobody assigns; lanes pull* | [`docs/BACKLOG.md`](docs/BACKLOG.md) — **the READY queue**, prioritized by the product owner |
+| **Claiming a task** | §20e *The Task Claim Protocol* | the claim commit itself — **atomic, because a push is** |
 | **Lane assignment** | §20e *Modules are permanent* | [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) — **the execution board**, written by the claiming lane |
 | **Startup workflow** | §20e *Startup* | — |
 | **Cross-lane communication** | §20e *The slice* | [`docs/LANE_COORDINATION.md`](docs/LANE_COORDINATION.md) |
@@ -471,6 +472,8 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 
 **QE's responsibility is not repository testing. It is the complete repository lifecycle** (ratified 2026-08-02, product owner). **Seven stages, always in this order:**
 
+> **QE's responsibility resumes only when feature work returns to `integration` for validation.** Between promotions, an `AVAILABLE` lane claims and builds without QE's involvement, and QE is genuinely idle. That is the model working.
+>
 > **Scheduling is not one of them** (ratified 2026-08-02, product owner). **QE validates, certifies, integrates, promotes, closes out, synchronizes and declares. It does not decide who works on what.** Quality, integration, certification and promotion belong together — each is a judgement about the repository as a whole. **Work allocation is a product decision**, and routing it through QE meant every idle lane waited on the one session that was busy certifying. See *Nobody assigns; lanes pull* below.
 
 | # | Stage | What it is | Deterministic? |
@@ -592,14 +595,43 @@ promoted commit SHA  ==  certified commit SHA
 
 **The rules, and they are short:**
 
-- **[`docs/BACKLOG.md`](docs/BACKLOG.md) is the queue**, in priority order, and **the product owner owns that order.**
+- **[`docs/BACKLOG.md`](docs/BACKLOG.md) is the authoritative work queue**, in priority order, and **the queue order *is* the priority.** The product owner owns it. **Every task carries a permanent `TASK-nnn`**, and every other document refers to work by that id rather than by its title.
 - **A lane may claim only a `READY` item.** `WAITING` needs somebody to answer; `BLOCKED` needs somebody to build. Neither is claimable, and both are listed so nothing disappears.
-- **Claim before implementing, and write it down in the same action.** The claim lands in [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) **before the first line of code**. A claim nobody can see is two lanes about to build the same thing.
+- **Claim before implementing, by the Task Claim Protocol below.** The claim is a **standalone commit, pushed**, and it is not yours until you have pulled and confirmed nobody beat you to it. **A claim nobody can see is two lanes about to build the same thing.**
 - **Claim from the top.** If the top item cannot be taken — it needs a module another lane is inside, or a decision nobody has made — **say so in its backlog note and take the next one.** Skipping quietly is re-prioritizing, and priority is not a lane's to hold.
-- **A lane never reorders, reprioritizes, adds or removes a backlog item.** A defect goes to [`BUGS.md`](docs/BUGS.md), a dependency to [`LANE_COORDINATION.md`](docs/LANE_COORDINATION.md), and anything else is a conversation with the product owner.
+- **A lane never reorders, reprioritizes, removes, or inserts `READY` work without the product owner.** It may claim, it may record why it skipped the first `READY` task, and it may move a task it holds through the lifecycle. A defect goes to [`BUGS.md`](docs/BUGS.md), a dependency to [`LANE_COORDINATION.md`](docs/LANE_COORDINATION.md), and anything else is a conversation with the product owner.
 - **QE writes nothing in the backlog and allocates nothing.** At Closeout it reconciles the *board* — removing what has been promoted — and stops there.
 
 **One lane per module still binds**, and it is what makes a claim refusable: if the item you are about to take needs a module somebody else is inside, you cannot take it, and the note saying so is more useful to the product owner than a silent skip.
+
+### The Task Claim Protocol
+
+**Ratified 2026-08-02, product owner. Mandatory before any production code is written.**
+
+**Pulling created a race the pushing model did not have.** Two `AVAILABLE` lanes read the same queue at the same moment, both see `TASK-002` at the top, and both start building. Nothing about that is caught by care: each lane behaved correctly in isolation. **The repository must prevent duplicate implementation through process, not convention.**
+
+**The claim is made atomic by the one mechanism that is already atomic here — a push to a shared remote.** A claim is not an intention; it is a commit that either lands before somebody else's or does not.
+
+| # | Step | What |
+|---|---|---|
+| 1 | **Synchronize** | `git fetch origin && git checkout integration && git pull --ff-only` |
+| 2 | **Rebase** | `git checkout <lane-branch> && git rebase integration`. Resolve your own conflicts |
+| 3 | **Read [`BACKLOG.md`](docs/BACKLOG.md)** | The whole `READY` section, in order |
+| 4 | **Select** | The **highest** `READY` task that has **no active assignee**, **no unmet dependency**, and **is not already claimed** |
+| 5 | **Record the claim** | Update **only your own row** in [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md), naming the `TASK-nnn`, and mark the task `CLAIMED` in the backlog |
+| 6 | **Commit it alone** | **A standalone commit containing nothing but the claim.** `Claim TASK-002 — <title>` |
+| 7 | **Push** | `git push origin <lane-branch>`. **This is the moment the claim exists** |
+| 8 | **Pull and rebase again** | `git pull --rebase origin integration`, and look at what came back |
+| 9 | **If somebody else claimed it first** | **Abandon your claim** — drop the commit, return to step 3, take the next eligible task. **Do not negotiate, do not split the task, do not proceed in parallel** |
+| 10 | **Only now, implement** | A successful claim is recorded *and* synchronized. Not before |
+
+> **No production code may be written before a successful claim has been recorded and synchronized.** Not a line, not a scaffold, not *"just the types while I decide"*. **The claim is what makes the work yours**, and code written before it is code that may have to be thrown away — which is precisely the waste the protocol exists to prevent.
+
+**Why a standalone commit.** A claim mixed into an implementation commit cannot land before the implementation, so it cannot arbitrate anything — it announces a decision already acted on. **Alone, it is cheap to abandon**: `git reset --hard origin/integration` costs nothing when nothing was built on it.
+
+**Why step 8 is not optional.** A push proves your claim was written; it does not prove it was *first*. Step 8 is where you learn, and step 9 is what you do about it. **A lane that pushes and starts building has not run this protocol** — it has recorded a claim and assumed it won.
+
+**Losing a race costs one commit and no code.** That is the entire point of the ordering, and it is why the protocol reads as more ceremony than it costs.
 
 ### The Change Budget
 
@@ -631,7 +663,7 @@ Together these appear in roughly two thirds of all commits. **A lane does not ed
 | `PROJECT_STATUS.md` | **The executive dashboard** — *"where are we?"*, measured | **QE**, at Closeout |
 | [`docs/SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) | **Operational context** — *"what should the next session know?"* | **QE**, at Closeout |
 | [`docs/BACKLOG.md`](docs/BACKLOG.md) | **The READY queue** — *"what is available, and in what order?"* | **Product owner.** A lane writes **only** its claim; QE writes nothing |
-| [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) | **The execution board** — *"who is doing what, right now?"* | **The claiming lane**, at once. **QE** reconciles it at Closeout |
+| [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) | **The execution board, and nothing else** — who is working · on which `TASK-nnn` · on which branch · at what execution status. **It does not define priority** | **The claiming lane**, at once. **QE** reconciles it at Closeout |
 | `docs/architecture/38` · `39` | Design decisions · review findings | **QE**, at merge |
 | The roadmaps | *Scope* is the product owner's · *progress* is QE's | Both, as marked |
 | `PRODUCT_DIFFERENTIATORS.md` | Product strategy | Product owner |
@@ -706,7 +738,7 @@ Three sequences. **Every step names who does it.**
 | 4 | **Take the rows assigned to your lane** | If one belongs naturally to today's work, **fix it first, with a regression test**. If it is deferred, **record the reason in the commit message**. Never silently ignore an assigned bug |
 | 5 | **Read [`docs/LANE_COORDINATION.md`](docs/LANE_COORDINATION.md)** | **Every open item, not only your own.** Another lane's pending contract change is something to discover now, not at merge |
 | 6 | **Read [`docs/RUNNING.md`](docs/RUNNING.md#running-a-lane)** | Use **only** your assigned ports, PostgreSQL database, Redis index and environment variables. **Never invent a local convention** — that table is authoritative |
-| 7 | **Claim your slice** | If you are carrying one, confirm it. If you are `AVAILABLE`, **take the highest `READY` item in [`docs/BACKLOG.md`](docs/BACKLOG.md) you can take, and record the claim in [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) before writing any code.** Then confirm: milestone · slice · **the module and its architectural boundaries** · what it depends on · which coordination items touch it |
+| 7 | **Claim your slice** | If you are carrying one, confirm it. If you are `AVAILABLE`, **run the Task Claim Protocol above — all ten steps, and no production code until step 10.** Then confirm: the `TASK-nnn` · milestone · slice · **the module and its architectural boundaries** · what it depends on · which coordination items touch it |
 | 8 | **Read your own uncommitted history** | `git log integration..HEAD` — what is already on this branch that you have forgotten, or that a previous session left |
 | 9 | **Only then begin the slice** | |
 

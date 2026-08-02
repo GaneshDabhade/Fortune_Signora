@@ -203,19 +203,43 @@ def main() -> int:
                 f"(CLAUDE.md §20e)."
             )
 
-    # 5c — a claim must be visible on both sides, or two lanes can take one item.
-    if backlog:
-        claimed = re.findall(r"`CLAIMED`\s*(?:by|—|-)?\s*\*{0,2}(Lane [A-Z])", backlog)
-        unrecorded = [lane for lane in claimed if lane not in assignments]
-        if unrecorded:
+    # 5c — the claim protocol's two failure modes, both detectable only because a
+    #      task has a permanent id. "Are these the same task?" must be a fact.
+    if backlog and assignments:
+        known = set(re.findall(r"\bTASK-(\d+)\b", backlog))
+        board_rows = [
+            line for line in assignments.splitlines()
+            if line.startswith("| ") and "TASK-" in line
+        ]
+
+        # (a) two lanes holding one task — the race the protocol exists to lose safely.
+        held: dict[str, list[str]] = {}
+        for row in board_rows:
+            lane = row.split("|")[1].strip().strip("*")
+            for task in re.findall(r"\bTASK-(\d+)\b", row):
+                held.setdefault(task, []).append(lane)
+        contested = {t: lanes for t, lanes in held.items() if len(set(lanes)) > 1}
+        if contested:
+            for task, lanes in contested.items():
+                findings.append(
+                    f"TASK-{task} is claimed by {' and '.join(sorted(set(lanes)))} at once. "
+                    f"The Task Claim Protocol requires the later claim to be abandoned "
+                    f"(CLAUDE.md §20e)."
+                )
+
+        # (b) a board row naming a task the backlog has never heard of.
+        unknown = {t for row in board_rows for t in re.findall(r"\bTASK-(\d+)\b", row)} - known
+        if unknown:
             findings.append(
-                f"BACKLOG.md marks {', '.join(sorted(set(unrecorded)))} as having claimed an "
-                f"item, and ACTIVE_ASSIGNMENTS.md does not carry the claim. A claim that is "
-                f"visible on one side only is two lanes about to build the same thing."
+                f"ACTIVE_ASSIGNMENTS.md names {', '.join('TASK-' + t for t in sorted(unknown))}, "
+                f"which BACKLOG.md does not define. A claim must refer to a task that exists."
             )
-        else:
-            ready = len(re.findall(r"^\| \d+ \|", backlog, re.M))
-            notes.append(f"Backlog: {ready} READY item(s), every claim recorded on both sides.")
+
+        if not contested and not unknown:
+            ready = len(re.findall(r"^### TASK-\d+", backlog, re.M))
+            notes.append(
+                f"Backlog: {len(known)} task(s), {ready} READY, no task claimed twice."
+            )
 
     # 6 — a coordination register that only grows has become a discussion log.
     opened = len(re.findall(r"^#{2,3} C-\d+", coordination, re.M))

@@ -27,6 +27,8 @@ QE is the only lane that may merge into `integration`, certify, move `main`, wri
 
 > **The repository is not ready until all seven have completed. Stopping at certification, or at promotion, is an incomplete cycle** (`CLAUDE.md` §20e). **The runbook is [`REPOSITORY_RELEASE_CHECKLIST.md`](REPOSITORY_RELEASE_CHECKLIST.md)** — open it at the start of every cycle and tick it as you execute.
 
+**QE's turn begins when work returns to `integration`, and not before.** Between promotions, `AVAILABLE` lanes claim and build without QE — that is the model working, not a gap in it. **An idle QE with an empty `integration` is the correct resting state.**
+
 **QE is also the one permanent assignment.** Every other lane is a temporary execution resource assigned a slice inside a module (`CLAUDE.md` §20e); QE's responsibility is the repository rather than any module in it, so it does not rotate.
 
 ---

@@ -4,22 +4,24 @@
 >
 > **A lane writes its own row when it claims work.** QE reconciles the board at Repository Closeout and removes what has been promoted, but **QE does not decide who does what** (`CLAUDE.md` §20e). If this file and any other document disagree about who is implementing what, **this file is right and the other is a defect.**
 >
-> **This file holds active execution only.** What is *available* to work on is [`BACKLOG.md`](BACKLOG.md), which the product owner prioritizes — the two are deliberately separate, because a board that also holds the queue becomes a place to negotiate priority.
+> **This file holds active execution only: who is working, on which task, on which branch, at what status.** What is *available* is [`BACKLOG.md`](BACKLOG.md), and **the queue's order is the priority — this board defines none of it.** The two are deliberately separate, because a board that also holds the queue becomes a place to negotiate priority.
+>
+> **Rows reference a `TASK-nnn` and not a description.** An id is immutable and a title drifts, and *"are these two lanes on the same task?"* has to be a fact rather than a reading.
 
-## The eight questions it answers
+## What a row records
 
-**Every row answers all eight. A row that cannot is incomplete, not brief.**
+**Four facts about execution, and nothing about priority.**
 
 | | |
 |---|---|
-| **Which lane is currently working?** | The `Lane` column |
-| **Which module is currently assigned?** | The `Module` column — **the permanent boundary**, never a lane's property |
-| **Which milestone?** | The `Milestone` column |
-| **Which slice?** | The `Slice` column — *slice 2 of 5*, not *the module* |
-| **Current status?** | The `Status` column, from the table below |
-| **Blockers?** | The `Blocked by` column — **named, never implied**. `—` means genuinely none |
-| **Dependencies?** | The `Depends on` column — the `C-` items and lane outputs this slice waits on |
-| **Expected next action?** | The `Next action` column — **what happens next and who does it**, so a cold session knows where to pick up |
+| **Who is working** | The `Lane` column |
+| **On which task** | The `Task` column — **a `TASK-nnn` from [`BACKLOG.md`](BACKLOG.md)**, never free text |
+| **On which branch** | The `Branch` column — where the work physically is, so QE knows what to take |
+| **At what execution status** | The `Status` column, from the table below |
+
+**And four that make a cold session useful rather than merely informed:** the `Module` it is inside (the permanent boundary, never a lane's property), the `Slice`, what it is `Blocked by` — named, never implied — and the `Next action`.
+
+> **Priority is not among them.** If this board and [`BACKLOG.md`](BACKLOG.md) ever disagree about what matters most, **the backlog is right**: it is the queue, and this is a record of who is busy.
 
 ## What it is, and what it is not
 
@@ -37,8 +39,10 @@
 
 ## The rules
 
-- **A lane claims; nobody assigns.** Take the highest [`READY`](BACKLOG.md) item you can, and **write the row here before the first line of implementation.** A claim that is not written down is two lanes about to build the same thing.
-- **Claim from the top of the queue.** If the top item cannot be taken, say why in its backlog note and take the next — skipping silently is re-prioritizing, and priority is the product owner's.
+- **A lane claims; nobody assigns.** Follow the **Task Claim Protocol** (`CLAUDE.md` §20e) — all ten steps, ending with a pushed standalone commit and a pull that confirms you were first. **No production code before step 10.**
+- **Claim from the top of the queue.** If the highest `READY` task cannot be taken, **say why in its backlog note** and take the next. Skipping silently is re-prioritizing, and priority is the product owner's.
+- **A row names a `TASK-nnn`.** If the work has no task id, it is not claimable work — it is a conversation with the product owner.
+- **A lane edits only its own row.** Writing another lane's row, or clearing one, is the confusion this file exists to prevent.
 - **One active assignment per lane. One assignee per module.** Both directions, at all times.
 - **When a lane finishes a slice: mark it `COMPLETE`, return the lane to `AVAILABLE`, and remove the completed row.** A row describing work already on `main` is the defect this file exists to prevent — **no lane may remain assigned to work that has shipped, and no stale assignment is left behind.**
 - **A row is a slice, not a milestone.** *Commercial Profile — slice 2* is an assignment; *Commercial Profile* is not.
@@ -48,7 +52,7 @@
 
 | Status | Meaning |
 |---|---|
-| `CLAIMED` | Taken from the backlog, not yet started |
+| `CLAIMED` | The claim commit is **pushed and confirmed first**. Implementation may begin |
 | `ACTIVE` | Being implemented |
 | `BLOCKED` | Waiting on a `C-` item or a dependency. **Name it** |
 | `IN VALIDATION` | Handed to QE — **committed and pushed**, in the lifecycle, not yet promoted |
@@ -61,11 +65,11 @@
 
 ## Current — as of 2026-08-02, `3e36da9`
 
-| Lane | Assignment | Module | Milestone | Slice | Status | Blocked by | Depends on | Next action | Started |
-|---|---|---|---|---|---|---|---|---|---|
-| **Lane A** | — | — | — | — | `AVAILABLE` | — | — | **Claim from [`BACKLOG.md`](BACKLOG.md).** Last slice: R2-01, promoted in `1bbee30` | — |
-| **Lane B** | — | — | — | — | `AVAILABLE` | — | — | **Claim from [`BACKLOG.md`](BACKLOG.md).** Last slice: M12.5 slice 5, promoted at `3f4e988` | — |
-| **QE** | Repository lifecycle and governance | — (the repository) | — | permanent | `ACTIVE` | — | — | Next cycle: validate whatever a lane hands over | 2026-08-01 |
+| Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Started |
+|---|---|---|---|---|---|---|---|---|
+| **Lane A** | — | `lane-a-product-surface` | — | — | `AVAILABLE` | — | **Run the Task Claim Protocol.** Nobody will assign it; the queue is open | — |
+| **Lane B** | — | `lane-b-commercial-profile` | — | — | `AVAILABLE` | — | **Run the Task Claim Protocol.** Nobody will assign it; the queue is open | — |
+| **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | Idle until a lane pushes work to `integration`. **QE's turn begins there** | 2026-08-01 |
 
 **Available lanes:** **Lane A and Lane B — both, and neither is waiting on anybody.** An `AVAILABLE` lane claims its next slice from [`BACKLOG.md`](BACKLOG.md) and starts. **Unclaimed capacity:** lanes C, D and E ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).
 
