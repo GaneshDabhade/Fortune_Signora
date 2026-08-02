@@ -1108,3 +1108,95 @@ If inbound integrations are providers (item 1), **they inherit the Provider Simu
 | **—** | **All outbound delivery** | **Not schedulable.** Recommendation Engine and RIP do not exist |
 
 **M13 as ratified is a phase.** Cut this way, the executable part is three slices in one module Lane B can build today, and the rest is honestly blocked on modules rather than on architecture.
+
+---
+
+### The Integration domain — Lane B, 2026-08-02, at the product owner's direction
+
+*Asked to step back one level and define the domain before designing a mechanism. **Two things already in the code decide most of it**, and one is a defect the marketplace future would hit.*
+
+#### What the repository already got right, and it is the whole model
+
+[`provider.py`](../backend/modules/provider_platform/domain/provider.py) declares `ProviderCapability` with a comment that answers most of this review:
+
+> *"A provider **declares its capabilities** rather than the platform hardcoding them, so adding a provider does not require editing a dispatch table."*
+
+Resolution is `registry.supporting(capability)` — **by capability, never by vendor.** That is the AI Platform's `for_model()` rule appearing independently in the provider layer, and it is the property that makes a hundred providers survivable.
+
+> **Recommendation: do not introduce an "integration" vocabulary at all.** An integration is a **source of capabilities whose credential belongs to the customer**. Everything below is that sentence expanded.
+
+#### What the repository already got wrong for this future
+
+**`ProviderName` is a closed `StrEnum` with five members.** Correct for five ratified suppliers of Signora's own; **it cannot survive the future the product owner named.** A marketplace extension or a customer-developed adapter cannot add an enum member, so every new vendor becomes a code change inside a shared domain file, and every `match` over it becomes a place that silently does not handle the new one.
+
+**This is the single change that decides whether the ecosystem future is reachable**, and it is cheap now and expensive later: an opaque identifier validated against a catalog, with the catalog as **data** rather than as an enum. Not M13's to fix unilaterally — `provider_platform` is another lane's assignment — but M13 is what makes it load-bearing.
+
+#### The concepts, and who owns each
+
+| Concept | Definition | Owner | Why there |
+|---|---|---|---|
+| **Integration** | A *kind* of external system and the capabilities it supplies. Salesforce, Google Calendar. **Not a customer's anything** | **Catalog — reviewed static knowledge** | Same category as the Signal Catalog: a domain expert signs it, a diff shows the change (§2, least-powerful author) |
+| **Connected Account** | One customer's account **in** such a system — this Salesforce org, this rep's calendar. Workspace-owned, RLS-scoped | **Provider Platform** (inbound) | It is a *source*, and Provider Platform already owns sources, watermarks, health and runs |
+| **Integration Grant** | The credential authorising access to a Connected Account, **and nothing about what it is for** | **Platform capability** | A security boundary with no domain language, needed identically by every consumer — the category JWT verification is in |
+| **External Resource** | A thing in the external system Signora reads or writes — a meeting, a CRM activity, a channel | **Provider Platform** inbound; **the delivering module** outbound | Its *meaning* is the consuming module's; its *retrieval* is not |
+| **Integration Instance** | — | **— collapse it** | It is a Connected Account. A workspace connecting five reps' calendars has five Connected Accounts, not five instances of one thing. A concept that never differs from another is a synonym, and synonyms are where responsibility leaks |
+
+#### Three capabilities that must not be coupled, because OAuth performs all three
+
+| | What varies | What must not vary |
+|---|---|---|
+| **1 · Credential acquisition** | **Everything.** An OAuth redirect, an API key pasted into a form, a service-account JSON upload, an mTLS certificate, a JWT assertion | Whether it is **browser-mediated**, which is the only fact the rest of the system may know |
+| **2 · Credential management** | **Nothing.** Store, scope to a workspace, refresh *if refreshable*, expire, revoke, audit | One implementation, in the platform |
+| **3 · Business synchronization** | Per capability | **It must never learn how the credential was obtained** |
+
+> **The rule that makes this survive mTLS: an adapter receives a resolved `Credential` and can never ask where it came from.** If an adapter can branch on *"was this OAuth?"*, acquisition has leaked into synchronization and the architecture is already vendor-shaped.
+>
+> `refreshable` is a **property of the grant**, never a question about OAuth. An API key is a grant that does not expire and cannot be refreshed — a value, not a special case.
+
+#### The lifecycle, and why it is two aggregates rather than one
+
+`SyncStatus` today is `RUNNING · COMPLETED · FAILED` — **a run's lifecycle.** The lifecycle the product owner sketched is a **connection's**, and merging them would be the first responsibility leak:
+
+```
+connection:  NOT_CONNECTED → AUTHORIZING → CONNECTED → VALIDATED
+                   ↑                            ↓
+             DISCONNECTED ← REVOKED ← EXPIRED ←─┘
+run:         RUNNING → COMPLETED | FAILED          (already built)
+```
+
+**A healthy connection can have a failed run, and a revoked grant can have a completed one.** Keeping them separate is what lets *"the customer revoked us in Salesforce"* be a different alert from *"last night's sync timed out"* — and only the first is something a customer can act on.
+
+**`VALIDATED` earns its place.** A grant that authenticates but lacks a scope is the most common integration failure and is indistinguishable from healthy until the first real sync. One read at connect time turns a silent week into an error while the customer is still looking at the screen.
+
+#### The vendor-independence test
+
+**If Salesforce disappeared and HubSpot replaced it**, under this model: one adapter, one catalog row. **Zero** domain, platform, consuming-module or schema changes — because nothing above the adapter names a vendor, only capabilities.
+
+**Under today's code it is also an edit to `ProviderName`** and to everything matching on it. That is the closed enum's cost stated as a number rather than as a worry.
+
+#### Operational realities — two need design, the rest are inherited
+
+Rate limiting, retries, backoff, circuit-breaking, partial sync and replay are **already solved** by Provider Platform and inherited unchanged. Two are genuinely new:
+
+**Revocation is not a failure, and treating it as one loses a customer silently.** A grant revoked in Salesforce surfaces as a 401 that retry cannot fix. It must move the *connection* to `REVOKED` and tell somebody — a retry loop against a revoked grant is a system doing nothing while a dashboard reports it is fine.
+
+**Offboarding must revoke at the vendor, not merely delete rows.** Deleting a workspace deletes Signora's copy of a token that is still valid at Google. **A live credential outliving the customer relationship is a compliance finding**, not an engineering nicety.
+
+#### Commercial reading, and one reversal
+
+**Calendar still ships first** — a meeting booked with an account is the strongest buying signal the product could carry, and it is the one integration whose value needs no other module: it flows into Observation Engine, which is built.
+
+**Reversing something said earlier:** CRM-inbound is not merely *"the largest build"*. It is the one that **increases retention most**, because a customer whose CRM history feeds Signora cannot leave without losing it. Strategically first and tactically third are different questions, and CRM should not be deferred on the grounds of size.
+
+#### Implementation sequence
+
+| | Slice | Depends on |
+|---|---|---|
+| **1** | **Grants** — mechanism-agnostic credential management, workspace-scoped under RLS, `refreshable` as a property | The OAuth ruling |
+| **2** | **Connected Accounts and the connection lifecycle** on Provider Platform | Slice 1 |
+| **3** | **Calendar inbound**, against a simulated adapter first | Slice 2 |
+| **4** | Email engagement inbound | Slice 3 |
+| **5** | CRM activity inbound | Slice 4 |
+| **—** | All outbound delivery | **Unschedulable** — no consuming module exists |
+
+**Slices 1 and 2 are the architecture; 3–5 are adapters, and if the model is right they should be dull.** That is the test Lane B would hold this design to: **if slice 4 needs a design decision, slice 1 was wrong.**
