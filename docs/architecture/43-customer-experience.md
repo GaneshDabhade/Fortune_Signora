@@ -174,6 +174,23 @@
 
 > **A request is not a screen, and this is where the check stops being mechanical.** Two endpoints are *requested* and still reach no customer: `GET /members` is fetched only so the shell can resolve **your own** role (TS-02), and its list is rendered nowhere. **Automation can tell you a route is called. Only reading the pages tells you whether anybody sees the answer.**
 
+### ⚪ Intentionally unreachable — capabilities that correctly have no screen
+
+**The category that stops a future engineer "fixing" something that is not broken.** A capability with no UI is a defect *only if a customer should have been able to use it*, and most of this repository's capability is deliberately invisible.
+
+| Capability | Why it has no screen, and should not gain one |
+|---|---|
+| **`observation_engine` · `provider_normalization` · `ai_reasoning_engine`** — no HTTP router | **Pipeline stages, event-driven by design.** A customer does not invoke them; they invoke themselves when evidence arrives. Their *output* is on the brief — the score, the narration, the ledger — which is the correct surface for a stage that has no verb of its own |
+| **65 event types** on the internal bus | **Inter-module contracts, not customer capability.** `06-events.md` is an engineering artifact; a screen listing published events would be the platform describing itself to somebody who does not work here |
+| **`dispatch_event`** — the only registered worker task | Infrastructure. **Its visible consequence is that the product is up to date**, which is the only form a customer should ever meet it in |
+| **`GET /workspaces/{id}/connections`** | **Superseded by `/integrations`**, which returns the catalog and the connections together. An endpoint may legitimately outlive its first consumer |
+| **`GET /workspaces/{id}` · `GET /workspaces`** | Consumed by the shell's workspace selector rather than by a page. **Reached, but never as a destination** |
+| **The Playground and the Provider Simulation Framework** | **Test and demo instruments.** Exposing them would be a `if playground` branch in the product, which the Single Product Principle forbids outright |
+
+> **Two things separate this list from the roadmap above it.** Each entry has a *reason it should stay unreachable*, not merely an absence of demand — and each names what a customer meets **instead**. An entry that can say neither belongs in the blocked list, not here.
+
+**`provider_platform` is deliberately not on this list.** It has no HTTP router either, but **provider health is a customer question** — *"is Signora still getting data from my systems?"* — and today nobody, customer or operator, can answer it. **That is a gap, not a design.** It has no backend to expose, so it is not this lane's to build; it is recorded in the blocked table above.
+
 ### ⚫ No backend at all — not this document's gap, recorded for completeness
 
 **Provider Platform · Provider Normalization · Observation Engine · AI Reasoning Engine have no HTTP router.** For the three pipeline modules that is correct — they are event-driven and a customer has no business calling them. **Provider Platform is the one worth noting**: `provider.health_changed` is published, `12-scalability.md` depends on its metrics, and **there is no way for anybody to see whether a provider is healthy.**
@@ -265,6 +282,51 @@
 **What is deliberately not on this list:** a Provider health screen, a RevOps dashboard, a notifications centre and a recommendations surface. **Three have no backend and one has no journey** — building any of them would be a new capability rather than the completion of an existing one, and that is the product owner's to schedule.
 
 ---
+
+## 6a · The four questions every module must answer
+
+**Set by the product owner, 2026-08-02, and the standard this document is now held to.** A module is covered here when all four have an answer — and the fourth is the one most easily skipped.
+
+| | |
+|---|---|
+| **1 · What backend capabilities exist?** | §3, measured from `router.py` rather than remembered |
+| **2 · Which customer journeys use them?** | §4, ten journeys |
+| **3 · Which UI surfaces expose them?** | §2, screen inventory |
+| **4 · Which capabilities are intentionally unreachable?** | **§3's ⚪ table.** *"Not every endpoint requires a direct screen. Documenting intentional non-consumption avoids future engineers fixing something that isn't broken."* |
+
+**Coverage today: all four answered for every module with a router**, and for the four pipeline modules without one. **The gap is `provider_platform`**, which has no HTTP surface and, unlike the other four, *should* have one.
+
+## 6b · Experience consistency — reviewed as one application
+
+**A running record of patterns that are shared across screens, so a new screen inherits them rather than inventing its own.** Where a pattern is *deliberately* uniform, saying so stops the next reviewer filing it as a gap.
+
+| Pattern | Where it holds | Verdict |
+|---|---|---|
+| **A save confirms itself by rendering the new value** | All five commercial editors — products, ICP, committee, focus, target accounts. **Each handles error and pending; none shows a success toast** | **Deliberate, and consistent.** For an inline editor the value appearing *is* the confirmation. A toast is right where the result is not visible — creating an organization does toast, because the dialog closes and one new row joins many |
+| **An error names its reference** | Toasts and both dead-end pages carry `correlation_id` or `digest` | **Consistent.** It is what turns *"it broke"* into a request an engineer can find |
+| **A section renders on failure rather than disappearing** | Narration, validation, research, decision history, account history | **Consistent, and load-bearing** — B-006 was an absent section reading as a feature the customer does not have |
+| **A control the server would refuse is not shown** | Navigation, route guards, workflow actions | **Consistent.** Presentation, never enforcement (§20c) |
+| **Colour comes from a token** | Everywhere except `integrations` and `timeline` | **🟠 Inconsistent — [B-200](../BUGS.md).** Two undefined token names on 44 lines |
+| **Customer vocabulary at the edge** | Enforced repository-wide by `vocabulary.test.tsx` | **Consistent, and machine-checked** — the test walks the whole tree rather than a directory list, which is why it has never fallen behind |
+
+> **The two rows that disagree are worth reading together.** `vocabulary.test.tsx` walks `app/` and `components/` entirely; `design-tokens.test.tsx` maintains a hand-written list of six directories and is behind for the third time. **Same repository, same problem, one solved structurally and one by memory** — which is the identifier lesson ([C-201](../LANE_COORDINATION.md)) in a different costume.
+
+## 6c · QE Impact — the section every slice now carries
+
+**Required by the product owner from 2026-08-02**, in the implementation report of every customer-visible change, so **automation evolves alongside the product instead of catching up afterward.**
+
+**Four headings, and `none` is a valid answer under any of them:**
+
+| | |
+|---|---|
+| **UI changes** | New pages · routes · dialogs · controls · navigation · changed layouts · new empty, loading, error and confirmation states · accessibility · keyboard · responsive behaviour |
+| **Workflow changes** | New, changed, completed or removed journeys · navigation · permissions · entry and exit points |
+| **Backend usage** | Endpoints newly consumed · previously consumed · no longer consumed · changed contracts · flags · permission changes |
+| **Expected automation impact** | **What QE should review** — existing UI tests needing updates, new automation required, regression suites affected, end-to-end journeys affected, accessibility, visual regression, navigation and API-contract validation |
+
+> **The lane does not write those tests.** Its responsibility is to describe the change precisely enough that QE can update, create or retire automation without reading the diff — the same reason the Slice Handoff exists, applied to validation instead of to status.
+
+**It lives in the commit message beside the Slice Handoff**, for the same reason: a file would conflict between lanes, and a commit message travels with the change forever and is greppable.
 
 ## 7 · How to keep this document true
 

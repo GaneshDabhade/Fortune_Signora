@@ -1349,6 +1349,17 @@ tests/components/timeline-feed.test.tsx(80,19): error TS2345: (the same)
 
 > **That is the same gap the check already records finding once**, at M12.3: *"this check scanned `components/` and nothing else, so `app/(auth)` — the first screen every customer sees — had been using `bg-white` since M1.5."* **A rule with a gap in its enforcement is a rule the code eventually finds the gap in**, and it has now happened twice.
 
+**The fix for the enforcement half is already written, in another test in the same directory.** Found 2026-08-02 while checking whether the newly-mounted feed was covered:
+
+| | How it selects files | Covers `integrations` / `timeline`? |
+|---|---|---|
+| `vocabulary.test.tsx` | **Walks `app/` and `components/` entirely.** No list to maintain | **Yes**, automatically, and every future directory too |
+| `design-tokens.test.tsx` | **A hand-written list of six directories** | **No** |
+
+**Two repository-wide tests, one repository, and only one of them has the gap.** The vocabulary check has never needed extending because it cannot fall behind — a new directory is covered the moment it exists. **The token check has now been extended twice** (M12.2 for `intelligence`, M12.3 for `(auth)`, both recorded in its own docstring as *"a rule with a gap in its enforcement is a rule the code eventually finds the gap in"*) and is behind again.
+
+**So the fix is not "add two directories" — it is to select files the way the test beside it already does.** That closes the directory half permanently. The *undefined-token* half still needs a second assertion, because both checks look for wrong colours and neither looks for absent ones.
+
 **Two fixes, and they are different owners.** The 44 lines are Lane B's, in Lane B's modules. **Strengthening the check so a third instance is impossible is the frontend foundation's**, which has no assignee — recorded here rather than opened as a separate row, because it is the same defect seen from the enforcement side. A check that can only catch one of the two ways a colour goes wrong is worth saying out loud.
 
 **Not fixed by the reporting lane.** Both modules are Lane B's, and *finding a defect is an obligation to report it, never permission to fix it* (`CLAUDE.md` §20e).
