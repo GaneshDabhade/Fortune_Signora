@@ -4,12 +4,13 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from sqlalchemy import desc, select
+from sqlalchemy import desc, select, tuple_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.timeline.domain.entry import EntryKind, TimelineEntry
 from modules.timeline.infrastructure.models import TimelineEntryModel
+from signora_platform.pagination import CursorPosition
 
 
 class SqlEntryStore:
@@ -44,7 +45,12 @@ class SqlEntryStore:
         return result.scalar_one_or_none() is not None
 
     async def feed(
-        self, *, workspace_id: UUID, entity_id: UUID, limit: int
+        self,
+        *,
+        workspace_id: UUID,
+        entity_id: UUID,
+        after: CursorPosition | None,
+        limit: int,
     ) -> list[TimelineEntry]:
         # `workspace_id` is filtered explicitly even though RLS is the
         # authoritative control — defence in depth, per §8.
@@ -57,6 +63,15 @@ class SqlEntryStore:
             .order_by(desc(TimelineEntryModel.occurred_at), desc(TimelineEntryModel.id))
             .limit(limit)
         )
+        if after is not None:
+            # Row-wise comparison rather than `occurred_at < x OR (= x AND
+            # id < y)`: one tuple predicate the planner can drive straight off
+            # the `(workspace, entity, occurred_at, id)` index, and one
+            # expression that cannot be got subtly wrong at a tie.
+            statement = statement.where(
+                tuple_(TimelineEntryModel.occurred_at, TimelineEntryModel.id)
+                < (after.created_at, after.id)
+            )
         rows = (await self._session.execute(statement)).scalars().all()
         return [
             TimelineEntry(

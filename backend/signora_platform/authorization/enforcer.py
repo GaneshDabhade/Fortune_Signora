@@ -66,6 +66,12 @@ class Resource(StrEnum):
     #: most consequential declaration a customer makes, and the one most
     #: likely to want a narrower grant than the rest of the profile later.
     TARGET_ACCOUNT = "target_account"
+    #: Registered by M7, on the same terms as every member above — a *use* of
+    #: the platform rather than a change to it (§20a). Its own resource rather
+    #: than a reuse of `ACCOUNT`: reading what an account *is* and reading
+    #: everything that has *happened* to it are different grants, and a feed is
+    #: the surface most likely to want a narrower one later.
+    TIMELINE = "timeline"
 
 
 class Action(StrEnum):

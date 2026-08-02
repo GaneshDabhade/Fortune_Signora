@@ -11,6 +11,7 @@ from typing import Protocol
 from uuid import UUID
 
 from modules.timeline.domain.entry import TimelineEntry
+from signora_platform.pagination import CursorPosition
 
 
 class EntryStore(Protocol):
@@ -35,12 +36,23 @@ class EntryStore(Protocol):
         """
         ...
 
-    async def feed(
-        self, *, workspace_id: UUID, entity_id: UUID, limit: int
-    ) -> list[TimelineEntry]:
-        """The account's entries, newest first.
 
-        Ordered by `occurred_at` descending with `id` breaking ties, which is
-        the total order the feed index exists for.
+class FeedReader(Protocol):
+    """Reading one account's entries, newest first."""
+
+    async def feed(
+        self,
+        *,
+        workspace_id: UUID,
+        entity_id: UUID,
+        after: CursorPosition | None,
+        limit: int,
+    ) -> list[TimelineEntry]:
+        """The account's entries, newest first, after `after`.
+
+        Ordered by `occurred_at` descending with `id` breaking ties — the total
+        order the feed index exists for. Two entries can share a timestamp, and
+        a cursor over a non-total order drops or repeats rows at a page
+        boundary.
         """
         ...
