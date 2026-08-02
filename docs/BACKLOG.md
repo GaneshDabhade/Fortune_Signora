@@ -28,7 +28,8 @@
 | Status | Meaning |
 |---|---|
 | `READY` | **Claimable now.** Every input exists, no decision is outstanding, nobody holds it |
-| `CLAIMED` | A lane holds it. The lane is named here, and [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) carries the detail |
+| `CLAIMED` | A lane holds it. The lane is named here, and [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) carries the detail. **Implementation begins immediately** |
+| `IN PROGRESS` | Being built. **A claim flows straight into this** — there is no waiting state between them |
 | `IN VALIDATION` | **Implemented and pushed.** Set by the implementing lane, the moment the work exists as commits QE can take. **The lane's responsibility ends here and it claims its next task immediately** |
 | `CHANGES REQUESTED` | **QE**, during validation. Returned to the implementing lane with the corrections named; that lane fixes them and sets `IN VALIDATION` again |
 | `VERIFIED` · `CERTIFIED` · `PROMOTED` | QE's stages, and **only QE's** — validation passed, `make certify` passed, `main` fast-forwarded |
@@ -95,7 +96,7 @@
 |---|---|
 | **Module** | Product Surface |
 | **Slice** | PS-02 |
-| **Status** | `CLAIMED` — **Lane A**, 2026-08-02. Taken after [TASK-003](#task-003--the-attributes-are-engineerings-words-r11-06) was skipped with its reason recorded |
+| **Status** | `IN VALIDATION` — **Lane A**, 2026-08-02. Taken after [TASK-003](#task-003--the-attributes-are-engineerings-words-r11-06) was skipped with its reason recorded |
 | **Notes** | The lane's half of [B-010](BUGS.md). The `RUNNING.md` half is QE's and is done separately. **Do not "fix" it by deleting narrations** — a materialized AI artifact is a historical fact (§2) |
 
 ### TASK-005 · `state-check` learns the backlog

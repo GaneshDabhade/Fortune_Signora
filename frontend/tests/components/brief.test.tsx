@@ -20,6 +20,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ApiError } from '@/lib/api/client';
 import type { AccountOpportunity, AccountScore } from '@/lib/api/types';
 
 const workspaceContext = vi.hoisted(() => vi.fn());
@@ -61,7 +62,7 @@ import AccountBriefPage from '@/app/(app)/accounts/[accountId]/page';
 
 const WORKSPACE = 'aaaaaaaa-1111-4111-8111-111111111111';
 const ACCOUNT = '22222222-2222-4222-8222-222222222222';
-const IDLE = { data: undefined, isLoading: false, isError: false };
+const IDLE = { data: undefined, isLoading: false, isError: false, error: null };
 
 const SCORE: AccountScore = {
   account_id: ACCOUNT,
@@ -189,7 +190,7 @@ describe('the brief distinguishes a quiet account from a broken one — R2-03', 
   it('says the request failed, in different words', () => {
     // The whole finding: "the section just isn't there, so I can't tell if
     // there's nothing to check or if the feature didn't load."
-    validation.mockReturnValue({ data: undefined, isLoading: false, isError: true });
+      validation.mockReturnValue({ ...IDLE, isError: true });
 
     render(withQuery(<AccountBriefPage />));
 
@@ -207,3 +208,48 @@ describe('the brief distinguishes a quiet account from a broken one — R2-03', 
     expect(screen.queryByRole('heading', { name: 'Before you act' })).toBeNull();
   });
 });
+
+describe('the brief tells three narration states apart — B-010, TASK-004', () => {
+  it('says nothing has been written when there is no narration', () => {
+    // A 404 here is an answer: Signora has written no explanation for this
+    // account. It used to render as the same blank space as a broken request.
+    narration.mockReturnValue({
+      ...IDLE,
+      isError: true,
+      error: notFound(),
+    });
+
+    render(withQuery(<AccountBriefPage />));
+
+    expect(screen.getByRole('heading', { name: 'In plain language' })).toBeVisible();
+    expect(screen.getByText(/has not written one for this account yet/)).toBeVisible();
+  });
+
+  it('says the request failed when it actually failed', () => {
+    narration.mockReturnValue({
+      ...IDLE,
+      isError: true,
+      error: new Error('network down'),
+    });
+
+    render(withQuery(<AccountBriefPage />));
+
+    expect(screen.getByText(/could not load the explanation/)).toBeVisible();
+    expect(screen.queryByText(/has not written one/)).toBeNull();
+  });
+
+  it('says neither while the answer is still in flight', () => {
+    render(withQuery(<AccountBriefPage />));
+
+    expect(screen.queryByRole('heading', { name: 'In plain language' })).toBeNull();
+  });
+});
+
+/** What the API returns for an account nothing has narrated. */
+function notFound(): ApiError {
+  return new ApiError(404, {
+    code: 'not_found',
+    message: 'No narration for this account.',
+    correlation_id: '00000000-0000-4000-8000-000000000000',
+  });
+}

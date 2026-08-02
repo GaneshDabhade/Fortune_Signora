@@ -94,7 +94,14 @@ export default function AccountBriefPage() {
 
   const { data: score, isLoading, error } = useAccountScore(workspaceId, accountId);
   const { data: opportunity } = useAccountOpportunity(workspaceId, accountId);
-  const { data: narration } = useAccountNarration(workspaceId, accountId);
+  const { data: narration, error: narrationError } = useAccountNarration(
+    workspaceId,
+    accountId,
+  );
+  // **404 is an answer here, not a failure** (B-010). Signora has written no
+  // explanation for this account — which is a different sentence from *the
+  // request failed*, and both used to render as the same blank space.
+  const notNarrated = narrationError instanceof ApiError && narrationError.status === 404;
   const { data: validation, isError: validationFailed } = useAccountValidation(
     workspaceId,
     accountId,
@@ -203,7 +210,11 @@ export default function AccountBriefPage() {
               arithmetic first, and the narration is the bridge between them.
               Rendered only when one exists — absence shows nothing at all,
               because a panel announcing a gap is worse than the gap. */}
-          {narration ? <NarrativeBlock narration={narration} /> : null}
+          <NarrativeBlock
+            narration={narration}
+            notNarrated={notNarrated}
+            isError={narrationError !== null && !notNarrated}
+          />
 
           {score.contested ? <ContestedNote /> : null}
           {opportunity ? (

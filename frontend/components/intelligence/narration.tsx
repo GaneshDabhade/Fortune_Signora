@@ -30,21 +30,55 @@ import type { AccountNarration, EvidenceFact } from '@/lib/api/types';
  * generated it *while they are reading it*, not after following a link nobody
  * follows.
  *
- * **Absence renders nothing at all.** An account with no narration shows no
- * panel — not an empty state. The brief explains itself without this; a box
- * saying *"no narration yet"* would advertise a gap rather than fill one, and
- * would appear on every account until a worker had caught up.
- *
  * ### Since D42, the citations open
  *
  * *"3 facts"* was a count for two milestones because there was nowhere for it
  * to go. It is now the affordance, and it opens **what the model was actually
  * given** — not a record fetched afterwards, which would be a summary vouching
  * for a summary.
+ *
+ * ### Absence used to render nothing at all — B-010
+ *
+ * The original rule was *"a box saying no narration yet would advertise a gap
+ * rather than fill one, and would appear on every account until a worker had
+ * caught up."* **The reasoning was sound and the outcome was not**: a reviewer
+ * opened twelve briefs, found no explanation on any of them, and could not tell
+ * whether the feature was broken or simply had nothing to say. It was broken.
+ *
+ * **Three states used to be one blank space**, and they are now three sentences:
+ * *nothing has been written yet* · *this did not load* · *this was written
+ * against evidence that has since moved*. The panel is still quiet — a line of
+ * muted text, never an illustrated empty state — because the objection to
+ * advertising a gap was right about **volume** and wrong about **silence**.
  */
-export function NarrativeBlock({ narration }: { narration: AccountNarration }) {
+export function NarrativeBlock({
+  narration,
+  notNarrated = false,
+  isError = false,
+}: {
+  /** Undefined while in flight, and while either flag below is set. */
+  narration: AccountNarration | undefined;
+  /** Signora has never written one for this account — the request 404'd.
+   * **A real answer, not a failure**, and worded so a reader can tell. */
+  notNarrated?: boolean;
+  /** The request failed for any other reason. */
+  isError?: boolean;
+}) {
   const [open, setOpen] = useState<string[] | null>(null);
+
+  if (narration === undefined) {
+    if (notNarrated) return <Aside>{NOT_WRITTEN}</Aside>;
+    if (isError) return <Aside>{COULD_NOT_LOAD}</Aside>;
+    return null;
+  }
+
   const facts = new Map(narration.facts.map((fact) => [fact.token, fact]));
+  // **The one condition that strands a reader.** When nothing resolves, every
+  // citation renders as a plain count rather than a button — so the dialog that
+  // would explain *why* has no way to be opened. The sentence moves onto the
+  // panel exactly then, and stays in the dialog the rest of the time: one
+  // explanation, placed wherever the reader can actually reach it.
+  const stranded = !narration.evidence_unchanged && narration.facts.length === 0;
 
   return (
     <section className="flex flex-col gap-3">
@@ -67,6 +101,15 @@ export function NarrativeBlock({ narration }: { narration: AccountNarration }) {
           ))}
         </ol>
 
+        {stranded ? (
+          <p className="border-t border-border pt-3 text-xs leading-5 text-content-muted">
+            The evidence behind this account has changed since{' '}
+            {formatDay(narration.generated_at)}, so the facts these sentences cite can no
+            longer be opened. They describe what was true when they were written — a
+            narration is never rewritten to catch up.
+          </p>
+        ) : null}
+
         <Provenance narration={narration} />
       </div>
 
@@ -77,6 +120,30 @@ export function NarrativeBlock({ narration }: { narration: AccountNarration }) {
         writtenOn={narration.generated_at}
         onClose={() => setOpen(null)}
       />
+    </section>
+  );
+}
+
+const NOT_WRITTEN =
+  'Signora has not written one for this account yet. Everything above stands on its own — an explanation is written separately, and appears here once it has been.';
+
+const COULD_NOT_LOAD =
+  'Signora could not load the explanation for this account. Nothing has changed about the account — reload to try again.';
+
+/**
+ * The panel with nothing in it, said in one line.
+ *
+ * **Deliberately not an `EmptyState`.** The illustrated component is for a
+ * screen whose whole subject is missing; this is one section of a page that
+ * has already answered the reader's question. The original objection — *a box
+ * advertising a gap* — was about volume, and a muted sentence is the version
+ * that survives it.
+ */
+function Aside({ children }: { children: string }) {
+  return (
+    <section className="flex flex-col gap-3">
+      <h2 className="text-sm font-semibold text-content">In plain language</h2>
+      <p className="text-sm leading-6 text-content-muted">{children}</p>
     </section>
   );
 }

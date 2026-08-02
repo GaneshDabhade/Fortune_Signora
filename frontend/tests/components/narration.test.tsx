@@ -248,3 +248,86 @@ describe('a citation opens what the model was given', () => {
     expect(screen.getByText('research_finding')).toBeInTheDocument();
   });
 });
+
+describe('three states that used to be one blank space — B-010', () => {
+  // A reviewer opened twelve briefs, saw no explanation on any, and could not
+  // tell whether the feature was broken. It was. Absence cannot distinguish
+  // itself from failure, and neither could distinguish itself from *nothing
+  // has been written yet*.
+
+  it('says nothing has been written, where it used to say nothing', () => {
+    render(<NarrativeBlock narration={undefined} notNarrated />);
+
+    expect(screen.getByRole('heading', { name: 'In plain language' })).toBeVisible();
+    expect(screen.getByText(/has not written one for this account yet/)).toBeVisible();
+  });
+
+  it('says the request failed, in different words', () => {
+    render(<NarrativeBlock narration={undefined} isError />);
+
+    expect(screen.getByText(/could not load the explanation/)).toBeVisible();
+    expect(screen.queryByText(/has not written one/)).toBeNull();
+  });
+
+  it('says neither while the answer is still being fetched', () => {
+    // Announcing "nothing has been written" during the first paint is a
+    // confident wrong answer to an account that has an explanation.
+    const { container } = render(<NarrativeBlock narration={undefined} />);
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('reads as an answer rather than as a fault', () => {
+    // Signora having nothing to add is not an error, and the sentence must not
+    // borrow the vocabulary of one.
+    render(<NarrativeBlock narration={undefined} notNarrated />);
+
+    const said = screen.getByText(/has not written one for this account yet/).textContent;
+    expect(said).not.toMatch(/error|failed|unavailable|problem/i);
+  });
+});
+
+describe('a narration whose evidence has moved says so where it can be read', () => {
+  it('explains on the panel when no citation can be opened', () => {
+    // **The defect this found.** When nothing resolves, every citation renders
+    // as a plain count rather than a button — so the dialog that explains why
+    // has no way to be opened, and the explanation was only ever in the dialog.
+    render(
+      <NarrativeBlock narration={narration({ facts: [], evidence_unchanged: false })} />,
+    );
+
+    expect(screen.getByText(/can no longer be opened/)).toBeVisible();
+    expect(screen.queryByRole('button', { name: /facts?$/ })).toBeNull();
+  });
+
+  it('leaves it to the dialog while the citations still open', async () => {
+    // One explanation, placed wherever the reader can reach it — never both.
+    // A reader who has opened a citation is checking something, and that is
+    // the moment the difference between then and now matters.
+    render(<NarrativeBlock narration={narration({ evidence_unchanged: false })} />);
+
+    expect(screen.queryByText(/can no longer be opened/)).toBeNull();
+
+    await userEvent.click(screen.getAllByRole('button', { name: /facts?$/ })[0]!);
+    expect(screen.getByText(/has changed since/)).toBeVisible();
+  });
+
+  it('says nothing extra when the evidence is unchanged', () => {
+    render(<NarrativeBlock narration={narration()} />);
+
+    expect(screen.queryByText(/can no longer be opened/)).toBeNull();
+    expect(screen.queryByText(/has changed since/)).toBeNull();
+  });
+
+  it('still shows the sentences, which are not wrong — only dated', () => {
+    // A narration is never rewritten to catch up, and never withheld because
+    // its evidence moved. It is a record of what was true when it was written.
+    render(
+      <NarrativeBlock narration={narration({ facts: [], evidence_unchanged: false })} />,
+    );
+
+    expect(
+      screen.getByText('Hiring and revenue both moved in the last month.'),
+    ).toBeVisible();
+  });
+});

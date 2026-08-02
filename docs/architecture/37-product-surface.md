@@ -391,3 +391,41 @@ The section returned `null` on an empty list, on the reasoning that governs narr
 
 `frontend/tests/components/brief.test.tsx`. Six of its nine assertions were confirmed failing against the pre-slice page before the fix was trusted.
 
+---
+
+## PS-02 — three narration states that were one blank space *(2026-08-02)*
+
+**TASK-004**, the lane's half of [B-010](../BUGS.md). The `RUNNING.md` half is QE's and is separate.
+
+### The rule PS-01 established, applied to the section PS-01 deliberately left alone
+
+PS-01 ended by saying narration was *a different question*, and it was — but it is the same **shape**, and the answer turns out to be the same:
+
+> **Absence can never distinguish itself from failure.**
+
+`NarrativeBlock` returned `null` when there was no narration, on stated reasoning: *"a box saying no narration yet would advertise a gap rather than fill one, and would appear on every account until a worker had caught up."*
+
+**The reasoning was sound and the outcome was not.** A reviewer opened twelve briefs, found no explanation on any of them, and could not tell whether the feature was broken or simply had nothing to say. **It was broken** — a re-seed had orphaned all 748 narrations, and the screen said exactly as much about that as it says about a healthy quiet account: nothing.
+
+**The objection was right about volume and wrong about silence.** So the empty state is one line of muted text under the existing heading, never an illustrated `EmptyState`: this is one section of a page that has already answered the reader's question, not a screen whose whole subject is missing.
+
+| State | Before | Now |
+|---|---|---|
+| No narration written (`404`) | nothing | *"Signora has not written one for this account yet."* **An answer, and worded so it does not read as a fault** |
+| The request failed | nothing | *"Signora could not load the explanation…"* — the page's own wording for a fault |
+| Still loading | nothing | nothing. **Announcing either during the first paint is a confident wrong answer** |
+
+### The defect reading the component revealed
+
+**The one condition that strands a reader**, and it was invisible from either end:
+
+When a narration's evidence can no longer be re-derived, every citation correctly degrades from a button to a plain count — *a citation drawn as clickable and going nowhere costs more trust than the missing feature does*. **But the sentence explaining why lived only inside the dialog that citation opens.** So in exactly the case where the explanation was needed, **there was no longer any control that could reach it.**
+
+The fix is not to duplicate the sentence. It moves onto the panel **only when nothing resolves**, and stays in the dialog the rest of the time: **one explanation, placed wherever the reader can actually reach it.** A reader who *has* opened a citation is checking something, and that remains the better moment for it.
+
+### What it deliberately does not do
+
+- **It deletes nothing.** A materialized AI artifact is a historical fact and is immutable (§2). An orphaned narration correctly survives and correctly stops resolving; the residue is a seeding question, not a retention one.
+- **It does not rewrite a dated narration.** The sentences still render in full — *"false means these sentences are dated, not wrong"* — because a narration is never edited to catch up with its account.
+- **It says nothing about when one will appear.** The brief does not know, and a promise the repository cannot keep is the failure D39 names.
+

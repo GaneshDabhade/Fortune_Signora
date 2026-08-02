@@ -683,7 +683,7 @@ promoted commit SHA  ==  certified commit SHA
 | 7 | **Push the claim to `integration`** | `git checkout integration && git merge --ff-only <lane-branch> && git push origin integration`, then push your lane branch. **This is the moment the claim exists** — and it must exist *where every other lane will look* |
 | 8 | **Pull and rebase again** | `git pull --rebase origin integration`, and look at what came back |
 | 9 | **If somebody else claimed it first** | **Abandon your claim** — drop the commit, return to step 3, take the next eligible task. **Do not negotiate, do not split the task, do not proceed in parallel** |
-| 10 | **Only now, implement** | A successful claim is recorded *and* synchronized. Not before |
+| 10 | **Only now, implement — and immediately** | A successful claim is recorded *and* synchronized. **Not before, and no pause after**: the task moves to `IN PROGRESS` as work starts |
 
 > **No production code may be written before a successful claim has been recorded and synchronized.** Not a line, not a scaffold, not *"just the types while I decide"*. **The claim is what makes the work yours**, and code written before it is code that may have to be thrown away — which is precisely the waste the protocol exists to prevent.
 
@@ -724,7 +724,8 @@ promoted commit SHA  ==  certified commit SHA
 | State | Set by | Means |
 |---|---|---|
 | `READY` | Product owner | Claimable |
-| `CLAIMED` | **The lane**, by the Task Claim Protocol | It is yours; implementation may begin |
+| `CLAIMED` | **The lane**, by the Task Claim Protocol | It is yours. **Implementation begins immediately** |
+| `IN PROGRESS` | **The lane**, as work starts | Being built. **A claim flows straight into this** — there is no pause between them unless another rule explicitly requires one |
 | `IN VALIDATION` | **The lane**, the moment it pushes | Implementation, tests, module documentation and Slice Handoff are all complete. **The lane's responsibility for this task has ended** |
 | `CHANGES REQUESTED` | **QE**, during validation | Something did not hold. Returned to the implementing lane, with the corrections named |
 | `VERIFIED` · `CERTIFIED` · `PROMOTED` · `DONE` | **QE, exclusively** | Validation passed · `make certify` passed · `main` fast-forwarded · closed out. **A feature lane never writes one of these** |
