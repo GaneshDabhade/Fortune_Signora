@@ -211,9 +211,21 @@ Four capabilities the architecture already treats as QE's, of which two exist. *
 
 ### What the candidate model does *not* yet solve
 
-**A defect that reaches `integration` blocks every candidate cut after it.** [B-023](BUGS.md) is the worked example: two type errors in one lane's test file, and six unrelated slices from another lane cannot certify. **The candidate is immutable and independent; its *base* is neither.**
+**A defect that reaches `integration` blocks every candidate cut after it.** [B-023](BUGS.md) is the worked example: two type errors in one lane's test file, and unrelated slices from another lane cannot certify. **The candidate is immutable and independent; its *base* is neither.**
 
-**[ADR-0039](architecture/adr/0039-release-engineering-model.md) §II-2 already contains the answer** — validate before entering the shared line, so a failing candidate fails alone. **It is not adopted, and this section does not adopt it.** Recorded here so that the next occurrence has somewhere to accumulate.
+> **Stated more precisely** (product owner, 2026-08-02, correcting this section's first wording): the observation is **not** *"a defect entered `integration`"*. It is that **`integration` accepts executable work before repository-level quality has been established.** The defect is the symptom; the acceptance rule is the mechanism. **One is an incident, the other is an architecture**, and only the second is worth changing anything for.
+
+**[ADR-0039](architecture/adr/0039-release-engineering-model.md) §II-2 already contains a candidate answer** — validate before entering the shared line, so a failing candidate fails alone. **It is not adopted, and this section does not adopt it.**
+
+**What is being measured instead**, and what would have to be true before it is worth proposing:
+
+| Evidence sought | Observed so far |
+|---|---|
+| Unrelated candidates become blocked | **1 occurrence** — [B-023](BUGS.md) |
+| Independent module work inherits a failure | **1 occurrence** — 17 Lane A commits, none touching Timeline |
+| Release throughput degrades because `integration` accepted unvalidated executable code | **1 occurrence.** Elapsed cost still small; the fix is two characters and the lane is active |
+
+**One occurrence is an incident.** The bar (`CLAUDE.md` §20e) is a **repeated** bottleneck, whose fix eliminates a **class** rather than an instance, and which **increases throughput** while preserving deterministic releases. **Only the second of those three is currently satisfied.** This table exists so the next occurrence lands somewhere countable rather than being re-argued from memory.
 
 ---
 
