@@ -60,7 +60,7 @@ Every ADR follows this structure:
 | [0035](0035-commercial-profile.md) | Commercial Profile — the head of the intelligence pipeline: the bounded context that records what a customer declares, and the owner ICP never had |
 | [0037](0037-failure-categories.md) | **Proposed, not accepted.** Failure categories — `CustomerError` vs `PlatformError`, and the rule that an internal fault must never reach a customer as a business error |
 | [0038](0038-timeline.md) | **Proposed, not accepted.** Timeline — the module's design, ahead of its implementation |
-| [0039](0039-release-engineering-model.md) | **Proposed, not accepted.** Release Engineering — the integration model becomes architecture: change identity, immutable validation targets, merge over rebase, one file per record |
+| [0039](0039-release-engineering-model.md) | **Proposed, not accepted.** Release Engineering — the integration model becomes architecture. **Part I**: change identity, immutable validation targets, merge over rebase, one file per record. **Part II**: the same question from first principles — claims as refs, proofs as notes, and whether a permanent integration branch should exist at all |
 | [0036](0036-target-account-contract.md) | The Target Account Contract — the first Customer–Supplier edge, and four permanent ownership boundaries: **Commercial Profile owns intent, Provider Platform owns synchronization, Knowledge Graph owns understanding, Signal Engine owns intelligence** |
 
 ## How to Propose a New ADR

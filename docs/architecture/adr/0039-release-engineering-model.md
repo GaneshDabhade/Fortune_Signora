@@ -417,3 +417,342 @@ This removes, structurally: register merge conflicts · section inversion (B-021
 - §20e loses a synchronization stage, six protocol steps, and four `state-check` rules — **the review's best evidence that it is the right direction is how much governance it deletes.**
 - `docs/BUGS.md`, `docs/LANE_COORDINATION.md`, `docs/BACKLOG.md` and `docs/ACTIVE_ASSIGNMENTS.md` become generated artifacts; their ownership rules survive unchanged and become enforceable per file.
 - **No module, no boundary, no event contract, no schema and no product behaviour is affected.** This ADR is entirely about how work travels, and not at all about what the work is.
+
+---
+---
+
+# Part II · First principles — what would emerge if we designed this today
+
+**Added 2026-08-02, at the product owner's direction, before ratification.** Part I began with the repository's git workflow and improved it. **Part II deliberately does not.** It asks what release architecture would emerge if this repository had no branching strategy at all, and only afterwards compares that with what exists — because a review that starts from the current model can only ever optimise around it.
+
+**Two technical claims in Part II were verified experimentally rather than asserted.** Both are load-bearing, and both are reproduced in §II-3.
+
+---
+
+## II-1 · First-principles release architecture
+
+### II-1.1 · What the system actually is, with git removed
+
+Strip away branches, and the repository is a system with:
+
+- **one prioritized work queue**, written by one author;
+- **N concurrent workers** that must not duplicate each other;
+- **a body of source** that must move forward without losing contributions;
+- **a proof obligation** — some states are provably fit to publish, most are not;
+- **one published sequence** that consumers depend on.
+
+It must be able to answer, at any instant and without ambiguity:
+
+| # | Question | Nature of the answer |
+|---|---|---|
+| 1 | What work exists? | An ordered set |
+| 2 | Who holds what? | A **mutual-exclusion** problem |
+| 3 | What has been contributed? | An **immutable, identified** artifact |
+| 4 | In what order was it accepted? | A **total order** |
+| 5 | What has been proven, and about which exact state? | An **annotation on an immutable object** |
+| 6 | What is published? | A **checkpoint** into that order |
+| 7 | What was removed, and by whose decision? | An **append-only record of exceptions** |
+
+> **These are seven independent facts with seven different concurrency profiles. The repository currently encodes all seven in one mutable structure — the branch topology plus hand-edited markdown in the working tree.** That is the architectural error. Rebase-versus-merge is a symptom of it, not the cause.
+
+### II-1.2 · What each fact needs, chosen on its own merits
+
+| Fact | Correct primitive, from first principles | Why |
+|---|---|---|
+| **Queue** | Independent records, one author | Single-writer: no concurrency problem exists. Any storage works; the only requirement is that concurrent *readers* never conflict |
+| **Claim** | **Compare-and-swap on a unique key** | Mutual exclusion has exactly one correct solution shape. A protocol that *simulates* CAS with ten ordered steps is a distributed lock implemented in prose |
+| **Contribution** | **Immutable, content-addressed, stably identified, versioned** | If it can be rewritten, "what was validated" is unanswerable. If identity dies with the SHA, supersession and loss are indistinguishable |
+| **Order** | **Append-only log with a single serializer** | Total order requires serialization. Append-only is what makes loss impossible rather than merely detectable |
+| **Proof** | **Annotation keyed by the hash of the proven state, stored outside it** | A proof about state X must name X. If it is stored *inside* X it changes X, and the record can never describe the thing that carries it |
+| **Publication** | **A checkpoint pointer into the log** | Nothing more. A published state is a position, not a copy |
+| **Removal** | **An explicit, append-only exception record** | The only way "lost" and "superseded" can differ is if one of them is written down |
+
+### II-1.3 · The architecture that emerges
+
+```
+   WORK                CONTRIBUTION           ORDER + PROOF            PUBLICATION
+   ────                ────────────           ─────────────            ───────────
+
+   queue records       lane workspace         serializer               checkpoint
+   (one per task,      (private, mutable,     ┌──────────────┐
+    single author)      disposable)           │ candidate =  │
+        │                    │                │ order + slice│
+        │  CAS claim         │  offer         │      ↓       │
+        ├──────────────▶ ────┴────▶ immutable │  certify     │
+        │  (unique key)       slice artifact  │      ↓       │        ┌─────────┐
+        │                     + stable id     │ pass → adopt ├───────▶│ trunk   │
+        │                                     │ fail → drop, │        │ every   │
+        │                                     │   with a     │        │ state   │
+        │                                     │   reason     │        │ proven  │
+        │                                     └──────────────┘        └─────────┘
+        ▼                                              │                    │
+   projections  ◀────────────── derived ───────────────┴────────────────────┘
+   (queue · board · bugs · dashboard · release notes)
+```
+
+**Six properties fall out of the shape, not out of any rule:**
+
+1. **Nothing that has been contributed can leave without a written decision** — the log is append-only, so removal is an act rather than an absence.
+2. **What was validated and what was published are the same object** — the candidate *becomes* the published state; it is not re-derived.
+3. **Two workers cannot take one task** — CAS, not protocol.
+4. **Repository state cannot be stale** — it is a projection, and a projection is rebuilt, never maintained.
+5. **There is exactly one long-lived name** — the trunk. Everything else is either private, immutable, or ephemeral.
+6. **The proof travels with the thing proven**, and is not part of it.
+
+**Notice what is absent.** There is no permanent integration branch, no synchronization step, no branch-reset ceremony, no reconciliation pass, no dashboard to keep current, and no ten-step protocol. **Not because they were removed — because nothing in the derivation ever produced them.**
+
+---
+
+## II-2 · Assumptions challenged
+
+Every assumption the current model rests on, tested against §II-1 rather than against its own history.
+
+| # | Assumption | Verdict |
+|---|---|---|
+| 1 | **A permanent `integration` branch is necessary** | **Retire.** It names the window between *merged* and *certified*. That window is **6.5 minutes** — the measured mean certification time. A permanent branch for a six-minute state is what produced the divergence, the eleven forced rebases, and the certification exception |
+| 2 | **Validation happens after merge** | **Retire.** Validating after merge means a failure has already entered the shared line and must be removed — the operation that loses work. **Validate the merge *result* before adopting it** (speculative merge). Failure then costs nothing but a discarded candidate |
+| 3 | **A branch is the unit of validation** | **Retire.** A branch is a mutable name. ADR-0032 established this for certification and stopped one stage short |
+| 4 | **Lane branches must be permanent by name and reset after each merge** | **Retire.** With immutable slice artifacts, a lane branch is a private scratchpad. Permanence buys nothing and costs a reset ceremony |
+| 5 | **Feature branches must survive after their slices merge** | **Retire.** The slice artifact survives; the branch need not |
+| 6 | **Registers are documents that lanes edit** | **Retire.** They are **projections**. [B-021](../../BUGS.md) was never a corruption bug — it was a hand-maintained projection drifting from its source, which is what hand-maintained projections do |
+| 7 | **The certification record must live in the working tree** | **Retire — and this is the keystone.** It is the sole reason ADR-0032 needs a bounded exception, `--audit-main` needs a Closeout special case, and `main` needs commits `integration` does not have. **See §II-3** |
+| 8 | **`PROJECT_STATUS.md` must be maintained** | **Retire.** Derived. The repository's own §2 already says a stored copy of a derivable fact is a defect waiting to happen |
+| 9 | **Claiming requires a ten-step protocol** | **Retire.** It is a compare-and-swap written out longhand. **See §II-3** |
+| 10 | **Fast-forward-only everywhere** | **Split.** Keep for the trunk — a checkpoint should only advance. Retire for integration, where it is the direct cause of mandatory rebase |
+| 11 | **The queue and the board are separate documents** | **Retire the duplication, keep the separation.** The board is derivable from claims: *who holds which task* is exactly the set of claim keys |
+| 12 | **QE must synchronize branches after every cycle** | **Retire.** Only divergent things need synchronizing |
+| 13 | **A single serializer is required** | **Keep.** Convergent across every system in §4 and §II-5. Total order requires it |
+| 14 | **Certification binds to an immutable commit** | **Keep, and extend.** The best decision in the repository's governance history |
+| 15 | **Work is pulled, never assigned** | **Keep, and strengthen** — CAS makes the pull safe rather than merely disciplined |
+| 16 | **One assignee per module** | **Keep.** An architectural invariant, unrelated to release mechanics |
+| 17 | **All verification is local** ([ADR-0027](0027-local-first-development.md)) | **Keep. It is a binding constraint on this design, and the design satisfies it** — every mechanism below is a local git operation with no service |
+| 18 | **Only executable change opens a cycle** | **Keep** |
+| 19 | **Lanes never idle waiting for QE** | **Keep. Non-negotiable** — it is the throughput property everything else must not damage |
+
+## II-3 · The two verified mechanisms
+
+Both were tested against a scratch repository rather than reasoned about, because both replace a governance rule with an architectural guarantee, and a guarantee that turns out not to hold would be Decorative Logic at the scale of the whole process.
+
+### II-3.1 · A claim is a ref, and git enforces mutual exclusion
+
+```bash
+# Lane A
+git push origin HEAD:refs/claims/TASK-018
+ * [new reference]   HEAD -> refs/claims/TASK-018
+
+# Lane B, same task, same moment
+git push origin HEAD:refs/claims/TASK-018
+ ! [rejected]  (fetch first)
+
+# Lane B, trying harder — expecting-absent lease
+git push --force-with-lease=refs/claims/TASK-018: origin HEAD:refs/claims/TASK-018
+ ! [rejected]  (stale info)
+```
+
+**The second lane cannot win, and cannot force its way past.** This is a genuine compare-and-swap, enforced by the remote, requiring no service, no protocol and no discipline.
+
+**What it deletes:** Task Claim Protocol steps 6, 7, 8 and 9 — *commit it alone*, *push the claim to `integration`*, *pull and rebase again*, *if somebody else claimed it first, abandon*. Those four steps exist to simulate exactly this operation. **It also removes the one exception that lets a feature lane write to `integration`**, and with it `certification-guard.py --audit-claims`, whose whole job is checking that claim commits carry nothing else. **A claim stops being a commit, so it can never be replayed, rebased, conflicted, or dropped** — which is precisely what happened to `a599201` in [B-018](../../BUGS.md).
+
+**The board becomes a projection:** `git ls-remote origin 'refs/claims/*'` *is* the answer to *"who holds what?"*, and it cannot disagree with itself.
+
+### II-3.2 · The proof attaches to the commit without being inside it
+
+```bash
+C=$(git rev-parse HEAD)
+git notes --ref=certification add -m '{"commit":"'$C'","certified":true,...}' $C
+git rev-parse HEAD        # unchanged — the commit is not rewritten
+git push origin refs/notes/certification
+# from a fresh clone:
+git fetch origin 'refs/notes/*:refs/notes/*'
+git notes --ref=certification show $C   →  the record
+```
+
+**A commit can carry its own certificate.** ADR-0032 states the opposite as a law:
+
+> *"A certification record cannot contain its own commit hash, so the commit that writes the record is always created after the run it records."*
+
+**That is true of a record stored in the tree, and false of a record stored beside it.** It is an artifact of the storage choice, not a property of certification — and the entire chain of consequences hangs off it:
+
+```
+  record lives in the tree
+        └─▶ Closeout must be a commit
+              └─▶ that commit cannot be certified
+                    └─▶ ADR-0032 needs a bounded exception
+                          └─▶ --audit-main needs a path allowlist  (and B-014 came from it)
+                                └─▶ Closeout lands on main only
+                                      └─▶ main and integration diverge every cycle
+                                            └─▶ 11 forced rebases of integration
+                                                  └─▶ a synchronization stage exists at all
+```
+
+**Move the record out of the tree and the whole chain collapses at the top.** `refs/notes/certification` is itself a git history — append-only, pushable, auditable, and every past certification is `git log refs/notes/certification`.
+
+**This is the single highest-leverage finding in either part of this ADR**, and Part I did not see it, because Part I started from the branch topology and this problem is not visible from there.
+
+---
+
+## II-4 · Which assumptions remain valid
+
+**The execution model is not what needs changing, and this review does not touch it.** Independent feature lanes · pull-based execution · module ownership · deterministic certification · commit-bound promotion · executable-slice delivery · architecture-first implementation · product-first decision making — **all preserved, and three of them strengthened**: claiming becomes atomic rather than disciplined, commit-binding extends from certification to validation, and executable-slice delivery gets faster because the merge ceremony around it shrinks.
+
+**What was right all along, and is worth stating because the rest of this document is a list of corrections:**
+
+- **The single serializer.** Every system in §4 and §II-5 has one. QE's role is correct.
+- **Commit-bound certification.** ADR-0032 is the best decision in the repository's governance history; Part II extends it, and contradicts nothing in it except a storage assumption.
+- **Local-first.** It is a real constraint, and it is what rules out every off-the-shelf merge queue. **The design satisfies it with no service and no daemon.**
+- **Lanes never wait for QE.** Preserved exactly.
+
+## II-5 · Comparison with mature systems, by discipline
+
+Part I compared *release workflows*. Part II compares the **disciplines** the repository actually resembles.
+
+| Discipline | Principle extracted | Where it lands |
+|---|---|---|
+| **Database concurrency** | The registers are a table with no transactions: lost updates ([B-017](../../BUGS.md)), phantom reads (a stale queue), and no unique constraint (id collisions QE renumbers at merge). The four fixes are textbook: **unique constraint** → ref/path uniqueness · **serializable isolation** → single serializer · **MVCC snapshot** → immutable candidate · **WAL + checkpoint** → append-only log with a published pointer | II-1.2, II-3.1 |
+| **Event sourcing** | **One write model, many read models.** Commits, refs and notes are the events; the registers and the dashboard are **projections**, rebuilt rather than maintained. A corrupt projection is not a defect — it is a rebuild | II-1.3 fact 4 |
+| **Queueing** | A claim is a **lease**. Today it has no expiry, so an abandoned claim blocks a task indefinitely, with only human observation to catch it. A ref-based claim carries its commit time, and staleness becomes a check | II-3.1 |
+| **Distributed systems** | **Idempotence** — advancing a checkpoint to an already-published state is a no-op, so promotion can be retried safely. **At-least-once with dedup** — a contribution offered twice is one change with a stable id. **Linearizability** — from the serializer. **Partition tolerance** — lanes already work offline, which is what git is for | throughout |
+| **Build engineering** | **Hermetic, content-addressed artifacts with provenance.** A build output is identified by the hash of its inputs, and a build that cannot say what went into it is not reproducible. Applied here: the slice artifact is the input, the candidate is the output, and the note is the provenance | II-1.3 |
+| **Release engineering** | **Cut, prove, publish, and never edit what was published.** Also: **a release is a decision recorded about an artifact, never a property of a branch** — which the repository already believes | II-1.3 |
+| **Monorepo engineering** | **Presubmit against the state you will actually land on**, because a change validated against a stale tree is validated against nothing. This is the argument for speculative merge, and against validating a lane branch | II-2 #2 |
+
+## II-6 · Alternative end-state architectures
+
+Four credible end states, described honestly enough to be chosen against.
+
+### Option A · Evolve the current model — Part I, phases 1–5
+
+Keeps `integration` as a permanent branch. Adds `Change-Id`, slice tags, merge-based integration, file-per-record registers, derived status.
+
+**For:** smallest conceptual change; every step reversible; no unfamiliar git surface.
+**Against:** **keeps assumptions 1, 2, 7 and 9** — so it keeps the divergence, the synchronization stage, the certification exception and the ten-step protocol. It makes the current model safe rather than making it simple.
+
+### Option B · Merge-queue trunk — *recommended*
+
+One permanent branch. Immutable slice artifacts. Ephemeral certified candidates. Claims as refs. Certification as notes. Registers and dashboard as projections.
+
+```
+  lane-*          private, mutable, disposable      the lane's workspace
+  slice/<id>/<n>  immutable, versioned              the offer
+  cand/<n>        ephemeral                          order + slice, before proof
+  main            append-only, every state proven    the only permanent branch
+  refs/claims/*   CAS                                who holds what
+  refs/notes/*    append-only annotation             what was proven, about what
+```
+
+**For:** every failure class in Part I §3 becomes structurally impossible rather than detectable; **deletes more governance than it adds**; keeps every strength in §II-4; runs entirely locally.
+**Against:** topology change; `refs/claims/*` and `refs/notes/*` are unfamiliar and are **not fetched or pushed by default**; a failed candidate must be attributed to a slice.
+
+### Option C · Patch-series, kernel style
+
+Contributions are versioned patch series; the integrator applies them; supersession is explicit (`v2`, `v3`).
+
+**For:** the most loss-resistant model in existence; needs no shared write access at all.
+**Against:** ceremony calibrated for thousands of contributors and dozens of maintainers. **At two or three lanes with one integrator it is pure overhead**, and it would slow the product down — which §II-9 rules out.
+
+### Option D · Change-first, no branches at all (Sapling / Phabricator / stacked diffs)
+
+The unit is a *change* with a stable id; branches disappear entirely; changes stack and land independently.
+
+**For:** the cleanest expression of §II-1; scales furthest; **its identity model is already Option B's `Change-Id`**.
+**Against:** requires a client and a server the repository would have to build. **Correct destination, wrong decade.** Option B is deliberately shaped so that D remains reachable.
+
+## II-7 · Trade-offs, compared
+
+| | **A · Evolve** | **B · Merge-queue trunk** | **C · Patch series** | **D · Change-first** |
+|---|---|---|---|---|
+| Loss impossible? | Detectable | **Impossible** | Impossible | Impossible |
+| Permanent branches | 2 + N lanes | **1 + N private** | 1 | **0** |
+| Governance rules removed | 4 | **~14** | ~6 | ~16 |
+| New concepts a lane must learn | 2 | **3** | 4 | 5 |
+| Tooling to build | ~630 lines | **~700 lines** | ~400 | thousands |
+| Local-first compatible | Yes | **Yes** | Yes | No, as bought |
+| Migration risk | Medium | **Medium-high, phased to low** | High | Very high |
+| Throughput effect | Neutral | **Positive** | **Negative** | Positive |
+| Reaches D later? | Awkwardly | **Directly** | No | — |
+
+## II-8 · Recommended long-term architecture
+
+> **Option B, reached in the order of §II-9 — and the first four steps are worth taking whatever is decided about the rest.**
+
+**The end state, stated once:**
+
+- **One permanent branch, `main`.** Every commit on it was proven before it arrived. It only ever advances.
+- **Lane branches are private, mutable and disposable.** A lane rebases, squashes and rewrites its own workspace as freely as it likes, because nothing outside it depends on those objects.
+- **A slice is offered as an immutable, versioned artifact** carrying a stable `Change-Id`. A correction is version 2; version 1 remains.
+- **The serializer builds a candidate** — the merge of `main` and the slice — **certifies the candidate, and adopts it or discards it.** Validation happens on the object that will actually be published, which is the only object worth validating.
+- **A discarded candidate costs nothing**, because nothing was published. The slice returns to its lane with the failure named.
+- **Claims are refs.** Mutual exclusion is enforced by git.
+- **Proofs are notes.** They attach to the exact object proven and never alter it.
+- **Every register, board and dashboard is a projection**, regenerated on demand, never hand-maintained.
+- **Removal is always an explicit record.** There is no way for a contribution to leave silently, because the log only appends.
+
+**What no longer exists, and this is the measure of the design:** the integration branch · the synchronization stage · the branch-reset ceremony · the register reconciliation pass · the Closeout commit · the certification exception · the audit special case · six of the ten claim-protocol steps · and four `state-check` rules that check for failures the architecture no longer permits.
+
+## II-9 · Migration roadmap, ordered by return over risk
+
+**This is the prioritization requested.** Every row is independently valuable and independently reversible; **nothing below depends on anything above it being adopted**, except where stated.
+
+### High value · low risk — *adopt first, regardless of the rest*
+
+| Move | Value | Cost | Risk | Why it is safe |
+|---|---|---|---|---|
+| **Loss detection** (`change-ledger`) | **Highest** — answers *"was it lost?"*, which is currently unanswerable | ~200 lines | **Very low** | Reports only; changes nothing |
+| **`Change-Id` trailer** | **Highest** — identity survives the operation that destroys the SHA | ~20 lines | **Very low** | A trailer nothing yet reads |
+| **Claims as refs** | **Highest** — deletes 4 protocol steps, an `integration` write exception, and an audit mode; makes duplicate claiming *impossible* | ~30 lines | **Very low** | **Verified §II-3.1.** Touches no file; coexists with the current protocol during changeover |
+| **Certification as notes** | **Highest** — collapses the entire divergence chain at its source | ~60 lines | **Low** | **Verified §II-3.2.** Notes can be written alongside the current manifest until trusted |
+| **Immutable slice tags** | High — validation stops chasing a moving branch | ~20 lines | **Low** | Purely additive |
+
+> **These five are the recommendation.** They are roughly 330 lines, none changes how a lane works, and **together they would have prevented every incident in Part I §3.** If nothing else in this document is adopted, adopt these.
+
+### Medium value · medium risk — *schedule deliberately*
+
+| Move | Value | Risk | Constraint |
+|---|---|---|---|
+| **Registers → one file per record + projection** | High — removes 82% of the conflict surface | Medium | ~40 records to convert; **needs a cycle where every lane is `AVAILABLE`**, which the board shows regularly |
+| **Derived `PROJECT_STATUS.md`** | Medium — deletes the Closeout commit | Low-medium | Follows certification-as-notes |
+| **Append-only removal records** | Medium — makes supersession a decision | Low | Follows `Change-Id` |
+| **Claim leases with visible staleness** | Medium | Low | Follows claims-as-refs |
+
+### High value · high risk — *last, and only once the above hold*
+
+| Move | Value | Risk | Why last |
+|---|---|---|---|
+| **Merge instead of rebase** | High — ends `--skip` loss | Medium | The largest habit change; needs `--first-parent` to become the reading convention |
+| **Retire the `integration` branch; candidate-based integration** | **Highest structural value** | **High** | A topology change. **Safe only after slice tags, notes and merge-based integration are all in place** — each removes one reason `integration` currently exists |
+| **Disposable lane branches** | Low | Low | Cosmetic once the above are done |
+
+**Sequencing constraints, and there are only three:** registers before merge-strategy (so a failure in the first merge-based cycle is attributable) · notes before derived status · everything before retiring `integration`.
+
+## II-10 · Expected impact
+
+| Dimension | Today | Option B end state |
+|---|---|---|
+| **Engineering throughput** | A lane rebases against an 82%-contended tree and may lose a commit doing it | **Higher.** Claim: 10 steps → 1 push. Conflicts: one resolution, or none. **The lane loop is otherwise unchanged, and lanes still never wait for QE** |
+| **Serializer capacity** | ~6.5 min per certification, plus reconciliation, sync and Closeout | ~6.5 min per candidate, and **nothing else** — roughly **8 slices/hour against a demand of a few per day**, about 20× headroom |
+| **Repository complexity** | 2 permanent shared branches, 4 hand-maintained registers, 1 hand-maintained dashboard | **1 permanent branch, 0 hand-maintained records** |
+| **Governance burden** | 7-stage lifecycle, 10-step claim protocol, 16-step completion sequence | **~14 rules deleted**, none added. The lifecycle keeps its stages and loses its ceremony |
+| **Traceability** | *"Lost or superseded?"* requires a human investigation | **`make ledger`** |
+| **Recoverability** | An unreferenced object in one clone ([B-017](../../BUGS.md)) | Structurally impossible — the log only appends |
+| **Scalability** | O(N²) shared-file conflicts; O(N) rebases per cycle | **~0 conflicts, 0 rebases.** Serializer-bound at roughly 6–8 lanes, at which point the answer is an automated queue — and **Option B is already that shape**, so adopting one replaces the operator, not the model |
+
+### II-10.1 · The product test
+
+**Does this make it easier to build and release the best possible product?**
+
+| | |
+|---|---|
+| **Yes, clearly** | The five high-value/low-risk moves. They remove a class of lost work, delete protocol steps, and change nothing about how a lane spends its day |
+| **Yes, with scheduling** | Registers-as-files. The largest single reduction in friction, and the one that needs a quiet board |
+| **Yes, eventually** | Retiring `integration`. The most structural improvement, and the one with the most to lose if rushed |
+| **No** | Option C, and any rule added for symmetry rather than for a failure that has actually occurred |
+
+> **The release process exists to serve product engineering, and the honest summary of this review is that the current one has begun to cost more than it returns.** Not because it is badly designed — it is carefully designed — but because it maintains by procedure what could be guaranteed by structure, and the procedure now has to be executed by every session, forever.
+
+## II-11 · Consequences of Part II, beyond Part I
+
+- **[ADR-0032](0032-release-certification.md) loses its bounded exception entirely**, rather than narrowing it. The sentence *"a certification record cannot contain its own commit hash"* is retired as a storage artifact.
+- **`refs/claims/*` and `refs/notes/*` must be in the fetch and push refspecs** — they are not by default. This is the single most likely operational mistake in the design, and it is a two-line `git config` plus one `state-check` rule.
+- **`git log --first-parent` becomes the documented reading convention**, replacing `--oneline` as the changelog a cold session reads.
+- **No module, boundary, event contract, schema or product behaviour is affected — unchanged from Part I.**
+- **Part II contradicts Part I in one place and defers to it in another.** It retires Part I's retention of `integration` (Part I asked whether it should be authoritative; Part II asks whether it should exist), and it keeps Part I's ordering discipline — **do not retire `integration` early.** Where the two disagree, **Part II is the target and Part I is the path.**
