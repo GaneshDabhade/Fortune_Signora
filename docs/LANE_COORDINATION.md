@@ -1200,3 +1200,76 @@ Rate limiting, retries, backoff, circuit-breaking, partial sync and replay are *
 | **—** | All outbound delivery | **Unschedulable** — no consuming module exists |
 
 **Slices 1 and 2 are the architecture; 3–5 are adapters, and if the model is right they should be dull.** That is the test Lane B would hold this design to: **if slice 4 needs a design decision, slice 1 was wrong.**
+
+---
+
+### Stress test — Lane B, 2026-08-02. **Trying to break the model**
+
+*Run against every mechanism and scenario the product owner named. **Three broke it**, and the corrections are below. The rest passed without changing anything, which is the result that matters.*
+
+#### The load-bearing finding: the Provider Port assumes a workspace-independent credential
+
+[`ProviderRequest`](../backend/modules/provider_platform/domain/provider.py) carries `capability`, `workspace_id`, `subject`, `since`, `cursor` — **and no credential.** That is correct today and invisible as an assumption: Signora's Apollo key is the same for every workspace, so the adapter is built once at the composition root with its secret already bound.
+
+**A customer-credential source breaks that silently.** The credential now varies per *(workspace, connected account)*, and there are only two places it can go:
+
+| | |
+|---|---|
+| **On the request** | Puts secret material inside a frozen domain dataclass that is logged, traced and replayed. **Rejected** |
+| **Bound into the adapter instance**, resolved per connected account by a factory | The credential never enters the domain, and the adapter still cannot ask where it came from |
+
+> **So the registry stops resolving `capability → adapter` and starts resolving `(capability, connected account) → a bound adapter`.** One change, at the seam that already exists, and it is the thing slice 1 has to get right.
+
+**This is exactly the class of discovery this review existed to make.** It is invisible in the architecture documents, obvious in `provider.py`, and would otherwise have surfaced halfway through the first adapter.
+
+#### Mechanisms that broke the abstraction, and the corrections
+
+**1 · mTLS — a credential is not a value to put in a header.**
+
+Every other mechanism resolves to something an adapter attaches to a request. **mTLS is used at the transport layer**: a client certificate and private key configure the TLS context before any request exists.
+
+> **Correction: a `Credential` is an opaque handle an adapter hands to a client factory — never a value it formats into a request.** An abstraction shaped as *"give me the string for the Authorization header"* is OAuth-shaped and cannot express mTLS.
+
+This is the improvement the product owner asked for rather than an implementation workaround, and it costs nothing now.
+
+**2 · Service accounts and Microsoft Graph app-only — a Connected Account is not a person.**
+
+Domain-wide delegation means **one grant serves an entire organisation** and impersonates many users. If `ConnectedAccount` had implied *"one human's mailbox"*, this breaks it.
+
+> **Correction: a Connected Account is an *account in an external system* — an org, a domain, a mailbox or a calendar.** How many humans it covers is the vendor's business, not the model's.
+
+**3 · Salesforce Connected Apps — the endpoint is not the credential.**
+
+Salesforce returns a per-org `instance_url` with the token. It is **connection metadata**, not secret material, and putting it in the grant would mean rotating a credential to correct an address.
+
+> **Correction: the Connected Account carries the endpoint; the Grant carries only secret material.**
+
+#### Mechanisms that passed and changed nothing
+
+**API key · Basic auth · OAuth 2.1 · JWT assertion · SAML-backed APIs** — all resolve to secret material with a lifecycle. `refreshable` is a property, and an API key is simply a grant that never expires.
+
+**OAuth Device Flow** passed, and it *earned* a state: authorization is asynchronous and polled, so **`AUTHORIZING` must be persisted rather than a transient in a request handler.** The model already had it.
+
+**Slack incoming webhooks** looked like a break — the pasted URL is simultaneously credential and destination — and is not one: it is secret material bound to a Connected Account, and the adapter treats it as a credential. It confirms a `Grant` must not be modelled as *"a token"*.
+
+**Signed webhook callbacks (Stripe-style) inverted the direction of trust** — Signora verifies *them* rather than authenticating to them — and the model absorbed it without a new concept. **A grant is secret material bound to a Connected Account with a lifecycle; which way it is presented is the adapter's business**, on exactly the rule that already forbids an adapter asking whether it was OAuth. Adding a `direction` flag would have hidden a second concept inside the first.
+
+**Webhooks · polling · event streaming · GraphQL subscriptions** are **transports, not capabilities.** `CALENDAR_EVENTS` is satisfied identically by a poll or a push; the watermark remains the invariant and a webhook only makes it advance sooner. **Capability is *what*; transport is *how*** — and that is why webhooks were never an architectural question, only an operational one.
+
+#### One concept eliminated
+
+**`External Resource` is dropped.** Inbound it is `RawProviderRecord`, which exists and is already the unit of sync; outbound it has no referent, because a module delivering a recommendation to Slack is not managing a resource. **A concept that is a synonym in one direction and empty in the other is not a concept.**
+
+The model is now four: **Integration (catalog) · Connected Account · Grant · Capability.** Each survives every mechanism above.
+
+#### Limits worth stating rather than discovering
+
+**Customer-developed adapters do not fit a modular monolith.** An adapter is a Python class imported at the composition root; a customer cannot add one without a deploy. Reaching an ecosystem needs process isolation — a sandbox, or *bring-your-own-endpoint* where the customer's adapter is an HTTP service Signora calls through the same port. **The catalog should become data now; the execution model is a later decision, and this design does not foreclose it.**
+
+**Multi-region is a scheduling property, not a model property.** An EU customer's calendar data must not transit the US — which constrains *where the adapter runs*, and Provider Platform already owns scheduling. No model change; stated so it is not rediscovered.
+
+**Deleting customer data while keeping audit evidence is already answered** by the repository's data categories: the grant is customer configuration and is erasable; the record that it was revoked is operational history and is immutable. **Nothing new is needed** — but offboarding must still revoke at the vendor, which remains the compliance finding.
+
+#### Freeze recommendation
+
+**Additional scenarios stopped changing the architecture after mTLS.** Every mechanism after it either passed unchanged or confirmed a rule already stated. **Lane B recommends freezing this model** — four concepts, three separated capabilities, two lifecycles, capability-first resolution, and the credential bound per connected account — and beginning slice 1 on the product owner's OAuth ruling.
