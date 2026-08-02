@@ -60,11 +60,11 @@
 
 | Lane | Assignment | Module | Milestone | Slice | Status | Blocked by | Depends on | Next action | Started |
 |---|---|---|---|---|---|---|---|---|---|
-| **Lane A** | Two accounts get identical guidance (**R2-01**) | `signal_engine` · `opportunity_engine` | product surface | R2-01 | `ACTIVE` | — | — | Lane implements; **rebase onto the reconciled `integration` first** | 2026-08-02 |
+| **Lane A** | — | — | — | — | `AVAILABLE` | — | — | **QE to assign.** R2-01 landed on `integration` at `f450a36`, **not yet validated or promoted** | — |
 | **Lane B** | — | — | — | — | `AVAILABLE` | — | — | **QE to assign.** M12.5 completed and promoted at `3f4e988` | — |
 | **QE** | Repository lifecycle and governance | — (the repository) | — | permanent | `ACTIVE` | — | — | Next cycle: validate whatever a lane hands over | 2026-08-01 |
 
-**Available lanes:** **Lane B.** **Unassigned capacity:** lanes C, D and E are unclaimed ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).
+**Available lanes:** **Lane A and Lane B — both.** **Unassigned capacity:** lanes C, D and E are unclaimed ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).
 
 **QE's assignment is permanent** and is never removed — it is the one row that outlives its own completion, because the responsibility is the repository rather than a slice inside it.
 
@@ -76,6 +76,8 @@
 
 | Item | Where | Note |
 |---|---|---|
+| **[C-008](LANE_COORDINATION.md)** — sellers cannot see what their company sells | Product Surface | **Proposal accepted 2026-08-02**; awaiting the choice of option A/B/C/D from the product owner. *"A repository-level capability, not a module enhancement"* |
+| **[C-007](LANE_COORDINATION.md)** — the guided first run | Product Surface | The sequencing condition has fired: all five declarations exist. **Blocked on a capability, not a decision** — the `target_accounts_changed` consumer |
 | **R2-03** — an account with nothing live says nothing at all | Product Surface | 🟡, and overlaps R1-04 |
 | **R11-06** — the attributes are engineering's words | Knowledge Graph | 🟡 |
 | **R9-04 / D5** — what changed since you last looked | Product Surface | Needs per-user read state. **Trigger unfired** — a design partner saying they cannot tell what is new |
@@ -99,6 +101,7 @@
 | Lane | Assignment | Promoted | Commit |
 |---|---|---|---|
 | QE | The repository operating model, certification `f6691728aaf9`, and B-013 | 2026-08-02 | `f669172` · `6aadea9` |
+| A | R2-01 — the guidance is generic; what it points at is not. **On `integration`, awaiting validation** | *not yet promoted* | `f450a36` |
 | B | M12.5 slice 5 — target accounts. **M12.5 complete** | 2026-08-02 | `3f4e988` |
 | A | M12.4 — research on demand | 2026-08-02 | `c1f5985` |
 | A | R4-02 · R4-03 — the words the product uses when it refuses you | 2026-08-02 | `bdb014f` |

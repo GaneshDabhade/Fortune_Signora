@@ -48,9 +48,9 @@
 | [C-003](#c-003--three-wire-codes-for-one-condition) | Three wire codes for one condition | Lane B | **Product owner** | `OPEN` | Nothing. **It stopped growing** — slice 5 cites no product |
 | [C-004](#c-004--shared-documents-lag-commercial-profile) | Shared documents lag Commercial Profile | Lane B | **QE** | `OPEN` | Nothing today; a cold session reads a stale manifest |
 | [C-005](#c-005--who-owns-the-signal-profile-write-path) | Who owns the signal-profile write path | Lane B | **Product owner** / Lane A | `ANSWERED` — ownership. **Sequencing still the product owner's** | The first customer-editable relevance profile |
-| [C-006](#c-006--which-lane-owns-test_api_modulepy) | Which lane owns `test_api_<module>.py` | Lane B | **Product owner** | `OPEN` | Nothing — a standing ambiguity in §20e |
-| [C-007](#c-007--the-guided-first-run-is-a-two-lane-build) | The guided first run is a two-lane build | Lane B | Lane A + **product owner** | `ANSWERED` — routing and navigation. **Sequencing still the product owner's** | Sequencing after M12.5 slice 5 |
-| [C-008](#c-008--sellers-cannot-see-what-their-company-sells) | Sellers cannot see what their company sells | Lane B | **Product owner** + QE | `OPEN` | Nothing today. Every AE and SDR, every day |
+| [C-006](#c-006--which-lane-owns-test_api_modulepy) | Which lane owns `test_api_<module>.py` | Lane B | **Product owner** | `OPEN` — **deliberately.** Not to be resolved inside a slice (2026-08-02) | Nothing — a standing ambiguity in §20e |
+| [C-007](#c-007--the-guided-first-run-is-a-two-lane-build) | The guided first run is a two-lane build | Lane B | Lane A + **product owner** | `OPEN` — routing and navigation answered; **deliberately not scheduled** (2026-08-02) | **Blocked on a capability, not a decision:** the `target_accounts_changed` consumer in `provider_platform` |
+| [C-008](#c-008--sellers-cannot-see-what-their-company-sells) | Sellers cannot see what their company sells | Lane B | **Product owner** + QE | `OPEN` — **proposal accepted 2026-08-02.** Awaiting the choice of option A/B/C/D | Nothing today. Every AE and SDR, every day. **A repository-level capability, not a module enhancement** |
 | [C-009](#c-009--an-internal-fault-reaches-a-customer-as-a-422) | An internal fault reaches a customer as a `422` | Lane A | **Product owner** (platform §20a) | `OPEN` | Nothing today. Splitting the error hierarchy in any module |
 | [C-010](#c-010--no-lane-is-assignable-to-apps-or-signora_platform-and-a-defect-is-sitting-in-one) | No lane is assignable to `apps/` or `signora_platform/` | QE | **Product owner** | `OPEN` | [B-007](BUGS.md) and [B-012](BUGS.md) sit in exactly this gap |
 | [C-011](#c-011--a-contraction-risk-reads-like-a-small-opportunity-on-the-attention-list) | A contraction risk reads like a small opportunity on the attention list | QE | **Product owner** | `OPEN` | R9-03 only. The rest of the surface proceeds |
@@ -298,6 +298,14 @@ Both are customer-authored, both are versioned, both are immutable, and **custom
 
 **Proposed rule, for ratification:** *a file named `test_api_<module>.py` is that module's own suite regardless of directory; QE owns everything else in the tree, including every cross-module flow test.* That keeps two lanes' edits disjoint without moving files or splitting a suite mid-module.
 
+### Ruling — product owner, 2026-08-02
+
+**Stays `OPEN`, and is not to be resolved inside a slice.** Ownership of module-specific integration tests is defined by repository governance, not settled by whichever lane next needs to write one.
+
+> **Avoid creating a local convention that later becomes repository behaviour.**
+
+Raised again because [C-008](#c-008--sellers-cannot-see-what-their-company-sells)'s proposal needs member-role tests on five `GET` handlers that live in exactly this file. **That is not a reason to decide it** — the slice proceeds under whatever governance has ruled by then, and if it has not ruled, the question is asked again rather than answered by precedent. Four slices of `commercial_profile` already followed slice 1's placement, and four repetitions of an unratified choice is how a convention gets mistaken for a decision.
+
 ---
 
 ## C-007 · The guided first run is a two-lane build
@@ -333,6 +341,34 @@ Lane A's call, and the answer is no change. [D38](38-product-design-principles.m
 
 **Recorded so the two do not get merged**: C-007 is *how a customer gets started*; C-008 is *where their declarations show up afterwards*. They share an input and nothing else.
 
+### The condition has fired — Lane B, 2026-08-02
+
+*Recorded at the product owner's direction, on the close of M12.5 slice 5. **This is a request to schedule, not a request to decide** — the decisions were taken above and none of them is reopened here.*
+
+**All five declarations now exist**: products, ICP, buying committee, commercial focus, target accounts. The sequencing condition both lanes agreed to — *"guiding a customer through steps that do not exist would demonstrate an incomplete thing well"* — no longer holds on that reading.
+
+**Lane B is not implementing this and is not proposing to.** Lane A owns the route by the Change Budget and said so above. What follows is what Lane B believes still needs saying before the flow is placed in a milestone, in the five terms the product owner named.
+
+| | What is settled | What still needs an answer |
+|---|---|---|
+| **Milestone placement** | Nothing. It has never had a milestone | It is not in [IMPLEMENTATION_ROADMAP.md §5b](../IMPLEMENTATION_ROADMAP.md) under any number, and M12.5 is closed. It is either an M12.6 or scope inside a Lane A slice. **Lane B has no view** — the roadmap is 🔴 |
+| **Sequencing** | After slice 5 — **and that turned out to be the wrong condition.** See the ruling below | — |
+| **Ownership** | Lane A owns the sequence, the progress and the end state. Lane B keeps every form | **A component Lane A needs and Lane B does not have** is a request through this register — that route exists and has never been used |
+| **User journey** | Five steps in declaration order; **completeness derived from the versions already returned**, never stored | Where the flow *ends* |
+| **Implementation boundaries** | No backend change. A composition over existing reads and writes | Whether the flow may **write** through Lane B's existing endpoints (Lane B: yes — they are the only write path, and there is no second one to build) |
+
+**The one thing Lane B flagged before scheduling.** The flow's last step now succeeds and then stops: `target_accounts_changed` is published and **nothing consumes it**. A guided first run is the most prominent place in the product to make a promise, and today the truthful end state is a smaller one than a first run usually delivers.
+
+### Ruling — product owner, 2026-08-02
+
+**The guided first run is not implemented until the downstream consumer exists.** The flag above is accepted, and stated as a general rule rather than as a judgement about this flow:
+
+> **A setup flow must never conclude by implying that monitoring or synchronization has begun when the repository cannot yet perform that work. The onboarding journey represents the actual capabilities of the promoted repository.**
+
+**So the sequencing condition was never really *"after slice 5"*.** Slice 5 was the condition for the flow's five *steps* to exist; this is the condition for its *ending* to be true. Both lanes agreed the first and neither had named the second, which is why it is written down here rather than carried in a recommendation.
+
+**C-007 stays `OPEN` as a coordination item** — not scheduled, not placed in a milestone, and **not blocked on a decision. It is blocked on a capability**: the `target_accounts_changed` consumer in `provider_platform`, which is Lane A's and unbuilt. When that ships, this item needs only a milestone.
+
 ---
 
 ## C-008 · Sellers cannot see what their company sells
@@ -357,6 +393,149 @@ Lane A's call, and the answer is no change. [D38](38-product-design-principles.m
 3. **Or should the API be narrowed instead?** The opposite resolution is legitimate and should be considered rather than assumed away: revoke `member` read on all four and make the profile genuinely administrative. Lane B thinks this is the weaker answer but it is a real option, and leaving the contradiction unresolved is the only wrong outcome.
 
 **Why Lane B has not simply fixed it.** `GUARDED_ROUTES` lives in `frontend/lib/state/permissions.ts` — frontend foundation, frozen under §20c — and the destination is Lane A's routing. Neither is Lane B's to change, and the underlying question is a product decision rather than a routing one.
+
+---
+
+### Proposal — Lane B, 2026-08-02
+
+**Nothing below is implemented, and nothing should be until an option is chosen.** Written at the product owner's direction after M12.5 closed, so the decision has something concrete to evaluate rather than a problem statement. Every claim about the current system was read out of the repository and the line is cited.
+
+#### 1 · The customer problem
+
+**A seller cannot see what their own company sells, who it sells to, or who has to agree.**
+
+Five declarations exist, are versioned, and are read-authorized for members at the API. **Not one of them is reachable by a member**, because the only screen rendering any of them is `/settings/products`, and [`frontend/lib/state/permissions.ts:47`](../frontend/lib/state/permissions.ts#L47) guards `/settings` — and, through `startsWith`, everything beneath it — behind `workspace:update`.
+
+The contradiction is in the repository, not in an opinion about it:
+
+| Where | What it says |
+|---|---|
+| [`policy.csv:14–32`](../backend/signora_platform/authorization/policies/policy.csv) | `member` holds **`read`** on `product`, `icp`, `buying_committee`, `commercial_focus` and `target_account`. Five separate grants, taken across five slices |
+| [`router.py`](../backend/modules/commercial_profile/interface/router.py) | All five `GET` handlers authorize `Action.READ`. **A member's request would succeed today** |
+| [`permissions.ts:47`](../frontend/lib/state/permissions.ts#L47) | One guard makes all five unreachable |
+
+**This is not a defect in either component.** The API is right and the guard is right for an *authoring* page. What is missing is a reading surface, and nobody has ever built one.
+
+**Why it matters more than it looks.** The declarations exist to make selling explainable. An AE working an account *"cannot see the ICP that account is supposed to match, or the buying committee they are supposed to be selling into"* — the product asking a customer to author knowledge and then withholding it from the people whose job it describes.
+
+#### 2 · Affected personas
+
+| Persona | Role | Today | What they cannot answer |
+|---|---|---|---|
+| **AE** | `member` | Nothing. The route is guarded | *"Which of our products is this account even a candidate for?"* · *"Who normally has to sign off on a deal like this?"* |
+| **SDR** | `member` | Nothing, same guard | *"Is this company the kind of company we sell to?"* · *"Which title do I prospect into?"* |
+| **Sales manager** | `member` unless made owner | Nothing | *"Is my team working accounts that match what we said we wanted?"* |
+| **Sales administrator / founder** | `owner` | Full read **and** write | Nothing — the whole surface is theirs |
+| **New joiner** (any seller role) | `member` | Nothing | The fastest onboarding artifact the company has just wrote down, and they cannot open it |
+
+**The population is the point.** Owners are one or two people per workspace; members are everybody else, every day. The declarations are read far more often than they are written, and the only people who can read them are the ones who wrote them.
+
+#### 3 · Architectural options
+
+Four, and the second is included because the opposite resolution is legitimate and should be rejected on the record rather than assumed away.
+
+**Option A — un-guard `/settings/products` for members, render read-only below `member`.**
+
+- ✅ Smallest possible change. No new route, no new component, no navigation decision.
+- ❌ **Requires editing a frozen file.** The guard is `startsWith('/settings')`, so exempting one child means changing `GUARDED_ROUTES`' shape in `permissions.ts` — §20c, outside every lane's budget.
+- ❌ **Sends a seller into Settings to do their job**, which [D38](architecture/38-product-design-principles.md) rules against: navigation is journeys, not data.
+
+**Option B — narrow the API instead. Revoke `member` read on all five.**
+
+- ✅ Consistent, cheap, honest about what the product does today.
+- ❌ **Wrong direction on the merits.** Five separate grants were taken deliberately, each on the reasoning that every seller needs to see the catalog. Reversing five reviewed decisions to avoid building one screen optimises for the repository, not the customer.
+- **Lane B's position: reject** — but in writing. Leaving the contradiction unresolved is the only outcome that is definitely wrong.
+
+**Option C — a dedicated read-only surface at a top-level route.**
+
+- ✅ **Needs no change to any frozen file.** A route absent from `GUARDED_ROUTES` requires only a resolved workspace; the guard is a deny-list, so a new top-level route is member-reachable by construction. The strongest practical argument for C over A.
+- ✅ Authoring stays under Settings, where D38 says it belongs; reading lives where reading belongs.
+- ⚠️ Adds a navigation entry, and D38 reduced navigation to two on purpose. Whether it earns one is Lane A's call.
+
+**Option D — in-context surfacing: the declarations appear on the screens the seller already uses.**
+
+Products and ICP beside the account brief; the buying committee where contacts appear — the shape Lane A already argued for in C-007: *"the declarations never reaching the surfaces where they would matter."*
+
+- ✅ The right long-term answer, and the only one that closes *"is this account the kind of company we sell to?"* at the moment it is asked.
+- ❌ **Partly blocked.** Anything saying *this account matches this ICP* is matching, and matching has no owner — [C-002](#c-002--customer-language-has-no-anticorruption-layer). It is also not Commercial Profile's: the module records and computes nothing ([ADR-0035](architecture/adr/0035-commercial-profile.md)).
+- ⚠️ Its unblocked half — *displaying* what we sell and who has to agree, with **no grading of the account against it** — needs nothing from C-002.
+
+#### 4 · Recommendation
+
+**Option C now, Option D next, in two stages. A and B rejected.**
+
+> **Stage 1 — a read-only commercial profile at a member-reachable route.** Lane A adds the route and the navigation call; Lane B gives its five existing components a read mode. No backend change, no frozen file touched, no matching, no grading.
+>
+> **Stage 2 — in-context placement of the two declarations that need no matching:** the buying committee where contacts appear, and what we sell on the brief. **Explicitly not** *"this account fits ICP X"*, which waits on C-002.
+
+**Why C before D rather than straight to D.** D is where this ends up, and it is also where the module boundary gets contested. Stage 1 makes five declarations readable by everybody who needs them without settling a single ownership question; stage 2 can then be argued about while sellers already have the information. Going straight to D means the fastest fix waits on the slowest question.
+
+**Why not A even though it is smaller.** A is smaller in diff and larger in commitment: it changes a frozen foundation file to widen an authoring route, and it fixes the symptom in the place the product has already decided is the wrong place.
+
+#### 5 · Module ownership
+
+**No module boundary moves, and no backend module is involved beyond what it already publishes.**
+
+| Piece | Owner | Budget |
+|---|---|---|
+| The five declarations, their aggregates, endpoints and read authorization | **Commercial Profile** (Lane B) | Already built. **Unchanged** |
+| The five components in read mode — `frontend/components/commercial/*` | **Lane B** | 🟢 own components |
+| `frontend/lib/query/hooks/commercial.ts` — read hooks | **Lane B** | 🟢 already exist; the same read path the settings page uses |
+| The route, its navigation entry and its placement | **Lane A** | Its `frontend/app/(app)/` |
+| Stage 2 placement on the brief and the contacts surface | **Lane A**, composing Lane B's components | Same rule as C-007 |
+| Any matching or grading of an account against a declaration | **Nobody yet** — [C-002](#c-002--customer-language-has-no-anticorruption-layer) | **Out of scope, deliberately** |
+
+**The rule this follows is the one C-007 set:** a composition over another lane's components, never a reimplementation of them.
+
+#### 6 · Routing implications
+
+| | |
+|---|---|
+| **`/settings/products` stays owner-only** | Authoring. D38 and Lane A's C-007 ruling both put it there, and neither is reopened |
+| **A new member-reachable route is required** | Name is Lane A's. Lane B notes only that the page is already headed *Your business* while its route says `products` — a slice-1 artifact, and a reason not to copy the name |
+| **No change to `GUARDED_ROUTES`** | A route absent from the list needs only a resolved workspace. **This is what makes Option C cost nothing frozen** |
+| **Navigation** | D38 holds navigation to journeys. Whether reading the commercial profile is a journey or a link from elsewhere is Lane A's call |
+| **Deep-link from the brief** | Stage 2's natural bridge, worth designing in stage 1 rather than retrofitting |
+
+#### 7 · Authorization implications
+
+**The server needs no change whatsoever, and this is the proposal's strongest property.**
+
+- **Casbin already allows it.** Ten grants across five resources — `read` for both roles, `update` for `owner` only.
+- **Every read handler already authorizes `Action.READ`**, not `UPDATE`. A member's `GET` succeeds now; nothing in the backend is aware it has no caller.
+- **Write remains owner-only, enforced server-side.** Hiding an editor from a member is presentation, never enforcement — `permissions.ts` says so in its own header, and the read surface must not be where that rule gets forgotten.
+- **Tenancy is unchanged.** Same endpoints, same membership verification, same RLS context; no new workspace-scoped path.
+- **If Option B were chosen instead**, the change is the mirror image: revoke five `member, read` lines, remove the client-side affordance, and add a Security Invariant asserting members *cannot* read — so the decision is enforced rather than remembered.
+
+**One thing to check when it is built, and it is a test rather than a design question:** the five read endpoints have only ever been called by an owner. A member-role integration test per resource belongs in the slice — *"correct in `policy.csv`"* and *"exercised"* are different claims.
+
+#### 8 · Implementation sequencing
+
+**This is a proposal. Nothing starts until an option is chosen and the work is prioritised.**
+
+| # | Step | Who | Depends on |
+|---|---|---|---|
+| 0 | **Choose the option.** A/B/C/D | **Product owner** | This item |
+| 1 | Read mode for the five components + component tests | **Lane B** | Step 0. 🟢, no new endpoint, no new hook |
+| 2 | Member-role integration tests on the five `GET`s | **Lane B** ([C-006](#c-006--which-lane-owns-test_api_modulepy) permitting) | Independent of step 1 |
+| 3 | The route, its navigation entry, its empty states | **Lane A** | Step 1's components |
+| 4 | Product review of the read surface as an AE and an SDR | **Lane B**, then QE | Step 3 |
+| 5 | *Stage 2* — committee on contacts, products on the brief | **Lane A** | Steps 1–4. **Not scheduled here** |
+| — | Anything that grades an account against the ICP | **Nobody** | [C-002](#c-002--customer-language-has-no-anticorruption-layer). **Explicitly excluded** |
+
+**Against C-007.** Both want the same two lanes and the same five components, and Lane B recommends **C-008 first**: a first run happens once per workspace, this happens every day for every seller, and step 1 produces the read-mode components the guided flow would otherwise need to invent.
+
+**Against Version History.** Version History is Commercial Profile's own best remaining idea and Lane B still recommends it — *after* both. It improves a surface owners already have; C-008 gives a surface to people who have none.
+
+### Ruling — product owner, 2026-08-02
+
+**The proposal is accepted. Implementation waits for repository-level sequencing.**
+
+**The finding named as most valuable is not the proposal but the implementation analysis**, and it is worth stating in its own words so the next reader does not reconstruct it: **authorization, the API, the policy and the backend behaviour all already exist.** The remaining gap is Product Surface routing and presentation, which makes this substantially cheaper than a problem of this size usually is.
+
+**C-008 is a repository-level product capability, not a Commercial Profile enhancement**, and is to be treated as one when it is scheduled. Commercial Profile contributes read-mode components; it does not own the capability.
+
+**Choosing between A/B/C/D remains the product owner's**, and nothing begins until it is made.
 
 ---
 
@@ -401,85 +580,15 @@ Add a catch-all handler to `signora_platform/api/errors.py` that returns the sta
 
 ---
 
-### Proposed architecture — **a proposal only, at the product owner's request**
+### Proposed architecture — **[ADR-0037](architecture/adr/0037-failure-categories.md)**
 
-**Nothing below is implemented and nothing should be until this item is `ANSWERED`.** It exists so the product owner and QE have something concrete to evaluate rather than a problem statement.
+**Proposed, not accepted.** The product owner has agreed the direction and has **not** scheduled implementation; the ADR carries `Status: Proposed` and stays that way until it is.
 
-#### 1 · The hierarchy
+The full proposal — hierarchy, status mappings, envelope behaviour, logging levels, correlation-id requirements, which exceptions may never become customer-facing business errors, and the four changes `signora_platform/api/errors.py` would need — lives in the ADR rather than here, because **a decision that outlives the question belongs in the architecture and not in a working register.** This item closes when the ADR is accepted and implemented.
 
-Four categories, and the test that separates them is **who caused it and what they can do about it** — not where the code lives:
+### What was done meanwhile
 
-```
-SignoraError                      (platform, abstract — never raised)
-├── CustomerError                 the caller did something the domain refuses
-│   ├── BusinessRuleViolation     a rule about their data said no
-│   ├── ValidationError           the request itself was malformed
-│   └── NotFoundError             the thing named is not visible to them
-└── PlatformError                 nobody outside caused this
-    ├── InvariantViolation        a stored fact contradicts itself
-    └── InfrastructureError       a dependency failed — database, queue, provider
-```
-
-**`CustomerError` is the only branch whose message is customer copy.** That single sentence is the whole proposal; everything else follows from it.
-
-**Modules keep their own exception types** and inherit from one of the five leaves. `OpportunityError` becomes a `BusinessRuleViolation`; the four construction-time refusals in `OpportunityState.__post_init__` and `ResearchRequestState.__post_init__` become `InvariantViolation`. **No module names an HTTP status**, exactly as today.
-
-**Why `NotFoundError` is a customer error and not its own branch.** *"That account has no opportunity in this workspace"* is actionable — and 404-not-403 is already a deliberate security property (a non-member and a non-existent resource must be indistinguishable). Splitting it out would invite somebody to make the two differ.
-
-#### 2 · What a customer sees
-
-| Category | Status | Message | Envelope |
-|---|---|---|---|
-| `BusinessRuleViolation` | `422` | **The domain's own words** | Full |
-| `ValidationError` | `422` | The domain's own words | Full, with `details` |
-| `NotFoundError` | `404` | The domain's own words | Full |
-| `InvariantViolation` | **`500`** | **Fixed string. Never `str(exc)`** | Full |
-| `InfrastructureError` | **`503`** | **Fixed string. Never `str(exc)`** | Full |
-
-**`PlatformError` messages must never be translated into customer-facing business errors.** That is the rule this item exists to establish. A customer told *"an opportunity cannot record a negative score at creation"* learns nothing, can do nothing, and is being told about a bug in a sentence that sounds like their fault.
-
-**`503` rather than `500` for infrastructure** because it is the one platform failure a client can act on: retry. `500` says *do not retry*, and telling a client to give up on a transient database blip is a wrong answer with a cost.
-
-**The full envelope in every case, including `500`.** That is the point of the change — today an unmapped exception bypasses `ErrorResponse` entirely and a customer reporting a fault has no `correlation_id` to quote.
-
-#### 3 · Envelope, logging and correlation
-
-**Envelope — unchanged in shape.** `{ error: { code, message, details?, correlation_id } }`, which is already ratified in [19-api-conventions.md](architecture/19-api-conventions.md). What changes is that **nothing escapes it**.
-
-Two new stable codes: `internal_error` and `service_unavailable`. Module codes are untouched.
-
-**Logging, and this is the half that makes the fixed message acceptable:**
-
-| Category | Level | What is logged |
-|---|---|---|
-| `CustomerError` | `INFO` | Code, `workspace_id`, `correlation_id`. **Not an error** — the platform behaved correctly |
-| `InvariantViolation` | `ERROR` | Full `str(exc)`, traceback, every identifier the message ever carried |
-| `InfrastructureError` | `ERROR` | Full `str(exc)`, traceback, the dependency that failed |
-
-**A `CustomerError` logged at `ERROR` is how an error dashboard becomes noise nobody reads.** A seller trying an illegal transition is the product working.
-
-**Correlation id — the requirement that makes this worth doing.** Every response carries it, `500` included; every log line for that request carries the same one; it is generated once per request and already stored on `request.state`. **It is the only thread between *"it broke and said something about an internal error"* and the line that explains why**, and today that thread is cut exactly where it matters most.
-
-Identifiers therefore move **out of messages and into log fields** rather than being deleted — `logger.error(..., extra={"opportunity_id": ...})`. This slice removed them from the messages; the proposal is what gives them a proper home.
-
-#### 4 · What changes in `signora_platform/api/errors.py`
-
-**Four changes, all additive. No existing behaviour is altered.**
-
-1. **A catch-all `Exception` handler**, registered last, returning the envelope with `internal_error`, a fixed message and the correlation id. **This alone fixes the regression that blocks the split** and is independently worth having: any unhandled bug today escapes the contract.
-2. **Two platform base classes** (`CustomerError`, `PlatformError`) exported for modules to inherit — or, if the product owner prefers zero new platform vocabulary, a second mapping `PLATFORM_ERROR_TYPES` and no base classes at all. **The first is stronger** because it makes the category a type rather than a registration somebody can forget.
-3. **`_domain_handler` stops calling `str(exc)` unconditionally** — customer copy for `CustomerError`, the fixed string otherwise.
-4. **Logging inside the handlers**, at the levels above. There is none today, so an error's only record is whatever the raising code happened to log.
-
-**Estimated size: under a hundred lines, no migration, no API path change, no client change.** The risk is not size — it is that `signora_platform/` is frozen (§20a) and this is a change to how *every* module's errors surface, which is precisely why it is here rather than in a lane's commit.
-
-#### 5 · What this unlocks, and what it costs
-
-**Unlocks:** each module splits its own hierarchy inside its own budget · the invariant added in `e1a34a6` narrows from *"no mapped message may name an identifier"* to *"no **customer** message may"*, which is stronger, because a `PlatformError` would then be free to say everything an engineer needs · error dashboards separate *customers being refused* from *Signora being wrong*, which are currently one number.
-
-**Costs:** every module reclassifies its exceptions once — mechanical, and the invariant will find any that are missed · two new response codes for clients to know about, both already implied by the status codes · QE gains a real assertion it cannot make today: **no `5xx` response may contain a domain sentence.**
-
----
+**Identifiers were removed from all seven messages** (`e1a34a6`), so nothing unreadable reaches a screen today. **The attribution is still wrong** — an internal fault still renders as `transition_refused` — and that is stated in [27-opportunity-engine.md](architecture/27-opportunity-engine.md) rather than left implicit.
 
 ---
 
