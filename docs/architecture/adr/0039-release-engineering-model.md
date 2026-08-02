@@ -1,6 +1,10 @@
 # ADR-0039 · Release Engineering — the integration model becomes architecture
 
-**Status:** **Proposed.** Nothing in this document is in force. It changes no rule, no branch, no tool, and no commit. It is a design exercise requested by the product owner on 2026-08-02, to be ratified, amended or rejected as a whole.
+**Status:** **Proposed — and deliberately staying that way.**
+
+**Accepted 2026-08-02 by the product owner as the repository's long-term Release Engineering direction, and explicitly *not* as an implementation roadmap.** Nothing in this document is in force: it changes no rule, no branch, no tool and no commit, and **no implementation may begin from it** unless a future execution bottleneck demonstrates that a particular recommendation has become worth adopting.
+
+**It is a north star, not a queue.** When a bottleneck appears, the first question is whether this document already contains the answer — before a new one is invented. Until then the repository builds product, and governance evolves only on the evidence bar recorded in `CLAUDE.md` §20e: an **observed**, **repeated** bottleneck, whose fix **simplifies** the repository, **preserves throughput**, and **serves product development** rather than process.
 
 **Author:** QE (Quality Engineering & Integration)
 **Supersedes:** nothing. **Amends, if ratified:** `CLAUDE.md` §20e (*Branches and promotion*, *Completion*, *Repository Closeout*), [ADR-0032](0032-release-certification.md) (extends commit-binding upstream from certification to validation)
