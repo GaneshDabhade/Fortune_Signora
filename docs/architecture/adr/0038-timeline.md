@@ -45,6 +45,27 @@ This follows *truth has exactly one authoritative representation; everything els
 
 A projection that cannot be rebuilt has quietly become a source of truth. This one is placed in the *derived intelligence* data category — rebuildable — and never in *operational history*, which is the platform's account of its own behaviour and is not.
 
+> ### ⚠️ This property is not achievable as drafted — found 2026-08-02, in review, before ratification
+>
+> **Rebuilding requires replaying the events the entries derive from, and the outbox is a delivery mechanism rather than an event store.** A relayed row has done its job; nothing in the architecture undertakes to keep it for the life of the workspace. So a rebuild has exactly two sources and **this ADR is entitled to neither**:
+>
+> | Source | Why it is unavailable |
+> |---|---|
+> | The upstream modules' own tables | **Forbidden outright.** No module may query another's tables (§5) — the rule with no exceptions |
+> | A read port on each of the six upstreams | **None exists.** Six ports, six `public/` contracts, six owning modules — and every one is another lane's to publish |
+>
+> **The cost of honouring it is larger than the milestone.** Six read ports negotiated across six modules is not a slice inside M7; it is comparable to M7 itself, and by [05-module-dependencies.md](../05-module-dependencies.md) each is a Conformist relationship the *downstream* module does not get to define alone.
+>
+> **Three ways out, and the choice is the product owner's:**
+>
+> | | |
+> |---|---|
+> | **A · Drop the claim** | Timeline becomes rebuildable only from whatever event history is retained. Honest, smaller, and it means a projection defect is repaired by migration rather than by replay |
+> | **B · Keep it and fund it** | Six read ports enter M7's scope, and M7 stops being a 6–8 ew milestone |
+> | **C · Make the outbox retain** | The property becomes real for every projection, not just this one — and it changes a **platform** component under §20a, so it is an RFC rather than a milestone decision |
+>
+> **Lane B recommends A for M7 and C as the eventual answer**, because *"a projection can be rebuilt"* is a property the platform should provide once rather than each projection arranging privately. **Recorded rather than quietly deleted:** the claim was load-bearing in the argument for placing Timeline in the rebuildable data category, and a reader who sees only the conclusion would inherit reasoning that no longer holds.
+
 ### Entries are immutable, and correction is a new entry
 
 An entry records **what was true when the event arrived**. Upstream supersession — `observation.superseded`, `business_event.superseded`, `signal.superseded` — does not edit the entry it supersedes; it **adds** one that names its predecessor, exactly as the upstream modules do.

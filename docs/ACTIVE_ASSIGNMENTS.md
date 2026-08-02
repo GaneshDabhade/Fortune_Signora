@@ -68,7 +68,7 @@
 | Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Started |
 |---|---|---|---|---|---|---|---|---|
 | **Lane A** | **TASK-002 · TASK-004** | `lane-a-product-surface` | Product Surface | PS-01 · PS-02 | `IN VALIDATION` | — | **QE to validate** — both pushed and finished. *Reconciled by QE from the lane branch; the claims never reached `integration`* | 2026-08-02 |
-| **Lane B** | **M7 — Timeline** *(implementation initiative)* | `lane-b-commercial-profile` | `timeline` | design | `ACTIVE` | — | **Drafting for ratification, not implementing.** [ADR-0038](architecture/adr/0038-timeline.md) proposed; **three open questions are the product owner's** — Meilisearch sequencing, six events or seven, and whether M7 reaches a customer. **No production code until ratified** | 2026-08-02 |
+| **Lane B** | **M7 — Timeline** *(implementation initiative)* | `lane-b-commercial-profile` | `timeline` | design | `AVAILABLE` | — | **Design delivered; awaiting a product decision.** [ADR-0038](architecture/adr/0038-timeline.md) proposed and **amended in review** — its rebuild property is not achievable as drafted. Four open questions now, not three. **No implementation until ratified**, and the queue holds nothing else eligible | 2026-08-02 |
 | **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | Idle until a lane pushes work to `integration`. **QE's turn begins there** | 2026-08-01 |
 
 **Which lanes are available is the `Status` column above, and is not restated here** — a sentence beside a table is a second copy of one fact, and it drifted within an hour of being written (§2). **Unclaimed capacity:** lanes C, D and E ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).

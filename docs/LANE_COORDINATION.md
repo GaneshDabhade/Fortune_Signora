@@ -656,6 +656,27 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 
 **Recorded in.** —
 
+### Evidence from the 2026-08-02 architecture review — Lane B
+
+*Added by Lane B, not the item's owner, because the review measured this item and found its scope understated. **Nothing here changes the item, its owner or its status** — the decision remains the product owner's RFC.*
+
+**The item reads as a question about a handler signature. The measurement says it is the absence of a production composition root.**
+
+| Measured at `c62760b` | |
+|---|---|
+| Event types published by module code | **23** |
+| Subscriptions the deployed worker registers | **1** — `ai_research.requested` ([`apps/worker/subscriptions.py:201`](../backend/apps/worker/subscriptions.py#L201)) |
+| Where the other twelve stages are wired | [`backend/tests/pipeline.py`](../backend/tests/pipeline.py) — whose own docstring calls it *"The process composition root the pipeline demonstrations run through"* |
+| Production importers of `build_detect_business_events` | **none** — only `tests/pipeline.py` and the module's own files |
+
+**So a deployed Signora accepts a target-account declaration, publishes `commercial_profile.target_accounts_changed`, and does nothing.** No sync, no claims, no entities, no observations, no business events, no signals, no scores, no opportunities. The one thing it does is run research when asked directly, which is the one subscription that exists.
+
+**Why every gate stays green.** The suite and `make smoke` compose the pipeline through `tests/pipeline.py`. They prove the modules compose correctly; **they cannot prove the deployed process composes at all**, because the wiring under test is not the wiring that ships. This is the item's own sentence — *"every gate is green while the deployed worker consumes nothing"* — with the mechanism named.
+
+**Its consequence for M7, which is why Lane B measured it.** Timeline is a pure event consumer with no synchronous input. Built today it becomes the fifteenth module wired only in a test file — a milestone that cannot be demonstrated to a non-engineer, which `CLAUDE.md` §2 makes a completion criterion rather than a preference.
+
+**Lane B is not proposing a fix and has implemented nothing.** The item's own instruction stands: *not to be worked around inside a product milestone, which is how it would become permanent.*
+
 ---
 
 ---
