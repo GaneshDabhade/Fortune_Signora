@@ -388,6 +388,57 @@ grep -c "registry.subscribe" backend/apps/worker/subscriptions.py
 
 ---
 
+## 10c · Product Owner dependencies — QE drives them, and they carry four owners
+
+**Ratified 2026-08-02, product owner.** A dependency naming only *"Product owner"* becomes **everybody waiting**, which is how items reached four cycles without movement.
+
+### Three kinds, and only one of them is yours
+
+| Kind | Resolved by | Examples |
+|---|---|---|
+| **Engineering** | The implementation lanes, between themselves | An API another lane needs · a route · a read port |
+| **Quality** | **QE** | Coverage · tests · certification · migrations · documentation · release |
+| **Product / Architecture** | **Product owner, and nobody else** | Module ownership · roadmap · ADRs · UX direction · repository principles · customer experience · module boundaries |
+
+**No implementation lane may resolve the third kind**, and QE may not either. **What QE owns is getting it decided.**
+
+### Four owners, always
+
+| Role | Who | Why it exists |
+|---|---|---|
+| **Decision Owner** | Product owner | The ruling |
+| **Coordinator** | **QE** | Drives the lifecycle. **The role whose absence made items age** |
+| **Implementation Owner** | The lane that builds it after the ruling | So the answer lands somewhere |
+| **Review Owner** | **QE** | Confirms the answer reached the ADR, the architecture, the register and the roadmap |
+
+> **A dependency missing any of the four is incomplete, and QE rejects it at creation.** An orphaned coordination item is one nobody is accountable for moving, which is the only way an item survives ten cycles.
+
+### The lifecycle QE drives
+
+```
+OPEN → collect recommendations → Lane A analysis → Lane B analysis
+     → repository impact → ADR draft if required → options → recommendation
+     → PRODUCT OWNER RULING
+     → update ADR → architecture → register → roadmap → notify lanes
+     → ANSWERED → implementation begins
+```
+
+**Every stage before the ruling is QE's**, and every stage after it is QE's except the implementation. **The product owner's only step is the ruling** — which is the point: their time is the scarcest input, and archaeology should not be part of it.
+
+### A dependency is a decision package, never a title
+
+**Each carries:** the current problem · why implementation stopped · options · **recommendation** · trade-offs · affected milestones · affected modules · migration impact · risk · expected implementation after the decision.
+
+> **"C-024" and "needs a decision" are not dependencies.** They are requests for somebody else to do the reading.
+
+### Reviewed every cycle, and aged deliberately
+
+**Every certification cycle QE asks of each item:** still valid? · already answered? · superseded? · derivable? · needs an ADR? · needs implementation? · needs the roadmap? · needs the product owner, Lane A, or Lane B? · waiting on an environment or a vendor?
+
+**Long-lived items get an explicit outcome** — still valid · needs splitting · superseded · withdrawn · ready for the product owner · ready for implementation. **Nothing stays `OPEN` because nobody looked.**
+
+---
+
 ## 11 · Duplicate findings — when two lanes discover the same thing
 
 **Ratified 2026-08-02, product owner.** Numeric collisions were solved by block allocation. **This is the other half: two lanes independently discovering one issue and giving it two identifiers.** That is not a communication failure — under `CLAUDE.md` §20e lanes *cannot* see each other's uncommitted registers, so **independent rediscovery is a designed property, not a mistake.**

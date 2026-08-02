@@ -682,6 +682,35 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 
 ---
 
+
+### Widened 2026-08-02, product owner — this is now runtime composition ownership
+
+**Seven defects have originated in code no implementation lane owns**, and [B-301](BUGS.md) makes the pattern explicit rather than incidental.
+
+| Defect | Where it lived |
+|---|---|
+| [B-007](BUGS.md) | the migration runner |
+| [B-012](BUGS.md) | branch topology |
+| [B-013](BUGS.md) | `pyproject.toml` runtime dependencies |
+| [B-014](BUGS.md) | `infra/` gate tooling |
+| [B-022](BUGS.md) | the `certify` target |
+| [B-025](BUGS.md) | the certification harness |
+| **[B-301](BUGS.md)** | **`apps/worker/subscriptions.py` — the composition root** |
+
+**What this item now covers, stated so nothing falls between the words:**
+
+- **`apps/` in its entirety** — the API composition root and the worker composition root
+- **Runtime composition** — which handlers the deployed worker subscribes, and which projections are wired
+- **Deployment composition** — what a deployed process actually runs, as distinct from what the modules can do
+- **Repository composition validation** — the checks that prove the above, including `infra/runtime-composition.py`
+- **`signora_platform/`** under the §20a freeze, and **repository process code** in `infra/`
+
+**The measurement, now that one exists.** `make runtime-composition` reports **1 of 9 modules declaring a consumer are wired.** Eight are deliberate under [C-012](#c-012--eventhandler-receives-no-session-so-no-module-handler-is-registered) — **and nothing was re-measuring that claim between M3A and today.** B-301 was the one that was *not* deliberate, and it took a lane's own module audit to find it.
+
+> **The ownership gap and the composition gap are the same gap.** A module's suite proves its half; the join belongs to whoever owns `apps/`, and nobody does. **Every one of the seven defects above is a join.**
+
+**Splitting is available and not recommended yet.** The natural split is *repository tooling* (`infra/`, gates) from *runtime composition* (`apps/`, deployment). **They have had one owner's worth of work between them**, and two unassigned items would be worse than one — the failure mode here has always been that nobody looks, not that the item was too broad.
+
 ## C-011 · A contraction risk reads like a small opportunity on the attention list
 
 | | |

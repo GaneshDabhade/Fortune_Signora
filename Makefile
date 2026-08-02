@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight demo demo-seed demo-users demo-narrate eval eval-reasoning eval-research
+.PHONY: smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-seed demo-users demo-narrate eval eval-reasoning eval-research
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
 # The executable bit is filesystem state, not repository state, and it does
@@ -154,6 +154,20 @@ certified:
 ##     make kpi ARGS="--markdown"      # the block PROJECT_STATUS.md carries
 kpi:
 	@python3 ./infra/kpi.py $(ARGS)
+
+## What does the deployed worker actually consume? (B-301)
+#
+# The fifth validation layer, and the one no module's suite covers: a
+# composition root. Each module tests its half and assumes the wiring, so a
+# handler nothing calls passes every gate — which is how Timeline shipped
+# complete and consumed nothing, through four certified promotions.
+#
+# Reports; does not fail. Most unwired consumers are deliberate (C-012).
+#
+#     make runtime-composition
+#     make runtime-composition ARGS="--strict"
+runtime-composition:
+	@python3 ./infra/runtime-composition.py $(ARGS)
 
 ## Where is the coverage debt, and is it growing? (CLAUDE.md §19)
 #
