@@ -347,7 +347,7 @@ Three consequences, in ascending order of seriousness:
 | **Module** | repository documentation — `docs/RUNNING.md`, `Makefile`, `README.md` |
 | **Current assignee** | QE |
 | **Severity** | 🟠 — it stopped a reviewer at the first step, and the error did not name the cause |
-| **Status** | **`VERIFIED`** — Lane B, 2026-08-02, under [TASK-001](BACKLOG.md). Reproduced from the original steps on `a9cc204` |
+| **Status** | **`FIXED`** — fixed by the QE lane under product-owner direction, 2026-08-01. **Independent verification complete — result `PASS`**, Lane B, [TASK-001](BACKLOG.md), evidence below. **`VERIFIED` is QE's to set** |
 | **Found** | `f996a42`, QE lane, first attempt to start the product |
 
 **Steps to reproduce.** Run `make demo`. Copy the command it prints — the same one in [`RUNNING.md`](RUNNING.md) lines 41 and 153:
@@ -380,7 +380,16 @@ Three sites: `docs/RUNNING.md:41`, `docs/RUNNING.md:153`, `Makefile:80`. `README
 
 **QE fixed this, so QE may not close it.** `VERIFIED` is set by someone else reproducing the original steps from a clean shell — not by reading the diff, and not by the lane that wrote the fix. **The role merge does not dissolve this rule**; it is the one place QE genuinely needs a second pair of eyes.
 
-### Verification — Lane B, 2026-08-02, [TASK-001](BACKLOG.md)
+### Verification report — Lane B, 2026-08-02, [TASK-001](BACKLOG.md)
+
+| | |
+|---|---|
+| **Verification performed** | Reproduce the documented startup from the original steps on a clone with no prior setup |
+| **Result** | **`PASS`** |
+| **Commands executed** | `cp backend/.env.example backend/.env` · the [`RUNNING.md:57`](RUNNING.md) command block verbatim · `curl localhost:8000/health` · `SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run pytest tests/test_documented_commands.py` |
+| **Environment** | Lane B clone at `a9cc204`; Python tier local, PostgreSQL and Redis in Docker; no `backend/.env` and no `.dev-keys/` at the start |
+| **Defects discovered** | [B-016](#b-016--the-documented-startup-command-reads-a-key-file-nothing-creates) — the same command block reads a key file nothing creates |
+| **Lifecycle** | **Not advanced.** `VERIFIED` is QE's to set on this evidence |
 
 **From the original steps, never from the diff.** This clone had no `backend/.env` and no `.dev-keys/`, so the starting point was genuinely the one a new reviewer has.
 
@@ -439,7 +448,7 @@ Three sites: `docs/RUNNING.md:41`, `docs/RUNNING.md:153`, `Makefile:80`. `README
 | **Module** | **none** — repository process |
 | **Current assignee** | **none — not assignable.** [C-010](LANE_COORDINATION.md) |
 | **Severity** | 🟡 — the changes were small, reviewed and correct; **the process gap is the defect** |
-| **Status** | **`VERIFIED`** — Lane B, 2026-08-02, under [TASK-001](BACKLOG.md). Both cases run: zero violations, **and the guard proven able to refuse one**. See [B-015](#b-015--the-certification-audit-passes-vacuously-in-every-lanes-clone) for a defect the verification exposed |
+| **Status** | `FIXED` — the rule that prevents it was ratified 2026-08-02 and is enforced by `infra/certification-guard.py`. **Independent verification complete — result `PASS` on both cases**, Lane B, [TASK-001](BACKLOG.md), evidence below. **`VERIFIED` is QE's to set**, and [B-015](#b-015--the-certification-audit-passes-vacuously-in-every-lanes-clone) should be read before it is |
 | **Found** | `e44819b`, by `certification-guard.py --audit-main` on its first run — **against the commits QE had just written** |
 
 **Steps to reproduce.** `python3 infra/certification-guard.py --audit-main`, with `RULE_RATIFIED_AT` set to the certified commit `f669172`.
@@ -454,7 +463,16 @@ Three sites: `docs/RUNNING.md:41`, `docs/RUNNING.md:153`, `Makefile:80`. `README
 
 **For whoever verifies it.** Run the audit; it must report zero violations. Then edit `infra/state-check.py`, commit it to `main` with a Closeout message, and confirm the audit refuses it. **A guard that cannot fail is documentation pretending to be code**, and this one was written by finding a real violation on its first run.
 
-### Verification — Lane B, 2026-08-02, [TASK-001](BACKLOG.md)
+### Verification report — Lane B, 2026-08-02, [TASK-001](BACKLOG.md)
+
+| | |
+|---|---|
+| **Verification performed** | The audit against the promoted history, **and a deliberate violation to prove the guard can refuse one** |
+| **Result** | **`PASS`** on both cases — 0 violations on real history; `REFUSED` with exit `1` on the probe |
+| **Commands executed** | `python3 infra/certification-guard.py --audit-main` · in a throwaway clone: `git branch -f main 2c35d86`, an edit to `infra/state-check.py`, `git commit -m "Repository Closeout — a probe that must be refused"`, the audit again |
+| **Environment** | A **throwaway clone** under the session scratchpad, deleted afterwards. **The probe was never committed to this repository and never pushed** |
+| **Defects discovered** | [B-015](#b-015--the-certification-audit-passes-vacuously-in-every-lanes-clone) — the audit examines nothing, and reports success, wherever a lane runs it |
+| **Lifecycle** | **Not advanced.** `VERIFIED` is QE's to set, and B-015 should be read first |
 
 **Both halves run, and the negative case is the one that matters.** The violation was committed in a **throwaway clone** under the session scratchpad, never in the working repository and never pushed; the clone was deleted afterwards.
 
@@ -478,7 +496,7 @@ Three sites: `docs/RUNNING.md:41`, `docs/RUNNING.md:153`, `Makefile:80`. `README
 | **Module** | **none** — `apps/worker/` is composition-root production code, plus `backend/pyproject.toml` |
 | **Current assignee** | **none — not assignable.** [C-010](LANE_COORDINATION.md) |
 | **Severity** | 🔴 — **two of the six production services crash-loop.** Nothing deployed would process an event |
-| **Status** | **`VERIFIED`** — Lane B, 2026-08-02, under [TASK-001](BACKLOG.md). `make smoke` green end to end on `a9cc204` |
+| **Status** | **`FIXED`** — fixed by QE under product-owner direction, 2026-08-02. **Independent verification complete — result `PASS`**, Lane B, [TASK-001](BACKLOG.md), evidence below. **`VERIFIED` is QE's to set** |
 | **Found** | `3f4e988`, by QE at lifecycle stage 1, the first `make smoke` run since 2026-07-31 |
 
 **Steps to reproduce.** `make smoke`.
@@ -503,7 +521,16 @@ ModuleNotFoundError: No module named 'httpx'
 
 **Fixed 2026-08-02.** `httpx>=0.27` moved into `[project].dependencies` with the reason recorded beside it, `uv lock` re-run, and **`make smoke` passes end to end — 21 stages, 125s**, having failed at stage 2 immediately before. Not a new dependency and no ADR required: it was an approved one filed under the wrong heading. **QE applied it under explicit product-owner direction**, because `apps/` and `pyproject.toml` have no assignable lane ([C-010](LANE_COORDINATION.md)) — and **QE may not verify its own fix.**
 
-### Verification — Lane B, 2026-08-02, [TASK-001](BACKLOG.md)
+### Verification report — Lane B, 2026-08-02, [TASK-001](BACKLOG.md)
+
+| | |
+|---|---|
+| **Verification performed** | A full `make smoke` run — the regression test this bug names as its own |
+| **Result** | **`PASS`** — `PLATFORM SMOKE TEST PASSED`, 128s, 24 stage headings, zero failures |
+| **Commands executed** | `bash infra/smoke.sh` |
+| **Environment** | Lane B clone at `a9cc204`; production images built from the tree; ports 3000 and 8000 confirmed free first; `make` absent ([B-011](#b-011--make-is-not-installed-on-this-workstation--not-a-repository-defect)) |
+| **Defects discovered** | None |
+| **Lifecycle** | **Not advanced.** `VERIFIED` is QE's to set on this evidence |
 
 **The regression test for this bug is `make smoke` itself**, as the fix says, so the verification is a full run from the original step. `make` is absent on this workstation ([B-011](#b-011--make-is-not-installed-on-this-workstation--not-a-repository-defect), `WONTFIX`), so it ran as `bash infra/smoke.sh` — the same script the target invokes.
 
