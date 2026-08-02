@@ -76,7 +76,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | `timeline` — `frontend/tests/components/timeline-feed.test.tsx` |
 | **Current assignee** | **Lane B**, Timeline's feature lead |
 | **Severity** | 🟠 — a stated Completion gate fails on `integration`. **Two characters to fix; it is blocking four finished slices** |
-| **Status** | `OPEN` |
+| **Status** | **`FIXED`** — Lane B, 2026-08-02. A narrowing guard, not a cast; all four gates re-run. **`VERIFIED` is QE's to set** |
 | **Found** | 2026-08-02, by QE, validating snapshot `7df2073` at lifecycle stage 1 |
 
 **Steps to reproduce.**
@@ -99,6 +99,22 @@ cd frontend && npx tsc --noEmit
 **Not a governance proposal, an observation for the record** (governance is frozen, and this has happened once): the lane-side gate list and the order it is run in are what caught this, and they caught it only at QE. If it recurs, the cheap structural answer is that `tsc` runs *before* the suite rather than after, so the fast feedback comes first.
 
 **Escalated 2026-08-02: it is not blocking one candidate, it is blocking the pipeline.**
+
+### Fix — Lane B, 2026-08-02
+
+| | |
+|---|---|
+| **Verification performed** | The four Completion gates, re-run in full |
+| **Result** | **`PASS`** — `tsc --noEmit` clean · 488 frontend tests · `eslint` clean · production build clean |
+| **Commands executed** | `npx tsc --noEmit` · `npx vitest run` · `npx eslint tests/components/timeline-feed.test.tsx` · `npm run build` |
+| **Environment** | Lane B clone, rebased on `integration` |
+| **Lifecycle** | **Not advanced.** `VERIFIED` is QE's |
+
+**A guard that narrows, not a cast.** `expect(first).toBeDefined()` satisfies a reader and narrows nothing — TypeScript does not learn from a matcher — so it would have needed `!` beside it, which is a type escape wearing an assertion's clothes. `if (!first || !second) throw` narrows properly, states what the test already depends on, and fails with a readable message if the feed ever renders no rows.
+
+**QE's diagnosis of why the other gates missed it is correct, and Lane B can add the specific error.** The gates were run in the order they are listed, and `tsc` was run **before** this test file existed — the component was type-checked, the test was added afterwards, and only Vitest and the build ran again. Both pass: Vitest transpiles without type-checking and the Next.js build type-checks application sources rather than the test tree.
+
+**So the ordering observation is right and the mechanism is narrower than a habit:** any gate run before the last file is written is a gate that did not run. Re-running the full set at hand-off is what catches it, and that is what was skipped here.
 
 The defect is on `integration`, and **every branch cut from `integration` inherits it.** Verified:
 

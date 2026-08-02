@@ -75,9 +75,15 @@ describe('emphasis is presentation, never ranking', () => {
       entry({ kind: 'observation_recorded', occurred_at: '2026-05-01T11:00:00+00:00' }),
       entry({ kind: 'opportunity_created', occurred_at: '2026-05-01T09:00:00+00:00' }),
     ]);
-    const items = screen.getAllByRole('listitem');
-    expect(within(items[0]).getByText(HEADLINE.observation_recorded)).toBeInTheDocument();
-    expect(within(items[1]).getByText(HEADLINE.opportunity_created)).toBeInTheDocument();
+    // A guard that narrows, rather than `!` or a cast. `getAllByRole` returns
+    // `HTMLElement[]`, and under `noUncheckedIndexedAccess` an index yields
+    // `HTMLElement | undefined`. Throwing states what the test already depends
+    // on — two rows rendered — and fails here with a readable message instead
+    // of somewhere less obvious if the feed ever renders none.
+    const [first, second] = screen.getAllByRole('listitem');
+    if (!first || !second) throw new Error('expected two entries to render');
+    expect(within(first).getByText(HEADLINE.observation_recorded)).toBeInTheDocument();
+    expect(within(second).getByText(HEADLINE.opportunity_created)).toBeInTheDocument();
   });
 });
 
