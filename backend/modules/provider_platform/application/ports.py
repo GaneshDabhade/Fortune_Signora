@@ -25,11 +25,19 @@ class SyncRepository(Protocol):
     async def save(self, sync: ProviderSync) -> None: ...
 
     async def get_watermark(
-        self, workspace_id: UUID, provider: ProviderName, capability: ProviderCapability
+        self,
+        workspace_id: UUID,
+        provider: ProviderName,
+        capability: ProviderCapability,
+        subject: str,
     ) -> SyncWatermark:
-        """The current position, or a watermark with `position=None` when
-        the provider has never been synced — which requests a full snapshot
-        and is distinct from a position of zero."""
+        """The current position **for this subject**, or a watermark with
+        `position=None` when it has never been synced — which requests a full
+        snapshot and is distinct from a position of zero.
+
+        `subject` is required rather than optional (B-004): a caller that
+        could omit it would get another account's position, which is the
+        defect, and it would get it silently."""
         ...
 
     async def save_watermark(self, watermark: SyncWatermark) -> None: ...

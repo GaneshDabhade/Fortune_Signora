@@ -325,3 +325,131 @@ class TestFailureHandling:
         assert result.sync.failure is not None
         assert result.sync.failure.kind is SyncFailureKind.CONTRACT
         assert result.sync.is_retryable is False
+
+
+class TestAWatermarkBelongsToOneSubject:
+    """**B-004.** `provider_watermark` was keyed `(workspace, provider,
+    capability)` and carried no subject, so a workspace watching two accounts
+    shared one position between them.
+
+    **The failure is silent, which is what makes it worth a suite of its
+    own.** Sync Acme to Tuesday, then sync Initech: Initech's run reads
+    Acme's position, asks the provider for everything *since* it, and every
+    Initech record older than Tuesday is never requested. No error, no log,
+    no failed sync — just evidence that never becomes a signal, on an
+    integration that looks healthy.
+
+    Latent until PP-02, because nothing outside the simulation framework has
+    ever supplied a `subject` and no workspace has yet had two.
+    """
+
+    async def _sync(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        workspace_id: UUID,
+        user_id: UUID,
+        subject: str,
+    ) -> None:
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=user_id
+        ) as session:
+            await build_run_sync(
+                session, adapter=_adapter(), publisher=PostgresOutboxEventPublisher()
+            ).execute(
+                RunProviderSyncInput(
+                    workspace_id=workspace_id,
+                    capability=ProviderCapability.COMPANY_ENRICHMENT,
+                    subject=subject,
+                ),
+                correlation_id=uuid4(),
+            )
+
+    async def test_two_watched_accounts_keep_separate_positions(
+        self, session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """The regression. One row per subject, not one row shared."""
+        workspace_id, user_id = await _workspace(session_factory)
+
+        await self._sync(session_factory, workspace_id, user_id, "acme-corp")
+        await self._sync(session_factory, workspace_id, user_id, "initech")
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=user_id
+        ) as session:
+            subjects = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT subject FROM provider_watermark "
+                            "WHERE workspace_id = :w ORDER BY subject"
+                        ),
+                        {"w": workspace_id},
+                    )
+                )
+                .scalars()
+                .all()
+            )
+
+        assert list(subjects) == ["acme-corp", "initech"]
+
+    async def test_the_second_account_is_not_read_from_the_first_s_position(
+        self, session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """**The defect stated as behaviour rather than as schema.**
+
+        A row count proves the constraint changed; this proves what the
+        constraint was protecting. The second subject must be read from the
+        beginning, because *it* has never been synced — which is exactly
+        what an absent watermark already means.
+        """
+        workspace_id, user_id = await _workspace(session_factory)
+
+        await self._sync(session_factory, workspace_id, user_id, "acme-corp")
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=user_id
+        ) as session:
+            before = await build_run_sync(
+                session, adapter=_adapter(), publisher=PostgresOutboxEventPublisher()
+            )._repository.get_watermark(
+                workspace_id,
+                ProviderName.APOLLO,
+                ProviderCapability.COMPANY_ENRICHMENT,
+                "initech",
+            )
+
+        assert before.position is None, (
+            "a subject that has never been synced must have no position — "
+            "reading another account's is B-004"
+        )
+        assert before.subject == "initech"
+
+    async def test_one_account_advancing_does_not_move_the_other(
+        self, session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """Re-syncing Acme must leave Initech exactly where it was. Under
+        the old key it would have moved both, and the movement would have
+        been invisible."""
+        workspace_id, user_id = await _workspace(session_factory)
+
+        await self._sync(session_factory, workspace_id, user_id, "acme-corp")
+        await self._sync(session_factory, workspace_id, user_id, "initech")
+
+        async def position(subject: str) -> object:
+            async with tenant_scoped_session(
+                session_factory, workspace_id=workspace_id, user_id=user_id
+            ) as session:
+                return (
+                    await session.execute(
+                        text(
+                            "SELECT position FROM provider_watermark "
+                            "WHERE workspace_id = :w AND subject = :s"
+                        ),
+                        {"w": workspace_id, "s": subject},
+                    )
+                ).scalar_one()
+
+        initech_before = await position("initech")
+        await self._sync(session_factory, workspace_id, user_id, "acme-corp")
+
+        assert await position("initech") == initech_before

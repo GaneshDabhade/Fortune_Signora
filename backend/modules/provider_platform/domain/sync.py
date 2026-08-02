@@ -75,17 +75,25 @@ class RawProviderRecord:
 
 @dataclass(frozen=True, slots=True)
 class SyncWatermark:
-    """How far a (workspace, provider, capability) has been read.
+    """How far a (workspace, provider, capability, **subject**) has been read.
 
     Its own value object rather than a column on the sync, so that
     resetting it — the standard recovery from a bad run — does not require
     editing or deleting sync history. Recovery should not destroy the
     record of what went wrong.
+
+    **`subject` is part of the identity, not a label on it** (B-004). A
+    position is *how far this account has been read*, and a watermark that
+    could not name its account meant a workspace watching two of them
+    advanced one and silently skipped evidence for the other. There is no
+    default: a watermark that does not know its subject is the defect, so
+    the type refuses to construct one.
     """
 
     workspace_id: UUID
     provider: ProviderName
     capability: ProviderCapability
+    subject: str
     position: datetime | None = None
 
     def advanced_to(self, position: datetime) -> SyncWatermark:

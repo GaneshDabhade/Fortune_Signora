@@ -53,12 +53,17 @@ class ProviderSyncRepository:
         model.failure_message = sync.failure.message if sync.failure else None
 
     async def get_watermark(
-        self, workspace_id: UUID, provider: ProviderName, capability: ProviderCapability
+        self,
+        workspace_id: UUID,
+        provider: ProviderName,
+        capability: ProviderCapability,
+        subject: str,
     ) -> SyncWatermark:
         statement = select(ProviderWatermarkModel).where(
             ProviderWatermarkModel.workspace_id == workspace_id,
             ProviderWatermarkModel.provider == provider.value,
             ProviderWatermarkModel.capability == capability.value,
+            ProviderWatermarkModel.subject == subject,
         )
         model = (await self._session.execute(statement)).scalar_one_or_none()
 
@@ -69,6 +74,7 @@ class ProviderSyncRepository:
             workspace_id=workspace_id,
             provider=provider,
             capability=capability,
+            subject=subject,
             position=model.position if model else None,
         )
 
@@ -80,12 +86,13 @@ class ProviderSyncRepository:
                 workspace_id=watermark.workspace_id,
                 provider=watermark.provider.value,
                 capability=watermark.capability.value,
+                subject=watermark.subject,
                 position=watermark.position,
                 created_by=SYSTEM_USER_ID,
                 updated_by=SYSTEM_USER_ID,
             )
             .on_conflict_do_update(
-                constraint="uq_provider_watermark_scope",
+                constraint="uq_provider_watermark_subject",
                 set_={"position": watermark.position},
             )
         )

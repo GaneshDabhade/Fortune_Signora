@@ -39,14 +39,26 @@ class ProviderWatermarkModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMi
 
     __tablename__ = "provider_watermark"
     __table_args__ = (
+        # **`subject` is part of the key** (B-004). Without it a workspace
+        # watching two accounts shares one position between them, and the
+        # second account's sync silently starts from the first's.
         UniqueConstraint(
-            "workspace_id", "provider", "capability", name="uq_provider_watermark_scope"
+            "workspace_id",
+            "provider",
+            "capability",
+            "subject",
+            name="uq_provider_watermark_subject",
         ),
     )
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
     provider: Mapped[str] = mapped_column(String(64), nullable=False)
     capability: Mapped[str] = mapped_column(String(64), nullable=False)
+    #: Opaque to the platform and interpreted only by the adapter
+    #: ([ADR-0036](../../../docs/architecture/adr/0036-target-account-contract.md)
+    #: §5) — a company name as the customer typed it. Empty on rows written
+    #: before the column existed; those match no real subject and are inert.
+    subject: Mapped[str] = mapped_column(String(512), nullable=False)
     position: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 

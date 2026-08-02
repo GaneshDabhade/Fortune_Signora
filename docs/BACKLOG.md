@@ -105,7 +105,7 @@
 |---|---|
 | **Module** | `provider_platform` |
 | **Slice** | PP-01 — **slice 1 of the target-account consumer** |
-| **Status** | `CLAIMED` — **Lane A**, 2026-08-02 |
+| **Status** | `IN VALIDATION` — **Lane A**, 2026-08-02. Migration `0026`; 907 backend tests pass |
 | **Notes** | **Left `BLOCKED` because its blocker is now being built by the same lane in the same effort.** The row read *"blocked on the consumer — not to be fixed opportunistically, without it the schema change has nothing exercising it."* That condition is **satisfied rather than waived**: [ADR-0036](architecture/adr/0036-target-account-contract.md) names this *"one defect that must be fixed before the consumer is built"*, and PP-02 is what exercises it |
 
 ### TASK-018 · Nothing consumes a customer's target accounts

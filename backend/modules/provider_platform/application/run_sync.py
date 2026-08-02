@@ -110,7 +110,7 @@ class RunProviderSync:
         )
 
         watermark = await self._repository.get_watermark(
-            request.workspace_id, descriptor.provider, request.capability
+            request.workspace_id, descriptor.provider, request.capability, request.subject
         )
         since = watermark.position if request.incremental else None
 
