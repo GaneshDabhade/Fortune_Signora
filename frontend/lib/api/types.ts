@@ -314,6 +314,22 @@ export interface AccountNarration {
  * versioned by the Signal Catalog. What `expansion_opportunity` fails to prove
  * is identical on Tuesday and Wednesday and for every workspace.
  */
+/**
+ * One recorded thing that happened at this account.
+ *
+ * **The specific half of generic guidance** (R2-01). A check is a property of
+ * the hypothesis *type* and is word-for-word identical on every account holding
+ * it — deliberately, because that is what keeps it from being a recommendation.
+ * These are not: they are this company's own events, and they differ.
+ */
+export interface SupportingEvent {
+  /** The same citation the score's ledger carries — opens the evidence drawer. */
+  business_event_id: string;
+  /** The Business Event Engine's own sentence. **Never a paraphrase.** */
+  summary: string;
+  occurred_at: string;
+}
+
 export interface HypothesisValidation {
   signal_id: string;
   title: string;
@@ -324,6 +340,10 @@ export interface HypothesisValidation {
   limitations: string[];
   /** What to confirm before acting. Never empty. */
   suggested_validation: string[];
+  /** **What this account actually did to earn the hypothesis** (R2-01). Empty
+   * only when the cited events no longer resolve — a signal cannot exist
+   * citing nothing. */
+  observed: SupportingEvent[];
 }
 
 /** What to check on an account, and what its evidence cannot tell you. */

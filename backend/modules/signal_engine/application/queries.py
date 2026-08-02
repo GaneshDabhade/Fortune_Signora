@@ -217,6 +217,43 @@ class SignalQueries:
             )
         return tuple(sorted(readings, key=lambda r: r.signal_type.value))
 
+    async def live_with_evidence(
+        self, workspace_id: UUID, entity_id: UUID, *, now: datetime | None = None
+    ) -> tuple[tuple[Signal, tuple[BusinessEvent, ...]], ...]:
+        """Every live hypothesis, with the recorded events it rests on (**R2-01**).
+
+        **Two reads, not one per hypothesis.** Every signal about an account
+        cites events belonging to that account, so the events are fetched once
+        and paired in memory — a per-signal join would make a page of four
+        hypotheses cost five queries to answer one question.
+
+        The pairing preserves `contributing_event_ids` order, which is the
+        order the pipeline recorded, so the same account renders the same way
+        twice. Insertion order is not a fact about a company.
+        """
+        signals = await self.signals(workspace_id, entity_id, live_only=True, now=now)
+        if not signals:
+            return ()
+        events = {
+            event.id: event
+            for event in await self._business_events.business_events(workspace_id, entity_id)
+        }
+        return tuple(
+            (
+                signal,
+                # A cited event that no longer resolves is skipped rather than
+                # faked. A signal cannot be constructed citing nothing, so an
+                # empty tuple here means the events were deleted underneath it
+                # — which the surface renders as absence, never as a guess.
+                tuple(
+                    events[event_id]
+                    for event_id in signal.contributing_event_ids
+                    if event_id in events
+                ),
+            )
+            for signal in signals
+        )
+
     def catalog(self) -> SignalCatalog:
         """The global vocabulary. Exposed so the product, analytics,
         documentation, and support all read the same definitions rather than

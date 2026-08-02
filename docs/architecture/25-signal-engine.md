@@ -633,3 +633,43 @@ It also settles the design question the finding left open. *"Say something when 
 **Corroboration is nearly absent from the dataset, and that may be a property of the simulation rather than of the world.** Each provider in `playground@2` contributes different facts about a company — which is realistic for *coverage* and means two providers rarely describe the *same* phenomenon, so the corroboration path is exercised 17 times in 1,800.
 
 **D17 again — *the dataset, not the architecture, is the constraint*.** The pipeline computes corroboration correctly and the surface now reports it legibly; what neither can do is make a dataset produce agreement it does not contain. **Raised for whoever next extends the Playground**: a scenario in which two providers report the same headcount move, disagreeing on the number, would exercise the strongest thing the evidence drawer can say and currently exercises almost nothing. Not this lane's file (§20e) and not a defect — a demonstration gap, recorded so the next simulator change knows it is worth closing.
+
+---
+
+# R2-01 — the guidance is generic; what it points at is not *(2026-08-02, Lane A)*
+
+**Recorded before implementation.** Two accounts holding `expansion_opportunity` get **word-for-word the same checks**, and an AE said the sentence that makes this the highest-value refinement left:
+
+> *"It gave me the same advice for two different companies, so I assumed it wasn't really looking at either."*
+
+**That is a customer concluding the product is generic** — which attacks the one claim Signora is built on, that it reasons about *this* account from *this* evidence.
+
+## The design, and the thing it refuses to do
+
+**The checks stay generic, and that is not a compromise.** `suggested_validation` is a property of the hypothesis *type*: what `expansion_opportunity` fails to prove is identical for every account in every workspace, which is precisely what lets it be shown with no model, no confidence figure and no caveat. **Making it per-account would make it a recommendation**, which is a different product with a different burden of proof and an owner that does not exist yet.
+
+**So nothing above the checks changed. What changed is that the reader can see what they are pointed at.**
+
+R2-01's own suggestion was to rewrite the check with the account's data interpolated — *"NVIDIA added 5,000 people and 500 open roles in 38 days; which functions?"* **Rejected.** It would put the product in the business of editing a domain expert's reviewed sentence, and the catalog would need placeholders whose correctness nobody could review independently of the data. **The evidence goes beside the check instead of inside it.**
+
+### What arrives on the wire
+
+Each hypothesis gains `observed` — the recorded business events it cites, carrying **the Business Event Engine's own summary, unedited**, and **the same `business_event_id` the score's ledger already cites**.
+
+**One citation, one drawer, one wording.** A second phrasing of one fact is how a customer catches a product contradicting itself, and a second citation concept would be a second thing to learn for no gain.
+
+### Two reads, not one per hypothesis
+
+Every signal about an account cites events belonging to that account, so `live_with_evidence` fetches signals once and events once and pairs them in memory. A per-signal join would make a four-hypothesis page cost five queries to answer one question.
+
+**Order is `contributing_event_ids` order** — the order the pipeline recorded — so the same account renders identically twice. Insertion order is not a fact about a company.
+
+**A cited event that no longer resolves is skipped, never faked.** A signal cannot be constructed citing nothing, so an empty list means the events were removed underneath it, and the surface renders that as absence.
+
+## What the tests had to work around, and why it is recorded
+
+**The baseline scenario's evidence is months old on purpose**, so every hypothesis it forms is past its shelf life and this surface — which shows *live* hypotheses only — correctly returns nothing. That is the lifecycle working and is asserted in its own right above.
+
+The integration tests therefore ingest at a recent epoch, **the same way the Playground seeder does** — same code path, same scenario file, only the clock differs.
+
+**One test uses the twelve-account `playground@2` cast**, because the two-account baseline holds each hypothesis exactly once and the central R2-01 assertion — *two accounts sharing a hypothesis get identical checks and different evidence* — would otherwise **skip**. A test that skips is a claim nobody checked. Only that one test pays the cost.

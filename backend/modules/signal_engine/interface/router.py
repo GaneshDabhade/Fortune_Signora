@@ -65,20 +65,23 @@ async def account_validation(
     answer rather than an error, and never a 404.
     """
     context.authorize(Resource.ACCOUNT, Action.READ)
-    signals = await queries.signals(context.workspace_id, account_id)
+    # Signals **with the events they cite** (R2-01). Two reads rather than one
+    # per hypothesis — the guidance is generic by design, and what makes it
+    # legible as guidance about *this* account is the evidence beside it.
+    held = await queries.live_with_evidence(context.workspace_id, account_id)
     catalog = queries.catalog()
 
     return AccountValidationResponse(
         account_id=account_id,
         hypotheses=tuple(
             HypothesisValidationResponse.from_domain(
-                signal, catalog.definition(signal.signal_type)
+                signal, catalog.definition(signal.signal_type), events
             )
-            for signal in sorted(
-                signals,
-                key=lambda s: (
-                    _ORDER[s.relevance],
-                    catalog.definition(s.signal_type).title,
+            for signal, events in sorted(
+                held,
+                key=lambda pair: (
+                    _ORDER[pair[0].relevance],
+                    catalog.definition(pair[0].signal_type).title,
                 ),
             )
         ),

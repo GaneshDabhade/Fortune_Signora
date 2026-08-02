@@ -193,7 +193,9 @@ export default function AccountBriefPage() {
               who is not continues to the ledger below. That is what
               progressive disclosure means on a page — information ordered so
               most of it is never read. */}
-          {validation ? <ValidationBlock validation={validation} /> : null}
+          {validation ? (
+            <ValidationBlock validation={validation} onOpenEvidence={evidence.open} />
+          ) : null}
 
           {/* **Below the deterministic page, and above the ledger it cites.**
               Research is the only thing here a person starts, and it is the

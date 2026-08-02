@@ -8,7 +8,7 @@
  */
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { ValidationBlock } from '@/components/intelligence/validation';
 import type { AccountValidation, HypothesisValidation } from '@/lib/api/types';
@@ -28,6 +28,13 @@ function hypothesis(overrides: Partial<HypothesisValidation> = {}): HypothesisVa
     suggested_validation: [
       'Check which functions the recent hiring is in.',
       'Ask on a first call which division the investment sits in.',
+    ],
+    observed: [
+      {
+        business_event_id: 'eeee1111-1111-4111-8111-111111111111',
+        summary: 'Headcount in platform engineering grew 29,000 to 34,000.',
+        occurred_at: '2026-07-04T00:00:00Z',
+      },
     ],
     ...overrides,
   };
@@ -236,5 +243,59 @@ describe('nothing here is a recommendation', () => {
     const { container } = render(<ValidationBlock validation={validation()} />);
 
     expect(container.textContent).not.toMatch(/\d+%/);
+  });
+});
+
+describe('the generic guidance is anchored to this account — R2-01', () => {
+  it('names what this account actually did', () => {
+    // "It gave me the same advice for two different companies, so I assumed it
+    // wasn't really looking at either." The advice is generic by design; what
+    // it points at is not.
+    render(<ValidationBlock validation={validation()} />);
+
+    expect(
+      screen.getByText('Headcount in platform engineering grew 29,000 to 34,000.'),
+    ).toBeVisible();
+  });
+
+  it('keeps the checks generic — they are a property of the type', () => {
+    // Making the checks per-account would make them a recommendation, which is
+    // a different product with a different burden of proof.
+    render(<ValidationBlock validation={validation()} />);
+
+    expect(
+      screen.getByText('Check which functions the recent hiring is in.'),
+    ).toBeVisible();
+  });
+
+  it('opens the recorded event in the drawer the ledger already uses', async () => {
+    const open = vi.fn();
+    render(<ValidationBlock validation={validation()} onOpenEvidence={open} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /Headcount in platform/ }));
+
+    // One citation, one drawer, one wording. A second concept for the same
+    // fact is how a customer catches a product contradicting itself.
+    expect(open).toHaveBeenCalledWith('eeee1111-1111-4111-8111-111111111111');
+  });
+
+  it('draws no affordance when there is nowhere to send the reader', () => {
+    // The rule the ledger already follows: a control that looks clickable and
+    // goes nowhere costs more trust than the missing feature does.
+    render(<ValidationBlock validation={validation()} />);
+
+    expect(screen.queryByRole('button', { name: /Headcount in platform/ })).toBeNull();
+  });
+
+  it('says nothing at all when the cited events no longer resolve', () => {
+    // A signal cannot exist citing nothing, so an empty list means the
+    // evidence was removed underneath it — rendered as absence, never a guess.
+    render(
+      <ValidationBlock
+        validation={validation({ hypotheses: [hypothesis({ observed: [] })] })}
+      />,
+    );
+
+    expect(screen.queryByText('What we saw here')).toBeNull();
   });
 });

@@ -4,7 +4,11 @@ import { ChevronRight } from 'lucide-react';
 import { useId, useState } from 'react';
 
 import { Badge } from '@/components/ui';
-import type { AccountValidation, HypothesisValidation } from '@/lib/api/types';
+import type {
+  AccountValidation,
+  HypothesisValidation,
+  SupportingEvent,
+} from '@/lib/api/types';
 import { cn } from '@/lib/design/cn';
 
 /**
@@ -47,7 +51,17 @@ import { cn } from '@/lib/design/cn';
  * control that forgets is worse than no control**, so these are list markers.
  * When something owns per-user state, they can become real.
  */
-export function ValidationBlock({ validation }: { validation: AccountValidation }) {
+export function ValidationBlock({
+  validation,
+  onOpenEvidence,
+}: {
+  validation: AccountValidation;
+  /** Opens a recorded event in the drawer the ledger already uses. Omitted
+   * where there is nowhere to send the reader — the same rule the ledger
+   * follows: a control that looks clickable and goes nowhere costs more trust
+   * than the missing feature does. */
+  onOpenEvidence?: (businessEventId: string) => void;
+}) {
   if (validation.hypotheses.length === 0) return null;
 
   return (
@@ -56,7 +70,7 @@ export function ValidationBlock({ validation }: { validation: AccountValidation 
       <ol className="flex flex-col gap-3">
         {validation.hypotheses.map((hypothesis) => (
           <li key={hypothesis.signal_id}>
-            <Hypothesis hypothesis={hypothesis} />
+            <Hypothesis hypothesis={hypothesis} onOpenEvidence={onOpenEvidence} />
           </li>
         ))}
       </ol>
@@ -64,7 +78,72 @@ export function ValidationBlock({ validation }: { validation: AccountValidation 
   );
 }
 
-function Hypothesis({ hypothesis }: { hypothesis: HypothesisValidation }) {
+/**
+ * What this account actually did to earn the hypothesis — **R2-01**.
+ *
+ * *"It gave me the same advice for two different companies, so I assumed it
+ * wasn't really looking at either."*
+ *
+ * **The advice is generic and stays generic.** A check is a property of the
+ * hypothesis type; making it per-account would make it a recommendation, which
+ * is a different product with a different burden of proof. So nothing above
+ * this line changes — what changes is that the reader can now see the generic
+ * guidance is pointed at something specific.
+ *
+ * **The sentences are the pipeline's**, unedited, and each opens the same
+ * evidence drawer the score's ledger opens. Two surfaces, one citation, one
+ * wording — a second phrasing of one fact is how a customer catches a product
+ * contradicting itself.
+ *
+ * **Placed after the checks, not before.** A reader who already trusts the
+ * hypothesis acts on the checks and never reads this; one who is hesitating
+ * looks down. That is what progressive disclosure means here — ordering, not a
+ * collapsed panel.
+ */
+function Observed({
+  observed,
+  onOpenEvidence,
+}: {
+  observed: SupportingEvent[];
+  onOpenEvidence?: (businessEventId: string) => void;
+}) {
+  if (observed.length === 0) return null;
+
+  return (
+    <div className="flex flex-col gap-1 border-t border-border pt-2.5">
+      <p className="text-xs text-content-subtle">What we saw here</p>
+      <ul className="flex flex-col gap-1">
+        {observed.map((event) => (
+          <li key={event.business_event_id} className="text-sm leading-6">
+            {onOpenEvidence === undefined ? (
+              <span className="text-content-muted">{event.summary}</span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onOpenEvidence(event.business_event_id)}
+                className={cn(
+                  'text-left text-content-muted underline decoration-dotted underline-offset-4',
+                  'transition-colors hover:text-content',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                )}
+              >
+                {event.summary}
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function Hypothesis({
+  hypothesis,
+  onOpenEvidence,
+}: {
+  hypothesis: HypothesisValidation;
+  onOpenEvidence?: (businessEventId: string) => void;
+}) {
   return (
     <div className="flex flex-col gap-2.5 rounded-md border border-border bg-surface-raised px-4 py-3.5">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
@@ -90,6 +169,8 @@ function Hypothesis({ hypothesis }: { hypothesis: HypothesisValidation }) {
           </li>
         ))}
       </ul>
+
+      <Observed observed={hypothesis.observed} onOpenEvidence={onOpenEvidence} />
 
       <Limitations limitations={hypothesis.limitations} title={hypothesis.title} />
     </div>
