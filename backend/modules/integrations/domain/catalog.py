@@ -98,7 +98,39 @@ CATALOG: Final[dict[str, CatalogEntry]] = {
     ),
     "slack": CatalogEntry("slack", (Capability.MESSAGE_DELIVERY,), connectable=False),
 }
-"""The systems Signora understands, and the six the product expects first.
+"""The systems Signora understands, and the two that ship first.
+
+**Day One is one CRM and one calendar** (ruled 2026-08-02). Not breadth — the
+launch set exists to deliver real value and to prove the architecture, and both
+are better served by two integrations that work than by seven that are listed.
+
+**HubSpot is the first CRM, and Salesforce is the second.** Signora's ICP is
+mid-market to upper-mid-market, $20M–$1B ARR
+([PRODUCT_DIFFERENTIATORS.md](../../../../PRODUCT_DIFFERENTIATORS.md)), and
+HubSpot dominates the lower half of that band where first design partners are
+most likely to come from. It is also the materially simpler acquisition: a plain
+authorization-code flow against a single host, with no per-org `instance_url`,
+no sandbox/production divergence and no API-version pinning — so the first slice
+validates *acquisition* rather than Salesforce's object model.
+
+**Salesforce second is the architecture's own test.** *"Would adding a second
+CRM require configuration or architectural change?"* is a question worth
+answering with evidence rather than confidence, and it is answered cheaply the
+moment the first one works.
+
+> **The counter-argument, stated rather than buried:** a named RevOps function
+> skews toward Salesforce, and if the first design partners are upper-mid-market
+> then Salesforce-first is correct. That is a fact about the sales pipeline
+> rather than about the code, and it is the product owner's to overturn.
+
+**Google Calendar is the first calendar.** Microsoft Graph's permission model is
+heavier for the same signal, and Google Workspace is the more common in this
+band. A meeting booked with an account remains the strongest buying signal the
+product can carry, and the cheapest to obtain.
+
+**Slack is deferred, and the catalog already refuses to advertise it.** Its only
+capability is delivering conclusions that no built module produces.
+
 
 **Every entry is `connectable=False` today, and that is the truthful state**
 rather than a placeholder: no acquisition path exists yet, because the OAuth

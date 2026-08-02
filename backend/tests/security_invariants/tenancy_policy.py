@@ -155,6 +155,12 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # systems a company runs.
         "connected_account",
         "integration_grant",
+        # Integrations (M13 slice 4), migration 0028. **The only table in the
+        # platform holding customer credential material**, encrypted at rest
+        # with a key injected as configuration. Its own table rather than a
+        # column on the grant: the grant is read on every connections screen
+        # and this is read only when a call is about to be made.
+        "integration_secret",
     }
 )
 
@@ -291,6 +297,11 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         # said at one moment; a correction is a new entry naming the event it
         # came from. No `UPDATE` grant, `DELETE` granted on the same terms.
         "timeline_entry",
+        # Migration 0028. Credential material is never edited: rotating writes
+        # a new `secret_ref` and the old one is purged. Editing in place would
+        # destroy the previous value at exactly the moment a rotation is being
+        # diagnosed.
+        "integration_secret",
     }
 )
 
