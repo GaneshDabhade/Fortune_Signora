@@ -186,3 +186,78 @@ Four capabilities the architecture already treats as QE's, of which two exist. *
 - Change a scenario, a threshold, a timeout or a prompt to make a measurement pass.
 
 > **The safeguard is no longer a second role — it is that QE has nothing to ship.** Every rule above is what makes that true, and the first one is what makes the rest credible.
+
+---
+
+## 7 · The Release Candidate
+
+**Added 2026-08-02, on the product owner's direction.** `CLAUDE.md` §20e defines *when* QE acts. This section defines *what QE acts on* — and it names a thing the repository has been building for thirteen cycles without a word for.
+
+> **A Release Candidate is one immutable implementation snapshot, with exactly one validation target, one certification decision, one promotion decision, and one audit record.**
+
+**It is not a branch, not a lane, and not a milestone.** `integration` keeps moving while a candidate is under validation; that is not interference, it is the next candidate arriving.
+
+### Lifecycle — created, identified, tracked, retired
+
+| Stage | What happens | Identity |
+|---|---|---|
+| **Created** | QE pins `integration`'s head. **This is the Certification Snapshot** (§20e) and the candidate *is* that commit | The full SHA, recorded at stage 0 |
+| **Identified** | Every measurement, gate result, register reconciliation and report in the cycle names that SHA | `CERT_SHA` — one variable, one value, for the whole cycle |
+| **Tracked** | Stage 1 validation → stage 2 certification. **Its input set is exactly `git log <last-certified>..<candidate>`**, which needs no bookkeeping because git already holds it | `--next-cycle` derives it |
+| **Retired — accepted** | Certified, then promoted by SHA. `promoted == certified` or the promotion aborts | The manifest entry and `certification/reports/<sha>.md` |
+| **Retired — rejected** | A gate failed. **The candidate is abandoned, not repaired.** The defect returns to its lane as a `B-` row; the fix produces a *new* candidate at a *new* SHA | The `B-` row is the audit record |
+
+**A rejected candidate is never patched into passing.** There is no such thing as a candidate that certified on its second attempt — the second attempt is a different snapshot, with a different SHA and its own record. **This is what makes "every commit on `main` was individually certified" a fact rather than a claim**, and it is why B-022's discarded manifest entry was discarded rather than annotated.
+
+### What the candidate model does *not* yet solve
+
+**A defect that reaches `integration` blocks every candidate cut after it.** [B-023](BUGS.md) is the worked example: two type errors in one lane's test file, and six unrelated slices from another lane cannot certify. **The candidate is immutable and independent; its *base* is neither.**
+
+**[ADR-0039](architecture/adr/0039-release-engineering-model.md) §II-2 already contains the answer** — validate before entering the shared line, so a failing candidate fails alone. **It is not adopted, and this section does not adopt it.** Recorded here so that the next occurrence has somewhere to accumulate.
+
+---
+
+## 8 · Release failure classification
+
+**Purpose: diagnosis and trend analysis. Not certification decisions.** A gate that fails, fails — the class never changes the outcome, only what QE does about it afterwards.
+
+| Class | Means | Fixed by | Should it be prevented, or moved earlier? |
+|---|---|---|---|
+| **Product defect** | Shipped behaviour is wrong | The module's current assignee | **Moved earlier** — a lane's own suite should see it |
+| **Test defect** | The test is wrong, or does not typecheck; the product is fine | The owning lane | **Moved earlier.** [B-023](BUGS.md) |
+| **Tooling defect** | A gate, script or register tool is wrong | Repository tooling assignee ([C-010](LANE_COORDINATION.md)) | **Prevented.** [B-014](BUGS.md), [B-020](BUGS.md) |
+| **Infrastructure defect** | The application cannot run as deployed | The owning lane | Prevented — `make smoke`, `make dr`. [B-013](BUGS.md) |
+| **Environment defect** | The gate ran against the wrong world | **QE** — it owns the release environment | **Prevented structurally.** [B-022](BUGS.md) is the exemplar: a gate that under-measured because three variables were absent |
+| **Governance defect** | A rule contradicts itself, or is unenforceable | Product owner, or QE for tooling | Prevented. [B-019](BUGS.md), [B-021](BUGS.md) |
+| **Documentation defect** | The repository asserts something untrue about itself | Whoever owns the document | Prevented — `state-check`, `doc-drift` |
+
+**The classification earns its place only if it changes what gets built.** Two readings already available from thirteen cycles:
+
+- **Environment and tooling defects are QE's own**, and they are the ones a lane cannot see. B-022 and B-014 both reached `main` or a manifest before anyone noticed. **These are the class to attack structurally**, because nobody else is positioned to.
+- **Test defects are the cheapest to fix and the most expensive to catch late.** B-023 cost a full cycle for two characters, and blocked a second lane.
+
+**No class is recorded by hand.** Each `B-` row already carries a Module and a Found-during field; the class is a reading of those, and if it ever needs its own field it will be because a trend could not be derived without one.
+
+---
+
+## 9 · Release batching — what the evidence says
+
+**Batching is a QE optimization, not a repository rule** (product owner, 2026-08-02). The invariant is unchanged: **every promoted executable change must have been certified.**
+
+**Measured across the eleven certified transitions to date:**
+
+| | |
+|---|---|
+| **Commits per release** | **mean 8.6, median 4**, range 2–49 |
+| **Certification duration** | **~6–10 minutes, and effectively fixed** — it is a full suite, a full smoke and a full scenario run regardless of how much changed |
+| **Certification failure rate** | **0 of 12 runs.** Every failure so far has been caught at **validation**, one stage earlier |
+
+**Three conclusions, and the third is the only interesting one:**
+
+1. **Certification cost does not scale with batch size**, so batching is strictly cheaper per unit of work. A ten-commit candidate costs the same gate run as a one-commit candidate.
+2. **Attribution cost does scale with batch size** — but so far it has not mattered, because every failure named its own file. `tsc` said `timeline-feed.test.tsx(79,19)`. A gate that reports a location does not need a small batch to be diagnosable.
+3. **Therefore batch size is not the lever.** The thing that actually costs release time is **a defect entering `integration` at all**, because it blocks every candidate afterwards regardless of how they are grouped. Optimising batch size while that is true is optimising the wrong variable.
+
+**The working rule, until evidence changes it:** *take whatever is on `integration` when the cycle opens.* Do not hold executable work back to make a batch bigger; do not split what has already arrived to make candidates smaller. **Both are ceremony, and neither is what is costing time.**
+
+**Rollback** is deliberately absent from this analysis: `main` has never been rolled back, there is no released version to roll back to ([ADR-0027](architecture/adr/0027-local-first-development.md)), and reasoning about it now would be speculative design. It becomes a real question at M14.5.

@@ -98,6 +98,19 @@ cd frontend && npx tsc --noEmit
 
 **Not a governance proposal, an observation for the record** (governance is frozen, and this has happened once): the lane-side gate list and the order it is run in are what caught this, and they caught it only at QE. If it recurs, the cheap structural answer is that `tsc` runs *before* the suite rather than after, so the fast feedback comes first.
 
+**Escalated 2026-08-02: it is not blocking one candidate, it is blocking the pipeline.**
+
+The defect is on `integration`, and **every branch cut from `integration` inherits it.** Verified:
+
+```bash
+git show origin/lane-a-product-surface:frontend/tests/components/timeline-feed.test.tsx | sed -n '79p'
+#   expect(within(items[0]).getByText(...))     ← the same two lines
+```
+
+**Lane A's six unrelated slices — PS-01, PS-02, PP-01, PP-02, PP-04, PP-05 — cannot certify either**, and nothing in them touches Timeline. A two-character type error in one lane's test file is holding two lanes' finished product work.
+
+**This is the clearest evidence the repository has produced for [ADR-0039](architecture/adr/0039-release-engineering-model.md) §II-2, assumption 2** — *validation happens after merge* — and for what that assumption costs. A candidate validated **before** entering the shared line fails alone; a defect that reaches the shared line **fails everything downstream of it, forever, until somebody fixes it.** Recorded as evidence. **Not acted on** — the ADR is a north star, the governance bar is unmet at one occurrence, and the fix here is Lane B's.
+
 | | |
 |---|---|
 | **Module** | Repository tooling — `Makefile`, the `certify` target |

@@ -130,6 +130,74 @@ def certification_kpis() -> dict[str, str]:
     }
 
 
+def release_kpis() -> dict[str, str]:
+    """**Release Engineering observability, derived and never reported by hand.**
+
+    Only metrics git and the manifest can actually answer appear here. The ones
+    that would need a human to type a number — time a slice spent in
+    `IN VALIDATION`, changes-requested counts, rollback rate — are deliberately
+    **absent rather than estimated**: a figure nobody can recompute is the thing
+    this whole file exists to avoid, and an absent metric is honest where an
+    invented one is not.
+    """
+    runs = _runs()
+    passing = [r for r in runs if _satisfied(r)]
+
+    # Release frequency and batch size, read from the gaps between certified
+    # commits. `git rev-list --count` is the whole measurement: the candidate's
+    # input set is exactly what lies between the last certified commit and it,
+    # which is why no bookkeeping is needed to know what a release contained.
+    batches: list[int] = []
+    ages: list[float] = []
+    previous: str | None = None
+    for run in passing:
+        commit = str(run.get("commit", ""))
+        if previous:
+            count = _git("rev-list", "--count", f"{previous}..{commit}")
+            if count.isdigit():
+                batches.append(int(count))
+            # Candidate age: how long the oldest unreleased commit waited.
+            oldest = _git("log", "--format=%cI", "--reverse", f"{previous}..{commit}")
+            certified_at = run.get("certified_at")
+            first = oldest.splitlines()[:1]
+            if first and certified_at:
+                try:
+                    delta = datetime.fromisoformat(str(certified_at)) - datetime.fromisoformat(
+                        first[0]
+                    )
+                    ages.append(delta.total_seconds() / 60)
+                except ValueError:
+                    pass
+        previous = commit
+
+    span = ""
+    if len(passing) >= 2:
+        try:
+            first_at = datetime.fromisoformat(str(passing[0]["certified_at"]))
+            last_at = datetime.fromisoformat(str(passing[-1]["certified_at"]))
+            hours = (last_at - first_at).total_seconds() / 3600
+            if hours > 0:
+                span = f"{len(passing) / hours:.2f} releases/hour over {hours:.0f}h"
+        except (ValueError, KeyError):
+            pass
+
+    def mean(values: list[float], unit: str) -> str:
+        return f"{sum(values) / len(values):.1f} {unit}" if values else "—"
+
+    rate = f"{100 * len(passing) / len(runs):.0f}%" if runs else "—"
+    return {
+        "Certification success rate": f"{rate} ({len(passing)} of {len(runs)} runs)",
+        "Commits per release": (
+            f"mean {sum(batches) / len(batches):.1f}, median "
+            f"{sorted(batches)[len(batches) // 2]}, range {min(batches)}–{max(batches)}"
+            if batches
+            else "—"
+        ),
+        "Mean candidate age": mean(ages, "min") + "  — oldest commit → certified",
+        "Release frequency": span or "—",
+    }
+
+
 def register_kpis() -> dict[str, str]:
     bugs = _read("docs/BUGS.md")
     coordination = _read("docs/LANE_COORDINATION.md")
@@ -210,6 +278,7 @@ def main() -> int:
 
     sections = {
         "Certification": certification_kpis(),
+        "Release flow": release_kpis(),
         "Defects and queues": register_kpis(),
         "Automation": automation_kpis(),
     }
