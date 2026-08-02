@@ -184,6 +184,36 @@ Why this run does not certify
 **Fix.** Either run coverage as its own gate and drop `--cov-fail-under` from the pytest invocation, or report the pytest gate as passed-with-coverage-short. **Do not merely reword the message**: the gate is currently wrong about which component failed, not just unclear.
 
 
+### B-024 · The connect screen promises a disconnect that does not exist
+
+| | |
+|---|---|
+| **Module** | `integrations` — `frontend/components/integrations/connect-panel.tsx` |
+| **Current assignee** | **Lane B**, M13's owner |
+| **Severity** | 🟠 — **the product asserts a capability it does not have**, to a customer who is deciding whether to trust it with their CRM |
+| **Status** | `OPEN` |
+| **Found** | 2026-08-02, by Lane B, in M13's end-to-end module review — **in its own slice** |
+
+**Steps to reproduce.** Open the connect panel for any system. Read the section headed *If you change your mind*:
+
+> *"You can disconnect {name} at any time from this page. Signora stops reading from it immediately."*
+
+**Expected.** A way to disconnect.
+
+**Actual.** There is none. `ConnectionState.DISCONNECTED` exists, `UNUSABLE_STATES` contains it, the query layer treats it as *not broken*, and the Connection Center renders it as *Turned off* — and **no use case transitions to it.** `grep` for a caller finds only comments.
+
+**This is the principle Lane B proposed in [C-017](LANE_COORDINATION.md) violated by Lane B's own copy**: *a surface never advertises a capability the system cannot execute*. It is the more embarrassing kind of instance — the sentence exists precisely to reduce a customer's hesitation before they commit, so it is doing persuasive work that the product cannot back.
+
+**Two related gaps found in the same review, recorded here rather than as separate rows** because one fix closes all three:
+
+**`EncryptedSecretStore.purge_for` is never called.** It exists so that disconnecting removes credential material rather than merely forgetting the pointer — which is the compliance finding from M13's own architecture review, arriving as unreached code.
+
+**`SecretUndecryptable` is raised and never caught.** A rotated or wrong key surfaces as an unhandled exception rather than as a connection a customer is told to reconnect.
+
+**The fix, for whoever takes it — which is Lane B.** A `DisconnectSystem` use case transitioning to `DISCONNECTED`, revoking the grant, calling `purge_for`, and an endpoint plus a control behind it. **The copy is not the thing to change**: the promise is the right promise, and the product should keep it.
+
+---
+
 ### B-023 · `tsc --noEmit` fails on the Timeline feed tests, and the suite that passes cannot see it
 
 | | |

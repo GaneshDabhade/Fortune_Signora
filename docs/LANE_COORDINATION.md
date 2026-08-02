@@ -1203,6 +1203,64 @@ Rate limiting, retries, backoff, circuit-breaking, partial sync and replay are *
 
 ---
 
+### M13 module review — Lane B, 2026-08-02, before closing
+
+*An end-to-end audit of the built module rather than of the design. **Three things are unreachable, one of them is a promise a customer is already being shown**, and the model itself held.*
+
+#### The test the design set for itself, answered
+
+*"If slice 4 needs a design decision, slice 1 was wrong."* **It did not.** S04 added acquisition, S05 the experience, S06 the framework, and none required a domain change — the concepts settled in S01 carried all three. That is the strongest evidence available that the boundary was drawn in the right place, and it is worth more than any argument made before implementation.
+
+#### What is unreachable, found by looking rather than by assuming
+
+| | |
+|---|---|
+| **Nothing can disconnect** | `DISCONNECTED` exists, `UNUSABLE_STATES` contains it, the query layer treats it as *not broken*, the Connection Center renders *Turned off* — **and no use case transitions to it.** Opened as [B-024](BUGS.md), because the connect screen already promises it |
+| **`purge_for` is never called** | The offboarding half — disconnecting must remove material, not merely forget the pointer. **The compliance finding from this module's own architecture review, arriving as unreached code** |
+| **`SecretUndecryptable` is never caught** | A rotated or wrong key surfaces as an unhandled exception rather than as a connection a customer is told to reconnect |
+| **`ResolveExecutionContext` is not wired** | Deliberate and stated: no adapter exists to consume it. Recorded so it is not mistaken for an oversight when one does |
+| **`NOT_CONNECTED` is never persisted** | A constructor's starting value and an error signal. **Correct as a domain concept** — the catalog's *"not connected"* is the absence of a row — and worth naming so nobody later adds a migration for a state nothing stores |
+
+**One fix closes the first three**, and it is Lane B's.
+
+#### The questions the product owner asked, answered from the code
+
+| | |
+|---|---|
+| **Does every concept still belong here?** | Yes, and one earned its place late: `Capability` was deferred in S01 as speculative and became necessary in S03 the moment a customer had to be told what a connection gives them. Deferring it was right; adding it when a requirement arrived was right |
+| **Is anything leaking into Provider Platform?** | **No, and it was tested once.** *"When did it last synchronize"* was on the customer-experience list and is `SyncWatermark`'s fact. It was left off the surface rather than composed in, because composing it would have inverted the dependency |
+| **Is any vendor concept in the domain?** | **No.** `grep` finds *hubspot* and *salesforce* in the catalog, the provider table and tests — never in `domain/`. `ConnectInput` names no mechanism, which is why an API key or a certificate arrives through the same door |
+| **Can the public abstractions take more providers?** | `public/` publishes `ConnectedAccount`, `ConnectionState`, `Credential`, `ExecutionContext` and one exception. **None mentions a vendor or a protocol** |
+| **Is it understandable to a customer?** | The screens say *Ready to use*, *Action required*, *Turned off*, *Access was removed*. Two tests assert no internal state name and no mechanism word reaches the document |
+| **Does every customer-facing state explain itself?** | **Every state, yes. Not every capability** — B-024 is the gap |
+| **Coupling between acquisition, credentials, sync and presentation?** | **Acquisition and credentials are cleanly split** — `ConnectInput` names no mechanism, `SecretWriter` is separate from `SecretStore`. **Presentation is decoupled** — no rendered prose is stored. **Synchronization is not coupled because it does not exist yet**, which is an absence of evidence rather than evidence of absence, and the first adapter is what will actually test it |
+| **Would doubling the integrations hold?** | **Adding one is a catalog row, a provider-table entry and two environment variables.** The framework has no per-vendor branch, and a test asserts every scope is read-only so the connect screen's central promise cannot silently become false |
+
+#### Where the architecture would strain first, stated as a forecast
+
+**Not at the tenth provider — at the second *capability shape*.** Every Day One capability is a read of a customer's own system. The first *outbound* one inverts the flow: a delivery has no watermark, no incremental read and no pagination, and `ExecutionContext` will meet a use it was not shaped by. The model anticipates it and has never been tested against it, and the honest position is that the first outbound adapter is the real test.
+
+#### Day Two — recorded, not designed
+
+*Surfaced by implementation. **None is scheduled, and none should be built until a customer needs it.***
+
+| | Where implementation exposed it |
+|---|---|
+| **Connection ownership and delegated administration** | `connected_account` carries `created_by`/`updated_by` and nothing reads them. A rep connects their own calendar; when they leave, nobody owns it |
+| **Credential rotation history** | `secret_ref` is stable per connection, so rotating writes a new row and the old is purged. **A rotation is currently unobservable** — the extension point is the ref, which could become versioned |
+| **Connection audit timeline** | Every state change is a fact with a time, and none is recorded. `connected_account` is mutable by design; the history belongs in an event log this module does not yet publish to |
+| **Shared organizational connections** | One workspace's Salesforce cannot serve another. Correct today, and the first enterprise customer with two divisions will ask |
+| **Connection health analytics** | `Attention` is derived per request and never stored, so *"how often does HubSpot lapse?"* has no source. Deliberate — but the fact is currently unrecoverable rather than merely uncomputed |
+| **Provider capability evolution** | `Capability` is a closed enum in this module's domain. Fine while Signora writes every adapter; the marketplace question is the same one `ProviderName` already poses |
+| **Synchronization observability** | Belongs to Provider Platform, and the connection's health and the sync's health will need composing somewhere. **That surface has no owner today** |
+| **Customer-developed adapters** | An adapter is a class imported at the composition root. Unchanged from the earlier finding: an ecosystem needs process isolation or bring-your-own-endpoint |
+
+#### Recommendation
+
+**M13's Day One architecture is complete and holds.** Before it closes: **[B-024](BUGS.md)** — because the product is currently promising something it cannot do — and then the HubSpot handshake, which is environmental.
+
+---
+
 ### Stress test — Lane B, 2026-08-02. **Trying to break the model**
 
 *Run against every mechanism and scenario the product owner named. **Three broke it**, and the corrections are below. The rest passed without changing anything, which is the result that matters.*
