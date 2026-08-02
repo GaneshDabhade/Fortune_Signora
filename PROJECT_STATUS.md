@@ -19,8 +19,8 @@
 | **Current phase** | **Product implementation** — the pipeline is built; the surface is being exposed |
 | **Last completed milestone** | **M12.5 — Commercial Profile**, all five slices promoted 2026-08-02. The head of the pipeline now exists |
 | **Current milestones** | **M12.3 — the product surface.** The brief's hierarchy (D20) remains; **R2-01 shipped this cycle**. *(Decision Package still deferred until `reasoning@1` is released — see §7)* |
-| **`main` at** | **`624f770`** — *Certification 1bbee30b7e62*. **The certified commit itself**, promoted by SHA and checked after the merge |
-| **Certification status** | ✅ **CERTIFIED** — [`624f7704647b`](certification/reports/624f7704647b.md), 2026-08-02, bound to migration head **`0025`** and rendering protocol **v2**. **Commit-bound**: the record names `624f770`, and `624f770` is what was promoted. `make certified ARGS="--audit-main"` proves it across the branch. See §4 |
+| **`main` at** | **`3e36da9`** — *Nobody assigns; lanes pull*. **The certified commit itself**, promoted by SHA and checked after the merge |
+| **Certification status** | ✅ **CERTIFIED** — [`3e36da9ff0ae`](certification/reports/3e36da9ff0ae.md), 2026-08-02, bound to migration head **`0025`** and rendering protocol **v2**. **Commit-bound**: the record names `3e36da9`, and `3e36da9` is what was promoted. `make certified ARGS="--audit-main"` proves it across the branch. See §4 |
 | **Branches** | **`main` and `lane-qe` at the promoted, certified baseline.** `integration` sits **one slice ahead** — Lane A's R2-01 landed while QE was measuring `main`; it is validated by its own lane, **not yet by QE**, and is the next cycle's stage 1. Both feature lane branches are synchronized to `integration`. **QE is the only lane that merges, certifies, promotes and publishes this file** ([CLAUDE.md §20e](CLAUDE.md)). Who is on what: [docs/ACTIVE_ASSIGNMENTS.md](docs/ACTIVE_ASSIGNMENTS.md) · defects: [docs/BUGS.md](docs/BUGS.md) · cross-lane questions: [docs/LANE_COORDINATION.md](docs/LANE_COORDINATION.md) |
 | **Verification** | **Local only** ([ADR-0027](docs/architecture/adr/0027-local-first-development.md)). There is no remote gate; a `git push` stores the repository and triggers nothing |
 | **Overall completion** | **~66%** by engineering effort (~205 of ~261–339 ew) — M12.5 closed (five slices) · M12.4 shipped · M9.5 (~3 ew) inserted and **not** closed. **An estimate, and marked as one**; every other figure on this page is measured |
@@ -37,62 +37,43 @@ They can also **follow any ledger line to the provider readings beneath it**, an
 
 ---
 
-## 1b · Release summary — 2026-08-02, cycle 2
+## 1b · Release summary — 2026-08-02, cycle 3
 
-**Derived from the promoted commit `1bbee30`, and from nothing else.** Four commits since `e44819b`.
+**Derived from the promoted commit `3e36da9`.** One commit since `624f770`.
 
-### Features delivered
+### Governance — planning, execution and release are now three roles
 
-- **The guidance says what it is pointing at** (R2-01). Two accounts no longer receive identical wording: what the product tells a seller to check is now tied to the evidence behind that account rather than to a shared template. [ADR-0037](docs/architecture/adr/0037-failure-categories.md) records the failure categories it introduced.
+**Work allocation moved from QE to a pull model** (`CLAUDE.md` §20e, *Nobody assigns; lanes pull*). QE had five responsibilities; four of them are judgements about the repository as a whole and belong together. **Scheduling is not one of them** — it is a product decision, and routing it through QE meant an idle lane waited for the session that was busy certifying. **Every additional lane increased the wait rather than the throughput**, which is the opposite of what lanes are for.
 
-### Governance — the release guarantee
+| Role | Owns |
+|---|---|
+| **Product owner** | Priority — [`docs/BACKLOG.md`](docs/BACKLOG.md), the `READY` queue |
+| **Feature lanes** | Execution — claim the top item you can take, record it, build |
+| **QE** | Quality and release — validate, certify, integrate, promote, close out, declare. **Never schedules** |
 
-**Certification now binds to an immutable commit rather than to a branch** (`CLAUDE.md` §20e). A cycle opens with a **Certification Snapshot** pinning one SHA; every measurement derives from it; promotion is `git merge --ff-only <certified-sha>`. `integration` keeps moving during certification by design, and anything landing after the snapshot belongs to the next cycle automatically.
+**A lane claims only a `READY` item, writes the claim before the first line of code, and never reorders the queue.** `WAITING` needs somebody to answer; `BLOCKED` needs somebody to build; the distinction decides who unblocks it.
 
-> **The repository guarantee, stated exactly:** *every commit on `main` was either individually certified, or is a Closeout commit that provably changes nothing executable.* **Enforced by [`infra/certification-guard.py`](infra/certification-guard.py)** — `make certified` refuses a promotion, `make certified ARGS="--audit-main"` proves the guarantee across the branch by checking **paths, not commit messages**.
-
-**This cycle is the first one that was commit-bound end to end.** Certified `1bbee30`; promoted `1bbee30`; every figure below measured at `1bbee30`.
+**Certification is unchanged and remains commit-bound.** This cycle certified `3e36da9` and promoted `3e36da9`.
 
 ### Bugs fixed
 
-| | |
-|---|---|
-| [B-014](docs/BUGS.md) | **Two commits reached `main` outside certification and nothing noticed.** Found by the guard's first audit — against the two commits QE had written an hour earlier, both labelled Closeout and both editing `infra/state-check.py`. `FIXED` by the rule; QE wrote it, so QE may not close it |
-
-**And the rule caught its own author twice more.** The governance slice was first committed straight to `main` — executable files, no certification — and was moved to `lane-qe` and put through the lifecycle instead. `main` was reset before anything was pushed.
+None this cycle. **Verification of [B-009](docs/BUGS.md), [B-013](docs/BUGS.md) and [B-014](docs/BUGS.md) is now the top `READY` backlog item** — all three were fixed by QE, which may not close its own fixes.
 
 ### Architectural decisions introduced
 
 | | |
 |---|---|
-| [ADR-0037](docs/architecture/adr/0037-failure-categories.md) | Failure categories — what the product says when it cannot support a claim |
-| `CLAUDE.md` §20e | **Certification is attached to a commit, never to a branch**, with the Certification Snapshot, the promotion equality rule, and the bounded Closeout exception |
-
-### Coordination
-
-**Seventeen items, one closed.** [C-017](docs/LANE_COORDINATION.md) was opened by Lane B — the onboarding rule needed a home outside the argument that produced it.
+| `CLAUDE.md` §20e | **Nobody assigns; lanes pull** — the backlog, the claim rules, and the three-role separation |
 
 ### Remaining blockers
 
-1. **`reasoning@1` has no released model**, so the Decision Package stage would refuse at runtime (§7). Unchanged.
-2. **[C-010](docs/LANE_COORDINATION.md)** — `apps/`, `signora_platform/` and repository process still have **no assignable lane**. [B-007](docs/BUGS.md), [B-012](docs/BUGS.md) and [B-014](docs/BUGS.md) all sit there.
-3. **Seven defects are `FIXED` awaiting verification**, five of them by somebody other than QE.
+1. **[C-010](docs/LANE_COORDINATION.md)** — `apps/`, `signora_platform/` and repository process have no assignable lane. **Four defects now sit there**, and it is the top `WAITING` item.
+2. **`reasoning@1` has no released model**, so the Decision Package would refuse at runtime (§7).
+3. **Seven defects `FIXED` awaiting verification**, five by somebody other than QE.
 
 ### Recommended next work
 
-| Priority | What | Why |
-|---|---|---|
-| 1 | **Rule [C-010](docs/LANE_COORDINATION.md)** | Four defects have now landed in unassignable code. It is the constraint that binds hardest, and it has bound harder every cycle |
-| 2 | **Verify [B-009](docs/BUGS.md), [B-013](docs/BUGS.md), [B-014](docs/BUGS.md)** | All fixed by QE, and QE may not close its own fixes |
-| 3 | **Teach the guard to find a record that is not yet on `main`** | Known limitation below. A slice, not a Closeout — `infra/` decides whether gates pass |
-| 4 | **[B-010](docs/BUGS.md)** — nothing narrates in the Playground | M12.3's headline feature cannot be demonstrated today |
-| 5 | **[C-008](docs/LANE_COORDINATION.md)** — sellers cannot see what their company sells | Proposal accepted; awaiting a choice between four options |
-
-### Closed the same day it was opened
-
-**The limitation recorded an hour ago — that the guard read the manifest only from the working tree, and so called a freshly promoted commit uncertified — is fixed.** The manifest is now read from the tree and from every ref that holds one. **The fix went through its own certification cycle rather than riding along in a Closeout**, because `infra/` decides whether a gate passes.
-
-**The same cycle corrected what the audit was asking for.** It demanded a certificate for every commit on `main`, which promotion cannot deliver: a fast-forward brings the certified commit's ancestors with it, and those were never individually a candidate for shipping. The guarantee is now stated as what it is — **no commit reaches `main` except inside a certified snapshot** — and that is checkable, so it is checked.
+**It is a queue now, not a paragraph:** [`docs/BACKLOG.md`](docs/BACKLOG.md), in order. The product owner's two decisions at the top of `WAITING` — [C-010](docs/LANE_COORDINATION.md) and [C-008](docs/LANE_COORDINATION.md) — unblock more than anything a lane could pick up unaided.
 
 ---
 
@@ -102,9 +83,9 @@ They can also **follow any ledger line to the provider readings beneath it**, an
 
 | Lane | Assignment | Status |
 |---|---|---|
-| Lane A | **R2-01** — two accounts get identical guidance (`signal_engine` · `opportunity_engine`) | `ACTIVE`. Rebases onto the reconciled `integration` first |
-| Lane B | `commercial_profile` — **M12.5 complete**; awaiting its next assignment | `AVAILABLE` |
-| QE | Repository lifecycle and governance | `ACTIVE` — permanent |
+| Lane A | — | `AVAILABLE`. **Claims from [BACKLOG.md](docs/BACKLOG.md)**; waiting on nobody |
+| Lane B | — | `AVAILABLE`. **Claims from [BACKLOG.md](docs/BACKLOG.md)**; waiting on nobody |
+| QE | Repository lifecycle and governance | `ACTIVE` — permanent, and **schedules nothing** |
 
 **Nothing is blocked.** [C-011](docs/LANE_COORDINATION.md) holds one finding inside Lane A's slice (R9-03) without stopping it; [C-012](docs/LANE_COORDINATION.md) and [C-013](docs/LANE_COORDINATION.md) wait on RFCs queued since M3A and block nothing today.
 
@@ -333,9 +314,9 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`624f7704647b`](certification/reports/624f7704647b.md) · 2026-08-02 · ✅ CERTIFIED**
+**Latest certification — [`3e36da9ff0ae`](certification/reports/3e36da9ff0ae.md) · 2026-08-02 · ✅ CERTIFIED**
 
-**Certified commit `624f770` · promoted commit `624f770`.** Identical, checked after the merge and re-checked by `make certified`.
+**Certified commit `3e36da9` · promoted commit `3e36da9`.** Identical, checked after the merge and re-checked by `make certified`.
 
 | Gate | Recorded |
 |---|---|
@@ -344,7 +325,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | **Security Invariants** | **354**, each proven to fail when its guarantee is removed |
 | **import-linter** | **31 kept**, 0 broken |
 | **MyPy** | strict, clean over **547 files** |
-| **`make smoke`** | **24 stages in 120s**, fresh images, clean teardown |
+| **`make smoke`** | **24 stages in 114s**, fresh images, clean teardown |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0025`** · scenario set `0cf6b2c581e4` · working tree clean · `research_planning@2` and `research_synthesis@2` released for `llama3.1:8b`.
