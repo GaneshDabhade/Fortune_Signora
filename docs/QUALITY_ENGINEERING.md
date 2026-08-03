@@ -629,3 +629,38 @@ OPEN → collect recommendations → Lane A analysis → Lane B analysis
 **Each pack carries:** decision · background · current implementation · repository evidence · options · trade-offs · repository, customer, engineering and migration impact · risk · recommendation · future pressure · rollback · deadline and urgency · dependencies created and removed · effort · implementation order · rejected alternatives.
 
 **A pack is deleted when its decision is taken.** The answer lives in the ADR it produced — **the packs are a staging area, never a record.**
+
+### Every ruling is classified, and says what it unlocks
+
+**Ratified 2026-08-03, product owner.** Two fields, and they exist for different readers.
+
+**Classification** tells a future engineer whether they are reading a **stable convention** or **open product strategy** — which is the difference between *"follow this"* and *"this may change when we learn more about customers."*
+
+| | |
+|---|---|
+| **Repository Engineering Rule** | How work is built, tested, released. Stable |
+| **Architecture Rule** | A boundary, a contract, a platform capability. Stable, and changed only by a new ADR |
+| **Product Rule** | What the product does for a customer. Stable until the product owner revises it |
+| **UX / Customer Experience Rule** | How a capability presents. Stable in intent; the treatment is the lane's |
+| **Product Vision Decision** | A bet about where the product is going. **Expected to be revisited** |
+| **Deferred (requires Product Owner)** | Not decided, and named so it cannot be mistaken for one that was |
+
+**What it unlocks** tells the product owner what a decision *buys*: **customer capability · engineering work unblocked · modules · journeys · effort now enabled.**
+
+> **The two orderings diverge, and that is the point.** In [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md), ordering by modules-unblocked puts the platform amendment first — and it **delivers nothing a customer can see.** Ordering by customer value puts the commercial-profile read first. **A decision backlog sorted by dependency count optimises the wrong thing.**
+
+**And one ruling unlocked nothing at all and was still the best value on the page:** *desktop-first* **prevents** work rather than enabling it. **A decision that removes future effort should be recorded as a gain**, or it will always lose to one that adds a feature.
+
+### A pattern is not a platform capability until it appears in several modules
+
+**The guard against premature abstraction, and R-1 is the worked example.**
+
+**`EventHandler` receiving no session was a platform gap in 7 independent modules**, `PublishableEvent`'s shape in 13 files, and both had persisted since M3A. **That is what earns a platform amendment.** One module finding the platform inconvenient is not a defect — `CLAUDE.md` §20a says so directly.
+
+**The test, before proposing any platform capability:**
+
+1. **Does the pattern exist in more than one module, independently arrived at?** One occurrence is a module problem.
+2. **Has it persisted across milestones?** A pattern that appears and disappears was a phase, not a shape.
+3. **Is the workaround compounding?** [C-013](LANE_COORDINATION.md) went 8 → 13 while open. **A stable workaround is cheaper than an abstraction; a growing one is not.**
+
+**All three must hold.** Two out of three is a finding to record, not a platform change to make.

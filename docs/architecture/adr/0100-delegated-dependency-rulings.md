@@ -10,7 +10,32 @@
 
 ---
 
+## Classification, and what each ruling unlocks
+
+**Added 2026-08-03 on the product owner's direction.** Two things every ruling must now carry: **what kind of decision it is**, so a reader knows whether it is a stable convention or open product strategy; and **what it unlocks**, so decisions prioritise by customer value rather than by how many modules are blocked.
+
+| Ruling | Classification | Customer capability unlocked | Engineering unblocked | Modules | Journeys | Effort now enabled |
+|---|---|---|---|---|---|---|
+| **R-1** platform composition | **Architecture Rule** | **None directly.** No pipeline stage is independently scalable or observable until it lands | 7 modules' event consumption · PP-02's last wire · all of PP-03 · leaving an organization | **7 pipeline modules + `signora_platform`** | None today | RFC ≈1 slice, then **7 one-slice rewirings** |
+| **R-2** roadmap → milestone | **Repository Engineering Rule** | None | **3 stalled milestones** — M7, M13, M14b | Repository-wide | — | **Governance only. No code** |
+| **R-3** ADR-0038 ratified | **Architecture Rule** | **Timeline's remaining slices** — a seller sees what has happened to an account | M7 S05+ | `timeline` | *Understand an account* | Several slices; **the surface already exists** |
+| **R-4** unassignable code | **Repository Engineering Rule** | None | Every defect in `apps/`, `signora_platform/`, frontend foundation — **8 have landed there** | Repository-wide | — | **Governance only** |
+| **R-5** sellers see the profile | **Product Rule** | **High and direct.** An AE can finally see the ICP the account is meant to match, and the committee they are selling into | 1 slice each side | `commercial_profile` · Product Surface | *Work an account* — **every AE and SDR, every day** | **2 slices, two lanes** |
+| **R-6** contraction ≠ opportunity | **UX / Customer Experience Rule** | **The attention list stops telling a CRO something false** | R9-03 | Product Surface · `buying_score_engine` | *Scan what needs attention* | **1 slice** |
+| **R-7** Signora owns invitations | **Product Rule** | **An organization can grow.** Today every workspace is permanently whoever created it | The invitation table, acceptance, the members list | `workspace_tenancy` | *Bring a colleague in* | **2–3 slices** |
+| **R-8** desktop-first | **Product Vision Decision** | None. **It removes a constraint** from every future layout | [B-019](../../BUGS.md) reclassified as correct behaviour | Product Surface | All of them, indirectly | **None — it prevents work** |
+| **R-9** onboarding honesty as D39 | **UX / Customer Experience Rule** | None directly. Binds every future onboarding flow | — | Product Surface | *Arrive for the first time* | **A paste** |
+| **R-10** ADR-0041 ≠ C-002 | **Deferred (requires Product Owner)** — the *interpretation* half | ICP declaration is authoritative intent; **matching is not unlocked** | ADR-0041's slices | `commercial_profile` · `knowledge_graph` | *Declare who buys from us* | ADR-0041 proceeds; **C-002 still gates matching** |
+
+> **Read the table by customer value and the order is R-5, R-7, R-6, R-3 — then R-1.** Read it by modules unblocked and **R-1 comes first and delivers nothing a customer can see.** That divergence is the reason the classification exists.
+>
+> **Two rulings unlock nothing and are still worth having**: R-2 and R-4 are pure engineering leverage, and R-8 is worth more than either because **it prevents work rather than enabling it.**
+
+---
+
 ## R-1 · The platform freeze admits one composition amendment — **Pack A**
+
+> **Classification: Architecture Rule.** A platform capability, ratified once, that seven modules then consume. **Not a product decision** — nothing a customer sees changes.
 
 **Closes [C-012](../../LANE_COORDINATION.md), [C-013](../../LANE_COORDINATION.md), [C-021](../../LANE_COORDINATION.md), [C-207](../../LANE_COORDINATION.md).**
 
