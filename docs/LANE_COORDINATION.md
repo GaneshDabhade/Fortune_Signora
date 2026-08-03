@@ -47,6 +47,7 @@
 
 ### Closed on repository evidence — no decision required
 
+
 | Item | Why | Verified against |
 |---|---|---|
 | **[C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it)** | **Implementation answered it.** The feed is mounted on the account brief, Option A, with B and C ruled out in the file | `accounts/[accountId]/page.tsx:335` |
@@ -84,6 +85,8 @@
 **Deliberately not ruled, and each says why:** C-002/C-018/C-204 need product intent · **C-203** is product semantics touching AI attribution, audit and notifications at once · **C-003, C-005, C-007, C-009, C-025** are **not yet re-validated against current code** · **C-302** is **tenancy, which is never decided inside a session**.
 
 > **Ten rulings, four deferrals, and the deferrals are the honest part.** A delegation returning *"all resolved"* would mean the hard ones had been decided by somebody without the information to decide them.
+
+> **[C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it) was the recommendation here and no longer needs answering** — Lane A mounted the timeline in `CX-03` while this classification was being written, which is the outcome the item wanted. **Closed 2026-08-03 by Lane B**, the requesting lane, after verifying the whole chain: route, component, hook, endpoint.
 
 ---
 
@@ -143,6 +146,7 @@
 | [C-001](#c-001--the-target-account-contract) | The target-account contract — this module's first edge | Lane B | **Lane A** | `ANSWERED` → **[ADR-0036](architecture/adr/0036-target-account-contract.md)** | **Nothing. Slice 5 may begin.** `CLOSED` when both lanes have built it |
 | [C-305](#c-305--two-principles-that-outgrew-the-adr-that-found-them) | Two principles that outgrew the ADR that found them | Lane B | **Product owner** | `OPEN` | **Nothing.** Both are already applied in two modules each; this is placement |
 | [C-304](#c-304--a-standing-review-question-that-has-already-paid-for-itself) | A standing review question that has already paid for itself | Lane B | **Product owner** | `OPEN` — **challenged and sharpened 2026-08-02.** It produces noise in the general form; the narrow one survives | **Nothing.** One line of review practice, wherever it belongs |
+| [C-306](#c-306--the-opportunities-and-signals-experience-already-exists-and-lane-a-owns-half-of-it) | The Opportunities & Signals experience already exists, and Lane A owns half of it | Lane B | **Product owner** | `OPEN` | **The frontend half only.** The backend half is unassigned and Lane B can start it |
 | [C-303](#c-303--an-icp-is-not-an-addressable-thing-and-every-verb-the-brief-asks-for-needs-one) | An ICP is not an addressable thing, and every verb the brief asks for needs one | Lane B | **Product owner** | `ANSWERED` — ICP stays in Commercial Profile (2026-08-02). **The aggregate is [ADR-0041](architecture/adr/0041-icp-aggregate.md), proposed** | **Implementation, on ADR-0041's ratification** |
 | [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) | A notification is per-person, and workspace RLS is not enough | Lane B | **Product owner** (tenancy 🔴) | `OPEN` | **M14a N-01's migration.** The pattern exists; the ruling does not |
 | [C-301](#c-301--nothing-asserts-what-the-deployed-worker-consumes) | Nothing asserts what the deployed worker consumes | Lane B | **QE** | `OPEN` | **Nothing today.** Every future consumer can ship [B-301](BUGS.md) again |
@@ -164,6 +168,10 @@
 | [C-020](#c-020--m7-has-no-scope-and-timeline-has-no-design) | M7 has no scope, and Timeline has no design | Lane B | **Product owner** (roadmap 🔴) | `OPEN` | **M7** — [`TASK-017`](BACKLOG.md), `WAITING`. Lane B released it and is `AVAILABLE` |
 | [C-026 *(Lane B's)*](#c-026--the-connection-center-is-reachable-only-by-typing-its-url) | The Connection Center is reachable only by typing its URL | Lane B | — | **`CLOSED`** — shipped as **CX-01**; Settings carries a Connections card | **Nothing, on either side** |
 | [C-027](#c-027--m14a-notifications--what-was-bought-is-not-what-must-be-built) | M14a — what was bought is not what must be built | Lane B | **Product owner** | `ANSWERED` — four decisions taken 2026-08-02, [ADR-0040](architecture/adr/0040-notifications.md) proposed | **One 🔴 ratification** — the fifteenth entry in `04-modules.md`, drafted and ready to paste |
+
+| [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it) | Timeline has a surface and nowhere to mount it | Lane B | **Lane A** + product owner | **`CLOSED`** — Lane A mounted it in `CX-03` (`e70dd60`). Verified by Lane B, the requesting lane, 2026-08-03 | **Nothing. A customer can open it** |
+| [C-025](#c-025--m13-is-not-a-module-and-its-consumers-do-not-exist-yet) | M13 is not a module, and its consumers do not exist yet | Lane B | **Product owner** | `ANSWERED` — all four decisions taken 2026-08-02. **M13 paused on an environmental dependency, not this item** | **Nothing.** The remaining work needs a HubSpot developer application, not a decision |
+| [C-026 *(Lane B's)*](#c-026--the-connection-center-is-reachable-only-by-typing-its-url) | The Connection Center is reachable only by typing its URL | Lane B | — | **`IMPLEMENTING`** — shipped as **CX-01**. **Narrowed to nothing**; `CLOSED` is Lane B's | **Nothing, on either side** |
 | [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it) | Timeline has a surface and nowhere to mount it | Lane B | ~~Lane A~~ → **[C-012](#c-012--eventhandler-receives-no-session-so-no-module-handler-is-registered)** | **`IMPLEMENTING`** — mount delivered (**CX-03**). **Narrowed: the remaining work is data, not placement** | **Nothing is buildable.** The feed is mounted and renders empty — `project_to_timeline` is wired into no worker and no seeder |
 | [C-025](#c-025--m13-is-not-a-module-and-its-consumers-do-not-exist-yet) | M13 is not a module, and its consumers do not exist yet | Lane B | **Product owner** | `OPEN` | **M13's credential half** — no tier may run an integration OAuth flow |
 | [C-018](#c-018--nobody-owns-the-customer-facing-name-of-an-attribute) | Nobody owns the customer-facing name of an attribute | Lane A | **Product owner** | `OPEN` | [`TASK-003`](BACKLOG.md), skipped with its reason recorded |
@@ -3242,4 +3250,84 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 **Placement, not agreement** — both are already applied in the code. If they belong in `CLAUDE.md` §2, the text above is ready. If they belong in a module document each, that is equally fine and this item closes.
 
 **What Lane B will not do is add them itself.** A repository-wide rule belongs in the governance document rather than in whichever ADR happened to find it — §20e is explicit, and **a principle discovered inside an ICP ADR that lives only there will be rediscovered by the next module that needs it.**
+
+
+### Closed — Lane B, 2026-08-03, by verification rather than by ruling
+
+**Lane A mounted it in `CX-03` (`e70dd60`) and this register did not notice.** The account brief carries a *What has happened* section rendering `AccountHistory`; the chain is complete end to end — route → component → `useAccountTimeline` → `GET /workspaces/{id}/accounts/{id}/timeline`.
+
+**Verified before closing rather than inferred from the commit message**, which is what the register's *"the requesting lane closes"* rule is for.
+
+**The finding worth keeping is the lag, not the fix.** The item sat `OPEN` — and was classified hours ago as *"the highest-value item on this page, the only one standing between a fully built capability and a customer using it"* — while the capability was already reachable. **A register that describes a gap somebody has closed is worse than one that never recorded it**, because it sends the product owner to answer a question that no longer exists. Both halves are ordinary: Lane A had no reason to edit an item it did not raise, and Lane B was not looking at Timeline that day. **The mechanism that would catch it is a lane re-verifying its own open items before reporting them**, which is what found this one.
+
+
+---
+
+## C-306 · The Opportunities & Signals experience already exists, and Lane A owns half of it
+
+| | |
+|---|---|
+| **Decision required** | How a capability spanning **one lane's assigned module** and **three unassigned ones** is executed without two lanes inside one module |
+| **Participating modules** | Product Surface (**Lane A — assigned, and not released**) · `opportunity_engine` · `signal_engine` · `buying_score_engine` (**all unassigned**) |
+| **Current assignee(s)** | **Product owner** |
+| **Blocking** | **The frontend half only.** The backend half is unassigned and Lane B can begin immediately |
+| **Raised** | 2026-08-03, by Lane B, assigned the capability, **after the mandatory reuse audit and before any code** |
+
+### 1 · The audit's first finding: it is already built, and reachable
+
+**The brief describes a capability to build. The repository already has most of it, and every part of it is reachable** — which is the opposite of what the last three assignments found, and it changes what this initiative is.
+
+| Customer question | Where it is answered today |
+|---|---|
+| *"What should I work on?"* | **`/`** — the attention list. Score, movement, hypothesis, contested mark, evidence health, ownership |
+| *"Why this account?"* | **`/accounts/{id}`** — the brief: workflow stage, momentum, contributions, *what it cannot tell you* |
+| *"Prove it."* | The **evidence drawer**, opened from a citation |
+| *"What did we observe?"* | **`ValidationBlock`** — signals as the evidence layer under a score |
+| *"What happened?"* | **`AccountHistory`** — the timeline, mounted by Lane A in `CX-03` |
+| *"Go find out more."* | **`ResearchPanel`** — AI research, on the brief |
+| *"I'm working this."* | **`WorkflowActions`** and `DecisionHistory` |
+
+**Every backend endpoint has a frontend caller and every hook is used.** Checked rather than assumed: `useAccounts`, `useDecidedAccounts`, `useAccountScore`, `useAccountValidation`, `useSignalCatalog`, `useAccountNarration`, `useAccountResearch`, `useAccountTimeline` — all consumed by a rendered screen. **There is no unreachable capability in this area**, which was the defect class the last three audits kept finding.
+
+**One item closed as a result:** [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it), which this register still described as *"the highest-value item on this page — no customer can open it"*. Lane A mounted it. **Verified end to end and closed by Lane B**, the requesting lane.
+
+### 2 · So the work is not building it — it is the open findings against it
+
+[39-product-review-findings.md](architecture/39-product-review-findings.md) already holds the audit somebody would otherwise redo. **Fourteen open findings sit in this capability**, including four 🔴:
+
+| | |
+|---|---|
+| **R1-01** 🔴 | *"Why now"* says the same thing eleven times. `ScoreTrigger` answers *why the score was recomputed* — a pipeline event — where a seller asks *why this company matters today* |
+| **R1-02** 🔴 | Trigger and evidence state contradict each other on the same row. Both correct, both read as a defect — *"one of these is wrong and I don't know which, so I don't trust either"* |
+| **R10-01** 🔴 | There is exactly one exit from the brief, and it is backwards |
+| **R11-01** 🔴 | Nine of twenty lifecycle stages implemented; five more built and unreachable |
+
+> **Rebuilding this experience would discard fourteen findings from real product review and replace a working surface with an unreviewed one.** The reuse policy's strongest form applies: **the experience evolves, and the findings are the backlog.**
+
+### 3 · The ownership conflict, stated precisely
+
+**[`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) records Product Surface as *"Lane A — assigned, and not released"***, with `PS-01…08` and `CX-01…03` built. **That is where this experience's frontend lives**: `app/(app)/page.tsx`, `app/(app)/accounts/[accountId]/page.tsx`, and all fourteen `components/intelligence/*`.
+
+**`CLAUDE.md` §20e's hardest invariant is one assignee per module at a time**, and it is the one that makes a claim refusable. **Lane B will not edit Lane A's module**, and raising it is what §20e requires rather than a manufactured pause — it is exactly *"repository ownership prevents implementation"*, one of the five conditions the product owner named.
+
+**The split is clean, which is what makes this answerable rather than awkward:**
+
+| Half | Module | Assignee | Lane B can start? |
+|---|---|---|---|
+| **The intelligence** — what a row *says*, and why | `buying_score_engine` · `signal_engine` · `opportunity_engine` | **Unassigned** | **Yes, now** |
+| **The surface** — how it reads, navigates and flows | Product Surface | **Lane A** | **No** |
+
+**R1-01 is the worked example.** Its root cause is a **backend** read model: the row's most valuable line carries `ScoreTrigger`, which cannot discriminate between two accounts because it describes a pipeline event. **Making it carry something commercially meaningful — the strongest contributing signal — is a change in modules nobody holds.** Rendering it is Lane A's. One finding, two lanes, and the ordering is obvious: the field has to exist before a row can show it.
+
+### 4 · What Lane B proposes, and what it will do meanwhile
+
+| # | Question |
+|---|---|
+| 1 | **Does Lane B take the three engines** and leave Product Surface with Lane A — the two-lane build [C-007](#c-007--the-guided-first-run-is-a-two-lane-build) already established as a pattern? |
+| 2 | **Or is Product Surface reassigned to Lane B**, and Lane A releases it? Lane A holds four other assignments, one of them `BLOCKED` |
+| 3 | **Should the fourteen open findings become backlog tasks** with ids, so priority is the product owner's rather than a lane's reading of severity marks? |
+
+**Lane B's recommendation is 1**, on the evidence that the surface is Lane A's most recent work — `CX-01…03` shipped days ago — and reassigning a module somebody is mid-context on costs more than it saves.
+
+**Meanwhile, and without waiting:** Lane B begins **R1-01** in the engines, because it is 🔴, its root cause is unambiguously backend, and its fix is a prerequisite for the row change rather than a duplicate of it. **No frontend file is touched until this item is answered.**
 
