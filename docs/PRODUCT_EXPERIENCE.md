@@ -356,3 +356,153 @@ PLATFORM
 **Three judgements behind it.** *Intelligence* and *Sell* separate **what the product knows** from **what a person is doing** — the line every mature platform eventually draws, and the one that lets a manager view exist at all. **Your business is a section, not a page**: five capabilities on one scrolling page is why it measures 57 words per action. And **Research already exists but is reachable only from inside an account**, which is why nobody would discover it.
 
 *Category: UX / Future Product. Raised for the product owner; **nothing built.***
+
+---
+
+## Review 3 — 2026-08-03 · the first hour
+
+**A person who has never existed signed up through the real form.** `priya.raman.…@northwind.example`, a real password, the product's own sign-up route. No seeding.
+
+> **Honest scope: this is the first *ten minutes*, not the first hour.** The walk stopped at the organization gate because the instrument never pressed *Create an organization*. Everything below is what happens before that button, and it is enough.
+
+### 🔴 Critical Trust · GA Blocker
+
+#### PX-319 · Nobody has ever walked in through the front door
+
+```
+2 · The moment after signing up
+  │ Confirm your email
+  │ We sent a link to priya.raman.…@northwind.example. Follow it and you will be signed in.
+
+  next steps offered: Send the link again · Back to sign in
+```
+
+**The link is written to the dev server's stdout.** `console` is the only transport this build has, and `loadAuthConfig` refuses to start in production with it — which is correct engineering and has a consequence nobody has stated:
+
+> **In every environment this team possesses — including Human Review — a new customer's first hour ends at *"check your email"*, and the link is in a terminal.**
+
+**Every account that has ever existed in Signora was created by `demo-users.ts`**, which mints a verification token and redeems it through `auth.api.verifyEmail` — **skipping the front door entirely**. So the sign-up flow is fully implemented, carefully written, and **has never been walked end to end by a human being.**
+
+**This is the same shape as the finding that created this lane.** *Every component proven; the composition never exercised.* There it was the browser's route to the API; here it is the path a customer takes to become one.
+
+**What is not claimed:** that production will lack a transport. That is a deployment decision belonging to M14.5, and it is raised as [C-320](LANE_COORDINATION.md) rather than assumed. **What is claimed** is that until one exists somewhere, *no one can review the most important hour in the product*, and the register should say so.
+
+*Category: Critical Trust · GA Blocker. Owner: product owner / M14.5 deployment.*
+
+### 🟢 Product Strength
+
+#### PX-321 · The organization gate is the clearest screen in the product
+
+```
+  │ You are not part of an organization yet
+  │ Your organization is your company on Signora — where its accounts, evidence
+  │ and decisions live. Create one, or ask a colleague to add you to theirs.
+  │ [ Create an organization ]
+```
+
+**One sentence of what it is, one of why it matters, and both routes out** — create one, or be added to one. **One button.** Nothing else on screen.
+
+Measured against everything else in this register: **13 words per action on the attention list, 138 on Connections — and this screen is a single decision.** It is the strongest evidence that the product's writing problem is one of *editing*, not of ability. Somebody here knows exactly how to do this.
+
+### 🟡 UX
+
+#### PX-322 · Every address collapses to one screen, silently
+
+`/settings`, `/settings/products` and `/settings/connections` all render the organization gate **at URL `/`**. The gating is right — there is nothing to configure without an organization. **The silent rewrite is not**: a customer following a shared link to Connections lands on Attention with no explanation, and the address they typed is gone.
+
+*Category: UX. Module: Product Surface.*
+
+---
+
+## Missing capabilities, classified
+
+**As requested, each is now classified by *when it is needed* rather than by how much it is wanted.**
+
+| # | Capability | Classification | Why that classification |
+|---|---|---|---|
+| **MC-1** | **Search** — find an account by name | **Essential for GA** | *"Show me Databricks"* is the first thing every evaluator types. A ranked list cannot answer it |
+| **MC-2** | **Filters and saved views** | **Essential for GA** | Twelve accounts scroll; two thousand do not. **This decides whether Signora survives a real book** |
+| **MC-4** | **CRM write-back** (Salesforce, HubSpot) | **Enterprise requirement** | RevOps asks in the first call. Without it Signora is a second system to check, and adoption dies quietly |
+| **MC-3** | **People** — the committee as names, not job titles | **Important within six months** | *"Who do I call?"* Signora describes the shape of a committee, never its members. ZoomInfo and Apollo answer this |
+| **MC-5** | **Notification or digest** | **Important within six months** | A product about *what changed* that requires you to come and look. **The value is time-sensitive; the delivery is not** |
+| **MC-6** | **A manager view** — roll-up, coverage, team | **Important within six months** | The buyer is a CRO and **there is no screen addressed to one** |
+| **MC-8** | **Guided first run** | **Important within six months** | Excellent empty states, none of which *starts* anything |
+| **MC-7** | **Export / share a brief** | **Nice to have** | *"Can you send me that?"* has no answer, but a screenshot suffices at first |
+| **MC-9** | **Explainable scoring as a public artifact** | **Competitive advantage** | Every claim already decomposes to a provider reading with a date. **No competitor can copy this quickly** — it is a consequence of the architecture, not a feature |
+| **MC-10** | **Activity capture** (email, calendar) | **Future platform capability** | Gong and People.ai are built on it. Signora lists the connectors and offers none — a deliberate, correct *"not available yet"* |
+
+---
+
+## Navigation — challenged, and a second proposal
+
+**The product owner's example was five groups.** Working through it as each persona, three things did not survive.
+
+| Challenged | Why |
+|---|---|
+| **Sales** containing *Outreach · Meetings · Tasks* | **Signora does not send, schedule or track anything, and should not.** Putting three empty sections in the sidebar advertises absence on every screen. A nav item is a promise |
+| **Customers** as a top-level group | A seller does not think *"I will go to Customers"* — they think about **an account**. Accounts are a destination reached from work, not a section of a product |
+| **AI Insights** as its own item | **The AI is not a place.** Every insight in Signora is attached to an account, and a separate AI section is how a product signals that its intelligence is a bolt-on |
+
+### The proposal
+
+```
+WORK                  what I am doing today
+  Attention           the ranked list                     ← exists
+  My accounts         taken, contested, waiting on me     ← MC-2
+  Team                roll-up, for a manager              ← MC-6
+
+INTELLIGENCE          what Signora knows
+  Accounts            all of them, searchable             ← MC-1, MC-2
+  Signals             what changed, across the book       ← MC-5
+  Research            deep comparisons and their results  ← exists, unreachable
+
+YOUR BUSINESS         what Signora needs from you
+  Products · Ideal customers · Buying committees · Focus · Watchlist
+                                                          ← exists, one long page
+
+ADMINISTRATION
+  Connections · People · Organization
+```
+
+**The judgement that changed from the first proposal:** *Work* comes before *Intelligence*, and it is a separate group rather than a heading inside one.
+
+> **A seller does not open a Revenue Intelligence platform to browse intelligence. They open it to find out what to do before their first call.** Gong opens on *your* calls. Salesforce opens on *your* pipeline. **Signora already gets this right with Attention** — the proposal simply gives that instinct a home to grow in, instead of filing it under a section named after the technology.
+
+**Search belongs in the header, not the sidebar** — it is a verb, not a place.
+
+*Category: Navigation / Information Architecture. **Nothing built.** Raised for the product owner.*
+
+---
+
+## The unnamed account — challenged as philosophy, not as a screen
+
+**[PX-301](#px-301--the-list-a-seller-works-from-contains-an-account-with-no-name) and [PX-316](#px-316--signora-invites-you-to-work-an-account-it-cannot-name) asked for a fix. The better question is what should be true.**
+
+| Question | My answer, and it is arguable |
+|---|---|
+| Should an unnamed company **appear** at all? | **Yes** — hiding it loses real intelligence. Four weeks of research on Design Systems is worth knowing about |
+| Should it appear **on the working list**? | **No.** The list answers *"who should I call?"* and this record cannot be called |
+| Should it **contribute to a score**? | **Yes.** The score measures the evidence, and the evidence is real. Identity is a separate axis from significance |
+| Should it become an **opportunity**? | **No.** An opportunity is something a person can pursue |
+| Should it be **workable** — *"I'm working this"*? | **Never.** This is the sharpest edge: today those buttons are offered |
+| What should it be? | **`Needs identity` — a queue, not a filter.** Records arrive, somebody resolves them or dismisses them, and a resolved one joins the book with its evidence intact |
+
+> **The principle underneath: identity and significance are different axes, and Signora currently multiplies them into one list.** A record can be highly significant and unidentifiable; that combination is *interesting*, and it is not *actionable*. **Every product that gets this wrong gets it wrong the same way** — by treating "we do not know who this is" as a display problem rather than as a state with its own workflow.
+
+*Category: Future Product — see [PX-312](#px-312--an-unresolved-records-surface). **Documented, deliberately not half-built.***
+
+---
+
+## Persona lenses — what each would say after an hour
+
+| Persona | The sentence they would say |
+|---|---|
+| **SDR** | *"Where are the contacts? I can't call a company."* — MC-3 |
+| **AE** | *"This is the best explanation of why an account matters I have seen. Now how do I find the ones I already own?"* — MC-1, MC-2 |
+| **Sales Manager** | *"There is no screen that shows me my team."* — MC-6 |
+| **CRO** | *"Nothing here is addressed to me."* The buyer has no view — MC-6 |
+| **RevOps** | *"Does it write back to Salesforce?"* No. **This is the first question and the shortest conversation** — MC-4 |
+| **Founder** | *"It tells me what it cannot tell me. I have never seen a vendor do that."* — the strongest reaction available today |
+| **Procurement** | *"Who else uses it, what is the SLA, where is the data held?"* **None of it exists**, and none of it is this lane's to build |
+| **Enterprise evaluator** | *"SSO, SCIM, audit log, retention."* Better Auth covers sign-in; the rest is unbuilt |
+| **Customer Success** | *"What does an unhealthy account look like?"* Signora scores opportunity, never risk |

@@ -150,6 +150,8 @@
 | [C-306](#c-306--the-opportunities-and-signals-experience-already-exists-and-lane-a-owns-half-of-it) | The Opportunities & Signals experience already exists, and Lane A owns half of it | Lane B | **Product owner** | `OPEN` | **The frontend half only.** The backend half is unassigned and Lane B can start it |
 | [C-303](#c-303--an-icp-is-not-an-addressable-thing-and-every-verb-the-brief-asks-for-needs-one) | An ICP is not an addressable thing, and every verb the brief asks for needs one | Lane B | **Product owner** | `ANSWERED` — ICP stays in Commercial Profile (2026-08-02). **The aggregate is [ADR-0041](architecture/adr/0041-icp-aggregate.md), proposed** | **Implementation, on ADR-0041's ratification** |
 | [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) | A notification is per-person, and workspace RLS is not enough | Lane B | **Product owner** (tenancy 🔴) | `OPEN` | **M14a N-01's migration.** The pattern exists; the ruling does not |
+| [C-320](#c-320--no-environment-can-complete-a-sign-up-so-nobody-has-reviewed-the-first-hour) | No environment can complete a sign-up, so nobody has reviewed the first hour | Lane B | **Product owner** | `OPEN` | Reviewing onboarding. No implementation |
+| [C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name) | What should Signora do with a company it cannot name? | Lane B | **Product owner** | `OPEN` | A correct fix for PX-301 / PX-316 |
 | [C-308](#c-308--browser-to-api-is-in-no-gate-and-that-is-how-the-product-shipped-without-one) | Browser→API is in no gate, and that is how the product shipped without one | Lane B | **QE** | `OPEN` — **the strongest evidence yet for [C-301](#c-301--nothing-asserts-what-the-deployed-worker-consumes)**; a constraint on the answer appended 2026-08-03 ([B-311](BUGS.md)) | Nothing today. **Every future frontend defect of this class** |
 | [C-301](#c-301--nothing-asserts-what-the-deployed-worker-consumes) | Nothing asserts what the deployed worker consumes | Lane B | **QE** | `OPEN` | **Nothing today.** Every future consumer can ship [B-301](BUGS.md) again |
 | [C-002](#c-002--customer-language-has-no-anticorruption-layer) | Customer language has no anticorruption layer | Lane B | **Product owner** (ADR) | `OPEN` | Anything that matches an account against an ICP |
@@ -3498,3 +3500,52 @@ USING (
 **If `test:e2e:smoke` becomes a gate, it must be runnable by somebody who has read nothing.** [B-311](BUGS.md): the suite depended on an exported `LD_LIBRARY_PATH` that lived in one terminal and in no document, so the same commit passed 119/119 in one shell and failed 128/128 in another — **`browserType.launch` on every test, which reads as a catastrophically broken product rather than as a missing variable.**
 
 That is fixed at the root (`browserEnvironment()` in `tests/e2e/fixtures/environment.ts`), and the general point survives the fix: **a browser gate has a system-library surface that no other gate in this repository has.** WebKit still needs forty packages and `sudo`. Whatever QE decides C-308's answer is, *"the gate cannot start"* and *"the product is broken"* must not look the same from the outside — which argues for the gate to fail loudly on a launch failure with its own message, rather than reporting N red tests.
+
+## C-320 · No environment can complete a sign-up, so nobody has reviewed the first hour
+
+| | |
+|---|---|
+| **Raised by** | Lane B, 2026-08-03, Product Experience Review 3 |
+| **Owner** | **Product owner** — it is a deployment decision, not an implementation one |
+| **Status** | `OPEN` |
+| **Blocks** | **Reviewing the most commercially important hour in the product.** Blocks no implementation |
+
+**The question.** *Where, and when, does Signora get an email transport — and until then, how does anybody experience a customer's first hour?*
+
+**What is true today, and none of it is a defect.** `createEmailTransport` returns a console transport; `loadAuthConfig` **refuses to start in production with it**, deliberately, so a misconfigured deployment stops rather than silently emailing nobody. The `.example` addresses can never resolve, deliberately, so no build can email a real person by accident. **Every one of those decisions is correct.**
+
+**The consequence nobody has stated.** Sign-up requires email verification (`requireEmailVerification: true`, and rightly — it is what makes the `email_verified` claim mean anything). The link goes to a terminal. **So in every environment this team possesses, including Human Review, a new customer's first hour ends at *"check your email"*.**
+
+**And therefore:** every account that has ever existed in Signora was created by `demo-users.ts`, which mints a verification token and redeems it through `auth.api.verifyEmail`. **The front door is fully implemented and has never been walked.**
+
+> **This is the pattern that produced [B-303](BUGS.md), [B-301](BUGS.md), [B-302](BUGS.md) and [B-024](BUGS.md)** — *every component proven, the composition never exercised.* It is the fifth instance, and the first one where the unexercised composition is **the customer's path into the product**.
+
+**What Lane B is not asking for.** Not a vendor, not an ADR, not an implementation. **A decision on sequencing**: whether a transport belongs to M14.5 with the rest of deployment, or earlier because it gates the review of onboarding — which is now a named priority for this lane. **Proceeding needs no answer**; reviewing the first hour properly does.
+
+---
+
+## C-321 · What should Signora do with a company it cannot name?
+
+| | |
+|---|---|
+| **Raised by** | Lane B, 2026-08-03, Product Experience Reviews 1–3 |
+| **Owner** | **Product owner**, with `knowledge_graph` and `opportunity_engine` |
+| **Status** | `OPEN` |
+| **Blocks** | Nothing today. **[PX-301](PRODUCT_EXPERIENCE.md) and [PX-316](PRODUCT_EXPERIENCE.md) cannot be fixed correctly without it** |
+
+**The question**, and it is a product-philosophy one rather than a screen fix: **identity and significance are different axes, and the attention list currently multiplies them into one number.**
+
+A record can be highly significant and unidentifiable — `70b04700` has four weeks of elevated research on Design Systems, peaking at 87, and no name. **That combination is genuinely interesting and genuinely not actionable**, and today the product offers *"I'm working this"* on it.
+
+**Six sub-questions, with Lane B's recommendation as input rather than authority:**
+
+| | Recommended |
+|---|---|
+| Should an unnamed company appear at all? | **Yes** — hiding it discards real intelligence |
+| On the working list? | **No** — that list answers *"who should I call?"* |
+| Contribute to a score? | **Yes** — the score measures evidence, and the evidence is real |
+| Become an opportunity? | **No** — an opportunity is something a person can pursue |
+| Be workable? | **Never.** Today it is |
+| What is it, then? | **`Needs identity` — a queue with its own workflow**, not a filter |
+
+**Why it is a coordination item rather than a bug.** Whichever answer is taken changes `knowledge_graph`'s output contract, `opportunity_engine`'s qualification rule, and a Product Surface screen. **Two lanes would otherwise encode contradictory halves of it**, which is precisely what this register exists to prevent.

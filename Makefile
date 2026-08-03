@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: environments reachability event-catalog workstation unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research e2e e2e-quick e2e-smoke product-demo product-demo-record endurance review-product review-messy
+.PHONY: environments reachability event-catalog workstation unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research e2e e2e-quick e2e-smoke product-demo product-demo-record endurance review-product review-messy review-first-hour
 
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
@@ -402,6 +402,16 @@ review-product:
 ## — because "too much text" is a number, not an opinion.
 review-messy:
 	@python3 infra/environment-lease.py run e2e -- sh -c 'cd backend && $(E2E_ENV) uv run python -m tests.playground.seed && cd ../frontend && SIGNORA_APP_URL=$(E2E_URL) npx tsx tests/review/messy.ts'
+
+## Review 3 — the first hour, for somebody the product has never met.
+##
+##     make review-first-hour
+##
+## Registers a brand new person through the real sign-up form and follows them
+## until they reach value or run out of things to click. **No seeding** — a
+## seeded shortcut would skip precisely the hour under review.
+review-first-hour:
+	@python3 infra/environment-lease.py run e2e -- sh -c 'cd frontend && set -a && . ./.env.local && set +a && SIGNORA_APP_URL=$(E2E_URL) npx tsx tests/review/first-hour.ts'
 
 ## A working day in one tab — endurance, not regression.
 ##
