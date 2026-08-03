@@ -25,11 +25,23 @@ x-backend-image: &backend-image
 # SIGNORA_DATABASE_URL. Each service supplies its own, because each connects
 # under its own least-privileged identity, and a shared default would make
 # it far too easy for one to silently inherit another's.
+#
+# **Host ports are 3100/8100, not 3000/8000.** Those two belong to Human Review
+# (docs/RUNNING.md § Running a lane), and binding them here made this stack and
+# a review session mutually exclusive *by construction* — the product owner
+# could not launch a review while a certification stack was up, and a leftover
+# `make dr` stack blocked one for hours. **Container-internal ports are
+# unchanged**: the tiers still listen on 3000 and 8000 and still reach each
+# other by service name. Only the host mapping moved, into the block
+# `infra/environments.py` had already recorded as allocated to nobody.
+#
+# The issuer below is browser-facing and must therefore match the host port,
+# not the container's — a mismatch mints tokens the API rejects with no clue why.
 x-backend-env: &backend-env
   SIGNORA_ENVIRONMENT: production-local
   SIGNORA_REDIS_URL: redis://redis:6379/0
   SIGNORA_LOG_LEVEL: INFO
-  SIGNORA_JWT_ISSUER: http://localhost:3000
+  SIGNORA_JWT_ISSUER: http://localhost:3100
   SIGNORA_JWT_AUDIENCE: signora-api
   SIGNORA_JWT_PUBLIC_KEY: ${SIGNORA_JWT_PUBLIC_KEY:?set SIGNORA_JWT_PUBLIC_KEY — run "npm run keys:generate" in frontend/}
 
@@ -99,7 +111,7 @@ services:
       <<: *backend-env
       SIGNORA_DATABASE_URL: postgresql+asyncpg://signora_app:signora_app_local_dev@postgres:5432/signora
     ports:
-      - "8000:8000"
+      - "8100:8000"
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -161,7 +173,7 @@ services:
       dockerfile: Dockerfile
     environment:
       NODE_ENV: production
-      SIGNORA_APP_URL: http://localhost:3000
+      SIGNORA_APP_URL: http://localhost:3100
       SIGNORA_API_URL: http://api:8000
       # Connects as signora_auth, never the owner: migration 0005 revokes
       # signora_app from the auth schema, and that isolation only holds if
@@ -169,7 +181,7 @@ services:
       SIGNORA_AUTH_DATABASE_URL: postgresql://signora_auth:signora_auth_local_dev@postgres:5432/signora
       SIGNORA_AUTH_SCHEMA: auth
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-local-prod-stack-secret}
-      SIGNORA_JWT_ISSUER: http://localhost:3000
+      SIGNORA_JWT_ISSUER: http://localhost:3100
       SIGNORA_JWT_AUDIENCE: signora-api
       # This tier holds the PRIVATE key — it is the Authentication
       # Authority. The API gets the public half only (ADR-0026).
@@ -180,7 +192,7 @@ services:
       MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID:-}
       MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET:-}
     ports:
-      - "3000:3000"
+      - "3100:3000"
     depends_on:
       migrate:
         condition: service_completed_successfully

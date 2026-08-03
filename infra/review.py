@@ -309,7 +309,26 @@ def _holders() -> dict[int, str]:
     preflight = _infra("release-preflight.py")
     if preflight is None:
         return {}
-    return {holder.port: holder.process for holder in preflight._listeners()}
+    # **The profile's ports, passed explicitly.** This used to call `_listeners()`
+    # bare and inherit that module's constant — fine while both meant the same
+    # two ports, and wrong the moment the production stack moved off them: a
+    # live review session was then reported to the next reviewer as `unknown`.
+    # An implicit shared constant is a hidden input (CLAUDE.md §2).
+    return {
+        holder.port: holder.process
+        for holder in preflight._listeners((PROFILE.web_port, PROFILE.api_port))
+    }
+
+
+def _looks_like_a_review(process: str) -> bool:
+    """Whether a port holder is a review stack.
+
+    The signatures come from `release-preflight.py` rather than being restated,
+    for the reason everything else here is imported (`CLAUDE.md` §2).
+    """
+    preflight = _infra("release-preflight.py")
+    signatures = getattr(preflight, "REVIEW_SIGNATURES", ()) if preflight else ()
+    return any(signature in process for signature in signatures)
 
 
 def _validate() -> list[str]:
@@ -338,9 +357,27 @@ def _validate() -> list[str]:
         )
 
     holders = _holders()
-    for port, tier in ((PROFILE.web_port, "web"), (PROFILE.api_port, "API")):
-        if _listening(port):
-            problems.append(f"port {port} ({tier}) is held by {holders.get(port, 'unknown')}")
+    held = [
+        (port, tier, holders.get(port, "unknown"))
+        for port, tier in ((PROFILE.web_port, "web"), (PROFILE.api_port, "API"))
+        if _listening(port)
+    ]
+    if held and all(_looks_like_a_review(what) for _, _, what in held):
+        # **The common case, and it deserves its own sentence.** A review stack
+        # already on these ports is almost always a session somebody is using —
+        # frequently from a *different clone*, which is how the product owner
+        # was reviewing when this message was first read. Reporting it as two
+        # anonymous held ports sends them hunting for a conflict; naming it as a
+        # review tells them the one thing they need, which is that stopping it
+        # is a decision rather than a cleanup.
+        problems.append(
+            f"a review session is already running on {PROFILE.web_port}/{PROFILE.api_port} "
+            f"({', '.join(what for _, _, what in held)}). It may be this clone's — "
+            "`make review-status` — or another's. **Use it, or end it there; do not "
+            "stop somebody else's review to start your own**"
+        )
+    else:
+        problems += [f"port {port} ({tier}) is held by {what}" for port, tier, what in held]
 
     # The two values that have no default and never should (B-104). Absent, the
     # tier refuses to start — correctly, but several seconds later and with the

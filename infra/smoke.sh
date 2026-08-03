@@ -26,8 +26,8 @@ cd "$(dirname "$0")"
 COMPOSE="docker compose --env-file .env.prod-local -f docker-compose.prod.yml"
 PG="docker exec signora-prod-postgres-1"
 PSQL="$PG psql -U signora -d signora -tAc"
-API="http://localhost:8000"
-FRONTEND="http://localhost:3000"
+API="http://localhost:8100"
+FRONTEND="http://localhost:3100"
 
 STAGE=""
 STARTED_AT=$SECONDS
@@ -91,7 +91,7 @@ import re, pathlib
 t = pathlib.Path('.env.prod-local').read_text()
 print(re.search(r'SIGNORA_JWT_PRIVATE_KEY=\"(.*?)\"', t, re.S).group(1))")"
   (cd ../frontend && npx tsx tests/contract/mint-token.ts \
-     "$priv" "http://localhost:3000" "signora-api" ${1:-} 2>/dev/null)
+     "$priv" "http://localhost:3100" "signora-api" ${1:-} 2>/dev/null)
 }
 
 wait_for() {  # wait_for <url> <expected-code> <seconds>
@@ -269,7 +269,7 @@ stage "9. JWT verification"
 
 # Forged against the running API, not a unit-test verifier.
 HEADER_NONE="$(printf '{"alg":"none","typ":"JWT"}' | base64 -w0 | tr '+/' '-_' | tr -d '=')"
-CLAIMS="$(printf '{"sub":"3f6c8a1e-0000-4000-8000-000000000001","iss":"http://localhost:3000","aud":"signora-api","exp":9999999999}' | base64 -w0 | tr '+/' '-_' | tr -d '=')"
+CLAIMS="$(printf '{"sub":"3f6c8a1e-0000-4000-8000-000000000001","iss":"http://localhost:3100","aud":"signora-api","exp":9999999999}' | base64 -w0 | tr '+/' '-_' | tr -d '=')"
 [[ "$(http_code $API/workspaces -H "Authorization: Bearer ${HEADER_NONE}.${CLAIMS}.")" == "401" ]] \
   || fail "alg:none token was accepted"
 pass "alg:none rejected"

@@ -28,6 +28,7 @@ Logic `CLAUDE.md` §2 names.
 from __future__ import annotations
 
 import importlib.util
+import re
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -120,16 +121,44 @@ def test_a_certified_ancestor_beyond_the_walk_is_not_claimed(review: ModuleType)
 
 
 def test_the_review_environment_is_derived_and_never_literal(review: ModuleType) -> None:
-    """**No port, database or Redis index is written in `review.py`.**
+    """**No port is written into `review.py` as a value.**
 
-    The whole value of Phase 1 is that an allocation lives in one place. A
-    literal `3000` here would compile, run, and be wrong the day the allocation
-    moves — with nothing to catch it, because the review would still start.
+    The whole worth of the environment model is that an allocation lives in one
+    place. A literal `3000` here would compile, run, and be wrong the day the
+    allocation moves — with nothing to catch it, because the review would still
+    start.
+
+    **Parsed rather than grepped.** A first version searched the file text and
+    failed on a *comment* explaining why the production stack moved off 3000 —
+    prose about a port is not a dependency on one, and a check that cannot tell
+    the difference teaches people to weaken it. This walks the AST, so only
+    values count.
     """
-    source = (REPO_ROOT / "infra" / "review.py").read_text()
-    body = source.split('"""', 2)[-1]  # the module docstring may discuss ports
-    for literal in ("3000", "8000", "localhost:3", "localhost:8"):
-        assert literal not in body, f"`{literal}` is written into review.py; derive it from the profile"
+    import ast
+
+    tree = ast.parse((REPO_ROOT / "infra" / "review.py").read_text())
+    forbidden = {3000, 8000, 3100, 8100, 3200, 8200}
+    literals = {
+        node.value
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Constant) and isinstance(node.value, int)
+    }
+    offending = literals & forbidden
+    assert not offending, (
+        f"{sorted(offending)} is written into review.py as a value; derive it from the profile"
+    )
+    # `localhost:` **followed by digits**. An f-string prefix parses as the bare
+    # constant `"http://localhost:"` with the port as a separate FormattedValue,
+    # and that is the derived form this test exists to encourage — flagging it
+    # would make the correct code fail the check.
+    urls = {
+        node.value
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Constant)
+        and isinstance(node.value, str)
+        and re.search(r"localhost:\d", node.value)
+    }
+    assert not urls, f"{sorted(urls)} hard-codes a host and port; build it from the profile"
 
 
 def test_the_dataset_is_read_from_the_seeder_that_seeds_it(review: ModuleType) -> None:
@@ -185,3 +214,52 @@ def test_an_unrecognised_module_is_shown_rather_than_hidden(review: ModuleType) 
         phrase in "commercial_profile — the opportunity list"
         for phrase in review.NOT_REACHABLE_BY_A_REVIEWER
     ), "a product module's description matched an exclusion phrase — reviewers would stop seeing it"
+
+
+def test_the_production_stack_does_not_bind_the_review_ports(review: ModuleType) -> None:
+    """**The isolation guarantee, asserted where it can actually fail.**
+
+    `infra/docker-compose.prod.yml` bound `3000:3000` and `8000:8000` — the
+    same host ports a review session uses — which made a certification run and
+    a product review **mutually exclusive by construction**. It was not a
+    theoretical conflict: the product owner could not start a review because a
+    leftover `make dr` stack still held both, and `release-preflight.py` existed
+    largely to explain the collision rather than remove it.
+
+    The stack now publishes on 3100/8100. **Proven by running both at once** —
+    the full 24-stage smoke test completed while a live review session stayed
+    healthy — and asserted here so a future edit to the compose file cannot
+    quietly reintroduce it. A regression would not fail any other gate: smoke
+    would pass on an otherwise-idle machine and fail only when somebody was
+    reviewing.
+    """
+    compose = (REPO_ROOT / "infra" / "docker-compose.prod.yml").read_text()
+    published = re.findall(r'^\s*-\s*"(\d+):(\d+)"\s*$', compose, re.M)
+    host_ports = {int(host) for host, _ in published}
+
+    profile = review.PROFILE
+    collisions = host_ports & {profile.web_port, profile.api_port}
+    assert not collisions, (
+        f"the production stack publishes {sorted(collisions)}, which human review uses. "
+        "A certification run and a product review would again be mutually exclusive."
+    )
+
+
+def test_the_jwt_issuer_matches_the_published_frontend_port(review: ModuleType) -> None:
+    """A browser-facing issuer must name the port a browser reaches.
+
+    The issuer is a JWT claim minted by the frontend and verified by the API,
+    and it is browser-facing — so it tracks the **host** port, not the
+    container's. Moving the published ports without it mints tokens the API
+    rejects, and the symptom is every request 401ing with no clue why.
+    **The smoke test's cross-tier JWT stage catches it**; this catches it in a
+    second, and says which line is wrong.
+    """
+    compose = (REPO_ROOT / "infra" / "docker-compose.prod.yml").read_text()
+    issuers = set(re.findall(r"SIGNORA_JWT_ISSUER:\s*http://localhost:(\d+)", compose))
+    frontend = re.search(r'-\s*"(\d+):3000"', compose)
+    assert frontend, "the frontend no longer publishes a host port; this test cannot see it"
+    assert issuers == {frontend.group(1)}, (
+        f"issuer(s) {sorted(issuers)} do not match the published frontend port "
+        f"{frontend.group(1)} — tokens would be minted for a port nobody reaches"
+    )

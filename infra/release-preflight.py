@@ -1,16 +1,25 @@
 #!/usr/bin/env python3
 """**Is the workstation in a state where Release Engineering may begin?**
 
-The repository has two operating modes that want the same two ports, and
-until now nothing said so. **Human Review Mode** (`make demo`) runs a frontend
-on 3000 and an API on 8000 so a person can use the product. **QE Release Mode**
-(`make smoke`, `make certify`, `make dr`) needs those ports free, because the
-smoke test builds its own stack on them.
+**The collision this was built for no longer exists**, and the honest thing is
+to say so at the top rather than leave a checker guarding a resolved problem.
 
-**They are mutually exclusive, and the collision used to be discovered several
-minutes into a smoke run** — as *"3 of 24 stages"*, which reads like a
-repository defect and is not one. This tells you in under a second, and says
-which of the two it is.
+Human Review runs on **3000/8000**; the production stack that `make smoke`,
+`make certify` and `make dr` build now runs on **3100/8100**. They were the same
+two ports until 2026-08-03, which made a review session and a certification run
+mutually exclusive *by construction* — the product owner could not start a
+review because a leftover `make dr` stack held both. The compose file was moved
+into the block `infra/environments.py` had recorded as allocated to nobody.
+
+**So why does this still exist?** Because *"the ports are free"* was never the
+only precondition, and the rest have each cost a real incident: an unreachable
+development database once blocked `pytest` for 22 minutes with no diagnostic
+(RE-04), and memory pressure from another environment turned a 130s smoke run
+into a 320s one with nothing in the record to explain it.
+
+**What it no longer does is arbitrate between two modes.** A review session on
+3000/8000 is now simply *not this stack's business*, and a holder of 3100/8100
+is a stale production stack — QE's own, and QE's to remove.
 
 **It classifies; it never repairs.** Stopping somebody's review session to make
 a gate green is exactly the move `CLAUDE.md` §20e forbids — the authority is to
@@ -22,8 +31,11 @@ make a documented gate *runnable*, never to make it *pass*.
 Exit codes are the contract:
 
     0  ready       — QE Release Mode may begin
-    2  waiting     — Human Review Mode is active. **Not a repository failure**
-    3  blocked     — something else holds the ports, or a prerequisite is missing
+    3  blocked     — something holds 3100/8100, or a prerequisite is missing
+
+**Exit code 2 is retired.** It meant *"a Human Review session is active, and
+that is a correct state rather than a failure"* — a distinction that existed
+only because the two shared ports. Nothing produces it now.
 """
 
 from __future__ import annotations
@@ -40,9 +52,11 @@ from typing import Final
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
-# The human-review allocation, from docs/RUNNING.md § Running a lane. Lanes get
-# 3300/8300 and above precisely so they never contend for these two.
-REVIEW_PORTS = (3000, 8000)
+# The production stack's host binding, from infra/docker-compose.prod.yml.
+# **Not the review ports any more** — that is the point of the move. Human
+# review keeps 3000/8000 and lanes keep 3300/8300 upward, so a holder of these
+# two is this stack and nothing else.
+REVIEW_PORTS = (3100, 8100)
 
 # What the review stack actually looks like on the process table. `make demo`
 # prints the two commands a reviewer runs by hand, so the preflight recognises
@@ -60,7 +74,7 @@ class Holder:
         return any(sig in self.process for sig in REVIEW_SIGNATURES)
 
 
-def _container_holders() -> dict[int, str]:
+def _container_holders(ports: tuple[int, ...] = REVIEW_PORTS) -> dict[int, str]:
     """Containers publishing a review port, by port.
 
     **A published container port belongs to `docker-proxy`, not to the process
@@ -79,15 +93,22 @@ def _container_holders() -> dict[int, str]:
     ).stdout
     found: dict[int, str] = {}
     for line in out.splitlines():
-        name, _, ports = line.partition("\t")
-        for port in REVIEW_PORTS:
-            if re.search(rf"(^|[^0-9]):{port}->", ports):
+        name, _, published = line.partition("\t")
+        for port in ports:
+            if re.search(rf"(^|[^0-9]):{port}->", published):
                 found.setdefault(port, name)
     return found
 
 
-def _listeners() -> list[Holder]:
-    """Who is listening on the review ports, and as what.
+def _listeners(ports: tuple[int, ...] = REVIEW_PORTS) -> list[Holder]:
+    """Who is listening on the given ports, and as what.
+
+    **Parameterised, because a second caller got the wrong answer.**
+    `infra/review.py` reuses this to name what holds *its* ports, and when the
+    production stack moved to 3100/8100 the constant moved with it — so a live
+    review session on 3000/8000 was reported to the reviewer as `unknown`.
+    A shared helper that silently answers about somebody else's ports is worse
+    than no helper.
 
     `ss` is used rather than `lsof` because it is present on a bare Debian
     container, which is what `RUNNING.md` assumes.
@@ -97,10 +118,10 @@ def _listeners() -> list[Holder]:
     out = subprocess.run(
         ["ss", "-ltnp"], capture_output=True, text=True, check=False
     ).stdout
-    containers = _container_holders()
+    containers = _container_holders(ports)
     holders: list[Holder] = []
     for line in out.splitlines():
-        for port in REVIEW_PORTS:
+        for port in ports:
             if not re.search(rf":{port}\s", line):
                 continue
             names = re.findall(r'"([^"]+)"', line)
@@ -291,21 +312,24 @@ def main() -> int:
     other = [h for h in holders if not h.is_review_stack]
 
     if review and not other:
+        # **A dev server on this block is somebody's misconfiguration, not a
+        # review.** Since the production stack moved off 3000/8000, nothing
+        # legitimate binds these two except this stack itself — so a `next dev`
+        # or a bare `uvicorn` here is an environment pointed at the wrong row of
+        # RUNNING.md, and naming that is more useful than waiting for it.
         say(
             "",
-            "  WAITING — a Human Review session is active",
+            "  BLOCKED — a development server is on the production stack's ports",
             "",
             *(f"    :{h.port}  {h.process}" for h in review),
             "",
-            "  This is an ENVIRONMENT state, not a repository failure. `make smoke`",
-            "  builds its own stack on 3000/8000 and cannot run beside a review",
-            "  session; a run started now fails around stage 3 and looks like a defect.",
+            f"  {REVIEW_PORTS[0]}/{REVIEW_PORTS[1]} belong to the local production stack.",
+            "  Human review uses 3000/8000 and a lane uses its own row in",
+            "  docs/RUNNING.md § Running a lane. Something is pointed at the wrong one.",
             "",
-            "  Release Engineering waits until the session ends. Do not stop somebody",
-            "  else's review to obtain a green pipeline — the authority is to make a",
-            "  gate runnable, never to make it pass (CLAUDE.md §20e).",
+            "  It is not QE's to stop — hand the finding to whoever owns it.",
         )
-        return 2
+        return 3
 
     # `ss` reports a listener per address family, so one holder appears twice.
     seen: set[tuple[int, str]] = set()

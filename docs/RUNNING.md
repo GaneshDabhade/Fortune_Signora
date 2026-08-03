@@ -31,22 +31,24 @@ Everything runs locally. There is no cloud environment and no remote gate ([ADR-
 
 ---
 
-## Two operating modes, and they are mutually exclusive
+## Two operating modes, and they now run at the same time
 
-**Added 2026-08-02, on the product owner's direction, after a certification run failed for a reason that was not a defect.**
+**Added 2026-08-02 as *"mutually exclusive"*. Corrected 2026-08-03, when the product owner could not start a review because a leftover certification stack held both ports.**
 
-**This repository has exactly two ways of being run, and they want the same two ports.** Knowing which one you are in is the difference between a five-minute diagnosis and an instant answer.
+> **They are no longer mutually exclusive, and this is the change that matters most in this file.** The local production stack moved to **3100/8100**. Human Review keeps **3000/8000**. **Proven rather than asserted**: the full 24-stage smoke test was run to completion while a live review session stayed healthy, and neither knew the other existed.
 
 | | **Human Review Mode** | **QE Release Mode** |
 |---|---|---|
 | **Purpose** | Interactive product evaluation — *using* Signora | Repository validation and certification |
 | **Started by** | **`make review`** — one command, ended by `make review-end` | `make smoke` · `make certify` · `make dr` |
 | **Runs** | frontend · backend · Playground data | a self-contained stack the gates build themselves |
-| **Ports** | **3000 / 8000** | **3000 / 8000** — *the same two* |
+| **Ports** | **3000 / 8000** | **3100 / 8100** — *a different block, since 2026-08-03* |
 | **Database** | `signora` | `signora` (smoke builds its own; `make test` truncates) |
 | **Who** | the product owner, reviewing on `main` | QE |
 
-> **They cannot run at the same time.** `make smoke` builds its own stack on 3000 and 8000, so a review session holding those ports makes it fail — around stage 3 of 24, with a message about the stack not becoming healthy. **That reads like a repository defect and is not one.**
+> **The rule this now satisfies:** *every runnable environment must be independently startable, independently stoppable and independently disposable.* An environment that requires another to be stopped first is not isolated; it is merely documented.
+>
+> **What is still shared is the machine.** Ports, databases, Redis indices and compose projects are isolated; RAM and CPU are not. `make release-preflight` reports memory pressure and names what holds it, because that is the one dimension nothing can allocate away.
 
 ### Check before you start — one second, not five minutes
 
@@ -56,13 +58,14 @@ make release-preflight
 
 | Exit | Meaning |
 |---|---|
-| **0** `READY` | Ports free. QE Release Mode may begin |
-| **2** `WAITING` | **A Human Review session is active.** An *environment* state, **not a repository failure** — release engineering waits |
-| **3** `BLOCKED` | Something unrecognised holds a port, or a documented prerequisite is missing |
+| **0** `READY` | 3100/8100 free. QE Release Mode may begin |
+| **3** `BLOCKED` | Something holds 3100/8100, or a documented prerequisite is missing |
+
+> **Exit code 2 is retired.** It meant *"a Human Review session is active, and that is correct rather than a failure"* — a distinction that only existed because the two modes shared ports. **Nothing produces it now**, and a review session is simply not this gate's business.
 
 **`make smoke` runs this automatically** and refuses immediately rather than failing slowly.
 
-> **Never stop somebody else's review session to obtain a green pipeline.** QE's authority is to make a documented gate *runnable*, never to make it *pass* (`CLAUDE.md` §20e). A review session in progress is work, not an obstacle.
+> **Never stop somebody else's review session to obtain a green pipeline.** QE's authority is to make a documented gate *runnable*, never to make it *pass* (`CLAUDE.md` §20e). A review session in progress is work, not an obstacle. **This is now easy to honour rather than a discipline to maintain** — the gate no longer wants those ports.
 
 ### Leaving Human Review Mode
 
@@ -270,6 +273,7 @@ Three development lanes work the same repository at once (`CLAUDE.md` §20e). **
 | Environment | Branch | Web | API | Database | Redis DB |
 |---|---|---|---|---|---|
 | **Human review** | `main` | **3000** | **8000** | `signora` | 0 |
+| **Production stack** *(smoke · dr · certify)* | any | **3100** | **8100** | *its own, inside its compose project* | *its own* |
 | **QE** | `lane-qe` | 3200 | 8200 | `signora_lane_qe` | 1 |
 | **Lane A — Product Surface** | `lane-a-product-surface` | 3300 | 8300 | `signora_lane_a` | 2 |
 | **Lane B — Commercial Profile** | `lane-b-commercial-profile` | 3400 | 8400 | `signora_lane_b` | 3 |
@@ -325,7 +329,7 @@ cd backend && uv run uvicorn apps.api.main:create_app --factory --reload --port 
 
 Set `SIGNORA_API_URL` and `BETTER_AUTH_URL` to that lane's ports in its `frontend/.env.local`.
 
-> **`make smoke` binds 3000 and 8000** — the human-review ports. It cannot run while anything holds them: stop the review stack **and** every lane's dev server first. Worth knowing before a milestone gate, because the failure reads as *"stack did not reach healthy"* rather than *"a port is in use"* ([B-002](BUGS.md)).
+> **`make smoke` binds 3100 and 8100** since 2026-08-03, and no longer contends with human review or with any lane. [B-002](BUGS.md) described the old collision and is a record of what was true then, not a current limitation.
 
 > **The Playground lives in `signora`, and no lane's tests may target it.** That is the whole point of steps 1 and 2: it is the database `make demo-seed` fills and the one you review the product in.
 

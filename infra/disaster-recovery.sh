@@ -18,7 +18,7 @@ cd "$(dirname "$0")"
 
 COMPOSE="docker compose --env-file .env.prod-local -f docker-compose.prod.yml"
 PSQL="docker exec signora-prod-postgres-1 psql -U signora -d signora -tAc"
-API="http://localhost:8000"
+API="http://localhost:8100"
 
 pass() { printf '  \033[32m✓\033[0m %s\n' "$1"; }
 fail() { printf '  \033[31m✗ %s\033[0m\n' "$1"; exit 1; }
@@ -34,7 +34,7 @@ import re, pathlib
 t = pathlib.Path('.env.prod-local').read_text()
 print(re.search(r'SIGNORA_JWT_PRIVATE_KEY=\"(.*?)\"', t, re.S).group(1))")"
   (cd ../frontend && npx tsx tests/contract/mint-token.ts \
-    "$priv" "http://localhost:3000" "signora-api" $user_id 2>/dev/null)
+    "$priv" "http://localhost:3100" "signora-api" $user_id 2>/dev/null)
 }
 
 wait_for_api() {

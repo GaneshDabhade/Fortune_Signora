@@ -72,10 +72,10 @@ class Environment:
     #:
     #: `RUNNING.md` states one rule — *"web `3000 + 100n`, API `8000 + 100n`,
     #: Redis logical index `n`"* — and **its own table does not obey it**: QE
-    #: sits on port block 2 and Redis index 1, and block `3100/8100` is
-    #: allocated to nobody. Phase 1 records the repository as it is rather than
-    #: renumbering live environments, and the divergence is a finding for the
-    #: product owner (see `--check`).
+    #: sits on port block 2 and Redis index 1. Block `3100/8100` was allocated
+    #: to nobody, which is exactly why the production stack could be moved into
+    #: it without renumbering a live environment. The divergence itself remains
+    #: a finding for the product owner (see `--check`).
     port_slot: int | None = None
     #: Whether it is expected to be running alongside everything else.
     coexists: bool = True
@@ -137,18 +137,30 @@ ENVIRONMENTS: Final = (
     Environment("lane-e", 6, "Development — unclaimed", "—", port_slot=7),
 )
 
-#: **`smoke` has no slot, and that is the finding rather than an omission.**
+#: **Deliberately outside the slot table, and no longer colliding.**
 #:
-#: `infra/docker-compose.prod.yml` binds **3000 and 8000** — the same ports as
-#: `review`. That is not an oversight in the compose file; it is what
-#: `release-preflight.py` was built to detect, and what stops the product owner
-#: reviewing while certification runs.
+#: `prod-local` is a self-contained compose project: its PostgreSQL, its Redis
+#: and its service names are **private to it** and reachable only from inside.
+#: Nothing about it derives from a slot, and giving it one would make this model
+#: assert a database name and a Redis index that are not the ones it uses —
+#: a model that lies is worse than a model with a documented exception.
 #:
-#: **Giving it a slot here would be a behaviour change**, and Phase 1 makes
-#: none. It is recorded so the collision is visible in the model rather than
-#: only in an operator's memory.
+#: **What it does share with everything else is host ports**, and that is what
+#: went wrong. It bound **3000 and 8000** — `review`'s — which made a
+#: certification run and a product review mutually exclusive *by construction*.
+#: Phase 1 recorded the collision rather than fixing it. **It was fixed when the
+#: product owner hit it**: they could not start a review because a leftover
+#: `make dr` stack still held both ports.
+#:
+#: It now binds **3100/8100**, the block this model had recorded as allocated
+#: to nobody, and the two environments no longer meet.
+#:
+#: **The rule this is an instance of:** *every runnable environment must be
+#: independently startable, independently stoppable and independently
+#: disposable.* An environment that requires another to be stopped first is not
+#: isolated; it is merely documented.
 UNSLOTTED: Final = {
-    "smoke": "binds 3000/8000 — collides with `review` by construction",
+    "prod-local": "binds 3100/8100 — its own compose project; nothing else is shared",
 }
 
 BY_NAME: Final = {environment.name: environment for environment in ENVIRONMENTS}
