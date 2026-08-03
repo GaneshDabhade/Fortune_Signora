@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+#
+# **Refuses a commit on a shared branch that does not belong there.**
+#
+# Twice, a commit landed on the wrong branch because the shell was on whatever
+# branch the previous command left it: once on `main` (bypassing certification
+# entirely) and once on `integration`. Neither was careless — each command was
+# correct in isolation, and neither checked where it was standing.
+#
+# **The rules are not restated here.** `infra/certification-guard.py` already
+# owns what may live on each shared branch, and this asks it rather than keeping
+# a second copy that would eventually disagree (CLAUDE.md §2).
+#
+#   main         a Closeout commit only — documents and certification records
+#   integration  a claim commit only — the two registers
+#   lane-*       anything
+#
+# **Deliberately narrow.** It guards the two branches where a wrong commit has
+# actually happened, and nothing else. A generic policy engine would need to be
+# right about cases nobody has hit, and the repository has repeatedly shown that
+# narrow automation outlives ambitious automation.
+#
+# Install once:  git config core.hooksPath infra/hooks
+# Bypass:        git commit --no-verify   (and say why in the message)
+
+set -euo pipefail
+
+branch="$(git rev-parse --abbrev-ref HEAD)"
+case "$branch" in
+  main|integration) ;;
+  *) exit 0 ;;
+esac
+
+staged="$(git diff --cached --name-only --diff-filter=ACMR)"
+[[ -n "$staged" ]] || exit 0
+
+if ! offending="$(python3 infra/hooks/allowed_here.py "$branch" <<<"$staged")"; then
+  printf '\n\033[31m\033[1m  REFUSED — this commit does not belong on `%s`\033[0m\n\n' "$branch"
+  printf '%s\n' "$offending"
+  printf '\n  You are probably on this branch because the previous command left you\n'
+  printf '  here. That is how a commit reached `main` without certification.\n\n'
+  printf '    git stash && git checkout lane-qe && git stash pop\n\n'
+  printf '  If this really is a Closeout or a claim, `git commit --no-verify`\n'
+  printf '  and say why in the message.\n\n'
+  exit 1
+fi

@@ -459,6 +459,30 @@ def main() -> int:
         else:
             notes.append(f"ACTIVE_ASSIGNMENTS.md is dated at `{named}`, reachable from HEAD.")
 
+    # 5h — L-17. **The inverse direction, and the one that failed.**
+    #
+    # `certification-guard.py --audit-main` proves every commit on `main` was
+    # certified. Nothing proved the converse: that a certified commit actually
+    # *reached* `main`. So a cycle could certify, stop, and leave the repository
+    # reporting "certified" while `main` did not contain the code — which is
+    # exactly what happened, and the product owner noticed before QE did.
+    #
+    # **Certification and promotion are one workflow.** A certified commit that
+    # is not an ancestor of `main` is an incomplete cycle, not a finished one
+    # with paperwork outstanding (§20e).
+    if main_sha and certified_commit:
+        if not _is_ancestor(certified_commit, main_sha):
+            findings.append(
+                f"`{certified_commit}` is certified and is NOT on `main` ({main_sha}). "
+                f"The cycle stopped after certification: promotion, Closeout, "
+                f"synchronization and Repository Ready have not run. **A certified "
+                f"commit that never reached `main` is not protected by anything.**"
+            )
+        else:
+            notes.append(
+                f"Certified `{certified_commit}` is on `main` — the cycle completed."
+            )
+
     # 6 — a coordination register that only grows has become a discussion log.
     opened = len(re.findall(r"^#{2,3} C-\d+", coordination, re.M))
     closed = 0

@@ -437,3 +437,17 @@ All seven are documented at **<http://localhost:8000/docs>**.
 - **Roughly ten of twelve accounts narrate.** The rest time out on a local 8B model and can be re-run — `make demo-narrate` is safe to repeat. A separate defect refuses any statement quoting a date in the first nine days of a month, because a zero-padded `01` in the evidence never matches a `1` in prose *(F-11)*.
 - **The ledger repeats itself on a composite signal.** An account whose expansion rests on two grounds shows two identical sentences, because the line names the *hypothesis* and not the evidence beneath it *(D19)*.
 - **`reasoning@1` has no released model**, so the Decision Package stage would refuse at runtime. It is not on either screen, so you will not see it — but the pipeline is not whole.
+
+## The commit guard
+
+**One line, once per clone:**
+
+```bash
+git config core.hooksPath infra/hooks
+```
+
+**It refuses a commit on `main` or `integration` that does not belong there** — a Closeout on the first, a claim on the second, and anything at all on a lane branch. It owns no rules of its own: `infra/certification-guard.py` already defines both, and the hook asks it rather than keeping a second copy.
+
+**Why it exists.** Twice a commit landed on the wrong branch because the shell was on whatever branch the previous command left it — once on `main`, bypassing certification entirely. Neither was careless; each command was correct in isolation and neither checked where it was standing.
+
+**Bypass with `git commit --no-verify`** when the commit genuinely is a Closeout or a claim, and say why in the message.
