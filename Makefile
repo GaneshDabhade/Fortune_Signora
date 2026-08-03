@@ -42,21 +42,21 @@ release-preflight:
 # Preflighted, so a run that cannot possibly succeed says why immediately
 # rather than after building a stack it will not be able to bind.
 smoke: release-preflight
-	@bash ./infra/smoke.sh
+	@python3 infra/environment-lease.py run smoke -- bash ./infra/smoke.sh
 
 ## Same, but leave the stack running for inspection after a failure.
 smoke-keep:
 	@SMOKE_KEEP_STACK=1 bash ./infra/smoke.sh
 
 ## Disaster Recovery Validation against an already-running production stack.
-dr:
-	@bash ./infra/disaster-recovery.sh
+dr: release-preflight
+	@python3 infra/environment-lease.py run dr -- bash ./infra/disaster-recovery.sh
 
 ## Bring the local production stack up / down.
 up:
-	@docker compose --env-file infra/.env.prod-local -f infra/docker-compose.prod.yml up -d --build --wait
+	@python3 infra/environment-lease.py run up -- docker compose --env-file infra/.env.prod-local -f infra/docker-compose.prod.yml up -d --build --wait
 down:
-	@docker compose --env-file infra/.env.prod-local -f infra/docker-compose.prod.yml down -v --remove-orphans
+	@python3 infra/environment-lease.py run down -- docker compose --env-file infra/.env.prod-local -f infra/docker-compose.prod.yml down -v --remove-orphans
 
 ## Backend suite. Truncates its target database — hence the explicit opt-in.
 test:
@@ -199,8 +199,8 @@ state-check:
 ## There are no options. A mode that skipped a gate would produce a run that
 ## cannot certify, and a command whose convenient path yields worthless evidence
 ## teaches people to use it.
-certify:
-	@cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.certification
+certify: release-preflight
+	@python3 infra/environment-lease.py run certify -- sh -c 'cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.certification'
 
 ## Prompt evaluation against a real model. Deliberately NOT part of `make test`.
 #

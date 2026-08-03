@@ -46,3 +46,6 @@ htmlcov/
 # Git-ignored deliberately: being untracked is what lets a failed run survive
 # the `git checkout --` its next attempt requires (RE-01).
 certification/attempts.jsonl
+
+# The environment lease — who currently owns the shared stack (RE-02).
+.environment-lease

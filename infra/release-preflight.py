@@ -31,10 +31,12 @@ from __future__ import annotations
 import argparse
 import re
 import shutil
+import socket
 import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Final
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -124,6 +126,27 @@ def _prerequisites() -> list[str]:
     return missing
 
 
+#: Where the suite's database lives. `RUNNING.md` allocates one per lane, all in
+#: the development PostgreSQL — which the gates need running and never check.
+DEV_DATABASE_PORT: Final = 5432
+
+
+def _development_stack_missing() -> bool:
+    """Whether the database every gate needs is unreachable.
+
+    **RE-04, and it is an integration gap rather than a missing capability**:
+    this preflight already existed and already checked prerequisites; nothing
+    had taught it about the one service the suite cannot run without.
+
+    The cost of not checking was measured. `pytest` blocked for **22 minutes**
+    against an exited container, with no timeout and no diagnostic, and the
+    failure looked like a hung suite rather than an absent database.
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+        probe.settimeout(0.5)
+        return probe.connect_ex(("127.0.0.1", DEV_DATABASE_PORT)) != 0
+
+
 def _tree_dirty() -> bool:
     out = subprocess.run(
         ["git", "status", "--porcelain"],
@@ -155,6 +178,21 @@ def main() -> int:
             "",
             "  docs/RUNNING.md lists what a workstation needs. Installing these is",
             "  within QE's authority (CLAUDE.md §20e); escalate only if it is not.",
+        )
+        return 3
+
+    if _development_stack_missing():
+        say(
+            "",
+            "  BLOCKED — the development database is not reachable",
+            "",
+            f"    nothing is listening on 127.0.0.1:{DEV_DATABASE_PORT}",
+            "",
+            "  Every gate needs it, and none of them check: `pytest` blocks with no",
+            "  timeout and no diagnostic, which reads as a hung suite rather than an",
+            "  absent database. That cost 22 minutes once (RE-04).",
+            "",
+            "    docker compose -f infra/docker-compose.yml up -d --wait",
         )
         return 3
 

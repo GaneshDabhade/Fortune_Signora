@@ -120,10 +120,10 @@
 | Id | Item | Why | Cost | Prevents |
 |---|---|---|---|---|
 | ~~**RE-01**~~ | ~~Preserve failed certification runs~~ | **✅ Shipped 2026-08-03.** Challenged first, and the challenge changed the design — see §1. `certification/attempts.jsonl`, git-ignored so it survives the reset; `started` written before the first gate so aborts are countable | **S** | Survivorship bias in every stability figure |
-| **RE-02** | **A lock around `make certify`** — refuse a second run, naming the first's PID and start time | A-4, which cost three attempts this cycle | **S** | A-4 |
+| ~~**RE-02**~~ | ~~A lock around `make certify`~~ → **an environment lease** | **✅ Shipped 2026-08-03, and the challenge changed it — see §7.** A certify-lock would have permitted every command that actually caused the incident | **S** | A-2 · A-4 · A-6 · A-7 |
 | **RE-03** | **`certify` creates and drops its own database** | A-3 · [B-022](BUGS.md). Removes the last hand-typed correctness requirement in the pipeline | **M** | A-3, permanently |
-| **RE-04** | **A connection preflight before `pytest`** — fail in 2s with *"postgres is not running"* | A-5. A 22-minute hang that should have been a two-second message | **S** | A-5 |
-| **RE-05** | **Per-run compose project name** | A-2. Two smoke runs stop destroying each other | **S** | A-2 |
+| ~~**RE-04**~~ | ~~A connection preflight before `pytest`~~ | **✅ Shipped 2026-08-03**, by extending `release-preflight.py` rather than adding a checker — an **integration** gap, not a missing capability | **S** | A-5 |
+| **RE-05** | **Per-run compose project name** | **Deprioritised 2026-08-03.** The lease *serialises* what this would *parallelise*, and A-2 is prevented today. **Its remaining value is parallel certification** — a Stage 4 concern, not a now one | **S** | A-2, in parallel |
 | ~~**RE-06**~~ | ~~Certification stability metrics in `make kpi`~~ | **✅ Shipped with RE-01**, because a measurement nobody reads is not a measurement | **S** | — |
 | **RE-07** | **Resolve the duplicated suite run** | ~250s per cycle — **but it may be load-bearing for ADR-0032** | **S**, after a ruling | — |
 | **RE-08** | **Flaky-test detection** — record per-test durations, flag non-determinism | No evidence of flakiness yet. **Listed so it is not forgotten, not because it is due** | **M** | — |
@@ -140,3 +140,67 @@
 **Reviewed by QE at Closeout when the cycle produced a pipeline incident**, and otherwise when an item is picked up. **An item is deleted when it ships**, and the evidence for it moves to the commit that closed it — this is a backlog, not a record.
 
 **New items require the same standard as [`ENGINEERING_LAWS.md`](../ENGINEERING_LAWS.md):** an incident that already happened, or a specific assumption in current code with a named failure mode. **A speculative improvement is not a backlog item.**
+
+---
+
+## 7 · RE-02, RE-04, RE-05 — challenged before building
+
+**The same process RE-01 proved.** All three were re-derived from the incidents rather than implemented as written, and **two of the three changed.**
+
+### RE-02 was wrong as written, and the test that proves it now exists
+
+**Written as:** *"a lock around `make certify` — refuse a second run."*
+
+**Challenged by replaying the incident.** Cycle 25's contamination came from `make smoke` and `make down` running **beside** a certification. **No second `certify` was ever started.** A certify-lock would have permitted every command that actually did the damage.
+
+**So the lease belongs to the environment, not to a command.** One production stack, one pair of review ports, one test database — and until now **nothing knew who was using them.** In the taxonomy: not *missing capability* but **missing ownership**.
+
+**It is prevention rather than detection.** The preflight *reports* a held port and asks the operator to look; the lease *refuses to start*.
+
+**Two properties that keep it from becoming a new failure mode:**
+
+| | |
+|---|---|
+| **A dead holder is reclaimed silently** | `pkill` on a hung run is legitimate recovery — it happened **twice** in cycle 25. A lease surviving it would turn one stuck run into a permanently stuck repository |
+| **It is re-entrant** | `certify` shells out to `smoke.sh` inside its own lease. Without inheritance the nested acquisition would block on its own parent forever |
+
+### RE-04 was an integration gap, not a missing capability
+
+`release-preflight.py` **already existed** and already checked prerequisites. Nothing had taught it about the one service the suite cannot run without. **Extended, not replaced** — and `make dr` and `make certify` now depend on it, which they did not: only `make smoke` was preflighted, which is why `make dr` once failed with *"API did not become ready"* against a stack that was never up.
+
+### RE-05 was deprioritised on the evidence
+
+A per-run compose project name would let two smoke runs coexist. **The lease makes them not need to** — it serialises where RE-05 parallelises, and A-2 is prevented today. **Its remaining value is parallel certification**, which belongs to Stage 4 below, not to now.
+
+---
+
+## 8 · Where this is going — visibility, not a plan
+
+**Seven stages. Nothing here is scheduled**; its purpose is to tell whether today's improvements build toward it or away from it.
+
+| Stage | | Today |
+|---|---|---|
+| **1** | **Reliable certification** | **Substantially here.** Gates deterministic, promotion commit-bound, environment leased |
+| **2** | **Reliable measurement** | **Started.** RE-01 made attempts countable; the stability panel has one data point |
+| **3** | **Reliable environments** | **Not started.** The stack is shared and long-lived; RE-03 (disposable database) is the first step |
+| **4** | **Parallel certification** | Needs Stage 3 and RE-05. **The lease is deliberately the opposite of this** — serialising was the correct answer for one machine and is the wrong one for several |
+| **5** | **Distributed certification** | Far. Would need the attempt log to be shared rather than git-ignored — **the one design decision here that a future stage reverses** |
+| **6** | **Predictive certification** | Needs a year of stability data |
+| **7** | **Self-healing certification** | Needs 3–6 |
+
+> **The honest read: RE-01 and RE-02 build toward Stages 1 and 2 and are neutral on 3–7, except that the git-ignored attempt log is a decision Stage 5 would revisit.** That is recorded rather than avoided — a local log answers today's question, and a distributed one is not justified by a repository with one machine.
+
+### Stability has dimensions, and today they are reported as one
+
+**Identified, not yet implemented.** The single *"pipeline stability"* figure currently mixes at least six things:
+
+| Dimension | Would answer | Today |
+|---|---|---|
+| **Repository stability** | Does the code pass its own gates? | The only one measured cleanly |
+| **Environment stability** | Was the stack there and healthy? | The attempt log's `containers` and `ports_held` are the raw signal |
+| **Infrastructure stability** | Docker, disk, the machine | Not captured |
+| **Operator stability** | Did a human contaminate the run? | **Cycle 25 was entirely this**, and nothing distinguishes it |
+| **Tool stability** | Did a gate misreport? | [B-101](BUGS.md) was this — a KPI counting nine rows twice |
+| **Certification stability** | Did the process complete? | RE-01's `completion_rate` |
+
+**Separating them is the natural next measurement step**, and it is deliberately not attempted yet: the attempt log has one entry, and classifying a dimension from a single data point is exactly the anecdote-driven work §1 exists to prevent.
