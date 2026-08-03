@@ -12,16 +12,16 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `d39b136`, 2026-08-03.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `34d8acb`, 2026-08-03.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`d39b136`** — the certified commit itself |
-| **`integration`** | `d39b136` — level with `main` |
+| **`main`** | **`34d8acb`** — the certified commit itself |
+| **`integration`** | `34d8acb` — level with `main` |
 | **Release candidate** | **None pinned.** Cycle 24 promoted [`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md) and the [B-101](docs/BUGS.md) fix |
-| **Certification** | ✅ [`d39b1361c288`](certification/reports/d39b1361c288.md) · migration head **`0030`** · protocol **v2** |
+| **Certification** | ✅ [`34d8acb8a506`](certification/reports/34d8acb8a506.md) · migration head **`0030`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **130 commits, none outside a certified snapshot** |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **133 commits, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Both lanes.** Five separate rulings, all the product owner's — see §1c |
 | **Validation queue** | Lane A's and Lane B's branches, **both awaiting a rebase by their lane** |
@@ -101,61 +101,61 @@
 
 ---
 
-## 1d · Release summary — 2026-08-03, cycle 24
+## 1d · Release summary — 2026-08-03, cycle 25
 
-**Derived from the promoted commit `d39b136`.** Three commits: the Repository Engineering Standard, the [B-101](docs/BUGS.md) tooling fix, and a type correction to its test.
+**Derived from the promoted commit `34d8acb`.** Three commits, all QE's, all executable.
 
-### [`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md) — the rules the lanes had started deriving independently
+### The dependency register stopped growing for the first time
 
-**Ratified by the product owner.** Seven milestones in, the lanes were reaching the same conclusions separately: Lane A's capability census and Lane B's ICP reuse audit produced compatible principles a day apart, from different modules, with no shared instruction. **When two engineers derive the same rule separately, the derivation is waste.**
+**32 open items → 25, and the 25 group into 5 decisions.** Seven closed on shipped code, each naming a file and a line — no product-owner time spent.
 
-**Thirteen laws, and every one names the incident that earned it.** Reuse exhausted before creation ([B-027](docs/BUGS.md), and the `member remove` grant with no endpoint) · evidence before assumption (including **two of QE's own wrong measurements**) · production path first ([B-301](docs/BUGS.md)) · customer journey integrity (**31 endpoints, 5 screens, a Connection Center reachable only from inside itself**) · behaviour and data preservation · evolution over replacement · migration contracts · debt classification · operational readiness.
+| Pack | The one question | Items |
+|---|---|---|
+| **A** | May the platform be amended so a module can compose itself into the runtime? | [C-012](docs/LANE_COORDINATION.md) · C-013 · C-021 · C-207 |
+| **B** | What must exist before a roadmap row may be claimed? | C-020 · C-023 · C-200 |
+| **C** | Which component turns a customer's words into a canonical claim? | C-002 · C-018 · C-204 · ADR-0041 |
+| **D** | Who owns code belonging to no module? | C-010 · C-004 · C-014 |
+| **E** | Five independent product calls | C-008 · C-011 · C-017 · C-205 · C-206 |
 
-**Three laws are deliberately absent and referenced instead** — architecture preservation, single source of truth, security — because they are already authoritative in `CLAUDE.md`, and a rule in two places eventually contradicts itself.
+**Pack A is one wall hit from four directions, open since M3A**, and `make runtime-composition` measures its cost every cycle: 7 of 9 declaring modules unwired. **Pack B is three lanes reaching three identical blockers.** Both carry a recommendation in [`DECISION_PACKS.md`](docs/DECISION_PACKS.md).
 
-> **A fourth was considered and rejected.** *Performance & Scalability by Design* has caused **no defect in this repository**; `CLAUDE.md` §14 already forbids both waste and speculative optimization. **Adding it would have been inventing a law**, which the standard's own mandate forbids. Recorded as considered, so the omission reads as a decision.
+> ⚠️ **[C-024](docs/LANE_COORDINATION.md) is QE's error, and it is recorded rather than quietly corrected.** It was escalated in **two consecutive cycle reports** as the repository's sharpest blocker — *"ten lines of routing between a working capability and a customer"* — **while Lane A had already mounted the feed and said so in its handoff.** QE was reading the register instead of the repository: [L-2 *Evidence before assumption*](ENGINEERING_LAWS.md), violated by its own author within the week.
 
-**The enforcement section is the one to read first.** Six laws are checked by a command, three by a human, **and four by nothing at all.** Saying so is the first defence — and the right answer to erosion is a check rather than a firmer sentence, which is [B-022](docs/BUGS.md)'s lesson: a bolded warning in this repository's own runbook was violated within hours **by the person who wrote it**.
+### [B-102](docs/BUGS.md) — a conflict marker had been sitting in the register through several certifications
 
-### [B-101](docs/BUGS.md) — the KPI block counted nine rows twice
+It stranded `C-027` outside its table and left `C-024` and `C-025` duplicated **with contradictory statuses** — one row reading `ANSWERED`, the other `OPEN`. `malformed_tables` could not see it: a `>>>>>>>` line inside a table is not a table separator.
 
-`register_kpis` substring-matched the status cell, so a row reading *"`FIXED` — `VERIFIED` is QE's to set"* landed in both buckets. **Totals came to 42 against 33 rows**, published under a banner promising nothing was typed by hand — **which is exactly what made the wrong figure credible.**
+`conflict_markers` now checks all four registers. **It fired on B-102's own row within a minute of being written** — that row quotes the marker it reports — so fenced code is skipped, and the one genuine false positive is asserted in the tests rather than hidden.
 
-**Two things underneath mattered more.** Three rows were verified in name only, and **QE's own audit used the same broken precedence as the tool it was accusing.** I reported eleven verified rows; the truth was five, and I called the severity counts wrong when they were correct. Both errors leaned the same way as the tool's, because they made the same assumption.
+**ADR-0039 RC-4's third instance in a week:** the registers are a multi-writer database written in markdown.
 
-**Not affected:** `state-check`'s promotion gate. `unresolved` reads the cell prefix and was always right — **no 🔴 was ever mis-cleared**, checked across all rows.
+### The cycle took three attempts, and none of the failures was the software's
 
-### The documentation audit that started it
+| Attempt | Outcome | Cause |
+|---|---|---|
+| 1 | Hung 22 min | `pytest` blocked on an **exited** postgres container. No timeout, no diagnostic |
+| 2 | `NOT CERTIFIED` | **QE ran competing gates.** Two records for one commit; the second read `pytest 134 passed` because the first truncated its database |
+| 3 | **CERTIFIED** | Clean environment, nothing else running |
 
-**§4 of this dashboard was two cycles stale** and its defect and coordination counts were **less than half their real values**. `README.md` listed Timeline as *not started* when it is built, promoted and consumed by the deployed worker, and omitted `integrations` entirely. **Nothing detects this** — `state-check` reads §1 and never §4.
+**Both invalid records were discarded.** A contaminated measurement must never become repository truth — the [B-022](docs/BUGS.md) standard: *the finding is durable, the false number is not*.
+
+**This produced [`RELEASE_ENGINEERING.md`](docs/RELEASE_ENGINEERING.md)** — a study of the pipeline, seven places it assumes nothing else is running, and a nine-item backlog. **Its first finding is that the manifest cannot measure certification stability**, because failed runs do not survive the reset that correctly removes them. The KPI's *100% success* is an artefact of the discard, not a measurement.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **2580 tests** *(+12)* · **95.51%** · 360 invariants · **615 files typed** · 34 contracts |
-| **Release** | **4 promotions in 4 cycles.** Smoke at **119s**, the fastest recorded |
-| **Architecture** | Runtime composition **2 of 2 expected, 0 unexpected** — third clean reading |
-| **Dependency** | **37 items, 5 closed.** ⚠️ Four have waited 5+ cycles; all need the same person |
-| **Customer Value** | ❌ **None, two cycles running.** Governance and tooling. **The lanes are blocked, not idle** |
-| **Process** | Clean. **The gates caught two of my own errors before certification** — a `mypy --strict` failure in my new test, and the preflight blocking on my own DR stack |
+| **Technical** | **2589 tests** · **95.51%** · 360 invariants · 615 files typed · 34 contracts |
+| **Release** | **4 promotions in 4 cycles**, but **three attempts for this one.** Reliability, not speed, is the constraint |
+| **Architecture** | Runtime composition **2 of 2 expected, 0 unexpected** — third consecutive clean reading |
+| **Dependency** | **37 items, 12 closed.** ⚠️ **The register shrank for the first time** — 7 closed on evidence this cycle |
+| **Customer Value** | ❌ **None this cycle.** Governance, tooling and dependency work. **Both lanes remain in discovery, blocked on the packs above** |
+| **Process** | **One self-inflicted failure**, recorded above and turned into RE-02 and RE-04 |
 
-### What the gates caught this cycle, and nothing else would have
+### ⚠️ Escalation — every live blocker is the product owner's
 
-**The preflight refused to start cycle 24** because my own `make dr` stack was still holding ports 3000 and 8000. It named the cause and said it was QE's to clear. **`make smoke` binds those ports, so certification would have failed later and less clearly.**
+**[`DECISION_PACKS.md`](docs/DECISION_PACKS.md) is now the place to read them**, grouped. If you answer only three: **Pack A** (waiting since M3A, cost measured every cycle) · **Pack B** (governance only, no code, releases three stalled milestones) · **[C-017](docs/LANE_COORDINATION.md)** (ratifiable text, already written).
 
-**`mypy --strict` rejected my own new test** — `_row` returned `object`, so every attribute access on it was an error. **The lane's own gate is exactly where that belongs**, and it is the rule QE asks of every other lane.
-
-### ⚠️ Four-cycle-plus escalation — unchanged, and that is the finding
-
-| Item | Cycles | The one action |
-|---|---|---|
-| **[C-010](docs/LANE_COORDINATION.md)** | **8** | **Assign an owner.** **8 defects have landed here** — [B-101](docs/BUGS.md) is the newest, and it is the third in three cycles |
-| **[C-020](docs/LANE_COORDINATION.md)** | **7** | Ratify, amend or reject [ADR-0038](docs/architecture/adr/0038-timeline.md) |
-| **[C-024](docs/LANE_COORDINATION.md)** | **6** | **Choose where the Timeline feed mounts** |
-| **[C-025](docs/LANE_COORDINATION.md)** | **6** | Rule which tier may run an OAuth flow |
-
-> **[C-010](docs/LANE_COORDINATION.md) is now measurably the most expensive item in the repository.** It owns `apps/`, `signora_platform/` and repository process — **and the last three defects QE found all landed in it.** Every one was fixed by QE, and QE cannot verify its own fixes, which is why [TASK-001](docs/BACKLOG.md) had to exist and why three rows sat unverified for two days.
 
 ## 2 · Milestone progress
 
@@ -364,23 +364,25 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`d39b1361c288`](certification/reports/d39b1361c288.md) · 2026-08-03 · ✅ CERTIFIED**
+**Latest certification — [`34d8acb8a506`](certification/reports/34d8acb8a506.md) · 2026-08-03 · ✅ CERTIFIED**
 
-**Certified commit `d39b136` · promoted commit `d39b136`.** Identical, checked by `infra/certification-guard.py` before the fast-forward and re-checked by `make certified`.
+**Certified commit `34d8acb` · promoted commit `34d8acb`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
 
 | Gate | Recorded |
 |---|---|
-| **pytest** | **2580 passed** |
+| **pytest** | **2589 passed** |
 | **coverage** | **95.51%** *(floor 95%)* |
-| **Security Invariants** | **360**, each proven to fail when its guarantee is removed |
-| **import-linter** | **34 kept**, 0 broken |
-| **MyPy** | strict, clean over **615 files** |
-| **`make smoke`** | **24 stages in 119s** — the fastest recorded, fresh images, clean teardown |
+| **Security Invariants** | **360 invariants**, each proven to fail when its guarantee is removed |
+| **import-linter** | **34 kept, 0 broken** |
+| **MyPy** | **strict, clean over 615 files** |
+| **`make smoke`** | **24 stages in 145s**, fresh images, clean teardown |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
-**Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0030`** · scenario set `0cf6b2c581e4` · working tree clean · `research_planning@2` and `research_synthesis@2` released for `llama3.1:8b`.
+**Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0030`** · scenario set `0cf6b2c581e4` · working tree clean.
 
-**Also verified this cycle, and not yet certification gates:** frontend **701 tests** across 39 files, typecheck, lint and production build · **migration reversibility to base and back** · **`make dr`** — every component restarted, nothing lost, 360 invariants re-run against the restarted stack · **runtime composition**, 2 of 2 expected wired, 0 unexpected.
+**Also verified this cycle, and not yet certification gates:** frontend 701 tests · **migration reversibility to base and back** · **`make dr`** — every component restarted, nothing lost, 360 invariants re-run · **runtime composition**, 2 of 2 expected, 0 unexpected.
+
+> ⚠️ **This cycle needed three certification attempts, and the manifest records only the third.** A failed run leaves the tree dirty and is correctly discarded, so **the manifest structurally cannot measure stability** — see [`RELEASE_ENGINEERING.md`](docs/RELEASE_ENGINEERING.md) §1. The *Certification run success rate* below is an artefact of that discard, not a measurement, and **RE-01 exists to fix it.**
 
 | Indicator | Value | Target |
 |---|---|---|
@@ -413,26 +415,26 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Indicator | Value |
 |---|---|
 | **Certification** | |
-| Certification cycles | 20 |
-| Certified | 20 of 20 |
-| Mean time to certify (last 5) | 16.3 min |
-| Mean smoke duration | 364.1 s |
-| Mean certify → Ready (last 5) | 4.7 min |
+| Certification cycles | 21 |
+| Certified | 21 of 21 |
+| Mean time to certify (last 5) | 40.6 min |
+| Mean smoke duration | 353.7 s |
+| Mean certify → Ready (last 5) | 4.5 min |
 | **Release flow** | |
-| Certification run success rate | 100% (20 of 20 runs) |
+| Certification run success rate | 100% (21 of 21 runs) |
 | ↳ excludes | candidates rejected at validation — see Repository Health |
-| Commits per release | mean 9.9, median 5, range 2–49 |
-| Mean candidate age | 191.3 min  — oldest commit → certified |
-| Release frequency | 0.32 releases/hour over 62h |
+| Commits per release | mean 9.6, median 5, range 2–49 |
+| Mean candidate age | 190.8 min  — oldest commit → certified |
+| Release frequency | 0.32 releases/hour over 65h |
 | **Defects and queues** | |
 | Queue depth (claimable now) | 1 — a lane with none reaches for undefined work |
-| Open bugs | 13 open · 15 fixed awaiting verification · 5 verified · 1 won't fix |
-| Bugs by severity | 🔴 1 · 🟠 22 · 🟡 10 |
+| Open bugs | 13 open · 16 fixed awaiting verification · 5 verified · 1 won't fix |
+| Bugs by severity | 🔴 1 · 🟠 23 · 🟡 10 |
 | Open 🔴 (blocks promotion) | 0 |
 | Coordination items | 37 · 5 closed |
 | Backlog | 17 tasks · 5 READY · 12 WAITING/BLOCKED · 4 claimed |
 | **Automation** | |
-| Governance checks, executable | 28 |
+| Governance checks, executable | 29 |
 | Security Invariant files | 6 |
 | Gate commands | make test · smoke · dr · certify · certified · state-check · doc-drift · kpi |
 
