@@ -7,6 +7,7 @@ import {
   DroppedWithTheirProduct,
   keptForCatalog,
 } from '@/components/commercial/catalog-scope';
+import { size } from '@/components/commercial/vocabulary';
 import { formatDay } from '@/components/intelligence/dates';
 import { Button, Dialog, EmptyState, Input } from '@/components/ui';
 import { ApiError } from '@/lib/api/client';
@@ -174,16 +175,6 @@ function summarise(profile: ProductIcp): string {
   ].filter((part) => part !== '');
 
   return parts.join(' · ');
-}
-
-function size(employees: ProductIcp['employees']): string {
-  if (employees === null) return '';
-  const { minimum, maximum } = employees;
-  if (minimum !== null && maximum !== null)
-    return `${minimum.toLocaleString()}–${maximum.toLocaleString()} people`;
-  if (minimum !== null) return `${minimum.toLocaleString()}+ people`;
-  if (maximum !== null) return `up to ${maximum.toLocaleString()} people`;
-  return '';
 }
 
 /**

@@ -26,8 +26,17 @@ afterEach(() => {
   for (const path of scratch.splice(0)) rmSync(path, { recursive: true, force: true });
 });
 
-/** Build an app tree and ask the checker what it makes of it. */
-function analyse(pages: Record<string, string>): {
+/**
+ * Build an app tree and ask the checker what it makes of it.
+ *
+ * `extras` are files that are **not** routes — a navigation module, a guard
+ * declaration — written into the same tree the checker scans, so a test can
+ * assert what does *and does not* count as an entrance.
+ */
+function analyse(
+  pages: Record<string, string>,
+  extras: Record<string, string> = {},
+): {
   reachable: string[];
   declared: string[];
   unreachable: string[];
@@ -39,6 +48,11 @@ function analyse(pages: Record<string, string>): {
     const directory = join(app, route);
     mkdirSync(directory, { recursive: true });
     writeFileSync(join(directory, 'page.tsx'), source);
+  }
+  for (const [path, source] of Object.entries(extras)) {
+    const file = join(app, path);
+    mkdirSync(join(file, '..'), { recursive: true });
+    writeFileSync(file, source);
   }
   const script = `
 import json, sys, importlib.util
@@ -124,6 +138,76 @@ describe('what counts as navigation', () => {
     const result = analyse({ '(app)': 'export default () => <p>home</p>;' });
 
     expect([...result.reachable, ...result.declared, ...result.unreachable]).toContain('/');
+  });
+});
+
+describe('the sidebar, which this check could not see until CX-05', () => {
+  it('counts a route listed in a navigation array', () => {
+    // **navigation.tsx holds its routes in an array** and renders them through
+    // `<Link href={item.href}>`, so neither half matched any pattern. The
+    // product's primary source of doors was invisible to the check that exists
+    // to find missing doors.
+    const result = analyse({
+      '(app)': "export default () => <nav><Link href={i.href}>x</Link></nav>;",
+      '(app)/business': 'export default () => <p>what we sell</p>;',
+    });
+
+    expect(result.unreachable).toContain('/business');
+
+    const withNav = analyse({
+      '(app)': `
+        const ITEMS = [{ href: '/business', label: 'Your business' }];
+        export default () => <nav>{ITEMS.map((i) => <Link href={i.href}>{i.label}</Link>)}</nav>;
+      `,
+      '(app)/business': 'export default () => <p>what we sell</p>;',
+    });
+
+    expect(withNav.reachable).toContain('/business');
+  });
+
+  it('reconstructs why nobody noticed — /settings had exactly one literal door', () => {
+    // `/` is linked from six places and `/settings` from precisely one:
+    // no-workspace.tsx. Delete that file and the check called the most-used
+    // screen in the product an orphan.
+    const result = analyse({
+      '(app)': `
+        const ITEMS = [{ href: '/settings', label: 'Settings' }];
+        export default () => <nav>{ITEMS.map((i) => <Link href={i.href} />)}</nav>;
+      `,
+      '(app)/settings': 'export default () => <p>settings</p>;',
+    });
+
+    expect(result.unreachable).not.toContain('/settings');
+  });
+
+  it('does not mistake a guard declaration for an entrance', () => {
+    // **GUARDED_ROUTES has the identical shape and the opposite meaning.**
+    // Naming a route there restricts it; counting it would make a route
+    // reachable because something forbade it. The rule that separates them is
+    // whether the file renders links at all.
+    const result = analyse(
+      { '(app)/secret': 'export default () => <p>nobody sends you here</p>;' },
+      {
+        'permissions.ts':
+          "export const GUARDED_ROUTES = [{ href: '/secret', requires: 'workspace:update' }];",
+      },
+    );
+
+    expect(result.unreachable).toContain('/secret');
+  });
+
+  it('and the same declaration in a file that renders links is a door', () => {
+    // The pair that makes the rule load-bearing rather than decorative: one
+    // character of difference in the file, opposite verdicts.
+    const result = analyse(
+      { '(app)/secret': 'export default () => <p>a door leads here</p>;' },
+      {
+        'sidebar.tsx':
+          "const ITEMS = [{ href: '/secret' }];\nexport const Nav = () => <Link href={ITEMS[0].href} />;",
+      },
+    );
+
+    expect(result.unreachable).not.toContain('/secret');
   });
 });
 

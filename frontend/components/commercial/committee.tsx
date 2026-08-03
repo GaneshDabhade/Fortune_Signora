@@ -7,6 +7,7 @@ import {
   DroppedWithTheirProduct,
   keptForCatalog,
 } from '@/components/commercial/catalog-scope';
+import { PART_HINTS, PART_LABELS } from '@/components/commercial/vocabulary';
 import { formatDay } from '@/components/intelligence/dates';
 import { Badge, Button, Dialog, EmptyState, Input, Select } from '@/components/ui';
 import { ApiError } from '@/lib/api/client';
@@ -163,28 +164,6 @@ export function BuyingCommitteeEditor({
     </section>
   );
 }
-
-/**
- * What each part means, in the words a seller would use.
- *
- * **A label, not a translation.** The five parts are already ordinary sales
- * language; this only capitalises them for a screen.
- */
-const PART_LABELS: Record<CommitteePart, string> = {
-  economic_buyer: 'Economic buyer',
-  champion: 'Champion',
-  evaluator: 'Evaluator',
-  user: 'User',
-  gatekeeper: 'Gatekeeper',
-};
-
-const PART_HINTS: Record<CommitteePart, string> = {
-  economic_buyer: 'Owns the budget. The signature at the end.',
-  champion: 'Argues for it when you are not in the room.',
-  evaluator: 'Judges whether it actually works.',
-  user: 'Lives with it afterwards.',
-  gatekeeper: 'Must sign off — security, legal, procurement.',
-};
 
 /**
  * One product's committee, described or corrected.

@@ -1,6 +1,6 @@
 'use client';
 
-import { LineChart, Settings } from 'lucide-react';
+import { Briefcase, LineChart, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -42,9 +42,31 @@ interface NavItem {
  * measures commercial attention, the ledger splits it by posture, the query is
  * `attention_list` — so the vocabulary is now the same from the database to
  * the sidebar.
+ *
+ * ---
+ *
+ * ### Three entries from CX-05, and the third had to earn it
+ *
+ * **D38 reduced this to two on purpose, so adding one back is a claim that
+ * needs defending.** *Your business* earns it on a fact that was not measured
+ * until 2026-08-03: **a `member` saw a sidebar with one item in it.** `Settings`
+ * is guarded and correctly not rendered for them, so of the two entries, a
+ * salesperson — the person Signora is built for — saw one. **A navigation of
+ * one is not navigation; it is a label.**
+ *
+ * **It is the only door, not a second one.** Every test D38 applied still
+ * holds: this is not a pipeline module with a menu item, it is not *show me all
+ * the X*, and it does not lead to a *coming soon*. `/settings/products` remains
+ * the authoring screen for owners; **for a member there is no other route to
+ * five declarations `policy.csv` explicitly grants them** ([C-008](../../../docs/LANE_COORDINATION.md)).
+ *
+ * **Unguarded, deliberately.** `guardFor` is a deny-list, so leaving `/business`
+ * out of `GUARDED_ROUTES` is what makes it member-reachable — the property that
+ * chose option C over option A and kept `permissions.ts` untouched (§20c).
  */
 const ITEMS: readonly NavItem[] = [
   { href: '/', label: 'Attention', icon: LineChart },
+  { href: '/business', label: 'Your business', icon: Briefcase },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 

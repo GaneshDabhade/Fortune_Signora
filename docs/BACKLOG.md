@@ -312,7 +312,7 @@
 | Id | Task | Module | Waiting on |
 |---|---|---|---|
 | **TASK-006** | [C-010](LANE_COORDINATION.md) — no lane is assignable to `apps/`, `signora_platform/` or repository process | Repository | **The product owner.** Four defects have landed in this gap: [B-007](BUGS.md), [B-012](BUGS.md), [B-013](BUGS.md), [B-014](BUGS.md). **The highest-value decision on this page** |
-| **TASK-007** | [C-008](LANE_COORDINATION.md) — sellers cannot see what their company sells | Product Surface | **The product owner**, to choose between options A/B/C/D. The proposal is accepted; only the choice remains |
+| ~~**TASK-007**~~ | [C-008](LANE_COORDINATION.md) — sellers cannot see what their company sells | Product Surface | **Answered 2026-08-03 — option C now, D next.** Stage 1 shipped as **CX-05** by Lane A, under the product owner's explicit Product Surface assignment. **`IN VALIDATION`.** Stage 2 is unclaimed and is not `READY` until the product owner places it |
 | **TASK-008** | [C-005](LANE_COORDINATION.md) — the signal-profile write path | `signal_engine` | **The product owner**, on whether a customer should author relevance at all. Ownership answered; sequencing is not |
 | **TASK-009** | [C-009](LANE_COORDINATION.md) — an internal fault reaches a customer as a `422` | `signora_platform` | **The product owner.** A frozen-platform change under §20a, with a full proposal recorded |
 | **TASK-010** | [C-006](LANE_COORDINATION.md) — which lane owns `test_api_<module>.py` | Repository | **The product owner**, and deliberately: *"avoid creating a local convention that later becomes repository behaviour"* |

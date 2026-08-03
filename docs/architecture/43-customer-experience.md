@@ -14,18 +14,20 @@
 
 **Four numbers now, and the fourth is the finding.**
 
-| | 2026-08-02 | 2026-08-03 |
-|---|---|---|
-| **Backend HTTP endpoints** | 31, across 11 modules | **40**, across **11 modules** |
-| **Navigable application screens** | 5 | **6** — one attention list, one account brief, four settings pages *(plus five sign-in screens and two dead-end states)* |
-| **Screens a `member` can reach** | 2 | **2 — unchanged** |
-| **Navigation entries a `member` sees** | *not measured* | **1** |
+| | 2026-08-02 | 2026-08-03, assessed | **2026-08-03, after CX-05** |
+|---|---|---|---|
+| **Backend HTTP endpoints** | 31, across 11 modules | 40, across 11 modules | **40** — CX-05 added none |
+| **Navigable application screens** | 5 | 6 | **7** |
+| **Screens a `member` can reach** | 2 | 2 | **3** |
+| **Navigation entries a `member` sees** | *not measured* | **1** | **2** |
 
-> **Nine endpoints and one screen arrived; the seller's half of the product did not move.** Every one of the nine is Team Management, and every one of them is behind `workspace:update`.
+> **The assessment's finding, and what was done about it the same day.** Nine endpoints and one screen had arrived since 2026-08-02 and **the seller's half of the product had not moved** — every one of the nine was Team Management, behind `workspace:update`.
 
-**The fourth number is the one to act on.**
+**The fourth number was the one to act on.**
 
-> **A signed-in salesperson who is not an owner sees a sidebar with one item in it.** `Settings` is guarded by `workspace:update` and `Navigation` correctly declines to render a link the server would refuse — so of the two entries D38 reduced navigation to, a member sees one. **A navigation of one is not navigation; it is a label.**
+> **A signed-in salesperson who was not an owner saw a sidebar with one item in it.** `Settings` is guarded by `workspace:update` and `Navigation` correctly declines to render a link the server would refuse — so of the two entries D38 reduced navigation to, a member saw one. **A navigation of one is not navigation; it is a label.**
+
+**CX-05 answered it without adding a single endpoint.** `/business` reads the five declarations `policy.csv` had already granted a member for a year — see §8.7.
 
 **The route-with-no-entrance class is closed.** Every route in `app/` now has an inbound link from somewhere a customer can already be — checked mechanically, not by memory, and the check is worth re-running rather than trusting: for each `page.tsx`, does any other source file name its path? CX-01 fixed the last one.
 
@@ -54,9 +56,9 @@
                                                │
               ┌────────────────────────────────┴───────────┐
               ▼                                            ▼
-      /  Attention                              /settings  ← owner only
-      (every role)                                   │
-              │                                      ├─▶ /settings/products     linked
+      /  Attention        /business            /settings  ← owner only
+      (every role)        (every role)               │
+              │            ← CX-05                   ├─▶ /settings/products     linked
               │                                      ├─▶ /settings/team         linked  ← TM-03a
               ▼                                      └─▶ /settings/connections  linked  ← CX-01
       /accounts/[accountId]  Brief
@@ -65,13 +67,16 @@
               └─▶ account history, mounted inline  ← CX-03
 ```
 
-**What a `member` sees of that diagram is the left column and nothing else** — `Settings` is filtered out of the sidebar by `guardFor`, taking its three children with it. §8.1.
+**What a `member` sees of that diagram is the first two columns** — `Settings` is filtered out of the sidebar by `guardFor`, taking its three children with it. Before CX-05 it was the first column alone (§8.1).
+
+> **`/business` is deliberately absent from `GUARDED_ROUTES`, and that is the design rather than an omission.** `guardFor` is a **deny-list**: a route it does not name needs only a resolved workspace. So a top-level route is member-reachable *by construction* — which is why option C needed no change to `permissions.ts`, frozen frontend foundation under §20c, and option A did.
 
 ### Every customer-accessible area, and how it is reached
 
 | Area | Route | Reached by | Who |
 |---|---|---|---|
 | **Attention list** | `/` | Navigation · the wordmark · post-decision *"All accounts"* | Every role |
+| **Your business** | `/business` | Navigation — **CX-05** | **Every role** |
 | **Account brief** | `/accounts/[id]` | A row on the attention list · `j`/`k` · the post-decision offer | Every role |
 | **Settings** | `/settings` | Navigation | **Owner only** |
 | **Products** | `/settings/products` | A link on Settings | **Owner only** |
@@ -93,6 +98,7 @@
 |---|---|---|---|---|---|---|
 | **Attention list** | `/` | Opportunity · Buying Score · Signal · Knowledge Graph · Commercial Profile | ✅ | ✅ | ✅ Complete | **Production** |
 | **Account brief** | `/accounts/[id]` | 8 modules | ✅ | ✅ | ✅ Complete | **Production** |
+| **Your business** | `/business` | Commercial Profile · Workspace & Tenancy | ✅ **unchanged** | ✅ | ✅ Complete — read, for every role | **Production** — CX-05 |
 | **Settings** | `/settings` | Workspace & Tenancy | ✅ | ✅ | ✅ Lists organizations, and **links all three children** | **Production** — CX-01 |
 | **Products** | `/settings/products` | Commercial Profile | ✅ | ✅ | ✅ Complete for an owner · ❌ unreachable for a member ([C-008](../LANE_COORDINATION.md)) | **Permissions gap** |
 | **Connection Center** | `/settings/connections` | Integrations | ✅ | ✅ | ✅ Complete — **CX-01** | **Production** |
@@ -170,7 +176,7 @@
 
 | Capability | Where it lives | What is missing |
 |---|---|---|
-| **See what my company sells** *(as a seller)* | `/settings/products` | A member-reachable surface — **[C-008](../LANE_COORDINATION.md)**. **Now the only capability in this class** (§8.1), and five resources wide: `product` · `icp` · `buying_committee` · `commercial_focus` · `target_account` |
+| ~~**See what my company sells** *(as a seller)*~~ | `/business` | **Closed 2026-08-03 — CX-05.** Five resources wide: `product` · `icp` · `buying_committee` · `commercial_focus` · `target_account`, all now member-reachable. §8.7 |
 
 ### 🔴 Workflow incomplete — the customer starts something that cannot finish
 
@@ -325,9 +331,9 @@
 | **CX-02** | **The two dead ends stop being Next.js's** | All | A bad address showed *"404 &#124; This page could not be found"* with no product, no theme and no way back; a render error **outside** the authenticated shell blanked the application, because `ErrorBoundary` wraps three regions *inside* it and `(auth)` has none | ✅ **Shipped** |
 | **CX-03** | **Timeline mounts on the brief** | **J6** | An endpoint, a hook and a built component that reached nobody. **Ten lines** | ✅ **Shipped** |
 | **CX-04** | **The signal glossary** | J2 · J3 | Nine words a first-time reader cannot look up. **Built and reverted** | **[C-025](../LANE_COORDINATION.md)** |
-| **CX-05** | **A seller can read the commercial profile** | **J7** | Every AE and SDR, every day | **[C-008](../LANE_COORDINATION.md)** |
+| **CX-05** | **A seller can read the commercial profile** | **J7** | Every AE and SDR, every day | ✅ **Shipped** — stage 1. **Stage 2 (option D) remains** |
 | **CX-06** | **The Team page** | **J9** | An owner cannot see who is in their organization | ✅ **Shipped** — as TM-03a |
-| **CX-07** | **Responsive shell and screens** | All | The product on a device other than a laptop | **[C-026](../LANE_COORDINATION.md)** |
+| **CX-07** | **Responsive shell and screens** | All | The product on a device other than a laptop | **Unblocked 2026-08-03** — [C-026](../LANE_COORDINATION.md) ruled: **phone is in scope.** Now the largest executable slice on this page |
 | **CX-08** | **Target accounts actually get watched** | J7 | The one place the product accepts an instruction and does nothing with it | **[C-021](../LANE_COORDINATION.md)** |
 | **TM-03a** | **An organization can grow** | **J10** | Every workspace was permanently whoever created it. Invite · list · withdraw, with a Team card on Settings | ✅ **Shipped** |
 
@@ -435,6 +441,8 @@
 
 > **Five deliberate grants, each taken on the reasoning that every seller needs to see the catalog, and none of them reaches a seller.** This is [C-008](../LANE_COORDINATION.md), raised 2026-08-02, proposal accepted, **awaiting one choice.** The assessment did not find it — it confirms it, independently, from the other direction, and reports that it is now the **only** capability in this class.
 
+> ✅ **Ruled and closed the same day.** The table above is the reading that prompted the ruling and is kept as it was measured. **All five are member-reachable at `/business` since CX-05** — §8.7.
+
 ### 8.2 · Which routes are unreachable through navigation?
 
 **None.** The class CX-01 opened is closed, and it was re-checked mechanically rather than remembered.
@@ -494,6 +502,8 @@
 
 **This is not a new idea and it is not this assessment's.** It is recorded in [C-008](../LANE_COORDINATION.md)'s own analysis — *"the declarations never reaching the surfaces where they would matter"* — and the assessment's contribution is to confirm it holds after nine more endpoints and to say that **it is now the highest-value Product Surface work available.**
 
+> **Ruled as option C now, option D next — so this section is stage 2 and remains unbuilt.** Its unblocked half is *displaying* what we sell and who has to agree on the brief, with **no grading**; anything asserting a fit waits on [C-002](../LANE_COORDINATION.md). §8.7.
+
 **It also composes with `sales_engagement`.** SE-02 already joins the declared Buying Committee Role to the observed appointment — a reasoning step whose *inputs* the seller is currently not permitted to see. **Surfacing the declarations on the brief puts the premise next to the conclusion**, which is the whole argument for provenance (principle 2).
 
 ### 8.6 · Which screens still feel like developer tools?
@@ -513,18 +523,66 @@
 
 ---
 
-### The conclusion, stated plainly
+### The conclusion, stated plainly — and what happened to it
 
-**Product Surface is not short of ideas. It is short of five decisions, and four of them have been waiting since 2026-08-02.**
+**Product Surface was not short of ideas. It was short of five decisions, four of them waiting since 2026-08-02.**
 
-| Slice | Value | Blocked by | Waiting since |
+| Slice | Value | Was blocked by | Now |
 |---|---|---|---|
-| **CX-05** · a seller can read the commercial profile | **Every AE and SDR, every day** | **[C-008](../LANE_COORDINATION.md)** — proposal accepted, **one choice outstanding** | 2026-08-02 |
-| **CX-07** · responsive shell and screens | The product on anything but a laptop | [C-026](../LANE_COORDINATION.md) | 2026-08-02 |
-| **CX-04** · the signal glossary | Nine words a first-time reader cannot look up. **Built, and reverted** | [C-025](../LANE_COORDINATION.md) | 2026-08-02 |
-| **CX-08** · target accounts actually get watched | The one place the product accepts an instruction and does nothing | [C-021](../LANE_COORDINATION.md) | 2026-08-02 |
-| **TASK-011** · the brief's hierarchy pass | Refinement, not capability | **A seller in the room** — correctly not a slice | 2026-08-02 |
+| **CX-05** · a seller can read the commercial profile | **Every AE and SDR, every day** | [C-008](../LANE_COORDINATION.md) | ✅ **Ruled and shipped, 2026-08-03** — option C. §8.7 |
+| **CX-07** · responsive shell and screens | The product on anything but a laptop | [C-026](../LANE_COORDINATION.md) | ✅ **Ruled 2026-08-03 — phone is in scope.** Executable, unbuilt |
+| **CX-04** · the signal glossary | Nine words a first-time reader cannot look up. **Built, and reverted** | [C-025](../LANE_COORDINATION.md) | ⏳ Still waiting |
+| **CX-08** · target accounts actually get watched | The one place the product accepts an instruction and does nothing | [C-021](../LANE_COORDINATION.md) | ⏳ Still waiting |
+| **TASK-011** · the brief's hierarchy pass | Refinement, not capability | **A seller in the room** | ⏳ Correctly not a slice |
 
-> **Every unblocked Product Surface slice has been built.** CX-01, CX-02, CX-03 and TM-03a shipped; the Sales Workspace slices shipped on top of them. **What remains is a queue of five, each waiting on somebody who is not this lane** — which `CLAUDE.md` §20e names as a correct repository state rather than a stalled one.
->
-> **The lane's recommendation is to rule on C-008 first**, and it is the same recommendation Lane B made on 2026-08-02 for the same reason: a guided first run happens once per workspace, **this happens every day for every seller**, and the read-mode components it produces are what every later commercial-profile surface would otherwise have to invent.
+> **Two of the five were ruled on the day the assessment named them, and one of the two shipped the same day.** That is the assessment paying for itself: the work was never blocked on engineering, and putting the two decisions in front of the person who owns them was worth more than another slice would have been.
+
+---
+
+## 8.7 · CX-05, as built — *2026-08-03*
+
+**[C-008](../LANE_COORDINATION.md) ruled by the product owner: option C now, option D next.** Stage 1 is `/business` — a read-only commercial profile at a top-level, member-reachable route.
+
+### What it cost, and what it did not
+
+| | |
+|---|---|
+| **Backend change** | **None.** Not an endpoint, not a policy line, not a migration |
+| **Frozen files touched** | **None.** `permissions.ts` is untouched — a route absent from `GUARDED_ROUTES` is member-reachable by construction, which is the whole argument for C over A |
+| **New navigation entries** | **One**, and D38's every test still holds: not a pipeline module with a menu item, not *show me all the X*, and it leads to something rather than to *coming soon* |
+| **What a member gained** | **Five declarations `policy.csv` had granted them all along** |
+
+### The shape is the customer's, not the API's
+
+**The authoring screen renders five declarations as five editors in a column**, because each arrived in its own slice — §8.4's finding. **A reader does not have five questions; they have one, asked about each product.** Three of the five cite a product, so the product is the spine:
+
+```
+  what we are pushing            ← focus, if there is one — the only declaration that expires
+  ├─ Product              name · description
+  │    who buys it        industries · countries · size
+  │    who has to agree   title · part
+  └─ …
+  companies we are chasing       ← target accounts, if there are any
+```
+
+**Focus leads because it is the only one with a shelf life.** The others describe what is permanently true of the business; focus says what is true this quarter, and a seller reading to decide their next move needs the perishable fact first.
+
+### Three refusals
+
+**It grades nothing.** No score, no rank, no *this account fits*. Comparing a real company to a description is **matching**, matching has no owner ([C-002](../LANE_COORDINATION.md)), and Commercial Profile computes nothing (ADR-0035). **That is the boundary the ruling drew between stage 1 and stage 2**, and it is what made stage 1 buildable in a day without settling one ownership question. Asserted by a test that walks the rendered text for *fit*, *match*, *score*, *rank* and *qualified*.
+
+**A fact true of every product is said once, not once per product.** If no product has an ideal customer described, the page says so at the section rather than printing five identical notes — repeated identical text is what a reader learns to skip, and skipping is how they miss the one that appears when a colleague describes the sixth. When *some* product has one, the absence becomes informative and moves onto the product that lacks it.
+
+**A member is offered no link they cannot follow.** The empty state teaches an owner how to fix it and tells a member who can — *a control that goes nowhere costs more trust than an absent one* (principle 8), which is the same reasoning that refused option A for the whole item.
+
+### The gate that could not see the sidebar
+
+**`infra/reachability.py` reported `/business` as having no entrance**, and it was wrong — the entry is in the sidebar. **The check could not see `navigation.tsx` at all**: it matches `href="…"`, `href={\`…\`}` and `router.push(…)`, and the navigation holds its routes in an array (`{ href: '/', label: 'Attention' }`) rendered through `<Link href={item.href}>`. **Neither half matched.**
+
+**Nothing revealed it because both existing entries had a second, literal door.** `/` has six; **`/settings` has exactly one — `no-workspace.tsx`.** Delete that one file and the check calls the most-used screen in the product an orphan. **CX-05 surfaced it by adding the first navigation entry since the check was written.**
+
+**Fixed, with the bias kept in the right direction.** A route named as an object property counts as a door **only in a file that also renders a link** — because `GUARDED_ROUTES` has the identical shape and the opposite meaning, and counting it would let a route be *reachable* because something forbade it. **A new form of declaration therefore stays unmatched, which reports a false orphan rather than hiding a real one.** Four tests, and the new condition was mutated to confirm it is load-bearing rather than decorative.
+
+### What stage 2 still owes
+
+**Option D — the declarations on the screens the seller already uses.** Its unblocked half is *displaying* what we sell and who has to agree on the account brief, with **no grading of the account against it**; anything saying *this account matches this ICP* waits on [C-002](../LANE_COORDINATION.md). §8.5 is the argument; the ruling is *next*, not *instead*.

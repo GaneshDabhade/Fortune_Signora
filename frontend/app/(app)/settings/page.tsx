@@ -130,9 +130,16 @@ export default function SettingsPage() {
           <p className="text-sm text-content-muted">
             What your company sells, and — as it arrives — who buys it and who decides.
             Signora needs this before it can tell you anything useful about anyone
-            else&apos;s company.
+            else&apos;s company.{' '}
+            {/* **The two screens name each other rather than sharing a title.**
+                Reading lives at `Your business` in the sidebar, where everybody
+                including a member can reach it (CX-05); this card authors it.
+                Without this sentence an owner meets two pages headed *Your
+                business* and has to work out which one they are on. */}
+            Everyone in your organization can <strong className="font-medium">read</strong>{' '}
+            this under <em>Your business</em>; changing it is yours.
           </p>
-          <SettingsLink href="/settings/products">Products</SettingsLink>
+          <SettingsLink href="/settings/products">Change what you sell</SettingsLink>
         </CardBody>
       </Card>
 

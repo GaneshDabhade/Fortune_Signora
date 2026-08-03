@@ -296,7 +296,7 @@ databaseUrl: required(
 | [C-005](#c-005--who-owns-the-signal-profile-write-path) | Who owns the signal-profile write path | Lane B | **Product owner** / Lane A | `ANSWERED` — ownership. **Sequencing still the product owner's** | The first customer-editable relevance profile |
 | [C-006](#c-006--which-lane-owns-test_api_modulepy) | Which lane owns `test_api_<module>.py` | Lane B | **Product owner** | `OPEN` — **deliberately.** Not to be resolved inside a slice (2026-08-02) | Nothing — a standing ambiguity in §20e |
 | [C-007](#c-007--the-guided-first-run-is-a-two-lane-build) | The guided first run is a two-lane build | Lane B | Lane A + **product owner** | `OPEN` — routing and navigation answered; **deliberately not scheduled** (2026-08-02) | **Blocked on a capability, not a decision:** the `target_accounts_changed` consumer in `provider_platform` |
-| [C-008](#c-008--sellers-cannot-see-what-their-company-sells) | Sellers cannot see what their company sells | Lane B | **Product owner** + QE | `OPEN` — **proposal accepted 2026-08-02.** Awaiting the choice of option A/B/C/D | Nothing today. Every AE and SDR, every day. **A repository-level capability, not a module enhancement** |
+| [C-008](#c-008--sellers-cannot-see-what-their-company-sells) | Sellers cannot see what their company sells | Lane B | **Product owner** + QE | **`OPEN` — narrowed to stage 2, 2026-08-03.** Ruled **option C now, D next**; stage 1 shipped as **CX-05** | Nothing. **Stage 2's grading half waits on [C-002](#c-002--customer-language-has-no-anticorruption-layer)**; its display half is executable |
 | [C-009](#c-009--an-internal-fault-reaches-a-customer-as-a-422) | An internal fault reaches a customer as a `422` | Lane A | **Product owner** (platform §20a) | `OPEN` | Nothing today. Splitting the error hierarchy in any module |
 | [C-010](#c-010--no-lane-is-assignable-to-apps-or-signora_platform-and-a-defect-is-sitting-in-one) | No lane is assignable to `apps/` or `signora_platform/` | QE | **Product owner** | `OPEN` | [B-007](BUGS.md) and [B-012](BUGS.md) sit in exactly this gap |
 | [C-011](#c-011--a-contraction-risk-reads-like-a-small-opportunity-on-the-attention-list) | A contraction risk reads like a small opportunity on the attention list | QE | **Product owner** | `OPEN` | R9-03 only. The rest of the surface proceeds |
@@ -321,7 +321,7 @@ databaseUrl: required(
 | [C-023](#c-023--m13-is-ratified-architecture-not-an-executable-milestone) | M13 is ratified architecture, not an executable milestone | Lane A | **Product owner** | `OPEN` | **Overlaps Lane B's C-025 in substance** — two lanes reached it independently |
 | [C-024 *(Lane A's — see the collision note)*](#c-024--nothing-in-the-product-can-render-a-persons-name) | Nothing in the product can render a person's name | Lane A | **Product owner** | `OPEN` — **architectural** | **TS-01, the Team page.** And how *anything* names a user: AI attribution, audit actors, notifications, mentions |
 | [C-025 *(Lane A's — see the collision note)*](#c-025--the-catalog-explains-nine-words-to-nobody) | The catalog explains nine words to nobody | Lane A | **Product owner** + `signal_engine` | `OPEN` | [R5-04](architecture/39-product-review-findings.md). **Built and reverted; one sentence unblocks either outcome** |
-| [C-026](#c-026--is-signora-expected-to-work-on-a-phone) | Is Signora expected to work on a phone? | Lane A | **Product owner** | `OPEN` | [B-019](BUGS.md), and **every responsive decision in Product Surface** |
+| [C-205](#c-205--is-signora-expected-to-work-on-a-phone) | Is Signora expected to work on a phone? | Lane A | **Product owner** | **`ANSWERED` 2026-08-03 — yes, a phone is in scope** | **Unblocks CX-07**, which is a milestone rather than a slice. [B-019](BUGS.md) is confirmed a defect |
 | [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | M14b is three concerns in one roadmap row, and none has a module | Lane A | **Product owner** (bounded context 🔴) | `OPEN` — **architectural** | **The whole of M14b.** [R-01](architecture/16-architecture-risks.md) has been waiting for it at High/High |
 | [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide) | Identifier allocation is still only *unlikely* to collide | Lane A | **QE** + product owner | `OPEN` — **directed by the product owner** | Nothing built. **The repository scaling past three actors without manual reconciliation** |
 | [C-202](#c-202--four-shared-documents-disagree-and-one-disagrees-with-itself) | Four shared documents disagree, and one disagrees with itself | Lane A | **QE** | `OPEN` — **directed by the product owner** | Nothing built. **A cold session trusting any status in the repository** |
@@ -757,6 +757,23 @@ Products and ICP beside the account brief; the buying committee where contacts a
 **Why C before D rather than straight to D.** D is where this ends up, and it is also where the module boundary gets contested. Stage 1 makes five declarations readable by everybody who needs them without settling a single ownership question; stage 2 can then be argued about while sellers already have the information. Going straight to D means the fastest fix waits on the slowest question.
 
 **Why not A even though it is smaller.** A is smaller in diff and larger in commitment: it changes a frozen foundation file to widen an authoring route, and it fixes the symptom in the place the product has already decided is the wrong place.
+
+### Ruled by the product owner — 2026-08-03
+
+> **Option C now, option D next. A and B rejected**, exactly as recommended.
+
+**Stage 1 shipped the same day, as CX-05.** `/business` — a read-only commercial profile at a top-level route, reachable by every role.
+
+| The recommendation said | What was built |
+|---|---|
+| No backend change | **None.** Not an endpoint, not a policy line, not a migration |
+| No frozen file touched | **None.** `permissions.ts` untouched — a route absent from `GUARDED_ROUTES` is member-reachable by construction |
+| No matching, no grading | **None**, and asserted by a test that walks the rendered text for *fit*, *match*, *score*, *rank*, *qualified* |
+| Lane B gives its five components a read mode | **Not needed, and not asked for.** A read surface was built alongside the editors rather than a mode added inside them — the editors are full of mutation hooks, and *reading* and *authoring* are different jobs. **Lane B's files were changed only to stop duplicating vocabulary**: `PART_LABELS`, `PART_HINTS` and `size()` moved to `components/commercial/vocabulary.ts` and are now imported by both, because a part reading *Economic buyer* while being declared and `economic_buyer` while being read describes two taxonomies to somebody who knows there is one |
+
+**The split in §4 assumed two lanes and needed one.** Recorded rather than quietly departed from: the product owner set the boundary on 2026-08-03 as *Lane B exposes capability through stable contracts; Lane A presents it*, and rendering an existing contract is Lane A's under that reading. **No backend contract moved, so no agreement was required.**
+
+**Status: `OPEN`, narrowed to stage 2** — option D, the declarations on the screens the seller already uses. Its unblocked half needs nothing from anyone; anything asserting *this account fits this ICP* still waits on [C-002](#c-002--customer-language-has-no-anticorruption-layer). **Lane B opened this item and closes it**; Lane A has recorded the ruling and what it delivered, and has not closed somebody else's row.
 
 #### 5 · Module ownership
 
@@ -2074,6 +2091,22 @@ assert set(SignalTypeResponse.model_fields) == {"key", "title"}
 **If desktop-only:** say so, and make the frame say so below the threshold instead of silently dropping the navigation. That is a smaller fix than B-019's, and it turns a broken experience into an honest one.
 
 **Lane A has no recommendation between the two.** Which devices a seller uses is a customer fact, and this lane has never seen one.
+
+### Ruled by the product owner — 2026-08-03
+
+> **Yes. A phone is in scope.**
+
+**So the second reading is the one that binds**, and its consequences are as this item stated them rather than as anybody would prefer them:
+
+| | |
+|---|---|
+| **[B-019](BUGS.md) is a defect** | Not a missing statement. The shell drops the navigation below `768px` and nothing replaces it |
+| **CX-07 is executable** | And it is **a milestone, not a slice**: every screen needs a responsive pass, the brief's eleven sections need an order that survives one column, and the shell needs a mobile navigation pattern that does not exist |
+| **Responsiveness becomes a defect class** | Every Product Surface slice from now on carries it, rather than paying a retrofit later. `/business` was built responsive on the day of the ruling — its one two-column row collapses at `sm` |
+
+**What this item asked for is now true: the repository states a supported viewport**, so a screen can be reviewed against a target instead of an assumption. **Status `ANSWERED`; it closes when the viewport is written into the frontend foundation's own documentation**, which is the artifact a cold lane would read — and that belongs with CX-07 rather than with this record.
+
+**Not started here, deliberately.** CX-05 was the slice in hand, and folding a milestone-sized responsive pass into it would be two slices under construction at once (§20e).
 
 ---
 

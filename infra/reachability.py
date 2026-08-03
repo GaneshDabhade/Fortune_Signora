@@ -73,13 +73,48 @@ def _routes(app: Path = APP) -> dict[str, Path]:
     return found
 
 
+#: A JSX link element. **The evidence that a file hands out doors.**
+_RENDERS_LINKS: Final = re.compile(r"<(?:Link|a)\b")
+
+#: A route named as an object property — `{ href: '/business', label: … }`.
+_HREF_PROPERTY: Final = re.compile(r"href:\s*[\"']([^\"']+)[\"']")
+
+
 def _navigations(roots: tuple[Path, ...] | None = None) -> list[tuple[str, Path]]:
     """Every in-product navigation, as `(target, the file that offers it)`.
 
     Covers what this codebase actually writes: `href="…"`, `href={`…`}`,
-    `router.push(…)`, `redirect(…)` and `replace(…)`. **Verified against the
-    repository rather than assumed** — a pattern nobody uses would be dead
+    `router.push(…)`, `redirect(…)`, `replace(…)` — and **a route named as an
+    object property, in a file that renders links.** Verified against the
+    repository rather than assumed: a pattern nobody uses would be dead
     matching, and one that is used and unmatched would make the check lie.
+
+    ### The object-property case, and why it is conditional
+
+    **This check could not see the sidebar** until CX-05, and nothing revealed
+    it, because `navigation.tsx` holds its routes in an array — `{ href: '/',
+    label: 'Attention' }` — and renders them through `<Link href={item.href}>`.
+    No pattern above matches either half. **The product's primary source of
+    doors was invisible to the check that exists to find missing doors.**
+
+    It went unnoticed because both existing entries had a second, literal
+    entrance elsewhere: `/` from six places, and `/settings` from exactly one —
+    `no-workspace.tsx`. **Delete that one file and `/settings` reports as an
+    orphan**, which is the check being wrong about the most-used screen in the
+    product. CX-05 surfaced it by adding the first navigation entry since the
+    check was written.
+
+    **Why it is not simply `href:\\s*'…'` everywhere.** `GUARDED_ROUTES` in
+    `permissions.ts` has the identical shape — `{ href: '/settings', requires:
+    … }` — and it is a *guard declaration*, the opposite of an entrance:
+    naming a route there restricts it. Counting it would let a route be
+    "reachable" because something forbade it.
+
+    **So the rule is: a route named in a file that renders links is a door; a
+    route named in a file that renders nothing is a declaration.** It separates
+    the two cases in this repository exactly, and it keeps the check's bias in
+    the right direction — a new form of *declaration* stays unmatched, which
+    reports a false orphan rather than hiding a real one.
     """
     patterns = (
         r'href="([^"]+)"',
@@ -94,6 +129,10 @@ def _navigations(roots: tuple[Path, ...] | None = None) -> list[tuple[str, Path]
             text = source.read_text()
             for pattern in patterns:
                 for target in re.findall(pattern, text):
+                    if target.startswith("/"):
+                        found.append((target, source))
+            if _RENDERS_LINKS.search(text):
+                for target in _HREF_PROPERTY.findall(text):
                     if target.startswith("/"):
                         found.append((target, source))
     return found

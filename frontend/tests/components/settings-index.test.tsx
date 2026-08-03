@@ -100,9 +100,20 @@ describe('the entrance the Connection Center never had', () => {
     ).toBeVisible();
   });
 
-  it('still offers Products, which was the only link before', () => {
+  it('still offers the commercial profile, which was the only link before', () => {
+    // **The link is named for the verb since CX-05**, not for the noun. The
+    // noun now belongs to `/business`, which is where everybody — including a
+    // member — reads it; this card is the half only an owner can do.
     render(draw());
 
-    expect(screen.getByRole('link', { name: 'Products' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Change what you sell' })).toBeVisible();
+  });
+
+  it('tells an owner that reading it lives somewhere everybody can reach', () => {
+    // Two screens would otherwise share the title *Your business* with nothing
+    // saying which is which.
+    render(draw());
+
+    expect(screen.getByText(/everyone in your organization can/i)).toBeVisible();
   });
 });
