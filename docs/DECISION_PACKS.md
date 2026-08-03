@@ -282,7 +282,13 @@
 | **C** | QE publishes assignment commits during its cycle | No | No | **Yes, every assignment** | **Couples assignment to the certification cycle** |
 | **D** | A dedicated assignment file or queue | Yes | — | Yes | One pull |
 
-**Recommendation: A.** It is the only option that changes **no mechanism at all** — the claim protocol, the guard, `CLAIM_PATHS`, QE's authority over `integration` and the one-exception rule all stand exactly as written. **The lane still claims, the claim still arbitrates, and QE still owns every other arrival on `integration`.**
+> ⚠️ **Superseded 2026-08-03, product owner, before ratification — and the ruling is simpler than the recommendation.** **Lane C notifies the lane directly; the lane creates its own `Claim TASK-nnn` and pushes it.** No `CLAUDE.md` amendment is needed, and **no lane has to discover anything.**
+>
+> **What Option A got wrong:** it still required the lane to *go looking* on a ref, and **a lane cannot claim work it has never been told it owns.** Reading is discovery; **an assignment is a message.** The claim protocol is preserved exactly — only the notification changes, and it was never a repository artifact.
+>
+> **What survives:** the delivery insight is unchanged and is what makes the ruling work — **the lane's own claim commit is the delivery to `integration`**, touching exactly `CLAIM_PATHS`, and **Lane C still never pushes there.**
+
+**Original recommendation, superseded above: A.** It is the only option that changes **no mechanism at all** — the claim protocol, the guard, `CLAIM_PATHS`, QE's authority over `integration` and the one-exception rule all stand exactly as written. **The lane still claims, the claim still arbitrates, and QE still owns every other arrival on `integration`.**
 
 **B is what Lane C nearly did**, and it is worth naming as rejected: it would have put a second commit type on a shared branch to solve a problem that a `git show` already solves.
 

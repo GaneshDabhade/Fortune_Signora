@@ -126,9 +126,11 @@ Product Owner decision required:
 
 | Step | Done when |
 |---|---|
-| **Publish** | The assignment is on a ref the receiving lane reads |
-| **Verify** | `git show <that ref>:docs/ACTIVE_ASSIGNMENTS.md` shows it — **checked, not assumed** |
-| **Notify** | The lane's open coordination item is answered where the lane will see the answer |
+| **Record** | The task exists in [`BACKLOG.md`](BACKLOG.md) with everything a lane needs to start |
+| **Notify** | **Lane C replies directly to that lane: `Assigned: TASK-nnn`.** Not a ref to read, not an item to find — **a lane cannot claim work it has never been told it owns** |
+| **Verify** | **The lane has acknowledged and created its claim.** Lane C's responsibility ends there; execution is the lane's |
+
+> **Lane C does not push assignments to `integration`, does not create claims, and does not wait for QE.** The lane creates `Claim TASK-nnn` and pushes it — **the existing protocol, unchanged** — and that claim is what puts the assignment on the shared branch.
 
 > **Delivery uses no new mechanism** ([Pack K](DECISION_PACKS.md)). **The lane's own claim commit is the delivery to `integration`** — it already touches exactly `ACTIVE_ASSIGNMENTS.md` and `BACKLOG.md`, which is `CLAIM_PATHS`. **Lane C never pushes to `integration`**, and QE's authority over it is untouched.
 
