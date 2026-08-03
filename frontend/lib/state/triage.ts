@@ -27,14 +27,50 @@
  *
  * **No urgency, no score, no ordering of the questions by importance.** They are
  * listed in a fixed reading order, and the counts are the only quantity.
+ *
+ * ---
+ *
+ * ### SW-04 · movement, and the four questions that were refused
+ *
+ * *"Which deals accelerated · slowed · silently stopped moving?"* Each needs a
+ * threshold or a baseline, and **Signora has neither**:
+ *
+ * - **Slowed / stopped moving** would be read off `since`, which records when a
+ *   *workflow decision* was last taken. It is not a measure of activity. Signora
+ *   cannot see a call, an email or a meeting (LO-06), so an account with no
+ *   recorded decision for three weeks may have been worked every day. **This is
+ *   `Neglected` wearing a pipeline word**, and it is refused here for the reason
+ *   it was refused one layer down.
+ * - **Accelerated** needs a baseline — *faster than what?* Historical conversion
+ *   rates need closed-won volume the platform does not have
+ *   (`50-sales-engagement.md` §23, an **operational** trigger: time must pass).
+ *
+ * **What Signora *can* see is both halves of a divergence**, and both are
+ * recorded facts rather than judgements: **what a person committed to** (the
+ * stage) and **what the evidence did afterwards** (the score and its state).
+ * `unclaimed` and `diverged` are that comparison and nothing more.
+ *
+ * > **These two are closer to the judgement line than the three above them**,
+ * > and saying so is the point: they combine *two* server-computed facts where
+ * > the others read one. **No threshold, no scale, no ranking** — but a
+ * > conjunction is a step, and the next step after it would be a weight. If a
+ * > third fact or any number enters one of these, it has stopped being
+ * > arrangement and belongs in the module that owns the conclusion.
  */
 
 import type { AccountAttention, EvidenceState, Trend } from '@/lib/api/types';
 
 /** A question the accounts on this list are raising. */
-export type Raised = 'verify' | 'ageing' | 'rising';
+export type Raised = 'verify' | 'ageing' | 'rising' | 'unclaimed' | 'diverged';
 
-const RAISED: readonly Raised[] = ['verify', 'ageing', 'rising'];
+/**
+ * Reading order, and **not an order of importance.**
+ *
+ * The two workflow questions come last because they are about what a *person*
+ * did, and the three evidence questions are about what the *pipeline* saw — a
+ * seller triages the second kind faster.
+ */
+const RAISED: readonly Raised[] = ['verify', 'ageing', 'rising', 'unclaimed', 'diverged'];
 
 /**
  * What a customer calls each one, and what it means underneath.
@@ -47,6 +83,8 @@ export const RAISED_WORDS: Record<Raised, string> = {
   verify: 'Worth verifying',
   ageing: 'Ranked on ageing evidence',
   rising: 'Rising',
+  unclaimed: 'Building, and nobody has taken it',
+  diverged: 'Taken on, evidence has since aged',
 };
 
 /**
@@ -59,6 +97,8 @@ export const RAISED_MEANING: Record<Raised, string> = {
   verify: 'Providers describe this company differently.',
   ageing: 'The evidence behind the score has aged.',
   rising: 'The score last moved up.',
+  unclaimed: 'The score is rising and nobody has picked this up.',
+  diverged: 'Somebody is working this, and the evidence has stopped being current.',
 };
 
 /** Whether one account raises one question. **A filter, never a judgement.** */
@@ -73,6 +113,14 @@ export function raises(account: AccountAttention, question: Raised): boolean {
       return AGEING.includes(account.evidence);
     case 'rising':
       return RISING.includes(account.trend as Trend);
+    case 'unclaimed':
+      // `tracking` **is** the unclaimed state — the Opportunity Engine's own
+      // words: *"Signora suggests tracking this account. Nobody has
+      // committed."* Testing `owner_id` as well would be a second copy of that
+      // rule, wrong the moment the stage vocabulary changes.
+      return account.stage === 'tracking' && RISING.includes(account.trend as Trend);
+    case 'diverged':
+      return account.stage === 'engaged' && AGEING.includes(account.evidence);
   }
 }
 

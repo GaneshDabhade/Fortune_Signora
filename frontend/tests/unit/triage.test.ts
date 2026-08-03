@@ -7,7 +7,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import type { AccountAttention, EvidenceState, Trend } from '@/lib/api/types';
+import type { AccountAttention, EvidenceState, Stage, Trend } from '@/lib/api/types';
 import {
   RAISED_MEANING,
   RAISED_WORDS,
@@ -72,6 +72,54 @@ describe('whether one account raises one question', () => {
   });
 });
 
+describe('movement, as the divergence between what a person did and what the evidence did', () => {
+  it('notices a rising account nobody has picked up', () => {
+    expect(raises(account({ stage: 'tracking', trend: 'rising' }), 'unclaimed')).toBe(true);
+  });
+
+  it('does not call a rising account unclaimed once somebody is working it', () => {
+    expect(raises(account({ stage: 'engaged', trend: 'rising' }), 'unclaimed')).toBe(false);
+  });
+
+  it('does not call a claimed-but-flat account unclaimed', () => {
+    expect(raises(account({ stage: 'tracking', trend: 'steady' }), 'unclaimed')).toBe(false);
+  });
+
+  it('notices an account somebody took on whose evidence has since aged', () => {
+    expect(raises(account({ stage: 'engaged', evidence: 'stale' }), 'diverged')).toBe(true);
+    expect(raises(account({ stage: 'engaged', evidence: 'cooling' }), 'diverged')).toBe(true);
+  });
+
+  it('says nothing about an account being worked on current evidence', () => {
+    expect(raises(account({ stage: 'engaged', evidence: 'current' }), 'diverged')).toBe(false);
+  });
+
+  it('says nothing about ageing evidence nobody has taken on', () => {
+    // That is `ageing`, which is a different question with a different answer.
+    // Collapsing the two would lose which of them a seller can act on.
+    expect(raises(account({ stage: 'tracking', evidence: 'stale' }), 'diverged')).toBe(false);
+  });
+
+  it.each<Stage>(['closed_won', 'closed_lost', 'dismissed'])(
+    'says nothing about a %s account',
+    (stage) => {
+      // A finished account is not a divergence. It is a decision.
+      expect(raises(account({ stage, evidence: 'stale' }), 'diverged')).toBe(false);
+      expect(raises(account({ stage, trend: 'rising' }), 'unclaimed')).toBe(false);
+    },
+  );
+
+  it('never asks how long an account has sat still', () => {
+    // **`Neglected` wearing a pipeline word.** `since` records when a workflow
+    // decision was last taken, not activity — Signora cannot see a call, an
+    // email or a meeting (LO-06), so an account with no recorded decision for
+    // three weeks may have been worked every day.
+    const untouched = account({ stage: 'engaged', since: '2020-01-01T00:00:00Z' });
+
+    expect(triage([untouched])).toEqual([]);
+  });
+});
+
 describe('which questions a list actually raises', () => {
   it('omits a question nobody raises', () => {
     // **Absent, never present at zero.** A strip showing the same three labels
@@ -114,20 +162,26 @@ describe('which questions a list actually raises', () => {
   });
 
   it('reads questions in a fixed order rather than by how many raise them', () => {
+    // The two rising accounts are also `tracking`, so they raise `unclaimed`
+    // too — which is correct, and is why the order is fixed rather than sorted
+    // by count. `verify` is raised once and still reads first.
     const groups = triage([
       account({ trend: 'rising' }),
       account({ trend: 'rising' }),
       account({ contested: true }),
     ]);
 
-    expect(groups.map((one) => one.question)).toEqual(['verify', 'rising']);
+    expect(groups.map((one) => one.question)).toEqual(['verify', 'rising', 'unclaimed']);
   });
 });
 
 describe('the question a URL is asking for', () => {
-  it.each(['verify', 'ageing', 'rising'] as const)('reads %s', (question) => {
-    expect(raisedFrom(question)).toBe(question);
-  });
+  it.each(['verify', 'ageing', 'rising', 'unclaimed', 'diverged'] as const)(
+    'reads %s',
+    (question) => {
+      expect(raisedFrom(question)).toBe(question);
+    },
+  );
 
   it('shows the whole list rather than failing on a stale link', () => {
     expect(raisedFrom('neglected')).toBeNull();
@@ -157,7 +211,7 @@ describe('the words a customer reads', () => {
   it('gives every question a label and a meaning', () => {
     // A question with no sentence under it is a label a seller has to guess at,
     // and the guess is where a filter starts being ignored.
-    for (const question of ['verify', 'ageing', 'rising'] as const) {
+    for (const question of ['verify', 'ageing', 'rising', 'unclaimed', 'diverged'] as const) {
       expect(RAISED_WORDS[question]).toBeTruthy();
       expect(RAISED_MEANING[question]).toBeTruthy();
     }

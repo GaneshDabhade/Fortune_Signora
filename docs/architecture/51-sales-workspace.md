@@ -239,3 +239,39 @@ Three questions, each a filter over a fact the server already computed:
 | **A *neglected* or *sitting too long* question** | ⛔ It needs a threshold, and a threshold is a judgement Signora has no basis for: it **cannot see a call, an email or a meeting** (LO-06). `HeldSince` renders the duration and **grades nothing**; reversing that one layer up would be quiet. |
 | **A server-side triage endpoint** | ⛔ Filtering a list the seller already holds costs no round trip and cannot return a differently-ordered list mid-triage. **The trigger is a portfolio large enough to paginate**, at which point the question has to travel to the server or the counts will lie about the pages not fetched. |
 | **A count of anything a seller cannot act on** | ⛔ That is the Overview page D38 retired, in a smaller font. |
+
+---
+
+## 10 · SW-04 — movement, and the four questions Signora may not answer
+
+**The product owner's framing was the constraint, and it is the right one:** *movement itself isn't valuable; understanding the significance of movement is — and the deterministic layer decides significance.*
+
+**Applying it honestly refuses four of the six questions asked.**
+
+| Question | Why it cannot be answered |
+|---|---|
+| **Which deals slowed?** | It would be read off `since`, which records **when a workflow decision was last taken** — not activity |
+| **Which deals silently stopped moving?** | The same field, the same problem |
+| **Which deals accelerated?** | *Faster than what?* A baseline needs closed-won volume the platform does not have (§23 of [50](50-sales-engagement.md) — an **operational** trigger: time must pass) |
+| **Which opportunities lost momentum?** | *Momentum* is the same threshold in commercial clothes |
+
+> **`since` is not a measure of activity, and reading it as one is `Neglected` wearing a pipeline word.** Signora cannot see a call, an email or a meeting (LO-06), so an account with no recorded decision for three weeks may have been worked every day. **SW-03 refused that judgement one layer down**, and reversing it here — where the word would be *slowed* rather than *neglected* — would be the same reversal, quieter.
+
+### What Signora *can* see: both halves of a divergence
+
+**A person committed to something. The evidence then did something.** Both are recorded facts, and comparing them invents nothing:
+
+| Question | Both halves | What a seller does about it |
+|---|---|---|
+| **Building, and nobody has taken it** | `stage = tracking` *(the Opportunity Engine's own words: "nobody has committed")* × `trend = rising` | Pick it up, or decide not to |
+| **Taken on, evidence has since aged** | `stage = engaged` × `evidence ≠ current` | Re-check what it was taken on |
+
+**Neither says a deal is going badly.** The first says nobody has decided; the second says the reason for the decision is no longer current. **A seller supplies the significance, because they have the half Signora cannot see.**
+
+### These two are closer to the line, and the trigger is stated
+
+**They combine *two* server-computed facts where SW-03's three read one.** No threshold, no scale, no ranking — but a conjunction is a step, and the next step after it is a weight.
+
+> **If a third fact or any number enters one of these, it has stopped being arrangement** and belongs in the module that owns the conclusion. That is written in `lib/state/triage.ts` beside the code, where the next person to add a question will read it.
+
+**A finished account raises neither.** `closed_won`, `closed_lost` and `dismissed` are decisions, not divergences — pinned by a test, because a dismissed account whose score later rises would otherwise reappear as *unclaimed* forever.
