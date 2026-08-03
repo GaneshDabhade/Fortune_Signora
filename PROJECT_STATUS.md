@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `f034364`, 2026-08-03.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `bdc159f`, 2026-08-03.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`f034364`** — the certified commit itself |
-| **`integration`** | `f034364` — level with `main` |
-| **Release candidate** | **None pinned.** Cycle 34 promoted the Human Review command and two defect findings |
-| **Certification** | ✅ [`f034364a09a9`](certification/reports/f034364a09a9.md) · migration head **`0030`** · protocol **v2** |
+| **`main`** | **`bdc159f`** — the certified commit itself |
+| **`integration`** | `bdc159f` — level with `main` |
+| **Release candidate** | **None pinned.** Cycle 35 promoted `make unsaved`, the performance guideline, and two ruled decisions |
+| **Certification** | ✅ [`bdc159fb257f`](certification/reports/bdc159fb257f.md) · migration head **`0030`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **158 commits, none outside a certified snapshot** |
-| **Blocking Quality Defects** | **None.** One was found and closed inside this cycle — [B-106](docs/BUGS.md) |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **162 commits, none outside a certified snapshot** |
+| **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Both lanes.** Five separate rulings, all the product owner's — see §1c |
 | **Validation queue** | Lane A's and Lane B's branches, **both awaiting a rebase by their lane** |
 | **Customer value this cycle** | ⚠️ **Indirectly.** No product capability changed, but **reviewing the product is now one command** rather than six steps and two terminals — the product owner is the customer of that |
-| **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for four cycles, correctly** |
+| **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for five cycles, correctly** |
 
 > ⚠️ **The cycle's finding outweighs its feature.** Running the suite in a shell that did not export `SIGNORA_DATABASE_URL` produced **three failures on the commit certified hours earlier** — a certification gate had a hidden input, so the run that certified `909374a` and the run reproducing it were measuring different things, and nothing in the record said so ([B-106](docs/BUGS.md)). It is fixed and verified by removing the variable entirely. **[B-022](docs/BUGS.md) predicted this class and stayed open; this is the first time it was observed rather than reasoned about.**
 
-**Repository health:** **2627 backend tests** · **95.50% coverage** *(floor 95)* · 719 frontend tests · 360 Security Invariants · mypy strict over **619 files** · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
+**Repository health:** **2640 backend tests** · **95.50% coverage** *(floor 95)* · 719 frontend tests · 360 Security Invariants · mypy strict over **620 files** · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
 
 ---
 
@@ -101,50 +101,63 @@
 
 ---
 
-## 1d · Release summary — 2026-08-03, cycle 34
+## 1d · Release summary — 2026-08-03, cycle 35
 
-**Derived from the promoted commit `f034364`.** One command a product owner can use, and two defects it found on the way.
+**Derived from the promoted commit `bdc159f`.** One small command, a guideline every lane now shares, and a correction to QE's own measurement.
 
-### `make review` — a product review is one command
+### `make unsaved` — what would you lose if this disk died right now?
 
-A reviewer types `make review` and gets a browser. **No port, no database, no compose project, no environment variable, no second terminal.** It validates the workstation, seeds twelve accounts through the real pipeline, starts both tiers, waits until each answers, opens the product, and records what was shown. `make review-end` closes it and finalizes the record.
+RS-1, the executable half of proposed law **L-18**. **Awareness, never enforcement**: it always exits 0, no gate consults it, and it asks for nothing smaller than a WIP commit. `make unsaved ARGS=--workstation` surveys every Signora clone on the machine.
 
-Phase 2 of the Environment Framework, and the first thing to **consume** a profile: `infra/review.py` contains no port, no database name and no Redis index — asserted by a test, because a literal would compile, run, and be wrong the day an allocation moves with nothing to catch it.
+**The design decision that kept it small: `.gitignore` is already the disposability classifier**, and the repository maintains it. Anything reported is non-disposable by the repository's own declaration — and a test asserts no second taxonomy appears.
 
-### Three lifecycle stages are deliberately absent
+### The measurement was understated by nearly four times
+
+QE reported *"seven untracked paths"* last cycle. **The real figure is 27.** `git status --porcelain` collapses an untracked *directory* into one line, and the count was taken from it — so **an entire untracked module counted as a single path**, and `unsaved.py` inherited the same defect until a test was written for it.
+
+```
+Lane A  backend/modules/sales_engagement/       22 files, in one physical location
+          prompts/executive_summary@1.md        ← a prompt release
+          prompts/manifest.json
+          evaluation/datasets/approach@1.json   ← an evaluation dataset
+Lane B  frontend/tests/e2e/ page objects · endurance suites
+```
+
+**A module in neither [`04-modules.md`](docs/architecture/04-modules.md) nor [`README.md`](README.md), carrying the exact artifacts R-3 calls production assets that must never be regenerated to recover them.**
+
+> **The correction is visible rather than quietly fixed**, because the error ran in the direction that would have made the work look unnecessary. **A resilience tool that under-reports is worse than none — the number is believed.**
+
+### Performance work — the sequencing every lane now shares
+
+**Ratified by the product owner, recorded as [`RELEASE_ENGINEERING.md`](docs/RELEASE_ENGINEERING.md) §10.**
+
+> **Performance is not deferred. Performance *engineering* is.** The distinction is which numbers are meaningful today.
+
+N+1 queries, unbounded fetches, quadratic algorithms, memory leaks and catastrophic regressions stay defects at write time, at any milestone (§14, unchanged). Load testing, concurrency, autoscaling, ECS/EKS sizing, database tuning, CDN behaviour, SLAs, endurance and chaos testing move to **Production Readiness** — because the infrastructure is temporary, the architecture incomplete, the data volumes artificial and the deployment local. [`12-scalability.md`](docs/architecture/12-scalability.md) already requires an evidence-based trigger, and **a trigger requires a production.**
+
+### Two decisions ruled
 
 | | |
 |---|---|
-| **Product demonstration** | A guided tour asserts what the product *means*, not what it does. **QE is not qualified to author that story**, and doing it inside a launcher would hide the authorship. Designed before it is coded |
-| **Playwright evidence** | The repository has **one** e2e spec. A collector would be an empty framework wearing a lifecycle stage's name |
-| **Smoke validation** | **Impossible by construction** — the production stack binds the same two ports a review holds. The certification record answers the same question better, so the session *cites* it rather than re-proving a build the reviewer is standing on |
+| **D-1** | **An uncertified review is allowed, and simply non-evidential.** Internal development review and customer-facing evidence are different use cases; the marking goes in the record rather than in somebody's memory of which it was |
+| **D-2** | **The repository stores the summary; binary evidence stays external, named and hashed in a committed manifest.** The hashes are what make it more than a file list — the repository can prove which image was shown, and detect one replaced, **without storing it**. R-4 unblocked |
 
-### The session is the artifact
+### The smoke gate took 320s, and that is a success
 
-*"What exactly did we demonstrate, and when?"* is a question about a past moment, and a torn-down environment cannot answer it. Every run records the commit, **whether that commit was certified and at what coverage**, the dataset and its version, the accounts, the open defects a reviewer could actually meet, the duration, and the notes.
+Last cycle: 130s. This cycle: **320s, slowest stage `14k. Researched account 43s`** — with `release-preflight` naming the cause *before* the run: another lane's dev server holding 5.7 GB on a 15 GB machine.
 
-**Records are git-ignored, deliberately.** Making them repository evidence means teaching `--audit-main` to accept a new class of commit on `main` — governance, and not a slice's to decide.
-
-### What running it found that reading it would not
-
-**The certification question was the wrong one.** Asking *"is `HEAD` certified?"* is wrong on `main` **every single time**: a Closeout commit can never be certified, because a record cannot contain its own hash. Every review would have reported *"no certification record"* about a repository whose every promotion was certified. It now walks to the nearest certified ancestor and **verifies** each intervening commit is a Closeout rather than assuming it.
-
-**[B-105](docs/BUGS.md) — `make demo` cannot work on a clean workstation.** Nothing loads `frontend/.env.local` for the two `tsx` setup scripts, so the documented quickstart stops at `npm run auth:migrate`. **Not new**: B-104 removed the fallback that had been hiding it, which is that fallback's whole indictment — a defect that fails loudly today was a silent data-placement bug for as long as the default existed. **Reported, not fixed here.**
-
-**[B-106](docs/BUGS.md) — a certification gate read a variable nobody declared.** `TestConcurrencySafety` inherited `SIGNORA_DATABASE_URL` from the shell: **seven passed in a shell that had it, three failed in one that did not, on the same commit.** So the run that certified `909374a` and the run reproducing it were measuring different things, and nothing in the record said so. Fixed by declaring the input; **verified by removing the variable entirely**, which is the only run that proves a dependency is gone rather than merely satisfied.
-
-> **[B-022](docs/BUGS.md) predicted this class and stayed open.** This is the first time it was *observed* rather than reasoned about, and the direction is the alarming one: **the certified run was the lucky one.**
+> **Five days ago this was a 4830s mystery nobody could explain afterwards.** The gate is slower and the repository is healthier, because **a slow run that is diagnosable is worth more than a fast one that is not.**
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **2627 backend** · 719 frontend · **95.50%** · 360 invariants · **619 files typed** |
-| **Release** | **Four consecutive cycles with no process failure.** Both known failure modes have guards |
+| **Technical** | **2640 backend** · 719 frontend · **95.50%** · 360 invariants · **620 files typed** |
+| **Release** | **Five consecutive cycles with no process failure** |
 | **Architecture** | Runtime composition 0 unexpected · Reachability 0 doorless |
-| **Dependency** | 37 items, 12 closed |
-| **Customer Value** | ⚠️ **Indirect — six cycles without a product capability.** Twelve `READY` tasks unclaimed. Reviewing the product did get materially cheaper |
-| **Process** | Clean. **One hidden input removed from a gate** |
+| **Dependency** | 38 items, 6 closed · **C-100 blocks PR-1** |
+| **Customer Value** | ⚠️ **Indirect — seven cycles without a product capability.** Twelve `READY` tasks unclaimed |
+| **Process** | Clean. **One understated measurement corrected in public** |
 
 ### Repository Health Trend
 
@@ -156,6 +169,7 @@ Phase 2 of the Environment Framework, and the first thing to **consume** a profi
 | **Smoke duration** | unexplained 104–4830s | **129–186s, and diagnosable** |
 | **Gates with a hidden input** | unknown | **1 found, 1 fixed** — [B-106](docs/BUGS.md) |
 | **Steps to review the product** | 6, across two terminals | **1** — `make review` |
+| **Work in one physical location** | unmeasured | **27 files, measured and surfaced** — `make unsaved` |
 
 
 ## 2 · Milestone progress
@@ -365,18 +379,18 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`f034364a09a9`](certification/reports/f034364a09a9.md) · 2026-08-03 · ✅ CERTIFIED**
+**Latest certification — [`bdc159fb257f`](certification/reports/bdc159fb257f.md) · 2026-08-03 · ✅ CERTIFIED**
 
-**Certified commit `f034364` · promoted commit `f034364`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
+**Certified commit `bdc159f` · promoted commit `bdc159f`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
 
 | Gate | Recorded |
 |---|---|
-| **pytest** | **2627 passed** |
+| **pytest** | **2640 passed** |
 | **coverage** | **95.5%** *(floor 95%)* |
 | **Security Invariants** | **360 invariants**, each proven to fail when its guarantee is removed |
 | **import-linter** | **34 kept, 0 broken** |
-| **MyPy** | **strict, clean over 619 files** |
-| **`make smoke`** | **24 stages in 130s, slowest 2. Startup 19s** |
+| **MyPy** | **strict, clean over 620 files** |
+| **`make smoke`** | **24 stages in 320s, slowest 14k. Researched account 43s** — slow, and **explained**: memory pressure from another lane's dev server, named by `release-preflight` before the run |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0030`** · scenario set `0cf6b2c581e4` · working tree clean.
@@ -393,7 +407,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | **Migrations** | **`0000`–`0030`**, additive and reversible — verified to base and back this cycle | — |
 | **Architecture drift** | **0** — no ratified ADR reversed | trending to 0 |
 | **Open defects** | **38 rows: 14 `OPEN`** · **17 `FIXED` awaiting verification** · **5 `VERIFIED`** · 1 `WONTFIX` · **0 unresolved 🔴** ([docs/BUGS.md](docs/BUGS.md)) | 0 🔴 |
-| **Coordination items** | **37** — 5 closed, the rest open or waiting ([docs/LANE_COORDINATION.md](docs/LANE_COORDINATION.md)) | shrinking |
+| **Coordination items** | **38** — 6 closed, the rest open or waiting ([docs/LANE_COORDINATION.md](docs/LANE_COORDINATION.md)) | shrinking |
 
 > ⚠️ **Every figure in the two tables above was stale until this audit, and two were stale by two cycles.** §4 named `e5a266d17203` while `main` had been certified twice since; the defect and coordination counts were less than half their real values. **Nothing detected it** — `state-check` verifies that §1 names a reachable commit and never reads §4. Recorded as the reason the audit happened at all, and as a gap: **the dashboard has one checked section and eight unchecked ones.**
 
@@ -416,7 +430,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Indicator | Value |
 |---|---|
 | **Certification** | |
-| Certification cycles | 31 |
+| Certification cycles | 32 |
 | Certified | 29 of 30 |
 | Mean time to certify (last 5) | 13.3 min |
 | Mean smoke duration | 327.9 s |
