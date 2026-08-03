@@ -61,6 +61,21 @@
 >
 > **The durable lesson is not *be more careful*.** It is that **an item's own description is not evidence of its status**, and this review's method — verify every item against shipped code — is now what happens every Closeout.
 
+### Re-validated against today's repository — 2026-08-03, at `7e43841`
+
+**On the product owner's direction: every blocked item re-checked against the repository *as it exists now*, not as it existed when the item was raised.** Months of implementation have landed since most were written.
+
+| Item | Was | Is, measured today | Action |
+|---|---|---|---|
+| **[C-020](#c-020--m7-has-no-scope-and-timeline-has-no-design)** | *"M7 has no scope, **and Timeline has no design**"* | **[`45-timeline.md`](architecture/45-timeline.md) exists — 135 lines**, delivered cycle 22 | **NARROWED.** The design half is answered by implementation. **Only ADR-0038's ratification remains** |
+| **[C-023](#c-023--m13-is-ratified-architecture-not-an-executable-milestone)** | *"M13 is ratified architecture, not an **executable** milestone"* | **It executed.** `44-integrations.md` written, the module built, **S01, S02 and S09 promoted** | **CLOSE.** The question was empirical and implementation answered it. Which lane holds M13 is scheduling, and Lane B holds it |
+| **[C-013](#c-013--publishableevent-cannot-be-satisfied-by-a-frozen-dataclass)** | *"eight publishing modules carry a `# type: ignore`"* | **13+ files carry one.** The item predicted *"a `type: ignore` in eight places trains people to add a ninth"* | **STILL OPEN, and worse.** Its own forecast came true. **Priority raised** |
+| **[C-203](#c-203--nothing-in-the-product-can-render-a-persons-name)** | *"nothing can render a **person's** name"* | `entity-name.tsx` exists — **and renders a *company***. Its own docstring says so | **STILL OPEN.** Nearly closed in error; the component's name suggested otherwise and the code did not |
+
+> **Two of the four moved, and two did not — which is the useful shape.** A re-validation that closed everything would mean the register had been wrong; one that closed nothing would mean the exercise was theatre. **[C-203](#c-203--nothing-in-the-product-can-render-a-persons-name) is the one to learn from**: `entity-name.tsx` looked like the answer by its filename, and reading it showed it renders companies. **A component's name is not evidence of what it does** ([L-2](../ENGINEERING_LAWS.md)).
+
+**Not yet re-validated**, and stated rather than implied: C-003, C-005, C-007, C-009, C-011, C-018, C-021, C-025, C-200, C-204, C-205, C-206, C-207 and the platform items. Each needs a code read of the kind above; **guessing at them would produce exactly the register-not-repository error this exercise exists to correct.**
+
 ### Consolidated — 25 items, 5 decisions
 
 **The largest finding: most remaining items are not independent.** They are one architectural question surfacing in several modules, and answering them one at a time risks answering the same question inconsistently.

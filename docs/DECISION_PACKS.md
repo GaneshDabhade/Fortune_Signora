@@ -46,6 +46,24 @@
 
 ---
 
+## 0b · Prioritized — by customer value unlocked, not by dependency count
+
+**Re-validated against `7e43841`, 2026-08-03.** Two items moved on evidence; the estimates below are QE's and are marked as estimates.
+
+| Pack | Customer value unlocked | Modules unblocked | Journeys unblocked | Reversible? | Risk if delayed | Effort after approval |
+|---|---|---|---|---|---|---|
+| **A** — platform composition | **None directly. Everything indirectly** — no pipeline stage is independently scalable or observable | **7** | 0 today | **Yes** — additive | **Compounding.** 13+ files now carry the workaround, up from 8 | RFC + 2–3 slices, then 7 one-slice rewirings |
+| **B** — roadmap → milestone | **None directly.** Releases three stalled milestones | 3 milestones | — | **Yes** — a queue rule | **High.** Three lanes have hit it independently | **Governance only. No code** |
+| **C** — customer vocabulary | **High and direct.** Nothing can match an account against an ICP until it is answered — the commercial-profile value proposition | 2 | **ICP → account matching** | Partly — a catalog is diffable | High | 1 slice + a reviewed catalog |
+| **D** — unassignable code | None directly | `apps/` · `signora_platform/` · frontend foundation | — | Yes | **Compounding.** 8 defects have landed here | **Governance only** |
+| **E** — five product calls | **[C-008](LANE_COORDINATION.md) is the highest single-item customer value on this page** — every AE and SDR, every day | 1–2 each | 1–3 each | Yes | Low each | 1 slice each |
+
+> **If the objective is customer value rather than a shorter register, the order is C → E(C-008) → B → A → D.** That is *not* the order by dependency count, and the difference is the point: **Pack A unblocks the most modules and ships nothing a customer can see**, while [C-017](LANE_COORDINATION.md) is a paste and [C-206](LANE_COORDINATION.md) is one question.
+
+**Two items moved on re-validation** ([`LANE_COORDINATION.md`](LANE_COORDINATION.md)): **C-020 narrowed** — Timeline's design doc now exists, so only ADR-0038's ratification remains — and **C-023 closes**, because it asked whether M13 was executable and Lane B executed three slices of it.
+
+---
+
 ## PACK A · Does the platform freeze admit a composition amendment?
 
 **Four items. One question. It is the most expensive open decision in the repository.**
