@@ -58,7 +58,13 @@ certification/attempts.jsonl
 # later — means teaching `certification-guard.py --audit-main` to accept a new
 # class of commit on `main`, and that is a governance decision rather than a
 # slice's to take.
-review/
+#
+# **Anchored, and it was not.** `review/` matches a directory of that name
+# *anywhere* in the tree, so it silently swallowed `frontend/tests/review/` —
+# a lane's committed instrument, absent from every clone and reported by
+# nothing. The leading slash restricts it to the repository root, which is
+# what it always meant (Lane B, 2026-08-03).
+/review/
 # Playwright: signed-in browser state (real session cookies) and run artifacts.
 # Never committed — a storage-state file is a live credential for a demo account.
 frontend/tests/e2e/.auth/

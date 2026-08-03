@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: environments reachability event-catalog workstation unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research e2e e2e-quick e2e-smoke product-demo product-demo-record endurance
+.PHONY: environments reachability event-catalog workstation unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research e2e e2e-quick e2e-smoke product-demo product-demo-record endurance review-product
 
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
@@ -380,6 +380,18 @@ product-demo-record:
 	@python3 infra/environment-lease.py run product-demo -- sh -c 'cd backend && $(E2E_ENV) uv run python -m tests.playground.seed && cd ../frontend && SIGNORA_APP_URL=$(E2E_URL) npx playwright test --project=demo --reporter=list $(ARGS)'
 	@echo ""
 	@echo "  video and trace:  frontend/test-results/"
+
+## Walk the product as a demanding customer would, in a browser you can watch.
+##
+## **Not a test, and it can never fail.** Product Experience Engineering
+## (product owner, 2026-08-03): the question is *"would I buy this?"*, not
+## *"does it work?"* — so this asserts nothing, reads every screen back as
+## text, and leaves the judgement to a person.
+##
+##     make review-product            headed, at human pace
+##     make review-product PACE=2000  slower, for a demonstration
+review-product:
+	@python3 infra/environment-lease.py run e2e -- sh -c 'cd backend && $(E2E_ENV) uv run python -m tests.playground.seed && cd ../frontend && SIGNORA_APP_URL=$(E2E_URL) npx tsx tests/review/walk.ts'
 
 ## A working day in one tab — endurance, not regression.
 ##

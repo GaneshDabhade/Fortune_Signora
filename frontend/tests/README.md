@@ -15,6 +15,7 @@
 | `unit/` | **QE** | the auth library — JWT minting, key generation, sign-in methods, auth events |
 | `contract/mint-token.ts` | **QE** | mints a real token for the backend's cross-tier JWT test |
 | `e2e/` | **QE**, except while the product owner has assigned End-to-End Product Validation to a lane — **Lane B holds it from 2026-08-03** ([C-308](../../docs/LANE_COORDINATION.md)) | Playwright, against the **real** application: real Better Auth, real API, real database, the seeded Playground. Fifteen specs, four cadences |
+| `review/` | the same as `e2e/` | **The review instrument, and not a test.** `make review-product` walks the product headed at human pace and reads every screen back as text. **It asserts nothing and can never fail** — findings go to [`PRODUCT_EXPERIENCE.md`](../../docs/PRODUCT_EXPERIENCE.md) by human judgement |
 | `endurance/` | the same as `e2e/` | **A working day in one tab.** Not a test — a long-running recorder plus pure trend arithmetic. `make endurance`. Its unit tests live in `unit/endurance/`, because the arithmetic deserves a test that needs no browser |
 
 **The three governance tests are the enforcement behind three frozen decisions**, and are the reason those decisions are not merely documentation. `vocabulary.test.tsx` found a leak on its first run that a manual audit had missed ([ADR-0034](../../docs/architecture/adr/0034-ubiquitous-language.md)). Do not weaken one to make a component pass; the component is what is wrong.
