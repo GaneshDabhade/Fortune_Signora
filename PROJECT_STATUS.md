@@ -12,16 +12,16 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `47cdfd0`, 2026-08-03.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `b0d10b3`, 2026-08-03.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`47cdfd0`** — the certified commit itself |
-| **`integration`** | `47cdfd0` — level with `main` |
-| **Release candidate** | **None pinned.** Cycle 36 promoted the production stack's move off the review ports |
-| **Certification** | ✅ [`47cdfd005f2a`](certification/reports/47cdfd005f2a.md) · migration head **`0030`** · protocol **v2** · **attempt 1 aborted and was recorded** |
+| **`main`** | **`b0d10b3`** — the certified commit itself |
+| **`integration`** | `b0d10b3` — level with `main` |
+| **Release candidate** | **None pinned.** Cycle 37 promoted **Lane C** into repository governance |
+| **Certification** | ✅ [`b0d10b3836bc`](certification/reports/b0d10b3836bc.md) · migration head **`0030`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **166 commits, none outside a certified snapshot** |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **169 commits, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Both lanes.** Five separate rulings, all the product owner's — see §1c |
 | **Validation queue** | Lane A's and Lane B's branches, **both awaiting a rebase by their lane** |
@@ -101,69 +101,53 @@
 
 ---
 
-## 1d · Release summary — 2026-08-03, cycle 36
+## 1d · Release summary — 2026-08-03, cycle 37
 
-**Derived from the promoted commit `47cdfd0`.** A structural fix to a conflict the product owner hit personally, an aborted certification that became evidence, and Lane C.
-
-### The production stack leaves the review ports
-
-The product owner could not start a Human Review session because a leftover `make dr` stack held **3000 and 8000**. Not bad luck: `infra/docker-compose.prod.yml` published exactly the two ports human review uses, so **a certification run and a product review were mutually exclusive by construction**, and `release-preflight` existed largely to *explain* the collision rather than remove it.
-
-The stack now publishes **3100/8100** — the block `infra/environments.py` had already recorded as allocated to nobody. Container-internal ports are unchanged; only the host mapping moved, plus the two browser-facing URLs that must track it.
-
-> **Proven, not asserted.** The full 24-stage smoke test ran to completion **twice while the product owner's live review session stayed healthy on 3000/8000.** Before: web 307, api 200. After: web 307, api 200. Cross-tier JWT contract green both times.
-
-**The rule it is an instance of, now permanent:** *every runnable environment must be independently startable, independently stoppable and independently disposable.* An environment that requires another to be stopped first is not isolated; it is merely documented.
-
-### An aborted certification became evidence — RE-01's first real catch
-
-Attempt 1 of this cycle was killed mid-run. **It never reached a verdict**, and before RE-01 it would have left **no trace in any file**: the manifest records only completed runs, so the history would have shown a 100% completion rate and no sign a run had ever vanished.
-
-```
-attempts started : 13      ABORTED : bdb7eb0c534d
-reached a verdict: 12
-```
-
-**Three outcomes, and they are not interchangeable.** A *succeeded* run says the repository is sound. A *failed* run says something about the repository. An *aborted* run says something about execution and **nothing at all** about correctness. A history that conflates them misleads the reader who most needs it.
-
-**The abort record also surfaced a hidden input in machine-written form** rather than in an argument: `"test_database": "(unset — defaults to shared)"`. That is [B-022](docs/BUGS.md) appearing as evidence, and it is why **RE-03** — `certify` creating and dropping its own database — is now the highest-value item in the Release Engineering backlog.
+**Derived from the promoted commit `b0d10b3`.** An organizational change, recorded rather than enacted — and the governance principle that came out of nearly getting it wrong.
 
 ### Lane C — Product Office & Architecture Office
 
-**Created instead of a third implementation lane, on evidence.** QE's readiness assessment measured **23 of 38 open coordination items owned by the product owner** and **16 `READY` tasks unclaimed with two lanes available**: implementation capacity was not the constraint, decision throughput was, and a third implementation lane would have been a third consumer of the same queue.
+**Created instead of a third implementation lane, on evidence.** QE measured **23 of 38 open coordination items owned by the product owner** and **16 `READY` tasks unclaimed with two lanes available**. Implementation capacity was not the constraint; **decision throughput was**, and a third implementation lane would have been a third consumer of the same queue.
 
-**Four responsibilities that do not overlap:** implementation lanes **build** · QE **certifies** · Lane C **prepares** · the product owner **decides**.
+| | | |
+|---|---|---|
+| **Implementation lanes** | **build** | Production code in their assigned modules |
+| **QE** | **certifies** | Quality, release, repository health, environment isolation, the review platforms |
+| **Lane C** | **prepares** | Options · plans · ADR drafts · investigations · dependency analysis · decomposition · sequencing · consistency reviews · capability audits |
+| **Product owner** | **decides** | Priority, product direction, every ruling |
 
-```
-  implementation lane  ─▶  Lane C investigates  ─▶  Lane C prepares alternatives
-                                                              │
-  implementation resumes  ◀──  product owner decides  ◀────────┘
-```
+**Lane C owns no production module, no bounded context and no runtime** — a clone, a branch and repository access, with no ports, database, Redis index or compose project. **The first lane whose onboarding is simpler than the one before it.**
 
-**Lane C owns no production module, no bounded context and no runtime** — a clone, a branch and repository access, with no ports, database, Redis index or compose project. It is the first lane whose onboarding is *simpler* than the one before it.
+### The governance principle, found by nearly breaking it
 
-> **No module changed owner**, and that is stated as a line rather than left as an absence — because the absence is what nearly turned a description of strategic direction into a silent reassignment of two mid-flight modules.
-
-### A governance principle, found by nearly breaking it
+A description of the lanes' strategic direction **implied a module ownership swap between two lanes, both mid-flight.** Written into the governance files as prose it would have reassigned two bounded contexts through a documentation edit that nobody would have recognised as a decision.
 
 > **Governance describes reality; it never quietly changes it.** Any behavioural change requires an explicit architectural or product decision **before** governance is updated.
 
 This is the general form of *the repository should always tell the truth*, applied to the **direction of causation**: that rule says a document must not misdescribe reality; this one says a document must not *become* it. **The tell is simple — if applying the edit would change what somebody does tomorrow, it needed a decision yesterday.**
 
-### The coordination register shrank
+**No module changed owner**, stated as a line rather than left as an absence.
 
-**38 items, 8 closed** — up from 6. [C-022](docs/LANE_COORDINATION.md) closed because `CLAUDE.md` already contains the rule it asked for; [C-202](docs/LANE_COORDINATION.md) closed after four of its five measured disagreements had been fixed and the fifth was fixed here. **C-004 and C-201 moved to `READY FOR PRODUCT DECISION`** — both had sat under QE's name while waiting on a ruling, which is the drift Lane C exists to end.
+### The register was reviewed item by item, and shrank
+
+**6 closed → 8.** [C-022](docs/LANE_COORDINATION.md) closed because `CLAUDE.md` already contained the rule it asked for; [C-202](docs/LANE_COORDINATION.md) closed after its last live disagreement was fixed. **C-004 and C-201 moved to `READY FOR PRODUCT DECISION`** — both had sat under QE's name while waiting on a ruling, which is exactly the drift Lane C exists to end.
+
+**Coordination items now carry a lifecycle**, so a reader sees *where* a decision is stuck: `OPEN → READY FOR LANE C → IN ANALYSIS → READY FOR PRODUCT DECISION → READY FOR IMPLEMENTATION → CLOSED`.
+
+### A claim arrived mid-cycle, and the model handled it
+
+Lane B pushed `Claim TASK-300` to `integration` while certification was running — **the one exception the model allows**, claim-only paths, verified against the guard. `integration` was rebased onto `main` (Closeout activity 10) and the one expected conflict resolved by keeping **each side's own row**.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
 | **Technical** | **2642 backend** · 719 frontend · **95.50%** · 360 invariants · 620 files typed |
-| **Release** | **Six consecutive cycles with no process failure.** One aborted attempt, recorded rather than lost |
-| **Architecture** | Runtime composition 0 unexpected · Reachability 0 doorless · **review and certification no longer exclusive** |
-| **Dependency** | 38 items, **8 closed** · C-100 blocks PR-1 |
-| **Customer Value** | ⚠️ **Indirect — eight cycles without a product capability.** Lane C exists to change the reason for that |
-| **Process** | Clean. **One organizational change, no module moved** |
+| **Release** | **Seven consecutive cycles with no process failure** |
+| **Architecture** | Runtime composition 0 unexpected · Reachability 0 doorless · review and certification concurrent |
+| **Dependency** | **39 items, 8 closed** · C-100 blocks PR-1 · **C-101 awaits Lane C** |
+| **Customer Value** | ⚠️ **Indirect — nine cycles.** Lane C exists to change the reason for that |
+| **Process** | Clean. **An organizational change that moved no module** |
 
 ### Repository Health Trend
 
@@ -387,9 +371,9 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`47cdfd005f2a`](certification/reports/47cdfd005f2a.md) · 2026-08-03 · ✅ CERTIFIED**
+**Latest certification — [`b0d10b3836bc`](certification/reports/b0d10b3836bc.md) · 2026-08-03 · ✅ CERTIFIED**
 
-**Certified commit `47cdfd0` · promoted commit `47cdfd0`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
+**Certified commit `b0d10b3` · promoted commit `b0d10b3`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
 
 | Gate | Recorded |
 |---|---|
@@ -398,7 +382,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | **Security Invariants** | **360 invariants**, each proven to fail when its guarantee is removed |
 | **import-linter** | **34 kept, 0 broken** |
 | **MyPy** | **strict, clean over 620 files** |
-| **`make smoke`** | **24 stages in 134s, slowest 2. Startup 20s** — back to baseline on the new 3100/8100 ports |
+| **`make smoke`** | **24 stages in 145s, slowest 2. Startup 20s** |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0030`** · scenario set `0cf6b2c581e4` · working tree clean.
@@ -415,7 +399,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | **Migrations** | **`0000`–`0030`**, additive and reversible — verified to base and back this cycle | — |
 | **Architecture drift** | **0** — no ratified ADR reversed | trending to 0 |
 | **Open defects** | **38 rows: 14 `OPEN`** · **17 `FIXED` awaiting verification** · **5 `VERIFIED`** · 1 `WONTFIX` · **0 unresolved 🔴** ([docs/BUGS.md](docs/BUGS.md)) | 0 🔴 |
-| **Coordination items** | **38** — 8 closed, the rest open or waiting ([docs/LANE_COORDINATION.md](docs/LANE_COORDINATION.md)) | shrinking |
+| **Coordination items** | **39** — 8 closed, the rest open or waiting ([docs/LANE_COORDINATION.md](docs/LANE_COORDINATION.md)) | shrinking |
 
 > ⚠️ **Every figure in the two tables above was stale until this audit, and two were stale by two cycles.** §4 named `e5a266d17203` while `main` had been certified twice since; the defect and coordination counts were less than half their real values. **Nothing detected it** — `state-check` verifies that §1 names a reachable commit and never reads §4. Recorded as the reason the audit happened at all, and as a gap: **the dashboard has one checked section and eight unchecked ones.**
 
@@ -438,7 +422,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Indicator | Value |
 |---|---|
 | **Certification** | |
-| Certification cycles | 33 |
+| Certification cycles | 34 |
 | Certified | 29 of 30 |
 | Mean time to certify (last 5) | 13.3 min |
 | Mean smoke duration | 327.9 s |
