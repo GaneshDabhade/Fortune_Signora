@@ -41,3 +41,8 @@ htmlcov/
 # .dev-keys/, but RUNNING.md once told a reader to (B-016) and one did.
 *.pem
 .dev-keys/
+
+# Operational history of the certification pipeline, not repository truth.
+# Git-ignored deliberately: being untracked is what lets a failed run survive
+# the `git checkout --` its next attempt requires (RE-01).
+certification/attempts.jsonl

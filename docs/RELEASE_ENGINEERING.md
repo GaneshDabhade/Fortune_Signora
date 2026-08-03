@@ -10,25 +10,59 @@
 
 ---
 
-## 1 · The finding that changes how everything below is measured
+## 1 · RE-01 — challenged, corrected, and shipped
 
-> **The certification manifest cannot measure certification stability, because failed runs do not survive.**
+**The original finding was right about the symptom and wrong about the cause**, and the [L-1](../ENGINEERING_LAWS.md) reuse audit is what found the difference.
 
-`make certify` writes a record for every run, pass or fail. **But a failed run leaves the working tree dirty**, and the operator's next move is `git checkout -- certification/manifest.json` — which is the *correct* move, because a contaminated measurement must not become repository truth.
+**What I first wrote:** *"the manifest does not preserve failed runs."*
 
-**The consequence is structural:**
+**What the code actually does:** `store.append()` writes **every** run, pass or fail. `CertificationRun.failures` already enumerates every reason a run did not certify. **The model was never the problem** — and had I implemented before auditing, I would have built a parallel failure log beside a store that already recorded failures.
+
+### The real cause is a circular dependency, and it is structural
 
 ```
-  runs recorded          21
-  gate failures recorded  0
-  reruns recorded         0
+  certification requires a clean tree   (tree_is_clean → git status --porcelain)
+            ↓
+  every run dirties it                  (manifest.json modified, report untracked)
+            ↓
+  re-running requires cleaning it       (git checkout -- certification/)
+            ↓
+  which deletes the failure record
 ```
 
-**That 100% is not a measurement. It is an artefact of the discard.** This cycle alone produced **two** failed runs and **three** attempts at one commit; the manifest retains none of it. The KPI block already carries a caveat that the success rate *"excludes candidates rejected at validation"* — this is a second, larger exclusion nobody had named.
+**A passing run survives only because Closeout commits it.** A failing run has no commit to carry it, so the operator's *correct* next move erases the only evidence it happened. **The tree-clean condition and the failure record are in direct conflict by construction.**
 
-**Every stability question the review was asked — rerun frequency, environment failures, false failures, recovery time — is unanswerable from the current data.** That makes **RE-01** the first item in the backlog: not because it is the biggest problem, but because **without it every other item below is prioritised on anecdote.**
+### A second gap, entirely separate
 
----
+**`append()` is called once, after every gate.** A run that hangs, is killed or crashes never reaches it. This cycle's 22-minute hang against an exited database **wrote nothing to any file** — an abort is invisible not by accident but by design.
+
+**So "preserve failed runs" was two problems wearing one name:** completed-but-failed runs are *erased*; aborted runs are *never written*.
+
+### The design questions, answered
+
+| Question | Answer, and why |
+|---|---|
+| Preserve every failed run, or only meaningful ones? | **Every one.** "Meaningful" is a judgement made after the fact, and filtering at write time is how a dataset acquires the bias it was built to remove |
+| Should attempts be first-class? | **Yes — that is the fix.** A *run* is a completed measurement; an *attempt* may never finish. Writing a `started` event before the first gate is the only way an abort can be counted at all |
+| Classify environment vs repository vs operator failures? | **No.** A column of guesses is worse than none. It records **what a human needs to make that call** — which gate failed, what containers were up, which ports were held, which database was configured — and infers nothing |
+| Where does it live? | **A separate, git-ignored `certification/attempts.jsonl`.** Two reasons, and the first is decisive: **git-ignored files do not appear in `--porcelain`, so the log survives the reset that erases the manifest entry.** The second is architectural — `CLAUDE.md` §2 already separates *repository truth* (which commits are certified; a customer could audit it) from *operational history* (the pipeline's account of its own behaviour). They are different data categories and should not share a file |
+| Reuse or new? | **Extended.** It lives in `backend/tests/certification/` beside `store.py`, `record.py` and `conditions.py`, and reuses their shape. **No parallel tooling, no second manifest** |
+
+### What it now answers, that nothing could before
+
+```
+  Attempts            3
+    ↳ certified       1
+    ↳ failed          1
+    ↳ aborted         1     started, never reached a verdict
+  First-pass rate     33.3%
+  Completion rate     66.7%
+  Failures by gate    smoke 1
+```
+
+**Against the manifest's `100% (21 of 21)` for the same cycle.** The KPI block now carries both, with the success rate explicitly pointing at the stability panel — because deleting the old metric would lose a true statement about certification, and leaving it alone was leaving a false impression of release health.
+
+> **`make kpi` prints `no attempts recorded yet` until the next `make certify`.** The log starts empty and says so, rather than printing a confident zero. **RE-01 buys the ability to measure; it does not retroactively measure.**
 
 ## 2 · Where the pipeline assumes nothing else is running
 
@@ -85,17 +119,17 @@
 
 | Id | Item | Why | Cost | Prevents |
 |---|---|---|---|---|
-| **RE-01** | **Preserve failed certification runs** — a `failures` list the reset does not touch, or a separate append-only log | **Every other item here is currently prioritised on anecdote.** The manifest's 100% is an artefact of the discard | **S** | Nothing directly. **Enables everything** |
+| ~~**RE-01**~~ | ~~Preserve failed certification runs~~ | **✅ Shipped 2026-08-03.** Challenged first, and the challenge changed the design — see §1. `certification/attempts.jsonl`, git-ignored so it survives the reset; `started` written before the first gate so aborts are countable | **S** | Survivorship bias in every stability figure |
 | **RE-02** | **A lock around `make certify`** — refuse a second run, naming the first's PID and start time | A-4, which cost three attempts this cycle | **S** | A-4 |
 | **RE-03** | **`certify` creates and drops its own database** | A-3 · [B-022](BUGS.md). Removes the last hand-typed correctness requirement in the pipeline | **M** | A-3, permanently |
 | **RE-04** | **A connection preflight before `pytest`** — fail in 2s with *"postgres is not running"* | A-5. A 22-minute hang that should have been a two-second message | **S** | A-5 |
 | **RE-05** | **Per-run compose project name** | A-2. Two smoke runs stop destroying each other | **S** | A-2 |
-| **RE-06** | **Certification stability metrics in `make kpi`**, once RE-01 exists | Answers the questions this review could not | **S** | — |
+| ~~**RE-06**~~ | ~~Certification stability metrics in `make kpi`~~ | **✅ Shipped with RE-01**, because a measurement nobody reads is not a measurement | **S** | — |
 | **RE-07** | **Resolve the duplicated suite run** | ~250s per cycle — **but it may be load-bearing for ADR-0032** | **S**, after a ruling | — |
 | **RE-08** | **Flaky-test detection** — record per-test durations, flag non-determinism | No evidence of flakiness yet. **Listed so it is not forgotten, not because it is due** | **M** | — |
 | **RE-09** | **Ephemeral certification environments** | The shape a multi-lane, multi-branch future needs | **L** | A-1, A-2, A-4 together |
 
-**RE-01 through RE-05 are all small, and four of the five have an incident behind them from this week.** That is deliberate: **the cheap preventions come first, and the large redesign waits for evidence it is needed.**
+**RE-01 and RE-06 shipped 2026-08-03. RE-02 through RE-05 are all small, and each has an incident behind it from this week.** That is deliberate: **the cheap preventions come first, and the large redesign waits for evidence it is needed.**
 
 > **What is not on this backlog, and why.** No item optimises certification *time*: §3 shows time is not the problem. No item weakens a gate, shortens the sequence, or reduces coverage — **the pipeline must become faster because it is engineered better, never because it checks less.**
 

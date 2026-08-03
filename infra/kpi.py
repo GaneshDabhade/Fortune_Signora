@@ -195,7 +195,8 @@ def release_kpis() -> dict[str, str]:
         # (QUALITY_ENGINEERING §10), not a figure this file can derive: nothing
         # machine-readable records a validation rejection.
         "Certification run success rate": f"{rate} ({len(passing)} of {len(runs)} runs)",
-        "  ↳ excludes": "candidates rejected at validation — see Repository Health",
+        "  ↳ excludes": "rejected candidates, and every failed or aborted attempt",
+        "  ↳ see instead": "Pipeline stability below — measured from the attempt log",
         "Commits per release": (
             f"mean {sum(batches) / len(batches):.1f}, median "
             f"{sorted(batches)[len(batches) // 2]}, range {min(batches)}–{max(batches)}"
@@ -204,6 +205,43 @@ def release_kpis() -> dict[str, str]:
         ),
         "Mean candidate age": mean(ages, "min") + "  — oldest commit → certified",
         "Release frequency": span or "—",
+    }
+
+
+def stability_kpis() -> dict[str, str]:
+    """**What the manifest structurally cannot say.**
+
+    A failed certification dirties the tree; the reset its next attempt requires
+    deletes the record. A passing one survives only because Closeout commits it.
+    So the manifest's success rate is survivorship bias — it read *21 runs, 0
+    failures* from a cycle with two failures and three attempts.
+
+    `certification/attempts.jsonl` is git-ignored precisely so it outlives that
+    reset. **Empty until the first attempt is recorded**, and it says so rather
+    than printing a confident zero.
+    """
+    sys.path.insert(0, str(REPO_ROOT / "backend"))
+    try:
+        from tests.certification import attempts
+    except ImportError:  # pragma: no cover - the log is optional tooling
+        return {"Pipeline stability": "unavailable — certification module not importable"}
+
+    result = attempts.stability()
+    if not result.attempts:
+        return {
+            "Pipeline stability": "no attempts recorded yet — the log begins at the "
+            "next `make certify`"
+        }
+    return {
+        "Attempts": str(result.attempts),
+        "  ↳ certified": str(result.certified),
+        "  ↳ failed": str(result.failed),
+        "  ↳ aborted": f"{result.aborted}  (started, never reached a verdict)",
+        "First-pass rate": f"{result.first_pass_rate}%  — attempts that certified",
+        "Completion rate": f"{result.completion_rate}%  — attempts that reached a verdict",
+        "Failures by gate": (
+            " · ".join(f"{k} {v}" for k, v in result.gate_failures.items()) or "none"
+        ),
     }
 
 
@@ -290,6 +328,7 @@ def main() -> int:
     sections = {
         "Certification": certification_kpis(),
         "Release flow": release_kpis(),
+        "Pipeline stability": stability_kpis(),
         "Defects and queues": register_kpis(),
         "Automation": automation_kpis(),
     }

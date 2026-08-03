@@ -34,6 +34,7 @@ from pathlib import Path
 
 from tests.certification import conditions as repository_conditions
 from tests.certification.record import CertificationRun, GateResult, ScenarioResult
+from tests.certification import attempts
 from tests.certification.store import MANIFEST, append, render, report_path
 
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
@@ -184,6 +185,12 @@ def main() -> int:
     convenient path yields worthless evidence teaches people to use it."""
     print("certification — running every gate\n")
 
+    # **Before the first gate**, so an attempt that hangs, is killed or crashes
+    # is still counted. `append()` below runs only after every gate, so an
+    # aborted run would otherwise leave no trace in any file — which is how a
+    # 22-minute hang became invisible to every metric the repository has.
+    attempt = attempts.start()
+
     suite, coverage, invariants = _pytest()
     print(f"  pytest              {suite.detail}")
     print(f"  coverage            {coverage:.2f}%")
@@ -227,7 +234,17 @@ def main() -> int:
     print(f"\nrecorded in {MANIFEST.relative_to(REPOSITORY_ROOT)}")
     print(f"report      {report.relative_to(REPOSITORY_ROOT)}")
 
-    if run.certifies(now):
+    certified = run.certifies(now)
+    # The attempt log is git-ignored, so this survives the `git checkout --`
+    # that a failed run's next attempt requires — and which deletes the
+    # manifest entry recording the failure.
+    attempt.conclude(
+        outcome="certified" if certified else "failed",
+        failing_gates=tuple(gate.name for gate in run.gates if not gate.passed),
+        coverage=coverage,
+    )
+
+    if certified:
         print(f"\nCERTIFIED  {run.commit[:12]}")
         return 0
     print("\nNOT CERTIFIED")
