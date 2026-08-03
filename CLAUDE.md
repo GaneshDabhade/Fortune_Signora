@@ -497,6 +497,25 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 
 > **Assigning is not prioritising, and the line is exact.** [`BACKLOG.md`](docs/BACKLOG.md)'s order is the product owner's and Lane C never changes it. **Lane C selects *which already-prioritised, genuinely claimable* row a given lane takes next** — and **escalates rather than deciding** whenever the answer would change priority, invent a task, cross a module boundary somebody else holds, or settle a product or architectural question.
 
+**Autonomous engineering is the operating principle** *(ratified 2026-08-03, product owner)*.
+
+> **If the next action is objectively determinable from the existing vision, ADRs, implementation specifications, module ownership, repository policy, product principles, accepted epics or the approved roadmap — take it. Do not wait.**
+
+**A lane stops for exactly six reasons, and nothing else:**
+
+| | Escalate because |
+|---|---|
+| **A product decision is required** | It changes what the product does for a customer |
+| **An architecture decision is required** | A new bounded context, a new ADR, a changed principle |
+| **A commercial decision is required** | Enterprise versus GA, pricing, packaging |
+| **Two repository principles conflict** | Two ADRs disagree, and neither yields |
+| **Two implementation specifications conflict** | The same capability is specified twice, differently |
+| **Two equally valid executable tasks exist** | **Lane C recommends; the product owner chooses** |
+
+**Everything else continues.** *"Waiting for confirmation"* is not among the six, and a lane that stops for anything else is a finding.
+
+**Coordination reaches Lane C, not the product owner.** Ownership, dependency, sequencing, documentation and overlap questions are Lane C's to investigate and resolve from existing repository knowledge. **QE routes coordination issues it discovers to Lane C rather than resolving or escalating them** — QE owns whether the work is correct, never whether it should proceed.
+
 **Success is measured by repository flow, never by documents produced:** lanes rarely wait for work · tasks are implementation-ready before assignment · cross-lane conflicts are resolved before implementation starts · **the product owner spends time deciding rather than gathering information** · duplicate implementation is prevented by planning rather than discovered after coding.
 
 > **The measurement that created it:** 29 of 34 indexed coordination rows named the product owner, 27 were `OPEN`, and 13 `READY` tasks sat unclaimed with two implementation lanes live. **The repository is not short of engineering capacity; it is short of decisions.**
@@ -1113,26 +1132,20 @@ Lane:
 Current Feature:
 Current Epic:
 Current Slice:
-Status:
+Current Status:
 Current Branch:
 Current Commit:
 
 Short Summary:
-(3–8 sentences)
+(3–5 lines)
 
 Current Progress:
-(xx%)
-
-Currently Working On:
-
-Next Planned Work:
 
 Blockers:
 
 Waiting On:
 
 Ready For New Work:
-YES / NO
 
 Recommended Next Action:
 ```
@@ -1143,6 +1156,7 @@ Recommended Next Action:
 
 - **Every field is present; `none` and `n/a` are valid values and silence is not.** An absent field reads as *nobody looked*, which is the same failure the Slice Handoff's `none`-is-a-value rule prevents.
 - **`Current Progress` is the lane's estimate and is marked as one.** It is not a measurement and never contradicts `PROJECT_STATUS.md`, which is QE's and measured.
+- **Amended 2026-08-03 to the product owner's form** — `Status` became `Current Status`, the summary tightened to 3–5 lines, and `Currently Working On` and `Next Planned Work` were dropped as restatements of `Current Slice` and `Recommended Next Action`. **One version exists; the earlier one is superseded, not kept alongside.**
 - **`Blockers` and `Waiting On` are different questions.** A blocker stops the work; *waiting on* names who owes an answer. A row in one is not a row in the other, and an architectural blocker still carries its six fields (*Two kinds of blocker*).
 - **`Ready For New Work` is `YES` only when the four conditions in *Continuous execution* permit a claim.** A lane carrying `CHANGES REQUESTED` is `NO`.
 - **`Recommended Next Action` is input, never authority.** Proposing is expected; proceeding on it is not — the product owner owns priority.

@@ -86,7 +86,13 @@
 
 ## 5 · Preparing a next-task recommendation
 
-**When a lane reports `AVAILABLE`, `READY FOR NEW WORK`, `BLOCKED` or `WAITING`**, Lane C reads the roadmap, the backlog, the board, the dependency register and the module boundaries, and prepares **one recommendation for the product owner to approve.**
+**Preparation starts before the lane finishes, not after** *(product owner, 2026-08-03)*. **At roughly 70–80% of a slice**, Lane C verifies repository reality, dependencies, ownership and priority for that lane's *next* work, so **the assignment exists before `AVAILABLE` is reported.**
+
+> **Every lane should hold a current assignment and a prepared next one at all times.** A lane that finishes and then waits while coordination begins is the failure this exists to prevent — **and it happened on 2026-08-03**, when Lane A reported `AVAILABLE`, opened [C-217](LANE_COORDINATION.md) asking for an epic, and sat idle while the office was still analysing.
+>
+> **Genuine blockers are acceptable; late coordination is not.** *"No lane waits for work because coordination was late"* is the metric, not *"every lane is always busy"*.
+
+**When a lane does report `AVAILABLE` with nothing prepared**, Lane C investigates immediately and assigns; **only if the next action cannot be objectively determined does it escalate.** That should be rare.
 
 **Verified against the repository, never against the register.** The register lags; branches do not.
 

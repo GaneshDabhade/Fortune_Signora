@@ -171,6 +171,36 @@
 
 ---
 
+## PACK I · Epics B–G are specified and unapproved, and the queue is running dry
+
+**Raised by Lane C 2026-08-03 — an *epic approval* decision, which the escalation criteria reserve for the product owner.**
+
+| | |
+|---|---|
+| **Decision** | **Which of Epics B–G, if any, enter the backlog?** |
+| **Class** | **Product Decision** — scope, and therefore not Lane C's |
+
+**The queue is thin, and it is thin for a good reason.** Three `READY` rows turned out to be already built ([C-404](LANE_COORDINATION.md)); [TASK-400](BACKLOG.md) was queued from Epic A's own decomposition. **What remains unclaimed for an idle lane is [TASK-900](BACKLOG.md), a platform RFC, which Lane B has already declined as a different discipline.**
+
+**Meanwhile [51-implementation-specifications.md](architecture/51-implementation-specifications.md) carries 21 specified slices** — objective, module-assigned, effort-estimated — **of which only Epic A is approved.**
+
+| Epic | What it closes | Modules | Note |
+|---|---|---|---|
+| **B** · Close the contradictions | The ICP is declared and **nothing consumes it**; the first-run path | `commercial_profile` · `buying_score_engine` · Product Surface | **B1 is the commercial-profile value proposition** and is gated by [Pack C](#pack-c--where-does-customer-language-meet-canonical-data) |
+| **C** · People | *"Who do I call?"* — the gap every persona names first | **A new bounded context** (C1, XL) | 🔴 — needs an ADR before it is claimable ([ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) R-2) |
+| **D** · Risk | Risk signal families, risk postures, who is already a customer | `signal_engine` · `buying_score_engine` · `integrations` | **D2 and D3 are S/M and unblocked** |
+| **E** · Enterprise | CRM OAuth and write-back, SSO, SCIM, audit | `integrations` · QE | **Commercial decision** — enterprise versus GA |
+| **F** · Workflow | Rules, safe actions, a builder | **A new `workflow` module** | 🔴 — new bounded context |
+| **G** · Assistance | Ask about an account; draft an approach | `ai_reasoning_engine` | Gated by `reasoning@1` having no released model ([TASK-013](BACKLOG.md)) |
+
+**Lane C's recommendation, and it is narrow: approve *D2 and D3* only.** They are **S/M**, sit in modules with no open coordination item, need no new bounded context and no commercial ruling, and **D3 — *which accounts are already customers* — changes what the attention list means for every seller**, because an expansion opportunity and a net-new opportunity are not the same row.
+
+**Not recommended now:** **C** and **F** each need a new bounded context and an ADR; **E** is a commercial call; **B1** waits on Pack C; **G** waits on a released model.
+
+> **This is escalated rather than queued because it is epic scope, and scope is the product owner's.** [TASK-400](BACKLOG.md) was different: it decomposes Epic A, which is already approved. **The line Lane C is holding is that decomposing approved work is coordination, and admitting new epics is not.**
+
+---
+
 ## What remains open
 
 **One pack, and it is the one the product owner declined to consolidate.** [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) **R-10** kept ADR-0041 and C-002 separate: *"ADR-0041 defines how customer intent is modeled, versioned, governed and referenced. C-002 defines how that intent is interpreted against normalized provider data. They are complementary capabilities, not one combined decision."*

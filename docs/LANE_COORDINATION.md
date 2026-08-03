@@ -2589,7 +2589,14 @@ Every lane's rows sit **adjacent in one table**, and each lane's branch carries 
 
 **5b flags any board row containing `"to assign"` or `"await…assign"`**, on the reasoning that *"a lane sitting idle because a document told it to wait for an allocation that nobody is going to make"* is the bottleneck the pull model removed. **Under the amendment of 2026-08-03 a lane legitimately awaits an approved assignment**, so the first board row that says so truthfully will trip a guard that is describing the previous model.
 
-> **It passes today only because no row has yet used those words.** That is not the guard working — it is the guard not having been reached. **A check that fires on correct behaviour teaches people to ignore it**, which is the failure mode §2 names, and it is worse here than a check that is merely absent.
+> **It has now fired, and the prediction is an observation.** Queueing [TASK-400](BACKLOG.md) on 2026-08-03 made the board describe a lane awaiting an assignment — **which is exactly what the amended model requires** — and `state-check` reported:
+>
+> ```
+> ·  ACTIVE_ASSIGNMENTS.md has 1 row(s) implying a lane is waiting to be assigned
+>    work. Lanes pull from BACKLOG.md; nobody assigns (CLAUDE.md §20e).
+> ```
+>
+> **Every clause of that message is now false**, and it cites a section that no longer says what it quotes. **A check that fires on correct behaviour teaches people to ignore it**, which is the failure mode §2 names and is worse than a check that is merely absent. **This moved from forecast to defect in one working session.**
 
 **Lane C caused this by amending the governance and is reporting it rather than editing `infra/`.** The narrow fix is to distinguish *waiting for an allocation nobody owns* — still a finding — from *awaiting an approved recommendation*, which is now the model. **QE's to implement; the judgement about what 5b should assert is the product owner's if the two readings disagree.**
 

@@ -99,10 +99,12 @@
 
 | | **Lane B** | **Lane A** |
 |---|---|---|
-| **Next action** | **[B-400](BUGS.md) — renumber `0031_commercial_profile_segment.py` to `0035`** | Continue `TASK-300`-adjacent work already under way |
-| **Why first** | 🔴 **Blocking Quality Defect.** Alembic cannot build the revision map with two `0031`s, so **neither lane can be certified** until it clears. One file, one line | Nothing of Lane A's is blocked by it, but **its branch cannot promote either** |
-| **Then** | [TASK-902](BACKLOG.md) — **M7 Timeline S05+.** `timeline` is Lane B's, [ADR-0038](architecture/adr/0038-timeline.md) is ratified, the surface is already mounted, and **no open item blocks it** | **Nothing to assign.** Lane A's three highest-value rows — [TASK-903](BACKLOG.md) · [904](BACKLOG.md) · [905](BACKLOG.md) — **it has already built** ([C-404](LANE_COORDINATION.md)) |
-| **Not assigned, and why** | [TASK-900](BACKLOG.md) platform RFC — **a different discipline**, and Lane B said so when it declined the queue's top item on 2026-08-02 | [TASK-906](BACKLOG.md) M14b discovery — **Lane A's own analysis is already recorded** in [42-billing-and-entitlements.md](architecture/42-billing-and-entitlements.md); the row needs the product owner to accept it, not a lane to redo it |
+| **ASSIGNED NOW** | **[B-400](BUGS.md) — renumber `0031_commercial_profile_segment.py` to `0035`** | **[TASK-400](BACKLOG.md) · A7 — the product says when it last *looked*** |
+| **Why** | 🔴 **Blocking Quality Defect.** Alembic cannot build the revision map with two `0031`s, so **neither lane can be certified** until it clears. One file, one line | **`provider_platform` is Lane A's**, the slice is **S**, it is **verified unbuilt** on every branch, and it sits inside **Epic A, which the product owner already approved** — so it needs no new ruling |
+| **Prepared next** | [TASK-902](BACKLOG.md) — **M7 Timeline S05+.** `timeline` is Lane B's, [ADR-0038](architecture/adr/0038-timeline.md) is ratified, the surface is already mounted, and **no open item blocks it** | **[TASK-903](BACKLOG.md) stage 2.** Lane A shipped **CX-05** — *a seller can read what their company sells* — so the first half is done; **the remainder is the brief-side surface**, and Lane A has already scoped it in [C-217](LANE_COORDINATION.md) |
+| **Escalated, not assigned** | [TASK-900](BACKLOG.md) platform RFC — **a different discipline**, and Lane B declined it on 2026-08-02 | **CX-07 responsive** — Lane A's own first choice, and **it has no task id and no agreed scope.** [Pack I](DECISION_PACKS.md) carries it; **new scope is the product owner's, not the office's** |
+
+> **[C-217](LANE_COORDINATION.md) is answered by this row.** Lane A asked the office for its next epic and is assigned **[TASK-400](BACKLOG.md)**, with **[TASK-903](BACKLOG.md) stage 2 prepared behind it** so the lane does not wait twice. **Lane A records the assignment on its own row, sets it `ACTIVE`, and closes C-217 in the slice that begins the work.**
 
 > **The honest finding: with three rows corrected, the `READY` queue has little Lane A can take.** [TASK-900](BACKLOG.md) is the only substantial unclaimed item and it is a platform RFC. **That is a queue-depth observation for the product owner, not a request** — and it is what *"lanes rarely wait for work"* looks like when it stops being true.
 

@@ -82,6 +82,19 @@
 
 > **This lane is not proceeding into Lane A's modules on the strength of a directive that predates the collision.** One assignee per module is §20e's hardest invariant, and the product owner's own instruction in the same assignment was *"do not quietly bypass module boundaries."* **[C-323](LANE_COORDINATION.md) asks which way to resolve it**; the two backends in unassigned `knowledge_graph` are claimable meanwhile.
 
+### TASK-400 · The product says when it last *looked*
+
+| | |
+|---|---|
+| **Module** | `provider_platform` — **Lane A holds it** · Knowledge Graph joins · Product Surface renders |
+| **Slice** | **A7**, specified in [51-implementation-specifications.md](architecture/51-implementation-specifications.md) |
+| **Status** | `READY` |
+| **Queued by** | **Lane C, 2026-08-03.** **Decomposition of Epic A, which the product owner approved and assigned on 2026-08-03** — not new scope. A7 was *"proposed by building A4"*: implementing A4 proved the fact it assumed was missing |
+| **Notes** | **Verified unbuilt**: no `attempted_at`, `polled_at` or equivalent in `provider_platform` on `integration` or either lane branch. `provider_sync` has no `subject`; `provider_watermark.position` advances **only when records arrive**, so a successful empty read leaves no trace |
+| **Customer value** | **The second half of trust.** A seller seeing *"Latest evidence · 5 weeks ago"* cannot tell whether the account went quiet or Signora stopped looking. **Those diverge exactly when it matters** |
+| **Effort** | **S** for the column · **M** if the `subject`↔entity join needs a design |
+| **On claiming** | **Ship the word *checked* only once it is true** — A4 deliberately refuses it and `freshness.test.tsx` asserts the refusal, so that test is the contract. **The open question is the `subject`↔entity join**, not the column; resolve it with Lane C rather than assuming it |
+
 ### TASK-900 · The platform learns to compose a module into the runtime
 
 | | |
@@ -137,7 +150,7 @@
 |---|---|
 | **Module** | Product Surface · `buying_score_engine` owns posture |
 | **Slice** | one slice |
-| **Status** | **`IN VALIDATION` — Lane A. Already built; corrected by Lane C 2026-08-03, [C-404](LANE_COORDINATION.md).** Verified on `lane-a-product-surface`: `frontend/components/intelligence/attention.tsx` marks `contractionary` alone with an icon, a `warning` tone and screen-reader text *"risk to existing revenue"*, asserted in `frontend/tests/components/attention.test.tsx`. **Satisfies R-6** — *distinct, and the treatment was the lane's* |
+| **Status** | **`READY`.** ⚠️ **Lane C marked this `IN VALIDATION` on 2026-08-03 and was wrong — restored the same day.** The `contractionary` marking in `attention.tsx` is real but arrives from **`0d8d325` (M12.3), already promoted to `main`** — **not** from Lane A's branch, which is what Lane C claimed. **Lane A, which owns the module, states nothing about this row has moved.** The module owner's reading stands over the office's inference. **What R-6 still requires beyond the promoted marking is Lane A's to state** |
 | **Notes** | Posture reaches the attention row. **A contraction risk must not be confusable with a low-scoring opportunity** — they mean opposite things to a CRO scanning a list. **The treatment is yours**, within the design system; the ruling is only that they must differ |
 
 ### TASK-906 · M14b names its bounded context
