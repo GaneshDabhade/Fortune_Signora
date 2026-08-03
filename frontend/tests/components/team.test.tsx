@@ -209,13 +209,15 @@ describe('the words are the customer’s', () => {
 
     render(draw());
 
-    // On an invitation, as text.
-    expect(screen.getByText('Can administer Signora')).toBeVisible();
+    // On an invitation, as text — and the same words appear in the roster's
+    // control and in the role explanation, which is the catalog working
+    // rather than a duplicate.
+    expect(screen.getAllByText('Can administer Signora').length).toBeGreaterThan(1);
     // On a member, as the chosen option of the control that changes it.
     expect(screen.getByLabelText('What ana@acme.com can do')).toHaveValue('owner');
     expect(
-      screen.getByRole('option', { name: /Administer Signora/ }),
-    ).toBeInTheDocument();
+      screen.getAllByRole('option', { name: 'Can administer Signora' }).length,
+    ).toBeGreaterThan(0);
   });
 
   it('says *Withdrawn* rather than *Revoked*', () => {
@@ -503,5 +505,89 @@ describe('changing what somebody can do', () => {
       { membershipId: 'm2', role: 'owner' },
       expect.anything(),
     );
+  });
+});
+
+describe('roles are explained as capabilities, never as permissions', () => {
+  // **One reviewed catalog.** Before it, the same distinction was written in
+  // the selector, the roster and the invitation dialog — three copies of one
+  // fact, which eventually disagree.
+
+  /** jsdom hides the contents of a closed `<details>`, correctly — so opening
+   * it is part of the test rather than a workaround. */
+  function openExplanation(): HTMLElement {
+    const summary = screen.getByText('What each role can do');
+    const details = summary.closest('details')!;
+    details.setAttribute('open', '');
+    return details;
+  }
+
+  it('explains what each role can do, where an owner is choosing', () => {
+    render(draw());
+    const explanation = openExplanation();
+
+    expect(
+      within(explanation).getByText('Invite colleagues, and withdraw an invitation'),
+    ).toBeVisible();
+    expect(
+      within(explanation).getByText(
+        'See every account Signora is watching, and why it matters',
+      ),
+    ).toBeVisible();
+  });
+
+  it('says what a member cannot do, so the difference is a real one', () => {
+    render(draw());
+    const explanation = openExplanation();
+
+    expect(
+      within(explanation).getByText(/Cannot invite or remove colleagues/),
+    ).toBeVisible();
+  });
+
+  it('explains the role being offered, inside the invitation dialog', () => {
+    // An administrator inviting somebody as an owner should not have to open a
+    // disclosure elsewhere to learn what that grants.
+    render(draw());
+    fireEvent.click(screen.getAllByRole('button', { name: 'Invite a colleague' })[0]!);
+    const dialog = screen.getByRole('dialog');
+
+    expect(
+      within(dialog).getByText('Decide on an account — take it on, close it, or disagree'),
+    ).toBeVisible();
+  });
+
+  it('tells a member who can do what they cannot', () => {
+    // A screen that simply omits the control leaves somebody wondering whether
+    // the feature exists. Naming who *can* is a fact they can act on; 403 is
+    // a fact about a request.
+    viewerRole.mockReturnValue({ role: 'member', resolved: true });
+
+    render(draw());
+
+    expect(screen.getByText(/Only owners can invite colleagues/)).toBeVisible();
+    expect(screen.getByText(/Ask somebody who administers this organization/)).toBeVisible();
+  });
+
+  it('never uses the platform’s vocabulary for any of it', () => {
+    // **The property that makes the catalog worth having.** Adding
+    // `timeline:read` to `member` must change nothing here, because "see
+    // everything Signora finds" was already true and already said.
+    render(draw());
+    const text = (document.body.textContent ?? '').toLowerCase();
+
+    for (const forbidden of [
+      'casbin',
+      'policy',
+      'permission',
+      'workspace:',
+      'member:',
+      'resource',
+      'tuple',
+      'forbidden',
+      '403',
+    ]) {
+      expect(text).not.toContain(forbidden);
+    }
   });
 });

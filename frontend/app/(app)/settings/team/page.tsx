@@ -22,6 +22,12 @@ import {
   TR,
   Table,
 } from '@/components/ui';
+import {
+  ROLE_CAPABILITIES,
+  ROLE_OPTIONS,
+  onlyOwnersCan,
+  type TeamRole,
+} from '@/components/team/capabilities';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { ApiError } from '@/lib/api/client';
 import type { Invitation, Membership } from '@/lib/api/types';
@@ -166,7 +172,16 @@ export default function TeamPage() {
         <CardHeader>
           <CardTitle>People</CardTitle>
         </CardHeader>
-        <CardBody>
+        <CardBody className="flex flex-col gap-4">
+          {/* **Where a control is absent, say who has it.** A member reading
+              this page sees roles and no way to change them; without this they
+              cannot tell whether the feature exists, is broken, or is not
+              theirs. Naming who *can* is a fact they can act on — 403 is not. */}
+          {myRole === 'member' ? (
+            <p className="text-sm text-content-muted">
+              {onlyOwnersCan('invite colleagues, remove them, or change what they can do')}
+            </p>
+          ) : null}
           {rosterLoading ? (
             <SkeletonText lines={3} />
           ) : rosterFailed ? (
@@ -206,13 +221,13 @@ export default function TeamPage() {
                           onChange={(event) =>
                             setPromoting({
                               membership: one,
-                              to: event.target.value as 'owner' | 'member',
+                              to: event.target.value as TeamRole,
                             })
                           }
                           options={ROLE_OPTIONS}
                         />
                       ) : (
-                        <span className="text-content-muted">{ROLE_WORDS[one.role]}</span>
+                        <span className="text-content-muted">{ROLE_CAPABILITIES[one.role].summary}</span>
                       )}
                     </TD>
                     <TD>
@@ -239,6 +254,37 @@ export default function TeamPage() {
           )}
         </CardBody>
       </Card>
+
+      {/* **The explanation lives where the decision is made**, closed by
+          default. An owner choosing between two roles is the one person who
+          needs it, and a permanently expanded list of nine sentences would be
+          the clutter a matrix was avoided to prevent. */}
+      <details className="rounded border border-border px-4 py-3">
+        <summary className="cursor-pointer text-sm font-medium text-content">
+          What each role can do
+        </summary>
+        <div className="mt-3 flex flex-col gap-4">
+          {(['owner', 'member'] as const).map((role) => (
+            <div key={role} className="flex flex-col gap-1.5">
+              <h3 className="text-sm font-medium text-content">
+                {ROLE_CAPABILITIES[role].summary}
+              </h3>
+              <ul className="flex list-disc flex-col gap-1 pl-5 text-sm text-content-muted">
+                {ROLE_CAPABILITIES[role].can.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+              {ROLE_CAPABILITIES[role].cannot.length > 0 ? (
+                <ul className="flex list-disc flex-col gap-1 pl-5 text-sm text-content-subtle">
+                  {ROLE_CAPABILITIES[role].cannot.map((line) => (
+                    <li key={line}>Cannot {line.charAt(0).toLowerCase() + line.slice(1)}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      </details>
 
       <Card>
         <CardHeader>
@@ -275,7 +321,7 @@ export default function TeamPage() {
                 {[...waiting, ...settled].map((one) => (
                   <TR key={one.id}>
                     <TD>{one.invited_email}</TD>
-                    <TD className="text-content-muted">{ROLE_WORDS[one.role]}</TD>
+                    <TD className="text-content-muted">{ROLE_CAPABILITIES[one.role].summary}</TD>
                     <TD>
                       <Badge tone={STATE_TONE[one.state]}>{STATE_WORDS[one.state]}</Badge>
                     </TD>
@@ -453,28 +499,22 @@ export default function TeamPage() {
           <Select
             label="What they can do"
             value={role}
-            onChange={(event) => setRole(event.target.value as 'owner' | 'member')}
+            onChange={(event) => setRole(event.target.value as TeamRole)}
             options={ROLE_OPTIONS}
           />
+          {/* **The same sentences, at the moment the choice is made.** An
+              administrator inviting somebody as an owner should not have to
+              open a disclosure elsewhere to learn what that grants. */}
+          <ul className="flex list-disc flex-col gap-1 pl-5 text-sm text-content-muted">
+            {ROLE_CAPABILITIES[role].can.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
         </div>
       </Dialog>
     </div>
   );
 }
-
-/**
- * What each role means, said in full.
- *
- * **Not *Owner* and *Member*.** Those are the words the policy uses; an
- * administrator choosing between them is asking *what will this person be able
- * to do*, and the answer belongs in the control rather than in a tooltip.
- * (Explaining the full permission set is still unsolved — §5 of
- * `46-team-management.md`.)
- */
-const ROLE_OPTIONS = [
-  { value: 'member', label: 'Work accounts — see everything, decide on accounts' },
-  { value: 'owner', label: 'Administer Signora — and everything a member can do' },
-] as const;
 
 /**
  * Who somebody is, in the only terms the product can honestly use.
@@ -492,11 +532,6 @@ function countWord(n: number, one: string, many: string): string {
   return `${n} ${n === 1 ? one : many}`;
 }
 
-/** The customer's words for a role, not the enum's (ADR-0034). */
-const ROLE_WORDS: Record<Invitation['role'], string> = {
-  owner: 'Can administer Signora',
-  member: 'Works accounts',
-};
 
 /**
  * What became of an offer.

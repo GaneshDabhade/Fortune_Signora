@@ -846,3 +846,88 @@ An invitation is **two facts with two owners**, and separating them dissolves mo
 **Profile cards · presence · activity summaries · workload · approvals · assignments · mentions · comments · ownership history · onboarding progress.**
 
 **All of them attach to a membership or to a Better Auth identity, and both already exist.** The roster row is the natural anchor: it has a stable id, an address, a role and a lifecycle. **The one that would strain today's layout is presence** — a per-row live indicator implies subscriptions the frontend has no mechanism for, and it is the first of these that is not simply another column.
+
+
+---
+
+## 20 · TM-05 — roles explained as capabilities, 2026-08-03
+
+**§5 called this the weakest part of the design, on the assumption it meant rendering thirty Casbin tuples. It did not.** Customers think in capabilities, and the difference between two roles is four sentences.
+
+### One reviewed catalog
+
+[`components/team/capabilities.ts`](../../frontend/components/team/capabilities.ts) — the only place these sentences exist. **Before it the same distinction was written three times** — the role selector's options, the roster's text, the invitation dialog — and three copies of one fact eventually disagree.
+
+**Deliberately not generated from `policy.csv`.** The least-powerful-author rule: this is *static knowledge a domain expert owns*, like the timeline's headline catalog. **Generating it would climb a rung for no gain** — the output would drift into resource names the moment somebody added a resource, and nobody would notice until a customer read it.
+
+> **The property that makes it worth having: adding `timeline:read` to `member` changes nothing here**, because *"see every account Signora is watching"* was already true and already said. **The explanation is stable while the policy evolves.**
+
+### Where it appears, and where it deliberately does not
+
+| | |
+|---|---|
+| **A closed disclosure on the Team page** | *"What each role can do."* **Closed by default** — an owner choosing between two roles is the one person who needs nine sentences, and a permanently expanded list is the clutter a matrix was avoided to prevent |
+| **Inside the invitation dialog** | The role being offered, explained where the choice is made. **An administrator inviting somebody as an owner should not have to open a disclosure elsewhere** to learn what that grants |
+| **To a member, as *who can*** | *"Only owners can invite colleagues, remove them, or change what they can do. Ask somebody who administers this organization."* **A fact they can act on** — they know who to ask. A screen that simply omits the control leaves them wondering whether the feature exists |
+| **In onboarding** | **Not yet.** There is no onboarding flow to put it in ([C-007](../LANE_COORDINATION.md)), and inventing one to host a sentence would be building the wrong thing |
+| **On a denied action** | **Not needed here, and the reason is the design.** No control the server would refuse is ever rendered — so there is no denial to explain, only an absence, and the absence is what the member-facing line addresses. **It becomes worth building the moment a control cannot be hidden**, which is the trigger |
+
+**A test asserts no platform vocabulary reaches any of it** — `casbin`, `policy`, `permission`, `workspace:`, `member:`, `resource`, `tuple`, `forbidden`, `403`. Same terms `vocabulary.test.tsx` applies to every screen, applied to the one place a matrix would have leaked.
+
+---
+
+## 21 · Ownership transfer — challenged, and it is one operation
+
+**The question: does a customer think in two operations or one?**
+
+**One.** *"Hand over the organization"* is a single intent with a single reason — somebody is leaving, or changing role, or the wrong person set it up. **Nobody thinks *"promote Ravi, then demote myself"***; that is the mechanism, and today the product asks the customer to know it.
+
+**And composing it from two operations is not merely inelegant — it is unsafe in a way one operation would not be.** Between the promote and the demote there are **two owners**, and if the second step fails, is abandoned, or the browser closes, the organization is left in a state nobody chose. **A transfer that half-happens is worse than one that is refused.**
+
+> **So it deserves its own workflow**, and the evidence is the intermediate state rather than the click count.
+
+**What it needs, and it is small:** one use case taking both memberships, inside the transaction and the workspace lock TM-04 already added — so the two role changes are atomic and the invariant is never momentarily satisfied by an owner nobody meant to create. **Two `membership_role_change` rows, which is correct**: two people's authority changed.
+
+**Not built in this slice.** It is a genuine capability rather than polish, it is unblocked, and it is recorded here as the next one.
+
+---
+
+## 22 · TM-06 — audit history, designed before it is built
+
+**Every fact it needs is already stored.** The challenge is presentation, and one question decides most of it.
+
+### The single place a customer answers *"what happened?"*
+
+| Source | Already stored |
+|---|---|
+| Invited · resent · withdrawn · expired | `invitation`, with `created_by` and all four states |
+| Accepted | `invitation.accepted_at` *(pending [C-208](../LANE_COORDINATION.md))* |
+| Role changed | `membership_role_change` — from, to, by, when |
+| Removed | `membership.ended_at` · `ended_by` · `ended_reason` |
+| Rejoined | A second live membership after an ended one |
+
+**Chronology, newest first, one entry per fact.** Grouping by day, as the account timeline already does — **the same component shape, deliberately**: a customer who has read one history should not have to learn a second layout.
+
+**Filtering and search are deferred with the trigger stated:** a history that does not fit on one screen. An organization of four generates perhaps twenty entries a year.
+
+### The question that decides the design: **whose name, and from when?**
+
+**A person renames themselves. Should an entry say the name they have now, or the one they had then?**
+
+| | |
+|---|---|
+| **Current name** | Reads naturally, and **silently rewrites history**: *"Raj promoted Anita"* when the record says Ravi did, and the audit no longer matches an export taken last year |
+| **Historical snapshot** | Truthful, and **confusing** — a reader who knows Raj cannot find Ravi |
+| **Both** | *"Ravi (now Raj)"*. Truthful, findable, and slightly heavy |
+
+**Signora's answer follows from what it already does.** `member_email` is *the address a membership was created with* — **already a historical snapshot**, chosen for exactly this reason. So the entry says what was true then, **and the roster says what is true now**, and the two are reconciled by the reader rather than by the product guessing.
+
+> **The pressure point, recorded now because it reaches nine surfaces:** audit, timeline, comments, mentions, notifications, approvals, assignments, AI summaries and exports **will each face this question independently**, and they must answer it the same way. **The first one to answer it sets the convention** — and this document is the first, which is why the reasoning is here rather than in a component.
+
+**Not built.** The reading is TM-06; the facts are kept, which is the half that cannot be added retroactively.
+
+### Future pressure, checked
+
+**Absorbed:** bulk invitations and role changes *(more entries, same shape)* · delegated administration *(a role)* · organization rename *(the workspace's name is not in an entry)* · temporary access · guests · consultants · read-only users *(all roles)* · workspace deletion *(cascades)*.
+
+**Where pressure begins:** **SCIM and directory synchronisation** — the actor stops being a person, and the `opened_by` pattern is the answer (§11). **Legal holds and retention** — an append-only table with a `DELETE` grant is exactly the shape a hold has to override, and nothing today expresses one. **Organization merge or split** — two histories over one organization, and §19 already records it as genuinely unabsorbed.
