@@ -144,3 +144,35 @@ class TestForceIsAnEscapeHatchNotADefault:
         lease.acquire("certify")
         lease.release(force=True)
         assert lease.holder() is None
+
+
+class TestGatePreconditionsDoNotContradict:
+    """`dr` and `smoke` want opposite things from the review ports.
+
+    **`release-preflight` requires 3000 and 8000 to be *free*** so `smoke` can
+    bind them. **`dr` requires the production stack to be *up*** on exactly
+    those ports, because it restarts a running system and checks nothing was
+    lost.
+
+    Wiring the preflight into `dr` therefore made `dr` unrunnable — `make up`
+    brought the stack up, and the preflight then refused. It was caught within
+    one cycle of being introduced, by running the gate rather than by reasoning
+    about it, and this asserts it cannot come back.
+    """
+
+    def test_dr_does_not_depend_on_the_preflight(self) -> None:
+        makefile = (REPO_ROOT / "Makefile").read_text()
+        recipe = makefile.split("\ndr:")[1].split("\n\n")[0]
+        assert "release-preflight" not in recipe.split("\n")[0]
+
+    def test_dr_still_takes_the_lease(self) -> None:
+        """Dropping the preflight must not drop the contention protection —
+        that was the half `dr` actually needed."""
+        makefile = (REPO_ROOT / "Makefile").read_text()
+        recipe = makefile.split("\ndr:")[1].split("\n\n")[0]
+        assert "environment-lease.py run dr" in recipe
+
+    def test_smoke_keeps_both(self) -> None:
+        makefile = (REPO_ROOT / "Makefile").read_text()
+        assert "smoke: release-preflight" in makefile
+        assert "environment-lease.py run smoke" in makefile

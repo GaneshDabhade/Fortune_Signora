@@ -49,7 +49,12 @@ smoke-keep:
 	@SMOKE_KEEP_STACK=1 bash ./infra/smoke.sh
 
 ## Disaster Recovery Validation against an already-running production stack.
-dr: release-preflight
+## **Not preflighted, deliberately.** `release-preflight` requires 3000 and 8000
+## to be *free* so smoke can bind them; `dr` requires the production stack to be
+## *up* on exactly those ports. The preconditions are inverses, and wiring the
+## preflight here made `dr` unrunnable — caught within one cycle of adding it.
+## What `dr` needed was the lease, which it has.
+dr:
 	@python3 infra/environment-lease.py run dr -- bash ./infra/disaster-recovery.sh
 
 ## Bring the local production stack up / down.
