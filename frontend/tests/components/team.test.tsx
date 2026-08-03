@@ -13,13 +13,17 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { Invitation } from '@/lib/api/types';
+import type { Invitation, Membership } from '@/lib/api/types';
 
 const workspaceContext = vi.hoisted(() => vi.fn());
 const invitations = vi.hoisted(() => vi.fn());
 const invite = vi.hoisted(() => vi.fn());
 const revoke = vi.hoisted(() => vi.fn());
 const resend = vi.hoisted(() => vi.fn());
+const removeMember = vi.hoisted(() => vi.fn());
+const members = vi.hoisted(() => vi.fn());
+const viewerRole = vi.hoisted(() => vi.fn());
+const session = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/state/workspace-provider', () => ({
   useWorkspaceContext: workspaceContext,
@@ -30,7 +34,12 @@ vi.mock('@/lib/query/hooks/team', () => ({
   useInviteMember: () => ({ mutate: invite, isPending: false }),
   useRevokeInvitation: () => ({ mutate: revoke, isPending: false }),
   useResendInvitation: () => ({ mutate: resend, isPending: false }),
+  useRemoveMember: () => ({ mutate: removeMember, isPending: false }),
+  useWorkspaceMembers: members,
+  useViewerRole: viewerRole,
 }));
+
+vi.mock('@/lib/auth/client', () => ({ useSession: session }));
 
 vi.mock('@/components/feedback/toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 
@@ -53,6 +62,20 @@ function invitation(overrides: Partial<Invitation> = {}): Invitation {
   };
 }
 
+const ME = 'user-me';
+
+function person(overrides: Partial<Membership> = {}): Membership {
+  return {
+    id: 'm1',
+    workspace_id: WORKSPACE.id,
+    user_id: ME,
+    role: 'owner',
+    created_at: '2026-08-01T09:00:00Z',
+    member_email: 'ana@acme.com',
+    ...overrides,
+  };
+}
+
 function draw(): ReactElement {
   return <TeamPage />;
 }
@@ -61,6 +84,9 @@ beforeEach(() => {
   vi.clearAllMocks();
   workspaceContext.mockReturnValue({ activeWorkspace: WORKSPACE, isLoading: false });
   invitations.mockReturnValue({ ...IDLE, data: [] });
+  session.mockReturnValue({ data: { user: { id: ME } } });
+  viewerRole.mockReturnValue({ role: 'owner', resolved: true });
+  members.mockReturnValue({ ...IDLE, data: { items: [person()] } });
 });
 
 describe('an organization with nobody in it says what to do about it', () => {
@@ -68,10 +94,15 @@ describe('an organization with nobody in it says what to do about it', () => {
     // A table of one row with column headings is the product showing its
     // schema. The one moment an administrator is guaranteed to be looking is
     // the moment to ask for a colleague.
+    //
+    // **Scoped to the Invited card**, because the roster above it legitimately
+    // renders a table — the founder is always in it.
     render(draw());
+    const invited = screen.getByRole('heading', { name: 'Invited' }).closest('div')!
+      .parentElement!;
 
     expect(screen.getByText('Nobody has been invited yet')).toBeVisible();
-    expect(screen.queryByRole('table')).toBeNull();
+    expect(within(invited).queryByRole('table')).toBeNull();
   });
 });
 
@@ -169,11 +200,13 @@ describe('a forgotten invitation is raised, not waited for', () => {
 
 describe('the words are the customer’s', () => {
   it('describes a role by what it lets somebody do', () => {
+    // The same words in the roster and in the invited list, deliberately: a
+    // role means one thing whether somebody holds it or has been offered it.
     invitations.mockReturnValue({ ...IDLE, data: [invitation({ role: 'owner' })] });
 
     render(draw());
 
-    expect(screen.getByText('Can administer Signora')).toBeVisible();
+    expect(screen.getAllByText('Can administer Signora')).toHaveLength(2);
   });
 
   it('says *Withdrawn* rather than *Revoked*', () => {
@@ -280,5 +313,98 @@ describe('the banner promised “send it again”, and now there is a control', 
     const text = container.textContent ?? '';
 
     expect(text.indexOf('Send again')).toBeLessThan(text.indexOf('Withdraw'));
+  });
+});
+
+describe('the roster answers *who is in my organization?*', () => {
+  it('names people by the address their membership was created with', () => {
+    render(draw());
+
+    expect(screen.getByText('ana@acme.com')).toBeVisible();
+  });
+
+  it('says *Somebody here* rather than an identifier when no address is known', () => {
+    // **D23.** A membership added by identifier before invitations existed has
+    // no address, and a UUID would be the same absence dressed as information.
+    members.mockReturnValue({
+      ...IDLE,
+      data: { items: [person(), person({ id: 'm2', user_id: 'other', member_email: null })] },
+    });
+
+    const { container } = render(draw());
+
+    expect(screen.getByText('Somebody here')).toBeVisible();
+    expect(container.textContent).not.toContain('other');
+  });
+
+  it('marks which row is you', () => {
+    render(draw());
+
+    expect(screen.getByText('You')).toBeVisible();
+  });
+
+  it('says how many people, and how many can administer Signora', () => {
+    // The second is what makes the last-owner refusal comprehensible before
+    // anybody meets it.
+    members.mockReturnValue({
+      ...IDLE,
+      data: {
+        items: [person(), person({ id: 'm2', user_id: 'b', role: 'member', member_email: 'jo@acme.com' })],
+      },
+    });
+
+    render(draw());
+
+    expect(screen.getByText(/2 people · 1 can administer Signora/)).toBeVisible();
+  });
+});
+
+describe('removing somebody is offered only where it is real', () => {
+  it('is not offered to a member', () => {
+    // Presentation, never enforcement — the server refuses it regardless, and
+    // a control that goes nowhere costs more trust than an absent one.
+    viewerRole.mockReturnValue({ role: 'member', resolved: true });
+    members.mockReturnValue({
+      ...IDLE,
+      data: { items: [person(), person({ id: 'm2', user_id: 'b', member_email: 'jo@acme.com' })] },
+    });
+
+    render(draw());
+
+    expect(screen.queryByRole('button', { name: 'Remove' })).toBeNull();
+  });
+
+  it('is never offered on your own row', () => {
+    // Leaving is a different operation with a different invariant, and it is
+    // blocked on C-207.
+    render(draw());
+
+    expect(screen.queryByRole('button', { name: 'Remove' })).toBeNull();
+  });
+
+  it('names the person and the consequence rather than asking *are you sure*', () => {
+    members.mockReturnValue({
+      ...IDLE,
+      data: { items: [person(), person({ id: 'm2', user_id: 'b', member_email: 'jo@acme.com' })] },
+    });
+
+    render(draw());
+    fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
+
+    expect(screen.getByText(/jo@acme.com will lose access/)).toBeVisible();
+  });
+
+  it('promises that what they decided stays on the record', () => {
+    // D3: the membership is ended, never deleted, so decision history and the
+    // timeline still say who acted.
+    members.mockReturnValue({
+      ...IDLE,
+      data: { items: [person(), person({ id: 'm2', user_id: 'b', member_email: 'jo@acme.com' })] },
+    });
+
+    render(draw());
+    fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
+
+    expect(screen.getByText(/already decided stays on the record/)).toBeVisible();
   });
 });

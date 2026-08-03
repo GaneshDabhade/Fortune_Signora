@@ -59,10 +59,16 @@ class MembershipResponse(BaseModel):
     user_id: UUID
     role: WorkspaceRole
     created_at: datetime
+    #: The address this membership was created with, when one is known.
+    #: `None` for memberships added by identifier before invitations existed —
+    #: the screen says *"Somebody here"*, which is the wording D23 established
+    #: rather than an identifier dressed as information.
+    member_email: str | None = None
 
     @classmethod
     def from_domain(cls, membership: Membership) -> "MembershipResponse":
         return cls(
+            member_email=membership.member_email,
             id=membership.id,
             workspace_id=membership.workspace_id,
             user_id=membership.user_id,

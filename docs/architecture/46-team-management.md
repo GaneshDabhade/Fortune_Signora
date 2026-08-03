@@ -721,3 +721,70 @@ An invitation is **two facts with two owners**, and separating them dissolves mo
 **Fixed in this slice**: `ResendInvitation` re-delivers **the same row**, and *Send again* sits before *Withdraw* because an administrator chasing a forgotten invitation reaches for the recoverable action first.
 
 **`require_pending` became public** so resend could reuse the domain's own refusal rather than re-express it — a use case reaching into a private method would be the boundary leaking rather than the rule being shared.
+
+
+---
+
+## 18 · TM-01 — the roster, 2026-08-03
+
+**The Team page names people.** Removal and the invitation lifecycle stop being headless capabilities and become things a customer can see and do.
+
+### How the roster became possible without waiting for acceptance
+
+**§9 concluded the members list had to follow TM-03b, because no membership carried an address.** That was true of memberships created by `POST /members`. **It was not true of the founder's.**
+
+`create_workspace` runs under a verified token, and **`AuthenticatedPrincipal.email` has carried the address since M1.2.** So the one person who is certainly in every organization can be named today, and everybody after them gets theirs from the invitation they accepted.
+
+> **The correction to §9's correction:** the narrowing was right, the sequencing was wrong, **and the sequencing was wrong in a second way** — the address has two sources, and only one of them waits on C-208.
+
+**Nullable, and no backfill.** Memberships added by identifier have none, and inventing one is what migration `0029` refused. They render as *"Somebody here"* — D23's wording, which the product has used for exactly this since M12.2.
+
+**Why this stays inside §13:** the address is **a fact about how the membership came to exist**, not a mirror of a profile. A display name is Better Auth's and goes stale; *the address this membership was created with* is historical and stays true.
+
+### The UX questions, answered
+
+| | |
+|---|---|
+| **What an owner understands first** | **How many people, and how many can administer Signora** — before any row. The second is what makes the last-owner refusal comprehensible *before* somebody meets it |
+| **Table or cards** | **Table, and it is not a default.** Today a row is address · role · one action, and a card would be a table with more whitespace. **The trigger to revisit is stated**: the first row-level fact that is not a single value — an avatar, a last-active reading, a badge set. **Responsive is [C-205](../LANE_COORDINATION.md)'s**, and cards are what that answer will probably want |
+| **Row actions** | **One today, and the shape is chosen for six.** *Change role · Remove · Transfer ownership · Suspend · Audit · Activity* do not fit as six buttons; the trigger for a per-row menu is **the third action**, and the column exists to receive it |
+| **Pending invitations** | **A separate card, as §10 argued.** *Who is here* and *who is on their way in* are different questions, and a `Status: pending` column would invite sorting a person next to a not-yet-person |
+| **Where removal is offered** | **Absent, never disabled — for two different reasons.** A member is not shown a control the server would refuse; **nobody is shown one on their own row**, because leaving is a different operation with a different invariant ([C-207](../LANE_COORDINATION.md)) |
+| **The confirmation** | **Names the person and the consequence**, and adds the reassurance only this design can make: *"What they have already decided stays on the record."* That is D3 being true, said out loud |
+
+### Enterprise growth — what today's layout does not block
+
+**Nothing here is built.** The question is only whether the shape refuses it.
+
+| | |
+|---|---|
+| **Hundreds of users · search · filters · sorting** | The endpoint is already **cursor-paginated**; the screen reads one page. **The trigger is a list that does not fit on one screen** |
+| **Bulk actions** | A selection column and a toolbar. **The domain methods are per-member either way** |
+| **Departments · teams · cost centres · grouping** | **Multiple workspaces already**, and a grouped roster is a rendering change |
+| **SCIM users · guests · external collaborators** | A membership with a different provenance. **`member_email` is nullable and `created_by` already distinguishes who acted** |
+| **Seats · licences** | **Lands on the owner count this page already computes** — the prediction §13 made, arriving one slice later than expected |
+
+### Future events — recorded so nobody rediscovers them
+
+**None is implemented.** [C-012](../LANE_COORDINATION.md) means no module handler is subscribed anyway, and an event with no consumer is speculative (§6).
+
+| Event | Why it will exist | Producer | Expected consumers | Why not today |
+|---|---|---|---|---|
+| `membership.ended` | A departure must reach everything that names a person | Workspace & Tenancy | Notifications · assignments · approvals · billing seats · integrations | **None of those exists.** Nothing would receive it |
+| `membership.role_changed` | An entitlement change must reach anything caching a capability | Workspace & Tenancy | Billing · notifications · audit | TM-04 is unbuilt, and nothing caches a role |
+| `invitation.accepted` | The moment an organization grows | Workspace & Tenancy | Onboarding · notifications · seat counting | Acceptance is [C-208](../LANE_COORDINATION.md) |
+| `workspace.owner_transferred` | Ownership is the highest-consequence change a workspace has | Workspace & Tenancy | Audit · notifications · billing contact | Transfer is unbuilt |
+
+**`workspace.created` and `workspace.member_added` already exist** in [06-events.md](06-events.md) and are published today — so the catalog entry for any of the above is an extension of a pattern rather than a new one.
+
+### If Signora ever builds a People Profile — one pressure point, and it is small
+
+**The question: does a membership-centric design make a person-centric one impossible?**
+
+**No, and the reason is that this module never claims to own a person.** `user_id` is Better Auth's identifier, unmodified; `member_email` is a fact about an act rather than a profile field; **nothing here would become a second home for identity.**
+
+> **A People Profile would sit beside this module, not above it.** A person's memberships, notifications, approvals, sessions and connected identities are five different modules' facts about one Better Auth identity — and joining them is a *projection*, exactly as §11 concluded when it refused "person within a workspace" as an aggregate.
+
+**The one pressure point.** `member_email` would then exist in two places: here, as *the address this membership was created with*, and in a profile, as *this person's current address*. **They can legitimately differ** — somebody changes their address after joining — and a future engineer will read that as duplicated truth.
+
+**It is not.** One is historical and one is current, which is the same relationship `ai_narration` has to today's evidence. **Recorded so the difference is found in this document rather than reasoned out from scratch**, and the fix if it ever confuses anybody is a rename — `joined_as_email` — not a schema change.

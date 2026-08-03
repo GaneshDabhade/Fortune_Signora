@@ -14,6 +14,10 @@ from modules.workspace_tenancy.domain.entities import Membership, Workspace, Wor
 class CreateWorkspaceInput:
     name: str
     created_by: UUID
+    #: The founder's verified address, from the token. **Recorded so the roster
+    #: can name the one person who is certainly in it** — every later member
+    #: gets theirs from the invitation they accepted.
+    created_by_email: str | None = None
 
 
 @dataclass(frozen=True)
@@ -60,6 +64,7 @@ class CreateWorkspaceUseCase:
             role=WorkspaceRole.OWNER,
             created_by=input_.created_by,
             causation_id=workspace_created.event_id,
+            member_email=input_.created_by_email,
         )
         await self._membership_repository.add(membership)
 

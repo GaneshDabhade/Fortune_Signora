@@ -24,13 +24,17 @@ import {
 } from '@/components/ui';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { ApiError } from '@/lib/api/client';
-import type { Invitation } from '@/lib/api/types';
+import type { Invitation, Membership } from '@/lib/api/types';
 import {
   useInviteMember,
   useInvitations,
+  useRemoveMember,
   useResendInvitation,
   useRevokeInvitation,
+  useViewerRole,
+  useWorkspaceMembers,
 } from '@/lib/query/hooks/team';
+import { useSession } from '@/lib/auth/client';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -66,15 +70,24 @@ export default function TeamPage() {
   const invite = useInviteMember(workspaceId);
   const revoke = useRevokeInvitation(workspaceId);
   const resend = useResendInvitation(workspaceId);
+  const remove = useRemoveMember(workspaceId);
+  const { data: session } = useSession();
+  const viewerId = session?.user.id ?? null;
+  const { data: roster, isLoading: rosterLoading, isError: rosterFailed } =
+    useWorkspaceMembers(workspaceId);
+  const { role: myRole } = useViewerRole(workspaceId, viewerId);
   const { toast } = useToast();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<'owner' | 'member'>('member');
+  const [leaving, setLeaving] = useState<Membership | null>(null);
 
   if (workspacesLoading) return <SkeletonText lines={4} />;
   if (!activeWorkspace) return <NoWorkspace />;
 
+  const people = roster?.items ?? [];
+  const owners = people.filter((one) => one.role === 'owner');
   const invitations = data ?? [];
   const waiting = invitations.filter((one) => one.state === 'pending');
   const settled = invitations.filter((one) => one.state !== 'pending');
@@ -113,9 +126,18 @@ export default function TeamPage() {
       <header className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold text-content">Your team</h1>
+          {/* **The answer to *is this right?*, before any row.** How many
+              people, and how many can administer Signora — the second is what
+              makes the last-owner refusal comprehensible before anybody meets
+              it. */}
           <p className="mt-1 text-sm text-content-muted">
-            Everyone who can see this organization&apos;s accounts, and everyone on
-            their way in.
+            {rosterLoading
+              ? 'Everyone who can see this organization\u2019s accounts.'
+              : `${countWord(people.length, 'person', 'people')} · ${
+                  owners.length === 1
+                    ? '1 can administer Signora'
+                    : `${owners.length} can administer Signora`
+                }`}
           </p>
         </div>
         <Button onClick={() => setDialogOpen(true)}>Invite a colleague</Button>
@@ -133,6 +155,62 @@ export default function TeamPage() {
           </p>
         </div>
       ) : null}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>People</CardTitle>
+        </CardHeader>
+        <CardBody>
+          {rosterLoading ? (
+            <SkeletonText lines={3} />
+          ) : rosterFailed ? (
+            <p className="text-sm text-content-muted">
+              The people in this organization could not be loaded. Nothing has
+              changed — reload to try again.
+            </p>
+          ) : (
+            <Table>
+              <THead>
+                <TR>
+                  <TH>Person</TH>
+                  <TH>Role</TH>
+                  <TH>{''}</TH>
+                </TR>
+              </THead>
+              <TBody>
+                {people.map((one) => (
+                  <TR key={one.id}>
+                    <TD>
+                      {nameOf(one, viewerId)}
+                      {one.user_id === viewerId ? (
+                        <span className="ml-2 text-xs text-content-subtle">You</span>
+                      ) : null}
+                    </TD>
+                    <TD className="text-content-muted">{ROLE_WORDS[one.role]}</TD>
+                    <TD>
+                      {/* **Absent, never disabled**, and absent for two
+                          different reasons: a member is not offered a control
+                          the server would refuse, and nobody is offered one
+                          that removes themselves — leaving is a different
+                          operation, and it is blocked on C-207. */}
+                      {myRole === 'owner' && one.user_id !== viewerId ? (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          loading={remove.isPending}
+                          onClick={() => setLeaving(one)}
+                        >
+                          Remove
+                        </Button>
+                      ) : null}
+                    </TD>
+                  </TR>
+                ))}
+              </TBody>
+            </Table>
+          )}
+        </CardBody>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -216,6 +294,53 @@ export default function TeamPage() {
       </Card>
 
       <Dialog
+        open={leaving !== null}
+        onClose={() => setLeaving(null)}
+        title="Remove from this organization"
+        // Names the person and the consequence. Never "are you sure" — a
+        // question the customer has no way to answer.
+        description={
+          leaving
+            ? `${nameOf(leaving, viewerId)} will lose access to this organization\u2019s accounts, evidence and decisions. What they have already decided stays on the record.`
+            : ''
+        }
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setLeaving(null)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                if (!leaving) return;
+                remove.mutate(
+                  { membershipId: leaving.id },
+                  {
+                    onSuccess: () => {
+                      setLeaving(null);
+                      toast({ tone: 'success', message: 'Removed from this organization' });
+                    },
+                    onError: (error) => {
+                      setLeaving(null);
+                      toast({
+                        tone: 'error',
+                        message:
+                          error instanceof ApiError
+                            ? error.message
+                            : 'Could not remove them.',
+                      });
+                    },
+                  },
+                );
+              }}
+              loading={remove.isPending}
+            >
+              Remove
+            </Button>
+          </>
+        }
+      />
+
+      <Dialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         title="Invite a colleague"
@@ -267,6 +392,22 @@ const ROLE_OPTIONS = [
   { value: 'member', label: 'Work accounts — see everything, decide on accounts' },
   { value: 'owner', label: 'Administer Signora — and everything a member can do' },
 ] as const;
+
+/**
+ * Who somebody is, in the only terms the product can honestly use.
+ *
+ * The address a membership was created with, when one is known. **Otherwise
+ * *"Somebody here"*** — the wording D23 established for exactly this, and the
+ * reason a UUID never reaches the screen.
+ */
+function nameOf(membership: Membership, viewerId: string | null): string {
+  if (membership.member_email) return membership.member_email;
+  return membership.user_id === viewerId ? 'You' : 'Somebody here';
+}
+
+function countWord(n: number, one: string, many: string): string {
+  return `${n} ${n === 1 ? one : many}`;
+}
 
 /** The customer's words for a role, not the enum's (ADR-0034). */
 const ROLE_WORDS: Record<Invitation['role'], string> = {

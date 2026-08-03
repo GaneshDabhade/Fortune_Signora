@@ -108,6 +108,11 @@ class Membership:
     ended_at: datetime | None = None
     ended_by: UUID | None = None
     ended_reason: str | None = None
+    #: The address this membership was created with — the founder's verified
+    #: claim, or the address an administrator invited. **A fact about an act,
+    #: not a mirror of a profile**, which is what keeps it inside §13: a
+    #: display name would go stale, and this cannot.
+    member_email: str | None = None
 
     @property
     def is_live(self) -> bool:
@@ -151,6 +156,7 @@ class Membership:
         role: WorkspaceRole,
         created_by: UUID,
         causation_id: UUID | None = None,
+        member_email: str | None = None,
     ) -> tuple[Membership, MemberAdded]:
         now = datetime.now(UTC)
         membership = cls(
@@ -162,6 +168,7 @@ class Membership:
             updated_at=now,
             created_by=created_by,
             updated_by=created_by,
+            member_email=member_email,
         )
         event = MemberAdded(
             workspace_id=workspace_id,

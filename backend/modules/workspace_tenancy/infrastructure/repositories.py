@@ -44,6 +44,7 @@ def _membership_to_domain(model: MembershipModel) -> Membership:
         ended_at=model.ended_at,
         ended_by=model.ended_by,
         ended_reason=model.ended_reason,
+        member_email=model.member_email,
     )
 
 
@@ -112,6 +113,7 @@ class SqlAlchemyMembershipRepository(SqlAlchemyRepository):
                 updated_at=membership.updated_at,
                 created_by=membership.created_by,
                 updated_by=membership.updated_by,
+                member_email=membership.member_email,
             )
         )
 

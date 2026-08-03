@@ -165,3 +165,21 @@ export function useResendInvitation(workspaceId: string | null) {
       client.invalidateQueries({ queryKey: queryKeys.invitations(workspaceId ?? '') }),
   });
 }
+
+/** Remove somebody from this organization. The record survives; access does not. */
+export function useRemoveMember(workspaceId: string | null) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { membershipId: string; reason?: string }) =>
+      apiRequest<Membership>(
+        `/workspaces/${workspaceId}/members/${input.membershipId}/remove`,
+        {
+          method: 'POST',
+          body: { reason: input.reason ?? null },
+          workspaceId: workspaceId ?? undefined,
+        },
+      ),
+    onSuccess: () =>
+      client.invalidateQueries({ queryKey: queryKeys.members(workspaceId ?? '') }),
+  });
+}

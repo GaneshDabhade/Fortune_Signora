@@ -69,6 +69,7 @@ class MembershipModel(Base, TimestampMixin, AuditMixin):
     ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     ended_by: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), nullable=True)
     ended_reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    member_email: Mapped[str | None] = mapped_column(String(320), nullable=True)
 
 
 class InvitationModel(Base, TimestampMixin, AuditMixin):

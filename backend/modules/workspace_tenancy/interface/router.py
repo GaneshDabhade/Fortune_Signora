@@ -90,7 +90,11 @@ async def create_workspace(
     workspace, and plan limits are a separate, future concern.
     """
     result = await build_use_cases(context.session).create_workspace.execute(
-        CreateWorkspaceInput(name=body.name, created_by=context.principal.user_id),
+        CreateWorkspaceInput(
+            name=body.name,
+            created_by=context.principal.user_id,
+            created_by_email=context.principal.email,
+        ),
         correlation_id=correlation_id_of(request),
     )
     return WorkspaceResponse.from_domain(result.workspace)

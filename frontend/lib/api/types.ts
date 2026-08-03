@@ -20,6 +20,14 @@ export interface Membership {
   user_id: string;
   role: 'owner' | 'member';
   created_at: string;
+  /**
+   * The address this membership was created with, when one is known.
+   *
+   * `null` for memberships added by identifier before invitations existed.
+   * The screen says *"Somebody here"* — the wording D23 established, rather
+   * than an identifier dressed as information.
+   */
+  member_email: string | null;
 }
 
 /**
