@@ -120,9 +120,11 @@ frontend/tests/e2e/
 **Run against a live stack: Next 15 dev server on 3400, FastAPI on 8400, PostgreSQL `signora_lane_b` at migration head `0031`, seeded with `playground@2` — twelve accounts through the real pipeline, four personas enrolled through Better Auth.**
 
 ```
-76 tests · 75 passed · 1 skipped (the OAuth round trip, no credentials) · 0 failed
-4.4 minutes, serial, one worker, zero retries
+92 tests · 90 passed · 2 skipped · 0 failed
+6.2 minutes, serial, one worker, zero retries
 ```
+
+Skipped, both deliberately and visibly: the **OAuth round trip** (no provider credentials) and one **workflow move** when the seeded book has no account left in that state.
 
 Alongside it: **719 Vitest tests green**, `tsc --noEmit` clean, `eslint` clean, and the **production build succeeds** with `/api/proxy/[...path]` in the route manifest.
 
@@ -180,6 +182,46 @@ Alongside it: **719 Vitest tests green**, `tsc --noEmit` clean, `eslint` clean, 
 ### Unevidenced, and deliberately not claimed
 
 **The visual half of a premium review cannot be taken from a browser I cannot see.** Micro-interactions, spacing rhythm, hover and focus *aesthetics*, dark-mode fidelity, responsive breakpoints, animation timing and "does this feel like Linear" are **not asserted anywhere in this document**. What the suite does cover mechanically — focus visibility, focus return, labelling, heading structure, decorative icons — is in `accessibility.spec.ts`. **The rest needs a human at `make demo`**, and with B-303 fixed that session is now worth having for the first time.
+
+---
+
+## 6a · Customer confidence
+
+**Asked and answered in the product owner's words: *if I were a paying customer today, how confident would I feel using this part of Signora?***
+
+| Area | Confidence | Why |
+|---|---|---|
+| **Signing in and out** | **High** | It works, it is refused correctly when it should be, it does not leak which half of a credential was wrong, and signing out actually ends the session — all four asserted on every run. All four were broken this morning |
+| **The morning list** | **High** | Ranked, honest about what it does not know, and every row leads somewhere. The one thing a seller reads first is now proven to be a real ordering rather than an arrangement |
+| **The account brief** | **Medium-high** | The argument holds together and every citation opens real evidence. What holds it back is R1-01: *"why now"* says the same thing on eleven of twelve rows, so the column a seller reads second stops earning attention by the fourth account |
+| **Declaring your business** | **Medium-high** | Five declarations, versioned, recoverable, and the concurrent-edit case does not lose anybody's work. The gap is that **nothing downstream consumes an ICP yet** — a customer describes who buys from them and the product does not visibly change |
+| **Deciding on an account** | **High** | The one place a human decision is recorded, and it is required to carry a reason, attributed, dated, permanent, and survives a reload. It also offers somewhere to go next rather than leaving a person on a page they have finished with |
+| **Connections** | **Medium**, and correctly so | The product refuses to offer what it cannot complete — *"Connecting this is not available yet"* rather than a button that fails at the callback. **That is the confidence-building answer**; the low ceiling is the missing capability, not a missing statement about it |
+| **Coming back later** | **High** | Refresh, back, forward, deep links, bookmarks and a second tab all behave. This was the single largest cluster of defects and is now the most heavily asserted area |
+| **When something fails** | **Medium-high** | A failed list says *nothing has changed about your accounts*, which is what a seller actually fears. A failed brief does not masquerade as an empty one. What is missing is any indication that background work is still in progress |
+
+**The biggest confidence-building change of this cycle** is not any single fix — it is that **the product now shows a customer their own data**, and everything above is a statement about a product somebody can actually use.
+
+**The biggest remaining gap is not a defect.** It is that a customer can do all of the above and still not know **what to do first**. There is no guided first run ([C-007](../LANE_COORDINATION.md)), and a brand-new organization's only sentence is *"You are not part of an organization yet."*
+
+---
+
+## 6b · Product experience scorecard
+
+**Reasoned, not scored out of ten** — the point is the argument, and a number would invite comparison between things that are not comparable.
+
+| Dimension | Assessment |
+|---|---|
+| **Functional completeness** | **Strong for the daily loop, thin at the edges.** Triage → brief → evidence → decide is complete and proven. Absent: search, filter, sort, bulk actions, saved views, and any way to find an account that is not on today's list |
+| **Workflow clarity** | **Strong.** Two navigation entries, one ordered list, one question per screen. The restraint is the achievement: this product had six menu items for four modules and is better for having five fewer |
+| **Explainability** | **The product's best quality.** A score decomposes into an arithmetic, the arithmetic into contributions, a contribution into provider readings, and every one of those is a real record. Nothing on the daily surface was written by a model, deliberately. **Held back only by R1-01** |
+| **Recoverability** | **Good, with one asymmetry.** Cancel, escape and reload all preserve state; a watched company can be un-watched. But **a recorded decision is permanent by design and the dialog says so** — correct for an audit trail, and it means a mis-click on *Not a real opportunity* has no undo. Worth a confirmation step, not a change of model |
+| **Trustworthiness** | **High, and structurally so.** Every number is derived and citable; the list and the brief are asserted to agree; the product refuses to offer a connection it cannot complete. **The one thing that would damage it most is a screen that quietly shows nothing** — which is precisely the class of defect this cycle removed |
+| **Visual polish** | **Not assessable from here, and not claimed.** Structure, focus, labelling and heading hierarchy pass; spacing, motion, dark mode and "premium feel" need a human at a browser |
+| **Performance perception** | **The weakest dimension.** Opening one page mints **eight** access tokens, each an RS256 signature. Nothing tells a customer that background work is in progress, and research is the one action that costs real time |
+| **Discoverability** | **Adequate for a seller, poor for an administrator.** The daily surface needs no discovery. But the five declarations that make the product work are three clicks deep behind *Settings*, and nothing on the attention list points at them when it is empty for want of them |
+| **Enterprise readiness** | **Two roles where reviewers asked for five** (R8-05). No audit surface for permission changes, no ownership transfer, no way to leave an organization. **These are absences, not defects** — and each is the kind of thing an enterprise buyer asks about in the first meeting |
+| **Overall customer confidence** | **A product a seller could use tomorrow and an administrator could not yet run.** The daily loop is real, explainable and trustworthy. What surrounds it — first run, team management, connections, search — is where the next confidence lives |
 
 ---
 
