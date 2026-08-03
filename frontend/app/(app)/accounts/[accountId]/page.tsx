@@ -45,6 +45,7 @@ import {
   useRequestResearch,
 } from '@/lib/query/hooks';
 import { useAccountTimeline } from '@/lib/query/hooks/timeline';
+import { useWorkspaceMembers } from '@/lib/query/hooks/team';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -116,6 +117,10 @@ export default function AccountBriefPage() {
   // Paged rather than fetched whole: an account worked for a year has a long
   // history, and the brief must not wait on all of it to render the rest.
   const timeline = useAccountTimeline(workspaceId, accountId);
+  // **The roster, so an account can be handed to a colleague.** The same query
+  // the Team page holds, same cache key, so this costs no request — and
+  // TM-01's `member_email` is what makes a name renderable at all.
+  const { data: roster } = useWorkspaceMembers(workspaceId);
   const evidence = useEvidenceDrawer();
   const { data: identities, isLoading: nameLoading } = useAccountIdentities(workspaceId, [
     accountId,
@@ -177,6 +182,17 @@ export default function AccountBriefPage() {
             <div className="mt-0.5 flex flex-col gap-2.5">
               <WorkflowStage opportunity={opportunity} viewerId={viewerId} />
               <WorkflowActions
+                colleagues={(roster?.items ?? [])
+                  .filter((one) => one.user_id !== viewerId)
+                  // **Named or not offered.** A membership added by identifier
+                  // has no address, and *"Somebody here"* in a picker is a row
+                  // nobody can choose between — the same rule the sequence
+                  // applies to an unresolved account name.
+                  .flatMap((one) =>
+                    one.member_email
+                      ? [{ id: one.user_id, name: one.member_email }]
+                      : [],
+                  )}
                 opportunity={opportunity}
                 workspaceId={workspaceId}
                 viewerId={viewerId}

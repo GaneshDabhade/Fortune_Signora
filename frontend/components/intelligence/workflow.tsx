@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { Button, Dialog, Input } from '@/components/ui';
+import { Button, Dialog, Input, Select } from '@/components/ui';
 import { ApiError } from '@/lib/api/client';
 import type { AccountOpportunity, Stage } from '@/lib/api/types';
 import { useRecordDecision } from '@/lib/query/hooks';
@@ -99,6 +99,29 @@ const REASON_QUESTION: Record<Stage, string> = {
   dismissed: "Why shouldn't Signora have shown you this?",
 };
 
+/**
+ * What the confirm button will actually do.
+ *
+ * **`Take it on` is wrong the moment somebody is handing the account over**,
+ * and the control that says it is the last thing they read before committing.
+ * A button that describes a different act than the one it performs is the
+ * defect a confirmation exists to prevent.
+ */
+function confirmWording(
+  stage: Stage | null,
+  handTo: string | null,
+  colleagues: readonly { id: string; name: string }[],
+): string {
+  if (stage === null) return '';
+  if (stage === 'engaged' && handTo !== null) {
+    const name = colleagues.find((one) => one.id === handTo)?.name;
+    // **Named or not claimed.** If the name has not resolved, say the honest
+    // general thing rather than "Hand it to " with nothing after it.
+    return name ? `Hand it to ${name}` : 'Hand it over';
+  }
+  return CONFIRM_WORDING[stage];
+}
+
 const CONFIRM_WORDING: Record<Stage, string> = {
   tracking: 'Track it again',
   engaged: 'Take it on',
@@ -111,12 +134,21 @@ export function WorkflowActions({
   opportunity,
   workspaceId,
   viewerId,
+  colleagues = [],
   next,
 }: {
   opportunity: AccountOpportunity;
   workspaceId: string | null;
   /** The signed-in user, so taking an account on can assign it to them. */
   viewerId: string | null;
+  /** Everybody else in the organization, so an account can be handed to one.
+   *
+   * **Passed in rather than fetched here.** The same rule `next` follows: a
+   * presentational control that reached for a query would make every test of a
+   * decision mount a client. **Empty means nobody else is here yet** — a
+   * one-person organization — and the control is then absent rather than empty.
+   */
+  colleagues?: readonly { id: string; name: string }[];
   /** Where the morning continues, if anywhere — a name to offer and a way to
    * go there. **Omitted rather than defaulted**: an offer that goes nowhere is
    * the failure this surface refuses everywhere else.
@@ -147,6 +179,7 @@ export function WorkflowActions({
       ))}
 
       <DecisionDialog
+        colleagues={colleagues}
         opportunity={opportunity}
         workspaceId={workspaceId}
         viewerId={viewerId}
@@ -172,6 +205,7 @@ export function WorkflowActions({
  * system.
  */
 function DecisionDialog({
+  colleagues,
   opportunity,
   workspaceId,
   viewerId,
@@ -183,15 +217,21 @@ function DecisionDialog({
   workspaceId: string | null;
   viewerId: string | null;
   stage: Stage | null;
+  colleagues: readonly { id: string; name: string }[];
   next?: { name: string; go: () => void } | undefined;
   onClose: () => void;
 }) {
   const [reason, setReason] = useState('');
+  // **`null` means *me*.** The commonest case by far — somebody deciding about
+  // an account is usually taking it on — so it is the default rather than a
+  // choice they have to make first.
+  const [handTo, setHandTo] = useState<string | null>(null);
   const [recorded, setRecorded] = useState<Stage | null>(null);
   const decide = useRecordDecision(workspaceId, opportunity.account_id, opportunity.id);
 
   const close = () => {
     setReason('');
+    setHandTo(null);
     setRecorded(null);
     decide.reset();
     onClose();
@@ -200,13 +240,21 @@ function DecisionDialog({
   // Taking an account on means taking it on. Stated in the dialog rather than
   // applied quietly, because ownership is a fact about a person and one they
   // should see being recorded.
-  const claiming =
-    stage === 'engaged' && viewerId !== null && opportunity.owner_id !== viewerId;
+  const engaging = stage === 'engaged';
+  const claiming = engaging && viewerId !== null && opportunity.owner_id !== viewerId;
+  // **The line that was the whole milestone.** This sent `viewerId` and
+  // nothing else, so a seller could take an account on and **could not hand
+  // one to a colleague** — while the endpoint had accepted an arbitrary
+  // `owner_id` since M6, validated the assignee's membership, and returned
+  // `owner_not_a_member` when it failed. The capability was built; the UI had
+  // no way to name a person until TM-01
+  // ([49-lead-ownership.md](../../../docs/architecture/49-lead-ownership.md) §1).
+  const newOwner = engaging ? (handTo ?? (claiming ? viewerId : null)) : null;
 
   const submit = () => {
     if (stage === null || reason.trim() === '') return;
     decide.mutate(
-      { stage, reason, ...(claiming ? { owner_id: viewerId } : {}) },
+      { stage, reason, ...(newOwner !== null ? { owner_id: newOwner } : {}) },
       // **R10-02.** The decision is the end of the visit — the one moment the
       // product can be certain the reader is done — and it used to close the
       // dialog and do nothing else. With somewhere to go, it offers; with
@@ -227,7 +275,9 @@ function DecisionDialog({
             : ''
       }
       description={
-        recorded === null && claiming ? 'This account will be assigned to you.' : undefined
+        recorded === null && claiming && handTo === null
+          ? 'This account will be assigned to you.'
+          : undefined
       }
       footer={
         recorded !== null && next !== undefined ? (
@@ -265,7 +315,7 @@ function DecisionDialog({
             // as a form validator. The server still enforces it.
             disabled={reason.trim() === '' || decide.isPending}
           >
-            {stage ? CONFIRM_WORDING[stage] : ''}
+            {confirmWording(stage, handTo, colleagues)}
           </Button>
         </>
         )
@@ -284,6 +334,22 @@ function DecisionDialog({
           submit();
         }}
       >
+        {/* **Only when taking an account on**, and only when there is
+            somebody to hand it to. Every other decision — closing, dismissing
+            — leaves ownership exactly where it was, and offering a control
+            there would invite a change nobody asked for. */}
+        {engaging && colleagues.length > 0 ? (
+          <Select
+            label="Who is working this"
+            value={handTo ?? ''}
+            onChange={(event) => setHandTo(event.target.value || null)}
+            options={[
+              { value: '', label: 'You' },
+              ...colleagues.map((one) => ({ value: one.id, label: one.name })),
+            ]}
+          />
+        ) : null}
+
         <Input
           label={stage ? REASON_QUESTION[stage] : ''}
           value={reason}

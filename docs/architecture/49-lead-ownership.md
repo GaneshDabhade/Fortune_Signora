@@ -1,0 +1,207 @@
+# Lead ownership, assignment and collaboration — design
+
+> **Assigned to Lane A by the product owner on 2026-08-03.** The brief was eighteen deliverables and a warning not to think in tables. **The audit changed what the milestone is**, so this document leads with that rather than with a model.
+
+---
+
+## 1 · Repository Reuse Audit — the capability is built, and it has no UI
+
+**Measured before anything was designed.**
+
+| What the brief asks for | What already exists |
+|---|---|
+| **Who owns an opportunity** | `WorkflowState.owner_id` — `None` until a human takes it up |
+| **Who changed ownership** | `WorkflowState.actor_id` — **required**, and the domain refuses a state without one unless it is the single machine-authored `TRACKING` |
+| **Why** | `WorkflowState.reason` — **required and non-empty**, refused otherwise |
+| **When, in order** | `WorkflowState.sequence` — monotonic from 0, *"ordering that does not depend on clock resolution"* |
+| **Append-only history** | Every transition is a new row. **The record is already immutable** |
+| **Assigning to somebody else** | **`POST /workspaces/{w}/opportunities/{o}/states` accepts `owner_id`** |
+| **Refusing a non-member assignee** | `MembershipError` → `422 owner_not_a_member`, with the reasoning already written: *"naming the wrong person is a fault in the request rather than in their permissions"* |
+| **Naming the person** | **TM-01**, last cycle |
+
+> **The one line that decides this milestone is in `workflow.tsx`:**
+>
+> ```
+> { stage, reason, ...(claiming ? { owner_id: viewerId } : {}) }
+> ```
+>
+> **The UI has only ever sent the viewer's own id.** A seller can take an account on. **Nobody can hand one to a colleague** — and the backend that does it has been built, authorized, validated and tested since M6.
+
+**This is the fourth instance of the pattern the capability census exists to find**, after Timeline's mount, the Connection Center's entrance, and the members endpoint. **And it is the first where the missing piece was another slice rather than a decision** — you could not assign to a colleague because the product could not name one, and TM-01 fixed that.
+
+### What is therefore *not* being built
+
+**No new aggregate. No new table. No new endpoint. No new event. No new permission.** Assignment is a `WorkflowState` with an `owner_id`, and that is already true.
+
+**`assignment`, `assignee`, `lead` and `claim` do not enter the codebase.** They would be a second vocabulary for `owner_id` and `WorkflowState`, and §4's rule is explicit: *never invent a synonym.* **The customer word is *owner*, the platform word is *owner*, and they are deliberately the same.**
+
+---
+
+## 2 · The customer journey — Monday morning
+
+**Eight questions a seller arrives with, against what the product answers today.**
+
+| | Today |
+|---|---|
+| *Which ones are mine?* | 🔴 **Nothing.** The attention list shows no owner and cannot be filtered by one |
+| *Which changed overnight?* | 🔴 R9-04 · [TASK-016](../BACKLOG.md), blocked on per-user read state |
+| *Which were reassigned?* | 🟠 **The fact is recorded and unreachable** — `WorkflowState` holds every owner change and only the account brief renders history |
+| *Which need attention today?* | ✅ The attention list, ranked by buying score |
+| *Which are blocked?* | ⚫ No such concept, and **probably correctly** — see §4 |
+| *Which need my manager?* | ⚫ No escalation, no manager relationship |
+| *Which are waiting on the customer?* | ⚫ No such state |
+| *Can I organize my day?* | 🔴 **Not by ownership.** Everything else, yes |
+
+> **The gap is not the lifecycle. It is that ownership is invisible.** Four of the eight are answered or correctly absent; the three that hurt are all *"who holds this"*, and none needs a new state to fix.
+
+---
+
+## 3 · The ownership model — one owner, and the evidence for it
+
+**`WorkflowState.owner_id` is a single nullable id. The brief lists sixteen ownership models. This adopts one and records the triggers for the rest.**
+
+| Model | Verdict |
+|---|---|
+| **Single owner** | ✅ **Today.** One person is accountable, and *"nobody has taken it yet"* is a first-class state the product already says out loud |
+| **Manual assignment** | ✅ **Today** — the slice below |
+| **Manager assignment** | ✅ **Today, and it needs nothing.** An owner assigning to somebody else *is* manager assignment; the roles differ, the operation does not |
+| **AI recommendation** | ⚠️ **Deliberately not.** *Intelligence suggests; humans commit* is the module's founding rule, and `TRACKING` is the only machine-authored stage. An AI-assigned owner would be the first machine-authored *commitment* — see §7 |
+| **Primary + secondary · collaborative · shared** | ⚠️ **Trigger: two people working one account and needing to see each other.** Today a second person is *watching*, not owning, and watching is a different concept that does not exist |
+| **Round-robin · load balancing · territory · regional · industry · product · strategic** | ⚠️ **All the same shape: a rule that picks an owner.** None changes the ownership *model* — each is an input to the same assignment. **Trigger: the first customer with more sellers than they can assign by hand** |
+| **Temporary ownership · vacation coverage** | ⚠️ **Trigger: the first customer who asks.** It is an owner with an end date, which the state record already expresses as *a later state* |
+| **Customer success · partner ownership** | ⚫ **Not this product yet.** No CS or partner concept exists anywhere |
+
+**The single-owner model is not a simplification — it is a decision the domain already documents.** An account with two accountable people is an account nobody is accountable for, and the state record's whole shape is *one owner at a time, with a reason for each change.*
+
+---
+
+## 4 · The lifecycle — most of the brief's states are events or derivations
+
+**Seventeen proposed states, against five that exist.**
+
+| Proposed | Verdict |
+|---|---|
+| **Unassigned** | ✅ **Exists** — `TRACKING` with `owner_id: None`, and the brief already renders it as *"nobody has taken it yet"* |
+| **Assigned · Claimed · Accepted · Working** | ✅ **All one state: `ENGAGED`.** Four words for *somebody is working this*, and the difference between them is *who* acted — which is `actor_id`, not a stage |
+| **Converted** | ✅ `CLOSED_WON` |
+| **Rejected · Lost** | ✅ **Two states, and the distinction is load-bearing**: `DISMISSED` is feedback about Signora's judgement, `CLOSED_LOST` is a sales outcome. *"Collapsing them would destroy the only signal the platform gets about its own qualification quality"* |
+| **Transferred · Reassigned** | **Events, not states.** A transfer is a new `WorkflowState` with a different `owner_id`; the account is still `ENGAGED`. **Making it a state would mean an account stops being worked while it changes hands** |
+| **Reactivated** | **An event.** A new state naming the one it follows — the sequence already carries it |
+| **Dormant** | **Derived.** *Nothing has happened for N days* is a reading of `occurred_at`, and storing it needs a job that makes the row wrong until it runs — the reasoning that made invitation expiry derived |
+| **Needs review · Escalated · Waiting · Blocked** | ⚠️ **Genuinely absent, and genuinely different**: each says *somebody else must act*. **They are one concept — a hand-off that is not an ownership change** — and adding four stages would be four words for it. **Trigger: a customer describing an account they cannot progress** |
+| **Archived** | ⚫ Closed states already remove an account from the attention list |
+
+> **Thirteen of seventeen already exist, are events, or are derivations. One real gap remains — *waiting on somebody else* — and it is one concept rather than four.**
+
+---
+
+## 5 · What ownership does *not* propagate to, and why
+
+**The brief asks whether reassignment should cascade. It must not, and the repository already says so.**
+
+| | Owned by | Moves on reassignment? |
+|---|---|---|
+| **The opportunity** | The person in `owner_id` | **Yes — that is the operation** |
+| **The account · signals · buying score · research · evidence** | **Nobody.** They are *derived intelligence about a company*, rebuildable from evidence | **No.** A company does not belong to a salesperson |
+| **The buying committee · ICP · products** | **The organization**, as customer-authored declarations | **No** |
+| **Decision history** | **Nobody — it is the record.** `decided_by` is provenance | **Never.** Moving it would rewrite who decided what |
+| **The timeline** | The account | **No** |
+
+> **One rule covers all of it: ownership attaches to the *commitment*, never to the *knowledge*.** An opportunity is a person's undertaking; everything else is what the platform found out, and findings have no owner.
+
+**CRM synchronisation is the one place this gets hard** — a CRM's owner field is on the *account*, and Signora's is on the *commitment*. **Recorded as M13's problem, with the mapping stated: `WorkflowState.owner_id` is the field a CRM's account owner corresponds to.**
+
+---
+
+## 6 · Collaboration — one concept exists, the rest need a customer
+
+**Watching · followers · mentions · delegation · escalation · ownership requests · transfer requests · queues · comments · approvals · presence · out-of-office.**
+
+**None exists. One is close:** an owner change already carries a `reason`, which is the smallest possible hand-off note — *"passing to Ravi, he knows their CTO"*.
+
+> **The honest ordering: every item on that list needs somebody to be notified**, and Signora has no notification capability (M14a, not started). **Building any of them first would be building the half a customer cannot feel.**
+
+**Trigger for the whole group: M14a ships.** Recorded rather than sequenced, because it is the product owner's ordering.
+
+---
+
+## 7 · AI participation — the boundary already exists
+
+**`TRACKING` is the only machine-authored stage, and the domain enforces it**: a state without an `actor_id` is refused unless it is `TRACKING`.
+
+> **So an AI-assigned owner is structurally impossible today, and that is correct.** *Intelligence suggests; humans commit.*
+
+| Where AI helps | Where it must not |
+|---|---|
+| **Suggesting an owner** — a name pre-selected in the dialog, which a human still confirms | **Assigning one.** That would be the first machine-authored commitment |
+| **Detecting a neglected account** — nothing has happened for weeks | **Reassigning it** |
+| **Detecting an overloaded seller** — a count against a workload nobody has declared | **Rebalancing** |
+
+**Every one of those is a *reading*, and every reading needs the ownership data to be visible first.** None is buildable before §8's slice.
+
+---
+
+## 8 · The roadmap, ordered by what a customer feels
+
+| | | |
+|---|---|---|
+| **LO-01** | **Hand an account to a colleague** | The backend exists; the UI sends only the viewer. **Unblocked — this cycle** |
+| **LO-02** | **The attention list says who holds each account** | *"Which are mine?"* — the question that hurts most. Needs the list to carry `owner_id`, which the opportunity response already does |
+| **LO-03** | **Filter the list to mine** | Follows LO-02 directly |
+| **LO-04** | **Ownership changes reach the account history** | The facts are in `WorkflowState`; the brief renders stage changes and not owner changes |
+| **LO-05** | *Waiting on somebody else* | ⚠️ **A new stage.** Needs a customer describing it — §4 |
+| **LO-06+** | Watching · escalation · queues · AI suggestion | ⚠️ **Blocked on M14a** — §6 |
+
+---
+
+## 9 · Enterprise readiness, and where pressure begins
+
+**Absorbed without change:** territories, regions, business units, industries and strategic accounts are **all rules that pick an owner**, and none changes the model. Multi-country and matrix organizations are **multiple workspaces**, which already work.
+
+**Where pressure begins:**
+
+| | |
+|---|---|
+| **A rule that assigns automatically** | The first thing that would write an `owner_id` **without an `actor_id`** — and the domain refuses that. **The rule needs an identity**, which is the `opened_by` pattern again, and it is the same pressure point SCIM creates in Team Management |
+| **Two owners** | The state record holds one. A second is a schema change *and* a change to *"one person is accountable"*, which is a product decision rather than a technical one |
+| **Ownership analytics · manager dashboards** | **Read models over `WorkflowState`**, which is append-only and complete. **Nothing blocks them; nothing has been built** |
+| **100k accounts · millions of signals** | The attention list is already cursor-paginated and ranked. **Ownership filtering is an indexed predicate on a column that exists** |
+| **Channel partners · resellers · distributors** | **Not this product.** No concept of an organization acting on another's behalf, and §11's *cross-workspace* problem is the same one |
+
+
+---
+
+## 10 · LO-01 — an account can be handed to a colleague, 2026-08-03
+
+**One line changed, and it was the milestone.**
+
+```
+- { stage, reason, ...(claiming ? { owner_id: viewerId } : {}) }
++ { stage, reason, ...(newOwner !== null ? { owner_id: newOwner } : {}) }
+```
+
+**No endpoint, no migration, no permission, no event, no new vocabulary.** `WorkflowState` already carried the owner, the actor and the reason; the API already validated the assignee's membership; TM-01 already made a person nameable. **The whole slice is a picker, a default and a sentence.**
+
+### The decisions inside it
+
+| | |
+|---|---|
+| **Default to *You*** | The commonest case by far — somebody deciding about an account is usually taking it on. **A required choice would tax the common path to enable the rare one** |
+| **Only on *Take it on*** | Closing and dismissing leave ownership where it was, and a control there would invite a change nobody asked for |
+| **Absent when nobody else exists** | A one-person organization gets no picker. **An empty control teaches a reader to distrust the ones that work** |
+| **Named or not offered** | A membership with no address is skipped — *"Somebody here"* in a picker is a row nobody can choose between, the rule the account sequence already applies |
+| **The roster is passed in, not fetched** | Same rule `next` follows: a presentational control that reached for a query would make every test of a decision mount a client. **And it costs no request** — the Team page's query, same cache key |
+
+### A defect this slice introduced, and caught
+
+**The confirm button said *"Take it on"* while handing the account to somebody else.** It is the last thing a person reads before committing, and **a button describing a different act than the one it performs is precisely what a confirmation exists to prevent.**
+
+**It now says *"Hand it to ravi@acme.com"***, and falls back to *"Hand it over"* if the name has not resolved — rather than *"Hand it to "* with nothing after it.
+
+> **Found by writing the test, not by reviewing the diff.** The assertion needed the button's name, and the name was wrong.
+
+### What a seller can now do that they could not
+
+**Hand an account to the colleague who should work it, with the reason recorded against both of them** — because a `WorkflowState` carries `actor_id` *and* `owner_id`, so the history already says *Ana gave this to Ravi, and why.*
+
+**LO-02 is next**: the attention list still does not say who holds each account, which is the question that hurts most.

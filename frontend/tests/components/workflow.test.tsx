@@ -6,7 +6,7 @@
  * from the server, that a refusal is shown in the domain's own words, and
  * that nothing appears to have happened until it has.
  */
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactElement } from 'react';
@@ -486,5 +486,137 @@ describe('a decision is the end of the visit — R10-02', () => {
     await dismiss(user);
 
     expect(screen.queryByRole('button', { name: 'Dismiss it' })).toBeNull();
+  });
+});
+
+describe('an account can be handed to a colleague — LO-01', () => {
+  // **The capability was built and had no UI.** `POST /states` has accepted an
+  // arbitrary `owner_id` since M6, validated the assignee's membership, and
+  // returned `owner_not_a_member` when it failed. This dialog sent `viewerId`
+  // and nothing else, so a seller could take an account on and **could not
+  // hand one over** — until TM-01 made a person nameable
+  // (49-lead-ownership.md §1).
+
+  const COLLEAGUES = [
+    { id: COLLEAGUE, name: 'ravi@acme.com' },
+    { id: 'dddddddd-4444-4444-8444-444444444444', name: 'jo@acme.com' },
+  ];
+
+  function engaging(colleagues: readonly { id: string; name: string }[] = COLLEAGUES) {
+    return withQuery(
+      <WorkflowActions
+        opportunity={opportunity({ stage: 'tracking', allowed_next: ['engaged'] })}
+        workspaceId="eeeeeeee-5555-4555-8555-555555555555"
+        viewerId={VIEWER}
+        colleagues={colleagues}
+      />,
+    );
+  }
+
+  function open(node: ReactElement) {
+    render(node);
+    fireEvent.click(screen.getAllByRole('button')[0]!);
+  }
+
+  it('offers the colleagues by name, with you first', () => {
+    open(engaging());
+
+    const picker = screen.getByLabelText('Who is working this');
+    const options = within(picker).getAllByRole('option');
+    expect(options[0]).toHaveTextContent('You');
+    expect(options.map((o) => o.textContent)).toContain('ravi@acme.com');
+  });
+
+  it('defaults to you, because that is the commonest case', () => {
+    open(engaging());
+
+    expect(screen.getByLabelText('Who is working this')).toHaveValue('');
+  });
+
+  it('assigns to the colleague who was chosen', async () => {
+    open(engaging());
+    fireEvent.change(screen.getByLabelText('Who is working this'), {
+      target: { value: COLLEAGUE },
+    });
+    fireEvent.change(screen.getByRole('textbox'), {
+      target: { value: 'Ravi knows their CTO.' },
+    });
+    // **The button says what it will do.** "Take it on" would describe a
+    // different act than the one being performed.
+    fireEvent.click(screen.getByRole('button', { name: 'Hand it to ravi@acme.com' }));
+
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    expect(sent().body).toEqual({
+      stage: 'engaged',
+      reason: 'Ravi knows their CTO.',
+      owner_id: COLLEAGUE,
+    });
+  });
+
+  it('still assigns to you when nobody else is chosen', async () => {
+    open(engaging());
+    fireEvent.change(screen.getByRole('textbox'), {
+      target: { value: 'Taking this on.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Take it on' }));
+
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    expect(sent().body).toEqual({
+      stage: 'engaged',
+      reason: 'Taking this on.',
+      owner_id: VIEWER,
+    });
+  });
+
+  it('offers nothing when there is nobody else in the organization', () => {
+    // A one-person organization. An empty picker is a control that cannot be
+    // used, which teaches a reader to distrust the ones that can.
+    open(engaging([]));
+
+    expect(screen.queryByLabelText('Who is working this')).toBeNull();
+  });
+
+  it('never offers it on a decision that does not change ownership', () => {
+    // Closing or dismissing leaves ownership where it was, and a control there
+    // would invite a change nobody asked for.
+    render(
+      withQuery(
+        <WorkflowActions
+          opportunity={opportunity({
+            stage: 'engaged',
+            owner_id: VIEWER,
+            allowed_next: ['closed_lost'],
+          })}
+          workspaceId="eeeeeeee-5555-4555-8555-555555555555"
+          viewerId={VIEWER}
+          colleagues={COLLEAGUES}
+        />,
+      ),
+    );
+    fireEvent.click(screen.getAllByRole('button')[0]!);
+
+    expect(screen.queryByLabelText('Who is working this')).toBeNull();
+  });
+});
+
+describe('the confirmation says what it will actually do', () => {
+  it('offers to hand it over, by name, once a colleague is chosen', () => {
+    render(
+      withQuery(
+        <WorkflowActions
+          opportunity={opportunity({ stage: 'tracking', allowed_next: ['engaged'] })}
+          workspaceId="eeeeeeee-5555-4555-8555-555555555555"
+          viewerId={VIEWER}
+          colleagues={[{ id: COLLEAGUE, name: 'ravi@acme.com' }]}
+        />,
+      ),
+    );
+    fireEvent.click(screen.getAllByRole('button')[0]!);
+    fireEvent.change(screen.getByLabelText('Who is working this'), {
+      target: { value: COLLEAGUE },
+    });
+
+    expect(screen.getByRole('button', { name: 'Hand it to ravi@acme.com' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Take it on' })).toBeNull();
   });
 });
