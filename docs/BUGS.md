@@ -229,6 +229,25 @@ Both values are now **getters** — required at point of *use*, not point of *re
 
 **And one of the same class remains open:** `signora_platform/settings.py` declares `redis_url: RedisDsn = RedisDsn("redis://localhost:6379/0")` while [`RUNNING.md`](RUNNING.md) allocates an index per lane and states *"no lane invents ports; no lane shares a database."* **The allocation table exists and the code does not require it to be used.** Redis carries the ARQ queue and the outbox relay, so two environments on index 0 means **one environment's workers consume the other's jobs** — cross-environment *execution*, not merely storage. Tracked as part of the Human Review Environment work.
 
+
+---
+
+### Closing the `BETTER_AUTH_SECRET` investigation — 2026-08-03
+
+**An unresolved question needs an owner more than it needs an answer.** The operational scope of the committed signing secret could not be determined, and it was never going to become determinable by waiting. Leaving it open indefinitely would mean the repository carried an unowned uncertainty — which is worse than a recorded one, because nothing forces a reader to notice it.
+
+**So the operational investigation is closed here, on the product owner's direction, with the uncertainty stated rather than resolved.**
+
+| | |
+|---|---|
+| **Known incident** | `BETTER_AUTH_SECRET=local-dev-secret-change-me` was committed in `frontend/.env.example` and was **live by default** — `required()` took a fallback and, with one supplied, could never throw. Any clone that copied the example unedited signed sessions with a value every other clone also held |
+| **Deployment scope** | **Unknown, and it will stay unknown.** No deployed environment exists ([ADR-0027](architecture/adr/0027-local-first-development.md)) and no telemetry records which clones ran with the default. The absence of evidence is not evidence here |
+| **Assumption adopted** | **Worst case.** The value is treated as public and permanently compromised. Not *"probably only local"* — the product owner's standing instruction is to assume the worst until disproven, and nothing disproves it |
+| **Mitigation completed** | The fallback is gone: `required()` no longer accepts one, so the tier **refuses to start** rather than signing with a shared value. The example file now carries an explicit warning naming the value as committed and telling the reader to generate their own. Verified by the tier failing to start with the variable unset |
+| **Monitoring retained** | The committed string stays in `.env.example` **deliberately**, marked, so a `grep` for it identifies any environment still using it. Removing it would erase the only detection mechanism there is. If a deployed environment ever exists, the secret is rotated as a precondition of deploying — not as a follow-up |
+
+> **What this closes and what it does not.** It closes the *investigation* — there is no further finding to be had from asking. It does not close the *risk*: the worst-case assumption remains in force, and any future deployment inherits it as a rotation requirement rather than a resolved question.
+
 ### B-103 · An internal invariant tells a customer their request was refused
 
 | | |
