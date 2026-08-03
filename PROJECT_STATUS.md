@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `190e340`, 2026-08-03.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `909374a`, 2026-08-03.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`190e340`** — the certified commit itself |
-| **`integration`** | `190e340` — level with `main` |
+| **`main`** | **`909374a`** — the certified commit itself |
+| **`integration`** | `909374a` — level with `main` |
 | **Release candidate** | **None pinned.** Cycle 24 promoted [`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md) and the [B-101](docs/BUGS.md) fix |
-| **Certification** | ✅ [`190e34056c09`](certification/reports/190e34056c09.md) · migration head **`0030`** · protocol **v2** |
+| **Certification** | ✅ [`909374a21353`](certification/reports/909374a21353.md) · migration head **`0030`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **151 commits, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -101,59 +101,60 @@
 
 ---
 
-## 1d · Release summary — 2026-08-03, cycle 32
+## 1d · Release summary — 2026-08-03, cycle 33
 
-**Derived from the promoted commit `190e340`.** Two commits, both observability: smoke stage timing, and machine-resource pressure in the preflight.
+**Derived from the promoted commit `909374a`.** Two guards, each closing a failure that had already happened twice or once — **and nothing else.**
 
-### The smoke variance is root-caused, and it was not what I expected
+### The branch guard
 
-**I attacked the obvious hypothesis first and it did not survive.** Build-cache invalidation is disproven: `tests/` is excluded from the frontend build context, so the **4830s** run — which changed documentation and one frontend *test* — invalidated nothing and should have been a full cache hit.
+A commit landed on the wrong branch twice, because the shell was on whatever branch the previous command left it: **once on `main`, bypassing certification entirely.** Neither was careless — each command was correct in isolation, and neither checked where it was standing.
 
-**What was observable instead:** 4.0 GB available of 15, **swap 85% consumed**, and a stray `next-server` on **port 3400** holding **2.7 GB**. The preflight was right that 3000 and 8000 were free; **this was never a port collision.**
+**It owns no rules.** `certification-guard.py` already defines what may live on `main` (a Closeout) and on `integration` (a claim); the hook asks it rather than keeping a second copy that would eventually disagree.
 
-**The clincher is the failure shape.** The first instrumented smoke run died at stage 14j with pytest printing dots and then nothing — no summary, no traceback. **That is the OOM-kill signature, not a test failure.** A re-run passed in 186s.
+**It guards those two branches and nothing else.** A generic policy engine would have to be right about cases nobody has hit.
 
-### A fifth isolation layer, and it belongs in the architectural model
+### L-17 — the direction nothing verified
 
-| Layer | Status |
-|---|---|
-| **Ports** | 7/7 isolated |
-| **Application database** | 7/7 |
-| **Redis / queues** | 7/7 *(closed last cycle)* |
-| **Compose projects** | 0/7 — modelled, not implemented |
-| **Machine resources — RAM, CPU, disk, kernel scheduler** | **0/7, and newly visible** |
+`--audit-main` proves **every commit on `main` was certified.** Nothing proved the converse: that a certified commit *reached* `main`. So a cycle could certify, stop, and report *certified* while `main` did not contain the code — which happened, and **the product owner noticed before QE did.**
 
-> **Redis and the machine are the same pattern one level apart:** *multiple isolated logical environments, one set of shared physical resources.* A repository can have perfectly isolated environments and still contend for RAM. **That is no longer an implementation detail; it is an isolation layer**, and future engineers should know which layer a problem belongs to.
+**Proven against the historical failure rather than asserted:** certified was `514de85`, `main` was `e1e409a`, and the first is not an ancestor of the second. **The check would have fired.**
 
-**Observation, not automation.** The preflight now names who is holding the machine and warns that certification will be slow or killed. **It does not stop another lane's processes** — that is not QE's call (§20e), and a slow certification is still a valid one.
-
-### This cycle's certification, with the instrument working
+### The lifecycle is now verifiable end to end
 
 ```
-smoke   24 stages in 131s, slowest 2. Startup 19s
+Development → Validation → Certification → Promotion
+           → Synchronization → Audit → Verified main
 ```
 
-**Back in the normal band, and the breakdown is in the durable record for the first time.** The next outlier is diagnosed from the manifest rather than from a re-run that may not reproduce it.
+**Both directions are checked**: nothing uncertified reaches `main`, and nothing certified is left behind.
+
+### Structural checks stop at twelve
+
+**A repository with fifty mediocre checks is weaker than one with twelve good ones.** Every future proposal competes with the existing set, and the question is whether it reduces future engineering effort more than it increases repository complexity. **If that is not obvious, it does not get built.**
+
+### An honest limitation
+
+**The hook depends on `git config core.hooksPath` being set per clone** — a manual step, which is the class of thing the last two cycles have been removing. It is the right trade, because a hook is the only mechanism that intercepts a commit, but it means **the clone is protected and the repository is not.** Documented in [`RUNNING.md`](docs/RUNNING.md) rather than hidden.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
 | **Technical** | 2615 backend · 719 frontend · **95.50%** · 360 invariants · 618 files typed |
-| **Release** | Full seven-stage cycle. **Two consecutive cycles with no process failure** |
+| **Release** | **Three consecutive cycles with no process failure.** Both known failure modes now have guards |
 | **Architecture** | Runtime composition 0 unexpected · Reachability 0 doorless |
-| **Dependency** | 37 items, 12 closed. Unchanged |
-| **Customer Value** | ❌ **None.** Observability and diagnosis |
+| **Dependency** | 37 items, 12 closed |
+| **Customer Value** | ❌ **None — five cycles.** Twelve `READY` tasks unclaimed |
 | **Process** | Clean |
 
 ### Repository Health Trend
 
-| | Four days ago | Today |
+| | Five days ago | Today |
 |---|---|---|
-| **Structural checks** | 3 | **11** |
-| **Shared resources remaining** | 5 | **4** *(machine newly counted)* |
-| **Unexplained variance events** | 3 | **0** |
-| **Recurring process failures** | 2 identified | **0 in two cycles** |
+| **Structural checks** | 3 | **12, and stopping** |
+| **Unexplained variance** | 3 events | **0** |
+| **Process failure modes** | 2 open | **0 — both guarded** |
+| **Smoke duration** | unexplained 104–4830s | **129–186s, and diagnosable** |
 
 
 ## 2 · Milestone progress
@@ -363,9 +364,9 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`190e34056c09`](certification/reports/190e34056c09.md) · 2026-08-03 · ✅ CERTIFIED**
+**Latest certification — [`909374a21353`](certification/reports/909374a21353.md) · 2026-08-03 · ✅ CERTIFIED**
 
-**Certified commit `190e340` · promoted commit `190e340`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
+**Certified commit `909374a` · promoted commit `909374a`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
 
 | Gate | Recorded |
 |---|---|
@@ -374,7 +375,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | **Security Invariants** | **360 invariants**, each proven to fail when its guarantee is removed |
 | **import-linter** | **34 kept, 0 broken** |
 | **MyPy** | **strict, clean over 618 files** |
-| **`make smoke`** | **24 stages in 131s, slowest 2. Startup 19s** |
+| **`make smoke`** | **24 stages in 129s, slowest 2. Startup 20s** |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0030`** · scenario set `0cf6b2c581e4` · working tree clean.
@@ -414,24 +415,24 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Indicator | Value |
 |---|---|
 | **Certification** | |
-| Certification cycles | 29 |
-| Certified | 28 of 29 |
-| Mean time to certify (last 5) | 12.4 min |
-| Mean smoke duration | 335.0 s |
+| Certification cycles | 30 |
+| Certified | 29 of 30 |
+| Mean time to certify (last 5) | 13.3 min |
+| Mean smoke duration | 327.9 s |
 | Mean certify → Ready (last 5) | 6.0 min |
 | **Release flow** | |
-| Certification run success rate | 97% (28 of 29 runs) |
+| Certification run success rate | 97% (29 of 30 runs) |
 | ↳ excludes | rejected candidates, and every failed or aborted attempt |
 | ↳ see instead | Pipeline stability below — measured from the attempt log |
-| Commits per release | mean 7.9, median 4, range 1–49 |
-| Mean candidate age | 158.4 min  — oldest commit → certified |
-| Release frequency | 0.38 releases/hour over 74h |
+| Commits per release | mean 7.6, median 4, range 1–49 |
+| Mean candidate age | 153.3 min  — oldest commit → certified |
+| Release frequency | 0.39 releases/hour over 74h |
 | **Pipeline stability** | |
-| Attempts | 8 |
-| ↳ certified | 7 |
+| Attempts | 9 |
+| ↳ certified | 8 |
 | ↳ failed | 1 |
 | ↳ aborted | 0  (started, never reached a verdict) |
-| First-pass rate | 87.5%  — attempts that certified |
+| First-pass rate | 88.9%  — attempts that certified |
 | Completion rate | 100.0%  — attempts that reached a verdict |
 | Failures by gate | smoke 1 |
 | **Defects and queues** | |
@@ -442,7 +443,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Coordination items | 37 · 5 closed |
 | Backlog | 24 tasks · 12 READY · 12 WAITING/BLOCKED · 4 claimed |
 | **Automation** | |
-| Governance checks, executable | 29 |
+| Governance checks, executable | 30 |
 | Security Invariant files | 6 |
 | Gate commands | make test · smoke · dr · certify · certified · state-check · doc-drift · kpi |
 
