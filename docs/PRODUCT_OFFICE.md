@@ -129,3 +129,61 @@ Product Owner decision required:
 **And the principle that outranks every recommendation in this document:**
 
 > **Every recommendation aims to remove complexity rather than introduce it.** Where a problem can be solved by evolving an existing mechanism, that beats a new framework, process or governance layer. **The repository should become progressively simpler to understand even as it becomes more capable.**
+
+---
+
+## 8 · Three purposes, and the reading path
+
+**Ratified 2026-08-03, product owner.** **Every document serves exactly one of three purposes**, and the failure this prevents is all three competing for one reader's attention.
+
+| Purpose | What it holds | Requirement |
+|---|---|---|
+| **Operational** | Current assignments · active coordination · the workflow · decisions in flight | **Extremely easy to find.** This is the reading path |
+| **Historical** | Retired items · completed packs · past investigations · superseded governance | **Permanently available. Not permanently visible** |
+| **Reference** | Standards · conventions · architecture · policies · module ownership | **Stays concise.** Changes slowly |
+
+> **The distinction is lifecycle state, never age** (product owner, 2026-08-03). **Some old information is still operational; some information is historical the day it is written.** Archiving on age would retire a two-month-old convention that binds every slice, and keep a decision that was superseded within the hour.
+
+**And the objective is cognitive load, not size.** A document can double in length and become easier to navigate; a document can shrink and become unreadable. **Size stays a measurement and never becomes the goal** — recommendations optimise for **discoverability · readability · maintenance · navigation · ownership · cognitive load.**
+
+---
+
+## 9 · Every artifact has a lifecycle
+
+**Ratified 2026-08-03, product owner.**
+
+> **An artifact with no lifecycle eventually becomes permanent operational clutter.** Not only code, bugs and tasks — **ADRs, decision packs, coordination items, roadmaps, specifications, design documents and governance documents.**
+
+**Audit, 2026-08-03 — measured, not assumed:**
+
+| Artifact | Lifecycle today | Retirement state? |
+|---|---|---|
+| **Bugs** | `OPEN` → `FIXING` → `FIXED` → `VERIFIED` | ✅ Complete |
+| **Tasks** | `READY` → `CLAIMED` → … → `DONE`, removed at Closeout | ✅ Complete |
+| **Prompts** | Versioned · evaluated · released · immutable | ✅ **The strongest in the repository** |
+| **Decision packs** | Staged → ruled → **retired through three gates** | ✅ Added 2026-08-03 |
+| **Coordination items** | `OPEN` → `WAITING` → `ANSWERED` → `IMPLEMENTING` → `CLOSED` | ⚠️ **No archive.** The register only grows — Pack H |
+| **ADRs** | `Proposed` → `Accepted` | ❌ **No `Superseded`, no `Retired`.** Six ADRs record amendment *as prose in the Status line* — 0010 by 0026, 0022/0023/0024 by 0027, 0013 by 0028. **A reader must parse a sentence to learn a state** |
+| **Numbered architecture documents** | none | ❌ **3 of 46 carry any status marker.** A design doc for a module that was never built is indistinguishable from one that is current |
+| **Certification reports** | none | ⚠️ **33 and accumulating.** Correct as evidence; **worth a stated policy rather than an accident** |
+| **Roadmaps** | none | ❌ Rows are added; nothing marks a row spent |
+
+**Lane C identifies missing lifecycles and proposes them. It never imposes one** — each is a governance decision.
+
+---
+
+## 10 · Operational Reading Cost
+
+**The metric Lane C tracks, replacing document size** (product owner, 2026-08-03). **It answers what raw line counts cannot: what must somebody actually read before they can act?**
+
+| Reader | Must read | Baseline 2026-08-03 |
+|---|---|---|
+| **A new engineer, before contributing** | `README` · `CLAUDE.md` · `ENGINEERING_LAWS` · `RUNNING` | **2,498 lines** |
+| **A lane, before starting a slice** | the above **plus** `BUGS` · `LANE_COORDINATION` · `BACKLOG` · the board | **7,669 lines** *(registers alone: 5,171)* |
+| **A reviewer, before deciding** | `DECISION_PACKS` · `PROJECT_STATUS` · `SESSION_HANDOFF` | **1,559 lines** |
+
+> **The lane figure is the one that matters**, because Startup requires it *before every slice* and rotation means it is paid repeatedly. **`LANE_COORDINATION.md` alone is 3,041 of those 7,669 lines — 40% — and most of it is items nobody can act on.**
+>
+> **This table was published wrong on its first measurement and is corrected here.** The lane row read **5,102** — the four registers *only*, under a label saying *"the above plus"*. **The metric's first published figure understated its own headline by a third**, which is the failure mode it exists to catch, found by re-running it rather than by rereading it. **Re-measure; never transcribe.**
+
+**Re-measured whenever a governance change lands.** A change that reduces size but raises reading cost has failed, and this is the number that shows it.

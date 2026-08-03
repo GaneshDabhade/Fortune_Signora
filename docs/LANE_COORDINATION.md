@@ -176,6 +176,8 @@
 | [C-207](#c-207--casbin-cannot-express-an-action-on-yourself) | Casbin cannot express an action on yourself | Lane A | **Product owner** (platform §20a) | **`ANSWERED`** — [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) R-1, 2026-08-03 | **Leaving an organization**, and every self-directed operation after it |
 | [C-400](#c-400--three-architecture-document-numbers-are-already-collided-and-the-check-that-catches-them-cannot-fire-yet) | Three architecture-document numbers are already collided | Lane C | **QE** (the renumber) + **product owner** (the block rule) | **`ANSWERED`** — block table extended 2026-08-03; **the renumber and the `state-check` half remain QE's** | **Nothing today. The next merge of either lane branch** — `49`, `50` and `51` each become two documents |
 | [C-401](#c-401--which-measure-predicts-merge-risk--and-the-answer-is-none-of-the-four) | Which measure predicts merge risk — **none of the four** | Lane C | **Product owner** (whether to change anything) + **QE** (both mechanical halves) | `OPEN` | **Nothing.** The execution board conflicts every multi-lane cycle by construction — **the only textual conflict in 77 commits** |
+| [C-402](#c-402--the-board-restructuring-is-approved--and-doing-it-today-costs-two-lanes-a-conflict) | Board restructuring — **approved**, and the timing is the finding | Lane C | **QE** (performs and times it) | **`ANSWERED`** — Option B approved 2026-08-03 | **Nothing.** 49 unmerged commits touch the file; reshaping after the next promotion costs nothing |
+| [C-403](#c-403--every-outstanding-qe-action-from-lane-c-in-one-place) | Every outstanding QE action from Lane C, in one place | Lane C | **QE** | `OPEN` | **Nothing.** Two are latent defects that pass today and will not later |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
 >
@@ -2590,6 +2592,73 @@ Every lane's rows sit **adjacent in one table**, and each lane's branch carries 
 ### What Lane C is not proposing
 
 **No new register, no new metric, no new gate, no dashboard.** The measurement above took one command and a throwaway worktree, and it can be re-run whenever the question recurs. **A standing "integration health" report would be a framework for a number that has been interesting exactly once.**
+
+---
+
+## C-402 · The board restructuring is approved — and doing it today costs two lanes a conflict
+
+| | |
+|---|---|
+| **Classification** | **Repository Decision** — approved. **What remains is sequencing** |
+| **Owner** | **QE** (performs the reshape and holds the board's reconciliation) |
+| **Requester** | **Lane C — Product Office** |
+| **Status** | `ANSWERED` — Option B approved by the product owner 2026-08-03. **Awaiting the right moment, not a decision** |
+| **Blocks** | Nothing. It removes a conflict that recurs every multi-lane cycle |
+
+### What was approved
+
+**Option B — one section per lane, fixed order, one file** ([`DECISION_PACKS.md`](DECISION_PACKS.md) Pack F). One file per lane was explicitly rejected: *"the current scale doesn't justify it."*
+
+**The cause it removes:** every lane's rows sit adjacent in one table, and each lane's branch carries a snapshot of every other lane's rows — including QE's. **The conflict hunk read `Cycle 28` against `Cycle 35`, neither of which the conflicting lanes wrote.** With one section per lane, two lanes edit disjoint line ranges and git has nothing to reconcile.
+
+### The finding: reshaping it now is the most expensive moment available
+
+**Measured 2026-08-03:**
+
+| Branch | Commits touching `ACTIVE_ASSIGNMENTS.md`, unmerged |
+|---|---|
+| `lane-a-product-surface` | **31** |
+| `lane-b-commercial-profile` | **18** |
+
+**Forty-nine unmerged commits touch the file whose shape would change.** A restructure today would land against two branches that have each edited it ~25 times, converting **one small recurring conflict into two large one-off ones** — and both would be resolved by lanes rebasing, not by QE, which is the opposite of the intent.
+
+> **The decision is not in question; the moment is.** Restructuring immediately **after** QE integrates both lanes costs nothing: the board has one authoritative shape, no branch carries competing edits, and the next cycle is the first to benefit.
+
+### Recommendation
+
+**QE performs the reshape as the first action after the next promotion**, in the same pass that reconciles the board at Closeout — where QE is already rewriting it and no lane is mid-rebase.
+
+**Lane C is not performing it.** The board is QE's to reconcile and the reshape is a repository-wide structural change; **Lane C prepared the option, the product owner approved it, and QE holds the timing.** The specification is Pack F's table, which needs nothing added.
+
+**If QE judges a different moment cheaper, that judgement is QE's** — it holds the merge and sees the branch state at the time. This item records the measurement, not an instruction.
+
+---
+
+## C-403 · Every outstanding QE action from Lane C, in one place
+
+| | |
+|---|---|
+| **Classification** | **Implementation Coordination** — nothing here needs a decision |
+| **Owner** | **QE** |
+| **Requester** | **Lane C — Product Office** |
+| **Status** | `OPEN` |
+| **Blocks** | **Nothing.** Two items are latent defects that pass today and will not later |
+
+**Lane C has raised seven QE actions across [C-400](#c-400--three-architecture-document-numbers-are-already-collided-and-the-check-that-catches-them-cannot-fire-yet), [C-401](#c-401--which-measure-predicts-merge-risk--and-the-answer-is-none-of-the-four) and [C-402](#c-402--the-board-restructuring-is-approved--and-doing-it-today-costs-two-lanes-a-conflict).** Reading three items to assemble one work list is exactly the cost this register exists to remove, so they are gathered here. **Each links its origin; none is restated.**
+
+| # | Action | Origin | Why it matters | Size |
+|---|---|---|---|---|
+| **1** | **Renumber the collided architecture documents.** Lane A keeps `49`/`50`/`51`; Lane B's move to `52`/`53`/`54` — **decided by author timestamp, unanimous, no judgement needed** | [C-400](#c-400--three-architecture-document-numbers-are-already-collided-and-the-check-that-catches-them-cannot-fire-yet) | Fires the moment either branch merges. **Cheapest now; every further cross-reference adds to it** | S |
+| **2** | **Teach `state-check` 5e/5f to read `refs/remotes/origin/lane-*`** | [C-400](#c-400--three-architecture-document-numbers-are-already-collided-and-the-check-that-catches-them-cannot-fire-yet) R2 | The check globs one tree, so it **cannot fail until the merge it protects has happened.** Spec is in C-401 §2 | S |
+| **3** | **Correct `state-check` rule 5b** — it flags a board row implying a lane awaits assignment, **which is now correct behaviour** | [C-401](#c-401--which-measure-predicts-merge-risk--and-the-answer-is-none-of-the-four) | **Passes today only because nothing has reached it.** A check that fires on correct behaviour teaches people to ignore it | S |
+| **4** | **Update [`QUALITY_ENGINEERING.md`](QUALITY_ENGINEERING.md) §178** — *"Lanes pull from `BACKLOG.md`"* | [C-401](#c-401--which-measure-predicts-merge-risk--and-the-answer-is-none-of-the-four) | QE's own procedure states the superseded model. **The conclusion is still right; the mechanism named is not** | XS |
+| **5** | **Reshape the board to one section per lane** — **after the next promotion**, not before | [C-402](#c-402--the-board-restructuring-is-approved--and-doing-it-today-costs-two-lanes-a-conflict) | Approved. **49 unmerged commits touch the file**; timing is the whole finding | M |
+| **6** | **Record a retention policy for `certification/reports/`** — 33 reports, accumulating, no stated lifecycle | [`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §9 | Accumulating is probably **correct** for evidence. **Worth stating rather than leaving accidental** | XS |
+| **7** | **Verify Lane C's governance edits at the next validation** — `CLAUDE.md`, `PROJECT_STATUS.md`, `SESSION_HANDOFF.md`, `DECISION_PACKS.md` | This session | **Lane C may not verify its own work**, the same rule that produced [TASK-001](BACKLOG.md) for QE's | S |
+
+> **Item 7 is the one Lane C cannot do anything about, and it is the most important.** Three of those files are QE's or the product owner's by the shared-files rule and were edited on explicit direction, flagged in place. **A lane verifying its own governance change is the gap [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) R-4 closed for QE**, and Lane C has now created the same shape for itself.
+
+**Also outstanding and not QE's:** [`BACKLOG.md`](BACKLOG.md)'s header states the superseded pull model. **That file is the product owner's**; Lane C writes nothing in it.
 
 
 ## Closed

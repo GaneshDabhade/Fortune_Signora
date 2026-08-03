@@ -117,6 +117,54 @@
 
 ---
 
+## PACK H · The coordination register has no retirement, and 58% of a lane's reading is it
+
+**Commissioned by the product owner 2026-08-03: *"prepare a simple lifecycle for coordination items… before implementation."***
+
+| | |
+|---|---|
+| **Decision** | **What lifecycle retires a coordination item, and where does a retired one live?** |
+| **Class** | **Governance Decision** |
+| **Evidence** | [`LANE_COORDINATION.md`](LANE_COORDINATION.md) is **2,972 lines — 58% of the 5,102 a lane must read before every slice.** Its own rule says it *should shrink*; it has only grown. **12 items are 52% of it, and the largest — C-025 at 408 lines — has been closed since 2026-08-03** |
+
+### The proposed lifecycle
+
+```
+  OPEN  ──▶  ANSWERED  ──▶  IMPLEMENTED  ──▶  VERIFIED  ──▶  ARCHIVED
+   │            │                │               │              │
+ raised    a decision       the work is      QE confirms    leaves the
+           exists           built            it holds       reading path
+```
+
+**Two states are new. The existing five are unchanged in meaning**, which is what makes this cheap:
+
+| State | Set by | Means | New? |
+|---|---|---|---|
+| `OPEN` · `WAITING` | Any lane | Raised · the owner has it | |
+| `ANSWERED` | The named owner | **A decision exists.** Implementation may not have started | |
+| `IMPLEMENTING` → **`IMPLEMENTED`** | The requesting lane | **The work is built and pushed** | **Renamed** — a state, not an activity |
+| **`VERIFIED`** | **QE** | The answer holds in the promoted repository | **New** |
+| **`ARCHIVED`** | **Lane C**, at Closeout | **Moved out of the reading path**, fully searchable | **New** |
+
+> **`VERIFIED` is the gate that makes archiving safe.** Without it, an item leaves the register on the *claim* that it was built — which is the failure `ANSWERED` vs `CLOSED` already exists to prevent, one step later.
+
+### Where an archived item goes
+
+| | Option | Consequence |
+|---|---|---|
+| **A** ✅ | **`docs/archive/coordination-YYYY-MM.md`**, append-only, dated. The register keeps **one row**: id · title · decision · link | **Historical, not invisible** (§8). Full deliberation preserved verbatim; `grep` still finds it; the reading path loses 58% of its bulk. **Reuses the dated-record convention `CLAUDE.md` §2 already requires** |
+| **B** | Keep everything; collapse closed items behind detail markers | **Rejected.** The bytes stay in the file a lane opens, and the rule becomes *"scroll past"* — which is the current state with extra syntax |
+| **C** | Delete; rely on `git log` | **Rejected.** *"A record nobody can cite."* It is the one option that genuinely loses something |
+| **D** | One file per item | **Rejected.** Trades a long file for a directory nobody can scan, and §12 forbids new files where an existing one serves |
+
+**Recommendation: A, archiving only at `VERIFIED`, monthly, by Lane C at Closeout.**
+
+**Immediate effect if approved:** the nine items already closed on evidence plus C-025 leave the path — **roughly 900 lines, ~30% of the register**, on the first pass alone.
+
+**What this does not change.** Ids are never reused. An archived item keeps its `C-nnn` and its anchor. **Archiving is not closing** — only a `VERIFIED` item is eligible, and verification is QE's.
+
+---
+
 ## What remains open
 
 **One pack, and it is the one the product owner declined to consolidate.** [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) **R-10** kept ADR-0041 and C-002 separate: *"ADR-0041 defines how customer intent is modeled, versioned, governed and referenced. C-002 defines how that intent is interpreted against normalized provider data. They are complementary capabilities, not one combined decision."*
