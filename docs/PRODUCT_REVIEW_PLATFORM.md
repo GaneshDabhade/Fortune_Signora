@@ -31,7 +31,7 @@ The product owner's eleven stages, with each marked by what it costs and what bl
 | 7 | **Capture evidence** | 🔵 proposed | §5 |
 | 8 | **Reviewer notes** | ✅ built | `make review-end ARGS='--note "…"'` |
 | 9 | **Summarize session** | ✅ built | `summary.md` beside the record |
-| 10 | **Archive review** | 🔴 **blocked on a decision** | [`REPOSITORY_RESILIENCE.md`](REPOSITORY_RESILIENCE.md) §5 — where evidence lives |
+| 10 | **Archive review** | 🔵 **unblocked 2026-08-03** | D-2 ruled: summary committed, binaries external, hashes in the manifest |
 | 11 | **Cleanup** | ✅ built | Ports released, and **verified** before the claim is printed |
 
 **Smoke validation is deliberately absent and cannot be added.** The production stack binds the same two ports a review holds. The certification record answers the same question from a run that measured the real thing, so the session **cites** it. Ratified by the product owner: *"Review should reference certification, not recreate certification."*
@@ -132,9 +132,15 @@ The product owner's target list, with what each costs and what it is worth. **Ch
 
 ## 6 · Two decisions this needs
 
-### D-1 · May a review run on an uncertified tree?
+### D-1 · May a review run on an uncertified tree? — **RULED 2026-08-03, product owner**
 
-Today it starts and says so on the card. **Three positions:**
+> **An uncertified review is allowed. It is simply non-evidential.**
+>
+> *"Internal development review: allowed. Customer-facing evidence: requires certification. Those are different use cases."*
+
+**Option C, ratified.** PR-5 implements it: a session started from a tree with no certified ancestor — or with executable commits above one — records itself as **non-evidential**, and the marking is in the record rather than in somebody's memory of which kind of session it was.
+
+The positions considered:
 
 | | | |
 |---|---|---|
@@ -142,11 +148,28 @@ Today it starts and says so on the card. **Three positions:**
 | **B** | **Refuse unless the tree is certified or a certified ancestor is clean** | The strongest evidence guarantee — every record describes measured software |
 | **C** | Start, but **mark the record as non-evidential** | **Recommended.** Keeps a lane's ability to look at its own work, and stops an uncertified session becoming a citable artifact |
 
-**QE recommends C**, because the failure it prevents is specific: a record produced from a working tree, filed indistinguishably from one produced from a certified build, cited months later. **The distinction has to be in the record, not in somebody's memory of which it was.**
+**C was ratified**, because the failure it prevents is specific: a record produced from a working tree, filed indistinguishably from one produced from a certified build, cited months later.
 
-### D-2 · Where does review evidence live?
+### D-2 · Where does review evidence live? — **RULED 2026-08-03, product owner**
 
-**Deferred to [`REPOSITORY_RESILIENCE.md`](REPOSITORY_RESILIENCE.md) §5**, where the same decision blocks R-4. It is one decision and belongs in one place.
+> **The repository stores the summary. Binary evidence remains external.**
+>
+> *"We should avoid committing hundreds of megabytes of binary data simply because a review occurred."*
+
+**Option B, ratified**, and specified more precisely than QE proposed it:
+
+| **Committed — the record** | **External — the evidence** |
+|---|---|
+| review metadata · summary · findings · reviewer notes | screenshots · videos |
+| certification reference · dataset version · **playbook version** | Playwright traces · HAR files |
+| **screenshots manifest · hashes · fingerprints** | browser recordings · logs |
+
+**The hashes are the part that makes this work.** A committed manifest naming each screenshot and its hash means the repository can prove *which* image was shown even when the image itself is elsewhere — and can detect one that has been replaced. **The record stays lightweight and stays checkable**, which a bare file list would not.
+
+Two consequences to implement:
+
+1. **`--audit-main` learns a `review/` path class**, bounded to `.json` and `.md` — a Closeout-style allowance, and the binary exclusion is enforced by the path rule rather than by care.
+2. **[`REPOSITORY_RESILIENCE.md`](REPOSITORY_RESILIENCE.md) R-4 is unblocked**, and its §5 decision table is now answered.
 
 ---
 
@@ -156,9 +179,9 @@ Today it starts and says so on the card. **Three positions:**
 |---|---|---|---|
 | **PR-1** | **The beat runner** — executes a playbook, captures a screenshot per beat, checks `present`, records outcomes | Nothing | **M** |
 | **PR-2** | **The Product Capability playbook** — the first, written **by the product owner**, over screens that exist | PR-1, and the product owner's authorship | **S** |
-| **PR-3** | **Evidence package** — screenshots, trace, video, beat outcomes, timings into the session directory | PR-1 | **S** |
+| **PR-3** | **Evidence package** — screenshots, trace, video, beat outcomes, timings into the session directory, **with a hashed manifest** (D-2) | PR-1 | **S** |
 | **PR-4** | **Prompt versions in the record** | PR-3 | **M** |
-| **PR-5** | **Non-evidential marking** | D-1 | **S** |
+| **PR-5** | **Non-evidential marking** | ~~D-1~~ **ruled** | **S** |
 
 > **PR-1 before PR-2, deliberately.** A playbook written before a runner exists is a guess about what the runner will accept. **A runner built with no playbook is testable against a two-beat example**, which is how the `present` condition gets exercised before anybody has written a story worth losing.
 

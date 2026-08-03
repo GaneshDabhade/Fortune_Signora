@@ -109,6 +109,25 @@ make release-preflight            # confirm, do not assume — expect: READY
 
 **Record the transition in the release log** (the Closeout commit), so a later reader can tell a deliberate handover from a session somebody killed.
 
+### Before you finish for the day — `make unsaved`
+
+```bash
+make unsaved                        # this working copy
+make unsaved ARGS=--workstation     # every Signora clone on this machine
+```
+
+**Awareness, not enforcement.** It always exits 0, no gate consults it, and nothing about it asks for smaller commits. It answers one question: *what would you lose if this disk died right now?*
+
+**`.gitignore` is the classifier**, so anything it reports is non-disposable by the repository's own declaration — caches, `node_modules`, `.venv` and `.env` never appear.
+
+Measured on 2026-08-03, minutes after a promotion: every branch on this workstation was pushed, and **27 untracked files across two lanes existed in exactly one physical location** — including an entire module carrying a prompt release and an evaluation dataset. Nothing was lost. That is the only reason this is a reminder rather than a retrospective ([`REPOSITORY_RESILIENCE.md`](REPOSITORY_RESILIENCE.md)).
+
+> **Recoverable is enough.** A WIP commit on your lane branch, pushed. Not merged, not reviewed, not finished — and experimenting freely during a session is exactly what the rule permits.
+
+> **`--workstation` surfaces other lanes' unsaved work, and that is all it does.** It is read-only. Work in another lane's clone is **that lane's to decide** — surfacing it is a finding to hand them, never a thing to fix for them (`CLAUDE.md` §20e).
+
+---
+
 ### Lanes never collide with either mode
 
 **A lane's ports start at 3300/8300** and are allocated in [§ Running a lane](#running-a-lane). **That table exists to keep this collision limited to the two modes above** — a lane running on its own row can develop right through a review session or a certification run, and neither notices.

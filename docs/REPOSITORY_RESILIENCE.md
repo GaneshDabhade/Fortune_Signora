@@ -10,31 +10,39 @@
 
 **Every working copy on this workstation, 2026-08-03**, immediately after cycle 34 was promoted:
 
-| Working copy | Branch | Uncommitted | **Untracked** | Unpushed commits | Stash |
+| Working copy | Branch | Modified | **Untracked files** | Unpushed | Last commit |
 |---|---|---|---|---|---|
-| `Signora-QE` | `lane-qe` | 0 | 0 | **0** | 0 |
-| `Signora-LaneB` | `lane-b-commercial-profile` | 17 | **4** | **0** | 0 |
-| `LaneA/signora-lane-a` | `lane-a-product-surface` | 4 | **3** | **0** | 0 |
-| `Signora-Demo/Fortune_Signora` | `main` | 819 | 0 | **0** | 0 |
+| `Signora-QE` | `lane-qe` | 0 | 0 | **0** | minutes |
+| `Signora-LaneB` | `lane-b-commercial-profile` | 13 | **5** | **0** | 3 hours |
+| `LaneA/signora-lane-a` | `lane-a-product-surface` | 6 | **22** | **0** | 2 hours |
+| `Signora-Demo/Fortune_Signora` | `main` | 819 | 0 | **0** | **26 hours** |
 | `SignoraHumanReview` | — | *empty directory* | — | — | — |
+
+> **The 819 is noise, and the last column is why the column exists.** That clone is a stale checkout carrying GitHub workflow files this repository removed months ago. Without the age beside it, the loudest row in the report is the one that matters least — and a report whose largest number is noise teaches people to skim it.
 
 ### The finding, stated exactly
 
 > **Committed work is not at risk. Every branch on this machine is pushed — zero unpushed commits across four repositories.**
 >
-> **Seven untracked paths across two lanes exist in exactly one physical location.** A disk failure this afternoon loses them and nothing else.
+> **Twenty-seven untracked files across two lanes exist in exactly one physical location.** A disk failure this afternoon loses them and nothing else.
 
-Named, because a resilience rule aimed at nothing in particular protects nothing in particular:
+**Corrected 2026-08-03, within hours of first publishing it.** This table first said *"seven untracked paths"*, because `git status --porcelain` **collapses an untracked directory into a single line** and the count was taken from it. The real figure is 27, and the difference was not cosmetic:
 
 ```
+Lane A   backend/modules/sales_engagement/          an entire module — 22 files
+           domain/ application/ infrastructure/
+           prompts/executive_summary@1.md           ← a prompt release
+           prompts/manifest.json                    ← a prompt manifest
+           evaluation/datasets/approach@1.json      ← an evaluation dataset
+         backend/tests/sales_engagement/            5 test files
 Lane B   frontend/tests/e2e/interaction-boundaries.spec.ts
          frontend/tests/e2e/pages/sign-in.ts
-         frontend/tests/endurance/            (a directory)
-         frontend/tests/unit/endurance/       (a directory)
-Lane A   3 untracked paths
+         frontend/tests/endurance/  ·  tests/unit/endurance/
 ```
 
-**These are new test suites.** Not scratch files, not experiments — Playwright page objects, an endurance suite, an interaction-boundaries spec. **Hours of work that git has never seen.**
+**A module that appears in neither [`04-modules.md`](architecture/04-modules.md) nor [`README.md`](../README.md), containing a prompt release and an evaluation dataset, exists nowhere but one disk.** Those are the precise artifacts R-3 below calls production assets that must never be regenerated to recover them — **regenerating a prompt release produces a different artifact, not the same one back.**
+
+> **The understatement is itself the evidence.** The measurement that justified this document was wrong in the direction that would have made the document unnecessary, and `infra/unsaved.py` inherited the same defect until a test was written for it. **A resilience tool that under-reports is worse than none**, because the number is believed.
 
 ### What the measurement removes from the brief
 
@@ -79,7 +87,7 @@ The product owner's taxonomy, with every artifact in this repository placed in i
 
 **Every valuable engineering artifact is committed, reproducible by a documented command, or explicitly disposable.** A fourth answer — *"it is on my machine"* — is the one this rule exists to remove.
 
-*Exposure:* seven untracked paths, measured above. *Verified by:* a check that reports untracked non-disposable paths older than a session. *Retires when:* it reports zero for a sustained period across every lane, which would mean the habit holds without it.
+*Exposure:* 27 untracked files, measured above. *Enforced by:* `make unsaved` (RS-1, shipped). *Verified by:* a check that reports untracked non-disposable paths older than a session. *Retires when:* it reports zero for a sustained period across every lane, which would mean the habit holds without it.
 
 ### R-2 · Generated artifacts are never the only copy
 
@@ -97,7 +105,7 @@ The product owner's taxonomy, with every artifact in this repository placed in i
 
 **A product review's record outlives the environment that produced it.** *"What did we demonstrate before signing that contract?"* is unanswerable from a torn-down stack, and today it is unanswerable from a rebuilt laptop.
 
-*Exposure:* **real and current.** `review/` is git-ignored. *Blocked on:* a decision about whether review records may reach `main`, which is the product owner's (§5). *Retires when:* never — it is the reason the Product Review Platform exists.
+*Exposure:* **real and current.** `review/` is git-ignored. *Ruled 2026-08-03:* **the summary is committed; binary evidence stays external, named and hashed in a committed manifest** (§5). *Retires when:* never — it is the reason the Product Review Platform exists.
 
 ### R-5 · Machine independence
 
@@ -119,7 +127,7 @@ The product owner's taxonomy, with every artifact in this repository placed in i
 
 | | | Why now | Size |
 |---|---|---|---|
-| **RS-1** | **An untracked-work check**, reporting non-disposable paths git has never seen. Advisory, run at Startup | **The one measured exposure.** Seven paths, two lanes, today | **S** |
+| ~~**RS-1**~~ | ~~An untracked-work check~~ | **✅ Shipped 2026-08-03** — `make unsaved`, `make unsaved ARGS=--workstation`. Always exits 0; `.gitignore` is the disposability classifier | **S** |
 | **RS-2** | **`make workstation`** — regenerate `.env` files and key pairs, with the consequences stated | R-5's gap, hit by QE this cycle | **M** |
 | **RS-3** | **Decide where review evidence lives** — a product-owner decision, not an implementation | R-4 is blocked on it and cannot be built around it | **decision** |
 
@@ -134,17 +142,19 @@ The product owner's taxonomy, with every artifact in this repository placed in i
 
 ---
 
-## 5 · The decision this needs from the product owner
+## 5 · Where review evidence lives — **RULED 2026-08-03, product owner**
 
-**Where does review evidence live?** Three options, and QE recommends the second.
+> **The repository stores the summary. Binary evidence remains external.**
 
-| | | Cost |
-|---|---|---|
-| **A** | **Stays git-ignored.** Records are local artifacts; the platform produces them and the reviewer keeps them | Free, and R-4 is permanently unmet |
-| **B** | **Summaries committed, blobs ignored.** `session.json` and `summary.md` reach the repository — small, textual, diffable; screenshots, video and traces stay local and are referenced by path | `--audit-main` learns a `review/` path class. **Recommended:** it makes the *record* durable without making the repository a media store |
-| **C** | **Everything committed** | Binary artifacts in git history, permanently. **Not recommended** |
+| **Committed** | **External** |
+|---|---|
+| review metadata · summary · findings · reviewer notes | screenshots · videos |
+| certification reference · dataset version · playbook version | Playwright traces · HAR files |
+| **screenshots manifest · hashes · fingerprints** | browser recordings · logs |
 
-> **Option B is the same shape the certification manifest already has**: the record is committed and the evidence it points at is not. That precedent is why it is the recommendation rather than a new idea.
+**Option B of the three considered**, and the reason it is right is that it is the shape the certification manifest already has: the record is committed and the evidence it points at is not. **The hashes are what make it more than a file list** — the repository can prove which image was shown, and detect one that has been replaced, without storing it.
+
+**R-4 is unblocked.** The implementation is [`PRODUCT_REVIEW_PLATFORM.md`](PRODUCT_REVIEW_PLATFORM.md) §7 PR-3, and it requires `--audit-main` to accept a `review/` path class bounded to `.json` and `.md` — the binary exclusion enforced by the path rule rather than by care.
 
 ---
 
@@ -158,7 +168,7 @@ The product owner's taxonomy, with every artifact in this repository placed in i
 >
 > **What it requires.** By the end of a working session, work is **recoverable** — committed, pushed to a branch, or stashed and pushed. **Not merged, not reviewed, not finished.** A WIP commit on a lane branch satisfies it; so does a pushed stash-branch. **Nothing about this demands small commits**, because forcing them would trade a resilience risk for a history quality one.
 >
-> **How it is enforced.** RS-1: an advisory check at Startup, reporting untracked non-disposable paths. **Advisory rather than blocking**, because a lane mid-experiment is doing exactly what the law permits — the check is a reminder at a session boundary, not a gate.
+> **How it is enforced.** `make unsaved` (RS-1, shipped 2026-08-03): an advisory check at a session boundary, reporting untracked non-disposable paths. **Advisory rather than blocking**, because a lane mid-experiment is doing exactly what the law permits — the check is a reminder at a session boundary, not a gate.
 >
 > **What evidence proves it works.** The check reporting zero at the end of sessions where it reported non-zero at the start.
 >

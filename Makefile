@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: environments reachability review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research
+.PHONY: environments reachability unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
 # The executable bit is filesystem state, not repository state, and it does
@@ -192,6 +192,21 @@ environments:
 ## connection flow, so a customer could reach it only by already being there.
 reachability:
 	@python3 ./infra/reachability.py $(ARGS)
+
+## **What would you lose if this disk died right now?** (RS-1, L-18)
+#
+# Awareness, never enforcement — it always exits 0, and no gate consults it. A
+# lane mid-experiment is doing exactly what the law permits; the point is that a
+# session should not *end* without somebody deciding whether the work on disk is
+# temporary or worth keeping.
+#
+# `.gitignore` is the disposability classifier, so anything reported is, by the
+# repository's own declaration, not disposable.
+#
+#     make unsaved
+#     make unsaved ARGS=--workstation    every Signora clone on this machine
+unsaved:
+	@python3 ./infra/unsaved.py $(ARGS)
 
 ## **A product review, in one command.** Prepare, validate, seed, start both
 ## tiers, open the browser, and record the session.

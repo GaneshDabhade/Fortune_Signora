@@ -271,3 +271,59 @@ playwright.config.ts         2 reads — a config file, correctly
 > **What is deliberately not recommended: one loader for both tiers.** They are separate runtimes with separate secrets — the private signing key belongs to Next and must never reach Python ([ADR-0026](architecture/adr/0026-jwt-boundary-architecture.md)). A shared loader would be a shared reachability surface for exactly the values the boundary exists to separate. **Two loaders, each canonical within its tier**, is the correct target, and the backend is already there.
 
 ---
+
+## 10 · Performance work — what belongs now, and what belongs to Production Readiness
+
+**Ratified 2026-08-03 by the product owner, and binding on every lane.** Recorded here rather than in `CLAUDE.md` because it is a *guideline about sequencing*, not a rule about behaviour — but it is the answer any lane should get when it wonders whether to benchmark something.
+
+> **Performance is not deferred. Performance *engineering* is.** The distinction is which numbers are meaningful today.
+
+### The two categories
+
+| **Development-time performance — fix now, always** | **Production performance — Production Readiness milestone** |
+|---|---|
+| N+1 queries | Load testing · concurrency testing |
+| Unbounded fetches | Autoscaling validation · ECS/EKS sizing |
+| Accidental quadratic algorithms | Redis and PostgreSQL tuning |
+| Infinite loops · memory leaks | ALB/NLB tuning · CDN behaviour |
+| Browser freezes | Cache tuning · distributed load generation |
+| Extremely slow queries | Response-time SLAs |
+| **Catastrophic regressions** | Endurance testing · chaos testing |
+
+**The left column is already `CLAUDE.md` §14**, and nothing about it relaxes: *"obvious inefficiency is a defect at write time, not a future task."* A lane that ships an N+1 has shipped a defect, today, whatever milestone it is.
+
+### Why the right column would produce meaningless numbers today
+
+**Not because performance does not matter. Because the measurement would not describe anything that will exist:**
+
+| | |
+|---|---|
+| **The infrastructure is temporary** | Everything runs on one laptop. [ADR-0022](architecture/adr/0022-devops-infrastructure-and-deployment-topology.md)'s topology is not provisioned until M14.5, so a latency figure measured now is a figure about a workstation |
+| **The architecture is incomplete** | Modules are still being built. A benchmark of a pipeline missing stages measures a different pipeline |
+| **The features are still changing** | A tuned query in a module whose schema changes next month is tuning that must be redone |
+| **The data volumes are artificial** | Twelve seeded accounts. Nothing about their behaviour predicts ten thousand |
+| **The deployment is local** | No load balancer, no CDN, no autoscaler, no network between tiers |
+
+**`12-scalability.md` already says this**, and this section is its operational reading: scaling work is justified by *evidence-based triggers*, and **a trigger requires production**. Benchmarking before there is a production to trigger on inverts the rule — it produces a number in search of a decision.
+
+### What QE keeps doing meanwhile
+
+**Regression prevention is not performance engineering**, and QE continues it:
+
+- **Certification records `make smoke`'s duration and slowest stage** every cycle. That is how the 104s–4830s variance was root-caused to memory pressure rather than to the repository.
+- **`release-preflight` reports machine pressure** before a gate runs, so a slow run is diagnosable instead of mysterious.
+- **A catastrophic regression is a Blocking Quality Defect** whenever it appears, at any milestone. *"Performance is deferred"* is never a defence for a change that made something ten times slower.
+
+### What this means for a lane
+
+**Write efficient code. Do not benchmark it.**
+
+If a lane believes it has found a genuine performance problem, the test is the one `CLAUDE.md` §14 already sets: **is it obviously wrong, or is it unmeasured?** Obviously wrong is a defect to fix now. Unmeasured is a Production Readiness concern, and the correct action is a [`BACKLOG.md`](BACKLOG.md) note — not a benchmark, not a tuning slice, and not an optimisation nobody can show is needed.
+
+> **Endurance and load suites written today are the clearest case.** They are real engineering effort, they will run against infrastructure that does not exist yet, and their numbers will be replaced entirely by the first run in AWS. **The work is not wrong; the timing is** — and the same suite written after M14.5 measures the system customers will actually use.
+
+### When this is revisited
+
+**At M14.5**, when the target AWS environment exists. At that point the right column becomes a milestone with its own acceptance criteria, and this section is replaced by it rather than amended.
+
+---
