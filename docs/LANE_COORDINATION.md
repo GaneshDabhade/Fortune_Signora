@@ -2675,6 +2675,49 @@ Two scenarios were **excluded on principle rather than on effort**, and the reas
 
 ---
 
+## C-100 · The demonstration runner must reuse Lane B's Playwright infrastructure, not grow a second one
+
+| | |
+|---|---|
+| **Owner** | **Lane B** — it is building the infrastructure |
+| **Requesting lane** | **QE**, before PR-1 starts |
+| **Category** | Reuse (L-1) · test infrastructure ownership |
+| **Status** | `OPEN` |
+| **Blocks** | **PR-1**, the demonstration beat runner in [`PRODUCT_REVIEW_PLATFORM.md`](PRODUCT_REVIEW_PLATFORM.md) §7. Nothing else |
+| **Raised** | 2026-08-03, from a workstation survey rather than from a merge — which is the point |
+
+**`main` has one Playwright spec.** QE said so in cycle 34's Slice Handoff, and used it to justify *not* building an evidence collector — a collector for one spec would be an empty framework wearing a lifecycle stage's name.
+
+**That statement was true of `main` and is already stale.** A survey of the workstation found Lane B building, uncommitted:
+
+```
+frontend/tests/e2e/auth.setup.ts                    modified
+frontend/tests/e2e/demo/golden-journey.spec.ts      modified
+frontend/tests/e2e/fixtures/environment.ts          modified
+frontend/tests/e2e/fixtures/signora.ts              modified
+frontend/tests/e2e/pages/brief.ts                   modified
+frontend/tests/e2e/pages/sign-in.ts                 untracked
+frontend/tests/e2e/interaction-boundaries.spec.ts   untracked
+frontend/playwright.config.ts                       modified
+```
+
+**Page objects, fixtures, an authenticated setup, and a golden journey.** That is precisely the substrate a demonstration runner needs, and QE was two documents away from designing a parallel one.
+
+### What QE needs to know before PR-1
+
+1. **Is `frontend/tests/e2e/pages/` intended as a reusable page-object layer**, or private to Lane B's specs? A demonstration beat says *"be at the account Northwind"* in customer vocabulary; a page object is exactly the translation layer that should own it.
+2. **What does `fixtures/environment.ts` assume about ports and databases?** The review environment derives everything from the `review` profile (`infra/environments.py`); a fixture with its own literals would collide, and the collision would look like a flaky demonstration.
+3. **Does `auth.setup.ts` sign in as the Playground accounts** created by `npm run demo:users`? If so, a demonstration inherits sign-in for free. If not, QE should not build a second sign-in path.
+
+### Why this is a coordination item rather than a QE decision
+
+**QE may write a test in any module's suite; it may not restructure another lane's test infrastructure** (`CLAUDE.md` §20e). If the answer to (1) is *"reusable"*, PR-1 imports it and QE writes nothing. If the answer is *"private"*, that is an architectural answer about where customer-vocabulary navigation belongs, and it is Lane B's to give.
+
+**QE will not start PR-1 until this is answered.** Proceeding would encode an assumption about another lane's contract, which is the one thing the register exists to prevent — and the cost of guessing wrong here is a duplicated page-object layer that both lanes then maintain.
+
+> **Secondary finding, not blocking:** four of those paths are **untracked**, and exist in exactly one physical location. Recorded in [`REPOSITORY_RESILIENCE.md`](REPOSITORY_RESILIENCE.md) §1 as the measured exposure behind proposed law L-18. **No action is asked of Lane B beyond what that law would ask of anyone.**
+
+
 ## C-301 · Nothing asserts what the deployed worker consumes
 
 | | |

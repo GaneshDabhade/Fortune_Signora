@@ -204,3 +204,70 @@ A per-run compose project name would let two smoke runs coexist. **The lease mak
 | **Certification stability** | Did the process complete? | RE-01's `completion_rate` |
 
 **Separating them is the natural next measurement step**, and it is deliberately not attempted yet: the attempt log has one entry, and classifying a dimension from a single data point is exactly the anecdote-driven work §1 exists to prevent.
+
+## 9 · Configuration loading — investigated 2026-08-03, and the finding is narrower than the brief
+
+**Assignment:** *"one canonical environment loading mechanism across the repository — nobody reads `.env`, nobody calls dotenv, nobody assembles configuration."*
+
+**The investigation says most of that already exists**, and naming what does not is worth more than a redesign that would rewrite the half that is correct.
+
+### Three questions were being asked as one
+
+| | | Today |
+|---|---|---|
+| **Who *reads* a variable?** | Which code touches `os.environ` / `process.env` | **Backend: solved.** Frontend: not |
+| **Who *populates* the process?** | What puts values into the environment before an entrypoint starts | **Four mechanisms, and one entrypoint has none** |
+| **Who *validates* it?** | Where a missing or wrong value is refused | Backend at construction · frontend at use |
+
+**These have different answers and different fixes.** Treating them as one problem is how a redesign starts.
+
+### The backend already has the loader
+
+Every `os.environ` in `backend/` outside tests:
+
+| Where | What | Verdict |
+|---|---|---|
+| `signora_platform/settings.py` · `modules/ai_platform/infrastructure/settings.py` | *Docstrings saying never to do it* | The rule, not a violation |
+| `apps/worker/pools.py` | A pool **name** | Legitimate — process identity, not configuration |
+| `apps/migrate/main.py` | **Sets** `SIGNORA_LOGGING_CONFIGURED` | A flag to a child, not a read |
+| `migrations/env.py` | `SIGNORA_DATABASE_URL` | **Alembic's own contract**, outside the application. It is why [B-106](BUGS.md) happened |
+
+**There is no scattered reading to consolidate.** Typed `Settings`, `env_prefix="SIGNORA_"`, `env_file=".env"`, constructed at the composition root, injected inward — `CLAUDE.md` §6 as written. **The pipeline the assignment describes is the one the backend runs.**
+
+### The frontend is where the divergence is
+
+`process.env` outside tests, by file:
+
+```
+lib/auth/config.ts          11 reads — centralised, typed, validated at use (post-B-104)
+lib/api/client.ts            1 read  — SIGNORA_API_URL, deliberately decoupled
+lib/auth/server.ts           1 read  — NODE_ENV
+app/api/integrations/*       4 reads — SIGNORA_INTEGRATIONS_STATE_SECRET, provider credentials
+playwright.config.ts         2 reads — a config file, correctly
+```
+
+**Sixteen reads across five files, and no typed object.** `loadAuthConfig()` is close to one for the auth surface and covers none of the rest. **This is the real gap**, and it is a frontend-foundation change (🔒 §20c) rather than QE's.
+
+### The populating gap is B-105, and it is separate
+
+| Entrypoint | What populates its environment |
+|---|---|
+| `uvicorn` / worker / `pytest` | `pydantic-settings` reads `backend/.env` |
+| `next dev` · `next build` | Next's own loader reads `frontend/.env.local` |
+| `alembic` | **Whatever the shell holds** — the B-106 mechanism |
+| **`tsx` scripts** (`auth:migrate`, `demo:users`) | **Nothing.** This is [B-105](BUGS.md) |
+| `make` targets | Nothing, except values a recipe passes explicitly |
+
+**Four mechanisms and one hole.** The hole is not that there are four — a Python tier and a Node tier having their own loaders is correct, and unifying them would mean one tier reading the other's file. **The hole is that `tsx` has none**, so a script run from `make` sees a different environment from the application it configures.
+
+### Recommendation — three items, none of them a redesign
+
+| | | Owner | Size |
+|---|---|---|---|
+| **RE-10** | **`tsx` scripts load `frontend/.env.local`** — Node's `--env-file`, or the loader Next already uses. Closes B-105, and deletes `infra/review.py`'s `_dotenv` in the same change | Frontend foundation (🔒) | **S** |
+| **RE-11** | **A typed frontend configuration object**, the shape `loadAuthConfig()` already has, covering the sixteen reads. Nothing outside it touches `process.env` | Frontend foundation (🔒) | **M** |
+| **RE-12** | **Alembic receives its URL rather than reading it** — the last entrypoint whose configuration is ambient. B-106 fixed the *test*; the *contract* is unchanged | `apps/migrate` | **S** |
+
+> **What is deliberately not recommended: one loader for both tiers.** They are separate runtimes with separate secrets — the private signing key belongs to Next and must never reach Python ([ADR-0026](architecture/adr/0026-jwt-boundary-architecture.md)). A shared loader would be a shared reachability surface for exactly the values the boundary exists to separate. **Two loaders, each canonical within its tier**, is the correct target, and the backend is already there.
+
+---
