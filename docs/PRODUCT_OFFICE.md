@@ -126,6 +126,12 @@ Product Owner decision required:
 
 > **Discovering an issue never confers authority to resolve it.** Lane C records the finding with its evidence and a recommendation; the change is made by whoever owns it.
 
+**And Lane C does not verify its own governance** *(ratified 2026-08-03)*:
+
+> **A lane may not be the final verifier of governance changes that it authored. Lane C prepares governance; QE verifies governance consistency.**
+
+**Every governance change Lane C lands carries a verification request to QE** — as a row in [`LANE_COORDINATION.md`](LANE_COORDINATION.md), naming the files touched and the rule changed. **A governance slice is not finished when it is pushed; it is finished when somebody else has read it.**
+
 **And the principle that outranks every recommendation in this document:**
 
 > **Every recommendation aims to remove complexity rather than introduce it.** Where a problem can be solved by evolving an existing mechanism, that beats a new framework, process or governance layer. **The repository should become progressively simpler to understand even as it becomes more capable.**
@@ -143,6 +149,10 @@ Product Owner decision required:
 | **Reference** | Standards · conventions · architecture · policies · module ownership | **Stays concise.** Changes slowly |
 
 > **The distinction is lifecycle state, never age** (product owner, 2026-08-03). **Some old information is still operational; some information is historical the day it is written.** Archiving on age would retire a two-month-old convention that binds every slice, and keep a decision that was superseded within the hour.
+
+> **Archival is deferred until the governance model stabilises** (product owner, 2026-08-03). **The lifecycle states are adopted; the migration is not run.** The reasoning is that Lane C is days old and the model is still moving — *"otherwise you'll be moving documents every week"*, which would cost more churn than the reading it saves.
+>
+> **What continues meanwhile:** measuring growth, re-measuring Operational Reading Cost when governance lands, and **naming archival candidates without moving them.** **The resume condition is governance stability, not a date** — when a cycle passes with no change to the coordination model, the backlog of candidates is migrated in one pass rather than weekly.
 
 **And the objective is cognitive load, not size.** A document can double in length and become easier to navigate; a document can shrink and become unreadable. **Size stays a measurement and never becomes the goal** — recommendations optimise for **discoverability · readability · maintenance · navigation · ownership · cognitive load.**
 
@@ -162,7 +172,7 @@ Product Owner decision required:
 | **Tasks** | `READY` → `CLAIMED` → … → `DONE`, removed at Closeout | ✅ Complete |
 | **Prompts** | Versioned · evaluated · released · immutable | ✅ **The strongest in the repository** |
 | **Decision packs** | Staged → ruled → **retired through three gates** | ✅ Added 2026-08-03 |
-| **Coordination items** | `OPEN` → `WAITING` → `ANSWERED` → `IMPLEMENTING` → `CLOSED` | ⚠️ **No archive.** The register only grows — Pack H |
+| **Coordination items** | `OPEN` → `ANSWERED` → `IMPLEMENTED` → `VERIFIED` → `ARCHIVED` | ✅ **Adopted 2026-08-03** (Pack H). **`ARCHIVED` is defined and not yet exercised** — migration deferred until governance stabilises |
 | **ADRs** | `Proposed` → `Accepted` | ❌ **No `Superseded`, no `Retired`.** Six ADRs record amendment *as prose in the Status line* — 0010 by 0026, 0022/0023/0024 by 0027, 0013 by 0028. **A reader must parse a sentence to learn a state** |
 | **Numbered architecture documents** | none | ❌ **3 of 46 carry any status marker.** A design doc for a module that was never built is indistinguishable from one that is current |
 | **Certification reports** | none | ⚠️ **33 and accumulating.** Correct as evidence; **worth a stated policy rather than an accident** |

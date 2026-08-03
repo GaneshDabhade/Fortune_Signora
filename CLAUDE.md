@@ -502,9 +502,19 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 | | |
 |---|---|
 | **Owns** | Task-assignment coordination · ownership resolution · cross-lane dependency analysis · feature decomposition · decision preparation ([`DECISION_PACKS.md`](docs/DECISION_PACKS.md)) · roadmap stewardship · governance coordination · product architecture and ADR preparation |
-| **Never** | **Writes production code · modifies business logic · implements · merges · certifies · changes module ownership · reprioritizes the roadmap · approves an architectural decision · overrides a lane · bypasses the product owner** |
+| **Never** | **Writes production code · modifies business logic · implements · merges · certifies · changes module ownership · reprioritizes the roadmap · approves an architectural decision · overrides a lane · bypasses the product owner · **verifies governance it authored itself** |
 | **Branch** | `lane-c-product-office`. Identifier block `400`+ |
 | **Board** | **Referenced, never rowed** — [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) measures implementation, and Lane C produces none |
+
+**A lane never verifies governance it authored** *(ratified 2026-08-03, product owner)*.
+
+> **A lane may not be the final verifier of governance changes that it authored.**
+>
+> **Lane C prepares governance. QE verifies governance consistency.**
+
+**This is the separation that already binds implementation, applied one level up.** QE may not verify its own fixes ([ADR-0100](docs/architecture/adr/0100-delegated-dependency-rulings.md) R-4), and a lane may not close its own defect — **and on 2026-08-03 Lane C amended the pull model, the block table and four shared documents, then reported that they were correct.** Nothing was wrong with the work; **the loop had no second reader**, which is the same gap in a different place.
+
+**What QE verifies** is consistency, not judgement: that the amended rule is stated once, that every document asserting the old rule was found, that no gate now guards a superseded premise, and that a cold session reading the result is not misled. **Whether the rule is *right* remains the product owner's** — QE checks that the repository tells the truth about it.
 
 **Lane C and QE — the boundary is one question:**
 
@@ -1280,8 +1290,15 @@ Every row carries: **ID · Title · Module · Current assignee · Severity · St
 **Every lane reads every open item before beginning a slice** (*Startup* step 5), and a Slice Handoff names the items it opened and closed.
 
 ```
-Coordination  →  Agreement  →  Implementation  →  ADR  →  Coordination closed
+OPEN → ANSWERED → IMPLEMENTED → VERIFIED → ARCHIVED
+  │        │            │            │          └─ Lane C, at Closeout — out of the
+  │        │            │            └─ QE only     reading path, never out of the record
+  │        │            └─ the requesting lane
+  │        └─ the named owner: a decision exists
+  └─ any lane                          ( CLOSED = withdrawn; the question dissolved )
 ```
+
+**Adopted 2026-08-03** ([`DECISION_PACKS.md`](docs/DECISION_PACKS.md) Pack H). **`ANSWERED` means a decision exists; `IMPLEMENTED` means the work is built; `VERIFIED` means it holds in the promoted repository.** Collapsing any two would make the register claim work that has not happened. **`ARCHIVED` is defined and not yet exercised** — archival is deferred until governance stabilises.
 
 > **A coordination item is a temporary implementation question on its way to becoming permanent architecture.** The register should therefore **shrink** over time. A row open for months is either a decision nobody will make or a question that was never really blocking — **both are findings**, and a register that only grows has become the discussion log it is not allowed to be.
 

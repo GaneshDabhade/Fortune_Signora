@@ -117,7 +117,13 @@
 
 ---
 
-## PACK H · The coordination register has no retirement, and 58% of a lane's reading is it
+## PACK H · The coordination register has no retirement — **APPROVED, migration deferred**
+
+> **Approved in principle 2026-08-03, product owner.** The lifecycle **is adopted** and is recorded in [`LANE_COORDINATION.md`](LANE_COORDINATION.md) and `CLAUDE.md` §20e *Coordination*.
+>
+> **The migration is deliberately not run.** *"Do not begin large-scale archival until the governance model has stabilized — otherwise you'll be moving documents every week."* **Lane C continues measuring and naming candidates and moves nothing.** The resume condition is a cycle passing with no change to the coordination model.
+>
+> **Retained below as the record of what was approved and why** — it is retired from the staging area once the migration runs.
 
 **Commissioned by the product owner 2026-08-03: *"prepare a simple lifecycle for coordination items… before implementation."***
 

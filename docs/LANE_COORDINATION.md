@@ -16,19 +16,30 @@
 
 ## How it works
 
-**Any lane may open an item.** The **named owner** answers it. The **requesting lane** moves it to `IMPLEMENTING` and then `CLOSED`, because only the requester knows whether the answer was sufficient.
+**Any lane may open an item.** The **named owner** answers it. The **requesting lane** moves it to `IMPLEMENTED`, because only the requester knows whether the answer was sufficient — and **QE alone sets `VERIFIED`**, from the promoted repository. `CLOSED` is reserved for an item **withdrawn** with a reason.
 
 **An answer is not a conversation — it is a decision with a home.** Every `ANSWERED` item names the commit, ADR or document that carries it, so the answer outlives the exchange that produced it.
 
-| Status | Meaning |
-|---|---|
-| `OPEN` | Raised. The owner has not yet seen it |
-| `WAITING` | The owner has it, and the requesting lane is blocked |
-| `ANSWERED` | Decided, with the commit or ADR named. Implementation may begin |
-| `IMPLEMENTING` | The requesting lane is building against the answer |
-| `CLOSED` | Built and merged, or withdrawn with a reason |
+| Status | Meaning | Set by |
+|---|---|---|
+| `OPEN` | Raised. The owner has not yet seen it | Any lane |
+| `WAITING` | The owner has it, and the requesting lane is blocked | Any lane |
+| `ANSWERED` | **A decision exists**, with the commit or ADR named. Implementation may begin — and may not have started | The named owner |
+| `IMPLEMENTED` | **The work is built and pushed.** A state, not an activity | The requesting lane |
+| `VERIFIED` | **The answer holds in the promoted repository** | **QE, exclusively** |
+| `ARCHIVED` | **Moved out of the reading path**, fully searchable, id and anchor preserved | **Lane C**, at Closeout |
+| `CLOSED` | **Withdrawn with a reason** — the item was never a decision, or the question dissolved | The requesting lane |
 
 **Ids are `C-nnn`, allocated sequentially and never reused.**
+
+> **The lifecycle was adopted 2026-08-03** (product owner, [`DECISION_PACKS.md`](DECISION_PACKS.md) Pack H). **`IMPLEMENTING` became `IMPLEMENTED`** — a state, not an activity — and **`VERIFIED` and `ARCHIVED` are new.**
+>
+> **`VERIFIED` is what makes archiving safe.** Without it an item would leave the reading path on the *claim* that its answer was built, which is the `ANSWERED`-versus-`CLOSED` confusion one step later. **Only QE sets it**, from the promoted repository.
+>
+> **`ARCHIVED` is defined and deliberately not yet exercised.** Large-scale archival is **deferred until the governance model stabilises** (product owner, 2026-08-03) — *"otherwise you'll be moving documents every week."* **The state exists so items can start accumulating it correctly; the migration waits.** Lane C continues measuring and naming candidates and moves nothing.
+>
+> **`CLOSED` narrowed and did not disappear.** It now means *withdrawn* — an item that was never a decision. **Items closed before this date under the old meaning keep their status**; a record of what was true then is not rewritten to match now (§2).
+
 
 **A lane reads this before starting a slice**, alongside [`BUGS.md`](BUGS.md) and [`RUNNING.md`](RUNNING.md).
 
@@ -2654,9 +2665,14 @@ Every lane's rows sit **adjacent in one table**, and each lane's branch carries 
 | **4** | **Update [`QUALITY_ENGINEERING.md`](QUALITY_ENGINEERING.md) §178** — *"Lanes pull from `BACKLOG.md`"* | [C-401](#c-401--which-measure-predicts-merge-risk--and-the-answer-is-none-of-the-four) | QE's own procedure states the superseded model. **The conclusion is still right; the mechanism named is not** | XS |
 | **5** | **Reshape the board to one section per lane** — **after the next promotion**, not before | [C-402](#c-402--the-board-restructuring-is-approved--and-doing-it-today-costs-two-lanes-a-conflict) | Approved. **49 unmerged commits touch the file**; timing is the whole finding | M |
 | **6** | **Record a retention policy for `certification/reports/`** — 33 reports, accumulating, no stated lifecycle | [`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §9 | Accumulating is probably **correct** for evidence. **Worth stating rather than leaving accidental** | XS |
-| **7** | **Verify Lane C's governance edits at the next validation** — `CLAUDE.md`, `PROJECT_STATUS.md`, `SESSION_HANDOFF.md`, `DECISION_PACKS.md` | This session | **Lane C may not verify its own work**, the same rule that produced [TASK-001](BACKLOG.md) for QE's | S |
+| **7** | **Verify Lane C's governance edits** — `CLAUDE.md`, `PROJECT_STATUS.md`, `SESSION_HANDOFF.md`, `DECISION_PACKS.md`, `ACTIVE_ASSIGNMENTS.md`, `README.md`, `PRODUCT_OFFICE.md` | This session | **Now a permanent rule** (`CLAUDE.md` §20e): *a lane may not be the final verifier of governance changes that it authored.* **Lane C prepares; QE verifies consistency** | M |
+| **8** | **Verify the coordination lifecycle adoption** — seven states, `IMPLEMENTING` → `IMPLEMENTED`, `VERIFIED` and `ARCHIVED` added | Pack H | **`VERIFIED` is QE's to set**, so QE inherits a state it did not define. **Check it is one QE can actually apply from the promoted repository** | S |
 
-> **Item 7 is the one Lane C cannot do anything about, and it is the most important.** Three of those files are QE's or the product owner's by the shared-files rule and were edited on explicit direction, flagged in place. **A lane verifying its own governance change is the gap [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) R-4 closed for QE**, and Lane C has now created the same shape for itself.
+> **Items 7 and 8 are the ones Lane C cannot do anything about, and they are the most important.** Several of those files are QE's or the product owner's by the shared-files rule and were edited on explicit direction, flagged in place. **A lane verifying its own governance change is the gap [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) R-4 closed for QE**, and Lane C had created the same shape for itself.
+>
+> **That is now closed as a permanent rule rather than as one lane's good manners** (product owner, 2026-08-03): *a lane may not be the final verifier of governance changes that it authored.* **This item is the first application of it**, and every future Lane C governance change carries one like it.
+>
+> **What QE is being asked for is consistency, not judgement:** is the rule stated once · was every document asserting the old rule found · does any gate now guard a superseded premise · would a cold session be misled. **Whether the rule is right stays the product owner's.**
 
 **Also outstanding and not QE's:** [`BACKLOG.md`](BACKLOG.md)'s header states the superseded pull model. **That file is the product owner's**; Lane C writes nothing in it.
 
