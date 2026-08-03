@@ -686,3 +686,140 @@ That is the defect **R1-06** named on the workflow line and **D6** named on a fi
 **Correctness is necessary and not sufficient**, on the product owner's direction. A released pass will be measured on: factual accuracy · unsupported claims · citation correctness · readability · executive clarity · actionability · commercial usefulness · explanation quality · hallucination rate · **stability across repeated runs**.
 
 **The last is the one this architecture can guarantee cheaply**: the input is a closed set, so two runs differ only by the model, and a pass whose output swings between runs is a pass that is not ready — measurable without a human reading either.
+
+---
+
+## 27 · SE-09c — the first production prompt, and the layer between the graph and it
+
+**The prompt is not the product.** It is one field on an artifact, and the artifact is one stage in a pipeline whose upper half must survive the model being replaced:
+
+```
+  Commercial Reasoning Graph  ──▶  Commercial Context  ──▶  Prompt  ──▶  model
+                                          │                                │
+                                          └──── one closed set ────────────┘
+                                                        │
+                                                        ▼
+                                            validated commercial narrative
+```
+
+### The layer the product owner asked about, and why it is built now rather than at the second pass
+
+The question was whether a **Prompt Context** — a normalized serialization of the reasoning graph, optimized for a model and decoupled from internal domain objects — simplifies future evolution enough to justify introducing it today.
+
+**It is built, and the argument is not about the future.** The repository has already paid for this once. [`ai_platform/domain/rendering.py`](../../backend/modules/ai_platform/domain/rendering.py) exists because, until M9.5, *what a model was shown* was an experimental input that nothing recorded: a prompt fingerprint covers the template, which contains `{context}` rather than context, and no other artifact covered the rendering. **Two inferences with identical fingerprints could have been shown different text, and the change was undetectable.**
+
+> **That defect was available in this slice.** A prompt interpolating `reasoning.roles[0].role.title` would couple a frozen, fingerprinted artifact to a moving domain object — rename a field in `reasoning.py` and every released evaluation silently stops describing what the model reads, with nothing in the fingerprint moving.
+
+So the layer is not speculative generalization. **It is the declared contract between an immutable artifact and a domain that evolves**, and the slice would have introduced a hidden input without it (`CLAUDE.md` §2).
+
+**It is versioned like the protocol it is:** `COMMERCIAL_CONTEXT_PROTOCOL_VERSION`, pinned by a specimen test, with a bump invalidating every release earned under the previous value — by derivation rather than by anyone remembering.
+
+### The version bumped inside this slice, and the first real run is why
+
+**Protocol 1 was measured against `llama3.1:8b` over all ten golden graphs and refused eight of them. Both failure modes were the protocol's, not the model's.**
+
+| Observed | Diagnosis |
+|---|---|
+| Six cases cited `BUYING COMMITTEE ROLES`, `WHAT SIGNORA DOES NOT KNOW` or `LIKELY PRODUCT` | **A capitalised heading looks exactly like a token.** The model was never shown the set of legal citations and had to infer one, so it took the most visually salient strings on the page. It cited correctly on the *richest* case — which is what a guess looks like when it happens to land |
+| Two cases wrote *"July 20th"* from `occurred: 2026-07-20` | **A false refusal.** The date was shown and only the English word for its month was withheld. The model rephrased a fact it had been given and was punished for the phrasing |
+
+> **This is the same defect class ADR-0031 found in the evidence rendering protocol**, and it is fixed the same way: *every observed grounding failure was an error about how much to transform, and a form requiring no transformation has no mechanism for one.*
+
+**Protocol 2**, therefore: headings are lower case and delimited (`── buying committee roles ──`) so none can be mistaken for a token; the context **ends with an explicit `citable` list** naming every legal citation exactly; and dates carry their month name (`2026-07-14 (July 2026)`).
+
+**The remedy is the format, not a longer instruction.** A rule the format keeps cannot be forgotten by a model reading in a hurry — and the alternative, a growing list of prohibitions in the prompt, is the list nobody can finish that SE-09a already rejected once.
+
+**Measured, before and after, over the same ten graphs:**
+
+| | Protocol 1 | Protocol 2 | Protocol 2, recorded |
+|---|---|---|---|
+| Refusals | **8 of 10** | 1 of 10 | **1 of 10** |
+| Coverage | 0.200 | 0.717 | **0.692** |
+| Stability | not measured | 0.952 | **1.000** |
+
+**The prompt is `REFUSED` for this model, and that is the correct outcome rather than a disappointment.** Both protocol-2 runs failed the *same* case — `abundant-corroborated-approach`, the richest graph in the set — and failed it *differently*: once citing `strong`, a `strength:` value absent from the explicit `citable` list; once stating `5`, a figure nothing derived.
+
+> **That the richest graph is the one a model over-reaches on is the most useful thing this evaluation found**, and it is a finding about models rather than about this prompt: more material to work with is more opportunity to add. It is exactly the case a single-run, happy-path evaluation would have reported as fine on a good day.
+
+**Chasing it with a third protocol iteration would be tuning to make the gate pass**, which is the practice ADR-0028 names and this slice will not adopt. *A refused run is a result*: the prompt is not releasable for `granite3.3:2b`, **the failing run is on record in the manifest saying so**, and the next engineer to look does not repeat the work.
+
+> **`llama3.1:8b` could not be measured at all on this workstation** — seven of ten calls exceeded the ninety-second budget and the harness abandoned the run rather than average the three that survived. **That is an observation about the machine, not a finding about the prompt**, and per ADR-0028 changing the pinned model to make a run complete is the product owner's decision, never a coding session's.
+
+> **Protocol 1 is recorded rather than deleted**, in `domain/context.py`, so the measurement above stays explicable. It is still true; it simply no longer describes what a model would be shown.
+
+### One claim this slice made and then had to withdraw
+
+Lane A recorded that the release divergence in [C-214](../LANE_COORDINATION.md) **failed closed** — that the AI Platform's `PromptVersion.is_released` would always refuse a Sales Engagement measurement, so a caller reaching for the wrong gate could not be wrongly permitted.
+
+**That held only while the two protocol constants differed.** Bumping the Commercial Context Protocol to 2 made it equal to `PROMPT_RENDERING_PROTOCOL_VERSION`, and the platform's gate silently began returning the right answer for the wrong reason.
+
+**Neither state is a guarantee, because the comparison is meaningless whichever way it lands.** What is pinned instead is *visibility*: a test asserts the two constants currently coincide, so the next move of either one fails and sends the reader to C-214 rather than leaving an accidental coupling invisible.
+
+### The property that makes it more than a formatter
+
+**The closed set is computed from the rendered text, not in parallel with it.**
+
+SE-09a's rule was that the prompt and the validation must read from **one** set. A renderer showing a model a date the validator had never heard of causes a **false refusal** — the model faithfully copies what it was given and is punished for it. Deriving `numbers()` and `vocabulary()` from the same fragments that produce `render()` makes that unrepresentable.
+
+**And citations are excluded from what may be quoted.** A UUID contains digits; folding citation tokens into the quotable set would let *"3 providers"* pass because some event id happened to contain a `3`, making the numeral check — the one that catches invented confidence, chronology and urgency — **decorative**. A test pins it.
+
+### The artifact is much larger than the prompt
+
+| | Where |
+|---|---|
+| identifier · version · owner · fingerprint · evaluation history | `prompts/manifest.json`, reusing the AI Platform's registry whole |
+| supported pass | the filename **is** the `Pass` value — a seventh pass is an artifact, not a pipeline |
+| supported graph schema version | `rendering_protocol_version` on each evaluation, naming the **Commercial Context Protocol** |
+| supported models · release status | derived from evaluations, never declared |
+| supported datasets | `evaluation/datasets/approach@1.json`, fingerprinted |
+
+**It ships unreleased, and that is the correct state.** It has been measured — twice under protocol 1 and twice under protocol 2, with the results below — and **it has not passed**. Release is earned, never declared, and a manifest asserting a pairing no run produced would be the one lie this mechanism exists to make impossible. `reasoning@1` has stood unreleased since M9 for the same reason ([TASK-013](../BACKLOG.md)).
+
+### Evaluation designed past correctness
+
+**Four families, and only what is genuinely measurable is measured** — a dimension with a field and no measurement behind it would be the Decorative Logic this module has already found and removed twice.
+
+| Family | Today | Why |
+|---|---|---|
+| **Deterministic** | ✅ refusals · malformed drafts · citation resolution · numeric invention | The fence is arithmetic over a closed set. Counted, never judged |
+| **Commercial** | ⚠️ coverage | Clarity and actionability need a human or a judge model. Coverage is the honest proxy: a summary that never mentions the recommendation is unhelpful whatever its prose |
+| **Operational** | ⚠️ stability | Latency and cost belong on an inference record, and a synthesis does not write one yet ([C-214](../LANE_COORDINATION.md)) |
+| **Enterprise** | ✅ structural | Prompt fingerprint, dataset fingerprint, context protocol version and rubric version are all on every report |
+
+**Stability is measured by default**, two runs per case, and **the first failure decides the case**: a pass that fabricated on one of two attempts has fabricated, and averaging would let a prompt earn a release on the run that happened to behave.
+
+### The golden set is weighted toward the cases where the honest answer is small
+
+Ten recorded reasoning graphs. **A case is a *conclusion*, not evidence** — layer 2 is never shown raw evidence, so a dataset of raw evidence would measure a system Signora does not run.
+
+`abundant-corroborated-approach` · `single-source-verify` · `nothing-observed-wait` · `champion-departed-verify` · `departed-then-replaced-approach` · `contradiction-unresolved` · `stale-evidence-wait` · `product-tie-unknown` · `mostly-unranked-why-not` · `inferred-link-thin`
+
+> **A rich graph is the easy half.** The valuable cases are the ones where the honest answer is small — a `wait` with one thin observation, a contradiction with no resolution, a tie the platform refuses to break — because those are exactly where a fluent model supplies the confidence the evidence did not.
+
+### Portability, not one model
+
+Nothing in the prompt names a vendor or a model family. The artifact is asked for **by model**, the provider is resolved by the registry, and `--model` on `make eval-approach` is configuration. The same golden graphs are evaluatable against any model the environment has registered a provider for, and **compatibility is a property of the recorded evaluations rather than of the prompt text**.
+
+### Voice — a strategist, not an assistant
+
+The prompt asks for commercially sharp, evidence-first, concise prose that is **opinionated where the evidence earns it and plainly uncertain where it does not**, and comfortable recommending patience. It bans motivational language, information-free adjectives, hedging filler, and any sentence that would read identically for a different Target Account.
+
+**Not:** *"They recently appointed a new VP of Engineering."* — the graph already said that, and repeating it buys latency and hallucination surface for nothing.
+
+### What this deliberately did not become
+
+| | |
+|---|---|
+| **Six prompts** | ⛔ One artifact, for one pass. The other five `Pass` values remain reachable the moment their artifacts exist, and a brief with none of them is complete |
+| **A prompt that reads domain objects** | ⛔ The context protocol is the contract, and it is versioned |
+| **A judge-model rubric** | ⛔ Not yet measurable without a second model and a second evaluation to trust it. Recorded as a dimension, not stubbed as a field |
+| **A declared release** | ⛔ Empty evaluations, and the gate refuses at the point of use |
+
+### Insertion points this leaves open
+
+| | |
+|---|---|
+| **The remaining five passes** | ✅ An artifact each. The code path is already generic — validated, keyed and rendered by one mechanism |
+| **Brief variants** — Executive · SDR · AE · Manager | ✅ Arrangements of `sections()` over the same graph |
+| **A judge model for commercial quality** | ⚠️ Enters as a second evaluation dimension over the same reports, never as a second reasoning path |
+| **Prompt replay and regression** | ⚠️ Needs the durable inference record C-214 describes. `EvaluationReport` already names every experimental condition a replay would have to reproduce |

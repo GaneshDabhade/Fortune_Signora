@@ -478,3 +478,21 @@ eval-reasoning:
 # schema refuses.
 eval-research:
 	@cd backend && uv run python -m modules.ai_research_engine.evaluation $(ARGS)
+
+## The same again, for Sales Engagement's commercial synthesis passes.
+#
+# A fourth entry point for the same reason M9 and M10 own theirs: the platform's
+# would have to import this module's `Pass`, its context protocol and its dataset
+# shape, and no upstream module depends on a downstream one.
+#
+# Its dataset is different in kind rather than merely in content. Every other
+# golden set is a transcript of what providers *reported*; `approach@1` is a
+# transcript of what the deterministic layer *decided*, because layer 2 is never
+# shown raw evidence. A synthesis evaluated against evidence would be measuring a
+# system Signora does not run.
+#
+# Runs each case twice by default: the input is a closed set, so two runs differ
+# only by the model, and a pass that behaves once and fabricates on the second
+# attempt is one a single run structurally cannot detect.
+eval-approach:
+	@cd backend && uv run python -m modules.sales_engagement.evaluation $(ARGS)

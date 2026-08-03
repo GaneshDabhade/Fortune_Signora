@@ -54,6 +54,8 @@ MODULE_DOCS: dict[str, tuple[str, ...]] = {
     "ai_reasoning_engine": ("docs/architecture/29-ai-reasoning-engine.md",),
     "ai_research_engine": ("docs/architecture/33-ai-research-engine-scope.md",),
     "commercial_profile": ("docs/architecture/adr/0035-commercial-profile.md",),
+    "sales_engagement": ("docs/architecture/50-sales-engagement.md",),
+    "timeline": ("docs/architecture/45-timeline.md",),
 }
 
 _MODULE_PATH = re.compile(r"^backend/modules/(?P<module>[a-z_]+)/")

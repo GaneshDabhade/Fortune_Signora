@@ -1,0 +1,546 @@
+{
+  "_comment": "Golden reasoning graphs for the Approach Brief's synthesis passes. **A case is a conclusion, not evidence** — layer 2 is never shown raw evidence, so a dataset of raw evidence would measure a system Signora does not run. Recorded and reviewed, never computed at load time: a case produced by `reason()` would silently re-score every historical result the next time `reason()` changed. `fingerprint` covers `cases` only; editing an expectation without bumping `version` fails to load. The set is weighted toward the cases where the honest answer is small — wait, thin, contradictory, tied — because those are exactly where a fluent model supplies the confidence the evidence did not.",
+  "name": "approach",
+  "version": 1,
+  "fingerprint": "83cceaad28fe19cb847d622a619ceff99a2491f3a81adc941cd17d903adae41a",
+  "cases": [
+    {
+      "_comment": "Abundant, corroborated, recent. The easy half — and the baseline every other case is read against.",
+      "name": "abundant-corroborated-approach",
+      "account_id": "acc00000-0000-0000-0000-000000000001",
+      "recommendation": {
+        "action": "approach",
+        "reason": "Two providers saw a new VP Engineering appointed, and engineering hiring accelerated in the same period.",
+        "role": {
+          "title": "VP Engineering",
+          "part": "champion"
+        }
+      },
+      "roles": [
+        {
+          "role": {
+            "title": "VP Engineering",
+            "part": "champion"
+          },
+          "strength": "strong",
+          "support": [
+            {
+              "event_id": "5e000000-0000-0000-0000-000000000001",
+              "type_key": "leadership_appointed",
+              "summary": "Appointed a new VP of Engineering",
+              "occurred_at": "2026-07-14T09:00:00Z",
+              "corroborating_providers": 2,
+              "names_title": "VP of Engineering"
+            },
+            {
+              "event_id": "5e000000-0000-0000-0000-000000000002",
+              "type_key": "workforce_expansion",
+              "summary": "Engineering headcount grew 42 percent",
+              "occurred_at": "2026-07-02T09:00:00Z",
+              "corroborating_providers": 2,
+              "names_title": null
+            }
+          ]
+        },
+        {
+          "role": {
+            "title": "CFO",
+            "part": "economic_buyer"
+          },
+          "why_not": "No evidence names this role."
+        }
+      ],
+      "unknowns": [
+        {
+          "subject": "budget owner",
+          "question": "Who signs off on platform spend this year?"
+        }
+      ],
+      "risks": [],
+      "fits": [
+        {
+          "product": {
+            "id": "9d000000-0000-0000-0000-000000000001",
+            "name": "Revenue Cloud"
+          },
+          "strength": "strong",
+          "reasons": [
+            {
+              "dimension": "committee_overlap",
+              "detail": "VP Engineering is on this product's buying committee, and appointed a new vp of engineering."
+            }
+          ]
+        }
+      ],
+      "product": {
+        "id": "9d000000-0000-0000-0000-000000000001",
+        "name": "Revenue Cloud"
+      },
+      "load_bearing": [
+        "recommendation",
+        "vp engineering",
+        "budget owner"
+      ]
+    },
+    {
+      "_comment": "One provider, no corroboration. The model must not upgrade thin into confident.",
+      "name": "single-source-verify",
+      "account_id": "acc00000-0000-0000-0000-000000000002",
+      "recommendation": {
+        "action": "verify",
+        "reason": "One provider reported a new Head of Platform. Confirm the appointment before reaching out.",
+        "role": {
+          "title": "Head of Platform",
+          "part": "champion"
+        }
+      },
+      "roles": [
+        {
+          "role": {
+            "title": "Head of Platform",
+            "part": "champion"
+          },
+          "strength": "reasonable",
+          "support": [
+            {
+              "event_id": "5e000000-0000-0000-0000-000000000003",
+              "type_key": "leadership_appointed",
+              "summary": "Appointed a Head of Platform",
+              "occurred_at": "2026-07-20T09:00:00Z",
+              "corroborating_providers": 1,
+              "names_title": "Head of Platform"
+            }
+          ]
+        }
+      ],
+      "unknowns": [],
+      "risks": [
+        {
+          "kind": "single_source",
+          "detail": "One provider reported the appointment and no other corroborates it."
+        }
+      ],
+      "fits": [],
+      "product": null,
+      "load_bearing": [
+        "recommendation",
+        "head of platform",
+        "single_source"
+      ]
+    },
+    {
+      "_comment": "Nothing observed names any declared role. The honest answer is small, and a fluent model will want to make it bigger.",
+      "name": "nothing-observed-wait",
+      "account_id": "acc00000-0000-0000-0000-000000000003",
+      "recommendation": {
+        "action": "wait",
+        "reason": "Nothing has happened at this account that names any role on the declared committee."
+      },
+      "roles": [
+        {
+          "role": {
+            "title": "VP Engineering",
+            "part": "champion"
+          },
+          "why_not": "No evidence names this role."
+        },
+        {
+          "role": {
+            "title": "CFO",
+            "part": "economic_buyer"
+          },
+          "why_not": "No evidence names this role."
+        }
+      ],
+      "unknowns": [
+        {
+          "subject": "why this account is tracked",
+          "question": "What prompted tracking this account?"
+        }
+      ],
+      "risks": [],
+      "fits": [],
+      "product": null,
+      "load_bearing": [
+        "recommendation",
+        "why this account is tracked"
+      ]
+    },
+    {
+      "_comment": "The seat is empty. The single most embarrassing recommendation this module could cause is approaching someone who has left.",
+      "name": "champion-departed-verify",
+      "account_id": "acc00000-0000-0000-0000-000000000004",
+      "recommendation": {
+        "action": "verify",
+        "reason": "The most recent event naming your champion's title was a departure. Confirm who holds the seat.",
+        "role": {
+          "title": "VP Engineering",
+          "part": "champion"
+        }
+      },
+      "roles": [
+        {
+          "role": {
+            "title": "VP Engineering",
+            "part": "champion"
+          },
+          "strength": "reasonable",
+          "support": [
+            {
+              "event_id": "5e000000-0000-0000-0000-000000000004",
+              "type_key": "leadership_departed",
+              "summary": "The VP of Engineering departed",
+              "occurred_at": "2026-07-25T09:00:00Z",
+              "corroborating_providers": 2,
+              "names_title": "VP of Engineering"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "subject": "who holds the engineering seat",
+          "question": "Has a successor been appointed?"
+        }
+      ],
+      "risks": [],
+      "fits": [],
+      "product": null,
+      "load_bearing": [
+        "recommendation",
+        "vp engineering",
+        "who holds the engineering seat"
+      ]
+    },
+    {
+      "_comment": "Left in March, replaced in July. The sequence decides, not the set — and the recommendation is the opposite of the case above.",
+      "name": "departed-then-replaced-approach",
+      "account_id": "acc00000-0000-0000-0000-000000000005",
+      "recommendation": {
+        "action": "approach",
+        "reason": "The seat turned over and has been filled. The incoming VP Engineering is the one to approach.",
+        "role": {
+          "title": "VP Engineering",
+          "part": "champion"
+        }
+      },
+      "roles": [
+        {
+          "role": {
+            "title": "VP Engineering",
+            "part": "champion"
+          },
+          "strength": "strong",
+          "support": [
+            {
+              "event_id": "5e000000-0000-0000-0000-000000000005",
+              "type_key": "leadership_departed",
+              "summary": "The VP of Engineering departed",
+              "occurred_at": "2026-03-11T09:00:00Z",
+              "corroborating_providers": 2,
+              "names_title": "VP of Engineering"
+            },
+            {
+              "event_id": "5e000000-0000-0000-0000-000000000006",
+              "type_key": "leadership_appointed",
+              "summary": "Appointed a new VP of Engineering",
+              "occurred_at": "2026-07-18T09:00:00Z",
+              "corroborating_providers": 2,
+              "names_title": "VP of Engineering"
+            }
+          ]
+        }
+      ],
+      "unknowns": [],
+      "risks": [],
+      "fits": [],
+      "product": null,
+      "load_bearing": [
+        "recommendation",
+        "vp engineering"
+      ]
+    },
+    {
+      "_comment": "An appointment and a departure for one title, neither superseding the other. Reported, never resolved — the model must not pick a winner.",
+      "name": "contradiction-unresolved",
+      "account_id": "acc00000-0000-0000-0000-000000000006",
+      "recommendation": {
+        "action": "verify",
+        "reason": "Two providers describe different worlds for the same title. Establish which is current before reaching out.",
+        "role": {
+          "title": "VP Engineering",
+          "part": "champion"
+        }
+      },
+      "roles": [
+        {
+          "role": {
+            "title": "VP Engineering",
+            "part": "champion"
+          },
+          "strength": "reasonable",
+          "support": [
+            {
+              "event_id": "5e000000-0000-0000-0000-000000000007",
+              "type_key": "leadership_appointed",
+              "summary": "Appointed a new VP of Engineering",
+              "occurred_at": "2026-07-14T09:00:00Z",
+              "corroborating_providers": 1,
+              "names_title": "VP of Engineering"
+            },
+            {
+              "event_id": "5e000000-0000-0000-0000-000000000008",
+              "type_key": "leadership_departed",
+              "summary": "The VP of Engineering departed",
+              "occurred_at": "2026-07-14T09:00:00Z",
+              "corroborating_providers": 1,
+              "names_title": "VP of Engineering"
+            }
+          ]
+        }
+      ],
+      "unknowns": [],
+      "risks": [
+        {
+          "kind": "contradiction",
+          "detail": "One provider reports an appointment and another a departure for the same title on the same day."
+        }
+      ],
+      "fits": [],
+      "product": null,
+      "load_bearing": [
+        "recommendation",
+        "contradiction",
+        "vp engineering"
+      ]
+    },
+    {
+      "_comment": "A six-month-old reason to call is a reason not to. The brief must lead with the staleness.",
+      "name": "stale-evidence-wait",
+      "account_id": "acc00000-0000-0000-0000-000000000007",
+      "recommendation": {
+        "action": "wait",
+        "reason": "Everything known about this account predates the staleness threshold. There is no current reason to reach out."
+      },
+      "roles": [
+        {
+          "role": {
+            "title": "VP Engineering",
+            "part": "champion"
+          },
+          "strength": "thin",
+          "support": [
+            {
+              "event_id": "5e000000-0000-0000-0000-000000000009",
+              "type_key": "leadership_appointed",
+              "summary": "Appointed a new VP of Engineering",
+              "occurred_at": "2025-11-04T09:00:00Z",
+              "corroborating_providers": 2,
+              "names_title": "VP of Engineering"
+            }
+          ]
+        }
+      ],
+      "unknowns": [],
+      "risks": [
+        {
+          "kind": "stale",
+          "detail": "The most recent supporting observation is older than the staleness threshold."
+        }
+      ],
+      "fits": [],
+      "product": null,
+      "load_bearing": [
+        "recommendation",
+        "stale"
+      ]
+    },
+    {
+      "_comment": "Two products fit equally. `likely` returns None and the tie becomes an unknown — guessing would be the platform inventing a commercial decision.",
+      "name": "product-tie-unknown",
+      "account_id": "acc00000-0000-0000-0000-000000000008",
+      "recommendation": {
+        "action": "approach",
+        "reason": "A new VP Engineering was appointed and corroborated, and that role sits on both products' committees.",
+        "role": {
+          "title": "VP Engineering",
+          "part": "champion"
+        }
+      },
+      "roles": [
+        {
+          "role": {
+            "title": "VP Engineering",
+            "part": "champion"
+          },
+          "strength": "strong",
+          "support": [
+            {
+              "event_id": "5e000000-0000-0000-0000-00000000000a",
+              "type_key": "leadership_appointed",
+              "summary": "Appointed a new VP of Engineering",
+              "occurred_at": "2026-07-14T09:00:00Z",
+              "corroborating_providers": 2,
+              "names_title": "VP of Engineering"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "subject": "which product this is about",
+          "question": "Is this Revenue Cloud or Secure Edge? The evidence fits both equally."
+        }
+      ],
+      "risks": [],
+      "fits": [
+        {
+          "product": {
+            "id": "9d000000-0000-0000-0000-000000000001",
+            "name": "Revenue Cloud"
+          },
+          "strength": "strong",
+          "reasons": [
+            {
+              "dimension": "committee_overlap",
+              "detail": "VP Engineering is on this product's buying committee, and appointed a new vp of engineering."
+            }
+          ]
+        },
+        {
+          "product": {
+            "id": "9d000000-0000-0000-0000-000000000002",
+            "name": "Secure Edge"
+          },
+          "strength": "strong",
+          "reasons": [
+            {
+              "dimension": "committee_overlap",
+              "detail": "VP Engineering is on this product's buying committee, and appointed a new vp of engineering."
+            }
+          ]
+        }
+      ],
+      "product": null,
+      "load_bearing": [
+        "recommendation",
+        "which product this is about",
+        "vp engineering"
+      ]
+    },
+    {
+      "_comment": "Some roles rank, most do not. `why not` is the useful half of an empty result, and a summary that drops it has dropped the point.",
+      "name": "mostly-unranked-why-not",
+      "account_id": "acc00000-0000-0000-0000-000000000009",
+      "recommendation": {
+        "action": "approach",
+        "reason": "Only one declared role is named by anything that happened here, and it was named recently by two providers.",
+        "role": {
+          "title": "VP Engineering",
+          "part": "champion"
+        }
+      },
+      "roles": [
+        {
+          "role": {
+            "title": "VP Engineering",
+            "part": "champion"
+          },
+          "strength": "strong",
+          "support": [
+            {
+              "event_id": "5e000000-0000-0000-0000-00000000000b",
+              "type_key": "leadership_appointed",
+              "summary": "Appointed a new VP of Engineering",
+              "occurred_at": "2026-07-14T09:00:00Z",
+              "corroborating_providers": 2,
+              "names_title": "VP of Engineering"
+            }
+          ]
+        },
+        {
+          "role": {
+            "title": "CFO",
+            "part": "economic_buyer"
+          },
+          "why_not": "No evidence names this role."
+        },
+        {
+          "role": {
+            "title": "Chief Information Security Officer",
+            "part": "gatekeeper"
+          },
+          "why_not": "No evidence names this role."
+        },
+        {
+          "role": {
+            "title": "Head of Procurement",
+            "part": "gatekeeper"
+          },
+          "why_not": "No evidence names this role."
+        }
+      ],
+      "unknowns": [
+        {
+          "subject": "security review timeline",
+          "question": "Who owns the security review, and when does it start?"
+        }
+      ],
+      "risks": [],
+      "fits": [],
+      "product": null,
+      "load_bearing": [
+        "recommendation",
+        "vp engineering",
+        "cfo",
+        "security review timeline"
+      ]
+    },
+    {
+      "_comment": "Indirect evidence only — nothing names a title, but hiring bears on the champion's part. Always thin, and always accompanied by an inferred risk.",
+      "name": "inferred-link-thin",
+      "account_id": "acc00000-0000-0000-0000-00000000000a",
+      "recommendation": {
+        "action": "verify",
+        "reason": "Nothing names a declared role directly. Hiring in engineering bears on the champion's part, which is an assumption rather than an observation.",
+        "role": {
+          "title": "VP Engineering",
+          "part": "champion"
+        }
+      },
+      "roles": [
+        {
+          "role": {
+            "title": "VP Engineering",
+            "part": "champion"
+          },
+          "strength": "thin",
+          "support": [
+            {
+              "event_id": "5e000000-0000-0000-0000-00000000000c",
+              "type_key": "workforce_expansion",
+              "summary": "Engineering headcount grew 42 percent",
+              "occurred_at": "2026-07-02T09:00:00Z",
+              "corroborating_providers": 1,
+              "names_title": null
+            }
+          ]
+        }
+      ],
+      "unknowns": [],
+      "risks": [
+        {
+          "kind": "inferred",
+          "detail": "The link from hiring to this role is indirect, and is stated as an assumption."
+        }
+      ],
+      "fits": [],
+      "product": null,
+      "load_bearing": [
+        "recommendation",
+        "inferred",
+        "vp engineering"
+      ]
+    }
+  ]
+}

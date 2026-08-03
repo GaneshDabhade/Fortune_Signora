@@ -47,7 +47,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Final
+from typing import Final, Protocol
 from uuid import UUID
 
 from modules.sales_engagement.domain.fit import ProductFit, ProductRef
@@ -61,6 +61,27 @@ class SynthesisRefusedError(ReasoningError):
     from a provider failure or a malformed response. *Why did this brief render
     without prose* has three different answers and they need different fixes.
     """
+
+
+class ClosedSet(Protocol):
+    """Everything a draft is permitted to have come from.
+
+    **Structural, and that is the point.** `SynthesisSource` is the graph's own
+    answer; `CommercialContext` (SE-09c) is that answer *plus what the rendering
+    protocol actually showed the model* — a date, a corroboration count — and
+    both are legitimate closed sets for the same draft.
+
+    Naming the shape rather than the class is what lets the protocol widen the
+    set **without a second validator**. Two validators is the failure this
+    module was built to prevent, and it would arrive here first.
+
+    > **A caller passes the narrowest set the model was really shown.** Passing
+    > a wider one than the model read is how a false negative gets designed in.
+    """
+
+    def vocabulary(self) -> frozenset[str]: ...
+    def numbers(self) -> frozenset[str]: ...
+    def citable(self) -> frozenset[str]: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -169,9 +190,7 @@ _NUMERAL: Final = re.compile(r"\d+(?:[.,]\d+)?")
 _SENTENCE: Final = re.compile(r"(?<=[.!?])\s+")
 
 
-def validate(
-    draft: tuple[Passage, ...], source: SynthesisSource, *, inference_id: UUID
-) -> Synthesis:
+def validate(draft: tuple[Passage, ...], source: ClosedSet, *, inference_id: UUID) -> Synthesis:
     """Refuse anything that would increase the repository's knowledge.
 
     **Four checks, and every one is a comparison against the closed set.** None

@@ -103,6 +103,30 @@
 
 **Implementation impact.** Blocks SE-03 onward. Blocks nothing in SE-02.
 
+### C-214 — `Evaluation` assumes one rendering protocol, and a second now exists
+
+**Opened 2026-08-03 · Lane A · owner: whoever is assigned `ai_platform` · 🟡**
+
+**The problem.** `Evaluation.rendering_protocol_version` records *which protocol produced the text the model actually read*, and `Evaluation.earns_release` compares it against `PROMPT_RENDERING_PROTOCOL_VERSION` — the AI Platform's **evidence** rendering protocol. That was correct while every prompt in the repository was shown an `EvidenceSet`.
+
+**SE-09c introduces a prompt that is never shown one.** A commercial synthesis is shown a *reasoning graph*, rendered by the **Commercial Context Protocol** (`sales_engagement/domain/context.py`), and that is the condition its measurements are bound to. Calling `earns_release` on a Sales Engagement measurement compares this module's protocol version against an unrelated module's constant — meaningless whatever it returns.
+
+**What Lane A has done in the meantime.** Sales Engagement **reuses the record and derives its own eligibility** (`sales_engagement/domain/release.py`). `Evaluation` states facts rather than verdicts and says so in its own docstring, so reusing it is correct; only the derivation is this module's.
+
+**The two protocols share an integer namespace and nothing coordinates them, which is the sharp edge here.** Lane A initially recorded that the divergence *failed closed*. It does not: that held only while the constants differed, and bumping the Commercial Context Protocol to 2 during SE-09c made them equal — at which point `PromptVersion.is_released` began returning the right answer for the wrong reason. **Neither state is a guarantee**, because the comparison is meaningless whichever way it lands. A test now pins the coincidence, so the next move of either constant fails and surfaces this item rather than leaving the coupling invisible.
+
+**Two smaller consequences, recorded here rather than separately.**
+
+- **A commercial synthesis writes no `ai_inference` record.** `Infer` owns that path and is shaped around an `EvidenceSet`. Every failure is carried on `PassResult` with its detail, so nothing is silent — but it is not yet durable, and *observability is a product capability* (`CLAUDE.md` §2).
+- **`evaluation/release.py` duplicates the platform's manifest recorder** (~45 lines), because the parameter type is the platform's `EvaluationReport` and this module's report counts refusals, carries stability, and applies a different coverage floor.
+- **Stability is measured but not durable.** `Evaluation` has no field for it, so agreement across repeated runs is computed, rendered on the report, and then lost — it cannot be read back from the manifest, and a regression in stability between two releases is therefore invisible. **This is the dimension the architecture guarantees most cheaply and the one it currently forgets fastest**, which is the sharpest argument for reconciling the record type.
+
+**Recommendation.** Parameterise the platform's release derivation on *which* protocol a measurement was taken under, rather than hard-coding one constant — the same shape `for_model` already uses to avoid naming a vendor. A shared manifest recorder and an `Infer` path that accepts a second input kind both fall out of that change rather than preceding it.
+
+**Trade-offs.** Doing nothing costs a duplicated recorder and a synthesis that is observable only to its caller. Doing it early, before a third input protocol exists, risks generalising from two instances — which is why this is raised rather than built.
+
+**Implementation impact.** Blocks nothing. SE-09c ships complete under the divergence above.
+
 ## Closed on repository evidence — no decision required
 
 

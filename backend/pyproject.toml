@@ -126,10 +126,11 @@ containers = [
     "modules.timeline",
     "modules.integrations",
     # **`modules.sales_engagement` is deliberately not here yet.** The
-    # layered contract requires every layer to exist, and at SE-02 this
-    # module has `domain`, `application` and `public` and no storage or
-    # transport at all — because it owns no fact. Creating two empty
-    # packages to satisfy a linter would be a placeholder pretending to be
+    # layered contract requires every layer to exist. At SE-09c this module
+    # has `domain`, `application`, `public`, `infrastructure` and
+    # `evaluation` — but **still no `interface`**, because it owns no fact
+    # and therefore has nothing to expose over HTTP yet. Creating an empty
+    # package to satisfy a linter would be a placeholder pretending to be
     # structure. **Added the moment SE-03 gives it an interface**, and the
     # forbidden-module contract below binds it in the meantime.
 ]

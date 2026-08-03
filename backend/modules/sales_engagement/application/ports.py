@@ -19,6 +19,7 @@ ranks on title evidence alone.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Protocol
 from uuid import UUID
 
@@ -61,3 +62,38 @@ class PortfolioReader(Protocol):
     """
 
     async def portfolio(self, workspace_id: UUID) -> tuple[ProductRef, ...]: ...
+
+
+@dataclass(frozen=True, slots=True)
+class ModelReply:
+    """What came back from one model call, in this module's words.
+
+    **`inference_id` is carried rather than looked up**, so a `Synthesis` can
+    name the record that produced it without this module knowing what a record
+    is, which model answered, or which vendor served it.
+    """
+
+    text: str
+    inference_id: UUID
+
+
+class SynthesisModel(Protocol):
+    """The one place AI enters commercial reasoning, and it enters last.
+
+    **It names a model, never a vendor** (`CLAUDE.md` §10). Business intent is
+    *execute against this model*; who serves it is configuration resolved inside
+    the AI Platform, and a port that let this module ask for a vendor would make
+    vendor neutrality a rule people remember rather than a shape they cannot
+    violate.
+
+    **Deliberately the narrowest possible surface.** Prompt in, text out. No
+    conversation, no tools, no streaming, no options — every one of those would
+    be a way for the synthesis layer to acquire state, and *statelessness is
+    what makes grounding verifiable* (`28-ai-platform.md`). A synthesis that
+    remembered the previous account could not be checked against the closed set
+    the model was actually shown.
+    """
+
+    async def complete(
+        self, *, prompt: str, model: str, workspace_id: UUID, correlation_id: UUID
+    ) -> ModelReply: ...
