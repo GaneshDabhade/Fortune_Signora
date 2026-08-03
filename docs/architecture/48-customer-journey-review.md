@@ -125,6 +125,93 @@
 
 ---
 
+## 6a · Who consumes an ICP — and the answer is almost nobody, directly
+
+**The product owner asked for a dependency graph. Building it produced a finding that changes what "wire the ICP in" means.**
+
+**Twelve candidate consumers were tested against one question: *does this module need the customer's description, or does it need to know whether a company matches it?***
+
+| Candidate | Verdict | Why |
+|---|---|---|
+| **Company discovery** | ✅ **The primary consumer** — and **unbuilt**. Recorded in [README](../../README.md) as an unowned capability | An ICP *is* the search criteria. This is the one module that consumes the description itself |
+| **AI Research** | ✅ **Consumes the description** | *"Research this company against who we sell to"* — the ICP is prompt context, and a description in a prompt is exactly what a description is for |
+| **Search** | ✅ eventually | Same shape: criteria, not a verdict |
+| **Buying Score** | ⚠️ **Consumes a match, never the ICP** | *"This company matches your ideal customer"* is a legitimate contribution to a score. **But that is a match result**, and computing it is not this module's |
+| **Signal Engine** | ❌ **and it is the closest call** | Relevance is already customer-specific via `signal_profile`. **But *"who we sell to"* and *"what we find interesting"* are different questions**, and merging them would put an ICP inside a module whose output is deliberately globally traceable |
+| **Provider Platform** | ❌ | It synchronizes **named subjects**. [ADR-0036](adr/0036-target-account-contract.md) fixed that boundary deliberately — discovery would *produce* subjects from an ICP, which is a different capability |
+| **Knowledge Graph** | ❌ | Resolves identity. An ICP is not an identity |
+| **Observation · Business Event** | ❌ **By rule** | Everything above the Signal Engine is *globally true*; an ICP is customer-specific. Consuming it there would make an observation depend on who is looking |
+| **Opportunity Engine** | ❌ | Records human commitment |
+| **Notifications** | ❌ | Notifies about events, not descriptions |
+| **Timeline** | ❌ | Records what happened |
+| **Workflows · agents** | — | Future, and they would consume a match |
+
+> **The ICP's missing consumer is not a wiring gap. It is a missing capability with no owner: *matching*.**
+
+**Both modules that would consume an ICP most valuably — discovery and matching — are unbuilt**, and matching is blocked by something already named: [C-002](../LANE_COORDINATION.md), the anticorruption layer between the customer's free-text *"mid-market fintech"* and Provider Normalization's canonical vocabulary. **Commercial Profile's own design records this**: it *"records a description; it never matches anybody against it"*, and matching *"is not built, is not this module's, and has no owner today."*
+
+**So `J3 — an ICP consumer` in §6 is wrong as written**, and this review corrects itself: **the slice is not *"wire the ICP into the pipeline."*** It is *"decide who owns matching, and answer C-002."* Wiring an ICP into a scorer before matching exists would put free-text comparison inside a module that must stay globally traceable — the exact failure the boundary test in `commercial_profile` refuses at the syntax-tree level.
+
+---
+
+## 6b · The pipeline is internal; the customer's mental model is not
+
+**The product owner's suggestion, tested against the code rather than agreed with.**
+
+**The screens are already customer-intent driven, and the repository fixed this deliberately.** [R8-01](39-product-review-findings.md) — *"the navigation was the data model, not the workflow"* — is **fixed**, and D38 retired an Overview page in favour of *"which accounts should I work on today?"* **No screen is named after a pipeline stage.**
+
+**The API is not.** `/accounts/{id}/validation`, `/accounts/{id}/score`, `/accounts/{id}/timeline` are stage names. A customer never asks for *"validation"*; they ask *"how confident are you?"*
+
+**Where that costs something today, measured:** the account brief makes **five requests** — score, validation, narration, research, timeline — because the API is shaped by producer, and the customer is asking one question. Each is individually correct and cursor-paginated; together they are a screen assembling a pipeline.
+
+**This already has a module, and it is not started.** *Revenue Intelligence Platform* is defined in [04-modules.md](04-modules.md) as the **composition/read module** — *"synchronous query when composing a workspace intelligence view"*. **The customer-intent read model is RIP's job**, and the pressure the product owner identified is the evidence for building it rather than for a new abstraction.
+
+**Nothing should change today.** Five requests on one screen is not a defect at this scale, and collapsing them before RIP exists would put composition in whichever caller did it first.
+
+---
+
+## 6c · Time to first value, step by step
+
+**Each of the eight declarations asked: *is this required before the customer receives value?***
+
+| Step | Required first? | Evidence |
+|---|---|---|
+| Sign up · verify · organization | **Yes** | Tenancy is the boundary everything else hangs off |
+| **Name companies to watch** | **Yes — and it should be first, not eighth** | It *"cites no product, so it needs no catalog"*. **It is the only declaration the pipeline consumes** |
+| Product catalog | **No** | Required by ICP and committee, not by discovery or watching |
+| ICP | **No** | Nothing consumes it (§6a). **Today it is stored information, not operational intelligence** |
+| Buying committee | **No** | No consumer |
+| Commercial focus | **No** | No consumer |
+
+> **A customer could reach first value after three steps: sign up, create an organization, name three companies.** The other five are ordered as prerequisites and are not — they are inputs to capabilities that do not exist yet.
+
+**The screen presents them in one column in a fixed order**, which reads as a required sequence. **That is a presentation choice, not a domain constraint**, and it is the cheapest available improvement to time-to-first-value: **reorder, and let the rest be discovered later.** It needs no backend change and no new capability.
+
+**What it does not fix** is that step 9 does not run (§1). **Reordering eight declarations in front of a pipeline that never executes moves a customer to disappointment faster.** Sequence matters: §1 first.
+
+---
+
+## 6d · The execution model, challenged before anybody wires it
+
+**Fourteen questions asked of today's architecture. It answers most of them already, and two are genuinely open.**
+
+| | Today |
+|---|---|
+| **Retries · dead-lettering** | ✅ Built and proven — ARQ, `dead_letter_event` with the full envelope, `replayed_at` rather than deletion |
+| **Replayable** | ✅ By construction. Every consumer is idempotent on `event_id`; Timeline derives its identity from it |
+| **Observable** | ✅ `correlation_id` end to end, OpenTelemetry, structured logs |
+| **Resumable** | ✅ The outbox is the durable record; a worker restart loses nothing |
+| **Prioritized** | ✅ Pools partition by cost and latency, declared since M1.1 |
+| **Conditional execution** | ✅ A consumer that finds nothing to do returns and marks done |
+| **Cancellable** | ⚠️ **Open.** Nothing stops an in-flight run. No customer has asked, and a provider spend cap would be the trigger |
+| **Customer-visible progress** | ⚠️ **Open, and the more likely of the two.** *"Signora is looking at your companies"* has no representation. **`research_request_state` is the shape** — a request with appended progress — and it exists for exactly one capability |
+| **Scheduled · partial reruns** | ❌ Not built. **`provider_watermark` is the mechanism** and it is per-subject since `0029` |
+| **Event-sourced · workflow-driven** | ❌ **And should stay that way.** The outbox is a delivery mechanism, not a source of truth; every stage's output is a durable row. Making the pipeline workflow-driven would add an orchestrator above modules designed to be independently extractable |
+
+> **Today's architecture supports thirteen of fourteen without redesign.** The one genuinely missing thing is **customer-visible progress**, and it is a read model rather than an execution change — which is worth knowing before §1 lands, because the first thing a customer will ask after *"nothing happened"* stops being true is *"is it working yet?"*
+
+---
+
 ## 7 · Future pressure
 
 **Five years, and the pressure is not where the roadmap assumes.**

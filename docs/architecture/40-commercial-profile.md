@@ -382,3 +382,22 @@ A row carries **name, state, version, products, last changed**. Not the criteria
 - **The list is the only surface today.** Create, edit, publish, archive, restore and duplicate are ICP-02 onward, and until they exist the only segments a workspace has are the ones the migration produced.
 - **Never add a verdict.** `tests/commercial_profile/test_boundary.py` reads the domain as a syntax tree and refuses any identifier naming a judgement; *effectiveness*, *health* and *"is this too broad?"* all need matching, and matching needs [C-002](../LANE_COORDINATION.md).
 - **A consumer cites `(segment_id, version_id)`** — identity says *which segment*, version says *which definition*. Citing only the version loses the first and is the one shape that would create debt.
+
+
+---
+
+## The ICP has no consumer, and that is a capability gap rather than a wiring one
+
+**Recorded 2026-08-03, from the end-to-end journey review ([48](48-customer-journey-review.md) §6a).**
+
+`commercial_profile/public/` publishes **only** `TargetAccountReader`. **No module imports an ICP.** A customer can spend real effort describing who buys each product, and nothing in the platform uses it — so today an ICP is *stored information rather than operational intelligence*.
+
+**Twelve candidate consumers were tested, and the result is not what "wire the ICP in" implies:**
+
+> **Almost nothing should consume the ICP directly. Most consumers need to know whether a company *matches* it — and matching has no owner.**
+
+**Two modules would consume the description itself**, and both are unbuilt: **company discovery** (an ICP *is* the search criteria) and **AI Research** (the ICP is prompt context). Everything else — a score, a ranking, a prioritisation — needs a **match result**, and this module *"records a description; it never matches anybody against it"*, by design and by a boundary test that reads the domain as a syntax tree.
+
+**Matching is blocked by [C-002](../LANE_COORDINATION.md)**, the anticorruption layer between a customer's free-text *"mid-market fintech"* and Provider Normalization's canonical vocabulary — open since M12.5 and named in this document's own *revenue band* discussion.
+
+**The consequence for whoever continues this module:** *"connect the ICP to the pipeline"* is not a Commercial Profile slice. **It is a decision about who owns matching**, and doing it here would put free-text comparison inside the module whose entire guarantee is that it holds no judgement.
