@@ -583,3 +583,49 @@ OPEN → collect recommendations → Lane A analysis → Lane B analysis
 - **Not fix a reuse duplication.** It is a defect in a module QE does not implement — a `B-` row, assigned to that module's current assignee.
 - **Not waive a law because a slice is small.** The gates are the decision, and the authority is to run them faithfully rather than to judge whether the result matters.
 - **Not add a law.** Amendment is the product owner's, through the same route as `CLAUDE.md`.
+
+---
+
+## 14 · The Dependency Health Review
+
+**Ratified 2026-08-03, product owner.** QE owns the *process* around product-owner dependencies — **never the decisions.**
+
+> **The failure it prevents:** a register that only grows. `CLAUDE.md` §20e already says a coordination register should **shrink** as questions become architecture, and that *"a row open for months is either a decision nobody will make or a question that was never really blocking — both are findings."* Nothing was measuring it.
+
+### Run it at every Closeout, against the promoted commit
+
+**Every open item is re-challenged. None is carried forward on the strength of its own description.**
+
+| # | Question | What answers it |
+|---|---|---|
+| 1 | **Is it still real?** | Shipped code, not the item's text |
+| 2 | **Is it still blocking?** | What the item claims to block — check that thing |
+| 3 | **Does it block the whole feature, or one capability?** | Narrow it to the capability |
+| 4 | **Has implementation already answered it?** | `grep` for the thing it says is missing |
+| 5 | **Has an ADR answered it?** | The ADR index |
+| 6 | **Has a repository rule superseded it?** | `CLAUDE.md` · [`ENGINEERING_LAWS.md`](../ENGINEERING_LAWS.md) |
+| 7 | **Can it split into two independent decisions?** | Two decisions are cheaper than one compound one |
+| 8 | **Can implementation proceed under a documented assumption?** | Only where proceeding **encodes no assumption about the answer** |
+| 9 | **Is it the same decision as another item?** | **The highest-value question in the list** |
+
+> **Question 4 is the one QE gets wrong.** [C-024](LANE_COORDINATION.md) was escalated for two consecutive cycles as the repository's sharpest blocker **while the capability was already mounted and shipped**. QE was reading the register instead of the repository — [L-2](../ENGINEERING_LAWS.md), violated by its own author within the week. **An item's description is not evidence of its status.**
+
+### What QE may and may not do
+
+| May | May not |
+|---|---|
+| **Close an item on repository evidence**, naming the file and line | **Decide** anything the item asks |
+| **Narrow** an item to the decision that actually remains | **Reprioritise** what the product owner answers first |
+| **Split** a compound item into independent ones | **Reinterpret** a decision as derivable to shorten the list |
+| **Consolidate** items that are one architectural question | **Assume** an unanswered item is obsolete |
+| **Recommend** an option, with trade-offs | Act on the recommendation |
+
+> **The temptation is to clear the board by reinterpreting decisions as derivable.** The honest output is usually *"most of these genuinely need you"* — and saying so is more useful than a shorter list. **Closure requires evidence a third party can check**, which is why every closed row names a file and a line.
+
+### The Decision Pack
+
+**Output goes to [`DECISION_PACKS.md`](DECISION_PACKS.md)** — grouped by the question actually being asked, so several architectural decisions can be taken together rather than discovered piecemeal.
+
+**Each pack carries:** decision · background · current implementation · repository evidence · options · trade-offs · repository, customer, engineering and migration impact · risk · recommendation · future pressure · rollback · deadline and urgency · dependencies created and removed · effort · implementation order · rejected alternatives.
+
+**A pack is deleted when its decision is taken.** The answer lives in the ADR it produced — **the packs are a staging area, never a record.**

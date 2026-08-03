@@ -29,7 +29,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from registers import bug_rows, malformed_tables  # noqa: E402
+from registers import bug_rows, conflict_markers, malformed_tables  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MIGRATIONS = REPO_ROOT / "backend" / "migrations" / "versions"
@@ -351,6 +351,20 @@ def main() -> int:
                 f"{name} has a malformed table at line(s) "
                 f"{', '.join(str(n) for n in orphans[:5])} — a separator with no header "
                 f"row above it. Usually the residue of a merge that split a section."
+            )
+
+        # An unresolved conflict marker is the same failure one stage earlier,
+        # and `malformed_tables` cannot see it: `>>>>>>>` inside a table is not
+        # a table separator. One sat in the coordination register through
+        # several certifications (B-102), stranding a row outside its table and
+        # leaving two more duplicated with contradictory statuses.
+        conflicts = conflict_markers(text)
+        if conflicts:
+            findings.append(
+                f"{name} carries an unresolved merge-conflict marker at line(s) "
+                f"{', '.join(str(n) for n in conflicts[:5])}. The register is "
+                f"corrupt, and every reader of it is reading a merge that never "
+                f"finished."
             )
 
     # 5e — identifier collisions, across every class a lane can allocate.

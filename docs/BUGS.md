@@ -80,6 +80,42 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-102 · An unresolved merge-conflict marker sat in the coordination register through several certifications
+
+| | |
+|---|---|
+| **Module** | None — `docs/LANE_COORDINATION.md`, a shared register ([C-010](LANE_COORDINATION.md)) |
+| **Current assignee** | **QE** |
+| **Severity** | 🟠 — **the register that exists to stop lanes encoding contradictory assumptions was itself internally contradictory** |
+| **Status** | **`FIXED`** — QE, 2026-08-03. Register repaired; `conflict_markers` added to `infra/registers.py` and wired into `state-check`. **`VERIFIED` is another lane's** |
+| **Found** | 2026-08-03, by QE, performing the Dependency Health Review |
+
+**Steps to reproduce.** Read `docs/LANE_COORDINATION.md` on `main` at `d39b136`, line 118.
+
+**Expected.** A register whose index agrees with its contents.
+
+**Actual.**
+
+```
+>>>>>>> 603a077 (ADR-0040 proposed — Notifications answers a different question from Attention)
+```
+
+**A conflict marker, committed, promoted, and carried through several certification cycles.** Its damage was not cosmetic:
+
+| | |
+|---|---|
+| **One row stranded** | `C-027` sat **outside** the table it belonged to, so the index under-reported what was waiting |
+| **Two rows duplicated** | `C-024` and `C-025` each appeared **twice, with contradictory statuses** — `C-025` read `ANSWERED — all four decisions taken` in one row and `OPEN` in the other |
+| **The table split** | A blank line broke it into two, so any tool reading it as one table saw half |
+
+**Why nothing caught it.** `malformed_tables` was built for the residue of a split section and looks for a separator with no header above it. **A `>>>>>>>` line inside a table is not a table separator**, so the check that was closest to this defect could not see it. Every other gate reads code.
+
+**This is the same class as [B-100](#b-100--a-lanes-rebase-silently-reverted-the-execution-board-by-seven-cycles-and-every-gate-passed), one week and one file apart** — [ADR-0039](architecture/adr/0039-release-engineering-model.md) RC-4: *the registers are a multi-writer database written in markdown*. **Third instance of the predicted class.**
+
+**The fix.** `conflict_markers()` in `infra/registers.py`, checked by `state-check` across all four registers. **`=======` is matched exactly rather than as a prefix**, so a setext heading underline does not fire — with the one genuine false positive (a seven-character underline) asserted in the test rather than hidden, so nobody silences it later.
+
+**What it does not fix.** The register is still hand-merged, so the *next* corruption will be a different shape. **RC-4's actual answer is not to store multi-writer state in markdown**, and that remains ADR-0039's to propose and the product owner's to schedule.
+
 ### B-101 · The KPI block counted nine bug rows twice, under a banner promising nothing was typed by hand
 
 | | |

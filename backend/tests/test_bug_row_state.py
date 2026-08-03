@@ -130,6 +130,57 @@ class TestTheSeverityRuleIsUnchanged:
         assert _row(cell, "`OPEN` |").severity == expected
 
 
+class TestConflictMarkersAreCaught:
+    """A `>>>>>>>` line inside a table is not a table separator.
+
+    `malformed_tables` was built for the residue of a split section and could
+    not see this, so a conflict marker sat in the coordination register through
+    several certifications ([B-102](../../docs/BUGS.md)) — stranding a row
+    outside its table and leaving two more duplicated with contradictory
+    statuses. **Every gate in the repository passed.**
+    """
+
+    def test_a_real_conflict_is_reported(self) -> None:
+        text = "| a | b |\n<<<<<<< HEAD\nx\n=======\ny\n>>>>>>> other (msg)\n"
+        assert registers.conflict_markers(text) == [2, 4, 6]
+
+    def test_a_clean_register_reports_nothing(self) -> None:
+        assert registers.conflict_markers("| a | b |\n|---|---|\n| 1 | 2 |\n") == []
+
+    @pytest.mark.parametrize("underline", ["=", "===", "====="])
+    def test_a_setext_heading_is_not_a_conflict(self, underline: str) -> None:
+        """`=======` is matched exactly, never as a prefix — a setext underline
+        is a run of `=` and would otherwise fire on every heading."""
+        assert registers.conflict_markers(f"Title\n{underline}\n") == []
+
+    def test_a_markdown_rule_is_not_a_conflict(self) -> None:
+        assert registers.conflict_markers("text\n---\nmore\n") == []
+
+    def test_a_marker_quoted_in_a_code_fence_is_not_a_conflict(self) -> None:
+        """A register that *documents* a conflict marker is not corrupt.
+
+        B-102's own row quotes the marker it reports, and this check fired on it
+        within a minute of being written — found by running the check rather
+        than by reasoning about it.
+        """
+        text = "Actual:\n\n```\n>>>>>>> 603a077 (some commit)\n```\n\nend\n"
+        assert registers.conflict_markers(text) == []
+
+    def test_a_real_marker_after_a_closed_fence_is_still_caught(self) -> None:
+        text = "```\n>>>>>>> quoted\n```\n>>>>>>> real\n"
+        assert registers.conflict_markers(text) == [4]
+
+    def test_a_seven_character_setext_underline_is_a_known_false_positive(self) -> None:
+        """**The one case this check gets wrong, asserted rather than hidden.**
+
+        A setext underline of exactly seven `=` is indistinguishable from a
+        conflict marker by shape alone. It is reported, and the finding is
+        advisory, so the cost is one line of noise against catching a corrupt
+        register — a trade recorded here so nobody 'fixes' it into silence.
+        """
+        assert registers.conflict_markers("Title\n=======\n") == [2]
+
+
 class TestBlockingIsUnaffected:
     """`unresolved` reads the cell's prefix and was always correct.
 

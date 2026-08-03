@@ -39,34 +39,43 @@
 
 ---
 
-## Product Owner dependencies — classified 2026-08-02
+## Dependency Health Review — 2026-08-03, against `d39b136`
 
-**Reviewed individually, at the product owner's direction, on the premise that not all of them still need a decision.** Four categories: **already answered · derivable · genuinely yours · obsolete.**
+> **Every open item re-challenged against the repository, not against its own description.** Is it still real · still blocking · narrowable · splittable · **already answered by shipped code, an ADR, or a repository rule**.
+>
+> **The decision packs are [`DECISION_PACKS.md`](DECISION_PACKS.md)** — grouped, with options, trade-offs and a recommendation each. **This section records what the review changed; that document is what the product owner reads.**
 
-| Item | Category | Why | What it needs |
-|---|---|---|---|
-| **[C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it)** | **3 — yours** | **The highest-value item on this page.** Timeline is built, tested and promoted; no customer can open it | **Placement only.** Options A/B/C stated, recommendation given. Then ~10 lines in Lane A's route |
-| **[C-025](#c-025--m13-is-not-a-module-and-its-consumers-do-not-exist)** | **3 — yours** | Two ratified rules conflict over which tier may run an OAuth flow. **Not derivable: resolving it means amending one of them** | A ruling, then an ADR |
-| **[C-010](#c-010--no-lane-is-assignable-to-apps-or-signora_platform-and-a-defect-is-sitting-in-one)** | **3 — yours** | **Six defects have now landed in this gap** — B-007, B-012, B-013, B-014, B-022, B-025 | An assignment rule for code owned by no module |
-| **[C-020](#c-020--m7-has-no-scope-and-timeline-has-no-design)** | **3 — yours** | M7's remaining scope. [ADR-0038](architecture/adr/0038-timeline.md) proposed, four open questions | Ratify, amend or reject the ADR |
-| **[C-009](#c-009--an-internal-fault-reaches-a-customer-as-a-422)** | **3 — yours** | Changes `signora_platform/`, frozen under §20a | RFC + ADR. Full proposal already recorded |
-| **[C-008](#c-008--sellers-cannot-see-what-their-company-sells)** | **3 — yours** | A product decision about who sees the commercial profile, with four options | Choose A/B/C/D |
-| **[C-006](#c-006--which-lane-owns-test_api_module_py)** | **3 — yours, explicitly** | **You ruled on 2026-08-02 that it stays open** and is not to be settled inside a slice | A governance ruling, when you choose |
-| **[C-002](#c-002--customer-language-has-no-anticorruption-layer)** · **[C-003](#c-003--three-wire-codes-for-one-condition)** · **[C-005](#c-005--who-owns-the-signal-profile-write-path)** · **[C-007](#c-007--the-guided-first-run-is-a-two-lane-build)** · **[C-011](#c-011--a-contraction-risk-reads-like-a-small-opportunity-on-the-attention-list)** · **[C-017](#c-017--the-onboarding-honesty-principle-has-no-permanent-home)** | **3 — yours** | Each changes product behaviour, architecture or customer experience | Stated in each item |
-| **[C-012](#c-012--eventhandler-receives-no-session-so-no-module-handler-is-registered)** · **[C-013](#c-013--publishableevent-cannot-be-satisfied-by-a-frozen-dataclass)** | **3 — yours** | Platform-frozen; RFCs queued since M3A | RFC. **C-012 blocks the deployed worker consuming anything** |
-| **[C-014](#c-014--accessibility-and-performance-testing-are-qes-and-neither-exists)** | **3 — yours**, low urgency | Milestone numbers for two QE capabilities | A roadmap slot |
-| **[C-004](#c-004--shared-documents-lag-commercial-profile)** | **2 — derivable, with one ruling** | The edits are **factual corrections recording what was built**, not architectural decisions. §12 makes drift a bug and §2 makes repository truth binding — **but `01`–`21` is 🔴, which admits no carve-out for drift** | **One ruling: may QE correct factual drift in `01`–`21`?** If yes, QE does it and this closes permanently |
-| **[C-015](#c-015--ports-3000-and-8000-now-belong-to-human-review)** | **1 — answered** | ✅ **Closed this session.** The release preflight answers it | — |
-| **[C-016](#c-016--two-branch-names-encode-a-permanent-module-assignment-that-no-longer-exists)** | **1 — answered** | ✅ **Closed.** Deferred deliberately | — |
-| **[C-001](#c-001--the-target-account-contract)** | **1 — answered** | Ratified as [ADR-0036](architecture/adr/0036-target-account-contract.md) | Move to Closed at the next reconciliation |
+### Closed on repository evidence — no decision required
 
-> **No item was found obsolete, and none was closed on QE's own authority beyond the two above.** The temptation in an exercise like this is to clear the board by reinterpreting decisions as derivable. **Eleven of fourteen genuinely need you** — and saying so is more useful than a shorter list.
+| Item | Why | Verified against |
+|---|---|---|
+| **[C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it)** | **Implementation answered it.** The feed is mounted on the account brief, Option A, with B and C ruled out in the file | `accounts/[accountId]/page.tsx:335` |
+| **[C-026 *(Lane B's)*](#c-026--the-connection-center-is-reachable-only-by-typing-its-url)** | Shipped as **CX-01** | `settings/page.tsx:148` |
+| **[C-019](#c-019--a-claim-is-invisible-to-the-step-meant-to-arbitrate-it)** | Superseded — claims push to `integration`, and `--audit-claims` enforces the boundary | `infra/certification-guard.py` · `CLAUDE.md` §20e |
+| **[C-006](#c-006--which-lane-owns-test_api_modulepy)** | Answered by rule: *QE creates repository-wide tests; lanes own their slices'* | `CLAUDE.md` §20e, lifecycle stage 1 |
+| **[C-022](#c-022--governance-belongs-to-qe-and-the-product-owner--and-this-branch-carries-governance-edits)** | The governance it asked about is **on `main`** | `CLAUDE.md`, *Execution ownership ends at `IN VALIDATION`* |
+| **[C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide)** | Collision made **impossible**, not merely unlikely | `CLAUDE.md` block table · `state-check` 5e/5f |
+| **[C-001](#c-001--the-target-account-contract)** | Ratified as [ADR-0036](architecture/adr/0036-target-account-contract.md); only the move was outstanding | — |
 
-**One reassignment made:** [C-004](#c-004--shared-documents-lag-commercial-profile) and [C-008](#c-008--sellers-cannot-see-what-their-company-sells) named **Integrator** as an owner. **That role was abolished on 2026-08-01** and folded into QE; both now name QE for the half that was the Integrator's.
+> ⚠️ **[C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it) is QE's error, recorded rather than quietly corrected.** It was escalated in **two consecutive cycle reports** as the sharpest blocker in the repository — *"ten lines of routing separate a working capability from a customer"* — **when Lane A had already mounted it and said so in its handoff.** QE was reading the register instead of the repository, which is precisely the failure [L-2 *Evidence before assumption*](../ENGINEERING_LAWS.md) exists to prevent. **Written by QE, violated by QE, in the same week.**
+>
+> **The durable lesson is not *be more careful*.** It is that **an item's own description is not evidence of its status**, and this review's method — verify every item against shipped code — is now what happens every Closeout.
 
-**If you answer only one, answer [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it).** It is the smallest item here and the only one standing between a fully built capability and a customer using it.
+### Consolidated — 25 items, 5 decisions
 
----
+**The largest finding: most remaining items are not independent.** They are one architectural question surfacing in several modules, and answering them one at a time risks answering the same question inconsistently.
+
+| Pack | Items | The one question |
+|---|---|---|
+| **A** | [C-012](#c-012--eventhandler-receives-no-session-so-no-module-handler-is-registered) · [C-013](#c-013--publishableevent-cannot-be-satisfied-by-a-frozen-dataclass) · [C-021](#c-021--an-event-handler-cannot-reach-a-provider-adapter) · [C-207](#c-207--casbin-cannot-express-an-action-on-yourself) | **May the platform be amended so a module can compose itself into the runtime?** |
+| **B** | [C-020](#c-020--m7-has-no-scope-and-timeline-has-no-design) · [C-023](#c-023--m13-is-ratified-architecture-not-an-executable-milestone) · [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | **What must exist before a roadmap row may be claimed?** |
+| **C** | [C-002](#c-002--customer-language-has-no-anticorruption-layer) · [C-018](#c-018--nobody-owns-the-customer-facing-name-of-an-attribute) · [C-204](#c-204--the-catalog-explains-nine-words-to-nobody) · ADR-0041 | **Which component turns a customer's words into a canonical claim?** |
+| **D** | [C-010](#c-010--no-lane-is-assignable-to-apps-or-signora_platform-and-a-defect-is-sitting-in-one) · [C-004](#c-004--shared-documents-lag-commercial-profile) · [C-014](#c-014--accessibility-and-performance-testing-are-qes-and-neither-exists) | **Who owns code that belongs to no module?** |
+| **E** | [C-008](#c-008--sellers-cannot-see-what-their-company-sells) · [C-011](#c-011--a-contraction-risk-reads-like-a-small-opportunity-on-the-attention-list) · [C-017](#c-017--the-onboarding-honesty-principle-has-no-permanent-home) · [C-205](#c-026--is-signora-expected-to-work-on-a-phone) · [C-206](#c-206--is-an-invitation-better-auths-or-signoras) | **Five independent product calls.** Not consolidatable, and none blocks another |
+
+**Not packable, and still open:** [C-003](#c-003--three-wire-codes-for-one-condition) · [C-005](#c-005--who-owns-the-signal-profile-write-path) · [C-007](#c-007--the-guided-first-run-is-a-two-lane-build) · [C-009](#c-009--an-internal-fault-reaches-a-customer-as-a-422) · [C-025](#c-025--m13-is-not-a-module-and-its-consumers-do-not-exist-yet) · [C-203](#c-203--nothing-in-the-product-can-render-a-persons-name).
+
+> **32 open → 25 open → 5 decision surfaces.** The register did not shrink because items were reinterpreted away; **seven were closed against shipped code**, and the rest were grouped by the question they actually ask.
 
 ## What is waiting
 
@@ -89,10 +98,8 @@
 | [C-016](#c-016--two-branch-names-encode-a-permanent-module-assignment-that-no-longer-exists) | Two branch names encode a permanent module assignment that no longer exists | QE | **Product owner** | `OPEN` | Nothing. It misleads every lane that reads `git branch` |
 | [C-017](#c-017--the-onboarding-honesty-principle-has-no-permanent-home) | The onboarding honesty principle has no permanent home | Lane B | **Product owner** + QE | `OPEN` — **ratifiable text ready to paste** as `D39` | Nothing being built. **Every future onboarding flow, wizard and assistant** |
 | [C-020](#c-020--m7-has-no-scope-and-timeline-has-no-design) | M7 has no scope, and Timeline has no design | Lane B | **Product owner** (roadmap 🔴) | `OPEN` | **M7** — [`TASK-017`](BACKLOG.md), `WAITING`. Lane B released it and is `AVAILABLE` |
-| [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it) | Timeline has a surface and nowhere to mount it | Lane B | **Lane A** + product owner | `OPEN` | **Nothing in Timeline** — backend and component built; only the mount point |
-| [C-025](#c-025--m13-is-not-a-module-and-its-consumers-do-not-exist-yet) | M13 is not a module, and its consumers do not exist yet | Lane B | **Product owner** | `ANSWERED` — all four decisions taken 2026-08-02. **M13 paused on an environmental dependency, not this item** | **Nothing.** The remaining work needs a HubSpot developer application, not a decision |
-| [C-026 *(Lane B's)*](#c-026--the-connection-center-is-reachable-only-by-typing-its-url) | The Connection Center is reachable only by typing its URL | Lane B | — | **`IMPLEMENTING`** — shipped as **CX-01**. **Narrowed to nothing**; `CLOSED` is Lane B's | **Nothing, on either side** |
-
+| [C-026 *(Lane B's)*](#c-026--the-connection-center-is-reachable-only-by-typing-its-url) | The Connection Center is reachable only by typing its URL | Lane B | — | **`CLOSED`** — shipped as **CX-01**; Settings carries a Connections card | **Nothing, on either side** |
+| [C-027](#c-027--m14a-notifications--what-was-bought-is-not-what-must-be-built) | M14a — what was bought is not what must be built | Lane B | **Product owner** | `ANSWERED` — four decisions taken 2026-08-02, [ADR-0040](architecture/adr/0040-notifications.md) proposed | **One 🔴 ratification** — the fifteenth entry in `04-modules.md`, drafted and ready to paste |
 | [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it) | Timeline has a surface and nowhere to mount it | Lane B | ~~Lane A~~ → **[C-012](#c-012--eventhandler-receives-no-session-so-no-module-handler-is-registered)** | **`IMPLEMENTING`** — mount delivered (**CX-03**). **Narrowed: the remaining work is data, not placement** | **Nothing is buildable.** The feed is mounted and renders empty — `project_to_timeline` is wired into no worker and no seeder |
 | [C-025](#c-025--m13-is-not-a-module-and-its-consumers-do-not-exist-yet) | M13 is not a module, and its consumers do not exist yet | Lane B | **Product owner** | `OPEN` | **M13's credential half** — no tier may run an integration OAuth flow |
 | [C-018](#c-018--nobody-owns-the-customer-facing-name-of-an-attribute) | Nobody owns the customer-facing name of an attribute | Lane A | **Product owner** | `OPEN` | [`TASK-003`](BACKLOG.md), skipped with its reason recorded |
@@ -114,8 +121,6 @@
 > **Three ids appear twice — `C-024`, `C-025` and now `C-026`** — allocated independently by Lane A and Lane B before the identifier-block rule existed; **renumbering is QE's at merge, by author timestamp** (`CLAUDE.md`). See *Blocker audit* below and [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide), which is what makes it stop.
 >
 > **`C-026` is worth reading twice.** Lane B raised *"the Connection Center is reachable only by typing its URL"* and Lane A shipped that exact fix as **CX-01** the same day, from an independent audit, **without either lane seeing the other's finding.** Two lanes reaching one defect by different routes is the model working; **two lanes reaching one identifier is the model failing**, and it is the same day's evidence for both.
-| [C-027](#c-027--m14a-notifications--what-was-bought-is-not-what-must-be-built) | M14a — what was bought is not what must be built | Lane B | **Product owner** | `ANSWERED` — all four decisions taken 2026-08-02, [ADR-0040](architecture/adr/0040-notifications.md) proposed | **One 🔴 ratification** — the fifteenth entry in `04-modules.md`, drafted and ready to paste |
->>>>>>> 603a077 (ADR-0040 proposed — Notifications answers a different question from Attention)
 
 ---
 

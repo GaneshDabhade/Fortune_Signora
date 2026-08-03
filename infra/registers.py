@@ -85,6 +85,45 @@ def bug_rows(text: str) -> list[BugRow]:
     return rows
 
 
+CONFLICT_MARKERS = ("<<<<<<< ", "=======", ">>>>>>> ")
+
+
+def conflict_markers(text: str) -> list[int]:
+    """Line numbers carrying an unresolved merge-conflict marker.
+
+    **`malformed_tables` was built for the residue of a split section and does
+    not catch this**: a `>>>>>>>` line inside a markdown table is not a table
+    separator, so a conflict marker sat in the coordination register through
+    several certifications ([B-102](../docs/BUGS.md)) — stranding one row
+    outside the table and leaving two others duplicated with contradictory
+    statuses.
+
+    **`=======` is matched exactly**, never as a prefix: a markdown setext
+    underline is a run of `=` and would otherwise be reported on every heading.
+
+    **Fenced code blocks are skipped**, because a register that *documents* a
+    conflict marker is not corrupt — B-102's own row quotes the marker it
+    reports, and the check fired on it within a minute of being written. The
+    register describing a defect must not be indistinguishable from the register
+    having one.
+    """
+    found: list[int] = []
+    fenced = False
+    for number, line in enumerate(text.splitlines(), start=1):
+        if line.lstrip().startswith("```"):
+            fenced = not fenced
+            continue
+        if fenced:
+            continue
+        if (
+            line.startswith(CONFLICT_MARKERS[0])
+            or line.startswith(CONFLICT_MARKERS[2])
+            or line.rstrip() == CONFLICT_MARKERS[1]
+        ):
+            found.append(number)
+    return found
+
+
 def malformed_tables(text: str) -> list[int]:
     """Line numbers of table separators with no header row above them.
 
