@@ -82,18 +82,47 @@
 
 > **This lane is not proceeding into Lane A's modules on the strength of a directive that predates the collision.** One assignee per module is §20e's hardest invariant, and the product owner's own instruction in the same assignment was *"do not quietly bypass module boundaries."* **[C-323](LANE_COORDINATION.md) asks which way to resolve it**; the two backends in unassigned `knowledge_graph` are claimable meanwhile.
 
-### TASK-400 · The product says when it last *looked*
+### TASK-400 · Epic A completion — the surfaces that expose what the platform already knows
 
 | | |
 |---|---|
-| **Module** | `provider_platform` — **Lane A holds it** · Knowledge Graph joins · Product Surface renders |
-| **Slice** | **A7**, specified in [51-implementation-specifications.md](architecture/51-implementation-specifications.md) |
+| **Epic** | **Epic A remainder**, [51-implementation-specifications.md](architecture/51-implementation-specifications.md). **Assigned whole, not sliced** |
+| **Module** | `provider_platform` (A7) · Product Surface (A6 render) — **both Lane A's** |
 | **Status** | `READY` |
-| **Queued by** | **Lane C, 2026-08-03.** **Decomposition of Epic A, which the product owner approved and assigned on 2026-08-03** — not new scope. A7 was *"proposed by building A4"*: implementing A4 proved the fact it assumed was missing |
-| **Notes** | **Verified unbuilt**: no `attempted_at`, `polled_at` or equivalent in `provider_platform` on `integration` or either lane branch. `provider_sync` has no `subject`; `provider_watermark.position` advances **only when records arrive**, so a successful empty read leaves no trace |
-| **Customer value** | **The second half of trust.** A seller seeing *"Latest evidence · 5 weeks ago"* cannot tell whether the account went quiet or Signora stopped looking. **Those diverge exactly when it matters** |
-| **Effort** | **S** for the column · **M** if the `subject`↔entity join needs a design |
-| **On claiming** | **Ship the word *checked* only once it is true** — A4 deliberately refuses it and `freshness.test.tsx` asserts the refusal, so that test is the contract. **The open question is the `subject`↔entity join**, not the column; resolve it with Lane C rather than assuming it |
+| **Assigned** | **Lane A, by Lane C 2026-08-03**, answering [C-217](LANE_COORDINATION.md). Decomposition of Epic A, **already approved by the product owner** — not new scope |
+
+**Epic A verified slice by slice, across every branch, before assigning:**
+
+| Slice | State | Who |
+|---|---|---|
+| **A1** search | ✅ built — `account_search` | Lane B |
+| **A2** accounts list | ✅ built — `SW-01…04` | Lane A |
+| **A4** freshness | ✅ built | Lane B |
+| **B2** first run | ✅ built — `first-run.test.tsx` | Lane A |
+| **A6** *needs identity* | ⬜ **render not built.** Raw material exists — `AccountIdentityResponse.agreement` | **This task** |
+| **A7** last *looked* | ⬜ **not built.** No `attempted_at`/`polled_at` anywhere; `provider_watermark.position` advances only when records arrive | **This task** |
+| **A5** company history | 🚫 **backend does not exist** — no history endpoint in `knowledge_graph`, and the module is unassigned | **Routed to Lane B**, see notes |
+
+| | |
+|---|---|
+| **A7 — objective** | Every account can state when a provider last *attempted* to read it, whether or not anything came back. **`attempted_at` on `provider_watermark`, written on every completed run** |
+| **A7 — the hard part** | **Not the column.** `subject` is the customer's typed company name and the brief holds an entity id; **the join is the open question.** Resolve it with Lane C rather than assuming it |
+| **A7 — risk** | **Ship the word *checked* only once it is true.** A4 deliberately refuses it and `freshness.test.tsx` asserts the refusal — **that test is the contract** |
+| **A6 — objective** | Unnamed records leave the working list. `agreement` is the raw material and nothing renders it |
+| **Effort** | **S** (A7 column) + **M** (A6 render) · **M** if A7's join needs a design |
+| **A5 is not in scope** | Its backend is unbuilt in an unassigned module. **Lane C has routed the backend to Lane B**, which already owns A1 and A4 in `knowledge_graph`. **A5's render returns to Lane A once the endpoint exists** — sequencing, not a blocker |
+
+### TASK-401 · A5 backend — a company's history, from the claims that already hold it
+
+| | |
+|---|---|
+| **Epic** | **Epic A, slice A5's backend half.** [51-implementation-specifications.md](architecture/51-implementation-specifications.md) |
+| **Module** | `knowledge_graph` — **unassigned; routed to Lane B by Lane C 2026-08-03**, which already built **A1** and **A4** there |
+| **Status** | `READY` — **after [B-400](BUGS.md)**, which blocks promotion for every lane |
+| **Notes** | **Verified unbuilt**: `knowledge_graph/interface/router.py` exposes `account_identities` and `account_search` and **no history endpoint**; `observed_at` appears in `schemas.py` but nothing serves a series |
+| **Customer value** | *"Employee count 2024 → 350, 2025 → 500."* **The claim model already holds every attribute's history with its source and observation time** — this exposes what the platform computed years of design to be able to say |
+| **Why it is cheap** | **No new storage and no new concept.** [50-product-capability-audit.md](architecture/50-product-capability-audit.md) records it exactly: *"not a feature to add; it is a `SELECT` over claims ordered by `observed_at`"* |
+| **On claiming** | **The render is Lane A's** and returns to it once this endpoint exists. Open a `C-` item to hand over the contract rather than assuming its shape |
 
 ### TASK-900 · The platform learns to compose a module into the runtime
 

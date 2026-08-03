@@ -96,6 +96,10 @@
 
 **Verified against the repository, never against the register.** The register lags; branches do not.
 
+**Assign a coherent epic, not an isolated slice** *(product owner, 2026-08-03)*. **Decompose only when architecture, dependencies, certification or a change of implementation ownership requires it** — otherwise the epic is the lane's and the momentum is the point. **The lane's reply to an assignment should be able to be *"claimed, starting implementation"*** and nothing else; anything it must ask first was missing from the assignment.
+
+**And the module owner's reading of their own module outranks the office's inference** *(product owner, 2026-08-03)* **until repository evidence proves otherwise.** Lane C keeps validating; it does not overrule ownership without evidence. **Learned by getting it wrong**: TASK-905 was marked built from a marking that turned out to be promoted months earlier, and Lane A — which owns the module — was right.
+
 ```
 Lane:                  which lane, and what it just finished
 Recommended task:      TASK-nnn, and why it is the highest value now
