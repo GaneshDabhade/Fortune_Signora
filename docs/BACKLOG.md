@@ -124,6 +124,36 @@
 | **Why it is cheap** | **No new storage and no new concept.** [50-product-capability-audit.md](architecture/50-product-capability-audit.md) records it exactly: *"not a feature to add; it is a `SELECT` over claims ordered by `observed_at`"* |
 | **On claiming** | **The render is Lane A's** and returns to it once this endpoint exists. Open a `C-` item to hand over the contract rather than assuming its shape |
 
+### TASK-402 · Epic E1 — a customer's CRM becomes a source Signora can read
+
+| | |
+|---|---|
+| **Epic** | **E1**, [51-implementation-specifications.md](architecture/51-implementation-specifications.md). **Assigned whole** |
+| **Module** | `integrations` — **Lane B's**, which built S01, S02 and S09 |
+| **Status** | `READY` — **after [B-400](BUGS.md)** |
+| **Assigned** | **Lane B, by Lane C 2026-08-03**, under the authority to assign a fresh epic when approved scope runs out |
+
+**Why this epic and not Epic D, correcting Lane C's own earlier recommendation.** [Pack I](DECISION_PACKS.md) recommended **D2 and D3**. **D3's own specification says *"depends on E1"*, and Lane C called it unblocked — that was wrong.** Verified in the catalog: of D1's four risk families, **`contraction_risk` and `decision_maker_departed` already exist**, and the two that do not — *usage decline* and *renewal approaching* — **need contract and usage data that only a CRM carries.** **Epic D is gated on this epic, so this one comes first.**
+
+**The reuse audit changes the size, and it is the reason to take it now.** The specification calls E1 **XL**. **Most of the connection half is built:**
+
+| Already built | Where |
+|---|---|
+| OAuth start + callback | `frontend/app/api/integrations/[slug]/{start,callback}/route.ts` — **a separate OAuth client from Better Auth's** |
+| Connection, grant, catalog, resolve, connect/disconnect | `modules/integrations/{domain,application}` |
+| Encrypted credential storage | `infrastructure/secrets.py` · migration **`0028_integration_secret`** |
+| Public contract · router · schemas | `modules/integrations/{public,interface}` |
+
+> **What remains is the *read*, not the plumbing:** a CRM adapter behind the existing port, normalization of accounts and opportunities into the canonical shape, and the events that carry them. **That is the difference between XL and L, and it is why this is worth starting rather than deferring.**
+
+| | |
+|---|---|
+| **Customer value** | The specification's own words: **the single highest-leverage integration in the roadmap — it unblocks pipeline intelligence, forecasting, expansion and customer risk on its own** |
+| **Unblocks** | **D3** directly · **D1's** two missing risk families · **E2** write-back · the whole expansion and renewal half of the vision |
+| **Non-negotiable** | **A sign-in OAuth token must never be reused as an integration token** (§13). Separate grants, separate scopes, separate storage — **already the shape `integration_secret` and the separate OAuth client enforce** |
+| **On claiming** | **Provider Normalization owns the canonical shape**, not `integrations` — a CRM payload is normalized the same way a provider payload is (§10, the anticorruption layer). **Do not invent a second normalization path**; open a `C-` item if the existing one does not fit |
+| **Escalate if** | The read requires a new bounded context, or a commercial ruling about which CRMs are GA versus enterprise. **Neither is expected — E3 and E4 are the enterprise gate, not E1** |
+
 ### TASK-900 · The platform learns to compose a module into the runtime
 
 | | |

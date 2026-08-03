@@ -193,11 +193,63 @@
 | **F** · Workflow | Rules, safe actions, a builder | **A new `workflow` module** | 🔴 — new bounded context |
 | **G** · Assistance | Ask about an account; draft an approach | `ai_reasoning_engine` | Gated by `reasoning@1` having no released model ([TASK-013](BACKLOG.md)) |
 
-**Lane C's recommendation, and it is narrow: approve *D2 and D3* only.** They are **S/M**, sit in modules with no open coordination item, need no new bounded context and no commercial ruling, and **D3 — *which accounts are already customers* — changes what the attention list means for every seller**, because an expansion opportunity and a net-new opportunity are not the same row.
+> ⚠️ **Corrected 2026-08-03, and the correction is Lane C's own.** This pack recommended **D2 and D3** as *"S/M and unblocked"*. **D3's specification says plainly that it depends on E1**, and verification of the signal catalog showed **D1's two missing risk families need contract and usage data only a CRM carries.** **Epic D is gated on Epic E1**, so the sequencing below is wrong and E1 comes first — queued as [TASK-402](BACKLOG.md) under the authority to assign a fresh epic.
+>
+> **What survives:** **D2** alone is genuinely independent — a posture within the existing ledger, no CRM required. It stays a candidate and is not urgent.
+
+**Lane C's original recommendation, superseded above: approve *D2 and D3* only.** They are **S/M**, sit in modules with no open coordination item, need no new bounded context and no commercial ruling, and **D3 — *which accounts are already customers* — changes what the attention list means for every seller**, because an expansion opportunity and a net-new opportunity are not the same row.
 
 **Not recommended now:** **C** and **F** each need a new bounded context and an ADR; **E** is a commercial call; **B1** waits on Pack C; **G** waits on a released model.
 
 > **This is escalated rather than queued because it is epic scope, and scope is the product owner's.** [TASK-400](BACKLOG.md) was different: it decomposes Epic A, which is already approved. **The line Lane C is holding is that decomposing approved work is coordination, and admitting new epics is not.**
+
+---
+
+## PACK J · A lane can report `AVAILABLE` and the office that assigns it cannot see the signal
+
+**Raised by Lane A as [C-218](LANE_COORDINATION.md); investigated by Lane C 2026-08-03, at the product owner's direction.** *"Do not assume Lane A's proposed solution is correct. Do not assume it is wrong either."*
+
+| | |
+|---|---|
+| **Class** | **Repository Decision** |
+| **Implementation** | **QE's**, if any is required |
+
+### Is the problem real? — **Partly, and the precise version matters**
+
+**The claim:** *Lane C reads `integration`; availability exists only on the lane branch; therefore Lane C never receives the signal.*
+
+**Measured, and the last clause is false.** Lane A's `AVAILABLE` commit `31f22e7` is on `lane-a-product-surface` and **Lane C read it** — that is how [C-217](LANE_COORDINATION.md) was answered. Every lane's board is readable from `refs/remotes/origin/lane-*` in **18 milliseconds**.
+
+> **What is true is narrower and still real: nothing obliges Lane C to look, and nothing tells it when.** Lane A idled not because the signal was unreachable but because **the office was analysing something else and had no defined moment to check.** The defect is in Lane C's operating procedure, **not in the repository's plumbing.**
+
+**How widespread:** structural rather than one-off — **it recurs every time any lane finishes**, for every lane, and it gets worse with lane count. **But it is one-sided:** the `IN VALIDATION` → QE path is unaffected, because QE is *told* by a push it already watches for.
+
+**One measurement nuance for whoever implements:** naive `grep` on a board returns the **legend row**, not the lane's status — all four refs report `IN VALIDATION` that way. **Parsing is required**, and `infra/registers.py` already does exactly this for `BUGS.md`.
+
+### The options
+
+| | Flow | Advantages | Disadvantages | Repository impact | Certification impact | Complexity | Maintainability |
+|---|---|---|---|---|---|---|---|
+| **A** ✅ | **Lane C reads every `lane-*` ref** at a defined cadence — at each assignment, and after every push of its own | **Zero repository change. Zero QE work. Works today; it is what already happened.** No new file, workflow, state or commit type | **Pull, not push** — Lane C must look. Nothing happens if Lane C is not running | **None** | **None** | **Procedure only** | **Highest** — nothing to maintain |
+| **B** | **A lane pushes a status commit to `integration`**, bounded to the two registers like a claim | Signal on the shared ref, **visible to every lane and QE**, and auditable | **Widens the one exception a feature lane may push.** `--audit-claims` greps `^Claim TASK-`, so a status commit **is neither permitted nor audited today** — the guard must change | Guard + `CLAUDE.md` | Low, but **it touches the promotion guard** | QE change | Medium |
+| **C** | **QE relays availability at Closeout** | No new mechanism | **Couples assignment latency to the certification cycle** — a lane finishing mid-cycle waits for a promotion. **Directly contradicts the objective** | None | Adds coupling | Low | Poor |
+| **D** | **A dedicated signal file or queue** | Explicit | **A new coordination artifact for a fact two registers already hold.** Rejected on `CLAUDE.md` §12 and the standing principle | New artifact | None | Medium | Worst |
+
+### Recommendation — **A**
+
+**It is the only option that reduces latency, and B does not.** The signal arriving on `integration` rather than on a lane ref **changes nothing about when Lane C notices**, because both are pull — Lane C reads either one when it looks. **B buys visibility to other lanes, which nobody has asked for, at the cost of widening the one exception a feature lane may push to a shared branch.**
+
+**A also preserves every principle named:** `integration` stays the source of truth for *merged work* — a lane ref is the source of truth for *that lane's state*, which is what is being read. **No certification guarantee moves, QE is not bypassed, no manual coordination is added, and no governance is created.**
+
+**What Lane C changes in its own procedure, and nothing else:**
+
+- **Read every `lane-*` ref at the start of every assignment cycle**, parsing the board rather than grepping it.
+- **Re-read after pushing** — the moment Lane C's own attention returns to the repository is the cheapest moment to notice a lane that finished meanwhile.
+- **Treat a lane at `AVAILABLE` with no prepared assignment as a finding against Lane C**, not against the lane.
+
+> **If A proves insufficient — if a lane idles again despite it — B is the fallback**, and the evidence for it will be an *observed* idle gap rather than a forecast one. **That is the same standard `CLAUDE.md` sets for changing governance at all: not one lane's inconvenience, but demonstrated recurrence.**
+
+**Lane C has implemented nothing.** If B is ever chosen, the guard and `CLAUDE.md` are QE's and the product owner's respectively.
 
 ---
 
