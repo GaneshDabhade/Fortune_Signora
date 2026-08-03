@@ -276,3 +276,203 @@ It reads the committee (Commercial Profile), signals (Signal Engine), business e
 **Most of its value can be delivered anyway**, because the platform already knows *why this account*, *why now*, *what changed*, *what is unproven*, and — declared by the customer and read by nobody — ***which role has to agree***.
 
 > **The last mile is the name. Everything before it is composition, and it is not built.**
+
+---
+
+# Part II · The design, after the product owner's refinement, 2026-08-03
+
+> **The direction changed on three points, and each made the feature stronger.** The absence of people is an **implementation boundary, not a stopping point** · the module owns **commercial synthesis**, which is why it deserves a bounded context · and **AI belongs in the design after all** — not in the reasoning, in the explanation.
+
+## 14 · The reasoning graph
+
+**Deterministic, end to end. No model is called anywhere in this section.**
+
+```
+  ICP ─────────┐
+  Portfolio ───┤
+  Committee ───┤
+               ├──▶  which product, which roles have to agree
+  Signals ─────┤
+  Events ──────┤──▶  which roles the evidence names, and how strongly
+  Intent ──────┤
+  Research ────┤
+  Validation ──┤──▶  what is asserted and unproven      → questions
+  Corroboration┤──▶  what one provider says alone       → risks
+  Timeline ────┤──▶  what changed, and when             → why now
+  Score ───────┘──▶  how much, and what moved it
+                     │
+                     ▼
+            a closed, cited evidence set
+```
+
+**Every edge already exists as a published contract.** Nothing here is a new pipeline stage; it is the first module permitted to read across them.
+
+### Role ranking — the join nothing performs today
+
+| Step | Deterministic rule |
+|---|---|
+| **1** | Take the committee declared for the likely product |
+| **2** | For each role, find business events whose `title` names it — `LEADERSHIP_APPOINTED` carries `title` and `seniority` today |
+| **3** | Add signals whose posture bears on that role's part — an expansion hypothesis bears on a champion; a contraction one on a gatekeeper |
+| **4** | Rank by **how directly the evidence names the role**, never by the declaration's order |
+| **5** | State **why not** for every role that did not rank — *"no evidence names your CFO"* is more useful than silence |
+
+**Step 4 is the whole discipline.** The customer's order is a preference; the evidence is a fact, and **a declaration must never become a ranking input** — Commercial Profile refuses to hold one and a structural test enforces it.
+
+### Unknowns — absences, computed
+
+**The section the product owner called magical, and it is the cheapest one to build**, because an absence is a set difference:
+
+| Unknown | Computed as |
+|---|---|
+| *Budget owner not identified* | A committee part with **no supporting evidence** |
+| *Which product line owns this* | Two products' ICPs match **equally well** |
+| *Existing cloud partner* | An attribute **no provider reported** |
+| *Security review timeline* | A `GATEKEEPER` declared and **never named by any event** |
+
+> **Signora already knows what it does not know.** It has a closed evidence set, a declared committee and a canonical attribute vocabulary — **the gaps are computable, and nothing has ever computed them.**
+
+### Risks — contradiction, thinness, inference
+
+| Risk | Computed from |
+|---|---|
+| **Contradiction** | Two providers, one attribute, different values. **`IdentityState.AMBIGUOUS` and the corroboration count already record this** |
+| **Thin** | One provider, no corroboration |
+| **Stale** | The evidence behind the score has expired — `evidence_state` says so today |
+| **Inferred** | The link between evidence and role is indirect. **Stated as an assumption, not hidden** |
+
+**None is a confidence figure in different clothes.** A risk names *what could be wrong and why*; confidence bands *how much to lean on it*. **Two questions, two answers.**
+
+## 15 · Where AI belongs, and the fence around it
+
+**The product owner's distinction, adopted exactly: the reasoning graph is deterministic; the explanation layer is AI.**
+
+| | Layer 1 — reasoning | Layer 2 — synthesis |
+|---|---|---|
+| **Produces** | Ranked roles · unknowns · risks · questions · citations | The paragraphs a seller reads in seconds |
+| **Verified against** | Fakes and fixtures. **Never calls a model** | A real model, prompt-evaluated, `REFUSED` a legitimate outcome |
+| **May invent** | Nothing | **Nothing.** Its input is a closed set |
+| **If it fails** | The brief cannot be shown | **The brief is shown without prose.** Degrades to the facts |
+
+**The enforcement is the closed evidence set, not a review.** A synthesis naming a role the graph did not rank, or a risk it did not find, **fails validation and is refused** — the same mechanism that already refuses a citation to evidence outside the set.
+
+> **Delete the synthesis and a seller still gets ranked roles with their evidence. Delete the graph and there is nothing to synthesise.** That asymmetry is the fence.
+
+## 16 · Which product — likely, never certain
+
+**The product owner's correction to C-212, and it is better than asking.**
+
+```
+  Portfolio ──▶ products A · B · C
+  ICP that matched this company ──▶ B
+  Signals mostly map to ─────────▶ B
+  Intent aligns with ────────────▶ B
+  Research aligns with ──────────▶ B
+                                   │
+                            Likely product B
+                            Seller may override
+```
+
+**Four weak agreements make one strong inference**, which is the same shape as corroboration across providers — a mechanism this platform already has, applied to a new question.
+
+**Ties are not resolved.** Two products matching equally well is an **unknown**, surfaced as one, and the seller answers it. **Guessing between them would be the platform inventing a commercial decision.**
+
+## 17 · Tracking is an explicit commercial decision
+
+**Recorded because it changes assumptions elsewhere.**
+
+```
+  ICP ──▶ discovery proposes ──▶ customer decides: Track · Ignore · Dismiss · Watch later
+                                          │
+                                    tracking begins, permanently
+```
+
+| Consequence | Why it matters here |
+|---|---|
+| **Signora never crawls the world** | Every tracked company was chosen. **Evidence density is high by construction**, which is what makes role ranking viable at all |
+| **Intelligence accumulates forever** | An approach brief is **better at six months than on day one**, and that improvement is free — it is the same graph over a longer evidence set |
+| **Historical reasoning becomes possible** | *"This company looked like this before it bought"* needs history the platform will have and does not yet |
+| **`Ignore` and `Watch later` are new states** | ⚠️ **Neither exists.** Not this module's, and **not a stage on an opportunity** — a company that was never tracked has no opportunity to put a stage on |
+
+## 18 · Ten hard questions, answered before any code
+
+| | Answer |
+|---|---|
+| **Five providers disagree** | **A risk, surfaced, never resolved.** Corroboration counts and `IdentityState.AMBIGUOUS` already record it; the reasoning refuses to pick a winner |
+| **The declared champion contradicts observed leadership** | **Both are shown, and the contradiction is the finding.** *"You declared the CFO; the evidence names the VP Engineering"* is the most useful sentence the module can produce |
+| **Two products match equally well** | An **unknown**, and the seller decides (§16) |
+| **No committee exists** | The brief says so and offers the declaration screen. **It ranks nothing** — a recommendation with no declared committee would be Signora inventing the customer's sales process |
+| **No strong signals** | **Silence, with a reason.** *"Nothing has happened here that names a role"* — the rule the attention list and the decided section already follow |
+| **Only weak evidence** | Shown, banded `thin`, with the risk named. **Never suppressed** — a seller deciding on thin evidence should know it is thin, not be left with nothing |
+| **Signals are six months old** | `evidence_state` reads `stale` today. **The brief leads with the staleness**, because a six-month-old reason to call is a reason not to |
+| **A provider disappears** | Corroboration drops, risks rise, ranking changes. **Nothing breaks**, because nothing was stored |
+| **AI suggests something unsupported** | **Refused by validation before a customer sees it**, and the brief degrades to its facts (§15) |
+| **Fifty companies become urgent on one day** | The attention ranking already orders them. **This module adds no urgency of its own** — and *"everything is urgent"* is a signal-profile problem, not a synthesis one |
+
+## 19 · Where the market stops, and where Signora goes further
+
+**Studied for where sellers still have to think, not for features.**
+
+| | What they expose | Where they stop |
+|---|---|---|
+| **ZoomInfo · Apollo · LinkedIn Sales Navigator** | Contacts, titles, filters | **Data, not reasoning.** The seller decides what any of it means |
+| **Clay** | Composable enrichment | **A workbench.** Powerful, and it presumes the seller already knows the question |
+| **6sense · Demandbase** | Account intent scores, buying stage | **A score with a black box behind it.** *Why* is a vendor model, not evidence a customer can open |
+| **Common Room · UserGems · Warmly** | Signals from communities and job changes | **Alerts.** *A person moved* is delivered; *what it means for your committee* is not |
+| **Gong · People.ai** | What happened **in** conversations | **After first contact.** They are strongest exactly where this capability ends |
+| **Salesforce · HubSpot** | Records, stages, fields | **The seller supplies all reasoning.** The CRM stores it |
+
+> **Every one of them either hands the seller data or hands them a number. None hands them a defensible argument.**
+>
+> **Signora's difference, stated as the acceptance test:** every sentence in the brief opens the observation, the provider and the date behind it — and the product says **what it does not know** as clearly as what it does. *"This product understands my account better than my CRM"* is not a claim about volume of data; it is what a reader concludes when nothing on the screen is unexplained.
+
+## 20 · The Approach Brief — the experience
+
+**On the account brief a seller already opens. Zero navigation.**
+
+```
+  Why this account matters today
+     hiring up 47% in 60 days · engineering leadership changed · intent
+     around cloud modernisation rose        ← every line opens its evidence
+
+  What changed, and why the score moved
+     Medium → High because: hiring acceleration · new leadership · research
+                                            ← already computed, never shown together
+
+  Who has to agree                          ← the customer's declaration, first consumer
+     Champion       VP Engineering    strong    recently appointed · org growing
+     Economic buyer CFO               —         no evidence names this role
+     Gatekeeper     Security          thin      one provider
+
+  What Signora does not know                ← absences, computed
+     Budget owner · which product line owns modernisation · existing cloud partner
+
+  What could be wrong                       ← contradictions and thin links
+     Provider A says Azure, provider B says AWS
+     Champion inferred from an appointment, not from a stated reporting line
+
+  What to ask                               ← from validation's unproven assertions
+     Has the new VP set a platform budget? · Who signs off on security?
+
+  ── and the seller can disagree, with a reason ──
+```
+
+**Refusals that keep it premium:** no message · no send · no cadence · no contact table · **no percentage anywhere** · nothing shown that cannot be opened · **silence when there is nothing to say.**
+
+## 21 · Implementation roadmap
+
+| | Slice | Depends on |
+|---|---|---|
+| **SE-01** | **ADR-0200 ratified** | Product owner |
+| **SE-02** | The module skeleton, its public contract and the reasoning graph's **deterministic core**, against fakes | SE-01 |
+| **SE-03** | **The committee reaches a screen** — read-only, per product, its first consumer ever | SE-02 |
+| **SE-04** | **Likely product**, inferred and overridable (§16) | SE-03 |
+| **SE-05** | **Roles ranked by evidence**, with *why* and *why not* | SE-04 |
+| **SE-06** | **Unknowns** — computed absences | SE-05 |
+| **SE-07** | **Risks** — contradiction, thinness, inference | SE-05 |
+| **SE-08** | **Questions** — from validation | SE-05 |
+| **SE-09** | **AI synthesis**, refused when unsupported | SE-06…08 |
+| **SE-10** | **Disagree with a recommendation** | SE-05 |
+| **SE-11+** | Person Intelligence | ⛔ [C-210](../LANE_COORDINATION.md) |
+
+**Browser journeys** (specified, with Lane B): open a strong account → know which role to approach and why → open the evidence behind it → read what Signora does not know → disagree, with a reason → find what to ask.
