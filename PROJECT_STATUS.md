@@ -12,16 +12,16 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `fd2d942`, 2026-08-03.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `514de85`, 2026-08-03.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`fd2d942`** — the certified commit itself |
-| **`integration`** | `fd2d942` — level with `main` |
+| **`main`** | **`514de85`** — the certified commit itself |
+| **`integration`** | `69056e0` — **1 commit ahead**, Environment Framework Phase 1 |
 | **Release candidate** | **None pinned.** Cycle 24 promoted [`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md) and the [B-101](docs/BUGS.md) fix |
-| **Certification** | ✅ [`fd2d94271e78`](certification/reports/fd2d94271e78.md) · migration head **`0030`** · protocol **v2** |
+| **Certification** | ✅ [`514de85baa35`](certification/reports/514de85baa35.md) · migration head **`0030`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **142 commits, none outside a certified snapshot** |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **148 commits, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Both lanes.** Five separate rulings, all the product owner's — see §1c |
 | **Validation queue** | Lane A's and Lane B's branches, **both awaiting a rebase by their lane** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The cycle's headline is not the promotion; it is why there was so little to promote.** Two lanes produced eight commits and **zero executable change**, because every next step needs a decision nobody has made. The pipeline is healthy and has almost nothing to carry.
 
-**Repository health:** 2580 backend tests · **95.51% coverage** *(floor 95)* · 711 frontend tests · 360 Security Invariants · mypy strict over 614 files · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
+**Repository health:** 2580 backend tests · **95.51% coverage** *(floor 95)* · 719 frontend tests · 360 Security Invariants · mypy strict over 614 files · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
 
 ---
 
@@ -101,53 +101,48 @@
 
 ---
 
-## 1d · Release summary — 2026-08-03, cycle 28
+## 1d · Release summary — 2026-08-03, cycle 30
 
-**Derived from the promoted commit `fd2d942`.** One executable commit: **PQ-02**.
+**Derived from the promoted commit `514de85`.** Six commits: [ADR-0100](docs/architecture/adr/0100-delegated-dependency-rulings.md)'s ten rulings, two rounds of dependency re-validation, and [B-104](docs/BUGS.md).
 
-### A route nothing leads to is now a finding, not a discovery
+> ⚠️ **This cycle was certified and then abandoned for several hours.** `514de85` passed every gate and **was never promoted** — QE went straight into design work and skipped lifecycle stages 3 through 7. **The product owner noticed before QE did**, which is the wrong way round. `CLAUDE.md` §20e names it exactly: *"stopping at certification is an incomplete repository cycle, not a finished one with paperwork outstanding."* QE has been writing that rule into documents while breaking it.
 
-**`make reachability`** is the frontend sibling of `runtime-composition`. One asks *"does the deployed worker consume what this module projects?"*; the other *"does any screen lead to this route?"* — **the same defect class from two ends**, and both have already cost this repository a shipped-but-inert capability.
+### [B-104](docs/BUGS.md) — one incident, five defects underneath it
 
-```
-  Navigable routes                   10
-  Reachable from inside the product   9
-  Entered from outside, declared      1
-  No entrance at all                  0
-```
+The product owner's review session wrote Better Auth users into another environment's database. **The reproduction was the README**: copy `.env.example`, sign up.
 
-**Four approaches were compared before building.** A Playwright crawl proves what *is* reachable and **cannot prove a route is unreachable** without exhausting the graph. Comparing backend endpoints against frontend hooks catches a *different* defect. The manual census goes stale within a cycle — **it already had**. Static analysis won because **the defect is structural, not behavioural**.
+| | |
+|---|---|
+| **A committed signing secret** | `BETTER_AUTH_SECRET` fell back to a string in this repository. Every clone that had not set it minted JWTs any other clone could forge (§13) |
+| **`required()` was a lie** | With a fallback supplied the throw was unreachable. Six values used it |
+| **The build connected to a database** | **All five authenticated pages were statically prerendered**, and every one reads a session. `npm run build` opened the **shared** database to render signed-in screens — §20b inverted |
+| **A comment asserting the opposite of the code** | *"Never evaluated at build time"* sat directly above `toNextJsHandler(auth())` **at module scope**. Decorative Logic (§2) with a false claim beside it |
+| **The API client loaded the whole auth config for one URL** | Every server-rendered page therefore depended on the auth database and signing secret it never uses |
 
-> **The rule that makes it work: an entrance is a link from *outside* the route's own subtree.** Without it the check passes on the exact defect it exists to catch — `/settings/connections` had **two** inbound links, both from OAuth helpers *inside* the connection flow, so a customer could reach it only by already being there.
+**Four of the five were found only because removing the fallbacks failed the build.** They had all been live since M1.5.
 
-**Asserted rather than claimed.** The test reconstructs the Connection Center exactly as it shipped and requires the checker to flag it; a second shows a naive inbound-link rule would have passed. **The live repository is asserted last and loosely** — it passes today and would pass identically with the rule deleted.
+**The design changed mid-fix.** Requiring the values at config-*read* time failed the build; after patching three call sites it was whack-a-mole. **A build legitimately has no environment** — reading configuration into a struct harms nobody, and *connecting* and *signing* are what matter. Both values are now getters, required at point of **use**.
 
-**What it does not catch, stated rather than implied:** reachability is *can a customer arrive*, never *is arriving worth it*. Timeline's feed was mounted, reachable and empty — this check would have called it reachable and been right.
+### [ADR-0100](docs/architecture/adr/0100-delegated-dependency-rulings.md) — ten rulings, four deferrals
 
-### The product-quality audit found twelve gates already built
+The product owner delegated dependency resolution to QE. **Every ruling records that a delegated agent decided it**, and names whether it rests on evidence or judgement, so the judgement ones are cheap to reverse.
 
-**Thirty were proposed; the repository already implements twelve**, and nobody had named them as a suite. `frontend/tests/components/` holds 34 files that are not component tests — they assert *"an address that does not lead anywhere"*, *"an empty list says why it is empty"*, *"the platform vocabulary never reaches a customer"*. **Four more are already Engineering Laws.**
-
-**So no framework was built.** A parallel product-quality system beside 34 tests and four laws would be the duplication [L-1](ENGINEERING_LAWS.md) forbids.
-
-**Deliberately not proposed:** cognitive load, task completion rate, enterprise readiness, searchability, undo coverage. **None has a defect behind it here.**
+**Twelve `READY` tasks now exist where five did.** [C-023](docs/LANE_COORDINATION.md) and [C-025](docs/LANE_COORDINATION.md) closed on implementation evidence; [C-009](docs/LANE_COORDINATION.md) closed because **it was never a decision** — the mechanism it asked for was already documented in the file it concerned, and it is now [B-103](docs/BUGS.md).
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | 2615 tests · **95.52%** · **711 frontend** *(+10)* · 360 invariants · 618 files typed |
-| **Release** | **7 promotions in 7 cycles.** Certification attempts: 5 recorded, 5 certified, 0 aborted |
-| **Architecture** | Runtime composition **0 unexpected** · **Reachability 0 without an entrance** — two structural checks now, where there was one |
-| **Dependency** | **37 items, 12 closed.** Two moved on re-validation: **C-020 narrowed**, **C-023 closes** |
-| **Customer Value** | ❌ **None, fifth consecutive cycle.** Quality tooling only |
-| **Process** | Clean. One self-correction: shipping PQ-02 left its own document contradicting itself in three places, fixed in the same commit |
+| **Technical** | 2615 backend · **719 frontend** *(+18)* · 95.51% · 360 invariants · 618 files typed |
+| **Release** | ⚠️ **A certified commit sat unpromoted for hours.** Cadence is not the problem; QE's discipline was |
+| **Architecture** | Runtime composition 0 unexpected · Reachability 0 doorless |
+| **Dependency** | **37 items, 12 closed** — the register shrank twice this session |
+| **Customer Value** | ❌ **None.** Security, governance and tooling |
+| **Process** | **Two self-inflicted failures**: the skipped promotion, and commits landing on the wrong branch twice |
 
-### ⚠️ Five cycles without customer value
+### ⚠️ Open, and one is CRITICAL
 
-**The pipeline can now prove more about the product than at any point in this repository's history** — and it has had nothing to certify since cycle 23. Both lanes are blocked on [`DECISION_PACKS.md`](docs/DECISION_PACKS.md).
-
-**Ordered by customer value rather than dependency count, the order is C → E(C-008) → B → A → D** — and it differs from the dependency-count order, which is the point. **Pack A unblocks 7 modules and ships nothing a customer can see.**
+**Redis defaults to shared index 0** while [`RUNNING.md`](docs/RUNNING.md) allocates one per environment. **A shared database corrupts data; a shared queue *executes* it** — one environment's workers consume another's jobs. Ruled CRITICAL by the product owner, ahead of any launcher work.
 
 
 ## 2 · Milestone progress
@@ -357,9 +352,9 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`fd2d94271e78`](certification/reports/fd2d94271e78.md) · 2026-08-03 · ✅ CERTIFIED**
+**Latest certification — [`514de85baa35`](certification/reports/514de85baa35.md) · 2026-08-03 · ✅ CERTIFIED**
 
-**Certified commit `fd2d942` · promoted commit `fd2d942`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
+**Certified commit `514de85` · promoted commit `514de85`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
 
 | Gate | Recorded |
 |---|---|
@@ -368,7 +363,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | **Security Invariants** | **360 invariants**, each proven to fail when its guarantee is removed |
 | **import-linter** | **34 kept, 0 broken** |
 | **MyPy** | **strict, clean over 618 files** |
-| **`make smoke`** | **24 stages in 151s**, fresh images, clean teardown |
+| **`make smoke`** | **2 stages in 38s**, fresh images, clean teardown |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0030`** · scenario set `0cf6b2c581e4` · working tree clean.
@@ -379,7 +374,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 
 | Indicator | Value | Target |
 |---|---|---|
-| **Frontend tests** | **711 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Frontend tests** | **719 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Modules** | **15 implemented** · **46** numbered architecture documents · **40** ADRs | — |
 | **Module count, reconciled** | [`04-modules.md`](docs/architecture/04-modules.md) ratifies **13 core + 1 platform = 14**; `integrations` and `timeline` were added since under [ADR-0025](docs/architecture/adr/0025-module-boundary-evolution.md). **15 directories is the measured figure**; [README](README.md) still says *fourteen* | reconcile |
 | **Migrations** | **`0000`–`0030`**, additive and reversible — verified to base and back this cycle | — |
@@ -408,33 +403,33 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Indicator | Value |
 |---|---|
 | **Certification** | |
-| Certification cycles | 25 |
-| Certified | 25 of 25 |
+| Certification cycles | 26 |
+| Certified | 25 of 26 |
 | Mean time to certify (last 5) | 32.8 min |
 | Mean smoke duration | 318.9 s |
-| Mean certify → Ready (last 5) | 13.4 min |
+| Mean certify → Ready (last 5) | 11.3 min |
 | **Release flow** | |
-| Certification run success rate | 100% (25 of 25 runs) |
+| Certification run success rate | 96% (25 of 26 runs) |
 | ↳ excludes | rejected candidates, and every failed or aborted attempt |
 | ↳ see instead | Pipeline stability below — measured from the attempt log |
 | Commits per release | mean 8.3, median 4, range 1–49 |
 | Mean candidate age | 166.8 min  — oldest commit → certified |
 | Release frequency | 0.36 releases/hour over 69h |
 | **Pipeline stability** | |
-| Attempts | 4 |
-| ↳ certified | 4 |
-| ↳ failed | 0 |
+| Attempts | 6 |
+| ↳ certified | 5 |
+| ↳ failed | 1 |
 | ↳ aborted | 0  (started, never reached a verdict) |
-| First-pass rate | 100.0%  — attempts that certified |
+| First-pass rate | 83.3%  — attempts that certified |
 | Completion rate | 100.0%  — attempts that reached a verdict |
-| Failures by gate | none |
+| Failures by gate | smoke 1 |
 | **Defects and queues** | |
-| Queue depth (claimable now) | 1 — a lane with none reaches for undefined work |
-| Open bugs | 13 open · 16 fixed awaiting verification · 5 verified · 1 won't fix |
-| Bugs by severity | 🔴 1 · 🟠 23 · 🟡 10 |
+| Queue depth (claimable now) | 7 — a lane with none reaches for undefined work |
+| Open bugs | 14 open · 16 fixed awaiting verification · 5 verified · 1 won't fix |
+| Bugs by severity | 🔴 1 · 🟠 24 · 🟡 10 |
 | Open 🔴 (blocks promotion) | 0 |
 | Coordination items | 37 · 5 closed |
-| Backlog | 17 tasks · 5 READY · 12 WAITING/BLOCKED · 4 claimed |
+| Backlog | 24 tasks · 12 READY · 12 WAITING/BLOCKED · 4 claimed |
 | **Automation** | |
 | Governance checks, executable | 29 |
 | Security Invariant files | 6 |
