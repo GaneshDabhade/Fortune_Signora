@@ -98,7 +98,20 @@ provider_sync(provider, capability, status, started_at, finished_at,
 
 ---
 
-## A1 · Find an account by name · **M** · Product Surface
+## A1 · Find an account by name · **M** · Knowledge Graph + Product Surface
+
+> ### Reuse audit, 2026-08-03 — three corrections before a line is written
+>
+> **1 · There is no resolved-name column, by design, so there is nothing to index.** The specification below says *"likely an index on the resolved-name column"*. **A name is not stored**: it is a `legal_name` claim, and the displayed name is `select_name()` — newest per provider, resolved on every request. The searchable text lives in `claim.value`, stored as `{"v": …}` JSONB.
+>
+> **2 · `identity_binding.legal_name` looks like the answer and is a trap.** It is a real column, it holds a company name, and it is **a resolution hint captured at binding time** — `resolve.py:92` takes the first non-null `subject_legal_name` it sees. Claims recorded afterwards never update it. **Searching it would find accounts by a name the product does not display**, which is the two-representations defect (§2) presenting as a search that returns the wrong label. It is the fastest thing to reach for and it must not be.
+>
+> **3 · The authoritative source finds former names for free, and that is a feature.** Matching over `legal_name` claims rather than the resolved name means *"Northwind Traders"* finds the company now shown as *"Northwind Group"* — which is what a seller who has not heard about the rename actually needs. **It falls out of the claim model rather than being built.**
+>
+> **The endpoint is separate, not a parameter on `/account-identities`.** That endpoint answers *"name these ids I already hold"* — `ids` is required, and its docstring is explicit that it is **not a page** and returns no order. Search answers *"which ids match this text"*, needs an order and a limit, and returns the same shape for a different question. **One path selecting between two contracts by which parameter arrived is two endpoints wearing one coat.** Proposed: `GET /workspaces/{id}/account-search?q=&limit=`, `knowledge_graph`, reusing `AccountIdentityResponse` unchanged.
+>
+> **Shape, end to end:** a new `ClaimReader` method returning subjects whose `legal_name` claim matches → `GraphQueries` maps subjects to entities through bindings → `identities()` resolves each display name, **which is the call A4 already extended.** No new table, no new module dependency.
+
 
 | | |
 |---|---|
