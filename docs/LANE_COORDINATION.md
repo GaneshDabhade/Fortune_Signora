@@ -324,6 +324,8 @@ databaseUrl: required(
 | [C-205](#c-205--is-signora-expected-to-work-on-a-phone) | Is Signora expected to work on a phone? | Lane A | **Product owner** | **`ANSWERED` 2026-08-03 — yes, a phone is in scope** | **Unblocks CX-07**, which is a milestone rather than a slice. [B-019](BUGS.md) is confirmed a defect |
 | [C-217](#c-217--lane-a-is-available-and-requests-its-next-product-surface-epic) | **Lane A is AVAILABLE and requests its next Product Surface epic** | Lane A | **Lane C** | `OPEN` — **awaiting an epic** | **Lane A's entire implementation capacity.** Carries four places where the register and the repository currently disagree |
 | [C-218](#c-218--a-lane-can-report-available-and-the-office-that-assigns-cannot-see-it) | **A lane can report `AVAILABLE`, and the office that assigns cannot see it** | Lane A | **Lane C** (model) · **QE** (mechanism) | `OPEN` | **Every lane's idle time, structurally.** [C-217](#c-217--lane-a-is-available-and-requests-its-next-product-surface-epic) is the worked example: raised, pushed, invisible |
+| [C-219](#c-219--task-400s-two-halves-are-not-equally-buildable) | **TASK-400's two halves are not equally buildable** | Lane A | **Product owner** (A6) · **Lane C** (A7 join) | `OPEN` — **A7 proceeding, A6 held** | **A6 only.** Its own specification says [C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name) *"must be answered first"* |
+| [C-220](#c-220--two-lanes-have-both-written-a-document-50-and-a-document-51) | **Two lanes have both written a document `50` and a document `51`** | Lane A | **QE** · Lane C | `OPEN` | Nothing today. **`state-check` at the merge that brings both branches together** |
 | [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | M14b is three concerns in one roadmap row, and none has a module | Lane A | **Product owner** (bounded context 🔴) | `OPEN` — **architectural** | **The whole of M14b.** [R-01](architecture/16-architecture-risks.md) has been waiting for it at High/High |
 | [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide) | Identifier allocation is still only *unlikely* to collide | Lane A | **QE** + product owner | `OPEN` — **directed by the product owner** | Nothing built. **The repository scaling past three actors without manual reconciliation** |
 | [C-202](#c-202--four-shared-documents-disagree-and-one-disagrees-with-itself) | Four shared documents disagree, and one disagrees with itself | Lane A | **QE** | `OPEN` — **directed by the product owner** | Nothing built. **A cold session trusting any status in the repository** |
@@ -4192,5 +4194,67 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 **Not pushing this to `integration`.** It is not a claim, and the exception is bounded to claims for a reason. **Not self-assigning while it waits** — the product owner was explicit that a coordination breakdown is a coordination issue rather than a licence to pick up work. **Not editing another lane's rows** to make the board describe reality.
 
 **Lane A is idle, correctly, and this item is the reason.**
+
+---
+
+---
+
+## C-219 · TASK-400's two halves are not equally buildable
+
+| | |
+|---|---|
+| **Owner** | **Product owner** (A6, via [C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name)) · **Lane C** (A7's join, and the assignment) |
+| **Requesting lane** | Lane A |
+| **Status** | `OPEN` — **A7 proceeding, A6 held** |
+| **Raised** | 2026-08-03, on claiming [TASK-400](BACKLOG.md) and reading the specification it cites |
+
+**Lane A claimed TASK-400 and is implementing A7. A6 is held, and this says why rather than quietly doing half an epic.**
+
+### A6 is blocked on a decision, by its own specification
+
+**`51-implementation-specifications.md` §A6 states it twice, in its own words:** *"Backend — **depends entirely on the [C-321] ruling**"* and *"Dependencies — **C-321 must be answered first. This is the clearest case in the roadmap of a decision blocking a build.**"*
+
+**[C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name) is `OPEN`, owned by the product owner, and asks six unanswered sub-questions** — should an unnamed company appear at all, on the working list, contribute to a score, become an opportunity, be workable, and what is it instead.
+
+**TASK-400 narrows A6 to *the render*, and that does not escape the block.** *What to render* **is** the ruling: whether an unnamed record leaves the working list, whether it keeps its score, whether it is offered a workflow action. **Building the render picks an answer by implementation**, which is precisely what the register exists to prevent — and exactly the reasoning Lane A applied to [C-008](#c-008--sellers-cannot-see-what-their-company-sells), where the obvious repair would have chosen option B or C silently.
+
+**Lane A is not asking for a different task.** A7 is real, is Lane A's, and is being built. **This asks the product owner to rule on C-321**, after which A6 is a normal slice.
+
+### A7's open question, narrowed by reading the code
+
+**The specification calls the `subject` ↔ entity join *"the design decision the slice turns on"*. It is smaller than that, and the domain has already made half the decision.**
+
+> `targets.py`: ***"`already_read` is what has a position**, not what has a watermark row. A watermark that exists with no position records an attempt that stored nothing."*
+
+**So *ever attempted* is already distinguishable from *never attempted* today** — acceptance ② is partly modelled. What is genuinely missing is **when we last tried**, because `position` advances only when records arrive (`run_sync.py:137`), so a repeat successful-but-empty read leaves the row untouched.
+
+**Lane A is therefore building the half that needs no ruling** — `attempted_at` on `provider_watermark`, written on every completed run, inside `provider_platform`, which is Lane A's. **The render waits on the join**, and Lane A will bring Lane C a proposal rather than assume one.
+
+**The word *checked* does not ship until it is true.** A4 refuses it and `freshness.test.tsx` asserts the refusal; that test is updated by the render slice, never worked around.
+
+---
+
+## C-220 · Two lanes have both written a document `50` and a document `51`
+
+| | |
+|---|---|
+| **Owner** | **QE** (the identifier rule) · **Lane C** (which cites the colliding numbers) |
+| **Requesting lane** | Lane A |
+| **Status** | `OPEN` |
+| **Blocks** | Nothing today. **`state-check` at the merge that brings both branches together** |
+| **Raised** | 2026-08-03, looking for the specification TASK-400 cites |
+
+**Measured across every ref:**
+
+| | Lane A, unmerged | Lane B, unmerged |
+|---|---|---|
+| **`50-`** | `50-sales-engagement.md` | `50-product-capability-audit.md` |
+| **`51-`** | `51-sales-workspace.md` | `51-implementation-specifications.md` |
+
+**Neither is on `main` or `integration`, so nothing is wrong yet** — and `state-check` already asserts *"Architecture documents: N numbered, none duplicated"*, so it fails the moment both land.
+
+**This is [B-400](BUGS.md) again in a different costume** — two lanes independently taking the next free number, both correctly, from a register that could not show them each other's. **`CLAUDE.md` §20e allocates blocks for `B-`, `C-`, `TASK-` and ADR numbers and is silent on architecture documents**, which is the whole gap: migrations are deliberately exempt and dense, ADRs are blocked, and this class is neither.
+
+**Lane A is not renumbering its own documents unilaterally** — both sets are cited from commit messages, board rows and other documents, and choosing which moves is QE's at merge, by the existing later-claim-moves rule.
 
 ---
