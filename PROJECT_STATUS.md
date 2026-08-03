@@ -52,6 +52,10 @@
 >
 > **This is not idling and must not be read as it.** A lane whose next step needs a ruling is correct to write the discovery and stop. **The cost lands on the repository, not the lane** — and §1c is where it is counted.
 
+> **Lane C — Product Office, Architecture & Planning — is deliberately not a column above** (product owner, 2026-08-03). **This dashboard measures implementation, and Lane C produces none.** It holds `lane-c-product-office`, claims nothing from [`BACKLOG.md`](docs/BACKLOG.md), and exists to shorten §1c rather than to appear in §1a — **the row it should move is the dependency dashboard's, not this one's.** Its current investigation is referenced on [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md); its remit is [`CLAUDE.md` §20e *Lane C*](CLAUDE.md).
+>
+> **Written by Lane C on the product owner's explicit direction, and flagged as an exception rather than a precedent.** This file is QE's, measured from the promoted commit — **the paragraph above is a registration, not a measurement, and no figure in this document was written or altered by a lane.** If Lane C's existence is better recorded by QE at the next Closeout, this paragraph should be replaced by that rather than kept alongside it.
+
 ---
 
 ## 1b · Customer capability — can a customer actually use it?

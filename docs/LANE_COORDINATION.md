@@ -174,7 +174,8 @@
 | [C-202](#c-202--four-shared-documents-disagree-and-one-disagrees-with-itself) | Four shared documents disagree, and one disagrees with itself | Lane A | **QE** | `OPEN` — **directed by the product owner** | Nothing built. **A cold session trusting any status in the repository** |
 | [C-206](#c-206--is-an-invitation-better-auths-or-signoras) | Is an invitation Better Auth's or Signora's? | Lane A | **Product owner** | **`OPEN` — narrowed sharply 2026-08-02.** The plugin recommendation is **withdrawn**; the proof already arrives in the JWT | **One email delivery decision.** The invitation table, acceptance and the members list are no longer blocked by it |
 | [C-207](#c-207--casbin-cannot-express-an-action-on-yourself) | Casbin cannot express an action on yourself | Lane A | **Product owner** (platform §20a) | `OPEN` — **architectural** | **Leaving an organization**, and every self-directed operation after it |
-| [C-400](#c-400--three-architecture-document-numbers-are-already-collided-and-the-check-that-catches-them-cannot-fire-yet) | Three architecture-document numbers are already collided | Lane C | **QE** (the renumber) + **product owner** (the block rule) | `OPEN` — **governance** | **Nothing today. The next merge of either lane branch** — `49`, `50` and `51` each become two documents |
+| [C-400](#c-400--three-architecture-document-numbers-are-already-collided-and-the-check-that-catches-them-cannot-fire-yet) | Three architecture-document numbers are already collided | Lane C | **QE** (the renumber) + **product owner** (the block rule) | **`ANSWERED`** — block table extended 2026-08-03; **the renumber and the `state-check` half remain QE's** | **Nothing today. The next merge of either lane branch** — `49`, `50` and `51` each become two documents |
+| [C-401](#c-401--which-measure-predicts-merge-risk--and-the-answer-is-none-of-the-four) | Which measure predicts merge risk — **none of the four** | Lane C | **Product owner** (whether to change anything) + **QE** (both mechanical halves) | `OPEN` | **Nothing.** The execution board conflicts every multi-lane cycle by construction — **the only textual conflict in 77 commits** |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
 >
@@ -2497,6 +2498,95 @@ Alembic's `down_revision` is a linear chain: **a gap is a broken graph, not an o
 ### What no ruling costs
 
 **The renumber gets more expensive, not more urgent.** Each document is already cited by its own lane's commits; every further slice that references `50-sales-engagement.md` or `50-product-capability-audit.md` by number is one more citation QE must rewrite at merge. **Today it is three filenames and their inbound links. It is never cheaper than now.**
+
+---
+
+## C-401 · Which measure predicts merge risk — and the answer is none of the four
+
+| | |
+|---|---|
+| **Owner** | **Product owner** for the rule (or for deciding none is needed) · **QE** for the two mechanical halves |
+| **Requester** | **Lane C — Product Office** |
+| **Status** | `OPEN` |
+| **Blocks** | **Nothing.** Commissioned 2026-08-03 after Lane C reported unmerged volume as a delivery risk |
+
+### The correction that starts this item
+
+**Lane C reported that Lane A and Lane B "far exceed" the two-day slice limit. That was wrong, and it was inferred rather than measured.**
+
+**Measured:** Lane A's oldest unmerged commit is `2026-08-02T20:11Z` and its newest `2026-08-03T20:45Z` — **24h 34m**. Lane B: `2026-08-02T19:48Z` to `2026-08-03T20:37Z` — **24h 49m**. **Both are inside 48 hours.** The rule is also *per slice*, not per branch, and a branch may carry several once the earlier ones are `IN VALIDATION` — so branch age was never the right frame.
+
+> **The commit count was doing the arguing, and it was not entitled to.** 46 commits *looks* like a delivery risk in a way 24 hours does not, and the two describe the same branch.
+
+### What was measured, and how
+
+**Every lane branch rebased onto `integration` in a throwaway worktree, then the full sequential integration QE would actually perform** — Lane A first, then Lane B onto `integration`+A.
+
+| | Lane A | Lane B |
+|---|---|---|
+| Commits ahead | **46** | 31 |
+| Files changed | **128** | 83 |
+| Lines | **+19,308 / −152** | +12,315 / −101 |
+| Elapsed | 24h 34m | 24h 49m |
+| Commits **behind** `integration` | **24** | **0** |
+| **Rebase onto `integration`** | **conflict — 1 file** | **clean** |
+| **Rebase onto `integration` + Lane A** | — | **conflict — 1 file** |
+
+**In 77 commits, 211 file-touches and +31,623 lines, every conflict was the same single file: [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md). One hunk. Zero production-code conflicts.**
+
+### The five questions, answered
+
+| Question | Answer | Evidence |
+|---|---|---|
+| **Commit count?** | **No** | 46 commits produced 1 conflict; 31 produced 1. **The counts differ by 48% and the outcome is identical** |
+| **Elapsed time?** | **No** | The two branches are within 15 minutes of each other and behaved differently on the first rebase |
+| **Divergence from `integration`?** | **Partly — and it is the best of the four** | Lane A was **24 behind** and conflicted; Lane B was **0 behind** and was clean. It is the only metric that separated them |
+| **Changed files?** | **No** | 128 files → 1 conflict. **What matters is the 7 files touched by *both* lanes**, not the 211 touched by either |
+| **Which predicts best?** | **None of them predicts what matters** | Textual merge risk is ~1 file regardless of volume, **and the risks that have actually cost this repository produced no textual conflict at all** |
+
+### The finding: the repository is measuring the wrong failure
+
+**Three of the four shared production files diverged between the lanes and none of them conflicted** — `types.ts`, `keys.ts` and `tenancy_policy.py` are append-only and alphabetical, and **the convention did exactly its job.** `frontend/components/timeline/feed.tsx` was edited by both lanes in different regions and merged silently.
+
+> **That last one is the point. [C-400](#c-400--three-architecture-document-numbers-are-already-collided-and-the-check-that-catches-them-cannot-fire-yet) produced *zero* textual conflict and is a real defect.** Two lanes numbering one document, or shaping one component two ways, is invisible to git precisely because git is comparing text. **A size-based slice rule would not have caught either, and would have fired constantly on branches that merge perfectly.**
+
+**So Lane C recommends no size rule, no age rule and no commit-count rule.** Adding one would spend governance on the failure that is already nearly free and leave the two that are not.
+
+### What is worth changing, and both are small
+
+**1 · The execution board conflicts by construction, and is the only thing that does.**
+
+Every lane's rows sit **adjacent in one table**, and each lane's branch carries a snapshot of *every other lane's rows* — including QE's, which is why the conflict hunk shows `Cycle 28` against `Cycle 35`. **`CLAUDE.md` says "update only your own row", and the file's shape makes that unexpressible as a non-conflicting diff.**
+
+| | Option | Consequence |
+|---|---|---|
+| **A** ✅ | **One table per lane**, in its own section, in a fixed order | **Two lanes then edit disjoint line ranges and git has nothing to reconcile.** Costs a one-off reshape of one file. **No new mechanism** |
+| **B** | Keep one table; QE resolves the conflict each cycle | The status quo. It is small, it is *every* cycle, and it is resolved by the one role that did not write either row |
+| **C** | A row per lane in separate files | **Rejected** — it fragments the one board a session reads, to fix a problem A already fixes |
+
+**2 · `state-check` is one tree behind the repository** — [C-400](#c-400--three-architecture-document-numbers-are-already-collided-and-the-check-that-catches-them-cannot-fire-yet) R2, approved. **Specified here so QE implements it once**, since Lane C does not write `infra/`:
+
+- Rules **5e** and **5f** currently glob the working tree. Extend both to enumerate `git for-each-ref refs/remotes/origin/lane-*` and compare allocations **across** refs as well as within the tree.
+- **Report, never repair** — unchanged; `state-check` has more than one correct resolution for every finding.
+- **A cross-branch collision is a finding, not a failure of the branch that is second.** The message should name both refs and both filenames, because the tie-break needs author timestamps rather than branch order.
+- **Advisory stays advisory.** This must not become a gate that blocks a lane from pushing; the range is what prevents, and this is what detects.
+
+**3 · `state-check` rule 5b now encodes a rule that has been superseded — reported the moment it was caused.**
+
+**5b flags any board row containing `"to assign"` or `"await…assign"`**, on the reasoning that *"a lane sitting idle because a document told it to wait for an allocation that nobody is going to make"* is the bottleneck the pull model removed. **Under the amendment of 2026-08-03 a lane legitimately awaits an approved assignment**, so the first board row that says so truthfully will trip a guard that is describing the previous model.
+
+> **It passes today only because no row has yet used those words.** That is not the guard working — it is the guard not having been reached. **A check that fires on correct behaviour teaches people to ignore it**, which is the failure mode §2 names, and it is worse here than a check that is merely absent.
+
+**Lane C caused this by amending the governance and is reporting it rather than editing `infra/`.** The narrow fix is to distinguish *waiting for an allocation nobody owns* — still a finding — from *awaiting an approved recommendation*, which is now the model. **QE's to implement; the judgement about what 5b should assert is the product owner's if the two readings disagree.**
+
+**4 · [`QUALITY_ENGINEERING.md`](QUALITY_ENGINEERING.md) §178 states the superseded rule** — *"Lanes pull from `BACKLOG.md`… an idle lane is not waiting for QE"*. **The conclusion is still right and the mechanism named is not**; a lane now reports `AVAILABLE` and Lane C recommends. **That file is QE's operating procedure and Lane C does not edit it** — flagged here so QE corrects it in one pass with the two above.
+
+> **All four are the same kind of debt and it is worth naming.** **A governance amendment does not stop at the file that states the rule** — it lands in the guard that checks it, the procedure that performs it, and the document that describes it to a cold session. **Lane C's job includes finding every place it landed**, and its boundary means reporting three of the four rather than fixing them.
+
+### What Lane C is not proposing
+
+**No new register, no new metric, no new gate, no dashboard.** The measurement above took one command and a throwaway worktree, and it can be re-run whenever the question recurs. **A standing "integration health" report would be a framework for a number that has been interesting exactly once.**
+
 
 ## Closed
 

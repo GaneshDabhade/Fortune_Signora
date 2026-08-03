@@ -428,7 +428,7 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 | **Documentation rules** | §12 | the owning document itself |
 | **Definition of Done · slice completion** | §19 · §20e *Completion* | — |
 | **Change Budget** | §20e | — |
-| **Work allocation** | §20e *Nobody assigns; lanes pull* | [`docs/BACKLOG.md`](docs/BACKLOG.md) — **the READY queue**, prioritized by the product owner |
+| **Work allocation** | §20e *Nobody assigns; lanes are routed through Lane C* | [`docs/BACKLOG.md`](docs/BACKLOG.md) — **the READY queue**, prioritized by the product owner |
 | **Claiming a task** | §20e *The Task Claim Protocol* | the claim commit itself — **atomic, because a push is** |
 | **Task lifecycle states · who sets each** | §20e *Execution ownership ends at `IN VALIDATION`* | [`docs/BACKLOG.md`](docs/BACKLOG.md) · [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) — the two legends |
 | **Lane assignment** | §20e *Modules are permanent* | [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) — **the execution board**, written by the claiming lane |
@@ -480,8 +480,95 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 |---|---|---|
 | **Implementation lanes** | Yes | **Implementing one slice at a time**, claimed from the backlog. Earlier slices may still be with QE — a lane never idles waiting for validation. Branch: `lane-*`, permanent by name |
 | **QE — Quality Engineering & Integration** | **No** | **One lifecycle, seven stages, below.** Holds `lane-qe`, **`integration` and `main`** |
+| **C — Product Office, Architecture & Planning** | **No** | **Prepares decisions; never takes them.** Holds `lane-c-product-office`. **Does not pull from [`BACKLOG.md`](docs/BACKLOG.md)** and is not on the execution board — see *Lane C* below |
 
-**QE is the one permanent assignment**, because its responsibility is the repository rather than any module in it.
+**QE and Lane C are the two permanent assignments**, because each has a responsibility to the repository rather than to any module in it. **They are permanent for opposite reasons**: QE's subject is what has been built, and Lane C's is what has not been decided.
+
+### Lane C — Product Office, Architecture Governance & Cross-Lane Coordination
+
+**Established 2026-08-03, product owner. Charter expanded the same day to the operational Product Office.**
+
+> **Lane C owns the coordination of implementation, not the implementation itself.**
+
+**That sentence is the charter, and every rule below is a consequence of it.** The purpose is to remove planning, coordination and dependency work from the product owner so implementation lanes stay on engineering — **without moving a single decision away from the product owner.**
+
+> **The measurement that created it:** 29 of 34 indexed coordination rows name the product owner, 27 are `OPEN`, and 13 `READY` tasks sat unclaimed with two implementation lanes live. **The repository is not short of engineering capacity; it is short of decisions.** A fourth *implementation* lane would have been a third claimant on work nobody was taking ([`RELEASE_ENGINEERING.md`](docs/RELEASE_ENGINEERING.md) §11, QE's readiness assessment, whose verdict stands).
+
+#### The one distinction everything rests on
+
+> **Lane C prepares decisions. The product owner makes them.**
+
+**Every Lane C output is advisory until approved.** A recommendation is not an assignment, an analysis is not a ruling, and a prepared decision package is not a decision. **Lane C never has implementation authority and never acquires it by having investigated.**
+
+#### What Lane C owns
+
+| | |
+|---|---|
+| **Task assignment coordination** | When a lane reports `AVAILABLE`, `READY FOR NEW WORK`, `BLOCKED` or `WAITING`, Lane C inspects the roadmap, dependencies, the board, ownership, blockers and implementation readiness, and **recommends the next task for the product owner to approve** |
+| **Ownership resolution** | Where two lanes could reasonably own one piece of work: current ownership · affected modules · dependency graph · merge risk · implementation impact · **a recommendation and the alternatives considered** |
+| **Cross-lane dependency analysis** | What is *actually* blocking · technical or organizational · whether a smaller public contract removes the dependency · **the smallest change that unblocks implementation** |
+| **Feature decomposition** | Epic → capability → slices → dependencies → acceptance criteria → suggested lane → effort → risks → open questions. Each package carries objective · customer value · architecture · existing foundation · modules · backend · frontend · workflows · UX · future evolution |
+| **Decision package preparation** | Problem · options · trade-offs · risks · recommendation · rationale. **[`DECISION_PACKS.md`](docs/DECISION_PACKS.md) passes from QE to Lane C** |
+| **Roadmap stewardship** | Roadmap consistency · implementation sequencing · dependency graph · epic decomposition · readiness — **maintained continuously, and never reprioritized** |
+| **Governance coordination** | Implementation governance · coordination rules · documentation consistency · cross-lane workflow · the planning process. **Repository certification stays QE's** |
+| **Product architecture** | Cross-module review · product consistency · feature sequencing · competitive capability analysis · vision alignment · ADR preparation |
+
+#### What Lane C must never do
+
+**Write production code · modify business logic · implement a feature · merge · certify a release · change module ownership · reprioritize the roadmap · approve an architectural decision · override an implementation lane · bypass the product owner.**
+
+**Discovering an issue never confers authority to resolve it.** Lane C records the finding with its evidence and a recommendation; the change is made by whoever owns it — QE for certification, repository health and `infra/`, the assigned lane for a module, the product owner for anything 🔴. This is the same rule that already binds a lane finding a defect outside its assignment (*Bugs*).
+
+#### Lane C and QE — complementary, and the boundary is one question
+
+> **Does this concern *whether work should proceed*? — Lane C.**
+> **Does this concern *whether the work is correct*? — QE.**
+
+| QE owns | Lane C owns |
+|---|---|
+| Quality Engineering · Release Engineering · repository health · certification · environment validation · governance **compliance** | Planning · coordination · task decomposition · dependency resolution · ownership analysis · decision preparation · roadmap evolution |
+
+**QE never decides who implements a feature, which lane owns it, which roadmap item ranks higher, which architecture is chosen, how work is split, or what starts next.** Those are planning judgements, not quality judgements — and **a QE that made them would become a second Product Office**, which is the drift this separation exists to prevent.
+
+#### The routing model
+
+```
+  Lane A ─┐
+  Lane B ─┼──▶  Lane C  ──▶  investigates · prepares options · recommends
+  QE     ─┘     (planning or                        │
+                 governance)                        ▼
+                                          Product Owner decides
+                                                    │
+                                                    ▼
+                                     Lane C updates the repository
+                                                    │
+                                                    ▼
+                                     implementation lane resumes
+```
+
+**One route in, one decision point, and the decision point is unchanged.** What the model removes is the product owner rebuilding context separately for each lane that asks.
+
+#### The operating discipline
+
+> **Investigate · verify · propose · justify · recommend — and stop there.**
+
+**Verify against the repository, never against a register.** Both of this lane's first findings were invisible to every gate and true only in the code, and one of them overturned an intuition this lane had asserted the day before.
+
+**The three conditions a Lane C investigation should satisfy**, all at once:
+
+1. **No implementation lane naturally owns it.**
+2. **It creates long-term repository friction.**
+3. **It is solvable by a small structural improvement rather than a new framework.**
+
+**And the standing principle, which outranks any recommendation Lane C makes:**
+
+> **Every recommendation aims to remove complexity rather than introduce it.** Where a problem can be solved by *evolving an existing mechanism*, that is preferred over creating a new framework, process or governance layer. **The repository should become progressively simpler to understand even as it becomes more capable** — and a Lane C that adds governance faster than it retires it has inverted its own purpose.
+
+| | |
+|---|---|
+| **Branch** | `lane-c-product-office`, permanent by name. Identifier block `400`+ |
+| **Board** | **Referenced, never rowed.** [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) measures implementation; Lane C produces none |
+| **Reporting** | The Standard Lane Header, like every lane |
 
 > **The Integrator was a fourth role and is now QE's responsibility** (2026-08-01, product owner). It was never a separate session; describing it as one meant every merge, certification and status update was owned by nobody in particular. **QE validates, certifies, integrates, promotes, closes out, synchronizes and declares** — one sequence performed by one lane.
 >
@@ -526,7 +613,7 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 
 > **QE's responsibility resumes only when feature work returns to `integration` for validation.** Between promotions, an `AVAILABLE` lane claims and builds without QE's involvement, and QE is genuinely idle. That is the model working.
 >
-> **Scheduling is not one of them** (ratified 2026-08-02, product owner). **QE validates, certifies, integrates, promotes, closes out, synchronizes and declares. It does not decide who works on what.** Quality, integration, certification and promotion belong together — each is a judgement about the repository as a whole. **Work allocation is a product decision**, and routing it through QE meant every idle lane waited on the one session that was busy certifying. See *Nobody assigns; lanes pull* below.
+> **Scheduling is not one of them** (ratified 2026-08-02, product owner). **QE validates, certifies, integrates, promotes, closes out, synchronizes and declares. It does not decide who works on what.** Quality, integration, certification and promotion belong together — each is a judgement about the repository as a whole. **Work allocation is a product decision**, and routing it through QE meant every idle lane waited on the one session that was busy certifying. See *Nobody assigns; lanes are routed through Lane C* below.
 
 | # | Stage | What it is | Deterministic? |
 |---|---|---|---|
@@ -635,7 +722,9 @@ promoted commit SHA  ==  certified commit SHA
 
 **What this does not license:** installing a *new project dependency* (🔴, §6 — that needs an ADR), changing what the repository requires, or working around a failing gate by changing the environment until it passes. **The authority is to make the documented gate runnable, never to make it pass.**
 
-### Nobody assigns; lanes pull
+### Nobody assigns; lanes are routed through Lane C
+
+> **Titled *"Nobody assigns; lanes pull"* from 2026-08-02 to 2026-08-03.** The half that changed is *who selects*; **the half that did not is the one the title was protecting** — no lane assigns itself, and priority is the product owner's. Renamed rather than left standing, because a heading asserting a superseded model is read by every cold session before the amendment below it (§2).
 
 **Ratified 2026-08-02, product owner.** Work allocation was QE's, and it made QE responsible for five things where four belong together.
 
@@ -646,25 +735,52 @@ promoted commit SHA  ==  certified commit SHA
 
 > **The bottleneck is arithmetic, not authority.** With QE scheduling, an idle lane waits for the one session that is busy certifying — so **every additional lane increases the wait rather than the throughput**, which is the opposite of what lanes exist to do. Three roles, cleanly separated: **the product owner plans, feature lanes execute, QE assures and releases.**
 
+> #### Amended 2026-08-03, product owner — **a lane no longer selects its own next task**
+>
+> **When a lane reports `AVAILABLE` or `READY FOR NEW WORK`, it does not choose what to do next.** Lane C analyses the roadmap, dependencies, the board, ownership and readiness, and **recommends the next assignment for the product owner to approve.**
+>
+> ```
+>   lane reports AVAILABLE  ──▶  Lane C analyses  ──▶  Lane C recommends
+>                                                              │
+>                                                              ▼
+>                                                   Product Owner approves
+>                                                              │
+>                                                              ▼
+>                                              lane records the claim, then builds
+> ```
+>
+> **What is unchanged, and it is the part that matters:** [`BACKLOG.md`](docs/BACKLOG.md) is still the authoritative queue, **its order is still the priority, and the priority is still the product owner's.** Lane C prepares; it never reorders, never inserts and never approves its own recommendation.
+>
+> **What this fixes.** Pulling kept lanes moving but made each lane its own planner — it had to read the queue, judge eligibility, detect that another lane held a needed module, and decide whether skipping was re-prioritizing. **That is planning work done four times in parallel by sessions whose expertise is engineering**, and it is how [C-323](docs/LANE_COORDINATION.md) arose: a lane discovered a two-lane ownership collision *after* claiming, by reading another lane's branch.
+>
+> **The bottleneck argument that created the pull model still binds, and is answered rather than ignored.** *"Every additional lane increases the wait"* was true because **the allocator was also the certifier** — an idle lane waited on a session busy running gates. **Lane C certifies nothing and has no queue of its own**, so recommending costs no lane a wait. The serialization point that was removed is not being restored; a different, non-blocking one is being used.
+>
+> **The residual risk, stated rather than discovered later:** a lane that reports `AVAILABLE` when Lane C is not running would idle where previously it could self-serve. **If that is ever observed, it is a finding** — the correct fix is a standing fallback, not a lane quietly resuming self-selection.
+>
+> **The Task Claim Protocol survives as the *recording* mechanism, not the *selection* one.** Its race — two lanes choosing one task simultaneously — **cannot occur once allocation is recommended centrally and approved once**, so the protocol's arbitration half is now belt-and-braces. The claim commit remains, because the board must still be updated atomically and visibly.
+
 ```
-  Product Owner          feature lanes              QE
-  ─────────────          ─────────────              ──
-  owns priority     ──▶  pull from READY      ──▶   validate · certify
-  writes BACKLOG.md      claim in                   integrate · promote
-                         ACTIVE_ASSIGNMENTS         close out · declare
-                         then build                 never schedules
+  Product Owner          Lane C                 feature lanes           QE
+  ─────────────          ──────                 ─────────────           ──
+  owns priority     ──▶  analyses          ──▶  record the claim   ──▶  validate · certify
+  writes BACKLOG.md      recommends next         then build              integrate · promote
+  approves          ◀──  never decides           never self-select       close out · declare
+                                                                         never schedules
 ```
 
 **The rules, and they are short:**
 
 - **[`docs/BACKLOG.md`](docs/BACKLOG.md) is the authoritative work queue**, in priority order, and **the queue order *is* the priority.** The product owner owns it. **Every task carries a permanent `TASK-nnn`**, and every other document refers to work by that id rather than by its title.
-- **A lane may claim only a `READY` item.** `WAITING` needs somebody to answer; `BLOCKED` needs somebody to build. Neither is claimable, and both are listed so nothing disappears.
-- **Claim before implementing, by the Task Claim Protocol below.** The claim is a **standalone commit, pushed to `integration`**, and it is not yours until you have pulled and confirmed nobody beat you to it. **A claim nobody else can see is two lanes about to build the same thing** — which is why it goes to the ref every lane pulls, not to your own.
-- **Claim from the top.** If the top item cannot be taken — it needs a module another lane is inside, or a decision nobody has made — **say so in its backlog note and take the next one.** Skipping quietly is re-prioritizing, and priority is not a lane's to hold.
+- **A lane may claim only a `READY` item, and only one it has been approved to take.** `WAITING` needs somebody to answer; `BLOCKED` needs somebody to build. Neither is claimable, and both are listed so nothing disappears.
+- **Claim before implementing, by the Task Claim Protocol below.** The claim is a **standalone commit, pushed to `integration`** — the board must be updated where every lane will look. **Selection now arrives approved** (*Amended 2026-08-03*), so the protocol's job is to record it visibly rather than to win a race.
+- **A lane reports `AVAILABLE`; it does not go shopping.** Where it once read the queue and chose, it now says so and Lane C prepares the recommendation. **If a lane believes a particular task is the right next one, that belongs in its `Recommended Next Action`** — which is input, exactly like Lane C's.
 - **A lane never reorders, reprioritizes, removes, or inserts `READY` work without the product owner.** It may claim, it may record why it skipped the first `READY` task, and it may move a task it holds through the lifecycle. A defect goes to [`BUGS.md`](docs/BUGS.md), a dependency to [`LANE_COORDINATION.md`](docs/LANE_COORDINATION.md), and anything else is a conversation with the product owner.
 - **QE writes nothing in the backlog and allocates nothing.** At Closeout it reconciles the *board* — removing what has been promoted — and stops there.
+- **Lane C neither pulls nor allocates.** It is directed by the product owner and its subject — the decision queue — is not modelled by the backlog at all (*Lane C*). **It may open a `C-` item or a `B-` row like any lane, and may not insert, reorder or claim `READY` work.**
 
 **One lane per module still binds**, and it is what makes a claim refusable: if the item you are about to take needs a module somebody else is inside, you cannot take it, and the note saying so is more useful to the product owner than a silent skip.
+
+> **"A lane never begins work when no `READY` task exists" binds implementation lanes**, and Lane C is the one deliberate exception — it builds no feature, so it can neither take a task from a lane nor manufacture product scope. **The rule protects the product owner's ownership of priority, and Lane C is directed by the product owner rather than by the queue**, which reaches the same guarantee by a shorter route.
 
 ### The Task Claim Protocol
 
@@ -736,7 +852,9 @@ promoted commit SHA  ==  certified commit SHA
 
 #### Continuous execution — a lane never idles waiting for QE
 
-> **The moment a lane sets `IN VALIDATION`, it returns to [`BACKLOG.md`](docs/BACKLOG.md) and claims the next `READY` task.** It does not wait for validation, certification, promotion, Closeout, or Repository Ready.
+> **The moment a lane sets `IN VALIDATION`, it reports `AVAILABLE` and takes the next approved task.** It does not wait for validation, certification, promotion, Closeout, or Repository Ready.
+>
+> **Amended 2026-08-03:** the lane no longer selects the task itself — **Lane C recommends and the product owner approves** (*Nobody assigns; lanes are routed through Lane C*). **The prohibition on waiting is unchanged and is the point of this section**: reporting `AVAILABLE` is not a queue a lane joins, and a recommendation that has not arrived is a finding rather than a reason to sit still.
 
 **Waiting serializes exactly the parallelism lanes exist to create.** A lane blocked on certification is idle engineering capacity, and the cost grows with every lane added — which is the same arithmetic that moved scheduling out of QE earlier the same day. **Repository quality is preserved by the gates, not by making people wait for them.**
 
@@ -773,11 +891,11 @@ promoted commit SHA  ==  certified commit SHA
 **The loop, and it has no branch a lane may add to:**
 
 ```
-  implement  ─▶  IN VALIDATION  ─▶  rescan BACKLOG.md  ─┬─▶  READY exists  ─▶  claim  ─▶  implement
-                                                        └─▶  none          ─▶  AVAILABLE, and wait
+  implement ─▶ IN VALIDATION ─▶ report AVAILABLE ─▶ Lane C recommends ─▶ PO approves ─▶ claim ─▶ implement
+                                                          └─▶  nothing eligible  ─▶  AVAILABLE, and say so
 ```
 
-**A lane never invents work · never reprioritizes · never reopens completed work · never waits for permission while `READY` work exists.** And the symmetric rule, which matters just as much: **a lane never begins work when no `READY` task exists.** Both halves protect the same thing — **the product owner owns priority**, and a lane that manufactures its own next task has taken it, however useful the task looked.
+**A lane never invents work · never reprioritizes · never reopens completed work · never selects its own next task.** And the symmetric rule, which matters just as much: **a lane never begins work it has not been approved to take.** Both halves protect the same thing — **the product owner owns priority**, and a lane that manufactures its own next task has taken it, however useful the task looked.
 
 **`AVAILABLE` with an empty queue is a correct repository state, not a stalled one** (ratified 2026-08-02, product owner). The remaining work is being implemented, awaiting QE, blocked, or awaiting a decision — and **each of those has an owner who is not this lane.** Saying so and stopping is the honest report; finding something to do is not.
 
@@ -814,7 +932,7 @@ Together these appear in roughly two thirds of all commits. **A lane does not ed
 
 | File | Its one responsibility | Who writes it |
 |---|---|---|
-| `CLAUDE.md` | **Repository governance** | Product owner |
+| `CLAUDE.md` | **Repository governance** | **Product owner.** **Lane C drafts an amendment only when the product owner has approved it**, and never on its own initiative — the file states the rules, and proposing one is not ratifying it |
 | [`docs/RUNNING.md`](docs/RUNNING.md) | **Development environments** — ports, databases, Redis indices, variables | **QE** |
 | [`docs/BUGS.md`](docs/BUGS.md) | **The defect register** | **Any lane opens. The module's current assignee fixes. Only QE sets `VERIFIED`** |
 | [`docs/LANE_COORDINATION.md`](docs/LANE_COORDINATION.md) | **Cross-lane coordination** — dependencies and pending contracts, nothing else | **Any lane opens. The named owner answers. The requesting lane closes** |
@@ -823,7 +941,7 @@ Together these appear in roughly two thirds of all commits. **A lane does not ed
 | `PROJECT_STATUS.md` | **The executive dashboard** — *"where are we?"*, measured | **QE**, at Closeout |
 | [`docs/SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) | **Operational context** — *"what should the next session know?"* | **QE**, at Closeout |
 | [`docs/BACKLOG.md`](docs/BACKLOG.md) | **The READY queue** — *"what is available, and in what order?"* | **Product owner.** A lane writes **only** its claim; QE writes nothing |
-| [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) | **The execution board, and nothing else** — who is working · on which `TASK-nnn` · on which branch · at what execution status. **It does not define priority** | **The claiming lane**, at once. **QE** reconciles it at Closeout |
+| [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) | **The execution board, and nothing else** — who is working · on which `TASK-nnn` · on which branch · at what execution status. **It does not define priority** | **The claiming lane**, at once. **QE** reconciles it at Closeout. **Lane C is referenced, never rowed** — it holds no `TASK-nnn` and its investigation is named in one line outside the assignment table |
 | `docs/architecture/38` · `39` | Design decisions · review findings | **QE**, at merge |
 | The roadmaps | *Scope* is the product owner's · *progress* is QE's | Both, as marked |
 | `PRODUCT_DIFFERENTIATORS.md` | Product strategy | Product owner |
@@ -1018,6 +1136,53 @@ Slice-Handoff:
 
 > **The handoff is input, never the record.** QE measures every figure from the promoted commit. A lane that reports a test count is offering a claim; QE publishes a measurement.
 
+### The Standard Lane Header
+
+**Ratified 2026-08-03, product owner. It binds every lane without exception, including QE and Lane C.**
+
+**Every status update, pause, completion report, blocker report and handoff begins with this block.** The detailed engineering discussion follows it unchanged — the header does not replace the report, it makes the report navigable.
+
+```text
+Lane:
+Current Feature:
+Current Epic:
+Current Slice:
+Status:
+Current Branch:
+Current Commit:
+
+Short Summary:
+(3–8 sentences)
+
+Current Progress:
+(xx%)
+
+Currently Working On:
+
+Next Planned Work:
+
+Blockers:
+
+Waiting On:
+
+Ready For New Work:
+YES / NO
+
+Recommended Next Action:
+```
+
+**The reason is arithmetic, not formality.** At four or more concurrent lanes the product owner reads four or more reports before deciding anything, and **the decision usually needs six facts that are currently spread through several pages of prose.** The header puts them first so a lane's state is legible in thirty seconds and the prose is read by choice rather than to extract a status.
+
+**The rules, and they are short:**
+
+- **Every field is present; `none` and `n/a` are valid values and silence is not.** An absent field reads as *nobody looked*, which is the same failure the Slice Handoff's `none`-is-a-value rule prevents.
+- **`Current Progress` is the lane's estimate and is marked as one.** It is not a measurement and never contradicts `PROJECT_STATUS.md`, which is QE's and measured.
+- **`Blockers` and `Waiting On` are different questions.** A blocker stops the work; *waiting on* names who owes an answer. A row in one is not a row in the other, and an architectural blocker still carries its six fields (*Two kinds of blocker*).
+- **`Ready For New Work` is `YES` only when the four conditions in *Continuous execution* permit a claim.** A lane carrying `CHANGES REQUESTED` is `NO`.
+- **`Recommended Next Action` is input, never authority.** Proposing is expected; proceeding on it is not — the product owner owns priority.
+
+> **This is not a second Slice Handoff, and the two never restate each other** (§2, *truth has exactly one authoritative representation*). **The Slice Handoff lives in a commit message, is written once per slice, and addresses QE and the next assignee.** The Standard Lane Header lives in a *report*, describes the lane's whole current state, and addresses the product owner. Where a figure belongs to one, the other references it.
+
 ### Repository Closeout
 
 **Repository Closeout is a mandatory engineering phase, never optional** (ratified 2026-08-02, product owner). It is lifecycle stage 5, it runs immediately after every successful promotion, and **the repository is not ready for the next cycle until all of it has finished.**
@@ -1097,24 +1262,32 @@ It compares what the governance documents *say* against what git, the migrations
 
 > **A lane allocates only from its own block. Two lanes therefore cannot choose the same number — not "are unlikely to", cannot.**
 
-| Actor | `B-` bugs | `C-` coordination | `TASK-` | ADR |
-|---|---|---|---|---|
-| **Historic** — allocated before this rule | `001`–`099` | `001`–`099` | `001`–`099` | `0001`–`0099` |
-| **QE** | `100`+ | `100`+ | — *(QE writes nothing in the backlog)* | `0100`+ |
-| **Lane A** | `200`+ | `200`+ | `200`+ | `0200`+ |
-| **Lane B** | `300`+ | `300`+ | `300`+ | `0300`+ |
-| **Lane C** | `400`+ | `400`+ | `400`+ | `0400`+ |
-| **Lane D** | `500`+ | `500`+ | `500`+ | `0500`+ |
-| **Lane E** | `600`+ | `600`+ | `600`+ | `0600`+ |
-| **Product owner** | `900`+ | `900`+ | `900`+ | `0900`+ |
+| Actor | `B-` bugs | `C-` coordination | `TASK-` | ADR | **numbered architecture document** |
+|---|---|---|---|---|---|
+| **Historic** — allocated before this rule | `001`–`099` | `001`–`099` | `001`–`099` | `0001`–`0099` | `01`–`099` |
+| **QE** | `100`+ | `100`+ | — *(QE writes nothing in the backlog)* | `0100`+ | `100`+ |
+| **Lane A** | `200`+ | `200`+ | `200`+ | `0200`+ | `200`+ |
+| **Lane B** | `300`+ | `300`+ | `300`+ | `0300`+ | `300`+ |
+| **Lane C** | `400`+ | `400`+ | `400`+ | `0400`+ | `400`+ |
+| **Lane D** | `500`+ | `500`+ | `500`+ | `0500`+ | `500`+ |
+| **Lane E** | `600`+ | `600`+ | `600`+ | `0600`+ | `600`+ |
+| **Product owner** | `900`+ | `900`+ | `900`+ | `0900`+ | `900`+ |
 
 **Within your block, take the next free number.** Across blocks, nobody needs to look at anybody else.
+
+> **The architecture-document column was added 2026-08-03**, on the product owner's approval of [C-400](docs/LANE_COORDINATION.md), **after three collisions had already happened and no gate had reported them.** Lane A and Lane B both allocated `49`, `50` and `51` on one day, on branches that had never met — and because the filenames differ, git merges all six without a conflict. **It was the one class the original rule enumerated past.**
+>
+> **The reading guide at the top of this file still classifies by range** — `01`–`21` system architecture, `22`–`29` plus `33` module designs, `30`+ records and cross-cutting notes — and **that classification describes the historic band only.** Every lane block sits above it, so a lane-allocated document is always in the *records and module designs* region and **never in `01`–`21`, which stays 🔴 and the product owner's.** A lane may not renumber into the historic band to keep a sequence tidy; the number is an identity, not a position.
+
+**Renumbering a collided document is QE's at merge**, by the same tie-break as every other identifier — the later claim moves, decided by author timestamp. **A lane records the collision and does not resolve it**, because the colliding files are on another lane's branch.
 
 **Why blocks rather than the alternatives.** A central allocator recreates the bottleneck that scheduling was moved out of QE to remove. A leased or ledger-based scheme makes a collision *detectable* — it still has to be resolved by hand, and the lane still has to get the resolution right. **A block makes it unrepresentable**, which is the standard §2 already prefers: *"a violation that is unrepresentable over one that is merely discouraged."* It is also the boring, proven answer — IANA, MAC addresses, database sequence caching and per-node CIDR allocation are all the same idea.
 
 **Chronological traceability is not lost.** It never lived in the number: every row carries `Found`, and `git log` carries the rest. **`B-301` after `B-105` is not out of order; it is a different allocator.**
 
-**Enforced twice.** `infra/state-check.py` refuses a duplicate in any class — `B-`, `C-`, `TASK-` and ADR filenames — so a fat-finger *inside* a block is caught even though a collision *across* blocks is impossible. **The range prevents; the check detects.**
+**Enforced twice.** `infra/state-check.py` refuses a duplicate in any class — `B-`, `C-`, `TASK-`, ADR filenames and numbered architecture documents — so a fat-finger *inside* a block is caught even though a collision *across* blocks is impossible. **The range prevents; the check detects.**
+
+> **The check is one tree behind the repository, and this is stated rather than assumed.** `state-check` globs the working tree, so a collision between two branches that have never met **cannot fail it until the merge it protects has already happened** — which is exactly how the `49`/`50`/`51` collision reached three documents while the check reported *"none duplicated"* and was correct. **The range is what actually prevents this; the check is defence in depth against a slip inside a block.** Teaching it to read every `lane-*` ref is approved and is QE's to implement ([C-400](docs/LANE_COORDINATION.md) R2).
 
 **Migrations are deliberately exempt**, and are the one identifier that must stay dense: Alembic's `down_revision` is a linear chain, so a gap is not a cosmetic oddity but a broken migration graph. **The existing practice is correct and stays** — a lane that finds its number taken renumbers on rebase and says so in the commit message, as Lane A did twice for `0026`. **The chain is the identity; the filename follows it.**
 

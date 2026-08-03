@@ -90,6 +90,7 @@ Governed by **[`CLAUDE.md` §20e](CLAUDE.md)** — read it before starting a lan
 | **Lane A** | `lane-a-product-surface` | Yes — one assigned slice at a time |
 | **Lane B** | `lane-b-commercial-profile` | Yes — one assigned slice at a time |
 | **QE — Quality Engineering & Integration** | `lane-qe`, `integration`, `main` | **No.** Validation · certification · integration · promotion, and the repository-state records |
+| **Lane C — Product Office, Architecture Governance & Cross-Lane Coordination** | `lane-c-product-office` | **No.** Planning · task decomposition · dependency and ownership analysis · decision preparation · roadmap stewardship. **Writes no production code, and recommends the next assignment rather than claiming one** |
 
 ```
 Feature Lane ─▶ integration ─▶ QE validation ─▶ QE certification ─▶ QE promotion ─▶ main
@@ -97,6 +98,12 @@ Feature Lane ─▶ integration ─▶ QE validation ─▶ QE certification ─
 ```
 
 **Feature lanes build. QE validates, certifies, integrates and promotes.** No feature lane pushes to `main`; no feature lane bypasses QE. QE builds no customer feature, which is what qualifies it to hold the merge — and **promotion is deterministic: if certification passes, it happens.**
+
+**Lane C sits outside that flow entirely.** It prepares decisions rather than producing commits to promote: it investigates, verifies against the repository, proposes and recommends, and **the change is then made by whoever owns it.**
+
+> **Lane C owns the coordination of implementation, not the implementation itself.**
+
+**Since 2026-08-03 a lane does not select its own next task.** It reports `AVAILABLE`, Lane C analyses roadmap, dependencies, ownership and readiness and recommends, and **the product owner approves.** The boundary with QE is one question: **whether work should proceed is Lane C's; whether the work is correct is QE's.** See [`CLAUDE.md` §20e *Lane C*](CLAUDE.md).
 
 **The workflow is defined in exactly one place: [`CLAUDE.md` §20e](CLAUDE.md).** Startup, slice, completion; who owns each stage; which gates run when; the **Slice Handoff** every lane writes so QE can publish an accurate project status. Nothing here restates it, deliberately: a workflow described in two places is a workflow that will disagree with itself.
 

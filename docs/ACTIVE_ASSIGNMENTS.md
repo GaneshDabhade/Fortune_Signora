@@ -79,6 +79,22 @@
 
 **QE's row is permanent** and is never removed — it is the one row that outlives its own completion, because the responsibility is the repository rather than a slice inside it. **QE claims nothing and is claimed by nothing.**
 
+### Lane C — referenced, not rowed
+
+**Lane C — Product Office, Architecture Governance & Cross-Lane Coordination** holds `lane-c-product-office` and is **deliberately absent from the table above** (product owner, 2026-08-03). **This board measures implementation; Lane C produces none.** It holds no `TASK-nnn` and claims nothing from [`BACKLOG.md`](BACKLOG.md). Its remit and boundaries are [`CLAUDE.md` §20e *Lane C*](../CLAUDE.md).
+
+> **Lane C owns the coordination of implementation, not the implementation itself.**
+
+**This board is now an input to Lane C, not only a record.** When a lane's row reaches `AVAILABLE`, `BLOCKED` or `WAITING`, **Lane C reads it and prepares the next recommendation for the product owner to approve** — the lane no longer selects for itself.
+
+| | |
+|---|---|
+| **Current investigation** | **Merge-risk metrics** — which measure actually predicts integration risk, commissioned 2026-08-03. **Answered in [C-401](LANE_COORDINATION.md): none of the four**, and the only textual conflict in 77 commits is this file |
+| **Delivered** | [C-400](LANE_COORDINATION.md) — three architecture-document numbers already collided; **both recommendations approved.** The block table is extended; the renumber and the `state-check` half are QE's |
+| **Next** | **Retire the four ruled Decision Packs**, and prepare the next assignment for each lane reporting `AVAILABLE` |
+
+> **One reference, not an assignment.** If this ever needs a `Status`, a `Slice` and a `Next action`, Lane C has drifted into implementation and the drift should be corrected rather than accommodated by widening the table.
+
 > **This file has changed hands twice in one day, and has ended up where it started.** Lane A created it as a **claim board** — a lane writes its own row before starting, so two lanes cannot take the same slice. It then became QE's, written at Closeout, with eight questions per row. It is now **claim-based again**, with QE reconciling rather than deciding: the eight questions were the improvement worth keeping, and **QE scheduling was the part that would not scale.** The claim it prevents has been the same one throughout.
 
 ## What is available to claim

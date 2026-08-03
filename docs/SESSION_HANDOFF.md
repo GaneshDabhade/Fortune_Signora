@@ -366,6 +366,21 @@ Slices 3–5 follow: buying-committee role templates, business priorities, and t
 3. **Validate the Playground against `playground@2`** — `make demo-narrate` has not been re-run since the dataset changed, so the narrations are one bland sentence each (**R11-07**) and the M12.3 citation slice cannot be shown at its best.
 4. **Own [BUGS.md](BUGS.md)** — two rows are already open.
 
+### Lane C — Product Office, Architecture Governance & Cross-Lane Coordination · `lane-c-product-office`
+
+**Established 2026-08-03, product owner; charter expanded to the operational Product Office the same day.** Its remit, boundaries and the three conditions an investigation must satisfy are [`CLAUDE.md` §20e *Lane C*](../CLAUDE.md); nothing is restated here.
+
+> **Lane C owns the coordination of implementation, not the implementation itself.**
+
+**The rule with the widest blast radius:** since 2026-08-03 **a lane does not select its own next task.** It reports `AVAILABLE`; Lane C analyses roadmap, dependencies, ownership and readiness and recommends; the product owner approves. **The Task Claim Protocol survives as the recording mechanism, not the selection one.**
+
+**What a session arriving on this lane needs to know first:**
+
+1. **The subject is the decision queue, not the task queue.** 29 of 34 indexed rows in [LANE_COORDINATION.md](LANE_COORDINATION.md) name the product owner and 27 are `OPEN`, while 13 `READY` tasks sit unclaimed. **That asymmetry is the lane's whole reason for existing** — it is why a fourth *implementation* lane was assessed as adding coordination overhead without velocity ([`RELEASE_ENGINEERING.md`](RELEASE_ENGINEERING.md) §11).
+2. **Investigate · verify · propose · justify · recommend — and stop there.** Discovering an issue never confers authority to fix it. The repository-wide change is QE's, the module change is its assignee's, and a 🔴 decision is the product owner's.
+3. **Verify against the repository, never against a register.** Both of this lane's first two findings were invisible to every gate and true only in the code: [C-400](LANE_COORDINATION.md) was green in `state-check` while three collisions already existed, and [C-401](LANE_COORDINATION.md) overturned an intuition this lane had itself asserted a day earlier.
+4. **Prefer removing complexity to adding it.** A recommendation that evolves an existing mechanism beats one that adds a framework, and a Lane C that grows governance faster than it retires it has inverted its purpose.
+
 
 ## Change log
 

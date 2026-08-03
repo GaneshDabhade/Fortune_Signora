@@ -1,6 +1,8 @@
 # Decision Packs — architectural decisions, grouped
 
-> **For the product owner. Prepared and maintained by QE.**
+> **For the product owner. Prepared and maintained by Lane C** — transferred from QE on 2026-08-03, when decision preparation became the Product Office's (`CLAUDE.md` §20e *Lane C*). **QE's authorship of everything below this line is preserved and is not rewritten**; what changes is who maintains it next.
+>
+> ⚠️ **Stale as it stands, and dated rather than quietly corrected.** Packs **A, B, D and E** were ruled by [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) on 2026-08-03 and **this document's own rule is that a pack is deleted when its decision is taken.** They are still here. **Retiring them is Lane C's first maintenance pass** and is deliberately not bundled into the ownership transfer, because deleting four packs is a content change and this is a custody change.
 >
 > **The problem this solves:** thirty-two open coordination items, presented one at a time over weeks, each needing context rebuilt from scratch. **They are not thirty-two decisions.** Grouped by the question actually being asked, they are **five** — and three of the five have a recommendation the repository's own evidence supports.
 >
@@ -176,6 +178,6 @@
 
 ## How this document is maintained
 
-**Refreshed by QE at every Repository Closeout**, against the promoted commit. **Every item is re-challenged, never merely carried forward:** is it still real · still blocking · narrowable · splittable · already answered by implementation, an ADR or a repository rule.
+**Refreshed by Lane C** *(QE until 2026-08-03)*, against the promoted commit — **at every Repository Closeout, and whenever a ruling lands**, because a pack that outlives its decision is what this document is currently demonstrating. **Every item is re-challenged, never merely carried forward:** is it still real · still blocking · narrowable · splittable · already answered by implementation, an ADR or a repository rule.
 
 **A pack is deleted when its decision is taken**, and the answer lives in the ADR or document it produced — never here. **This is a staging area, not a record.**
