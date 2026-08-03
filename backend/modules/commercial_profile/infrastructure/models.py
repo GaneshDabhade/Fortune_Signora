@@ -12,10 +12,20 @@ supersedes, enforced by the absent `UPDATE` grant in its migration.
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import CheckConstraint, ForeignKey, Integer, Text, UniqueConstraint
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    text,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -165,4 +175,90 @@ class CommercialFocusModel(DeclarationModel):
         PGUUID(as_uuid=True),
         ForeignKey("commercial_focus.id", ondelete="SET NULL"),
         nullable=True,
+    )
+
+
+class SegmentModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMixin):
+    """A named customer segment. **Identity, and nothing else.**
+
+    Deliberately not a `DeclarationModel`: that base carries a `version`, and
+    this row has none. Content is versioned; identity is not, which is what
+    makes a citation from an opportunity resolvable after eleven revisions
+    (migration 0031, ADR-0041).
+    """
+
+    __tablename__ = "icp_segment"
+
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+
+
+class SegmentVersionModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMixin):
+    """One published statement about a segment. **Never a draft.**"""
+
+    __tablename__ = "icp_segment_version"
+    __table_args__ = (
+        UniqueConstraint("segment_id", "version", name="uq_icp_segment_version_number"),
+    )
+
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    segment_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("icp_segment.id", ondelete="CASCADE"), nullable=False
+    )
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    name: Mapped[str] = mapped_column(String(80), nullable=False)
+    #: Read and written whole, never queried field by field — the same
+    #: reasoning as the catalog's `products`. **The product set is not in
+    #: here**: it is a relationship, and burying it in JSON would make
+    #: *"which segments buy Revenue Cloud?"* a scan.
+    criteria: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    supersedes: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("icp_segment_version.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+
+class SegmentProductModel(Base, WorkspaceScopedMixin):
+    """Which products a segment buys, **versioned with the content it belongs to.**
+
+    No foreign key to a product, because products have no table — they live
+    inside `product_catalog`'s versioned document. A removed product therefore
+    leaves this row intact and the screen resolves it against the current
+    catalog, exactly as `keptForCatalog` already does.
+    """
+
+    __tablename__ = "icp_segment_product"
+
+    version_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("icp_segment_version.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    product_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=text("now()")
+    )
+
+
+class SegmentStateModel(Base, WorkspaceScopedMixin):
+    """Append-only lifecycle. **The status is the audit log**, not something
+    kept beside it — `opportunity_state`'s shape, for the same reason."""
+
+    __tablename__ = "icp_segment_state"
+    __table_args__ = (
+        UniqueConstraint("segment_id", "sequence", name="uq_icp_segment_state_sequence"),
+    )
+
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    segment_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("icp_segment.id", ondelete="CASCADE"), nullable=False
+    )
+    sequence: Mapped[int] = mapped_column(Integer, nullable=False)
+    state: Mapped[str] = mapped_column(String(16), nullable=False)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    #: No default. A lifecycle change nobody is attributable for is one nobody
+    #: can explain.
+    actor_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=text("now()")
     )

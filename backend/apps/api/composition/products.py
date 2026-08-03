@@ -31,6 +31,7 @@ from modules.commercial_profile.application.ports import (
     TargetAccountListRepository,
 )
 from modules.commercial_profile.application.publish import PublishProductCatalog
+from modules.commercial_profile.application.segment_queries import SegmentQueries
 from modules.commercial_profile.infrastructure.composition import (
     build_buying_committees,
     build_catalogs,
@@ -42,6 +43,7 @@ from modules.commercial_profile.infrastructure.composition import (
     build_icp_declarations,
     build_publish_product_catalog,
     build_target_accounts,
+    build_segment_queries,
 )
 from signora_platform.api import CurrentWorkspace
 from signora_platform.event_bus import PostgresOutboxEventPublisher
@@ -129,3 +131,10 @@ __all__ = [
     "icp_declarations",
     "publish_catalog",
 ]
+
+
+def segment_queries(context: CurrentWorkspace) -> SegmentQueries:
+    return build_segment_queries(context.session)
+
+
+SegmentRead = Annotated[SegmentQueries, Depends(segment_queries)]

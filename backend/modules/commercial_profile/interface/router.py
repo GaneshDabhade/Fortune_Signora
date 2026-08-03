@@ -22,6 +22,7 @@ from apps.api.composition.products import (
     FocusWrite,
     IcpRead,
     IcpWrite,
+    SegmentRead,
     TargetAccountsRead,
     TargetAccountsWrite,
 )
@@ -44,10 +45,18 @@ from modules.commercial_profile.interface.schemas import (
     IcpDeclarationResponse,
     ProductCatalogResponse,
     PublishProductCatalogRequest,
+    SegmentSummaryResponse,
     TargetAccountListResponse,
 )
 from signora_platform.api import CurrentWorkspace
+from signora_platform.api.responses import CursorPage
 from signora_platform.authorization import Action, Resource
+from signora_platform.pagination import (
+    DEFAULT_PAGE_LIMIT,
+    MAX_PAGE_LIMIT,
+    decode_cursor,
+    encode_cursor,
+)
 
 router = APIRouter(tags=["commercial profile"])
 
@@ -364,3 +373,48 @@ async def declare_target_accounts(
 
 
 __all__ = ["router"]
+
+
+@router.get(
+    "/workspaces/{workspace_id}/icp-segments",
+    response_model=CursorPage[SegmentSummaryResponse],
+    summary="Every customer segment this workspace sells to",
+)
+async def list_segments(
+    context: CurrentWorkspace,
+    segments: SegmentRead,
+    include_archived: bool = False,
+    cursor: str | None = None,
+    limit: int = DEFAULT_PAGE_LIMIT,
+) -> CursorPage[SegmentSummaryResponse]:
+    """*"Who do we sell to?"*
+
+    **The question the product could not answer until now.** An ideal customer
+    used to be reachable only through the product it belonged to, so there was
+    no page that showed everything a workspace had said about its buyers.
+
+    **One product may be bought by several segments, and one segment may buy
+    several products.** A company selling a suite to one kind of buyer says
+    that once here; previously it had to say it once per product and keep the
+    copies in step by hand.
+
+    **Archived segments are excluded unless asked for.** They are retired, not
+    deleted — everything Signora found under one was found *because* of it, so
+    they stay reachable and simply do not answer *"who do we sell to?"*
+    """
+    context.authorize(Resource.ICP, Action.READ)
+    page = await segments.page(
+        workspace_id=context.workspace_id,
+        include_archived=include_archived,
+        after=decode_cursor(cursor) if cursor else None,
+        limit=min(limit, MAX_PAGE_LIMIT),
+    )
+    return CursorPage(
+        items=[SegmentSummaryResponse.from_domain(s) for s in page.items],
+        next_cursor=(
+            encode_cursor(position)
+            if page.has_more and (position := page.next_position) is not None
+            else None
+        ),
+        has_more=page.has_more,
+    )

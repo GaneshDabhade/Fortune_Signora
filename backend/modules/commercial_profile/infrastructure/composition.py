@@ -19,6 +19,7 @@ from modules.commercial_profile.application.declare_target_accounts import (
     DeclareTargetAccounts,
 )
 from modules.commercial_profile.application.publish import PublishProductCatalog
+from modules.commercial_profile.application.segment_queries import SegmentQueries
 from modules.commercial_profile.infrastructure.repository import (
     SqlBuyingCommitteeRepository,
     SqlCommercialFocusRepository,
@@ -26,6 +27,7 @@ from modules.commercial_profile.infrastructure.repository import (
     SqlProductCatalogRepository,
     SqlTargetAccountListRepository,
 )
+from modules.commercial_profile.infrastructure.segment_repository import SqlSegmentReader
 from modules.commercial_profile.infrastructure.target_account_reader import (
     SqlTargetAccountReader,
 )
@@ -107,3 +109,8 @@ def build_target_account_reader(session: AsyncSession) -> SqlTargetAccountReader
     calls this, and the consumer never learns that any of it is backed by SQL.
     """
     return SqlTargetAccountReader(session)
+
+
+def build_segment_queries(session: AsyncSession) -> SegmentQueries:
+    """The segments read surface. One level deep, like everything here."""
+    return SegmentQueries(SqlSegmentReader(session))

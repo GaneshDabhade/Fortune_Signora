@@ -12,6 +12,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from modules.commercial_profile.application.segment_queries import SegmentSummary
 from modules.commercial_profile.domain.catalog import (
     MAX_DESCRIPTION,
     MAX_NAME,
@@ -682,3 +683,52 @@ __all__ = [
     "ProductResponse",
     "PublishProductCatalogRequest",
 ]
+
+
+class SegmentSummaryResponse(BaseModel):
+    """One segment, as a list reads it.
+
+    **Purpose-built, never the domain object.** Nothing here exposes a version
+    id, a transition sequence or a `supersedes` pointer — those are how the
+    module keeps its promises, not something a customer asked about.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID
+    name: str = Field(description="What the customer calls this segment.")
+    state: str = Field(
+        description=(
+            "draft, published or archived. Derived from the latest lifecycle "
+            "transition rather than stored, so it cannot disagree with the log."
+        )
+    )
+    version: int = Field(
+        description=(
+            "Which published version is in force. A draft that has never been "
+            "published has no version and does not appear here yet."
+        )
+    )
+    product_ids: list[UUID] = Field(
+        description=(
+            "Which products this segment buys. Ids rather than names — the "
+            "catalog owns names, and a product removed from it must still "
+            "leave this row readable."
+        )
+    )
+    last_changed_at: datetime = Field(
+        description="A publication or a lifecycle move, whichever happened later."
+    )
+    last_changed_by: UUID
+
+    @classmethod
+    def from_domain(cls, summary: SegmentSummary) -> SegmentSummaryResponse:
+        return cls(
+            id=summary.id,
+            name=summary.name,
+            state=summary.state.value,
+            version=summary.version,
+            product_ids=list(summary.product_ids),
+            last_changed_at=summary.last_changed_at,
+            last_changed_by=summary.last_changed_by,
+        )

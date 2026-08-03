@@ -227,9 +227,7 @@ def next_state(
     explain, and a default would quietly attribute every one to the platform.
     """
     if to not in _ALLOWED[current]:
-        raise SegmentTransitionError(
-            f"a segment cannot move from {current.value} to {to.value}."
-        )
+        raise SegmentTransitionError(f"a segment cannot move from {current.value} to {to.value}.")
     return SegmentTransition(
         id=id,
         segment_id=segment_id,
