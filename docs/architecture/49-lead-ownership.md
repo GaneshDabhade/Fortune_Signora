@@ -757,3 +757,220 @@ The decided row said **`· yours`**, meaning *you held it*. **An account nobody 
 | **P-16** | Filter to *Mine* with nothing owned → understand why the list is empty → get back |
 | **P-17** | Dismiss a first account, having been told it is recoverable → find it → track it again |
 | **P-18** | A colleague's dismissal is attributable on the decided list |
+
+---
+
+# Part II · The ownership contract and handover, 2026-08-03
+
+> **Written for a session that has never seen this module.** Under rotating assignment the next lane inherits this document, the ADRs and the commit messages — nothing else (`CLAUDE.md` §12). Everything below exists so nobody has to rediscover the reasoning.
+
+## 19 · What Lead Lifecycle owns, and what it deliberately does not
+
+### It owns
+
+| | |
+|---|---|
+| **The opportunity aggregate** | Its identity, its generation, the score and policy that justified it, who opened it and when |
+| **The workflow state sequence** | Append-only, one complete statement per row. **The status *is* the audit trail**, not something kept beside it |
+| **The transition table** | Which stage may become which. Five stages, and the set is closed |
+| **Ownership** | Who holds an account. Assignment, hand-over, take-over, and the membership check behind each |
+| **Qualification policy** | The customer's threshold, versioned immutably, recorded on every opportunity |
+| **Attention ordering** | Which open accounts a seller sees, and in what order |
+| **`evidence_state`** | Derived at read time from the live score. **Never stored** |
+
+### It deliberately does not own
+
+| | Why, and who does |
+|---|---|
+| **What an account *is*** | Knowledge Graph. This module holds an `entity_id` and has never resolved a name |
+| **The score** | Buying Score Engine, read through its published port and **never recomputed** — this module decides what to track, not how much anything matters |
+| **Hypotheses and their names** | Signal Engine. The attention row carries a **catalog key and never a title**; its import contract forbids reaching that module at all |
+| **What happened to an account** | Timeline, which projects this module's events. **One-directional: Timeline reads, this module never calls it** |
+| **Who a person is** | Better Auth in the Next.js tier. The Python tier verifies tokens without learning who anybody is (ADR-0026). **Every name on screen comes from the roster at the frontend edge** |
+| **Membership** | Workspace & Tenancy, through the one approved synchronous read. **No copy is kept** |
+| **Activity, tasks, expectations, notes** | **Nothing owns them yet**, and this module must not start (§17) |
+| **Manager relationships** | Team Management's, when it exists |
+| **Which companies to watch** | Commercial Profile's Target Accounts |
+
+> **The line that decides every future question: this module answers *what is the state of the work*, never *what is true about the company*.** A field that describes the account belongs upstream; a field that describes the work belongs here.
+
+## 20 · Invariants this module protects
+
+**Each is enforced by code and covered by a test. A future change that breaks one is a defect, not a trade-off.**
+
+| | |
+|---|---|
+| **Intelligence suggests; humans commit** | `next_state` requires an `actor_id` with no default. **Only `TRACKING` may be machine-authored**, and only as an opening state |
+| **Every state carries a reason** | A blank one is refused by the domain. *"Someone changed it"* is not an explanation |
+| **Nothing is ever edited** | No `UPDATE` grant, no `UPDATE` policy, no repository method offering one. A change is a new row |
+| **A state row that changes nothing is refused** | Noise in an audit trail is worse than a gap |
+| **A won deal never reopens** | The next deal is genuinely a new opportunity, and conflating them distorts every win-rate figure computed later |
+| **One open opportunity per account** | Enforced on creation; a lost race leaves exactly one |
+| **An owner is a verified member** | Checked server-side on every assignment, never trusted from the request |
+| **No derived intelligence is stored** | `evidence_state` is computed on read. A falling score cannot revoke a seller's commitment |
+| **Ownership is not a stage** | A hand-over is a same-stage row with a different owner. **No `transferred` stage exists, and none may be added** |
+| **Provenance always exists** | Every opportunity records the score and policy version that justified it — including a manual one |
+
+## 21 · Contracts in and out
+
+| Direction | What |
+|---|---|
+| **Publishes** | `opportunity.created` · `opportunity.stage_changed` (v1, transactional outbox, `workspace_id` + `correlation_id` + `causation_id`) |
+| **Consumes** | `buying_score.updated` → `qualify_from_buying_score`. **⚠️ Not subscribed in the production worker** (§16) |
+| **Reads synchronously** | `buying_score_engine.public` · `workspace_tenancy.public` — and nothing else, ever |
+| **Read by** | `ai_reasoning_engine` · `ai_research_engine` · `ai_platform` — all through `public/`, all read-only |
+| **Projected by** | Timeline, from the two events above. **It reads; this module never calls it** |
+| **Depended on by the frontend** | The attention list, the account brief, the decided section, the workflow controls |
+
+> **`opportunity.stage_changed` carries a hand-over with `previous_stage == new_stage`.** Any future consumer must handle that; the name predates the capability. **Renaming it is a breaking change and is not worth it** — the payload has always described state rather than a delta.
+
+## 22 · Five users, walked
+
+### Seller
+**Morning** ✅ the ranked list, the reason, the score movement. **Lunch** ✅ decide, and be offered the next account *within the view they were working*. **End of day** ✅ *Taken on 3 weeks ago* answers *what have I been sitting on*. **Vacation** ✅ hand over, with a reason, in one act. **Returning after two weeks** ⚠️ **F-5** — everything is there and nothing says what moved while they were gone.
+
+### Sales Manager
+**Sees**: every account, who holds each, how long, every judgement and its author. **Does not see**: workload across the team, ownership distribution, aging as a *set*, decision consistency. **Should care about**: all four. ⚠️ **F-4** — the data exists on every row; **no screen aggregates it**, and aggregating needs a manager relationship to know whose accounts are *theirs*.
+
+### Organization Owner
+**Pipeline** ✅ readable account by account. **Workload** ❌ not without F-4. **Accountability** ✅ **the strongest answer in the product** — every decision names a person, a reason and a time, and nothing can be edited afterwards.
+
+### New employee
+✅ **The vocabulary is the customer's** (ADR-0034) and every stage is spelled out on the brief. The decision history reads from `sequence 0`, so six months of context arrives without asking anybody. **The one thing that needs explaining is `dismissed` vs `lost`** — and the dialog now asks the distinguishing question rather than a generic *Reason*.
+
+### Enterprise customer
+✅ Append-only history · server-side authorization · tenant isolation · a reason on every act · **an immutable record of a mistake rather than a quiet correction**. ⚠️ Would ask for: manager reporting, bulk reassignment, SLAs, approvals. **All four are recorded as pressure and none is built.**
+
+## 23 · What happens if — the pressure test
+
+| | |
+|---|---|
+| **I click twice** | The confirm disables on `isPending`. The domain refuses a second identical row anyway — **two defences, one of which is the database's** |
+| **My browser refreshes mid-decision** | Nothing is optimistic. **The screen is never briefly wrong** |
+| **The API is slow** | The dialog stays open and disabled; the list shows skeletons. ⚠️ **No timeout wording** — a 30-second request looks the same as a stuck one |
+| **The owner leaves** | ⚠️ **Their accounts stay assigned to a departed membership.** LO-04 makes reassignment possible; **nothing surfaces the need for it.** A trigger, not a defect |
+| **Ownership changes while I am reading** | My decision uses the id I loaded. The server refuses nothing — **last write wins, and the trail shows both.** Correct for a sales team, and deliberate |
+| **A score changes while I am reading** | The brief shows *then* beside *now*; a moved score never alters a commitment |
+| **Two people decide at once** | Both rows land, in order, each naming its actor. **No lock, and none wanted** |
+| **A decision arrives from AI** | Structurally impossible: `next_state` demands an `actor_id` |
+| **The account disappears upstream** | ⚠️ **Untested.** The opportunity survives; the name resolves to nothing and `EntityName` falls back. **Worth a test** |
+| **The ICP or buying committee changes** | No effect. **Opportunities outlive the score that created them**, which is the module's founding decision |
+| **Signals disappear** | The score expires, `evidence_state` reads `stale`, the opportunity stays open. **Signora never closes anything** |
+| **A CRM sync changes ownership** | ❌ **No CRM sync exists.** When it does, it must arrive through this module's endpoint as a named actor — **never a direct write** |
+| **The company merges, splits, or duplicates** | ❌ Knowledge Graph's identity problem. **Two entities means two opportunities, and this module cannot tell** |
+| **50,000 accounts imported** | The list is cursor-paginated and ordered server-side ✅. **The ranking is global** — see §18 |
+
+## 24 · Explainability, audited
+
+| Question | Answer |
+|---|---|
+| **Why did this become an opportunity?** | ✅ The score, the policy version, the contributions, the evidence |
+| **Why am I the owner?** | ✅ The decision history names who assigned it and why |
+| **Why did ownership change?** | ✅ LO-04, in both directions, with the reason leading |
+| **Why is this score lower?** | ✅ Contributions and the evidence drawer |
+| **Why is this ranked higher?** | ✅ Score, contested state, and the trigger |
+| **Why was this reopened?** | ✅ Its own reason and actor |
+| **Why can't I do this?** | ✅ **Only on a won deal**, which is now stated — and it is the only place the product refuses something |
+| **Why is this disabled?** | ⚠️ **The confirm button disables silently** on an empty reason and an unnamed assignee. A reader who has not noticed the field gets no explanation |
+| **Why am I waiting?** | ⛔ §17 |
+| **Why isn't this happening?** | ⚠️ **The weakest answer in the product**, and not this module's: `qualify_from_buying_score` is unsubscribed, so *"why has no opportunity appeared?"* has no answer anywhere |
+
+## 25 · Premium experience — observations, not work
+
+**Recorded rather than built.** None is a defect; each is where the product would feel more considered.
+
+| | |
+|---|---|
+| **A disabled confirm says nothing** | The one *"why is this disabled?"* the product does not answer. **The smallest premium win available** |
+| **No bulk anything** | Thirty hand-overs after one departure. **Correctly unbuilt** until somebody is watched doing it slowly |
+| **Filters are not saved, recent or pinned** | Three views is few enough that saving is premature; **the trigger is a fourth** |
+| **No keyboard path through the list** | `j`/`k`/`enter` is the shape a daily triage surface eventually wants |
+| **No undo anywhere** | **Deliberate.** Every recovery is a recorded act with a reason, which is the module's central claim |
+| **Nothing animates** | Calm by default. A decision landing without any acknowledgement is the one place a small transition would help |
+| **Context is preserved** | The scope rides the account link (LO-03) and *next* stays inside the filtered list (D41). ✅ **Already right** |
+
+## 26 · Repository reuse — the rule of three, applied to this milestone
+
+**Everything introduced, checked for a third consumer.**
+
+| Introduced | Consumers | Verdict |
+|---|---|---|
+| `components/team/people.ts` | **Four** — the picker, the workflow line, the decision history, the decided row | ✅ **Already extracted, and this milestone is why**. Two would have been a coincidence |
+| `lib/state/owner-scope.ts` | **Two** — the list, the brief | **Leave it.** It exists to stop the two disagreeing, not because a third asked |
+| `HeldSince` | One | **Leave it** |
+| `CONSEQUENCE` / `STAGE_PAST` / `ACTION_WORDING` | One each, and **deliberately separate** | **Never merge.** They are the same stage in four different sentences, and one shared table would force a wording change in four places at once |
+| `Choice` (stage + handover) | One | **Leave it** |
+| `movement()` in the decision history | One | **Leave it.** Timeline's feed answers a different question and names nobody |
+| `nameOf` fallbacks | Four | ✅ Extracted |
+
+> **Nothing else qualifies.** Three history-rendering surfaces now exist — organization history, decision history, account timeline — and **they still must not share a framework**: one names two people, one names one, one names nobody. **The differences are structural, not cosmetic**, which is precisely the case where a shared abstraction costs more than it saves.
+
+## 27 · AI pressure — where it inserts, and where it must not
+
+| Tomorrow | Insertion point | Cost |
+|---|---|---|
+| **AI recommends an owner** | The hand-over picker gains a suggested row | **None.** `Choice` already separates the act from the stage, and the actor is still the human who confirms |
+| **AI recommends the next action** | Beside `allowed_next`, never inside it | **None**, provided the recommendation cannot *become* a state |
+| **AI recommends reassignment** | Same as the first | **None** |
+| **AI explains a recommendation** | The brief already renders narration beside evidence | **None** |
+| **AI records a decision** | ⛔ **Structurally impossible, and must stay so.** `next_state` demands an `actor_id`; only `TRACKING` may be machine-authored |
+
+> **No redesign is required for any of them**, and that is not luck: *intelligence suggests, humans commit* was expressed in the **type system** rather than in a convention, so the boundary holds without anybody defending it.
+
+## 28 · Enterprise pressure — recorded, not designed
+
+| Scale | What breaks first |
+|---|---|
+| **1 → 10 sellers** | Nothing |
+| **100** | *Mine* stops being interesting; *my team's* starts. **F-4** |
+| **500** | Global ranking. Needs scoping **above** the filter, not another filter |
+| **5,000** | The attention list stops being a list and becomes a queue with assignment rules |
+| **Territories · regions · business units** | Ownership becomes *a person within a boundary*. **A scope on the workspace, not a second owner field** |
+| **Partners · resellers · channel** | **The owner is not a member.** Breaks the membership check LO-04 depends on — **needs an ADR before any code** |
+| **Multi-owner · account teams · overlay** | One `owner_id` cannot express *two people, two roles*. **A participation relation beside ownership; `owner_id` stays as who is accountable** |
+| **Temporary · vacation · assistant ownership** | A hand-over **with an end date** — the same expectation model §17 stopped on |
+| **Emergency reassignment** | Bulk, plus a reason applied once |
+| **Acquisitions · subsidiaries · cross-workspace** | ⛔ **Tenancy, not workflow.** RLS is the isolation boundary; cross-workspace selling would reopen it, and that is a platform decision |
+
+## 29 · Handover package
+
+### Functional summary
+**A seller discovers an account Signora surfaced, understands why, takes it on, works it, hands it over or takes it over, decides an outcome, and recovers from every mistake except a win — which is explained rather than hidden.** Every act names a person, carries a reason, and cannot be edited afterwards.
+
+### Customer journeys — the Playwright specification
+
+| # | Journey | Status |
+|---|---|---|
+| **P-1** | Discover → understand → take on → work → win | Specified |
+| **P-2** | Discover → take on → lose → reopen → win | Specified |
+| **P-3** | Dismiss → find it under *already decided* → reopen | Specified |
+| **P-4** | Hand over mid-work; the colleague sees it as theirs | Specified |
+| **P-5** | Take over an account somebody else holds | Specified |
+| **P-6** | Filter to *Mine*, decide, be offered the next **of mine** | Specified |
+| **P-7** | Refresh mid-hand-over; nothing half-applied | Specified |
+| **P-8** | Two tabs hand the same account to different people | Specified |
+| **P-9** | A role changes while a dialog is open | Specified |
+| **P-10** | Return after a week and understand what happened | **Written to fail** — F-5 |
+| **P-11** | Open a won account and understand why nothing can be done | Specified |
+| **P-12** | Six months of history read by somebody who just joined | Specified |
+| **P-13** | Win the wrong account → work it again → the win is still recorded | Specified |
+| **P-14** | Open an account scored below the threshold | Specified |
+| **P-15** | Open one already open → told plainly, not duplicated | Specified |
+| **P-16** | Filter to *Mine* with nothing owned → understand → get back | Specified |
+| **P-17** | Dismiss, having been told it is recoverable → find it → track it again | Specified |
+| **P-18** | A colleague's dismissal is attributable | Specified |
+
+### QE validation checklist
+**Tenancy** — every query workspace-scoped; an opportunity from another workspace is a 404, never a 403 · **Authorization** — `opportunity:read/add/update` enforced before application code · **Immutability** — no `UPDATE` grant on `opportunity_state`; a mutation attempt fails · **Reason** — every state has one; a blank is refused · **Actor** — every non-opening state names one · **Membership** — an owner outside the workspace is refused · **Won terminality** — `closed_won` offers no transition, and the manual route creates a *new* opportunity rather than editing it · **Pagination** — the owner filter is applied before the limit; a filtered page is a full page · **Vocabulary** — no screen says workspace, tenant, entity, stage enum or identifier.
+
+### Regression checklist
+The five stages and their transitions · the opening state names nobody on an automatic qualification and names a person on a manual one · a hand-over does not move the stage · the trail reads ownership pairwise · the clock resets only on a workflow decision · `since` and `opened_at` move independently · the empty states differ by scope · every consequence sentence matches what the transition actually does.
+
+### Known limitations
+**F-4** no manager view · **F-5** no *since you were last here* · no entity search, so manual opening is reachable only for closed accounts · no release-to-nobody (`owner_id: null` means *unchanged*) · no bulk anything · no *waiting* (§17) · **`qualify_from_buying_score` is unsubscribed in production**.
+
+### Future milestones that will extend this
+Manager workflows (needs a manager relationship) · notifications (M14a) · the expectation model (§17) · CRM sync (must arrive through the endpoint as a named actor) · forecasting (close date and amount, deliberately absent).
+
+### What must never be modified directly
+**The transition table** without an ADR · **the actor requirement** on `next_state` · **the immutability of `opportunity_state`** · **`evidence_state` becoming stored** · **any write to this module's tables from another module** · **a fifth stage for anything that is an event.**
