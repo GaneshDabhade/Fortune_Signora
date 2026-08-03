@@ -401,5 +401,11 @@ class TestTheRowCarriesNoScore:
             "stage",
             "reason",
             "owner_id",
+            # **Who decided, which is not who held it** (the screen audit). An
+            # account nobody ever took on can still be dismissed, and until
+            # this field the row could attribute a judgement only when the
+            # reader happened to have owned the account.
+            "decided_by",
+
             "decided_at",
         }

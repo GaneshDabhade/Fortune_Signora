@@ -926,6 +926,49 @@ describe('an account somebody else holds can be taken over — LO-04', () => {
   });
 });
 
+describe('the dialog says what happens to the account — the screen audit', () => {
+  // **The product built recoverability and never mentioned it at the moment
+  // somebody was deciding whether to risk it.** A Sales Manager said it out
+  // loud during R4-04: *"I'd tell my reps not to dismiss anything"* — and a rep
+  // who will not dismiss produces no qualification-quality signal at all,
+  // which is the one thing `dismissed` exists to capture.
+
+  it('tells a first-time dismisser that a dismissal is recoverable', () => {
+    render(actions());
+    fireEvent.click(screen.getByRole('button', { name: 'Not a real opportunity' }));
+
+    expect(screen.getByText(/find it again/i)).toBeVisible();
+    expect(screen.getByText(/track it again if you change your mind/i)).toBeVisible();
+  });
+
+  it('says a loss can be picked up, because it can', () => {
+    render(actions());
+    fireEvent.click(screen.getByRole('button', { name: 'Lost without pursuing' }));
+
+    expect(screen.getByText(/find it again/i)).toBeVisible();
+  });
+
+  it('tells the truth about a win, which does not come back', () => {
+    // **A statement of consequence, never reassurance.** This one is not
+    // recoverable, and pretending otherwise would be the more expensive
+    // kindness.
+    render(actions({ stage: 'engaged', owner_id: VIEWER, allowed_next: ['closed_won'] }));
+    fireEvent.click(screen.getByRole('button', { name: 'Won' }));
+
+    expect(screen.getByText(/Won deals stay won/)).toBeVisible();
+    expect(screen.queryByText(/find it again/i)).toBeNull();
+  });
+
+  it('still says who an account is being assigned to when that is the news', () => {
+    // The consequence of engaging is the assignment, and that sentence was
+    // already right — it must not be replaced by a generic one.
+    render(actions());
+    fireEvent.click(screen.getByRole('button', { name: "I'm working this" }));
+
+    expect(screen.getByText('This account will be assigned to you.')).toBeVisible();
+  });
+});
+
 describe('the confirmation says what it will actually do', () => {
   it('offers to hand it over, by name, once a colleague is chosen', () => {
     render(

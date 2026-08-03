@@ -19,11 +19,15 @@ const identities = vi.hoisted(() => vi.fn());
 const catalog = vi.hoisted(() => vi.fn());
 const decided = vi.hoisted(() => vi.fn());
 const targets = vi.hoisted(() => vi.fn());
+/** The query string the page is reading. Hoisted so a test can put the
+ * reader on a filtered view, which is the only way to reach the empty
+ * state LO-03 introduced. */
+const search = vi.hoisted(() => vi.fn(() => new URLSearchParams()));
 
 // The list reads `?owner=` so a seller's view survives a refresh and travels
 // on the account link (LO-03).
 vi.mock('next/navigation', () => ({
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => search(),
 }));
 
 vi.mock('@/lib/state/workspace-provider', () => ({
@@ -192,5 +196,78 @@ describe('an empty list says why it is empty', () => {
     render(withQuery(<AttentionPage />));
 
     expect(screen.queryByRole('link', { name: /settings/i })).toBeNull();
+  });
+});
+
+describe('an empty view is not an empty workspace — LO-03 corrected', () => {
+  // **A defect LO-03 introduced.** Filtered to *Mine* while holding nothing, a
+  // seller was told *"Nothing needs your attention"* — which may be false
+  // twenty times over, and is exactly the confident wrong answer this page
+  // refuses when the target declaration has not loaded.
+
+  beforeEach(() => {
+    workspaceContext.mockReturnValue({
+      activeWorkspace: { id: 'w1', name: 'Acme' },
+      isLoading: false,
+    });
+    accounts.mockReturnValue({ ...IDLE, data: { items: [], has_more: false } });
+    identities.mockReturnValue({ ...IDLE, data: new Map() });
+    catalog.mockReturnValue({ ...IDLE, data: new Map() });
+    decided.mockReturnValue({ ...IDLE, data: { items: [], has_more: false } });
+    targets.mockReturnValue({
+      ...IDLE,
+      data: {
+        version: 3,
+        accounts: [{ id: 'a', name: 'Initech' }],
+        updated_at: '2026-08-01T09:00:00Z',
+        updated_by: 'u1',
+      },
+    });
+  });
+
+  it('says the filter is why the list is empty, not the workspace', () => {
+    search.mockReturnValue(new URLSearchParams('owner=mine'));
+
+    render(withQuery(<AttentionPage />));
+
+    expect(screen.getByText('You are not working any accounts')).toBeInTheDocument();
+    expect(screen.queryByText('Nothing needs your attention')).toBeNull();
+  });
+
+  it('does not claim the workspace is quiet when it may not be', () => {
+    // Twenty accounts may need attention; none of them are yours.
+    search.mockReturnValue(new URLSearchParams('owner=mine'));
+
+    render(withQuery(<AttentionPage />));
+
+    expect(screen.getByText(/Other accounts may still need attention/i)).toBeInTheDocument();
+  });
+
+  it('offers the way back out of the view it put the reader in', () => {
+    // **A dead end a reader arrived at by clicking** is the one kind this
+    // surface should never leave them in.
+    search.mockReturnValue(new URLSearchParams('owner=mine'));
+
+    render(withQuery(<AttentionPage />));
+
+    expect(screen.getByRole('link', { name: 'Show everything' })).toHaveAttribute('href', '/');
+  });
+
+  it('says something different about an unassigned view', () => {
+    // *Nobody has left one unclaimed* is a different fact from *you hold
+    // none*, and one sentence for both would be true of neither.
+    search.mockReturnValue(new URLSearchParams('owner=unassigned'));
+
+    render(withQuery(<AttentionPage />));
+
+    expect(screen.getByText('Every account here has somebody on it')).toBeInTheDocument();
+  });
+
+  it('keeps the established wording on the unfiltered view', () => {
+    search.mockReturnValue(new URLSearchParams());
+
+    render(withQuery(<AttentionPage />));
+
+    expect(screen.getByText('Nothing needs your attention')).toBeInTheDocument();
   });
 });

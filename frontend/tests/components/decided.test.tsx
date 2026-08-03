@@ -22,6 +22,7 @@ function decided(overrides: Partial<DecidedAccount> = {}): DecidedAccount {
     stage: 'dismissed',
     reason: 'They standardised on a competitor last quarter.',
     owner_id: VIEWER,
+    decided_by: VIEWER,
     decided_at: '2026-07-30T09:00:00Z',
     ...overrides,
   };
@@ -42,9 +43,21 @@ const IDENTITIES = new Map<string, AccountIdentity>([
   ],
 ]);
 
-function section(accounts: DecidedAccount[], identities = IDENTITIES) {
+function section(
+  accounts: DecidedAccount[],
+  options: {
+    identities?: Map<string, AccountIdentity>;
+    /** The roster, so a judgement can name its author. */
+    people?: ReadonlyMap<string, string>;
+  } = {},
+) {
   return render(
-    <DecidedAccounts accounts={accounts} identities={identities} viewerId={VIEWER} />,
+    <DecidedAccounts
+      accounts={accounts}
+      identities={options.identities ?? IDENTITIES}
+      viewerId={VIEWER}
+      people={options.people ?? new Map()}
+    />,
   );
 }
 
@@ -126,7 +139,7 @@ describe('what a row says', () => {
   });
 
   it('reaches an account no source has named', async () => {
-    section([decided()], new Map());
+    section([decided()], { identities: new Map() });
     await userEvent.click(screen.getByRole('button'));
 
     // An account nobody has named is exactly the one a reader most wants to
@@ -163,11 +176,16 @@ describe('what a row says', () => {
     expect(screen.queryByText(/2026-07-30T/)).toBeNull();
   });
 
-  it('marks a row the reader holds', async () => {
+  it('marks the reader\'s own decision as theirs', async () => {
+    // **This said `· yours` and meant *you held it***, which answered the
+    // question only when the reader happened to have owned the account — an
+    // account nobody ever took on can still be dismissed. It now names the
+    // *decider*, which answers the same question in strictly more cases and
+    // reads identically in this one (the screen audit).
     section([decided()]);
     await userEvent.click(screen.getByRole('button'));
 
-    expect(screen.getByText(/yours/)).toBeVisible();
+    expect(screen.getByText(/· you/)).toBeVisible();
   });
 
   it('claims nothing about a row somebody else holds', async () => {
@@ -223,5 +241,37 @@ describe('the rows are a list', () => {
 
     const list = screen.getByRole('list');
     expect(within(list).getAllByRole('listitem')).toHaveLength(2);
+  });
+});
+
+describe('a judgement has an author — the screen audit', () => {
+  const COLLEAGUE = '00000000-0000-4000-8000-000000000002';
+
+  it('names who decided, not only who held it', async () => {
+    // **An account nobody ever took on can still be dismissed**, so `owner_id`
+    // answered the question only when the reader happened to have owned it —
+    // and a colleague's judgement was unattributable, on the one surface whose
+    // whole purpose is showing a customer a judgement back.
+    section([decided({ owner_id: null, decided_by: COLLEAGUE })], {
+      people: new Map([[COLLEAGUE, 'ravi@acme.com']]),
+    });
+    await userEvent.click(screen.getByRole('button'));
+
+    expect(screen.getByText(/ravi@acme\.com/)).toBeVisible();
+  });
+
+  it('says *you* about your own decision', async () => {
+    section([decided({ owner_id: null, decided_by: VIEWER })]);
+    await userEvent.click(screen.getByRole('button'));
+
+    expect(screen.getByText(/· you/)).toBeVisible();
+  });
+
+  it('never prints an identifier for somebody it cannot name', async () => {
+    const { container } = section([decided({ owner_id: null, decided_by: COLLEAGUE })]);
+    await userEvent.click(screen.getByRole('button'));
+
+    expect(container.textContent).not.toContain(COLLEAGUE);
+    expect(screen.getByText(/somebody here/)).toBeVisible();
   });
 });

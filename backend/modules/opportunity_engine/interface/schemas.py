@@ -348,6 +348,14 @@ class DecidedAccountResponse(BaseModel):
             "who anybody is, so it can never say a name (**D23**)."
         )
     )
+    decided_by: UUID | None = Field(
+        description=(
+            "**Who decided, which is not the same person as who held it.** An account "
+            "nobody ever took on can still be dismissed, and until this field existed that "
+            "judgement was unattributable: the row could say *yours* only when the reader "
+            "had *held* it. Null only on an opening state, which never reaches this list."
+        )
+    )
     decided_at: datetime = Field(description="When.")
 
     @classmethod
@@ -358,6 +366,9 @@ class DecidedAccountResponse(BaseModel):
             stage=decided.state.stage,
             reason=decided.state.reason,
             owner_id=decided.state.owner_id,
+            # Already loaded, like `since` on the attention row: the state is
+            # read beside the opportunity, and this field was simply left off.
+            decided_by=decided.state.actor_id,
             decided_at=decided.state.occurred_at,
         )
 

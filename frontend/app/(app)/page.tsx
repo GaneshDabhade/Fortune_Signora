@@ -162,7 +162,10 @@ export default function AttentionPage() {
           told Signora anything"* to a workspace that has is the confident
           wrong answer this page already refuses elsewhere. */}
       {data && data.items.length === 0 ? (
-        <Quiet declared={targets === undefined ? undefined : targets.version > 0} />
+        <Quiet
+          scope={scope}
+          declared={targets === undefined ? undefined : targets.version > 0}
+        />
       ) : null}
       {data && data.items.length > 0 ? (
         <ol className="flex flex-col gap-2">
@@ -192,6 +195,7 @@ export default function AttentionPage() {
         accounts={decided?.items ?? []}
         identities={decidedIdentities}
         viewerId={viewerId}
+        people={owners}
       />
     </div>
   );
@@ -329,7 +333,41 @@ function Loading() {
  * An owner already has Settings in the navigation; a member cannot declare
  * one, so a control offering it would be a control they cannot use.
  */
-function Quiet({ declared }: { declared: boolean | undefined }) {
+function Quiet({
+  scope,
+  declared,
+}: {
+  scope: OwnerScope;
+  declared: boolean | undefined;
+}) {
+  // **An empty *view* is not an empty workspace, and LO-03 made the two look
+  // identical.** Filtered to *Mine* while holding nothing, a seller was told
+  // *"Nothing needs your attention"* — which may be false twenty times over,
+  // and is exactly the confident wrong answer this page refuses when the
+  // target declaration has not loaded. The filter is the reason the list is
+  // empty, so the filter is what the sentence has to be about.
+  //
+  // **And it offers the way back.** A dead end a reader arrived at by
+  // clicking is the one kind this surface should never leave them in.
+  if (scope !== 'all') {
+    return (
+      <EmptyState
+        icon={LineChart}
+        title={
+          scope === 'mine'
+            ? 'You are not working any accounts'
+            : 'Every account here has somebody on it'
+        }
+        description={
+          scope === 'mine'
+            ? 'Nothing on your list is held by you. Other accounts may still need attention — this view is showing only yours.'
+            : 'Nobody has left an account unclaimed. This view is showing only accounts nobody has taken on.'
+        }
+        action={<Link href="/">Show everything</Link>}
+      />
+    );
+  }
+
   if (declared === false) {
     return (
       <EmptyState

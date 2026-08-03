@@ -2611,3 +2611,44 @@ class TestAHumanCanOpenAnOpportunity:
         # The opening entry of a *manual* opportunity names its actor, where an
         # automatic one names nobody. Only TRACKING may be machine-authored.
         assert brief["history"][0]["decided_by"] == str(user_id)
+
+
+class TestADecidedRowNamesItsAuthor:
+    """**A judgement without an author — the screen audit.**
+
+    The decided row carried `owner_id` and said *yours* when it matched the
+    reader. **An account nobody ever took on can still be dismissed**, so that
+    answered *"who decided this?"* only when the reader happened to have owned
+    it — on the one surface whose whole purpose is showing a customer a
+    judgement back.
+    """
+
+    async def test_the_row_says_who_decided_even_when_nobody_held_it(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        rows = (await _accounts(client, key_pair, user_id, workspace_id)).json()["items"]
+        (row,) = [r for r in rows if UUID(r["account_id"]) == entity_id]
+        # Dismissed straight from `tracking`, so it was never owned by anybody.
+        await client.post(
+            f"/workspaces/{workspace_id}/opportunities/{row['id']}/states",
+            headers=_auth(key_pair, user_id),
+            json={"stage": "dismissed", "reason": "wrong segment entirely"},
+        )
+
+        decided = (
+            await client.get(
+                f"/workspaces/{workspace_id}/accounts/decided",
+                headers=_auth(key_pair, user_id),
+            )
+        ).json()["items"]
+
+        (entry,) = [d for d in decided if UUID(d["account_id"]) == entity_id]
+        assert entry["owner_id"] is None, "this account was never held, which is the case"
+        assert UUID(entry["decided_by"]) == user_id

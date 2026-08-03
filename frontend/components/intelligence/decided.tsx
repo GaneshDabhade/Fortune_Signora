@@ -4,9 +4,13 @@ import { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 
 import { formatDay } from '@/components/intelligence/dates';
+import { nameOf } from '@/components/team/people';
 import { EntityName } from '@/components/intelligence/entity-name';
 import { Badge } from '@/components/ui';
 import type { AccountIdentity, DecidedAccount, Stage } from '@/lib/api/types';
+
+/** One instance, so a default parameter is not a new object every render. */
+const EMPTY: ReadonlyMap<string, string> = new Map();
 
 /**
  * *"Wait — what did I just dismiss?"* (**R4-04**)
@@ -47,11 +51,14 @@ export function DecidedAccounts({
   accounts,
   identities,
   viewerId,
+  people = EMPTY,
 }: {
   accounts: DecidedAccount[];
   /** Keyed by account id, as `useAccountIdentities` returns them. */
   identities: Map<string, AccountIdentity> | undefined;
   viewerId: string | null;
+  /** Everybody who can be named, so a judgement has an author. */
+  people?: ReadonlyMap<string, string>;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -92,6 +99,7 @@ export function DecidedAccounts({
               account={account}
               identities={identities}
               viewerId={viewerId}
+              people={people}
             />
           ))}
         </ul>
@@ -112,10 +120,12 @@ function DecidedRow({
   account,
   identities,
   viewerId,
+  people,
 }: {
   account: DecidedAccount;
   identities: Map<string, AccountIdentity> | undefined;
   viewerId: string | null;
+  people: ReadonlyMap<string, string>;
 }) {
   const identity = identities?.get(account.account_id);
 
@@ -131,7 +141,14 @@ function DecidedRow({
         <span className="flex items-center gap-2 text-xs text-content-subtle">
           <Outcome stage={account.stage} />
           {formatDay(account.decided_at)}
-          {account.owner_id !== null && account.owner_id === viewerId ? ' · yours' : null}
+          {/* **Who decided, not who held it.** An account nobody ever took on
+              can still be dismissed, so `· yours` answered the question only
+              when the reader happened to have owned it — and a colleague's
+              judgement was unattributable, on the one surface whose whole
+              purpose is showing a customer a judgement back. */}
+          {account.decided_by !== null
+            ? ` · ${nameOf(account.decided_by, people, viewerId)}`
+            : null}
         </span>
       </div>
 

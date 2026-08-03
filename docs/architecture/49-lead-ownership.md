@@ -678,3 +678,82 @@ A human opening an opportunity is **still a suggestion becoming a record**. Taki
 | **Inferring it from silence** | ⚫ Silence is what LO-06 reports and refuses to interpret. *Waiting* and *forgotten* look identical from here, and they are opposites |
 
 **The trigger is a customer describing one.** Not a request for *"a waiting stage"* — the words for what they are owed, from whom, and by when.
+
+---
+
+## 18 · LO-09 — the screen audit, 2026-08-03
+
+**Every Lead Lifecycle surface walked as a seller rather than as its engineer**, asking one question of each: *does it answer what the reader came to ask, and does it hide anything?* Three surfaces failed, and one of the failures was **introduced two slices earlier by this lane**.
+
+### The empty list lied, and LO-03 is what made it lie
+
+**Filter to *Mine*, hold nothing, and the product said *"Nothing needs your attention."***
+
+Twenty accounts may need attention. **None of them are yours.** The sentence is not merely unhelpful — it is *false*, and it is exactly the confident wrong answer this page's own comment says it refuses when the target declaration has not loaded.
+
+> **An empty view is not an empty workspace**, and LO-03 made the two indistinguishable by adding a filter without teaching the empty state about it.
+
+Each view now says what is actually true, and — the part that matters more — **offers the way back**. A dead end a reader arrived at *by clicking* is the one kind this surface must never leave them in.
+
+| View | What it says |
+|---|---|
+| **All**, nothing declared | *"Signora does not know which companies to watch yet"* — unchanged |
+| **All**, declared | *"Nothing needs your attention"* — unchanged, and now only said when it is true |
+| **Mine** | *"You are not working any accounts"* · *other accounts may still need attention* · **Show everything** |
+| **Unassigned** | *"Every account here has somebody on it"* · **Show everything** |
+
+### The dialog never mentioned that a dismissal is recoverable
+
+**The product built the recovery and told nobody at the moment it mattered.** The decided section exists precisely so a seller can find a dismissed account again — and a rep who does not know that will not dismiss anything, which is what a Sales Manager said out loud during R4-04: *"I'd tell my reps not to dismiss anything."*
+
+> **A rep who will not dismiss produces no qualification-quality signal at all**, which is the one thing `dismissed` exists to capture. The sentence that makes the decision safe belongs on the dialog, not on the screen a reader reaches afterwards.
+
+Every decision now states its consequence before it is committed:
+
+| | |
+|---|---|
+| **Dismiss · Lost** | *"This leaves your list. You can find it again under the accounts you have already decided…"* |
+| **Won** | *"…Won deals stay won — if the company comes back, that is a new opportunity."* |
+| **Take it on** | *"This account will be assigned to you"* — unchanged, because the assignment *is* the consequence |
+
+**A statement of consequence, never reassurance.** A win is told plainly that it does not come back, because that one genuinely is not recoverable and **pretending otherwise would be the more expensive kindness.**
+
+### A judgement with no author
+
+The decided row said **`· yours`**, meaning *you held it*. **An account nobody ever took on can still be dismissed** — dismissal is reachable straight from `tracking` — so on those rows the mark never appeared at all, and a colleague's judgement was anonymous on the one surface whose entire purpose is showing a customer a judgement back.
+
+`decided_by` was **already loaded** — the state is read beside the opportunity — and simply left off the response, the same shape as `since` in LO-06 and `owner_id` in M12.2. The row now names the decider, which answers the question in strictly more cases and reads identically in the one `yours` covered.
+
+### Surfaces that passed
+
+| | |
+|---|---|
+| **The account brief** | Score, contributions, evidence, narration, research, validation, workflow, history — *why is this here* is the strongest thing the product does |
+| **The decision history** | Reason-first, named, ordered as recorded, never re-sorted |
+| **The account timeline** | Days, prominence, a reviewed catalog, and LO-04's hand-over correction |
+| **Workflow controls** | Exactly `allowed_next`, plus the two controls that are deliberately not stage moves |
+| **The decided section** | Absent rather than empty; closed by default; the customer's own words on the row |
+| **Reopening** | Offered from the brief of any lost or dismissed account, with its own reason and actor |
+
+### Five-year pressure recorded, not built
+
+| Trigger | Pressure | Direction |
+|---|---|---|
+| **50 sellers** | *Mine* stops being the interesting filter; *my team's* starts | One more `OwnerScope` value once a manager relationship exists |
+| **500 sellers · 50,000 accounts** | The attention list's ranking is global; nobody reads past the first screen | Territory or business-unit scoping **above** the filter, not another filter |
+| **Territories · business units · regions** | Ownership stops being *a person* and becomes *a person within a boundary* | A scope on the workspace, not a second owner field |
+| **Vacation coverage · temporary ownership** | LO-04 hands over permanently; coverage is a hand-over **with an end date** | The first genuine case for an expectation (§17) — **the same model** |
+| **Shared ownership · account teams · overlay specialists** | One `owner_id` cannot express *two people, different roles* | A participation relation beside ownership; **`owner_id` stays** as *who is accountable* |
+| **AI agents · auto-assignment** | *Intelligence suggests; humans commit* must survive | A suggestion **on the existing control**, never an owner written by a machine |
+| **Enterprise approvals** | A decision becomes a request | Would put an approval state between intent and record — **the first real pressure on the stage table**, and worth resisting hard |
+| **Partner · channel selling** | The owner is not a member of the workspace | Breaks the membership check LO-04 relies on; **needs an ADR before anything is built** |
+
+**Every row is a note. None is a design.**
+
+### Playwright scenarios added
+
+| # | Scenario |
+|---|---|
+| **P-16** | Filter to *Mine* with nothing owned → understand why the list is empty → get back |
+| **P-17** | Dismiss a first account, having been told it is recoverable → find it → track it again |
+| **P-18** | A colleague's dismissal is attributable on the decided list |

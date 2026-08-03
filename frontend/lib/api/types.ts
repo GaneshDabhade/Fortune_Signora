@@ -747,6 +747,14 @@ export interface DecidedAccount {
   /** Compared against the reader to say *yours*. Never a name — the tier
    * verifies tokens without learning who anybody is (**D23**). */
   owner_id: string | null;
+  /**
+   * Who decided — **not the same person as who held it**.
+   *
+   * An account nobody ever took on can still be dismissed, so `owner_id` left
+   * that judgement unattributable: the row could say *yours* only when the
+   * reader had *held* it. Resolved through the roster the page already has.
+   */
+  decided_by: string | null;
   decided_at: string;
 }
 

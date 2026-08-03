@@ -154,6 +154,36 @@ const HANDOVER_QUESTION = {
   taking: 'Why are you taking this over?',
 } as const;
 
+/**
+ * What happens to the account afterwards.
+ *
+ * **The product built recoverability and never mentioned it at the moment
+ * somebody was deciding whether to risk it** (LO-05, the screen audit). A
+ * dismissal *is* recoverable — the decided section exists precisely so a
+ * seller can find one again — and a rep who does not know that will not
+ * dismiss anything, which is exactly what a Sales Manager said out loud during
+ * R4-04: *"I'd tell my reps not to dismiss anything."*
+ *
+ * **A rep who will not dismiss produces no qualification-quality signal at
+ * all**, which is the one thing `dismissed` exists to capture. So the sentence
+ * that makes the decision safe belongs on the dialog, not on the screen a
+ * reader reaches afterwards.
+ *
+ * **A statement of consequence, never reassurance.** A won deal is told
+ * plainly that it does not come back, because that one is *not* recoverable
+ * and pretending otherwise would be the more expensive kindness.
+ */
+const CONSEQUENCE: Record<Stage, string> = {
+  tracking: 'This comes back onto your list.',
+  engaged: 'This stays on your list, marked as yours.',
+  closed_won:
+    'This closes the deal and leaves your list. Won deals stay won — if the company comes back, that is a new opportunity.',
+  closed_lost:
+    'This leaves your list. You can find it again under the accounts you have already decided, and pick it up if it comes back.',
+  dismissed:
+    'This leaves your list. You can find it again under the accounts you have already decided, and track it again if you change your mind.',
+};
+
 const CONFIRM_WORDING: Record<Stage, string> = {
   tracking: 'Track it again',
   engaged: 'Take it on',
@@ -470,15 +500,19 @@ function DecisionDialog({
       description={
         recorded !== null
           ? undefined
-          : claiming && handTo === null
-            ? 'This account will be assigned to you.'
-            : handover && !holding
-              ? // **Said before it happens, not discovered afterwards.** Taking
+          : handover
+            ? holding
+              ? undefined
+              : // **Said before it happens, not discovered afterwards.** Taking
                 // an account somebody else is working is a legitimate act — a
                 // territory change, a colleague on leave — and the product's
                 // job is to make it visible rather than to prevent it.
                 'This account is being worked by somebody else. It will move to you, and the change will be on its record.'
-              : undefined
+            : claiming && handTo === null
+              ? 'This account will be assigned to you.'
+              : choice
+                ? CONSEQUENCE[choice.stage]
+                : undefined
       }
       footer={
         recorded !== null && next !== undefined ? (
