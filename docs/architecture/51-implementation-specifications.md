@@ -2,7 +2,9 @@
 
 > **The continuation of [50 — Product Capability Audit](50-product-capability-audit.md) §5**, dated 2026-08-03, by Lane B.
 >
-> **Each specification is written so a lane can claim it and start.** Objective · customer problem · customer value · existing foundation · modules · backend · frontend · UX · API · events · data model · acceptance criteria · risks · dependencies · effort · future evolution · lane.
+> **Each specification is written so a lane can claim it and start.** Objective · customer problem · customer value · existing foundation · modules · backend · frontend · UX · API · events · data model · acceptance criteria · risks · dependencies · effort · future evolution.
+>
+> **A specification no longer names a lane** (product owner, 2026-08-03). **Ownership is an operational decision and a specification is a durable one**, so embedding the first in the second dates the second the first time anything is reassigned — which happened to five of these within a day of writing them. Who builds it lives on the [execution board](../ACTIVE_ASSIGNMENTS.md); what it is lives here. The `Lane` rows below are struck rather than deleted, because a dated record of what was true then is not rewritten to match now (`CLAUDE.md` §2).
 >
 > **Nothing here is built.** Where a specification names a file, a schema or an event, it was read from the repository rather than assumed — and one slice was deleted during writing because it turned out to be finished already.
 >
@@ -41,7 +43,25 @@
 
 ---
 
-## A4 · The product says when it last looked · **S** · Provider Platform
+## A4 · The product says how current its evidence is · **S** · Knowledge Graph
+
+> ### BUILT 2026-08-03 — and the title changed, because the specification was wrong about the fact
+>
+> **This slice was specified as *"the product says when it last looked"*, sourced from `provider_watermark.position`, on the strength of reading the schema.** Tracing the code before writing any found three things that made that impossible, and every one is worth keeping:
+>
+> | What the specification assumed | What the code does |
+> |---|---|
+> | `position` records when a provider last read a subject | **It advances only when records arrive** — `run_sync.py:167`, `if sync.may_advance_watermark and sync.high_water is not None`. A provider that ran and found nothing leaves it untouched |
+> | `provider_sync` says a run happened for an account | **It carries no subject.** One row per run, and the row cannot say which account the run was for |
+> | `subject` can be reached from an `account_id` | **`subject` is the company name as the customer typed it** (ADR-0036 §5), unresolved by design. The brief holds an entity id, and resolution is deliberately downstream |
+>
+> **So Signora cannot currently say when it last looked at an account, and no amount of composition changes that.** The only per-account fact that exists is *when the newest evidence about it was observed*, from `claim.observed_at`.
+>
+> **That is what shipped, and it is what the screen says.** *"Latest evidence · 2 weeks ago"*, never *"Last checked"* — the second would be the product claiming a capability no table supports, on the surface where trust is being built. A test asserts the wording never drifts back.
+>
+> **The slice moved module as a result.** It was specified against Provider Platform and built in Knowledge Graph, which already joins claims to entities for `identities()` — so it needed **no new endpoint, no new HTTP request, no new module dependency and no new storage.** The account brief already calls `/account-identities`.
+>
+> **What is still missing is now a named gap rather than a wrong assumption.** *"When did Signora last look?"* needs either a subject on `provider_sync` or an attempt timestamp on the watermark. **That is a Provider Platform slice, small, and it is the honest other half of this one.**
 
 **Start here.** Smallest slice in the roadmap, closes a real contradiction, and changes how the product *feels* more than anything else of its size.
 
@@ -74,7 +94,7 @@ provider_sync(provider, capability, status, started_at, finished_at,
 | **Risks** | *Last looked* is **per provider and per capability**; the screen needs one number. **Recommend the oldest**, because a customer reading *"2 hours ago"* must not be seeing the freshest of six providers while a seventh has been silent for a week |
 | **Dependencies** | None. Buildable today |
 | **Future** | The same field drives a staleness badge on the list, a *re-sync* control, and the freshness axis of A2's filters |
-| **Lane** | Provider Platform's current assignee |
+| ~~**Lane**~~ | ~~Provider Platform's current assignee~~ — *ownership moved to the board, 2026-08-03* |
 
 ---
 
@@ -101,7 +121,7 @@ provider_sync(provider, capability, status, started_at, finished_at,
 | **Risks** | **Match quality on messy names.** *"Adobe"* must find *"Adobe Systems Incorporated"*, and the review found accounts whose sources disagree about their own name. **Recommend substring over the resolved display name for this slice** and defer fuzzy matching until somebody misses a search |
 | **Dependencies** | None |
 | **Future** | The same endpoint becomes universal search (people, signals, decisions) once C1 exists |
-| **Lane** | Product Surface |
+| ~~**Lane**~~ | ~~Product Surface~~ — *ownership moved to the board, 2026-08-03* |
 
 ---
 
@@ -137,7 +157,7 @@ provider_sync(provider, capability, status, started_at, finished_at,
 | **Risks** | **Two lists showing different things is a product problem, not a technical one.** *Attention* and *Accounts* must be visibly different answers to visibly different questions, or customers will ask which one is right |
 | **Dependencies** | A1 (shared query shape) · A4 (freshness filter) · the per-person ruling, for saved views only |
 | **Effort note** | **L**, and it is the largest slice in Epic A |
-| **Lane** | Product Surface |
+| ~~**Lane**~~ | ~~Product Surface~~ — *ownership moved to the board, 2026-08-03* |
 
 ---
 
@@ -170,7 +190,7 @@ ORDER BY attribute, observed_at
 | **Risks** | **Volume.** `claim` is the largest table in the schema. Scope to one subject and paginate per attribute |
 | **Dependencies** | A1, for a way to reach a company that is not on the attention list |
 | **Future** | The same read powers a *what changed this week* digest ([MC-5](../PRODUCT_EXPERIENCE.md)) and the competitor monitoring in the audit's module 14 |
-| **Lane** | Product Surface, with `knowledge_graph`'s assignee for the read port |
+| ~~**Lane**~~ | ~~Product Surface, with `knowledge_graph`'s assignee for the read port~~ — *ownership moved to the board, 2026-08-03* |
 
 ---
 
@@ -197,7 +217,37 @@ ORDER BY attribute, observed_at
 | **Risks** | **Hiding it entirely loses real intelligence** — the evidence on that record is genuine. The queue must be discoverable or it becomes a place data goes to die |
 | **Dependencies** | **[C-321](../LANE_COORDINATION.md) must be answered first.** This is the clearest case in the roadmap of a decision blocking a build |
 | **Future** | The same queue absorbs merge/dedupe once two providers name one company differently |
-| **Lane** | `knowledge_graph`'s assignee, with Product Surface |
+| ~~**Lane**~~ | ~~`knowledge_graph`'s assignee, with Product Surface~~ — *ownership moved to the board, 2026-08-03* |
+
+---
+
+## A7 · The product says when it last *looked* · **S** · Provider Platform
+
+**Proposed 2026-08-03, by building A4.** Not in the original audit — **it exists because implementing A4 proved the fact it assumed was missing.**
+
+| | |
+|---|---|
+| **Objective** | Every account can state when a provider last attempted to read it, whether or not anything came back |
+| **Customer problem** | A4 answers *"how old is what we know"*. It cannot answer *"is Signora still watching this?"* — and those diverge exactly where it matters: **an account nobody has found anything about looks identical to one nobody has checked** |
+| **Customer value** | The second half of trust. A seller who sees *"Latest evidence · 5 weeks ago"* today cannot tell whether the account went quiet or the pipeline did |
+
+**Why it does not exist, precisely.**
+
+| Table | Why it cannot answer |
+|---|---|
+| `provider_sync` | One row per run, with `started_at`/`finished_at` — but **no `subject`**. It knows a run happened; it cannot say which account for |
+| `provider_watermark` | Keyed by `subject`, but `position` advances **only when records arrive** (`run_sync.py:167`). A successful empty read leaves it untouched, which is the whole case |
+
+| | |
+|---|---|
+| **Modules** | `provider_platform` (owns both tables) · Knowledge Graph (joins it to an account) · Product Surface (renders) |
+| **Backend** | **Recommend `attempted_at` on `provider_watermark`**, written on every completed run regardless of `high_water` — one column, one write, no new table, and it keeps *how far we read* and *when we last tried* in the row that already has the subject. The alternative — `subject` on `provider_sync` — is more faithful to *runs* but adds a per-subject row to a table whose grain is per-run |
+| **The hard part, and it is not the column** | **`subject` is the customer's typed company name; the brief holds an entity id**, and resolution is deliberately downstream (ADR-0036 §5). Joining the two needs either a resolved-subject link the Knowledge Graph can follow, or the answer surfaced per *target account* rather than per account entity. **This is the design decision the slice turns on** |
+| **UX** | The same line A4 owns, extended — *"Latest evidence · 5 weeks ago · last checked today"*. **One line, not two**: the brief is already 619 words |
+| **Acceptance** | ① An account checked today with nothing new says so · ② An account never checked is distinguishable from one checked and empty · ③ The existing A4 sentence is unchanged when this fact is absent |
+| **Risks** | **Only ship the word *checked* once it is true.** A4 deliberately refuses it today, and `freshness.test.tsx` asserts the refusal — that test is updated by this slice, never worked around |
+| **Dependencies** | None technically. **The subject↔entity join is the open question** |
+| **Effort** | **S** for the column; **M** if the join needs a design |
 
 ---
 
@@ -225,7 +275,7 @@ ORDER BY attribute, observed_at
 | **Acceptance** | ① Declaring an ICP changes at least one account's score · ② Removing it reverts — and the revert is visible · ③ Scores are explainable **against the declaration**: the contribution ledger must say *"matches your ICP"* as a line · ④ **A workspace with no declaration keeps working** — no declaration must never mean no scores, or the product breaks for everybody mid-migration · ⑤ Rescoring is asynchronous and idempotent |
 | **Risks** | **The highest-risk slice in the roadmap.** It changes the meaning of every score in the product, and scores are already on screens customers have seen. **Requires a rescoring migration and an answer to "what do existing workspaces see the morning after"** |
 | **Dependencies** | C-322 |
-| **Lane** | Commercial Profile's assignee, with Buying Score's |
+| ~~**Lane**~~ | ~~Commercial Profile's assignee, with Buying Score's~~ — *ownership moved to the board, 2026-08-03* |
 
 ---
 
@@ -245,7 +295,7 @@ ORDER BY attribute, observed_at
 | **Acceptance** | ① A person can sign up and verify without reading a log · ② The console transport still refuses to exist in production · ③ No credential in the repository |
 | **Risks** | **A new dependency needs an ADR** (§6). That is the real cost of this slice, not the code |
 | **Dependencies** | **[C-320](../LANE_COORDINATION.md)** — the product owner's sequencing call: M14.5, or earlier because it gates onboarding review |
-| **Lane** | QE, or whoever holds M14.5 |
+| ~~**Lane**~~ | ~~QE, or whoever holds M14.5~~ — *ownership moved to the board, 2026-08-03* |
 
 ---
 
@@ -270,7 +320,7 @@ ORDER BY attribute, observed_at
 | **Acceptance** | ① A new customer reaches a scored account without being told what to do by a person · ② Every step is skippable · ③ It disappears permanently once complete · ④ **It never blocks a customer who wants to explore out of order** |
 | **Risks** | **A checklist can make an empty product feel emptier** by enumerating what is missing. The copy must promise what arrives, not list what is absent |
 | **Dependencies** | B3, to be reviewable end to end |
-| **Lane** | Product Surface |
+| ~~**Lane**~~ | ~~Product Surface~~ — *ownership moved to the board, 2026-08-03* |
 
 ---
 
@@ -294,7 +344,7 @@ ORDER BY attribute, observed_at
 | **Risks** | **PII is the whole risk, and one part is architectural.** §2 makes claims immutable; GDPR grants a right to erasure. **Those are in direct tension and must be resolved in the ADR, not discovered mid-implementation.** Lane B's input: erasure of a *person* is a documented, audited exception with its own table of tombstones — not a general licence to mutate claims |
 | **Dependencies** | **An ADR before any code** — new bounded context (🔴, §20e) *and* the immutability/erasure ruling |
 | **Future** | Reporting hierarchy · relationship graph · job-change signals |
-| **Lane** | Dedicated. **Not a side-slice of an existing lane** |
+| ~~**Lane**~~ | ~~Dedicated. **Not a side-slice of an existing lane**~~ — *ownership moved to the board, 2026-08-03* |
 
 ## C2 · Committee members · **L** · Commercial Profile
 Roles gain people. Depends on C1. **The committee model stays role-first** — a role with no member is still valid, because that is how a seller discovers a gap.

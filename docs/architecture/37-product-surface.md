@@ -734,3 +734,25 @@ So on an expired account the brief said it **twice in one card, three lines apar
 ### Where the work is tracked now
 
 **[43-customer-experience.md](43-customer-experience.md) is the driver** — the navigation map, screen inventory, capability mapping, the nine journeys and the CX roadmap. **This document remains Product Surface's design record**; the blueprint is what says which slice comes next.
+
+---
+
+## A4 — the brief says how current its evidence is *(2026-08-03)*
+
+**Epic A's first slice, and the first Product Surface change made by Lane B** under the end-to-end ownership ruled in [C-323](../LANE_COORDINATION.md). **Sales Workspace remains Lane A's**; this touched the account brief's header and nothing else in that surface.
+
+**What a customer sees.** One line under the account name: *"Latest evidence · 2 weeks ago"*, or *"No evidence collected yet"*.
+
+**Why it sits directly under the name.** It qualifies the **whole page** rather than any one card. The score, its contributions, the narration and the validations are all built on evidence, and a reader who does not know how old that evidence is cannot calibrate any of them. Placing it beside the score would have made it read as a property of the number.
+
+**Why it renders nothing while the name is loading.** Two skeletons stacked on arrival is a page that looks broken, and this is the least urgent line on it.
+
+### The wording is a constraint, not a preference
+
+**The product says *observed*, and must never say *checked*.** The fact behind the line is *when a provider observed the newest thing Signora holds* — read from `claim.observed_at`, not from a sync record. **Signora cannot currently say when it last looked at a given account**: `provider_sync` carries no subject, and `provider_watermark.position` advances only when records arrive, so a provider that ran and found nothing leaves no trace.
+
+*"Last checked 2 hours ago"* is the more natural sentence and the product owner's own example, and it is **the one thing this line may not say.** `freshness.test.tsx` asserts the copy never drifts back to it, because the drift would be invisible to every other test and would put a claim on screen that no table supports.
+
+### What it did not need
+
+**No new endpoint · no new HTTP request · no new module dependency · no new table.** The brief already calls `/account-identities`, and Knowledge Graph already joins claims to entities to resolve names. **The whole slice is one field on a response that was already being fetched** — which is what Epic A is supposed to look like when the audit was right about the foundation.

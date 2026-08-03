@@ -245,11 +245,24 @@ Exposed through `public/`; no other module reaches deeper.
 resolve_entity(workspace_id, hint) -> Entity
 claim_set(workspace_id, entity_id, attribute) -> ClaimSet
 entity_evidence(workspace_id, entity_id) -> list[Claim]
+identities(workspace_id, entity_ids) -> dict[UUID, AccountIdentity]
 relationships(workspace_id, entity_id, kind=None, as_of=None) -> list[Relationship]
 resolution_history(workspace_id, entity_id) -> list[ResolutionDecision]
 ```
 
 `as_of` on `relationships` is the seam for historical replay. Adding it now costs nothing; retrofitting a temporal query onto a non-temporal API costs a rewrite of every caller.
+
+### `AccountIdentity.last_observed_at` — how current the account's evidence is
+
+**Added 2026-08-03 by Epic A slice A4.** The newest `observed_at` across **every** claim bound to the entity, from `ClaimReader.latest_observed_at`. Derived on every request; nothing is stored.
+
+**Why it is on this read model rather than a new one.** The join it needs — entity → bindings → claims — is the one `identities()` already performs, and the account brief already calls the endpoint that returns it. **No new endpoint, no new request, no new module dependency, no new table.**
+
+**Why it belongs to this module at all.** *"How current is what we know about this account?"* is a question about **claims grouped by entity**, and grouping claims by entity is this module's whole job. The Opportunity Engine holds the brief but reaches only Buying Score (`05-module-dependencies.md`); composing it there would have needed a new ratified edge to answer a question that was never the workflow's.
+
+**What it is not, and this must not drift.** It is **not** *"when Signora last looked"*. Nothing in the repository records that per account: `provider_sync` carries no subject, and `provider_watermark.position` advances only when records arrive — so an account a provider checked and found nothing about is indistinguishable from one it never checked. **Closing that gap is a Provider Platform slice**, and until it exists the product says *observed*, never *checked*.
+
+**The one deliberate cost.** A second query per page of accounts, aggregate and grouped, rather than widening `for_subjects` to every attribute — which would fetch every claim about fifty companies to keep fifty timestamps.
 
 ---
 

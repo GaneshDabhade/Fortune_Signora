@@ -134,6 +134,13 @@ class AccountIdentity:
     - **Anything about industry, headcount or domain.** Real, claimed, and not
       identity. A read model that grew every firmographic attribute would
       become the entity record `Entity` refuses to be.
+
+    **`last_observed_at` was weighed against that last rule and admitted.** It
+    is not a firmographic attribute: it says nothing about the *company* and
+    everything about **how current Signora's knowledge of it is**, which is a
+    property of this module's own work. The test the exclusions above apply is
+    *"a field a caller could read and not act on"* — a seller reading *"nothing
+    since March"* acts on it immediately, by not trusting the rest of the page.
     """
 
     entity_id: UUID
@@ -150,6 +157,28 @@ class AccountIdentity:
     #: exactly when `name` is.
     source: str | None
     observed_at: datetime | None
+    #: **When the newest evidence about this account was observed** — across
+    #: every attribute, not only the name. `None` when no provider has ever
+    #: reported anything about it.
+    #:
+    #: Distinct from `observed_at` above, and the difference is the whole
+    #: point: that one dates the *name*, which almost never changes, so a
+    #: brief rendering it would say *"3 months ago"* about a company somebody
+    #: read this morning.
+    #:
+    #: **Not "when Signora last checked", and the product must not say it
+    #: is.** Nothing in the repository records that: `provider_sync` carries
+    #: no subject, and `provider_watermark.position` advances only when
+    #: records arrive, so an account nobody found anything about is
+    #: indistinguishable from one nobody looked at. Recorded in
+    #: [51](../../../../docs/architecture/51-implementation-specifications.md).
+    #:
+    #: **No default**, though it is the last field and one would be legal.
+    #: A default here means a future construction site can omit it and get
+    #: `None` — which renders as *"No evidence collected yet"* on an
+    #: account that has plenty. Requiring it makes that unrepresentable
+    #: rather than merely discouraged (§2).
+    last_observed_at: datetime | None
 
     @property
     def is_disputed(self) -> bool:
@@ -195,7 +224,12 @@ class GraphQueries:
             return {}
 
         bindings = await self._repository.bindings_for_entities(workspace_id, entity_ids)
-        claims = await self._claims.for_subjects(_subjects(bindings), attribute=NAME_ATTRIBUTE)
+        subjects = _subjects(bindings)
+        claims = await self._claims.for_subjects(subjects, attribute=NAME_ATTRIBUTE)
+        # A second, narrow read rather than widening the one above. Dropping
+        # the attribute filter would pull every claim about every account on
+        # the page to keep one timestamp each.
+        latest = await self._claims.latest_observed_at(subjects)
 
         owner = {
             (binding.provider, binding.provider_external_id): binding.entity_id
@@ -208,8 +242,21 @@ class GraphQueries:
             if entity_id is not None and entity_id in grouped:
                 grouped[entity_id].append(claim)
 
+        # **The newest across every provider bound to the account**, not the
+        # newest of one. Two sources reading the same company is the ordinary
+        # case, and *"how current is this?"* is answered by whichever looked
+        # most recently.
+        freshest: dict[UUID, datetime] = {}
+        for subject, observed_at in latest.items():
+            entity_id = owner.get((subject.provider, subject.provider_external_id))
+            if entity_id is None or entity_id not in grouped:
+                continue
+            known = freshest.get(entity_id)
+            if known is None or observed_at > known:
+                freshest[entity_id] = observed_at
+
         return {
-            entity_id: _identity(entity_id, tuple(found))
+            entity_id: _identity(entity_id, tuple(found), freshest.get(entity_id))
             for entity_id, found in grouped.items()
         }
 
@@ -233,7 +280,9 @@ class GraphQueries:
         return await self._repository.decisions_for_entity(workspace_id, entity_id)
 
 
-def _identity(entity_id: UUID, claims: tuple[ClaimView, ...]) -> AccountIdentity:
+def _identity(
+    entity_id: UUID, claims: tuple[ClaimView, ...], last_observed_at: datetime | None
+) -> AccountIdentity:
     selected, agreement = select_name(claims)
     return AccountIdentity(
         entity_id=entity_id,
@@ -242,4 +291,5 @@ def _identity(entity_id: UUID, claims: tuple[ClaimView, ...]) -> AccountIdentity
         source_count=len({claim.provider for claim in claims}),
         source=selected.provider if selected else None,
         observed_at=selected.observed_at if selected else None,
+        last_observed_at=last_observed_at,
     )

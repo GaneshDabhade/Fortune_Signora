@@ -129,3 +129,26 @@ class ClaimReader(Protocol):
         snapshot taken at binding time would silently stop growing.
         """
         ...
+
+    async def latest_observed_at(
+        self, subjects: Sequence[SubjectRef]
+    ) -> dict[SubjectRef, datetime]:
+        """When the newest evidence about each of these identities was
+        observed. Subjects with no claims are **absent**, not null-valued.
+
+        **This is a time, never a value, and the distinction is what keeps
+        it on the right side of the refusal above.** `current_value` was
+        rejected because resolving truth behind a convenience call would
+        stop every consumer looking at the evidence. A maximum over
+        `observed_at` resolves nothing: it says *when the most recent thing
+        we know was seen*, and answering it still requires reading the
+        claims if you want to know **what** was seen.
+
+        **Why it exists rather than being a `max()` over `for_subjects`.**
+        That is what the first draft did, and it is an obvious N+1 in
+        aggregate clothing — fetching every claim about fifty companies to
+        keep fifty timestamps, on the list surface that renders fifty rows.
+        The database can answer it with one grouped scan (§14: fix what you
+        know is wrong).
+        """
+        ...

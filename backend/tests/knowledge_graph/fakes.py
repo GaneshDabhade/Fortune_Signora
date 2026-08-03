@@ -163,6 +163,24 @@ class FakeClaimReader:
             and (attribute is None or c.attribute is attribute)
         )
 
+    async def latest_observed_at(
+        self, subjects: Sequence[SubjectRef]
+    ) -> dict[SubjectRef, datetime]:
+        """A subject with no claims is **absent**, matching the real reader:
+        a `GROUP BY` returns no row rather than a null one, and a fake that
+        invented one would hide a caller that cannot handle absence."""
+        wanted = {(s.provider, s.provider_external_id) for s in subjects}
+        latest: dict[SubjectRef, datetime] = {}
+        for claim in self.claims:
+            key = (claim.provider, claim.subject_external_id)
+            if key not in wanted:
+                continue
+            ref = SubjectRef(provider=claim.provider, provider_external_id=claim.subject_external_id)
+            known = latest.get(ref)
+            if known is None or claim.observed_at > known:
+                latest[ref] = claim.observed_at
+        return latest
+
 
 class RecordingPublisher:
     def __init__(self) -> None:

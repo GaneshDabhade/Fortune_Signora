@@ -8,6 +8,27 @@
 
 ---
 
+## UX philosophy — questions, not filters
+
+**Ratified by the product owner, 2026-08-03**, on evidence from Epic A's audit. **The first principle in this document that came from being wrong.**
+
+> **A filter is a control the seller must think to use. A question is one the product volunteers.**
+
+**Where it came from.** [51](architecture/51-implementation-specifications.md)'s A2 specified the accounts workspace as *filters* — score, posture, owner, freshness, saved views. Lane A had already built the same surface as **questions the list is being asked**: *"Building, and nobody has taken it"*, *"Taken on, evidence has since aged"* — each narrowing the list, each **absent entirely when no account raises it.**
+
+**Why the second is better, and it is not a matter of taste.**
+
+| | **Filters** | **Questions** |
+|---|---|---|
+| Who supplies the intent | **The seller.** They must already know what they are looking for | **The product.** It says what is worth looking at today |
+| When there is nothing to say | The controls sit there, all returning everything | **The strip disappears.** No chrome for an empty answer |
+| What it teaches | How to operate a table | What Signora noticed |
+| Failure mode | A seller who never opens the filter panel gets the default list forever | A seller who ignores it loses nothing — the list is still ranked |
+
+**The rule that follows.** When a surface would let a customer narrow a set, **ask what the product already knows about why they would want to** — and offer that instead of the general control. Offer the general control too, if a real customer asks for it; **do not lead with it.**
+
+**Where this does not apply.** A question is a claim that something matters, so it must be derivable from facts the platform holds. Lane A's own SW-04 refused four of six proposed questions on exactly that test — *"which deals slowed"* would be read off a workflow timestamp that measures decisions rather than activity. **A question the product cannot honestly answer is worse than a filter**, because a filter never claimed to know anything.
+
 ## How a finding gets here
 
 **By using the product with nobody explaining it.** `make review-product` opens a browser at human pace, and every finding below was seen on a screen rather than inferred from code.

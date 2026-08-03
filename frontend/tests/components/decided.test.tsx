@@ -37,6 +37,7 @@ const IDENTITIES = new Map<string, AccountIdentity>([
       source_count: 1,
       agreement: 'agreed',
       observed_at: '2026-07-01T00:00:00Z',
+      last_observed_at: '2026-07-28T00:00:00Z',
     },
   ],
 ]);

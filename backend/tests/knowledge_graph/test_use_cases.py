@@ -12,7 +12,7 @@ from uuid import uuid4
 
 import pytest
 
-from modules.knowledge_graph.application.queries import ClaimSet, GraphQueries
+from modules.knowledge_graph.application.queries import AccountIdentity, ClaimSet, GraphQueries
 from modules.knowledge_graph.application.relationships import (
     DeriveRelationships,
     DeriveRelationshipsInput,
@@ -30,7 +30,7 @@ from modules.knowledge_graph.domain.identity import (
     IdentityState,
 )
 from modules.knowledge_graph.public import MatchStrength
-from modules.provider_normalization.public import ClaimAttribute
+from modules.provider_normalization.public import ClaimAttribute, ClaimView
 from tests.knowledge_graph.fakes import (
     FakeClaimReader,
     FakeGraphRepository,
@@ -305,6 +305,109 @@ class TestGraphQueries:
         claim_set = await queries.claim_set(WORKSPACE, entity.id, ClaimAttribute.EMPLOYEE_COUNT)
 
         assert [c.subject_external_id for c in claim_set.claims] == ["acme-corp"]
+
+
+class TestHowCurrentTheEvidenceIs:
+    """*"How old is what I am looking at?"* — A4.
+
+    A seller reading a score has no way to tell *"nothing is happening here"*
+    from *"nothing has reached us since March"*, and those demand opposite
+    actions. These assert the answer is the newest thing known about the
+    **account**, not about its name.
+    """
+
+    def _entity_with(self, *bindings: tuple[str, str]) -> tuple[FakeGraphRepository, Entity]:
+        repository = FakeGraphRepository()
+        entity = Entity.create(workspace_id=WORKSPACE, kind=EntityKind.COMPANY, now=NOW)
+        repository.entities[entity.id] = entity
+        for provider, external_id in bindings:
+            repository.bindings.append(
+                bound_binding(
+                    entity, provider=provider, external_id=external_id, domain="acme.example"
+                )
+            )
+        return repository, entity
+
+    async def _identity(
+        self, repository: FakeGraphRepository, entity: Entity, claims: list[ClaimView]
+    ) -> AccountIdentity:
+        queries = GraphQueries(repository=repository, claims=FakeClaimReader(claims))
+        return (await queries.identities(WORKSPACE, (entity.id,)))[entity.id]
+
+    async def test_it_reports_the_newest_evidence_of_any_kind(self) -> None:
+        """**Not the newest *name*.** A company's legal name is claimed once
+        and almost never again, so an identity dated by its name would tell a
+        seller *"March"* about an account somebody read headcount for this
+        morning — the exact false alarm this line exists to prevent.
+        """
+        repository, entity = self._entity_with(("apollo", "acme-corp"))
+
+        identity = await self._identity(
+            repository,
+            entity,
+            [
+                claim(
+                    attribute=ClaimAttribute.LEGAL_NAME,
+                    value="Acme Corp",
+                    observed_at=datetime(2026, 1, 5, tzinfo=UTC),
+                ),
+                claim(
+                    attribute=ClaimAttribute.EMPLOYEE_COUNT,
+                    observed_at=datetime(2026, 7, 20, tzinfo=UTC),
+                ),
+            ],
+        )
+
+        assert identity.last_observed_at == datetime(2026, 7, 20, tzinfo=UTC)
+        assert identity.observed_at == datetime(2026, 1, 5, tzinfo=UTC)
+
+    async def test_the_provider_that_looked_most_recently_wins(self) -> None:
+        """Two sources reading the same company is the ordinary case, and
+        *"how current is this?"* is answered by whichever looked last — not
+        by whichever the name happened to come from."""
+        repository, entity = self._entity_with(("apollo", "acme-corp"), ("coresignal", "acme-cs"))
+
+        identity = await self._identity(
+            repository,
+            entity,
+            [
+                claim(provider="apollo", observed_at=datetime(2026, 2, 1, tzinfo=UTC)),
+                claim(
+                    provider="coresignal",
+                    external_id="acme-cs",
+                    observed_at=datetime(2026, 6, 1, tzinfo=UTC),
+                ),
+            ],
+        )
+
+        assert identity.last_observed_at == datetime(2026, 6, 1, tzinfo=UTC)
+
+    async def test_an_account_nobody_has_reported_on_says_so_with_absence(self) -> None:
+        """**Absent, never epoch zero and never `now`.** Either substitute
+        would be a claim Signora cannot support, and the screen renders this
+        as *"No evidence collected yet"* — which is the answer that should
+        stop a seller trusting the score above it."""
+        repository, entity = self._entity_with(("apollo", "acme-corp"))
+
+        identity = await self._identity(repository, entity, [])
+
+        assert identity.last_observed_at is None
+
+    async def test_another_accounts_evidence_does_not_make_this_one_look_fresh(self) -> None:
+        """The failure that would be invisible on screen: a page full of
+        accounts all reporting the freshest reading in the workspace."""
+        repository, entity = self._entity_with(("apollo", "acme-corp"))
+
+        identity = await self._identity(
+            repository,
+            entity,
+            [
+                claim(observed_at=datetime(2026, 2, 1, tzinfo=UTC)),
+                claim(external_id="globex", observed_at=datetime(2026, 9, 1, tzinfo=UTC)),
+            ],
+        )
+
+        assert identity.last_observed_at == datetime(2026, 2, 1, tzinfo=UTC)
 
 
 class TestRelationshipDerivation:

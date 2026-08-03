@@ -132,6 +132,10 @@ export interface AccountIdentity {
   source_count: number;
   source: string | null;
   observed_at: string | null;
+  /** When the newest evidence about this account was observed, across every
+   * attribute rather than only the name. `null` when no source has ever
+   * reported anything. **Not when Signora last looked** — see `Freshness`. */
+  last_observed_at: string | null;
 }
 
 /** What a reading implies commercially. **Never a sign in the arithmetic** —

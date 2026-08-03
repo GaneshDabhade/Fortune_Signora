@@ -150,7 +150,7 @@
 | [C-306](#c-306--the-opportunities-and-signals-experience-already-exists-and-lane-a-owns-half-of-it) | The Opportunities & Signals experience already exists, and Lane A owns half of it | Lane B | **Product owner** | `OPEN` | **The frontend half only.** The backend half is unassigned and Lane B can start it |
 | [C-303](#c-303--an-icp-is-not-an-addressable-thing-and-every-verb-the-brief-asks-for-needs-one) | An ICP is not an addressable thing, and every verb the brief asks for needs one | Lane B | **Product owner** | `ANSWERED` — ICP stays in Commercial Profile (2026-08-02). **The aggregate is [ADR-0041](architecture/adr/0041-icp-aggregate.md), proposed** | **Implementation, on ADR-0041's ratification** |
 | [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) | A notification is per-person, and workspace RLS is not enough | Lane B | **Product owner** (tenancy 🔴) | `OPEN` | **M14a N-01's migration.** The pattern exists; the ruling does not |
-| [C-323](#c-323--epic-a-was-assigned-to-lane-b-and-lane-a-is-already-building-it) | Epic A was assigned to Lane B, and Lane A is already building it | Lane B | **Product owner** | `OPEN` — **blocking** | **Four of Epic A's six slices.** A2 and B2 are already built elsewhere |
+| [C-323](#c-323--epic-a-was-assigned-to-lane-b-and-lane-a-is-already-building-it) | Epic A was assigned to Lane B, and Lane A is already building it | Lane B | **Product owner** | **`CLOSED` 2026-08-03** — ruled the same day it was raised | **Nothing now.** Lane B owns Epic A end to end; Lane A keeps Sales Workspace |
 | [C-322](#c-322--is-an-icp-a-description-or-a-filter) | Is an ICP a description, or a filter? | Lane B | **Product owner** | `OPEN` | Epic B1; the product contradicts itself on screen until it is answered |
 | [C-320](#c-320--no-environment-can-complete-a-sign-up-so-nobody-has-reviewed-the-first-hour) | No environment can complete a sign-up, so nobody has reviewed the first hour | Lane B | **Product owner** | `OPEN` | Reviewing onboarding. No implementation |
 | [C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name) | What should Signora do with a company it cannot name? | Lane B | **Product owner** | `OPEN` | A correct fix for PX-301 / PX-316 |
@@ -3588,8 +3588,18 @@ A record can be highly significant and unidentifiable — `70b04700` has four we
 |---|---|
 | **Raised by** | Lane B, 2026-08-03, on being assigned Epic A — **found by reading Lane A's branch before writing a line, not by reading this register** |
 | **Owner** | **Product owner** |
-| **Status** | `OPEN` — **blocking four of the six slices** |
-| **Blocks** | A4 · A1 · A5's render · A6's render. **Not** A5 and A6's backends, which are in unassigned `knowledge_graph` |
+| **Status** | **`CLOSED` 2026-08-03** — the product owner ruled on the day it was raised |
+| **Blocks** | **Nothing.** It blocked A4, A1 and two renders for the length of one review |
+
+> ### Ruled — option A, and wider than option A
+>
+> **Lane B owns Epic A end to end**: backend, read models, public contracts, API composition, Knowledge Graph, Provider Platform, Product Surface, routing, UI, UX, navigation, workflows, tests and documentation. **Lane A keeps Sales Workspace** and its roadmap.
+>
+> **Module boundaries are unchanged and bind exactly as before.** What moved is implementation ownership, not architecture: a slice crossing two modules is still two proper extensions through two `public/` contracts, and *"Epic A needs it"* is not a licence to shortcut one.
+>
+> **A2 and B2 stay struck.** Lane A's implementations stand; [51](architecture/51-implementation-specifications.md) records where each lives and what the original proposal got wrong. **The *Questions instead of Filters* finding is promoted to product philosophy** rather than left in a struck slice.
+>
+> **What the ruling rejected, and it is the part worth recording:** splitting Epic A by layer. *"Surface what already exists"* is not backend work with a frontend attached — it is one capability per slice, and **a split would have made every slice a coordination item.** This lane proposed the split; the product owner was right that it optimises the wrong thing.
 
 **The problem.** The product owner assigned Lane B as implementation owner for Epic A, and instructed in the same message: *"continue respecting ownership boundaries · do not quietly bypass module boundaries."* **Those two instructions are in direct conflict, because every slice in Epic A lands in a module Lane A holds and has not released.**
 

@@ -23,6 +23,7 @@ function identity(overrides: Partial<AccountIdentity> = {}): AccountIdentity {
     source_count: 2,
     source: 'apollo',
     observed_at: '2026-07-31T12:00:00Z',
+    last_observed_at: '2026-07-31T12:00:00Z',
     ...overrides,
   };
 }

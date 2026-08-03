@@ -8,10 +8,11 @@ is defense in depth, per CLAUDE.md §8.
 from __future__ import annotations
 
 from collections.abc import Sequence
+from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import select, tuple_
+from sqlalchemy import func, select, tuple_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.provider_normalization.domain.vocabulary import ClaimAttribute
@@ -75,3 +76,28 @@ class SqlClaimReader:
             statement.order_by(ClaimModel.observed_at, ClaimModel.id)
         )
         return tuple(_view(row) for row in rows.scalars())
+
+    async def latest_observed_at(
+        self, subjects: Sequence[SubjectRef]
+    ) -> dict[SubjectRef, datetime]:
+        if not subjects:
+            return {}
+
+        rows = await self._session.execute(
+            select(
+                ClaimModel.provider,
+                ClaimModel.subject_external_id,
+                func.max(ClaimModel.observed_at),
+            )
+            .where(
+                ClaimModel.workspace_id == self._workspace_id,
+                tuple_(ClaimModel.provider, ClaimModel.subject_external_id).in_(
+                    [(s.provider, s.provider_external_id) for s in subjects]
+                ),
+            )
+            .group_by(ClaimModel.provider, ClaimModel.subject_external_id)
+        )
+        return {
+            SubjectRef(provider=provider, provider_external_id=external_id): observed_at
+            for provider, external_id, observed_at in rows.all()
+        }

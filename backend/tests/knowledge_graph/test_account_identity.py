@@ -197,6 +197,14 @@ class TestTheReadModelExposesOnlyWhatCanBeActedOn:
             "source_count",
             "source",
             "observed_at",
+            # **Added by A4, and this assertion is why it was argued for
+            # rather than appended.** The read model is deliberately narrow;
+            # a field set nobody has to justify grows until it is the entity
+            # record `Entity` refuses to be. `last_observed_at` says nothing
+            # about the company — it says how current Signora's knowledge of
+            # it is, which is this module's own work and is acted on the
+            # moment it is read.
+            "last_observed_at",
         }
         for absent in ("claim_id", "claims", "industry", "employee_count", "domain"):
             assert absent not in fields
@@ -204,10 +212,11 @@ class TestTheReadModelExposesOnlyWhatCanBeActedOn:
     def test_an_unnamed_account_reports_absence_rather_than_a_placeholder(self) -> None:
         from modules.knowledge_graph.application.queries import _identity
 
-        identity = _identity(UUID(int=1), ())
+        identity = _identity(UUID(int=1), (), None)
 
         assert identity.name is None
         assert identity.source is None
         assert identity.observed_at is None
+        assert identity.last_observed_at is None
         assert identity.source_count == 0
         assert not identity.is_disputed

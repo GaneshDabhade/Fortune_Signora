@@ -370,3 +370,51 @@ describe('the account says what has actually happened to it — C-024', () => {
     expect(text.indexOf('What contributed')).toBeLessThan(text.indexOf('What has happened'));
   });
 });
+
+describe('the brief says how current its evidence is — A4', () => {
+  /**
+   * **Page-level for the fourth time, and for the reason this file exists.**
+   * `Freshness` has its own tests and they would all pass while the brief
+   * never called it — which is precisely what R1-04 was. A seller cannot
+   * calibrate a score, its contributions or its narration without knowing how
+   * old the evidence beneath them is, and the component being correct in
+   * isolation does nothing for them.
+   */
+  function named(lastObservedAt: string | null) {
+    return {
+      ...IDLE,
+      data: new Map([
+        [
+          ACCOUNT,
+          {
+            account_id: ACCOUNT,
+            name: 'Northwind Traders',
+            agreement: 'agreed',
+            source_count: 2,
+            source: 'apollo',
+            observed_at: '2026-01-05T00:00:00Z',
+            last_observed_at: lastObservedAt,
+          },
+        ],
+      ]),
+    };
+  }
+
+  it('carries the line, above everything built on that evidence', () => {
+    identities.mockReturnValue(named(new Date(Date.now() - 20 * 86_400_000).toISOString()));
+
+    const { container } = render(withQuery(<AccountBriefPage />));
+    const text = container.textContent ?? '';
+
+    expect(screen.getByText(/Latest evidence · 2 weeks ago/)).toBeVisible();
+    expect(text.indexOf('Latest evidence')).toBeLessThan(text.indexOf('What contributed'));
+  });
+
+  it('says an account has nothing rather than leaving the line out', () => {
+    identities.mockReturnValue(named(null));
+
+    render(withQuery(<AccountBriefPage />));
+
+    expect(screen.getByText('No evidence collected yet')).toBeVisible();
+  });
+});

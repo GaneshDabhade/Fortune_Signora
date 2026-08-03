@@ -11,15 +11,18 @@ count; each test states something a customer would notice.
 """
 
 from collections.abc import AsyncIterator
+from datetime import datetime
 from types import SimpleNamespace
 from typing import Any
 from uuid import UUID, uuid4
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from apps.api.main import create_app
+from signora_platform.db.session import set_workspace_context
 from signora_platform.settings import Settings
 from signora_platform.tests.keys import (
     TEST_AUDIENCE,
@@ -418,6 +421,61 @@ class TestAccountIdentitiesAreResolvedNotStored:
 
         assert response.status_code == 200, response.text
         assert {i["account_id"] for i in response.json()} == set(ids)
+
+    async def test_an_account_says_how_current_its_evidence_is(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**A4 — *"how old is what I am looking at?"***
+
+        Against a real database and the real grouped query, because the thing
+        most likely to be wrong is the join: `latest_observed_at` groups by
+        `(provider, subject_external_id)` and the caller maps those back
+        through identity bindings. A fake agrees with whatever the fake was
+        written to agree with.
+
+        **Not `>= observed_at`.** The name claim is one of many, so asserting
+        an ordering between the two would pass whichever way the join was
+        wired. What is asserted is that it equals the newest claim the
+        pipeline actually recorded for this account.
+        """
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        response = await client.get(
+            f"/workspaces/{workspace_id}/account-identities",
+            params={"ids": [str(entity_id)]},
+            headers=_auth(key_pair, user_id),
+        )
+
+        assert response.status_code == 200, response.text
+        (identity,) = response.json()
+        assert identity["last_observed_at"] is not None, (
+            "the pipeline produced claims for this account, so something was observed"
+        )
+
+        async with session_factory() as session:
+            # `set_config(..., true)` rather than `SET LOCAL`: the latter takes
+            # no bind parameter, so the platform's own helper is the only
+            # correct way to establish tenant context — and reading through
+            # RLS is the point of doing it here rather than as the owner.
+            await set_workspace_context(session, workspace_id)
+            newest = await session.scalar(
+                text(
+                    "SELECT max(c.observed_at) FROM claim c "
+                    "JOIN identity_binding b "
+                    "  ON b.provider = c.provider "
+                    " AND b.provider_external_id = c.subject_external_id "
+                    "WHERE b.entity_id = :entity_id AND c.workspace_id = :workspace_id"
+                ),
+                {"entity_id": entity_id, "workspace_id": workspace_id},
+            )
+
+        assert datetime.fromisoformat(identity["last_observed_at"]) == newest
 
     async def test_another_workspace_s_account_is_absent_rather_than_named(
         self,

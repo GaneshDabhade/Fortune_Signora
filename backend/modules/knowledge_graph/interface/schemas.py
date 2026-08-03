@@ -51,6 +51,17 @@ class AccountIdentityResponse(BaseModel):
         description="When that provider observed the name — not when Signora stored it. "
         "The distinction matters when judging whether a rename has been picked up."
     )
+    last_observed_at: datetime | None = Field(
+        description=(
+            "When the newest evidence about this account was observed, across every "
+            "attribute rather than only the name. Null when no source has ever reported "
+            "anything about it. Read this to judge how current the rest of the page is: "
+            "a score built on evidence nobody has refreshed since March is a different "
+            "thing from the same score built this morning. It is not a record of when "
+            "Signora last looked — an account nobody found anything about cannot "
+            "currently be distinguished from one nobody checked."
+        )
+    )
 
     @classmethod
     def from_domain(cls, identity: AccountIdentity) -> "AccountIdentityResponse":
@@ -61,6 +72,7 @@ class AccountIdentityResponse(BaseModel):
             source_count=identity.source_count,
             source=identity.source,
             observed_at=identity.observed_at,
+            last_observed_at=identity.last_observed_at,
         )
 
 

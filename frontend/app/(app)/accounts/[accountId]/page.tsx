@@ -18,6 +18,7 @@ import {
 import { EntityName } from '@/components/intelligence/entity-name';
 import { DecisionHistory } from '@/components/intelligence/decision-history';
 import { EvidenceDrawer, useEvidenceDrawer } from '@/components/intelligence/evidence';
+import { Freshness } from '@/components/intelligence/freshness';
 import { NarrativeBlock } from '@/components/intelligence/narration';
 import { ResearchPanel } from '@/components/intelligence/research';
 import { AccountSequence, nextInSequence } from '@/components/intelligence/sequence';
@@ -119,6 +120,7 @@ export default function AccountBriefPage() {
   const { data: identities, isLoading: nameLoading } = useAccountIdentities(workspaceId, [
     accountId,
   ]);
+  const identity = identities?.get(accountId);
   // **The same query the attention page holds**, same cache key, so this costs
   // no request — the brief reads the ranked order rather than fetching it, and
   // *next* therefore means *next most pressing* (D41).
@@ -145,11 +147,23 @@ export default function AccountBriefPage() {
       <header className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <EntityName
-            identity={identities?.get(accountId)}
+            identity={identity}
             fallbackId={accountId}
             isLoading={nameLoading}
             className="text-lg"
           />
+          {/* **Directly under the name, because it qualifies the whole page**
+              rather than any one card. Everything below — the score, its
+              contributions, the narration, the validations — is built on
+              evidence, and a reader who does not know how old that evidence is
+              cannot calibrate any of it.
+
+              **Only once the identity has actually arrived.** Absent means
+              *we do not know yet, or the request failed*; rendering "No
+              evidence collected yet" for either would state something false
+              about the account, which is the one thing this line exists not
+              to do. It also keeps two skeletons off the page on arrival. */}
+          {identity ? <Freshness observedAt={identity.last_observed_at} /> : null}
           {/* The workflow line sits under the name rather than in the score
               card: it is about the *account*, not about the number, and a
               seller reads it once on arrival and never again.

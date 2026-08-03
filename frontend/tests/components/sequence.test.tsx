@@ -48,6 +48,7 @@ const NAMES = new Map<string, AccountIdentity>(
       source_count: 2,
       source: 'coresignal',
       observed_at: '2026-07-01T00:00:00Z',
+      last_observed_at: '2026-07-25T00:00:00Z',
     },
   ]),
 );
