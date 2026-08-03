@@ -313,3 +313,36 @@ The Lane A stack was stood up on its own allocation — **3300 / 8300, database 
 > **Three of the five questions are correctly absent on real data.** That is the R1-06/D6 rule holding outside a test: a workspace where everything is current and nobody has committed shows two lines, not five empty ones.
 
 **What could not be verified is a browser screenshot.** Chromium is installed but missing `libnspr4.so`, and installing OS packages needs root this environment does not grant (`CLAUDE.md` §20e — escalate when installation is blocked by operating-system permissions). **Rendering is covered by thirteen component tests against a real DOM**, and the data path by the live run above.
+
+
+---
+
+## 12 · SW-05a — the blank the filter could produce, and the sentence that was no longer true
+
+**Two truth defects, both introduced by SW-03's filter, both found by asking whether the page still describes itself when narrowed.**
+
+### A question nobody raises any more rendered nothing at all
+
+The strip is **absent when empty**; the page's quiet state fires on **the unfiltered list** being empty. A URL naming a question nothing raises satisfies neither:
+
+| | |
+|---|---|
+| Strip | correctly hides the question — nothing raises it |
+| Quiet state | does not fire — the *unfiltered* list has twelve accounts |
+| The list | renders `<ol>` with **no rows** |
+
+**Result: a silent blank.** Reachable from a shared link, a bookmark, or browser-back after the evidence moved — none of which requires anybody to do anything wrong.
+
+> **This is D36 exactly**, the defect this page fixed once already: *a page that renders nothing is indistinguishable from a broken one.* SW-03 reintroduced it through a door D36 did not cover, which is the ordinary way a fixed defect returns.
+
+`NothingRaises` closes it: it says which question no longer applies, **blames the evidence moving rather than the reader** — the evidence moving is the product working — and offers *Show every account*, preserving the owner scope so a seller is not silently handed everybody else's work.
+
+### The subtitle claimed the whole list while showing a slice
+
+*"Accounts your evidence says are worth a look, most pressing first"* stayed on screen when the list was narrowed to one question. **The same defect class as a dashboard describing the previous milestone**: a sentence a reader has no way to check against anything but itself. It now says what is on the screen.
+
+### Why this was the slice rather than a density pass
+
+The invitation was to reduce reading. **Measured first: the account row already leads with the name, carries three chips and a right-aligned tabular score, and reads in about a second** — it is not where the reading is. Changing it would have been redecoration, and the honest report is that the row is already at the density the principles ask for.
+
+> **A defect I introduced two slices ago outranks a refinement nobody needs.** Looking for the density problem is what found it.

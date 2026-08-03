@@ -10,7 +10,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { TriageStrip } from '@/components/intelligence/triage';
+import { NothingRaises, TriageStrip } from '@/components/intelligence/triage';
 import type { AccountAttention, AccountIdentity } from '@/lib/api/types';
 import { triage } from '@/lib/state/triage';
 
@@ -217,5 +217,50 @@ describe('every line narrows the list rather than reporting on it', () => {
     );
 
     expect(screen.getByRole('navigation', { name: /raising/i })).toBeInTheDocument();
+  });
+});
+
+describe('a question the list no longer raises', () => {
+  it('says so rather than rendering nothing', () => {
+    // **The defect SW-03 introduced, closed.** A shared link, a bookmark or
+    // browser-back can name a question nothing raises any more: the strip
+    // correctly hides it, the unfiltered list is not empty so the quiet state
+    // does not fire, and the list renders no rows. A page that renders nothing
+    // is indistinguishable from a broken one (D36).
+    render(<NothingRaises raised="diverged" scope="all" />);
+
+    expect(screen.getByText(/nothing is .* any more/i)).toBeInTheDocument();
+  });
+
+  it('names the question that no longer applies', () => {
+    render(<NothingRaises raised="verify" scope="all" />);
+
+    expect(screen.getByText(/worth verifying/i)).toBeInTheDocument();
+  });
+
+  it('blames the evidence moving rather than the reader', () => {
+    // Not an error, and not "no results". The evidence moved, which is the
+    // product working.
+    render(<NothingRaises raised="verify" scope="all" />);
+
+    expect(screen.getByText(/evidence has moved/i)).toBeInTheDocument();
+  });
+
+  it('offers the way back without editing a URL', () => {
+    render(<NothingRaises raised="ageing" scope="all" />);
+
+    expect(screen.getByRole('link', { name: /show every account/i })).toHaveAttribute(
+      'href',
+      '/',
+    );
+  });
+
+  it('keeps the seller"s scope on the way back', () => {
+    render(<NothingRaises raised="ageing" scope="mine" />);
+
+    expect(screen.getByRole('link', { name: /show every account/i })).toHaveAttribute(
+      'href',
+      '/?owner=mine',
+    );
   });
 });

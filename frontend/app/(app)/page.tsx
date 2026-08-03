@@ -15,7 +15,7 @@ import {
   ScoreMovement,
 } from '@/components/intelligence/attention';
 import { DecidedAccounts } from '@/components/intelligence/decided';
-import { TriageStrip } from '@/components/intelligence/triage';
+import { NothingRaises, TriageStrip } from '@/components/intelligence/triage';
 import { EntityName } from '@/components/intelligence/entity-name';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { Card, CardBody, EmptyState, SkeletonText } from '@/components/ui';
@@ -135,8 +135,15 @@ export default function AttentionPage() {
     <div className="mx-auto flex max-w-4xl flex-col gap-6">
       <header>
         <h1 className="text-xl font-semibold text-content">Attention</h1>
+        {/* **The subtitle describes what is on the screen, not what the screen
+            is for.** Filtered to one question it was claiming the whole list,
+            which is the same defect class as a dashboard describing the
+            previous milestone — a sentence a reader has no way to check
+            against anything but itself. */}
         <p className="mt-1 text-sm text-content-muted">
-          Accounts your evidence says are worth a look, most pressing first.
+          {raised === null
+            ? 'Accounts your evidence says are worth a look, most pressing first.'
+            : 'Accounts raising one question, in the same order.'}
         </p>
       </header>
 
@@ -196,7 +203,17 @@ export default function AttentionPage() {
           declared={targets === undefined ? undefined : targets.version > 0}
         />
       ) : null}
-      {data && data.items.length > 0 ? (
+      {/* **A question nobody raises any more.** Reachable from a shared link, a
+          bookmark, or browser-back after the evidence moved: the strip
+          correctly hides a question with nothing under it, `Quiet` does not
+          fire because the *unfiltered* list is not empty, and the list below
+          renders no rows at all. **A page that renders nothing is
+          indistinguishable from a broken one** (D36) — so it says so, and
+          offers the way back. */}
+      {data && data.items.length > 0 && shown.length === 0 && raised !== null ? (
+        <NothingRaises raised={raised} scope={scope} />
+      ) : null}
+      {data && shown.length > 0 ? (
         <ol className="flex flex-col gap-2">
           {shown.map((account) => (
             <li key={account.id}>

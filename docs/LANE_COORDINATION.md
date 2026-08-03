@@ -147,6 +147,37 @@
 
 **Implementation impact.** Blocks SW-02 and SW-06. **Blocks nothing else** — SW-03, SW-04 and SW-05 are composition over `GET /accounts`, which is already workspace-scoped, and Lane A has taken SW-03 instead.
 
+### C-216 — the setup scripts do not load `.env.local`, and fall back silently
+
+**Opened 2026-08-03 · Lane A · owner: QE ([`RUNNING.md`](RUNNING.md) is QE's) · 🟠**
+
+**The problem.** `npm run auth:migrate` and `npm run demo:users` run under `tsx`, not Next.js. **Next.js loads `.env.local`; a standalone `tsx` script does not.** Both read `process.env` through `lib/auth/config.ts`, whose `required()` helper supplies a **default** when the variable is absent:
+
+```ts
+databaseUrl: required(
+  'SIGNORA_AUTH_DATABASE_URL',
+  'postgresql://signora_auth:…@localhost:5432/signora',   // ← the review database
+),
+```
+
+**Observed, on this lane, today.** `frontend/.env.local` correctly named `signora_lane_a`. Both scripts ignored it, took the default, and **created four sign-in accounts in `signora` — the human-review database** — while reporting success. `make demo-seed` then found no users in the lane's database and printed *"members — none, no accounts exist yet"*, which reads as a seeding bug rather than as a configuration one.
+
+**Why this matters beyond one lane.** [`RUNNING.md`](RUNNING.md#running-a-lane) tells every lane to set its own database and ports, and its *"three things per lane"* section does not mention that the `tsx` scripts bypass `.env.local`. **Every lane setting up its own environment will hit this**, and the failure is silent in the direction that matters: it writes to somebody else's database rather than failing.
+
+> **The default is the defect, not the missing loader.** `required(name, fallback)` is a fallback wearing the name *required*. A variable with a default is not required, and a setup script that silently targets the review database when misconfigured is the *"hidden inputs are architecture defects"* rule (`CLAUDE.md` §2) in its most expensive form.
+
+**Recommendation, in the order the product owner stated it.**
+
+| | |
+|---|---|
+| **Deterministic loading** | The `tsx` scripts load `.env.local` explicitly, so a script and the dev server read the same file |
+| **Lane-aware configuration** | One documented way to point a whole lane — API, web, scripts, seeder — at its own database |
+| **No silent fallback** | A setup script with no `SIGNORA_AUTH_DATABASE_URL` **fails and says so.** A runtime default that happens to be another environment's database is worse than a crash |
+
+**Trade-offs.** Removing the default would fail any environment that relied on it; that is the point, and it fails loudly at setup rather than quietly at seed time. Loading `.env.local` in the scripts alone fixes the symptom and leaves the fallback in place for the next caller.
+
+**Implementation impact.** Blocks nothing. **It has already cost one lane an hour and wrote to a database that lane does not own** — recorded because a lane touching another environment's data must say so, and because the next lane deserves the sentence `RUNNING.md` is missing.
+
 ## Closed on repository evidence — no decision required
 
 

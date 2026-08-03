@@ -44,6 +44,7 @@
 import Link from 'next/link';
 
 import { cn } from '@/lib/design/cn';
+import { EmptyState } from '@/components/ui';
 import type { AccountAttention, AccountIdentity } from '@/lib/api/types';
 import { withScope, type OwnerScope } from '@/lib/state/owner-scope';
 import {
@@ -149,5 +150,36 @@ function TriageLine({ question, accounts, identities, active, href }: TriageLine
           when the first line did not settle it. */}
       <span className="text-xs text-content-subtle">{RAISED_MEANING[question]}</span>
     </Link>
+  );
+}
+
+/**
+ * A question the list no longer raises.
+ *
+ * **Not an error, and not "no results".** The evidence moved, which is the
+ * product working.
+ *
+ * **It exists because the strip is absent-when-empty and the page is not.** A
+ * shared link, a bookmark or browser-back can name a question nothing raises
+ * any more: the strip correctly hides it, the *unfiltered* list is not empty so
+ * the quiet state does not fire, and the list renders no rows at all. **A page
+ * that renders nothing is indistinguishable from a broken one** (D36) — the
+ * defect this page fixed once already, reintroduced by SW-03's filter and
+ * closed here.
+ */
+export function NothingRaises({ raised, scope }: { raised: Raised; scope: OwnerScope }) {
+  return (
+    <EmptyState
+      title={`Nothing is ${RAISED_WORDS[raised].toLowerCase()} any more`}
+      description="The evidence has moved since this view was opened."
+      action={
+        <Link
+          href={withScope('/', scope)}
+          className="text-sm font-medium text-accent hover:text-accent-hover"
+        >
+          Show every account
+        </Link>
+      }
+    />
   );
 }
