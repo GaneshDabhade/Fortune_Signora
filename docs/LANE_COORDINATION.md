@@ -45,7 +45,49 @@
 >
 > **The decision packs are [`DECISION_PACKS.md`](DECISION_PACKS.md)** — grouped, with options, trade-offs and a recommendation each. **This section records what the review changed; that document is what the product owner reads.**
 
-### Closed on repository evidence — no decision required
+#### C-210 — will Signora hold personal data?
+
+**Opened 2026-08-03 · Lane A · owner: product owner · 🔴 architectural**
+
+**The problem.** Sales Engagement Intelligence was assigned to answer *"who should I contact?"*, and **the platform has no people**. `EntityKind` is `COMPANY | TECHNOLOGY`, and the exclusion is deliberate and documented twice: *"claims carry role changes but no person identifier, so there is no identity to resolve"*, and *"naming an individual would put **personal data in a module with no lawful basis declared for holding it**."*
+
+**Affected modules.** Knowledge Graph (a `PERSON` kind and identity resolution for people) · Provider Normalization (person fields in the canonical vocabulary) · Provider Platform (contact providers, on a dispatch path already blocked by [C-021](#c-021)) · AI Platform, Timeline and every export surface (PII reaching prompts, evidence and records).
+
+**Alternatives.** **(a)** Declare a lawful basis, retention, erasure and subject access, then build people across four modules. **(b)** Defer people and build the role-level capability, which needs none of it. **(c)** Abandon the person-level ambition permanently.
+
+**Recommendation: (b) now, (a) later if a customer asks for names.** [50-sales-engagement.md](architecture/50-sales-engagement.md) §2 shows **eight of the eleven questions in the assignment are answerable without a person**, including the one nothing currently reads — *which role has to agree*.
+
+**Trade-offs.** (b) delivers most of the value in weeks and leaves the last mile — the individual's name — undone. (a) is a legal commitment before it is an engineering one, and it touches the whole pipeline. Deferring costs nothing that taking it now would save.
+
+**Implementation impact.** (b) blocks nothing that is currently buildable. (a) blocks itself until the decision exists.
+
+### C-211 — where does an approach brief live?
+
+**Opened 2026-08-03 · Lane A · owner: product owner · 🔴 architectural**
+
+**The problem.** An approach brief reads the buying committee, signals, business events, validation, narration and the opportunity. **No existing module may read all six**, and the Opportunity Engine's import contract forbids reaching the Signal Engine at all.
+
+**Alternatives.** **(a)** A new `sales_engagement` module. **(b)** Extend the Opportunity Engine — refused by its own ownership contract ([49](architecture/49-lead-ownership.md) §19). **(c)** A read-model composition in the API layer. **(d)** Extend AI Reasoning Engine — refused, because the ranking is deterministic and *"if the system already knows something deterministically, never ask a model to invent it again"*.
+
+**Recommendation: (a), with an ADR before any code.** **The composition is the product**, and a product capability living in a composition root has no owner, no tests of its own and no boundary.
+
+**Trade-offs.** (a) adds a node to the dependency graph reading six modules — honest, and the largest change. (c) is smallest and hides commercial reasoning where nothing reviews it.
+
+**Implementation impact.** Blocks SE-01 onward. **Nothing in Sales Engagement can begin until it is settled.**
+
+### C-212 — which product is an opportunity about?
+
+**Opened 2026-08-03 · Lane A · owner: product owner · 🟠**
+
+**The problem.** The buying committee is declared **per product**. An opportunity has no product. So *"which committee applies to this account?"* is unanswerable, and role ranking cannot start.
+
+**Alternatives.** **(a)** Ask the seller once, at the moment they take the account on — one field on a decision they are already making. **(b)** Infer it from the leading hypothesis and the ICP. **(c)** Show every product's committee and let the reader choose.
+
+**Recommendation: (a).** It is a fact the seller knows and Signora does not, which is the definition of something to ask rather than infer. **(b)** would be the platform guessing at a commercial decision.
+
+**Implementation impact.** Blocks SE-04. SE-03 can ship without it by showing the committee per product, which is how it is declared.
+
+## Closed on repository evidence — no decision required
 
 
 | Item | Why | Verified against |
