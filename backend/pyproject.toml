@@ -125,6 +125,13 @@ containers = [
     "modules.ai_research_engine",
     "modules.timeline",
     "modules.integrations",
+    # **`modules.sales_engagement` is deliberately not here yet.** The
+    # layered contract requires every layer to exist, and at SE-02 this
+    # module has `domain`, `application` and `public` and no storage or
+    # transport at all — because it owns no fact. Creating two empty
+    # packages to satisfy a linter would be a placeholder pretending to be
+    # structure. **Added the moment SE-03 gives it an interface**, and the
+    # forbidden-module contract below binds it in the meantime.
 ]
 layers = [
     # Optional and topmost. `evaluation/` is the harness plus each consuming
@@ -859,3 +866,38 @@ forbidden_modules = ["modules"]
 # discovered by the platform itself. A simulator that reads a Signal to
 # decide what to emit next makes every scenario pass while proving nothing
 # about the pipeline (20-provider-simulation.md, principle 2).
+
+[[tool.importlinter.contracts]]
+name = "sales_engagement reaches every module it reasons from only through public/"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = ["modules.sales_engagement"]
+forbidden_modules = [
+    # **It owns commercial reasoning and no fact at all** (ADR-0200). Every
+    # value it produces is derived from facts these modules own, and reaching
+    # past a published contract would let a conclusion depend on a storage
+    # shape — which is how a derived value quietly becomes a stored one.
+    "modules.commercial_profile.domain",
+    "modules.commercial_profile.application",
+    "modules.commercial_profile.infrastructure",
+    "modules.commercial_profile.interface",
+    "modules.business_event_engine.domain",
+    "modules.business_event_engine.application",
+    "modules.business_event_engine.infrastructure",
+    "modules.business_event_engine.interface",
+    "modules.signal_engine.domain",
+    "modules.signal_engine.application",
+    "modules.signal_engine.infrastructure",
+    "modules.signal_engine.interface",
+    "modules.buying_score_engine.domain",
+    "modules.buying_score_engine.application",
+    "modules.buying_score_engine.infrastructure",
+    "modules.buying_score_engine.interface",
+    "modules.opportunity_engine.domain",
+    "modules.opportunity_engine.application",
+    "modules.opportunity_engine.infrastructure",
+    "modules.opportunity_engine.interface",
+    # Nothing reasons about people, because no person exists (C-210).
+    "modules.knowledge_graph.domain",
+    "modules.knowledge_graph.infrastructure",
+]

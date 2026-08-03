@@ -87,6 +87,22 @@
 
 **Implementation impact.** Blocks SE-04. SE-03 can ship without it by showing the committee per product, which is how it is declared.
 
+### C-213 — the Buying Committee is not exported from `commercial_profile.public`
+
+**Opened 2026-08-03 · Lane A · owner: Lane B (`commercial_profile`) · 🟠**
+
+**The problem.** `commercial_profile.public` exports `TargetAccountReader`, `TargetAccountView` and `TargetAccountListView` — and **nothing about the Buying Committee**. Sales Engagement's whole capability is the join between a declared committee role and an observed appointment at a Target Account, and it cannot read the declaration.
+
+**What Lane A has done in the meantime.** SE-02's reasoning core is built against **its own port** (`CommitteeReader`), which is correct architecture regardless — *a port belongs to the module that owns the language it represents* (`CLAUDE.md` §6). The deterministic graph, its thirty tests and its type checking are complete and reviewable now. **Only the adapter is blocked.**
+
+**What is needed.** A read contract on `commercial_profile.public` exposing, for a workspace and a product, the declared roles as `(title, part)`. **Read-only, no ranking, no evaluation** — Commercial Profile's structural boundary test refuses an influence model and Sales Engagement must not import one.
+
+**Recommendation.** Lane B exports a `BuyingCommitteeReader` shaped like the existing `TargetAccountReader`. Sales Engagement writes the adapter mapping it onto its own port, which is where the anti-corruption boundary belongs.
+
+**Trade-offs.** Without it, SE-03 cannot put the committee on a screen — which would be the first time the customer's declaration reached one. **The declaration's own docstring says *"nothing downstream reads it yet"***; this is the change that ends that.
+
+**Implementation impact.** Blocks SE-03 onward. Blocks nothing in SE-02.
+
 ## Closed on repository evidence — no decision required
 
 
