@@ -1043,9 +1043,13 @@ Every built module has one, marked *as built*: `22`–`29`, `33`, and `40-commer
 | **Owner** | **Lane A** (the route) + **product owner** (the placement, [ADR-0038](architecture/adr/0038-timeline.md) Q3) |
 | **Requesting lane** | Lane B — **Timeline's feature lead** |
 | **Category** | Cross-module slice · frontend routing |
-| **Status** | `OPEN` |
-| **Blocks** | **Nothing in Timeline.** The backend and the component are built; only the mount point is missing |
+| **Status** | **`CLOSED`** — 2026-08-03, by Lane B, the requesting lane |
+| **Blocks** | Nothing. **Resolved: the feed is mounted on the account brief** |
 | **Raised** | 2026-08-02, at the close of M7-S04a |
+
+> **Closed on evidence, not on memory.** `app/(app)/accounts/[accountId]/page.tsx:117` calls `useAccountTimeline`, and a product review walked the rendered feed — *"What has happened"*, with four dated entries. **Lane A mounted it during the Product Surface slices and the row was never closed**, which is exactly the shrink this register is supposed to show (§20e: *a register that only grows has become the discussion log it is not allowed to be*).
+>
+> **Found while writing an implementation roadmap that would have listed it as pending work.** A stale `OPEN` row costs a future lane a slice it does not need to build.
 
 **Lane B owns Timeline and is not handing the feature over.** The Change Budget's 🟢 tier covers *"the frontend components and routes that serve your slice"*, so the feed component, its query hook and its tests are built and green. **One thing is genuinely another lane's: where the component is rendered.**
 

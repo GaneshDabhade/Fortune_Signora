@@ -223,7 +223,7 @@ Recording, transcription, storage, retention, consent, and per-region compliance
 |---|---|---|---|---|---|
 | **A1** | **Account search** — find by name | Product Surface · `knowledge_graph` | — | **M** | Product Surface |
 | **A2** | **The accounts list** — all of them, filtered by score, posture, owner, freshness | Product Surface · `opportunity_engine` | A1 | **L** | Product Surface |
-| **A3** | **Mount Timeline** — account history on the brief | Product Surface | [C-024](../LANE_COORDINATION.md) | **S** | Product Surface |
+| ~~A3~~ | ~~Mount Timeline~~ — **already done.** Lane A mounted it; [C-024](../LANE_COORDINATION.md) was stale and is now closed | — | — | — | — |
 | **A4** | **Freshness** — *"as of"* on every account | `provider_platform` → read model | 4c | **S** | Provider Platform |
 | **A5** | **Company profile** — attribute history from claims | Product Surface · `knowledge_graph` | A1 | **M** | Product Surface |
 | **A6** | **`Needs identity` queue** — unnamed records leave the working list | `knowledge_graph` · Product Surface | [C-321](../LANE_COORDINATION.md) | **M** | Knowledge Graph |
@@ -279,7 +279,7 @@ Recording, transcription, storage, retention, consent, and per-region compliance
 ### Suggested order
 
 ```
-A4 · A3 · A1  ──▶  A2 · A5      surface what exists          weeks 1–4
+A4 · A1  ──▶  A2 · A5           surface what exists          weeks 1–4
 B3 · B2                          a customer can get in        weeks 2–3
 C-322 ──▶ B1                     stop contradicting ourselves weeks 3–6
 C-321 ──▶ A6                     the unnamed record           weeks 5–7
@@ -323,6 +323,9 @@ E3 · E4                          procurement                   before GA
 ---
 
 ## 7 · TODOs
+
+> **Expanded into implementation specifications in [51 — Implementation Specifications](51-implementation-specifications.md)**, on the product owner's direction (2026-08-03). Every slice below has an entry there with objective, customer problem, existing foundation, backend and frontend changes, UX, API, events, data model, acceptance criteria, risks, dependencies, effort and lane — **written so a lane can claim one and start without a design discussion.**
+
 
 **Proposed, not inserted.** A lane may not add `READY` work to [`BACKLOG.md`](../BACKLOG.md) (§20e) — these are offered for the product owner to admit, with ids left unallocated so the block rules are not pre-empted.
 
