@@ -114,6 +114,26 @@ Open questions:        anything the lane would have to assume
 Product Owner decision required:
 ```
 
+**An assignment is not made until the receiving lane can consume it** *(product owner, 2026-08-03)*. **Preparing it is not sufficient. Recording it is not sufficient. Reporting it is not sufficient.**
+
+```
+  lane reports AVAILABLE ─▶ validate reality ─▶ select ─▶ update the artifacts
+                                                                  │
+   begin preparing the next ◀─ implementation starts ◀─ notify ◀─ verify the lane can see it
+```
+
+**The last two steps are the ones Lane C skipped**, and skipping them cost Lane A an idle cycle: the assignment existed on `lane-c-product-office`, where no lane reads, and Lane C reported it as made. **Verification means reading it back from where the lane will look, not from where it was written.**
+
+| Step | Done when |
+|---|---|
+| **Publish** | The assignment is on a ref the receiving lane reads |
+| **Verify** | `git show <that ref>:docs/ACTIVE_ASSIGNMENTS.md` shows it — **checked, not assumed** |
+| **Notify** | The lane's open coordination item is answered where the lane will see the answer |
+
+> **Delivery uses no new mechanism** ([Pack K](DECISION_PACKS.md)). **The lane's own claim commit is the delivery to `integration`** — it already touches exactly `ACTIVE_ASSIGNMENTS.md` and `BACKLOG.md`, which is `CLAIM_PATHS`. **Lane C never pushes to `integration`**, and QE's authority over it is untouched.
+
+**Maintain one fully prepared assignment ahead of every active lane, and a small rolling backlog behind it.** A lane should never have to ask what to work on next.
+
 **Alternatives are not decoration.** A recommendation without them is a decision presented as an inevitability, and the product owner cannot rank what they cannot see.
 
 ---

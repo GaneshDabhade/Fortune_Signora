@@ -190,6 +190,7 @@
 | [C-402](#c-402--the-board-restructuring-is-approved--and-doing-it-today-costs-two-lanes-a-conflict) | Board restructuring — **approved**, and the timing is the finding | Lane C | **QE** (performs and times it) | **`ANSWERED`** — Option B approved 2026-08-03 | **Nothing.** 49 unmerged commits touch the file; reshaping after the next promotion costs nothing |
 | [C-403](#c-403--every-outstanding-qe-action-from-lane-c-in-one-place) | Every outstanding QE action from Lane C, in one place | Lane C | **QE** | `OPEN` | **Nothing.** Two are latent defects that pass today and will not later |
 | [C-404](#c-404--two-ready-tasks-are-already-built-and-the-queue-cannot-see-it) | **Three** `READY` tasks were already built | Lane C | Lane C | `IMPLEMENTED` — backlog corrected 2026-08-03. **`VERIFIED` is QE's** | **Nothing.** It would have caused duplicate implementation three times |
+| [C-405](#c-405--assignment-delivery--answered-without-a-new-mechanism-and-c-217-with-it) | Assignment delivery, and Lane A's assignment | Lane C | **Product owner** (one sentence) | `ANSWERED` — assignments published; rule awaiting ratification | **Nothing, once a lane reads this ref** |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
 >
@@ -2713,6 +2714,44 @@ Every lane's rows sit **adjacent in one table**, and each lane's branch carries 
 > **Reality was corrected; priority was not touched.** No row moved position, none was added or removed, and none was reordered. **Lane C records what exists; the queue's order stays the product owner's.**
 
 > **The general finding is the one worth keeping:** the backlog is written from rulings and the work is done on branches, and **nothing reconciles the two until QE merges.** `state-check` reading every `lane-*` ref ([C-403](#c-403--every-outstanding-qe-action-from-lane-c-in-one-place) item 2) would close this the same way it closes [C-400](#c-400--three-architecture-document-numbers-are-already-collided-and-the-check-that-catches-them-cannot-fire-yet) and [B-400](BUGS.md) — **three findings, one blind spot.**
+
+---
+
+## C-405 · Assignment delivery — answered without a new mechanism, and C-217 with it
+
+| | |
+|---|---|
+| **Classification** | **Repository Decision** — the mechanism · **Implementation Coordination** — the assignments themselves |
+| **Owner** | **Product owner** for one `CLAUDE.md` sentence · **QE** for nothing, deliberately |
+| **Requester** | **Lane C — Product Office** |
+| **Status** | `ANSWERED` — the assignments are published; **the one-sentence rule awaits ratification** |
+| **Blocks** | **Nothing, once a lane reads this ref** |
+
+### Lane A's assignment — [C-217](#c-217--lane-a-is-available-and-requests-its-next-product-surface-epic) is answered
+
+**Lane A is assigned [TASK-400](BACKLOG.md) — Epic A completion, A6 and A7, whole.** Both verified unbuilt on every branch; `provider_platform` and Product Surface are Lane A's; **Epic A is already approved, so no ruling is needed.** **Next: [TASK-903](BACKLOG.md) stage 2. Then A5's render**, once [TASK-401](BACKLOG.md) lands.
+
+**Lane B is assigned [B-400](BUGS.md) first** — renumber `0031_commercial_profile_segment.py` to **`0035`**. Two migrations claim `0031`, Alembic cannot build the revision map, and **neither lane can certify until it clears.** Then **[TASK-902](BACKLOG.md)**, then **[TASK-402](BACKLOG.md)**, then **[TASK-401](BACKLOG.md)**.
+
+**Not assigned, and each says why:** CX-07 has no task id and no agreed scope — **new scope is the product owner's.** [TASK-900](BACKLOG.md) is a platform RFC Lane B declined as a different discipline.
+
+### Why this was late, stated plainly
+
+**Lane C prepared these on its own branch and reported them made.** Lane A checked `integration`, found nothing, and held at `AVAILABLE`. **Lane A was right and the office had not delivered.** [C-218](#c-218) named one direction of this channel; **this is the other, and [Pack J](DECISION_PACKS.md) examined only the first.**
+
+### The mechanism, and it needs nothing built
+
+**A lane's own claim commit already delivers to `integration`.** `710c9d3` touches **`ACTIVE_ASSIGNMENTS.md` and `BACKLOG.md` and nothing else** — exactly `CLAIM_PATHS` in `certification-guard.py`. **The assignment never needed Lane C to push it.**
+
+> **Nothing is weakened and nothing is invented.** No new commit type · no widened guard · no second exception · **Lane C never pushes to `integration`** · QE's authority over it is untouched. **What was missing was that a lane did not know where to read.**
+
+**The whole change is one sentence in `CLAUDE.md` §20e Startup step 7, drafted in [Pack K](DECISION_PACKS.md) ready to paste** — an `AVAILABLE` lane reads its assignment from `origin/lane-c-product-office:docs/ACTIVE_ASSIGNMENTS.md`, then runs the Task Claim Protocol **unchanged**.
+
+**Until it is ratified, this item is the notification**, and it is on the ref Lane A already read to raise [C-217](#c-217--lane-a-is-available-and-requests-its-next-product-surface-epic).
+
+### What QE is asked for — nothing new
+
+**No publication workflow, no guard change, no assignment commits.** [C-403](#c-403--every-outstanding-qe-action-from-lane-c-in-one-place)'s nine items stand unchanged, and **item 2 — `state-check` reading every `lane-*` ref — is the one that makes both directions of this channel checkable** rather than a matter of remembering.
 
 
 ## Closed

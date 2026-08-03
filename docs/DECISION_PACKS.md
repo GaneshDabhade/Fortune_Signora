@@ -253,6 +253,51 @@
 
 ---
 
+## PACK K · Assignment delivery — and the mechanism already exists
+
+**Raised and investigated by Lane C 2026-08-03, after Lane A held at `AVAILABLE` while its assignment sat on Lane C's branch.** *"An assignment is not made until the receiving lane can consume it."*
+
+| | |
+|---|---|
+| **Class** | **Repository Decision** — and the recommendation needs **no new exception, no guard change and no QE workflow** |
+
+### What actually failed
+
+**Lane C prepared TASK-400, TASK-401 and TASK-402 on `lane-c-product-office` and reported the lanes assigned.** Lane A checked `integration`, found nothing, and held. **Lane A was right.**
+
+> **This is [C-218](LANE_COORDINATION.md) in the opposite direction, and [Pack J](#pack-j--a-lane-can-report-available-and-the-office-that-assigns-it-cannot-see-the-signal) analysed only one half.** C-218 asks how the office sees a lane report `AVAILABLE`. **This asks how a lane sees the assignment that answers it.** One channel, two directions, and only one was examined.
+
+### The finding: nothing needs inventing
+
+**A lane's own claim commit already does the delivery.** `710c9d3 Claim TASK-300` touches **`docs/ACTIVE_ASSIGNMENTS.md` and `docs/BACKLOG.md`, and nothing else**, and pushes to `integration` — which is exactly `CLAIM_PATHS` in `infra/certification-guard.py`.
+
+> **The assignment does not need Lane C to push it. The receiving lane pushes it, as its claim** — which is the atomic arbitration point the protocol was built around. **What was missing was never a channel. It was that the lane did not know where to read.**
+
+### The options
+
+| | Mechanism | New exception? | Guard change? | QE work? | Latency |
+|---|---|---|---|---|---|
+| **A** ✅ | **A lane at `AVAILABLE` reads its assignment from `origin/lane-c-product-office`, then runs the existing Task Claim Protocol unchanged** | **None** | **None** | **None** | **One pull** |
+| **B** | Lane C pushes an `Assign TASK-nnn` commit to `integration`; widen the guard's grep | **Yes** — a second commit type a non-QE lane may push to a shared branch | Yes | Yes | One pull |
+| **C** | QE publishes assignment commits during its cycle | No | No | **Yes, every assignment** | **Couples assignment to the certification cycle** |
+| **D** | A dedicated assignment file or queue | Yes | — | Yes | One pull |
+
+**Recommendation: A.** It is the only option that changes **no mechanism at all** — the claim protocol, the guard, `CLAIM_PATHS`, QE's authority over `integration` and the one-exception rule all stand exactly as written. **The lane still claims, the claim still arbitrates, and QE still owns every other arrival on `integration`.**
+
+**B is what Lane C nearly did**, and it is worth naming as rejected: it would have put a second commit type on a shared branch to solve a problem that a `git show` already solves.
+
+### The whole change, and it is one sentence
+
+**`CLAUDE.md` §20e Startup step 7** currently sends an `AVAILABLE` lane to [`BACKLOG.md`](BACKLOG.md) to choose. **It should send it to Lane C's ref to read what it has been assigned**, then into the Task Claim Protocol unchanged:
+
+> **If you are `AVAILABLE`, read your assignment from `origin/lane-c-product-office:docs/ACTIVE_ASSIGNMENTS.md` — Lane C prepares it before you finish — then run the Task Claim Protocol to record it. If no assignment is prepared, say so; that is a finding against Lane C, not a licence to choose.**
+
+**That is the entire proposal.** It generalises the same principle [Pack J](#pack-j--a-lane-can-report-available-and-the-office-that-assigns-it-cannot-see-the-signal) recommends for the other direction — **read refs, not only `integration`** — so **one rule now covers both halves of the channel.**
+
+**Lane C has implemented nothing and pushed nothing to `integration`.** The `CLAUDE.md` amendment is the product owner's; **the drafted sentence is above, ready to paste.**
+
+---
+
 ## What remains open
 
 **One pack, and it is the one the product owner declined to consolidate.** [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) **R-10** kept ADR-0041 and C-002 separate: *"ADR-0041 defines how customer intent is modeled, versioned, governed and referenced. C-002 defines how that intent is interpreted against normalized provider data. They are complementary capabilities, not one combined decision."*
