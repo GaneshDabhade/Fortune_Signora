@@ -2,11 +2,19 @@
 
 ## Status
 
-**PROPOSED — 2026-08-02, by Lane B, assigned M7.**
+**RATIFIED — 2026-08-03**, by **QE under product-owner delegation** ([ADR-0100](0100-delegated-dependency-rulings.md) R-3). Drafted 2026-08-02 by Lane B, assigned M7.
 
-**Not ratified, and nothing is implemented.** Drafted at the product owner's direction after [C-020](../../LANE_COORDINATION.md) recorded that Timeline had a bounded context and no design. It follows the route [ADR-0035](0035-commercial-profile.md) took for Commercial Profile: the assigned lane drafts, the product owner ratifies, and slice 1 begins after ratification and not before.
+**All three open questions are answered, and M7 may proceed:**
 
-**Three decisions are deliberately left open** and marked ❓ below. They are the product owner's, and each changes what M7 builds.
+| | Ruling |
+|---|---|
+| **❓1 · Meilisearch now, or Postgres first** | **Postgres first.** Meilisearch on a stated trigger: *the first customer asking to search or facet a timeline rather than scroll it.* ADR-0008 ratifies the technology, never the schedule |
+| **❓2 · Six events now, or wait for the seventh** | **Ship the six.** `recommendation.created` joins when M11 resumes |
+| **❓3 · Does the timeline reach a customer in M7** | **Already answered by implementation** — the feed is mounted on the account brief (**CX-03**, `accounts/[accountId]/page.tsx:335`), Option A, with B and C ruled out in the file |
+
+> **❓3 is the one worth reading twice.** A lane writing code answered it correctly, and this ADR stayed `Proposed` for five cycles while QE escalated the question as a blocker. **A blocker can outlive its own answer, and nothing was checking.**
+
+*Original drafting note, kept because a dated record is not rewritten (§2):* **Not ratified when written, and nothing was implemented then.** It followed the route [ADR-0035](0035-commercial-profile.md) took for Commercial Profile — the assigned lane drafts, the product owner ratifies, and slice 1 begins after ratification and not before. **Three decisions were deliberately left open** and are marked ❓ below.
 
 ## Context
 

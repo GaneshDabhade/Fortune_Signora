@@ -60,6 +60,75 @@
 
 ## READY — claimable now, in priority order
 
+> **Seven tasks became claimable on 2026-08-03**, when [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) resolved the decisions they were waiting on. **They are placed at the top because they have waited longest**, not because they are larger.
+
+### TASK-900 · The platform learns to compose a module into the runtime
+
+| | |
+|---|---|
+| **Module** | `signora_platform` — 🔴, and **explicitly approved** by [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) R-1 |
+| **Slice** | **The RFC only.** No rewiring in this task |
+| **Status** | `READY` |
+| **Notes** | Four capabilities in one RFC: a session on `EventHandler` · `PublishableEvent` satisfiable by a frozen dataclass · a port from a handler to a provider adapter · a self-directed Casbin action. **Additive only** — a module not using one behaves identically |
+| **On claiming** | **The RFC lands before any module is rewired.** §20a's approval branch means approved *then* implemented. Closes [C-012](LANE_COORDINATION.md), [C-013](LANE_COORDINATION.md), [C-021](LANE_COORDINATION.md), [C-207](LANE_COORDINATION.md) |
+
+### TASK-901 · Seven modules consume the events they declare
+
+| | |
+|---|---|
+| **Module** | Seven pipeline modules, **one per slice** |
+| **Slice** | **Seven independently certifiable slices**, not one |
+| **Status** | `BLOCKED` on TASK-900 — listed here so the sequence is visible |
+| **Notes** | After each, `make runtime-composition` is measured and **`BLOCKED_BY_C012` shrinks by exactly one.** A module leaving that list is how the architecture records that it now expects live consumption |
+
+### TASK-902 · M7 Timeline — the remaining slices
+
+| | |
+|---|---|
+| **Module** | `timeline` |
+| **Slice** | S05+ |
+| **Status** | `READY` — **[ADR-0038](architecture/adr/0038-timeline.md) is ratified** |
+| **Notes** | **Postgres first**; Meilisearch on a stated trigger — *the first customer asking to search or facet a timeline rather than scroll it*. **Ship the six live events**; the seventh joins when M11 resumes. **The customer surface already exists** — CX-03 mounted the feed on the account brief |
+| **On claiming** | Supersedes `TASK-017`, which was waiting on exactly these three answers |
+
+### TASK-903 · A seller can see what their company sells
+
+| | |
+|---|---|
+| **Module** | `commercial_profile` (the read surface) · Product Surface (the mount) — **a two-lane build** |
+| **Slice** | one slice each side |
+| **Status** | `READY` |
+| **Notes** | **Read-only, for `member`, beside the account brief** — not under `/settings`, where the granted read is unreachable behind `workspace:update`. `policy.csv` already grants `member` read on `product`, `icp`, `buying_committee` and `commercial_focus`: **the API and the product disagree, and the API is right** |
+| **On claiming** | Open a `C-` item for the mount if the two halves are claimed by different lanes. **Placement is judgement** ([ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) R-5) — say so in review if it reads wrong |
+
+### TASK-904 · An organization can grow
+
+| | |
+|---|---|
+| **Module** | `workspace_tenancy` |
+| **Slice** | invitation table · acceptance · members list |
+| **Status** | `READY` |
+| **Notes** | **Signora owns the invitation.** An `invitation` table keyed by email; acceptance matches a pending row against the **`email` claim already in the verified JWT**. **Better Auth's `organization` plugin is not adopted** — migration `0005` revokes `signora_app` from the `auth` schema, so plugin-owned membership is membership the Python tier cannot read, and §13 requires it re-verified every request |
+| **On claiming** | **v1 delivery is a shareable link, not email.** No transactional-email dependency is added. **That half is judgement** and is the ruling to challenge first if you would rather ship with email |
+
+### TASK-905 · A contraction risk stops looking like an opportunity
+
+| | |
+|---|---|
+| **Module** | Product Surface · `buying_score_engine` owns posture |
+| **Slice** | one slice |
+| **Status** | `READY` |
+| **Notes** | Posture reaches the attention row. **A contraction risk must not be confusable with a low-scoring opportunity** — they mean opposite things to a CRO scanning a list. **The treatment is yours**, within the design system; the ruling is only that they must differ |
+
+### TASK-906 · M14b names its bounded context
+
+| | |
+|---|---|
+| **Module** | **Undecided — that is the deliverable** |
+| **Slice** | discovery |
+| **Status** | `READY` |
+| **Notes** | [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) R-2: **a roadmap row is not claimable until it names its bounded context.** M14b's first task is therefore the discovery that names it. Lane A's analysis is already recorded — *one module and two integrations, not one and not three* |
+
 ### TASK-001 · Verify the three fixes QE may not close
 
 | | |

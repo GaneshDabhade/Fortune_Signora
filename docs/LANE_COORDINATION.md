@@ -61,6 +61,32 @@
 >
 > **The durable lesson is not *be more careful*.** It is that **an item's own description is not evidence of its status**, and this review's method — verify every item against shipped code — is now what happens every Closeout.
 
+### Resolved by delegated ruling — 2026-08-03, [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md)
+
+**The product owner delegated dependency resolution to QE on 2026-08-03.** Ten rulings, four deliberate deferrals. **Every ruling names whether it rests on evidence or judgement**, so the judgement ones are cheap to reverse.
+
+| Item | Ruling | Basis |
+|---|---|---|
+| **C-012 · C-013 · C-021 · C-207** | **`ANSWERED` — R-1.** One platform amendment, one RFC, four capabilities. **Seven independently certifiable rewiring slices** | **Evidence** — 7 of 9 modules unwired since M3A; `type: ignore` 8 → 13 |
+| **C-020** | **`ANSWERED` — R-2 + R-3.** [ADR-0038](architecture/adr/0038-timeline.md) **ratified**, all three ❓ answered. **M7 may proceed** | **Evidence** |
+| **C-023** | **`CLOSED` — R-2.** It asked whether M13 was executable; **Lane B executed three slices of it** | **Evidence** |
+| **C-200** | **`ANSWERED` — R-2.** A roadmap row is not claimable until it names its bounded context. M14b's first task is a discovery slice | **Evidence** — three lanes, same friction |
+| **C-010** | **`ANSWERED` — R-4.** QE owns it; **a rotating lane verifies QE's fixes**, starting with Lane B | **Evidence** — 8 defects landed here |
+| **C-004** | **`ANSWERED` — R-4.** **QE may correct factual drift in `01`–`21`** — recording what was built, never changing a decision | **Evidence** |
+| **C-014** | **`ANSWERED` — R-4.** A milestone slot **after M14**. Not urgent: §20c already treats accessibility as a defect class | **Judgement** |
+| **C-008** | **`ANSWERED` — R-5.** **Yes, read-only for `member`, beside the account brief**, not under `/settings` | **Evidence** on *whether*; **judgement** on *where* |
+| **C-011** | **`ANSWERED` — R-6.** Posture reaches the row; **a contraction risk is never confusable with an opportunity.** Treatment is the lane's | **Evidence** |
+| **C-017** | **`ANSWERED` — R-9.** Ratified as `D39` | **Zero-cost. It should not have waited five cycles** |
+| **C-206** | **`ANSWERED` — R-7.** **Signora owns the invitation**; the plugin is not adopted. **v1 delivery is a shareable link, not email** | **Evidence** on the plugin; **judgement** on delivery |
+| **C-205** | **`ANSWERED` — R-8.** **Desktop-first, usable to tablet. Phone is out of scope for v1.** [B-019](BUGS.md)'s hidden aside is correct behaviour | **Judgement — the thinnest here** |
+| **C-002 · C-018 · C-204** | **STAY OPEN — R-10, the product owner's own ruling.** ADR-0041 models customer *intent*; these are its *interpretation*. **Complementary, not one decision** | **QE's Pack C grouping withdrawn** |
+
+**Deliberately not ruled, and each says why:** C-002/C-018/C-204 need product intent · **C-203** is product semantics touching AI attribution, audit and notifications at once · **C-003, C-005, C-007, C-009, C-025** are **not yet re-validated against current code** · **C-302** is **tenancy, which is never decided inside a session**.
+
+> **Ten rulings, four deferrals, and the deferrals are the honest part.** A delegation returning *"all resolved"* would mean the hard ones had been decided by somebody without the information to decide them.
+
+---
+
 ### Re-validated against today's repository — 2026-08-03, at `7e43841`
 
 **On the product owner's direction: every blocked item re-checked against the repository *as it exists now*, not as it existed when the item was raised.** Months of implementation have landed since most were written.
