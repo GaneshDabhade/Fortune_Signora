@@ -93,6 +93,49 @@
 | **Delivered** | [C-400](LANE_COORDINATION.md) doc-number collisions · [C-401](LANE_COORDINATION.md) merge-risk measurement · [C-403](LANE_COORDINATION.md) QE's action list · [C-404](LANE_COORDINATION.md) backlog reality · [B-400](BUGS.md) 🔴 migration collision · [B-401](BUGS.md) the blocking check |
 | **Next** | Assign on `AVAILABLE`, after [B-400](BUGS.md) clears |
 
+### Prepared queues — planning artifacts; only the first item is assigned
+
+**Maintained continuously by Lane C, not when a lane finishes.** **Verified against branches, never against the queue.**
+
+| | **Lane A** | **Lane B** |
+|---|---|---|
+| **Current** | **[TASK-400](BACKLOG.md)** — Epic A completion (A6 + A7) · *assigned* | **[B-400](BUGS.md)** — renumber to `0035` · *assigned* |
+| **Next** | [TASK-903](BACKLOG.md) stage 2 | **[TASK-401](BACKLOG.md)** — A5 backend · **S** |
+| **Then** | [TASK-905](BACKLOG.md) — posture on the attention row | [TASK-902](BACKLOG.md) — M7 Timeline S05+ |
+| **Then** | **A5 render** — needs [TASK-401](BACKLOG.md) | [TASK-402](BACKLOG.md) — Epic E1, the CRM read |
+| **Future** | **CX-07 responsive** — no task id, **needs scope** ([Pack I](DECISION_PACKS.md)) | Epic D, **after E1** |
+| **Depth** | **4 executable + 1 pending scope** | **4 executable** |
+
+**Two sequencing decisions, both made to prevent a stall rather than to react to one:**
+
+- **[TASK-401](BACKLOG.md) moved ahead of [TASK-402](BACKLOG.md) in Lane B's queue.** A5's *render* is Lane A's fourth item and needs A5's *backend*, which sat behind **Epic E1 — an L**. **Lane A would have reached A5 while Lane B was mid-epic and stalled.** TASK-401 is **S**; moving it costs Lane B days and saves Lane A a stop. **Sequencing within a prepared queue is the office's; [`BACKLOG.md`](BACKLOG.md)'s priority order is untouched.**
+- **[TASK-905](BACKLOG.md) inserted as Lane A's third**, which is where Lane A itself ranked it in [C-217](LANE_COORDINATION.md). It is Product Surface's, self-contained, and needs nothing from anyone.
+
+**Predicted blockers, and what is being done now rather than when they land:**
+
+| Horizon | Risk | Action taken |
+|---|---|---|
+| **Immediate** | **[B-400](BUGS.md) blocks promotion for both lanes.** Nothing certifies until it clears | Assigned first, ahead of all feature work |
+| **~2 slices** | Lane A reaches **A5's render** before Lane B ships the backend | **Resequenced above** |
+| **~4 slices** | **Lane A runs out of approved scope.** CX-07 is its only remaining candidate and has none | **Escalated** ([Pack I](DECISION_PACKS.md)) — the one item genuinely needing the product owner |
+| **Standing** | **[TASK-003](BACKLOG.md) reads `READY` and is not claimable** — [C-018](LANE_COORDINATION.md) is still `OPEN` and Lane A skipped it with its reason recorded | **Flagged as stale.** A `READY` row nobody can take is the queue lying about its own depth |
+
+> **Queue health is the measure, not assignment count.** **Fewer than three prepared executable tasks for any lane starts preparation immediately** — and the number that matters is *executable*, which is why [TASK-003](BACKLOG.md) is excluded from both depths above.
+
+### Lane C — referenced, not rowed
+
+**Lane C — Product Office, Architecture Governance & Cross-Lane Coordination** holds `lane-c-product-office` and is **deliberately absent from the table above** (product owner, 2026-08-03). **This board measures implementation; Lane C produces none.** It holds no `TASK-nnn` and claims nothing from [`BACKLOG.md`](BACKLOG.md). Its remit and boundaries are [`CLAUDE.md` §20e *Lane C*](../CLAUDE.md).
+
+> **Lane C owns the coordination of implementation, not the implementation itself.**
+
+**This board is now an input to Lane C, not only a record.** When a lane's row reaches `AVAILABLE`, `BLOCKED` or `WAITING`, **Lane C reads it and prepares the next recommendation for the product owner to approve** — the lane no longer selects for itself.
+
+| | |
+|---|---|
+| **Current** | **Assignment preparation and B-400 coordination** |
+| **Delivered** | [C-400](LANE_COORDINATION.md) doc-number collisions · [C-401](LANE_COORDINATION.md) merge-risk measurement · [C-403](LANE_COORDINATION.md) QE's action list · [C-404](LANE_COORDINATION.md) backlog reality · [B-400](BUGS.md) 🔴 migration collision · [B-401](BUGS.md) the blocking check |
+| **Next** | Assign on `AVAILABLE`, after [B-400](BUGS.md) clears |
+
 ### Next assignments — prepared, and what each is waiting on
 
 **Verified against branches, not against the queue** ([`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §10). **Neither lane is `AVAILABLE` today; both are carrying large unmerged branches.**

@@ -134,7 +134,15 @@ Product Owner decision required:
 
 > **Delivery uses no new mechanism** ([Pack K](DECISION_PACKS.md)). **The lane's own claim commit is the delivery to `integration`** — it already touches exactly `ACTIVE_ASSIGNMENTS.md` and `BACKLOG.md`, which is `CLAIM_PATHS`. **Lane C never pushes to `integration`**, and QE's authority over it is untouched.
 
-**Maintain one fully prepared assignment ahead of every active lane, and a small rolling backlog behind it.** A lane should never have to ask what to work on next.
+**Maintain at least three prepared *executable* tasks per active lane** *(product owner, 2026-08-03)*. **Fewer than three starts preparation immediately** — not when the lane finishes.
+
+> **Assignment is not the end of the work; it starts preparing the next one.** The office runs continuously: monitor every lane, track progress against epics, verify reality, prepare ahead, and **resolve dependencies before they become blockers.**
+
+**Executable is the word that matters.** A `READY` row nobody can take does not count — **it makes the queue lie about its own depth.** [TASK-003](BACKLOG.md) reads `READY` while [C-018](LANE_COORDINATION.md) is open and Lane A has already skipped it; it is excluded from every depth Lane C reports.
+
+**The questions the office answers before anyone asks:** what blocks each lane two slices out · which dependency should be resolved today · which epic is running out of prepared slices · which module becomes the next hotspot · **which `READY` row went stale because reality moved.**
+
+**Sequencing within a prepared queue is the office's; [`BACKLOG.md`](BACKLOG.md)'s priority order is the product owner's.** Reordering a lane's *prepared* work to prevent a stall is coordination. Reordering the *queue* is not.
 
 **Alternatives are not decoration.** A recommendation without them is a decision presented as an inevitability, and the product owner cannot rank what they cannot see.
 
