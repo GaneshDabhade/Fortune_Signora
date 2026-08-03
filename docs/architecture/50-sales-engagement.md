@@ -628,3 +628,61 @@ Each `Passage` carries what it cites, so *"why does this paragraph say that?"* r
 | **Commercial memory** | `SynthesisSource` is a complete snapshot of one moment's reasoning. **Materializing it with a supersession chain is the shape `ai_inference` already uses** — recorded, not built |
 | **Reopened questions** | An `Unknown` is a subject and a question. *"We asked this six months ago; hiring changed yesterday"* needs the snapshot above and **nothing about today's shape prevents it** |
 | **Richer unknown kinds** | *missing data · insufficient confidence · conflicting providers · not yet observable · requires human validation · external dependency* each drive a different action. **A kind is a field, not a redesign** — and each arrives when something can produce it |
+
+---
+
+## 26 · SE-09b(i) — the brief as an object, and six views of one graph
+
+**The structural instruction, taken literally: the Approach Brief is a domain object with named sections, never a prompt's output.**
+
+A brief assembled as markdown is one shape forever — a second audience, a seventh section or an export would each need a new prompt and a new parser. **A brief assembled as named sections over one reasoning graph** means the graph is written once and every future view is an arrangement of it.
+
+### Sections are absent, never empty
+
+> **A brief with a *Contradictions* heading and nothing under it looks the same for every Target Account.**
+
+That is the defect **R1-06** named on the workflow line and **D6** named on a filter: *a control that always shows the same thing teaches people to ignore controls.* So a section with nothing to say **is not in the brief at all**, and a reader who sees *Unknowns* knows before reading it that something is unknown.
+
+**`sections()` computes it** rather than a renderer checking six fields and remembering the rule — so a seventh section cannot be added to the object and forgotten by the screen.
+
+### A brief with no narration is complete, not degraded
+
+**The asymmetry, asserted rather than described.** Every field above `narration` exists without a model; a brief whose narration is empty carries the recommendation, the roles, their evidence, the unknowns and the risks — **none of which was ever the model's to produce.**
+
+**And narration cannot be added after assembly.** The mapping is frozen at the boundary, because a caller holding the original dictionary could otherwise attach a pass *after* validation — precisely the hole the synthesis contract exists to close.
+
+### Six passes, and why six values is not the `FitDimension` mistake
+
+| | |
+|---|---|
+| **Executive summary** | The account in thirty seconds |
+| **Conversation strategy** | What the first conversation should be about |
+| **Evidence narration** | Why the recommendation exists, in connected prose |
+| **Risk narration** | What is uncertain, and what it means commercially |
+| **Questions** | Discovery questions, from what the reasoning could not settle |
+| **Objections** | What to expect back, and which claims to avoid making |
+
+**The distinction matters and is worth stating.** Five absent `FitDimension` values would have needed *reasoning that does not exist* — a declaration nobody has made — so the code could never have emitted them. **Here the code path is identical for every value**: a pass is validated, keyed and rendered by one generic mechanism, and only the artifact is outstanding. **A rule applied with judgement rather than mechanically.**
+
+### What the model will be asked to do, and what it will not
+
+**Not:** *"They recently hired a VP Engineering."* — the graph already said that, and a model repeating it adds latency and hallucination surface for nothing.
+
+**But:** *"The appointment of a new VP Engineering often signals organizational change; combined with hiring in platform engineering, this suggests leadership may be evaluating modernization — a good moment to validate priorities before procurement becomes formal."*
+
+> **Nothing new was invented. Deterministic facts were connected into readable commercial reasoning.** That is the entire job, and the SE-09a fence is what keeps it to that job.
+
+### Insertion points this leaves open, and does not build
+
+| | |
+|---|---|
+| **Brief variants** — Executive · SDR · AE · Manager · Customer Success · Partner | ✅ **Arrangements of `sections()`, not new reasoning.** No `Audience` enum exists yet, because nothing would render differently for one — it arrives with the first variant that does |
+| **Personalization by Signora Customer** — motion, deal size, methodology, past wins | ⚠️ Not prevented. It would enter as **additional closed-set input to a pass**, never as a second reasoning path |
+| **Provider attribution per sentence** | ✅ **Already structural** — each `Passage` carries what it cites |
+| **Commercial memory** | ⚠️ `ApproachBrief` is a complete snapshot. Materializing it with supersession is the shape `ai_inference` already uses |
+
+### Evaluation, when SE-09c releases a prompt
+
+**Correctness is necessary and not sufficient**, on the product owner's direction. A released pass will be measured on: factual accuracy · unsupported claims · citation correctness · readability · executive clarity · actionability · commercial usefulness · explanation quality · hallucination rate · **stability across repeated runs**.
+
+**The last is the one this architecture can guarantee cheaply**: the input is a closed set, so two runs differ only by the model, and a pass whose output swings between runs is a pass that is not ready — measurable without a human reading either.

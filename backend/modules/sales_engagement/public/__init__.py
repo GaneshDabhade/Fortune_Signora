@@ -26,6 +26,11 @@ from modules.sales_engagement.application.ports import (
     EvidenceReader,
     PortfolioReader,
 )
+from modules.sales_engagement.domain.brief import (
+    ApproachBrief,
+    Pass,
+    assemble,
+)
 from modules.sales_engagement.domain.fit import (
     FitDimension,
     FitReason,
@@ -66,6 +71,7 @@ from modules.sales_engagement.domain.synthesis import (
 __all__ = [
     "STALE_AFTER_DAYS",
     "Approach",
+    "ApproachBrief",
     "ApproachInput",
     "ApproachReasoning",
     "AssembleApproach",
@@ -79,6 +85,7 @@ __all__ = [
     "ProductFit",
     "ProductRef",
     "NextAction",
+    "Pass",
     "Passage",
     "RankedRole",
     "ReasoningError",
@@ -90,6 +97,7 @@ __all__ = [
     "SynthesisRefusedError",
     "SynthesisSource",
     "Unknown",
+    "assemble",
     "contradictions",
     "fit",
     "rank_roles",
