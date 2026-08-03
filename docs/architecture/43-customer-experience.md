@@ -6,25 +6,30 @@
 >
 > **It is a living document.** Every figure was read out of the repository at the commit named below, and every one is re-measurable. **When a status here disagrees with the code, the code is right and this is a defect** (`CLAUDE.md` §2).
 
-**Re-measured at `origin/integration` = `0632680`, 2026-08-02**, after CX-01, CX-02 and CX-03. *(First measured at `11280f0`; endpoints and modules unchanged, screens and reachability changed.)* Frontend routes from `frontend/app/`, endpoints from `backend/modules/*/interface/router.py`, mounts from `backend/apps/api/main.py`, guards from `frontend/lib/state/permissions.ts`, navigation from `frontend/components/shell/navigation.tsx`.
+**Re-measured at `lane-a-product-surface` = `fc59125`, 2026-08-03**, after TM-03a and the Sales Workspace slices. *(Previously `0632680`; first measured at `11280f0`.)* Frontend routes from `frontend/app/`, endpoints from `backend/modules/*/interface/router.py`, mounts from `backend/apps/api/main.py`, guards from `frontend/lib/state/permissions.ts`, navigation from `frontend/components/shell/navigation.tsx`.
 
 ---
 
 ## 0 · The headline, before the detail
 
-**Three numbers, and the third is the finding.**
+**Four numbers now, and the fourth is the finding.**
 
-| | |
-|---|---|
-| **Backend HTTP endpoints** | **31**, across **11 modules** |
-| **Navigable application screens** | **5** — one attention list, one account brief, three settings pages *(plus five sign-in screens, and two dead-end states added by CX-02)* |
-| **Screens a `member` can reach** | **2** — unchanged by CX-01/02/03, and the number that still matters most |
+| | 2026-08-02 | 2026-08-03 |
+|---|---|---|
+| **Backend HTTP endpoints** | 31, across 11 modules | **40**, across **11 modules** |
+| **Navigable application screens** | 5 | **6** — one attention list, one account brief, four settings pages *(plus five sign-in screens and two dead-end states)* |
+| **Screens a `member` can reach** | 2 | **2 — unchanged** |
+| **Navigation entries a `member` sees** | *not measured* | **1** |
 
-> **A signed-in salesperson who is not an owner can reach the attention list and an account brief. Nothing else.** Settings, Products, and the Connection Center are all behind `workspace:update`, and the navigation has exactly two entries — one of which is the guarded one.
+> **Nine endpoints and one screen arrived; the seller's half of the product did not move.** Every one of the nine is Team Management, and every one of them is behind `workspace:update`.
 
-**And one route has no entrance at all.**
+**The fourth number is the one to act on.**
 
-> **`/settings/connections` is linked from nowhere in the product.** The only links to it in the entire codebase are the two OAuth redirect helpers *inside the connection flow itself* — so a customer can reach the Connection Center only by first being in the Connection Center. **A closed loop with no door.**
+> **A signed-in salesperson who is not an owner sees a sidebar with one item in it.** `Settings` is guarded by `workspace:update` and `Navigation` correctly declines to render a link the server would refuse — so of the two entries D38 reduced navigation to, a member sees one. **A navigation of one is not navigation; it is a label.**
+
+**The route-with-no-entrance class is closed.** Every route in `app/` now has an inbound link from somewhere a customer can already be — checked mechanically, not by memory, and the check is worth re-running rather than trusting: for each `page.tsx`, does any other source file name its path? CX-01 fixed the last one.
+
+**What replaced it is harder to see, because nothing is missing.** The remaining gap is not a route without a door, it is **a role without a product**: every screen exists, every screen is linked, and the person Signora is built for can open two of them.
 
 **This is not a criticism of the work.** Every module was built to its own milestone's Definition of Done, and each is correct. **It is the cost, now measurable, of the sequencing `31-m10-design-review-evidence.md` predicted before it was felt** — nine pipeline stages ahead of any user-visible surface. `CLAUDE.md` §2's *every completed slice is demoable by a non-engineer* was ratified to stop this growing; this document is what it looks like already grown.
 
@@ -52,12 +57,15 @@
       /  Attention                              /settings  ← owner only
       (every role)                                   │
               │                                      ├─▶ /settings/products     linked
+              │                                      ├─▶ /settings/team         linked  ← TM-03a
               ▼                                      └─▶ /settings/connections  linked  ← CX-01
       /accounts/[accountId]  Brief
       (reachable only from the list)
               │
               └─▶ account history, mounted inline  ← CX-03
 ```
+
+**What a `member` sees of that diagram is the left column and nothing else** — `Settings` is filtered out of the sidebar by `guardFor`, taking its three children with it. §8.1.
 
 ### Every customer-accessible area, and how it is reached
 
@@ -67,6 +75,7 @@
 | **Account brief** | `/accounts/[id]` | A row on the attention list · `j`/`k` · the post-decision offer | Every role |
 | **Settings** | `/settings` | Navigation | **Owner only** |
 | **Products** | `/settings/products` | A link on Settings | **Owner only** |
+| **Team** | `/settings/team` | A card on Settings — **TM-03a** | **Owner only** |
 | **Connection Center** | `/settings/connections` | A card on Settings — **CX-01** | **Owner only** |
 | **Sign-in family** | `/(auth)/*` | Unauthenticated entry, and each other | Signed out |
 
@@ -84,13 +93,13 @@
 |---|---|---|---|---|---|---|
 | **Attention list** | `/` | Opportunity · Buying Score · Signal · Knowledge Graph · Commercial Profile | ✅ | ✅ | ✅ Complete | **Production** |
 | **Account brief** | `/accounts/[id]` | 8 modules | ✅ | ✅ | ✅ Complete | **Production** |
-| **Settings** | `/settings` | Workspace & Tenancy | ✅ | ✅ | ⚠️ Lists organizations; **does not link Connections** | **Incomplete navigation** |
+| **Settings** | `/settings` | Workspace & Tenancy | ✅ | ✅ | ✅ Lists organizations, and **links all three children** | **Production** — CX-01 |
 | **Products** | `/settings/products` | Commercial Profile | ✅ | ✅ | ✅ Complete for an owner · ❌ unreachable for a member ([C-008](../LANE_COORDINATION.md)) | **Permissions gap** |
 | **Connection Center** | `/settings/connections` | Integrations | ✅ | ✅ | ✅ Complete — **CX-01** | **Production** |
 | **Sign-in · sign-up · forgot · reset · verify** | `/(auth)/*` | Better Auth | ✅ | ✅ | ✅ Complete | **Production** |
 | **Address not found** | *any unmatched URL* | Product Surface | n/a | ✅ **CX-02** | ✅ Complete | **Production** |
 | **Render failure, outside the shell** | *any* | Product Surface | n/a | ✅ **CX-02** | ✅ Complete | **Production** |
-| **Team** | — | Workspace & Tenancy | ✅ endpoint | ❌ | ❌ | **Blocked — [C-024](../LANE_COORDINATION.md)** |
+| **Team** | `/settings/team` | Workspace & Tenancy | ✅ | ✅ | ✅ Complete — invite · list · role · remove · history | **Production** — TM-03a |
 | **Account history** | on `/accounts/[id]` | Timeline | ⚠️ **served, never written** | ✅ **CX-03** | ⚠️ **Renders its empty state everywhere** | **Mounted; awaiting data** |
 | **Provider health** | — | Provider Platform | ❌ **no router** | ❌ | ❌ | **No HTTP surface at all** |
 | **Billing · plan · usage** | — | *undecided* | ❌ | ❌ | ❌ | **Blocked — [C-200](../LANE_COORDINATION.md)** |
@@ -153,7 +162,7 @@
 
 | Capability | Endpoint | What is missing | Blocked by |
 |---|---|---|---|
-| **See who is in my organization** | `GET /workspaces/{id}/members` | The whole screen. The hook exists and reaches nothing | **[C-024](../LANE_COORDINATION.md)** — nothing can render a person's name |
+| ~~**See who is in my organization**~~ | `GET /workspaces/{id}/members` | ~~The whole screen~~ | **Closed** — `/settings/team`, TM-03a |
 | **See connected systems as a list** | `GET /workspaces/{id}/connections` | **No consumer.** The Connection Center reads `/integrations` instead | Not blocked — an observation for the owning lane |
 | **Read the entity graph** | `GET /knowledge-graph` *(1 endpoint)* | No dedicated surface; the brief consumes it indirectly | Not blocked — **no journey asks for one** |
 
@@ -161,7 +170,7 @@
 
 | Capability | Where it lives | What is missing |
 |---|---|---|
-| **See what my company sells** *(as a seller)* | `/settings/products` | A member-reachable route — **[C-008](../LANE_COORDINATION.md)** |
+| **See what my company sells** *(as a seller)* | `/settings/products` | A member-reachable surface — **[C-008](../LANE_COORDINATION.md)**. **Now the only capability in this class** (§8.1), and five resources wide: `product` · `icp` · `buying_committee` · `commercial_focus` · `target_account` |
 
 ### 🔴 Workflow incomplete — the customer starts something that cannot finish
 
@@ -172,6 +181,8 @@
 | **Use Signora on a phone** | No navigation below 768px | **[C-026](../LANE_COORDINATION.md)** · [B-019](../BUGS.md) |
 
 ### The measurement behind all of the above — 2026-08-02
+
+> **Re-measured 2026-08-03 in §8.1: 40 endpoints, 39 requested, the same one not.** The figures below are the 2026-08-02 reading and are kept as the record of what was true then (`CLAUDE.md` §2). **§8.1 also records why this census can no longer find the remaining gap** — it asks whether a route is called, and the gap is now about who is allowed on the page that calls it.
 
 **Every endpoint in the repository, checked against whether the frontend issues a request for it.** Mechanical, repeatable, and the check that found CX-01 and CX-03.
 
@@ -274,6 +285,31 @@
 | **8** | **A control that goes nowhere costs more trust than an absent one** | Why [C-008](../LANE_COORDINATION.md) was not fixed by un-guarding a page full of controls that would 403 |
 | **9** | **The product teaches its own vocabulary** | [ADR-0034](adr/0034-ubiquitous-language.md) · and its unfinished half, [C-025](../LANE_COORDINATION.md) |
 | **10** | **A capability nobody can reach is not shipped** | **This document.** Timeline, Team and the Connection Center are each built and unreachable |
+| **11** | **A narrowed view has a different empty state from the whole.** Wherever a filter, search, segment, tab, scope, saved view or workspace can independently produce no rows, **that emptiness is its own state and needs its own words** | **SW-05a**, and set as a Product Surface rule by the product owner, 2026-08-03 |
+
+### Principle 11, stated as the rule a slice is checked against
+
+**Ratified by the product owner on 2026-08-03, after SW-05a.** It is principle **4** — *nothing here* and *nothing yet* are different sentences — extended to the case that produced three defects before anybody named it.
+
+> **Whenever a screen gains a way to narrow itself, it gains a new empty state in the same change.** Not as a follow-up: the filter and its emptiness ship together, or the filter has shipped a blank.
+
+**The failure is structural rather than careless, which is why a rule is worth having.** Two correct components leave a gap between them:
+
+| | |
+|---|---|
+| **The control** | Correctly absent-when-empty — it hides a question nothing raises (principle · **R1-06 / D6**) |
+| **The page's quiet state** | Correctly does not fire — the **unfiltered** list is not empty |
+| **The list** | Renders zero rows, and **nothing says why** |
+
+**Each component is right. The composition is blank.** No test failed, because every test asked *does this render correctly* and each one did. **A page that renders nothing is indistinguishable from a broken one** (D36) — and D36 was already fixed on this page once, through a door D36 did not cover.
+
+**The three questions a narrowing control must answer before it ships:**
+
+1. **Can this control produce zero rows while the unfiltered view has some?** If yes, it has its own empty state.
+2. **Is that state reachable without using the control?** A shared link, a bookmark, browser-back and a stale tab all name a narrowing the evidence has since moved past. **It is reachable.**
+3. **Does the surrounding copy still tell the truth when narrowed?** SW-05a's subtitle claimed *"accounts worth a look, most pressing first"* while showing one question's slice — the same defect class as a dashboard describing the previous milestone (`CLAUDE.md` §2).
+
+**And the wording rule:** the state blames the evidence moving, never the reader and never *"no results"*. **Nothing raising a question any more is the product working**, and it says so.
 
 ---
 
@@ -290,12 +326,12 @@
 | **CX-03** | **Timeline mounts on the brief** | **J6** | An endpoint, a hook and a built component that reached nobody. **Ten lines** | ✅ **Shipped** |
 | **CX-04** | **The signal glossary** | J2 · J3 | Nine words a first-time reader cannot look up. **Built and reverted** | **[C-025](../LANE_COORDINATION.md)** |
 | **CX-05** | **A seller can read the commercial profile** | **J7** | Every AE and SDR, every day | **[C-008](../LANE_COORDINATION.md)** |
-| **CX-06** | **The Team page** | **J9** | An owner cannot see who is in their organization | **[C-024](../LANE_COORDINATION.md)** |
+| **CX-06** | **The Team page** | **J9** | An owner cannot see who is in their organization | ✅ **Shipped** — as TM-03a |
 | **CX-07** | **Responsive shell and screens** | All | The product on a device other than a laptop | **[C-026](../LANE_COORDINATION.md)** |
 | **CX-08** | **Target accounts actually get watched** | J7 | The one place the product accepts an instruction and does nothing with it | **[C-021](../LANE_COORDINATION.md)** |
 | **TM-03a** | **An organization can grow** | **J10** | Every workspace was permanently whoever created it. Invite · list · withdraw, with a Team card on Settings | ✅ **Shipped** |
 
-> **CX-01 and CX-02 are shipped.** Everything below them is a decision away, and each decision is already recorded.
+> **Re-read 2026-08-03 (§8).** CX-01, CX-02, CX-03 and CX-06 are shipped. **Every remaining slice is a decision away, and every decision has been waiting since 2026-08-02** — the assessment's conclusion, and the reason it recommends ruling on [C-008](../LANE_COORDINATION.md) before anything else.
 >
 > **What the two had in common is worth naming, because it is how the next one will be found.** Neither was a missing feature. One was a complete module with no entrance; the other was two screens the framework supplied and the product never claimed. **Both were invisible to every test in the repository**, because a test asks *does this render correctly* and neither failure was about rendering — one was about reachability, the other about a file that did not exist. **The audit found them; no suite could have.**
 
@@ -363,4 +399,132 @@
 | **A navigation entry changes** | §1, including the diagram |
 | **A review earns a new principle** | §5, with the slice that earned it |
 
-**The three counts in §0 are the fastest check that this document has drifted:** endpoints, screens, and screens a member can reach. **If any of them is wrong, everything below it is suspect.**
+**The four counts in §0 are the fastest check that this document has drifted:** endpoints, screens, screens a member can reach, and **navigation entries a member sees**. **If any of them is wrong, everything below it is suspect.**
+
+---
+
+## 8 · Product Surface assessment — 2026-08-03
+
+**Commissioned by the product owner** as an *implementation-driven* review: not another UX pass over screens that exist, but a reading of **how existing capability should be surfaced**. Six questions were asked. Each is answered below from the repository at `fc59125`, and each answer names how it was measured so the next lane can re-run it rather than believe it.
+
+### 8.1 · Which implemented capabilities are not discoverable?
+
+**One, and it is the same one that was here in August: the commercial profile.** Everything else a customer may read, they can find.
+
+**The measurement.** Every endpoint against whether the frontend requests it, then — because *a request is not a screen* — every request against whether a page renders the answer.
+
+| | |
+|---|---|
+| **Endpoints** | **40**, across 11 modules |
+| **Requested by the frontend** | **39** |
+| **Not requested** | **1** — `GET /workspaces/{id}/connections`, superseded by `/integrations`, which returns the catalog *and* the connections. **Still not a gap**, and still recorded rather than opened |
+
+**The census now says almost nothing, and that is the finding.** When it was 31 endpoints and one unconsumed, the number was doing work. At 40 and one, **it has stopped being able to see the problem** — because the problem is no longer *is anything calling this*, it is *who is allowed to be on the page that calls it*. **A capability can be requested, rendered, linked and still unreachable, if the reader is a member.**
+
+**The correction to the method: four questions, not three.** *Is it served* · *is it called* · *is anything writing what it serves* · **and can the person who needs it reach the screen.** The fourth is answered by crossing `policy.csv` with `GUARDED_ROUTES`, and it is the check that finds what is below.
+
+**Crossed, the two disagree in exactly one place — and it is four rows wide:**
+
+| Resource | `policy.csv` grants `member` read | Screen | Reachable by a member |
+|---|---|---|---|
+| `product` | ✅ | `/settings/products` | ❌ |
+| `icp` | ✅ | `/settings/products` | ❌ |
+| `buying_committee` | ✅ | `/settings/products` | ❌ |
+| `commercial_focus` | ✅ | `/settings/products` | ❌ |
+| `target_account` | ✅ | `/settings/products` | ❌ |
+
+> **Five deliberate grants, each taken on the reasoning that every seller needs to see the catalog, and none of them reaches a seller.** This is [C-008](../LANE_COORDINATION.md), raised 2026-08-02, proposal accepted, **awaiting one choice.** The assessment did not find it — it confirms it, independently, from the other direction, and reports that it is now the **only** capability in this class.
+
+### 8.2 · Which routes are unreachable through navigation?
+
+**None.** The class CX-01 opened is closed, and it was re-checked mechanically rather than remembered.
+
+| Route | Inbound links, from |
+|---|---|
+| `/` | Navigation · the wordmark · the brief's back link · sign-in · `not-found` · the triage strip · the OAuth start route |
+| `/accounts/[accountId]` | The attention list row · `j`/`k` · the post-decision offer |
+| `/settings` | Navigation · `no-workspace` |
+| `/settings/products` · `/settings/team` · `/settings/connections` | A card on `/settings` — **the rule CX-01 set, held three times** |
+
+**The rule that produced this is worth restating because it is cheap and it works:** *a settings page ships with its card on `/settings` in the same slice.* `/settings` is the only entrance to `/settings/*`, so a page not listed there is a page nobody can reach — and `/settings/team` was the first to ship under the rule rather than have it applied afterwards.
+
+### 8.3 · Where do workflows require unnecessary clicks?
+
+**The seller's daily loop is clean and should not be touched.** Walked end to end against the running product:
+
+```
+  sign in ─▶ attention list ─▶ [filter by question] ─▶ account ─▶ decide ─▶ next account
+              ▲                                                              │
+              └──────────────────────────────────────────────────────────────┘
+```
+
+**Zero avoidable clicks in it.** The triage strip filters in one click and clears in one; `j`/`k` moves between accounts without the list; the decision dialog offers the next account *and* offers to stay (PS-04). **Nothing here is a candidate.**
+
+**The friction is not in the loop; it is the wall at the edge of it.** A seller who wants to know *why is this account a fit for us* — the question the brief is answering — has **no click at all**, at any count. That is 8.1, and it is a reachability problem wearing a workflow costume.
+
+### 8.4 · Where can information hierarchy be improved?
+
+**`/settings/products` — one heading, five bounded declarations, five editors, one scroll.**
+
+| The page says | What is actually on it |
+|---|---|
+| *Your business* | The product catalog · the ideal customer · the buying committee · commercial focus · target accounts |
+
+**Five independently-versioned declarations, from five endpoint pairs, stacked in a column with no hierarchy between them and no read mode for any.** The page is correct — each editor handles its own loading, its own failure and its own empty state, and B-006 is properly closed. **It is the composition that has no shape.**
+
+**It is also the screen most likely to be described as feeling like a developer tool** (8.6), and the two observations have the same cause: **it was built one declaration per slice, and nothing has yet looked at all five together.**
+
+**Not proposed as a slice here.** Restructuring it decides where the commercial profile lives, which is C-008's question 2 — **so the layout is downstream of the ruling, not a way to avoid it.**
+
+**The account brief was measured and is not a candidate.** Its ordering — *what changed* → *how much attention* → *how long that holds* → *what to do next* → *why* → *what disagrees* — is progressive disclosure done on the page rather than behind a control, and the subtraction review already examined all eleven sections and removed none. **[TASK-011](../BACKLOG.md) holds the remaining hierarchy pass and is `WAITING` on a seller in the room**, which is the right owner for it.
+
+### 8.5 · Where should related capabilities be composed into one experience?
+
+**The commercial profile belongs on the account brief, not only in Settings — and this is the assessment's substantive recommendation.**
+
+**The brief already composes eight modules into the one page a seller argues with.** The declarations that explain *why this account* are not among them, and they are the customer's own words about their own business:
+
+| The seller is reading | And cannot see |
+|---|---|
+| Why this account scores | **Which of our products it is a fit for** |
+| The evidence behind it | **The ideal customer it is being matched against** |
+| Who holds it, and what to do next | **The buying committee roles they are meant to be selling into** |
+
+> **Moving a settings entry into the sidebar would satisfy none of this.** It would leave a seller opening a configuration screen to answer a question they had while reading about an account — which is the shape of *navigation mirroring how modules are organised rather than how customers think about their work.*
+
+**This is not a new idea and it is not this assessment's.** It is recorded in [C-008](../LANE_COORDINATION.md)'s own analysis — *"the declarations never reaching the surfaces where they would matter"* — and the assessment's contribution is to confirm it holds after nine more endpoints and to say that **it is now the highest-value Product Surface work available.**
+
+**It also composes with `sales_engagement`.** SE-02 already joins the declared Buying Committee Role to the observed appointment — a reasoning step whose *inputs* the seller is currently not permitted to see. **Surfacing the declarations on the brief puts the premise next to the conclusion**, which is the whole argument for provenance (principle 2).
+
+### 8.6 · Which screens still feel like developer tools?
+
+**Measured against one test: does the screen read as somebody's judgement about a job, or as a form over a data model?**
+
+| Screen | Verdict |
+|---|---|
+| **Attention list** | **Commercial software.** It asks questions rather than reporting statistics, and it is absent when it has nothing to ask |
+| **Account brief** | **Commercial software.** It is ordered to be stopped reading |
+| **Team** | **Commercial software.** Invitations, roles and history, in the customer's words |
+| **Connection Center** | **Commercial software**, and the outcome-per-failure error handling is better than most of the product |
+| **Settings** | **Adequate.** An index of cards; it is honestly an index |
+| **`/settings/products`** | **🟠 The one that reads as a tool.** Five editors in a column under one heading, no read mode, no hierarchy — 8.4 |
+
+**One repository-wide gap, and it is not a screen.** No surface is responsive below 768px — [C-026](../LANE_COORDINATION.md) / [B-019](../BUGS.md). **A product a seller cannot open between meetings is a desk tool**, whatever the desktop layout looks like, and that is the largest single "feels like software for engineers" finding in the product. It is a decision, not a slice, and it has been open since 2026-08-02.
+
+---
+
+### The conclusion, stated plainly
+
+**Product Surface is not short of ideas. It is short of five decisions, and four of them have been waiting since 2026-08-02.**
+
+| Slice | Value | Blocked by | Waiting since |
+|---|---|---|---|
+| **CX-05** · a seller can read the commercial profile | **Every AE and SDR, every day** | **[C-008](../LANE_COORDINATION.md)** — proposal accepted, **one choice outstanding** | 2026-08-02 |
+| **CX-07** · responsive shell and screens | The product on anything but a laptop | [C-026](../LANE_COORDINATION.md) | 2026-08-02 |
+| **CX-04** · the signal glossary | Nine words a first-time reader cannot look up. **Built, and reverted** | [C-025](../LANE_COORDINATION.md) | 2026-08-02 |
+| **CX-08** · target accounts actually get watched | The one place the product accepts an instruction and does nothing | [C-021](../LANE_COORDINATION.md) | 2026-08-02 |
+| **TASK-011** · the brief's hierarchy pass | Refinement, not capability | **A seller in the room** — correctly not a slice | 2026-08-02 |
+
+> **Every unblocked Product Surface slice has been built.** CX-01, CX-02, CX-03 and TM-03a shipped; the Sales Workspace slices shipped on top of them. **What remains is a queue of five, each waiting on somebody who is not this lane** — which `CLAUDE.md` §20e names as a correct repository state rather than a stalled one.
+>
+> **The lane's recommendation is to rule on C-008 first**, and it is the same recommendation Lane B made on 2026-08-02 for the same reason: a guided first run happens once per workspace, **this happens every day for every seller**, and the read-mode components it produces are what every later commercial-profile surface would otherwise have to invent.
