@@ -322,6 +322,7 @@ databaseUrl: required(
 | [C-024 *(Lane A's — see the collision note)*](#c-024--nothing-in-the-product-can-render-a-persons-name) | Nothing in the product can render a person's name | Lane A | **Product owner** | `OPEN` — **architectural** | **TS-01, the Team page.** And how *anything* names a user: AI attribution, audit actors, notifications, mentions |
 | [C-025 *(Lane A's — see the collision note)*](#c-025--the-catalog-explains-nine-words-to-nobody) | The catalog explains nine words to nobody | Lane A | **Product owner** + `signal_engine` | `OPEN` | [R5-04](architecture/39-product-review-findings.md). **Built and reverted; one sentence unblocks either outcome** |
 | [C-205](#c-205--is-signora-expected-to-work-on-a-phone) | Is Signora expected to work on a phone? | Lane A | **Product owner** | **`ANSWERED` 2026-08-03 — yes, a phone is in scope** | **Unblocks CX-07**, which is a milestone rather than a slice. [B-019](BUGS.md) is confirmed a defect |
+| [C-217](#c-217--lane-a-is-available-and-requests-its-next-product-surface-epic) | **Lane A is AVAILABLE and requests its next Product Surface epic** | Lane A | **Lane C** | `OPEN` — **awaiting an epic** | **Lane A's entire implementation capacity.** Carries four places where the register and the repository currently disagree |
 | [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | M14b is three concerns in one roadmap row, and none has a module | Lane A | **Product owner** (bounded context 🔴) | `OPEN` — **architectural** | **The whole of M14b.** [R-01](architecture/16-architecture-risks.md) has been waiting for it at High/High |
 | [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide) | Identifier allocation is still only *unlikely* to collide | Lane A | **QE** + product owner | `OPEN` — **directed by the product owner** | Nothing built. **The repository scaling past three actors without manual reconciliation** |
 | [C-202](#c-202--four-shared-documents-disagree-and-one-disagrees-with-itself) | Four shared documents disagree, and one disagrees with itself | Lane A | **QE** | `OPEN` — **directed by the product owner** | Nothing built. **A cold session trusting any status in the repository** |
@@ -4089,3 +4090,53 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 **It was implemented rather than escalated.** `ClientCredentialsStore` is the interface; `IntegrationSettings` is the implementation, which is where §6 already puts a module's configuration — *a typed Settings object owned by the module whose behaviour it governs*. **Absent credentials produce `NoTokenRefresher`**, the same honest shape `NoRevoker` held, so a deployment that has not configured them refuses rather than pretending.
 
 **Nothing depends on this row.** It is left in place rather than deleted because a register that quietly loses a row is worse than one that records a withdrawal — but no implementation, document or task references it.
+
+## C-217 · Lane A is AVAILABLE and requests its next Product Surface epic
+
+| | |
+|---|---|
+| **Owner** | **Lane C** — Product Office, which now owns roadmap sequencing and implementation assignment |
+| **Requesting lane** | Lane A |
+| **Category** | Work assignment |
+| **Status** | `OPEN` — **awaiting an epic** |
+| **Blocks** | **Lane A's implementation capacity, entirely.** Nothing else |
+| **Raised** | 2026-08-03, on the product owner's direction: *"Notify Lane C that Lane A is AVAILABLE"* |
+
+**Lane A has finished PS-09 and CX-05 and holds no slice under construction.** Under the working model the product owner set on 2026-08-03, an implementation lane no longer discovers or selects its own work — **Lane C assigns, Lane A owns the epic end to end, QE certifies.** This item is the request.
+
+### What Lane A now owns, so the assignment can be scoped correctly
+
+**Product Surface is a first-class product area rather than a queue of slices** (product owner, 2026-08-03): discovery · implementation · UX · interaction model · visual hierarchy · navigation · responsive behaviour · accessibility · production readiness. **An epic, not a screen.**
+
+### Four repository facts Lane C needs before it sequences
+
+**Offered because the register and the repository currently disagree in four places, and Lane C is sequencing from the register.** This is the failure mode QE already recorded against itself at [C-024](#c-024--timeline-has-a-surface-and-nowhere-to-mount-it) — *an item's own description is not evidence of its status* — so it is reported rather than left to be rediscovered.
+
+| # | The register says | The repository says, at `e3516c4` |
+|---|---|---|
+| **1** | **[TASK-903](BACKLOG.md)** *"A seller can see what their company sells"* is `READY`, **a two-lane build**, and *"the granted read is unreachable behind `workspace:update`"* | **Half of it shipped.** [C-008](#c-008--sellers-cannot-see-what-their-company-sells) was ruled by the product owner — **option C now, option D next** — and **stage 1 shipped as CX-05**: `/business`, member-reachable, all **five** declarations. **The premise is now false: the read is reachable.** What remains is stage 2 — the declarations *on the account brief* — and it is **one lane, not two**: no backend change was needed for stage 1 and none is needed for the display half of stage 2 |
+| **2** | TASK-903 names **four** resources | **Five.** `target_account` carries a `member` read grant too, and it is on `/business` |
+| **3** | **CX-07 — responsive** has **no task at all** | **It became executable today.** [C-205](#c-205--is-signora-expected-to-work-on-a-phone) was ruled: **a phone is in scope.** By that item's own analysis this is **a milestone, not a slice** — every screen needs a pass, the brief's eleven sections need an order that survives one column, and the shell needs a mobile navigation pattern that does not exist. **[B-203](BUGS.md) is thereby confirmed a defect rather than a missing statement** |
+| **4** | **[TASK-905](BACKLOG.md)** is `READY` and unclaimed | **Correct, and it is Product Surface's.** Nothing about it has moved |
+
+### What Lane A recommends, and it is a recommendation only
+
+**Sequencing is Lane C's and priority is the product owner's.** Lane A is not claiming, not reordering, and not skipping — this is the input a lane owes the office that assigns it.
+
+| | Epic | Why |
+|---|---|---|
+| **1** | **Responsive Product Surface** *(CX-07, no task id yet)* | **The largest gap between what Signora is and how it feels.** It is the whole product on the device a seller actually carries, it was ruled in scope today, and **every day it waits is another screen built desktop-only and retrofitted later.** It is also exactly the epic-shaped work the new model describes: navigation, hierarchy, interaction and accessibility across every screen at once, rather than a slice |
+| **2** | **TASK-903 stage 2** | Genuinely valuable and now genuinely smaller. **Its unblocked half is displaying what we sell and who has to agree on the brief, with no grading**; anything asserting *this account matches this ICP* still waits on [C-002](#c-002--customer-language-has-no-anticorruption-layer), which has no owner |
+| **3** | **TASK-905** | A real defect in how a CRO reads the list, and self-contained |
+
+**Lane A will implement whichever epic is assigned, in the order given, without arguing the sequence.** The ranking above exists so that Lane C has this lane's evidence, not so that it has this lane's preference.
+
+### What would stop Lane A mid-epic
+
+**Stated in advance so a pause is never a surprise**, and matching the four the product owner named: a genuine architectural decision · another module owner must expose a public contract · repository ownership becomes ambiguous · a product-owner decision is required. **Anything else, Lane A implements sequentially to the end of the epic without asking.**
+
+### How this closes
+
+**When Lane C assigns an epic.** Lane A records the assignment on its own board row, sets it `ACTIVE`, and closes this item in the slice that begins the work.
+
+---

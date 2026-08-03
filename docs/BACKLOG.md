@@ -227,6 +227,7 @@
 | **Status** | `READY` |
 | **Notes** | **Read-only, for `member`, beside the account brief** — not under `/settings`, where the granted read is unreachable behind `workspace:update`. `policy.csv` already grants `member` read on `product`, `icp`, `buying_committee` and `commercial_focus`: **the API and the product disagree, and the API is right** |
 | **On claiming** | Open a `C-` item for the mount if the two halves are claimed by different lanes. **Placement is judgement** ([ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) R-5) — say so in review if it reads wrong |
+| **Repository check, 2026-08-03 — Lane A** | **Half of this shipped, and the premise above is no longer true.** [C-008](LANE_COORDINATION.md) was ruled by the product owner — **option C now, option D next** — and stage 1 shipped as **CX-05** at `e3516c4`: `/business`, member-reachable, **five** declarations rather than four (`target_account` carries the same grant). **The granted read is no longer unreachable.** What remains is stage 2 — the declarations *on the account brief* — and it is **one lane, not two**: stage 1 needed no backend change and the display half of stage 2 needs none either. **Anything asserting *this account matches this ICP* is still blocked on [C-002](LANE_COORDINATION.md)**, which has no owner. **Not reclaimed, not reworded, not rescoped by this lane** — status and position are Lane C's and the product owner's ([C-217](LANE_COORDINATION.md)) |
 
 ### TASK-904 · An organization can grow
 
