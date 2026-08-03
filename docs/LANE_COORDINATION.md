@@ -3436,3 +3436,22 @@ USING (
 
 **What is not blocked:** nothing in User Profile. The profile table is the foundation and every slice needs it. **Lane B is not building a screen over a table shape it expects to migrate.**
 
+
+### Evidence from the end-to-end journey review — Lane B, 2026-08-03
+
+*Appended by Lane B, not the item's owner. **Nothing here changes C-012, its owner or its status** — the decision remains the product owner's RFC. What is new is the cost, measured for the first time by walking the product as a customer rather than by reading the item.*
+
+**Seven of nine pipeline consumers are unregistered in the deployed worker.** Verified twice from `apps/worker/subscriptions.py`: only `timeline.project` and `ai_research_engine.run_requested` are registered, and the second is a self-loop. `provider_platform.sync_declared_targets`, `knowledge_graph.resolve_identity`, `observation_engine.observe_changes`, `business_event_engine.detect`, `signal_engine.generate`, `buying_score_engine.compute` and `opportunity_engine.qualify` are **written, tested and never registered.** `backend/tests/pipeline.py` is the only composition root that wires them.
+
+**What that costs, stated as a customer journey rather than as a gap:**
+
+> **A customer can sign up, create an organization, invite their team, declare what they sell, describe who buys it, name the buying committee, state their focus, and name the companies they want watched — and nothing will ever happen.**
+
+**`commercial_profile.target_accounts_changed` is published into the outbox, the relay delivers it, and no consumer exists.** The first hand-off in the product is also the last, and **sixteen built, reviewed screens are correct and permanently empty** because the pipeline that fills them never runs.
+
+**Timeline made it visible rather than fixing it.** Since [B-301](BUGS.md), Timeline projects nine event types faithfully — and **six have no producer in a deployed environment**, so an account's history will show the declaration and nothing after it.
+
+**This does not change what C-012 asks.** A handler still needs a defined relationship to the dispatcher's transaction, and that is still an RFC. **Two consumers now work around it in different ways** — AI Research holds a session factory on the runtime, Timeline is idempotent by derived identity and needs no transaction share — and **neither pattern has been ratified**, which is exactly what the item exists to prevent becoming permanent by accident.
+
+**Recorded in full in [48-customer-journey-review.md](architecture/48-customer-journey-review.md) §1**, with the stage-by-stage journey behind it.
+
