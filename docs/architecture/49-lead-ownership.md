@@ -623,3 +623,58 @@ A human opening an opportunity is **still a suggestion becoming a record**. Taki
 | **P-13** | Win the wrong account → work it again → the win is still on the record |
 | **P-14** | Open an account Signora scored below the threshold |
 | **P-15** | Open one that is already open → told plainly, not duplicated |
+
+---
+
+## 17 · The walk, repeated — and why LO-08 stops, 2026-08-03
+
+### The findings, re-checked against the shipped product
+
+| | Finding | Then | Now |
+|---|---|---|---|
+| **F-1** | A stalled account looks identical to a fresh one | ⚠️ | ✅ **LO-06.** The list and the brief both say how long, and neither grades it |
+| **F-2** | An accidental win is unrecoverable | 🔴 | ✅ **LO-07.** *Work this account again*, with the win left on the record |
+| **F-3** | A human cannot open an opportunity | 🔴 | ✅ **LO-07.** `Qualification.MANUAL` is reachable, and names the person |
+| **F-4** | No manager view | ⚠️ | ⚠️ **Open.** Needs a manager relationship, which is Team Management's to model |
+| **F-5** | *"What changed since I was last here?"* | ⚠️ | ⚠️ **Open.** Per-user read state, the same as [TASK-016](../BACKLOG.md) |
+| **F-6** | *"you have decided"* over a workspace query | ⚠️ | ✅ **LO-05** |
+| **F-7** | A won brief offered nothing and explained nothing | ⚠️ | ✅ **LO-05**, and LO-07 gave it a way forward |
+
+**Five of seven closed. Both survivors need a concept this module does not own**, and neither is a gap a lane may fill by inventing one.
+
+### The lifecycle, walked again
+
+| | |
+|---|---|
+| **Discovered → understood → owned → worked** | ✅ Coherent, explained, recoverable |
+| **Worked → handed over → worked by somebody else** | ✅ LO-04, in both directions, with the trail naming both people |
+| **Worked → sat on for a month** | ✅ LO-06 says so, and says only what it knows |
+| **Won → realised it was the wrong account** | ✅ LO-07 |
+| **Lost or dismissed → reopened** | ✅ Since M12.3 |
+| **Returning after three months** | ⚠️ F-5 |
+| **A manager asking where the team should focus** | ⚠️ F-4 |
+
+### LO-08 — *waiting on somebody* — stops here, and this is the reasoning
+
+**First principles, as asked, rather than a pipeline stage.** *"What am I waiting for?"* decomposes into four things, and only one of them exists:
+
+| Part | Does Signora have it? |
+|---|---|
+| **Since when** | ✅ **LO-06** |
+| **What** — a signature, a security review, a callback | ❌ Nothing models it |
+| **From whom** — the customer, legal, our own team | ❌ Nothing models it |
+| **Until when** — *"they said Friday"* | ❌ Nothing models it |
+
+> **Waiting is not a state, a relationship or a timer. It is an *expectation*: a thing, owed by somebody, by a date.** Three of its four parts are facts a seller would have to *tell* Signora, and the product has **no note, no activity and no task** — it has decisions, and a decision is not an expectation.
+
+**So LO-08 is not a lifecycle slice at all. It is the first activity model**, and that is a new concept with a real boundary question — is an expectation the Opportunity Engine's, or a note on the account that Timeline owns? **That is architectural pressure, and it stops.**
+
+**What must not be built to fill the gap:**
+
+| | |
+|---|---|
+| **A `waiting` stage** | ⚫ Every CRM that shipped one has a pipeline full of accounts stuck in it since March — somebody has to remember to leave, and nobody does |
+| **`waiting_on` on the state row** | ⚫ A stage by another name, on an immutable snapshot, carried by every row that has no expectation |
+| **Inferring it from silence** | ⚫ Silence is what LO-06 reports and refuses to interpret. *Waiting* and *forgotten* look identical from here, and they are opposites |
+
+**The trigger is a customer describing one.** Not a request for *"a waiting stage"* — the words for what they are owed, from whom, and by when.
