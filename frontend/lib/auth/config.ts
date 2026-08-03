@@ -47,12 +47,40 @@ function optionalProvider(idVar: string, secretVar: string): OAuthProviderConfig
   return { clientId, clientSecret };
 }
 
-function required(name: string, fallback?: string): string {
-  const value = process.env[name] ?? fallback;
+/**
+ * A value with no safe default. **Refuses rather than guessing.**
+ *
+ * This used to accept a `fallback`, which made the name a lie: with one
+ * supplied it could never throw. Two of the six values that used it were
+ * dangerous ([B-104](../../../docs/BUGS.md)) — the auth database silently
+ * became the *shared* `signora`, and the JWT signing secret silently became a
+ * string committed to this repository.
+ *
+ * **Refusing to start is the correct failure.** A process that will not boot is
+ * diagnosed in seconds; one that boots against the wrong database is diagnosed
+ * after somebody notices users in it.
+ */
+function required(name: string): string {
+  const value = process.env[name];
   if (!value) {
-    throw new Error(`${name} is required but not configured.`);
+    throw new Error(
+      `${name} is required and is not set. It has no default: guessing one ` +
+        `would connect this tier to somebody else's environment. See ` +
+        `docs/RUNNING.md for the value your environment should use.`,
+    );
   }
   return value;
+}
+
+/**
+ * A value whose default is harmless and helps a first clone run.
+ *
+ * **Named separately so the distinction is visible at the call site.** A URL
+ * pointing at the wrong port fails loudly and immediately; a database pointing
+ * at the wrong schema fails silently and permanently.
+ */
+function developmentDefault(name: string, fallback: string): string {
+  return process.env[name] ?? fallback;
 }
 
 export function loadAuthConfig(): AuthConfig {
@@ -61,23 +89,28 @@ export function loadAuthConfig(): AuthConfig {
     // 0005 revokes `signora_app` from the auth schema; that isolation only
     // holds if this tier's credential is equally narrow. The owner role
     // would read every application table and bypass Row-Level Security.
-    databaseUrl: required(
-      'SIGNORA_AUTH_DATABASE_URL',
-      'postgresql://signora_auth:signora_auth_local_dev@localhost:5432/signora',
-    ),
+    //
+    // **No default.** Every environment — each lane, QE, human review — has
+    // its own database, and an unset variable used to send all of them to the
+    // shared one.
+    databaseUrl: required('SIGNORA_AUTH_DATABASE_URL'),
     // Better Auth's tables live in their own schema so they can never
     // collide with application tables and so a rollback of one cannot
     // affect the other (approved decision, M1.2).
     authSchema: process.env.SIGNORA_AUTH_SCHEMA ?? 'auth',
-    baseUrl: required('SIGNORA_APP_URL', 'http://localhost:3000'),
-    betterAuthSecret: required('BETTER_AUTH_SECRET', 'local-dev-secret-change-me'),
-    jwtIssuer: required('SIGNORA_JWT_ISSUER', 'http://localhost:3000'),
-    jwtAudience: required('SIGNORA_JWT_AUDIENCE', 'signora-api'),
+    baseUrl: developmentDefault('SIGNORA_APP_URL', 'http://localhost:3000'),
+    // **No default, and this one is a security property.** The previous
+    // fallback was a signing secret committed to the repository, so any clone
+    // that had not set it minted tokens every other clone could forge (§13:
+    // no credential is ever hardcoded or committed).
+    betterAuthSecret: required('BETTER_AUTH_SECRET'),
+    jwtIssuer: developmentDefault('SIGNORA_JWT_ISSUER', 'http://localhost:3000'),
+    jwtAudience: developmentDefault('SIGNORA_JWT_AUDIENCE', 'signora-api'),
     jwtPrivateKey: process.env.SIGNORA_JWT_PRIVATE_KEY,
     jwtPublicKey: process.env.SIGNORA_JWT_PUBLIC_KEY,
     google: optionalProvider('GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'),
     microsoft: optionalProvider('MICROSOFT_CLIENT_ID', 'MICROSOFT_CLIENT_SECRET'),
-    apiBaseUrl: required('SIGNORA_API_URL', 'http://localhost:8000'),
+    apiBaseUrl: developmentDefault('SIGNORA_API_URL', 'http://localhost:8000'),
     // On by default. An address and a password is the method that works
     // without an external service, and a product whose only sign-in requires
     // a Google account has assumed something about its customers.

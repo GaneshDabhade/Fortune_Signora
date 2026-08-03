@@ -19,6 +19,14 @@ const ORIGINAL = { ...process.env };
 
 beforeEach(() => {
   vi.resetModules();
+  // **The two values with no default** ([B-104](../../../docs/BUGS.md)). These
+  // used to fall back — the database to the *shared* `signora`, the secret to a
+  // string committed to this repository — and `loadAuthConfig()` now refuses
+  // rather than guessing. This suite exercised those defaults without meaning
+  // to; setting them explicitly is what it always intended.
+  process.env.SIGNORA_AUTH_DATABASE_URL =
+    'postgresql://signora_auth:x@localhost:5432/signora_test';
+  process.env.BETTER_AUTH_SECRET = 'a-secret-this-suite-sets-explicitly';
 });
 
 afterEach(() => {

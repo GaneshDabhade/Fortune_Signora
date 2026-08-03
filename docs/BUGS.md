@@ -80,6 +80,61 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-104 · The auth tier had one database for every environment, and a signing secret in the repository
+
+| | |
+|---|---|
+| **Module** | Frontend foundation — `frontend/lib/auth/config.ts` (🔒 §20c) |
+| **Current assignee** | **QE** ([ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) R-4) |
+| **Severity** | 🟠 — **customer data written to the wrong database**, and a committed signing secret that activates silently |
+| **Status** | **`FIXED`** — QE, 2026-08-03. **`VERIFIED` is another lane's** |
+| **Found** | 2026-08-03, **by the product owner**, whose review session wrote Better Auth users into another environment's database |
+
+**Steps to reproduce.** Follow the README: `cp frontend/.env.example frontend/.env.local`, then sign up. **That is the whole reproduction.**
+
+**Expected.** A review session writes to the review environment.
+
+**Actual.** It writes to the **shared `signora`** database — as does every lane, QE, and anything else that copied the example unedited.
+
+### Two mechanisms, and the second is worse
+
+**1 · `required()` was a lie.** It took an optional `fallback`, and **with one supplied it could never throw**:
+
+```ts
+function required(name: string, fallback?: string): string {
+  const value = process.env[name] ?? fallback;   // never undefined
+  if (!value) throw new Error(...);              // unreachable
+  return value;
+}
+```
+
+Six values used it. A reader seeing `required('BETTER_AUTH_SECRET', …)` reasonably believes it is required. **It was not.**
+
+**2 · The fallbacks pointed at shared resources.**
+
+| Value | Silent default | Consequence |
+|---|---|---|
+| `SIGNORA_AUTH_DATABASE_URL` | the **shared `signora`** | **The incident.** Users written to another environment |
+| `BETTER_AUTH_SECRET` | `local-dev-secret-change-me` | **A signing secret committed to this repository.** Every clone using it mints JWTs any other clone can forge — §13: *no credential is ever hardcoded or committed* |
+
+**And `.env.example` shipped the same shared values**, so following the README's own instruction produced the defect. **The documentation and the code agreed, and both were wrong.**
+
+### Why nothing caught it
+
+**`RUNNING.md` allocates per-lane ports, PostgreSQL databases and Redis indices — for the backend only.** `SIGNORA_AUTH_DATABASE_URL` appears in it **zero times**. The backend tier has environment isolation; **the frontend auth tier never did**, and no check compared them.
+
+### The fix
+
+**`required()` no longer accepts a fallback and genuinely refuses.** `developmentDefault()` is a separate, named function for values whose default is harmless — **the distinction is now visible at the call site.**
+
+> **The asymmetry that decides which is which:** a URL with a wrong default fails **loudly and immediately**; a database with a wrong default fails **silently and permanently**. Ports keep their defaults so a first clone still runs. The database and the secret do not.
+
+**Four of the frontend's own tests failed on this change** — they had been exercising the defaults without meaning to. **Their setup was fixed, not the guard**: the defaults were the defect.
+
+**Permitted under §20c** as a security issue and a production defect, and QE's to fix under R-4.
+
+**What this does not fix.** There is still **no `signora_review` database and no `make review`** — the product owner has no environment to be isolated *into*. That is the assignment this bug was found inside, and it is not yet built.
+
 ### B-103 · An internal invariant tells a customer their request was refused
 
 | | |
