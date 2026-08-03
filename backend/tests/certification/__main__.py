@@ -138,7 +138,27 @@ def _smoke() -> _Outcome:
     started = datetime.now(UTC)
     code, output = _run(["bash", "./infra/smoke.sh"], cwd=REPOSITORY_ROOT)
     elapsed = int((datetime.now(UTC) - started).total_seconds())
-    return _Outcome(passed=code == 0, detail=f"{stage_count(output)} stages in {elapsed}s")
+    detail = f"{stage_count(output)} stages in {elapsed}s"
+    if slowest := _slowest_stage(output):
+        detail = f"{detail}, slowest {slowest}"
+    return _Outcome(passed=code == 0, detail=detail)
+
+
+def _slowest_stage(output: str) -> str:
+    """The stage that dominated the run, carried into the durable record.
+
+    **A total cannot explain variance.** Across 28 runs the smoke gate sat
+    between 104s and 193s except twice — 4830s and 1096s, both completing every
+    stage. Neither was explainable afterwards, because the record kept one
+    number. This puts the answer *in* the record, so the next outlier is
+    diagnosed from the manifest rather than from a re-run that may not reproduce
+    it.
+    """
+    for line in output.splitlines():
+        stripped = re.sub(r"\033\[[0-9;]*m", "", line).strip()
+        if match := re.match(r"^(\d+)s\s+(.+)$", stripped):
+            return f"{match.group(2)} {match.group(1)}s"
+    return ""
 
 
 def _scenarios() -> tuple[ScenarioResult, ...]:

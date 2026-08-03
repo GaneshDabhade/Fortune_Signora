@@ -32,9 +32,46 @@ FRONTEND="http://localhost:3000"
 STAGE=""
 STARTED_AT=$SECONDS
 
-stage() { STAGE="$1"; printf '\n\033[1m%s\033[0m\n' "$1"; }
+# **Where the time actually went.**
+#
+# The certification record stored one number — `24 stages in 1096s` — and across
+# 28 runs that number sat between 104s and 193s twice-excepted: **4830s and
+# 1096s, both completing all 24 stages.** Slow, not broken, and neither
+# explainable after the fact.
+#
+# Content was not the cause: the 4830s run changed documentation and one
+# frontend test. So the variance is environmental, and a total cannot say which
+# environment. **One accumulator on the existing `stage()` is the whole
+# instrument** — no new structure, and it answers *which stage* on the next
+# occurrence rather than on the one after somebody adds logging.
+STAGE_STARTED=$SECONDS
+STAGE_TIMES=()
+
+stage() {
+  if [[ -n "$STAGE" ]]; then
+    STAGE_TIMES+=("$((SECONDS - STAGE_STARTED))|$STAGE")
+  fi
+  STAGE="$1"
+  STAGE_STARTED=$SECONDS
+  printf '\n\033[1m%s\033[0m\n' "$1"
+}
+
+#: Emits the breakdown, slowest first. **Printed on success and on failure** —
+#: a run that died at stage 2 is exactly when the timing of stages 0 and 1
+#: matters most.
+stage_timings() {
+  if [[ -n "$STAGE" ]]; then
+    STAGE_TIMES+=("$((SECONDS - STAGE_STARTED))|$STAGE")
+  fi
+  [[ ${#STAGE_TIMES[@]} -gt 0 ]] || return 0
+  printf '\n\033[1mStage timings\033[0m  (slowest first)\n'
+  printf '%s\n' "${STAGE_TIMES[@]}" | sort -t'|' -k1 -rn | head -6 |
+    while IFS='|' read -r seconds name; do
+      printf '  %5ds  %s\n' "$seconds" "$name"
+    done
+}
 pass()  { printf '  \033[32m✓\033[0m %s\n' "$1"; }
-fail()  { printf '  \033[31m✗ %s\033[0m\n' "$1"; printf '\n\033[31m\033[1mSMOKE FAILED at: %s\033[0m\n\n' "$STAGE"; exit 1; }
+fail()  { printf '  \033[31m✗ %s\033[0m\n' "$1"; stage_timings; printf '\n\033[31m\033[1mSMOKE FAILED at: %s\033[0m\n\n' "$STAGE"; exit 1; }
 
 cleanup() {
   local code=$?
@@ -605,6 +642,8 @@ pass "stack removed, no orphans"
 
 SMOKE_KEEP_STACK=1  # already torn down; stop the trap doing it again
 trap - EXIT
+
+stage_timings
 
 printf '\n\033[32m\033[1mPLATFORM SMOKE TEST PASSED\033[0m  (%ds)\n' "$((SECONDS - STARTED_AT))"
 printf 'Build · startup · migrations · identities · image hygiene · health · readiness ·\n'
