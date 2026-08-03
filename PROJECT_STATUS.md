@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `1e269f5`, 2026-08-02.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `d39b136`, 2026-08-03.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`1e269f5`** — the certified commit itself |
-| **`integration`** | `1e269f5` — level with `main` |
-| **Release candidate** | **None pinned.** Cycle 23 promoted Lane A's 6 documentation commits plus QE's [B-100](docs/BUGS.md) fix |
-| **Certification** | ✅ [`1e269f5c8499`](certification/reports/1e269f5c8499.md) · migration head **`0030`** · protocol **v2** |
+| **`main`** | **`d39b136`** — the certified commit itself |
+| **`integration`** | `d39b136` — level with `main` |
+| **Release candidate** | **None pinned.** Cycle 24 promoted [`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md) and the [B-101](docs/BUGS.md) fix |
+| **Certification** | ✅ [`d39b1361c288`](certification/reports/d39b1361c288.md) · migration head **`0030`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **126 commits, none outside a certified snapshot** |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **130 commits, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Both lanes.** Five separate rulings, all the product owner's — see §1c |
-| **Validation queue** | Lane B's branch, **awaiting a rebase by the lane** |
-| **Customer value this cycle** | ❌ **No.** Eight of nine commits are documentation; the ninth is a governance-tooling fix. **No customer-visible capability changed** |
-| **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged from cycle 22, correctly** |
+| **Validation queue** | Lane A's and Lane B's branches, **both awaiting a rebase by their lane** |
+| **Customer value this cycle** | ❌ **No.** The Repository Engineering Standard and a KPI-tooling fix. **No customer-visible capability changed — two cycles running** |
+| **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for three cycles, correctly** |
 
 > ⚠️ **The cycle's headline is not the promotion; it is why there was so little to promote.** Two lanes produced eight commits and **zero executable change**, because every next step needs a decision nobody has made. The pipeline is healthy and has almost nothing to carry.
 
-**Repository health:** 2568 backend tests · **95.51% coverage** *(floor 95)* · 701 frontend tests · 360 Security Invariants · mypy strict over 614 files · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
+**Repository health:** 2580 backend tests · **95.51% coverage** *(floor 95)* · 701 frontend tests · 360 Security Invariants · mypy strict over 614 files · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
 
 ---
 
@@ -101,67 +101,61 @@
 
 ---
 
-## 1d · Release summary — 2026-08-02, cycle 23
+## 1d · Release summary — 2026-08-03, cycle 24
 
-**Derived from the promoted commit `1e269f5`.** Nine commits: six from Lane A, one from QE, two already on `main`.
+**Derived from the promoted commit `d39b136`.** Three commits: the Repository Engineering Standard, the [B-101](docs/BUGS.md) tooling fix, and a type correction to its test.
 
-### The finding is that there was almost nothing to release
+### [`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md) — the rules the lanes had started deriving independently
 
-**Two lanes, eight commits, zero executable change.** Lane A produced a 431-line Team Management discovery, a customer-capability census and three coordination items. Lane B produced ADR-0041 and an ICP reuse audit. **All of it is documentation, and all of it is correct work** — a lane whose next step needs a ruling should write the discovery and stop rather than guess (§20e, *architectural blockers*).
+**Ratified by the product owner.** Seven milestones in, the lanes were reaching the same conclusions separately: Lane A's capability census and Lane B's ICP reuse audit produced compatible principles a day apart, from different modules, with no shared instruction. **When two engineers derive the same rule separately, the derivation is waste.**
 
-**The pipeline is healthy and is carrying nothing.** That is a scheduling condition, not an engineering one, and it is not QE's to fix — [§20e](CLAUDE.md) puts work allocation with the product owner precisely so that certification never becomes the bottleneck. It is reported here because a dashboard that showed two `ACTIVE` lanes and a green pipeline would be true and useless.
+**Thirteen laws, and every one names the incident that earned it.** Reuse exhausted before creation ([B-027](docs/BUGS.md), and the `member remove` grant with no endpoint) · evidence before assumption (including **two of QE's own wrong measurements**) · production path first ([B-301](docs/BUGS.md)) · customer journey integrity (**31 endpoints, 5 screens, a Connection Center reachable only from inside itself**) · behaviour and data preservation · evolution over replacement · migration contracts · debt classification · operational readiness.
 
-### [B-100](docs/BUGS.md) — a rebase moved the board back seven cycles, and every gate passed
+**Three laws are deliberately absent and referenced instead** — architecture preservation, single source of truth, security — because they are already authoritative in `CLAUDE.md`, and a rule in two places eventually contradicts itself.
 
-Lane A's branch rebased cleanly, fast-forwarded without complaint, and carried `ACTIVE_ASSIGNMENTS.md` back to `3451f8b`: QE's row read *cycle 15, 15 of 15 certified* against a repository that had promoted 22, with two promoted rows deleted from the Completed table.
+> **A fourth was considered and rejected.** *Performance & Scalability by Design* has caused **no defect in this repository**; `CLAUDE.md` §14 already forbids both waste and speculative optimization. **Adding it would have been inventing a law**, which the standard's own mandate forbids. Recorded as considered, so the omission reads as a decision.
 
-**Nothing was careless.** Lane A hit a conflict in a file that is mostly its own rows and kept its own side — the resolution a careful engineer makes. **The rows it destroyed were QE's, in the same table, and git had no way to say so.**
+**The enforcement section is the one to read first.** Six laws are checked by a command, three by a human, **and four by nothing at all.** Saying so is the first defence — and the right answer to erosion is a check rather than a firmer sentence, which is [B-022](docs/BUGS.md)'s lesson: a bolded warning in this repository's own runbook was violated within hours **by the person who wrote it**.
 
-| | before the rebase | after |
-|---|---|---|
-| Header | `2262bb5` | **`3451f8b`** |
-| QE's row | cycle 22, 18 certified | **cycle 15, 15 certified** |
-| Completed | 11 rows | **9** |
+### [B-101](docs/BUGS.md) — the KPI block counted nine rows twice
 
-**This is [ADR-0039](docs/architecture/adr/0039-release-engineering-model.md) RC-2 arriving in the wild** — *fast-forward-only × shared mutable files ⇒ a rebase that is lossy by construction* — and the **second** instance after [B-018](docs/BUGS.md). **The prediction preceded both.**
+`register_kpis` substring-matched the status cell, so a row reading *"`FIXED` — `VERIFIED` is QE's to set"* landed in both buckets. **Totals came to 42 against 33 rows**, published under a banner promising nothing was typed by hand — **which is exactly what made the wrong figure credible.**
 
-The durable half is `state-check` **rule 5g**: the board's own header must be reachable from `HEAD` and must not name a commit older than the dashboard's. Rule 1 read `PROJECT_STATUS.md`, which was untouched — so a seven-cycle regression passed every gate in the repository.
+**Two things underneath mattered more.** Three rows were verified in name only, and **QE's own audit used the same broken precedence as the tool it was accusing.** I reported eleven verified rows; the truth was five, and I called the severity counts wrong when they were correct. Both errors leaned the same way as the tool's, because they made the same assumption.
 
-**What it does not fix, stated rather than papered over:** rule 5g catches the header, not a reverted row. The real answer is RC-2's, and it is the product owner's to schedule.
+**Not affected:** `state-check`'s promotion gate. `unresolved` reads the cell prefix and was always right — **no 🔴 was ever mis-cleared**, checked across all rows.
 
-### Three bug rows retired on evidence QE was not allowed to supply
+### The documentation audit that started it
 
-**[B-009](docs/BUGS.md), [B-013](docs/BUGS.md) and [B-014](docs/BUGS.md) are `VERIFIED`.** QE fixed all three and may not verify its own work — which is exactly what [TASK-001](docs/BACKLOG.md) existed to resolve, and Lane B supplied the evidence. **TASK-001, 002, 004 and 005 are `DONE`.**
+**§4 of this dashboard was two cycles stale** and its defect and coordination counts were **less than half their real values**. `README.md` listed Timeline as *not started* when it is built, promoted and consumed by the deployed worker, and omitted `integrations` entirely. **Nothing detects this** — `state-check` reads §1 and never §4.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | 2568 tests · **95.51%** · 360 invariants · 614 files typed · 34 contracts. **Every figure unchanged — no executable change to move them** |
-| **Release** | **3 promotions in 3 cycles.** Cadence holding |
-| **Architecture** | **Runtime composition 2 of 2 expected, 0 unexpected.** Second consecutive clean reading |
-| **Dependency** | **37 items, 5 closed.** ⚠️ **Four have waited 5+ cycles; all need the same person.** Two new blockers opened this cycle |
-| **Customer Value** | ❌ **None this cycle.** Documentation and a governance fix. **Said plainly because the honest answer is the useful one** |
-| **Process** | Clean. Every gate ran; the sequence was not shortened. **One near-miss of my own, below** |
+| **Technical** | **2580 tests** *(+12)* · **95.51%** · 360 invariants · **615 files typed** · 34 contracts |
+| **Release** | **4 promotions in 4 cycles.** Smoke at **119s**, the fastest recorded |
+| **Architecture** | Runtime composition **2 of 2 expected, 0 unexpected** — third clean reading |
+| **Dependency** | **37 items, 5 closed.** ⚠️ Four have waited 5+ cycles; all need the same person |
+| **Customer Value** | ❌ **None, two cycles running.** Governance and tooling. **The lanes are blocked, not idle** |
+| **Process** | Clean. **The gates caught two of my own errors before certification** — a `mypy --strict` failure in my new test, and the preflight blocking on my own DR stack |
 
-### A near-miss worth recording
+### What the gates caught this cycle, and nothing else would have
 
-**I ran the backend suite without `--cov` and nearly reported validation green with the coverage gate silently absent.** It passed 2568 tests in 189s and printed no coverage line; I noticed only because I grepped for one. Re-run properly: **95.51%, gate satisfied.**
+**The preflight refused to start cycle 24** because my own `make dr` stack was still holding ports 3000 and 8000. It named the cause and said it was QE's to clear. **`make smoke` binds those ports, so certification would have failed later and less clearly.**
 
-**This is the [B-022](docs/BUGS.md) class exactly** — a gate that quietly measures less — and it is the second time I have hit it in two days. The lesson is not *be more careful*: it is that **validation should invoke the same `make` target certification does**, rather than a hand-written `pytest` line that can omit a flag. Recorded here; not proposed as a governance change, since one instance of a fix is not evidence (§20e).
+**`mypy --strict` rejected my own new test** — `_row` returned `object`, so every attribute access on it was an error. **The lane's own gate is exactly where that belongs**, and it is the rule QE asks of every other lane.
 
-### ⚠️ Four-cycle-plus escalation
-
-**Every live blocker is the product owner's, and four have now waited five cycles or more.** Escalated per the policy — **not because they became urgent, but because a stagnant dependency is silently reclassified as normal.**
+### ⚠️ Four-cycle-plus escalation — unchanged, and that is the finding
 
 | Item | Cycles | The one action |
 |---|---|---|
-| **[C-010](docs/LANE_COORDINATION.md)** | **7** | **Assign an owner** to the six areas. **7 defects have landed here**, [B-100](docs/BUGS.md) the newest |
-| **[C-020](docs/LANE_COORDINATION.md)** | **6** | Ratify, amend or reject [ADR-0038](docs/architecture/adr/0038-timeline.md) |
-| **[C-024](docs/LANE_COORDINATION.md)** | **5** | **Choose where the Timeline feed mounts.** Ten lines of routing separate a *proven-live* backend from a customer |
-| **[C-025](docs/LANE_COORDINATION.md)** | **5** | Rule which tier may run an OAuth flow |
+| **[C-010](docs/LANE_COORDINATION.md)** | **8** | **Assign an owner.** **8 defects have landed here** — [B-101](docs/BUGS.md) is the newest, and it is the third in three cycles |
+| **[C-020](docs/LANE_COORDINATION.md)** | **7** | Ratify, amend or reject [ADR-0038](docs/architecture/adr/0038-timeline.md) |
+| **[C-024](docs/LANE_COORDINATION.md)** | **6** | **Choose where the Timeline feed mounts** |
+| **[C-025](docs/LANE_COORDINATION.md)** | **6** | Rule which tier may run an OAuth flow |
 
-**[C-010](docs/LANE_COORDINATION.md) is the one I would raise first.** It is the only item whose cost is compounding: it owns `apps/`, `signora_platform/` and repository process, and **every defect that lands in that gap is one nobody is assigned to fix** — so QE fixes it, and QE then cannot verify its own fix, which is how [TASK-001](docs/BACKLOG.md) came to exist.
+> **[C-010](docs/LANE_COORDINATION.md) is now measurably the most expensive item in the repository.** It owns `apps/`, `signora_platform/` and repository process — **and the last three defects QE found all landed in it.** Every one was fixed by QE, and QE cannot verify its own fixes, which is why [TASK-001](docs/BACKLOG.md) had to exist and why three rows sat unverified for two days.
 
 ## 2 · Milestone progress
 
@@ -370,18 +364,18 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`1e269f5c8499`](certification/reports/1e269f5c8499.md) · 2026-08-02 · ✅ CERTIFIED**
+**Latest certification — [`d39b1361c288`](certification/reports/d39b1361c288.md) · 2026-08-03 · ✅ CERTIFIED**
 
-**Certified commit `1e269f5` · promoted commit `1e269f5`.** Identical, checked by `infra/certification-guard.py` before the fast-forward and re-checked by `make certified`.
+**Certified commit `d39b136` · promoted commit `d39b136`.** Identical, checked by `infra/certification-guard.py` before the fast-forward and re-checked by `make certified`.
 
 | Gate | Recorded |
 |---|---|
-| **pytest** | **2568 passed** |
+| **pytest** | **2580 passed** |
 | **coverage** | **95.51%** *(floor 95%)* |
 | **Security Invariants** | **360**, each proven to fail when its guarantee is removed |
 | **import-linter** | **34 kept**, 0 broken |
-| **MyPy** | strict, clean over **614 files** |
-| **`make smoke`** | **24 stages in 136s**, fresh images, clean teardown |
+| **MyPy** | strict, clean over **615 files** |
+| **`make smoke`** | **24 stages in 119s** — the fastest recorded, fresh images, clean teardown |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0030`** · scenario set `0cf6b2c581e4` · working tree clean · `research_planning@2` and `research_synthesis@2` released for `llama3.1:8b`.
@@ -419,17 +413,17 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Indicator | Value |
 |---|---|
 | **Certification** | |
-| Certification cycles | 19 |
-| Certified | 19 of 19 |
-| Mean time to certify (last 5) | 17.1 min |
-| Mean smoke duration | 377.1 s |
-| Mean certify → Ready (last 5) | 4.4 min |
+| Certification cycles | 20 |
+| Certified | 20 of 20 |
+| Mean time to certify (last 5) | 16.3 min |
+| Mean smoke duration | 364.1 s |
+| Mean certify → Ready (last 5) | 4.7 min |
 | **Release flow** | |
-| Certification run success rate | 100% (19 of 19 runs) |
+| Certification run success rate | 100% (20 of 20 runs) |
 | ↳ excludes | candidates rejected at validation — see Repository Health |
-| Commits per release | mean 10.2, median 5, range 2–49 |
-| Mean candidate age | 177.3 min  — oldest commit → certified |
-| Release frequency | 0.35 releases/hour over 54h |
+| Commits per release | mean 9.9, median 5, range 2–49 |
+| Mean candidate age | 191.3 min  — oldest commit → certified |
+| Release frequency | 0.32 releases/hour over 62h |
 | **Defects and queues** | |
 | Queue depth (claimable now) | 1 — a lane with none reaches for undefined work |
 | Open bugs | 13 open · 15 fixed awaiting verification · 5 verified · 1 won't fix |
