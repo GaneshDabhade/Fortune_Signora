@@ -338,7 +338,7 @@ Provider Normalization is an **anticorruption layer for vendor vocabulary** — 
 | **Owner** | **QE** — *reassigned 2026-08-02: the Integrator role was abolished on 2026-08-01 and folded into QE (`CLAUDE.md` §20e)* |
 | **Requesting lane** | Lane B |
 | **Category** | Architecture documentation |
-| **Status** | `OPEN` |
+| **Status** | **`READY FOR PRODUCT DECISION`** — the edits are written; only a 🔴 file stands in the way |
 | **Blocks** | Nothing today. A cold session reads a manifest that is four rows out of date |
 | **Raised** | `30e66d0` as F-B3, growing each slice |
 
@@ -899,7 +899,7 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 
 | | |
 |---|---|
-| **Owner** | **Product owner** (ratification) + **QE** (the file) |
+| **Owner** | **Product owner** (ratification). **`38-product-design-principles.md` is QE's** by the Change Budget — QE places the text once it is ratified |
 | **Requesting lane** | Lane B |
 | **Category** | Product design principle · cross-cutting |
 | **Status** | `OPEN` — **text ready to paste.** Lane B may not place it |
@@ -1694,77 +1694,6 @@ It is also the failure mode this repository keeps finding in a different coat: [
 
 ---
 
-## C-022 · Governance belongs to QE and the product owner — and this branch carries governance edits
-
-| | |
-|---|---|
-| **Owner** | **Product owner** + **QE** |
-| **Requesting lane** | Lane A |
-| **Category** | Governance ownership |
-| **Status** | `OPEN` |
-| **Blocks** | Nothing being implemented. **It blocks a lane from knowing which rules are in force** |
-| **Raised** | 2026-08-02, on the product owner's ruling the same day |
-
-### What is actually on this branch, measured — 2026-08-02
-
-**So the product owner can rule in one read rather than a diff.**
-
-| | |
-|---|---|
-| **Net change to `CLAUDE.md`** | **+87 / −7**, all of it one section: *Execution ownership ends at `IN VALIDATION`*, with *Continuous execution*, *Two kinds of blocker*, *What continuous execution means for the branch* and *`CHANGES REQUESTED`* |
-| **Is it ratified?** | **Yes, in substance.** Every part of it was directed by the product owner across three messages on 2026-08-02 and is the lifecycle the repository now runs on. **`integration` does not have it** — removing it from this branch would delete governance that is in force |
-| **What was withdrawn** | The duplicate `integration`/`lane-*` rows ([B-019](BUGS.md)), fixed exactly as QE specified: the original `integration` row survives **with its claim-commit exception**, which `certification-guard.py --audit-claims` depends on. And the `BACKLOG.md` half — **`TASK-015` is restored to `BLOCKED`** |
-| **What remains open** | **Only whether these 87 lines are ratified where they stand.** They cannot be re-entered by their owner without being deleted first, and deleting in-force rules to re-add them is worse than ratifying them in place |
-
-**Ruled 2026-08-02:** a feature lane no longer modifies repository governance — `CLAUDE.md`, the execution workflow, lifecycle definitions, governance terminology, repository state legends, the execution board's structure. **A lane may identify an improvement, document the reasoning, open an item and recommend it. QE and the product owner evolve the rules.**
-
-**The rule is not yet written anywhere in the repository**, which is the first thing this item asks for. Until it is, the next lane will do what Lane A did — read *"documentation is part of the implementation"* (§12) and edit the rulebook in good faith.
-
-### What this branch already carries, and why it is not being reverted
-
-**Made before the ruling, each on explicit product-owner direction, and each accepted at the time.** They are listed so QE can adopt them, re-author them, or drop them — **as a decision rather than as a discovery in a diff.**
-
-| Where | What |
-|---|---|
-| `CLAUDE.md` §20e | *Execution ownership ends at `IN VALIDATION`* · *Continuous execution* · `CHANGES REQUESTED` · the two kinds of blocker · Claim Protocol steps 6a/6b/10 |
-| `CLAUDE.md` §20e | The *Concurrent milestones* paragraph that made a lane wait for `PROJECT_STATUS.md` — **withdrawn**, because it was the idle time *Continuous execution* removes |
-| [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) | Status legend: `IN PROGRESS`, `CHANGES REQUESTED`, `ACTIVE` scoped to QE's row, `BLOCKED` split by kind, a *Set by* column |
-| [`BACKLOG.md`](BACKLOG.md) | Status legend: `IN PROGRESS`, `IN VALIDATION`, `CHANGES REQUESTED`, QE's three |
-
-**Reverting them would leave the repository describing an execution model nobody is following** — the same defect class as a dashboard describing the previous milestone (§2), pointed the other way. **Keeping them silently would leave governance authored by a feature lane.** Neither is a lane's call, so both are put here.
-
-### And a second thing this item asks for: task identifiers
-
-**Lane A may no longer mint them** (ruled 2026-08-02), and three pieces of work now exist without one:
-
-| Work | State |
-|---|---|
-| **PP-02** — the target-account consumer | Built, pushed, `IN VALIDATION`. **No id** |
-| **PP-03** — un-watching stops the spending | Blocked on [C-021](#c-021), and [re-scoped before it started](architecture/41-provider-platform.md) |
-| **The Product Surface list slice** | See below — **it turns out to be already done** |
-
-## The queue is decision-limited, not capacity-limited
-
-**Recorded 2026-08-02 by Lane A, after returning to the queue with `provider_platform` architecturally blocked and finding nothing claimable.** This is an observation offered for the product owner's planning, **not a request to reprioritize** — position is theirs.
-
-| Candidate | Why it is not executable |
-|---|---|
-| [TASK-003](BACKLOG.md) | `READY`, blocked on [C-018](#c-018) — unanswered |
-| [TASK-005](BACKLOG.md) | `READY` **in the register only.** The check is on `integration`; [B-017](BUGS.md) records it as Lane B's and `IN VALIDATION`. **Claiming it would be the duplicate implementation the protocol exists to prevent** |
-| **Product Surface — the list (R1-01 🔴, R1-02 🔴)** | **Already implemented.** The row shows the Signal Catalog's title and the trigger has moved to the brief, exactly as R1-01 prescribed. R1-02 was *"resolved for free by R1-01"* and is. **[37-product-surface.md](architecture/37-product-surface.md) still calls this *"the only part of the milestone still open"*** — that sentence is stale, and it is the one a lane looking for work reads first |
-| Product Surface — [TASK-011](BACKLOG.md) (D20/R1-07) | `WAITING` on a seller in the room. Not a slice |
-| Product Surface — [TASK-014](BACKLOG.md), [TASK-016](BACKLOG.md) | `BLOCKED` — one on [C-021](#c-021), one on a trigger that has not fired |
-| `provider_platform` — PP-03 | `BLOCKED`, architectural, [C-021](#c-021) |
-| `timeline` — M7 | Lane B's |
-| [TASK-006](BACKLOG.md) · [TASK-007](BACKLOG.md) · [TASK-008](BACKLOG.md) · [TASK-009](BACKLOG.md) · [TASK-010](BACKLOG.md) · [TASK-012](BACKLOG.md) · [TASK-013](BACKLOG.md) | **All `WAITING` on the product owner** |
-| `apps/` · `signora_platform/` | Unassignable — [C-010](#c-010) |
-
-> **Seven of the eight `WAITING` rows wait on one person, and two lanes are idle behind them.** Adding a third lane would add nothing. **The binding constraint on this repository is no longer engineering capacity.**
-
-**The two decisions that would free the most engineering time**, offered as observation rather than as priority: **[C-021](#c-021)** returns Lane A to `provider_platform` immediately and unblocks [C-007](#c-007--the-guided-first-run-is-a-two-lane-build) behind it, and **[C-010](#c-010)** ends the ownership gap that four defects have already fallen into.
-
----
-
 ## C-023 · M13 is ratified architecture, not an executable milestone
 
 | | |
@@ -2123,7 +2052,7 @@ assert set(SignalTypeResponse.model_fields) == {"key", "title"}
 | **Owner** | **QE** (the rules and the tooling) + **product owner** (ratification) |
 | **Requesting lane** | Lane A |
 | **Category** | Repository governance · identifier allocation |
-| **Status** | `OPEN` — **directed by the product owner, 2026-08-02**, not self-generated |
+| **Status** | **`READY FOR PRODUCT DECISION`** — investigation complete, two mechanisms proposed, awaiting a ruling |
 | **Blocks** | Nothing being implemented. **It blocks the repository from scaling past three actors without manual reconciliation** |
 | **Raised** | 2026-08-02, after the third collision |
 
@@ -2219,81 +2148,6 @@ Alembic's `down_revision` is a linear chain: **a gap is a broken graph, not an o
 **[ADR-0039](architecture/adr/0039-release-engineering-model.md) RC-4 already diagnosed this**, and listed *"id collisions requiring QE to renumber `B-` and `C-` rows at merge"* as one of three symptoms of one cause. **That ADR is deliberately `Proposed` and waiting on an evidence bar:** an *observed*, *repeated* bottleneck.
 
 > **Three collisions in two days, the third found only by accident, is that bar being met.** The first question `CLAUDE.md` §20e asks is whether the north star already contains the answer **before a new one is invented** — and for the register's structure it does. **This item adds the half ADR-0039 does not solve:** one file per record removes structural corruption and rebase loss, and **leaves id collision exactly where it was**, because two differently-named files never conflict.
-
----
-
-## C-202 · Four shared documents disagree, and one disagrees with itself
-
-| | |
-|---|---|
-| **Owner** | **QE** — every document below is QE's to write |
-| **Requesting lane** | Lane A |
-| **Category** | Shared-document governance · dashboard consistency |
-| **Status** | `OPEN` — **directed by the product owner, 2026-08-02** |
-| **Blocks** | Nothing being implemented. **It blocks a cold session from trusting any status in the repository** |
-| **Raised** | 2026-08-02, during the cross-check the product owner asked for |
-
-**The stated requirement:** *"The same work item should never appear with different states in different documents. The repository should have exactly one truth for every status."*
-
-### Measured, at `origin/integration` — five disagreements
-
-| # | Fact | `PROJECT_STATUS.md` says | The authoritative record says |
-|---|---|---|---|
-| **1** | **Lane B's assignment** | *"Lane B — `AVAILABLE`"* | [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md): **two rows** — M7 Timeline `IN VALIDATION`, M13 Integrations `CHANGES REQUESTED` |
-| **2** | **Whether anything is blocked** | *"**Nothing is blocked.**"* | The board carries **three `BLOCKED` rows** and one `CHANGES REQUESTED` |
-| **3** | **Lane A's batch** | §1c: *"PS-01, PS-02, PP-01, PP-02 — **four** slices"* | §1b of the **same file**: *"Lane A's batch is now **eight** slices"* — **and then lists nine** |
-| **4** | **M10** | §2: **✅ Complete 2026-07-31** | §6 of the **same file**: AI Research Engine *"🔵 **In progress** — M10"* |
-| **5** | **Lane A's branch contents** | *"sits ahead with **four** finished slices"* | The branch holds **fifteen** |
-
-**Two of the five are a document contradicting itself in the same session.** That is the strongest available evidence that the cause is structural rather than anybody's care.
-
-### The cause, and it is one line of that file's own prose
-
-`PROJECT_STATUS.md` §1c says it plainly:
-
-> *"Authoritative record: `ACTIVE_ASSIGNMENTS.md` — the execution board. **Summarised here** because a dashboard that cannot say who is working is not a dashboard."*
-
-**A summary of another document is a stored copy of a derivable fact**, and `CLAUDE.md` §2 already rules on those: *"truth has exactly one authoritative representation; everything else derives from it… a stored copy of a derivable fact is a defect waiting for the two to disagree."*
-
-**It has waited two days.** [ADR-0039](architecture/adr/0039-release-engineering-model.md) RC-7 names this exactly — *"the dashboard is a stored copy of a derivable fact"* — so this is a second confirmation of the same north star from a different direction.
-
-**And #5 is a different defect worth separating.** `PROJECT_STATUS` is *"always representing `main`"*, measured at Closeout — correct and deliberate. **But a lane branch is not `main`, and moves on a different clock.** A dashboard that describes `lane-a-product-surface` has taken on a fact it structurally cannot keep true. **The fix is not a better number; it is not carrying that fact.**
-
-### What each shared document should state about itself
-
-**The product owner asked for ownership, timing, section ownership, what is generated and what needs review. None of the eight shared documents states any of it today**, and a reader cannot tell a hand-maintained section from a measured one — which is exactly how #3 and #4 survive review.
-
-**Recommendation: a five-line header on each, and nothing more elaborate.**
-
-| | |
-|---|---|
-| **Who writes it** | One actor. Where two do, name the sections |
-| **When** | The trigger, not a cadence — *"at Closeout"*, *"when a lane claims"* |
-| **Which sections are measured** | **Read from the repository, never typed.** Test counts, coverage, `HEAD`, migration head |
-| **Which sections are judgement** | Written by hand and reviewed by a person |
-| **What it must never contain** | **The one that would have prevented all five:** a fact whose authoritative home is another document |
-
-### Recommendation on the specific five
-
-| | |
-|---|---|
-| **§1c *Active work*** | **Delete the table; keep the link.** It restates the board and can only ever lag it. *"Who is working"* is one `ACTIVE_ASSIGNMENTS.md` away, and a dashboard that links is not a dashboard that cannot answer |
-| **§1b *Recommended next work*** | Stop naming slice counts. **They are a lane's fact, on a lane's clock** |
-| **§6 *Current AI architecture*** | Derive milestone state from §2 or drop the column. **Two states for M10 in one file is the whole finding** |
-| **Branch descriptions** | **Remove.** `PROJECT_STATUS` describes `main`; a branch is not `main` |
-| ***"Nothing is blocked"*** | Derive from the board, or say nothing. **A blanket claim about a multi-writer record is a claim that will be wrong within a day** |
-
-> **Every one of the five recommendations deletes something.** That is deliberate, and it is the shape the answer takes: **the dashboard is not wrong because it is under-maintained — it is wrong because it stores facts it does not own.** A rule requiring more diligence would fail the same way in a week.
-
-### Implementation impact
-
-| | |
-|---|---|
-| **Whose** | **QE's, entirely.** All eight shared documents are QE's or the product owner's to write |
-| **Cost** | Five deletions and eight five-line headers. **Smaller than one Closeout** |
-| **Risk of not doing it** | A cold session reads `PROJECT_STATUS` first, and it is currently wrong about who is working, whether anything is blocked, and how much is waiting |
-| **Not proposed** | A tool that generates the dashboard. **That is [ADR-0039](architecture/adr/0039-release-engineering-model.md)'s territory**, it is a much larger change, and the five deletions above are worth having whether or not it ever happens |
-
 
 ---
 
@@ -2447,6 +2301,158 @@ Alembic's `down_revision` is a linear chain: **a gap is a broken graph, not an o
 ---
 
 ## Closed
+
+## C-022 · Governance belongs to QE and the product owner — and this branch carries governance edits
+
+| | |
+|---|---|
+| **Owner** | **Product owner** + **QE** |
+| **Requesting lane** | Lane A |
+| **Category** | Governance ownership |
+| **Status** | **`CLOSED`** — 2026-08-03, by QE, on evidence |
+| **Blocks** | Nothing being implemented. **It blocks a lane from knowing which rules are in force** |
+| **Raised** | 2026-08-02, on the product owner's ruling the same day |
+
+### What is actually on this branch, measured — 2026-08-02
+
+**So the product owner can rule in one read rather than a diff.**
+
+| | |
+|---|---|
+| **Net change to `CLAUDE.md`** | **+87 / −7**, all of it one section: *Execution ownership ends at `IN VALIDATION`*, with *Continuous execution*, *Two kinds of blocker*, *What continuous execution means for the branch* and *`CHANGES REQUESTED`* |
+| **Is it ratified?** | **Yes, in substance.** Every part of it was directed by the product owner across three messages on 2026-08-02 and is the lifecycle the repository now runs on. **`integration` does not have it** — removing it from this branch would delete governance that is in force |
+| **What was withdrawn** | The duplicate `integration`/`lane-*` rows ([B-019](BUGS.md)), fixed exactly as QE specified: the original `integration` row survives **with its claim-commit exception**, which `certification-guard.py --audit-claims` depends on. And the `BACKLOG.md` half — **`TASK-015` is restored to `BLOCKED`** |
+| **What remains open** | **Only whether these 87 lines are ratified where they stand.** They cannot be re-entered by their owner without being deleted first, and deleting in-force rules to re-add them is worse than ratifying them in place |
+
+**Ruled 2026-08-02:** a feature lane no longer modifies repository governance — `CLAUDE.md`, the execution workflow, lifecycle definitions, governance terminology, repository state legends, the execution board's structure. **A lane may identify an improvement, document the reasoning, open an item and recommend it. QE and the product owner evolve the rules.**
+
+**The rule is not yet written anywhere in the repository**, which is the first thing this item asks for. Until it is, the next lane will do what Lane A did — read *"documentation is part of the implementation"* (§12) and edit the rulebook in good faith.
+
+### Closed 2026-08-03 — the answer is in the file
+
+**Its question was *"are these 87 lines ratified where they stand?"*** They are: `CLAUDE.md` on `main` carries *Execution ownership ends at `IN VALIDATION`*, *Continuous execution*, *Two kinds of blocker* and *`CHANGES REQUESTED`*, and the repository has run on that lifecycle for six certified cycles.
+
+**And the rule it asked for now exists** — §2 *governance describes reality; it never quietly changes it*, ratified 2026-08-03 after a lane-description very nearly reassigned two modules through a documentation edit. **The item asked for a written rule and got a stronger one than it proposed**, because the near-miss that produced it was larger than the one that raised this.
+
+### What this branch already carries, and why it is not being reverted
+
+**Made before the ruling, each on explicit product-owner direction, and each accepted at the time.** They are listed so QE can adopt them, re-author them, or drop them — **as a decision rather than as a discovery in a diff.**
+
+| Where | What |
+|---|---|
+| `CLAUDE.md` §20e | *Execution ownership ends at `IN VALIDATION`* · *Continuous execution* · `CHANGES REQUESTED` · the two kinds of blocker · Claim Protocol steps 6a/6b/10 |
+| `CLAUDE.md` §20e | The *Concurrent milestones* paragraph that made a lane wait for `PROJECT_STATUS.md` — **withdrawn**, because it was the idle time *Continuous execution* removes |
+| [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) | Status legend: `IN PROGRESS`, `CHANGES REQUESTED`, `ACTIVE` scoped to QE's row, `BLOCKED` split by kind, a *Set by* column |
+| [`BACKLOG.md`](BACKLOG.md) | Status legend: `IN PROGRESS`, `IN VALIDATION`, `CHANGES REQUESTED`, QE's three |
+
+**Reverting them would leave the repository describing an execution model nobody is following** — the same defect class as a dashboard describing the previous milestone (§2), pointed the other way. **Keeping them silently would leave governance authored by a feature lane.** Neither is a lane's call, so both are put here.
+
+### And a second thing this item asks for: task identifiers
+
+**Lane A may no longer mint them** (ruled 2026-08-02), and three pieces of work now exist without one:
+
+| Work | State |
+|---|---|
+| **PP-02** — the target-account consumer | Built, pushed, `IN VALIDATION`. **No id** |
+| **PP-03** — un-watching stops the spending | Blocked on [C-021](#c-021), and [re-scoped before it started](architecture/41-provider-platform.md) |
+| **The Product Surface list slice** | See below — **it turns out to be already done** |
+
+## The queue is decision-limited, not capacity-limited
+
+**Recorded 2026-08-02 by Lane A, after returning to the queue with `provider_platform` architecturally blocked and finding nothing claimable.** This is an observation offered for the product owner's planning, **not a request to reprioritize** — position is theirs.
+
+| Candidate | Why it is not executable |
+|---|---|
+| [TASK-003](BACKLOG.md) | `READY`, blocked on [C-018](#c-018) — unanswered |
+| [TASK-005](BACKLOG.md) | `READY` **in the register only.** The check is on `integration`; [B-017](BUGS.md) records it as Lane B's and `IN VALIDATION`. **Claiming it would be the duplicate implementation the protocol exists to prevent** |
+| **Product Surface — the list (R1-01 🔴, R1-02 🔴)** | **Already implemented.** The row shows the Signal Catalog's title and the trigger has moved to the brief, exactly as R1-01 prescribed. R1-02 was *"resolved for free by R1-01"* and is. **[37-product-surface.md](architecture/37-product-surface.md) still calls this *"the only part of the milestone still open"*** — that sentence is stale, and it is the one a lane looking for work reads first |
+| Product Surface — [TASK-011](BACKLOG.md) (D20/R1-07) | `WAITING` on a seller in the room. Not a slice |
+| Product Surface — [TASK-014](BACKLOG.md), [TASK-016](BACKLOG.md) | `BLOCKED` — one on [C-021](#c-021), one on a trigger that has not fired |
+| `provider_platform` — PP-03 | `BLOCKED`, architectural, [C-021](#c-021) |
+| `timeline` — M7 | Lane B's |
+| [TASK-006](BACKLOG.md) · [TASK-007](BACKLOG.md) · [TASK-008](BACKLOG.md) · [TASK-009](BACKLOG.md) · [TASK-010](BACKLOG.md) · [TASK-012](BACKLOG.md) · [TASK-013](BACKLOG.md) | **All `WAITING` on the product owner** |
+| `apps/` · `signora_platform/` | Unassignable — [C-010](#c-010) |
+
+> **Seven of the eight `WAITING` rows wait on one person, and two lanes are idle behind them.** Adding a third lane would add nothing. **The binding constraint on this repository is no longer engineering capacity.**
+
+**The two decisions that would free the most engineering time**, offered as observation rather than as priority: **[C-021](#c-021)** returns Lane A to `provider_platform` immediately and unblocks [C-007](#c-007--the-guided-first-run-is-a-two-lane-build) behind it, and **[C-010](#c-010)** ends the ownership gap that four defects have already fallen into.
+
+---
+
+## C-202 · Four shared documents disagree, and one disagrees with itself
+
+| | |
+|---|---|
+| **Owner** | **QE** — every document below is QE's to write |
+| **Requesting lane** | Lane A |
+| **Category** | Shared-document governance · dashboard consistency |
+| **Status** | **`CLOSED`** — 2026-08-03, by QE, re-measured rather than assumed |
+| **Blocks** | Nothing being implemented. **It blocks a cold session from trusting any status in the repository** |
+| **Raised** | 2026-08-02, during the cross-check the product owner asked for |
+
+**The stated requirement:** *"The same work item should never appear with different states in different documents. The repository should have exactly one truth for every status."*
+
+### Measured, at `origin/integration` — five disagreements
+
+| # | Fact | `PROJECT_STATUS.md` says | The authoritative record says |
+|---|---|---|---|
+| **1** | **Lane B's assignment** | *"Lane B — `AVAILABLE`"* | [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md): **two rows** — M7 Timeline `IN VALIDATION`, M13 Integrations `CHANGES REQUESTED` |
+| **2** | **Whether anything is blocked** | *"**Nothing is blocked.**"* | The board carries **three `BLOCKED` rows** and one `CHANGES REQUESTED` |
+| **3** | **Lane A's batch** | §1c: *"PS-01, PS-02, PP-01, PP-02 — **four** slices"* | §1b of the **same file**: *"Lane A's batch is now **eight** slices"* — **and then lists nine** |
+| **4** | **M10** | §2: **✅ Complete 2026-07-31** | §6 of the **same file**: AI Research Engine *"🔵 **In progress** — M10"* |
+| **5** | **Lane A's branch contents** | *"sits ahead with **four** finished slices"* | The branch holds **fifteen** |
+
+**Two of the five are a document contradicting itself in the same session.** That is the strongest available evidence that the cause is structural rather than anybody's care.
+
+### The cause, and it is one line of that file's own prose
+
+`PROJECT_STATUS.md` §1c says it plainly:
+
+> *"Authoritative record: `ACTIVE_ASSIGNMENTS.md` — the execution board. **Summarised here** because a dashboard that cannot say who is working is not a dashboard."*
+
+**A summary of another document is a stored copy of a derivable fact**, and `CLAUDE.md` §2 already rules on those: *"truth has exactly one authoritative representation; everything else derives from it… a stored copy of a derivable fact is a defect waiting for the two to disagree."*
+
+**It has waited two days.** [ADR-0039](architecture/adr/0039-release-engineering-model.md) RC-7 names this exactly — *"the dashboard is a stored copy of a derivable fact"* — so this is a second confirmation of the same north star from a different direction.
+
+**And #5 is a different defect worth separating.** `PROJECT_STATUS` is *"always representing `main`"*, measured at Closeout — correct and deliberate. **But a lane branch is not `main`, and moves on a different clock.** A dashboard that describes `lane-a-product-surface` has taken on a fact it structurally cannot keep true. **The fix is not a better number; it is not carrying that fact.**
+
+### What each shared document should state about itself
+
+**The product owner asked for ownership, timing, section ownership, what is generated and what needs review. None of the eight shared documents states any of it today**, and a reader cannot tell a hand-maintained section from a measured one — which is exactly how #3 and #4 survive review.
+
+**Recommendation: a five-line header on each, and nothing more elaborate.**
+
+| | |
+|---|---|
+| **Who writes it** | One actor. Where two do, name the sections |
+| **When** | The trigger, not a cadence — *"at Closeout"*, *"when a lane claims"* |
+| **Which sections are measured** | **Read from the repository, never typed.** Test counts, coverage, `HEAD`, migration head |
+| **Which sections are judgement** | Written by hand and reviewed by a person |
+| **What it must never contain** | **The one that would have prevented all five:** a fact whose authoritative home is another document |
+
+### Recommendation on the specific five
+
+| | |
+|---|---|
+| **§1c *Active work*** | **Delete the table; keep the link.** It restates the board and can only ever lag it. *"Who is working"* is one `ACTIVE_ASSIGNMENTS.md` away, and a dashboard that links is not a dashboard that cannot answer |
+| **§1b *Recommended next work*** | Stop naming slice counts. **They are a lane's fact, on a lane's clock** |
+| **§6 *Current AI architecture*** | Derive milestone state from §2 or drop the column. **Two states for M10 in one file is the whole finding** |
+| **Branch descriptions** | **Remove.** `PROJECT_STATUS` describes `main`; a branch is not `main` |
+| ***"Nothing is blocked"*** | Derive from the board, or say nothing. **A blanket claim about a multi-writer record is a claim that will be wrong within a day** |
+
+> **Every one of the five recommendations deletes something.** That is deliberate, and it is the shape the answer takes: **the dashboard is not wrong because it is under-maintained — it is wrong because it stores facts it does not own.** A rule requiring more diligence would fail the same way in a week.
+
+### Implementation impact
+
+| | |
+|---|---|
+| **Whose** | **QE's, entirely.** All eight shared documents are QE's or the product owner's to write |
+| **Cost** | Five deletions and eight five-line headers. **Smaller than one Closeout** |
+| **Risk of not doing it** | A cold session reads `PROJECT_STATUS` first, and it is currently wrong about who is working, whether anything is blocked, and how much is waiting |
+| **Not proposed** | A tool that generates the dashboard. **That is [ADR-0039](architecture/adr/0039-release-engineering-model.md)'s territory**, it is a much larger change, and the five deletions above are worth having whether or not it ever happens |
+
+
+---
 
 ## C-016 · Two branch names encode a permanent module assignment that no longer exists
 

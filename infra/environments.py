@@ -127,14 +127,21 @@ class Environment:
 #: **The registry.** Adding an environment is a row here, not a table edit in a
 #: document — and a row is three facts rather than eight columns somebody keeps
 #: consistent by hand.
+#:
+#: **`lane-c`, `lane-d` and `lane-e` are *environments*, not lanes**, and the
+#: distinction became load-bearing on 2026-08-03. **Lane C — the Product Office
+#: & Architecture Office — holds none of them**: it owns no production module
+#: and runs no production code, so it needs a clone and a branch and nothing
+#: numbered. These three rows are free slots waiting for the next
+#: *implementation* lane, whichever letter it is given.
 ENVIRONMENTS: Final = (
     Environment("review", 0, "Human product review", "Product owner"),
     Environment("lane-qe", 1, "Certification and repository validation", "QE", port_slot=2),
     Environment("lane-a", 2, "Development — Product Surface", "Lane A", port_slot=3),
     Environment("lane-b", 3, "Development — Commercial Profile", "Lane B", port_slot=4),
-    Environment("lane-c", 4, "Development — unclaimed", "—", port_slot=5),
-    Environment("lane-d", 5, "Development — unclaimed", "—", port_slot=6),
-    Environment("lane-e", 6, "Development — unclaimed", "—", port_slot=7),
+    Environment("lane-c", 4, "Development — free implementation slot", "—", port_slot=5),
+    Environment("lane-d", 5, "Development — free implementation slot", "—", port_slot=6),
+    Environment("lane-e", 6, "Development — free implementation slot", "—", port_slot=7),
 )
 
 #: **Deliberately outside the slot table, and no longer colliding.**

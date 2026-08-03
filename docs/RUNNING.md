@@ -277,9 +277,13 @@ Three development lanes work the same repository at once (`CLAUDE.md` §20e). **
 | **QE** | `lane-qe` | 3200 | 8200 | `signora_lane_qe` | 1 |
 | **Lane A — Product Surface** | `lane-a-product-surface` | 3300 | 8300 | `signora_lane_a` | 2 |
 | **Lane B — Commercial Profile** | `lane-b-commercial-profile` | 3400 | 8400 | `signora_lane_b` | 3 |
-| **Lane C** | `lane-c-<name>` | 3500 | 8500 | `signora_lane_c` | 4 |
+| **Lane C** — *Product Office & Architecture Office* | `lane-c` | **none** | **none** | **none** | **none** |
 | **Lane D** | *unclaimed* | 3600 | 8600 | `signora_lane_d` | 5 |
 | **Lane E** | *unclaimed* | 3700 | 8700 | `signora_lane_e` | 6 |
+
+> **Lane C is allocated nothing, and that is correct.** It owns no production module and runs no production code, so it needs a clone, a branch, the documentation and repository access — **no ports, no database, no Redis index, no MinIO bucket, no compose project.** It is the first lane whose onboarding is *simpler* than the one before it, and the row records the absence so nobody allocates it a block out of symmetry.
+>
+> **The port block 3500/8500 stays free** for the next *implementation* lane, whenever one is created.
 
 **The rule generating it:** web `3000 + 100n`, API `8000 + 100n`, database `signora_lane_<letter>`, Redis logical index `n`. One block of 100 per environment, so nothing collides and the arithmetic is obvious from any one row.
 

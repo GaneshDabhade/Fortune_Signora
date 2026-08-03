@@ -54,6 +54,12 @@ Before writing any code in a session, Claude must know which module it is workin
 - Consistency across the codebase is worth more than local optimization. A module that looks like every other module is more valuable than a module that is 10% cleverer.
 - When a decision is genuinely architectural — not just an implementation detail — it does not belong to a single coding session. It belongs to the RFC process described in `docs/architecture/01-overview.md`.
 - **The repository itself should always tell the truth.** Everything committed here — code, configuration, documentation, status, workflow files — is read by someone who was not in the conversation that produced it, and they have no way to check it against anything but itself. A workflow that looks live but is disabled, a dashboard describing the previous milestone, a document asserting a gate that no longer runs, a config file implying enforcement that was never installed: each is a defect of the same kind, and each is more damaging than the absent version, because it is trusted. This cuts both ways — **a record of what was true then must not be rewritten to match now.** Correct a claim about the present; date a record of the past. Falsifying history to make the repository look consistent is the same failure wearing the opposite coat.
+- **Governance describes reality; it never quietly changes it** (ratified 2026-08-03, product owner). **Any behavioural change requires an explicit architectural or product decision *before* governance is updated** — the document records the decision, it does not constitute it.
+
+  **Found by nearly committing the opposite.** A description of the lanes' strategic direction implied a module ownership swap between two lanes, both mid-flight. Written into the governance files as prose, it would have reassigned two bounded contexts through a documentation edit that nobody would have recognised as a decision — and the next reader would have inferred it from commit history rather than from a ruling.
+
+  This is the general form of *the repository itself should always tell the truth* above, applied to the **direction of causation.** That rule says a document must not misdescribe reality. This one says a document must not *become* the reality. A governance edit that changes what the software or the organisation does is a decision wearing a document's clothes, and the tell is simple: **if applying the edit would change what somebody does tomorrow, it needed a decision yesterday.**
+
 - **Every completed slice is demoable by a non-engineer** (ratified 2026-08-01, on the product owner's direction, binding from M12.3). A slice is finished when it can be shown to a salesperson, a founder or a designer **without explaining the architecture**. If demonstrating it requires naming a module, a table, a port or an event, it is infrastructure that has not yet reached a customer — which may be correct work, but it is not a completed product slice and must not be reported as one.
 
   This is a **check on sequencing, not a ban on foundations.** The pipeline ran nine stages ahead of any user-visible surface and that was a real cost, recorded in `31-m10-design-review-evidence.md` before it was felt. The rule that follows: when a slice's demonstration needs a paragraph of architecture, look for the smaller slice inside it that does not.
@@ -480,8 +486,43 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 |---|---|---|
 | **Implementation lanes** | Yes | **Implementing one slice at a time**, claimed from the backlog. Earlier slices may still be with QE — a lane never idles waiting for validation. Branch: `lane-*`, permanent by name |
 | **QE — Quality Engineering & Integration** | **No** | **One lifecycle, seven stages, below.** Holds `lane-qe`, **`integration` and `main`** |
+| **Lane C — Product Office & Architecture Office** | **No** | **Prepares.** Owns no module, no bounded context and no runtime. Below |
 
-**QE is the one permanent assignment**, because its responsibility is the repository rather than any module in it.
+**QE and Lane C are the two permanent assignments**, because their responsibility is the repository rather than any module in it.
+
+### Four responsibilities, and they do not overlap
+
+**Ratified 2026-08-03, product owner.** Lane C was created **instead of** a third implementation lane, on evidence: 23 of 38 open coordination items were the product owner's and 16 `READY` tasks sat unclaimed with two lanes available. **Implementation capacity was not the constraint; decision throughput was**, and a third implementation lane would have added a third consumer of the same queue.
+
+| | | |
+|---|---|---|
+| **Implementation lanes** | **Build** | Production code inside their assigned modules |
+| **QE** | **Certifies** | Quality, certification, release, repository health, environment isolation, the review platforms, reproducibility, regression prevention |
+| **Lane C** | **Prepares** | Architectural options · implementation plans · ADR drafts · technical investigations · dependency analysis · migration strategies · decomposition · sequencing · repository consistency reviews · capability audits · roadmap refinement |
+| **Product owner** | **Decides** | Priority, product direction, commercial priority, release sequencing, and every ruling |
+
+> **The routing model, and it is the reason Lane C exists.** Implementation used to stop and the product owner started investigating; now the investigation is delegated and implementation almost never stops for research.
+>
+> ```
+>   implementation lane  ─▶  Lane C investigates  ─▶  Lane C prepares
+>                                                     alternatives
+>                                                          │
+>   implementation resumes  ◀──  product owner decides  ◀───┘
+> ```
+
+**Lane C owns no production module, no bounded context, and no implementation responsibility.** It does not write production code until explicitly assigned, and **it must never silently become the owner of roadmap priority, commercial priority, release sequencing or product direction** — those are the product owner's, and a lane that prepares a decision is not the lane that takes it.
+
+**Lane C is the first lane that needs no runtime.** A clone, a branch, the documentation and repository access — **no ports, no database, no Redis index, no MinIO bucket, no compose project.** Its row in [`RUNNING.md`](docs/RUNNING.md#running-a-lane) records the absence rather than an allocation.
+
+**Responsibilities migrating from QE to Lane C**, as Lane C becomes operational: ADR drafting · engineering-policy drafting · roadmap and epic decomposition · implementation planning and specifications · cross-module architecture review · product consistency review · feature sequencing · task preparation · capability analysis · competitive architecture studies · decision preparation. **QE keeps quality, certification, release engineering, repository health, environment isolation, the Human Review and Product Review platforms, reproducibility and regression prevention.**
+
+> **This is a separation, not a reduction.** QE had accumulated architectural and planning work because there was nowhere else for it — which is how the coordination register came to hold items filed under QE that were decisions in disguise.
+
+#### No module changes owner
+
+**Stated as a line rather than left as an absence**, because the absence is what caused the ambiguity that produced this section:
+
+> **No production module changes owner. No bounded context changes owner. No implementation responsibility moves.** Lane A owns exactly what it owned before this section existed; so does Lane B; so does QE. **Descriptions of a lane's strategic direction are direction, never reassignment**, and **any future ownership transfer requires its own explicit decision** — raised as a coordination item, ruled by the product owner, never arriving inside a governance edit (§2, *governance describes reality*).
 
 > **The Integrator was a fourth role and is now QE's responsibility** (2026-08-01, product owner). It was never a separate session; describing it as one meant every merge, certification and status update was owned by nobody in particular. **QE validates, certifies, integrates, promotes, closes out, synchronizes and declares** — one sequence performed by one lane.
 >
@@ -817,7 +858,7 @@ Together these appear in roughly two thirds of all commits. **A lane does not ed
 | `CLAUDE.md` | **Repository governance** | Product owner |
 | [`docs/RUNNING.md`](docs/RUNNING.md) | **Development environments** — ports, databases, Redis indices, variables | **QE** |
 | [`docs/BUGS.md`](docs/BUGS.md) | **The defect register** | **Any lane opens. The module's current assignee fixes. Only QE sets `VERIFIED`** |
-| [`docs/LANE_COORDINATION.md`](docs/LANE_COORDINATION.md) | **Cross-lane coordination** — dependencies and pending contracts, nothing else | **Any lane opens. The named owner answers. The requesting lane closes** |
+| [`docs/LANE_COORDINATION.md`](docs/LANE_COORDINATION.md) | **Cross-lane coordination** — dependencies and pending contracts, nothing else | **Any lane opens. The named owner answers. The requesting lane closes.** **Lane C moves an item through `IN ANALYSIS` → `READY FOR PRODUCT DECISION`** |
 | [`docs/QUALITY_ENGINEERING.md`](docs/QUALITY_ENGINEERING.md) | **QE's operating procedure** — how the lane validates, reviews and reports | **QE** |
 | [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md) | **The lifecycle runbook** — every command and tick-box from validation to Repository Ready | **QE** |
 | `PROJECT_STATUS.md` | **The executive dashboard** — *"where are we?"*, measured | **QE**, at Closeout |
@@ -827,6 +868,7 @@ Together these appear in roughly two thirds of all commits. **A lane does not ed
 | `docs/architecture/38` · `39` | Design decisions · review findings | **QE**, at merge |
 | The roadmaps | *Scope* is the product owner's · *progress* is QE's | Both, as marked |
 | `PRODUCT_DIFFERENTIATORS.md` | Product strategy | Product owner |
+| `docs/architecture/adr/**` *(drafts)* | **ADR preparation** — a draft is a recommendation, never a ratification | **Lane C** drafts; the product owner ratifies |
 | `apps/api/main.py` · `pyproject.toml` contracts · `tenancy_policy.py` · `policy.csv` · `lib/api/types.ts` · `lib/query/keys.ts` | Registries every lane extends | Any lane — **append-only, one line, alphabetical where a list exists** |
 
 **Two registers are deliberately writable by every lane** — `BUGS.md` and `LANE_COORDINATION.md` — because a defect nobody may record and a dependency nobody may raise are the two failures that cost most. Both are **append-only with allocated ids**, so a conflict is two lanes claiming one number and QE renumbers the later at merge.
@@ -1103,7 +1145,7 @@ It compares what the governance documents *say* against what git, the migrations
 | **QE** | `100`+ | `100`+ | — *(QE writes nothing in the backlog)* | `0100`+ |
 | **Lane A** | `200`+ | `200`+ | `200`+ | `0200`+ |
 | **Lane B** | `300`+ | `300`+ | `300`+ | `0300`+ |
-| **Lane C** | `400`+ | `400`+ | `400`+ | `0400`+ |
+| **Lane C** *(Product Office)* | `400`+ | `400`+ | `400`+ | `0400`+ |
 | **Lane D** | `500`+ | `500`+ | `500`+ | `0500`+ |
 | **Lane E** | `600`+ | `600`+ | `600`+ | `0600`+ |
 | **Product owner** | `900`+ | `900`+ | `900`+ | `0900`+ |
@@ -1155,6 +1197,19 @@ Every row carries: **ID · Title · Module · Current assignee · Severity · St
 **An item exists only when another module's assignee or the product owner must answer something before implementation can safely continue.** If you can proceed without encoding an assumption about the answer, you do not need an item. If the answer would change a public contract, a schema, an event payload or a module boundary, **you may not proceed** — that is the whole case the register serves.
 
 **Every lane reads every open item before beginning a slice** (*Startup* step 5), and a Slice Handoff names the items it opened and closed.
+
+**Every item carries a lifecycle state**, so a reader can see *where* a decision is stuck rather than only that it is (ratified 2026-08-03, product owner):
+
+| State | Set by | Means |
+|---|---|---|
+| `OPEN` | Whoever raises it | Raised, nobody has looked |
+| `READY FOR LANE C` | The raising lane | **Investigation is warranted and nothing else blocks it.** Claimable |
+| `IN ANALYSIS` | **Lane C**, on claiming | Being investigated |
+| `READY FOR PRODUCT DECISION` | **Lane C** | **Options, trade-offs and a recommendation are prepared.** Waiting only on a ruling |
+| `READY FOR IMPLEMENTATION` | **Product owner**, on ruling | Decided. The implementing lane may proceed |
+| `CLOSED` | The requesting lane | The dependency no longer exists |
+
+**`AWAITING LANE C` is used only while Lane C has no session.** It is deliberately distinct from `READY FOR LANE C`: one says *nobody can take this yet*, the other says *it is ready to be taken*. **An item assigned to a lane that cannot answer is worse than one visibly unowned**, because it looks like progress.
 
 ```
 Coordination  →  Agreement  →  Implementation  →  ADR  →  Coordination closed

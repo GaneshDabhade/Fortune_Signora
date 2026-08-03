@@ -89,6 +89,7 @@ Governed by **[`CLAUDE.md` §20e](CLAUDE.md)** — read it before starting a lan
 |---|---|---|
 | **Lane A** | `lane-a-product-surface` | Yes — one assigned slice at a time |
 | **Lane B** | `lane-b-commercial-profile` | Yes — one assigned slice at a time |
+| **Lane C** — *Product Office & Architecture Office* | `lane-c` | **No.** It prepares: options, plans, ADR drafts, investigations, decomposition. It owns no module and needs no runtime |
 | **QE — Quality Engineering & Integration** | `lane-qe`, `integration`, `main` | **No.** Validation · certification · integration · promotion, and the repository-state records |
 
 ```
