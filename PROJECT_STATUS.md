@@ -12,16 +12,16 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `5c47a0d`, 2026-08-03.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `ebcf690`, 2026-08-03.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`5c47a0d`** — the certified commit itself |
-| **`integration`** | `5c47a0d` — level with `main` |
+| **`main`** | **`ebcf690`** — the certified commit itself |
+| **`integration`** | `ebcf690` — level with `main` |
 | **Release candidate** | **None pinned.** Cycle 24 promoted [`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md) and the [B-101](docs/BUGS.md) fix |
-| **Certification** | ✅ [`5c47a0d3b6ad`](certification/reports/5c47a0d3b6ad.md) · migration head **`0030`** · protocol **v2** |
+| **Certification** | ✅ [`ebcf690f9348`](certification/reports/ebcf690f9348.md) · migration head **`0030`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **136 commits, none outside a certified snapshot** |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **139 commits, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Both lanes.** Five separate rulings, all the product owner's — see §1c |
 | **Validation queue** | Lane A's and Lane B's branches, **both awaiting a rebase by their lane** |
@@ -101,55 +101,49 @@
 
 ---
 
-## 1d · Release summary — 2026-08-03, cycle 26
+## 1d · Release summary — 2026-08-03, cycle 27
 
-**Derived from the promoted commit `5c47a0d`.** One executable commit: **RE-01**.
+**Derived from the promoted commit `ebcf690`.** Two commits: the environment lease, and the gate contradiction it exposed.
 
-### Certification can now count the runs that left no other trace
+### One operation now owns the shared environment, and the second refuses to start
 
-**The pipeline could not measure its own reliability, and the reason was structural.** `tree_is_clean()` reads `git status --porcelain`, so **every** run dirties the tree by writing the manifest and an untracked report. A **passing** run survives because Closeout commits it; a **failing** one has no commit to carry it, so the operator's *correct* next move — resetting to re-run — deletes the only evidence it happened.
+**RE-02 was wrong as written, and replaying the incident is what showed it.** It said *"a lock around `make certify`"*. Cycle 25's contamination came from `make smoke` and `make down` running **beside** a certification — **no second `certify` was ever started**, so a certify-lock would have permitted every command that actually did the damage.
 
-```
-  certification requires a clean tree
-        ↓  every run dirties it
-        ↓  re-running requires cleaning it
-        ↓  which deletes the failure record
-```
+**The lease belongs to the environment, not to a command.** One production stack, one pair of review ports, one test database — and nothing knew who was using them. **Not missing capability; missing ownership.**
 
-**A second, separate gap:** `append()` runs once, after every gate, so a run that hangs or is killed **wrote nothing to any file**. Cycle 25's 22-minute hang was invisible by design, not by accident.
+**It prevents rather than detects.** The preflight *reports* a held port and asks the operator to look; the lease *refuses to start*.
 
-**The result was survivorship bias**: the manifest read *21 runs, 0 failures, 0 reruns* from a cycle with **two failures and three attempts.**
+| | |
+|---|---|
+| **A dead holder is reclaimed silently** | `pkill` on a hung run is legitimate recovery and happened **twice** in cycle 25. A lease surviving it turns one stuck run into a permanently stuck repository |
+| **Re-entrant through the environment** | `certify` shells out to `smoke.sh` inside its own lease, and would otherwise block on itself forever |
 
-`certification/attempts.jsonl` is git-ignored — which is the *decisive* property, not a tidiness one: ignored files never appear in `--porcelain`, so the log outlives the reset. A `started` event is written **before the first gate**, which is the only way an abort becomes countable.
+**RE-04 was an integration gap**, not a missing capability: `release-preflight.py` already existed and already checked prerequisites — nothing had taught it about the one service the suite cannot run without. **Extended, not replaced.**
 
-**It records facts and infers none.** No field says whether a failure was the environment's, the operator's or the repository's — a column of guesses is worse than none. It captures what a human needs to judge: the failing gate, containers running, review ports held, and **which test database was configured** ([B-022](docs/BUGS.md), where certification measured the shared database and recorded it as fact).
+**RE-05 was deprioritised on evidence.** A per-run compose project would let two smoke runs coexist; the lease makes them not need to. Its remaining value is *parallel* certification — a later stage.
 
-> **The reuse audit ([L-1](ENGINEERING_LAWS.md)) changed the design.** The original finding said *"the manifest does not preserve failed runs"* — but `store.append()` already writes every run, pass or fail. **Implementing before auditing would have produced a parallel failure log beside a store that already recorded failures.**
+### ⚠️ I broke `make dr`, and running it is what found out
 
-**RE-06 shipped with it**, because a measurement nobody reads is not a measurement. `make kpi` now carries a Pipeline stability panel, and the old *Certification run success rate* points at it rather than standing alone as a false impression of release health.
+I wired the preflight into `dr` reasoning it was the one gate nobody preflighted. **True, and the conclusion was wrong: the two have inverse preconditions.** The preflight requires 3000/8000 **free** so smoke can bind them; `dr` requires the production stack **up** on exactly those ports. `make up` then `make dr` could never both succeed.
 
-### ⚠️ QE committed directly to `main`, and the audit caught it
+**Caught within one cycle, by running the gate rather than reasoning about it** — [L-2](ENGINEERING_LAWS.md) in both directions, since *"not preflighted"* was never checked against what `dr` actually needs. `dr` keeps the lease, which was the half it genuinely needed. **Three tests assert the preconditions cannot contradict again.**
 
-After cycle 25's Closeout I ended on `main` and never switched back, so **RE-01 was committed to `main` without certification** — the one guarantee the repository exists to hold.
-
-**It never left the machine.** `origin/main` was unchanged, and `--audit-main` named it exactly: *"neither a certified commit, nor an ancestor of one, nor a Closeout. Something reached `main` without a gate."* The commit was moved to `lane-qe`, `main` reset, and it went through the full cycle as `5c47a0d`.
-
-**The guard worked — but it is a detector.** The preventive form is a pre-commit refusal on `main`, recorded as a backlog candidate with a real incident behind it. **Not implemented**: one occurrence, and the rule is evidence before governance.
+**It also invalidated `947ba37`'s certification** — the tree changed, so the snapshot restarted at `ebcf690`. That is the rule working, not a cost.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **2601 tests** · **95.51%** · 360 invariants · 617 files typed · 34 contracts |
-| **Release** | **5 promotions in 5 cycles.** Cycle 25 needed three attempts; cycle 26 needed one |
-| **Architecture** | Runtime composition **2 of 2 expected, 0 unexpected** — fourth consecutive clean reading |
-| **Dependency** | **37 items, 12 closed.** Unchanged this cycle — no lane candidates arrived |
-| **Customer Value** | ❌ **None.** Release Engineering. **Both lanes remain blocked on [`DECISION_PACKS.md`](docs/DECISION_PACKS.md)** |
-| **Process** | **One serious self-inflicted error**, caught by the repository's own guard and repaired before it escaped |
+| **Technical** | **2615 tests** · **95.51%** · 360 invariants · 618 files typed · 34 contracts |
+| **Release** | **6 promotions in 6 cycles.** Smoke back to its floor at **116s** |
+| **Architecture** | Runtime composition **2 of 2 expected, 0 unexpected** — fifth consecutive clean reading |
+| **Dependency** | **37 items, 12 closed.** Unchanged — no lane candidates arrived |
+| **Customer Value** | ❌ **None, for the fourth consecutive cycle.** Release Engineering only |
+| **Process** | **One self-inflicted broken gate**, caught by running it, fixed and tested in the same cycle |
 
-### ⚠️ Escalation — unchanged, and now the only thing holding delivery
+### ⚠️ Four cycles without customer value is now the signal, not the tooling
 
-**Five decision packs, every one the product owner's.** No implementation slice has reached QE in three cycles, and the reason is not lane capacity — it is that **both lanes are blocked on rulings.** If you answer only three: **Pack A** · **Pack B** · **[C-017](docs/LANE_COORDINATION.md)**.
+**No implementation slice has reached QE since cycle 23.** The pipeline is measurably healthier — leased, preflighted, and able to count its own failures — and it **has nothing to carry.** Both lanes are blocked on [`DECISION_PACKS.md`](docs/DECISION_PACKS.md), and every pack is the product owner's.
 
 
 ## 2 · Milestone progress
@@ -359,18 +353,18 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`5c47a0d3b6ad`](certification/reports/5c47a0d3b6ad.md) · 2026-08-03 · ✅ CERTIFIED**
+**Latest certification — [`ebcf690f9348`](certification/reports/ebcf690f9348.md) · 2026-08-03 · ✅ CERTIFIED**
 
-**Certified commit `5c47a0d` · promoted commit `5c47a0d`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
+**Certified commit `ebcf690` · promoted commit `ebcf690`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
 
 | Gate | Recorded |
 |---|---|
-| **pytest** | **2601 passed** |
+| **pytest** | **2615 passed** |
 | **coverage** | **95.51%** *(floor 95%)* |
 | **Security Invariants** | **360 invariants**, each proven to fail when its guarantee is removed |
 | **import-linter** | **34 kept, 0 broken** |
-| **MyPy** | **strict, clean over 617 files** |
-| **`make smoke`** | **24 stages in 158s**, fresh images, clean teardown |
+| **MyPy** | **strict, clean over 618 files** |
+| **`make smoke`** | **24 stages in 116s**, fresh images, clean teardown |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0030`** · scenario set `0cf6b2c581e4` · working tree clean.
@@ -410,21 +404,21 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Indicator | Value |
 |---|---|
 | **Certification** | |
-| Certification cycles | 22 |
-| Certified | 22 of 22 |
-| Mean time to certify (last 5) | 40.1 min |
-| Mean smoke duration | 344.8 s |
-| Mean certify → Ready (last 5) | 5.0 min |
+| Certification cycles | 24 |
+| Certified | 24 of 24 |
+| Mean time to certify (last 5) | 32.5 min |
+| Mean smoke duration | 325.9 s |
+| Mean certify → Ready (last 5) | 13.8 min |
 | **Release flow** | |
-| Certification run success rate | 100% (22 of 22 runs) |
+| Certification run success rate | 100% (24 of 24 runs) |
 | ↳ excludes | rejected candidates, and every failed or aborted attempt |
 | ↳ see instead | Pipeline stability below — measured from the attempt log |
-| Commits per release | mean 9.2, median 4, range 2–49 |
-| Mean candidate age | 184.9 min  — oldest commit → certified |
-| Release frequency | 0.33 releases/hour over 66h |
+| Commits per release | mean 8.5, median 4, range 1–49 |
+| Mean candidate age | 169.8 min  — oldest commit → certified |
+| Release frequency | 0.36 releases/hour over 67h |
 | **Pipeline stability** | |
-| Attempts | 1 |
-| ↳ certified | 1 |
+| Attempts | 3 |
+| ↳ certified | 3 |
 | ↳ failed | 0 |
 | ↳ aborted | 0  (started, never reached a verdict) |
 | First-pass rate | 100.0%  — attempts that certified |
