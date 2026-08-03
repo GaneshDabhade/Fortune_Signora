@@ -80,6 +80,11 @@ export const queryKeys = {
   identities: (workspaceId: string, accountIds: readonly string[]) =>
     ['workspace', workspaceId, 'identities', [...accountIds].sort().join(',')] as const,
 
+  /** Keyed by the search text, so each distinct query is its own cache entry
+   * and returning to one the customer already typed is instant. */
+  accountSearch: (workspaceId: string, text: string) =>
+    ['workspace', workspaceId, 'account-search', text] as const,
+
   decidedAccounts: (workspaceId: string) =>
     ['workspace', workspaceId, 'accounts', 'decided'] as const,
 

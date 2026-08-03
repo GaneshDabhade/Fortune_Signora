@@ -260,6 +260,48 @@ class GraphQueries:
             for entity_id, found in grouped.items()
         }
 
+    async def find_accounts(
+        self, workspace_id: UUID, text: str, *, limit: int
+    ) -> tuple[AccountIdentity, ...]:
+        """Accounts some source has called something matching `text`.
+
+        **Three steps, and none of them is a join across a module boundary.**
+        Provider Normalization finds the identities a `legal_name` claim
+        matched; this module maps those to accounts through its own bindings;
+        `identities()` then resolves each account's *displayed* name.
+
+        **So a result can be named something other than what was searched
+        for**, and that is the behaviour rather than a defect: a company that
+        renamed is found by its old name and shown under its new one, which is
+        precisely what somebody who has not heard about the rename needs.
+
+        **Blank input finds nothing, and does not find everything.** An empty
+        pattern matches every claim in the workspace, so the guard is here
+        rather than left to the caller — every future caller would have to
+        remember it, and the one that forgets ships a search box that dumps
+        the customer's whole book of business on the first keystroke.
+
+        **The bound is on identities considered, not accounts returned**, and
+        it is a real limitation: several providers naming one company are
+        several matches, so a workspace where one account has many sources can
+        return fewer than `limit` accounts while more exist. Recorded rather
+        than hidden — collapsing in the database would need the cross-module
+        join this deliberately does not have.
+        """
+        if not text.strip():
+            return ()
+
+        subjects = await self._claims.subjects_named_like(text, limit=limit)
+        entity_ids = await self._repository.entities_for_subjects(workspace_id, subjects)
+        if not entity_ids:
+            return ()
+
+        found = await self.identities(workspace_id, entity_ids[:limit])
+        # `identities()` returns a mapping, and a mapping has no order worth
+        # relying on. The order that means something is the one the match
+        # produced, so it is re-imposed here.
+        return tuple(found[entity_id] for entity_id in entity_ids[:limit] if entity_id in found)
+
     async def relationships(
         self,
         workspace_id: UUID,

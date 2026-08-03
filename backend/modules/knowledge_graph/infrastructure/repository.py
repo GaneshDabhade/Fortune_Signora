@@ -17,7 +17,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import or_, select, update
+from sqlalchemy import or_, select, tuple_, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.knowledge_graph.domain.identity import (
@@ -32,6 +32,7 @@ from modules.knowledge_graph.domain.identity import (
     ResolutionRule,
 )
 from modules.knowledge_graph.domain.resolution import ResolutionCandidate
+from modules.provider_normalization.public import SubjectRef
 from modules.knowledge_graph.infrastructure.models import (
     EntityModel,
     IdentityBindingModel,
@@ -277,6 +278,41 @@ class SqlGraphRepository:
             .order_by(IdentityBindingModel.provider, IdentityBindingModel.provider_external_id)
         )
         return tuple(_to_binding(row) for row in rows.scalars())
+
+    async def entities_for_subjects(
+        self, workspace_id: UUID, subjects: Sequence[SubjectRef]
+    ) -> tuple[UUID, ...]:
+        if not subjects:
+            return ()
+        rows = await self._session.execute(
+            select(
+                IdentityBindingModel.entity_id,
+                IdentityBindingModel.provider,
+                IdentityBindingModel.provider_external_id,
+            ).where(
+                IdentityBindingModel.workspace_id == workspace_id,
+                IdentityBindingModel.superseded_by.is_(None),
+                IdentityBindingModel.entity_id.is_not(None),
+                tuple_(
+                    IdentityBindingModel.provider,
+                    IdentityBindingModel.provider_external_id,
+                ).in_([(s.provider, s.provider_external_id) for s in subjects]),
+            )
+        )
+        # **The caller's order is preserved, and the database's is not used.**
+        # Search hands these over already ordered by matched name; re-sorting
+        # here, or letting the planner decide, would make the same query
+        # return the same accounts in a different order on a different day.
+        found = {
+            (provider, external_id): entity_id
+            for entity_id, provider, external_id in rows.all()
+        }
+        ordered: list[UUID] = []
+        for subject in subjects:
+            entity_id = found.get((subject.provider, subject.provider_external_id))
+            if entity_id is not None and entity_id not in ordered:
+                ordered.append(entity_id)
+        return tuple(ordered)
 
     async def decisions_for_entity(
         self, workspace_id: UUID, entity_id: UUID

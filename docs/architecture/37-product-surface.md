@@ -756,3 +756,24 @@ So on an expired account the brief said it **twice in one card, three lines apar
 ### What it did not need
 
 **No new endpoint · no new HTTP request · no new module dependency · no new table.** The brief already calls `/account-identities`, and Knowledge Graph already joins claims to entities to resolve names. **The whole slice is one field on a response that was already being fetched** — which is what Epic A is supposed to look like when the audit was right about the foundation.
+
+---
+
+## A1 — find an account by name *(2026-08-03)*
+
+**Epic A's second slice.** *"Show me Databricks"* — the second question of every evaluation, and the one a ranked list structurally cannot answer.
+
+**Where it lives, and why the shell.** A control in the application header, not a navigation entry: **search is a verb, not a place.** The shell owns *placement*; the feature owns *behaviour* — `components/shell/app-shell.tsx` gains one region and its error boundary, matching every other region in that file, and every line of logic is in `components/intelligence/account-search.tsx` behind `lib/query/hooks/search.ts`.
+
+**Touching the shell is 🔴 and was approved by the product owner** for this slice, on the grounds that A1's specification places global search there. Recorded because a lane reading the Change Budget alone would conclude it could not.
+
+### Two decisions a later change must not quietly reverse
+
+| | |
+|---|---|
+| **No substring highlighting** | The server matches every name a source has ever claimed, so **a result may not contain the text that was typed** — a company found under its former name is listed under its current one. Highlighting promises *"this visible text matched"*, which is sometimes false. If explainability is wanted, say *"matched previous name: Acme Software Ltd."* |
+| **The highlight resets when the answer changes** | Arrow down to the second result, type one more letter, and the list is a different list. Without the reset, Enter opens whatever has arrived in that position — **silent, and wrong every time.** Asserted |
+
+**The keyboard path is the product, not the accessible alternative to it.** ⌘K from anywhere, arrows, Enter, Escape. One implementation serves both a seller who has learned the control and a customer who cannot use a mouse, which is why §20c treats an unreachable control as a defect rather than a missing enhancement.
+
+**An account nobody has named is still a result**, shown as *Unnamed account*. Hiding it would make search quietly disagree with the list that shows it — and A6 is the slice that gives that state a name worth reading.

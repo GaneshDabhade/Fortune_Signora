@@ -27,6 +27,7 @@ from modules.knowledge_graph.domain.identity import (
     USES_TECHNOLOGY,
     Entity,
     EntityKind,
+    IdentityBinding,
     IdentityState,
 )
 from modules.knowledge_graph.public import MatchStrength
@@ -566,3 +567,141 @@ class TestRelationshipDerivation:
 )
 def test_technology_names_reach_one_canonical_key(raw: str, expected: str) -> None:
     assert canonical_technology_key(raw) == expected
+
+
+class TestFindingAnAccountByName:
+    """*"Show me Databricks."* — A1, and the question a ranked list cannot answer.
+
+    These state what a customer would notice, and one thing they would not
+    notice until it cost them: that a blank box does not return the whole
+    workspace.
+    """
+
+    def _named(self, *names: tuple[str, str, str]) -> tuple[FakeGraphRepository, dict[str, UUID]]:
+        """`(provider, external_id, legal_name)` per source, one entity each."""
+        repository = FakeGraphRepository()
+        claims: list[ClaimView] = []
+        ids: dict[str, UUID] = {}
+        for provider, external_id, legal_name in names:
+            entity = Entity.create(workspace_id=WORKSPACE, kind=EntityKind.COMPANY, now=NOW)
+            repository.entities[entity.id] = entity
+            repository.bindings.append(
+                bound_binding(
+                    entity, provider=provider, external_id=external_id, domain=f"{external_id}.example"
+                )
+            )
+            ids[legal_name] = entity.id
+            claims.append(
+                claim(
+                    provider=provider,
+                    external_id=external_id,
+                    attribute=ClaimAttribute.LEGAL_NAME,
+                    value=legal_name,
+                )
+            )
+        self._claims = claims
+        return repository, ids
+
+    def _queries(self, repository: FakeGraphRepository) -> GraphQueries:
+        return GraphQueries(repository=repository, claims=FakeClaimReader(self._claims))
+
+    async def test_a_partial_name_reaches_the_account(self) -> None:
+        repository, ids = self._named(("apollo", "dbx", "Databricks, Inc."))
+
+        found = await self._queries(repository).find_accounts(WORKSPACE, "databr", limit=10)
+
+        assert [identity.entity_id for identity in found] == [ids["Databricks, Inc."]]
+        assert found[0].name == "Databricks, Inc."
+
+    async def test_a_company_is_found_under_the_name_it_used_to_have(self) -> None:
+        """**The behaviour, not a defect.** Matching claims rather than the
+        displayed name means the old name still finds it — which is exactly
+        what somebody who has not heard about the rename types. The result is
+        then shown under the *current* name, so nobody is misled about what it
+        is called today."""
+        repository, ids = self._named(("apollo", "nw", "Northwind Traders"))
+        self._claims.append(
+            claim(
+                provider="apollo",
+                external_id="nw",
+                attribute=ClaimAttribute.LEGAL_NAME,
+                value="Northwind Group",
+                observed_at=datetime(2026, 6, 1, tzinfo=UTC),
+            )
+        )
+
+        found = await self._queries(repository).find_accounts(WORKSPACE, "Traders", limit=10)
+
+        assert [identity.entity_id for identity in found] == [ids["Northwind Traders"]]
+        assert found[0].name == "Northwind Group", "shown under what it is called now"
+
+    async def test_a_blank_search_finds_nothing_rather_than_everything(self) -> None:
+        """**The failure that would look like a feature.** An empty pattern
+        matches every claim in the workspace, so a search box that sent one on
+        the first keystroke would dump the customer's whole book of business
+        and call it a result."""
+        repository, _ = self._named(("apollo", "dbx", "Databricks, Inc."))
+        queries = self._queries(repository)
+
+        assert await queries.find_accounts(WORKSPACE, "", limit=10) == ()
+        assert await queries.find_accounts(WORKSPACE, "   ", limit=10) == ()
+
+    async def test_no_match_is_an_empty_answer_not_an_error(self) -> None:
+        repository, _ = self._named(("apollo", "dbx", "Databricks, Inc."))
+
+        assert await self._queries(repository).find_accounts(WORKSPACE, "zzz", limit=10) == ()
+
+    async def test_two_sources_naming_one_company_return_it_once(self) -> None:
+        """A match is found per *identity*; a customer is looking for an
+        account. Two providers on one company is the ordinary case and must
+        not read as two search results."""
+        repository = FakeGraphRepository()
+        entity = Entity.create(workspace_id=WORKSPACE, kind=EntityKind.COMPANY, now=NOW)
+        repository.entities[entity.id] = entity
+        for provider, external_id in (("apollo", "acme-a"), ("coresignal", "acme-c")):
+            repository.bindings.append(
+                bound_binding(entity, provider=provider, external_id=external_id, domain="acme.example")
+            )
+        self._claims = [
+            claim(
+                provider=provider,
+                external_id=external_id,
+                attribute=ClaimAttribute.LEGAL_NAME,
+                value="Acme Corporation",
+            )
+            for provider, external_id in (("apollo", "acme-a"), ("coresignal", "acme-c"))
+        ]
+
+        found = await self._queries(repository).find_accounts(WORKSPACE, "acme", limit=10)
+
+        assert [identity.entity_id for identity in found] == [entity.id]
+
+    async def test_an_identity_that_resolved_to_nothing_is_not_a_result(self) -> None:
+        """An ambiguous identity binds to no entity, so there is no account to
+        send anybody to. Inventing one would be the merge this module exists
+        to refuse."""
+        repository = FakeGraphRepository()
+        entity = Entity.create(workspace_id=WORKSPACE, kind=EntityKind.COMPANY, now=NOW)
+        repository.entities[entity.id] = entity
+        repository.bindings.append(
+            IdentityBinding(
+                id=uuid4(),
+                workspace_id=WORKSPACE,
+                provider="apollo",
+                provider_external_id="ambiguous",
+                state=IdentityState.AMBIGUOUS,
+                entity_id=None,
+                decision_id=uuid4(),
+                created_at=NOW,
+            )
+        )
+        self._claims = [
+            claim(
+                provider="apollo",
+                external_id="ambiguous",
+                attribute=ClaimAttribute.LEGAL_NAME,
+                value="Acme Corporation",
+            )
+        ]
+
+        assert await self._queries(repository).find_accounts(WORKSPACE, "acme", limit=10) == ()

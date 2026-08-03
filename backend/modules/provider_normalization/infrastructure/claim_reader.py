@@ -20,6 +20,17 @@ from modules.provider_normalization.infrastructure.models import ClaimModel
 from modules.provider_normalization.public.claims import ClaimView, SubjectRef
 
 
+def _escape_like(text: str) -> str:
+    """Neutralise the wildcards a customer did not know they typed.
+
+    `_` and `%` are `LIKE` syntax, so an unescaped search for `Acme_Corp`
+    matches `AcmeXCorp` and a search containing `%` matches every account in
+    the workspace. The backslash is escaped first, or escaping the others
+    would produce a dangling escape.
+    """
+    return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 def _view(row: ClaimModel) -> ClaimView:
     stored: dict[str, Any] = row.value
     return ClaimView(
@@ -76,6 +87,29 @@ class SqlClaimReader:
             statement.order_by(ClaimModel.observed_at, ClaimModel.id)
         )
         return tuple(_view(row) for row in rows.scalars())
+
+    async def subjects_named_like(self, text: str, *, limit: int) -> tuple[SubjectRef, ...]:
+        pattern = f"%{_escape_like(text)}%"
+        name = ClaimModel.value["v"].astext
+
+        rows = await self._session.execute(
+            select(ClaimModel.provider, ClaimModel.subject_external_id, name)
+            .where(
+                ClaimModel.workspace_id == self._workspace_id,
+                ClaimModel.attribute == ClaimAttribute.LEGAL_NAME.value,
+                # `escape` is not optional. Without it a customer searching for
+                # a name containing `_` matches any character, and one
+                # containing `%` matches everything in the workspace.
+                name.ilike(pattern, escape="\\"),
+            )
+            .distinct()
+            .order_by(name, ClaimModel.provider, ClaimModel.subject_external_id)
+            .limit(limit)
+        )
+        return tuple(
+            SubjectRef(provider=provider, provider_external_id=external_id)
+            for provider, external_id, _ in rows.all()
+        )
 
     async def latest_observed_at(
         self, subjects: Sequence[SubjectRef]

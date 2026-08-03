@@ -151,6 +151,7 @@
 | [C-303](#c-303--an-icp-is-not-an-addressable-thing-and-every-verb-the-brief-asks-for-needs-one) | An ICP is not an addressable thing, and every verb the brief asks for needs one | Lane B | **Product owner** | `ANSWERED` — ICP stays in Commercial Profile (2026-08-02). **The aggregate is [ADR-0041](architecture/adr/0041-icp-aggregate.md), proposed** | **Implementation, on ADR-0041's ratification** |
 | [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) | A notification is per-person, and workspace RLS is not enough | Lane B | **Product owner** (tenancy 🔴) | `OPEN` | **M14a N-01's migration.** The pattern exists; the ruling does not |
 | [C-323](#c-323--epic-a-was-assigned-to-lane-b-and-lane-a-is-already-building-it) | Epic A was assigned to Lane B, and Lane A is already building it | Lane B | **Product owner** | **`CLOSED` 2026-08-03** — ruled the same day it was raised | **Nothing now.** Lane B owns Epic A end to end; Lane A keeps Sales Workspace |
+| [C-324](#c-324--where-does-epic-as-rendering-stop-being-lane-bs) | Where does Epic A's rendering stop being Lane B's? | Lane B | **Lane C** | `OPEN` | **A5 and A6's screens.** Nothing in A1 or A4 |
 | [C-322](#c-322--is-an-icp-a-description-or-a-filter) | Is an ICP a description, or a filter? | Lane B | **Product owner** | `OPEN` | Epic B1; the product contradicts itself on screen until it is answered |
 | [C-320](#c-320--no-environment-can-complete-a-sign-up-so-nobody-has-reviewed-the-first-hour) | No environment can complete a sign-up, so nobody has reviewed the first hour | Lane B | **Product owner** | `OPEN` | Reviewing onboarding. No implementation |
 | [C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name) | What should Signora do with a company it cannot name? | Lane B | **Product owner** | `OPEN` | A correct fix for PX-301 / PX-316 |
@@ -3631,3 +3632,31 @@ A record can be highly significant and unidentifiable — `70b04700` has four we
 **Implementation impact.** Until this is answered: A4 and A1 cannot start · A5 and A6 build backend-only and wait for a render · A2 and B2 should be **struck from Epic A** rather than built, and [51-implementation-specifications.md](architecture/51-implementation-specifications.md) has been corrected to say so.
 
 > **This is the second time in three days.** [C-306](#c-306--the-opportunities-and-signals-experience-already-exists-and-lane-a-owns-half-of-it) found the same shape in Opportunities & Signals. **The pattern is not bad luck: Lane B keeps being assigned initiatives whose customer surface is Product Surface, and Product Surface has one permanent-feeling assignee.** Whatever is decided for Epic A, the third occurrence is already scheduled unless the allocation model changes.
+
+---
+
+## C-324 · Where does Epic A's rendering stop being Lane B's?
+
+| | |
+|---|---|
+| **Raised by** | Lane B, 2026-08-03, on the ownership clarification |
+| **Owner** | **Lane C** — roadmap decomposition and implementation planning, per the coordination model ratified the same day |
+| **Status** | `OPEN` — **not blocking today, blocking before A5** |
+| **Blocks** | A5's and A6's frontend halves. **Nothing in A1**, which the product owner approved explicitly |
+
+**The two sentences, both from the product owner, both on 2026-08-03.**
+
+| | |
+|---|---|
+| **The C-323 ruling** | Lane B owns Epic A **end to end** — *"backend implementation, read models, public contracts, API composition, Knowledge Graph, Provider Platform, Product Surface implementation, frontend implementation, routing, UI, UX, navigation, interaction model, visual hierarchy, customer workflows"* |
+| **The later clarification** | Lane B owns Epic A *"except for **Product Surface rendering that belongs to Lane A**"* — and the list of owned responsibilities that follows it is entirely backend |
+
+**They cannot both be applied to the same slice, and the same message resolved A1 in favour of the first**: the shell mount was approved, the component tests were requested, and the push was authorised without further approval. **A1 shipped on that reading.**
+
+**Why it needs answering before A5 rather than now.** A4 was one line on an existing page. A1 was one control. **A5 is a screen** — *"how do we let a customer understand years of company evolution in seconds?"*, which the product owner has already said is *"a place where visual design becomes more important than engineering"*. **A6 introduces a workflow**, not just a view. On the second reading almost none of either is Lane B's, and on the first, all of it is.
+
+**Lane B's reading, offered as input and not as authority.** The distinction that actually held in A1 is the one the product owner drew when approving the shell change — **the shell owns *placement*, the feature owns *behaviour*.** Generalised: **Lane A owns the surfaces it is actively building (Sales Workspace, the attention list, the brief's hierarchy); Lane B owns the surfaces Epic A brings into existence.** That is a boundary about *which screens*, not about *which layer*, and it is the one that does not split a slice in half.
+
+**What Lane B is doing meanwhile.** Continuing on work inside its boundaries on **either** reading — A5's backend is a `knowledge_graph` read over `claim.observed_at` and is unambiguously Lane B's. **The screen is not started until this is answered.**
+
+> **A layer boundary makes every Epic A slice a coordination item**, which is the exact cost the product owner rejected when ruling on C-323. That reasoning has not changed; only its application to the frontend is unclear.

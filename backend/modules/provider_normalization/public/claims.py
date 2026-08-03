@@ -130,6 +130,31 @@ class ClaimReader(Protocol):
         """
         ...
 
+    async def subjects_named_like(self, text: str, *, limit: int) -> tuple[SubjectRef, ...]:
+        """Provider identities some source has called something matching `text`.
+
+        Case-insensitive substring over `LEGAL_NAME` claims, ordered by the
+        matched name then by identity, so the same query returns the same
+        rows on every run and every machine.
+
+        **Every name a source has ever given, not the one being displayed.**
+        The displayed name is chosen by the Knowledge Graph's selection rule
+        — newest per provider — and matching only that would require
+        resolving every account in the workspace before knowing which to
+        keep. Matching the claims means a
+        company that has renamed is **found under its old name**, which is
+        what somebody who has not heard about the rename is typing.
+
+        **This is the searchable text, and it is the only one.**
+        `identity_binding.legal_name` looks like a faster answer and is a
+        resolution hint frozen at binding time — searching it would find an
+        account under a name the product does not display.
+
+        Returns identities, never accounts: resolving these to entities is
+        the Knowledge Graph's job and this module has no idea they exist.
+        """
+        ...
+
     async def latest_observed_at(
         self, subjects: Sequence[SubjectRef]
     ) -> dict[SubjectRef, datetime]:

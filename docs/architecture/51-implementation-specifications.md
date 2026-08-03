@@ -100,6 +100,15 @@ provider_sync(provider, capability, status, started_at, finished_at,
 
 ## A1 · Find an account by name · **M** · Knowledge Graph + Product Surface
 
+> ### BUILT 2026-08-03
+>
+> `GET /workspaces/{id}/account-search?q=&limit=` · `AccountSearch` in the shell header · `useAccountSearch`.
+>
+> **Built as the audit below proposed, not as the specification did.** Its own endpoint rather than a `q=` parameter; matched against `legal_name` claims rather than a resolved-name column, because there is no such column by design. **No index was added** — twelve accounts need none, and [12-scalability.md](12-scalability.md) forbids optimising before there is evidence.
+>
+> **Known limitation, recorded rather than hidden:** the bound is on *identities considered*, not accounts returned. Several providers naming one company are several matches, so a workspace where one account has many sources can return fewer than `limit` accounts while more exist. Collapsing in the database would need a cross-module join this deliberately does not have.
+
+
 > ### Reuse audit, 2026-08-03 — three corrections before a line is written
 >
 > **1 · There is no resolved-name column, by design, so there is nothing to index.** The specification below says *"likely an index on the resolved-name column"*. **A name is not stored**: it is a `legal_name` claim, and the displayed name is `select_name()` — newest per provider, resolved on every request. The searchable text lives in `claim.value`, stored as `{"v": …}` JSONB.

@@ -97,6 +97,21 @@ class FakeGraphRepository:
             found.extend(await self.bindings_for_entity(workspace_id, entity_id))
         return tuple(found)
 
+    async def entities_for_subjects(
+        self, workspace_id: UUID, subjects: Sequence[SubjectRef]
+    ) -> tuple[UUID, ...]:
+        live = {
+            (b.provider, b.provider_external_id): b.entity_id
+            for b in self.bindings
+            if b.superseded_by is None and b.entity_id is not None
+        }
+        ordered: list[UUID] = []
+        for subject in subjects:
+            entity_id = live.get((subject.provider, subject.provider_external_id))
+            if entity_id is not None and entity_id not in ordered:
+                ordered.append(entity_id)
+        return tuple(ordered)
+
     async def decisions_for_entity(
         self, workspace_id: UUID, entity_id: UUID
     ) -> tuple[ResolutionDecision, ...]:
@@ -162,6 +177,25 @@ class FakeClaimReader:
             if (c.provider, c.subject_external_id) in wanted
             and (attribute is None or c.attribute is attribute)
         )
+
+    async def subjects_named_like(self, text: str, *, limit: int) -> tuple[SubjectRef, ...]:
+        """Case-insensitive substring over LEGAL_NAME claims, ordered by the
+        matched name — the same contract the SQL reader implements, because a
+        fake that orders differently would let a caller depend on an order the
+        database does not produce."""
+        matched = [
+            c
+            for c in self.claims
+            if c.attribute is ClaimAttribute.LEGAL_NAME
+            and isinstance(c.value, str)
+            and text.lower() in c.value.lower()
+        ]
+        seen: list[SubjectRef] = []
+        for claim in sorted(matched, key=lambda c: (str(c.value), c.provider, c.subject_external_id)):
+            ref = SubjectRef(provider=claim.provider, provider_external_id=claim.subject_external_id)
+            if ref not in seen:
+                seen.append(ref)
+        return tuple(seen[:limit])
 
     async def latest_observed_at(
         self, subjects: Sequence[SubjectRef]

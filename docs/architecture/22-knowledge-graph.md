@@ -246,11 +246,33 @@ resolve_entity(workspace_id, hint) -> Entity
 claim_set(workspace_id, entity_id, attribute) -> ClaimSet
 entity_evidence(workspace_id, entity_id) -> list[Claim]
 identities(workspace_id, entity_ids) -> dict[UUID, AccountIdentity]
+find_accounts(workspace_id, text, limit) -> tuple[AccountIdentity, ...]
 relationships(workspace_id, entity_id, kind=None, as_of=None) -> list[Relationship]
 resolution_history(workspace_id, entity_id) -> list[ResolutionDecision]
 ```
 
 `as_of` on `relationships` is the seam for historical replay. Adding it now costs nothing; retrofitting a temporal query onto a non-temporal API costs a rewrite of every caller.
+
+### `find_accounts` — searching by name, and why it searches names nobody displays
+
+**Added 2026-08-03 by Epic A slice A1.** `GET /workspaces/{id}/account-search?q=&limit=`.
+
+**Three steps, and none is a join across a module boundary.** Provider Normalization finds the identities whose `LEGAL_NAME` claim matched (`ClaimReader.subjects_named_like`) · this module maps those to accounts through its own bindings (`entities_for_subjects`) · `identities()` resolves each account's displayed name.
+
+**It matches every name a source has ever claimed, not the displayed one.** Matching only the displayed name would require resolving every account in the workspace before knowing which to keep — and it would be worse product: **a company that renamed is found under its old name and shown under its new one**, which is what a seller who has not heard about the rename types.
+
+**Two consequences to preserve, both asserted:**
+
+| | |
+|---|---|
+| **A result may not contain the search text** | The customer typed a former name. **The list must never highlight a matched substring** — highlighting promises the match is in the visible text, and sometimes it is not. If explainability is wanted later, say *"matched previous name: Acme Software Ltd."* rather than decorating |
+| **A blank query returns nothing** | An empty pattern matches every claim in the workspace. The guard is in `find_accounts` rather than only in the browser, so every future caller inherits it |
+
+**`identity_binding.legal_name` is not the searchable text, and it looks like it should be.** It is a resolution hint frozen at binding time (`resolve.py` takes the first non-null `subject_legal_name`), and claims recorded afterwards never update it. **Searching it would return accounts under a name the product does not display** — the two-representations defect (§2) presenting as a search with the wrong labels.
+
+**The bound is on identities considered, not accounts returned.** Several providers naming one company are several matches, so a workspace where one account has many sources can return fewer than `limit` accounts while more exist. A known limitation rather than a hidden one: collapsing in the database would need the cross-module join this deliberately does not have.
+
+**Wildcards are escaped.** `_` and `%` are `LIKE` syntax; unescaped, a customer searching for a name containing `%` receives their entire book of business and it looks like the search working.
 
 ### `AccountIdentity.last_observed_at` — how current the account's evidence is
 

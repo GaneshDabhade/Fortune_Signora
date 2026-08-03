@@ -2044,3 +2044,143 @@ class TestTheRowSaysWhatKindOfAttentionThisIs:
                 f"'{catalog_key}' is named in the module forbidden from reaching the "
                 "Signal Engine. Posture travels on the wire so it does not have to be."
             )
+
+
+class TestFindingAnAccountByName:
+    """`GET /workspaces/{id}/account-search` — A1.
+
+    Against a real database, because the parts most likely to be wrong are the
+    ones a fake cannot have: the JSONB accessor, `ILIKE`, wildcard escaping,
+    and whether RLS actually stops a search crossing a workspace.
+    """
+
+    async def test_a_partial_name_finds_the_account(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        named = (
+            await client.get(
+                f"/workspaces/{workspace_id}/account-identities",
+                params={"ids": [str(entity_id)]},
+                headers=_auth(key_pair, user_id),
+            )
+        ).json()[0]
+        assert named["name"], "the pipeline produced an account nothing can name"
+
+        response = await client.get(
+            f"/workspaces/{workspace_id}/account-search",
+            params={"q": named["name"][:4]},
+            headers=_auth(key_pair, user_id),
+        )
+
+        assert response.status_code == 200, response.text
+        assert entity_id in {UUID(row["account_id"]) for row in response.json()}
+
+    async def test_a_search_never_crosses_a_workspace(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**A tenancy assertion wearing a feature's clothes.** Search is the
+        first endpoint that returns accounts the caller did not name, so it is
+        the first place a missing `workspace_id` filter would hand one
+        customer another's book of business — and it would look like a
+        working search."""
+        mine, my_user, my_entity, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        theirs, their_user, their_entity, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        assert mine != theirs
+
+        their_name = (
+            await client.get(
+                f"/workspaces/{theirs}/account-identities",
+                params={"ids": [str(their_entity)]},
+                headers=_auth(key_pair, their_user),
+            )
+        ).json()[0]["name"]
+
+        response = await client.get(
+            f"/workspaces/{mine}/account-search",
+            params={"q": their_name[:4]},
+            headers=_auth(key_pair, my_user),
+        )
+
+        assert response.status_code == 200, response.text
+        returned = {UUID(row["account_id"]) for row in response.json()}
+        assert their_entity not in returned
+        assert returned <= {my_entity} or returned, "only this workspace's accounts"
+
+    async def test_a_wildcard_is_text_and_not_a_pattern(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**`%` is a character a customer typed, not an instruction.**
+        Unescaped it matches every account in the workspace, so a search box
+        would return the whole book of business for a keystroke — and look
+        like it was working."""
+        workspace_id, user_id, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        response = await client.get(
+            f"/workspaces/{workspace_id}/account-search",
+            params={"q": "%%"},
+            headers=_auth(key_pair, user_id),
+        )
+
+        assert response.status_code == 200, response.text
+        assert response.json() == []
+
+    async def test_no_match_is_an_empty_list_not_a_404(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, user_id, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        response = await client.get(
+            f"/workspaces/{workspace_id}/account-search",
+            params={"q": "zzzzzznothing"},
+            headers=_auth(key_pair, user_id),
+        )
+
+        assert response.status_code == 200, response.text
+        assert response.json() == []
+
+    async def test_one_character_is_refused_before_it_reaches_the_database(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """A customer who has typed one letter has not asked a question yet."""
+        workspace_id, user_id, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        response = await client.get(
+            f"/workspaces/{workspace_id}/account-search",
+            params={"q": "a"},
+            headers=_auth(key_pair, user_id),
+        )
+
+        assert response.status_code == 422, response.text

@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 
 import { ErrorBoundary } from '@/components/feedback/error-boundary';
+import { AccountSearch } from '@/components/intelligence/account-search';
 import { Navigation } from '@/components/shell/navigation';
 import { ThemeToggle } from '@/components/shell/theme-toggle';
 import { WorkspaceSelector } from '@/components/shell/workspace-selector';
@@ -41,6 +42,13 @@ export function AppShell({ children, role, signOut }: AppShellProps) {
         <header className="flex h-topbar shrink-0 items-center justify-between gap-4 border-b border-border bg-surface px-4">
           <ErrorBoundary region="Workspace selector">
             <WorkspaceSelector />
+          </ErrorBoundary>
+          {/* **Search is a verb, not a place** (A1), so it sits here rather
+              than becoming a navigation entry. Its own boundary on the same
+              reasoning as every other region: a failing search must not take
+              the workspace selector or sign-out down with it. */}
+          <ErrorBoundary region="Account search">
+            <AccountSearch />
           </ErrorBoundary>
           <div className="flex items-center gap-3">
             <ThemeToggle />
