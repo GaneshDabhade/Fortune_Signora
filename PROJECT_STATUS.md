@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `9484228`, 2026-08-03.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `190e340`, 2026-08-03.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`9484228`** — the certified commit itself |
-| **`integration`** | `9484228` — level with `main` |
+| **`main`** | **`190e340`** — the certified commit itself |
+| **`integration`** | `190e340` — level with `main` |
 | **Release candidate** | **None pinned.** Cycle 24 promoted [`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md) and the [B-101](docs/BUGS.md) fix |
-| **Certification** | ✅ [`94842288c409`](certification/reports/94842288c409.md) · migration head **`0030`** · protocol **v2** |
+| **Certification** | ✅ [`190e34056c09`](certification/reports/190e34056c09.md) · migration head **`0030`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **151 commits, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -101,48 +101,59 @@
 
 ---
 
-## 1d · Release summary — 2026-08-03, cycle 31
+## 1d · Release summary — 2026-08-03, cycle 32
 
-**Derived from the promoted commit `9484228`.** One commit: **Redis isolation**, ruled CRITICAL by the product owner.
+**Derived from the promoted commit `190e340`.** Two commits, both observability: smoke stage timing, and machine-resource pressure in the preflight.
 
-### A shared queue executes; a shared database only corrupts
+### The smoke variance is root-caused, and it was not what I expected
 
-`signora_platform` defaulted `redis_url` to **logical index 0** while [`RUNNING.md`](docs/RUNNING.md) allocates one index per environment and states that no lane shares. **The allocation table existed and the code never required anybody to use it**, so any environment that had not set the variable joined index 0 with every other.
+**I attacked the obvious hypothesis first and it did not survive.** Build-cache invalidation is disproven: `tests/` is excluded from the frontend build context, so the **4830s** run — which changed documentation and one frontend *test* — invalidated nothing and should have been a full cache hit.
 
-Redis carries the **ARQ job queue and the outbox relay**. Two environments on one index means **one environment's workers consume the other's jobs**, and the resulting failures look random — which makes them the hardest kind to investigate.
+**What was observable instead:** 4.0 GB available of 15, **swap 85% consumed**, and a stray `next-server` on **port 3400** holding **2.7 GB**. The preflight was right that 3000 and 8000 were free; **this was never a port collision.**
 
-**The documentation was already right.** `RUNNING.md` states *"every one is required; none has a default that would be safe in production."* **The code contradicted its own documentation** — the inverse of the drift this repository usually finds.
+**The clincher is the failure shape.** The first instrumented smoke run died at stage 14j with pytest printing dots and then nothing — no summary, no traceback. **That is the OOM-kill signature, not a test failure.** A re-run passed in 186s.
 
-**The [B-104](docs/BUGS.md) lesson was applied rather than repeated.** Optional at construction, required where it connects: `require_redis_url()` guards the worker and the relay, the only two things that open the queue. A test building `Settings` to check an unrelated field does not have to supply a queue it never opens.
+### A fifth isolation layer, and it belongs in the architectural model
 
-> **The principle this generalizes to**, and it now covers three subsystems: **configuration may be read lazily; infrastructure must never be acquired implicitly.** A configuration object may exist. A *connection* may not.
->
-> **Where it is expected to recur**, by likelihood: object storage · AI provider clients (both carry base-URL defaults today) · the provider simulation framework, which fabricates data *into* an environment and would write it somewhere real.
+| Layer | Status |
+|---|---|
+| **Ports** | 7/7 isolated |
+| **Application database** | 7/7 |
+| **Redis / queues** | 7/7 *(closed last cycle)* |
+| **Compose projects** | 0/7 — modelled, not implemented |
+| **Machine resources — RAM, CPU, disk, kernel scheduler** | **0/7, and newly visible** |
 
-### ⚠️ Smoke took 1096s against a 120s median
+> **Redis and the machine are the same pattern one level apart:** *multiple isolated logical environments, one set of shared physical resources.* A repository can have perfectly isolated environments and still contend for RAM. **That is no longer an implementation detail; it is an isolation layer**, and future engineers should know which layer a problem belongs to.
 
-**Nine times the median**, in a cycle that changed one settings field. Not investigated yet and **not dismissed** — the previous outlier of this shape (4830s) was also never explained. Two unexplained outliers is a pattern rather than weather, and it is now the first candidate for Release Engineering attention.
+**Observation, not automation.** The preflight now names who is holding the machine and warns that certification will be slow or killed. **It does not stop another lane's processes** — that is not QE's call (§20e), and a slow certification is still a valid one.
+
+### This cycle's certification, with the instrument working
+
+```
+smoke   24 stages in 131s, slowest 2. Startup 19s
+```
+
+**Back in the normal band, and the breakdown is in the durable record for the first time.** The next outlier is diagnosed from the manifest rather than from a re-run that may not reproduce it.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
 | **Technical** | 2615 backend · 719 frontend · **95.50%** · 360 invariants · 618 files typed |
-| **Release** | **Full seven-stage cycle completed** — the failure the product owner caught last cycle did not recur |
+| **Release** | Full seven-stage cycle. **Two consecutive cycles with no process failure** |
 | **Architecture** | Runtime composition 0 unexpected · Reachability 0 doorless |
 | **Dependency** | 37 items, 12 closed. Unchanged |
-| **Customer Value** | ❌ **None.** Isolation and security |
-| **Process** | Clean. **Zero self-inflicted failures this cycle**, after two in the last |
+| **Customer Value** | ❌ **None.** Observability and diagnosis |
+| **Process** | Clean |
 
 ### Repository Health Trend
 
 | | Four days ago | Today |
 |---|---|---|
-| **Structural checks** | 3 | **9** |
-| **Shared resources remaining** | 5 | **4** |
-| **Environment isolation** | app DB only | app DB 7/7 · ports 7/7 · **Redis 7/7** |
-| **Recurring process failures** | — | 2 identified, both now targeted |
-| **Certification duration** | ~6 min | ~6–20 min ⚠️ **widening** |
+| **Structural checks** | 3 | **11** |
+| **Shared resources remaining** | 5 | **4** *(machine newly counted)* |
+| **Unexplained variance events** | 3 | **0** |
+| **Recurring process failures** | 2 identified | **0 in two cycles** |
 
 
 ## 2 · Milestone progress
@@ -352,9 +363,9 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`94842288c409`](certification/reports/94842288c409.md) · 2026-08-03 · ✅ CERTIFIED**
+**Latest certification — [`190e34056c09`](certification/reports/190e34056c09.md) · 2026-08-03 · ✅ CERTIFIED**
 
-**Certified commit `9484228` · promoted commit `9484228`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
+**Certified commit `190e340` · promoted commit `190e340`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
 
 | Gate | Recorded |
 |---|---|
@@ -363,7 +374,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | **Security Invariants** | **360 invariants**, each proven to fail when its guarantee is removed |
 | **import-linter** | **34 kept, 0 broken** |
 | **MyPy** | **strict, clean over 618 files** |
-| **`make smoke`** | **24 stages in 1096s** ⚠️ *(median 120s — see below)*, fresh images, clean teardown |
+| **`make smoke`** | **24 stages in 131s, slowest 2. Startup 19s** |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0030`** · scenario set `0cf6b2c581e4` · working tree clean.
@@ -403,24 +414,24 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Indicator | Value |
 |---|---|
 | **Certification** | |
-| Certification cycles | 28 |
-| Certified | 27 of 28 |
-| Mean time to certify (last 5) | 11.1 min |
-| Mean smoke duration | 342.6 s |
-| Mean certify → Ready (last 5) | 7.7 min |
+| Certification cycles | 29 |
+| Certified | 28 of 29 |
+| Mean time to certify (last 5) | 12.4 min |
+| Mean smoke duration | 335.0 s |
+| Mean certify → Ready (last 5) | 6.0 min |
 | **Release flow** | |
-| Certification run success rate | 96% (27 of 28 runs) |
+| Certification run success rate | 97% (28 of 29 runs) |
 | ↳ excludes | rejected candidates, and every failed or aborted attempt |
 | ↳ see instead | Pipeline stability below — measured from the attempt log |
-| Commits per release | mean 8.0, median 4, range 1–49 |
-| Mean candidate age | 160.8 min  — oldest commit → certified |
-| Release frequency | 0.38 releases/hour over 72h |
+| Commits per release | mean 7.9, median 4, range 1–49 |
+| Mean candidate age | 158.4 min  — oldest commit → certified |
+| Release frequency | 0.38 releases/hour over 74h |
 | **Pipeline stability** | |
-| Attempts | 7 |
-| ↳ certified | 6 |
+| Attempts | 8 |
+| ↳ certified | 7 |
 | ↳ failed | 1 |
 | ↳ aborted | 0  (started, never reached a verdict) |
-| First-pass rate | 85.7%  — attempts that certified |
+| First-pass rate | 87.5%  — attempts that certified |
 | Completion rate | 100.0%  — attempts that reached a verdict |
 | Failures by gate | smoke 1 |
 | **Defects and queues** | |
