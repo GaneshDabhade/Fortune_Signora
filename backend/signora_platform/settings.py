@@ -34,7 +34,39 @@ class Settings(BaseSettings):
     # assert the two roles are distinct.
     relay_database_url: PostgresDsn | None = None
 
-    redis_url: RedisDsn = RedisDsn("redis://localhost:6379/0")
+    # **No default, because a queue default is worse than a database default.**
+    #
+    # This was `redis://localhost:6379/0` — logical index 0 — while
+    # `docs/RUNNING.md` allocates an index per environment and states that no
+    # lane shares one. **The allocation table existed and the code did not
+    # require anybody to use it**, so any environment that had not set the
+    # variable joined index 0 with every other.
+    #
+    # A shared database corrupts data; **a shared queue executes it.** Redis
+    # carries the ARQ job queue and the outbox relay, so two environments on
+    # one index means one environment's workers consume the other's jobs — and
+    # the resulting failures look random, which makes them the hardest kind to
+    # investigate.
+    #
+    # **Optional here, required where it connects** (`require_redis_url()`).
+    # The same asymmetry as the auth tier's ([B-104](../../docs/BUGS.md)): a
+    # test that constructs `Settings` to check an unrelated field should not
+    # have to supply a queue it never opens.
+    redis_url: RedisDsn | None = None
+
+    def require_redis_url(self) -> RedisDsn:
+        """The queue this environment owns. **Refuses rather than guessing.**
+
+        Called by the worker and the relay — the only two things that connect.
+        """
+        if self.redis_url is None:
+            raise ValueError(
+                "SIGNORA_REDIS_URL is required and is not set. It has no default: "
+                "index 0 is another environment's queue, and sharing one means this "
+                "process would consume that environment's jobs. See docs/RUNNING.md "
+                "for the index allocated to yours."
+            )
+        return self.redis_url
 
     # --- JWT boundary (ADR-0026) ---
     #

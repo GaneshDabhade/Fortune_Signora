@@ -184,7 +184,7 @@ class WorkerSettings:
     # at worker startup with `'staticmethod' object has no attribute 'host'`.
     # Evaluating at class-definition time is consistent with `_pool` above,
     # which already resolves at import.
-    redis_settings = RedisSettings.from_dsn(str(get_settings().redis_url))
+    redis_settings = RedisSettings.from_dsn(str(get_settings().require_redis_url()))
 
 
 __all__ = ["POOLS", "WorkerSettings", "dispatch_event"]

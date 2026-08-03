@@ -308,7 +308,7 @@ Set `SIGNORA_API_URL` and `BETTER_AUTH_URL` to that lane's ports in its `fronten
 | Variable | Local value |
 |---|---|
 | `SIGNORA_DATABASE_URL` | `postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5432/signora` |
-| `SIGNORA_REDIS_URL` | `redis://localhost:6379/0` |
+| `SIGNORA_REDIS_URL` | `redis://localhost:6379/0` — **index 0 is human review's.** Substitute your environment's index from [§ Running a lane](#running-a-lane); the worker and relay refuse to start without it |
 | `SIGNORA_JWT_PUBLIC_KEY` | the **public** half of a dev RSA pair |
 | `SIGNORA_JWT_ISSUER` | `http://localhost:3000` |
 | `SIGNORA_JWT_AUDIENCE` | `signora-api` |

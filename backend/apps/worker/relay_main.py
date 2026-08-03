@@ -57,7 +57,7 @@ async def run() -> None:
     engine = create_relay_engine(settings)
     instrument_sqlalchemy(engine)
     session_factory = create_session_factory(engine)
-    redis = await create_pool(RedisSettings.from_dsn(str(settings.redis_url)))
+    redis = await create_pool(RedisSettings.from_dsn(str(settings.require_redis_url())))
 
     relay = OutboxRelay(
         session_factory=session_factory,
