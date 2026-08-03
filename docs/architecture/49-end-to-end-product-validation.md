@@ -120,8 +120,8 @@ frontend/tests/e2e/
 **Run against a live stack: Next 15 dev server on 3400, FastAPI on 8400, PostgreSQL `signora_lane_b` at migration head `0031`, seeded with `playground@2` — twelve accounts through the real pipeline, four personas enrolled through Better Auth.**
 
 ```
-92 tests · 90 passed · 2 skipped · 0 failed
-6.2 minutes, serial, one worker, zero retries
+93 tests · 91 passed · 2 skipped · 0 failed  (92 regression + 1 demonstration)
+6.9 minutes through `make e2e` — leased, re-seeded, serial, zero retries
 ```
 
 Skipped, both deliberately and visibly: the **OAuth round trip** (no provider credentials) and one **workflow move** when the seeded book has no account left in that state.
@@ -222,6 +222,111 @@ Alongside it: **719 Vitest tests green**, `tsc --noEmit` clean, `eslint` clean, 
 | **Discoverability** | **Adequate for a seller, poor for an administrator.** The daily surface needs no discovery. But the five declarations that make the product work are three clicks deep behind *Settings*, and nothing on the attention list points at them when it is empty for want of them |
 | **Enterprise readiness** | **Two roles where reviewers asked for five** (R8-05). No audit surface for permission changes, no ownership transfer, no way to leave an organization. **These are absences, not defects** — and each is the kind of thing an enterprise buyer asks about in the first meeting |
 | **Overall customer confidence** | **A product a seller could use tomorrow and an administrator could not yet run.** The daily loop is real, explainable and trustworthy. What surrounds it — first run, team management, connections, search — is where the next confidence lives |
+
+---
+
+## 6c · The environment question, answered from the repository's own work
+
+**The product owner asked nine questions about environment isolation and instructed me to read the existing work first. Every one of them had already been answered, and the answers are not mine.**
+
+| Question | Answer | Where it was already decided |
+|---|---|---|
+| Should Playwright own a dedicated **compose project**? | **No.** | **RE-05 was deprioritised on 2026-08-03** — *"the lease serialises what this would parallelise… its remaining value is parallel certification, a Stage 4 concern, not a now one"* ([RELEASE_ENGINEERING.md](../RELEASE_ENGINEERING.md) §7) |
+| A dedicated **auth database**? | **It has one.** | `signora_lane_b` — [RUNNING.md § Running a lane](../RUNNING.md#running-a-lane) |
+| A dedicated **application database**? | **The same one.** | ditto |
+| Dedicated **Redis**? | **Logical index 3.** | ditto |
+| Dedicated **ports**? | **3400 / 8400.** | ditto, and *"no lane invents ports"* |
+| Reuse **provider simulation**? | **Already does**, via the Playground seeder | §3 above |
+| **Regenerate seed data** before every run? | **Yes, per suite — and that is the one genuinely new decision.** `make e2e` re-seeds; `make e2e-quick` does not | New. Reasoning below |
+| **Preserve state** or be **disposable**? | **Disposable per run, durable between runs** | Below |
+| Can **two Playwright runs collide**? | **They could, and now they cannot** | `environment-lease.py`, reused unchanged |
+
+> **Nothing new was built for isolation.** A lane's environment already *is* the isolation the question asks for, and the repository has twice declined — on evidence — to add a second environment model. Building one for Playwright would have been the parallel system I was told not to build.
+
+### The one hazard that was real, and it was mine
+
+**`playwright.config.ts` defaulted `SIGNORA_APP_URL` to `http://localhost:3000` — Human Review's stack, which belongs to the product owner and to no lane.**
+
+That was survivable while the suite only read. **It stopped being survivable the moment the suite started writing** — and this milestone made it write: products, watched companies, and **permanent, attributed decisions**. `npm run test:e2e` with no environment variable would have put decisions signed *Dana Reyes* into the environment the product owner reviews the product in.
+
+**This is the cycle-25 class exactly**: one operation quietly mutating an environment another operation owns. The repository's own conclusion from that incident is the fix — *prevention, not detection* — so the suite now **refuses to start** with no URL, and **refuses to drive ports 3000 or 8000** at all:
+
+```
+  REFUSING to drive http://localhost:3000.
+  Ports 3000 and 8000 are Human Review on `main` (docs/RUNNING.md).
+  This suite writes to whatever it is pointed at …
+```
+
+There is a documented override for the one legitimate case — demonstrating the product on the review stack deliberately — and it is a variable nobody sets in a script.
+
+### Re-seeding, and why it is per suite rather than per test
+
+**The evidence is in this milestone.** `workflow.spec.ts` records real decisions, which changes what the attention list contains, so **two consecutive runs are not identical**. Three options were weighed:
+
+| | |
+|---|---|
+| **Per test** | Correct and unaffordable — the seeder is seconds, and 92 tests would add an hour |
+| **Never** | What we had. A suite whose result depends on how many times it has been run |
+| **Per suite** | **Chosen.** `make e2e` seeds then runs; `make e2e-quick` skips it for iterating on one spec |
+
+This is RE-03's reasoning — *"a certification that creates and drops its own database cannot measure the wrong one"* — applied one level up, and **without building RE-03**: a re-seed of an owned database achieves the reproducibility without the disposable-database machinery that item is about.
+
+### Two runs at once, and why nothing new locks anything
+
+`make e2e`, `make e2e-quick` and `make product-demo` all run inside **`infra/environment-lease.py`, unchanged**. Two Playwright runs in one clone would truncate each other's database mid-suite — the same failure, one layer out, as the one that made cycle 25 record *"134 passed"* against a suite of 2589. The lease already prevents it, is re-entrant, and reclaims a dead holder. **Reused rather than reimplemented.**
+
+---
+
+## 6d · Browsers
+
+| Engine | State | Evidence |
+|---|---|---|
+| **Chromium, headless** | The suite's default | 92 tests |
+| **Chromium, headed** | **Works** — WSLg provides a display, so the demonstration is watchable | `make product-demo` |
+| **Firefox** | **Works. 16/16 on the daily journey, no differences** | `E2E_BROWSERS=all --project=firefox` |
+| **WebKit** | **Blocked by the host**, not by the product | 40 missing system libraries — `libgtk-4`, `libgraphene`, `libevent`, GStreamer. One command fixes it: **`sudo npx playwright install-deps webkit`**, which needs a password this lane does not have |
+
+**Firefox and WebKit are absent from a normal run by design.** A listed project runs by default, and three engines over every journey would triple a six-minute suite to answer a compatibility question nobody has asked. `E2E_BROWSERS=all` adds them, over the daily journey only — *does the product work in another engine*, not *does every assertion hold three times*.
+
+---
+
+## 6e · The Product Demonstration Suite
+
+```bash
+make product-demo          # watch it, headed, at a human pace
+make product-demo-record   # headless, keeps the video and the trace
+```
+
+**A different product from the regression suite, and separated because the goals conflict.**
+
+| | Regression | Demonstration |
+|---|---|---|
+| **Wants** | fast, headless, independent | to be **watched** |
+| **Shape** | many small isolated cases | **one continuous story** |
+| **On failure** | a precise assertion | *"the demonstration stopped here"* |
+| **Artifact** | a pass | a **video somebody can replay** |
+
+Nine steps, narrated as they happen, every one against real pipeline output. It **does not assert its way through the product**: a demonstration that failed on a changed sentence would be re-baselined until it demonstrated nothing — the same failure mode as a re-baselined screenshot — so it asserts only what would make the demonstration meaningless if absent.
+
+What it printed on its last run, unedited:
+
+```
+1 · "Which accounts should I work on today?"
+     12 accounts, most pressing first
+     · NVIDIA Corporation  · Databricks, Inc.  · Snowflake Inc.  · Stripe, Inc.
+
+4 · The score decomposes into an arithmetic
+     90 of 120 points
+
+5 · "Prove it."
+     Grew open roles 60% over 32 days · Only coresignal has reported this
+     · Jul 26, 2026 · open roles 300→480 · coresignal · Jul 26, 2026
+
+9 · What Signora refuses to claim
+     No developer application is configured here, so no button is offered.
+```
+
+**5.5 MB of artifacts per run** — video, trace, screenshots — in `frontend/test-results/`, git-ignored. That is the living documentation the brief asked for, and it is replayable by somebody who was not in the room.
 
 ---
 

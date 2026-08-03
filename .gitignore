@@ -59,3 +59,6 @@ certification/attempts.jsonl
 # class of commit on `main`, and that is a governance decision rather than a
 # slice's to take.
 review/
+# Playwright: signed-in browser state (real session cookies) and run artifacts.
+# Never committed — a storage-state file is a live credential for a demo account.
+frontend/tests/e2e/.auth/

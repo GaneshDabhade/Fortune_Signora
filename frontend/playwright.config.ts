@@ -1,5 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
+import { resolveAppUrl } from './tests/e2e/fixtures/environment';
 import { OWNER, MEMBER, storageStatePath } from './tests/e2e/fixtures/personas';
 
 /**
@@ -41,10 +42,49 @@ import { OWNER, MEMBER, storageStatePath } from './tests/e2e/fixtures/personas';
  * No `webServer`: a lane already has its own dev server on its own port
  * (`docs/RUNNING.md` § Running a lane), and a config that started a second one
  * would bind a port that belongs to somebody else. `SIGNORA_APP_URL` selects
- * which — Lane B's is 3400.
+ * which — Lane B's is 3400 — and **there is no default**, because the previous
+ * default was the product owner's review stack.
+ *
+ * ## Browsers
+ *
+ * **Chromium runs everywhere and is the suite's browser.** Firefox and WebKit
+ * are opt-in projects rather than defaults: running three engines over every
+ * journey triples a six-minute suite to buy a compatibility signal nobody has
+ * asked a question about yet. `--project=firefox` when the question arises.
+ *
+ * **Headed is a first-class mode, not a debugging flag.** `PWDEBUG`-style
+ * headed runs are what make the demonstration suite watchable, and the whole
+ * point of a demonstration is that somebody sees it: `HEADED=1`.
  */
 
-const APP_URL = process.env.SIGNORA_APP_URL ?? 'http://localhost:3000';
+/**
+ * **There is no default, deliberately.** It used to be `http://localhost:3000`
+ * — the Human Review stack — and this suite *writes*. See
+ * `tests/e2e/fixtures/environment.ts` for the whole reasoning.
+ */
+const APP_URL = resolveAppUrl();
+
+/**
+ * Firefox and WebKit, **absent unless asked for**.
+ *
+ * A listed project runs by default, so listing them would triple a six-minute
+ * suite to answer a compatibility question nobody has asked — and would fail on
+ * any machine without WebKit's forty system libraries. `E2E_BROWSERS=all` is
+ * the one flag, and it covers the daily journey only: the point is *does the
+ * product work in another engine*, not *does every assertion hold three times*.
+ */
+const OTHER_ENGINES =
+  process.env.E2E_BROWSERS === 'all'
+    ? (['firefox', 'webkit'] as const).map((engine) => ({
+        name: engine,
+        testMatch: /daily-usage\.spec\.ts/,
+        dependencies: ['authenticate'],
+        use: {
+          ...devices[engine === 'firefox' ? 'Desktop Firefox' : 'Desktop Safari'],
+          storageState: storageStatePath(OWNER.email),
+        },
+      }))
+    : [];
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -69,6 +109,11 @@ export default defineConfig({
 
   use: {
     baseURL: APP_URL,
+    // **A watchable run is a different product from a fast one.** The
+    // demonstration suite exists to be seen, and `HEADED=1` is what lets a
+    // person watch Signora being used rather than read that it was.
+    headless: process.env.HEADED !== '1',
+    ...(process.env.HEADED === '1' ? { launchOptions: { slowMo: 250 } } : {}),
     // Everything a failure needs, and nothing a pass pays for.
     trace: 'retain-on-failure',
     video: 'retain-on-failure',
@@ -95,13 +140,46 @@ export default defineConfig({
     },
     {
       name: 'owner',
-      testIgnore: [/auth-journey\.spec\.ts/, /.*\.member\.spec\.ts/],
+      testIgnore: [/auth-journey\.spec\.ts/, /.*\.member\.spec\.ts/, /demo\//],
       dependencies: ['authenticate'],
       use: {
         ...devices['Desktop Chrome'],
         storageState: storageStatePath(OWNER.email),
       },
     },
+    {
+      // **The Product Demonstration Suite** — a different product from the
+      // regression suite, and separated because the goals genuinely conflict.
+      //
+      // A regression test wants to be fast, headless, and to assert the one
+      // thing it is about. A demonstration wants to be **watched**: it moves at
+      // a human pace, it narrates what it is doing, it records a video, and it
+      // is a continuous story rather than a set of independent cases.
+      //
+      // **It does run in a normal suite, and that is deliberate.** A listed
+      // project runs by default, and leaving it out would mean the
+      // demonstration is only ever exercised on the day somebody puts it in
+      // front of a customer — which is the one day it must not be broken.
+      // 25 seconds on a seven-minute suite is cheap insurance.
+      //
+      // It is excluded from every *other* project, so it is demonstrated once
+      // rather than counted as coverage of anything.
+      name: 'demo',
+      testMatch: /demo\/.*\.spec\.ts/,
+      dependencies: ['authenticate'],
+      // A demonstration that stops halfway is not a demonstration.
+      timeout: 180_000,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: storageStatePath(OWNER.email),
+        // **Always, not on failure.** The artifact is the point: this is meant
+        // to be replayable by anybody on the team, and by somebody who was not
+        // in the room.
+        video: 'on',
+        trace: 'on',
+      },
+    },
+    ...OTHER_ENGINES,
     {
       // The same product seen by somebody who administers nothing. A separate
       // project rather than a fixture, because the difference is the browser

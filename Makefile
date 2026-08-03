@@ -18,6 +18,7 @@
 
 .PHONY: environments reachability event-catalog workstation unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research
 
+
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
 # The executable bit is filesystem state, not repository state, and it does
 # not survive every checkout: a Windows or WSL mount, a zip export, or a
@@ -313,6 +314,64 @@ state-check:
 ## teaches people to use it.
 certify: release-preflight
 	@python3 infra/environment-lease.py run certify -- sh -c 'cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.certification'
+
+## The customer journeys, in a real browser, against this lane's own stack.
+##
+## **Leased, because a browser suite mutates whatever it is pointed at.** It
+## adds products, watches companies and records permanent decisions — so two
+## runs against one database contaminate each other exactly as cycle 25's
+## second operation contaminated a certification. `environment-lease.py` already
+## solves that and is reused unchanged; nothing new locks anything
+## (docs/RELEASE_ENGINEERING.md §7).
+##
+## **Re-seeded first, so a run is reproducible.** The workflow journeys record
+## real decisions, which changes what the next run reads. Seeding is seconds and
+## the alternative is a suite whose result depends on how many times it has been
+## run before — `make e2e-quick` skips it when iterating on one spec.
+##
+## **SIGNORA_APP_URL has no default and the suite refuses ports 3000/8000.**
+## Those are Human Review's, and a suite that writes must never reach them.
+##
+##     make e2e                        the whole suite, re-seeded
+##     make e2e ARGS="--project=firefox"
+##     make e2e-quick                  no re-seed
+##     make e2e-smoke                  the shortest proof the product is alive
+E2E_URL ?= http://localhost:3400
+E2E_DB  ?= signora_lane_b
+E2E_ENV := SIGNORA_TEST_APP_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5432/$(E2E_DB) \
+           SIGNORA_TEST_ADMIN_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:5432/$(E2E_DB) \
+           SIGNORA_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:5432/$(E2E_DB) \
+           SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1
+
+e2e:
+	@python3 infra/environment-lease.py run e2e -- sh -c 'cd backend && $(E2E_ENV) uv run python -m tests.playground.seed && cd ../frontend && SIGNORA_APP_URL=$(E2E_URL) npx playwright test $(ARGS)'
+
+e2e-quick:
+	@python3 infra/environment-lease.py run e2e -- sh -c 'cd frontend && SIGNORA_APP_URL=$(E2E_URL) npx playwright test $(ARGS)'
+
+e2e-smoke:
+	@python3 infra/environment-lease.py run e2e -- sh -c 'cd frontend && SIGNORA_APP_URL=$(E2E_URL) npx playwright test --grep @smoke'
+
+## Signora, demonstrated rather than verified — a real browser, at human pace.
+##
+## **A different product from `make e2e`, and separated because the goals
+## conflict**: a regression suite wants to be fast and headless, a
+## demonstration wants to be watched. One continuous story, narrated as it
+## goes, against real pipeline output.
+##
+##     make product-demo          watch it
+##     make product-demo-record   headless, and keep the video and trace
+##
+## The recording lands in `frontend/test-results/` and is the artifact worth
+## keeping: a replayable account of how Signora behaves, for somebody who was
+## not in the room.
+product-demo:
+	@python3 infra/environment-lease.py run product-demo -- sh -c 'cd backend && $(E2E_ENV) uv run python -m tests.playground.seed && cd ../frontend && HEADED=1 SIGNORA_APP_URL=$(E2E_URL) npx playwright test --project=demo --reporter=list'
+
+product-demo-record:
+	@python3 infra/environment-lease.py run product-demo -- sh -c 'cd backend && $(E2E_ENV) uv run python -m tests.playground.seed && cd ../frontend && SIGNORA_APP_URL=$(E2E_URL) npx playwright test --project=demo --reporter=list'
+	@echo ""
+	@echo "  video and trace:  frontend/test-results/"
 
 ## Prompt evaluation against a real model. Deliberately NOT part of `make test`.
 #

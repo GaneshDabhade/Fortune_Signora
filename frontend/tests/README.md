@@ -41,18 +41,34 @@ npm run build         # the production build is part of a lane's own gate
 
 It drives a **running application with a seeded organization**, and it starts nothing itself — a lane already has its own dev server on its own port, and a config that started a second would bind a port belonging to somebody else.
 
-```bash
-# your lane's row of docs/RUNNING.md — database migrated, then:
-cd frontend && SIGNORA_AUTH_DATABASE_URL=<your lane's auth URL> npm run demo:users
-cd backend  && python -m tests.playground.seed        # with your lane's test URLs exported
-npx playwright install chromium                       # once
+**From the repository root, and this is the way to run it:**
 
-SIGNORA_APP_URL=http://localhost:3400 npm run test:e2e            # everything
-SIGNORA_APP_URL=http://localhost:3400 npm run test:e2e:smoke      # ~40s, the shortest proof the product is alive
-                                       npm run test:e2e:journey   # complete customer workflows
-                                       npm run test:e2e:regression # defects that must not come back
-                                       npm run test:e2e:a11y      # keyboard, focus, labels, dialogs
+```bash
+make e2e                    # re-seeds, then the whole suite
+make e2e-quick              # no re-seed, for iterating on one spec
+make e2e-smoke              # ~40s, the shortest proof the product is alive
+make product-demo           # watch Signora being used, headed, at human pace
+make product-demo-record    # the same, headless, keeping the video and trace
+make e2e ARGS="--grep @a11y"
 ```
+
+**All of them run inside `infra/environment-lease.py`, unchanged.** Two browser runs against one database truncate each other mid-suite — the same failure that made cycle 25 record *"134 passed"* against a suite of 2589 ([`RELEASE_ENGINEERING.md`](../../docs/RELEASE_ENGINEERING.md) §7). The lease already prevents it.
+
+**`make e2e` re-seeds first, deliberately.** The workflow journeys record real decisions, which changes what the next run reads. `make e2e-quick` skips it.
+
+Set `E2E_URL` and `E2E_DB` if your lane's row is not Lane B's.
+
+<details><summary>First-time setup, once per clone</summary>
+
+```bash
+cd frontend && SIGNORA_AUTH_DATABASE_URL=<your lane's auth URL> npm run demo:users
+npx playwright install chromium
+npx playwright install firefox        # optional: E2E_BROWSERS=all
+sudo npx playwright install-deps webkit   # WebKit needs 40 system libraries
+```
+</details>
+
+**`SIGNORA_APP_URL` has no default and never will.** It used to be `http://localhost:3000` — Human Review's stack — and **this suite writes**: products, watched companies, and permanent attributed decisions. It now refuses to start without an explicit URL, and refuses ports 3000/8000 outright. See `tests/e2e/fixtures/environment.ts`.
 
 **Pass `SIGNORA_AUTH_DATABASE_URL` explicitly to `demo:users`.** The scripts under `scripts/` do not read `.env.local`, and `loadAuthConfig()` supplies a working default — so an unset variable seeds a *different* database rather than failing (recorded as O-3 in [`49-end-to-end-product-validation.md`](../../docs/architecture/49-end-to-end-product-validation.md)).
 

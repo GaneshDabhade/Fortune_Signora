@@ -20,7 +20,8 @@
     "test:e2e:journey": "playwright test --grep @journey",
     "test:e2e:regression": "playwright test --grep @regression",
     "test:e2e:a11y": "playwright test --grep @a11y",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:demo": "playwright test --project=demo"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.0",
