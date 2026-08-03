@@ -224,3 +224,51 @@ class Membership:
             causation_id=causation_id,
         )
         return membership, event
+
+
+class OwnershipTransferError(Exception):
+    """A transfer was asked for that cannot be performed as one act."""
+
+
+def transfer_ownership(
+    *,
+    outgoing: Membership,
+    incoming: Membership,
+    by: UUID,
+    at: datetime,
+) -> None:
+    """Hand the organization over — **one operation, not two role changes.**
+
+    Composing this from `promote` and `demote` leaves an intermediate state
+    with **two owners that nobody asked for**, and if the second step fails,
+    is abandoned, or the browser closes, the organization is left in a shape
+    no customer chose. **A transfer that half-happens is worse than one that
+    is refused.**
+
+    So both mutations happen here, and the caller performs them inside one
+    transaction. **The last-owner invariant is deliberately not consulted**:
+    it protects against ending with nobody, and this ends with exactly one —
+    checking it mid-operation would refuse the very thing that satisfies it.
+    """
+    # **No same-workspace check here, deliberately.** It was written, and the
+    # test proved it could never fire: both memberships are fetched scoped to
+    # one workspace, and RLS scopes them again beneath that. A guard that
+    # cannot fail is documentation pretending to be code (`CLAUDE.md` §2), and
+    # the real protection is asserted where it actually lives — the repository
+    # returns nothing for a membership in another organization.
+    if outgoing.id == incoming.id:
+        raise OwnershipTransferError("They already own this organization.")
+    if not outgoing.is_live:
+        raise MembershipAlreadyEndedError(outgoing.id)
+    # **Checked before anything is mutated.** Somebody removed while the dialog
+    # was open would otherwise be promoted, then found to have left.
+    if not incoming.is_live:
+        raise MembershipAlreadyEndedError(incoming.id)
+    if outgoing.role is not WorkspaceRole.OWNER:
+        raise OwnershipTransferError("Only an owner can hand over an organization.")
+
+    incoming.role = WorkspaceRole.OWNER
+    outgoing.role = WorkspaceRole.MEMBER
+    for membership in (incoming, outgoing):
+        membership.updated_at = at
+        membership.updated_by = by

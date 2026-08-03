@@ -37,6 +37,7 @@ import {
   useInvitations,
   useRemoveMember,
   useResendInvitation,
+  useTransferOwnership,
   useRevokeInvitation,
   useViewerRole,
   useWorkspaceMembers,
@@ -79,6 +80,7 @@ export default function TeamPage() {
   const resend = useResendInvitation(workspaceId);
   const remove = useRemoveMember(workspaceId);
   const changeRole = useChangeRole(workspaceId);
+  const transfer = useTransferOwnership(workspaceId);
   const { data: session } = useSession();
   const viewerId = session?.user.id ?? null;
   const { data: roster, isLoading: rosterLoading, isError: rosterFailed } =
@@ -90,6 +92,7 @@ export default function TeamPage() {
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<'owner' | 'member'>('member');
   const [leaving, setLeaving] = useState<Membership | null>(null);
+  const [handingTo, setHandingTo] = useState<Membership | null>(null);
   const [promoting, setPromoting] = useState<{
     membership: Membership;
     to: 'owner' | 'member';
@@ -100,6 +103,8 @@ export default function TeamPage() {
 
   const people = roster?.items ?? [];
   const owners = people.filter((one) => one.role === 'owner');
+  const mine = people.find((one) => one.user_id === viewerId);
+  const others = people.filter((one) => one.user_id !== viewerId);
   const invitations = data ?? [];
   const waiting = invitations.filter((one) => one.state === 'pending');
   const settled = invitations.filter((one) => one.state !== 'pending');
@@ -255,6 +260,31 @@ export default function TeamPage() {
         </CardBody>
       </Card>
 
+      {/* **At the foot, away from the list.** An administrator scanning names
+          should not be one mis-click from handing over the organization —
+          danger separated by scope rather than hidden behind a confirmation. */}
+      {myRole === 'owner' && mine !== undefined && others.length > 0 ? (
+        <div className="flex flex-col gap-2 rounded border border-border px-4 py-3">
+          <h2 className="text-sm font-medium text-content">Hand over this organization</h2>
+          <p className="text-sm text-content-muted">
+            Make somebody else the owner and step back to working accounts. It happens
+            as one change — there is never a moment when both of you are owners.
+          </p>
+          <div className="mt-1 flex flex-wrap gap-2">
+            {others.map((one) => (
+              <Button
+                key={one.id}
+                variant="secondary"
+                size="sm"
+                onClick={() => setHandingTo(one)}
+              >
+                Hand over to {nameOf(one, viewerId)}
+              </Button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       {/* **The explanation lives where the decision is made**, closed by
           default. An owner choosing between two roles is the one person who
           needs it, and a permanently expanded list of nine sentences would be
@@ -366,6 +396,53 @@ export default function TeamPage() {
           )}
         </CardBody>
       </Card>
+
+      <Dialog
+        open={handingTo !== null}
+        onClose={() => setHandingTo(null)}
+        title="Hand over this organization"
+        // **The gain, then the loss, then the thing they cannot undo alone.**
+        // Three sentences in the order somebody needs them.
+        description={
+          handingTo
+            ? `${nameOf(handingTo, viewerId)} will be able to invite people, remove them, and change this organization\u2019s settings. You will keep working accounts and will no longer be able to. Only they can hand it back.`
+            : ''
+        }
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setHandingTo(null)}>
+              Cancel
+            </Button>
+            <Button
+              loading={transfer.isPending}
+              onClick={() => {
+                if (!handingTo || !mine) return;
+                transfer.mutate(
+                  { fromMembershipId: mine.id, toMembershipId: handingTo.id },
+                  {
+                    onSuccess: () => {
+                      setHandingTo(null);
+                      toast({ tone: 'success', message: 'This organization has a new owner' });
+                    },
+                    onError: (error) => {
+                      setHandingTo(null);
+                      toast({
+                        tone: 'error',
+                        message:
+                          error instanceof ApiError
+                            ? error.message
+                            : 'Could not hand over the organization.',
+                      });
+                    },
+                  },
+                );
+              }}
+            >
+              Hand over
+            </Button>
+          </>
+        }
+      />
 
       <Dialog
         open={promoting !== null}

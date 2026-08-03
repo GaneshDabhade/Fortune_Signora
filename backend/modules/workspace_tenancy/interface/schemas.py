@@ -135,3 +135,12 @@ class ChangeRoleRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     role: WorkspaceRole
+
+
+class TransferOwnershipRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    #: Who is handing over. Explicit rather than inferred from the caller, so
+    #: one owner can transfer on another's behalf after they have left.
+    from_membership_id: UUID
+    to_membership_id: UUID

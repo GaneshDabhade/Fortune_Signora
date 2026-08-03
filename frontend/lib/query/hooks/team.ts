@@ -208,3 +208,26 @@ export function useChangeRole(workspaceId: string | null) {
       client.invalidateQueries({ queryKey: queryKeys.members(workspaceId ?? '') }),
   });
 }
+
+/**
+ * Hand the organization over.
+ *
+ * **One request, because it is one operation.** Two calls would leave a window
+ * with two owners that nobody asked for, and the second could fail.
+ */
+export function useTransferOwnership(workspaceId: string | null) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { fromMembershipId: string; toMembershipId: string }) =>
+      apiRequest<Membership[]>(`/workspaces/${workspaceId}/ownership`, {
+        method: 'POST',
+        body: {
+          from_membership_id: input.fromMembershipId,
+          to_membership_id: input.toMembershipId,
+        },
+        workspaceId: workspaceId ?? undefined,
+      }),
+    onSuccess: () =>
+      client.invalidateQueries({ queryKey: queryKeys.members(workspaceId ?? '') }),
+  });
+}

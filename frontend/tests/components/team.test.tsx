@@ -22,6 +22,7 @@ const revoke = vi.hoisted(() => vi.fn());
 const resend = vi.hoisted(() => vi.fn());
 const removeMember = vi.hoisted(() => vi.fn());
 const changeRole = vi.hoisted(() => vi.fn());
+const transfer = vi.hoisted(() => vi.fn());
 const members = vi.hoisted(() => vi.fn());
 const viewerRole = vi.hoisted(() => vi.fn());
 const session = vi.hoisted(() => vi.fn());
@@ -37,6 +38,7 @@ vi.mock('@/lib/query/hooks/team', () => ({
   useResendInvitation: () => ({ mutate: resend, isPending: false }),
   useRemoveMember: () => ({ mutate: removeMember, isPending: false }),
   useChangeRole: () => ({ mutate: changeRole, isPending: false }),
+  useTransferOwnership: () => ({ mutate: transfer, isPending: false }),
   useWorkspaceMembers: members,
   useViewerRole: viewerRole,
 }));
@@ -589,5 +591,80 @@ describe('roles are explained as capabilities, never as permissions', () => {
     ]) {
       expect(text).not.toContain(forbidden);
     }
+  });
+});
+
+describe('handing the organization over is one operation', () => {
+  function withColleague() {
+    members.mockReturnValue({
+      ...IDLE,
+      data: {
+        items: [
+          person(),
+          person({ id: 'm2', user_id: 'b', role: 'member', member_email: 'jo@acme.com' }),
+        ],
+      },
+    });
+  }
+
+  it('is offered at the foot, away from the roster', () => {
+    // Danger separated by scope: an administrator scanning names should not be
+    // one mis-click from handing over the organization.
+    withColleague();
+
+    render(draw());
+
+    expect(screen.getByRole('button', { name: 'Hand over to jo@acme.com' })).toBeVisible();
+  });
+
+  it('promises that there is never a moment with two owners', () => {
+    // The reason this exists rather than promote-then-demote.
+    withColleague();
+
+    render(draw());
+
+    expect(screen.getByText(/never a moment when both of you are owners/)).toBeVisible();
+  });
+
+  it('is not offered when there is nobody to hand over to', () => {
+    // A one-person organization has nobody to give it to. Asserted on the
+    // affordance rather than on the heading, because the dialog carries the
+    // same words and is mounted closed.
+    render(draw());
+
+    expect(screen.queryByRole('button', { name: /Hand over to/ })).toBeNull();
+  });
+
+  it('is not offered to a member', () => {
+    viewerRole.mockReturnValue({ role: 'member', resolved: true });
+    withColleague();
+
+    render(draw());
+
+    expect(screen.queryByRole('button', { name: /Hand over to/ })).toBeNull();
+  });
+
+  it('explains the gain, the loss, and what only they can undo', () => {
+    withColleague();
+
+    render(draw());
+    fireEvent.click(screen.getByRole('button', { name: 'Hand over to jo@acme.com' }));
+
+    expect(screen.getByText(/will be able to invite people/)).toBeVisible();
+    expect(screen.getByText(/You will keep working accounts/)).toBeVisible();
+    expect(screen.getByText(/Only they can hand it back/)).toBeVisible();
+  });
+
+  it('sends both memberships in one request', () => {
+    withColleague();
+
+    render(draw());
+    fireEvent.click(screen.getByRole('button', { name: 'Hand over to jo@acme.com' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Hand over' }));
+
+    expect(transfer).toHaveBeenCalledWith(
+      { fromMembershipId: 'm1', toMembershipId: 'm2' },
+      expect.anything(),
+    );
   });
 });

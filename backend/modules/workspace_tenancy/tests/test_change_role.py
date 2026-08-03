@@ -57,7 +57,9 @@ async def change(
     )
 
 
-def setup(*roles: WorkspaceRole) -> tuple[FakeMembershipRepository, FakeRoleChangeLog, list[Membership]]:
+def setup(
+    *roles: WorkspaceRole,
+) -> tuple[FakeMembershipRepository, FakeRoleChangeLog, list[Membership]]:
     repo, log = FakeMembershipRepository(), FakeRoleChangeLog()
     people = [member(role) for role in roles]
     repo.memberships.extend(people)

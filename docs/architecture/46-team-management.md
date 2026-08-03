@@ -931,3 +931,67 @@ An invitation is **two facts with two owners**, and separating them dissolves mo
 **Absorbed:** bulk invitations and role changes *(more entries, same shape)* · delegated administration *(a role)* · organization rename *(the workspace's name is not in an entry)* · temporary access · guests · consultants · read-only users *(all roles)* · workspace deletion *(cascades)*.
 
 **Where pressure begins:** **SCIM and directory synchronisation** — the actor stops being a person, and the `opened_by` pattern is the answer (§11). **Legal holds and retention** — an append-only table with a `DELETE` grant is exactly the shape a hold has to override, and nothing today expresses one. **Organization merge or split** — two histories over one organization, and §19 already records it as genuinely unabsorbed.
+
+
+---
+
+## 23 · Ownership transfer, as built — 2026-08-03
+
+**One operation, and the domain says so.** `transfer_ownership(outgoing, incoming, by, at)` mutates both memberships; the use case performs it inside one transaction under the workspace lock TM-04 added.
+
+**The last-owner invariant is deliberately not consulted.** It protects against ending with nobody, and this ends with exactly one — **checking it mid-operation would refuse the very thing that satisfies it.**
+
+**Two `membership_role_change` rows**, because two people's authority changed and an audit showing one would leave the other's unexplained.
+
+### The scenarios, and where each one landed
+
+| | |
+|---|---|
+| **Recipient removed while the dialog was open** | **Checked before anything is mutated.** Otherwise they are promoted and *then* found to have left |
+| **Outgoing owner lost ownership first** *(concurrent demotion)* | Refused — the transaction finds a member, not an owner. **This is the race the lock exists for, seen from the losing side** |
+| **Two tabs transferring simultaneously** | The lock serialises them; the second finds a member and is refused |
+| **Racing organization deletion** | The workspace row is the lock target and the FK parent. **A deletion holding it blocks the transfer; a transfer holding it blocks the deletion** |
+| **Audit write succeeds, role update fails** | **Impossible — one transaction.** Both roles and both rows commit together or not at all |
+| **Handing over to yourself** | Refused |
+| **Transactional notifications later** | **Absorbed**: they would be published from the same transaction via the outbox, which is what the outbox is for |
+| **Transfer eventually requiring approval** | ⚠️ **Where pressure begins.** An approval makes this a *pending* operation, and §11 Challenge F already rejected a generic pending-relationship aggregate — **this would be the third instance that reopens it**, which is the stated trigger |
+
+### A guard was written and removed
+
+**`outgoing.workspace_id != incoming.workspace_id` could never fire.** Both memberships are fetched scoped to one workspace, and RLS scopes them again beneath that.
+
+> **A guard that cannot fail is documentation pretending to be code** (§2). It was found by a test expecting `OwnershipTransferError` and getting `MembershipNotFoundError` — **the failing test was right and the code was wrong.** The test now asserts the protection that is real.
+
+---
+
+## 24 · Historical identity — one convention for the whole repository
+
+**Recorded here because this module answered it first, and every collaborative feature after it must answer the same.**
+
+> **Persistence stores immutable facts. Presentation resolves identity.**
+
+| | |
+|---|---|
+| **An event stores** | `actor_id` · `membership_id` · the **email snapshot** as it was · the timestamp |
+| **A screen decides** | current name · historical name · or both |
+
+**Why the split, in the product owner's framing and this repository's terms:** a stored *rendering* is a stored copy of a derivable fact (§2), and it goes wrong the moment somebody renames themselves — **the audit stops matching an export taken last year.** A stored *snapshot with an id beside it* keeps both options open forever, because the id resolves and the snapshot does not move.
+
+**Signora already does this**, which is why the convention is a recognition rather than a decision: `member_email` is *the address a membership was created with*, and `decided_by` is an id the screen renders as *"Somebody here"*.
+
+**The convention, stated so nine surfaces can share it:**
+
+1. **Store the id and the snapshot. Never store the rendering.**
+2. **Default to the snapshot** — *what was true then* is the truthful answer for a historical entry.
+3. **Resolve the id when a reader needs to act**, not merely to read. A mention must reach the person who exists now.
+4. **Show both only where finding somebody matters** — *"Ravi (now Raj)"* in a search result, not in every audit line.
+
+**It binds:** audit · timeline · comments · mentions · notifications · approvals · assignments · decision history · activity feeds · AI summaries · exports.
+
+> **Team Management is not coupled to today's representation.** When User Profile introduces display names, **nothing here changes**: the snapshot stays the historical fact and the profile becomes a second resolver the *screen* may call. That is the whole point of keeping presentation and persistence apart, and it is why this convention is recorded before the other workstream needs it.
+
+### Future pressure, checked once more
+
+**Absorbed:** bulk ownership transfer *(a loop over one operation)* · delegated administration · department hierarchy · temporary access · guests · external collaborators · just-in-time provisioning *(a membership with a different creator)* · organization archival · workspace deletion.
+
+**Where pressure begins:** **SCIM and directory sync** — the actor stops being a person, and the `opened_by` pattern answers it. **Emergency owner recovery** — every rule here assumes an owner is reachable; nothing expresses *"the only owner has left the company"*, and support intervention is currently the only path. **Legal hold and retention** — an append-only table with a `DELETE` grant is exactly what a hold must override. **Organization merge or split** — still genuinely unabsorbed, and now with a second reason: two role histories over one organization.

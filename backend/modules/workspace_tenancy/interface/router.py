@@ -23,6 +23,9 @@ from modules.workspace_tenancy.application.use_cases import (
 from modules.workspace_tenancy.application.use_cases.change_role import ChangeRoleCommand
 from modules.workspace_tenancy.application.use_cases.invite_member import InviteMemberCommand
 from modules.workspace_tenancy.application.use_cases.remove_member import RemoveMemberCommand
+from modules.workspace_tenancy.application.use_cases.transfer_ownership import (
+    TransferOwnershipCommand,
+)
 from modules.workspace_tenancy.infrastructure.composition import build_use_cases
 from modules.workspace_tenancy.interface.schemas import (
     AddMemberRequest,
@@ -32,6 +35,7 @@ from modules.workspace_tenancy.interface.schemas import (
     InviteMemberRequest,
     MembershipResponse,
     RemoveMemberRequest,
+    TransferOwnershipRequest,
     WorkspaceResponse,
 )
 from signora_platform.api import (
@@ -288,6 +292,37 @@ async def revoke_invitation(context: CurrentWorkspace, invitation_id: UUID) -> I
         context.workspace_id, invitation_id, now=now
     )
     return InvitationResponse.from_domain(invitation, at=now)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/ownership",
+    response_model=list[MembershipResponse],
+    summary="Hand this organization over",
+)
+async def transfer_ownership_endpoint(
+    context: CurrentWorkspace, body: TransferOwnershipRequest
+) -> list[MembershipResponse]:
+    """**One operation, deliberately.**
+
+    Promote-then-demote works and leaves a window in which the organization
+    has two owners nobody asked for — permanent if the second step never runs.
+    **A transfer that half-happens is worse than one that is refused**, so both
+    role changes and both audit rows are one transaction.
+
+    On the workspace, not on a membership: **the thing changing hands is the
+    organization**, and neither person is more the subject than the other.
+    """
+    context.authorize(Resource.MEMBER, Action.ADD)
+    outgoing, incoming = await build_use_cases(context.session).transfer_ownership.execute(
+        TransferOwnershipCommand(
+            workspace_id=context.workspace_id,
+            from_membership_id=body.from_membership_id,
+            to_membership_id=body.to_membership_id,
+            performed_by=context.principal.user_id,
+        ),
+        now=datetime.now(UTC),
+    )
+    return [MembershipResponse.from_domain(m) for m in (incoming, outgoing)]
 
 
 @router.post(

@@ -24,6 +24,7 @@ from modules.workspace_tenancy.application.use_cases.invite_member import (
     RevokeInvitation,
 )
 from modules.workspace_tenancy.application.use_cases.remove_member import RemoveMember
+from modules.workspace_tenancy.application.use_cases.transfer_ownership import TransferOwnership
 from modules.workspace_tenancy.infrastructure.adapters import (
     OutboxEventPublisherAdapter,
     SessionTenantContext,
@@ -53,6 +54,7 @@ class WorkspaceTenancyUseCases:
     remove_member: RemoveMember
     resend_invitation: ResendInvitation
     change_role: ChangeRole
+    transfer_ownership: TransferOwnership
 
 
 def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
@@ -92,6 +94,10 @@ def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
         list_invitations=ListInvitations(invitations=invitation_repository),
         revoke_invitation=RevokeInvitation(invitations=invitation_repository),
         remove_member=RemoveMember(memberships=membership_repository),
+        transfer_ownership=TransferOwnership(
+            memberships=membership_repository,
+            history=SqlAlchemyRoleChangeLog(session),
+        ),
         change_role=ChangeRole(
             memberships=membership_repository,
             history=SqlAlchemyRoleChangeLog(session),
