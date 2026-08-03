@@ -25,6 +25,7 @@ platform that could not start.
 
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 import sys
@@ -33,6 +34,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from tests.certification import conditions as repository_conditions
+from tests.certification import database as disposable_database
 from tests.certification.record import CertificationRun, GateResult, ScenarioResult
 from tests.certification import attempts
 from tests.certification.store import MANIFEST, append, render, report_path
@@ -203,7 +205,39 @@ def main() -> int:
     """Every gate, then the record. **No options**, deliberately: a mode that
     skipped a gate would produce a run that cannot certify, and a command whose
     convenient path yields worthless evidence teaches people to use it."""
-    print("certification — running every gate\n")
+    commit = repository_conditions.commit()
+    with disposable_database.disposable(disposable_database.name_for(commit)) as target:
+        return _certify(target)
+
+
+def _certify(target: disposable_database.Disposable) -> int:
+    """The gates, against a database this run created and will destroy.
+
+    **RE-03.** Until now the target came from whatever the launching shell
+    exported, and a run in a shell that exported nothing silently measured the
+    shared database — recorded verbatim in an attempt log as
+    `"test_database": "(unset — defaults to shared)"`. **The workstation may
+    affect execution speed; it must never affect execution correctness.**
+    """
+    # **`os.environ`, not a dict passed to each subprocess.** Nine call sites run
+    # a gate, and threading an env through each would let one be forgotten —
+    # which is the exact shape of the defect this removes. It also keeps the
+    # in-process readers honest: `attempts.start()` records the database name
+    # from the environment, and a subprocess-only override would have made the
+    # attempt log say `(unset — defaults to shared)` about a run that was
+    # correctly isolated.
+    os.environ.update(target.environment)
+    print("certification — running every gate")
+    print(f"  database            {target.name}  (created for this run, dropped afterwards)\n")
+
+    migrated, output = _run(["uv", "run", "alembic", "upgrade", "head"], cwd=BACKEND_ROOT)
+    if migrated:
+        # **Before any gate, and fatal.** A suite run against an unmigrated
+        # database fails in hundreds of places for one reason, and the reason is
+        # the least visible line in that output.
+        print(f"  migrations          FAILED\n\n{output}")
+        return 1
+    print("  migrations          applied to head")
 
     # **Before the first gate**, so an attempt that hangs, is killed or crashes
     # is still counted. `append()` below runs only after every gate, so an
