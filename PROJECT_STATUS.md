@@ -12,16 +12,16 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `514de85`, 2026-08-03.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `9484228`, 2026-08-03.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`514de85`** — the certified commit itself |
-| **`integration`** | `69056e0` — **1 commit ahead**, Environment Framework Phase 1 |
+| **`main`** | **`9484228`** — the certified commit itself |
+| **`integration`** | `9484228` — level with `main` |
 | **Release candidate** | **None pinned.** Cycle 24 promoted [`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md) and the [B-101](docs/BUGS.md) fix |
-| **Certification** | ✅ [`514de85baa35`](certification/reports/514de85baa35.md) · migration head **`0030`** · protocol **v2** |
+| **Certification** | ✅ [`94842288c409`](certification/reports/94842288c409.md) · migration head **`0030`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **148 commits, none outside a certified snapshot** |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **151 commits, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Both lanes.** Five separate rulings, all the product owner's — see §1c |
 | **Validation queue** | Lane A's and Lane B's branches, **both awaiting a rebase by their lane** |
@@ -101,48 +101,48 @@
 
 ---
 
-## 1d · Release summary — 2026-08-03, cycle 30
+## 1d · Release summary — 2026-08-03, cycle 31
 
-**Derived from the promoted commit `514de85`.** Six commits: [ADR-0100](docs/architecture/adr/0100-delegated-dependency-rulings.md)'s ten rulings, two rounds of dependency re-validation, and [B-104](docs/BUGS.md).
+**Derived from the promoted commit `9484228`.** One commit: **Redis isolation**, ruled CRITICAL by the product owner.
 
-> ⚠️ **This cycle was certified and then abandoned for several hours.** `514de85` passed every gate and **was never promoted** — QE went straight into design work and skipped lifecycle stages 3 through 7. **The product owner noticed before QE did**, which is the wrong way round. `CLAUDE.md` §20e names it exactly: *"stopping at certification is an incomplete repository cycle, not a finished one with paperwork outstanding."* QE has been writing that rule into documents while breaking it.
+### A shared queue executes; a shared database only corrupts
 
-### [B-104](docs/BUGS.md) — one incident, five defects underneath it
+`signora_platform` defaulted `redis_url` to **logical index 0** while [`RUNNING.md`](docs/RUNNING.md) allocates one index per environment and states that no lane shares. **The allocation table existed and the code never required anybody to use it**, so any environment that had not set the variable joined index 0 with every other.
 
-The product owner's review session wrote Better Auth users into another environment's database. **The reproduction was the README**: copy `.env.example`, sign up.
+Redis carries the **ARQ job queue and the outbox relay**. Two environments on one index means **one environment's workers consume the other's jobs**, and the resulting failures look random — which makes them the hardest kind to investigate.
 
-| | |
-|---|---|
-| **A committed signing secret** | `BETTER_AUTH_SECRET` fell back to a string in this repository. Every clone that had not set it minted JWTs any other clone could forge (§13) |
-| **`required()` was a lie** | With a fallback supplied the throw was unreachable. Six values used it |
-| **The build connected to a database** | **All five authenticated pages were statically prerendered**, and every one reads a session. `npm run build` opened the **shared** database to render signed-in screens — §20b inverted |
-| **A comment asserting the opposite of the code** | *"Never evaluated at build time"* sat directly above `toNextJsHandler(auth())` **at module scope**. Decorative Logic (§2) with a false claim beside it |
-| **The API client loaded the whole auth config for one URL** | Every server-rendered page therefore depended on the auth database and signing secret it never uses |
+**The documentation was already right.** `RUNNING.md` states *"every one is required; none has a default that would be safe in production."* **The code contradicted its own documentation** — the inverse of the drift this repository usually finds.
 
-**Four of the five were found only because removing the fallbacks failed the build.** They had all been live since M1.5.
+**The [B-104](docs/BUGS.md) lesson was applied rather than repeated.** Optional at construction, required where it connects: `require_redis_url()` guards the worker and the relay, the only two things that open the queue. A test building `Settings` to check an unrelated field does not have to supply a queue it never opens.
 
-**The design changed mid-fix.** Requiring the values at config-*read* time failed the build; after patching three call sites it was whack-a-mole. **A build legitimately has no environment** — reading configuration into a struct harms nobody, and *connecting* and *signing* are what matter. Both values are now getters, required at point of **use**.
+> **The principle this generalizes to**, and it now covers three subsystems: **configuration may be read lazily; infrastructure must never be acquired implicitly.** A configuration object may exist. A *connection* may not.
+>
+> **Where it is expected to recur**, by likelihood: object storage · AI provider clients (both carry base-URL defaults today) · the provider simulation framework, which fabricates data *into* an environment and would write it somewhere real.
 
-### [ADR-0100](docs/architecture/adr/0100-delegated-dependency-rulings.md) — ten rulings, four deferrals
+### ⚠️ Smoke took 1096s against a 120s median
 
-The product owner delegated dependency resolution to QE. **Every ruling records that a delegated agent decided it**, and names whether it rests on evidence or judgement, so the judgement ones are cheap to reverse.
-
-**Twelve `READY` tasks now exist where five did.** [C-023](docs/LANE_COORDINATION.md) and [C-025](docs/LANE_COORDINATION.md) closed on implementation evidence; [C-009](docs/LANE_COORDINATION.md) closed because **it was never a decision** — the mechanism it asked for was already documented in the file it concerned, and it is now [B-103](docs/BUGS.md).
+**Nine times the median**, in a cycle that changed one settings field. Not investigated yet and **not dismissed** — the previous outlier of this shape (4830s) was also never explained. Two unexplained outliers is a pattern rather than weather, and it is now the first candidate for Release Engineering attention.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | 2615 backend · **719 frontend** *(+18)* · 95.51% · 360 invariants · 618 files typed |
-| **Release** | ⚠️ **A certified commit sat unpromoted for hours.** Cadence is not the problem; QE's discipline was |
+| **Technical** | 2615 backend · 719 frontend · **95.50%** · 360 invariants · 618 files typed |
+| **Release** | **Full seven-stage cycle completed** — the failure the product owner caught last cycle did not recur |
 | **Architecture** | Runtime composition 0 unexpected · Reachability 0 doorless |
-| **Dependency** | **37 items, 12 closed** — the register shrank twice this session |
-| **Customer Value** | ❌ **None.** Security, governance and tooling |
-| **Process** | **Two self-inflicted failures**: the skipped promotion, and commits landing on the wrong branch twice |
+| **Dependency** | 37 items, 12 closed. Unchanged |
+| **Customer Value** | ❌ **None.** Isolation and security |
+| **Process** | Clean. **Zero self-inflicted failures this cycle**, after two in the last |
 
-### ⚠️ Open, and one is CRITICAL
+### Repository Health Trend
 
-**Redis defaults to shared index 0** while [`RUNNING.md`](docs/RUNNING.md) allocates one per environment. **A shared database corrupts data; a shared queue *executes* it** — one environment's workers consume another's jobs. Ruled CRITICAL by the product owner, ahead of any launcher work.
+| | Four days ago | Today |
+|---|---|---|
+| **Structural checks** | 3 | **9** |
+| **Shared resources remaining** | 5 | **4** |
+| **Environment isolation** | app DB only | app DB 7/7 · ports 7/7 · **Redis 7/7** |
+| **Recurring process failures** | — | 2 identified, both now targeted |
+| **Certification duration** | ~6 min | ~6–20 min ⚠️ **widening** |
 
 
 ## 2 · Milestone progress
@@ -352,18 +352,18 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`514de85baa35`](certification/reports/514de85baa35.md) · 2026-08-03 · ✅ CERTIFIED**
+**Latest certification — [`94842288c409`](certification/reports/94842288c409.md) · 2026-08-03 · ✅ CERTIFIED**
 
-**Certified commit `514de85` · promoted commit `514de85`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
+**Certified commit `9484228` · promoted commit `9484228`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
 
 | Gate | Recorded |
 |---|---|
 | **pytest** | **2615 passed** |
-| **coverage** | **95.52%** *(floor 95%)* |
+| **coverage** | **95.5%** *(floor 95%)* |
 | **Security Invariants** | **360 invariants**, each proven to fail when its guarantee is removed |
 | **import-linter** | **34 kept, 0 broken** |
 | **MyPy** | **strict, clean over 618 files** |
-| **`make smoke`** | **2 stages in 38s**, fresh images, clean teardown |
+| **`make smoke`** | **24 stages in 1096s** ⚠️ *(median 120s — see below)*, fresh images, clean teardown |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0030`** · scenario set `0cf6b2c581e4` · working tree clean.
@@ -403,24 +403,24 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Indicator | Value |
 |---|---|
 | **Certification** | |
-| Certification cycles | 26 |
-| Certified | 25 of 26 |
-| Mean time to certify (last 5) | 32.8 min |
-| Mean smoke duration | 318.9 s |
-| Mean certify → Ready (last 5) | 11.3 min |
+| Certification cycles | 28 |
+| Certified | 27 of 28 |
+| Mean time to certify (last 5) | 11.1 min |
+| Mean smoke duration | 342.6 s |
+| Mean certify → Ready (last 5) | 7.7 min |
 | **Release flow** | |
-| Certification run success rate | 96% (25 of 26 runs) |
+| Certification run success rate | 96% (27 of 28 runs) |
 | ↳ excludes | rejected candidates, and every failed or aborted attempt |
 | ↳ see instead | Pipeline stability below — measured from the attempt log |
-| Commits per release | mean 8.3, median 4, range 1–49 |
-| Mean candidate age | 166.8 min  — oldest commit → certified |
-| Release frequency | 0.36 releases/hour over 69h |
+| Commits per release | mean 8.0, median 4, range 1–49 |
+| Mean candidate age | 160.8 min  — oldest commit → certified |
+| Release frequency | 0.38 releases/hour over 72h |
 | **Pipeline stability** | |
-| Attempts | 6 |
-| ↳ certified | 5 |
+| Attempts | 7 |
+| ↳ certified | 6 |
 | ↳ failed | 1 |
 | ↳ aborted | 0  (started, never reached a verdict) |
-| First-pass rate | 83.3%  — attempts that certified |
+| First-pass rate | 85.7%  — attempts that certified |
 | Completion rate | 100.0%  — attempts that reached a verdict |
 | Failures by gate | smoke 1 |
 | **Defects and queues** | |
