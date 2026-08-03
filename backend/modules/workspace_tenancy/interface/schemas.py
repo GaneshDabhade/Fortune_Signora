@@ -11,6 +11,10 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from modules.workspace_tenancy.application.use_cases.organization_history import (
+    HistoryEntry,
+    HistoryKind,
+)
 from modules.workspace_tenancy.domain.entities import (
     MAX_WORKSPACE_NAME_LENGTH,
     Membership,
@@ -144,3 +148,42 @@ class TransferOwnershipRequest(BaseModel):
     #: one owner can transfer on another's behalf after they have left.
     from_membership_id: UUID
     to_membership_id: UUID
+
+
+class HistoryEntryResponse(BaseModel):
+    """One thing that happened, in the terms it was recorded in.
+
+    **No rendered sentence.** The words a customer reads are a reviewed catalog
+    at the frontend edge (ADR-0034), so improving one is a deploy rather than a
+    migration — and an export can phrase the same entry differently.
+
+    **An id and a snapshot for each person** (46-team-management.md §24): the
+    snapshot is what was true then, the id is what a screen resolves when a
+    reader needs to act rather than merely read.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    occurred_at: datetime
+    kind: HistoryKind
+    actor_id: UUID | None
+    actor_email: str | None
+    subject_email: str | None
+    subject_membership_id: UUID | None
+    previous_role: str | None
+    new_role: str | None
+    reason: str | None
+
+    @classmethod
+    def from_domain(cls, entry: HistoryEntry) -> "HistoryEntryResponse":
+        return cls(
+            occurred_at=entry.occurred_at,
+            kind=entry.kind,
+            actor_id=entry.actor_id,
+            actor_email=entry.actor_email,
+            subject_email=entry.subject_email,
+            subject_membership_id=entry.subject_membership_id,
+            previous_role=entry.previous_role,
+            new_role=entry.new_role,
+            reason=entry.reason,
+        )

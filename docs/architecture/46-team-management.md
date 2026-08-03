@@ -995,3 +995,110 @@ An invitation is **two facts with two owners**, and separating them dissolves mo
 **Absorbed:** bulk ownership transfer *(a loop over one operation)* · delegated administration · department hierarchy · temporary access · guests · external collaborators · just-in-time provisioning *(a membership with a different creator)* · organization archival · workspace deletion.
 
 **Where pressure begins:** **SCIM and directory sync** — the actor stops being a person, and the `opened_by` pattern answers it. **Emergency owner recovery** — every rule here assumes an owner is reachable; nothing expresses *"the only owner has left the company"*, and support intervention is currently the only path. **Legal hold and retention** — an append-only table with a `DELETE` grant is exactly what a hold must override. **Organization merge or split** — still genuinely unabsorbed, and now with a second reason: two role histories over one organization.
+
+
+---
+
+## 25 · TM-06 — *"what happened?"*, 2026-08-03
+
+**A read model over three tables, and deliberately not a projection into a fourth.** The facts are already durable and already correct; a copy would be a second representation to keep in step (§2).
+
+### The reuse question, answered by checking rather than assuming
+
+**The account timeline groups by day, renders newest first, and translates a `kind` through a reviewed catalog — the same shape.** Reuse was the obvious move.
+
+> **It is the wrong abstraction, and one difference decides it.** The account timeline answers *what happened to this account* and **names nobody**. This answers ***who did what to whom***, so an actor and a subject are **structural rather than fields inside `detail`.** Bending the feed to carry two people would make every account entry pay for a pair it never has.
+
+**And extracting a shared framework now would be generalising from two instances** — the same *two is a coincidence* rule that refused a generic pending-relationship aggregate (§11). **The trigger is stated: a third history surface.**
+
+### Every question, answered
+
+| The question | The entry |
+|---|---|
+| *Who invited this person?* | *"ana@acme.com invited sam@acme.com as somebody who works accounts"* |
+| *Who removed them, and why?* | *"ana@acme.com removed jo@acme.com — Left the company"* |
+| *Who promoted them?* | *"ana@acme.com made jo@acme.com able to administer Signora"* |
+| *What role before, what now?* | Both, in the sentence |
+| *Who transferred ownership?* | **Two entries** — the promotion and the step back, at the same instant |
+| *When?* | To the minute, grouped by day |
+
+**Said as a move rather than a demotion.** *Demoted* is a judgement, and somebody handing over has not been demoted — asserted by a test.
+
+**And it is honest about what it does not know.** An invitation withdrawn today records no actor, so the entry says *"Somebody withdrew…"* rather than attributing it to the inviter, **who may not be who withdrew it.** That is a gap worth closing when revocation gains an actor column; it is not one worth guessing about.
+
+**Everybody in the organization can read it**, deliberately: *a history only administrators may read is a history that cannot be used to hold administrators accountable.*
+
+### The identity convention, applied
+
+**No rendered sentence crosses the wire.** The API sends `kind`, two `(id, snapshot)` pairs and the roles; **the words are a reviewed catalog at the frontend edge** — so improving one is a deploy rather than a migration, and an export can phrase the same entry differently.
+
+**Actor addresses are resolved at read time** from the actor's own membership. **An actor whose membership has since ended still resolves**, because D3 kept the row — which is the first time that decision paid for itself somewhere other than where it was made.
+
+---
+
+## 26 · Emergency owner recovery — the pressure point, documented not built
+
+**Every rule in this module assumes an owner is reachable.** The last-owner invariant guarantees one *exists*; nothing guarantees anybody can *use* it.
+
+### What breaks
+
+| | |
+|---|---|
+| **The founder leaves the company** | Their membership is live, their account is unreachable, and **nobody else can be made an owner** — only an owner can promote |
+| **The sole owner's account is compromised** | The correct response is to remove them, and **only they can do it** |
+| **The invariant is doing its job** | It refuses to leave an organization with nobody. **It cannot tell "nobody" from "somebody unreachable"**, and that distinction is the whole problem |
+
+### The questions, with what today's design already implies
+
+| | |
+|---|---|
+| **Who becomes responsible?** | **Nobody, today.** No support role, no platform administrator, no break-glass path exists — and `signora_app` deliberately cannot bypass RLS, so there is no back door either. **That is correct security and an unsolved product problem** |
+| **Can support intervene?** | Only by database access under the migration identity, which is **exactly what the tenancy model exists to prevent.** If it becomes the answer it needs designing, not tolerating |
+| **Do multiple owners prevent it?** | **Largely, and it is the only mitigation that exists today.** Ownership transfer (§23) makes a second owner cheap; **the product does not yet ask for one**, and an organization of one is the default |
+| **Should enterprises configure recovery owners?** | A recovery owner is **a membership with a purpose**, which today's model absorbs — it needs no new aggregate |
+| **Should SSO or SCIM influence it?** | **This is where it becomes tractable.** A directory that asserts who works at a company can assert that the founder no longer does — **which is the one authority outside the workspace that is not Signora's support desk** |
+| **Should billing owners differ from workspace owners?** | **Almost certainly yes, eventually**, and it is a second recovery path: whoever pays has a claim nobody inside the workspace can revoke. **M14b's territory** ([C-200](../LANE_COORDINATION.md)) |
+
+### What today's implementation does *not* make harder
+
+**Nothing here needs undoing.** Recovery would be a new *authority* — a directory, a billing relationship, a support procedure — granting a membership. **The membership model, the audit trail and the transfer operation all absorb it**: recovery is an ownership transfer whose actor is not a member, and `membership_role_change.created_by` already records an actor rather than assuming a colleague.
+
+**The one thing that would make it harder is a guard checking that an actor is a member of the workspace they are acting on** — which does not exist, and **should not be added without this in mind.**
+
+---
+
+## 27 · Module handover
+
+**Everything remaining in Team Management is a ruling, not engineering.**
+
+| Slice | State |
+|---|---|
+| TM-01 roster · TM-02 removal · TM-03a invitations · TM-04 roles · TM-05 capabilities · ownership transfer · TM-06 history | ✅ **Shipped** |
+| **TM-03b acceptance** | 🔴 [C-208](../LANE_COORDINATION.md) — *may a request establish workspace context from a path parameter when the caller is not yet a member?* One sentence |
+| **TM-02b leaving** | 🔴 [C-207](../LANE_COORDINATION.md) — *is acting on yourself an authorization question?* One paragraph in §7 |
+
+### Behaviour preservation, audited
+
+**No existing behaviour changed.** Four migrations, all additive: `0031` a new table, `0032` three nullable columns and a *weaker* constraint, `0033` one nullable column, `0034` a new table. **Every pre-existing row reads exactly as it did**; every pre-existing endpoint returns what it returned, with `MembershipResponse` gaining one nullable field.
+
+**Two reads narrowed deliberately** — `get` and `list_page_for_workspace` now exclude ended memberships, **which is the security property TM-02 exists to create** and cannot happen to a row that predates it.
+
+### Customer journey, audited
+
+```
+  Settings → Your team
+     ├ who is here, and how many can administer      → roster
+     ├ bring somebody in                             → invite · resend · withdraw
+     ├ change what they can do                       → role control + explanation
+     ├ take access away                              → remove, with the reason
+     ├ hand the organization over                    → one act, never two owners
+     └ what happened                                 → history, newest first
+```
+
+**Every transition lands somewhere.** Inviting adds a row to *Invited* and toasts the address. Removing returns to a roster one shorter. Transferring leaves the actor a member with the control gone. **The only journey that does not complete is the invitee's**, which is C-208.
+
+### Repository reuse, audited across the module
+
+**Nothing new in `components/ui`. No new `Resource`, no new `Action`, no policy line.** Reused: `policy.csv`'s three grants · `AuthenticatedPrincipal.email` · the JWT's verified claim · Better Auth's email verification · `WorkflowState`'s who/when/why shape · `Opportunity.opened_by`'s actor pattern · D23's *"Somebody here"* · the `evidence_state` derived-state discipline · Commercial Profile's versioned-immutable rule · the immutable-table convention and its `DELETE` grant · `set_workspace_context` · `lib/auth/email.ts`'s port shape · CX-01's Settings card · the route census, which caught the new page unedited.
+
+**Created only where nothing existed:** the invitation aggregate, the role-change record, one domain function, six use cases, four migrations, two components, seven hooks.

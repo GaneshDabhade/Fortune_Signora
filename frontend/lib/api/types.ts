@@ -49,6 +49,32 @@ export interface Invitation {
   invited_by: string;
 }
 
+/**
+ * One thing that happened to an organization.
+ *
+ * **An id and a snapshot for each person** (46-team-management.md §24): the
+ * snapshot is what was true then, the id is what a screen resolves when a
+ * reader needs to act rather than merely read. **No rendered sentence** — the
+ * words live in a reviewed catalog at this edge, so improving one is a deploy.
+ */
+export interface HistoryEntry {
+  occurred_at: string;
+  kind:
+    | 'joined'
+    | 'invited'
+    | 'invitation_withdrawn'
+    | 'invitation_accepted'
+    | 'role_changed'
+    | 'removed';
+  actor_id: string | null;
+  actor_email: string | null;
+  subject_email: string | null;
+  subject_membership_id: string | null;
+  previous_role: string | null;
+  new_role: string | null;
+  reason: string | null;
+}
+
 /** The cursor-page envelope every collection endpoint returns. */
 export interface CursorPage<T> {
   items: T[];

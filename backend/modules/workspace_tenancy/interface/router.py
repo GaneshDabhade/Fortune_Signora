@@ -26,11 +26,15 @@ from modules.workspace_tenancy.application.use_cases.remove_member import Remove
 from modules.workspace_tenancy.application.use_cases.transfer_ownership import (
     TransferOwnershipCommand,
 )
-from modules.workspace_tenancy.infrastructure.composition import build_use_cases
+from modules.workspace_tenancy.infrastructure.composition import (
+    build_query_service,
+    build_use_cases,
+)
 from modules.workspace_tenancy.interface.schemas import (
     AddMemberRequest,
     ChangeRoleRequest,
     CreateWorkspaceRequest,
+    HistoryEntryResponse,
     InvitationResponse,
     InviteMemberRequest,
     MembershipResponse,
@@ -182,6 +186,29 @@ async def add_member(
         correlation_id=correlation_id_of(request),
     )
     return MembershipResponse.from_domain(membership)
+
+
+@router.get(
+    "/workspaces/{workspace_id}/history",
+    response_model=list[HistoryEntryResponse],
+    summary="What has happened to this organization",
+)
+async def organization_history(context: CurrentWorkspace) -> list[HistoryEntryResponse]:
+    """*"What happened?"* — in one place, newest first.
+
+    Somebody joined, was invited, was withdrawn, changed role, or was removed.
+    **Every fact was already stored**; this is the reading, which is the half
+    that could always have been added later — and why the writing was not
+    deferred (`CLAUDE.md` §2).
+
+    **`member:read` authorizes it**, on the reading that already made listing
+    members and invitations `member:read`. **Everybody in the organization can
+    see it**, deliberately: a history only administrators may read is a history
+    that cannot be used to hold administrators accountable.
+    """
+    context.authorize(Resource.MEMBER, Action.READ)
+    entries = await build_query_service(context.session).organization_history(context.workspace_id)
+    return [HistoryEntryResponse.from_domain(entry) for entry in entries]
 
 
 @router.get(

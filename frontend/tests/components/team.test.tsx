@@ -23,6 +23,7 @@ const resend = vi.hoisted(() => vi.fn());
 const removeMember = vi.hoisted(() => vi.fn());
 const changeRole = vi.hoisted(() => vi.fn());
 const transfer = vi.hoisted(() => vi.fn());
+const orgHistory = vi.hoisted(() => vi.fn());
 const members = vi.hoisted(() => vi.fn());
 const viewerRole = vi.hoisted(() => vi.fn());
 const session = vi.hoisted(() => vi.fn());
@@ -39,6 +40,7 @@ vi.mock('@/lib/query/hooks/team', () => ({
   useRemoveMember: () => ({ mutate: removeMember, isPending: false }),
   useChangeRole: () => ({ mutate: changeRole, isPending: false }),
   useTransferOwnership: () => ({ mutate: transfer, isPending: false }),
+  useOrganizationHistory: orgHistory,
   useWorkspaceMembers: members,
   useViewerRole: viewerRole,
 }));
@@ -91,6 +93,7 @@ beforeEach(() => {
   session.mockReturnValue({ data: { user: { id: ME } } });
   viewerRole.mockReturnValue({ role: 'owner', resolved: true });
   members.mockReturnValue({ ...IDLE, data: { items: [person()] } });
+  orgHistory.mockReturnValue({ ...IDLE, data: [] });
 });
 
 describe('an organization with nobody in it says what to do about it', () => {

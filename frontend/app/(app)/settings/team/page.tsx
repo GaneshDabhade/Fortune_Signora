@@ -28,6 +28,7 @@ import {
   onlyOwnersCan,
   type TeamRole,
 } from '@/components/team/capabilities';
+import { OrganizationHistory } from '@/components/team/history';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { ApiError } from '@/lib/api/client';
 import type { Invitation, Membership } from '@/lib/api/types';
@@ -36,6 +37,7 @@ import {
   useInviteMember,
   useInvitations,
   useRemoveMember,
+  useOrganizationHistory,
   useResendInvitation,
   useTransferOwnership,
   useRevokeInvitation,
@@ -81,6 +83,7 @@ export default function TeamPage() {
   const remove = useRemoveMember(workspaceId);
   const changeRole = useChangeRole(workspaceId);
   const transfer = useTransferOwnership(workspaceId);
+  const history = useOrganizationHistory(workspaceId);
   const { data: session } = useSession();
   const viewerId = session?.user.id ?? null;
   const { data: roster, isLoading: rosterLoading, isError: rosterFailed } =
@@ -257,6 +260,22 @@ export default function TeamPage() {
               </TBody>
             </Table>
           )}
+        </CardBody>
+      </Card>
+
+      {/* **Last, because it answers a question asked after the others.** An
+          administrator arrives to see who is here or to change something; they
+          come to the history when something already looks wrong. */}
+      <Card>
+        <CardHeader>
+          <CardTitle>What has happened</CardTitle>
+        </CardHeader>
+        <CardBody>
+          <OrganizationHistory
+            entries={history.data ?? []}
+            isLoading={history.isLoading}
+            isError={history.isError}
+          />
         </CardBody>
       </Card>
 

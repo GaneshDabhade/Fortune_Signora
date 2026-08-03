@@ -243,7 +243,7 @@
 | **J6** | See an account's history over time | ⚠️ **Surfaced, not yet answerable** | **Nothing writes a timeline row outside a test.** The mount is done; `project_to_timeline` is not subscribed by the deployed worker and no seeder calls it ([C-012](../LANE_COORDINATION.md)) |
 | **J7** | Tell Signora who we sell to | ⚠️ **Half** | An owner can declare; **a seller cannot read** |
 | **J8** | Connect our systems | ⚠️ **Half** | Complete once reached; **unreachable** |
-| **J9** | See who is on the team | ✅ **Complete — TM-01** | — |
+| **J9** | See who is on the team, and manage it | ✅ **Complete** — roster, roles, removal, ownership transfer, history | — |
 | **J10** | **Invite a colleague** | 🔴 **Blocked** | **`POST /members` takes a `user_id: UUID`.** A customer cannot type one, and resolving an email to a user is Better Auth's, in the Next tier — **[C-024](../LANE_COORDINATION.md) again, from the write side** |
 
 **Five of ten are complete.** J8 closed on 2026-08-02 when CX-01 gave the Connection Center a door. **J6 did not close, and the correction is worth more than the count.**

@@ -19,7 +19,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { apiRequest } from '@/lib/api/client';
-import type { CursorPage, Invitation, Membership } from '@/lib/api/types';
+import type { CursorPage, HistoryEntry, Invitation, Membership } from '@/lib/api/types';
 import { queryKeys } from '@/lib/query/keys';
 import type { WorkspaceRole } from '@/lib/state/permissions';
 
@@ -229,5 +229,17 @@ export function useTransferOwnership(workspaceId: string | null) {
       }),
     onSuccess: () =>
       client.invalidateQueries({ queryKey: queryKeys.members(workspaceId ?? '') }),
+  });
+}
+
+/** What has happened to this organization. Everyone in it may read it. */
+export function useOrganizationHistory(workspaceId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.organizationHistory(workspaceId ?? ''),
+    queryFn: () =>
+      apiRequest<HistoryEntry[]>(`/workspaces/${workspaceId}/history`, {
+        workspaceId: workspaceId ?? undefined,
+      }),
+    enabled: workspaceId !== null,
   });
 }
