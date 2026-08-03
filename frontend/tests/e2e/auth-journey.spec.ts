@@ -9,6 +9,8 @@
 
 import { expect, test } from '@playwright/test';
 
+import { OWNER, PASSWORD } from './fixtures/personas';
+
 const hasOAuth = Boolean(process.env.GOOGLE_CLIENT_ID ?? process.env.MICROSOFT_CLIENT_ID);
 
 test.describe('unauthenticated access', () => {
@@ -17,8 +19,27 @@ test.describe('unauthenticated access', () => {
     await expect(page).toHaveURL(/\/sign-in/);
   });
 
-  test('the workspaces page is not reachable without a session', async ({ page }) => {
-    await page.goto('/workspaces');
+  /**
+   * **This asserted `/workspaces`, a route that has never existed.** A 404 is
+   * not a redirect, so the test was wrong — and it passed for three slices
+   * because Playwright's browsers were never installed and the suite never
+   * ran. Both halves of that are the finding.
+   *
+   * The property it meant to assert is that **every** authenticated route is
+   * closed without a session, so it now asserts exactly that, over the real
+   * ones.
+   */
+  for (const path of ['/', '/settings', '/settings/products', '/settings/connections']) {
+    test(`${path} is not reachable without a session`, async ({ page }) => {
+      await page.goto(path);
+      await expect(page).toHaveURL(/\/sign-in/);
+    });
+  }
+
+  test('@regression an account brief is closed without a session', async ({ page }) => {
+    // Guarded by the same server-side layout check, and worth its own case:
+    // it is the one authenticated route a customer would paste to a colleague.
+    await page.goto('/accounts/00000000-0000-4000-8000-000000000000');
     await expect(page).toHaveURL(/\/sign-in/);
   });
 
@@ -90,23 +111,95 @@ test.describe('sign-in surface', () => {
   });
 });
 
-test.describe('authenticated journey', () => {
+/**
+ * **This describe block used to be the only authenticated test in the
+ * repository, and it had never run.**
+ *
+ * It was skipped without OAuth credentials — which no local install has — and
+ * ADR-0033 added password sign-in without anybody noticing that the skip now
+ * hid a journey every install *could* exercise. Underneath the skip it waited
+ * for `/workspaces` and clicked a `workspace-item` test id, neither of which
+ * has ever existed, so it would have failed on its first line if it had ever
+ * been reached.
+ *
+ * It is replaced by a sign-in that needs no external service, because there is
+ * now one that needs none. What OAuth genuinely adds — the provider round trip
+ * — stays skipped without credentials, and only that.
+ */
+test.describe('signing in', () => {
+  test('@smoke a person with an address and a password reaches their morning', async ({
+    page,
+  }) => {
+    await page.goto('/sign-in');
+    await page.getByLabel('Email').fill(OWNER.email);
+    await page.getByLabel('Password').fill(PASSWORD);
+    await page.getByRole('button', { name: 'Sign in' }).click();
+
+    // **The regression.** Every sign-in landed on `/workspaces`, which returns
+    // *"That address does not lead anywhere"*. The password form's own
+    // `router.push('/')` never fixed it: the vendor navigates to its
+    // `callbackURL` and wins.
+    await page.waitForURL((url) => url.pathname === '/', { timeout: 30_000 });
+    await expect(page.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
+  });
+
+  test('@regression the wrong password is refused without saying which half was wrong', async ({
+    page,
+  }) => {
+    await page.goto('/sign-in');
+    await page.getByLabel('Email').fill(OWNER.email);
+    await page.getByLabel('Password').fill('not-the-password');
+    await page.getByRole('button', { name: 'Sign in' }).click();
+
+    const message = page.getByText(/That email and password do not match an account./);
+    await expect(message).toBeVisible();
+    // An address-enumeration oracle is the failure this wording exists to
+    // prevent: the same sentence must answer *no such account* too.
+    await expect(page).toHaveURL(/\/sign-in/);
+  });
+
+  test('@regression an address nobody has registered gets the same answer', async ({
+    page,
+  }) => {
+    await page.goto('/sign-in');
+    await page.getByLabel('Email').fill('nobody.at.all@northwind.example');
+    await page.getByLabel('Password').fill(PASSWORD);
+    await page.getByRole('button', { name: 'Sign in' }).click();
+
+    await expect(
+      page.getByText(/That email and password do not match an account./),
+    ).toBeVisible();
+  });
+
+  test('signing out ends the session and the product is closed again', async ({ page }) => {
+    await page.goto('/sign-in');
+    await page.getByLabel('Email').fill(OWNER.email);
+    await page.getByLabel('Password').fill(PASSWORD);
+    await page.getByRole('button', { name: 'Sign in' }).click();
+    await page.waitForURL((url) => url.pathname === '/');
+
+    await page.getByRole('button', { name: 'Sign out' }).click();
+    await page.waitForURL(/\/sign-in/, { timeout: 20_000 });
+
+    // Not merely redirected — the session is gone, so the seam between the
+    // tiers refuses to mint a token for it.
+    const token = await page.request.post('/api/token');
+    expect(token.status()).toBe(401);
+  });
+});
+
+test.describe('the OAuth round trip', () => {
   test.skip(!hasOAuth, 'requires real OAuth provider credentials');
 
-  test('sign in, create a workspace, and see only your own', async ({ page }) => {
+  test('@journey a provider sign-in reaches the same morning', async ({ page }) => {
     await page.goto('/sign-in');
     await page
       .getByRole('button', { name: /Continue with/ })
       .first()
       .click();
-    await page.waitForURL(/\/workspaces/, { timeout: 20_000 });
-
-    const name = `E2E ${Date.now()}`;
-    await page.getByPlaceholder('New workspace name').fill(name);
-    await page.getByRole('button', { name: 'Create' }).click();
-
-    await expect(
-      page.getByTestId('workspace-item').filter({ hasText: name }),
-    ).toBeVisible();
+    // The same destination as a password sign-in, deliberately: the session is
+    // identical and the token carries no record of the method (ADR-0033).
+    await page.waitForURL((url) => url.pathname === '/', { timeout: 30_000 });
+    await expect(page.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
   });
 });

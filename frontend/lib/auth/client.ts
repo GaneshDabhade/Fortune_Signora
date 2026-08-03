@@ -18,10 +18,27 @@ import { createAuthClient } from 'better-auth/react';
 
 export const authClient = createAuthClient();
 
-/** Where a person lands once they are signed in. Workspace selection, not the
- * product — a new account has no workspace yet, and dropping somebody into an
- * empty product is worse than asking them to choose. */
-const AFTER_SIGN_IN = '/workspaces';
+/**
+ * Where a person lands once they are signed in: the attention list, which is
+ * a seller's morning.
+ *
+ * **It said `/workspaces` and no such route has ever existed.** The comment
+ * here argued for workspace selection over the product — a reasonable
+ * argument about a page nobody built, and the address it named returned
+ * *"That address does not lead anywhere"* to every person who ever signed in.
+ *
+ * D38 recorded exactly this and fixed only half of it: the password form
+ * calls `router.push('/')` after a successful sign-in, which reads like the
+ * defect was closed. It is not — Better Auth performs its own navigation to
+ * `callbackURL`, and it wins. **A fix that cannot change the outcome is a
+ * comment claiming a correctness property the code does not have**, and it
+ * survived because no test has ever signed in.
+ *
+ * A brand-new account with no organization is answered by the attention list
+ * itself, which says so and offers to create one — so the destination this
+ * constant used to argue for is a screen the product already has.
+ */
+const AFTER_SIGN_IN = '/';
 
 export async function signIn(provider: string): Promise<void> {
   await authClient.signIn.social({ provider, callbackURL: AFTER_SIGN_IN });

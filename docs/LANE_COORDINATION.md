@@ -150,6 +150,7 @@
 | [C-306](#c-306--the-opportunities-and-signals-experience-already-exists-and-lane-a-owns-half-of-it) | The Opportunities & Signals experience already exists, and Lane A owns half of it | Lane B | **Product owner** | `OPEN` | **The frontend half only.** The backend half is unassigned and Lane B can start it |
 | [C-303](#c-303--an-icp-is-not-an-addressable-thing-and-every-verb-the-brief-asks-for-needs-one) | An ICP is not an addressable thing, and every verb the brief asks for needs one | Lane B | **Product owner** | `ANSWERED` — ICP stays in Commercial Profile (2026-08-02). **The aggregate is [ADR-0041](architecture/adr/0041-icp-aggregate.md), proposed** | **Implementation, on ADR-0041's ratification** |
 | [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) | A notification is per-person, and workspace RLS is not enough | Lane B | **Product owner** (tenancy 🔴) | `OPEN` | **M14a N-01's migration.** The pattern exists; the ruling does not |
+| [C-308](#c-308--browser-to-api-is-in-no-gate-and-that-is-how-the-product-shipped-without-one) | Browser→API is in no gate, and that is how the product shipped without one | Lane B | **QE** | `OPEN` — **the strongest evidence yet for [C-301](#c-301--nothing-asserts-what-the-deployed-worker-consumes)** | Nothing today. **Every future frontend defect of this class** |
 | [C-301](#c-301--nothing-asserts-what-the-deployed-worker-consumes) | Nothing asserts what the deployed worker consumes | Lane B | **QE** | `OPEN` | **Nothing today.** Every future consumer can ship [B-301](BUGS.md) again |
 | [C-002](#c-002--customer-language-has-no-anticorruption-layer) | Customer language has no anticorruption layer | Lane B | **Product owner** (ADR) | `OPEN` | Anything that matches an account against an ICP |
 | [C-003](#c-003--three-wire-codes-for-one-condition) | Three wire codes for one condition | Lane B | **Product owner** | `OPEN` | Nothing. **It stopped growing** — slice 5 cites no product |
@@ -3332,6 +3333,36 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 
 **Meanwhile, and without waiting:** Lane B begins **R1-01** in the engines, because it is 🔴, its root cause is unambiguously backend, and its fix is a prerequisite for the row change rather than a duplicate of it. **No frontend file is touched until this item is answered.**
 
+
+---
+
+## C-308 · Browser→API is in no gate, and that is how the product shipped without one
+
+| | |
+|---|---|
+| **Raised by** | Lane B, 2026-08-03, End-to-End Product Validation |
+| **Owner** | **QE** — every gate named here is QE's |
+| **Status** | `OPEN` |
+| **Blocks** | Nothing today. **The next defect of this class**, which will look exactly like the last four |
+
+**The question.** *Which gate would have caught [B-303](BUGS.md)?* The answer is none, and the reason is structural rather than an oversight.
+
+| Layer | Proven by | What it proves |
+|---|---|---|
+| the API | ~2000 backend tests | the endpoint is correct |
+| the components | Vitest, with mocked hooks | the component renders what it is given |
+| the token exchange | `make smoke`, minting through the real path | the cross-tier JWT contract holds |
+| **the browser reaching the API** | **nothing** | — |
+
+`make smoke` mints a real token through the real frontend issuance path and then calls **the API directly**. That is a genuine and valuable check of the JWT boundary, and it steps over the one hop a customer's browser actually makes. `/api/proxy` therefore 404'd from `ad52e66` (M1.2) to today with every gate green.
+
+**What Lane B has built, and what it does not settle.** `frontend/tests/e2e/` now signs in and drives the real browser against the real API, so the hop is exercised. **Whether that suite becomes a gate is QE's decision, not a lane's** — it needs a running application and a seeded organization, which is a prerequisite `make smoke` does not currently establish.
+
+**The recommendation, offered as input.** `npm run test:e2e:smoke` is eight tests and about forty seconds, and it is the shortest thing that would have failed on all three of B-303, B-304 and B-305. Where it belongs — a new gate, a stage of `make smoke`, or QE's validation runbook — is QE's to decide.
+
+**One documentation debt this raises, and it is not Lane B's to pay.** The four fixes land in files [`37-product-surface.md`](architecture/37-product-surface.md) describes — the shell, the auth client, the browser's API client — and **that design doc has no account of how the browser reaches the API**, which is precisely the gap that let the hop go unbuilt. Under rotation the next lane assigned Product Surface inherits that document and nothing else (§12). **Lane B has not edited it**: a design doc is 🟢 for the module's *assignee*, and Lane B is not it. The sentence it needs is *"the browser never calls the API directly; `lib/api/client.ts` routes through `app/api/proxy/[...path]`, which forwards the caller's own token and decides nothing"* — offered here so the current assignee can add it.
+
+**The pattern this is the fourth instance of.** [B-024](BUGS.md) · [B-301](BUGS.md) · [B-302](BUGS.md) · [B-303](BUGS.md). **Every component proven; the composition between them never exercised.** [C-301](#c-301--nothing-asserts-what-the-deployed-worker-consumes) asks for the assertion at the worker boundary; this asks the same question at the browser boundary. **They may well be one item, and QE is the one lane that can see both.**
 
 ---
 

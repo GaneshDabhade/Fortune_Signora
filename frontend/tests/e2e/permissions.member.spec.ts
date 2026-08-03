@@ -1,0 +1,114 @@
+/**
+ * The same product, seen by somebody who administers nothing.
+ *
+ * **Two independent guarantees, and the suite asserts both separately**
+ * because they fail in opposite directions and a customer cannot tell them
+ * apart until the day one is missing:
+ *
+ *   the **courtesy** — a member is not offered a control the server will
+ *   refuse, because a control that goes nowhere costs more trust than an
+ *   absent one;
+ *
+ *   the **enforcement** — Casbin refuses the request regardless, so hiding the
+ *   link is never what protects anything (ADR-0010).
+ *
+ * A suite that only checked the first would pass on a product whose server had
+ * stopped enforcing anything at all.
+ */
+
+import { expect, test } from './fixtures/signora';
+import { MEMBER } from './fixtures/personas';
+
+test.describe('a member of the organization', () => {
+  test('@smoke sees their morning like everybody else', async ({ attention, page }) => {
+    await attention.open();
+    const names = await attention.names();
+
+    expect(names.length).toBeGreaterThan(0);
+    // The intelligence surface is not an administrative capability. A member
+    // who could not see the list would have no product at all.
+    await expect(page.getByText(MEMBER.email)).toBeVisible();
+  });
+
+  test('@journey is not offered Settings in the navigation', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible();
+    await expect(
+      page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Settings' }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Attention' }),
+    ).toBeVisible();
+  });
+
+  test('@regression typing the settings address does not open it', async ({ page }) => {
+    await page.goto('/settings');
+    // The client guard redirects. This is a courtesy and the test says so —
+    // the next test is the one that proves anything.
+    await expect(page).toHaveURL((url) => url.pathname === '/', { timeout: 20_000 });
+  });
+
+  test('@regression the server refuses an administrative write regardless', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    // The caller's own real token, from the real exchange the browser uses.
+    const token = await (await page.request.post('/api/token')).json();
+    const workspaces = await (
+      await page.request.get('/api/proxy/workspaces', {
+        headers: { authorization: `Bearer ${token.access_token}` },
+      })
+    ).json();
+    const workspaceId = workspaces.items[0].id;
+
+    const scoped = await (
+      await page.request.post(`/api/token?workspace_id=${workspaceId}`)
+    ).json();
+    const response = await page.request.put(`/api/proxy/workspaces/${workspaceId}/products`, {
+      headers: {
+        authorization: `Bearer ${scoped.access_token}`,
+        'content-type': 'application/json',
+      },
+      // The real publish shape, including the optimistic-concurrency version
+      // the product sends — so a 403 here is a refusal of the *authorization*,
+      // not of a malformed body.
+      data: {
+        expected_version: 0,
+        products: [
+          {
+            // Client-chosen, as the API requires: a server-minted id would
+            // make a retried save duplicate every product.
+            id: '9f3b1c2d-0000-4000-8000-00000000e2e1',
+            name: 'Written by a member',
+            description: 'Should never be saved.',
+          },
+        ],
+      },
+    });
+
+    // **403, not 404.** A member is a legitimate part of this organization and
+    // may know it exists; what they may not do is administer it. The 404 rule
+    // is for a caller who is not a member at all, where the existence of the
+    // organization is itself the secret.
+    expect(response.status()).toBe(403);
+  });
+
+  test('@regression a member cannot read another organization by naming it', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const token = await (
+      await page.request.post('/api/token?workspace_id=11111111-1111-4111-8111-111111111111')
+    ).json();
+
+    const response = await page.request.get(
+      '/api/proxy/workspaces/11111111-1111-4111-8111-111111111111/accounts',
+      { headers: { authorization: `Bearer ${token.access_token}` } },
+    );
+
+    // **404, never 403.** Distinguishing *exists but forbidden* from *does not
+    // exist* is how organization identifiers become enumerable — a security
+    // property, not an inconsistency to tidy up (CLAUDE.md §7).
+    expect(response.status()).toBe(404);
+  });
+});

@@ -15,7 +15,12 @@
     "keys:generate": "tsx scripts/generate-keys.ts",
     "auth:migrate": "tsx scripts/auth-migrate.ts",
     "demo:users": "tsx scripts/demo-users.ts",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:e2e:smoke": "playwright test --grep @smoke",
+    "test:e2e:journey": "playwright test --grep @journey",
+    "test:e2e:regression": "playwright test --grep @regression",
+    "test:e2e:a11y": "playwright test --grep @a11y",
+    "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.0",

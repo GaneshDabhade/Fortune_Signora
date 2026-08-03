@@ -51,6 +51,14 @@ export function SignInForm({
       // the ADR-0034 vocabulary audit rather than by a test, because the code
       // was reasoning about a tenancy concept while the product needed a
       // destination. `/` is the attention list: a seller's morning (D38).
+      //
+      // **This line never fixed it, and that is the more useful lesson.**
+      // Better Auth navigates to its own `callbackURL` and beats this push,
+      // so the destination stayed `/workspaces` and the 404 stayed with it
+      // for three further slices — invisible because the constant read as
+      // corrected. Fixed at its source in `lib/auth/client.ts`; kept here
+      // because it is still the right destination when the vendor does not
+      // navigate, and it is now the same one.
       router.push('/');
       return;
     }
