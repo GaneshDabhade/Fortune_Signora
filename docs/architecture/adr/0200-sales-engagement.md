@@ -8,6 +8,30 @@ Drafted after the discovery in [50-sales-engagement.md](../50-sales-engagement.m
 
 **Two decisions are deliberately left open** and marked ❓. Both are the product owner's.
 
+## The vocabulary this ADR uses, and the repository should
+
+**Ratified by the product owner 2026-08-03.** *"Company"* was doing three jobs, and in a B2B platform that eventually confuses code, documentation, prompts and AI reasoning alike.
+
+| Term | What it means | Examples |
+|---|---|---|
+| **Signora Customer** | The organization that bought Signora. Configures ICPs, declares a portfolio and a Buying Committee, owns workspaces and opportunities | Stripe, Snowflake |
+| **Target Account** | The company a Signora Customer wants to sell to. **Not our customer — our customer's prospect.** Every signal, score, opportunity and approach revolves around one | NVIDIA, Shopify |
+| **Buying Committee Role** | A job title the Signora Customer declared must agree. **The unit this module reasons about** | *VP Engineering*, champion |
+| **Stakeholder** *(future)* | A real person inside a Target Account filling a role | ⛔ [C-210](../../LANE_COORDINATION.md) |
+| **Contact** *(future)* | A Stakeholder with provider-backed contact details | ⛔ C-210 |
+
+**Where "customer" appears unqualified, it means the Signora Customer.**
+
+> **This module adopts the vocabulary natively. It does not rename anything that exists.** Renaming `entity`, `workspace` or `company` across sixteen modules is repository-wide rewriting (⚫, `CLAUDE.md` §20e), and ADR-0034 already settled that `workspace` is precise about isolation in a way `organization` is not. **New code and new documents use these words; old code keeps its names and its meaning is unchanged.**
+
+### Intelligence Activation
+
+**Tracking is not a filter setting; it is a commercial investment.** A Signora Customer reviews Target Accounts a matching ICP proposed and decides to **activate commercial intelligence** for one — after which Signora accumulates knowledge about it permanently.
+
+**Two consequences this module depends on.** Evidence density at a Target Account is **high by construction**, because every one was chosen — which is what makes ranking a Buying Committee Role against observed events viable at all. And an approach brief is **better at six months than on day one**: the same graph over a longer evidence set, at no additional cost.
+
+**Whether a screen says *Track* is a UX decision. The repository thinks in activation.**
+
 ## Context
 
 **Sixteen modules exist. Every one of them owns facts.**
@@ -33,7 +57,19 @@ Drafted after the discovery in [50-sales-engagement.md](../50-sales-engagement.m
 
 ### The boundary, in one line
 
-> **Sales Engagement owns commercial synthesis. It composes facts other modules own into a conclusion about how to approach an account, and it owns no fact of its own.**
+> **Sales Engagement owns commercial reasoning *and* commercial synthesis. It composes facts other modules own into a conclusion about how to approach a Target Account, and it owns no fact of its own.**
+
+**The two are different responsibilities and the ADR is explicit about which is which, because the whole design rests on the seam between them:**
+
+| | **Commercial reasoning** | **Commercial synthesis** |
+|---|---|---|
+| **Decides** | Which Target Account matters · why · which Buying Committee Role · why now · the strongest evidence · the contradictions · the unknowns · the risks · the questions | Nothing |
+| **Explains** | Nothing | All of the above, in prose a seller reads in seconds |
+| **Mechanism** | **Deterministic.** String and set comparisons over recorded facts | **AI**, through the provider port |
+| **Verified by** | Fakes and fixtures. **Never calls a model** | A real model, prompt-evaluated |
+| **If it is wrong** | A defect, reproducible from its inputs | A refused synthesis, and the brief renders without prose |
+
+**AI participates in synthesis and nowhere else.** Every conclusion a seller acts on is reachable without it.
 
 Every module upstream has already made *its* judgement. This one is the first that is allowed to make a judgement **about the combination** — and it is the only one that will be.
 
@@ -41,7 +77,7 @@ Every module upstream has already made *its* judgement. This one is the first th
 
 | | |
 |---|---|
-| **Owns** | The reasoning graph · role ranking · unknowns · risks · questions · the AI synthesis contract · the seller's disagreement with a recommendation |
+| **Owns** | **Commercial reasoning** — the graph, role ranking, unknowns, risks, questions — **and commercial synthesis**, its contract and its refusal. Plus the seller's disagreement with a recommendation |
 | **Stores** | **Only what cannot be recomputed**: a seller's override, a seller's disagreement, and materialized AI syntheses (which are historical facts, `CLAUDE.md` §2) |
 | **Never owns** | Companies · people · claims · observations · events · signals · scores · declarations · workflow · the timeline |
 | **Never stores** | A ranking · a confidence · an inferred product · an unknown · a risk. **Every one is derived at read time**, the same rule `evidence_state` follows |
