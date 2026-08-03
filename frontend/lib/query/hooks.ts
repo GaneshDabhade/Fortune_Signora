@@ -13,6 +13,7 @@ import type {
   BusinessEventEvidence,
   DecidedAccount,
   CursorPage,
+  OpenedOpportunity,
   RecordDecision,
   SignalCatalog,
   Workspace,
@@ -282,6 +283,40 @@ export function useRecordDecision(
       // Without this, dismissing one would leave it visible on the list it
       // has left and absent from the one it has joined until a reload —
       // which is the shape of bug that teaches people to distrust a screen.
+      void client.invalidateQueries({
+        queryKey: queryKeys.decidedAccounts(workspaceId ?? ''),
+      });
+    },
+  });
+}
+
+/**
+ * Opening an opportunity by hand — LO-07.
+ *
+ * **The one write that creates rather than progresses.** Every other write in
+ * the product surface appends to something a customer is already looking at;
+ * this brings an account back into their work after Signora has stopped
+ * suggesting it, or after somebody closed the wrong one.
+ *
+ * Invalidates the same three queries a decision does, for the same reason: an
+ * opening moves an account between the two lists, and a screen that shows it
+ * on the list it has left is the shape of bug that teaches people to distrust
+ * a screen.
+ */
+export function useOpenOpportunity(workspaceId: string | null, accountId: string | null) {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: (opening: { reason: string }) =>
+      apiRequest<OpenedOpportunity>(
+        `/workspaces/${workspaceId}/accounts/${accountId}/opportunity`,
+        { method: 'POST', body: opening, workspaceId: workspaceId ?? undefined },
+      ),
+    onSuccess: () => {
+      void client.invalidateQueries({
+        queryKey: queryKeys.accountOpportunity(workspaceId ?? '', accountId ?? ''),
+      });
+      void client.invalidateQueries({ queryKey: queryKeys.accounts(workspaceId ?? '') });
       void client.invalidateQueries({
         queryKey: queryKeys.decidedAccounts(workspaceId ?? ''),
       });

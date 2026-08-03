@@ -61,6 +61,10 @@ vi.mock('@/lib/query/hooks', () => ({
   useAccounts: accounts,
   useAccountIdentities: identities,
   useRequestResearch: () => ({ mutate: vi.fn(), isPending: false }),
+  // A won account has no legal move, so the brief now renders the way
+  // back rather than an empty space (LO-05 F-7, LO-07).
+  useOpenOpportunity: () => ({ mutate: vi.fn(), reset: vi.fn(), isPending: false, error: null }),
+  useRecordDecision: () => ({ mutate: vi.fn(), reset: vi.fn(), isPending: false, error: null }),
   useBusinessEvent: () => ({ data: undefined, isLoading: false, isError: false }),
 }));
 

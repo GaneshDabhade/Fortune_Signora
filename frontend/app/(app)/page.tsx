@@ -10,6 +10,7 @@ import {
   ContestedMark,
   EvidenceHealth,
   Hypothesis,
+  HeldSince,
   Ownership,
   ScoreMovement,
 } from '@/components/intelligence/attention';
@@ -256,6 +257,11 @@ function AccountRow({
               title={hypothesis}
             />
             <ScoreMovement trend={account.trend} change={account.score_change} />
+            {/* **Beside what the evidence says, not among the badges.** This
+                is what the *seller* did and when; the badges to the right are
+                what Signora thinks. Keeping the two apart is why the row is
+                still scannable with a fourth fact on it. */}
+            <HeldSince stage={account.stage} since={account.since} />
           </div>
         </div>
 

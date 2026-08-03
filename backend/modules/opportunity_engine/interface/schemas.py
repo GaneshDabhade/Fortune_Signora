@@ -55,6 +55,62 @@ from modules.opportunity_engine.domain.opportunity import (
 _STAGE_ORDER: dict[Stage, int] = {stage: index for index, stage in enumerate(Stage)}
 
 
+class OpenOpportunityRequest(BaseModel):
+    """A human deciding an account is worth working, whatever the score says.
+
+    **The route into `Qualification.MANUAL`**, which the domain has modelled
+    since M12.1, the brief has rendered as *"somebody here added it"* since
+    M12.3, and **nothing could produce** — `QualifyOpportunity` had exactly one
+    caller, the buying-score handler, which never names a person
+    (49-lead-ownership.md §14, F-3).
+
+    Note what is **not** here, on the same reasoning as a decision: no
+    `opened_by`. Who opened it is the verified principal, because an opening
+    entry that could name somebody else would let one member sign another's
+    name to a commitment.
+
+    And no `account_id` in the body — it is the path, because the account is
+    what a seller arrives with.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    reason: str = Field(
+        max_length=512,
+        description=(
+            "Why this is worth working when Signora did not say so. **Required, and it "
+            "is the whole value of a manual opening**: the automatic path records the "
+            "score and the policy that qualified it, and a human opening has neither — "
+            "the sentence is the only explanation the account will ever carry."
+        ),
+    )
+
+
+class OpenedOpportunityResponse(BaseModel):
+    """What was opened, enough for a client to navigate to it."""
+
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID = Field(description="The new opportunity.")
+    account_id: UUID = Field(description="The company it is about.")
+    stage: Stage = Field(
+        description=(
+            "Always `tracking`. **A human opening an opportunity is still only a "
+            "suggestion becoming a record** — taking it on is a separate, deliberate "
+            "act, and opening one that arrived already owned would collapse the "
+            "distinction the whole module rests on."
+        )
+    )
+    generation: int = Field(
+        description=(
+            "How many times this account has been opened before. **A reopening is a new "
+            "opportunity rather than an edited one**: the deal that closed keeps its "
+            "history, its reasons and its outcome, and nothing rewrites them."
+        )
+    )
+    opened_at: datetime = Field(description="When it was opened.")
+
+
 class RecordDecisionRequest(BaseModel):
     """A human deciding something about an account.
 
@@ -182,6 +238,16 @@ class AccountAttentionResponse(BaseModel):
         )
     )
 
+    since: datetime = Field(
+        description=(
+            "When this stage and owner were last recorded — how long the account has stood "
+            "where it stands. **A fact, never a judgement**: Signora records workflow "
+            "decisions and cannot see a call, an email or a meeting, so it must not claim "
+            "an account is neglected. It states how long it has been since anything it "
+            "*can* see happened, and the reader decides what that means."
+        )
+    )
+
     @classmethod
     def from_domain(cls, tracked: TrackedOpportunity) -> "AccountAttentionResponse":
         score = tracked.current_score
@@ -205,6 +271,11 @@ class AccountAttentionResponse(BaseModel):
             stage=tracked.state.stage,
             owner_id=tracked.state.owner_id,
             opened_at=tracked.opportunity.created_at,
+            # **Already loaded.** `_page` returns the opportunity beside its
+            # current state, so this costs no query — the row has been carrying
+            # `stage` and `owner_id` off that same state since M12.2 and left
+            # *when* behind (LO-06).
+            since=tracked.state.occurred_at,
         )
 
 
@@ -411,6 +482,8 @@ __all__ = [
     "AccountAttentionResponse",
     "AccountOpportunityResponse",
     "DecidedAccountResponse",
+    "OpenOpportunityRequest",
+    "OpenedOpportunityResponse",
     "RecordDecisionRequest",
     "WorkflowStateResponse",
 ]

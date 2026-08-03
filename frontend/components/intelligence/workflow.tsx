@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button, Dialog, Input, Select } from '@/components/ui';
 import { ApiError } from '@/lib/api/client';
 import type { AccountOpportunity, Stage } from '@/lib/api/types';
-import { useRecordDecision } from '@/lib/query/hooks';
+import { useOpenOpportunity, useRecordDecision } from '@/lib/query/hooks';
 
 /**
  * Where a seller says what they decided.
@@ -222,12 +222,7 @@ export function WorkflowActions({
   // lifecycle where a reader can do nothing, so it is the one place that has
   // to say what happens instead.
   if (opportunity.allowed_next.length === 0 && !canHandOver) {
-    return (
-      <p className="text-sm leading-6 text-content-muted">
-        Won deals stay won. If this company comes back, Signora opens a new opportunity —
-        this one keeps its history.
-      </p>
-    );
+    return <WonAndFinished opportunity={opportunity} workspaceId={workspaceId} />;
   }
 
   return (
@@ -262,6 +257,100 @@ export function WorkflowActions({
         next={next}
         onClose={() => setChoice(null)}
       />
+    </div>
+  );
+}
+
+/**
+ * A won deal — the one place in the lifecycle where a reader can do nothing.
+ *
+ * ### Why it says something at all
+ *
+ * Every other brief offers a move; this one offered an empty space, which
+ * reads as the product having failed rather than as a deliberate rule
+ * (LO-05, F-7). **Silence is not an explanation.**
+ *
+ * ### And why it offers a way out that is not a reopening
+ *
+ * *"I clicked the wrong row"* had **no answer at all** — a won deal is
+ * terminal, correctly, and the recourse the domain names (*the next deal at
+ * that account is genuinely a new opportunity*) had no route into the product
+ * until LO-07 built one.
+ *
+ * **The mistake is preserved rather than erased.** The closed deal keeps its
+ * history, its reason and its outcome; the new opportunity carries the
+ * sentence explaining why it exists. A one-click undo would edit the past,
+ * which is the one thing this module refuses — and it would quietly remove a
+ * false win from a figure somebody may already have reported.
+ */
+function WonAndFinished({
+  opportunity,
+  workspaceId,
+}: {
+  opportunity: AccountOpportunity;
+  workspaceId: string | null;
+}) {
+  const [asking, setAsking] = useState(false);
+  const [reason, setReason] = useState('');
+  const open = useOpenOpportunity(workspaceId, opportunity.account_id);
+
+  const close = () => {
+    setReason('');
+    open.reset();
+    setAsking(false);
+  };
+
+  return (
+    <div className="flex flex-col items-start gap-2">
+      <p className="text-sm leading-6 text-content-muted">
+        Won deals stay won. If this company comes back, that is a new opportunity — this
+        one keeps its history.
+      </p>
+      <Button size="sm" variant="ghost" onClick={() => setAsking(true)}>
+        Work this account again
+      </Button>
+
+      <Dialog
+        open={asking}
+        onClose={close}
+        title="Work this account again"
+        description="The deal you closed stays exactly as it is. This opens a new opportunity beside it."
+        footer={
+          <>
+            <Button variant="ghost" onClick={close} disabled={open.isPending}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => reason.trim() !== '' && open.mutate({ reason })}
+              disabled={reason.trim() === '' || open.isPending}
+            >
+              Open it
+            </Button>
+          </>
+        }
+      >
+        <form
+          className="flex flex-col gap-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (reason.trim() !== '') open.mutate({ reason });
+          }}
+        >
+          <Input
+            // **The whole value of a manual opening.** The automatic path
+            // records the score and the policy that qualified it; a human
+            // opening has neither, so this sentence is the only explanation
+            // the new opportunity will ever carry.
+            label="Why is this worth working again?"
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+            maxLength={512}
+            autoFocus
+            hint="Recorded against the new opportunity permanently, with your name and the date."
+            {...(open.error ? { error: refusal(open.error) } : {})}
+          />
+        </form>
+      </Dialog>
     </div>
   );
 }

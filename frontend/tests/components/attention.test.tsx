@@ -15,6 +15,7 @@ import {
   ContestedMark,
   EvidenceHealth,
   Hypothesis,
+  HeldSince,
   Ownership,
   ScoreMovement,
   WhyNow,
@@ -386,5 +387,56 @@ describe('a held account says who holds it — LO-02', () => {
 
     expect(screen.queryByText('Yours')).toBeNull();
     expect(screen.getByText('me@acme.com')).toBeVisible();
+  });
+});
+
+describe('how long an account has been sitting where it sits — LO-06', () => {
+  // **The Friday-afternoon question.** An account taken on this morning and
+  // one taken on in March rendered as the same row, so *"what have I been
+  // sitting on?"* meant opening briefs one at a time.
+
+  const THREE_WEEKS_AGO = new Date(Date.now() - 21 * 86_400_000).toISOString();
+
+  it('says how long ago somebody took it on', () => {
+    render(<HeldSince stage="engaged" since={THREE_WEEKS_AGO} />);
+
+    expect(screen.getByText(/Taken on 3 weeks ago/)).toBeVisible();
+  });
+
+  it('never says an account is neglected, stalled or at risk', () => {
+    // **The property this whole design turns on.** Signora records workflow
+    // decisions and cannot see a call, an email or a meeting — so a seller who
+    // spoke to this customer yesterday must not be told they had not, by a
+    // product with no way to know. It reports the clock and grades nothing.
+    const { container } = render(<HeldSince stage="engaged" since={THREE_WEEKS_AGO} />);
+
+    expect(container.textContent).not.toMatch(/stalled|neglected|at risk|overdue|inactive/i);
+  });
+
+  it('carries no tone, because there is no threshold to have an opinion about', () => {
+    // A number at which an account becomes *too* old is a per-customer
+    // judgement, and the module's policy artifact refuses it — every
+    // opportunity records the policy version that qualified it. The threshold
+    // arrives with the thing that needs one, which is a notification (M14a).
+    const { container } = render(<HeldSince stage="engaged" since={THREE_WEEKS_AGO} />);
+
+    expect(container.querySelector('[class*="danger"], [class*="warning"]')).toBeNull();
+  });
+
+  it('says nothing about an account nobody has taken on', () => {
+    // A tracked account's age is *Signora's* suggestion ageing, which the
+    // brief already states and the evidence badge already grades. This is the
+    // clock that starts when a person takes responsibility.
+    const { container } = render(<HeldSince stage="tracking" since={THREE_WEEKS_AGO} />);
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('says nothing about a closed account', () => {
+    // The clock stopped. Measuring it under "Closed — won" would be reporting
+    // a duration that means nothing.
+    const { container } = render(<HeldSince stage="closed_won" since={THREE_WEEKS_AGO} />);
+
+    expect(container).toBeEmptyDOMElement();
   });
 });

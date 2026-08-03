@@ -40,7 +40,12 @@ from modules.provider_normalization.infrastructure.claim_reader import SqlClaimR
 from modules.signal_engine.infrastructure.composition import (
     build_queries as build_signal_queries,
 )
+from modules.opportunity_engine.application.qualify import QualifyOpportunity
+from modules.opportunity_engine.infrastructure.composition import (
+    build_qualify_opportunity,
+)
 from signora_platform.api import CurrentWorkspace
+from signora_platform.event_bus import PostgresOutboxEventPublisher
 
 
 def opportunity_queries(context: CurrentWorkspace) -> OpportunityQueries:
@@ -62,6 +67,41 @@ def opportunity_queries(context: CurrentWorkspace) -> OpportunityQueries:
     return build_opportunity_queries(session, scores=scores)
 
 
-OpportunityRead = Annotated[OpportunityQueries, Depends(opportunity_queries)]
+def qualify_opportunity(context: CurrentWorkspace) -> QualifyOpportunity:
+    """Opening an opportunity by hand, assembled for one request.
 
-__all__ = ["OpportunityRead", "opportunity_queries"]
+    **Here rather than in `composition/workflow.py`**, and the split is the
+    module's design showing through again. Progressing an opportunity consults
+    no intelligence at all — *a falling score cannot revoke a seller's
+    commitment* — so that path is given no score reader. **Opening one is the
+    opposite**: the score at the moment of opening is the provenance a manual
+    opportunity carries, and it is read through the Buying Score Engine's
+    published port rather than recomputed.
+
+    The publisher writes to the outbox on the request's own session, so the
+    opportunity, its opening state and the event announcing it commit together
+    or not at all.
+    """
+    session = context.session
+    workspace_id = context.workspace_id
+    graph = build_graph_queries(
+        session, claims=SqlClaimReader(session, workspace_id=workspace_id)
+    )
+    observations = build_observation_queries(session, graph=graph)
+    events = build_business_event_queries(session, observations=observations)
+    signals = build_signal_queries(session, business_events=events)
+    scores = build_buying_score_queries(session, signals=signals)
+    return build_qualify_opportunity(
+        session, scores=scores, publisher=PostgresOutboxEventPublisher()
+    )
+
+
+OpportunityRead = Annotated[OpportunityQueries, Depends(opportunity_queries)]
+OpportunityOpening = Annotated[QualifyOpportunity, Depends(qualify_opportunity)]
+
+__all__ = [
+    "OpportunityOpening",
+    "OpportunityRead",
+    "opportunity_queries",
+    "qualify_opportunity",
+]

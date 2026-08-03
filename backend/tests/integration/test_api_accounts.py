@@ -228,6 +228,11 @@ class TestTheResponseShapeIsTheOneDocumented:
             "stage",
             "owner_id",
             "opened_at",
+            # **The Friday-afternoon question** (LO-06). It passes the same
+            # test as every field above: *"what have I been sitting on?"* is
+            # asked weekly, and the row could not answer it — an account taken
+            # on this morning and one taken on in March rendered identically.
+            "since",
         }
         for internal in (
             "generation",
@@ -2362,3 +2367,247 @@ class TestHowACompanyHasChanged:
 
         assert response.status_code == 200, response.text
         assert response.json() == []
+
+
+class TestTheRowSaysHowLongItHasBeenSittingThere:
+    """**The Friday-afternoon question — LO-06.**
+
+    An account taken on this morning and one taken on in March rendered as the
+    same row, so *"what have I been sitting on?"* meant opening briefs one at a
+    time.
+
+    **The row already carried the state's stage and owner and left *when*
+    behind.** `_page` returns the opportunity beside its current state, so this
+    costs no query — the same shape as `owner_id` in M12.2 and `posture` in
+    M12.3.
+    """
+
+    async def test_the_row_says_when_its_state_was_recorded(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        rows = (await _accounts(client, key_pair, user_id, workspace_id)).json()["items"]
+
+        (row,) = [r for r in rows if UUID(r["account_id"]) == entity_id]
+        assert row["since"], "the row cannot say how long it has stood where it stands"
+
+    async def test_taking_an_account_on_restarts_the_clock(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**A workflow decision is the one act Signora can see**, so it is the
+        only thing that moves this clock. A new signal arriving is *Signora*
+        working, not the seller — letting it reset the count would let the
+        platform's own activity hide a seller's inactivity."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        before = (await _accounts(client, key_pair, user_id, workspace_id)).json()["items"]
+        (was,) = [r for r in before if UUID(r["account_id"]) == entity_id]
+
+        await client.post(
+            f"/workspaces/{workspace_id}/opportunities/{was['id']}/states",
+            headers=_auth(key_pair, user_id),
+            json={"stage": "engaged", "reason": "worth a call this quarter"},
+        )
+
+        after = (await _accounts(client, key_pair, user_id, workspace_id)).json()["items"]
+        (now,) = [r for r in after if UUID(r["account_id"]) == entity_id]
+        assert now["since"] > was["since"]
+        # **`opened_at` did not move**, which is the distinction: one says when
+        # Signora suggested this account and the other when a person last acted
+        # on it. Collapsing them would answer neither question.
+        assert now["opened_at"] == was["opened_at"]
+
+
+class TestAHumanCanOpenAnOpportunity:
+    """**The route into a capability the domain has had all along — LO-07.**
+
+    `Qualification.MANUAL` has been modelled since M12.1 and rendered on every
+    brief as *"somebody here added it"*, and **nothing could produce one**:
+    `QualifyOpportunity` had a single caller, the buying-score handler, which
+    never names a person (49-lead-ownership.md §14, F-3).
+
+    It is also the recourse for the finding above it. A won deal is terminal,
+    correctly — *the next deal at that account is genuinely a new
+    opportunity* — and until now that sentence named a route nobody could take.
+    """
+
+    async def test_a_seller_can_open_one_the_policy_did_not(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        rows = (await _accounts(client, key_pair, user_id, workspace_id)).json()["items"]
+        (row,) = [r for r in rows if UUID(r["account_id"]) == entity_id]
+        # A won deal is reached through being worked — `tracking` cannot
+        # become `closed_won`, which is the transition table doing its job.
+        await client.post(
+            f"/workspaces/{workspace_id}/opportunities/{row['id']}/states",
+            headers=_auth(key_pair, user_id),
+            json={"stage": "engaged", "reason": "worth a call this quarter"},
+        )
+        await client.post(
+            f"/workspaces/{workspace_id}/opportunities/{row['id']}/states",
+            headers=_auth(key_pair, user_id),
+            json={"stage": "closed_won", "reason": "signed the three-year deal"},
+        )
+
+        response = await client.post(
+            f"/workspaces/{workspace_id}/accounts/{entity_id}/opportunity",
+            headers=_auth(key_pair, user_id),
+            json={"reason": "they came back for the second site"},
+        )
+
+        assert response.status_code == 201, response.text
+        body = response.json()
+        assert UUID(body["account_id"]) == entity_id
+        # **Opened, never owned.** A human opening an opportunity is still a
+        # suggestion becoming a record; taking it on is a separate act.
+        assert body["stage"] == "tracking"
+        # **A new opportunity, not an edited one.** The won deal keeps its
+        # history, its reasons and its outcome, and nothing rewrites them.
+        assert body["generation"] == 1
+
+    async def test_the_closed_deal_is_left_exactly_as_it_was(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**The mistake stays on the record.** Records here are immutable, so
+        a false win is not erased — the correction is a new opportunity whose
+        reason names why it exists, and the win-rate figures keep the truth
+        about what somebody actually recorded."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        rows = (await _accounts(client, key_pair, user_id, workspace_id)).json()["items"]
+        (row,) = [r for r in rows if UUID(r["account_id"]) == entity_id]
+        # A won deal is reached through being worked — `tracking` cannot
+        # become `closed_won`, which is the transition table doing its job.
+        await client.post(
+            f"/workspaces/{workspace_id}/opportunities/{row['id']}/states",
+            headers=_auth(key_pair, user_id),
+            json={"stage": "engaged", "reason": "worth a call this quarter"},
+        )
+        await client.post(
+            f"/workspaces/{workspace_id}/opportunities/{row['id']}/states",
+            headers=_auth(key_pair, user_id),
+            json={"stage": "closed_won", "reason": "signed the three-year deal"},
+        )
+
+        await client.post(
+            f"/workspaces/{workspace_id}/accounts/{entity_id}/opportunity",
+            headers=_auth(key_pair, user_id),
+            json={"reason": "clicked the wrong row"},
+        )
+
+        decided = (
+            await client.get(
+                f"/workspaces/{workspace_id}/accounts/decided",
+                headers=_auth(key_pair, user_id),
+            )
+        ).json()["items"]
+        won = [d for d in decided if UUID(d["account_id"]) == entity_id]
+        assert won, "the closed deal disappeared from the record"
+        assert won[0]["stage"] == "closed_won"
+        assert won[0]["reason"] == "signed the three-year deal"
+
+    async def test_an_account_already_open_is_refused_rather_than_duplicated(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        response = await client.post(
+            f"/workspaces/{workspace_id}/accounts/{entity_id}/opportunity",
+            headers=_auth(key_pair, user_id),
+            json={"reason": "I want to work this"},
+        )
+
+        assert response.status_code == 409, response.text
+        # Reaches a customer verbatim, so no identifier (R4-03).
+        assert str(entity_id) not in response.text
+
+    async def test_an_account_signora_knows_nothing_about_is_a_404(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**An opportunity with no provenance is a record nobody can
+        defend.** A manual opening bypasses the policy and never the score."""
+        workspace_id, user_id, _, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        response = await client.post(
+            f"/workspaces/{workspace_id}/accounts/{uuid4()}/opportunity",
+            headers=_auth(key_pair, user_id),
+            json={"reason": "a company nobody has heard of"},
+        )
+
+        assert response.status_code == 404, response.text
+
+    async def test_the_opening_names_the_person_who_asked(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**Signora is not a person, and a human opening is not Signora.**
+        The brief's opening line is the product's central claim made visible —
+        *intelligence suggests, humans commit* — and it could only ever say
+        *suggested* until now."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        rows = (await _accounts(client, key_pair, user_id, workspace_id)).json()["items"]
+        (row,) = [r for r in rows if UUID(r["account_id"]) == entity_id]
+        await client.post(
+            f"/workspaces/{workspace_id}/opportunities/{row['id']}/states",
+            headers=_auth(key_pair, user_id),
+            json={"stage": "dismissed", "reason": "wrong segment"},
+        )
+
+        await client.post(
+            f"/workspaces/{workspace_id}/accounts/{entity_id}/opportunity",
+            headers=_auth(key_pair, user_id),
+            json={"reason": "they raised, so I was wrong"},
+        )
+
+        brief = (
+            await client.get(
+                f"/workspaces/{workspace_id}/accounts/{entity_id}/opportunity",
+                headers=_auth(key_pair, user_id),
+            )
+        ).json()
+        assert brief["opened_by"] == "manual"
+        assert brief["history"][0]["reason"] == "they raised, so I was wrong"
+        # The opening entry of a *manual* opportunity names its actor, where an
+        # automatic one names nobody. Only TRACKING may be machine-authored.
+        assert brief["history"][0]["decided_by"] == str(user_id)

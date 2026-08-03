@@ -106,8 +106,60 @@ describe('the moves offered are the ones the domain allows', () => {
     // has to say what happens instead.
     render(actions({ stage: 'closed_won', allowed_next: [], owner_id: VIEWER }));
 
-    expect(screen.queryAllByRole('button')).toHaveLength(0);
+    // **No stage move is offered**, which is the property: the domain sent an
+    // empty list and a control that cannot be used teaches a reader to
+    // distrust the ones that can.
+    for (const move of ['Won', 'Lost', 'Not a real opportunity', "I'm working this"]) {
+      expect(screen.queryByRole('button', { name: move })).toBeNull();
+    }
     expect(screen.getByText(/Won deals stay won/)).toBeVisible();
+  });
+
+  it('offers the way back, which is not a reopening — LO-07', () => {
+    // *"I clicked the wrong row"* had no answer at all. A won deal is
+    // terminal, correctly, and the recourse the domain names — *the next deal
+    // at that account is genuinely a new opportunity* — had no route into the
+    // product until this one.
+    render(actions({ stage: 'closed_won', allowed_next: [], owner_id: VIEWER }));
+
+    expect(screen.getByRole('button', { name: 'Work this account again' })).toBeVisible();
+  });
+
+  it('says the closed deal is left alone before anything is opened', () => {
+    // **The mistake is preserved rather than erased.** A one-click undo would
+    // edit the past, and would quietly remove a false win from a figure
+    // somebody may already have reported.
+    render(actions({ stage: 'closed_won', allowed_next: [], owner_id: VIEWER }));
+    fireEvent.click(screen.getByRole('button', { name: 'Work this account again' }));
+
+    expect(screen.getByText(/stays exactly as it is/)).toBeVisible();
+  });
+
+  it('will not open one without a reason', () => {
+    // The automatic path records the score and the policy that qualified it.
+    // A human opening has neither, so the sentence is the only explanation the
+    // new opportunity will ever carry.
+    render(actions({ stage: 'closed_won', allowed_next: [], owner_id: VIEWER }));
+    fireEvent.click(screen.getByRole('button', { name: 'Work this account again' }));
+
+    expect(screen.getByRole('button', { name: 'Open it' })).toBeDisabled();
+  });
+
+  it('opens a new opportunity rather than changing the closed one', async () => {
+    render(actions({ stage: 'closed_won', allowed_next: [], owner_id: VIEWER }));
+    fireEvent.click(screen.getByRole('button', { name: 'Work this account again' }));
+    fireEvent.change(screen.getByRole('textbox'), {
+      target: { value: 'They came back for the second site.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Open it' }));
+
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    const call = sent();
+    // Keyed by **account**, not by the closed opportunity — the new one is a
+    // new aggregate, and posting to the old one's states would be the edit
+    // this design refuses.
+    expect(call.path).toMatch(/\/accounts\/[^/]+\/opportunity$/);
+    expect(call.body).toEqual({ reason: 'They came back for the second site.' });
   });
 
   it('offers reopening on a dismissed account', () => {
@@ -392,6 +444,62 @@ describe('who holds an account', () => {
     expect(container.textContent).not.toContain(COLLEAGUE);
   });
 
+  it('says how long they have held it — LO-06', () => {
+    // *"You hold this"* is the same sentence on an account taken on this
+    // morning and one taken on in March, and the second is the one a seller
+    // wants to find on a Friday afternoon.
+    const threeWeeksAgo = new Date(Date.now() - 21 * 86_400_000).toISOString();
+
+    render(
+      <WorkflowStage
+        opportunity={opportunity({
+          stage: 'engaged',
+          owner_id: VIEWER,
+          history: [
+            {
+              stage: 'engaged',
+              owner_id: VIEWER,
+              decided_by: VIEWER,
+              reason: 'Met their VP.',
+              occurred_at: threeWeeksAgo,
+            },
+          ],
+        })}
+        viewerId={VIEWER}
+      />,
+    );
+
+    expect(screen.getByText(/you took this on 3 weeks ago/)).toBeInTheDocument();
+  });
+
+  it('measures no clock on a closed account', () => {
+    // The clock stopped. *"You took this on five months ago"* under
+    // *Closed — won* would be reporting a duration that means nothing; the
+    // decision history is where a closed account's dates belong.
+    render(
+      <WorkflowStage
+        opportunity={opportunity({
+          stage: 'closed_won',
+          owner_id: VIEWER,
+          allowed_next: [],
+          history: [
+            {
+              stage: 'closed_won',
+              owner_id: VIEWER,
+              decided_by: VIEWER,
+              reason: 'Signed.',
+              occurred_at: new Date(Date.now() - 150 * 86_400_000).toISOString(),
+            },
+          ],
+        })}
+        viewerId={VIEWER}
+      />,
+    );
+
+    expect(screen.getByText(/you hold this/)).toBeInTheDocument();
+    expect(screen.queryByText(/took this on/)).toBeNull();
+  });
+
   it('names the holder once the roster can name them', () => {
     // **The line said *"someone else"* for three milestones**, and the comment
     // justifying it said Signora *can say nobody else's name* — true when it
@@ -673,7 +781,8 @@ describe('an account being worked can change hands — LO-04', () => {
     // become the control that puts a button back on it.
     render(worked({ stage: 'closed_won', allowed_next: [], owner_id: VIEWER }));
 
-    expect(screen.queryAllByRole('button')).toHaveLength(0);
+    expect(screen.queryByRole('button', { name: 'Hand it over' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Take it over' })).toBeNull();
   });
 
   it('offers nothing on an account nobody holds', () => {

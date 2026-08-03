@@ -8,6 +8,7 @@ import {
   TrendingDown,
 } from 'lucide-react';
 
+import { howLongAgo } from '@/components/intelligence/dates';
 import { Badge } from '@/components/ui';
 import type { EvidenceState, Posture, ScoreTrigger, Stage, Trend } from '@/lib/api/types';
 import { cn } from '@/lib/design/cn';
@@ -303,6 +304,42 @@ export function Ownership({
   ) : (
     <Badge tone="neutral">{ownerName ?? 'Taken'}</Badge>
   );
+}
+
+/**
+ * How long an account has been sitting where it sits.
+ *
+ * **The Friday-afternoon question**, and the list could not answer it: an
+ * account taken on this morning and one taken on in March rendered as the same
+ * row, so *"what have I been sitting on?"* meant opening briefs one at a time
+ * (LO-06).
+ *
+ * ### A fact, never a judgement
+ *
+ * **Signora records workflow decisions and cannot see a call, an email or a
+ * meeting.** So it must never say an account is neglected, stalled or at risk —
+ * a seller who spoke to this customer yesterday would be told they had not, by
+ * a product with no way to know. It states how long it has been since something
+ * it *can* see happened, and the reader decides what that means.
+ *
+ * **No threshold, and that is a decision rather than an omission.** A number at
+ * which an account becomes *too* old is a per-customer judgement, and the
+ * module's own policy artifact refuses it: every opportunity records the policy
+ * version that qualified it, so adding an unrelated setting there would churn
+ * the recorded explanation of every historical opportunity — the same argument
+ * that kept qualification out of the scoring model. **The threshold arrives
+ * with the thing that needs one**, which is a notification, and that needs
+ * M14a.
+ *
+ * ### Only where somebody has committed
+ *
+ * A tracked account's age is *Signora's* suggestion ageing, which the brief
+ * already states and the evidence badge already grades. This is the clock that
+ * starts when a person takes responsibility.
+ */
+export function HeldSince({ stage, since }: { stage: Stage; since: string }) {
+  if (stage !== 'engaged') return null;
+  return <span className="text-xs text-content-subtle">Taken on {howLongAgo(since)}</span>;
 }
 
 /** What a stage is called where there is room for one word. The brief spells

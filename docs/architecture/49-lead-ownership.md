@@ -520,3 +520,106 @@ It now reads **"Account handed over"**, with **the reason** as its detail — wh
 | **LO-06** | **Nothing has happened here since…** | F-1. Derived from state the module already holds; no schema change; unblocks five future rows |
 | **LO-07** | **A human can add an account** | F-3, and therefore F-2's recourse. One endpoint, one control, one already-modelled `Qualification` |
 | **LO-08** | *Blocked* / *waiting on* | Needs a customer describing it. **Do not invent a stage** |
+
+---
+
+## 15 · LO-06 — how long an account has been sitting there, 2026-08-03
+
+### What counts as activity? The question decided the whole slice
+
+**Signora records workflow decisions. It cannot see a call, an email or a meeting.**
+
+That single fact rules out almost every design a CRM would reach for. *"Stalled"*, *"neglected"*, *"at risk"*, *"no activity in 30 days"* — **every one of them is a claim the platform has no way to make**, and a seller who spoke to the customer yesterday would be told they had not, by a product that could not know.
+
+> **So the product states the fact it owns and grades nothing.** *"Taken on 3 weeks ago."* The clock is real, checkable and the seller's own; what it means is the seller's to decide.
+
+**This is the least-powerful-author rule applied to a sentence.** The database owns *when*; nobody owns *too long*.
+
+### What resets it, and what deliberately does not
+
+| | |
+|---|---|
+| **A workflow decision** | ✅ **The one act by a human that Signora can see** |
+| **A new signal, a score move, a research run** | ⚫ **No.** That is *Signora* working, not the seller — and letting the platform's own activity reset the count would let it hide a seller's inactivity behind its own |
+| **Ownership changing** | ✅ Already a workflow decision (LO-04). A hand-over restarts the clock for the person who now holds it, which is correct: Ravi has had it two days |
+
+### No threshold, and that is a decision rather than an omission
+
+A number at which an account becomes *too* old is a per-customer judgement — a 30-day cycle and a 6-month one are not the same product.
+
+**The obvious home refused it, and its own docstring is the argument.** `OpportunityPolicy` is versioned *because every opportunity records the policy version that qualified it*; adding an unrelated setting there would mint a new policy version and churn the recorded explanation of every historical opportunity — **exactly the reasoning that kept qualification out of the scoring model.**
+
+> **The threshold arrives with the thing that needs one**, which is a notification, and that needs M14a. Until then a threshold would be a number nothing acts on.
+
+### Where it appears
+
+| | |
+|---|---|
+| **The brief** | Folded into the holder clause — *"you took this on 3 weeks ago"* replaces *"you hold this"*, which was the same sentence on an account taken on this morning and one taken on in March. **Read from the last history entry**, not a new field: the entry *is* the current state, and a second copy of a derivable fact will eventually disagree with it |
+| **The list** | `since` on the attention row — **already loaded**, because `_page` returns each opportunity beside its current state. The row has carried that state's `stage` and `owner_id` since M12.2 and left *when* behind |
+| **A tracked account** | ⚫ Silent. Its age is *Signora's* suggestion ageing, which the brief already states and the evidence badge already grades |
+| **A closed account** | ⚫ Silent. The clock stopped, and measuring it would report a duration that means nothing |
+
+**`since` is not `opened_at`, and a test asserts both.** One says when Signora suggested this account, the other when a person last acted on it. Collapsing them would answer neither.
+
+---
+
+## 16 · LO-07 — a human can open an opportunity, 2026-08-03
+
+### The finding it closes, and the one it closes *because* of that
+
+**F-3.** `Qualification.MANUAL` has been in the domain since M12.1, is covered by a test called *"a human may open one the policy would decline"*, and is rendered on every brief as *"somebody here added it"*. **Nothing could produce one:** `QualifyOpportunity` had exactly one caller — the buying-score event handler — which never passes `opened_by`. **A string that could never appear.**
+
+**F-2 follows from it.** A won deal is terminal, and correctly: *the next deal at that account is genuinely a new opportunity, and conflating them distorts every win-rate figure computed later.* But the recourse that sentence names **had no route into the product**, so *"I clicked the wrong row"* had no answer at all.
+
+> **One endpoint closed both**, because the second was never a separate problem — it was the first one wearing a customer's clothes.
+
+### What was already there, and what was actually missing
+
+| | |
+|---|---|
+| **The use case** | ✅ `QualifyOpportunityInput` already took `opened_by` and `reason`, already bypassed the policy for a manual opening, already incremented `generation`, already refused a second open opportunity |
+| **The domain** | ✅ `Qualification.MANUAL`, `Opportunity.created_by`, an opening state that names its actor |
+| **The route** | ❌ **The only thing missing.** One `POST`, one composition dependency, two policy tuples |
+
+**Nothing in the domain or the application layer changed.** The audit found the shape and the shape was correct; it had no door.
+
+### Deliberately narrow, and the boundary is somebody else's
+
+**This opens an opportunity on an account Signora already knows.** It does **not** create a company.
+
+- **A company Signora has never heard of** is what [Target Accounts](../BACKLOG.md) is for — the customer declares it, and the pipeline discovers, scores and qualifies it. That declaration exists and works.
+- **There is no entity browser or search**, so an account with no opportunity cannot be named by a seller anyway. Adding one would be a Knowledge Graph endpoint, and that is another bounded context.
+
+**So the reachable case is exactly the one the audit found: a closed account, which is already navigable under *accounts already decided*.**
+
+### Two things it refuses, and both are provenance
+
+| | |
+|---|---|
+| **404 when the account has no score at all** | A manual opening bypasses the *policy* and never the *score*. **`why does this exist` has two halves**, and a human answering the first does not remove the second — an opportunity with no provenance is a record nobody could defend |
+| **409 when one is already open** | The same account arriving twice, not an error the caller can fix |
+
+### The mistake is preserved rather than erased
+
+**There is no undo, and there will not be one.** A one-click undo would edit the past — the one thing this module refuses — and it would quietly remove a false win from a figure somebody may already have reported.
+
+> **The closed deal keeps its history, its reason and its outcome. The new opportunity carries the sentence saying why it exists.** A test asserts the won deal is still on the decided list, unchanged, after the recovery.
+
+### It opens at `tracking`, owned by nobody
+
+A human opening an opportunity is **still a suggestion becoming a record**. Taking it on is a separate, deliberate act, and one that arrived already owned would collapse the distinction the module rests on.
+
+### A finding this slice did not fix, and must not paper over
+
+**`qualify_from_buying_score` is not subscribed in the production worker.** `apps/worker/subscriptions.py` registers two consumers — research and Timeline projections — so **no opportunity is opened automatically in a running deployment**; the score-to-opportunity chain runs only in `tests/pipeline.py`. That is the runtime-composition gap `make runtime-composition` already reports, and it belongs with the dispatch direction ([C-021](../LANE_COORDINATION.md)) rather than to this module.
+
+**It makes manual opening more important, not less — and it is not a reason to pretend the pipeline works.**
+
+### Playwright scenarios added
+
+| # | Scenario |
+|---|---|
+| **P-13** | Win the wrong account → work it again → the win is still on the record |
+| **P-14** | Open an account Signora scored below the threshold |
+| **P-15** | Open one that is already open → told plainly, not duplicated |

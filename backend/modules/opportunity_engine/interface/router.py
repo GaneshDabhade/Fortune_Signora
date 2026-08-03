@@ -22,14 +22,17 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query, status
 
-from apps.api.composition.opportunities import OpportunityRead
+from apps.api.composition.opportunities import OpportunityOpening, OpportunityRead
 from apps.api.composition.workflow import OpportunityWorkflow
+from modules.opportunity_engine.application.qualify import QualifyOpportunityInput
 from modules.opportunity_engine.application.transition import TransitionOpportunityInput
-from modules.opportunity_engine.domain.opportunity import OwnerScope
+from modules.opportunity_engine.domain.opportunity import OwnerScope, Stage
 from modules.opportunity_engine.interface.schemas import (
     AccountAttentionResponse,
     AccountOpportunityResponse,
     DecidedAccountResponse,
+    OpenedOpportunityResponse,
+    OpenOpportunityRequest,
     RecordDecisionRequest,
     WorkflowStateResponse,
 )
@@ -237,6 +240,80 @@ async def record_decision(
         correlation_id=context.correlation_id,
     )
     return WorkflowStateResponse.from_domain(result.state)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/accounts/{account_id}/opportunity",
+    status_code=status.HTTP_201_CREATED,
+    response_model=OpenedOpportunityResponse,
+    summary="Work this account, whatever the score says",
+)
+async def open_opportunity(
+    context: CurrentWorkspace,
+    opening: OpportunityOpening,
+    account_id: UUID,
+    body: OpenOpportunityRequest,
+) -> OpenedOpportunityResponse:
+    """*"This one matters, and Signora has not noticed."*
+
+    **The route into a capability the domain has had all along.** A human
+    opening an opportunity has been modelled since M12.1, is rendered on every
+    brief as *"somebody here added it"*, and **nothing could produce one**:
+    `QualifyOpportunity` had a single caller, the buying-score handler, which
+    never names a person (49-lead-ownership.md §14).
+
+    Two customers need it and neither could be served:
+
+    - **A seller who disagrees with the qualification policy.** The threshold
+      is the customer's own setting, and a seller should not have to change a
+      workspace-wide policy to work one account.
+    - **A seller who closed the wrong account.** A won deal is terminal, and
+      correctly so — *the next deal at that account is genuinely a new
+      opportunity* — but the recourse the domain names had no route. **This is
+      it**, and it preserves the mistake rather than erasing it: the closed
+      deal keeps its history, and the new opportunity carries the sentence
+      explaining why it exists.
+
+    **The policy is bypassed and the score is not.** A manual opening still
+    records the score that was live when it happened, because *"why does this
+    exist"* has two halves and a human answering the first does not remove the
+    second. **404 when the account has no score at all** — nothing is known
+    about it yet, and an opportunity with no provenance would be a record
+    nobody could defend.
+
+    **409 when one is already open**, which is the same account arriving twice
+    rather than an error the caller can fix.
+    """
+    context.authorize(Resource.OPPORTUNITY, Action.ADD)
+    result = await opening.execute(
+        QualifyOpportunityInput(
+            workspace_id=context.workspace_id,
+            entity_id=account_id,
+            # **From the verified principal, never the body.** An opening entry
+            # that could name somebody else would let one member sign another's
+            # name to a commitment.
+            opened_by=context.principal.user_id,
+            reason=body.reason,
+        ),
+        correlation_id=context.correlation_id,
+    )
+    if result.opportunity is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Signora knows nothing about this account yet, so there is nothing to work.",
+        )
+    if not result.created:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This account is already open. Look for it on your list.",
+        )
+    return OpenedOpportunityResponse(
+        id=result.opportunity.id,
+        account_id=result.opportunity.entity_id,
+        stage=Stage.TRACKING,
+        generation=result.opportunity.generation,
+        opened_at=result.opportunity.created_at,
+    )
 
 
 __all__ = ["router"]

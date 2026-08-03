@@ -32,6 +32,7 @@ function account(id: string): AccountAttention {
     stage: 'tracking',
     owner_id: null,
     opened_at: '2026-07-01T00:00:00Z',
+    since: '2026-07-01T00:00:00Z',
   };
 }
 

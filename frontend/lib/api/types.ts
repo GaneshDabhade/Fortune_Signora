@@ -146,6 +146,15 @@ export interface AccountAttention {
   stage: Stage;
   owner_id: string | null;
   opened_at: string;
+  /**
+   * When this stage and owner were last recorded.
+   *
+   * **A fact, never a judgement.** Signora records workflow decisions and
+   * cannot see a call, an email or a meeting, so it must not say an account is
+   * neglected — it says how long it has been since anything it *can* see
+   * happened, and the reader decides what that means.
+   */
+  since: string;
 }
 
 /** One hypothesis type, named by the catalog that owns it. */
@@ -290,6 +299,23 @@ export interface AccountOpportunity {
    * deal, which does not reopen.
    */
   allowed_next: Stage[];
+}
+
+/**
+ * An opportunity a person opened, whatever the score said.
+ *
+ * **Always `tracking`.** Opening one is a suggestion becoming a record;
+ * taking it on is a separate, deliberate act. `generation` counts how many
+ * times this account has been opened before — **a reopening is a new
+ * opportunity rather than an edited one**, so the deal that closed keeps its
+ * history, its reasons and its outcome.
+ */
+export interface OpenedOpportunity {
+  id: string;
+  account_id: string;
+  stage: Stage;
+  generation: number;
+  opened_at: string;
 }
 
 /** A human deciding something about an account.

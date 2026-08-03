@@ -113,15 +113,49 @@ export function WorkflowStage({
       {!unclaimed ? (
         <>
           {' · '}
+          {/* **Who, and since when, as one clause** (LO-06). *"You hold this"*
+              is the same sentence on an account taken on this morning and one
+              taken on in March, and the second is the one a seller wants to
+              find on a Friday afternoon.
+
+              **A fact, never a judgement.** Signora records workflow decisions
+              and cannot see a call, an email or a meeting — so it says how
+              long it has been since something it *can* see happened, and never
+              that an account is neglected. Read from the last history entry
+              rather than a field of its own: the entry *is* the current state,
+              and a second copy of a derivable fact is one that will disagree. */}
           <span className="text-content-subtle">
-            {opportunity.owner_id === viewerId
-              ? 'you hold this'
-              : `held by ${nameOf(opportunity.owner_id, people, viewerId)}`}
+            {holderClause(opportunity, viewerId, people)}
           </span>
         </>
       ) : null}
     </p>
   );
+}
+
+/**
+ * Who holds this, and how long they have.
+ *
+ * **Only for an account being worked.** A closed one has a holder too, and
+ * *"you took this on five months ago"* under *Closed — won* would be measuring
+ * a clock that stopped; the decision history is where a closed account's dates
+ * belong.
+ */
+function holderClause(
+  opportunity: AccountOpportunity,
+  viewerId: string | null,
+  people: ReadonlyMap<string, string>,
+): string {
+  const who =
+    opportunity.owner_id === viewerId
+      ? 'you'
+      : nameOf(opportunity.owner_id, people, viewerId);
+  const held = opportunity.stage === 'engaged' ? opportunity.history.at(-1) : undefined;
+
+  if (held === undefined) {
+    return opportunity.owner_id === viewerId ? 'you hold this' : `held by ${who}`;
+  }
+  return `${who} took this on ${howLongAgo(held.occurred_at)}`;
 }
 
 /**
