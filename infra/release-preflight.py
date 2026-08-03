@@ -126,6 +126,69 @@ def _prerequisites() -> list[str]:
     return missing
 
 
+#: Below this, certification degrades rather than fails — which is the worst
+#: shape of failure, because it looks like the repository got slower.
+MINIMUM_AVAILABLE_GB: Final = 3.0
+#: Swap this full means the machine is already trading memory for disk.
+SWAP_PRESSURE: Final = 0.75
+
+
+def _memory_pressure() -> tuple[float, float, list[str]] | None:
+    """Available memory, swap saturation, and who is holding the machine.
+
+    **The environment model isolates ports, databases, Redis and compose
+    projects. It does not isolate the machine.** Every environment shares RAM,
+    and nothing checked it — so a lane's dev server holding 2.7 GB was invisible
+    to every gate while degrading certification.
+
+    **The evidence this exists for.** Across 28 runs the smoke gate sat between
+    104s and 193s except twice: 4830s and 1096s. The Docker build cache does not
+    explain either — `tests/` is excluded from the frontend build context, so the
+    4830s run invalidated nothing. What *was* observable afterwards: 4.0 GiB
+    available of 15, swap 85% consumed, and a `pytest` that died mid-run leaving
+    dots and no traceback — **the OOM-kill signature, not a test failure.**
+
+    **It warns rather than blocks.** A slow certification is still a valid one,
+    and refusing to start would trade a diagnosable slowdown for a blocked gate.
+    """
+    meminfo = Path("/proc/meminfo")
+    if not meminfo.exists():
+        return None
+    values: dict[str, int] = {}
+    for line in meminfo.read_text().splitlines():
+        name, _, rest = line.partition(":")
+        values[name] = int(rest.strip().split()[0])
+
+    available_gb = values.get("MemAvailable", 0) / 1024 / 1024
+    swap_total = values.get("SwapTotal", 0)
+    swap_used = swap_total - values.get("SwapFree", 0)
+    swap_ratio = (swap_used / swap_total) if swap_total else 0.0
+
+    if available_gb >= MINIMUM_AVAILABLE_GB and swap_ratio < SWAP_PRESSURE:
+        return None
+
+    # Name the holders. An operator told only "memory is low" goes hunting —
+    # the same lesson as naming the container that holds a port.
+    # `args`, not `comm`: node reports its *thread* name there, so a VS Code
+    # server and a lane's dev server both read as "MainThread" — which names
+    # nothing an operator can act on.
+    listing = subprocess.run(
+        ["ps", "-eo", "rss,args", "--sort=-rss"], capture_output=True, text=True, check=False
+    ).stdout.splitlines()[1:8]
+    holders = []
+    for row in listing:
+        parts = row.split(None, 1)
+        if len(parts) != 2 or (gigabytes := int(parts[0]) / 1024 / 1024) < 0.5:
+            continue
+        command = parts[1].strip()
+        # A lane dev server is the case worth naming precisely, because it is
+        # somebody else's and stopping it is not QE's call (§20e).
+        if "next-server" in command or "next dev" in command:
+            command = f"{command.split()[0]} — a dev server; check RUNNING.md for whose"
+        holders.append(f"{gigabytes:.1f} GB  {command[:72]}")
+    return available_gb, swap_ratio, holders
+
+
 #: Where the suite's database lives. `RUNNING.md` allocates one per lane, all in
 #: the development PostgreSQL — which the gates need running and never check.
 DEV_DATABASE_PORT: Final = 5432
@@ -198,13 +261,28 @@ def main() -> int:
 
     holders = _listeners()
     if not holders:
-        say(
+        lines = [
             "",
             "  READY — QE Release Mode may begin",
             "",
             f"    ports {REVIEW_PORTS[0]} and {REVIEW_PORTS[1]} are free",
             f"    working tree {'dirty — certify will refuse it' if _tree_dirty() else 'clean'}",
-        )
+        ]
+        if (pressure := _memory_pressure()) is not None:
+            available, swap_ratio, holders = pressure
+            lines += [
+                "",
+                "  ⚠️  MEMORY PRESSURE — certification will be slow, and may be killed",
+                "",
+                f"    {available:.1f} GB available · swap {swap_ratio:.0%} consumed",
+                *(f"    {holder}" for holder in holders),
+                "",
+                "  Ports are isolated per environment; the machine is not. A lane's dev",
+                "  server holding memory is invisible to every other gate, and this is",
+                "  what turns a 120s smoke run into a 1096s one — or kills pytest",
+                "  mid-run, which reads as a test failure and is not one.",
+            ]
+        say(*lines)
         # A dirty tree is reported but does not block: `make smoke` and `make dr`
         # both run against one, and only `make certify` records it as a condition.
         return 0
