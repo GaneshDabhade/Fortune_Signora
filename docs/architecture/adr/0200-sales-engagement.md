@@ -1,4 +1,4 @@
-# ADR-0200: Sales Engagement — the module that owns commercial synthesis
+# ADR-0200: Sales Engagement — the module that owns commercial reasoning and synthesis
 
 ## Status
 
