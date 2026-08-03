@@ -372,6 +372,12 @@ describe('who holds an account', () => {
     // Python tier verifies tokens without learning who a person is, so an
     // owner arrives as an identifier and nothing more. A raw one on screen
     // would be the same absence dressed as information.
+    //
+    // **The wording moved from *"held by someone else"* to *"held by somebody
+    // here"* in LO-04**, and the property did not: this asserts that no
+    // identifier reaches the screen, which is what D23 is actually about. The
+    // sentence changed because the roster can now usually name the holder,
+    // and the two phrasings needed to be the same phrase either way.
     const { container } = render(
       <WorkflowStage
         opportunity={opportunity({ stage: 'engaged', owner_id: COLLEAGUE })}
@@ -379,8 +385,24 @@ describe('who holds an account', () => {
       />,
     );
 
-    expect(screen.getByText(/held by someone else/)).toBeInTheDocument();
+    expect(screen.getByText(/held by somebody here/)).toBeInTheDocument();
     expect(container.textContent).not.toContain(COLLEAGUE);
+  });
+
+  it('names the holder once the roster can name them', () => {
+    // **The line said *"someone else"* for three milestones**, and the comment
+    // justifying it said Signora *can say nobody else's name* — true when it
+    // was written, untrue since TM-01 gave a membership an address. The
+    // product knew and did not say.
+    render(
+      <WorkflowStage
+        opportunity={opportunity({ stage: 'engaged', owner_id: COLLEAGUE })}
+        viewerId={VIEWER}
+        people={new Map([[COLLEAGUE, 'ravi@acme.com']])}
+      />,
+    );
+
+    expect(screen.getByText(/held by ravi@acme\.com/)).toBeInTheDocument();
   });
 
   it('still says nobody has taken a tracked account', () => {
@@ -596,6 +618,201 @@ describe('an account can be handed to a colleague — LO-01', () => {
     fireEvent.click(screen.getAllByRole('button')[0]!);
 
     expect(screen.queryByLabelText('Who is working this')).toBeNull();
+  });
+});
+
+describe('an account being worked can change hands — LO-04', () => {
+  // **`allowed_next` structurally could not offer this.** It is the domain's
+  // *stage* table, and a hand-over changes no stage — so an account being
+  // worked offered `Won`, `Lost` and `Not a real opportunity` and **no way to
+  // give it to anybody**. A seller going on leave had to close their accounts
+  // to get them off their name (49-lead-ownership.md §13).
+
+  const COLLEAGUES = [{ id: COLLEAGUE, name: 'ravi@acme.com' }];
+  const WORKED = {
+    stage: 'engaged',
+    owner_id: VIEWER,
+    allowed_next: ['closed_won', 'closed_lost', 'dismissed'],
+  } satisfies Partial<AccountOpportunity>;
+
+  function worked(
+    overrides: Partial<AccountOpportunity> = {},
+    colleagues: readonly { id: string; name: string }[] = COLLEAGUES,
+    next?: { name: string; go: () => void },
+  ) {
+    return withQuery(
+      <WorkflowActions
+        opportunity={opportunity({ ...WORKED, ...overrides })}
+        workspaceId="eeeeeeee-5555-4555-8555-555555555555"
+        viewerId={VIEWER}
+        colleagues={colleagues}
+        {...(next ? { next } : {})}
+      />,
+    );
+  }
+
+  it('offers a hand-over on an account you are working', () => {
+    render(worked());
+
+    expect(screen.getByRole('button', { name: 'Hand it over' })).toBeVisible();
+  });
+
+  it('offers nothing to hand over when there is nobody to hand it to', () => {
+    // A one-person organization. **A control that cannot complete is not
+    // offered** rather than offered and refused.
+    render(worked({}, []));
+
+    expect(screen.queryByRole('button', { name: 'Hand it over' })).toBeNull();
+  });
+
+  it('offers nothing on a closed account', () => {
+    // There is no live work to move. A won deal is terminal, and this must not
+    // become the control that puts a button back on it.
+    const { container } = render(
+      worked({ stage: 'closed_won', allowed_next: [], owner_id: VIEWER }),
+    );
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('offers nothing on an account nobody holds', () => {
+    // `I'm working this` already asks who is taking it. Two controls for one
+    // act would be two ways to answer the same question.
+    render(worked({ stage: 'tracking', owner_id: null, allowed_next: ['engaged'] }));
+
+    expect(screen.queryByRole('button', { name: 'Hand it over' })).toBeNull();
+  });
+
+  it('names nobody by default, and will not send until somebody is named', () => {
+    // **Handing an account over has no commonest case the product may
+    // assume.** The first colleague in a list is not a guess, it is a person.
+    render(worked());
+    fireEvent.click(screen.getByRole('button', { name: 'Hand it over' }));
+
+    expect(screen.getByLabelText('Who is taking it on')).toHaveValue('');
+    fireEvent.change(screen.getByRole('textbox'), {
+      target: { value: 'On leave until March.' },
+    });
+    // Scoped to the dialog: the toolbar control that opened it is still on the
+    // page behind, and both legitimately read *Hand it over*.
+    const confirm = within(screen.getByRole('dialog')).getByRole('button', {
+      name: 'Hand it over',
+    });
+    expect(confirm).toBeDisabled();
+  });
+
+  it('records the same stage with a new owner', async () => {
+    render(worked());
+    fireEvent.click(screen.getByRole('button', { name: 'Hand it over' }));
+    fireEvent.change(screen.getByLabelText('Who is taking it on'), {
+      target: { value: COLLEAGUE },
+    });
+    fireEvent.change(screen.getByRole('textbox'), {
+      target: { value: 'On leave until March.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Hand it to ravi@acme.com' }));
+
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    // **The stage does not move**, which is the whole point: ownership is not
+    // a lifecycle state, and inventing `transferred` would have made an event
+    // into one.
+    expect(sent().body).toEqual({
+      stage: 'engaged',
+      reason: 'On leave until March.',
+      owner_id: COLLEAGUE,
+    });
+  });
+
+  it('asks a different question than taking an account on', () => {
+    render(worked());
+    fireEvent.click(screen.getByRole('button', { name: 'Hand it over' }));
+
+    expect(screen.getByLabelText('Why is somebody else taking this on?')).toBeVisible();
+    expect(screen.queryByLabelText('Why are you taking this on?')).toBeNull();
+  });
+
+  it('does not say *you are working this* to somebody who just gave it away', async () => {
+    // **The same defect the confirm button had in LO-01**, one screen later.
+    // Recording the decision invalidates the brief, so asking *"do I hold
+    // this?"* when the panel renders would answer about the world after the
+    // act — the wording is about the act.
+    const user = userEvent.setup();
+    request.mockResolvedValue({ stage: 'engaged' });
+    render(worked({}, COLLEAGUES, { name: 'Initech', go: vi.fn() }));
+
+    await user.click(screen.getByRole('button', { name: 'Hand it over' }));
+    fireEvent.change(screen.getByLabelText('Who is taking it on'), {
+      target: { value: COLLEAGUE },
+    });
+    await user.type(screen.getByRole('textbox'), 'On leave until March.');
+    await user.click(screen.getByRole('button', { name: 'Hand it to ravi@acme.com' }));
+
+    expect(await screen.findByText('Handed over')).toBeVisible();
+    expect(screen.queryByText("You're working this")).toBeNull();
+  });
+});
+
+describe('an account somebody else holds can be taken over — LO-04', () => {
+  // **Two people believing they own an account is a real thing that happens**,
+  // and the product settles it in the open rather than preventing it: the
+  // taker is the actor, a reason is required, and the previous holder is on
+  // the row before it in the trail.
+
+  function held() {
+    return withQuery(
+      <WorkflowActions
+        opportunity={opportunity({
+          stage: 'engaged',
+          owner_id: COLLEAGUE,
+          allowed_next: ['closed_won', 'closed_lost', 'dismissed'],
+        })}
+        workspaceId="eeeeeeee-5555-4555-8555-555555555555"
+        viewerId={VIEWER}
+        colleagues={[{ id: COLLEAGUE, name: 'ravi@acme.com' }]}
+      />,
+    );
+  }
+
+  it('offers taking it over, not handing it over', () => {
+    render(held());
+
+    expect(screen.getByRole('button', { name: 'Take it over' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Hand it over' })).toBeNull();
+  });
+
+  it('says what is about to happen before it happens', () => {
+    render(held());
+    fireEvent.click(screen.getByRole('button', { name: 'Take it over' }));
+
+    expect(screen.getByText(/being worked by somebody else/)).toBeVisible();
+  });
+
+  it('assigns the account to the person taking it', async () => {
+    render(held());
+    fireEvent.click(screen.getByRole('button', { name: 'Take it over' }));
+    fireEvent.change(screen.getByRole('textbox'), {
+      target: { value: 'Agreed at the pipeline review.' },
+    });
+    // Scoped to the dialog: the toolbar control that opened it says the same
+    // thing, and correctly so.
+    fireEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Take it over' }),
+    );
+
+    await waitFor(() => expect(request).toHaveBeenCalled());
+    expect(sent().body).toEqual({
+      stage: 'engaged',
+      reason: 'Agreed at the pipeline review.',
+      owner_id: VIEWER,
+    });
+  });
+
+  it('asks no colleague, because the answer is the person asking', () => {
+    render(held());
+    fireEvent.click(screen.getByRole('button', { name: 'Take it over' }));
+
+    expect(screen.queryByLabelText('Who is taking it on')).toBeNull();
+    expect(screen.getByLabelText('Why are you taking this over?')).toBeVisible();
   });
 });
 

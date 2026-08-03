@@ -3,8 +3,12 @@
 import { ArrowDownRight, ArrowUpRight } from 'lucide-react';
 
 import { howLongAgo } from '@/components/intelligence/dates';
+import { nameOf } from '@/components/team/people';
 import type { AccountOpportunity, Stage } from '@/lib/api/types';
 import { cn } from '@/lib/design/cn';
+
+/** One instance, so a default parameter is not a new object every render. */
+const EMPTY: ReadonlyMap<string, string> = new Map();
 
 /**
  * How Signora shows a commitment — what it decided to track, and what has
@@ -65,15 +69,23 @@ const OPENED_BY_WORDING: Record<AccountOpportunity['opened_by'], string> = {
 export function WorkflowStage({
   opportunity,
   viewerId = null,
+  people = EMPTY,
 }: {
   opportunity: AccountOpportunity;
-  /** The signed-in user. **Signora can say *you* and can say nobody else's
-   * name**: Better Auth owns user profiles in the Next.js tier and the Python
-   * tier verifies tokens without ever learning who a person is (ADR-0026), so
-   * an owner arrives here as an identifier and nothing more. *"Held by someone
-   * else"* is the honest form of that — a raw identifier on screen would be
-   * the same absence dressed as information. Recorded as **D23**. */
+  /** The signed-in user, so this can say *you* rather than repeat a name the
+   * reader would have to recognise as their own. */
   viewerId?: string | null;
+  /** Everybody in the organization who can be named.
+   *
+   * **This line said *"held by someone else"* for three milestones**, and the
+   * comment justifying it said Signora *can say nobody else's name* — true
+   * when it was written, and untrue since TM-01 gave a membership an address
+   * (D23, `components/team/people.ts`). *"Someone else"* on the one line that
+   * exists to say who holds an account is the product knowing and not saying.
+   *
+   * **Empty is still honest**, not broken: a membership added by identifier
+   * has no address and reads exactly as it did before. */
+  people?: ReadonlyMap<string, string>;
 }) {
   const unclaimed = opportunity.owner_id === null;
 
@@ -102,7 +114,9 @@ export function WorkflowStage({
         <>
           {' · '}
           <span className="text-content-subtle">
-            {opportunity.owner_id === viewerId ? 'you hold this' : 'held by someone else'}
+            {opportunity.owner_id === viewerId
+              ? 'you hold this'
+              : `held by ${nameOf(opportunity.owner_id, people, viewerId)}`}
           </span>
         </>
       ) : null}

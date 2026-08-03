@@ -72,6 +72,34 @@ const HEADLINE: Record<TimelineEntryKind, string> = {
   observation_superseded: 'A detail was corrected',
 };
 
+/**
+ * The headline, which one kind cannot state on its own.
+ *
+ * **A hand-over is a workflow state whose stage did not move**, so it arrives
+ * here as `opportunity.stage_changed` with both stages equal and would have
+ * read *"Opportunity moved — Working it to Working it"*: a sentence that says
+ * nothing twice, on the feed a seller uses to understand an account. Found by
+ * asking what the new capability would project, rather than after somebody saw
+ * it (LO-04).
+ *
+ * **No owner is named, and that is the feed's own rule rather than a gap.**
+ * This surface answers *what happened to this account* and names nobody; *who
+ * did what to whom* is the decision history's question, and it has the whole
+ * state to answer it with. The reason is what a reader needs here, and it is
+ * already on the wire.
+ */
+function headlineOf(entry: TimelineEntry): string {
+  return isHandover(entry) ? 'Account handed over' : HEADLINE[entry.kind];
+}
+
+function isHandover(entry: TimelineEntry): boolean {
+  return (
+    entry.kind === 'opportunity_stage_changed' &&
+    typeof entry.detail.previous_stage === 'string' &&
+    entry.detail.previous_stage === entry.detail.new_stage
+  );
+}
+
 function detailLine(entry: TimelineEntry): string | null {
   const d = entry.detail;
   const text = (key: string): string | null =>
@@ -79,6 +107,10 @@ function detailLine(entry: TimelineEntry): string | null {
 
   switch (entry.kind) {
     case 'opportunity_stage_changed': {
+      // The reason, because on a hand-over it is the entire content of the
+      // entry — *"Ana is on leave until March"* is what a colleague opening
+      // this account next week actually needs.
+      if (isHandover(entry)) return text('reason');
       const from = text('previous_stage');
       const to = text('new_stage');
       return from && to ? `${humanise(from)} to ${humanise(to)}` : null;
@@ -183,7 +215,7 @@ export function AccountHistory({
                       PROMINENCE[entry.kind] === 'quiet' && 'text-xs text-content-muted',
                     )}
                   >
-                    {HEADLINE[entry.kind]}
+                    {headlineOf(entry)}
                   </span>
                   {detailLine(entry) ? (
                     <span className="text-xs text-content-muted">{detailLine(entry)}</span>
@@ -228,4 +260,4 @@ export function groupByDay(
   return [...days.entries()];
 }
 
-export { HEADLINE, PROMINENCE, detailLine };
+export { HEADLINE, PROMINENCE, detailLine, headlineOf };

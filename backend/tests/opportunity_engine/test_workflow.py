@@ -337,6 +337,87 @@ class TestHumansCommit:
         assert result.state.sequence == 1
         assert publisher.types() == ["opportunity.created", "opportunity.stage_changed"]
 
+    async def test_an_account_being_worked_can_be_handed_to_a_colleague(self) -> None:
+        """The move a real sales team makes constantly: leave, resignation, a
+        territory change. It changes no stage, and until LO-04 no screen could
+        reach it — a seller going on leave had to close their accounts to get
+        them off their name."""
+        qualify, transition, repository, _, publisher = build(make_score(value=60))
+        opened = await open_one(qualify)
+        assert opened.opportunity is not None
+        await move(transition, opened.opportunity.id, Stage.ENGAGED, owner=SELLER)
+
+        result = await move(
+            transition,
+            opened.opportunity.id,
+            Stage.ENGAGED,
+            owner=COLLEAGUE,
+            reason="on leave until March",
+        )
+
+        assert result.state.stage is Stage.ENGAGED
+        assert result.state.owner_id == COLLEAGUE
+        assert result.state.actor_id == SELLER
+        assert result.state.sequence == 2
+        history = await repository.history(WORKSPACE, opened.opportunity.id)
+        assert [s.owner_id for s in history] == [None, SELLER, COLLEAGUE]
+        assert publisher.types()[-1] == "opportunity.stage_changed"
+
+    def test_a_handover_is_deliberately_outside_the_stage_table(self) -> None:
+        """**Ownership is not a stage**, and the two rules together are what
+        say so: a stage cannot become itself, and a hand-over does exactly
+        that. Inventing `transferred` as a fifth stage would have made a state
+        out of an event and distorted every figure computed from the table."""
+        assert Stage.ENGAGED not in allowed_from(Stage.ENGAGED)
+
+        current = OpportunityState(
+            id=uuid4(),
+            opportunity_id=uuid4(),
+            workspace_id=WORKSPACE,
+            sequence=1,
+            stage=Stage.ENGAGED,
+            owner_id=SELLER,
+            actor_id=SELLER,
+            reason="taking this on",
+            occurred_at=NOW,
+        )
+
+        handed = next_state(
+            current,
+            state_id=uuid4(),
+            stage=Stage.ENGAGED,
+            owner_id=COLLEAGUE,
+            actor_id=SELLER,
+            reason="moving to their territory",
+            occurred_at=NOW,
+        )
+
+        assert handed.stage is current.stage
+        assert handed.owner_id == COLLEAGUE
+
+    async def test_a_colleague_may_take_over_an_account_somebody_else_holds(self) -> None:
+        """Two people believing they own an account is a real thing that
+        happens, and the product settles it in the open: the taker is the
+        actor, the reason is required, and the previous holder is on the row
+        before it. Nothing is silently overwritten."""
+        qualify, transition, repository, _, _ = build(make_score(value=60))
+        opened = await open_one(qualify)
+        assert opened.opportunity is not None
+        await move(transition, opened.opportunity.id, Stage.ENGAGED, owner=COLLEAGUE)
+
+        result = await move(
+            transition,
+            opened.opportunity.id,
+            Stage.ENGAGED,
+            actor=SELLER,
+            owner=SELLER,
+            reason="agreed at the pipeline review",
+        )
+
+        assert result.state.owner_id == SELLER
+        history = await repository.history(WORKSPACE, opened.opportunity.id)
+        assert history[-2].owner_id == COLLEAGUE
+
     async def test_a_state_change_that_changes_nothing_is_refused(self) -> None:
         qualify, transition, _, _, _ = build(make_score(value=60))
         opened = await open_one(qualify)

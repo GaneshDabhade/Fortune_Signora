@@ -289,3 +289,114 @@ A link is **bookmarkable, openable in a new tab, and keyboard-reachable without 
 ### The fake was changed to match the query
 
 `FakeOpportunityRepository.open_page` now applies the owner predicate **before the limit**, exactly as the SQL does. **A fake that filtered afterwards would agree with an implementation that returns short pages** — which is the precise defect this design exists to prevent, and it would have made the test that proves it pass against broken code.
+
+---
+
+## 13 · LO-04 — an account being worked can change hands, 2026-08-03
+
+### The slice was assigned as *ownership changes reach the account history*. The audit found the question before it
+
+**An account being worked could not be handed to anybody.**
+
+`allowed_next` is the domain's **stage** table, and it is what the brief's controls are drawn from. From `engaged` it contains `closed_won`, `closed_lost` and `dismissed` — so a seller working an account was offered *Won*, *Lost* and *Not a real opportunity*, **and no way to give it to a colleague.**
+
+> **A seller going on leave had to close their accounts to get them off their name.** Every one of the pressure points a real revenue team lives with — leave, resignation, a territory change, a manager inheriting thirty accounts — arrived at the same dead end.
+
+**Rendering ownership changes in the history without this would have rendered a fact that can occur exactly once per opportunity** — at the moment somebody first takes it on. The two are one slice because neither is worth much alone.
+
+### The domain has permitted it since M6. Nothing needed to change
+
+`next_state` refuses a row only when **the stage *and* the owner are both unchanged** — *"a state row that changes nothing is noise in the audit trail."* A same-stage row with a different owner has always been legal, `TransitionOpportunity` has always verified the new owner's membership, and the endpoint has always accepted an arbitrary `owner_id`.
+
+**No migration, no new endpoint, no new event, no domain change.** The capability was built; **the control was missing**, which is the sixth time this milestone has found that shape.
+
+### Ownership is not a stage, and the type is where that is enforced
+
+The obvious implementation is a fifth stage — `transferred`. **It is wrong**, and the reason is the one this module already states about a won deal: a stage is a **state**, a hand-over is an **event**, and a stage that exists to record an event distorts every figure computed from the table afterwards.
+
+So the control carries a `Choice`:
+
+```ts
+interface Choice {
+  stage: Stage;
+  handover: boolean;   // ownership is the change; the stage is going nowhere
+}
+```
+
+**Two independent facts, because a single enum could only hold one of them.** The hand-over control is therefore deliberately **not** driven by `allowed_next` — that list is about stages, and it structurally cannot express this.
+
+### Where it is offered, and where it is deliberately not
+
+| | |
+|---|---|
+| **Being worked, held by you** | **Hand it over** — a colleague is chosen, and the confirm stays disabled until one is |
+| **Being worked, held by somebody else** | **Take it over** — the reader becomes the owner, and the dialog says so before they commit |
+| **Nobody holds it** | ⚫ Not offered. *I'm working this* already asks who is taking it; two controls for one act would be two ways to answer one question |
+| **Closed — won, lost, dismissed** | ⚫ Not offered. There is no live work to move, and a won deal is terminal |
+| **A one-person organization** | ⚫ Not offered. **A control that cannot complete is not offered** rather than offered and refused |
+
+**Taking an account somebody else holds is allowed, on purpose.** *"Two people both think they own this"* is a real thing that happens, and the product settles it in the open: the taker is the actor, a reason is required, the previous holder appears on the row before it, and nothing is silently overwritten. **Preventing it would push the conversation outside the product**, where the record cannot follow it.
+
+### The picker has no default, which is the opposite of the take-on control
+
+Taking an account on defaults to *you* because that is overwhelmingly the commonest case. **Handing one over has no commonest case the product may assume** — the first colleague in a list is not a guess, it is a person — so the placeholder is unselectable and the confirm is disabled until somebody is named.
+
+### The history had to change, or a hand-over would have read as its opposite
+
+**The stage alone cannot say what an entry was.** A row recorded at `engaged` is *"took it on"* when the owner arrived with it and *"handed it to Ravi"* when the stage never moved. **Reading only the stage would have told a seller that Ana took on an account she had just given away.**
+
+So each entry is rendered against **the one before it**:
+
+| Entry, compared with its predecessor | Reads as |
+|---|---|
+| Owner arrived, from nobody | *took it on* |
+| Owner changed, stage did not | *handed it to ravi@acme.com* |
+| Owner changed to the actor, stage did not | *took it over from ravi@acme.com* |
+| Stage moved into `engaged`, owner is somebody else | *handed it to ravi@acme.com* |
+| Stage moved anywhere else | the stage wording, unchanged |
+
+**Ownership leads only where it is the news.** A win that also reassigned reads as *"closed it won"* — that is the fact, and the assignment beside it is bookkeeping.
+
+### D23 was true when it was written, and stopped being true
+
+The workflow line said **"held by someone else"** for three milestones, and the comment beside it said Signora *can say nobody else's name*. That was correct: the Python tier verifies tokens without ever learning who anybody is ([ADR-0026](adr/0026-jwt-boundary-architecture.md)).
+
+**TM-01 changed the fact underneath it.** A membership now carries the address it was created with, and the roster is already in the cache on every screen that needs one.
+
+> **"Someone else" on the one line whose job is to say who holds an account was the product knowing and not saying.**
+
+The decision history's own doc comment predicted this and named the wrong mechanism — it expected [C-024](../LANE_COORDINATION.md) to settle name resolution. **TM-01 settled it first.**
+
+**Three surfaces resolve a name** — the hand-over picker, the workflow line, the decision history — which is what makes `components/team/people.ts` a module rather than an expression written three times. **Two would have been a coincidence** (the rule that refused a shared history framework, [46-team-management.md](46-team-management.md) §11); three is the pattern it named as the trigger. The real argument is not repetition but agreement: **a picker offering *ana@acme.com* whose trail then says *"somebody here"* describes two people to a reader who knows there is one.**
+
+**The honest absence survives as the fallback**, for a membership added by identifier and for somebody who has since left — *a name the roster no longer holds is a fact about today, and the record is about then.*
+
+### What the hand-over would have projected onto the timeline
+
+**Asked before it shipped rather than after somebody saw it.** A hand-over publishes `opportunity.stage_changed` with **both stages equal**, and the account timeline renders `previous_stage` → `new_stage`:
+
+> **"Opportunity moved — Working it to Working it"** — a sentence that says nothing, twice, on the feed a seller uses to understand an account.
+
+It now reads **"Account handed over"**, with **the reason** as its detail — which is already on the wire and is exactly what a colleague opening the account next week needs.
+
+**No owner is named there, and that is the feed's own rule rather than a gap.** That surface answers *what happened to this account* and names nobody; *who did what to whom* is the decision history's question, and it has the whole state to answer it with. **The timeline's projection is unchanged** — no `owner_id` was added to `detail_keys`, because nothing on that surface would render it.
+
+### Two defects found by writing the test rather than by reading the diff
+
+**The success panel said *"You're working this"* to somebody who had just given the account away** — the same defect as LO-01's confirm button, one screen later.
+
+**And the fix had a second one inside it.** Recording the decision invalidates the brief, so by the time the panel renders **the account already belongs to somebody else** — asking *"do I hold this?"* then answers about the world *after* the act. The wording is about the act, so what was held at the moment of deciding is captured with the decision.
+
+### A branch that could not fail, removed
+
+`actor()` in the decision history read `state.decided_by === null ? (opened ? 'Signora' : 'Signora')` — **both arms identical.** Decorative Logic (`CLAUDE.md` §2): it looked like it distinguished the opening entry and could not. The `opened` argument is gone.
+
+### What LO-04 deliberately did not build
+
+| | |
+|---|---|
+| **Releasing an account back to nobody** | ⚠️ **Not representable.** `owner_id: null` on the request means *leave ownership unchanged*, so there is no way to express *unassign*. A real need — a rep leaves and nothing should silently inherit their pipeline — and it needs a request shape that can distinguish *absent* from *null*. **Trigger: the first customer who asks to unassign** |
+| **Acknowledgement by the new owner** | ⚫ Nothing to acknowledge with until M14a. A hand-over is currently a fact the trail records, not a message |
+| **Notifying the previous owner** | ⚫ Same. M14a |
+| **Bulk reassignment** | ⚫ **A manager inheriting thirty accounts does thirty hand-overs today.** Deliberately not built: the shape of the bulk operation should be decided by watching somebody do it slowly, not before |
+| **A required reason vocabulary** | ⚫ The free sentence is the record, and a dropdown of *leave · territory · resignation* would collect less than the sentence does |

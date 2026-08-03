@@ -1,7 +1,13 @@
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { AccountHistory, HEADLINE, PROMINENCE, detailLine } from '@/components/timeline/feed';
+import {
+  AccountHistory,
+  HEADLINE,
+  PROMINENCE,
+  detailLine,
+  headlineOf,
+} from '@/components/timeline/feed';
 import type { TimelineEntry, TimelineEntryKind } from '@/lib/api/types';
 
 const KINDS: TimelineEntryKind[] = [
@@ -108,6 +114,38 @@ describe('detail lines', () => {
         }),
       ),
     ).toBe('Open to In progress');
+  });
+
+  it('does not say a stage moved when it did not — LO-04', () => {
+    // **A hand-over is a workflow state whose stage did not move**, so it
+    // arrives here as `opportunity.stage_changed` with both stages equal and
+    // would have read *"Opportunity moved — Working it to Working it"*: a
+    // sentence that says nothing twice, on the feed a seller uses to
+    // understand an account. Found by asking what the new capability would
+    // project, rather than after somebody saw it.
+    const handover = entry({
+      kind: 'opportunity_stage_changed',
+      detail: {
+        previous_stage: 'engaged',
+        new_stage: 'engaged',
+        reason: 'On leave until March.',
+      },
+    });
+
+    expect(headlineOf(handover)).toBe('Account handed over');
+    // The reason is the entire content of the entry — what a colleague opening
+    // this account next week actually needs.
+    expect(detailLine(handover)).toBe('On leave until March.');
+  });
+
+  it('still reads a real stage change as a movement', () => {
+    const moved = entry({
+      kind: 'opportunity_stage_changed',
+      detail: { previous_stage: 'tracking', new_stage: 'engaged' },
+    });
+
+    expect(headlineOf(moved)).toBe(HEADLINE.opportunity_stage_changed);
+    expect(detailLine(moved)).toBe('Tracking to Engaged');
   });
 
   it('says a score out of one hundred rather than a bare number', () => {

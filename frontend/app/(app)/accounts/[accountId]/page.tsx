@@ -29,6 +29,7 @@ import {
   WorkflowStage,
 } from '@/components/intelligence/opportunity';
 import { WorkflowActions } from '@/components/intelligence/workflow';
+import { colleaguesFrom, peopleFrom } from '@/components/team/people';
 import { AccountHistory } from '@/components/timeline/feed';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { Card, CardBody, EmptyState, SkeletonText } from '@/components/ui';
@@ -122,6 +123,12 @@ export default function AccountBriefPage() {
   // the Team page holds, same cache key, so this costs no request — and
   // TM-01's `member_email` is what makes a name renderable at all.
   const { data: roster } = useWorkspaceMembers(workspaceId);
+  // **One resolution of a name, read by three surfaces** — the workflow line,
+  // the hand-over picker and the decision history. Three copies of *"who is
+  // this identifier"* would eventually disagree, and a brief that offers
+  // *ana@acme.com* in a picker and then says *"somebody here"* in the trail
+  // describes two people to a reader who knows there is one.
+  const people = peopleFrom(roster?.items);
   const evidence = useEvidenceDrawer();
   const { data: identities, isLoading: nameLoading } = useAccountIdentities(workspaceId, [
     accountId,
@@ -186,19 +193,9 @@ export default function AccountBriefPage() {
               to a control they have already seen. */}
           {opportunity ? (
             <div className="mt-0.5 flex flex-col gap-2.5">
-              <WorkflowStage opportunity={opportunity} viewerId={viewerId} />
+              <WorkflowStage opportunity={opportunity} viewerId={viewerId} people={people} />
               <WorkflowActions
-                colleagues={(roster?.items ?? [])
-                  .filter((one) => one.user_id !== viewerId)
-                  // **Named or not offered.** A membership added by identifier
-                  // has no address, and *"Somebody here"* in a picker is a row
-                  // nobody can choose between — the same rule the sequence
-                  // applies to an unresolved account name.
-                  .flatMap((one) =>
-                    one.member_email
-                      ? [{ id: one.user_id, name: one.member_email }]
-                      : [],
-                  )}
+                colleagues={colleaguesFrom(roster?.items, viewerId)}
                 opportunity={opportunity}
                 workspaceId={workspaceId}
                 viewerId={viewerId}
@@ -339,7 +336,7 @@ export default function AccountBriefPage() {
               sits where the page turns from Signora's argument to the record
               of what people did with it. */}
           {opportunity ? (
-            <DecisionHistory opportunity={opportunity} viewerId={viewerId} />
+            <DecisionHistory opportunity={opportunity} viewerId={viewerId} people={people} />
           ) : null}
 
           <section className="flex flex-col gap-3">
