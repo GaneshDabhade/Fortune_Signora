@@ -16,8 +16,24 @@ a derived conclusion is not a fact and a module that stored one would have
 created the second representation this architecture refuses.
 """
 
-from modules.sales_engagement.application.approach import ApproachInput, AssembleApproach
-from modules.sales_engagement.application.ports import CommitteeReader, EvidenceReader
+from modules.sales_engagement.application.approach import (
+    Approach,
+    ApproachInput,
+    AssembleApproach,
+)
+from modules.sales_engagement.application.ports import (
+    CommitteeReader,
+    EvidenceReader,
+    PortfolioReader,
+)
+from modules.sales_engagement.domain.fit import (
+    FitDimension,
+    FitReason,
+    ProductFit,
+    ProductRef,
+    fit,
+    likely,
+)
 from modules.sales_engagement.domain.reasoning import (
     STALE_AFTER_DAYS,
     ApproachReasoning,
@@ -42,6 +58,7 @@ from modules.sales_engagement.domain.reasoning import (
 
 __all__ = [
     "STALE_AFTER_DAYS",
+    "Approach",
     "ApproachInput",
     "ApproachReasoning",
     "AssembleApproach",
@@ -49,6 +66,11 @@ __all__ = [
     "CommitteeRoleRef",
     "Evidence",
     "EvidenceReader",
+    "FitDimension",
+    "FitReason",
+    "PortfolioReader",
+    "ProductFit",
+    "ProductRef",
     "NextAction",
     "RankedRole",
     "ReasoningError",
@@ -58,8 +80,10 @@ __all__ = [
     "Strength",
     "Unknown",
     "contradictions",
+    "fit",
     "rank_roles",
     "reason",
+    "likely",
     "recommend",
     "risks",
     "unknowns",

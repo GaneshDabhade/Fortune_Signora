@@ -22,6 +22,7 @@ from __future__ import annotations
 from typing import Protocol
 from uuid import UUID
 
+from modules.sales_engagement.domain.fit import ProductRef
 from modules.sales_engagement.domain.reasoning import CommitteeRoleRef, Evidence
 
 
@@ -49,3 +50,14 @@ class EvidenceReader(Protocol):
     """
 
     async def evidence(self, workspace_id: UUID, *, account_id: UUID) -> tuple[Evidence, ...]: ...
+
+
+class PortfolioReader(Protocol):
+    """What the Signora Customer sells.
+
+    **Needed only to infer which product a Target Account is about.** When the
+    seller has already said, the portfolio is not read at all — an override is
+    an answer, not a hint to be re-checked.
+    """
+
+    async def portfolio(self, workspace_id: UUID) -> tuple[ProductRef, ...]: ...

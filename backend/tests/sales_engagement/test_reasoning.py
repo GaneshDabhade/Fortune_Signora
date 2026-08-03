@@ -25,6 +25,7 @@ from modules.sales_engagement.public import (
     ReasoningError,
     Recommendation,
     RiskKind,
+    ProductRef,
     Strength,
     contradictions,
     rank_roles,
@@ -264,6 +265,16 @@ class FakeCommittees:
         return self._roles
 
 
+class FakePortfolio:
+    def __init__(self, products: tuple[ProductRef, ...]) -> None:
+        self._products = products
+        self.asked = 0
+
+    async def portfolio(self, workspace_id: UUID) -> tuple[ProductRef, ...]:
+        self.asked += 1
+        return self._products
+
+
 class FakeEvidence:
     def __init__(self, evidence: tuple[Evidence, ...]) -> None:
         self._evidence = evidence
@@ -279,6 +290,7 @@ class TestAssembly:
         assemble = AssembleApproach(
             committees=FakeCommittees((CHAMPION, BUYER)),
             evidence=FakeEvidence((appointed(),)),
+            portfolio=FakePortfolio(()),
             clock=lambda: NOW,
         )
 
@@ -286,9 +298,29 @@ class TestAssembly:
             ApproachInput(workspace_id=WORKSPACE, account_id=ACCOUNT, product_id=PRODUCT)
         )
 
-        assert result.account_id == ACCOUNT
-        assert result.roles[0].role is CHAMPION
-        assert [one.subject for one in result.unknowns] == ["CFO"]
+        assert result.reasoning.account_id == ACCOUNT
+        assert result.reasoning.roles[0].role is CHAMPION
+        assert [one.subject for one in result.reasoning.unknowns] == ["CFO"]
+
+    async def test_an_override_consults_no_portfolio_at_all(self) -> None:
+        """**An override is an answer, not a hint.** Re-checking a person's
+        decision against a guess is how a product starts arguing with its own
+        customer — and showing a fit ranking beside their answer would invite
+        them to re-litigate a decision they already made."""
+        portfolio = FakePortfolio((ProductRef(id=PRODUCT, name="Revenue Cloud"),))
+        assemble = AssembleApproach(
+            committees=FakeCommittees((CHAMPION,)),
+            evidence=FakeEvidence((appointed(),)),
+            portfolio=portfolio,
+            clock=lambda: NOW,
+        )
+
+        result = await assemble.execute(
+            ApproachInput(workspace_id=WORKSPACE, account_id=ACCOUNT, product_id=PRODUCT)
+        )
+
+        assert portfolio.asked == 0
+        assert result.fits == ()
 
 
 class TestTitleMatchingIsTheJoinAndMustNotBeLoose:

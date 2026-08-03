@@ -515,3 +515,65 @@ Token comparison handles *VP Engineering* ↔ *VP of Engineering* and will **not
 | **A model choosing the action** | ⛔ Every rule is a comparison over recorded facts |
 | **A stored recommendation** | ⛔ Derived at read time. Its inputs move daily and a stored copy would disagree within a week |
 | **An urgency of its own** | ⛔ The attention list already orders accounts. *"Everything is urgent"* is a signal-profile problem, not a synthesis one |
+
+---
+
+## 23 · SE-04 — Commercial Fit Reasoning, and the honest dimension count
+
+**Which of the Signora Customer's products is this Target Account about?** A Buying Committee is declared *per product*; an Opportunity has no product; so nothing could answer it and role ranking could not start.
+
+### One dimension today, and saying so is the discipline
+
+The product owner's list of fit dimensions is long and right: ICP match, portfolio fit, technology overlap, intent topics, hiring trends, business events, strategic initiatives, competitor technologies, existing-customer patterns, historical conversions, declared priorities, product capabilities.
+
+**Every one of them needs a declaration or a record the repository does not hold.** A `Product` is an id, a name and a description. Nothing links a product to a technology, and nothing records which ICP discovered a Target Account.
+
+> **So one dimension is implemented — committee overlap — and the enum has one value.** A `FitDimension` nothing could emit would be exactly the Decorative Logic found and fixed in `reasoning.py` an hour earlier, and adding five hopeful values would be that defect five times over.
+
+**And it reuses the SE-02 join rather than repeating it.** A product fits to the degree its declared committee is named by what happened at the Target Account — the same question, asked per product. Two implementations of one join disagree the first time either changes.
+
+### The dimensions that are not built, with their triggers
+
+| Dimension | What it needs first | Trigger category |
+|---|---|---|
+| **ICP match** | A record of *which ICP discovered this Target Account*. Discovery is not built | **Repository** |
+| **Technology overlap** | A product declaring the technologies it relates to. **A new Commercial Profile declaration**, and that module's decision | **Repository** |
+| **Intent topics** | `INTENT_TOPIC_SURGE` exists as a claim; **mapping a topic to a product is a declaration nobody has made** | **Repository** |
+| **Historical conversions** | Closed-won volume this platform does not have yet | **Operational** |
+| **Strategic initiatives · competitor technology** | Neither is modelled anywhere | **Repository** |
+| **Existing-customer patterns** | Requires customers, plural, and their outcomes | **Operational** |
+
+**Three trigger categories, distinguished on the product owner's direction**, because they are different kinds of pressure and arrive from different places:
+
+| | |
+|---|---|
+| **Repository trigger** | A declaration or record must exist first. *Somebody must build it* |
+| **Customer trigger** | A Signora Customer reports a wrong or missed inference. *Somebody must feel it* |
+| **Operational trigger** | Enough history has accumulated. *Time must pass* |
+
+**Title canonicalization now carries all three**: a repository trigger (**a third deterministic module needing title normalization** — Person Intelligence would be the second), a customer trigger (a missed match caused by abbreviation), and no operational one.
+
+### A tie is a question, and the seller still gets a screen
+
+`likely` returns `None` when two products fit equally — **guessing would be the platform inventing a commercial decision it has no evidence for**, the same refusal that stops it resolving a provider disagreement.
+
+**But the reasoning still runs**, against the best-fitting committee, and the tie is added as an unknown: *"Is this Revenue Cloud or Secure Edge? The evidence fits both equally."* **The open question is *which product*, not *whether anything is happening***, and a seller staring at an empty screen while they decide would be the product punishing them for its own uncertainty.
+
+### An override is an answer, not a hint
+
+When the seller has said which product, **the portfolio is not read at all** and no fit ranking is returned. Re-checking a person's decision against a guess is how a product starts arguing with its own customer — and showing a ranking beside their answer invites them to re-litigate a decision they already made.
+
+## 24 · What today's model does not prevent
+
+**Recorded on the product owner's direction: today's shapes must not foreclose tomorrow's.**
+
+| Tomorrow | Does today's model allow it? |
+|---|---|
+| **A richer recommendation taxonomy** — *watch · escalate · re-evaluate after next signal · engage partner · expand the committee · pause pursuit* | ✅ `NextAction` is an enum on a `Recommendation` that carries a reason and an optional role. **A new value is a new rule and a new sentence**, not a new shape |
+| **Richer contradictions** — intent says expanding, news says layoffs; hiring says growth, financials say decline | ✅ `Risk` is a kind plus a detail, and `contradictions()` is a function over the evidence set. **A cross-domain contradiction is another function**, not another model |
+| **Cumulative reasoning** — the same Target Account reads better at six months | ✅ **Already true, and free.** Nothing is stored, so every conclusion is the same graph over whatever evidence exists *now*. Density grows; the reasoning improves without retraining or tuning |
+| **Commercial memory** — *six months ago we thought Product A; today Product B; here is what changed* | ⚠️ **Not prevented, and not free.** It needs materialized reasoning with a supersession chain — the shape `ai_inference` and the prompt registry already use. **The `Approach` value is a complete snapshot**, which is exactly what such a record would hold |
+| **Person Intelligence** | ✅ A ranked role is a **slot**. Nothing derived changes shape when a name arrives |
+| **AI synthesis** | ✅ `Approach` is the closed set. **Layer 2 reads it and adds nothing** |
+
+> **The one thing that would foreclose all of it is storing a conclusion.** Today the module stores nothing, and every future capability above is a function over the same facts.
