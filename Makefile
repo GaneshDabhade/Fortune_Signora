@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: reachability smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-seed demo-users demo-narrate eval eval-reasoning eval-research
+.PHONY: environments reachability smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-seed demo-users demo-narrate eval eval-reasoning eval-research
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
 # The executable bit is filesystem state, not repository state, and it does
@@ -166,6 +166,14 @@ kpi:
 ##
 ## An entrance is a link from *outside* the route's own subtree. The Connection
 ## Center had two inbound links and was still unreachable: both were inside the
+## **Every environment, derived from its identity.** Phase 1 of the Environment
+## Framework: the model only — nothing launches from it yet.
+##
+##     make environments              the matrix
+##     make environments ARGS=--check the model agrees with RUNNING.md
+environments:
+	@python3 ./infra/environments.py $(ARGS)
+
 ## connection flow, so a customer could reach it only by already being there.
 reachability:
 	@python3 ./infra/reachability.py $(ARGS)
