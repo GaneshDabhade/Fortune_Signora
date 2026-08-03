@@ -191,9 +191,7 @@ class TestInferringWithoutAnOverride:
         assert result.reasoning.roles, "a tie left the seller with nothing to read"
 
     async def test_an_empty_portfolio_says_nothing_rather_than_guessing(self) -> None:
-        approach = assemble(
-            committees={}, evidence=(names("VP of Engineering"),), portfolio=()
-        )
+        approach = assemble(committees={}, evidence=(names("VP of Engineering"),), portfolio=())
 
         result = await approach.execute(ApproachInput(workspace_id=WORKSPACE, account_id=ACCOUNT))
 

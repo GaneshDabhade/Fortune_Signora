@@ -100,9 +100,7 @@ class AssembleApproach:
         # evidence rather than an empty screen while they answer the question.
         portfolio = await self._portfolio.portfolio(request.workspace_id)
         committees = {
-            product: await self._committees.committee(
-                request.workspace_id, product_id=product.id
-            )
+            product: await self._committees.committee(request.workspace_id, product_id=product.id)
             for product in portfolio
         }
         fits = fit(committees, evidence, now=now)

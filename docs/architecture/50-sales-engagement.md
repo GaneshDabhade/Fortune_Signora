@@ -577,3 +577,54 @@ When the seller has said which product, **the portfolio is not read at all** and
 | **AI synthesis** | ✅ `Approach` is the closed set. **Layer 2 reads it and adds nothing** |
 
 > **The one thing that would foreclose all of it is storing a conclusion.** Today the module stores nothing, and every future capability above is a function over the same facts.
+
+---
+
+## 25 · SE-09a — the synthesis contract, built before there is prose to be tempted by
+
+**The specification is one sentence**, and everything in `domain/synthesis.py` implements it:
+
+> **A synthesis must be incapable of increasing the repository's knowledge. It may only reorganize it.**
+
+### A compiler, not a prompt
+
+The model is handed a **fully constrained object** — recommendation, likely product, ranked roles, citations, contradictions, unknowns, risks — and **never raw evidence**. It is not asked to infer any of them. Its whole job is to order and phrase what it was given.
+
+**The source is assembled once and closed**, because the prompt and the validation must read from **one** set. Two assemblies would eventually differ, and the difference is exactly the space an invention would live in.
+
+### Four checks, and the third is the sharp one
+
+| | |
+|---|---|
+| **Every passage cites something** | Free-floating prose is an assertion, and this module publishes none |
+| **Every citation resolves** | Into evidence ids, role titles, unknown subjects, risk kinds or the recommendation — the things the graph produces that a paragraph can be *about* |
+| **Every number appears in the closed set** | **This is what catches invented confidence, chronology and urgency.** A fabricated *73%*, *nine months* or *twelve engineers* has nowhere to have come from — and none of the three is detectable by asking a model to behave |
+| **Every proper noun was already used** | Competitors, initiatives, departments, technologies, products and stakeholders are **all names**. One rule covers six categories of invention |
+
+**The refusal names the claim.** *"The synthesis was refused"* is not something an engineer can act on; *"it said 73% and nothing derived 73%"* is.
+
+### The rule that had to be rewritten, and what it taught
+
+**The first proper-noun check flagged every capitalised token**, so *"Approach them now"* was refused for naming a competitor called **Approach** — and the fix it invited was a growing list of English verbs, which is a list nobody can finish.
+
+> **A capital at the start of a sentence is grammar. A capital in the middle of one is a name.** That distinction removes the need for the list entirely.
+
+**The known gap is stated rather than hidden**: an invented name at the *start* of a sentence escapes this check. It is narrower than the alternative — a rule that refused every sentence's first word would refuse every synthesis — and the citation and numeral checks still bind on the same passage. **If a model is ever seen exploiting it, the answer is sentence-position-aware tagging, not a longer allowlist.**
+
+### What a refusal costs, and why that is the design
+
+**The brief renders without prose.** The seller still gets the recommendation, the ranked roles, the evidence, the unknowns and the risks — none of which was ever the model's to produce.
+
+> **Delete the synthesis and the product still works. Delete the graph and there is nothing to synthesise.** A refusal costs one paragraph; a fabrication costs the reader's trust in every other paragraph on the screen.
+
+### Evidence attribution — already structural
+
+Each `Passage` carries what it cites, so *"why does this paragraph say that?"* resolves without a second mechanism: **passage → citation → evidence → provider record.** The chain an enterprise buyer eventually asks for exists because the validation needed it anyway.
+
+### Insertion points this leaves open
+
+| | |
+|---|---|
+| **Commercial memory** | `SynthesisSource` is a complete snapshot of one moment's reasoning. **Materializing it with a supersession chain is the shape `ai_inference` already uses** — recorded, not built |
+| **Reopened questions** | An `Unknown` is a subject and a question. *"We asked this six months ago; hiring changed yesterday"* needs the snapshot above and **nothing about today's shape prevents it** |
+| **Richer unknown kinds** | *missing data · insufficient confidence · conflicting providers · not yet observable · requires human validation · external dependency* each drive a different action. **A kind is a field, not a redesign** — and each arrives when something can produce it |

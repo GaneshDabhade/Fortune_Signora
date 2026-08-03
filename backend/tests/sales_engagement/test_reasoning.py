@@ -21,11 +21,11 @@ from modules.sales_engagement.public import (
     CommitteeRoleRef,
     Evidence,
     NextAction,
+    ProductRef,
     RankedRole,
     ReasoningError,
     Recommendation,
     RiskKind,
-    ProductRef,
     Strength,
     contradictions,
     rank_roles,
@@ -446,9 +446,7 @@ class TestTheChampionWhoDisappeared:
     most embarrassing thing this module could cause."""
 
     def test_a_departure_makes_the_seat_a_question_rather_than_a_target(self) -> None:
-        result = reason(
-            account_id=ACCOUNT, committee=(CHAMPION,), evidence=(departed(),), now=NOW
-        )
+        result = reason(account_id=ACCOUNT, committee=(CHAMPION,), evidence=(departed(),), now=NOW)
 
         assert result.recommendation.action is NextAction.VERIFY
         assert "departure" in result.recommendation.reason
@@ -466,9 +464,7 @@ class TestTheChampionWhoDisappeared:
         assert result.recommendation.action is NextAction.APPROACH
 
     def test_an_empty_seat_becomes_an_unknown(self) -> None:
-        result = reason(
-            account_id=ACCOUNT, committee=(CHAMPION,), evidence=(departed(),), now=NOW
-        )
+        result = reason(account_id=ACCOUNT, committee=(CHAMPION,), evidence=(departed(),), now=NOW)
 
         assert any("since the last one left" in one.question for one in result.unknowns)
 
@@ -503,8 +499,6 @@ class TestTheChampionWhoDisappeared:
             occurred_at=NOW - timedelta(days=10),
             corroborating_providers=2,
         )
-        produced |= {
-            one.kind for one in risks(rank_roles((CHAMPION,), (surge,), now=NOW), now=NOW)
-        }
+        produced |= {one.kind for one in risks(rank_roles((CHAMPION,), (surge,), now=NOW), now=NOW)}
 
         assert produced == set(RiskKind)

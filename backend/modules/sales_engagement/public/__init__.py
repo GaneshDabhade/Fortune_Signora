@@ -55,6 +55,13 @@ from modules.sales_engagement.domain.reasoning import (
     unknowns,
     vacancy,
 )
+from modules.sales_engagement.domain.synthesis import (
+    Passage,
+    Synthesis,
+    SynthesisRefusedError,
+    SynthesisSource,
+    validate,
+)
 
 __all__ = [
     "STALE_AFTER_DAYS",
@@ -72,12 +79,16 @@ __all__ = [
     "ProductFit",
     "ProductRef",
     "NextAction",
+    "Passage",
     "RankedRole",
     "ReasoningError",
     "Recommendation",
     "Risk",
     "RiskKind",
     "Strength",
+    "Synthesis",
+    "SynthesisRefusedError",
+    "SynthesisSource",
     "Unknown",
     "contradictions",
     "fit",
@@ -87,5 +98,6 @@ __all__ = [
     "recommend",
     "risks",
     "unknowns",
+    "validate",
     "vacancy",
 ]
