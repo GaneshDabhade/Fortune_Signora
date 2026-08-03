@@ -150,6 +150,7 @@
 | [C-306](#c-306--the-opportunities-and-signals-experience-already-exists-and-lane-a-owns-half-of-it) | The Opportunities & Signals experience already exists, and Lane A owns half of it | Lane B | **Product owner** | `OPEN` | **The frontend half only.** The backend half is unassigned and Lane B can start it |
 | [C-303](#c-303--an-icp-is-not-an-addressable-thing-and-every-verb-the-brief-asks-for-needs-one) | An ICP is not an addressable thing, and every verb the brief asks for needs one | Lane B | **Product owner** | `ANSWERED` — ICP stays in Commercial Profile (2026-08-02). **The aggregate is [ADR-0041](architecture/adr/0041-icp-aggregate.md), proposed** | **Implementation, on ADR-0041's ratification** |
 | [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) | A notification is per-person, and workspace RLS is not enough | Lane B | **Product owner** (tenancy 🔴) | `OPEN` | **M14a N-01's migration.** The pattern exists; the ruling does not |
+| [C-322](#c-322--is-an-icp-a-description-or-a-filter) | Is an ICP a description, or a filter? | Lane B | **Product owner** | `OPEN` | Epic B1; the product contradicts itself on screen until it is answered |
 | [C-320](#c-320--no-environment-can-complete-a-sign-up-so-nobody-has-reviewed-the-first-hour) | No environment can complete a sign-up, so nobody has reviewed the first hour | Lane B | **Product owner** | `OPEN` | Reviewing onboarding. No implementation |
 | [C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name) | What should Signora do with a company it cannot name? | Lane B | **Product owner** | `OPEN` | A correct fix for PX-301 / PX-316 |
 | [C-308](#c-308--browser-to-api-is-in-no-gate-and-that-is-how-the-product-shipped-without-one) | Browser→API is in no gate, and that is how the product shipped without one | Lane B | **QE** | `OPEN` — **the strongest evidence yet for [C-301](#c-301--nothing-asserts-what-the-deployed-worker-consumes)**; a constraint on the answer appended 2026-08-03 ([B-311](BUGS.md)) | Nothing today. **Every future frontend defect of this class** |
@@ -3549,3 +3550,27 @@ A record can be highly significant and unidentifiable — `70b04700` has four we
 | What is it, then? | **`Needs identity` — a queue with its own workflow**, not a filter |
 
 **Why it is a coordination item rather than a bug.** Whichever answer is taken changes `knowledge_graph`'s output contract, `opportunity_engine`'s qualification rule, and a Product Surface screen. **Two lanes would otherwise encode contradictory halves of it**, which is precisely what this register exists to prevent.
+
+## C-322 · Is an ICP a description, or a filter?
+
+| | |
+|---|---|
+| **Raised by** | Lane B, 2026-08-03, Product Capability Audit ([50](architecture/50-product-capability-audit.md) §2.4, §4b) |
+| **Owner** | **Product owner**, with `commercial_profile` and `buying_score_engine` |
+| **Status** | `OPEN` |
+| **Blocks** | **Epic B1.** And it is why the product currently contradicts itself on screen |
+
+**The contradiction, measured.** *Your business* says Signora needs the catalogue *"before it can tell you anything useful about anyone else's company"*. A freshly seeded organization has **no products and twelve scored accounts** ([PX-314](PRODUCT_EXPERIENCE.md)). **One of those two screens is wrong**, and which one is a product decision.
+
+**The two positions, and each is coherent.**
+
+| | **A description** *(today)* | **A filter** *(the vision document)* |
+|---|---|---|
+| What it is | The customer's words, versioned, ungraded — *"Signora records what you say here; it does not grade anyone against it"* ([40-commercial-profile.md](architecture/40-commercial-profile.md)) | A query: `size > 500 AND uses AWS AND hiring "AI Engineer"`, with a live preview |
+| Scoring | Runs regardless. **Relevance is judged against the signal catalog, not the customer's ICP** | Relevance is measured against the declaration; an account outside it scores lower or not at all |
+| Strength | Nothing to get wrong; no false precision | The catalogue becomes load-bearing, and *Your business* becomes true |
+| Cost | **The declaration is decorative** — it changes nothing a customer can observe | Somebody must express an ICP in structured terms, which is harder than describing one |
+
+**Lane B's input, not authority.** **The claim model already supports the filter reading** — `claim(attribute, value, observed_at)` is the shape a query needs, and no new storage is required. **And a hybrid is available**: keep the prose declaration as the customer-facing artifact, derive a structured predicate from it, and let scoring consume the predicate. That preserves *"in your words, not ours"* while making the words consequential.
+
+**Why it is a coordination item.** Whichever answer is taken changes `buying_score_engine`'s relevance rule and `commercial_profile`'s public contract. **Two lanes would otherwise encode contradictory halves**, and one of them is already shipped.
