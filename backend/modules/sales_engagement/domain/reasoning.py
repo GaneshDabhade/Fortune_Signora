@@ -191,6 +191,57 @@ class Risk:
     detail: str
 
 
+class NextAction(StrEnum):
+    """What a seller should do with the next fifteen minutes.
+
+    **The question the Signora Customer is actually paying for**, and it is a
+    larger one than *"who do I contact?"*: the honest answer is often *not
+    yet*, and a platform that can only ever say *approach* is a platform whose
+    recommendation carries no information.
+
+    **Restraint is the trust mechanism.** A seller who is told to wait once,
+    correctly, believes the next *approach* — and one who is told to approach
+    every account learns to ignore all of them, which is the same failure the
+    attention list avoids by badging only the minority that matters.
+    """
+
+    APPROACH = "approach"
+    """The evidence names a role, recently, and more than one provider saw it."""
+
+    VERIFY = "verify"
+    """**One missing fact stands between here and an approach.** Named, so it
+    can be closed in a single call rather than guessed at."""
+
+    WAIT = "wait"
+    """Nothing here supports reaching out yet. **Said plainly, with why.**"""
+
+
+@dataclass(frozen=True, slots=True)
+class Recommendation:
+    """What to do, why, and — where it applies — with whom.
+
+    **`reason` is the *why now*, or the why-not-now**, and it cites the
+    evidence that decides it. A recommendation a seller cannot repeat to their
+    manager is not one this module will make.
+    """
+
+    action: NextAction
+    reason: str
+    #: The role to approach or verify. `None` on a `WAIT`, because there is
+    #: nobody to name yet.
+    role: CommitteeRoleRef | None = None
+
+    def __post_init__(self) -> None:
+        if self.action is NextAction.WAIT and self.role is not None:
+            raise ReasoningError(
+                "a recommendation to wait names a role. **Naming somebody while advising "
+                "against contact is an invitation dressed as caution**, and a seller will "
+                "read the name and ignore the advice."
+            )
+        if self.action is not NextAction.WAIT and self.role is None:
+            raise ReasoningError("a recommendation to act names nobody to act with.")
+
+
 @dataclass(frozen=True, slots=True)
 class ApproachReasoning:
     """Everything the deterministic layer concluded about one Target Account.
@@ -202,6 +253,9 @@ class ApproachReasoning:
     """
 
     account_id: UUID
+    #: **The answer to *"what should I do with the next fifteen minutes?"***,
+    #: and the first thing a seller reads. Everything below it is why.
+    recommendation: Recommendation
     roles: tuple[RankedRole, ...]
     unknowns: tuple[Unknown, ...]
     risks: tuple[Risk, ...]
@@ -406,6 +460,142 @@ def risks(roles: tuple[RankedRole, ...], *, now: datetime) -> tuple[Risk, ...]:
     return tuple(found)
 
 
+#: Event types that vacate a seat rather than fill one. **Split by direction
+#: deliberately, and the Business Event Engine already splits them the same
+#: way**: *"a leader joining and a leader leaving are not one event with a
+#: flag"*. Reasoning that read only `leadership_*` would recommend approaching
+#: somebody who has left.
+_DEPARTURES: Final[frozenset[str]] = frozenset({"leadership_departed"})
+
+
+def vacancy(role: RankedRole) -> Evidence | None:
+    """The departure that emptied this seat, if the seat is empty.
+
+    **The most recent naming event decides.** A VP who joined in March and left
+    in July is a vacancy; one who left in March and was replaced in July is
+    not. Reading the set rather than the sequence would get both wrong.
+
+    This is the *"champion disappeared"* case, and it inverts the
+    recommendation: the same evidence that would rank a role highest is the
+    evidence that means nobody is there.
+    """
+    naming = sorted(
+        (one for one in role.support if _names(one, role.role)),
+        key=lambda one: one.occurred_at,
+    )
+    if not naming:
+        return None
+    latest = naming[-1]
+    return latest if latest.type_key in _DEPARTURES else None
+
+
+def contradictions(roles: tuple[RankedRole, ...]) -> tuple[Risk, ...]:
+    """Where the evidence about one role points both ways at once.
+
+    **Reported, never resolved.** An appointment and a departure for the same
+    title, neither superseding the other, is two providers describing
+    different worlds — and picking one would be this module settling a question
+    the evidence did not.
+    """
+    found: list[Risk] = []
+    for one in roles:
+        naming = [e for e in one.support if _names(e, one.role)]
+        directions = {e.type_key in _DEPARTURES for e in naming}
+        if len(directions) > 1:
+            found.append(
+                Risk(
+                    kind=RiskKind.CONTRADICTION,
+                    detail=(
+                        f"Signora has seen this account both appoint and lose a "
+                        f"{one.role.title}, and cannot tell which is current."
+                    ),
+                )
+            )
+    return tuple(found)
+
+
+def recommend(
+    roles: tuple[RankedRole, ...],
+    *,
+    now: datetime,
+) -> Recommendation:
+    """What to do with the next fifteen minutes at this Target Account.
+
+    **The question the Signora Customer is paying for**, and the rules are
+    stated here rather than inferred by a model because every one of them is a
+    comparison over recorded facts.
+
+    Read in order, and the order is the argument:
+
+    1. **Nothing declared or nothing observed → wait.** A recommendation with
+       no committee would be Signora inventing the Signora Customer's sales
+       process; one with no evidence would be inventing a reason.
+    2. **The seat is empty → verify.** The strongest evidence for a role can
+       be the evidence that nobody holds it, and approaching a departed
+       executive is the single most embarrassing thing this module could
+       cause.
+    3. **Everything is old → wait.** A six-month-old reason to call is a
+       reason not to.
+    4. **Strong, recent, corroborated → approach**, naming the role and the
+       evidence that makes now the moment.
+    5. **Otherwise → verify**, naming the one fact that would settle it.
+
+    **`WAIT` is a first-class answer and the tests treat it as one.** A module
+    that can only say *approach* is one whose recommendation carries no
+    information.
+    """
+    ranked = tuple(one for one in roles if one.strength is not None)
+    if not ranked:
+        return Recommendation(
+            action=NextAction.WAIT,
+            reason=(
+                "Nothing Signora has observed at this account names anybody you said has to "
+                "agree. There is no argument to make yet."
+            ),
+        )
+
+    lead = ranked[0]
+    empty = vacancy(lead)
+    if empty is not None:
+        return Recommendation(
+            action=NextAction.VERIFY,
+            reason=(
+                f"The most recent thing Signora saw about this role was a departure — "
+                f"{empty.summary.lower()}. Find out who holds it now before reaching out."
+            ),
+            role=lead.role,
+        )
+
+    if all((now - e.occurred_at).days > STALE_AFTER_DAYS for e in lead.support):
+        return Recommendation(
+            action=NextAction.WAIT,
+            reason=(
+                f"Everything supporting this account is more than {STALE_AFTER_DAYS} days old. "
+                "There is nothing recent enough to open a conversation with."
+            ),
+        )
+
+    newest = max(lead.support, key=lambda one: one.occurred_at)
+    days = (now - newest.occurred_at).days
+    when = "today" if days == 0 else f"{days} days ago"
+
+    if lead.strength is Strength.STRONG:
+        return Recommendation(
+            action=NextAction.APPROACH,
+            reason=f"{newest.summary} — {when}, and more than one provider saw it.",
+            role=lead.role,
+        )
+
+    return Recommendation(
+        action=NextAction.VERIFY,
+        reason=(
+            f"{newest.summary} — {when}, but only one source supports it. Confirm it before "
+            "building an approach on it."
+        ),
+        role=lead.role,
+    )
+
+
 def reason(
     *,
     account_id: UUID,
@@ -423,7 +613,20 @@ def reason(
     ranked = rank_roles(committee, evidence, now=now)
     return ApproachReasoning(
         account_id=account_id,
+        recommendation=recommend(ranked, now=now),
         roles=ranked,
-        unknowns=unknowns(ranked),
-        risks=risks(ranked, now=now),
+        unknowns=unknowns(ranked) + _vacancies(ranked),
+        risks=risks(ranked, now=now) + contradictions(ranked),
+    )
+
+
+def _vacancies(roles: tuple[RankedRole, ...]) -> tuple[Unknown, ...]:
+    """An empty seat is something Signora does not know, and says so."""
+    return tuple(
+        Unknown(
+            subject=one.role.title,
+            question=f"Who is the {one.role.title} now, since the last one left?",
+        )
+        for one in roles
+        if one.strength is not None and vacancy(one) is not None
     )

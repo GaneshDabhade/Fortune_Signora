@@ -20,10 +20,13 @@ from modules.sales_engagement.public import (
     AssembleApproach,
     CommitteeRoleRef,
     Evidence,
+    NextAction,
     RankedRole,
     ReasoningError,
+    Recommendation,
     RiskKind,
     Strength,
+    contradictions,
     rank_roles,
     reason,
     risks,
@@ -330,3 +333,146 @@ class TestTitleMatchingIsTheJoinAndMustNotBeLoose:
         (ranked,) = rank_roles((role,), (appointed(title=observed),), now=NOW)
 
         assert ranked.strength is None, f"{declared!r} wrongly matched {observed!r}"
+
+
+def departed(*, title: str = "VP of Engineering", days_ago: int = 5) -> Evidence:
+    return Evidence(
+        event_id=uuid4(),
+        type_key="leadership_departed",
+        summary=f"Their {title} departed",
+        occurred_at=NOW - timedelta(days=days_ago),
+        corroborating_providers=2,
+        names_title=title,
+    )
+
+
+class TestWhatToDoWithTheNextFifteenMinutes:
+    """**The question the Signora Customer is actually paying for**, and it is
+    larger than *who do I contact*. A module that can only say *approach* is
+    one whose recommendation carries no information."""
+
+    def test_strong_recent_corroborated_evidence_says_approach(self) -> None:
+        result = reason(account_id=ACCOUNT, committee=(CHAMPION,), evidence=(appointed(),), now=NOW)
+
+        assert result.recommendation.action is NextAction.APPROACH
+        assert result.recommendation.role is CHAMPION
+
+    def test_the_reason_is_the_why_now(self) -> None:
+        """A recommendation a seller cannot repeat to their manager is not one
+        this module will make."""
+        result = reason(account_id=ACCOUNT, committee=(CHAMPION,), evidence=(appointed(),), now=NOW)
+
+        assert "Appointed a new" in result.recommendation.reason
+        assert "20 days ago" in result.recommendation.reason
+
+    def test_one_source_says_verify_rather_than_approach(self) -> None:
+        """**One missing fact stands between here and an approach**, and it is
+        named so it can be closed in a single call."""
+        result = reason(
+            account_id=ACCOUNT,
+            committee=(CHAMPION,),
+            evidence=(appointed(providers=1),),
+            now=NOW,
+        )
+
+        assert result.recommendation.action is NextAction.VERIFY
+        assert "only one source" in result.recommendation.reason
+
+    def test_nothing_observed_says_wait(self) -> None:
+        result = reason(account_id=ACCOUNT, committee=(CHAMPION, BUYER), evidence=(), now=NOW)
+
+        assert result.recommendation.action is NextAction.WAIT
+        assert result.recommendation.role is None
+
+    def test_everything_old_says_wait(self) -> None:
+        """A six-month-old reason to call is a reason not to."""
+        result = reason(
+            account_id=ACCOUNT,
+            committee=(CHAMPION,),
+            evidence=(appointed(days_ago=STALE_AFTER_DAYS + 30),),
+            now=NOW,
+        )
+
+        assert result.recommendation.action is NextAction.WAIT
+        assert str(STALE_AFTER_DAYS) in result.recommendation.reason
+
+    def test_waiting_never_names_somebody(self) -> None:
+        """**Naming somebody while advising against contact is an invitation
+        dressed as caution**, and a seller will read the name and ignore the
+        advice. The type refuses it."""
+        with pytest.raises(ReasoningError, match="invitation dressed as caution"):
+            Recommendation(action=NextAction.WAIT, reason="not yet", role=CHAMPION)
+
+    def test_acting_always_names_somebody(self) -> None:
+        with pytest.raises(ReasoningError, match="names nobody"):
+            Recommendation(action=NextAction.APPROACH, reason="go")
+
+
+class TestTheChampionWhoDisappeared:
+    """**The same evidence that would rank a role highest is the evidence that
+    means nobody is there.** Approaching a departed executive is the single
+    most embarrassing thing this module could cause."""
+
+    def test_a_departure_makes_the_seat_a_question_rather_than_a_target(self) -> None:
+        result = reason(
+            account_id=ACCOUNT, committee=(CHAMPION,), evidence=(departed(),), now=NOW
+        )
+
+        assert result.recommendation.action is NextAction.VERIFY
+        assert "departure" in result.recommendation.reason
+
+    def test_the_most_recent_event_decides_not_the_set(self) -> None:
+        """A VP who joined in March and left in July is a vacancy. One who
+        left in March and was replaced in July is not. **Reading the set rather
+        than the sequence would get both wrong.**"""
+        left_then_replaced = (departed(days_ago=90), appointed(days_ago=10))
+
+        result = reason(
+            account_id=ACCOUNT, committee=(CHAMPION,), evidence=left_then_replaced, now=NOW
+        )
+
+        assert result.recommendation.action is NextAction.APPROACH
+
+    def test_an_empty_seat_becomes_an_unknown(self) -> None:
+        result = reason(
+            account_id=ACCOUNT, committee=(CHAMPION,), evidence=(departed(),), now=NOW
+        )
+
+        assert any("since the last one left" in one.question for one in result.unknowns)
+
+    def test_both_directions_at_once_is_a_contradiction(self) -> None:
+        """**Reported, never resolved.** Two providers describing different
+        worlds, and picking one would be this module settling a question the
+        evidence did not."""
+        both = (appointed(days_ago=30), departed(days_ago=20))
+
+        result = reason(account_id=ACCOUNT, committee=(CHAMPION,), evidence=both, now=NOW)
+
+        assert RiskKind.CONTRADICTION in {one.kind for one in result.risks}
+
+    def test_the_contradiction_kind_is_reachable(self) -> None:
+        """**Every `RiskKind` must be producible.** A kind nothing can emit is
+        Decorative Logic — it reads as protection and enforces nothing, and
+        `CONTRADICTION` was exactly that until this rule existed."""
+        produced = set()
+        for evidence in [
+            (appointed(providers=1),),
+            (appointed(days_ago=STALE_AFTER_DAYS + 1),),
+            (appointed(days_ago=30), departed(days_ago=20)),
+        ]:
+            ranked = rank_roles((CHAMPION,), evidence, now=NOW)
+            produced |= {one.kind for one in risks(ranked, now=NOW)}
+            produced |= {one.kind for one in contradictions(ranked)}
+
+        surge = Evidence(
+            event_id=uuid4(),
+            type_key="workforce_surge",
+            summary="Engineering headcount grew 42%",
+            occurred_at=NOW - timedelta(days=10),
+            corroborating_providers=2,
+        )
+        produced |= {
+            one.kind for one in risks(rank_roles((CHAMPION,), (surge,), now=NOW), now=NOW)
+        }
+
+        assert produced == set(RiskKind)

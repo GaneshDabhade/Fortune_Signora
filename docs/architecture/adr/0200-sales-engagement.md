@@ -150,6 +150,52 @@ Every module upstream has already made *its* judgement. This one is the first th
 
 **One event, and only when a human acts:** `sales_engagement.recommendation_rejected`, carrying the role, the reason and the actor. **Nothing else** — a derived conclusion is not news, and publishing one would invite a consumer to store it.
 
+### The output is a recommendation, and *wait* is one of its values
+
+**Ratified in direction by the product owner 2026-08-03.** The Signora Customer is not paying for role ranking; they are paying for an answer to:
+
+> **"If I spend the next fifteen minutes on this Target Account, what should I do?"**
+
+**Three values, and the third is what makes the first two believable.**
+
+| | |
+|---|---|
+| **Approach** | The evidence names a Buying Committee Role, recently, and more than one provider saw it |
+| **Verify** | **One missing fact** stands between here and an approach. Named, so it closes in a single call |
+| **Wait** | Nothing here supports reaching out. **Said plainly, with why** |
+
+> **Restraint is the trust mechanism.** A seller told to wait once, correctly, believes the next *approach*. A seller told to approach every account learns to ignore all of them — the same failure the attention list avoids by badging only the minority that matters.
+
+**A recommendation to wait names nobody**, and the type refuses one that does: naming somebody while advising against contact is an invitation dressed as caution, and the reader takes the name and ignores the advice.
+
+### The rules, in order, and the order is the argument
+
+1. **Nothing declared, or nothing observed → wait.** A recommendation with no committee invents the Signora Customer's sales process; one with no evidence invents a reason.
+2. **The seat is empty → verify.** The most recent event naming the role was a departure.
+3. **Everything is old → wait.** A six-month-old reason to call is a reason not to.
+4. **Strong, recent, corroborated → approach**, citing the evidence that makes now the moment.
+5. **Otherwise → verify**, naming the one fact that would settle it.
+
+**Every rule is a comparison over recorded facts**, which is why no model is asked to make one.
+
+### The champion who disappeared
+
+**The same evidence that would rank a role highest is the evidence that means nobody is there.** `LEADERSHIP_DEPARTED` and `LEADERSHIP_APPOINTED` are separate types precisely because *"a leader joining and a leader leaving are not one event with a flag"* — and reasoning that read only `leadership_*` would recommend approaching somebody who has left.
+
+**The most recent naming event decides, not the set.** A VP who joined in March and left in July is a vacancy; one who left in March and was replaced in July is not. **Reading the set rather than the sequence gets both wrong**, and a test pins each direction.
+
+### Contradiction is now producible, which it was not
+
+`RiskKind.CONTRADICTION` existed in the first draft and **nothing could emit it** — a kind that reads as protection and enforces nothing, which is Decorative Logic (`CLAUDE.md` §2). An appointment and a departure for the same title, neither superseding the other, is two providers describing different worlds; it is now reported, **never resolved**, and a test asserts that **every** `RiskKind` is reachable.
+
+### Role canonicalization — the trigger, not the build
+
+Providers will normalize titles differently: *VP Engineering · VP of Engineering · Vice President Engineering · Engineering VP · EVP Engineering · Head of Engineering · CTO*. Token comparison after dropping filler handles the first five and **will not handle the last two** — *CTO* and *Chief Technology Officer* share no token, and *Head of Engineering* and *VP Engineering* are the same job at different companies.
+
+**Not built now.** The normalization lives in one private function in one module, and the rule stands: **three independent consumers justify extracting shared infrastructure.** Today there is one.
+
+> **The trigger is a second module needing to match a job title** — Person Intelligence would be it — **or a customer reporting a missed match that abbreviation caused.** Either turns this into a Role Canonicalization vocabulary owned where job titles are owned, and until then extraction would be generalising from a single instance.
+
 ## Consequences
 
 **Good.** The committee gets its first consumer. Every existing capability gains a purpose it did not have. No pipeline stage is duplicated. AI is confined to a layer whose input is closed and whose output is checkable. People can be added later without redesign.

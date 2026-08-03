@@ -476,3 +476,42 @@ It reads the committee (Commercial Profile), signals (Signal Engine), business e
 | **SE-11+** | Person Intelligence | ⛔ [C-210](../LANE_COORDINATION.md) |
 
 **Browser journeys** (specified, with Lane B): open a strong account → know which role to approach and why → open the evidence behind it → read what Signora does not know → disagree, with a reason → find what to ask.
+
+---
+
+## 22 · SE-02b — the recommendation, and the value of saying *wait*
+
+**The framing moved up a level on the product owner's direction**: the Signora Customer is not paying for role ranking, they are paying for an answer to *"if I spend the next fifteen minutes on this Target Account, what should I do?"*
+
+### Why *wait* is the value, not the fallback
+
+**A module that can only say *approach* has a recommendation carrying no information.** Restraint is what makes the positive case believable — a seller told to wait once, correctly, believes the next approach; a seller told to approach everything learns to ignore all of it.
+
+**And the type enforces the honest form:** a recommendation to wait **names nobody**. Naming somebody while advising against contact is an invitation dressed as caution, and a reader takes the name and ignores the advice.
+
+### The most valuable rule is the one that prevents an embarrassment
+
+> **The same evidence that would rank a role highest is the evidence that means nobody is there.**
+
+`LEADERSHIP_DEPARTED` naming your declared champion is *stronger* evidence than an appointment — and it inverts the conclusion completely. **Approaching a departed executive is the single most embarrassing thing this module could cause a seller to do**, and reasoning that read only `leadership_*` would have caused it.
+
+**The sequence decides, not the set**, and both directions are pinned by tests: joined-then-left is a vacancy, left-then-replaced is not.
+
+### A kind that nothing could produce
+
+`RiskKind.CONTRADICTION` was in the first draft and **no code path emitted it** — protection in appearance, nothing in fact. It is now produced by an appointment and a departure for the same title, and **a test asserts every `RiskKind` is reachable**, so the next one added cannot arrive decorative.
+
+### Title canonicalization — recorded, not built
+
+Token comparison handles *VP Engineering* ↔ *VP of Engineering* and will **not** handle *CTO* ↔ *Chief Technology Officer*, which share no token.
+
+**Three independent consumers justify extracting shared infrastructure; there is one.** The trigger is stated in [ADR-0200](adr/0200-sales-engagement.md): a second module needing to match a job title, or a customer reporting a missed match.
+
+### What this deliberately did not become
+
+| | |
+|---|---|
+| **A score for the recommendation** | ⛔ Three values a seller can act on beat a number they would have to interpret |
+| **A model choosing the action** | ⛔ Every rule is a comparison over recorded facts |
+| **A stored recommendation** | ⛔ Derived at read time. Its inputs move daily and a stored copy would disagree within a week |
+| **An urgency of its own** | ⛔ The attention list already orders accounts. *"Everything is urgent"* is a signal-profile problem, not a synthesis one |
