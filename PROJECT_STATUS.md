@@ -12,16 +12,16 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `08226e5`, 2026-08-03.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `630fc79`, 2026-08-03.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`08226e5`** — the certified commit itself |
-| **`integration`** | `08226e5` — level with `main` |
-| **Release candidate** | **None pinned.** Cycle 38 promoted the **Event Catalog Drift Check** |
-| **Certification** | ✅ [`08226e541959`](certification/reports/08226e541959.md) · migration head **`0030`** · protocol **v2** |
+| **`main`** | **`630fc79`** — the certified commit itself |
+| **`integration`** | `630fc79` — level with `main` |
+| **Release candidate** | **None pinned.** Cycle 39 promoted **RE-03** — certification provisions its own database |
+| **Certification** | ✅ [`630fc79b7d3f`](certification/reports/630fc79b7d3f.md) · migration head **`0030`** · protocol **v2** · **run against a database it created** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **172 commits, none outside a certified snapshot** |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **175 commits, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Both lanes.** Five separate rulings, all the product owner's — see §1c |
 | **Validation queue** | Lane A's and Lane B's branches, **both awaiting a rebase by their lane** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The cycle's finding outweighs its feature.** Running the suite in a shell that did not export `SIGNORA_DATABASE_URL` produced **three failures on the commit certified hours earlier** — a certification gate had a hidden input, so the run that certified `909374a` and the run reproducing it were measuring different things, and nothing in the record said so ([B-106](docs/BUGS.md)). It is fixed and verified by removing the variable entirely. **[B-022](docs/BUGS.md) predicted this class and stayed open; this is the first time it was observed rather than reasoned about.**
 
-**Repository health:** **2649 backend tests** · **95.50% coverage** *(floor 95)* · 719 frontend tests · 360 Security Invariants · mypy strict over **621 files** · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
+**Repository health:** **2659 backend tests** · **95.50% coverage** *(floor 95)* · 719 frontend tests · 360 Security Invariants · mypy strict over **623 files** · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
 
 ---
 
@@ -101,56 +101,54 @@
 
 ---
 
-## 1d · Release summary — 2026-08-03, cycle 38
+## 1d · Release summary — 2026-08-03, cycle 39
 
-**Derived from the promoted commit `08226e5`.** One small deterministic check that permanently closes a class of drift, and the measurement that decided its shape.
+**Derived from the promoted commit `630fc79`.** The last hand-typed correctness requirement leaves the pipeline.
 
-### `make event-catalog` — does the platform emit an event the contract does not name?
+### RE-03 — certification provisions its own database and destroys it
 
-*Repository Health · **Documentation Synchronization**.* The third sibling of `runtime-composition` (does the deployed worker consume what a module projects?) and `reachability` (can a customer reach this screen?), filling the one gap between them.
+The suite resolved its target from `SIGNORA_TEST_APP_DATABASE_URL`, so a run launched from a shell that did not export it **silently measured the shared `signora` database** — and certified correctly at that setting every time it was tried, **which is what made it dangerous rather than obvious.**
 
-**The measurement came before the checker, and changed what got built:**
+**The evidence was machine-written, not argued.** An attempt record from cycle 36, written before the first gate:
 
 ```
-declared in code   25
-in the catalog     24
-missing             1     commercial_profile.target_accounts_changed
+"test_database": "(unset — defaults to shared)"
 ```
 
-> **Twenty-four of twenty-five is a healthy repository**, and that number belongs beside the finding. [C-004](docs/LANE_COORDINATION.md) exposed a **workflow gap, not poor discipline**: the lane that emitted the event **may not edit `06-events.md`** — it is 🔴 — so §9's *"cataloged in the same change"* was unsatisfiable by the lane that incurred it. Lane B wrote the row out ready to paste and raised the item, which was correct under the rules as written.
+The same field, one cycle later:
 
-**Advisory, and the reasoning is asserted by a test rather than left in a comment.** Its one finding can only be cleared by editing a 🔴 file, so gating would make every lane's run red for a reason no lane could act on — and the second-order cost is every *other* warning being skimmed.
+```
+"test_database": "signora_certify_630fc79b7d3f"
+```
 
-### The workflow, not the row — [C-101](docs/LANE_COORDINATION.md) to Lane C
+> **Fixed by removal, not by discipline.** There is no longer a variable to forget — the environment is constructed by the run rather than inherited from the shell that launched it. **[B-022](docs/BUGS.md) is closed**, having predicted the class and then produced an instance of it.
 
-**QE built the detection and deliberately did not design the process.** A workflow that keeps a 🔴 document synchronized when the lane that must change it may not write it is governance design, and choosing one would be exactly the drift Lane C was created to end.
+**Three decisions worth reading:**
 
-**C-101 is Lane C's first assignment**, and it is the new routing model's first end-to-end test: small, bounded, with the answer genuinely open.
+| | |
+|---|---|
+| **A fresh database, not a fresh schema** | Migrations are the thing being certified. `0002` creates the least-privileged `signora_app` role and its grants; running the chain against an empty database proves it works **from nothing**, which a schema reset does not — it inherits grants somebody else applied |
+| **Named for the commit, not a UUID** | A killed run leaves a database whose name says which commit it belonged to, and the next run at that commit drops it first. A UUID leaves an orphan nobody can attribute |
+| **`DROP … WITH (FORCE)`** | A gate that fails mid-run can leave a pooled connection open, and `DROP` refuses while one exists. Without it **one failed certification would block every future run at that commit** — a single failure turned into a stuck pipeline |
 
-### Repository Health, organised into eight categories
+**Scope held.** `make smoke` and `make dr` build their own PostgreSQL inside their own compose project and are untouched. `make test` still uses whatever the developer configured — **a developer wants their data to persist between runs, and certification never does.**
 
-Repository Consistency · Release Integrity · **Documentation Synchronization** · Configuration Safety · Environment Isolation · Certification Reliability · Historical Traceability · Governance Compliance — [each with an honest gap column](docs/RELEASE_ENGINEERING.md). **A category with no gap listed is one nobody has looked at hard enough.**
+### The principle it completes
 
-Every improvement now answers one question before it is built: **what class of future mistakes does this permanently eliminate?**
+> **The workstation may affect execution speed. It must never affect execution correctness.**
 
-### The certification record was destroyed and rebuilt, not repaired
-
-**After promotion, QE ran `git checkout lane-qe -- certification/` while assembling this Closeout and discarded the manifest entry for `08226e5`.** `main` then held a commit whose certification evidence no longer existed, and `--audit-main` **failed** — correctly, and that is the check doing exactly its job.
-
-**The manifest was not edited by hand.** `tests/certification/__main__.py` states the rule it would have broken: *"Every fact is measured here, none is passed in."* An entry typed to look like a real one is indistinguishable from a real one to every future reader, which makes hand-repair the most damaging available option. **The gates were re-run**, and the restored record was produced by a run.
-
-> **Third destructive-git incident in one session**, all the same class: a git command used to undo something narrow, silently discarding uncommitted work in its blast radius. **None of the three would have been caught by `make unsaved`** — that reports work git has *never seen*, and all three were modifications to *tracked* files. A different exposure, currently surfaced by nothing.
+Measured against that, the repository had two known violations. **Both are now closed** — [B-106](docs/BUGS.md) by declaring a test's input, [B-022](docs/BUGS.md) by removing the input entirely.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **2649 backend** · 719 frontend · **95.50%** · 360 invariants · **621 files typed** |
-| **Release** | **Eight consecutive cycles with no process failure.** One certification record destroyed and rebuilt by re-running the gates |
-| **Architecture** | Runtime composition 0 unexpected · Reachability 0 doorless · **event catalog 1 known drift, tracked** |
-| **Dependency** | **39 items, 9 closed** · C-100 with Lane B · **C-101 with Lane C** |
-| **Customer Value** | ⚠️ **Indirect — ten cycles.** Lane C exists to change the reason for that |
-| **Process** | Clean |
+| **Technical** | **2659 backend** · 719 frontend · **95.50%** · 360 invariants · **623 files typed** |
+| **Release** | **Nine consecutive cycles with no process failure** |
+| **Architecture** | Runtime composition 0 unexpected · Reachability 0 doorless · event catalog 1 known drift, tracked |
+| **Dependency** | 39 items, 9 closed · C-100 with Lane B · **C-101 with Lane C** |
+| **Customer Value** | ⚠️ **Indirect — eleven cycles** |
+| **Process** | Clean. **Certification no longer inherits anything from the shell that starts it** |
 
 ### Repository Health Trend
 
@@ -374,18 +372,18 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`08226e541959`](certification/reports/08226e541959.md) · 2026-08-03 · ✅ CERTIFIED**
+**Latest certification — [`630fc79b7d3f`](certification/reports/630fc79b7d3f.md) · 2026-08-03 · ✅ CERTIFIED**
 
-**Certified commit `08226e5` · promoted commit `08226e5`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
+**Certified commit `630fc79` · promoted commit `630fc79`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
 
 | Gate | Recorded |
 |---|---|
-| **pytest** | **2649 passed** |
+| **pytest** | **2659 passed** |
 | **coverage** | **95.5%** *(floor 95%)* |
 | **Security Invariants** | **360 invariants**, each proven to fail when its guarantee is removed |
 | **import-linter** | **34 kept, 0 broken** |
-| **MyPy** | **strict, clean over 621 files** |
-| **`make smoke`** | **24 stages in 122s, slowest 2. Startup 19s** |
+| **MyPy** | **strict, clean over 623 files** |
+| **`make smoke`** | **24 stages in 120s, slowest 2. Startup 19s** |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0030`** · scenario set `0cf6b2c581e4` · working tree clean.
@@ -425,7 +423,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Indicator | Value |
 |---|---|
 | **Certification** | |
-| Certification cycles | 35 |
+| Certification cycles | 36 |
 | Certified | 29 of 30 |
 | Mean time to certify (last 5) | 13.3 min |
 | Mean smoke duration | 327.9 s |

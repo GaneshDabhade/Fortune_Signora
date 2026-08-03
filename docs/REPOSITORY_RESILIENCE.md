@@ -180,17 +180,18 @@ The product owner's taxonomy, with every artifact in this repository placed in i
 
 ---
 
-## 7 · Uncommitted work destroyed by git — three incidents, 2026-08-03
+## 7 · Uncommitted work destroyed by git — four incidents, 2026-08-03
 
 > **Knowledge, not a proposal.** The product owner asked for this class to be documented and explicitly **not** solved: *"do not implement anything yet — simply build the knowledge. Lane C can later evaluate whether this becomes repository policy."* Nothing here is a recommendation to build.
 
-**Three incidents in one session, by three different commands.** Recorded together because separately each looks like a slip, and together they are a class.
+**Four incidents in one session, and the fourth repeated the third exactly** — within two hours of this section being written. That is the finding: the first write-up identified the wrong root cause, and its recommendation was therefore wrong too.
 
 | # | Command | What it was meant to undo | What it actually destroyed | Recovered by |
 |---|---|---|---|---|
 | 1 | `git checkout infra/review.py` | A one-line test probe deliberately planted to prove a check could fail | **Three uncommitted edits** to that file — a decoupling fix, a helper, an improved message | Retyped from context |
 | 2 | `git reset --hard origin/integration` | A local branch position, before rebasing | **Five uncommitted files** — the entire Lane C governance change | **A backup taken after #1** |
 | 3 | `git checkout lane-qe -- certification/` | Restore one untracked report file from another branch | **The manifest entry certifying the commit already promoted to `main`** | **Re-running the gates** |
+| 4 | `git checkout lane-qe -- certification/manifest.json` | *(nothing — see below)* | **The same thing again, one cycle later** | **Re-running the gates** |
 
 ### Why git behaves this way, and why it is not a bug
 
@@ -216,6 +217,25 @@ Those coincide only when the file has exactly one modification. **The mismatch i
 | **`make unsaved` would not have caught any of the three** | It reports work git has **never seen** — untracked paths. **All three were modifications to tracked files**, a different exposure, and one nothing in this repository currently surfaces |
 | **Frequency** | These commands appear in ordinary recovery flows. A rule against them would fail on its first legitimate use, which is why none is proposed |
 
+### The corrected root cause — incident 4, and why it changes the conclusion
+
+**The first write-up concluded that discipline plus a scratchpad backup was the honest baseline, and that none of the tooling options cleared the repository's bar.** Two hours later the identical command destroyed the identical artifact. **A conclusion that fails within two hours of being written was reasoning about the wrong thing.**
+
+**The real cause is narrower, and better:**
+
+> **`git checkout lane-qe -- certification/` was never necessary.** `make certify` writes its manifest entry and report into the **working tree**, and the working tree carries across `git checkout <branch>` when both branches point at the same commit. **The artifacts were already there.** The command was run out of habit — to "bring them across" — and it did nothing except discard them.
+
+**A step with no upside and a destructive downside, in QE's own Closeout procedure, run twice.** That is not a discipline failure and no guard would have been the right answer:
+
+| | |
+|---|---|
+| **What the first write-up proposed** | Four mechanisms, no recommendation, *"discipline is the baseline to beat"* |
+| **What was actually needed** | **Delete the step.** It costs nothing, cannot be forgotten, and removes the class entirely for this workflow |
+
+**The general lesson is about the write-up, not the commands.** *"Four options, no recommendation"* felt appropriately humble and was in fact an abdication: it recorded the incidents without asking **why the command was being run at all.** A cause analysis that stops at *"the command is dangerous"* will always conclude *"be careful"*, because it never reaches the step that should not exist.
+
+> **Ask what the command was for before asking how to make it safe.** Twice here, the answer was *nothing*.
+
 ### The one thing that actually worked
 
 **Incident 2 was recovered because incident 1 had already happened.** A copy of the working tree taken to the scratchpad ninety seconds earlier restored five files exactly. **That is the entire mitigation observed to work in practice**, and it cost one command.
@@ -229,9 +249,9 @@ Those coincide only when the file has exactly one modification. **The mismatch i
 1. **A pre-command snapshot.** Copy modified tracked files to a scratch location before any destructive git command. Cheap; needs a hook git does not offer for `checkout`/`reset`.
 2. **Extend `make unsaved` to report modified tracked files** with an age, not only untracked ones. **Detection, not prevention** — it would not have stopped any of the three.
 3. **A wrapper that refuses a destructive command touching more paths than named.** Closest to the actual defect; also the most likely to be worked around the first time it is wrong.
-4. **Nothing.** Discipline plus the scratchpad backup, which is what worked twice. **The honest baseline**, and the one to beat.
+4. **Nothing.** Discipline plus the scratchpad backup. **This was the original recommendation and incident 4 disproved it** — the same command, the same artifact, two hours later.
 
-> **The bar this repository already sets:** *does this reduce future engineering effort more than it increases repository complexity?* **None of options 1–3 obviously clears it**, and that is why this section stops at knowledge.
+> **The bar this repository already sets:** *does this reduce future engineering effort more than it increases repository complexity?* **None of options 1–3 clears it, and none of them was needed** — the fix for incidents 3 and 4 was removing a step from a runbook, at zero cost. **Options 1–3 remain unrecommended**, and this section now says so for a better reason than before.
 
 
 ## 8 · How this document is maintained

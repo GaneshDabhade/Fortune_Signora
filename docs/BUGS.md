@@ -435,7 +435,7 @@ grep -rn "project_to_timeline" backend/apps/ --include=*.py         # no match
 | **Module** | Repository tooling — `Makefile`, the `certify` target |
 | **Current assignee** | **none — not assignable.** [C-010](LANE_COORDINATION.md), and the fourth defect to land in that gap |
 | **Severity** | 🟠 — the gate reports a number that looks like a regression and is actually a misconfiguration. **It does not fail; it under-measures** |
-| **Status** | `OPEN` |
+| **Status** | **`FIXED`** — QE, 2026-08-03, **by removal rather than by care** (RE-03). **`VERIFIED` is another lane's** |
 | **Found** | 2026-08-02, by QE, certifying `c3435a0` — it cost two full gate runs before the cause was clear |
 
 **Steps to reproduce.** From a shell without the lane database variables:
@@ -474,6 +474,24 @@ make certify
 **Recovered 2026-08-02, by an audit of the register.** This row was written at Closeout `7a08922`, reached `main`, and then **vanished from both branches** — removed without record when `integration` was rebased in the following cycle. **Nobody noticed; an audit found it.** That is the point: a defect that leaves the register is indistinguishable from one that was never reported. Same failure mode as [B-017](BUGS.md), now applied to the register that exists to prevent it.
 
 ---
+
+### Closed 2026-08-03 by RE-03 — the input no longer exists
+
+**This row predicted a class and then produced an instance of it.** An attempt record written by `make certify`, before the first gate:
+
+```
+"test_database": "(unset — defaults to shared)"
+```
+
+**That is this bug observed rather than reasoned about**, and the direction was the alarming one: the run that certified was the lucky one.
+
+**`make certify` now creates `signora_certify_<commit>`, migrates it to head, runs every gate against it, and drops it in a `finally`.** The same field, one cycle later:
+
+```
+"test_database": "signora_certify_630fc79b7d3f"
+```
+
+**Fixed by removal, not by discipline.** There is no longer a variable to forget — the environment is constructed by the run rather than inherited from the shell that launched it. **The workstation may affect execution speed; it can no longer affect execution correctness.**
 
 
 ### B-026 · The repository does not own its line endings, and depends on every contributor's git config

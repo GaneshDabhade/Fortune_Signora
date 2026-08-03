@@ -158,6 +158,10 @@ make dr
 - [ ] `make dr` succeeded
 - [ ] The certification record names **this commit** and the current migration head
 
+> ⚠️ **Never run `git checkout <branch> -- certification/`.** It is not in this runbook and never was — QE invented the step twice, out of a belief that the certification artifacts needed "bringing across" a branch switch. **They do not.** `make certify` writes into the *working tree*, and the working tree carries across `git checkout <branch>` when both branches point at the same commit. The command has **no upside and one downside**: it discards the manifest entry certifying the commit you are about to promote, and `--audit-main` then correctly reports that something reached `main` without a gate.
+>
+> **It happened twice on 2026-08-03**, in cycles 38 and 39, and both times the only honest recovery was to **re-run every gate** — a hand-written manifest entry is indistinguishable from a real one to every future reader ([`REPOSITORY_RESILIENCE.md`](REPOSITORY_RESILIENCE.md) §7).
+
 > **Certification expires by derivation, never by decision.** Change the rendering protocol, re-release a prompt, add a migration or edit a scenario and `is_certified` reads false on its own. **Nothing is ever marked certified by hand.**
 >
 > **If any gate fails: stop.** The cycle does not continue, and no part of the promotion happens.
