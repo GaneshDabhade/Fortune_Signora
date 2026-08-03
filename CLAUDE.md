@@ -512,6 +512,16 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 
 **Lane C owns no production module, no bounded context, and no implementation responsibility.** It does not write production code until explicitly assigned, and **it must never silently become the owner of roadmap priority, commercial priority, release sequencing or product direction** — those are the product owner's, and a lane that prepares a decision is not the lane that takes it.
 
+**Where the line falls in practice**, because the first case arrived within hours of Lane C existing:
+
+| Lane C may | Lane C may not |
+|---|---|
+| **Decompose an already-approved epic** into implementation-ready `TASK-nnn` rows | **Introduce scope** the product owner has not approved |
+| Record which lane a task belongs to, by module ownership | **Reorder** the queue, or change a task's priority |
+| Answer a coordination item and thereby unblock work | Decide *whether* the work is worth doing |
+
+> **The test is whether the product owner would recognise the outcome as their own decision, already made.** Decomposition makes an approved decision executable; prioritisation makes a new one. **The first is Lane C's whole purpose; the second is never delegated** — and a row in `BACKLOG.md` must say which it is, as [`TASK-400`](docs/BACKLOG.md) does: *"already approved by the product owner — not new scope."*
+
 **Lane C is the first lane that needs no runtime.** A clone, a branch, the documentation and repository access — **no ports, no database, no Redis index, no MinIO bucket, no compose project.** Its row in [`RUNNING.md`](docs/RUNNING.md#running-a-lane) records the absence rather than an allocation.
 
 **Responsibilities migrating from QE to Lane C**, as Lane C becomes operational: ADR drafting · engineering-policy drafting · roadmap and epic decomposition · implementation planning and specifications · cross-module architecture review · product consistency review · feature sequencing · task preparation · capability analysis · competitive architecture studies · decision preparation. **QE keeps quality, certification, release engineering, repository health, environment isolation, the Human Review and Product Review platforms, reproducibility and regression prevention.**
@@ -863,7 +873,7 @@ Together these appear in roughly two thirds of all commits. **A lane does not ed
 | [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md) | **The lifecycle runbook** — every command and tick-box from validation to Repository Ready | **QE** |
 | `PROJECT_STATUS.md` | **The executive dashboard** — *"where are we?"*, measured | **QE**, at Closeout |
 | [`docs/SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) | **Operational context** — *"what should the next session know?"* | **QE**, at Closeout |
-| [`docs/BACKLOG.md`](docs/BACKLOG.md) | **The READY queue** — *"what is available, and in what order?"* | **Product owner.** A lane writes **only** its claim; QE writes nothing |
+| [`docs/BACKLOG.md`](docs/BACKLOG.md) | **The READY queue** — *"what is available, and in what order?"* | **Product owner owns scope and order.** **Lane C writes decompositions of already-approved scope** into implementation-ready tasks — never new scope, never a reordering. An implementation lane writes **only** its claim. QE writes nothing |
 | [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) | **The execution board, and nothing else** — who is working · on which `TASK-nnn` · on which branch · at what execution status. **It does not define priority** | **The claiming lane**, at once. **QE** reconciles it at Closeout |
 | `docs/architecture/38` · `39` | Design decisions · review findings | **QE**, at merge |
 | The roadmaps | *Scope* is the product owner's · *progress* is QE's | Both, as marked |
