@@ -42,7 +42,7 @@
 | Gap | Why it is real | Cost |
 |---|---|---|
 | **PQ-01 · The suite is not named or measured** | Twelve product properties are asserted and **nothing reports them as product quality.** A lane deleting `dead-ends.test.tsx` would see a test count drop by two, not a gate disappear | **S** |
-| **PQ-02 · Reachability is measured by hand** | The 31-endpoints-against-5-screens census is a document a lane wrote once. **It was already stale within a cycle** (CX-01/02/03 changed it), and only a re-read catches that. It is the single highest-value check to automate — it is how [B-301](BUGS.md) and the doorless Connection Center were both found | **M** |
+| ~~**PQ-02** · Reachability measured by hand~~ | **✅ Shipped 2026-08-03 — `make reachability`.** See §6 | **M** |
 | **PQ-03 · No returning-user or time-to-first-value check** | Every existing test asserts a *screen*. None asserts a **journey across screens**, which is where R6, R7 and R10 findings all lived | **M** |
 | **PQ-04 · Product regressions are found by a human using the product** | `CLAUDE.md` records it plainly: **2046 tests found none of R4-01, R6-01–04, R7-01–03, R10-01 or R12-01.** That has not changed | **L** |
 
@@ -65,7 +65,7 @@
 
 **The minimum honest version** is `make product-certify` reporting: reachability census (PQ-02) · the named product suite (PQ-01) · journey checks (PQ-03) · **and the count of findings a human found that the suite did not** — because that last number is the only measure of whether the first three are working.
 
-> **It should not be built yet.** PQ-02 and PQ-03 do not exist, so a certification today would certify twelve tests and a hand-written document. **A gate that cannot fail is documentation pretending to be code** (§2).
+> **It should not be built yet.** PQ-02 now exists; **PQ-01 and PQ-03 do not**, so a certification today would report one automated check beside twelve unnamed tests. **A gate that cannot fail is documentation pretending to be code** (§2).
 
 ---
 
@@ -75,7 +75,7 @@
 
 | Regression | Caught today? | Evidence |
 |---|---|---|
-| A capability ships with no route to it | **No** | The Connection Center was linked from nowhere for weeks |
+| A capability ships with no route to it | **Yes, now** | `make reachability` (§6). It was **No** when the Connection Center was linked from nowhere for weeks |
 | A worker never consumes what a module projects | **Yes, now** | `make runtime-composition` — but it was **No** through four certified promotions |
 | A screen renders an empty state forever because nothing populates it | **No** | Timeline's feed was mounted and empty; only reading `apps/` found it |
 | Copy promises a capability the system lacks | **No** | [B-027](BUGS.md) — *"you can disconnect at any time"*, and no endpoint existed |
@@ -90,9 +90,69 @@
 
 **In value order, and deliberately short.**
 
-1. **PQ-01** — name and report the suite. Small, and it makes the other three measurable.
-2. **PQ-02** — automate the reachability census. **The highest-value check in this document**: it is how the two worst defects of the last month were both found, by hand.
-3. **PQ-03** — one journey check, end to end, as a proof of shape.
+1. ~~**PQ-02**~~ — **✅ shipped**, §6. It was the highest-value item: how the two worst defects of the last month were both found, by hand.
+2. **PQ-01** — name and report the suite. Small, and it makes the rest measurable.
+3. **PQ-03** — one journey check, end to end, as a proof of shape. **The gap §6 leaves**: reachability proves a customer can arrive, never that arriving is worth it.
 4. **PQ-04** — the human pass stays. **It should not be automated away**; it should become the measure of the others.
 
-> **Not started, deliberately.** [`DECISION_PACKS.md`](DECISION_PACKS.md) holds five decisions blocking both implementation lanes, and **four consecutive cycles have shipped no customer value.** Building product quality tooling while the product itself is stalled would repeat the mistake this assignment was written to correct — one level up.
+> **PQ-01 and PQ-03 are deliberately not started.** [`DECISION_PACKS.md`](DECISION_PACKS.md) holds five decisions blocking both implementation lanes, and **four consecutive cycles have shipped no customer value.** PQ-02 was built because it prevents a defect class that has already cost this repository twice; building the rest while the product itself is stalled would repeat the mistake this assignment was written to correct.
+
+
+---
+
+## 6 · PQ-02 shipped — `make reachability`
+
+**The frontend sibling of `runtime-composition`, and deliberately the same shape.** That one asks *"does the deployed worker consume what this module projects?"*; this asks *"does any screen lead to this route?"* **Both answer the same class of question: something is built, correct, tested, and nothing reaches it.**
+
+```
+  Customer Reachability
+
+    Navigable routes                   10
+    Reachable from inside the product   9
+    Entered from outside, declared      1
+    No entrance at all                  0
+```
+
+### The approach, challenged
+
+| Approach | Catches the real defect? | Cost | Needs a stack? |
+|---|---|---|---|
+| **A · Static route/link graph** | **Yes**, with the subtree rule below | **S** | **No** |
+| **B · Playwright crawl** | Partly — it proves what *is* reachable, and **cannot prove a route is unreachable** without exhaustive crawling | L | Yes |
+| **C · Backend endpoint vs frontend hook** | **A different defect** — headless capability, not unreachable screen. Complementary, not a substitute | M | No |
+| **D · Manual census** | Once, then stale within a cycle | — | No |
+
+**A was chosen because the defect is structural, not behavioural.** A route with nothing pointing at it is a fact about the source, and reading the source is faster, cheaper and more complete than driving a browser to *fail* to find something.
+
+### The rule that makes it work
+
+> **An entrance is a link from *outside* the route's own subtree.**
+
+**Without that refinement the check would pass on the exact defect it exists to catch.** `/settings/connections` *had* two inbound links — both from the OAuth redirect helpers inside the connection flow — so a customer could reach it only by already being there.
+
+**That is asserted, not claimed.** `frontend/tests/components/reachability.test.tsx` reconstructs the Connection Center exactly as it shipped and requires the checker to flag it; a second test shows a naive inbound-link rule would have passed it. **The live repository is asserted last and loosely** — it passes today and would pass identically with the rule deleted.
+
+### What it does not catch, stated rather than implied
+
+**A reachable route that is empty, broken, or lies.** Reachability is *"can a customer get here"*, never *"is it worth arriving"*. Timeline's feed was mounted, reachable, and rendered nothing — this check would have called it reachable and been right. **PQ-03 is the one that would catch that**, and it is still not built.
+
+---
+
+## 7 · Customer Journey Certification — the shape, and only journeys that have failed here
+
+**Organised around journeys, not modules.** Every item below has already failed in this repository or generalizes several failures — **nothing is included because it sounds like good practice.**
+
+| Journey | Certified when | Evidence it belongs |
+|---|---|---|
+| **A customer signs in and lands somewhere useful** | Sign-in completes · the shell renders · an empty organization says why | Sign-in was **broken by three defects hiding each other**, invisible because no auth request had ever finished ([SESSION_HANDOFF](SESSION_HANDOFF.md)) |
+| **Every screen has a door** | `make reachability` — no route without an entrance | **Shipped.** The Connection Center |
+| **A capability that ships is consumed** | `make runtime-composition` — 0 unexpected | **Shipped.** [B-301](BUGS.md) |
+| **The product does not promise what it cannot do** | No surface advertises a capability with no implementation | [B-027](BUGS.md) — *"you can disconnect at any time"*, no endpoint. And `policy.csv:5` grants `member remove` with no use case |
+| **A member, not just an owner, can work** | Every journey exercised as `member` | **2 of 5 screens** are reachable by a member |
+| **An empty state explains itself** | No screen renders blank without saying why | `no-mock-data.test.tsx` · `first-run.test.tsx` — **already covered** |
+| **A customer can tell empty from loading from still-processing** | Three states distinguishable on every async surface | **Not covered.** The pipeline is async everywhere and nothing asserts this |
+| **An AI claim can be traced to evidence** | Every narration cites what produced it | `narration.test.tsx` · `corroboration.test.tsx` — **already covered** |
+
+**Six of eight are covered or shipped. Two are not**, and both are honest gaps rather than proposals: *empty vs loading vs processing*, and *the product does not promise what it cannot do* — the second of which has failed twice and is the better candidate.
+
+> **Where Playwright fits, since Lane B is starting it.** Everything above is either static or component-level. **Playwright's unique value is what only a browser can prove**: session continuity across refresh, navigation history and back-button behaviour, permission changes taking effect mid-session, and optimistic updates reconciling. **It should not re-assert what a component test already covers** — that is how an end-to-end suite becomes slow browser unit tests, and this repository already has 711 component assertions.

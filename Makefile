@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-seed demo-users demo-narrate eval eval-reasoning eval-research
+.PHONY: reachability smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-seed demo-users demo-narrate eval eval-reasoning eval-research
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
 # The executable bit is filesystem state, not repository state, and it does
@@ -159,6 +159,16 @@ certified:
 ##     make kpi ARGS="--markdown"      # the block PROJECT_STATUS.md carries
 kpi:
 	@python3 ./infra/kpi.py $(ARGS)
+
+## **Can a customer get to this screen?** The frontend sibling of
+## `runtime-composition` — that asks whether the deployed worker consumes what a
+## module projects; this asks whether any screen leads to a route.
+##
+## An entrance is a link from *outside* the route's own subtree. The Connection
+## Center had two inbound links and was still unreachable: both were inside the
+## connection flow, so a customer could reach it only by already being there.
+reachability:
+	@python3 ./infra/reachability.py $(ARGS)
 
 ## What does the deployed worker actually consume? (B-301)
 #
