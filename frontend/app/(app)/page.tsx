@@ -2,6 +2,8 @@
 
 import { LineChart } from 'lucide-react';
 import { useMemo } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 import {
   AttentionScore,
@@ -25,6 +27,12 @@ import {
 import { useSession } from '@/lib/auth/client';
 import { useTargetAccounts } from '@/lib/query/hooks/commercial';
 import { useWorkspaceMembers } from '@/lib/query/hooks/team';
+import {
+  SCOPE_WORDS,
+  scopeFrom,
+  withScope,
+  type OwnerScope,
+} from '@/lib/state/owner-scope';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -54,7 +62,11 @@ import { useWorkspaceContext } from '@/lib/state/workspace-provider';
  */
 export default function AttentionPage() {
   const { activeWorkspace, isLoading: workspacesLoading } = useWorkspaceContext();
-  const { data, isLoading, isError } = useAccounts(activeWorkspace?.id ?? null);
+  // **From the URL, so the view survives a refresh, browser back and a second
+  // tab** — and so it can travel on the account link, which is what keeps the
+  // brief's *next* inside the list a seller was working (D41).
+  const scope = scopeFrom(useSearchParams().get('owner'));
+  const { data, isLoading, isError } = useAccounts(activeWorkspace?.id ?? null, scope);
   // Names arrive in a second request and the rows do not wait for them: the
   // score and the reason are what a seller triages on, and blocking the list
   // on a name would trade the decision for the label.
@@ -116,6 +128,32 @@ export default function AttentionPage() {
           is the state every brand-new account is in, and a blank page is
           indistinguishable from a broken one. */}
       {!workspacesLoading && activeWorkspace === null ? <NoWorkspace /> : null}
+
+      {/* **Three views, as links.** A link is what makes the choice
+          bookmarkable, openable in a new tab and reachable by keyboard without
+          a widget — and the scope has to live in the URL anyway, so the brief
+          can read the list a seller was working (D41).
+
+          **Only once there is an organization**: a filter above an empty
+          screen is a control over nothing. */}
+      {activeWorkspace !== null ? (
+        <nav aria-label="Whose work" className="flex items-center gap-1">
+          {(['all', 'mine', 'unassigned'] as const).map((one) => (
+            <Link
+              key={one}
+              href={withScope('/', one)}
+              aria-current={one === scope ? 'page' : undefined}
+              className={
+                one === scope
+                  ? 'rounded bg-accent-subtle px-2.5 py-1 text-sm font-medium text-accent'
+                  : 'rounded px-2.5 py-1 text-sm text-content-muted transition-colors hover:bg-surface-sunken hover:text-content'
+              }
+            >
+              {SCOPE_WORDS[one]}
+            </Link>
+          ))}
+        </nav>
+      ) : null}
       {isLoading ? <Loading /> : null}
       {isError ? <Unavailable /> : null}
       {/* `undefined` while the declaration is still loading, which keeps the
@@ -138,6 +176,7 @@ export default function AttentionPage() {
                 }
                 viewerId={viewerId}
                 owners={owners}
+                scope={scope}
               />
             </li>
           ))}
@@ -167,6 +206,7 @@ export default function AttentionPage() {
  */
 function AccountRow({
   account,
+  scope,
   identity,
   namesLoading,
   hypothesis,
@@ -185,6 +225,8 @@ function AccountRow({
    * Absent while the roster loads — the badge then says *Taken*, which is what
    * it said before this existed. */
   owners?: ReadonlyMap<string, string> | undefined;
+  /** The view this row was reached from, so opening it does not lose it. */
+  scope: OwnerScope;
 }) {
   return (
     // No card-wide hover. **Only the account name opens the brief**, and a card
@@ -200,7 +242,11 @@ function AccountRow({
           <EntityName
             identity={identity}
             fallbackId={account.account_id}
-            href={`/accounts/${account.account_id}`}
+            // **Carries the view.** The brief reads the same query to offer
+            // *next* (D41); without this a seller filtered to their own work
+            // would be handed somebody else's account and dropped out of the
+            // list they were working.
+            href={withScope(`/accounts/${account.account_id}`, scope)}
             isLoading={namesLoading}
           />
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">

@@ -20,7 +20,11 @@ from modules.buying_score_engine.public import (
     ScoreTrigger,
     Trend,
 )
-from modules.opportunity_engine.domain.opportunity import Opportunity, OpportunityState
+from modules.opportunity_engine.domain.opportunity import (
+    Opportunity,
+    OpportunityState,
+    OwnerScope,
+)
 from modules.opportunity_engine.domain.policy import WorkspaceOpportunityPolicy
 from modules.signal_engine.public import Relevance, SignalType
 from modules.workspace_tenancy.public import MembershipView
@@ -134,9 +138,21 @@ class FakeOpportunityRepository:
         return None
 
     async def open_page(
-        self, workspace_id: UUID, *, after: CursorPosition | None, limit: int
+        self,
+        workspace_id: UUID,
+        *,
+        after: CursorPosition | None,
+        limit: int,
+        scope: OwnerScope = OwnerScope.ALL,
+        viewer_id: UUID | None = None,
     ) -> tuple[tuple[Opportunity, OpportunityState], ...]:
-        """Mirrors the SQL: open only, keyset on `(created_at, id)`."""
+        """Mirrors the SQL: open only, keyset on `(created_at, id)`.
+
+        **The owner predicate is applied before the limit**, exactly as the
+        query does. A fake that filtered afterwards would agree with an
+        implementation that returns short pages — which is the defect the
+        server-side scope exists to prevent.
+        """
         page: list[tuple[Opportunity, OpportunityState]] = []
         for opportunity in sorted(self.rows, key=lambda o: (o.created_at, o.id.bytes)):
             if opportunity.workspace_id != workspace_id:
@@ -148,6 +164,10 @@ class FakeOpportunityRepository:
                 continue
             state = self._latest(opportunity.id)
             if state is None or not state.is_open:
+                continue
+            if scope is OwnerScope.MINE and state.owner_id != viewer_id:
+                continue
+            if scope is OwnerScope.UNASSIGNED and state.owner_id is not None:
                 continue
             page.append((opportunity, state))
             if len(page) == limit:

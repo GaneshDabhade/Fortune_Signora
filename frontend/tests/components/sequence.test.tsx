@@ -13,7 +13,10 @@ import { AccountSequence } from '@/components/intelligence/sequence';
 import type { AccountAttention, AccountIdentity } from '@/lib/api/types';
 
 const push = vi.hoisted(() => vi.fn());
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push }),
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 function account(id: string): AccountAttention {
   return {

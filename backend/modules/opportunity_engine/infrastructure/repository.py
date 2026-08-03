@@ -25,6 +25,7 @@ from modules.opportunity_engine.domain.opportunity import (
     TERMINAL_STAGES,
     Opportunity,
     OpportunityState,
+    OwnerScope,
     Qualification,
     Stage,
 )
@@ -107,9 +108,7 @@ class SqlOpportunityRepository:
             .subquery()
         )
 
-    async def open_for_entity(
-        self, workspace_id: UUID, entity_id: UUID
-    ) -> Opportunity | None:
+    async def open_for_entity(self, workspace_id: UUID, entity_id: UUID) -> Opportunity | None:
         latest = self._latest_sequence()
         row = (
             await self._session.execute(
@@ -132,9 +131,22 @@ class SqlOpportunityRepository:
         return _to_opportunity(row) if row is not None else None
 
     async def open_page(
-        self, workspace_id: UUID, *, after: CursorPosition | None, limit: int
+        self,
+        workspace_id: UUID,
+        *,
+        after: CursorPosition | None,
+        limit: int,
+        scope: OwnerScope = OwnerScope.ALL,
+        viewer_id: UUID | None = None,
     ) -> tuple[tuple[Opportunity, OpportunityState], ...]:
-        return await self._page(workspace_id, OPEN_STAGES, after=after, limit=limit)
+        return await self._page(
+            workspace_id,
+            OPEN_STAGES,
+            after=after,
+            limit=limit,
+            scope=scope,
+            viewer_id=viewer_id,
+        )
 
     async def decided_page(
         self, workspace_id: UUID, *, after: CursorPosition | None, limit: int
@@ -160,6 +172,8 @@ class SqlOpportunityRepository:
         after: CursorPosition | None,
         limit: int,
         newest_first: bool = False,
+        scope: OwnerScope = OwnerScope.ALL,
+        viewer_id: UUID | None = None,
     ) -> tuple[tuple[Opportunity, OpportunityState], ...]:
         latest = self._latest_sequence()
         order = (
@@ -182,6 +196,13 @@ class SqlOpportunityRepository:
             .order_by(*order)
             .limit(limit)
         )
+        # **In the query, so the cursor walks the filtered set.** Filtering the
+        # returned rows would page over everything and show a short page of
+        # *mine*, which is a different list wearing the same name.
+        if scope is OwnerScope.MINE:
+            statement = statement.where(OpportunityStateModel.owner_id == viewer_id)
+        elif scope is OwnerScope.UNASSIGNED:
+            statement = statement.where(OpportunityStateModel.owner_id.is_(None))
         if after is not None:
             position = tuple_(OpportunityModel.created_at, OpportunityModel.id)
             statement = statement.where(
@@ -245,9 +266,7 @@ class SqlOpportunityRepository:
             )
             # A concurrent qualification took this generation. Losing that
             # race is the mechanism working, not an error to report.
-            .on_conflict_do_nothing(
-                index_elements=["workspace_id", "entity_id", "generation"]
-            )
+            .on_conflict_do_nothing(index_elements=["workspace_id", "entity_id", "generation"])
             .returning(OpportunityModel.id)
         )
         if (await self._session.execute(statement)).scalar_one_or_none() is None:
@@ -314,9 +333,7 @@ class SqlOpportunityRepository:
         )
         return tuple(_to_state(row) for row in rows.scalars())
 
-    async def for_entity(
-        self, workspace_id: UUID, entity_id: UUID
-    ) -> tuple[Opportunity, ...]:
+    async def for_entity(self, workspace_id: UUID, entity_id: UUID) -> tuple[Opportunity, ...]:
         rows = await self._session.execute(
             select(OpportunityModel)
             .where(

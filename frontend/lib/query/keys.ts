@@ -24,7 +24,10 @@ export const queryKeys = {
   invitations: (workspaceId: string) =>
     ['workspace', workspaceId, 'invitations'] as const,
 
-  accounts: (workspaceId: string) => ['workspace', workspaceId, 'accounts'] as const,
+  /** **Scoped, so *mine* and *everything* are two lists.** The server applies
+   * the predicate in the page query, so they genuinely are. */
+  accounts: (workspaceId: string, scope: string = 'all') =>
+    ['workspace', workspaceId, 'accounts', scope] as const,
 
   accountScore: (workspaceId: string, accountId: string) =>
     ['workspace', workspaceId, 'accounts', accountId, 'score'] as const,

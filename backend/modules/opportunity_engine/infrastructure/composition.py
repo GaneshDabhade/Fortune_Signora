@@ -59,9 +59,7 @@ def build_transition_opportunity(
     )
 
 
-def build_queries(
-    session: AsyncSession, *, scores: BuyingScoreQueries
-) -> OpportunityQueries:
+def build_queries(session: AsyncSession, *, scores: BuyingScoreQueries) -> OpportunityQueries:
     return OpportunityQueries(
         repository=SqlOpportunityRepository(session),
         policies=SqlOpportunityPolicyRepository(session),

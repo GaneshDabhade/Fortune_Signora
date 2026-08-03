@@ -111,9 +111,7 @@ class TransitionOpportunity:
                 "This account has no opportunity in this workspace."
             )
 
-        current = await self._repository.current_state(
-            request.workspace_id, request.opportunity_id
-        )
+        current = await self._repository.current_state(request.workspace_id, request.opportunity_id)
         if current is None:
             raise OpportunityError(
                 # Reaches a customer as a 422, so no identifier (R4-03) — and

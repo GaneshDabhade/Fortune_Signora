@@ -242,3 +242,50 @@
 **No endpoint, no field, no migration, no component.** One optional prop, one fallback, and a map threaded from a query that was already cached by two other screens — so **it costs no request**.
 
 **LO-03 follows directly**: the list now shows ownership, and filtering to *mine* is a predicate over a field the row already carries.
+
+
+---
+
+## 12 · LO-03 — whose work the list is showing, 2026-08-03
+
+### The pagination question decided the slice
+
+**The attention list is a `CursorPage`.** So filtering the returned rows would mean **"mine on this page"** — which reads correctly at twelve accounts and **silently becomes a lie at two hundred**: nine of somebody else's followed by two of mine returns a page of two while claiming to be a page of ten.
+
+> **The predicate is in the page query**, so the cursor walks the filtered set. **One `where` clause, and the semantics are correct at any size.** A test asserts exactly that arrangement.
+
+### And it had to travel on the link, or *next* would break
+
+**The brief reads the same query to offer the next account (D41).** A seller filtered to *Mine*, who decides and is then handed **somebody else's** account, has been dropped out of the list they were working — silently, at the one moment the product is certain they are ready to continue.
+
+**So the scope lives in the URL and rides the row's `href`.** Three properties fall out of that, and all three were asked for: **it survives a refresh · it survives browser back · it opens in a second tab as a different view.** A `useState` would lose all three.
+
+**`all` is left out of the URL**, because a clean address is the one a seller copies.
+
+### The filter set — three, not ten
+
+| | |
+|---|---|
+| **All · Mine · Unassigned** | **Built.** The two questions a seller actually asks on a Monday, plus the default |
+| **Team** | ⚫ **No manager relationship exists.** *Everybody's* is `All` |
+| **Following · Watching** | ⚫ **Not concepts.** §6 |
+| **Recently changed · Recently assigned** | ⚠️ **Needs *since when you last looked***, which does not exist — the same per-user read state blocking [TASK-016](../BACKLOG.md). **Not approximated with 24 hours**, which is a different question |
+| **Mentioned me · Needs my review** | ⚠️ Mentions need M14a; *needs my review* needs the hand-off state LO-05 is waiting on a customer to describe |
+
+**Each absent one has a trigger rather than a stub.**
+
+### Rendered as links, not as a control
+
+A link is **bookmarkable, openable in a new tab, and keyboard-reachable without a widget** — and the scope has to be in the URL regardless. `aria-current="page"` marks the active view. **The filter appears only once an organization exists**: a control over nothing is furniture.
+
+**An unrecognised `?owner=` reads as `all` rather than failing.** It is a view preference, not a security boundary; there is nothing to protect by refusing, and a stale link should show a seller their accounts.
+
+### Reuse
+
+**`useSearchParams`, the convention `/settings/connections` already established.** No state library, no persisted preference, no new component. **One new module** — `lib/state/owner-scope.ts` — because reading, writing and naming the scope in one place is what stops the list and the brief disagreeing about what `?owner=mine` means.
+
+**One backend enum, one query parameter, one `where`.** No migration, no table, no new endpoint.
+
+### The fake was changed to match the query
+
+`FakeOpportunityRepository.open_page` now applies the owner predicate **before the limit**, exactly as the SQL does. **A fake that filtered afterwards would agree with an implementation that returns short pages** — which is the precise defect this design exists to prevent, and it would have made the test that proves it pass against broken code.

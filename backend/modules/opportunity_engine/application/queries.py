@@ -34,6 +34,7 @@ from modules.opportunity_engine.domain.opportunity import (
     EvidenceState,
     Opportunity,
     OpportunityState,
+    OwnerScope,
 )
 from modules.opportunity_engine.domain.policy import OpportunityPolicy, resolve_policy
 from signora_platform.pagination import CursorPosition
@@ -269,6 +270,10 @@ class OpportunityQueries:
         *,
         after: CursorPosition | None = None,
         limit: int = DEFAULT_PAGE,
+        scope: OwnerScope = OwnerScope.ALL,
+        #: Required when `scope` is `MINE`, and refused otherwise — *mine* is
+        #: meaningless without knowing whose.
+        viewer_id: UUID | None = None,
         now: datetime | None = None,
     ) -> AttentionPage:
         """Open opportunities for this workspace, **ordered by attention**.
@@ -289,10 +294,18 @@ class OpportunityQueries:
         a recomputation between two requests cannot make a row skip or repeat;
         if the sort key were the live score, it could do both.
         """
+        if scope is OwnerScope.MINE and viewer_id is None:
+            raise ValueError("scope 'mine' needs a viewer; there is no *mine* without a *me*.")
         moment = now or datetime.now(UTC)
         # One more than asked for, so *"is there another page"* is answered by
         # what the database returned rather than by a second count query.
-        page = await self._repository.open_page(workspace_id, after=after, limit=limit + 1)
+        page = await self._repository.open_page(
+            workspace_id,
+            after=after,
+            limit=limit + 1,
+            scope=scope,
+            viewer_id=viewer_id,
+        )
         has_more = len(page) > limit
         page = page[:limit]
         scores = await self._scores.current_for(
@@ -365,9 +378,7 @@ class OpportunityQueries:
         """Every state in order — what was decided, by whom, and why."""
         return await self._repository.history(workspace_id, opportunity_id)
 
-    async def for_entity(
-        self, workspace_id: UUID, entity_id: UUID
-    ) -> tuple[Opportunity, ...]:
+    async def for_entity(self, workspace_id: UUID, entity_id: UUID) -> tuple[Opportunity, ...]:
         """Every opportunity this account has had, oldest first."""
         return await self._repository.for_entity(workspace_id, entity_id)
 

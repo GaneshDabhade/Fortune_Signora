@@ -20,6 +20,12 @@ const catalog = vi.hoisted(() => vi.fn());
 const decided = vi.hoisted(() => vi.fn());
 const targets = vi.hoisted(() => vi.fn());
 
+// The list reads `?owner=` so a seller's view survives a refresh and travels
+// on the account link (LO-03).
+vi.mock('next/navigation', () => ({
+  useSearchParams: () => new URLSearchParams(),
+}));
+
 vi.mock('@/lib/state/workspace-provider', () => ({
   useWorkspaceContext: workspaceContext,
 }));

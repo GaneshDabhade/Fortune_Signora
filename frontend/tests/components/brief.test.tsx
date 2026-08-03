@@ -35,6 +35,9 @@ const identities = vi.hoisted(() => vi.fn());
 const timeline = vi.hoisted(() => vi.fn());
 
 vi.mock('next/navigation', () => ({
+  // The attention list and the brief read `?owner=` so a seller's view
+  // survives a refresh and travels on the account link (LO-03).
+  useSearchParams: () => new URLSearchParams(),
   useParams: () => ({ accountId: '22222222-2222-4222-8222-222222222222' }),
   // The account sequence binds `j`/`k` to move through the ranked list. Not
   // this test's subject, and it needs a router to exist.

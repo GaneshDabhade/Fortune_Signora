@@ -55,13 +55,28 @@ export function useWorkspace(workspaceId: string | null) {
  * seller who needs to scroll past fifty accounts has a prioritisation
  * problem the product should be solving rather than a paging one.
  */
-export function useAccounts(workspaceId: string | null) {
+export type OwnerScope = 'all' | 'mine' | 'unassigned';
+
+/**
+ * The accounts worth attention, optionally narrowed to whose they are.
+ *
+ * **The scope is part of the key**, so *mine* and *everything* are two cached
+ * lists rather than one list the browser re-filters. That matters because the
+ * server applies the predicate in the page query — a page of *mine* is a page
+ * of yours, not the yours that happened to fall on a page of everything.
+ *
+ * **The brief shares this key** (D41), so a seller walking their own accounts
+ * is offered their own next one. That only holds while the account link
+ * carries the scope, which is why it travels in the URL rather than in state.
+ */
+export function useAccounts(workspaceId: string | null, scope: OwnerScope = 'all') {
   return useQuery({
-    queryKey: queryKeys.accounts(workspaceId ?? ''),
+    queryKey: queryKeys.accounts(workspaceId ?? '', scope),
     queryFn: () =>
-      apiRequest<CursorPage<AccountAttention>>(`/workspaces/${workspaceId}/accounts`, {
-        workspaceId: workspaceId ?? undefined,
-      }),
+      apiRequest<CursorPage<AccountAttention>>(
+        `/workspaces/${workspaceId}/accounts${scope === 'all' ? '' : `?owner=${scope}`}`,
+        { workspaceId: workspaceId ?? undefined },
+      ),
     enabled: workspaceId !== null,
   });
 }

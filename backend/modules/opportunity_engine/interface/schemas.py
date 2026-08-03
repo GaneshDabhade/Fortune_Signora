@@ -49,7 +49,6 @@ from modules.opportunity_engine.domain.opportunity import (
     allowed_from,
 )
 
-
 #: Where each stage sits in the order work moves. Read from the enum rather
 #: than written out, so a stage added to the domain cannot be forgotten here
 #: and silently sort last.
@@ -108,9 +107,7 @@ class AccountAttentionResponse(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    id: UUID = Field(
-        description="The opportunity. Use this to open the account's full brief."
-    )
+    id: UUID = Field(description="The opportunity. Use this to open the account's full brief.")
     account_id: UUID = Field(
         description=(
             "The company this opportunity is about. Resolve its name from the "

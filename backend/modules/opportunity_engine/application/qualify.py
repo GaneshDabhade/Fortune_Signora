@@ -143,9 +143,7 @@ class QualifyOpportunity:
             id=uuid4(),
             workspace_id=request.workspace_id,
             entity_id=request.entity_id,
-            generation=await self._repository.generations(
-                request.workspace_id, request.entity_id
-            ),
+            generation=await self._repository.generations(request.workspace_id, request.entity_id),
             originating_buying_score_id=score.id,
             score_at_creation=score.value,
             contested_at_creation=score.contested,

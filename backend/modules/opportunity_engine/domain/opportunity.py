@@ -49,6 +49,21 @@ from uuid import UUID
 PAYLOAD_VERSION: Final = 1
 
 
+class OwnerScope(StrEnum):
+    """Whose work a seller is asking to see.
+
+    **Applied in the page query, never over the page.** The attention list is
+    cursor-paginated, so filtering returned rows would mean *"mine on this
+    page"* — which reads correctly at twelve accounts and silently becomes a
+    lie at two hundred. **Correct semantics beat convenience**, and the cost is
+    one predicate.
+    """
+
+    ALL = "all"
+    MINE = "mine"
+    UNASSIGNED = "unassigned"
+
+
 class Stage(StrEnum):
     """Where an opportunity stands.
 
@@ -169,9 +184,7 @@ class Opportunity:
         if self.generation < 0:
             raise OpportunityError("an opportunity's generation cannot be negative.")
         if self.score_at_creation < 0:
-            raise OpportunityError(
-                "An opportunity cannot record a negative score at creation."
-            )
+            raise OpportunityError("An opportunity cannot record a negative score at creation.")
 
 
 @dataclass(frozen=True, slots=True)

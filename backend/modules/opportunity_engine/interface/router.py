@@ -25,6 +25,7 @@ from fastapi import APIRouter, HTTPException, Query, status
 from apps.api.composition.opportunities import OpportunityRead
 from apps.api.composition.workflow import OpportunityWorkflow
 from modules.opportunity_engine.application.transition import TransitionOpportunityInput
+from modules.opportunity_engine.domain.opportunity import OwnerScope
 from modules.opportunity_engine.interface.schemas import (
     AccountAttentionResponse,
     AccountOpportunityResponse,
@@ -57,6 +58,17 @@ async def list_accounts(
     queries: OpportunityRead,
     limit: LimitParam = DEFAULT_PAGE_LIMIT,
     cursor: CursorParam = None,
+    owner: Annotated[
+        OwnerScope,
+        Query(
+            description=(
+                "Whose work to show: everything, only yours, or only what nobody "
+                "has taken. Applied in the query, so the cursor walks the filtered "
+                "set — a page of 'mine' is a page of yours, not the yours that "
+                "happened to fall on a page of everything."
+            )
+        ),
+    ] = OwnerScope.ALL,
 ) -> CursorPage[AccountAttentionResponse]:
     """*"Which accounts should I work on today?"*
 
@@ -80,6 +92,8 @@ async def list_accounts(
         context.workspace_id,
         after=decode_cursor(cursor) if cursor else None,
         limit=limit,
+        scope=owner,
+        viewer_id=context.principal.user_id,
     )
     position = page.next_position
     return CursorPage(

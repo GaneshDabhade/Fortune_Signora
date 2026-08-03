@@ -12,6 +12,7 @@ by `test_opportunity_pipeline.py`, which runs the whole pipeline.
 from __future__ import annotations
 
 from datetime import timedelta
+from dataclasses import replace
 from uuid import UUID, uuid4
 
 import pytest
@@ -19,6 +20,7 @@ import pytest
 from modules.buying_score_engine.public import BuyingScore
 from modules.opportunity_engine.application.queries import DEFAULT_PAGE, OpportunityQueries
 from modules.opportunity_engine.domain.opportunity import (
+    OwnerScope,
     EvidenceState,
     Opportunity,
     OpportunityState,
@@ -284,3 +286,79 @@ async def test_every_page_size_returns_at_most_that_many(limit: int) -> None:
     queries, _, _, _ = _world(*range(10, 100, 10))
 
     assert len((await queries.attention_list(WORKSPACE, limit=limit, now=NOW)).items) <= limit
+
+
+#: A colleague. Named here because *mine* is only meaningful against a *not
+#: mine*, and the fakes module's `SELLER` is the viewer in every other test.
+OTHER = UUID("66666666-6666-4666-8666-666666666666")
+
+
+class TestWhoseWorkTheListShows:
+    """**Filtering happens in the page query, never over the page.**
+
+    The list is cursor-paginated, so filtering returned rows would mean *"mine
+    on this page"* — correct at twelve accounts and silently a lie at two
+    hundred. These assert the semantics rather than the SQL, so the rule
+    survives a rewrite of either.
+    """
+
+    @staticmethod
+    def _held(repository: FakeOpportunityRepository, *owners: UUID | None) -> None:
+        """One open opportunity per owner, in the order given."""
+        for owner in owners:
+            opportunity = _opportunity(uuid4())
+            repository.rows.append(opportunity)
+            opening = _opening(opportunity)
+            repository.states.append(
+                replace(opening, owner_id=owner, stage=Stage.ENGAGED)
+                if owner is not None
+                else opening
+            )
+
+    async def test_all_is_the_default_and_shows_everybody_s(self) -> None:
+        queries, repository, _, _ = _world()
+        self._held(repository, SELLER, None, OTHER)
+
+        page = await queries.attention_list(WORKSPACE)
+
+        assert len(page.items) == 3
+
+    async def test_mine_shows_only_what_i_hold(self) -> None:
+        queries, repository, _, _ = _world()
+        self._held(repository, SELLER, OTHER, None)
+
+        page = await queries.attention_list(
+            WORKSPACE, scope=OwnerScope.MINE, viewer_id=SELLER
+        )
+
+        assert [item.state.owner_id for item in page.items] == [SELLER]
+
+    async def test_unassigned_shows_only_what_nobody_holds(self) -> None:
+        queries, repository, _, _ = _world()
+        self._held(repository, SELLER, None)
+
+        page = await queries.attention_list(WORKSPACE, scope=OwnerScope.UNASSIGNED)
+
+        assert [item.state.owner_id for item in page.items] == [None]
+
+    async def test_a_full_page_of_mine_is_a_full_page(self) -> None:
+        # **The defect this design exists to prevent.** Nine accounts held by
+        # somebody else, then two of mine. Filtering *after* the query would
+        # return a page of nothing while claiming to be a page of ten.
+        queries, repository, _, _ = _world()
+        self._held(repository, *([OTHER] * 9), SELLER, SELLER)
+
+        page = await queries.attention_list(
+            WORKSPACE, scope=OwnerScope.MINE, viewer_id=SELLER, limit=10
+        )
+
+        assert len(page.items) == 2
+        assert page.has_more is False
+
+    async def test_mine_without_a_viewer_is_refused(self) -> None:
+        # There is no *mine* without a *me*, and defaulting to nobody would
+        # return an empty list that looks like having no work.
+        queries, _, _, _ = _world()
+
+        with pytest.raises(ValueError):
+            await queries.attention_list(WORKSPACE, scope=OwnerScope.MINE)

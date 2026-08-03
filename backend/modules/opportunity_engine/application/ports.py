@@ -13,7 +13,11 @@ from typing import Protocol
 from uuid import UUID
 
 from modules.buying_score_engine.public import BuyingScore, BuyingScoreExplanation
-from modules.opportunity_engine.domain.opportunity import Opportunity, OpportunityState
+from modules.opportunity_engine.domain.opportunity import (
+    Opportunity,
+    OpportunityState,
+    OwnerScope,
+)
 from modules.opportunity_engine.domain.policy import WorkspaceOpportunityPolicy
 from signora_platform.pagination import CursorPosition
 
@@ -32,9 +36,7 @@ class OpportunityRepository(Protocol):
     rollback. Workflow has no regeneration, so deletion has no counterpart.
     """
 
-    async def open_for_entity(
-        self, workspace_id: UUID, entity_id: UUID
-    ) -> Opportunity | None:
+    async def open_for_entity(self, workspace_id: UUID, entity_id: UUID) -> Opportunity | None:
         """The opportunity for this entity that is not in a terminal stage.
 
         The rule this module enforces is **at most one open opportunity per
@@ -63,7 +65,13 @@ class OpportunityRepository(Protocol):
         ...
 
     async def open_page(
-        self, workspace_id: UUID, *, after: CursorPosition | None, limit: int
+        self,
+        workspace_id: UUID,
+        *,
+        after: CursorPosition | None,
+        limit: int,
+        scope: OwnerScope = OwnerScope.ALL,
+        viewer_id: UUID | None = None,
     ) -> tuple[tuple[Opportunity, OpportunityState], ...]:
         """One page of open opportunities, each with its current state.
 
@@ -113,9 +121,7 @@ class OpportunityRepository(Protocol):
         """Every state in order, oldest first. **Never rewritten.**"""
         ...
 
-    async def for_entity(
-        self, workspace_id: UUID, entity_id: UUID
-    ) -> tuple[Opportunity, ...]: ...
+    async def for_entity(self, workspace_id: UUID, entity_id: UUID) -> tuple[Opportunity, ...]: ...
 
 
 class OpportunityPolicyRepository(Protocol):

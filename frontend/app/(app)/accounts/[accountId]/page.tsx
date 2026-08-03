@@ -2,7 +2,7 @@
 
 import { ArrowLeft, Scale } from 'lucide-react';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
 import {
   ContestedMark,
@@ -46,6 +46,7 @@ import {
 } from '@/lib/query/hooks';
 import { useAccountTimeline } from '@/lib/query/hooks/timeline';
 import { useWorkspaceMembers } from '@/lib/query/hooks/team';
+import { scopeFrom } from '@/lib/state/owner-scope';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -129,7 +130,12 @@ export default function AccountBriefPage() {
   // **The same query the attention page holds**, same cache key, so this costs
   // no request — the brief reads the ranked order rather than fetching it, and
   // *next* therefore means *next most pressing* (D41).
-  const { data: list } = useAccounts(workspaceId);
+  // **The same scope the list was showing**, carried on the link that got
+  // here. Without it a seller working their own accounts would be offered
+  // somebody else's next — one definition of *next*, and it has to be the one
+  // they were walking (D41).
+  const scope = scopeFrom(useSearchParams().get('owner'));
+  const { data: list } = useAccounts(workspaceId, scope);
   const ranked = list?.items ?? [];
   const { data: rankedIdentities } = useAccountIdentities(
     workspaceId,
