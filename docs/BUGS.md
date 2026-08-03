@@ -80,7 +80,44 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
-### B-102 · An unresolved merge-conflict marker sat in the coordination register through several certifications
+### B-103 · An internal invariant tells a customer their request was refused
+
+| | |
+|---|---|
+| **Module** | `opportunity_engine` · `ai_research_engine` — **the same shape in both, arrived at independently** |
+| **Current assignee** | **Unassigned.** Neither module has a current lane; whoever is next assigned fixes it |
+| **Severity** | 🟠 — **the product tells a customer something false about their own request** |
+| **Status** | `OPEN` |
+| **Found** | 2026-08-03, by QE, re-validating [C-009](LANE_COORDINATION.md) against current code |
+
+**Steps to reproduce.** Trigger any condition that raises a domain invariant rather than a domain refusal — for example a negative generation or a negative state sequence.
+
+**Expected.** A `5xx`. Nobody's request can cause a negative sequence number; it is a bug in Signora.
+
+**Actual.** `422 transition_refused` — *your request was refused* — because one exception class carries both meanings:
+
+| Module | The raise | What the customer is told |
+|---|---|---|
+| `opportunity_engine` | `OpportunityError("an opportunity's generation cannot be negative.")` | `422 transition_refused` |
+| `ai_research_engine` | `ResearchRequestError("a state's sequence cannot be negative.")` | `422 research_request_refused` |
+
+**`workspace_tenancy` is *not* affected** — `InvalidWorkspaceNameError` genuinely is bad customer input, and 422 is correct there. **The defect is mixing two meanings in one class, not the status code itself.**
+
+**Why this is 🟠 and not cosmetic.** `CLAUDE.md` §10 states it directly: *"An error must never name a component that was not involved… an incorrect attribution is worse than none, because it misdirects the investigation."* Here the misdirection points at **the customer**. A seller is told their transition was refused; support looks at their data; the bug is in ours.
+
+### The finding that matters more than the defect
+
+**[C-009](LANE_COORDINATION.md) has been open five cycles as a frozen-platform change under §20a, requiring an RFC and a product-owner ruling. It is none of those things.**
+
+`opportunity_engine/interface/errors.py` documents the mechanism in its own comment:
+
+> *"handler lookup walks the exception's **MRO**, so the two rows above still win for their own types."*
+
+**A module can already map an invariant separately from a refusal.** It needs a second exception class and one more row in its own `ERROR_MAPPING` — **entirely inside the module, no platform change, no RFC, no decision.**
+
+**The fix, for whoever takes it.** Split the hierarchy so meaning is in the type: a refusal the customer caused, and an invariant they could not. Map the invariant to `500` with a neutral code. **Do not widen the existing mapping** — a refusal must stay 422, because those messages are written to be read and that is the point of the module.
+
+**Add a regression test that a domain invariant does not surface as a 4xx.** Without it the next class added re-merges them.
 
 | | |
 |---|---|
