@@ -12,16 +12,16 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `bdc159f`, 2026-08-03.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `47cdfd0`, 2026-08-03.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`bdc159f`** — the certified commit itself |
-| **`integration`** | `bdc159f` — level with `main` |
-| **Release candidate** | **None pinned.** Cycle 35 promoted `make unsaved`, the performance guideline, and two ruled decisions |
-| **Certification** | ✅ [`bdc159fb257f`](certification/reports/bdc159fb257f.md) · migration head **`0030`** · protocol **v2** |
+| **`main`** | **`47cdfd0`** — the certified commit itself |
+| **`integration`** | `47cdfd0` — level with `main` |
+| **Release candidate** | **None pinned.** Cycle 36 promoted the production stack's move off the review ports |
+| **Certification** | ✅ [`47cdfd005f2a`](certification/reports/47cdfd005f2a.md) · migration head **`0030`** · protocol **v2** · **attempt 1 aborted and was recorded** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **162 commits, none outside a certified snapshot** |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **166 commits, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Both lanes.** Five separate rulings, all the product owner's — see §1c |
 | **Validation queue** | Lane A's and Lane B's branches, **both awaiting a rebase by their lane** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The cycle's finding outweighs its feature.** Running the suite in a shell that did not export `SIGNORA_DATABASE_URL` produced **three failures on the commit certified hours earlier** — a certification gate had a hidden input, so the run that certified `909374a` and the run reproducing it were measuring different things, and nothing in the record said so ([B-106](docs/BUGS.md)). It is fixed and verified by removing the variable entirely. **[B-022](docs/BUGS.md) predicted this class and stayed open; this is the first time it was observed rather than reasoned about.**
 
-**Repository health:** **2640 backend tests** · **95.50% coverage** *(floor 95)* · 719 frontend tests · 360 Security Invariants · mypy strict over **620 files** · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
+**Repository health:** **2642 backend tests** · **95.50% coverage** *(floor 95)* · 719 frontend tests · 360 Security Invariants · mypy strict over **620 files** · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
 
 ---
 
@@ -101,63 +101,69 @@
 
 ---
 
-## 1d · Release summary — 2026-08-03, cycle 35
+## 1d · Release summary — 2026-08-03, cycle 36
 
-**Derived from the promoted commit `bdc159f`.** One small command, a guideline every lane now shares, and a correction to QE's own measurement.
+**Derived from the promoted commit `47cdfd0`.** A structural fix to a conflict the product owner hit personally, an aborted certification that became evidence, and Lane C.
 
-### `make unsaved` — what would you lose if this disk died right now?
+### The production stack leaves the review ports
 
-RS-1, the executable half of proposed law **L-18**. **Awareness, never enforcement**: it always exits 0, no gate consults it, and it asks for nothing smaller than a WIP commit. `make unsaved ARGS=--workstation` surveys every Signora clone on the machine.
+The product owner could not start a Human Review session because a leftover `make dr` stack held **3000 and 8000**. Not bad luck: `infra/docker-compose.prod.yml` published exactly the two ports human review uses, so **a certification run and a product review were mutually exclusive by construction**, and `release-preflight` existed largely to *explain* the collision rather than remove it.
 
-**The design decision that kept it small: `.gitignore` is already the disposability classifier**, and the repository maintains it. Anything reported is non-disposable by the repository's own declaration — and a test asserts no second taxonomy appears.
+The stack now publishes **3100/8100** — the block `infra/environments.py` had already recorded as allocated to nobody. Container-internal ports are unchanged; only the host mapping moved, plus the two browser-facing URLs that must track it.
 
-### The measurement was understated by nearly four times
+> **Proven, not asserted.** The full 24-stage smoke test ran to completion **twice while the product owner's live review session stayed healthy on 3000/8000.** Before: web 307, api 200. After: web 307, api 200. Cross-tier JWT contract green both times.
 
-QE reported *"seven untracked paths"* last cycle. **The real figure is 27.** `git status --porcelain` collapses an untracked *directory* into one line, and the count was taken from it — so **an entire untracked module counted as a single path**, and `unsaved.py` inherited the same defect until a test was written for it.
+**The rule it is an instance of, now permanent:** *every runnable environment must be independently startable, independently stoppable and independently disposable.* An environment that requires another to be stopped first is not isolated; it is merely documented.
+
+### An aborted certification became evidence — RE-01's first real catch
+
+Attempt 1 of this cycle was killed mid-run. **It never reached a verdict**, and before RE-01 it would have left **no trace in any file**: the manifest records only completed runs, so the history would have shown a 100% completion rate and no sign a run had ever vanished.
 
 ```
-Lane A  backend/modules/sales_engagement/       22 files, in one physical location
-          prompts/executive_summary@1.md        ← a prompt release
-          prompts/manifest.json
-          evaluation/datasets/approach@1.json   ← an evaluation dataset
-Lane B  frontend/tests/e2e/ page objects · endurance suites
+attempts started : 13      ABORTED : bdb7eb0c534d
+reached a verdict: 12
 ```
 
-**A module in neither [`04-modules.md`](docs/architecture/04-modules.md) nor [`README.md`](README.md), carrying the exact artifacts R-3 calls production assets that must never be regenerated to recover them.**
+**Three outcomes, and they are not interchangeable.** A *succeeded* run says the repository is sound. A *failed* run says something about the repository. An *aborted* run says something about execution and **nothing at all** about correctness. A history that conflates them misleads the reader who most needs it.
 
-> **The correction is visible rather than quietly fixed**, because the error ran in the direction that would have made the work look unnecessary. **A resilience tool that under-reports is worse than none — the number is believed.**
+**The abort record also surfaced a hidden input in machine-written form** rather than in an argument: `"test_database": "(unset — defaults to shared)"`. That is [B-022](docs/BUGS.md) appearing as evidence, and it is why **RE-03** — `certify` creating and dropping its own database — is now the highest-value item in the Release Engineering backlog.
 
-### Performance work — the sequencing every lane now shares
+### Lane C — Product Office & Architecture Office
 
-**Ratified by the product owner, recorded as [`RELEASE_ENGINEERING.md`](docs/RELEASE_ENGINEERING.md) §10.**
+**Created instead of a third implementation lane, on evidence.** QE's readiness assessment measured **23 of 38 open coordination items owned by the product owner** and **16 `READY` tasks unclaimed with two lanes available**: implementation capacity was not the constraint, decision throughput was, and a third implementation lane would have been a third consumer of the same queue.
 
-> **Performance is not deferred. Performance *engineering* is.** The distinction is which numbers are meaningful today.
+**Four responsibilities that do not overlap:** implementation lanes **build** · QE **certifies** · Lane C **prepares** · the product owner **decides**.
 
-N+1 queries, unbounded fetches, quadratic algorithms, memory leaks and catastrophic regressions stay defects at write time, at any milestone (§14, unchanged). Load testing, concurrency, autoscaling, ECS/EKS sizing, database tuning, CDN behaviour, SLAs, endurance and chaos testing move to **Production Readiness** — because the infrastructure is temporary, the architecture incomplete, the data volumes artificial and the deployment local. [`12-scalability.md`](docs/architecture/12-scalability.md) already requires an evidence-based trigger, and **a trigger requires a production.**
+```
+  implementation lane  ─▶  Lane C investigates  ─▶  Lane C prepares alternatives
+                                                              │
+  implementation resumes  ◀──  product owner decides  ◀────────┘
+```
 
-### Two decisions ruled
+**Lane C owns no production module, no bounded context and no runtime** — a clone, a branch and repository access, with no ports, database, Redis index or compose project. It is the first lane whose onboarding is *simpler* than the one before it.
 
-| | |
-|---|---|
-| **D-1** | **An uncertified review is allowed, and simply non-evidential.** Internal development review and customer-facing evidence are different use cases; the marking goes in the record rather than in somebody's memory of which it was |
-| **D-2** | **The repository stores the summary; binary evidence stays external, named and hashed in a committed manifest.** The hashes are what make it more than a file list — the repository can prove which image was shown, and detect one replaced, **without storing it**. R-4 unblocked |
+> **No module changed owner**, and that is stated as a line rather than left as an absence — because the absence is what nearly turned a description of strategic direction into a silent reassignment of two mid-flight modules.
 
-### The smoke gate took 320s, and that is a success
+### A governance principle, found by nearly breaking it
 
-Last cycle: 130s. This cycle: **320s, slowest stage `14k. Researched account 43s`** — with `release-preflight` naming the cause *before* the run: another lane's dev server holding 5.7 GB on a 15 GB machine.
+> **Governance describes reality; it never quietly changes it.** Any behavioural change requires an explicit architectural or product decision **before** governance is updated.
 
-> **Five days ago this was a 4830s mystery nobody could explain afterwards.** The gate is slower and the repository is healthier, because **a slow run that is diagnosable is worth more than a fast one that is not.**
+This is the general form of *the repository should always tell the truth*, applied to the **direction of causation**: that rule says a document must not misdescribe reality; this one says a document must not *become* it. **The tell is simple — if applying the edit would change what somebody does tomorrow, it needed a decision yesterday.**
+
+### The coordination register shrank
+
+**38 items, 8 closed** — up from 6. [C-022](docs/LANE_COORDINATION.md) closed because `CLAUDE.md` already contains the rule it asked for; [C-202](docs/LANE_COORDINATION.md) closed after four of its five measured disagreements had been fixed and the fifth was fixed here. **C-004 and C-201 moved to `READY FOR PRODUCT DECISION`** — both had sat under QE's name while waiting on a ruling, which is the drift Lane C exists to end.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **2640 backend** · 719 frontend · **95.50%** · 360 invariants · **620 files typed** |
-| **Release** | **Five consecutive cycles with no process failure** |
-| **Architecture** | Runtime composition 0 unexpected · Reachability 0 doorless |
-| **Dependency** | 38 items, 6 closed · **C-100 blocks PR-1** |
-| **Customer Value** | ⚠️ **Indirect — seven cycles without a product capability.** Twelve `READY` tasks unclaimed |
-| **Process** | Clean. **One understated measurement corrected in public** |
+| **Technical** | **2642 backend** · 719 frontend · **95.50%** · 360 invariants · 620 files typed |
+| **Release** | **Six consecutive cycles with no process failure.** One aborted attempt, recorded rather than lost |
+| **Architecture** | Runtime composition 0 unexpected · Reachability 0 doorless · **review and certification no longer exclusive** |
+| **Dependency** | 38 items, **8 closed** · C-100 blocks PR-1 |
+| **Customer Value** | ⚠️ **Indirect — eight cycles without a product capability.** Lane C exists to change the reason for that |
+| **Process** | Clean. **One organizational change, no module moved** |
 
 ### Repository Health Trend
 
@@ -170,6 +176,8 @@ Last cycle: 130s. This cycle: **320s, slowest stage `14k. Researched account 43s
 | **Gates with a hidden input** | unknown | **1 found, 1 fixed** — [B-106](docs/BUGS.md) |
 | **Steps to review the product** | 6, across two terminals | **1** — `make review` |
 | **Work in one physical location** | unmeasured | **27 files, measured and surfaced** — `make unsaved` |
+| **Review vs certification** | mutually exclusive | **concurrent, proven** — 3000/8000 vs 3100/8100 |
+| **Lost certification attempts** | invisible | **counted** — 13 started, 12 verdicts, 1 abort |
 
 
 ## 2 · Milestone progress
@@ -379,18 +387,18 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`bdc159fb257f`](certification/reports/bdc159fb257f.md) · 2026-08-03 · ✅ CERTIFIED**
+**Latest certification — [`47cdfd005f2a`](certification/reports/47cdfd005f2a.md) · 2026-08-03 · ✅ CERTIFIED**
 
-**Certified commit `bdc159f` · promoted commit `bdc159f`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
+**Certified commit `47cdfd0` · promoted commit `47cdfd0`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
 
 | Gate | Recorded |
 |---|---|
-| **pytest** | **2640 passed** |
+| **pytest** | **2642 passed** |
 | **coverage** | **95.5%** *(floor 95%)* |
 | **Security Invariants** | **360 invariants**, each proven to fail when its guarantee is removed |
 | **import-linter** | **34 kept, 0 broken** |
 | **MyPy** | **strict, clean over 620 files** |
-| **`make smoke`** | **24 stages in 320s, slowest 14k. Researched account 43s** — slow, and **explained**: memory pressure from another lane's dev server, named by `release-preflight` before the run |
+| **`make smoke`** | **24 stages in 134s, slowest 2. Startup 20s** — back to baseline on the new 3100/8100 ports |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0030`** · scenario set `0cf6b2c581e4` · working tree clean.
@@ -407,7 +415,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | **Migrations** | **`0000`–`0030`**, additive and reversible — verified to base and back this cycle | — |
 | **Architecture drift** | **0** — no ratified ADR reversed | trending to 0 |
 | **Open defects** | **38 rows: 14 `OPEN`** · **17 `FIXED` awaiting verification** · **5 `VERIFIED`** · 1 `WONTFIX` · **0 unresolved 🔴** ([docs/BUGS.md](docs/BUGS.md)) | 0 🔴 |
-| **Coordination items** | **38** — 6 closed, the rest open or waiting ([docs/LANE_COORDINATION.md](docs/LANE_COORDINATION.md)) | shrinking |
+| **Coordination items** | **38** — 8 closed, the rest open or waiting ([docs/LANE_COORDINATION.md](docs/LANE_COORDINATION.md)) | shrinking |
 
 > ⚠️ **Every figure in the two tables above was stale until this audit, and two were stale by two cycles.** §4 named `e5a266d17203` while `main` had been certified twice since; the defect and coordination counts were less than half their real values. **Nothing detected it** — `state-check` verifies that §1 names a reachable commit and never reads §4. Recorded as the reason the audit happened at all, and as a gap: **the dashboard has one checked section and eight unchecked ones.**
 
@@ -430,7 +438,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Indicator | Value |
 |---|---|
 | **Certification** | |
-| Certification cycles | 32 |
+| Certification cycles | 33 |
 | Certified | 29 of 30 |
 | Mean time to certify (last 5) | 13.3 min |
 | Mean smoke duration | 327.9 s |
@@ -498,7 +506,7 @@ A dashboard, not a specification. Authoritative detail: [28-ai-platform.md](docs
 | **Grounding** | ✅ Built, unchanged since M8 | Five `ViolationKind`s. Validates that every citation resolves **inside a closed evidence set** — it does **not** validate that a fact in the set is true |
 | **Decision Package** (M9) | ✅ Built | Fifteen parts; **the model authors three**. Eleven customer questions answered, eight without a model having spoken |
 | **AI Reasoning Engine** | ✅ Built | Structured, single-call. Exactly one inference per package, enforced by test |
-| **AI Research Engine** | 🔵 **In progress** — M10 | Agentic, multi-step, minutes not seconds — over **Signora's own ledger**. Ruled **Internal Research** 2026-07-31: no external retrieval, and embeddings and pgvector deferred, because the Knowledge Graph stores typed edges and enum kinds rather than a corpus to embed |
+| **AI Research Engine** | ✅ **Complete** — M10, closed 2026-07-31 | Agentic, multi-step, minutes not seconds — over **Signora's own ledger**. Ruled **Internal Research** 2026-07-31: no external retrieval, and embeddings and pgvector deferred, because the Knowledge Graph stores typed edges and enum kinds rather than a corpus to embed |
 
 **The organising principle**, ratified 2026-07-30:
 

@@ -64,7 +64,7 @@
 
 ---
 
-## Current — as of 2026-08-03, `bdc159f`
+## Current — as of 2026-08-03, `47cdfd0`
 
 | Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Started |
 |---|---|---|---|---|---|---|---|---|
@@ -73,7 +73,7 @@
 | **Lane A** | **Team Management** *(customer capability, assigned by the product owner 2026-08-02)* | `lane-a-product-surface` | `workspace_tenancy` — **the capability, not the module** | Phases 1–3 complete · **TM-03 unblocked by evidence** | **`ACTIVE`** | **[C-207](LANE_COORDINATION.md)** for leaving only · **[C-206](LANE_COORDINATION.md)** narrowed to one email-delivery decision | **Self-challenge overturned this lane's own recommendation.** The plugin was unnecessary: every access token already carries `email` and `email_verified`, both **required claims** the Python verifier type-checks, and Better Auth already enforces verification — so accepting an invitation is matching a pending row against a claim that already arrives. **No plugin, no dependency, no frozen-file change.** The invitation table and acceptance are buildable now; the members list follows them. Analysis in [46-team-management.md](architecture/46-team-management.md) §11 | 2026-08-02 |
 | **Lane A** | **M14b — Billing, Analytics & Feature Flags** *(implementation initiative, assigned by the product owner)* | `lane-a-product-surface` | **undecided — see [42-billing-and-entitlements.md](architecture/42-billing-and-entitlements.md)** | domain discovery | `BLOCKED` | **[C-200](LANE_COORDINATION.md)** — the bounded context is 🔴 | **Discovery complete, no code.** M14b has two roadmap table rows and no scope section, no module and no bounded context — the same shape as [C-020](LANE_COORDINATION.md) and [C-023](LANE_COORDINATION.md). **It is one module and two integrations, not one and not three**; every route into implementation decides the boundary by implementing it | 2026-08-02 |
 | **Lane B** | **ADR-0041 — the ICP aggregate** *(design)* | `lane-b-commercial-profile` | `commercial_profile` | discovery | `IN VALIDATION` | — | **Rebase required before QE can take it** — the branch does not fast-forward from `cb5cd33`. Documentation only: ADR-0041 and the ICP reuse audit. **M7, M13 and M14a all promoted; all three now wait on product decisions** | 2026-08-02 |
-| **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | **Cycle 35 promoted (`bdc159f`). 35 pinned, 28 certified.** `make unsaved` (RS-1) · performance sequencing guideline · D-1 and D-2 ruled. **Next: PR-1, the demonstration beat runner — blocked on [C-100](LANE_COORDINATION.md)** | 2026-08-01 |
+| **QE** | — | `lane-qe` | — (the repository) | permanent | `ACTIVE` | — | **Cycle 36 promoted (`47cdfd0`). 36 pinned, 29 certified.** Production stack off the review ports — a review and a certification now run together. Lane C introduced to governance. **Attempt 1 of this cycle aborted and was recorded rather than lost — RE-01's first real catch.** **Next: PR-1, blocked on [C-100](LANE_COORDINATION.md)** | 2026-08-01 |
 
 **Which lanes are available is the `Status` column above, and is not restated here** — a sentence beside a table is a second copy of one fact, and it drifted within an hour of being written (§2). **Unclaimed capacity:** lanes C, D and E ([`RUNNING.md`](RUNNING.md#running-a-lane) holds their reserved environments).
 
