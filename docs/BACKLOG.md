@@ -82,6 +82,41 @@
 
 > **This lane is not proceeding into Lane A's modules on the strength of a directive that predates the collision.** One assignee per module is §20e's hardest invariant, and the product owner's own instruction in the same assignment was *"do not quietly bypass module boundaries."* **[C-323](LANE_COORDINATION.md) asks which way to resolve it**; the two backends in unassigned `knowledge_graph` are claimable meanwhile.
 
+### TASK-400 · Epic A completion — the surfaces that expose what the platform already knows
+
+| | |
+|---|---|
+| **Epic** | **Epic A remainder**, [51-implementation-specifications.md](architecture/51-implementation-specifications.md). **Assigned whole, not sliced** |
+| **Module** | `provider_platform` (A7) · Product Surface (A6 render) — **both Lane A's** |
+| **Status** | **`CLAIMED` — Lane A**, 2026-08-03, by the Task Claim Protocol |
+| **Assigned** | **Lane A, by Lane C 2026-08-03**, answering [C-217](LANE_COORDINATION.md). Decomposition of Epic A, **already approved by the product owner** — not new scope |
+
+**Epic A verified slice by slice, across every branch, before assigning:**
+
+| Slice | State | Who |
+|---|---|---|
+| **A1** search | ✅ built — `account_search` | Lane B |
+| **A2** accounts list | ✅ built — `SW-01…04` | Lane A |
+| **A4** freshness | ✅ built | Lane B |
+| **B2** first run | ✅ built — `first-run.test.tsx` | Lane A |
+| **A6** *needs identity* | ⬜ **render not built.** Raw material exists — `AccountIdentityResponse.agreement` | **This task** |
+| **A7** last *looked* | ⬜ **not built.** No `attempted_at`/`polled_at` anywhere; `provider_watermark.position` advances only when records arrive | **This task** |
+| **A5** company history | 🚫 **backend does not exist** — no history endpoint in `knowledge_graph`, and the module is unassigned | **Routed to Lane B**, see notes |
+
+| | |
+|---|---|
+| **A7 — objective** | Every account can state when a provider last *attempted* to read it, whether or not anything came back. **`attempted_at` on `provider_watermark`, written on every completed run** |
+| **A7 — the hard part** | **Not the column.** `subject` is the customer's typed company name and the brief holds an entity id; **the join is the open question.** Resolve it with Lane C rather than assuming it |
+| **A7 — risk** | **Ship the word *checked* only once it is true.** A4 deliberately refuses it and `freshness.test.tsx` asserts the refusal — **that test is the contract** |
+| **A6 — objective** | Unnamed records leave the working list. `agreement` is the raw material and nothing renders it |
+| **Effort** | **S** (A7 column) + **M** (A6 render) · **M** if A7's join needs a design |
+| **A5 is not in scope** | Its backend is unbuilt in an unassigned module. **Lane C has routed the backend to Lane B**, which already owns A1 and A4 in `knowledge_graph`. **A5's render returns to Lane A once the endpoint exists** — sequencing, not a blocker |
+
+| | |
+|---|---|
+| **Recorded here by Lane A on claiming** | **The row is Lane C's, copied verbatim from `lane-c-product-office` at `c681ab9`**, with only `Status` changed. It did not exist on `integration`, and under the product owner's direction of 2026-08-03 **a lane claims on Lane C's assignment rather than waiting for the row to arrive** — Lane C is the source of truth for assignment, `integration` for claims and history. **No scope was added, reworded or reordered**; if Lane C's wording moves, Lane C's wins |
+| **Known gate** | **[B-400](BUGS.md) is 🔴 and blocks promotion for every lane.** It does not block implementation, and Lane C did not gate this row on it — unlike [TASK-401](#task-401--a5-backend--a-companys-history-from-the-claims-that-already-hold-it) and [TASK-402](#task-402--epic-e1--a-customers-crm-becomes-a-source-signora-can-read), which it marked `READY — after B-400`. **A7 adds a migration, so this lane expects to renumber on rebase and will say so** |
+
 ### TASK-900 · The platform learns to compose a module into the runtime
 
 | | |
