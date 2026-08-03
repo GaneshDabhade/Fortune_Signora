@@ -183,7 +183,23 @@ provider_sync(provider, capability, status, started_at, finished_at,
 
 ---
 
-## A5 · A company's history · **M** · Product Surface
+## A5 · A company's history · **M** · Observation Engine + Product Surface
+
+> ### BACKEND BUILT 2026-08-03 · the screen waits on [C-324](../LANE_COORDINATION.md)
+>
+> `GET /workspaces/{id}/accounts/{account_id}/observations?attribute=` — **the Observation Engine's first HTTP surface.**
+>
+> **Nothing was computed.** `Observation` has carried previous value, current value, direction, magnitude, both ends of the window and the provider since M4, and `ObservationQueries.observations()` has read them since. The module had no interface layer: thirteen fields of intelligence with no path to a customer. **That is what Epic A looks like when the audit was right.**
+>
+> **Two constraints the screen must respect**, both now in [23-observation-engine.md](23-observation-engine.md):
+>
+> | | |
+> |---|---|
+> | **One series per provider** | Apollo saying 120 on Monday and CoreSignal saying 145 on Tuesday is **disagreement, not growth of 25.** A chart joining them draws the phantom this module was built to avoid |
+> | **`previous_observed_at`…`observed_at` is an interval** | The change happened *somewhere between*. A single dated point claims precision the evidence does not have |
+>
+> **And the finding that decides whether the screen is worth building yet: [B-319](../BUGS.md).** The Playground produces **no transitions at all** — every observation is a first sighting, because a transition needs one provider asserting a state attribute twice and the scenario enriches each account once. **The endpoint is correct and its screen would be empty.** Pinned by a test that fails the day the simulator changes.
+
 
 | | |
 |---|---|

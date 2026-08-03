@@ -451,3 +451,37 @@ Revenue bands get a direction because the vocabulary orders them **by definition
 The scenario reports each subject once per provider, so it contains **occurrences but no movement**. Every negative assertion is therefore exercised by the real pipeline — first sync observes nothing, a repeated sync observes nothing new — while the positive case (a second, differing assertion by the same provider produces exactly one transition) is constructed explicitly in the demonstration.
 
 That split is recorded rather than papered over: a scenario with genuine multi-week movement is **scheduled M2.0 work**, alongside the fixture enrichment M3A identified. Both are simulation artifacts, and editing them mid-milestone would blur what these demonstrations prove.
+
+---
+
+## A5 — the module's first HTTP surface *(2026-08-03)*
+
+`GET /workspaces/{id}/accounts/{account_id}/observations?attribute=` — every recorded change to one account, with what it moved from, what it moved to, who observed it, and the window it happened in.
+
+**Nothing new was computed.** `Observation` has carried `previous_value`, `current_value`, `direction`, `magnitude`, `observed_at`, `previous_observed_at`, `recorded_at` and `provider` since M4, and `ObservationQueries.observations()` has read them since. **The module simply had no interface layer** — thirteen fields of intelligence with no path to a customer.
+
+### The response is bounded by this module's own refusals
+
+The wire shape carries **no `significance`, `score`, `importance` or `summary`**, matching `public/`'s stated contract exactly: *whether a move matters is the Business Event Engine's question.* A field here would be filled in by whoever rendered it, which is the judgement this module exists not to make. Asserted at both the schema and the HTTP layer.
+
+### `provider` on every row is a correctness constraint, not provenance decoration
+
+> **A reading is only ever a change according to one source.** Apollo saying 120 on Monday and CoreSignal saying 145 on Tuesday is **disagreement, not growth of 25** — the phantom change this module was built to avoid, and `series()` is per-provider by construction for the same reason.
+
+**A client that joins these into one line per attribute draws exactly that phantom.** The endpoint's docstring says *group by provider before plotting*, and the schema says why beside the field. **Any chart built on this must have one series per provider**, or show one provider at a time.
+
+### `previous_observed_at` bounds an interval, and a point would be a lie
+
+The change happened *somewhere between* it and `observed_at`, never more precisely. A visualisation drawing a single dated point claims a precision the evidence does not have — and the field exists specifically so it does not have to.
+
+### The response model is `AccountObservationResponse`, and the name is not cosmetic
+
+`ObservationResponse` was already taken by the Business Event Engine's evidence drawer. **Two response models sharing a class name share an OpenAPI component name**: FastAPI qualifies both, the original key disappears, and a shipped client contract is renamed by a change in an unrelated module. **The newer name moved, because the older one is already a contract.** [B-320](../BUGS.md) records that nothing in the repository checks for this — it was caught by a test that happened to name the schema it cared about.
+
+### Not paged, deliberately
+
+An account watched for a year has tens of changes, not thousands, and `attribute` narrows further. **If a real workspace makes this large, that measurement is the trigger** ([12-scalability.md](12-scalability.md)) rather than a guess made now.
+
+### The limitation that matters for the screen
+
+**The Playground produces no transitions** — [B-319](../BUGS.md). A transition needs one provider asserting a state attribute twice and the scenario enriches each account once, so every observation a demonstration can show is a first sighting. **The endpoint is correct and its screen would be empty.** Pinned by a test that fails the day the simulator changes.

@@ -37,6 +37,7 @@ from modules.signal_engine.interface.router import router as validation_router
 from modules.opportunity_engine.interface.errors import (
     ERROR_MAPPING as OPPORTUNITY_ENGINE_ERRORS,
 )
+from modules.observation_engine.interface.router import router as observation_router
 from modules.opportunity_engine.interface.router import router as opportunity_router
 from modules.workspace_tenancy.infrastructure.composition import build_query_service
 from modules.workspace_tenancy.interface.errors import (
@@ -146,6 +147,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(workspace_tenancy_router)
     app.include_router(opportunity_router)
     app.include_router(knowledge_graph_router)
+    app.include_router(observation_router)
     app.include_router(buying_score_router)
     app.include_router(narration_router)
     app.include_router(validation_router)

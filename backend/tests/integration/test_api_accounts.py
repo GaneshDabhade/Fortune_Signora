@@ -2184,3 +2184,181 @@ class TestFindingAnAccountByName:
         )
 
         assert response.status_code == 422, response.text
+
+
+class TestHowACompanyHasChanged:
+    """`GET /workspaces/{id}/accounts/{account_id}/observations` — A5.
+
+    *"Is this company actually growing, or did it hire once?"* The brief says
+    *"Grew headcount 15% over 32 days"* and, until this endpoint, nothing
+    behind it.
+
+    **Every field asserted here was computed by M4 and had no HTTP path**,
+    which is Epic A's whole shape.
+    """
+
+    async def test_a_recorded_change_carries_what_it_moved_from_and_to(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        response = await client.get(
+            f"/workspaces/{workspace_id}/accounts/{entity_id}/observations",
+            headers=_auth(key_pair, user_id),
+        )
+
+        assert response.status_code == 200, response.text
+        rows = response.json()
+        assert rows, "the pipeline recorded changes for this account"
+
+        for row in rows:
+            assert row["provider"], "a change is only ever a change according to someone"
+            assert row["observed_at"], "when the provider says it was true"
+            assert row["attribute"] and row["kind"] and row["direction"]
+            # **The window, whenever there is one to bound.** A transition
+            # carries both ends; an occurrence has genuinely nothing it moved
+            # from, and null there is absence rather than a missing field.
+            if row["previous_value"] is not None:
+                assert row["previous_observed_at"] is not None, (
+                    "a transition bounds the window it happened in; a client drawing a "
+                    "point without this claims precision the evidence does not have"
+                )
+                assert row["observed_at"] >= row["previous_observed_at"]
+
+    async def test_the_seeded_pipeline_records_occurrences_and_no_transitions(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**Pinning a limitation, not a behaviour** — see [B-319](../../../docs/BUGS.md).
+
+        A transition needs one provider asserting a *state* attribute twice, and
+        the scenario enriches each account once. So every observation the
+        Playground produces is a first sighting, and **A5's screen has no
+        evolution to draw** even though the engine computes transitions
+        correctly.
+
+        This test exists to fail the day that changes, because the day it does
+        is the day A5's screen becomes demonstrable — and nothing else in the
+        repository would say so.
+        """
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        rows = (
+            await client.get(
+                f"/workspaces/{workspace_id}/accounts/{entity_id}/observations",
+                headers=_auth(key_pair, user_id),
+            )
+        ).json()
+
+        assert rows
+        assert all(row["previous_value"] is None for row in rows), (
+            "A transition appeared. The simulator now enriches an account more than "
+            "once — remove this test, and A5's screen has a series to draw."
+        )
+
+    async def test_the_response_carries_no_judgement_about_significance(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**Whether a move matters is the Business Event Engine's question.**
+        A `significance`, `score` or `importance` here would be answered by
+        whoever rendered it — and this module's public contract has refused
+        one since M4. The wire shape must not quietly reintroduce it."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        response = await client.get(
+            f"/workspaces/{workspace_id}/accounts/{entity_id}/observations",
+            headers=_auth(key_pair, user_id),
+        )
+
+        for row in response.json():
+            for judgement in ("significance", "score", "importance", "severity", "summary"):
+                assert judgement not in row, f"'{judgement}' reached the wire"
+
+    async def test_it_narrows_to_one_attribute(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        everything = (
+            await client.get(
+                f"/workspaces/{workspace_id}/accounts/{entity_id}/observations",
+                headers=_auth(key_pair, user_id),
+            )
+        ).json()
+        attribute = everything[0]["attribute"]
+
+        response = await client.get(
+            f"/workspaces/{workspace_id}/accounts/{entity_id}/observations",
+            params={"attribute": attribute},
+            headers=_auth(key_pair, user_id),
+        )
+
+        assert response.status_code == 200, response.text
+        assert {row["attribute"] for row in response.json()} == {attribute}
+        assert len(response.json()) <= len(everything)
+
+    async def test_an_invented_attribute_is_refused_rather_than_ignored(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """Silently returning everything for an unknown filter is how a client
+        bug becomes a customer looking at the wrong data and believing it."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        response = await client.get(
+            f"/workspaces/{workspace_id}/accounts/{entity_id}/observations",
+            params={"attribute": "not_an_attribute"},
+            headers=_auth(key_pair, user_id),
+        )
+
+        assert response.status_code == 422, response.text
+
+    async def test_an_account_in_another_workspace_shows_nothing(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**An empty list, not another workspace's history.** The account
+        identifier is well-formed and belongs to somebody else, which is the
+        shape a scrape takes."""
+        mine, my_user, _, _ = await _tracked(session_factory, admin_session_factory, "northwind")
+        _, _, their_entity, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        response = await client.get(
+            f"/workspaces/{mine}/accounts/{their_entity}/observations",
+            headers=_auth(key_pair, my_user),
+        )
+
+        assert response.status_code == 200, response.text
+        assert response.json() == []
