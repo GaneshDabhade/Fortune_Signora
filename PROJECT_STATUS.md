@@ -12,16 +12,16 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `34d8acb`, 2026-08-03.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `5c47a0d`, 2026-08-03.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`34d8acb`** — the certified commit itself |
-| **`integration`** | `34d8acb` — level with `main` |
+| **`main`** | **`5c47a0d`** — the certified commit itself |
+| **`integration`** | `5c47a0d` — level with `main` |
 | **Release candidate** | **None pinned.** Cycle 24 promoted [`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md) and the [B-101](docs/BUGS.md) fix |
-| **Certification** | ✅ [`34d8acb8a506`](certification/reports/34d8acb8a506.md) · migration head **`0030`** · protocol **v2** |
+| **Certification** | ✅ [`5c47a0d3b6ad`](certification/reports/5c47a0d3b6ad.md) · migration head **`0030`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **133 commits, none outside a certified snapshot** |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **136 commits, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Both lanes.** Five separate rulings, all the product owner's — see §1c |
 | **Validation queue** | Lane A's and Lane B's branches, **both awaiting a rebase by their lane** |
@@ -101,60 +101,55 @@
 
 ---
 
-## 1d · Release summary — 2026-08-03, cycle 25
+## 1d · Release summary — 2026-08-03, cycle 26
 
-**Derived from the promoted commit `34d8acb`.** Three commits, all QE's, all executable.
+**Derived from the promoted commit `5c47a0d`.** One executable commit: **RE-01**.
 
-### The dependency register stopped growing for the first time
+### Certification can now count the runs that left no other trace
 
-**32 open items → 25, and the 25 group into 5 decisions.** Seven closed on shipped code, each naming a file and a line — no product-owner time spent.
+**The pipeline could not measure its own reliability, and the reason was structural.** `tree_is_clean()` reads `git status --porcelain`, so **every** run dirties the tree by writing the manifest and an untracked report. A **passing** run survives because Closeout commits it; a **failing** one has no commit to carry it, so the operator's *correct* next move — resetting to re-run — deletes the only evidence it happened.
 
-| Pack | The one question | Items |
-|---|---|---|
-| **A** | May the platform be amended so a module can compose itself into the runtime? | [C-012](docs/LANE_COORDINATION.md) · C-013 · C-021 · C-207 |
-| **B** | What must exist before a roadmap row may be claimed? | C-020 · C-023 · C-200 |
-| **C** | Which component turns a customer's words into a canonical claim? | C-002 · C-018 · C-204 · ADR-0041 |
-| **D** | Who owns code belonging to no module? | C-010 · C-004 · C-014 |
-| **E** | Five independent product calls | C-008 · C-011 · C-017 · C-205 · C-206 |
+```
+  certification requires a clean tree
+        ↓  every run dirties it
+        ↓  re-running requires cleaning it
+        ↓  which deletes the failure record
+```
 
-**Pack A is one wall hit from four directions, open since M3A**, and `make runtime-composition` measures its cost every cycle: 7 of 9 declaring modules unwired. **Pack B is three lanes reaching three identical blockers.** Both carry a recommendation in [`DECISION_PACKS.md`](docs/DECISION_PACKS.md).
+**A second, separate gap:** `append()` runs once, after every gate, so a run that hangs or is killed **wrote nothing to any file**. Cycle 25's 22-minute hang was invisible by design, not by accident.
 
-> ⚠️ **[C-024](docs/LANE_COORDINATION.md) is QE's error, and it is recorded rather than quietly corrected.** It was escalated in **two consecutive cycle reports** as the repository's sharpest blocker — *"ten lines of routing between a working capability and a customer"* — **while Lane A had already mounted the feed and said so in its handoff.** QE was reading the register instead of the repository: [L-2 *Evidence before assumption*](ENGINEERING_LAWS.md), violated by its own author within the week.
+**The result was survivorship bias**: the manifest read *21 runs, 0 failures, 0 reruns* from a cycle with **two failures and three attempts.**
 
-### [B-102](docs/BUGS.md) — a conflict marker had been sitting in the register through several certifications
+`certification/attempts.jsonl` is git-ignored — which is the *decisive* property, not a tidiness one: ignored files never appear in `--porcelain`, so the log outlives the reset. A `started` event is written **before the first gate**, which is the only way an abort becomes countable.
 
-It stranded `C-027` outside its table and left `C-024` and `C-025` duplicated **with contradictory statuses** — one row reading `ANSWERED`, the other `OPEN`. `malformed_tables` could not see it: a `>>>>>>>` line inside a table is not a table separator.
+**It records facts and infers none.** No field says whether a failure was the environment's, the operator's or the repository's — a column of guesses is worse than none. It captures what a human needs to judge: the failing gate, containers running, review ports held, and **which test database was configured** ([B-022](docs/BUGS.md), where certification measured the shared database and recorded it as fact).
 
-`conflict_markers` now checks all four registers. **It fired on B-102's own row within a minute of being written** — that row quotes the marker it reports — so fenced code is skipped, and the one genuine false positive is asserted in the tests rather than hidden.
+> **The reuse audit ([L-1](ENGINEERING_LAWS.md)) changed the design.** The original finding said *"the manifest does not preserve failed runs"* — but `store.append()` already writes every run, pass or fail. **Implementing before auditing would have produced a parallel failure log beside a store that already recorded failures.**
 
-**ADR-0039 RC-4's third instance in a week:** the registers are a multi-writer database written in markdown.
+**RE-06 shipped with it**, because a measurement nobody reads is not a measurement. `make kpi` now carries a Pipeline stability panel, and the old *Certification run success rate* points at it rather than standing alone as a false impression of release health.
 
-### The cycle took three attempts, and none of the failures was the software's
+### ⚠️ QE committed directly to `main`, and the audit caught it
 
-| Attempt | Outcome | Cause |
-|---|---|---|
-| 1 | Hung 22 min | `pytest` blocked on an **exited** postgres container. No timeout, no diagnostic |
-| 2 | `NOT CERTIFIED` | **QE ran competing gates.** Two records for one commit; the second read `pytest 134 passed` because the first truncated its database |
-| 3 | **CERTIFIED** | Clean environment, nothing else running |
+After cycle 25's Closeout I ended on `main` and never switched back, so **RE-01 was committed to `main` without certification** — the one guarantee the repository exists to hold.
 
-**Both invalid records were discarded.** A contaminated measurement must never become repository truth — the [B-022](docs/BUGS.md) standard: *the finding is durable, the false number is not*.
+**It never left the machine.** `origin/main` was unchanged, and `--audit-main` named it exactly: *"neither a certified commit, nor an ancestor of one, nor a Closeout. Something reached `main` without a gate."* The commit was moved to `lane-qe`, `main` reset, and it went through the full cycle as `5c47a0d`.
 
-**This produced [`RELEASE_ENGINEERING.md`](docs/RELEASE_ENGINEERING.md)** — a study of the pipeline, seven places it assumes nothing else is running, and a nine-item backlog. **Its first finding is that the manifest cannot measure certification stability**, because failed runs do not survive the reset that correctly removes them. The KPI's *100% success* is an artefact of the discard, not a measurement.
+**The guard worked — but it is a detector.** The preventive form is a pre-commit refusal on `main`, recorded as a backlog candidate with a real incident behind it. **Not implemented**: one occurrence, and the rule is evidence before governance.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **2589 tests** · **95.51%** · 360 invariants · 615 files typed · 34 contracts |
-| **Release** | **4 promotions in 4 cycles**, but **three attempts for this one.** Reliability, not speed, is the constraint |
-| **Architecture** | Runtime composition **2 of 2 expected, 0 unexpected** — third consecutive clean reading |
-| **Dependency** | **37 items, 12 closed.** ⚠️ **The register shrank for the first time** — 7 closed on evidence this cycle |
-| **Customer Value** | ❌ **None this cycle.** Governance, tooling and dependency work. **Both lanes remain in discovery, blocked on the packs above** |
-| **Process** | **One self-inflicted failure**, recorded above and turned into RE-02 and RE-04 |
+| **Technical** | **2601 tests** · **95.51%** · 360 invariants · 617 files typed · 34 contracts |
+| **Release** | **5 promotions in 5 cycles.** Cycle 25 needed three attempts; cycle 26 needed one |
+| **Architecture** | Runtime composition **2 of 2 expected, 0 unexpected** — fourth consecutive clean reading |
+| **Dependency** | **37 items, 12 closed.** Unchanged this cycle — no lane candidates arrived |
+| **Customer Value** | ❌ **None.** Release Engineering. **Both lanes remain blocked on [`DECISION_PACKS.md`](docs/DECISION_PACKS.md)** |
+| **Process** | **One serious self-inflicted error**, caught by the repository's own guard and repaired before it escaped |
 
-### ⚠️ Escalation — every live blocker is the product owner's
+### ⚠️ Escalation — unchanged, and now the only thing holding delivery
 
-**[`DECISION_PACKS.md`](docs/DECISION_PACKS.md) is now the place to read them**, grouped. If you answer only three: **Pack A** (waiting since M3A, cost measured every cycle) · **Pack B** (governance only, no code, releases three stalled milestones) · **[C-017](docs/LANE_COORDINATION.md)** (ratifiable text, already written).
+**Five decision packs, every one the product owner's.** No implementation slice has reached QE in three cycles, and the reason is not lane capacity — it is that **both lanes are blocked on rulings.** If you answer only three: **Pack A** · **Pack B** · **[C-017](docs/LANE_COORDINATION.md)**.
 
 
 ## 2 · Milestone progress
@@ -364,18 +359,18 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`34d8acb8a506`](certification/reports/34d8acb8a506.md) · 2026-08-03 · ✅ CERTIFIED**
+**Latest certification — [`5c47a0d3b6ad`](certification/reports/5c47a0d3b6ad.md) · 2026-08-03 · ✅ CERTIFIED**
 
-**Certified commit `34d8acb` · promoted commit `34d8acb`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
+**Certified commit `5c47a0d` · promoted commit `5c47a0d`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
 
 | Gate | Recorded |
 |---|---|
-| **pytest** | **2589 passed** |
+| **pytest** | **2601 passed** |
 | **coverage** | **95.51%** *(floor 95%)* |
 | **Security Invariants** | **360 invariants**, each proven to fail when its guarantee is removed |
 | **import-linter** | **34 kept, 0 broken** |
-| **MyPy** | **strict, clean over 615 files** |
-| **`make smoke`** | **24 stages in 145s**, fresh images, clean teardown |
+| **MyPy** | **strict, clean over 617 files** |
+| **`make smoke`** | **24 stages in 158s**, fresh images, clean teardown |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0030`** · scenario set `0cf6b2c581e4` · working tree clean.
@@ -415,17 +410,26 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Indicator | Value |
 |---|---|
 | **Certification** | |
-| Certification cycles | 21 |
-| Certified | 21 of 21 |
-| Mean time to certify (last 5) | 40.6 min |
-| Mean smoke duration | 353.7 s |
-| Mean certify → Ready (last 5) | 4.5 min |
+| Certification cycles | 22 |
+| Certified | 22 of 22 |
+| Mean time to certify (last 5) | 40.1 min |
+| Mean smoke duration | 344.8 s |
+| Mean certify → Ready (last 5) | 5.0 min |
 | **Release flow** | |
-| Certification run success rate | 100% (21 of 21 runs) |
-| ↳ excludes | candidates rejected at validation — see Repository Health |
-| Commits per release | mean 9.6, median 5, range 2–49 |
-| Mean candidate age | 190.8 min  — oldest commit → certified |
-| Release frequency | 0.32 releases/hour over 65h |
+| Certification run success rate | 100% (22 of 22 runs) |
+| ↳ excludes | rejected candidates, and every failed or aborted attempt |
+| ↳ see instead | Pipeline stability below — measured from the attempt log |
+| Commits per release | mean 9.2, median 4, range 2–49 |
+| Mean candidate age | 184.9 min  — oldest commit → certified |
+| Release frequency | 0.33 releases/hour over 66h |
+| **Pipeline stability** | |
+| Attempts | 1 |
+| ↳ certified | 1 |
+| ↳ failed | 0 |
+| ↳ aborted | 0  (started, never reached a verdict) |
+| First-pass rate | 100.0%  — attempts that certified |
+| Completion rate | 100.0%  — attempts that reached a verdict |
+| Failures by gate | none |
 | **Defects and queues** | |
 | Queue depth (claimable now) | 1 — a lane with none reaches for undefined work |
 | Open bugs | 13 open · 16 fixed awaiting verification · 5 verified · 1 won't fix |
