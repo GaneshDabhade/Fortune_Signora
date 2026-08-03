@@ -231,3 +231,48 @@
 **Nothing was implemented.** One thing was **not** built as a result: no journey gap here needs a new bounded context. **Every ✖ in §2 is a missing connection, a missing composition, or an existing blocker** — which is the outcome the product owner predicted and the reason this review was worth running before more building.
 
 **The honest summary in one line:** *Signora is a well-built product whose stages are not connected in the environment a customer would use.*
+
+
+---
+
+## 9 · Running the product, rather than reading it — 2026-08-03
+
+**The Complete Product Experience Audit began by looking for what to build, and found that the hardest part already exists.**
+
+### The reuse finding, and it is emphatic
+
+**Provider simulators and realistic customer organizations are built and in use.** `make demo` brings up the stack, migrates, creates sign-in accounts through Better Auth's own routes, and seeds **twelve accounts through the real pipeline** — provider simulation → ingestion → normalization → knowledge graph → observations → business events → signals → buying scores → opportunities.
+
+> **No branch anywhere knows it is a playground.** The only differences from the pipeline suite are which scenario file is named and where its timeline is anchored.
+
+**Building new simulators would have duplicated `signora_platform/simulation` — the Provider Simulation Framework, shipped at M2.0 — and the Playground around it.** The audit's first act was to check, and the check is the deliverable: **do not build them.**
+
+### What running it proved, and what it did not
+
+**Seeded into Lane B's own database rather than the shared review stack**, since 3000/8000 belong to human product review:
+
+```
+raw_provider_record  14004      signal         6311
+claim                53847      buying_score   4090
+entity                8652      opportunity    3956
+observation          18745      timeline_entry   156   ← the finding
+```
+
+**The pipeline works.** Twelve accounts, twelve qualified opportunities, four re-scored because their evidence had aged — **produced by band arithmetic from scenario dates, not declared.**
+
+**Two composition gaps, and they are not the same gap.**
+
+| | |
+|---|---|
+| **The deployed worker** | Seven consumers unregistered (§1). **A customer's product does nothing** |
+| **The Playground** | Timeline never composed — **[B-302](../BUGS.md)**. *"What has happened"* is empty on all twelve accounts, in the one environment the product owner reviews the product in |
+
+**The second was invisible to §1's analysis** and only appeared by running the product. `tests/pipeline.py` mentions Timeline exactly once, in a docstring.
+
+### What this audit could not do, stated rather than implied
+
+**A screen-by-screen visual audit needs a browser and a human**, and the review stack is not this lane's to occupy. **The twenty-seven deliverables that depend on seeing rendered screens — micro-interactions, spacing, hover and focus behaviour, dark mode, responsive breakpoints, animation, premium feel — are not in this document, and claiming them from source would be exactly the assumption this repository keeps catching.**
+
+**What is here is what running the product actually evidenced:** the pipeline produces realistic output, the simulators exist, and two composition roots are each missing the same module.
+
+> **The audit's most useful output is a subtraction.** It was scoped to build simulators and populate organizations; both already existed, and the effort that would have gone into rebuilding them produced [B-302](../BUGS.md) instead.
