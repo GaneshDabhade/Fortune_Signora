@@ -178,7 +178,63 @@ The product owner's taxonomy, with every artifact in this repository placed in i
 
 ---
 
-## 7 · How this document is maintained
+---
+
+## 7 · Uncommitted work destroyed by git — three incidents, 2026-08-03
+
+> **Knowledge, not a proposal.** The product owner asked for this class to be documented and explicitly **not** solved: *"do not implement anything yet — simply build the knowledge. Lane C can later evaluate whether this becomes repository policy."* Nothing here is a recommendation to build.
+
+**Three incidents in one session, by three different commands.** Recorded together because separately each looks like a slip, and together they are a class.
+
+| # | Command | What it was meant to undo | What it actually destroyed | Recovered by |
+|---|---|---|---|---|
+| 1 | `git checkout infra/review.py` | A one-line test probe deliberately planted to prove a check could fail | **Three uncommitted edits** to that file — a decoupling fix, a helper, an improved message | Retyped from context |
+| 2 | `git reset --hard origin/integration` | A local branch position, before rebasing | **Five uncommitted files** — the entire Lane C governance change | **A backup taken after #1** |
+| 3 | `git checkout lane-qe -- certification/` | Restore one untracked report file from another branch | **The manifest entry certifying the commit already promoted to `main`** | **Re-running the gates** |
+
+### Why git behaves this way, and why it is not a bug
+
+**All three commands are working exactly as designed.** `git checkout -- <path>` and `git reset --hard` are *the* documented mechanisms for discarding local modifications — destroying uncommitted work is their **purpose**, not a side effect.
+
+**What makes them dangerous is that their blast radius is a path, and the operator's intent is a change.** Every one of these was aimed at undoing one specific thing:
+
+```
+intent:  "undo the probe I added to review.py"
+command: "discard every modification to review.py"
+```
+
+Those coincide only when the file has exactly one modification. **The mismatch is invisible at the moment of typing**, because the command names the file and the operator is thinking about the edit.
+
+**Incident 3 is the sharpest form**: the goal was to *restore* a file, and the mechanism to restore one path from another branch discards uncommitted modifications to every other path under it. `certification/manifest.json` was collateral.
+
+### Why it was possible
+
+| | |
+|---|---|
+| **No warning** | Git prints nothing before discarding modifications, and nothing afterwards saying what was lost. There is no undo — these changes were never in the object database |
+| **The reflog does not help** | The reflog records *commits*. Uncommitted work has no object to recover |
+| **`make unsaved` would not have caught any of the three** | It reports work git has **never seen** — untracked paths. **All three were modifications to tracked files**, a different exposure, and one nothing in this repository currently surfaces |
+| **Frequency** | These commands appear in ordinary recovery flows. A rule against them would fail on its first legitimate use, which is why none is proposed |
+
+### The one thing that actually worked
+
+**Incident 2 was recovered because incident 1 had already happened.** A copy of the working tree taken to the scratchpad ninety seconds earlier restored five files exactly. **That is the entire mitigation observed to work in practice**, and it cost one command.
+
+**Incident 3 was recovered differently, and the difference matters.** The lost artifact was a *certification record*, and it could not be restored from a copy or retyped — **hand-writing it would have been fabricating evidence**, indistinguishable to any future reader from a real run. The gates were re-run instead. **Some artifacts can only be recovered by regenerating the process that produced them**, which is the four-state taxonomy in §2 applied under pressure.
+
+### What a guard *could* eventually look like — for Lane C to evaluate, not for QE to build
+
+**Recorded as options, deliberately without a recommendation:**
+
+1. **A pre-command snapshot.** Copy modified tracked files to a scratch location before any destructive git command. Cheap; needs a hook git does not offer for `checkout`/`reset`.
+2. **Extend `make unsaved` to report modified tracked files** with an age, not only untracked ones. **Detection, not prevention** — it would not have stopped any of the three.
+3. **A wrapper that refuses a destructive command touching more paths than named.** Closest to the actual defect; also the most likely to be worked around the first time it is wrong.
+4. **Nothing.** Discipline plus the scratchpad backup, which is what worked twice. **The honest baseline**, and the one to beat.
+
+> **The bar this repository already sets:** *does this reduce future engineering effort more than it increases repository complexity?* **None of options 1–3 obviously clears it**, and that is why this section stops at knowledge.
+
+
+## 8 · How this document is maintained
 
 **QE re-measures §1 whenever this document is touched.** The table is a measurement of one moment; carried forward it becomes a claim about a repository that no longer exists — the same rule the certification metrics follow.
 
