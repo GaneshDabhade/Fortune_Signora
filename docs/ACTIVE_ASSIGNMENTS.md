@@ -39,12 +39,12 @@
 
 ## The rules
 
-- **A lane claims; nobody assigns.** Follow the **Task Claim Protocol** (`CLAUDE.md` §20e) — all ten steps, ending with a pushed standalone commit and a pull that confirms you were first. **No production code before step 10.**
-- **Claim from the top of the queue.** If the highest `READY` task cannot be taken, **say why in its backlog note** and take the next. Skipping silently is re-prioritizing, and priority is the product owner's.
+- **A lane records; nobody self-selects** *(amended 2026-08-03)*. The task arrives **recommended by [Lane C](PRODUCT_OFFICE.md) and approved by the product owner**; the lane then follows the **Task Claim Protocol** (`CLAUDE.md` §20e) to record it — a pushed standalone commit. **No production code before the claim is recorded and synchronized.**
+- **Priority is read, never exercised.** [`BACKLOG.md`](BACKLOG.md)'s order is the priority and it is the product owner's. **A lane that believes a different task is the right next one says so in its `Recommended Next Action`** — which is input, exactly like Lane C's.
 - **A row names a `TASK-nnn`.** If the work has no task id, it is not claimable work — it is a conversation with the product owner.
 - **A lane edits only its own row.** Writing another lane's row, or clearing one, is the confusion this file exists to prevent.
 - **One slice under construction per lane. One assignee per module.** Both directions, at all times. **A lane may also hold earlier rows at `IN VALIDATION`** — those are finished work waiting on QE, not a second thing being built.
-- **When a lane finishes a slice: set its row `IN VALIDATION`, then immediately claim the next `READY` task.** A lane never idles waiting for QE (`CLAUDE.md` §20e, *Continuous execution*) — only four things stop it claiming again, and *"my last slice has not been certified"* is not among them.
+- **When a lane finishes a slice: set its row `IN VALIDATION`, then immediately report `AVAILABLE`.** A lane never idles waiting for QE (`CLAUDE.md` §20e, *Continuous execution*) — *"my last slice has not been certified"* has never been a reason to stop, and **a recommendation that has not arrived is a finding rather than a reason to sit still.**
 - **QE removes the row once the work reaches `main`.** A row describing work already on `main` is the defect this file exists to prevent — **no lane may remain recorded against shipped work, and no stale row is left behind.**
 - **A row is a slice, not a milestone.** *Commercial Profile — slice 2* is an assignment; *Commercial Profile* is not.
 - **`Started` is when the assignment was made**, not when the branch was created.
@@ -58,7 +58,7 @@
 | `IN VALIDATION` | Handed to QE — **committed and pushed**, in the lifecycle, not yet promoted |
 | `CHANGES REQUESTED` | **QE, during validation.** Something did not hold, and the corrections are named. Returned to the implementing lane, which fixes them in place and returns the task to `IN VALIDATION` |
 | `COMPLETE` | Promoted to `main`. **Marked by QE at Closeout, then removed, and the lane returns to `AVAILABLE`** |
-| `AVAILABLE` | No current slice. **Free to claim from [`BACKLOG.md`](BACKLOG.md)** — not waiting for anyone |
+| `AVAILABLE` | No current slice. **Amended 2026-08-03: this now means *awaiting Lane C's analysis and recommendation*, not *free to choose*.** A lane reports `AVAILABLE`; [Lane C](PRODUCT_OFFICE.md) prepares the next recommendation; the product owner approves; the lane records the claim and builds |
 
 > **`IN VALIDATION` means the work exists as commits QE can take.** Uncommitted work in a session's working tree is `ACTIVE`, whatever stage it feels like it has reached — **the board describes the repository, not an intention.** This distinction was added on 2026-08-02 after this file recorded QE's own governance slice as `IN VALIDATION` while it was still entirely uncommitted.
 

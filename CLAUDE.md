@@ -440,6 +440,7 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 | **Environments** | §20e *Startup* step 6 | [`docs/RUNNING.md`](docs/RUNNING.md#running-a-lane) — **the allocation table** |
 | **Test data policy** | §20e *Test data* | [`20-provider-simulation.md`](docs/architecture/20-provider-simulation.md) |
 | **QE responsibilities** | §20e *The QE lifecycle* | [`docs/QUALITY_ENGINEERING.md`](docs/QUALITY_ENGINEERING.md) |
+| **Lane C responsibilities** | §20e *Lane C* | [`docs/PRODUCT_OFFICE.md`](docs/PRODUCT_OFFICE.md) — **the Product Office's operating procedure.** The coordination taxonomy · governance impact analysis · merge-risk classification · the decision-pack lifecycle · recommendation and decomposition formats |
 | **The repository cycle, end to end** | §20e *The QE lifecycle* | [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md) — **the runbook** |
 | **Removing an operational blocker** | §20e *QE removes its own blockers* | [`docs/RUNNING.md`](docs/RUNNING.md) — the prerequisites |
 | **Promotion workflow** | §20e *Completion* | [`docs/QUALITY_ENGINEERING.md`](docs/QUALITY_ENGINEERING.md) |
@@ -486,95 +487,42 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 
 ### Lane C — Product Office, Architecture Governance & Cross-Lane Coordination
 
-**Established 2026-08-03, product owner. Charter expanded the same day to the operational Product Office.**
+**Established 2026-08-03, product owner.** **How Lane C performs this is [`docs/PRODUCT_OFFICE.md`](docs/PRODUCT_OFFICE.md)** — the coordination taxonomy, governance impact analysis, merge-risk classification, the decision-pack lifecycle and the recommendation formats. **This section states only what binds every lane.**
 
 > **Lane C owns the coordination of implementation, not the implementation itself.**
+>
+> **Its mission is to reduce decision latency by preparing decisions before they reach the product owner.**
 
-**That sentence is the charter, and every rule below is a consequence of it.** The purpose is to remove planning, coordination and dependency work from the product owner so implementation lanes stay on engineering — **without moving a single decision away from the product owner.**
+> **The measurement that created it:** 29 of 34 indexed coordination rows named the product owner, 27 were `OPEN`, and 13 `READY` tasks sat unclaimed with two implementation lanes live. **The repository is not short of engineering capacity; it is short of decisions.**
 
-> **The measurement that created it:** 29 of 34 indexed coordination rows name the product owner, 27 are `OPEN`, and 13 `READY` tasks sat unclaimed with two implementation lanes live. **The repository is not short of engineering capacity; it is short of decisions.** A fourth *implementation* lane would have been a third claimant on work nobody was taking ([`RELEASE_ENGINEERING.md`](docs/RELEASE_ENGINEERING.md) §11, QE's readiness assessment, whose verdict stands).
+**The distinction everything rests on:**
 
-#### The one distinction everything rests on
-
-> **Lane C prepares decisions. The product owner makes them.**
-
-**Every Lane C output is advisory until approved.** A recommendation is not an assignment, an analysis is not a ruling, and a prepared decision package is not a decision. **Lane C never has implementation authority and never acquires it by having investigated.**
-
-#### What Lane C owns
+> **Lane C prepares decisions. The product owner makes them.** Every Lane C output is advisory until approved — a recommendation is not an assignment, an analysis is not a ruling. **Lane C never has implementation authority and never acquires it by having investigated.**
 
 | | |
 |---|---|
-| **Task assignment coordination** | When a lane reports `AVAILABLE`, `READY FOR NEW WORK`, `BLOCKED` or `WAITING`, Lane C inspects the roadmap, dependencies, the board, ownership, blockers and implementation readiness, and **recommends the next task for the product owner to approve** |
-| **Ownership resolution** | Where two lanes could reasonably own one piece of work: current ownership · affected modules · dependency graph · merge risk · implementation impact · **a recommendation and the alternatives considered** |
-| **Cross-lane dependency analysis** | What is *actually* blocking · technical or organizational · whether a smaller public contract removes the dependency · **the smallest change that unblocks implementation** |
-| **Feature decomposition** | Epic → capability → slices → dependencies → acceptance criteria → suggested lane → effort → risks → open questions. Each package carries objective · customer value · architecture · existing foundation · modules · backend · frontend · workflows · UX · future evolution |
-| **Decision package preparation** | Problem · options · trade-offs · risks · recommendation · rationale. **[`DECISION_PACKS.md`](docs/DECISION_PACKS.md) passes from QE to Lane C** |
-| **Roadmap stewardship** | Roadmap consistency · implementation sequencing · dependency graph · epic decomposition · readiness — **maintained continuously, and never reprioritized** |
-| **Governance coordination** | Implementation governance · coordination rules · documentation consistency · cross-lane workflow · the planning process. **Repository certification stays QE's** |
-| **Product architecture** | Cross-module review · product consistency · feature sequencing · competitive capability analysis · vision alignment · ADR preparation |
+| **Owns** | Task-assignment coordination · ownership resolution · cross-lane dependency analysis · feature decomposition · decision preparation ([`DECISION_PACKS.md`](docs/DECISION_PACKS.md)) · roadmap stewardship · governance coordination · product architecture and ADR preparation |
+| **Never** | **Writes production code · modifies business logic · implements · merges · certifies · changes module ownership · reprioritizes the roadmap · approves an architectural decision · overrides a lane · bypasses the product owner** |
+| **Branch** | `lane-c-product-office`. Identifier block `400`+ |
+| **Board** | **Referenced, never rowed** — [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) measures implementation, and Lane C produces none |
 
-#### What Lane C must never do
-
-**Write production code · modify business logic · implement a feature · merge · certify a release · change module ownership · reprioritize the roadmap · approve an architectural decision · override an implementation lane · bypass the product owner.**
-
-**Discovering an issue never confers authority to resolve it.** Lane C records the finding with its evidence and a recommendation; the change is made by whoever owns it — QE for certification, repository health and `infra/`, the assigned lane for a module, the product owner for anything 🔴. This is the same rule that already binds a lane finding a defect outside its assignment (*Bugs*).
-
-#### Lane C and QE — complementary, and the boundary is one question
+**Lane C and QE — the boundary is one question:**
 
 > **Does this concern *whether work should proceed*? — Lane C.**
 > **Does this concern *whether the work is correct*? — QE.**
 
-| QE owns | Lane C owns |
-|---|---|
-| Quality Engineering · Release Engineering · repository health · certification · environment validation · governance **compliance** | Planning · coordination · task decomposition · dependency resolution · ownership analysis · decision preparation · roadmap evolution |
-
-**QE never decides who implements a feature, which lane owns it, which roadmap item ranks higher, which architecture is chosen, how work is split, or what starts next.** Those are planning judgements, not quality judgements — and **a QE that made them would become a second Product Office**, which is the drift this separation exists to prevent.
-
-#### The routing model
+**QE never decides who implements a feature, which lane owns it, which roadmap item ranks higher, which architecture is chosen, or what starts next.** Those are planning judgements, not quality judgements — **and a QE that made them would become a second Product Office.**
 
 ```
   Lane A ─┐
-  Lane B ─┼──▶  Lane C  ──▶  investigates · prepares options · recommends
-  QE     ─┘     (planning or                        │
-                 governance)                        ▼
-                                          Product Owner decides
-                                                    │
-                                                    ▼
-                                     Lane C updates the repository
-                                                    │
-                                                    ▼
-                                     implementation lane resumes
+  Lane B ─┼──▶ Lane C ──▶ investigates · prepares options · recommends ──▶ Product Owner decides
+  QE     ─┘                                                                        │
+                                                     implementation resumes ◀──────┘
 ```
 
-**One route in, one decision point, and the decision point is unchanged.** What the model removes is the product owner rebuilding context separately for each lane that asks.
+**Discovering an issue never confers authority to resolve it.** Lane C records the finding with its evidence and a recommendation; the change is made by whoever owns it — QE for certification, repository health and `infra/`, the assigned lane for a module, the product owner for anything 🔴.
 
-#### The operating discipline
-
-> **Investigate · verify · propose · justify · recommend — and stop there.**
-
-**Verify against the repository, never against a register.** Both of this lane's first findings were invisible to every gate and true only in the code, and one of them overturned an intuition this lane had asserted the day before.
-
-**The three conditions a Lane C investigation should satisfy**, all at once:
-
-1. **No implementation lane naturally owns it.**
-2. **It creates long-term repository friction.**
-3. **It is solvable by a small structural improvement rather than a new framework.**
-
-**And the standing principle, which outranks any recommendation Lane C makes:**
-
-> **Every recommendation aims to remove complexity rather than introduce it.** Where a problem can be solved by *evolving an existing mechanism*, that is preferred over creating a new framework, process or governance layer. **The repository should become progressively simpler to understand even as it becomes more capable** — and a Lane C that adds governance faster than it retires it has inverted its own purpose.
-
-| | |
-|---|---|
-| **Branch** | `lane-c-product-office`, permanent by name. Identifier block `400`+ |
-| **Board** | **Referenced, never rowed.** [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) measures implementation; Lane C produces none |
-| **Reporting** | The Standard Lane Header, like every lane |
-
-> **The Integrator was a fourth role and is now QE's responsibility** (2026-08-01, product owner). It was never a separate session; describing it as one meant every merge, certification and status update was owned by nobody in particular. **QE validates, certifies, integrates, promotes, closes out, synchronizes and declares** — one sequence performed by one lane.
->
-> **This reversed a separation this document asserted earlier the same day** — *"QE's authority is to withhold approval, not to promote, because a role that both judges the work and ships it can always ship it."* The reversal is deliberate and the reasoning replaces it: **the conflict of interest that argument protected against requires something to rush, and QE has nothing to ship.** QE builds no customer feature, owns no milestone of product scope, and gains nothing from a promotion. What it gains is that **one authority runs the same gates in the same order every time**, which is worth more here than a separation whose only holder had no independent work of its own.
->
-> **What still constrains QE is the gate, not another role:** the lifecycle below is not QE's to shorten, and **QE never manually overrides a failing gate.**
+> **Every recommendation aims to remove complexity rather than introduce it.** Where a problem can be solved by evolving an existing mechanism, that beats a new framework, process or governance layer — **and a Lane C that adds governance faster than it retires it has inverted its own purpose.**
 
 ### Implementation ownership and integration cadence are independent
 
@@ -937,6 +885,8 @@ Together these appear in roughly two thirds of all commits. **A lane does not ed
 | [`docs/BUGS.md`](docs/BUGS.md) | **The defect register** | **Any lane opens. The module's current assignee fixes. Only QE sets `VERIFIED`** |
 | [`docs/LANE_COORDINATION.md`](docs/LANE_COORDINATION.md) | **Cross-lane coordination** — dependencies and pending contracts, nothing else | **Any lane opens. The named owner answers. The requesting lane closes** |
 | [`docs/QUALITY_ENGINEERING.md`](docs/QUALITY_ENGINEERING.md) | **QE's operating procedure** — how the lane validates, reviews and reports | **QE** |
+| [`docs/PRODUCT_OFFICE.md`](docs/PRODUCT_OFFICE.md) | **Lane C's operating procedure** — how the lane classifies, analyses, decomposes and recommends | **Lane C** |
+| [`docs/DECISION_PACKS.md`](docs/DECISION_PACKS.md) | **The decision staging area** — grouped, with options and a recommendation each. **Not a record**: a pack is retired when its decision is taken | **Lane C** *(QE until 2026-08-03)* |
 | [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md) | **The lifecycle runbook** — every command and tick-box from validation to Repository Ready | **QE** |
 | `PROJECT_STATUS.md` | **The executive dashboard** — *"where are we?"*, measured | **QE**, at Closeout |
 | [`docs/SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) | **Operational context** — *"what should the next session know?"* | **QE**, at Closeout |
