@@ -16,14 +16,16 @@ import { apiRequest } from '@/lib/api/client';
 import type {
   BuyingCommittee,
   CommercialFocus,
-  DeclareTargetAccounts,
+  CursorPage,
   DeclareBuyingCommittee,
   DeclareFocus,
   DeclareIcp,
+  DeclareTargetAccounts,
   IcpDeclaration,
-  TargetAccountList,
+  IcpSegmentSummary,
   ProductCatalog,
   PublishProductCatalog,
+  TargetAccountList,
 } from '@/lib/api/types';
 import { queryKeys } from '@/lib/query/keys';
 
@@ -256,5 +258,40 @@ export function useDeclareTargetAccounts(workspaceId: string | null) {
     onSuccess: (declared) => {
       client.setQueryData(queryKeys.targetAccounts(workspaceId ?? ''), declared);
     },
+  });
+}
+
+/**
+ * Every customer segment this organization sells to.
+ *
+ * **The question the product could not answer.** An ideal customer used to be
+ * reachable only through the product it belonged to, so there was no page that
+ * showed everything a workspace had said about its buyers.
+ *
+ * Archived segments are excluded unless asked for — they are retired rather
+ * than deleted, and they are not what somebody means by *"who do we sell
+ * to?"*
+ */
+export function useIcpSegments(
+  workspaceId: string | null,
+  options: { includeArchived?: boolean; cursor?: string | null } = {},
+) {
+  const { includeArchived = false, cursor = null } = options;
+  const search = new URLSearchParams();
+  if (includeArchived) search.set('include_archived', 'true');
+  if (cursor) search.set('cursor', cursor);
+  const query = search.toString();
+
+  return useQuery({
+    queryKey: [
+      ...queryKeys.icpSegments(workspaceId ?? '', cursor),
+      includeArchived ? 'with-archived' : 'live',
+    ],
+    queryFn: () =>
+      apiRequest<CursorPage<IcpSegmentSummary>>(
+        `/workspaces/${workspaceId}/icp-segments${query ? `?${query}` : ''}`,
+        { workspaceId: workspaceId ?? undefined },
+      ),
+    enabled: workspaceId !== null,
   });
 }

@@ -771,3 +771,20 @@ export interface IntegrationSystem {
   connections: Connection[];
 }
 
+
+/**
+ * One customer segment, as the list reads it.
+ *
+ * **Ids rather than names for products**, deliberately: the catalog owns
+ * names, and a product removed from it must still leave the row readable.
+ * The screen resolves them and says plainly when one is gone.
+ */
+export interface IcpSegmentSummary {
+  id: string;
+  name: string;
+  state: 'draft' | 'published' | 'archived';
+  version: number;
+  product_ids: string[];
+  last_changed_at: string;
+  last_changed_by: string;
+}

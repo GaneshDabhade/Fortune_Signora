@@ -32,6 +32,10 @@ vi.mock('@/lib/query/hooks/commercial', () => ({
   useBuyingCommittee: committee,
   useCommercialFocus: focus,
   useTargetAccounts: targets,
+  // Added with the segments list. Idle by default: this file is about the
+  // page's per-section failure reporting (B-006), and a section that is
+  // neither loading nor failing must not change what the others report.
+  useIcpSegments: () => ({ data: undefined, isLoading: false, isError: false }),
   usePublishProductCatalog: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
   useDeclareIcp: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
   useDeclareBuyingCommittee: () => ({

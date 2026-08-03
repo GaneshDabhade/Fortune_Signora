@@ -4,6 +4,7 @@ import { BuyingCommitteeEditor } from '@/components/commercial/committee';
 import { CommercialFocusEditor } from '@/components/commercial/focus';
 import { TargetAccountsEditor } from '@/components/commercial/target-accounts';
 import { IcpEditor } from '@/components/commercial/icp';
+import { SegmentList } from '@/components/commercial/segments';
 import { ProductCatalogEditor } from '@/components/commercial/products';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { SkeletonText } from '@/components/ui';
@@ -11,6 +12,7 @@ import {
   useBuyingCommittee,
   useCommercialFocus,
   useIcpDeclaration,
+  useIcpSegments,
   useProductCatalog,
   useTargetAccounts,
 } from '@/lib/query/hooks/commercial';
@@ -36,6 +38,7 @@ export default function ProductsPage() {
   const { activeWorkspace, isLoading: workspacesLoading } = useWorkspaceContext();
   const { data, isLoading, isError } = useProductCatalog(activeWorkspace?.id ?? null);
   const icp = useIcpDeclaration(activeWorkspace?.id ?? null);
+  const segments = useIcpSegments(activeWorkspace?.id ?? null);
   const committee = useBuyingCommittee(activeWorkspace?.id ?? null);
   const focus = useCommercialFocus(activeWorkspace?.id ?? null);
   const targets = useTargetAccounts(activeWorkspace?.id ?? null);
@@ -76,6 +79,27 @@ export default function ProductsPage() {
           workspaceId={activeWorkspace?.id ?? null}
         />
       ) : null}
+      {/* **Who you sell to, as a list.** Reads the catalog for product names
+          and renders whatever the segments query returned — including nothing,
+          which is the common state for a new organization and is designed as a
+          statement rather than an apology. It renders independently of the
+          editor above: the two read different tables, and one failing must not
+          take the other with it (B-006). */}
+      <section className="flex flex-col gap-3">
+        <div>
+          <h2 className="text-base font-medium text-content">Who you sell to</h2>
+          <p className="mt-1 text-sm text-content-muted">
+            Every kind of company that buys from you. One product can be bought by
+            several, and one of these can buy several products.
+          </p>
+        </div>
+        <SegmentList
+          segments={segments.data?.items ?? []}
+          catalog={data}
+          isLoading={segments.isLoading}
+          isError={segments.isError}
+        />
+      </section>
       {data && committee.data ? (
         <BuyingCommitteeEditor
           catalog={data}

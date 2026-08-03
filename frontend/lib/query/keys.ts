@@ -48,6 +48,12 @@ export const queryKeys = {
    * catalog, and versioned separately from it. */
   icp: (workspaceId: string) => ['workspace', workspaceId, 'icp'] as const,
 
+  /** Lane B (Commercial Profile). The segments list — paginated, so the key
+   * carries the cursor: two pages are two cache entries, and echoing a cursor
+   * back must not overwrite the page it came from. */
+  icpSegments: (workspaceId: string, cursor: string | null) =>
+    ['workspace', workspaceId, 'icp-segments', cursor ?? 'first'] as const,
+
   /** Lane B (Commercial Profile). Versioned separately from the catalog and
    * the ideal customer, so it is its own cache entry. */
   buyingCommittee: (workspaceId: string) =>

@@ -339,3 +339,46 @@ Each section shows your own words back to you, each version line names you and t
 **Step 5 is the one that changed the platform.** Saving it announces `commercial_profile.target_accounts_changed`, which is the first thing this module has ever told anybody. **Nothing consumes it yet** — the consuming side is Lane A's and unbuilt — so the screen says Signora has been told and does not claim it has started looking. Open the page in a second browser, save from both, and the second is told a colleague got there first rather than quietly losing the work.
 
 **Nothing on any of the five screens grades a company, a person or a committee against what you typed, and nothing ranks anything** — those are different modules' jobs, and they are not built.
+
+
+---
+
+## ICP-01 — an ICP becomes a thing a customer can name
+
+> Ratified in proposal by [ADR-0041](adr/0041-icp-aggregate.md). **This section describes what was built**; the ADR holds why, including the two reversals discovery produced.
+
+**The screen this delivers did not exist in any form.** An ideal customer was reachable only through the product it belonged to, so *"show me everything we've said about who buys from us"* had no page — and a company selling one product to two different kinds of buyer could not say so at all.
+
+### What changed, and what deliberately did not
+
+| | |
+|---|---|
+| **Added** | `Segment`, `SegmentVersion`, `SegmentCriteria`, `SegmentTransition` · four tables (migration `0031`) · `SegmentQueries` · `SqlSegmentReader` · `GET /workspaces/{id}/icp-segments` · the *Who you sell to* list |
+| **Reused unchanged** | `EmployeeRange`, `validate_criterion_list`, `IcpError` — **imported, not copied**, so a rule fixed in one place stays fixed in both |
+| **Untouched** | `IcpDeclaration`, `ProductIcp`, `DeclareIcp`, `icp_declaration`, `GET`/`PUT /workspaces/{id}/icp`, the ICP editor, and all 69 of their tests |
+
+**The old path still serves the editor.** Migration `0031` copies and deletes nothing: old read, then new read, then old write disabled, then retirement. The customer-facing swap happens when the new path has earned it, not when the new tables exist.
+
+### The four tables, and why each is separate
+
+`icp_segment` is **identity and nothing else** — what every future citation points at. If the versioned row *were* the segment, each revision would mint a new id and every citation an opportunity ever made would stop resolving. `icp_segment_version` is **published content only**; a draft is not a version, which is what lets an abandoned one cost nothing. `icp_segment_product` is versioned *with* the content, so *"we added CPQ in March"* is recoverable. `icp_segment_state` is append-only, each row a complete statement — **the status is the audit log**, the shape `opportunity_state` already uses.
+
+**No `UPDATE` grant on any of them.** State is derived from the latest transition rather than stored, so *"who archived this, and when?"* has an answer without a mutable column.
+
+**`icp_segment_product` carries no foreign key to a product**, because products have no table — they live inside `product_catalog`'s versioned JSONB. A removed product therefore leaves the reference intact and the screen resolves it against the current catalog, saying plainly how many are missing. That is `keptForCatalog`, already built for [B-005](../BUGS.md).
+
+### The read model, and what it refuses to carry
+
+A row carries **name, state, version, products, last changed**. Not the criteria: nobody reads *"Fintech · US, UK · 100–1000"* across forty rows — they read names, find the one they meant, and open it.
+
+**No precomputed counts.** The count worth having is *"how many opportunities did this segment produce?"*, no module can answer it, and a stored product count would be a copy of a joined fact that goes stale the moment a version publishes.
+
+**Paged on `(created_at, id)`.** The first draft paged on `(name, id)` because a customer finds a segment by name — and the platform's `CursorPosition` is `(datetime, UUID)` and frozen, so that would have been a type lie to save the client a `sort()`. **Alphabetical is a display concern** until a workspace actually pages; a server-side name sort needs its own cursor and waits for evidence.
+
+**Archived segments are excluded by default and never hidden.** They are retired, not deleted — everything Signora found under one was found *because* of it.
+
+### Continuing this module
+
+- **The list is the only surface today.** Create, edit, publish, archive, restore and duplicate are ICP-02 onward, and until they exist the only segments a workspace has are the ones the migration produced.
+- **Never add a verdict.** `tests/commercial_profile/test_boundary.py` reads the domain as a syntax tree and refuses any identifier naming a judgement; *effectiveness*, *health* and *"is this too broad?"* all need matching, and matching needs [C-002](../LANE_COORDINATION.md).
+- **A consumer cites `(segment_id, version_id)`** — identity says *which segment*, version says *which definition*. Citing only the version loses the first and is the one shape that would create debt.
