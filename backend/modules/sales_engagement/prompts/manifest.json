@@ -21,6 +21,27 @@
           "retries": 0
         }
       ]
+    },
+    {
+      "name": "conversation_strategy",
+      "version": 1,
+      "owner": "Sales Engagement",
+      "fingerprint": "18589e0000e14c8a1c1c2d8a62a70854d4464cf8aabc8344f2fafa060d499235",
+      "evaluations": [
+        {
+          "model": "granite3.3:2b",
+          "dataset": "approach",
+          "dataset_version": 1,
+          "rubric_version": 1,
+          "evaluated_on": "2026-08-03",
+          "sample_size": 10,
+          "grounding_failures": 1,
+          "schema_failures": 0,
+          "coverage": 0.75,
+          "rendering_protocol_version": 2,
+          "retries": 0
+        }
+      ]
     }
   ]
 }

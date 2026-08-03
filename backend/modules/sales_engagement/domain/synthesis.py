@@ -107,7 +107,7 @@ class SynthesisSource:
         """
         words: set[str] = set()
         for text in self._texts():
-            words |= {token.strip(".,;:()'\"").casefold() for token in text.split()}
+            words |= {bare(token) for token in text.split()}
         return frozenset(words - {""})
 
     def numbers(self) -> frozenset[str]:
@@ -189,6 +189,33 @@ _NUMERAL: Final = re.compile(r"\d+(?:[.,]\d+)?")
 #: verbs, which the first implementation of this check began to grow.
 _SENTENCE: Final = re.compile(r"(?<=[.!?])\s+")
 
+#: A trailing possessive, straight or curly.
+#:
+#: **The possessive of a permitted name is not a new name**, and treating it as
+#: one refused a real synthesis: the graph offered *Revenue Cloud*, the model
+#: wrote *Revenue Cloud's*, and the fence read `cloud's` as an invented product.
+#: That is the same class as the month-name false refusal the Commercial Context
+#: Protocol fixed — **the model used a word it was given, in a grammatical form
+#: the checker had not anticipated.**
+#:
+#: It does not weaken the check. *Databricks's* still reduces to `databricks`,
+#: which is still absent from the closed set and still refused.
+_POSSESSIVE: Final = re.compile(r"['’]s$")
+
+#: Edge punctuation a word can carry without being a different word.
+_EDGES: Final = ".,;:()'\"“”‘’"
+
+
+def bare(token: str) -> str:
+    """One word, reduced to the form both sides of the fence compare.
+
+    **Used by the closed set and by the checker, so they cannot disagree.** Two
+    normalizations would eventually differ, and the difference is exactly the
+    space a false refusal lives in — the same argument `SynthesisSource` makes
+    about being assembled once.
+    """
+    return _POSSESSIVE.sub("", token.strip(_EDGES)).casefold()
+
 
 def validate(draft: tuple[Passage, ...], source: ClosedSet, *, inference_id: UUID) -> Synthesis:
     """Refuse anything that would increase the repository's knowledge.
@@ -258,5 +285,5 @@ def _proper_nouns(text: str) -> tuple[str, ...]:
         tokens = sentence.split()
         for token in tokens[1:]:
             if token[:1].isupper():
-                found.append(token.strip(".,;:()'\"").casefold())
+                found.append(bare(token))
     return tuple(found)

@@ -823,3 +823,105 @@ The prompt asks for commercially sharp, evidence-first, concise prose that is **
 | **Brief variants** — Executive · SDR · AE · Manager | ✅ Arrangements of `sections()` over the same graph |
 | **A judge model for commercial quality** | ⚠️ Enters as a second evaluation dimension over the same reports, never as a second reasoning path |
 | **Prompt replay and regression** | ⚠️ Needs the durable inference record C-214 describes. `EvaluationReport` already names every experimental condition a replay would have to reproduce |
+
+---
+
+## 28 · SE-09d — the brief speaks in more than one voice
+
+**SE-09c proved a pass could be built. This proves the mechanism was general, by
+building a second one and composing them.**
+
+Two things were missing after SE-09c, and neither was visible from its own tests:
+**nothing composed a pass result into a narrated brief**, and **one artifact is
+not evidence that a second costs only an artifact.**
+
+### `NarrateBrief` attempts every pass and is not configured to
+
+A pass with no released artifact costs nothing — `Synthesise.execute` resolves
+the release *before* it renders anything, so an unreleased pass returns without
+reaching a model. Attempting all six therefore needs **no feature flag, no list
+to keep in step, and no deployment step**:
+
+> **A pass becomes reachable the moment its prompt earns a release, and
+> unreachable again the moment a protocol change withdraws one.**
+
+The alternative — a caller naming which passes to run — puts the release decision
+in two places, and the copy nobody maintains is the one that will be read.
+
+### The outcomes travel beside the brief, never inside it
+
+`NarratedBrief` carries the `ApproachBrief` a seller reads **and** an account of
+what happened to every pass that was tried. Keeping them separate is what stops
+the brief growing a field about its own production — the shape that eventually
+puts a stack trace on a screen.
+
+**Three states that must not collapse into one**, because they are a defect, a
+backlog item and an afternoon respectively:
+
+| | |
+|---|---|
+| **Refused / malformed** | The pass reached a model and was not trusted. **A defect** |
+| **No released prompt** | The pass never ran. **A backlog item**, not a misbehaving prompt |
+| **Provider failed** | The call never reached a verdict. **Says nothing about the prompt** |
+
+`refused` counts only the first, so an outage cannot read as a quality regression
+and an unbuilt prompt cannot read as a fabricating one.
+
+### What this deliberately refused to decide
+
+**Whether narration happens on a read or in a worker is [ADR-0200](adr/0200-sales-engagement.md)'s open ❓ Q-2**, and `CLAUDE.md` §7 separately forbids an endpoint that triggers model work synchronously. `NarrateBrief` is an application service that *produces* narration when asked and says nothing about who asks or how often — **a worker calling it and a request calling it are both satisfied by this shape.**
+
+> Building either into it would have made the product owner's decision invisibly, inside a feature slice. That is the conversion §20e warns about: *"I could just add it"* is how an architectural blocker becomes a silent design decision.
+
+**Sequential, and that is a decision rather than an oversight.** Six independent
+model calls would gather concurrently; today one pass has a released artifact, so
+concurrency would be machinery for a load that does not exist. **The trigger is a
+second released pass on a latency-sensitive path** — which needs Q-2 answered
+first, because a worker does not care how long six calls take and a request path
+is forbidden from making them.
+
+### The second artifact answers a different question, not the same one louder
+
+`conversation_strategy@1` is shown **the identical closed set** and asked
+something `executive_summary@1` is not:
+
+> *"What should this first conversation be about, and what should it not be
+> about?"*
+
+It names the opening, the thing worth validating early, and **the claim the
+seller should avoid making because the evidence will not carry it** — often the
+most valuable sentence on the page. Where the recommendation is *wait*, it is
+required to say what would have to change rather than manufacture an opening.
+
+**The graph stays identical; only the perspective changes.** That is the property
+that makes ten passes a roadmap rather than a rewrite.
+
+### Measured, and it found a third false refusal
+
+`conversation_strategy@1` against `granite3.3:2b` over the same ten graphs:
+**9 of 10, coverage 0.750, stability 1.000** — better than the first pass, on
+its first attempt.
+
+**The one refusal was the fence's fault again.** The graph offered *Revenue
+Cloud*; the model wrote *Revenue Cloud's*; `_proper_nouns` read `cloud's` as an
+invented product. **A possessive of a permitted noun is English morphology, not
+a new name** — the third instance of the same class, after the section headings
+and the month names.
+
+> **Three false refusals, all found by running the thing rather than reasoning
+> about it.** Each was the checker punishing a model for using a word it had been
+> given, in a form nobody anticipated. None was caught by 158 unit tests, because
+> a fake never phrases anything unexpectedly — which is precisely why
+> `CLAUDE.md` §10 insists AI quality is measured against a real model and
+> deterministic behaviour against fakes.
+
+`bare()` now reduces a token once, and **both the closed set and the checker use
+it** — two normalizations would eventually differ, and the difference is exactly
+where a false refusal lives. *Databricks's* still reduces to `databricks`, is
+still absent, and is still refused; a test pins that.
+
+**`RUBRIC_VERSION` bumped to 2**, because what passes changed. A run measured
+under version 1 is not comparable with one under version 2, and recording that is
+what stops the improvement reading as the model getting better. **The two runs on
+record stand as written** — they are true accounts of what happened, they would
+both score better today, and neither is re-run to make them look so.

@@ -113,7 +113,7 @@ from dataclasses import dataclass
 from typing import Final
 
 from modules.sales_engagement.domain.reasoning import RankedRole
-from modules.sales_engagement.domain.synthesis import SynthesisSource
+from modules.sales_engagement.domain.synthesis import SynthesisSource, bare
 
 #: The Commercial Context Protocol this process implements.
 #:
@@ -174,7 +174,10 @@ class CommercialContext:
         for fragment in self._fragments():
             if not fragment.quotable:
                 continue
-            words |= {token.strip(".,;:()'\"").casefold() for token in fragment.text.split()}
+            # **`bare`, not a local normalization.** The set the model may quote
+            # from and the set it is checked against must be reduced by one
+            # function, or a word could be quotable here and invented there.
+            words |= {bare(token) for token in fragment.text.split()}
         return frozenset(words - {""}) | self.source.vocabulary()
 
     def numbers(self) -> frozenset[str]:

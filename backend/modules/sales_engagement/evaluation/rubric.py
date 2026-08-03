@@ -53,8 +53,31 @@ from typing import Final
 from modules.sales_engagement.domain.synthesis import Synthesis
 
 #: Which published criteria were applied. Recorded on every evaluation so a
-#: rubric change is legible as a rubric change.
-RUBRIC_VERSION: Final = 1
+#: rubric change is legible as a rubric change **rather than as a movement in
+#: quality** — which is exactly what the bump to 2 exists to prevent.
+#:
+#: ### Version 2 — current, 2026-08-03
+#:
+#: **The fence stopped refusing the possessive of a name it had permitted.** The
+#: graph offered *Revenue Cloud*, `conversation_strategy@1` wrote *Revenue
+#: Cloud's*, and `_proper_nouns` read `cloud's` as an invented product. A
+#: possessive of a permitted noun is English morphology, not a new name.
+#:
+#: **What passes therefore changed, so the criteria changed**, and a run
+#: measured under version 1 is not comparable with one measured under version 2.
+#: Recording that here is what stops the improvement reading as the model
+#: getting better.
+#:
+#: **It does not weaken anything.** *Databricks's* still reduces to `databricks`,
+#: is still absent from the closed set, and is still refused — pinned by a test.
+#:
+#: ### Version 1 — superseded, and its measurements stand
+#:
+#: The two runs recorded against it are still true accounts of what happened.
+#: They would both score better today, and neither is re-run to make them look
+#: so: **a record of what was true then is not rewritten to match now**
+#: (`CLAUDE.md` §2).
+RUBRIC_VERSION: Final = 2
 
 
 def coverage(synthesis: Synthesis, load_bearing: tuple[str, ...]) -> float:

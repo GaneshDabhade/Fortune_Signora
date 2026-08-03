@@ -208,6 +208,30 @@ class TestTheClosedSetIsComputedFromWhatWasShown:
 
         assert len(result.passages) == 1
 
+    def test_the_possessive_of_a_shown_name_is_accepted(self) -> None:
+        """**The possessive of a permitted name is not a new name.** Found by
+        the second pass's evaluation: the graph offered *Revenue Cloud*, the
+        model wrote *Revenue Cloud's*, and the fence read `cloud's` as an
+        invented product. Same class as the month-name false refusal — a word
+        the model was given, in a grammatical form the checker had not
+        anticipated."""
+        result = validate(
+            (Passage(text="It is VP Engineering's decision.", cites=("VP Engineering",)),),
+            context(),
+            inference_id=uuid4(),
+        )
+
+        assert len(result.passages) == 1
+
+    def test_the_possessive_of_an_invented_name_is_still_refused(self) -> None:
+        """Reducing the possessive must not disarm the check it unblocked."""
+        with pytest.raises(SynthesisRefusedError, match="databricks"):
+            validate(
+                (Passage(text="We saw Databricks's move.", cites=("recommendation",)),),
+                context(),
+                inference_id=uuid4(),
+            )
+
     def test_a_month_the_protocol_did_not_show_is_still_refused(self) -> None:
         """Widening to the month shown must not admit every month."""
         with pytest.raises(SynthesisRefusedError, match="november"):
