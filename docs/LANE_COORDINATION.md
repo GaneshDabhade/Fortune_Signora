@@ -174,6 +174,7 @@
 | [C-202](#c-202--four-shared-documents-disagree-and-one-disagrees-with-itself) | Four shared documents disagree, and one disagrees with itself | Lane A | **QE** | `OPEN` — **directed by the product owner** | Nothing built. **A cold session trusting any status in the repository** |
 | [C-206](#c-206--is-an-invitation-better-auths-or-signoras) | Is an invitation Better Auth's or Signora's? | Lane A | **Product owner** | **`OPEN` — narrowed sharply 2026-08-02.** The plugin recommendation is **withdrawn**; the proof already arrives in the JWT | **One email delivery decision.** The invitation table, acceptance and the members list are no longer blocked by it |
 | [C-207](#c-207--casbin-cannot-express-an-action-on-yourself) | Casbin cannot express an action on yourself | Lane A | **Product owner** (platform §20a) | `OPEN` — **architectural** | **Leaving an organization**, and every self-directed operation after it |
+| [C-400](#c-400--three-architecture-document-numbers-are-already-collided-and-the-check-that-catches-them-cannot-fire-yet) | Three architecture-document numbers are already collided | Lane C | **QE** (the renumber) + **product owner** (the block rule) | `OPEN` — **governance** | **Nothing today. The next merge of either lane branch** — `49`, `50` and `51` each become two documents |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
 >
@@ -2446,6 +2447,57 @@ Alembic's `down_revision` is a linear chain: **a gap is a broken graph, not an o
 
 ---
 
+## C-400 · Three architecture-document numbers are already collided, and the check that catches them cannot fire yet
+
+| | |
+|---|---|
+| **Owner** | **QE** for the renumber (it is QE's at merge, by existing rule) · **the product owner** for the prevention rule, which amends `CLAUDE.md` 🔴 |
+| **Requester** | **Lane C — Product Office** |
+| **Status** | `OPEN` |
+| **Blocks** | **Nothing today.** It fires on the next merge of either lane branch, and gets more expensive with every cross-reference added meanwhile |
+
+### The collision, measured
+
+**Both lanes numbered `49`, `50` and `51` independently on 2026-08-03.** Neither branch is merged, so neither lane can see the other's allocation.
+
+| # | Lane A — `lane-a-product-surface` | Authored | Lane B — `lane-b-commercial-profile` | Authored |
+|---|---|---|---|---|
+| **49** | `49-lead-ownership.md` | **10:14:07Z** | `49-end-to-end-product-validation.md` | 11:43:31Z |
+| **50** | `50-sales-engagement.md` | **13:34:21Z** | `50-product-capability-audit.md` | 19:49:21Z |
+| **51** | `51-sales-workspace.md` | **19:19:34Z** | `51-implementation-specifications.md` | 20:02:13Z |
+
+**`47` and `48` do not collide** — Lane B holds both and Lane A allocated neither.
+
+### Why no gate has reported it
+
+**`infra/state-check.py` rule 5f exists for exactly this class** and cites [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide) in its own comment: *"two lanes writing a module design in one week produce two differently named files that git merges without a word."*
+
+**Run against `integration` today it reports `Architecture documents: 46 numbered, none duplicated` — and is correct.** It globs one working tree. The colliding files exist on two branches that have never met, so **the check cannot fail until the merge it was written to protect has already happened.**
+
+> **This is the C-201 failure mode surviving the fix that was supposed to end it.** The block table makes collision *unrepresentable* for `B-`, `C-`, `TASK-` and ADR. **It stops before numbered architecture documents** — so that one class has detection-after-merge where every other class has prevention. `CLAUDE.md` states the intended standard directly: *"the range prevents; the check detects."* Here there is no range, and the check runs too late.
+
+### The renumber needs no ruling — the rule already decides it
+
+`CLAUDE.md` §20e: *"Renumbering an existing identifier is QE's, at merge, and only to break a tie — the later claim moves, decided by author timestamp."*
+
+**Applied, it is unanimous: Lane A authored first on all three.** Lane A keeps `49`, `50`, `51`; **Lane B's three move to `52`, `53`, `54`**, which are free on every branch.
+
+**This is evidence, not judgement, and Lane C is not acting on it** — the renumber is QE's at merge, and the files are on two other lanes' branches. Recorded here so QE performs one arbitration rather than rediscovering it three times.
+
+### The prevention — two options, and the repository has already chosen this shape once
+
+| | Option | Consequence |
+|---|---|---|
+| **A** ✅ | **Extend the block table to numbered architecture documents**, exactly as for `B-`/`C-`/`TASK-`/ADR — QE `100+`, Lane A `200+`, Lane B `300+`, Lane C `400+` | **Makes it unrepresentable**, which is the standard §2 prefers. **The reading guide survives**: `CLAUDE.md` classifies `30+` as *records and cross-cutting notes*, and every lane block is above 30. Costs a `CLAUDE.md` amendment 🔴 and nothing else |
+| **B** | **Teach `state-check` 5f to read every `lane-*` branch**, not only the working tree | **Detects before the merge instead of after**, and catches a fat-finger *inside* a block, which a range cannot. Does not prevent. `infra/` is QE's ([ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) R-4) |
+| **C** | Reserve the number in the claim commit | **Rejected.** `certification-guard.py --audit-claims` bounds a claim commit to `ACTIVE_ASSIGNMENTS.md` and `BACKLOG.md`; widening it weakens the guard that makes claims arbitrable, to solve a smaller problem |
+
+**Lane C recommends A and B together**, because that is the pairing `CLAUDE.md` already ratified for identifiers — *"the range prevents; the check detects"* — and adopting it here is reuse of a decided pattern rather than a new one ([L-1](../ENGINEERING_LAWS.md)).
+
+### What no ruling costs
+
+**The renumber gets more expensive, not more urgent.** Each document is already cited by its own lane's commits; every further slice that references `50-sales-engagement.md` or `50-product-capability-audit.md` by number is one more citation QE must rewrite at merge. **Today it is three filenames and their inbound links. It is never cheaper than now.**
+
 ## Closed
 
 ## C-016 · Two branch names encode a permanent module assignment that no longer exists
@@ -2824,4 +2876,3 @@ USING (
 **What "no ruling" costs, stated plainly.** N-01 cannot ship a table. There is no partial version — a notification table without the right policy is one that would have to be migrated later under real customer data, and a migration that tightens RLS on a populated table is exactly the change nobody wants to make in production.
 
 **Lane B recommends A**, and will not write the migration until it is ruled on. **N-01 has no other blocker of its own** — it waits on the `04-modules.md` entry (C-027) regardless, and both can be answered in one pass.
-
