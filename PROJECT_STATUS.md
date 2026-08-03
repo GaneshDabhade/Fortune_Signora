@@ -12,16 +12,16 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `ebcf690`, 2026-08-03.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `fd2d942`, 2026-08-03.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`ebcf690`** — the certified commit itself |
-| **`integration`** | `ebcf690` — level with `main` |
+| **`main`** | **`fd2d942`** — the certified commit itself |
+| **`integration`** | `fd2d942` — level with `main` |
 | **Release candidate** | **None pinned.** Cycle 24 promoted [`ENGINEERING_LAWS.md`](ENGINEERING_LAWS.md) and the [B-101](docs/BUGS.md) fix |
-| **Certification** | ✅ [`ebcf690f9348`](certification/reports/ebcf690f9348.md) · migration head **`0030`** · protocol **v2** |
+| **Certification** | ✅ [`fd2d94271e78`](certification/reports/fd2d94271e78.md) · migration head **`0030`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **139 commits, none outside a certified snapshot** |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **142 commits, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Both lanes.** Five separate rulings, all the product owner's — see §1c |
 | **Validation queue** | Lane A's and Lane B's branches, **both awaiting a rebase by their lane** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The cycle's headline is not the promotion; it is why there was so little to promote.** Two lanes produced eight commits and **zero executable change**, because every next step needs a decision nobody has made. The pipeline is healthy and has almost nothing to carry.
 
-**Repository health:** 2580 backend tests · **95.51% coverage** *(floor 95)* · 701 frontend tests · 360 Security Invariants · mypy strict over 614 files · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
+**Repository health:** 2580 backend tests · **95.51% coverage** *(floor 95)* · 711 frontend tests · 360 Security Invariants · mypy strict over 614 files · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
 
 ---
 
@@ -101,49 +101,53 @@
 
 ---
 
-## 1d · Release summary — 2026-08-03, cycle 27
+## 1d · Release summary — 2026-08-03, cycle 28
 
-**Derived from the promoted commit `ebcf690`.** Two commits: the environment lease, and the gate contradiction it exposed.
+**Derived from the promoted commit `fd2d942`.** One executable commit: **PQ-02**.
 
-### One operation now owns the shared environment, and the second refuses to start
+### A route nothing leads to is now a finding, not a discovery
 
-**RE-02 was wrong as written, and replaying the incident is what showed it.** It said *"a lock around `make certify`"*. Cycle 25's contamination came from `make smoke` and `make down` running **beside** a certification — **no second `certify` was ever started**, so a certify-lock would have permitted every command that actually did the damage.
+**`make reachability`** is the frontend sibling of `runtime-composition`. One asks *"does the deployed worker consume what this module projects?"*; the other *"does any screen lead to this route?"* — **the same defect class from two ends**, and both have already cost this repository a shipped-but-inert capability.
 
-**The lease belongs to the environment, not to a command.** One production stack, one pair of review ports, one test database — and nothing knew who was using them. **Not missing capability; missing ownership.**
+```
+  Navigable routes                   10
+  Reachable from inside the product   9
+  Entered from outside, declared      1
+  No entrance at all                  0
+```
 
-**It prevents rather than detects.** The preflight *reports* a held port and asks the operator to look; the lease *refuses to start*.
+**Four approaches were compared before building.** A Playwright crawl proves what *is* reachable and **cannot prove a route is unreachable** without exhausting the graph. Comparing backend endpoints against frontend hooks catches a *different* defect. The manual census goes stale within a cycle — **it already had**. Static analysis won because **the defect is structural, not behavioural**.
 
-| | |
-|---|---|
-| **A dead holder is reclaimed silently** | `pkill` on a hung run is legitimate recovery and happened **twice** in cycle 25. A lease surviving it turns one stuck run into a permanently stuck repository |
-| **Re-entrant through the environment** | `certify` shells out to `smoke.sh` inside its own lease, and would otherwise block on itself forever |
+> **The rule that makes it work: an entrance is a link from *outside* the route's own subtree.** Without it the check passes on the exact defect it exists to catch — `/settings/connections` had **two** inbound links, both from OAuth helpers *inside* the connection flow, so a customer could reach it only by already being there.
 
-**RE-04 was an integration gap**, not a missing capability: `release-preflight.py` already existed and already checked prerequisites — nothing had taught it about the one service the suite cannot run without. **Extended, not replaced.**
+**Asserted rather than claimed.** The test reconstructs the Connection Center exactly as it shipped and requires the checker to flag it; a second shows a naive inbound-link rule would have passed. **The live repository is asserted last and loosely** — it passes today and would pass identically with the rule deleted.
 
-**RE-05 was deprioritised on evidence.** A per-run compose project would let two smoke runs coexist; the lease makes them not need to. Its remaining value is *parallel* certification — a later stage.
+**What it does not catch, stated rather than implied:** reachability is *can a customer arrive*, never *is arriving worth it*. Timeline's feed was mounted, reachable and empty — this check would have called it reachable and been right.
 
-### ⚠️ I broke `make dr`, and running it is what found out
+### The product-quality audit found twelve gates already built
 
-I wired the preflight into `dr` reasoning it was the one gate nobody preflighted. **True, and the conclusion was wrong: the two have inverse preconditions.** The preflight requires 3000/8000 **free** so smoke can bind them; `dr` requires the production stack **up** on exactly those ports. `make up` then `make dr` could never both succeed.
+**Thirty were proposed; the repository already implements twelve**, and nobody had named them as a suite. `frontend/tests/components/` holds 34 files that are not component tests — they assert *"an address that does not lead anywhere"*, *"an empty list says why it is empty"*, *"the platform vocabulary never reaches a customer"*. **Four more are already Engineering Laws.**
 
-**Caught within one cycle, by running the gate rather than reasoning about it** — [L-2](ENGINEERING_LAWS.md) in both directions, since *"not preflighted"* was never checked against what `dr` actually needs. `dr` keeps the lease, which was the half it genuinely needed. **Three tests assert the preconditions cannot contradict again.**
+**So no framework was built.** A parallel product-quality system beside 34 tests and four laws would be the duplication [L-1](ENGINEERING_LAWS.md) forbids.
 
-**It also invalidated `947ba37`'s certification** — the tree changed, so the snapshot restarted at `ebcf690`. That is the rule working, not a cost.
+**Deliberately not proposed:** cognitive load, task completion rate, enterprise readiness, searchability, undo coverage. **None has a defect behind it here.**
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **2615 tests** · **95.51%** · 360 invariants · 618 files typed · 34 contracts |
-| **Release** | **6 promotions in 6 cycles.** Smoke back to its floor at **116s** |
-| **Architecture** | Runtime composition **2 of 2 expected, 0 unexpected** — fifth consecutive clean reading |
-| **Dependency** | **37 items, 12 closed.** Unchanged — no lane candidates arrived |
-| **Customer Value** | ❌ **None, for the fourth consecutive cycle.** Release Engineering only |
-| **Process** | **One self-inflicted broken gate**, caught by running it, fixed and tested in the same cycle |
+| **Technical** | 2615 tests · **95.52%** · **711 frontend** *(+10)* · 360 invariants · 618 files typed |
+| **Release** | **7 promotions in 7 cycles.** Certification attempts: 5 recorded, 5 certified, 0 aborted |
+| **Architecture** | Runtime composition **0 unexpected** · **Reachability 0 without an entrance** — two structural checks now, where there was one |
+| **Dependency** | **37 items, 12 closed.** Two moved on re-validation: **C-020 narrowed**, **C-023 closes** |
+| **Customer Value** | ❌ **None, fifth consecutive cycle.** Quality tooling only |
+| **Process** | Clean. One self-correction: shipping PQ-02 left its own document contradicting itself in three places, fixed in the same commit |
 
-### ⚠️ Four cycles without customer value is now the signal, not the tooling
+### ⚠️ Five cycles without customer value
 
-**No implementation slice has reached QE since cycle 23.** The pipeline is measurably healthier — leased, preflighted, and able to count its own failures — and it **has nothing to carry.** Both lanes are blocked on [`DECISION_PACKS.md`](docs/DECISION_PACKS.md), and every pack is the product owner's.
+**The pipeline can now prove more about the product than at any point in this repository's history** — and it has had nothing to certify since cycle 23. Both lanes are blocked on [`DECISION_PACKS.md`](docs/DECISION_PACKS.md).
+
+**Ordered by customer value rather than dependency count, the order is C → E(C-008) → B → A → D** — and it differs from the dependency-count order, which is the point. **Pack A unblocks 7 modules and ships nothing a customer can see.**
 
 
 ## 2 · Milestone progress
@@ -353,18 +357,18 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`ebcf690f9348`](certification/reports/ebcf690f9348.md) · 2026-08-03 · ✅ CERTIFIED**
+**Latest certification — [`fd2d94271e78`](certification/reports/fd2d94271e78.md) · 2026-08-03 · ✅ CERTIFIED**
 
-**Certified commit `ebcf690` · promoted commit `ebcf690`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
+**Certified commit `fd2d942` · promoted commit `fd2d942`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
 
 | Gate | Recorded |
 |---|---|
 | **pytest** | **2615 passed** |
-| **coverage** | **95.51%** *(floor 95%)* |
+| **coverage** | **95.52%** *(floor 95%)* |
 | **Security Invariants** | **360 invariants**, each proven to fail when its guarantee is removed |
 | **import-linter** | **34 kept, 0 broken** |
 | **MyPy** | **strict, clean over 618 files** |
-| **`make smoke`** | **24 stages in 116s**, fresh images, clean teardown |
+| **`make smoke`** | **24 stages in 151s**, fresh images, clean teardown |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0030`** · scenario set `0cf6b2c581e4` · working tree clean.
@@ -375,7 +379,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 
 | Indicator | Value | Target |
 |---|---|---|
-| **Frontend tests** | **701 passing**, 0 failing, 0 skipped | 0 skipped |
+| **Frontend tests** | **711 passing**, 0 failing, 0 skipped | 0 skipped |
 | **Modules** | **15 implemented** · **46** numbered architecture documents · **40** ADRs | — |
 | **Module count, reconciled** | [`04-modules.md`](docs/architecture/04-modules.md) ratifies **13 core + 1 platform = 14**; `integrations` and `timeline` were added since under [ADR-0025](docs/architecture/adr/0025-module-boundary-evolution.md). **15 directories is the measured figure**; [README](README.md) still says *fourteen* | reconcile |
 | **Migrations** | **`0000`–`0030`**, additive and reversible — verified to base and back this cycle | — |
@@ -404,21 +408,21 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Indicator | Value |
 |---|---|
 | **Certification** | |
-| Certification cycles | 24 |
-| Certified | 24 of 24 |
-| Mean time to certify (last 5) | 32.5 min |
-| Mean smoke duration | 325.9 s |
-| Mean certify → Ready (last 5) | 13.8 min |
+| Certification cycles | 25 |
+| Certified | 25 of 25 |
+| Mean time to certify (last 5) | 32.8 min |
+| Mean smoke duration | 318.9 s |
+| Mean certify → Ready (last 5) | 13.4 min |
 | **Release flow** | |
-| Certification run success rate | 100% (24 of 24 runs) |
+| Certification run success rate | 100% (25 of 25 runs) |
 | ↳ excludes | rejected candidates, and every failed or aborted attempt |
 | ↳ see instead | Pipeline stability below — measured from the attempt log |
-| Commits per release | mean 8.5, median 4, range 1–49 |
-| Mean candidate age | 169.8 min  — oldest commit → certified |
-| Release frequency | 0.36 releases/hour over 67h |
+| Commits per release | mean 8.3, median 4, range 1–49 |
+| Mean candidate age | 166.8 min  — oldest commit → certified |
+| Release frequency | 0.36 releases/hour over 69h |
 | **Pipeline stability** | |
-| Attempts | 3 |
-| ↳ certified | 3 |
+| Attempts | 4 |
+| ↳ certified | 4 |
 | ↳ failed | 0 |
 | ↳ aborted | 0  (started, never reached a verdict) |
 | First-pass rate | 100.0%  — attempts that certified |
