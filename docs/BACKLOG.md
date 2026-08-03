@@ -117,7 +117,7 @@
 |---|---|
 | **Module** | `commercial_profile` (the read surface) · Product Surface (the mount) — **a two-lane build** |
 | **Slice** | one slice each side |
-| **Status** | `READY` |
+| **Status** | **`READY` — but narrowed.** Verified against branches by Lane C 2026-08-03: the read surface overlaps [TASK-300](#task-300--epic-a--surface-what-already-exists) slice **A4**, which Lane B holds. **[C-323](LANE_COORDINATION.md) and [C-404](LANE_COORDINATION.md) carry the evidence** |
 | **Notes** | **Read-only, for `member`, beside the account brief** — not under `/settings`, where the granted read is unreachable behind `workspace:update`. `policy.csv` already grants `member` read on `product`, `icp`, `buying_committee` and `commercial_focus`: **the API and the product disagree, and the API is right** |
 | **On claiming** | Open a `C-` item for the mount if the two halves are claimed by different lanes. **Placement is judgement** ([ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) R-5) — say so in review if it reads wrong |
 
@@ -127,7 +127,7 @@
 |---|---|
 | **Module** | `workspace_tenancy` |
 | **Slice** | invitation table · acceptance · members list |
-| **Status** | `READY` |
+| **Status** | **`IN VALIDATION` — Lane A. Already built; corrected by Lane C 2026-08-03, [C-404](LANE_COORDINATION.md).** Verified on `lane-a-product-surface`: migration `0031_invitation.py`, `domain/invitation.py`, `application/use_cases/invite_member.py`, `tests/test_invitation.py`, across **TM-01…TM-06** — one titled *"an organization can grow"*, this row's own words. **Assigned directly by the product owner on 2026-08-02, a day before this row was written from [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) R-7** |
 | **Notes** | **Signora owns the invitation.** An `invitation` table keyed by email; acceptance matches a pending row against the **`email` claim already in the verified JWT**. **Better Auth's `organization` plugin is not adopted** — migration `0005` revokes `signora_app` from the `auth` schema, so plugin-owned membership is membership the Python tier cannot read, and §13 requires it re-verified every request |
 | **On claiming** | **v1 delivery is a shareable link, not email.** No transactional-email dependency is added. **That half is judgement** and is the ruling to challenge first if you would rather ship with email |
 
@@ -137,7 +137,7 @@
 |---|---|
 | **Module** | Product Surface · `buying_score_engine` owns posture |
 | **Slice** | one slice |
-| **Status** | `READY` |
+| **Status** | **`IN VALIDATION` — Lane A. Already built; corrected by Lane C 2026-08-03, [C-404](LANE_COORDINATION.md).** Verified on `lane-a-product-surface`: `frontend/components/intelligence/attention.tsx` marks `contractionary` alone with an icon, a `warning` tone and screen-reader text *"risk to existing revenue"*, asserted in `frontend/tests/components/attention.test.tsx`. **Satisfies R-6** — *distinct, and the treatment was the lane's* |
 | **Notes** | Posture reaches the attention row. **A contraction risk must not be confusable with a low-scoring opportunity** — they mean opposite things to a CRO scanning a list. **The treatment is yours**, within the design system; the ruling is only that they must differ |
 
 ### TASK-906 · M14b names its bounded context

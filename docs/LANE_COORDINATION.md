@@ -189,7 +189,7 @@
 | [C-401](#c-401--which-measure-predicts-merge-risk--and-the-answer-is-none-of-the-four) | Which measure predicts merge risk — **none of the four** | Lane C | **Product owner** (whether to change anything) + **QE** (both mechanical halves) | `OPEN` | **Nothing.** The execution board conflicts every multi-lane cycle by construction — **the only textual conflict in 77 commits** |
 | [C-402](#c-402--the-board-restructuring-is-approved--and-doing-it-today-costs-two-lanes-a-conflict) | Board restructuring — **approved**, and the timing is the finding | Lane C | **QE** (performs and times it) | **`ANSWERED`** — Option B approved 2026-08-03 | **Nothing.** 49 unmerged commits touch the file; reshaping after the next promotion costs nothing |
 | [C-403](#c-403--every-outstanding-qe-action-from-lane-c-in-one-place) | Every outstanding QE action from Lane C, in one place | Lane C | **QE** | `OPEN` | **Nothing.** Two are latent defects that pass today and will not later |
-| [C-404](#c-404--two-ready-tasks-are-already-built-and-the-queue-cannot-see-it) | Two `READY` tasks are already built | Lane C | **Product owner** (the backlog is theirs) | `OPEN` | **Nothing today.** It would have caused duplicate implementation on the next assignment |
+| [C-404](#c-404--two-ready-tasks-are-already-built-and-the-queue-cannot-see-it) | **Three** `READY` tasks were already built | Lane C | Lane C | `IMPLEMENTED` — backlog corrected 2026-08-03. **`VERIFIED` is QE's** | **Nothing.** It would have caused duplicate implementation three times |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
 >
@@ -2686,21 +2686,24 @@ Every lane's rows sit **adjacent in one table**, and each lane's branch carries 
 | **Classification** | **Implementation Coordination** — no decision needed; the backlog needs correcting |
 | **Owner** | **Product owner** — [`BACKLOG.md`](BACKLOG.md) is theirs and Lane C writes nothing in it |
 | **Requester** | **Lane C — Product Office** |
-| **Status** | `OPEN` |
-| **Blocks** | **Nothing today. It would have caused duplicate implementation** on the next assignment |
+| **Status** | `IMPLEMENTED` — the backlog is corrected. **`VERIFIED` is QE's** |
+| **Blocks** | **Nothing. It would have caused duplicate implementation** on the next assignment — three times, not once |
 
 **Found while doing the job rather than while auditing.** Preparing next-task recommendations required verifying every `READY` row against branch reality first ([`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §10, *reality always wins over planning*). **Two rows did not survive the check.**
 
-| Task | Backlog says | Repository says |
-|---|---|---|
-| **[TASK-904](BACKLOG.md)** *An organization can grow* | `READY` | **Built on `lane-a-product-surface`.** `0031_invitation.py` · `domain/invitation.py` · `application/use_cases/invite_member.py` · `tests/test_invitation.py`, across **TM-01…TM-06** — one of which is titled *"TM-03a — an organization can grow"*, the row's own words |
-| **[TASK-903](BACKLOG.md)** *A seller can see what their company sells* | `READY` | **Half-claimed.** It is a two-lane build and Lane B holds [TASK-300](BACKLOG.md) *Epic A*, whose slice **A4** is the same read surface. [C-323](LANE_COORDINATION.md) already records the collision |
+| Task | Backlog said | Repository says | Corrected to |
+|---|---|---|---|
+| **[TASK-904](BACKLOG.md)** *An organization can grow* | `READY` | **Built on `lane-a-product-surface`.** `0031_invitation.py` · `domain/invitation.py` · `application/use_cases/invite_member.py` · `tests/test_invitation.py`, across **TM-01…TM-06** — one titled *"an organization can grow"*, the row's own words | **`IN VALIDATION` — Lane A** |
+| **[TASK-905](BACKLOG.md)** *A contraction risk stops looking like an opportunity* | `READY` | **Built on `lane-a-product-surface`.** `attention.tsx` marks `contractionary` alone — icon, `warning` tone, screen-reader text *"risk to existing revenue"* — asserted in `attention.test.tsx`. **Satisfies [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) R-6** | **`IN VALIDATION` — Lane A** |
+| **[TASK-903](BACKLOG.md)** *A seller can see what their company sells* | `READY` | **Half-claimed.** A two-lane build; Lane B holds [TASK-300](BACKLOG.md) *Epic A*, whose slice **A4** is the same read surface. [C-323](LANE_COORDINATION.md) already records it | **`READY`, narrowed** |
 
 > **Neither lane did anything wrong, and that is the point.** Lane A was assigned Team Management directly by the product owner on 2026-08-02; TASK-904 was written on 2026-08-03 from [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) R-7. **The queue and the branch describe the same capability and have never met.**
 
 **What this would have cost.** Under the new model Lane C assigns the next slice. **TASK-904 is the highest-value unclaimed row by customer capability** — *"today every workspace is permanently whoever created it"* — so it is exactly what a reasonable assignment would have picked, **and it would have asked a lane to rebuild a migration, a domain object, a use case and a test suite that already exist.**
 
-**Recommendation.** **TASK-904 → `IN VALIDATION`, attributed to Lane A**, and **TASK-903 narrowed to the half Lane B does not already hold**, or folded into TASK-300. **Both are the product owner's edits**; Lane C records the evidence and changes nothing.
+**Actioned 2026-08-03**, on the product owner's direction that *"the backlog should never ask a lane to implement something that already exists"* and that maintaining it is Lane C's. **All three rows are corrected in [`BACKLOG.md`](BACKLOG.md) with the evidence named.**
+
+> **Reality was corrected; priority was not touched.** No row moved position, none was added or removed, and none was reordered. **Lane C records what exists; the queue's order stays the product owner's.**
 
 > **The general finding is the one worth keeping:** the backlog is written from rulings and the work is done on branches, and **nothing reconciles the two until QE merges.** `state-check` reading every `lane-*` ref ([C-403](#c-403--every-outstanding-qe-action-from-lane-c-in-one-place) item 2) would close this the same way it closes [C-400](#c-400--three-architecture-document-numbers-are-already-collided-and-the-check-that-catches-them-cannot-fire-yet) and [B-400](BUGS.md) — **three findings, one blind spot.**
 

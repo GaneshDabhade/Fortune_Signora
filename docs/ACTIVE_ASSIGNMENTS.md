@@ -89,9 +89,22 @@
 
 | | |
 |---|---|
-| **Current investigation** | **Merge-risk metrics** — which measure actually predicts integration risk, commissioned 2026-08-03. **Answered in [C-401](LANE_COORDINATION.md): none of the four**, and the only textual conflict in 77 commits is this file |
-| **Delivered** | [C-400](LANE_COORDINATION.md) — three architecture-document numbers already collided; **both recommendations approved.** The block table is extended; the renumber and the `state-check` half are QE's |
-| **Next** | **Retire the four ruled Decision Packs**, and prepare the next assignment for each lane reporting `AVAILABLE` |
+| **Current** | **Assignment preparation and B-400 coordination** |
+| **Delivered** | [C-400](LANE_COORDINATION.md) doc-number collisions · [C-401](LANE_COORDINATION.md) merge-risk measurement · [C-403](LANE_COORDINATION.md) QE's action list · [C-404](LANE_COORDINATION.md) backlog reality · [B-400](BUGS.md) 🔴 migration collision · [B-401](BUGS.md) the blocking check |
+| **Next** | Assign on `AVAILABLE`, after [B-400](BUGS.md) clears |
+
+### Next assignments — prepared, and what each is waiting on
+
+**Verified against branches, not against the queue** ([`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §10). **Neither lane is `AVAILABLE` today; both are carrying large unmerged branches.**
+
+| | **Lane B** | **Lane A** |
+|---|---|---|
+| **Next action** | **[B-400](BUGS.md) — renumber `0031_commercial_profile_segment.py` to `0035`** | Continue `TASK-300`-adjacent work already under way |
+| **Why first** | 🔴 **Blocking Quality Defect.** Alembic cannot build the revision map with two `0031`s, so **neither lane can be certified** until it clears. One file, one line | Nothing of Lane A's is blocked by it, but **its branch cannot promote either** |
+| **Then** | [TASK-902](BACKLOG.md) — **M7 Timeline S05+.** `timeline` is Lane B's, [ADR-0038](architecture/adr/0038-timeline.md) is ratified, the surface is already mounted, and **no open item blocks it** | **Nothing to assign.** Lane A's three highest-value rows — [TASK-903](BACKLOG.md) · [904](BACKLOG.md) · [905](BACKLOG.md) — **it has already built** ([C-404](LANE_COORDINATION.md)) |
+| **Not assigned, and why** | [TASK-900](BACKLOG.md) platform RFC — **a different discipline**, and Lane B said so when it declined the queue's top item on 2026-08-02 | [TASK-906](BACKLOG.md) M14b discovery — **Lane A's own analysis is already recorded** in [42-billing-and-entitlements.md](architecture/42-billing-and-entitlements.md); the row needs the product owner to accept it, not a lane to redo it |
+
+> **The honest finding: with three rows corrected, the `READY` queue has little Lane A can take.** [TASK-900](BACKLOG.md) is the only substantial unclaimed item and it is a platform RFC. **That is a queue-depth observation for the product owner, not a request** — and it is what *"lanes rarely wait for work"* looks like when it stops being true.
 
 > **One reference, not an assignment.** If this ever needs a `Status`, a `Slice` and a `Next action`, Lane C has drifted into implementation and the drift should be corrected rather than accommodated by widening the table.
 
