@@ -58,6 +58,32 @@ class Holder:
         return any(sig in self.process for sig in REVIEW_SIGNATURES)
 
 
+def _container_holders() -> dict[int, str]:
+    """Containers publishing a review port, by port.
+
+    **A published container port belongs to `docker-proxy`, not to the process
+    inside it**, so `ss` reports `unknown` and the operator is told to identify
+    something the tool could have named. That happened to QE twice in two
+    cycles, both times its own `make dr` stack — so the answer is a name, not a
+    firmer instruction to go looking.
+    """
+    if not shutil.which("docker"):
+        return {}
+    out = subprocess.run(
+        ["docker", "ps", "--format", "{{.Names}}\t{{.Ports}}"],
+        capture_output=True,
+        text=True,
+        check=False,
+    ).stdout
+    found: dict[int, str] = {}
+    for line in out.splitlines():
+        name, _, ports = line.partition("\t")
+        for port in REVIEW_PORTS:
+            if re.search(rf"(^|[^0-9]):{port}->", ports):
+                found.setdefault(port, name)
+    return found
+
+
 def _listeners() -> list[Holder]:
     """Who is listening on the review ports, and as what.
 
@@ -69,13 +95,23 @@ def _listeners() -> list[Holder]:
     out = subprocess.run(
         ["ss", "-ltnp"], capture_output=True, text=True, check=False
     ).stdout
+    containers = _container_holders()
     holders: list[Holder] = []
     for line in out.splitlines():
         for port in REVIEW_PORTS:
             if not re.search(rf":{port}\s", line):
                 continue
             names = re.findall(r'"([^"]+)"', line)
-            holders.append(Holder(port=port, process=" ".join(names) or "unknown"))
+            process = " ".join(names)
+            if container := containers.get(port):
+                # Name the container, and say what releases it. The operator
+                # otherwise reads "unknown" for a stack they started themselves.
+                process = f"container {container}" + (
+                    "  → `make down` releases it"
+                    if container.startswith("signora-prod-")
+                    else f" ({process or 'docker'})"
+                )
+            holders.append(Holder(port=port, process=process or "unknown"))
     return holders
 
 
@@ -155,15 +191,22 @@ def main() -> int:
         )
         return 2
 
+    # `ss` reports a listener per address family, so one holder appears twice.
+    seen: set[tuple[int, str]] = set()
+    unique = [
+        h
+        for h in other + review
+        if (h.port, h.process) not in seen and not seen.add((h.port, h.process))
+    ]
     say(
         "",
-        "  BLOCKED — the review ports are held by something unrecognised",
+        "  BLOCKED — the review ports are held",
         "",
-        *(f"    :{h.port}  {h.process}" for h in other + review),
+        *(f"    :{h.port}  {h.process}" for h in unique),
         "",
-        "  Not identifiable as the review stack. Identify it before releasing the",
-        "  port: a stray lane dev server belongs to that lane, and a stale container",
-        "  is QE's to remove.",
+        "  Not the review stack. Identify it before releasing the port: a stray",
+        "  lane dev server belongs to that lane, and a stale container is QE's",
+        "  to remove.",
     )
     return 3
 
