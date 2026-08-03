@@ -40,7 +40,7 @@ Everything runs locally. There is no cloud environment and no remote gate ([ADR-
 | | **Human Review Mode** | **QE Release Mode** |
 |---|---|---|
 | **Purpose** | Interactive product evaluation — *using* Signora | Repository validation and certification |
-| **Started by** | `make demo`, then the two dev processes | `make smoke` · `make certify` · `make dr` |
+| **Started by** | **`make review`** — one command, ended by `make review-end` | `make smoke` · `make certify` · `make dr` |
 | **Runs** | frontend · backend · Playground data | a self-contained stack the gates build themselves |
 | **Ports** | **3000 / 8000** | **3000 / 8000** — *the same two* |
 | **Database** | `signora` | `signora` (smoke builds its own; `make test` truncates) |
@@ -66,20 +66,15 @@ make release-preflight
 
 ### Leaving Human Review Mode
 
-**Three things are running, and all three must stop.** There is no single command, which is exactly why this section exists:
-
 ```bash
-# 1 — the two foreground processes: Ctrl-C in each terminal
-#     (the `uvicorn` on 8000 and `npm run dev` on 3000)
-
-# 2 — confirm the ports actually came back
-make release-preflight            # expect: READY
-
-# 3 — optional: stop the backing services too
-docker compose -f infra/docker-compose.yml down
+make review-end
 ```
 
-**Step 2 is the one people skip.** A backgrounded `next dev` survives closing its terminal, and the next person to run a gate inherits a failure that looks like a defect in their own work.
+**It waits until the ports are actually free before saying so**, and prints which state it left the workstation in. That matters more than it sounds: the first version signalled the processes and returned immediately, so it announced *"ports are released"* while the sockets were still bound — and the reviewer's next command would have failed on a claim that was false when it was printed.
+
+The backing services (`signora-v2-postgres-1`, `-redis-1`, `-minio-1`) are deliberately left running. **Release Engineering needs them** — the QE database lives in that PostgreSQL and the worker tests use that Redis — so stopping them turns a clean handover into a broken suite. `docker compose -f infra/docker-compose.yml down` if you really want them gone.
+
+> **This section used to open *"three things are running, and there is no single command, which is exactly why this section exists."*** That was true, and it was the friction that made a review feel like an operations task. **The commands it described still work** — nothing about starting the two processes by hand has been withdrawn, and [§ Starting the two processes yourself](#starting-the-two-processes-yourself) keeps them for anyone who wants a foreground log.
 
 ### Who owns the environment, and when
 
@@ -106,9 +101,8 @@ docker compose -f infra/docker-compose.yml down
 **The transition back to Release Mode, performed by QE:**
 
 ```bash
-# 1 — stop the review processes: the `next dev` on 3000, the `uvicorn` on 8000
-# 2 — confirm, do not assume
-make release-preflight            # expect: READY
+make review-end                   # stops the tiers and waits for the ports
+make release-preflight            # confirm, do not assume — expect: READY
 ```
 
 **What QE does *not* stop: the development services** (`signora-v2-postgres-1`, `-redis-1`, `-minio-1`). They are `infra/docker-compose.yml`, **Release Engineering needs them** — the QE database `signora_lane_qe` lives in that PostgreSQL and the worker tests use that Redis — and stopping them turns a clean handover into a broken suite. **Only the two foreground review processes belong to the review.**
@@ -130,12 +124,40 @@ cp frontend/.env.example frontend/.env.local
 cd frontend && npm install && npm run keys:generate   # paste both halves in — see below
 
 # 1 — everything else, in one command
-make demo
+make review
 ```
 
-`make demo` brings up PostgreSQL and Redis, migrates the schema under the **owner** identity, creates **Better Auth's own tables**, creates **four sign-in accounts**, and seeds **twelve accounts through the real pipeline**.
+**That is the whole thing.** `make review` validates the workstation, brings up PostgreSQL and Redis, migrates the schema under the **owner** identity, creates **Better Auth's own tables**, creates **four sign-in accounts**, seeds **twelve accounts through the real pipeline**, starts both tiers, waits until each answers, opens the browser, and records the session.
 
-Then start the two processes and open the product:
+It prints one card:
+
+```
+  ✓  Review environment ready
+
+     Application   http://localhost:3000
+     Build         certified, coverage 95.50% at `909374a21353`, +1 Closeout commit(s)
+     Dataset       playground@2 — twelve accounts through the real pipeline
+     Sign in as    dana.reyes@northwind.example
+     Password      signora-demo-password
+     Known issues  8 you could meet in the product: …
+     When finished  make review-end
+```
+
+**No port, no database, no compose project, no environment variable, no second terminal.** Every value is derived from the `review` profile in `infra/environments.py`, so the day an allocation changes, nothing about this command changes with it.
+
+**`make review-end` closes the session**, waits until the ports are genuinely free, and finalizes the record in `review/sessions/`. `--note` captures what you saw:
+
+```bash
+make review-end ARGS='--note "Timeline empty state reads oddly"'
+```
+
+**Every session leaves a record**: which commit, whether that commit was certified and at what coverage, which dataset, which accounts, the open defects a reviewer could meet, how long it ran, and the notes. It is how *"what exactly did we demonstrate, and when?"* is answered from evidence rather than memory. `make review-status` describes a live one.
+
+**If the workstation is not ready it says so before doing anything** — a held port with the container that holds it named, a missing `.env.local`, an unreachable database — and starts nothing.
+
+### Starting the two processes yourself
+
+`make demo` does the preparation and stops, printing the two commands, for when you want a foreground log or a debugger attached:
 
 ```bash
 # backend
@@ -154,6 +176,8 @@ cd frontend && npm run dev
 ```
 
 **<http://localhost:3000>** → sign in as `dana.reyes@northwind.example`.
+
+> **`make demo` alone currently fails on a clean workstation** — nothing loads `frontend/.env.local` for the two `tsx` setup scripts, so `npm run auth:migrate` refuses to start. That is **[B-105](BUGS.md)**, and it is why `make review` loads the file itself. Use `make review` until it is fixed.
 
 > **`make test` truncates this same database.** Do not run it while reviewing, or the Playground disappears underneath you. Re-run `make demo-seed` afterwards.
 

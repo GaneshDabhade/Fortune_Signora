@@ -80,6 +80,73 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-106 · A certification gate read a variable nobody declared, and two runs of one commit disagreed
+
+| | |
+|---|---|
+| **Module** | Repository tooling — `backend/tests/integration/test_migration_runner.py`, `TestConcurrencySafety` |
+| **Current assignee** | **QE** — a test-only defect in a repository-wide suite |
+| **Severity** | 🟠 — **the certification gate was not reproducible.** No customer-visible behaviour is wrong |
+| **Status** | **`FIXED`** — QE, 2026-08-03, with the input declared in the test. **`VERIFIED` is another lane's** |
+| **Found** | 2026-08-03, by QE, running the full suite at `68a643e` — the commit whose ancestor `909374a` had certified hours earlier |
+
+**Steps to reproduce.** At `68a643e`, in a shell with no `SIGNORA_DATABASE_URL` exported:
+
+```bash
+cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run pytest tests/integration/test_migration_runner.py
+```
+
+**Expected.** 7 passed — the result `make certify` recorded for this tree.
+
+**Actual.** `3 failed, 4 passed`, all three with `RuntimeError: SIGNORA_DATABASE_URL must be set to run migrations`. Export the variable and the same command gives `7 passed`. **The commit did not change; the shell did.**
+
+### The mechanism
+
+`migrations/env.py` reads `os.environ["SIGNORA_DATABASE_URL"]` directly. It cannot see the `Settings` object these tests construct, and nothing bridged the two — so the tests named a database in `_settings(DEFAULT_ADMIN_DATABASE_URL)` while Alembic read whichever one the operator's shell happened to hold, **or failed outright if it held none.**
+
+### Why this is worse than a flaky test
+
+**`CLAUDE.md` §2: hidden inputs are architecture defects**, because they make the same declared inputs produce different results. In a certification gate that is not an inconvenience — it is the guarantee failing quietly:
+
+> The run that certified `909374a` and the run that reproduced it were measuring different things, and **nothing in the record said so.** A certification is *"this commit satisfied these guarantees under these conditions"*, and one of the conditions was an environment variable nobody wrote down.
+
+**[B-022](#b-022--make-certify-inherits-the-database-environment-and-silently-measures-less-when-it-is-absent) predicted exactly this class** — *"`make certify` inherits the database environment, and silently measures less when it is absent"* — and stayed open. This is the first time the prediction was observed rather than reasoned about, and the direction is the alarming one: **the certified run was the lucky one.**
+
+### The fix
+
+An autouse fixture on `TestConcurrencySafety` sets `SIGNORA_DATABASE_URL` to the value the tests already name, so the environment and the settings cannot disagree. **Verified by removing the variable from the environment entirely** — `env -u SIGNORA_DATABASE_URL … 7 passed` — which is the only run that proves the dependency is gone rather than merely satisfied.
+
+**This does not close B-022.** That row is about `make certify` inheriting an environment at large; this is one gate inside it, found and closed. The general remedy — a certification run that declares its whole environment — remains open, and this is the evidence for prioritising it.
+
+### B-105 · The documented quickstart cannot work: nothing loads `frontend/.env.local` for the setup scripts
+
+| | |
+|---|---|
+| **Module** | Frontend tooling — `frontend/scripts/auth-migrate.ts`, `frontend/scripts/demo-users.ts`, and the `demo-prepare` target |
+| **Current assignee** | **unassigned** — the frontend foundation's current assignee, when there is one |
+| **Severity** | 🟠 — **the documented first-run path fails**, and it is the path every new environment takes |
+| **Status** | **`OPEN`** — found by QE while building `make review`, 2026-08-03 |
+| **Found** | 2026-08-03, on a workstation with no `frontend/.env.local`, following `docs/RUNNING.md` exactly |
+
+**Steps to reproduce.** On a clean checkout: `cp frontend/.env.example frontend/.env.local`, edit in the two required values, then `make demo`.
+
+**Expected.** The Playground is seeded and the product is reviewable.
+
+**Actual.** It stops at `npm run auth:migrate` with
+
+```
+SIGNORA_AUTH_DATABASE_URL is required and is not set. It has no default:
+guessing one would connect this tier to somebody else's environment.
+```
+
+**Next.js loads `frontend/.env.local`; `tsx` does not.** `next dev` and `next build` read the file through Next's own loader, so the application tier has always seen it. `npm run auth:migrate` and `npm run demo:users` are plain `tsx` scripts run from `make`, and nothing in that path loads it — not `tsx`, not npm, not make.
+
+**Why it appeared now, and why that is the good news.** It is not new. Before [B-104](#b-104--the-auth-tier-had-one-database-for-every-environment-and-a-signing-secret-in-the-repository) removed the fallbacks, these scripts silently used the shared `signora` database whatever the operator had configured — so the quickstart *appeared* to work while writing to the wrong place. **Removing the fallback did not break this; it revealed it.** That is the fallback's whole indictment: a defect that fails loudly today was a silent data-placement bug for as long as the default existed.
+
+**Not fixed here, deliberately.** `infra/review.py` loads the file itself for the subprocess it starts, which makes `make review` work. **That is a launcher's workaround, not the fix** — a second env-loading mechanism hidden inside one command is how two environments start disagreeing about what configuration means, and `make demo` is still broken for anyone running it directly.
+
+**The fix belongs in one place.** Either the two scripts load the file (Node's `--env-file`, or the loader Next already uses), or `demo-prepare` exports it before invoking them. Whichever is chosen, `infra/review.py`'s `_dotenv` should be deleted in the same change — it exists only because this is open.
+
 ### B-104 · The auth tier had one database for every environment, and a signing secret in the repository
 
 | | |

@@ -87,6 +87,33 @@ class TestIdentityEnforcement:
 
 
 class TestConcurrencySafety:
+    """Every test here runs Alembic, and Alembic reads its URL from the process.
+
+    **The input is declared below rather than inherited**, which it used to be.
+    `migrations/env.py` reads `os.environ["SIGNORA_DATABASE_URL"]` directly — it
+    cannot see the `Settings` object these tests build — so whether this class
+    passed depended on whether the shell that launched `pytest` happened to
+    export that variable. In a shell that did, seven passed; in a shell that did
+    not, three failed with *"SIGNORA_DATABASE_URL must be set to run
+    migrations"*, **on the same commit**.
+
+    That is a hidden input, and `CLAUDE.md` §2 calls one an architecture defect
+    for exactly this reason: it makes the same declared inputs produce different
+    results, which defeats replay and regression testing. It is worse in a
+    certification gate — the run that certified `909374a` and the run that
+    reproduced it were measuring different things, and nothing said so
+    ([B-106](../../../docs/BUGS.md), and the class B-022 predicted).
+
+    The value is the one the tests already name in `_settings(...)`, so the
+    environment and the settings can no longer disagree.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _alembic_reads_the_same_database_these_tests_name(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("SIGNORA_DATABASE_URL", DEFAULT_ADMIN_DATABASE_URL)
+
     async def test_a_second_runner_waits_rather_than_racing(
         self, admin_engine: AsyncEngine
     ) -> None:

@@ -30,6 +30,10 @@ FILES_NAMING_THE_ENTRY_POINT = (
     "Makefile",
     "backend/Dockerfile",
     "infra/docker-compose.prod.yml",
+    # `make review` starts the API itself rather than printing a command for
+    # somebody to paste, so a fifth place now names the entry point — and a
+    # launcher that fails on it fails after seeding, minutes in.
+    "infra/review.py",
 )
 
 # `apps.api.main:create_app` in a shell line, a Dockerfile CMD array, or a

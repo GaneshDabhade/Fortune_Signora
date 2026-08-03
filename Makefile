@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: environments reachability smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-seed demo-users demo-narrate eval eval-reasoning eval-research
+.PHONY: environments reachability review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
 # The executable bit is filesystem state, not repository state, and it does
@@ -88,17 +88,31 @@ OWNER_DATABASE_URL := postgresql+asyncpg://signora:signora@localhost:5432/signor
 ## Everything a reviewer needs, in one command: stack up, schema migrated,
 ## Better Auth's own tables created, four sign-in accounts, twelve accounts of
 ## pipeline output. Credentials are in docs/RUNNING.md.
-demo:
-	@$(DEV_COMPOSE) up -d --wait
-	@cd backend && SIGNORA_DATABASE_URL=$(OWNER_DATABASE_URL) uv run alembic upgrade head
-	@cd frontend && npm run --silent auth:migrate
-	@$(MAKE) demo-users
-	@$(MAKE) demo-seed
+##
+## **Leaves the two processes to you.** `make review` runs the same preparation
+## and then starts them — see `demo-prepare` below for why the two share one
+## definition rather than two.
+demo: demo-prepare
 	@echo ""
 	@echo "  backend   cd backend && uv run uvicorn apps.api.main:create_app --factory --reload --port 8000"
 	@echo "  frontend  cd frontend && npm run dev"
 	@echo "  then      http://localhost:3000 — sign in as dana.reyes@northwind.example"
 	@echo "  password  see docs/RUNNING.md"
+
+## The preparation itself, with nothing said about what to do next.
+##
+## **Extracted so `make review` can reuse it rather than restate it** (L-1). The
+## two differ only in what happens *after* the data exists — `demo` prints two
+## commands for someone who wants the processes in their own terminals; `review`
+## starts them. A second copy of these five steps would drift the day one of
+## them changed, and the copy nobody was maintaining is the one somebody would
+## have run.
+demo-prepare:
+	@$(DEV_COMPOSE) up -d --wait
+	@cd backend && SIGNORA_DATABASE_URL=$(OWNER_DATABASE_URL) uv run alembic upgrade head
+	@cd frontend && npm run --silent auth:migrate
+	@$(MAKE) demo-users
+	@$(MAKE) demo-seed
 
 demo-seed:
 	@cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -m tests.playground.seed
@@ -160,23 +174,49 @@ certified:
 kpi:
 	@python3 ./infra/kpi.py $(ARGS)
 
-## **Can a customer get to this screen?** The frontend sibling of
-## `runtime-composition` — that asks whether the deployed worker consumes what a
-## module projects; this asks whether any screen leads to a route.
-##
-## An entrance is a link from *outside* the route's own subtree. The Connection
-## Center had two inbound links and was still unreachable: both were inside the
-## **Every environment, derived from its identity.** Phase 1 of the Environment
-## Framework: the model only — nothing launches from it yet.
+## **Every environment, derived from its identity.** The Environment Framework's
+## model: ports, database, Redis index and compose project are all a function of
+## an environment's name, so nothing is allocated by hand.
 ##
 ##     make environments              the matrix
 ##     make environments ARGS=--check the model agrees with RUNNING.md
 environments:
 	@python3 ./infra/environments.py $(ARGS)
 
+## **Can a customer get to this screen?** The frontend sibling of
+## `runtime-composition` — that asks whether the deployed worker consumes what a
+## module projects; this asks whether any screen leads to a route.
+##
+## An entrance is a link from *outside* the route's own subtree. The Connection
+## Center had two inbound links and was still unreachable: both were inside the
 ## connection flow, so a customer could reach it only by already being there.
 reachability:
 	@python3 ./infra/reachability.py $(ARGS)
+
+## **A product review, in one command.** Prepare, validate, seed, start both
+## tiers, open the browser, and record the session.
+#
+# The reviewer types this and nothing else — no port, no database, no compose
+# project, no second terminal. Every value is derived from the `review` profile
+# in `infra/environments.py`, so the day an allocation changes, nothing here or
+# in `infra/review.py` is edited.
+#
+# Each run leaves a record in `review/sessions/`: the commit, whether that
+# commit was certified, the dataset, the accounts, and the open defects a
+# reviewer should expect to meet. `make review-end` finalizes it.
+#
+#     make review
+#     make review-status
+#     make review-end
+#     make review-end ARGS='--note "Timeline empty state reads oddly"'
+review:
+	@python3 ./infra/review.py start
+
+review-status:
+	@python3 ./infra/review.py status
+
+review-end:
+	@python3 ./infra/review.py end $(ARGS)
 
 ## What does the deployed worker actually consume? (B-301)
 #

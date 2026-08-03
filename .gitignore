@@ -49,3 +49,13 @@ certification/attempts.jsonl
 
 # The environment lease — who currently owns the shared stack (RE-02).
 .environment-lease
+
+# Human review sessions: records, logs and the pointer to the live one.
+#
+# **A deliberate stopping point, not an oversight.** These are durable local
+# artifacts today. Making them repository evidence — so that "what did we
+# demonstrate before signing that contract?" is answerable from git six months
+# later — means teaching `certification-guard.py --audit-main` to accept a new
+# class of commit on `main`, and that is a governance decision rather than a
+# slice's to take.
+review/
