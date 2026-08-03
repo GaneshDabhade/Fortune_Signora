@@ -146,6 +146,7 @@
 | [C-001](#c-001--the-target-account-contract) | The target-account contract — this module's first edge | Lane B | **Lane A** | `ANSWERED` → **[ADR-0036](architecture/adr/0036-target-account-contract.md)** | **Nothing. Slice 5 may begin.** `CLOSED` when both lanes have built it |
 | [C-305](#c-305--two-principles-that-outgrew-the-adr-that-found-them) | Two principles that outgrew the ADR that found them | Lane B | **Product owner** | `OPEN` | **Nothing.** Both are already applied in two modules each; this is placement |
 | [C-304](#c-304--a-standing-review-question-that-has-already-paid-for-itself) | A standing review question that has already paid for itself | Lane B | **Product owner** | `OPEN` — **challenged and sharpened 2026-08-02.** It produces noise in the general form; the narrow one survives | **Nothing.** One line of review practice, wherever it belongs |
+| [C-307](#c-307--signora-cannot-say-who-anybody-is) | Signora cannot say who anybody is | Lane B | **Product owner** | `OPEN` — **not blocking**; a recommendation is stated and Lane B is proceeding on it | **Nothing.** The foundation and its own screen are unowned; only the existing surfaces that render a person are Lane A's |
 | [C-306](#c-306--the-opportunities-and-signals-experience-already-exists-and-lane-a-owns-half-of-it) | The Opportunities & Signals experience already exists, and Lane A owns half of it | Lane B | **Product owner** | `OPEN` | **The frontend half only.** The backend half is unassigned and Lane B can start it |
 | [C-303](#c-303--an-icp-is-not-an-addressable-thing-and-every-verb-the-brief-asks-for-needs-one) | An ICP is not an addressable thing, and every verb the brief asks for needs one | Lane B | **Product owner** | `ANSWERED` — ICP stays in Commercial Profile (2026-08-02). **The aggregate is [ADR-0041](architecture/adr/0041-icp-aggregate.md), proposed** | **Implementation, on ADR-0041's ratification** |
 | [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) | A notification is per-person, and workspace RLS is not enough | Lane B | **Product owner** (tenancy 🔴) | `OPEN` | **M14a N-01's migration.** The pattern exists; the ruling does not |
@@ -3330,4 +3331,71 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 **Lane B's recommendation is 1**, on the evidence that the surface is Lane A's most recent work — `CX-01…03` shipped days ago — and reassigning a module somebody is mid-context on costs more than it saves.
 
 **Meanwhile, and without waiting:** Lane B begins **R1-01** in the engines, because it is 🔴, its root cause is unambiguously backend, and its fix is a prerequisite for the row change rather than a duplicate of it. **No frontend file is touched until this item is answered.**
+
+
+---
+
+## C-307 · Signora cannot say who anybody is
+
+| | |
+|---|---|
+| **Decision required** | Where a person's **display identity** lives, given that Better Auth owns the account and the Python tier only verifies tokens |
+| **Participating modules** | `signora_platform/auth` (frozen 🔴, verification only) · `workspace_tenancy` (**Lane A — Team Management**) · Product Surface (**Lane A**) · a new home, unowned |
+| **Current assignee(s)** | **Product owner** — a recommendation is stated below and **Lane B is proceeding on it rather than waiting** |
+| **Blocking** | **Nothing Lane B intends to build.** Named because the answer changes where one table goes |
+| **Raised** | 2026-08-03, by Lane B, assigned User Profile, **after the reuse audit and before any code** |
+
+### 1 · The audit's finding, and it is not "there is no profile screen"
+
+**Nothing in this repository can turn a user id into a human being.** Verified rather than assumed — `grep` finds no name resolution of any kind in `lib/` or `components/`.
+
+| Where a person appears | What a customer sees |
+|---|---|
+| Who owns an account (`Ownership`) | **`Yours`** or **`Taken`** — the product compares to the viewer because it cannot name the other person |
+| Who moved a stage (`DecisionHistory`) | a UUID |
+| Who published an ICP, who last changed a segment | a UUID — **including in Lane B's own ICP-01 work** |
+| Who is in this organization (`MembershipResponse`) | `user_id`, and nothing else |
+
+> **The customer problem is not *"I want to edit my name."* It is *"the product cannot tell me who my colleague is."*** Every collaborative feature already shipped is degraded by it, and every one planned — mentions, assignment, approvals, comments, presence — is blocked by it.
+
+**`Taken` is the sharpest evidence.** It is a well-written fallback for a fact the platform does not have, and it will keep being written until the fact exists.
+
+### 2 · What already exists, and must not be duplicated
+
+| | |
+|---|---|
+| **Better Auth** | Owns the account: `name` is collected at sign-up, plus email, verification, sessions, linked accounts, password. **[ADR-0026](architecture/adr/0026-jwt-boundary-architecture.md) makes it the sole Authentication Authority** |
+| **The JWT** | Carries `sub`, `sid`, `email`, `email_verified`, `active_workspace_id`. **It does not carry `name`** |
+| **`AuthenticatedPrincipal`** | The Python tier's whole knowledge of a caller — and `signora_platform/auth` is **frozen** (§20a) |
+| **`membership`** | `user_id` + role. Deliberately no user model: [ADR-0010](architecture/adr/0010-identity-and-access.md) — *"Signora does not own the user identity model"* |
+
+**So the account is Better Auth's, and nothing is Signora's.** That is correct and is not the question.
+
+### 3 · The question, stated exactly
+
+> **A display identity is not authentication.** *"What should we call you, and what should your colleagues see?"* is a product fact about a person; *"are you who you say you are"* is Better Auth's. **Signora needs the first and must not own the second.**
+
+| | Option | Consequence |
+|---|---|---|
+| **A** | **Add `name` to the JWT** | Cheapest. **But a token is a snapshot** — a rename shows nowhere until re-issue, it cannot answer *"who is user X?"* for a colleague you have no token for, and it widens a frozen boundary for a non-security fact |
+| **B** ✅ | **Signora owns a `user_profile`**, keyed by the Better Auth user id, holding display identity only | Answers *"who is X?"* for anybody. Renames are immediate. **Better Auth stays the sole Authentication Authority**; this owns no credential, no verification, no session |
+| **C** | **Query Better Auth from Python** | A synchronous cross-tier read on every screen that shows a person, and it makes the Python tier depend on the auth tier's storage — which [ADR-0026](architecture/adr/0026-jwt-boundary-architecture.md) exists to prevent |
+
+**Lane B recommends B**, and the boundary that keeps it honest: **the profile holds what a colleague may see, and never what proves who you are.** Email stays the JWT's, password and sessions stay Better Auth's, and the profile is a display fact — the same split ADR-0034 draws between the customer's words and the platform's.
+
+**Where it lives** is the part genuinely open: a new bounded context, or `workspace_tenancy` — which already answers *"who is in this organization?"* and is **Lane A's Team Management capability**. Lane B's position: **a profile is not workspace-scoped** — one person, many organizations, one name — so putting it in a workspace-scoped module would be the first row there with no `workspace_id`, which is a strong signal it does not belong.
+
+### 4 · What Lane B is building meanwhile, and why it is not blocked
+
+**The first slice touches no file either Lane A or the platform owns:**
+
+| | |
+|---|---|
+| **New** | A profile aggregate and its table · `GET`/`PUT /me/profile` · **`/settings/profile`, a route that does not exist** |
+| **Customer value** | *"I can tell Signora what to call me, and see it."* Demoable on its own |
+| **Not touched** | `signora_platform/auth` (frozen) · `membership` and its schemas (Lane A) · `Ownership`, `DecisionHistory`, the attention row (Lane A) |
+
+**Rendering a colleague's name on an existing surface is the second slice and is Lane A's**, exactly as [C-306](#c-306--the-opportunities-and-signals-experience-already-exists-and-lane-a-owns-half-of-it) splits. **The fact has to exist before a screen can show it**, which is the same ordering R1-01 has.
+
+**Answer needed only for:** whether the table lives in a new context or in `workspace_tenancy`. **Lane B proceeds on B with a new context**, and will move it if ruled otherwise — a table with no consumers is cheap to relocate, and waiting is not.
 
