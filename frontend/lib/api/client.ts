@@ -6,7 +6,6 @@
  * than letting callers parse it themselves.
  */
 
-import { loadAuthConfig } from '@/lib/auth/config';
 
 export interface ApiErrorBody {
   code: string;
@@ -62,8 +61,16 @@ export async function apiRequest<T>(
   options: RequestOptions = {},
 ): Promise<T> {
   const { method = 'GET', body, workspaceId } = options;
+  // **Read directly, not through `loadAuthConfig()`.** Where the API lives is
+  // not an authentication concern, and loading the whole auth config to obtain
+  // one URL made every server-rendered page depend on the auth database and the
+  // signing secret — values it never uses. That coupling was invisible while
+  // those had fallbacks, and became a build failure the moment they stopped
+  // ([B-104](../../../docs/BUGS.md)).
   const baseUrl =
-    typeof window === 'undefined' ? loadAuthConfig().apiBaseUrl : '/api/proxy';
+    typeof window === 'undefined'
+      ? (process.env.SIGNORA_API_URL ?? 'http://localhost:8000')
+      : '/api/proxy';
 
   const token = await fetchAccessToken(workspaceId);
   const response = await fetch(`${baseUrl}${path}`, {

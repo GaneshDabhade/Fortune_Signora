@@ -90,10 +90,18 @@ export function loadAuthConfig(): AuthConfig {
     // holds if this tier's credential is equally narrow. The owner role
     // would read every application table and bypass Row-Level Security.
     //
-    // **No default.** Every environment — each lane, QE, human review — has
-    // its own database, and an unset variable used to send all of them to the
-    // shared one.
-    databaseUrl: required('SIGNORA_AUTH_DATABASE_URL'),
+    // **No default, and evaluated on access rather than on load.** Every
+    // environment — each lane, QE, human review — has its own database, and an
+    // unset variable used to send all of them to the shared one.
+    //
+    // A getter because **a build legitimately has no environment**: Next.js
+    // prerenders pages that read `passwordEnabled`, and demanding a database
+    // URL to answer a boolean fails a build that was never going to connect to
+    // anything. **The value is required where it is *used*** — `getAuthPool()`
+    // — not where the struct is assembled.
+    get databaseUrl() {
+      return required('SIGNORA_AUTH_DATABASE_URL');
+    },
     // Better Auth's tables live in their own schema so they can never
     // collide with application tables and so a rollback of one cannot
     // affect the other (approved decision, M1.2).
@@ -103,7 +111,12 @@ export function loadAuthConfig(): AuthConfig {
     // fallback was a signing secret committed to the repository, so any clone
     // that had not set it minted tokens every other clone could forge (§13:
     // no credential is ever hardcoded or committed).
-    betterAuthSecret: required('BETTER_AUTH_SECRET'),
+    //
+    // A getter for the same reason as `databaseUrl`: required where it signs,
+    // not where it is read.
+    get betterAuthSecret() {
+      return required('BETTER_AUTH_SECRET');
+    },
     jwtIssuer: developmentDefault('SIGNORA_JWT_ISSUER', 'http://localhost:3000'),
     jwtAudience: developmentDefault('SIGNORA_JWT_AUDIENCE', 'signora-api'),
     jwtPrivateKey: process.env.SIGNORA_JWT_PRIVATE_KEY,

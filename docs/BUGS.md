@@ -133,7 +133,34 @@ Six values used it. A reader seeing `required('BETTER_AUTH_SECRET', …)` reason
 
 **Permitted under §20c** as a security issue and a production defect, and QE's to fix under R-4.
 
+### Three more defects, found only because the fallbacks stopped hiding them
+
+**Removing the fallbacks failed the build. Chasing that failure is what exposed the rest** — and every one had been live since M1.5.
+
+**1 · The build was connecting to a database.** **All five authenticated pages were statically prerendered**, every one reads a session, and reading a session opens the auth pool. So `npm run build` opened the **shared `signora`** database to render signed-in screens. That is §20b inverted: configuration resolved at *build* time into an artifact that must read it at *boot*. Fixed by `export const dynamic = 'force-dynamic'` on `(app)/layout.tsx` — **the segment, so five pages cannot each forget it.**
+
+**2 · A comment asserting the opposite of what the code did.** `app/api/auth/[...all]/route.ts` read *"**Never evaluated at build time.**"* directly above `toNextJsHandler(auth())` **at module scope**, which is precisely build-time evaluation. `force-dynamic` governs *rendering*; Next.js still imports every route module during *Collecting page data*. **Decorative Logic (§2) with a false claim beside it.** The handler is now built on first request.
+
+**3 · The API client loaded the entire auth config for one URL.** `apiBaseUrl` is not an authentication concern, and reaching it through `loadAuthConfig()` made **every server-rendered page depend on the auth database and the signing secret it never uses.** Now read directly.
+
+### The design changed mid-fix, and the second shape is the right one
+
+**The first fix required both values at config-*read* time.** It failed the build, and after patching three call sites it was clearly whack-a-mole — the next page added would reintroduce it.
+
+> **A build legitimately has no environment.** Reading configuration into a struct harms nobody; **connecting and signing** are what matter.
+
+Both values are now **getters** — required at point of *use*, not point of *read*. A prerendered page reading `passwordEnabled` never touches them; `getAuthPool()` and `createAuth()` always do. **That fixes the class rather than the instances.**
+
+**Two axes, and the second is what the first fix got wrong:**
+
+| | |
+|---|---|
+| **Convenience vs trust** | A port default is convenience. A database or secret default is trust |
+| **Read vs use** | Reading a secret into a struct is harmless. **Using it to connect or sign is the boundary** |
+
 **What this does not fix.** There is still **no `signora_review` database and no `make review`** — the product owner has no environment to be isolated *into*. That is the assignment this bug was found inside, and it is not yet built.
+
+**And one of the same class remains open:** `signora_platform/settings.py` declares `redis_url: RedisDsn = RedisDsn("redis://localhost:6379/0")` while [`RUNNING.md`](RUNNING.md) allocates an index per lane and states *"no lane invents ports; no lane shares a database."* **The allocation table exists and the code does not require it to be used.** Redis carries the ARQ queue and the outbox relay, so two environments on index 0 means **one environment's workers consume the other's jobs** — cross-environment *execution*, not merely storage. Tracked as part of the Human Review Environment work.
 
 ### B-103 · An internal invariant tells a customer their request was refused
 

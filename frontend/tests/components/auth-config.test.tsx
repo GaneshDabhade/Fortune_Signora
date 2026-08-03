@@ -38,39 +38,56 @@ afterEach(() => {
 });
 
 describe('values with no safe default', () => {
-  it('refuses to load without an auth database', () => {
+  it('refuses when the database is used, not when config is read', () => {
     delete process.env.SIGNORA_AUTH_DATABASE_URL;
 
-    expect(() => loadAuthConfig()).toThrow(/SIGNORA_AUTH_DATABASE_URL is required/);
+    // **Reading the struct is harmless and must stay harmless.** A build
+    // legitimately has no environment, and Next.js prerenders pages that read
+    // `passwordEnabled`; demanding a database URL to answer a boolean fails a
+    // build that was never going to connect to anything.
+    const config = loadAuthConfig();
+
+    expect(() => config.databaseUrl).toThrow(/SIGNORA_AUTH_DATABASE_URL is required/);
   });
 
-  it('refuses to load without a signing secret', () => {
+  it('refuses when the secret is used', () => {
     delete process.env.BETTER_AUTH_SECRET;
+    const config = loadAuthConfig();
 
-    expect(() => loadAuthConfig()).toThrow(/BETTER_AUTH_SECRET is required/);
+    expect(() => config.betterAuthSecret).toThrow(/BETTER_AUTH_SECRET is required/);
   });
 
   it('never falls back to the shared database', () => {
-    // The exact string that caused the incident. If it ever reappears as a
-    // default, this fails — regardless of how the fallback is spelled.
     delete process.env.SIGNORA_AUTH_DATABASE_URL;
+    const config = loadAuthConfig();
 
-    expect(() => loadAuthConfig()).toThrow();
-    expect(() => loadAuthConfig()).not.toThrow(/signora_review/);
+    // If a fallback ever reappears this returns a string instead of throwing,
+    // regardless of how the fallback is spelled.
+    expect(() => config.databaseUrl).toThrow();
   });
 
   it('says where to find the right value, rather than only that it is missing', () => {
     delete process.env.BETTER_AUTH_SECRET;
+    const config = loadAuthConfig();
 
     // An operator told only "missing" goes hunting. B-022's lesson, applied.
-    expect(() => loadAuthConfig()).toThrow(/RUNNING\.md/);
+    expect(() => config.betterAuthSecret).toThrow(/RUNNING\.md/);
   });
 
-  it('loads when both are provided', () => {
+  it('resolves when both are provided', () => {
     const config = loadAuthConfig();
 
     expect(config.databaseUrl).toBe(REQUIRED.SIGNORA_AUTH_DATABASE_URL);
     expect(config.betterAuthSecret).toBe(REQUIRED.BETTER_AUTH_SECRET);
+  });
+
+  it('reading a harmless field never touches the guarded ones', () => {
+    delete process.env.SIGNORA_AUTH_DATABASE_URL;
+    delete process.env.BETTER_AUTH_SECRET;
+
+    // The property the getters exist for: this is what a prerendered auth page
+    // does, and it must not demand credentials.
+    expect(() => loadAuthConfig().passwordEnabled).not.toThrow();
   });
 });
 

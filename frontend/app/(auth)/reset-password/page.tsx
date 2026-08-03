@@ -6,6 +6,18 @@ import { AuthLink, AuthShell } from '../auth-shell';
 import { ResetPasswordForm } from './reset-password-form';
 
 /**
+ * **Reads runtime configuration, so it must never be prerendered** — the same
+ * rule `/sign-in`, `/sign-up` and `/forgot-password` already follow (§20b,
+ * environment-based configuration).
+ *
+ * This page and `/verify-email` were the two that did not, and the gap was
+ * invisible: `loadAuthConfig()` had fallbacks, so prerendering silently
+ * succeeded against a database and a secret belonging to no environment in
+ * particular ([B-104](../../../../docs/BUGS.md)).
+ */
+export const dynamic = 'force-dynamic';
+
+/**
  * Set a new password.
  *
  * Reached from the emailed link, which carries the token as a query
