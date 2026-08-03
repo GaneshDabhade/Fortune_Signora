@@ -62,6 +62,26 @@
 
 > **Seven tasks became claimable on 2026-08-03**, when [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) resolved the decisions they were waiting on. **They are placed at the top because they have waited longest**, not because they are larger.
 
+### TASK-300 · Epic A — surface what already exists
+
+| | |
+|---|---|
+| **Module** | **Six slices across four modules** — see the table below. **Not one claimable unit**, which is the finding |
+| **Slice** | A4 · A1 · A2 · A5 · A6, specified in [51-implementation-specifications.md](architecture/51-implementation-specifications.md) |
+| **Status** | **`CLAIMED` — Lane B**, 2026-08-03. **Assigned directly by the product owner**, who named Lane B implementation owner for Epic A and set A4 as the first slice. Recorded here by Lane B because the row did not exist; **the priority is the product owner's, not this lane's** |
+| **Notes** | **Verified against Lane A's branch before claiming, not against this register.** Of the six slices, **one is built, one is substantially built by Lane A this week, and every remaining one needs at least one module Lane A holds.** [C-323](LANE_COORDINATION.md) carries the evidence and a recommendation |
+
+| Slice | Verified status, 2026-08-03 | Blocked on |
+|---|---|---|
+| **A4** freshness | **Not built.** No `last_observed_at` in any router or component | `provider_platform` **public port** (Lane A) · the render (Lane A). The response composition is `opportunity_engine` — **Lane B's** |
+| **A1** search | **Not built.** No search endpoint in any router; `/account-identities` names ids you already hold and is not a lookup | The shell (Lane A) · **and the endpoint has no owning module yet** |
+| **A2** accounts list | **Substantially built by Lane A**, `SW-01`…`SW-04`, this week — `TriageStrip`, `lib/state/triage.ts`, URL-driven narrowing | **Nothing. It is being delivered elsewhere** |
+| **A5** company history | **Not built.** `claim.observed_at` holds the series; nothing exposes it | The render (Lane A). **Backend is `knowledge_graph` — unassigned** |
+| **A6** needs identity | **Not built.** `AccountIdentityResponse.agreement` is the raw material | The render (Lane A). **Backend is `knowledge_graph` — unassigned** |
+| **B2** first run | **Built by Lane A** — `first-run.test.tsx`, D36 | — |
+
+> **This lane is not proceeding into Lane A's modules on the strength of a directive that predates the collision.** One assignee per module is §20e's hardest invariant, and the product owner's own instruction in the same assignment was *"do not quietly bypass module boundaries."* **[C-323](LANE_COORDINATION.md) asks which way to resolve it**; the two backends in unassigned `knowledge_graph` are claimable meanwhile.
+
 ### TASK-900 · The platform learns to compose a module into the runtime
 
 | | |
