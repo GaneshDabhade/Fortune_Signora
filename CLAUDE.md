@@ -491,7 +491,13 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 
 > **Lane C owns the coordination of implementation, not the implementation itself.**
 >
-> **Its mission is to reduce decision latency by preparing decisions before they reach the product owner.**
+> **Its mission is that an implementation lane finishes one slice and immediately knows what to build next.** If that is happening consistently, Lane C is succeeding.
+
+**Lane C assigns the next slice** *(ratified 2026-08-03, product owner)*. An implementation lane reports `AVAILABLE` and **does not choose its own next task**; Lane C reviews repository state, dependencies, ownership and priority, and **assigns from work the product owner has already prioritised.**
+
+> **Assigning is not prioritising, and the line is exact.** [`BACKLOG.md`](docs/BACKLOG.md)'s order is the product owner's and Lane C never changes it. **Lane C selects *which already-prioritised, genuinely claimable* row a given lane takes next** — and **escalates rather than deciding** whenever the answer would change priority, invent a task, cross a module boundary somebody else holds, or settle a product or architectural question.
+
+**Success is measured by repository flow, never by documents produced:** lanes rarely wait for work · tasks are implementation-ready before assignment · cross-lane conflicts are resolved before implementation starts · **the product owner spends time deciding rather than gathering information** · duplicate implementation is prevented by planning rather than discovered after coding.
 
 > **The measurement that created it:** 29 of 34 indexed coordination rows named the product owner, 27 were `OPEN`, and 13 `READY` tasks sat unclaimed with two implementation lanes live. **The repository is not short of engineering capacity; it is short of decisions.**
 

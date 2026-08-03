@@ -80,6 +80,72 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-401 · The promotion-blocking check can be defeated by bold markdown
+
+| | |
+|---|---|
+| **Module** | Repository tooling — `infra/registers.py`, `bug_rows()` |
+| **Current assignee** | **QE** — `infra/` is QE's ([ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) R-4) |
+| **Severity** | 🟠 — **the guard is real but evadable.** No customer-visible behaviour is wrong |
+| **Status** | `OPEN` |
+| **Found** | 2026-08-03, by **Lane C**, when a 🔴 row it had just opened did not block promotion |
+
+**Steps to reproduce.**
+
+```bash
+python3 - <<'EOF'
+import sys; sys.path.insert(0,"infra")
+from registers import bug_rows; import pathlib
+rows = bug_rows(pathlib.Path("docs/BUGS.md").read_text())
+print([(r.identifier, r.severity, r.blocks_promotion) for r in rows if "`OPEN`" in r.status])
+EOF
+```
+
+**Expected.** Every row whose status is `OPEN` counts as unresolved, and a 🔴 among them blocks promotion.
+
+**Actual.** `registers.py:81` computes `unresolved = status.startswith(("`OPEN`", "`FIXING`"))`. **A status written `**`OPEN`**` — bold, which 21 of 39 rows use for their status cell — does not start with the bare token, so the row parses as resolved.** A 🔴 written that way reports *"promotion is not blocked"* while it is.
+
+**This was observed, not reasoned about.** B-400 was opened 🔴 `**`OPEN`**` and `state-check` printed **`No unresolved 🔴 across 39 bug row(s) — promotion is not blocked.`** Reformatting the one cell to `` `OPEN` `` made the same check report the block correctly.
+
+**A second row is already affected and predates this one: [B-105](#b-105) is 🟠 `**`OPEN`**` and has been invisible to the unresolved count for as long as it has existed.** It does not block, so nothing failed visibly.
+
+> **This is the same defect class the check's own comment records having already fixed once** — *"the condition was never true and the one rule that blocks a promotion was never checked — Decorative Logic (§2)."* **It was fixed for the legend row and reintroduced through formatting variance.** The lesson the comment draws still applies: **the guard must be insensitive to how a human wrote the cell**, because the cell is prose.
+
+**Suggested fix, and it is small.** Match the state token anywhere in the cell rather than at its start — `registers.py` already does exactly that three lines below, in `STATES`, where it uses `self.status.find(f"`{s}`")`. **The two halves of one class disagree about how to read one field.** A regression test asserting that a bold `OPEN` still blocks would prevent the third occurrence.
+
+**Not fixed here.** `infra/` is QE's, and Lane C does not edit it. **B-400's own row was reformatted** so the blocking rule works today; that is a workaround in one row, not a fix.
+
+
+### B-400 · Two lanes both created migration `0031`, and Alembic cannot load either
+
+| | |
+|---|---|
+| **Module** | Repository — `backend/migrations/versions/` |
+| **Current assignee** | **Lane B** — the later claim moves, by the existing rule. **Not Lane C**, which does not touch production code |
+| **Severity** | 🔴 — **Blocking Quality Defect.** A broken migration graph prevents promotion (`CLAUDE.md` §20e) |
+| **Status** | `OPEN` — **Blocking Quality Defect.** Formatted unbolded deliberately; see [B-401](#b-401--the-promotion-blocking-check-can-be-defeated-by-bold-markdown) |
+| **Found** | 2026-08-03, by **Lane C**, verifying `READY` backlog tasks against branch reality before preparing assignments — not by a gate |
+
+**Steps to reproduce.** Merge either lane branch after the other, then run any Alembic command:
+
+```bash
+git ls-tree -r --name-only origin/lane-a-product-surface backend/migrations/versions/ | grep 0031
+#   0031_invitation.py                 revision "0031", down_revision "0030"
+git ls-tree -r --name-only origin/lane-b-commercial-profile backend/migrations/versions/ | grep 0031
+#   0031_commercial_profile_segment.py revision "0031", down_revision "0030"
+```
+
+**Expected.** One revision per identifier, in a linear chain — `CLAUDE.md` §20e: *"Alembic's `down_revision` is a linear chain, so a gap is not a cosmetic oddity but a broken migration graph."*
+
+**Actual.** **Two files declare `revision = "0031"` and both declare `down_revision = "0030"`.** Alembic requires revision identifiers to be unique; with both present **every `alembic` command fails to build the revision map** — this is not a mis-ordering that sorts itself out, it is a hard load error. Migration reversibility is a certification gate, so **the second lane to merge cannot be certified.**
+
+**Why no gate caught it.** **Each branch is internally valid.** `state-check` globs one working tree, migrations are deliberately exempt from block allocation, and the two filenames differ — so **git merges both without a conflict and every check passes on either branch alone.** It is the [C-401](LANE_COORDINATION.md) *structural* class exactly: **no textual conflict, and the damage is real.**
+
+**Scope, measured.** Lane A holds `0031`–`0034` (`invitation`, `membership_ends`, `membership_email`, `role_change`). Lane B holds `0031` only (`commercial_profile_segment`). **The cheaper renumber is Lane B's single file to `0035`**, which also matches the existing tie-break — *the later claim moves* — and Lane A's chain then needs no edit.
+
+**The rule already covers the fix and nobody applied it.** *"A lane that finds its number taken renumbers on rebase and says so in the commit message, as Lane A did twice for `0026`."* **Neither lane could find the number taken**, because the other's branch was never in its tree — which is the same blind spot as [C-400](LANE_COORDINATION.md) and the same fix: `state-check` reading every `lane-*` ref ([C-403](LANE_COORDINATION.md) item 2).
+
+
 ### B-106 · A certification gate read a variable nobody declared, and two runs of one commit disagreed
 
 | | |
