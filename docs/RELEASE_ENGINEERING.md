@@ -327,3 +327,82 @@ If a lane believes it has found a genuine performance problem, the test is the o
 **At M14.5**, when the target AWS environment exists. At that point the right column becomes a milestone with its own acceptance criteria, and this section is replaced by it rather than amended.
 
 ---
+
+## 11 · Is the repository ready for a fourth implementation lane? — assessed 2026-08-03
+
+**Assignment:** *"Can this repository safely support a fourth parallel implementation lane without increasing engineering friction?"* Evidence only.
+
+> ### Verdict: **CONDITIONAL — and the condition is not the repository.**
+>
+> **The infrastructure is ready. The decision queue is not.** Adding Lane C today would produce a third consumer of a queue that already has two consumers waiting, and **would increase coordination overhead without increasing delivery velocity.**
+>
+> **Confidence: high**, because the decisive numbers are counts rather than judgements.
+
+### The two numbers that decide it
+
+| | |
+|---|---|
+| **23 of 38 open coordination items (61%) are owned by the product owner** | Lane A owns 1. Lane B owns 1. QE owns 2. The remaining 11 are unclear or shared. **The repository's dependency register is, overwhelmingly, a queue of decisions awaiting one person** |
+| **16 `READY` tasks are unclaimed, with two implementation lanes available** | Not blocked, not waiting — *claimable, and unclaimed.* Lane A is carrying four assignments of which two are `BLOCKED` on product-owner decisions; Lane B has one, `IN VALIDATION` |
+
+**A third lane is a fourth consumer of the first row and a third claimant of the second.** Neither is capacity-limited today.
+
+> **The test is not "can the repository hold another lane?" It is "would another lane ship anything sooner?"** On this evidence, no: the work is available and the lanes are not taking it, because their attention is on assignments blocked upstream.
+
+### Area by area
+
+| # | Area | Finding | Ready? |
+|---|---|---|---|
+| **1** | **Environment isolation** | `infra/environments.py` already derives `lane-c`, `lane-d`, `lane-e` — ports, database name, Redis index, compose project, bucket. **Two gaps, both small:** the lane databases are **created by hand** (nothing in `infra/postgres-init/` creates them — `signora_lane_c` does not exist), and `.env` generation is manual (RS-2 unbuilt) | ⚠️ **near** |
+| **2** | **Repository ownership** | 15 module directories. **No module has two assignees.** Lane A holds four assignments across three modules; Lane B one. **The hotspot is not a module — it is Lane A**, which is spread across Product Surface, `provider_platform`, `workspace_tenancy` and M14b | ✅ |
+| **3** | **Merge risk** | The files touched by every lane are **the shared registers, and all are append-only or QE-written**: `PROJECT_STATUS.md` (117 commits/60d), `SESSION_HANDOFF.md` (93), `ACTIVE_ASSIGNMENTS.md` (75), `LANE_COORDINATION.md` (56), `BUGS.md` (52). **Production code shows no multi-lane hotspot.** Block-allocated identifiers already removed the one collision that occurred | ✅ |
+| **4** | **Architectural boundaries** | **No shared-utility module exists.** `signora_platform/` is frozen (§20a) and took 26 commits in 60 days against 92 for `backend/modules` — a substrate, not a bottleneck. The append-only registries (`tenancy_policy.py`, `types.ts`, `keys.ts`, `main.py`) are one line each, alphabetical | ✅ |
+| **5** | **Development workflow** | **2725 lines a new lane must read** before its first commit: `CLAUDE.md` 1248 · `RUNNING.md` 500 · `ENGINEERING_LAWS.md` 495 · `BACKLOG.md` 221 · `ACTIVE_ASSIGNMENTS.md` 136 · `README.md` 125. Complete and current — **and a real cost.** No `make workstation`, so environment setup is manual and undocumented as a *procedure* (R-5) | ⚠️ |
+| **6** | **Infrastructure** | Ports, database name, Redis index, compose project, bucket, identifier block (`400+`) and branch name are **all derivable today**. What is not: **the database itself, the `.env` files, and the clone** | ⚠️ **2 manual steps** |
+| **7** | **Human Review** | **Review and development coexist. Review and certification now coexist** — proven 2026-08-03 by running the full smoke test beside a live review session. **Two simultaneous *reviews* cannot** — one `review` profile, one pair of ports. No evidence anyone has needed two | ✅ *(for lanes)* |
+| **8** | **Release process** | **Nothing assumes three branches.** Certification pins a commit, promotion is `--ff-only` to a SHA, and the guard audits paths rather than branch names. A fourth lane adds **zero** certification complexity — cycles are warranted by executable change, not by lane count | ✅ |
+| **9** | **Product ownership** | ⚠️ **The weakest area.** Of 15 modules, those free of any open coordination item are `ai_platform`, `ai_reasoning_engine`, `observation_engine`, `business_event_engine`, `provider_normalization`, `workspace_tenancy`. **A clean boundary exists.** But four of Lane A's and Lane B's assignments are already blocked on decisions, so a new lane's independence would last only until its first architectural question | ⚠️ |
+| **10** | **What breaks first at double velocity** | **Not integration, not certification, not merges — the coordination register.** It has 38 items, 6 closed, and has only grown. Its own rule says it *should shrink*, and that a row open for months is a finding. **Double the lanes and it doubles the arrival rate against an unchanged answer rate** |
+
+### Six months out
+
+| | |
+|---|---|
+| **Eight isolated environments** | **Scales naturally.** Every value derives from one identity; the model refuses a slot collision. The unisolated dimension is **machine RAM**, and that is a workstation limit no allocation fixes — 15 GB already showed pressure with three environments up |
+| **Certification a bottleneck?** | **No, structurally** — it pins a commit and lanes keep merging during it. **Possibly by duration**: a cycle is ~25 minutes of gates, and at 4+ lanes the *queue* of certifiable states could exceed one QE session's throughput. **RE-09 (ephemeral certification environments) is the answer, and it is correctly not built yet** |
+| **Review a bottleneck?** | **Yes, and first.** One review profile, one pair of ports. Two people reviewing different builds is unrepresentable today |
+| **Integration / branch management** | **No.** Fast-forward-only with per-lane branches is O(1) in lane count |
+| **Does the Product Review Platform need another role?** | **Not a role — an author.** Playbooks are the product owner's to write, and that is the scaling limit, not QE's runner |
+
+### Recommendation
+
+| | |
+|---|---|
+| **Maximum implementation lanes today** | **2** — the current number. Not a repository limit: it is that 16 `READY` tasks are already unclaimed |
+| **Maximum after the minimal changes below** | **4**, and the binding constraint becomes decision throughput at roughly the same point |
+| **Timing** | **Revisit when the coordination register has shrunk below ~20 open items, or when `READY` reaches zero with a lane idle.** Either is a real signal that capacity is the constraint. Neither is true now |
+
+### If Lane C is created anyway — the ownership to give it
+
+**Optimised for clean architectural ownership, not workload**, as instructed:
+
+> **The Intelligence Pipeline** — `observation_engine`, `business_event_engine`, `signal_engine`, `buying_score_engine`.
+
+**Why this and not the alternatives:** it is the largest contiguous set of modules with **near-zero entanglement in open decisions** (0, 0, 2, 1 items respectively — the lowest of any coherent group), every module is documented *as built*, and [`TASK-901`](BACKLOG.md) — *"seven modules consume the events they declare"* — is a `READY` task sitting squarely inside it. **A lane could claim real work on day one without asking anybody a question.**
+
+**Not the AI Platform**, despite zero open items: prompts, releases and evaluations are the repository's most safety-critical artifacts, and `ADR-0028`/`§10` make model runtime a product-owner decision — a new lane would hit an architectural boundary early.
+**Not `integrations` (3 open items), `commercial_profile` (2), `provider_platform` (2) or `timeline` (2)** — each already has an unanswered question.
+
+### The minimal work before another lane is safe
+
+**Three items. Nothing larger is warranted.**
+
+| | | Size |
+|---|---|---|
+| **1** | **Shrink the coordination register below ~20 open items.** This is the actual blocker, it is the product owner's, and **no engineering work substitutes for it** | — |
+| **2** | **Create lane databases from the model rather than by hand** — `infra/postgres-init/` derives them from `environments.py`. Two lines, and it removes the one infrastructure step a new lane cannot self-serve | **S** |
+| **3** | **`make workstation`** (RS-2) — regenerate `.env` files and key pairs with the consequences stated. Already proposed for resilience; it doubles as onboarding | **M** |
+
+> **What is deliberately not proposed:** a lane-provisioning command, a second review profile, an environment-management framework, or any governance for a lane that does not exist. **The infrastructure gap is two manual steps; the real gap is 23 unanswered decisions**, and building machinery would disguise which is which.
+
+---
