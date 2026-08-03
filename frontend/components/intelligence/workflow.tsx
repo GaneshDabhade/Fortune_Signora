@@ -214,7 +214,21 @@ export function WorkflowActions({
   // A won deal is terminal and the server says so by sending nothing. **No
   // empty toolbar and no disabled buttons** — a control that cannot be used
   // teaches a reader to distrust the ones that can.
-  if (opportunity.allowed_next.length === 0 && !canHandOver) return null;
+  //
+  // **But silence is not an explanation** (LO-05). A seller arriving at a won
+  // account found every other brief offering something and this one offering
+  // nothing, with no sentence saying why — which reads as the product having
+  // failed rather than as a deliberate rule. It is the one place in the
+  // lifecycle where a reader can do nothing, so it is the one place that has
+  // to say what happens instead.
+  if (opportunity.allowed_next.length === 0 && !canHandOver) {
+    return (
+      <p className="text-sm leading-6 text-content-muted">
+        Won deals stay won. If this company comes back, Signora opens a new opportunity —
+        this one keeps its history.
+      </p>
+    );
+  }
 
   return (
     <div className="flex flex-wrap items-center gap-2">

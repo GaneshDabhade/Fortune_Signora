@@ -96,15 +96,18 @@ describe('the moves offered are the ones the domain allows', () => {
     expect(screen.queryByRole('button', { name: 'Won' })).not.toBeInTheDocument();
   });
 
-  it('draws nothing at all on a won deal', () => {
+  it('offers no control at all on a won deal, and says why', () => {
     // Terminal, and the server says so by sending an empty list. **No empty
     // toolbar and no disabled buttons** — a control that cannot be used
-    // teaches a reader to distrust the ones that can.
-    const { container } = render(
-      actions({ stage: 'closed_won', allowed_next: [], owner_id: VIEWER }),
-    );
+    // teaches a reader to distrust the ones that can. That property is
+    // asserted directly here rather than through an empty container, because
+    // **silence is not an explanation** (LO-05): this is the one place in the
+    // lifecycle where a reader can do nothing, so it is the one place that
+    // has to say what happens instead.
+    render(actions({ stage: 'closed_won', allowed_next: [], owner_id: VIEWER }));
 
-    expect(container).toBeEmptyDOMElement();
+    expect(screen.queryAllByRole('button')).toHaveLength(0);
+    expect(screen.getByText(/Won deals stay won/)).toBeVisible();
   });
 
   it('offers reopening on a dismissed account', () => {
@@ -668,11 +671,9 @@ describe('an account being worked can change hands — LO-04', () => {
   it('offers nothing on a closed account', () => {
     // There is no live work to move. A won deal is terminal, and this must not
     // become the control that puts a button back on it.
-    const { container } = render(
-      worked({ stage: 'closed_won', allowed_next: [], owner_id: VIEWER }),
-    );
+    render(worked({ stage: 'closed_won', allowed_next: [], owner_id: VIEWER }));
 
-    expect(container).toBeEmptyDOMElement();
+    expect(screen.queryAllByRole('button')).toHaveLength(0);
   });
 
   it('offers nothing on an account nobody holds', () => {

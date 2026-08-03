@@ -1,5 +1,5 @@
 /**
- * Accounts you have decided about, as a customer experiences them — `R4-04`.
+ * Accounts already decided, as a customer experiences them — `R4-04`.
  *
  * The tests that matter are about **safety and restraint**: whether dismissing
  * something is undoable, whether the section stays out of the way of a reader
@@ -70,16 +70,25 @@ describe('the section stays out of the way', () => {
   it('says how many there are before it is opened', () => {
     section([decided(), decided({ opportunity_id: 'b', account_id: 'b' })]);
 
-    expect(
-      screen.getByRole('button', { name: /2 accounts you have decided about/i }),
-    ).toBeVisible();
+    expect(screen.getByRole('button', { name: /2 accounts already decided/i })).toBeVisible();
+  });
+
+  it('does not claim a colleague\'s judgement as the reader\'s own', () => {
+    // **The query is workspace-wide and has no owner predicate**, so *"you
+    // have decided"* was true only while every workspace had one member —
+    // and Team Management made it false without anything here changing
+    // (LO-05). The row still says `· yours` where that is the case, which is
+    // the honest place for it.
+    section([decided({ owner_id: 'somebody-else' })]);
+
+    expect(screen.queryByText(/you have decided/i)).toBeNull();
   });
 
   it('counts one account in the singular', () => {
     section([decided()]);
 
     expect(
-      screen.getByRole('button', { name: /^1 account you have decided about$/i }),
+      screen.getByRole('button', { name: /^1 account already decided$/i }),
     ).toBeVisible();
   });
 

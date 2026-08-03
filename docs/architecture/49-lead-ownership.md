@@ -400,3 +400,123 @@ It now reads **"Account handed over"**, with **the reason** as its detail — wh
 | **Notifying the previous owner** | ⚫ Same. M14a |
 | **Bulk reassignment** | ⚫ **A manager inheriting thirty accounts does thirty hand-overs today.** Deliberately not built: the shape of the bulk operation should be decided by watching somebody do it slowly, not before |
 | **A required reason vocabulary** | ⚫ The free sentence is the record, and a dropdown of *leave · territory · resignation* would collect less than the sentence does |
+
+---
+
+## 14 · LO-05 — the lifecycle walked as a customer, 2026-08-03
+
+**Not a workflow review.** The product was walked end to end as an SDR, an AE, a manager and somebody returning after three months, with the implementation deliberately forgotten. Every finding below is **evidence from the running code**, not a guess about what might be missing.
+
+### The verdict, first
+
+**The lifecycle is coherent from discovery to closure, and it ends badly.** Everything up to *won* explains itself; the moment an account closes, three of the customer's most ordinary questions have no answer, and one of them — *"I clicked the wrong button"* — has no answer at all.
+
+### The walk
+
+| The customer's moment | What Signora does today | Verdict |
+|---|---|---|
+| **An opportunity appears** | The attention list ranks it, the badge says why it moved, the brief says *Signora suggested this* and *nobody has taken it yet* | ✅ Understandable and trustworthy |
+| **They want to know why** | Score, contributions, evidence drawer, narration, research, validation | ✅ The strongest part of the product |
+| **A seller takes it on** | Ownership is recorded with a reason and an actor; the line says *you hold this* | ✅ |
+| **A seller hands it over** | LO-04. Named colleague, reason, both directions | ✅ |
+| **A seller ignores it for three weeks** | The list surfaces *Cooling* and *Evidence expired* — **facts about Signora's evidence, not about the seller** | ⚠️ **F-1** |
+| **Ownership changes** | LO-04's trail, in both directions, naming both people | ✅ |
+| **The deal is won** | The brief now says why nothing can be done (fixed here). It stays reachable under *accounts already decided* | ✅ *after this slice* |
+| **The deal is lost or dismissed** | Reopening is offered, with its own reason and actor | ✅ |
+| **They closed the wrong account** | **Nothing.** A won deal is terminal, correctly — and the recourse the domain names does not exist | 🔴 **F-2** |
+| **They want to add an account themselves** | **No route.** `Qualification.MANUAL` exists in the domain, is rendered on the brief, and **nothing can produce it** | 🔴 **F-3** |
+| **A manager arrives** | Nothing a manager can answer that a seller cannot | ⚠️ **F-4** |
+| **An SDR joins halfway** | The decision history and the account timeline both read from the start | ✅ |
+| **They return after three months** | Everything is there; **nothing says what changed while they were gone** | ⚠️ **F-5** |
+
+### The findings, classified the way the product owner asked
+
+| | Finding | Class | Evidence |
+|---|---|---|---|
+| **F-1** | **A stalled account looks identical to a fresh one.** *Cooling* and *Evidence expired* describe Signora's evidence ageing, never *"you took this on three weeks ago and nothing has happened"* | **Missing.** The fact is derivable from the `engaged` state's `occurred_at` and nothing renders it | `attention.tsx` badges are keyed to `evidence_state` only |
+| **F-2** | **An accidental win is unrecoverable, and always will be** | **Missing recourse, correct rule.** `CLOSED_WON: frozenset()` is right — the next deal is genuinely a new opportunity — but the *product* offers no way to reach that new opportunity | `_ALLOWED[CLOSED_WON]` is empty; there is no opening endpoint |
+| **F-3** | **A human cannot open an opportunity.** `Qualification.MANUAL` is modelled, tested, and rendered as *"somebody here added it"* — **and is unreachable in production** | **Implemented but disconnected.** `QualifyOpportunity` has exactly one caller: the buying-score event handler, which never passes `opened_by` | `interface/handlers.py`; no POST route exists |
+| **F-4** | **No manager view exists**, so *"where should my team focus?"* has no screen | **Missing**, and blocked on a manager relationship that does not exist | Already recorded at §12 |
+| **F-5** | **"What changed since I was last here?"** has no answer | **Missing**, and it is the same per-user read state as [TASK-016](../BACKLOG.md) | §12 |
+| **F-6** | *"N accounts **you** have decided about"* over a **workspace-wide** query | **Confusing.** Fixed in this slice | `decided_page` has no owner predicate |
+| **F-7** | **A won brief offered nothing and explained nothing** | **Unpolished.** Fixed in this slice | `WorkflowActions` returned `null` |
+
+**F-3 is the seventh instance of this milestone's recurring shape** — built, and unreachable. It is also the *cause* of F-2: the domain's answer to a mis-click is *"open a new opportunity"*, and that is exactly the route nobody can take.
+
+### Two fixed inline, because they were wording and a missing sentence
+
+**F-7 — a won brief now says what happens instead.** *"Won deals stay won. If this company comes back, Signora opens a new opportunity — this one keeps its history."* **Every word of that is checkable**: a new qualifying score after a closure opens a new generation, which is asserted in the module's suite. It is the one screen in the lifecycle where a reader can do nothing, so it is the one screen that has to say why.
+
+**F-6 — the decided section no longer claims a colleague's judgement as the reader's own.** True when written, when every workspace had one member; **Team Management made it false without anything here changing**, which is the exact failure mode §12 of `CLAUDE.md` describes.
+
+### Challenging the inherited CRM
+
+**Asked deliberately: if Signora were invented today, with AI from day one, what would this look like?**
+
+| Inherited assumption | Challenge | Answer |
+|---|---|---|
+| **Won / Lost captures the outcome** | It captures *whether*, never *why now* or *against whom* | **Keep the stages; the reason field already carries it.** A competitor field is a CRM instinct — it is a *fact about the account*, and the Knowledge Graph owns facts about accounts |
+| **Waiting should be a stage** | ⚫ **No.** *Waiting on the customer* is not a state of the opportunity, it is a state of **the most recent activity**. Making it a stage means somebody must remember to leave it — and every CRM that did this has a pipeline full of accounts stuck in *Waiting* since March | **Activity, not stage.** It belongs to the timeline, and the honest surfacing of it is F-1: *nothing has happened here in three weeks* |
+| **Blocked should be first-class** | Same shape, stronger pull — a manager genuinely wants *what is blocked*. But *blocked* is a **claim with an owner and an expected resolution**, not a stage | **Deferred with a stated trigger**: a customer describing what unblocks it. Recorded as LO-06 |
+| **Needs customer response · Waiting for contract** | These are **five stages that are really one question**: *what is this waiting on, and since when?* | **One concept, not five stages.** Five would multiply the transition table by five and answer nothing the timeline cannot |
+| **An opportunity has a close date and an amount** | Absent, and deliberately so — both are **forecasting**, and neither is knowable by inference | Not this milestone. **Trigger: the first forecasting requirement** |
+| **A stage means the same thing to everyone** | This one is *worth* inheriting: the five stages are small, explained in the customer's words, and each maps to exactly one recorded value | **Keep** |
+
+> **The through-line: a CRM turns every question into a stage, because a stage is the only thing it can render.** Signora has a timeline, a decision history, evidence and a score — so a question should become a *fact it already holds*, and the stage table should stay small enough that a seller can hold it in their head.
+
+### Explainability, scored against the seven questions
+
+| Question | Answered? |
+|---|---|
+| **Why did this happen?** | ✅ Reason on every state, and it leads the entry |
+| **Who did it?** | ✅ Since LO-04, by name |
+| **When?** | ✅ |
+| **What changed?** | ✅ Stage and ownership, read pairwise |
+| **Why now?** | ✅ `BuyingScore.trigger`, on the list |
+| **What happens next?** | ⚠️ Only on a won deal (this slice). **Elsewhere the product never says what it expects next** |
+| **What should I do?** | ⚠️ The ranked list answers it *across* accounts; no brief answers it *for* one |
+| **Can I undo it?** | 🔴 **F-2** |
+| **Can I recover it?** | ✅ except after a win |
+
+### Playwright scenarios — the plan, not the suite
+
+**Written as customer behaviour**, per the product owner's instruction, and deliberately not implemented yet.
+
+| # | Scenario | Covers |
+|---|---|---|
+| **P-1** | Discover → understand → take on → work → win | The spine |
+| **P-2** | Discover → take on → lose → reopen → win | Recovery through the legal path |
+| **P-3** | Dismiss → find it again under *already decided* → reopen | R4-04 |
+| **P-4** | Hand an account over mid-work; the colleague sees it as theirs | LO-04 |
+| **P-5** | Take over an account somebody else holds; both trails agree | LO-04 |
+| **P-6** | Filter to *Mine*, decide, and be offered the next **of mine** | LO-03 · D41 |
+| **P-7** | Refresh mid-hand-over; nothing is half-applied | Not optimistic, deliberately |
+| **P-8** | Two tabs hand the same account to different people | Last write wins, and the trail shows both |
+| **P-9** | A member loses their role while a dialog is open | Server refuses; the message is the domain's |
+| **P-10** | Return after a week and understand what happened | F-5 — **expected to fail today**, and that is its value |
+| **P-11** | Open a won account and understand why nothing can be done | F-7 |
+| **P-12** | Six months of history read by somebody who has just joined | The trail from `sequence 0` |
+
+**P-10 is written to fail.** A scenario that documents a known gap is worth more than one that documents what already works, and it converts F-5 from a paragraph into a check.
+
+### Future pressure — trigger, pressure, direction
+
+| Trigger | Pressure | Possible direction |
+|---|---|---|
+| **A workspace passes ~500 open accounts** | The attention list is cursor-paginated and correct, but *"what needs attention"* stops being answerable by ranking alone | Saved views over the existing scope parameter — **no new concept** |
+| **A second seller shares a territory** | Two people work the same account and only the trail records it | Watching, which needs M14a |
+| **A manager with ten reports** | F-4. Needs a manager relationship, which is a Team Management concern rather than this module's | An owner relationship on membership, then a scope value — **the LO-03 filter already has the shape** |
+| **Bulk reassignment** | Thirty hand-overs after one departure | **Deliberately unbuilt** until somebody has been watched doing it slowly |
+| **Auto-assignment or AI-recommended owners** | *Intelligence suggests; humans commit* holds — a recommendation must arrive as a **suggestion on the existing control**, never as an owner written by a machine | The `Choice` type already separates the act from the stage |
+| **SLAs and escalation** | Both need F-1's *"nothing has happened since"* first | F-1 is the prerequisite for four of these rows |
+| **Territories, business units, partner ownership** | Ownership becomes a *relationship* rather than a person | Not until a customer has two of them |
+
+**F-1 is load-bearing for SLAs, escalation, queues, stale-ownership surfacing and manager health.** It is the smallest of the open findings and unlocks the most.
+
+### What LO-05 recommends next, in order
+
+| | | |
+|---|---|---|
+| **LO-06** | **Nothing has happened here since…** | F-1. Derived from state the module already holds; no schema change; unblocks five future rows |
+| **LO-07** | **A human can add an account** | F-3, and therefore F-2's recourse. One endpoint, one control, one already-modelled `Qualification` |
+| **LO-08** | *Blocked* / *waiting on* | Needs a customer describing it. **Do not invent a stage** |

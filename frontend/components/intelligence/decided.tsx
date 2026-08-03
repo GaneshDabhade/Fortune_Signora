@@ -72,9 +72,16 @@ export function DecidedAccounts({
         ].join(' ')}
       >
         <Chevron aria-hidden className="h-4 w-4 shrink-0" />
+        {/* **Not *"you have decided"*, which the query cannot support**
+            (LO-05). `decided_page` is workspace-wide with no owner predicate,
+            so on any team with two people this heading claimed a colleague's
+            judgements as the reader's own. It was true when it was written —
+            every workspace had one member — and Team Management made it false
+            without anything here changing. The row already says `· yours`
+            where that is the case, which is the honest place for it. */}
         {accounts.length === 1
-          ? '1 account you have decided about'
-          : `${accounts.length} accounts you have decided about`}
+          ? '1 account already decided'
+          : `${accounts.length} accounts already decided`}
       </button>
 
       {open ? (
