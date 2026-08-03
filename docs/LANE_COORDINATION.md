@@ -146,7 +146,7 @@
 | [C-001](#c-001--the-target-account-contract) | The target-account contract — this module's first edge | Lane B | **Lane A** | `ANSWERED` → **[ADR-0036](architecture/adr/0036-target-account-contract.md)** | **Nothing. Slice 5 may begin.** `CLOSED` when both lanes have built it |
 | [C-305](#c-305--two-principles-that-outgrew-the-adr-that-found-them) | Two principles that outgrew the ADR that found them | Lane B | **Product owner** | `OPEN` | **Nothing.** Both are already applied in two modules each; this is placement |
 | [C-304](#c-304--a-standing-review-question-that-has-already-paid-for-itself) | A standing review question that has already paid for itself | Lane B | **Product owner** | `OPEN` — **challenged and sharpened 2026-08-02.** It produces noise in the general form; the narrow one survives | **Nothing.** One line of review practice, wherever it belongs |
-| [C-307](#c-307--signora-cannot-say-who-anybody-is) | Signora cannot say who anybody is | Lane B | **Product owner** | `OPEN` — **not blocking**; a recommendation is stated and Lane B is proceeding on it | **Nothing.** The foundation and its own screen are unowned; only the existing surfaces that render a person are Lane A's |
+| [C-307](#c-307--signora-cannot-say-who-anybody-is) | Signora cannot say who anybody is | Lane B | **Product owner** | `OPEN` — **blocking, discovered during implementation.** Same class as [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) | **All of User Profile.** The first table is user-scoped, and the tenancy model has no classification for one |
 | [C-306](#c-306--the-opportunities-and-signals-experience-already-exists-and-lane-a-owns-half-of-it) | The Opportunities & Signals experience already exists, and Lane A owns half of it | Lane B | **Product owner** | `OPEN` | **The frontend half only.** The backend half is unassigned and Lane B can start it |
 | [C-303](#c-303--an-icp-is-not-an-addressable-thing-and-every-verb-the-brief-asks-for-needs-one) | An ICP is not an addressable thing, and every verb the brief asks for needs one | Lane B | **Product owner** | `ANSWERED` — ICP stays in Commercial Profile (2026-08-02). **The aggregate is [ADR-0041](architecture/adr/0041-icp-aggregate.md), proposed** | **Implementation, on ADR-0041's ratification** |
 | [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) | A notification is per-person, and workspace RLS is not enough | Lane B | **Product owner** (tenancy 🔴) | `OPEN` | **M14a N-01's migration.** The pattern exists; the ruling does not |
@@ -3398,4 +3398,41 @@ Today it is strictly the first — `ProductIcp` names a product, exactly one per
 **Rendering a colleague's name on an existing surface is the second slice and is Lane A's**, exactly as [C-306](#c-306--the-opportunities-and-signals-experience-already-exists-and-lane-a-owns-half-of-it) splits. **The fact has to exist before a screen can show it**, which is the same ordering R1-01 has.
 
 **Answer needed only for:** whether the table lives in a new context or in `workspace_tenancy`. **Lane B proceeds on B with a new context**, and will move it if ruled otherwise — a table with no consumers is cheap to relocate, and waiting is not.
+
+
+### 5 · Implementation reached a tenancy question, and it is [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough)'s twin
+
+**Lane B began building and stopped at the first table, for a reason that is one of the product owner's five named stop conditions.**
+
+**Every workspace-owned table in this repository is scoped by `workspace_id`.** A profile is not: **one person, many organizations, one name.** It has no `workspace_id`, so it satisfies neither classification the Tenant Isolation Policy offers — it is not tenant-owned (no tenant identifier) and it is certainly not platform infrastructure.
+
+**The precedent that nearly solves it, and does not.** `workspace` and `membership` have been RLS-scoped on `app.user_id` since migration `0001`, so **user-scoped RLS is proven here**. But `workspace` qualifies as tenant-owned because **it is the tenancy root — its own `id` is the tenant identifier.** A profile has no such claim. **It is the first table that is genuinely user-scoped rather than workspace-scoped**, and that is a tenancy-model question rather than a module one.
+
+**The policy itself is ordinary and reuses a shape already in the repository** — *you may read a profile belonging to anybody you share a workspace with*, which is `workspace_select`'s membership `EXISTS` inverted:
+
+```sql
+USING (
+  user_id = NULLIF(current_setting('app.user_id', true), '')::uuid
+  OR user_id IN (
+    SELECT m.user_id FROM membership m
+     WHERE m.workspace_id IN (
+       SELECT workspace_id FROM membership
+        WHERE user_id = NULLIF(current_setting('app.user_id', true), '')::uuid)
+  )
+)
+```
+
+### The alternative that avoids the ruling, and why Lane B rejected it
+
+**A workspace-scoped *membership* profile** — *"what this person is called in this organization"* — fits the existing model exactly, needs no ruling, and ships today. Some products do it (Slack). **Lane B is not building it.**
+
+> **A person in three organizations would have three names that drift.** That is duplicated truth **forced by the model**, which is precisely the failure [ADR-0041](architecture/adr/0041-icp-aggregate.md) §2 reversed a recommendation to avoid six hours after making it. Choosing it here to dodge a decision would repeat, deliberately, the mistake that review caught.
+
+### Why this is worth answering once rather than twice
+
+**[C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) asked the same question for notifications**: a notification is a fact about a *person*, and workspace RLS lets any member read a colleague's read state. **Two capabilities are now blocked on one missing decision**, which is better evidence than either alone — the repository has reached the point where *per-person data* is a category, not an exception.
+
+**Lane B recommends ruling once, on the general shape:** *a table may carry a second RLS predicate scoping rows to `app.user_id`, and a table whose subject is a person rather than an organization is classified user-owned.* That answers notifications, profiles, and everything that follows them.
+
+**What is not blocked:** nothing in User Profile. The profile table is the foundation and every slice needs it. **Lane B is not building a screen over a table shape it expects to migrate.**
 
