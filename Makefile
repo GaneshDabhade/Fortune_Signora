@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: environments reachability unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research
+.PHONY: environments reachability event-catalog unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
 # The executable bit is filesystem state, not repository state, and it does
@@ -29,11 +29,14 @@
 
 ## Is the workstation ready for QE Release Mode? Classifies in under a second.
 #
-# Human Review Mode (`make demo`) and QE Release Mode want the same two ports,
-# 3000 and 8000. The collision used to surface several minutes into a smoke run
-# as "3 of 24 stages", which reads like a repository defect and is not one.
+# **The collision it was built for is gone.** Human review runs on 3000/8000 and
+# the production stack now runs on 3100/8100, so a review session and a
+# certification run coexist — proven by running both at once. What remains are
+# the preconditions that each cost a real incident: an unreachable development
+# database once blocked pytest for 22 minutes with no diagnostic, and memory
+# pressure from another environment turned a 130s smoke run into a 320s one.
 #
-#   0 ready · 2 waiting on a review session · 3 blocked
+#   0 ready · 3 blocked        (exit 2 is retired with the collision)
 release-preflight:
 	@python3 infra/release-preflight.py
 
@@ -49,11 +52,11 @@ smoke-keep:
 	@SMOKE_KEEP_STACK=1 bash ./infra/smoke.sh
 
 ## Disaster Recovery Validation against an already-running production stack.
-## **Not preflighted, deliberately.** `release-preflight` requires 3000 and 8000
-## to be *free* so smoke can bind them; `dr` requires the production stack to be
-## *up* on exactly those ports. The preconditions are inverses, and wiring the
-## preflight here made `dr` unrunnable — caught within one cycle of adding it.
-## What `dr` needed was the lease, which it has.
+## **Not preflighted, deliberately.** `release-preflight` requires 3100/8100 to be
+## *free* so smoke can bind them; `dr` requires the production stack to be *up* on
+## exactly those ports. The preconditions are inverses, and wiring the preflight
+## here made `dr` unrunnable — caught within one cycle of adding it. What `dr`
+## needed was the lease, which it has.
 dr:
 	@python3 infra/environment-lease.py run dr -- bash ./infra/disaster-recovery.sh
 
@@ -70,7 +73,7 @@ test:
 ## The Product Playground — twelve accounts through the real pipeline.
 ##
 ## **There is one product.** This runs the same pipeline the suite runs, over
-## `playground@1` instead of `baseline@1`. No branch anywhere knows it is a
+## `playground@2` instead of `baseline@1`. No branch anywhere knows it is a
 ## playground; the only difference is which scenario file is named.
 ##
 ## `demo` brings the stack up and seeds. `demo-seed` re-seeds an already-running
@@ -192,6 +195,21 @@ environments:
 ## connection flow, so a customer could reach it only by already being there.
 reachability:
 	@python3 ./infra/reachability.py $(ARGS)
+
+## **Does the platform emit an event the contract does not name?**
+#
+# Repository Health · Documentation Synchronization. The third sibling of
+# `runtime-composition` (does the worker consume what a module projects?) and
+# `reachability` (can a customer reach this screen?).
+#
+# **Advisory, and deliberately.** Its one finding today can only be cleared by
+# editing a 🔴 file, so gating would make every lane's run red for a reason no
+# lane could act on — and the cost of that is every other warning being skimmed.
+#
+#     make event-catalog
+#     make event-catalog ARGS=--strict     # for a future gate; nothing uses it
+event-catalog:
+	@python3 ./infra/event-catalog.py $(ARGS)
 
 ## **What would you lose if this disk died right now?** (RS-1, L-18)
 #

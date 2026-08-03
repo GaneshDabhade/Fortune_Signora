@@ -406,3 +406,36 @@ If a lane believes it has found a genuine performance problem, the test is the o
 > **What is deliberately not proposed:** a lane-provisioning command, a second review profile, an environment-management framework, or any governance for a lane that does not exist. **The infrastructure gap is two manual steps; the real gap is 23 unanswered decisions**, and building machinery would disguise which is which.
 
 ---
+
+## 12 · Repository Health, organised — 2026-08-03
+
+**Repository Health is a product, not a collection of scripts** (ratified 2026-08-03, product owner). Every improvement answers one question before it is built:
+
+> **What class of future mistakes does this permanently eliminate?**
+
+**Eight categories**, so a lane can see at a glance what a check is *for*. Each row names what is built and what the category still lacks.
+
+| Category | Built | The class it eliminates |
+|---|---|---|
+| **Repository Consistency** | `state-check` · `registers` · duplicate-identifier detection | Governance documents disagreeing with the repository, or with each other |
+| **Release Integrity** | `certification-guard` — commit-bound certification · `--audit-main` · the branch guard · L-17 | An uncertified commit reaching `main`, or a certified one never getting there |
+| **Documentation Synchronization** | `doc-drift` · **`event-catalog`** *(new)* · `runtime-composition` · `reachability` | Implementation and its contract diverging silently |
+| **Configuration Safety** | `required()` with no fallback · `require_redis_url` · `release-preflight` prerequisites | A tier silently connecting to another environment's data |
+| **Environment Isolation** | `environments` · `environment-lease` · the 3100/8100 separation | One environment making another unusable |
+| **Certification Reliability** | `attempts.jsonl` (RE-01) · stage timings · memory pressure reporting | A run that cannot be explained afterwards, or one that vanishes |
+| **Historical Traceability** | The certification manifest · dated records · **aborted runs preserved** | A repository that records only its successes |
+| **Governance Compliance** | The Change Budget · claim auditing · `--audit-claims` | A change arriving without the authority to make it |
+
+### What each category still lacks — the honest column
+
+| Category | Gap |
+|---|---|
+| **Documentation Synchronization** | `event-catalog` is advisory and cannot gate until [C-101](LANE_COORDINATION.md) rules the workflow. `04-modules.md` and `05-module-dependencies.md` have the same shape and no checker |
+| **Configuration Safety** | **RE-03.** `certify` still inherits its test database from the shell — the last hand-typed correctness requirement in the pipeline |
+| **Environment Isolation** | Machine resources. Object storage, temp files, log directories and build caches are not per-environment; none has caused a conflict, so none is addressed |
+| **Certification Reliability** | An abort is *inferred* from a missing `finished` event rather than recorded as one. Compose profile and abort reason are absent from the attempt record |
+| **Historical Traceability** | Nothing yet measures trend — completion rate, abort rate, mean duration exist in `kpi` but are not tracked over time |
+
+> **A category with no gap listed is a category nobody has looked at hard enough.** These are findings, not a roadmap: each is built when it eliminates a class, and never because the table has an empty cell.
+
+---

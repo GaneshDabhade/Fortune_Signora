@@ -2681,6 +2681,48 @@ Two scenarios were **excluded on principle rather than on effort**, and the reas
 
 ---
 
+## C-101 · A lane can emit an event it is forbidden to catalog
+
+| | |
+|---|---|
+| **Owner** | **Lane C** — Product Office & Architecture Office. *Governance workflow design* |
+| **Requesting lane** | **QE**, from a Repository Health measurement |
+| **Category** | Governance workflow · Change Budget · documentation synchronization |
+| **Status** | **`AWAITING LANE C`** — Lane C has no session yet. Deliberately not filed against a lane that cannot answer |
+| **Blocks** | Nothing being implemented. **It blocks `06-events.md` from staying true without a manual correction every time** |
+| **Raised** | 2026-08-03, by QE, after measuring the drift rather than encountering it |
+
+**`CLAUDE.md` §9 requires a new event to be added to [`06-events.md`](architecture/06-events.md) *in the same change that introduces it*. `06-events.md` is 🔴 — product owner and ADR only. A lane that emits an event therefore cannot comply with §9, and the rule is unsatisfiable by the only person in a position to satisfy it.**
+
+### This is a workflow gap, not a discipline problem — and the number matters
+
+**Measured before raising it**, because the difference changes what should be built:
+
+```
+declared in code   25
+in the catalog     24
+missing             1     commercial_profile.target_accounts_changed
+```
+
+> **Twenty-four of twenty-five is a healthy repository.** Every reader of the one finding should understand that the catalog has been maintained well **by everyone who was allowed to maintain it**. C-004 exposed the boundary; it did not expose neglect.
+
+**The one gap has a specific cause.** Lane B shipped `target_accounts_changed` in slice 5, could not edit the catalog, and raised [C-004](#c-004--shared-documents-lag-commercial-profile) with the exact table row written out ready to paste. **That was the correct behaviour under the rules as written**, and the row has been waiting ever since.
+
+### What Lane C is being asked to design
+
+**Not the missing row.** That is a product-owner edit, tracked in C-004. This item asks for the *process* that stops the next one happening:
+
+1. **How does an authoritative 🔴 document stay synchronized when the lane that must change it may not write it?** Options exist and QE deliberately does not choose between them — a batched QE-applied edit, a lane-writable appendix the 🔴 document includes, a narrower Change Budget for the catalog specifically, or a ratification step attached to the Slice Handoff.
+2. **Does the same gap exist for other 🔴 documents a lane's work can invalidate?** `04-modules.md` (a module's endpoints and tables) and `05-module-dependencies.md` (a new read port) have the same shape, and C-004 lists pending edits to both.
+3. **What closes this item?** A ruled process, and §9 becoming satisfiable by whoever incurs it.
+
+### Why QE raises it rather than solving it
+
+**QE validates; Lane C prepares governance; the product owner decides.** A workflow that lets implementation and documentation stay synchronized is governance design, and QE choosing one would be the drift Lane C was created to end — the same drift that left [C-004](#c-004--shared-documents-lag-commercial-profile) and [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide) filed under QE while both waited on a ruling.
+
+**What QE did build** is the detection: `make event-catalog` (Repository Health · *Documentation Synchronization*) enumerates every declared `event_type` and compares it against the catalog. **Advisory, deliberately** — its one finding today can only be cleared by editing a 🔴 file, and a gate that fails on something its owner cannot fix teaches people to ignore gates. **It becomes gateable the day this item is resolved**, which is the clearest statement of what "resolved" means.
+
+
 ## C-100 · The demonstration runner must reuse Lane B's Playwright infrastructure, not grow a second one
 
 | | |
