@@ -87,6 +87,24 @@
 
 ---
 
+### Re-validation, round two — 2026-08-03, at `de3491e`
+
+**The five items [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) deliberately would not rule on, now read against current code.** Ruling on them without this was the register-not-repository error; this is that read.
+
+| Item | Verdict | Evidence |
+|---|---|---|
+| **C-025** | **`CLOSED` — answered by implementation** | **The OAuth flow is fully built in the Next.js tier**: `frontend/app/api/integrations/[slug]/start` and `/callback`, with state issuance and **a separate OAuth client from Better Auth's**. The question *"which tier may run an integration OAuth flow"* was answered by [`18-authentication.md`](architecture/18-authentication.md) **before the item was raised** — the implementation followed the architecture and the register never caught up |
+| **C-007** | **STILL OPEN — and it now blocks, where it did not** | Its own text: *"blocks nothing until M12.5 slice 5 is done."* **Slice 5 is done** — all five Commercial Profile slices are promoted. **The condition it named has been met, so the block is live.** The only item in two rounds of re-validation to get *more* blocking rather than less |
+| **C-009** | **STILL OPEN — verified precisely, and broader than described** | `OpportunityError` carries both refusals *and* invariants: **`"an opportunity's generation cannot be negative"` reaches a customer as `422 transition_refused`.** An internal bug attributed to the customer's request — the failure `CLAUDE.md` §10 names, *an incorrect attribution is worse than none*. **5 modules now map a domain error to 422** |
+| **C-003** | **STILL OPEN — but its urgency was a forecast that did not happen** | It said *"slice 5 makes it four."* **Slice 5 deliberately added none** — `commercial_focus` carries the comment *"No `*_unknown_product` here — a watch list cites no product."* Still three codes, and a neutral `unknown_product` now exists beside them. **Stable debt, not compounding — priority should fall, not rise** |
+| **C-005** | **STILL OPEN — correctly deferred, blocking nothing** | It blocks *"the first customer-editable relevance profile."* **No write surface exists** — `signal_profile` appears in no interface layer and no frontend route. Unchanged and correctly parked |
+
+> **The symmetry with [C-013](#c-013--publishableevent-cannot-be-satisfied-by-a-frozen-dataclass) is the useful part.** C-013 forecast that a workaround would spread, and it spread — 8 files to 13 — so its priority **rose**. C-003 forecast the same shape and **the lane held the line**, so its priority **falls**. *"Is the workaround compounding?"* is doing real discriminating work, not just sounding rigorous.
+>
+> **Across two rounds: 9 items closed on evidence, 2 narrowed, 1 escalated, 3 confirmed open.** The register has never once been wrong in the direction of *understating* what was blocked — every correction so far has been the repository moving ahead of its own paperwork.
+
+---
+
 ### Re-validated against today's repository — 2026-08-03, at `7e43841`
 
 **On the product owner's direction: every blocked item re-checked against the repository *as it exists now*, not as it existed when the item was raised.** Months of implementation have landed since most were written.
