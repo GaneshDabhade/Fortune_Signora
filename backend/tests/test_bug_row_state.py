@@ -26,6 +26,7 @@ import importlib.util
 import sys
 from pathlib import Path
 from types import ModuleType
+from typing import Any
 
 import pytest
 
@@ -47,7 +48,11 @@ def _load_registers() -> ModuleType:
 registers = _load_registers()
 
 
-def _row(severity: str, status: str) -> object:
+def _row(severity: str, status: str) -> Any:
+    """A single constructed row. `Any` because `registers` is loaded by path —
+    `infra/` is outside the package mypy resolves, so `BugRow` has no static type
+    here. The alternative is a Protocol duplicating the dataclass, which is a
+    second definition of one fact (`CLAUDE.md` §2)."""
     text = f"""### B-999 · a constructed row
 
 | | |
