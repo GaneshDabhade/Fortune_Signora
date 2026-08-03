@@ -154,7 +154,7 @@
 | [C-324](#c-324--where-does-epic-as-rendering-stop-being-lane-bs) | Where does Epic A's rendering stop being Lane B's? | Lane B | **Lane C** | `OPEN` | **A5 and A6's screens.** Nothing in A1 or A4 |
 | [C-322](#c-322--is-an-icp-a-description-or-a-filter) | Is an ICP a description, or a filter? | Lane B | **Product owner** | `OPEN` | Epic B1; the product contradicts itself on screen until it is answered |
 | [C-320](#c-320--no-environment-can-complete-a-sign-up-so-nobody-has-reviewed-the-first-hour) | No environment can complete a sign-up, so nobody has reviewed the first hour | Lane B | **Product owner** | `OPEN` | Reviewing onboarding. No implementation |
-| [C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name) | What should Signora do with a company it cannot name? | Lane B | **Product owner** | `OPEN` | A correct fix for PX-301 / PX-316 |
+| [C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name) | What should Signora do with a company it cannot name? | Lane B | **Product owner** | `OPEN` — **now blocking**, and sharpened by A6's audit | **Epic A's A6**, plus a correct fix for PX-301 / PX-316 |
 | [C-308](#c-308--browser-to-api-is-in-no-gate-and-that-is-how-the-product-shipped-without-one) | Browser→API is in no gate, and that is how the product shipped without one | Lane B | **QE** | `OPEN` — **the strongest evidence yet for [C-301](#c-301--nothing-asserts-what-the-deployed-worker-consumes)**; a constraint on the answer appended 2026-08-03 ([B-311](BUGS.md)) | Nothing today. **Every future frontend defect of this class** |
 | [C-301](#c-301--nothing-asserts-what-the-deployed-worker-consumes) | Nothing asserts what the deployed worker consumes | Lane B | **QE** | `OPEN` | **Nothing today.** Every future consumer can ship [B-301](BUGS.md) again |
 | [C-002](#c-002--customer-language-has-no-anticorruption-layer) | Customer language has no anticorruption layer | Lane B | **Product owner** (ADR) | `OPEN` | Anything that matches an account against an ICP |
@@ -3538,7 +3538,7 @@ That is fixed at the root (`browserEnvironment()` in `tests/e2e/fixtures/environ
 | **Raised by** | Lane B, 2026-08-03, Product Experience Reviews 1–3 |
 | **Owner** | **Product owner**, with `knowledge_graph` and `opportunity_engine` |
 | **Status** | `OPEN` |
-| **Blocks** | Nothing today. **[PX-301](PRODUCT_EXPERIENCE.md) and [PX-316](PRODUCT_EXPERIENCE.md) cannot be fixed correctly without it** |
+| **Blocks** | **Epic A's A6**, which is this item under a slice's name *(raised from* nothing today, *2026-08-03)*. Also [PX-301](PRODUCT_EXPERIENCE.md) and [PX-316](PRODUCT_EXPERIENCE.md) |
 
 **The question**, and it is a product-philosophy one rather than a screen fix: **identity and significance are different axes, and the attention list currently multiplies them into one number.**
 
@@ -3556,6 +3556,27 @@ A record can be highly significant and unidentifiable — `70b04700` has four we
 | What is it, then? | **`Needs identity` — a queue with its own workflow**, not a filter |
 
 **Why it is a coordination item rather than a bug.** Whichever answer is taken changes `knowledge_graph`'s output contract, `opportunity_engine`'s qualification rule, and a Product Surface screen. **Two lanes would otherwise encode contradictory halves of it**, which is precisely what this register exists to prevent.
+
+> ### Sharpened 2026-08-03 by Epic A's A6 reuse audit — and it now blocks a scheduled slice
+>
+> **`Blocks` above said *nothing today*. It now blocks A6**, which is this item wearing a slice's name: *"`Needs identity` — unnamed records leave the working list"* is the recommendation in the last row of the table above.
+>
+> **Two things the audit settled, so the ruling does not have to.**
+>
+> **1 · No new workflow state is warranted.** The proposed lifecycle *Unknown → Needs Identity → Named → Qualified → Opportunity* is two existing lifecycles glued together: the first three are **derived** from `NameAgreement` and `IdentityState` on every request, and the last two **are** `opportunity_engine`'s `Stage`, already stored, append-only and audited. A single stored enum would be a third representation of facts two modules own (§2). **The decision is about behaviour, not about a state machine.**
+>
+> **2 · *"Needs identity"* is two situations, and the ruling should say which one it means — or rule on both.**
+>
+> | | **An ambiguous binding** | **An account nobody has named** |
+> |---|---|---|
+> | Does an account exist? | **No** — `entity_id` is `None` by design; binding one would be the merge the graph refuses | **Yes**, and it is on the attention list today |
+> | Read over | bindings | entities |
+> | The customer's action | *"which company is this?"* | *"what is this company called?"* |
+> | Evidenced | Not yet observed in the Playground | **Yes** — [PX-301](PRODUCT_EXPERIENCE.md), `70b04700`, peaking at 87 with no name |
+>
+> **The six sub-questions above are all about the second.** The first has no screen anywhere and, unlike the second, is not currently offering a customer a button that cannot work.
+>
+> **Lane B has built nothing against this and is not proceeding on an assumption.** The derivable read is three lines on top of `identities()` and is worthless without knowing what the queue *does*, so it is recorded rather than built.
 
 ## C-322 · Is an ICP a description, or a filter?
 

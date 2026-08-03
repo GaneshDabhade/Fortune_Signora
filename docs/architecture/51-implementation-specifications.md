@@ -234,6 +234,40 @@ ORDER BY attribute, observed_at
 
 ## A6 · `Needs identity` — unnamed records leave the working list · **M** · Knowledge Graph
 
+> ### Reuse audit, 2026-08-03 — the lifecycle is already built, twice, and A6 is [C-321](../LANE_COORDINATION.md)
+>
+> **The proposed lifecycle is two existing lifecycles glued together.** *Unknown → Needs Identity → Named → Qualified → Opportunity* spans two modules that each already own their half, and neither half is missing:
+>
+> | Proposed state | What already holds it | Derived or stored |
+> |---|---|---|
+> | **Unknown** | `IdentityState.unresolved` · `NameAgreement.unknown` | **Derived** from claims, every request |
+> | **Needs identity** | `IdentityState.ambiguous` · or `NameAgreement.unknown` on a live account | **Derived** — and see below, these are *two different situations* |
+> | **Named** | `NameAgreement.single_source` · `agreed` | **Derived** |
+> | **Qualified** | `Stage.tracking` with `Qualification.automatic \| manual` | **Stored**, `opportunity_engine`, append-only and audited |
+> | **Opportunity** | `Stage.engaged` onward | **Stored**, same aggregate |
+>
+> **So a single stored `identity_state` enum would be a third representation of facts two modules already own** — the defect §2 names directly, and the one where the copies eventually contradict each other on a customer's screen. **No new workflow state is warranted**, which is the answer the product owner asked to be proven rather than assumed.
+>
+> ### The distinction the proposal collapses, and it is the design
+>
+> **"Needs identity" is two situations that need different reads and different customer actions:**
+>
+> | | **An ambiguous binding** | **An account nobody has named** |
+> |---|---|---|
+> | What it is | A provider identity matching two candidates | An entity with claims, scored, and no usable `legal_name` |
+> | Does an account exist? | **No.** `entity_id` is `None` by design — binding one would be the merge the graph refuses | **Yes**, and it is on the attention list today |
+> | Where it can be read | Over **bindings** | Over **entities** |
+> | What a customer would do | Tell Signora which company it is | Tell Signora what this company is called |
+>
+> **Conflating them produces a queue whose rows mean two things.** The evidenced case is the second: [PX-301](../PRODUCT_EXPERIENCE.md) found `70b04700` — four weeks of elevated research, peaking at 87, no name, and the product offering *"I'm working this"* on it.
+>
+> ### A6 is [C-321](../LANE_COORDINATION.md), and it is a product decision that is still open
+>
+> **The queue's semantics are exactly C-321's six sub-questions**, and three of them change `opportunity_engine`'s qualification rule: may an unnamed record become an opportunity · may it be worked · does it appear on the working list. **Implementing A6 without them encodes an assumption about the answer**, which is the one thing §20e forbids proceeding on.
+>
+> **What is safely buildable before the ruling: nothing that is worth building alone.** The derivable read — *which accounts cannot Signora name* — encodes no assumption, and is three lines on top of `identities()`. It is also useless without the decision about what the queue *does*, and building it now would be a screen-less endpoint for undecided semantics (§6). **Recorded rather than built.**
+
+
 | | |
 |---|---|
 | **Objective** | A record no provider has named stops appearing as a workable account and gets a queue of its own |
