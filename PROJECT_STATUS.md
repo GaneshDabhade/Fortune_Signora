@@ -12,16 +12,16 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `b0d10b3`, 2026-08-03.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `08226e5`, 2026-08-03.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`b0d10b3`** — the certified commit itself |
-| **`integration`** | `b0d10b3` — level with `main` |
-| **Release candidate** | **None pinned.** Cycle 37 promoted **Lane C** into repository governance |
-| **Certification** | ✅ [`b0d10b3836bc`](certification/reports/b0d10b3836bc.md) · migration head **`0030`** · protocol **v2** |
+| **`main`** | **`08226e5`** — the certified commit itself |
+| **`integration`** | `08226e5` — level with `main` |
+| **Release candidate** | **None pinned.** Cycle 38 promoted the **Event Catalog Drift Check** |
+| **Certification** | ✅ [`08226e541959`](certification/reports/08226e541959.md) · migration head **`0030`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **169 commits, none outside a certified snapshot** |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **172 commits, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Both lanes.** Five separate rulings, all the product owner's — see §1c |
 | **Validation queue** | Lane A's and Lane B's branches, **both awaiting a rebase by their lane** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The cycle's finding outweighs its feature.** Running the suite in a shell that did not export `SIGNORA_DATABASE_URL` produced **three failures on the commit certified hours earlier** — a certification gate had a hidden input, so the run that certified `909374a` and the run reproducing it were measuring different things, and nothing in the record said so ([B-106](docs/BUGS.md)). It is fixed and verified by removing the variable entirely. **[B-022](docs/BUGS.md) predicted this class and stayed open; this is the first time it was observed rather than reasoned about.**
 
-**Repository health:** **2642 backend tests** · **95.50% coverage** *(floor 95)* · 719 frontend tests · 360 Security Invariants · mypy strict over **620 files** · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
+**Repository health:** **2649 backend tests** · **95.50% coverage** *(floor 95)* · 719 frontend tests · 360 Security Invariants · mypy strict over **621 files** · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
 
 ---
 
@@ -101,53 +101,56 @@
 
 ---
 
-## 1d · Release summary — 2026-08-03, cycle 37
+## 1d · Release summary — 2026-08-03, cycle 38
 
-**Derived from the promoted commit `b0d10b3`.** An organizational change, recorded rather than enacted — and the governance principle that came out of nearly getting it wrong.
+**Derived from the promoted commit `08226e5`.** One small deterministic check that permanently closes a class of drift, and the measurement that decided its shape.
 
-### Lane C — Product Office & Architecture Office
+### `make event-catalog` — does the platform emit an event the contract does not name?
 
-**Created instead of a third implementation lane, on evidence.** QE measured **23 of 38 open coordination items owned by the product owner** and **16 `READY` tasks unclaimed with two lanes available**. Implementation capacity was not the constraint; **decision throughput was**, and a third implementation lane would have been a third consumer of the same queue.
+*Repository Health · **Documentation Synchronization**.* The third sibling of `runtime-composition` (does the deployed worker consume what a module projects?) and `reachability` (can a customer reach this screen?), filling the one gap between them.
 
-| | | |
-|---|---|---|
-| **Implementation lanes** | **build** | Production code in their assigned modules |
-| **QE** | **certifies** | Quality, release, repository health, environment isolation, the review platforms |
-| **Lane C** | **prepares** | Options · plans · ADR drafts · investigations · dependency analysis · decomposition · sequencing · consistency reviews · capability audits |
-| **Product owner** | **decides** | Priority, product direction, every ruling |
+**The measurement came before the checker, and changed what got built:**
 
-**Lane C owns no production module, no bounded context and no runtime** — a clone, a branch and repository access, with no ports, database, Redis index or compose project. **The first lane whose onboarding is simpler than the one before it.**
+```
+declared in code   25
+in the catalog     24
+missing             1     commercial_profile.target_accounts_changed
+```
 
-### The governance principle, found by nearly breaking it
+> **Twenty-four of twenty-five is a healthy repository**, and that number belongs beside the finding. [C-004](docs/LANE_COORDINATION.md) exposed a **workflow gap, not poor discipline**: the lane that emitted the event **may not edit `06-events.md`** — it is 🔴 — so §9's *"cataloged in the same change"* was unsatisfiable by the lane that incurred it. Lane B wrote the row out ready to paste and raised the item, which was correct under the rules as written.
 
-A description of the lanes' strategic direction **implied a module ownership swap between two lanes, both mid-flight.** Written into the governance files as prose it would have reassigned two bounded contexts through a documentation edit that nobody would have recognised as a decision.
+**Advisory, and the reasoning is asserted by a test rather than left in a comment.** Its one finding can only be cleared by editing a 🔴 file, so gating would make every lane's run red for a reason no lane could act on — and the second-order cost is every *other* warning being skimmed.
 
-> **Governance describes reality; it never quietly changes it.** Any behavioural change requires an explicit architectural or product decision **before** governance is updated.
+### The workflow, not the row — [C-101](docs/LANE_COORDINATION.md) to Lane C
 
-This is the general form of *the repository should always tell the truth*, applied to the **direction of causation**: that rule says a document must not misdescribe reality; this one says a document must not *become* it. **The tell is simple — if applying the edit would change what somebody does tomorrow, it needed a decision yesterday.**
+**QE built the detection and deliberately did not design the process.** A workflow that keeps a 🔴 document synchronized when the lane that must change it may not write it is governance design, and choosing one would be exactly the drift Lane C was created to end.
 
-**No module changed owner**, stated as a line rather than left as an absence.
+**C-101 is Lane C's first assignment**, and it is the new routing model's first end-to-end test: small, bounded, with the answer genuinely open.
 
-### The register was reviewed item by item, and shrank
+### Repository Health, organised into eight categories
 
-**6 closed → 8.** [C-022](docs/LANE_COORDINATION.md) closed because `CLAUDE.md` already contained the rule it asked for; [C-202](docs/LANE_COORDINATION.md) closed after its last live disagreement was fixed. **C-004 and C-201 moved to `READY FOR PRODUCT DECISION`** — both had sat under QE's name while waiting on a ruling, which is exactly the drift Lane C exists to end.
+Repository Consistency · Release Integrity · **Documentation Synchronization** · Configuration Safety · Environment Isolation · Certification Reliability · Historical Traceability · Governance Compliance — [each with an honest gap column](docs/RELEASE_ENGINEERING.md). **A category with no gap listed is one nobody has looked at hard enough.**
 
-**Coordination items now carry a lifecycle**, so a reader sees *where* a decision is stuck: `OPEN → READY FOR LANE C → IN ANALYSIS → READY FOR PRODUCT DECISION → READY FOR IMPLEMENTATION → CLOSED`.
+Every improvement now answers one question before it is built: **what class of future mistakes does this permanently eliminate?**
 
-### A claim arrived mid-cycle, and the model handled it
+### The certification record was destroyed and rebuilt, not repaired
 
-Lane B pushed `Claim TASK-300` to `integration` while certification was running — **the one exception the model allows**, claim-only paths, verified against the guard. `integration` was rebased onto `main` (Closeout activity 10) and the one expected conflict resolved by keeping **each side's own row**.
+**After promotion, QE ran `git checkout lane-qe -- certification/` while assembling this Closeout and discarded the manifest entry for `08226e5`.** `main` then held a commit whose certification evidence no longer existed, and `--audit-main` **failed** — correctly, and that is the check doing exactly its job.
+
+**The manifest was not edited by hand.** `tests/certification/__main__.py` states the rule it would have broken: *"Every fact is measured here, none is passed in."* An entry typed to look like a real one is indistinguishable from a real one to every future reader, which makes hand-repair the most damaging available option. **The gates were re-run**, and the restored record was produced by a run.
+
+> **Third destructive-git incident in one session**, all the same class: a git command used to undo something narrow, silently discarding uncommitted work in its blast radius. **None of the three would have been caught by `make unsaved`** — that reports work git has *never seen*, and all three were modifications to *tracked* files. A different exposure, currently surfaced by nothing.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **2642 backend** · 719 frontend · **95.50%** · 360 invariants · 620 files typed |
-| **Release** | **Seven consecutive cycles with no process failure** |
-| **Architecture** | Runtime composition 0 unexpected · Reachability 0 doorless · review and certification concurrent |
-| **Dependency** | **39 items, 8 closed** · C-100 blocks PR-1 · **C-101 awaits Lane C** |
-| **Customer Value** | ⚠️ **Indirect — nine cycles.** Lane C exists to change the reason for that |
-| **Process** | Clean. **An organizational change that moved no module** |
+| **Technical** | **2649 backend** · 719 frontend · **95.50%** · 360 invariants · **621 files typed** |
+| **Release** | **Eight consecutive cycles with no process failure.** One certification record destroyed and rebuilt by re-running the gates |
+| **Architecture** | Runtime composition 0 unexpected · Reachability 0 doorless · **event catalog 1 known drift, tracked** |
+| **Dependency** | **39 items, 9 closed** · C-100 with Lane B · **C-101 with Lane C** |
+| **Customer Value** | ⚠️ **Indirect — ten cycles.** Lane C exists to change the reason for that |
+| **Process** | Clean |
 
 ### Repository Health Trend
 
@@ -371,18 +374,18 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`b0d10b3836bc`](certification/reports/b0d10b3836bc.md) · 2026-08-03 · ✅ CERTIFIED**
+**Latest certification — [`08226e541959`](certification/reports/08226e541959.md) · 2026-08-03 · ✅ CERTIFIED**
 
-**Certified commit `b0d10b3` · promoted commit `b0d10b3`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
+**Certified commit `08226e5` · promoted commit `08226e5`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
 
 | Gate | Recorded |
 |---|---|
-| **pytest** | **2642 passed** |
+| **pytest** | **2649 passed** |
 | **coverage** | **95.5%** *(floor 95%)* |
 | **Security Invariants** | **360 invariants**, each proven to fail when its guarantee is removed |
 | **import-linter** | **34 kept, 0 broken** |
-| **MyPy** | **strict, clean over 620 files** |
-| **`make smoke`** | **24 stages in 145s, slowest 2. Startup 20s** |
+| **MyPy** | **strict, clean over 621 files** |
+| **`make smoke`** | **24 stages in 122s, slowest 2. Startup 19s** |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0030`** · scenario set `0cf6b2c581e4` · working tree clean.
@@ -422,7 +425,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Indicator | Value |
 |---|---|
 | **Certification** | |
-| Certification cycles | 34 |
+| Certification cycles | 35 |
 | Certified | 29 of 30 |
 | Mean time to certify (last 5) | 13.3 min |
 | Mean smoke duration | 327.9 s |
