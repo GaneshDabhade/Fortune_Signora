@@ -150,6 +150,7 @@
 | [C-306](#c-306--the-opportunities-and-signals-experience-already-exists-and-lane-a-owns-half-of-it) | The Opportunities & Signals experience already exists, and Lane A owns half of it | Lane B | **Product owner** | `OPEN` | **The frontend half only.** The backend half is unassigned and Lane B can start it |
 | [C-303](#c-303--an-icp-is-not-an-addressable-thing-and-every-verb-the-brief-asks-for-needs-one) | An ICP is not an addressable thing, and every verb the brief asks for needs one | Lane B | **Product owner** | `ANSWERED` — ICP stays in Commercial Profile (2026-08-02). **The aggregate is [ADR-0041](architecture/adr/0041-icp-aggregate.md), proposed** | **Implementation, on ADR-0041's ratification** |
 | [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) | A notification is per-person, and workspace RLS is not enough | Lane B | **Product owner** (tenancy 🔴) | `OPEN` | **M14a N-01's migration.** The pattern exists; the ruling does not |
+| [C-323](#c-323--epic-a-was-assigned-to-lane-b-and-lane-a-is-already-building-it) | Epic A was assigned to Lane B, and Lane A is already building it | Lane B | **Product owner** | `OPEN` — **blocking** | **Four of Epic A's six slices.** A2 and B2 are already built elsewhere |
 | [C-322](#c-322--is-an-icp-a-description-or-a-filter) | Is an ICP a description, or a filter? | Lane B | **Product owner** | `OPEN` | Epic B1; the product contradicts itself on screen until it is answered |
 | [C-320](#c-320--no-environment-can-complete-a-sign-up-so-nobody-has-reviewed-the-first-hour) | No environment can complete a sign-up, so nobody has reviewed the first hour | Lane B | **Product owner** | `OPEN` | Reviewing onboarding. No implementation |
 | [C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name) | What should Signora do with a company it cannot name? | Lane B | **Product owner** | `OPEN` | A correct fix for PX-301 / PX-316 |
@@ -3578,3 +3579,45 @@ A record can be highly significant and unidentifiable — `70b04700` has four we
 **Lane B's input, not authority.** **The claim model already supports the filter reading** — `claim(attribute, value, observed_at)` is the shape a query needs, and no new storage is required. **And a hybrid is available**: keep the prose declaration as the customer-facing artifact, derive a structured predicate from it, and let scoring consume the predicate. That preserves *"in your words, not ours"* while making the words consequential.
 
 **Why it is a coordination item.** Whichever answer is taken changes `buying_score_engine`'s relevance rule and `commercial_profile`'s public contract. **Two lanes would otherwise encode contradictory halves**, and one of them is already shipped.
+
+---
+
+## C-323 · Epic A was assigned to Lane B, and Lane A is already building it
+
+| | |
+|---|---|
+| **Raised by** | Lane B, 2026-08-03, on being assigned Epic A — **found by reading Lane A's branch before writing a line, not by reading this register** |
+| **Owner** | **Product owner** |
+| **Status** | `OPEN` — **blocking four of the six slices** |
+| **Blocks** | A4 · A1 · A5's render · A6's render. **Not** A5 and A6's backends, which are in unassigned `knowledge_graph` |
+
+**The problem.** The product owner assigned Lane B as implementation owner for Epic A, and instructed in the same message: *"continue respecting ownership boundaries · do not quietly bypass module boundaries."* **Those two instructions are in direct conflict, because every slice in Epic A lands in a module Lane A holds and has not released.**
+
+**The evidence, measured on `origin/lane-a-product-surface` at `db373db`.** 128 files, ~19,000 lines ahead of `integration`.
+
+| Epic A slice | What Lane B was asked to build | What is already there |
+|---|---|---|
+| **A2** — *"if a seller owns 2,000 accounts, how do they progressively narrow the space until only today's work remains?"* | The accounts workspace | **`SW-01`…`SW-04`, this week.** `TriageStrip`, `lib/state/triage.ts`, URL-driven narrowing, `triage-strip.test.tsx`, `triage.test.ts`. SW-04's own handoff: *"Two more questions appear above the account list … and each narrows the list"* |
+| **B2** — the first-run path | The empty-state journey | **Built.** `first-run.test.tsx`, against D36 |
+| **A4** · **A1** · **A5** · **A6** | Freshness · search · company history · needs identity | **Not built** — but each needs `provider_platform`'s `public/`, Product Surface, or both |
+
+**Had Lane B followed the instruction literally, it would have re-implemented A2 and B2 in parallel with the lane that was shipping them.** That is the exact failure the Task Claim Protocol exists to prevent, occurring one level up: **the protocol arbitrates tasks, and nothing arbitrates epics.**
+
+**Affected modules.** `provider_platform` (Lane A, `BLOCKED`/Implementation Waiting) · Product Surface (Lane A, `ACTIVE`) · `knowledge_graph` (**unassigned**) · `opportunity_engine` (Lane B).
+
+**The alternatives.**
+
+| | What it means | Cost |
+|---|---|---|
+| **A · Reassign Product Surface and `provider_platform` to Lane B** | The board changes; Lane A moves off | **Lane A is 128 files into an initiative.** Reassigning mid-flight discards the most expensive thing the lane model has — accumulated engineering context — and the Sales Workspace is not at a slice boundary |
+| **B · Epic A goes to Lane A; Lane B keeps the specification role** | Lane A implements what Lane B specified | Honest and cheap. **But it makes Lane B a document-producing lane**, which the product owner has twice said is not what they want |
+| **C · Split by layer — Lane B builds backend, Lane A renders** | Lane B: the `knowledge_graph` reads, `opportunity_engine` composition, the freshness derivation. Lane A: every screen | **Works today for A5 and A6.** Fails for A4, whose port is in Lane A's `provider_platform`, and for A1, whose endpoint has no owning module at all |
+| **D · Split by module, and move `provider_platform`'s Epic-A port only** | Lane B takes `knowledge_graph` outright, plus a single named port in `provider_platform` | Narrow, auditable, and does not touch the surface Lane A is live in. **Needs Lane A to agree to one file** |
+
+**Lane B's recommendation — D, then C.** Take `knowledge_graph` now and build A5 and A6's backends, which collide with nobody and are the two slices whose *data* work is the real content. Ask Lane A for the one `provider_platform` port A4 needs. **Leave every screen with Lane A while the Sales Workspace is in flight**, and revisit when it reaches a slice boundary.
+
+**The trade-off this accepts.** **Epic A stops being one lane's epic**, and the product owner's stated goal — one owner converting hidden capability into visible product — is not achieved by any of these four. **A is the only option that achieves it, and it is the most expensive.** That choice is the product owner's, not a lane's, which is why this is here rather than decided.
+
+**Implementation impact.** Until this is answered: A4 and A1 cannot start · A5 and A6 build backend-only and wait for a render · A2 and B2 should be **struck from Epic A** rather than built, and [51-implementation-specifications.md](architecture/51-implementation-specifications.md) has been corrected to say so.
+
+> **This is the second time in three days.** [C-306](#c-306--the-opportunities-and-signals-experience-already-exists-and-lane-a-owns-half-of-it) found the same shape in Opportunities & Signals. **The pattern is not bad luck: Lane B keeps being assigned initiatives whose customer surface is Product Surface, and Product Surface has one permanent-feeling assignee.** Whatever is decided for Epic A, the third occurrence is already scheduled unless the allocation model changes.

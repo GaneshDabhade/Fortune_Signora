@@ -53,23 +53,23 @@ export function DisconnectDialog({
     return (
       <Dialog open={open} onClose={onClose} title={`${name} disconnected`}>
         <div className="flex flex-col gap-3">
-          <p className="text-sm text-foreground">
+          <p className="text-sm text-content">
             Signora has stopped reading from {label}.
           </p>
           {result.revoked_at_provider ? (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-content-muted">
               {name} has been told, and Signora&rsquo;s access there has been removed.
             </p>
           ) : (
             // Said plainly rather than omitted. A customer who believes they
             // are finished when Signora's access still exists at the vendor is
             // worse off than one given a second step.
-            <p className="text-sm text-foreground">
+            <p className="text-sm text-content">
               Signora could not tell {name}. Nothing here can read from it any more, but you
               may also want to remove Signora from your {name} settings.
             </p>
           )}
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-content-muted">
             You can connect {name} again whenever you want.
           </p>
           <div>
@@ -83,23 +83,23 @@ export function DisconnectDialog({
   return (
     <Dialog open={open} onClose={onClose} title={`Disconnect ${name}?`}>
       <div className="flex flex-col gap-3">
-        <p className="text-sm text-foreground">
+        <p className="text-sm text-content">
           Signora will stop reading from {label} immediately.
         </p>
         <ul className="flex flex-col gap-1">
-          <li className="text-sm text-muted-foreground">
+          <li className="text-sm text-content-muted">
             What Signora already learned from it stays — your accounts keep their history.
           </li>
-          <li className="text-sm text-muted-foreground">
+          <li className="text-sm text-content-muted">
             Nothing in {name} is changed or deleted.
           </li>
-          <li className="text-sm text-muted-foreground">
+          <li className="text-sm text-content-muted">
             You can connect it again later.
           </li>
         </ul>
 
         {isError ? (
-          <p className="text-sm text-foreground">
+          <p className="text-sm text-content">
             That did not work. Nothing was changed — try again in a moment.
           </p>
         ) : null}

@@ -51,20 +51,20 @@ export function ConnectPanel({ system, outcome, onConnect, onDismiss }: ConnectP
   return (
     <section className="flex flex-col gap-4">
       <header className="flex flex-col gap-1">
-        <h2 className="text-base font-medium text-foreground">Connect {name}</h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="text-base font-medium text-content">Connect {name}</h2>
+        <p className="text-sm text-content-muted">
           Signora will read information from {name} to work out which accounts deserve your
           attention and why.
         </p>
       </header>
 
       <div className="flex flex-col gap-2">
-        <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <h3 className="text-xs font-medium uppercase tracking-wide text-content-muted">
           What this gives you
         </h3>
         <ul className="flex flex-col gap-1">
           {system.capabilities.map((capability: IntegrationCapability) => (
-            <li key={capability} className="text-sm text-foreground">
+            <li key={capability} className="text-sm text-content">
               {CAPABILITY_VALUE[capability]}
             </li>
           ))}
@@ -72,24 +72,24 @@ export function ConnectPanel({ system, outcome, onConnect, onDismiss }: ConnectP
       </div>
 
       <div className="flex flex-col gap-2">
-        <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <h3 className="text-xs font-medium uppercase tracking-wide text-content-muted">
           What Signora can do
         </h3>
         {/* First and unqualified, because it is the most reassuring true thing
             available and every Day One capability is an observation source. */}
-        <p className="text-sm text-foreground">
+        <p className="text-sm text-content">
           Read only. Signora never creates, changes or deletes anything in {name}.
         </p>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-content-muted">
           You will be taken to {name} to approve this. Signora never sees your password.
         </p>
       </div>
 
       <div className="flex flex-col gap-2">
-        <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <h3 className="text-xs font-medium uppercase tracking-wide text-content-muted">
           If you change your mind
         </h3>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-content-muted">
           You can disconnect {name} at any time from this page. Signora stops reading from it
           immediately.
         </p>
@@ -107,7 +107,7 @@ export function ConnectPanel({ system, outcome, onConnect, onDismiss }: ConnectP
         // offering a control that does nothing is worse than saying so.
         <div className="flex flex-col gap-2">
           <Badge tone="neutral">Not available yet</Badge>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-content-muted">
             Connecting {name} is not available yet. It will appear here when it is.
           </p>
           <Button variant="ghost" onClick={onDismiss}>
@@ -140,22 +140,22 @@ function ConnectResult({
         <Badge tone={succeeded ? 'success' : 'warning'}>
           {succeeded ? 'Connected' : 'Not connected'}
         </Badge>
-        <h2 className="text-base font-medium text-foreground">
+        <h2 className="text-base font-medium text-content">
           {succeeded ? `${name} is connected` : outcome.what}
         </h2>
       </div>
 
       {succeeded ? (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-content-muted">
           Signora is now reading from {name}. You will start to see it reflected in your
           accounts shortly.
         </p>
       ) : (
         <>
           {outcome.why ? (
-            <p className="text-sm text-muted-foreground">{outcome.why}</p>
+            <p className="text-sm text-content-muted">{outcome.why}</p>
           ) : null}
-          {outcome.next ? <p className="text-sm text-foreground">{outcome.next}</p> : null}
+          {outcome.next ? <p className="text-sm text-content">{outcome.next}</p> : null}
         </>
       )}
 

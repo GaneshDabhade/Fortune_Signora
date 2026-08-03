@@ -142,19 +142,19 @@ export function AccountHistory({
     // Rendered rather than absent. A section that vanishes on failure reads as
     // a feature the customer does not have — the defect B-006 was.
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-content-muted">
         This account&rsquo;s history could not be loaded. Try again in a moment.
       </p>
     );
   }
 
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Loading history&hellip;</p>;
+    return <p className="text-sm text-content-muted">Loading history&hellip;</p>;
   }
 
   if (entries.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-content-muted">
         Nothing has been recorded about this company yet. Anything Signora finds will appear
         here, most recent first.
       </p>
@@ -165,7 +165,7 @@ export function AccountHistory({
     <div className="flex flex-col gap-6">
       {days.map(([day, dayEntries]) => (
         <section key={day} className="flex flex-col gap-2">
-          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <h3 className="text-xs font-medium uppercase tracking-wide text-content-muted">
             {day}
           </h3>
           <ol className="flex flex-col gap-2">
@@ -177,20 +177,20 @@ export function AccountHistory({
                 <div className="flex flex-col gap-0.5">
                   <span
                     className={cn(
-                      'text-foreground',
+                      'text-content',
                       PROMINENCE[entry.kind] === 'lead' && 'text-sm font-medium',
                       PROMINENCE[entry.kind] === 'normal' && 'text-sm',
-                      PROMINENCE[entry.kind] === 'quiet' && 'text-xs text-muted-foreground',
+                      PROMINENCE[entry.kind] === 'quiet' && 'text-xs text-content-muted',
                     )}
                   >
                     {HEADLINE[entry.kind]}
                   </span>
                   {detailLine(entry) ? (
-                    <span className="text-xs text-muted-foreground">{detailLine(entry)}</span>
+                    <span className="text-xs text-content-muted">{detailLine(entry)}</span>
                   ) : null}
                 </div>
                 <time
-                  className="shrink-0 text-xs text-muted-foreground"
+                  className="shrink-0 text-xs text-content-muted"
                   dateTime={entry.occurred_at}
                 >
                   {timeOf(entry.occurred_at)}
@@ -208,7 +208,7 @@ export function AccountHistory({
       ) : (
         // Said out loud rather than left to a scrollbar. A feed that simply
         // stops leaves a reader unsure whether they have seen everything.
-        <p className="text-xs text-muted-foreground">That is the whole history.</p>
+        <p className="text-xs text-content-muted">That is the whole history.</p>
       )}
     </div>
   );

@@ -105,13 +105,13 @@ export function ConnectionCenter({
 }) {
   if (isError) {
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-content-muted">
         We could not load what you have connected. Try again in a moment.
       </p>
     );
   }
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Loading&hellip;</p>;
+    return <p className="text-sm text-content-muted">Loading&hellip;</p>;
   }
 
   const needsAttention = systems.filter((s) => s.needs_attention);
@@ -121,7 +121,7 @@ export function ConnectionCenter({
       {needsAttention.length > 0 ? (
         // Said once at the top, because the whole purpose of the screen is that
         // a broken connection is impossible to miss.
-        <p className="text-sm font-medium text-foreground">
+        <p className="text-sm font-medium text-content">
           {needsAttention.length === 1
             ? '1 connection needs your attention.'
             : `${needsAttention.length} connections need your attention.`}
@@ -157,7 +157,7 @@ function SystemCard({
           {system.capabilities.length > 0 ? (
             <ul className="flex flex-col gap-1">
               {system.capabilities.map((capability) => (
-                <li key={capability} className="text-sm text-muted-foreground">
+                <li key={capability} className="text-sm text-content-muted">
                   {CAPABILITY_VALUE[capability]}
                 </li>
               ))}
@@ -165,7 +165,7 @@ function SystemCard({
           ) : (
             // Honest rather than empty. A system whose only use is waiting on
             // work Signora has not built must not imply it does something.
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-content-muted">
               Signora cannot use anything from this yet.
             </p>
           )}
@@ -179,7 +179,7 @@ function SystemCard({
           ))}
 
           {system.connections.length === 0 && !system.connectable ? (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-content-muted">
               Connecting this is not available yet.
             </p>
           ) : null}
@@ -210,7 +210,7 @@ function ConnectionRow({
   return (
     <div className="flex flex-col gap-0.5 border-l-2 border-border pl-3">
       <div className="flex items-baseline justify-between gap-3">
-        <span className="text-sm text-foreground">{connection.label}</span>
+        <span className="text-sm text-content">{connection.label}</span>
         <div className="flex items-center gap-2">
           <Badge tone={attentionTone(connection.attention)}>
             {CONNECTION_STATE[connection.state] ?? connection.state}
@@ -226,7 +226,7 @@ function ConnectionRow({
           ) : null}
         </div>
       </div>
-      {reason ? <span className="text-xs text-muted-foreground">{reason}</span> : null}
+      {reason ? <span className="text-xs text-content-muted">{reason}</span> : null}
     </div>
   );
 }

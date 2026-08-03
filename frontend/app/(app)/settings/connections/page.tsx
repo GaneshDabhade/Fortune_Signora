@@ -53,8 +53,8 @@ export default function ConnectionsPage() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-lg font-medium text-foreground">Connections</h1>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="text-lg font-medium text-content">Connections</h1>
+        <p className="text-sm text-content-muted">
           The systems Signora reads from to work out which accounts deserve your attention.
         </p>
       </header>
@@ -63,9 +63,9 @@ export default function ConnectionsPage() {
         // The return from a provider. Shown above the list so somebody sees the
         // result and the state it produced without scrolling for either.
         <div className="flex flex-col gap-1 border-l-2 border-border pl-3">
-          <p className="text-sm text-foreground">{outcomeFor(returned).what}</p>
+          <p className="text-sm text-content">{outcomeFor(returned).what}</p>
           {outcomeFor(returned).next ? (
-            <p className="text-sm text-muted-foreground">{outcomeFor(returned).next}</p>
+            <p className="text-sm text-content-muted">{outcomeFor(returned).next}</p>
           ) : null}
         </div>
       ) : null}

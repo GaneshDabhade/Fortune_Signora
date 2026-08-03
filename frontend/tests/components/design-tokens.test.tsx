@@ -33,6 +33,21 @@ const AUTH_DIR = join(process.cwd(), 'app', '(auth)');
 /** Tenancy-state UI. Composed from the design system on the same terms as
  * `components/intelligence/` — never added to it. */
 const WORKSPACE_DIR = join(process.cwd(), 'components', 'workspace');
+/** **Added 2026-08-03, and they are where [B-200](../../../docs/BUGS.md) lived
+ * undetected.** Both compose from the design system, and both were outside
+ * every assertion in this file — so 30 uses of a token that does not exist
+ * accumulated across five files, one of them on the account brief.
+ *
+ * The omission was not a judgement that these directories mattered less. They
+ * simply were not written down, which is the failure mode of any list a human
+ * maintains: **it is correct on the day it is written and silently incomplete
+ * every day after.** */
+const INTEGRATIONS_DIR = join(process.cwd(), 'components', 'integrations');
+const TIMELINE_DIR = join(process.cwd(), 'components', 'timeline');
+const COMMERCIAL_DIR = join(process.cwd(), 'components', 'commercial');
+/** The application's own routes, on the same reasoning as `app/(auth)` above:
+ * `settings/connections` carried four of B-200's thirty. */
+const APP_DIR = join(process.cwd(), 'app', '(app)');
 
 function sourceFiles(dir: string, prefix?: string): { name: string; source: string }[] {
   const label = prefix ?? (dir.split('/').pop() as string);
@@ -52,7 +67,62 @@ const ALL_COMPONENTS = [
   ...sourceFiles(INTELLIGENCE_DIR),
   ...sourceFiles(AUTH_DIR, '(auth)'),
   ...sourceFiles(WORKSPACE_DIR),
+  ...sourceFiles(INTEGRATIONS_DIR),
+  ...sourceFiles(TIMELINE_DIR),
+  ...sourceFiles(COMMERCIAL_DIR),
+  ...sourceFiles(APP_DIR, '(app)'),
 ];
+
+/**
+ * The colour names this repository actually defines, read from the config
+ * rather than restated here.
+ *
+ * **Restating them would make this file the second authoritative list**, and
+ * the check would then pass against its own copy while the config said
+ * something else (§2 — truth has one authoritative representation).
+ */
+function definedColours(): { names: Set<string>; roots: Set<string> } {
+  const config = readFileSync(join(process.cwd(), 'tailwind.config.ts'), 'utf8');
+  const start = config.indexOf('colors: {');
+  const block = config.slice(config.indexOf('\n', start) + 1, config.indexOf('borderRadius:'));
+
+  const names = new Set<string>();
+  const roots = new Set<string>();
+  let root: string | null = null;
+
+  for (const raw of block.split('\n')) {
+    const line = raw.trim();
+    const opens = /^([A-Za-z]+):\s*\{$/.exec(line);
+    if (opens?.[1]) {
+      root = opens[1];
+      names.add(root);
+      roots.add(root);
+      continue;
+    }
+    if (line.startsWith('}')) {
+      root = null;
+      continue;
+    }
+    const leaf = /^([A-Za-z]+):\s*'rgb\(/.exec(line);
+    if (!leaf?.[1]) continue;
+    if (root === null) {
+      names.add(leaf[1]);
+      roots.add(leaf[1]);
+    } else if (leaf[1] !== 'DEFAULT') {
+      names.add(`${root}-${leaf[1]}`);
+    }
+  }
+  return { names, roots };
+}
+
+const COLOUR_PREFIX = 'bg|text|border|ring|fill|stroke|divide|outline|from|via|to';
+
+/** A `-foreground` name is shadcn's vocabulary, and this repository does not
+ * use it — the config defines `content`, `content-muted`, `content-subtle`
+ * and `content-inverted`, and no `foreground` at all. */
+const FOREGROUND_TOKEN = new RegExp(`\\b(?:${COLOUR_PREFIX})-(?:[a-z]+-)*foreground\\b`);
+
+const COLOUR_UTILITY = new RegExp(`\\b(?:${COLOUR_PREFIX})-([a-z]+(?:-[a-z]+)*)\\b`, 'g');
 
 // Tailwind's default palette. A shared component reaching for any of these
 // has pinned a colour that a theme swap cannot reach.
@@ -76,6 +146,38 @@ describe('components consume design tokens', () => {
   it.each(ALL_COMPONENTS)('$name uses no literal colour value', ({ source }) => {
     expect(HEX_COLOUR.test(source), 'hex colour found').toBe(false);
     expect(RAW_COLOUR_FUNCTION.test(source), 'literal rgb()/hsl() found').toBe(false);
+  });
+
+  /**
+   * **The opposite defect from the two above, and nothing could see it.**
+   *
+   * Those catch a component *pinning* a colour a theme swap cannot reach.
+   * This catches one naming a colour that **does not exist** — an undefined
+   * utility generates no CSS at all, so the element silently inherits and the
+   * text renders in the primary colour. [B-200](../../../docs/BUGS.md): 30
+   * uses across five files, every gate green throughout.
+   *
+   * **A wrong colour is visible. No colour is not** — it looks like a design
+   * decision somebody made, which is why it survived a repository-wide
+   * customer-experience audit and three product reviews.
+   */
+  it.each(ALL_COMPONENTS)('$name names no colour that does not exist', ({ source }) => {
+    expect(
+      FOREGROUND_TOKEN.exec(source)?.[0] ?? null,
+      'The `-foreground` names are shadcn\'s convention and resolve to nothing here. ' +
+        'Secondary text is `text-content-muted`; quieter still is `text-content-subtle`.',
+    ).toBeNull();
+
+    const { names, roots } = definedColours();
+    const unresolvable = [...source.matchAll(COLOUR_UTILITY)]
+      .map((match) => match[1])
+      .filter((name): name is string => name !== undefined)
+      .filter((name) => roots.has(name.split('-')[0] as string) && !names.has(name));
+
+    expect(
+      [...new Set(unresolvable)],
+      'A variant of a defined colour that the config does not declare.',
+    ).toEqual([]);
   });
 
   it('the token set is defined in exactly one place', () => {

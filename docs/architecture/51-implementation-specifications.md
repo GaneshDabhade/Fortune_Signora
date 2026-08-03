@@ -5,6 +5,19 @@
 > **Each specification is written so a lane can claim it and start.** Objective · customer problem · customer value · existing foundation · modules · backend · frontend · UX · API · events · data model · acceptance criteria · risks · dependencies · effort · future evolution · lane.
 >
 > **Nothing here is built.** Where a specification names a file, a schema or an event, it was read from the repository rather than assumed — and one slice was deleted during writing because it turned out to be finished already.
+>
+> ### Corrected 2026-08-03, before implementation began
+>
+> **That sentence was already wrong when it was written, and re-verifying the specifications against another lane's branch is what found it.** The audit behind this document read `integration` and the registers. It did not read `origin/lane-a-product-surface`, which was 128 files and ~19,000 lines ahead — and **two of Epic A's slices were being built there.**
+>
+> | Slice | Status, verified 2026-08-03 |
+> |---|---|
+> | **A2** · the accounts workspace | **Struck.** Lane A's `SW-01`…`SW-04` deliver it — `TriageStrip`, `lib/state/triage.ts`, URL-driven narrowing |
+> | **B2** · the first-run path | **Struck.** Built by Lane A against D36; `first-run.test.tsx` |
+>
+> **The lesson is the same one C-024 taught, one level up.** A register can describe a gap somebody has closed; **so can a specification, and a specification is more dangerous, because a lane is meant to start from it.** *Verify against the branches, not only against `integration`* — an unmerged lane branch is where the newest truth lives, and it is invisible to every check in this repository.
+>
+> **The ownership consequence is [C-323](../LANE_COORDINATION.md), and it is blocking.** Every remaining Epic A slice needs a module Lane A holds, except the two `knowledge_graph` backends.
 
 ---
 
@@ -93,6 +106,15 @@ provider_sync(provider, capability, status, started_at, finished_at,
 ---
 
 ## A2 · The accounts list — all of them, filtered · **L** · Product Surface
+
+> ### STRUCK 2026-08-03 — Lane A is delivering this
+>
+> **`SW-01`…`SW-04` on `origin/lane-a-product-surface`.** `TriageStrip`, `lib/state/triage.ts`, URL-driven narrowing, and SW-04's own handoff describes the capability this specification asks for: *"Two more questions appear above the account list when accounts raise them, and each narrows the list."*
+>
+> **Lane A's shape is different from the one below, and better in one respect worth recording:** this specification reached for *filters* — score, posture, owner, freshness — and Lane A reached for **questions the list is being asked**, which disappear when nothing raises them. **A filter is a control the seller must think to use; a question is one the product volunteers.** The specification below is kept unedited as the alternative that was considered.
+>
+> **What survives:** the `GET /accounts/all` read is still unbuilt, and *every* account — not only ranked ones — is still unanswerable. **That is a smaller slice than this one and belongs to whoever holds the list.**
+
 
 | | |
 |---|---|
@@ -228,6 +250,11 @@ ORDER BY attribute, observed_at
 ---
 
 ## B2 · The first-run path · **M** · Product Surface
+
+> ### STRUCK 2026-08-03 — built by Lane A
+>
+> **`first-run.test.tsx`**, against D36 — *"every branch on the page tested a falsy value, so nothing rendered at all"*. **The defect this slice was written for is fixed and pinned by a page-level test.**
+
 
 | | |
 |---|---|
