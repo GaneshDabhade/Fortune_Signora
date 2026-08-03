@@ -326,3 +326,65 @@ describe('the list shows what you are working', () => {
     expect(screen.getByText('Dismissed')).toBeInTheDocument();
   });
 });
+
+describe('a held account says who holds it — LO-02', () => {
+  // **`owner_id` has been on every row since M12.2** and the badge said
+  // *Taken* for everybody, because the product could not name a person. TM-01's
+  // `member_email` changed that (49-lead-ownership.md §11).
+
+  it('says *Yours* for your own, which is the whole answer a seller needs', () => {
+    render(<Ownership ownerId="me" stage="engaged" viewerId="me" />);
+
+    expect(screen.getByText('Yours')).toBeVisible();
+  });
+
+  it('names the colleague who holds it', () => {
+    // A manager's question is *who holds this*, and it needs the name.
+    render(
+      <Ownership
+        ownerId="ravi"
+        ownerName="ravi@acme.com"
+        stage="engaged"
+        viewerId="me"
+      />,
+    );
+
+    expect(screen.getByText('ravi@acme.com')).toBeVisible();
+  });
+
+  it('falls back to *Taken* when the product cannot name them', () => {
+    // A membership added by identifier before invitations existed. Still
+    // honest, and now rare.
+    render(<Ownership ownerId="ravi" stage="engaged" viewerId="me" />);
+
+    expect(screen.getByText('Taken')).toBeVisible();
+  });
+
+  it('prefers *Yours* over your own name', () => {
+    // *Yours* answers the question being asked; your own address does not.
+    render(
+      <Ownership ownerId="me" ownerName="me@acme.com" stage="engaged" viewerId="me" />,
+    );
+
+    expect(screen.getByText('Yours')).toBeVisible();
+    expect(screen.queryByText('me@acme.com')).toBeNull();
+  });
+
+  it('says nothing about an account nobody has taken', () => {
+    // Every row on a ranked list is untaken by default; a badge on each would
+    // be noise where the absence already says it.
+    const { container } = render(
+      <Ownership ownerId={null} stage="tracking" viewerId="me" />,
+    );
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('never says *Yours* while the session is still resolving', () => {
+    // A wrong *Yours* is worse than a late one.
+    render(<Ownership ownerId="me" ownerName="me@acme.com" stage="engaged" viewerId={null} />);
+
+    expect(screen.queryByText('Yours')).toBeNull();
+    expect(screen.getByText('me@acme.com')).toBeVisible();
+  });
+});

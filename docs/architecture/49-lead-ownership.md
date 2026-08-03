@@ -43,7 +43,7 @@
 
 | | Today |
 |---|---|
-| *Which ones are mine?* | 🔴 **Nothing.** The attention list shows no owner and cannot be filtered by one |
+| *Which ones are mine?* | 🟠 **Corrected 2026-08-03, see §11.** The list has said `Yours` since M12.2 — what it could not say is *who else*. It still cannot be **filtered** |
 | *Which changed overnight?* | 🔴 R9-04 · [TASK-016](../BACKLOG.md), blocked on per-user read state |
 | *Which were reassigned?* | 🟠 **The fact is recorded and unreachable** — `WorkflowState` holds every owner change and only the account brief renders history |
 | *Which need attention today?* | ✅ The attention list, ranked by buying score |
@@ -205,3 +205,40 @@
 **Hand an account to the colleague who should work it, with the reason recorded against both of them** — because a `WorkflowState` carries `actor_id` *and* `owner_id`, so the history already says *Ana gave this to Ravi, and why.*
 
 **LO-02 is next**: the attention list still does not say who holds each account, which is the question that hurts most.
+
+
+---
+
+## 11 · LO-02 — a held account says who holds it, 2026-08-03
+
+### A correction to my own audit, made before writing anything
+
+**§2 said the attention list *"shows no owner"*. That was wrong.** `Ownership` has been mounted on every row since M12.2, with its D23 reasoning written out, rendering **`Yours`** or **`Taken`**.
+
+> **I grepped the component file for its own strings and concluded it was unmounted.** The list imports it at `page.tsx:10` and renders it at `199`. **A search that looks in one file cannot tell you what imports it** — and the census's own method is what should have been applied.
+
+**So LO-02 is smaller than the roadmap said**: the list already answers *"which are mine?"*. What it could not do is say **who** the somebody else is.
+
+### `Taken` was right, and stopped being right
+
+**D23 chose *taken* because the Python tier verifies tokens without learning who anybody is** — so an identifier nobody could read was worse than an honest absence. **TM-01's `member_email` changed the premise**, and the badge now names the colleague.
+
+**`Taken` survives as the fallback** for a membership added by identifier before invitations existed. Still honest, and now rare.
+
+### The design questions, answered
+
+| | |
+|---|---|
+| **Avatar?** | **No.** There are no display names and no images — an avatar would be a coloured initial derived from an email, which is decoration standing in for information |
+| **Name, chip or badge?** | **The badge that already exists.** A chip beside a badge beside a badge is three shapes for one row |
+| **Primary or secondary?** | **Secondary, and unchanged.** It sits with contested and evidence, where a seller's eye goes when they pause on a row — not with the score, which is why the row is ranked |
+| **Two questions, one badge** | *Which are mine* is **binary**, and `Yours` is the whole answer. *Who holds this* needs the name. **The badge answers whichever the reader has** |
+| **Highlight a recent change?** | ⚠️ **Not built. It needs *since when you last looked*, which does not exist** — the same per-user read state that blocks [TASK-016](../BACKLOG.md). Recorded rather than approximated with *"changed in the last 24 hours"*, which is a different question wearing the same badge |
+| **Presence · workload · availability?** | ⚫ **None exists**, and each needs a capability rather than a rendering. §6's trigger applies: all of them need M14a |
+| **Manager ownership differently?** | ⚫ **No manager relationship exists.** An owner is an owner |
+
+### Nothing new was written
+
+**No endpoint, no field, no migration, no component.** One optional prop, one fallback, and a map threaded from a query that was already cached by two other screens — so **it costs no request**.
+
+**LO-03 follows directly**: the list now shows ownership, and filtering to *mine* is a predicate over a field the row already carries.

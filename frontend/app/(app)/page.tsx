@@ -1,6 +1,7 @@
 'use client';
 
 import { LineChart } from 'lucide-react';
+import { useMemo } from 'react';
 
 import {
   AttentionScore,
@@ -23,6 +24,7 @@ import {
 } from '@/lib/query/hooks';
 import { useSession } from '@/lib/auth/client';
 import { useTargetAccounts } from '@/lib/query/hooks/commercial';
+import { useWorkspaceMembers } from '@/lib/query/hooks/team';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -73,6 +75,19 @@ export default function AttentionPage() {
   // decision — Casbin on the server is that, and always.
   const { data: session } = useSession();
   const viewerId = session?.user.id ?? null;
+  // **The roster, so a held account says who holds it.** Same query and cache
+  // key as the Team page and the brief, so this costs no request — and
+  // TM-01's `member_email` is what makes a name renderable at all.
+  const { data: roster } = useWorkspaceMembers(activeWorkspace?.id ?? null);
+  const owners = useMemo(
+    () =>
+      new Map(
+        (roster?.items ?? []).flatMap((one) =>
+          one.member_email ? [[one.user_id, one.member_email] as const] : [],
+        ),
+      ),
+    [roster],
+  );
   // The other half of the workflow (R4-04). Fetched alongside rather than
   // behind a control: the section renders nothing when the page is empty, so
   // a reader who never dismisses never learns it exists.
@@ -122,6 +137,7 @@ export default function AttentionPage() {
                   account.signal_type ? catalog?.get(account.signal_type) : undefined
                 }
                 viewerId={viewerId}
+                owners={owners}
               />
             </li>
           ))}
@@ -155,6 +171,7 @@ function AccountRow({
   namesLoading,
   hypothesis,
   viewerId,
+  owners,
 }: {
   account: AccountAttention;
   identity: AccountIdentity | undefined;
@@ -163,6 +180,11 @@ function AccountRow({
   hypothesis: string | undefined;
   /** The signed-in reader, so a row they hold can say so. */
   viewerId: string | null;
+  /** Who each owner is, by id. **A map rather than a list**: a row asks about
+   * one person, and handing it everybody would make every row scan the team.
+   * Absent while the roster loads — the badge then says *Taken*, which is what
+   * it said before this existed. */
+  owners?: ReadonlyMap<string, string> | undefined;
 }) {
   return (
     // No card-wide hover. **Only the account name opens the brief**, and a card
@@ -198,6 +220,7 @@ function AccountRow({
                 surface a seller opens every morning (D40). */}
             <Ownership
               ownerId={account.owner_id}
+              ownerName={owners?.get(account.owner_id ?? '')}
               stage={account.stage}
               viewerId={viewerId}
             />

@@ -263,15 +263,25 @@ export function ContestedMark({ contested }: { contested: boolean }) {
  *
  * ### It can say *you* and it cannot say anybody else's name
  *
- * **D23.** The Python tier verifies tokens without ever learning who a person
- * is, so *taken* is the honest form of an identifier nobody can read.
+ * **D23 said *taken*, and that was right until TM-01.** The Python tier
+ * verifies tokens without learning who anybody is, so *taken* was the honest
+ * form of an identifier nobody could read. **A membership now records the
+ * address it was created with**, so a colleague can be named — and the badge
+ * says which colleague rather than merely that somebody got there first.
+ *
+ * **`Taken` survives as the fallback**, for a membership added by identifier
+ * before invitations existed. Still honest, and now rare.
  */
 export function Ownership({
   ownerId,
+  ownerName,
   stage,
   viewerId,
 }: {
   ownerId: string | null;
+  /** What to call them, when the product can. Absent for a membership with no
+   * recorded address — the badge then says *Taken*, as it always did. */
+  ownerName?: string | undefined;
   stage: Stage;
   /** The signed-in reader. Null while the session is still resolving, which
    * renders as *taken* rather than as a wrong *yours*. */
@@ -285,10 +295,13 @@ export function Ownership({
     return <Badge tone="neutral">{STAGE_MARK[stage]}</Badge>;
   }
 
+  // **Two different questions, and the row answers whichever the reader has.**
+  // A seller asks *which are mine* — binary, and `Yours` is the whole answer.
+  // A manager asks *who holds this*, which needs the name.
   return ownerId === viewerId ? (
     <Badge tone="accent">Yours</Badge>
   ) : (
-    <Badge tone="neutral">Taken</Badge>
+    <Badge tone="neutral">{ownerName ?? 'Taken'}</Badge>
   );
 }
 
