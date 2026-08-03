@@ -5,7 +5,8 @@ Each repository is constructed with the request/job-scoped ``AsyncSession``
 between domain entities and ORM models in both directions.
 """
 
-from uuid import UUID
+from datetime import datetime
+from uuid import UUID, uuid4
 
 from sqlalchemy import Select, func, literal, select, tuple_, update
 
@@ -14,6 +15,7 @@ from modules.workspace_tenancy.domain.invitation import Invitation
 from modules.workspace_tenancy.infrastructure.models import (
     InvitationModel,
     MembershipModel,
+    MembershipRoleChangeModel,
     WorkspaceModel,
 )
 from signora_platform.db import SqlAlchemyRepository
@@ -157,6 +159,24 @@ class SqlAlchemyMembershipRepository(SqlAlchemyRepository):
         model = (await self._session.execute(stmt)).scalar_one_or_none()
         return _membership_to_domain(model) if model is not None else None
 
+    async def lock_membership_set(self, workspace_id: UUID) -> None:
+        """Serialise changes to the shape of this workspace's membership set.
+
+        **The last-owner invariant spans every membership, so counting is not
+        enough.** Two owners demoted concurrently each read *two owners*, each
+        compute *one remaining*, and both succeed — leaving an organization
+        nobody can administer. Neither transaction did anything wrong; the
+        check is simply not atomic across them.
+
+        Locking the **workspace** row is the aggregate boundary made
+        executable: §13 records that Workspace is the root for anything that
+        changes the shape of the membership set, and this is what that means at
+        runtime. It serialises only those operations, and only per workspace.
+        """
+        await self._session.execute(
+            select(WorkspaceModel.id).where(WorkspaceModel.id == workspace_id).with_for_update()
+        )
+
     async def count_live_owners(self, workspace_id: UUID) -> int:
         """How many people can still administer this organization.
 
@@ -175,6 +195,21 @@ class SqlAlchemyMembershipRepository(SqlAlchemyRepository):
             )
         )
         return int((await self._session.execute(stmt)).scalar_one())
+
+    async def save_role(self, membership: Membership) -> None:
+        stmt = (
+            update(MembershipModel)
+            .where(
+                MembershipModel.workspace_id == membership.workspace_id,
+                MembershipModel.id == membership.id,
+            )
+            .values(
+                role=membership.role,
+                updated_at=membership.updated_at,
+                updated_by=membership.updated_by,
+            )
+        )
+        await self._session.execute(stmt)
 
     async def end(self, membership: Membership) -> None:
         stmt = (
@@ -290,8 +325,37 @@ def _invitation_to_domain(model: InvitationModel) -> Invitation:
     )
 
 
+class SqlAlchemyRoleChangeLog(SqlAlchemyRepository):
+    """Append-only. **There is no update method, and the grant has no UPDATE.**"""
+
+    async def record(
+        self,
+        *,
+        workspace_id: UUID,
+        membership_id: UUID,
+        previous_role: WorkspaceRole,
+        new_role: WorkspaceRole,
+        changed_by: UUID,
+        at: datetime,
+    ) -> None:
+        await self._add(
+            MembershipRoleChangeModel(
+                id=uuid4(),
+                workspace_id=workspace_id,
+                membership_id=membership_id,
+                previous_role=previous_role,
+                new_role=new_role,
+                created_at=at,
+                updated_at=at,
+                created_by=changed_by,
+                updated_by=changed_by,
+            )
+        )
+
+
 __all__ = [
     "SqlAlchemyInvitationRepository",
+    "SqlAlchemyRoleChangeLog",
     "SqlAlchemyMembershipRepository",
     "SqlAlchemyWorkspaceRepository",
 ]

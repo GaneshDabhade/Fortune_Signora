@@ -53,6 +53,10 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # legitimate reader is, at acceptance, not yet in the tenant — which is
         # C-208 and is why acceptance is not built here.
         "invitation",
+        # Role-change history (TM-04), migration 0034. **Append-only** — the
+        # grant carries no UPDATE, which is the enforcement rather than the
+        # convention.
+        "membership_role_change",
         # Provider Normalization (M2.2), migration 0008.
         "claim",
         "normalization_outcome",
@@ -330,6 +334,12 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         # destroy the previous value at exactly the moment a rotation is being
         # diagnosed.
         "integration_secret",
+        # Migration 0034. What somebody was allowed to do, and when it changed.
+        # A role that can be edited in place is a role whose history cannot be
+        # trusted, and *"who made Ravi an owner?"* becomes unanswerable — which
+        # is the whole reason this table exists rather than the role column
+        # simply being overwritten.
+        "membership_role_change",
     }
 )
 

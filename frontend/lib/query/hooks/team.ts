@@ -41,8 +41,13 @@ export function useWorkspaceMembers(workspaceId: string | null) {
         workspaceId: workspaceId ?? undefined,
       }),
     enabled: workspaceId !== null,
-    // Membership changes rarely and a stale role only ever *hides* a control
-    // the server would allow — never reveals one it would refuse.
+    // **Corrected at TM-04.** This said a stale role only ever *hides* a
+    // control the server would allow. That stopped being true the moment a
+    // role could change: a demoted owner would keep seeing owner controls
+    // until the cache expired, and the server would refuse each one. Five
+    // minutes is still right for a fact that changes this rarely — what
+    // changed is that the mutation now invalidates it, so the window is a
+    // *concurrent* demotion rather than one the same person performed.
     staleTime: 5 * 60_000,
   });
 }
@@ -178,6 +183,26 @@ export function useRemoveMember(workspaceId: string | null) {
           body: { reason: input.reason ?? null },
           workspaceId: workspaceId ?? undefined,
         },
+      ),
+    onSuccess: () =>
+      client.invalidateQueries({ queryKey: queryKeys.members(workspaceId ?? '') }),
+  });
+}
+
+/**
+ * Change what somebody is allowed to do.
+ *
+ * **Invalidates the roster and the viewer's own role**, because an owner may
+ * demote themselves and would otherwise keep seeing controls the server has
+ * just started refusing.
+ */
+export function useChangeRole(workspaceId: string | null) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { membershipId: string; role: 'owner' | 'member' }) =>
+      apiRequest<Membership>(
+        `/workspaces/${workspaceId}/members/${input.membershipId}/role`,
+        { method: 'POST', body: { role: input.role }, workspaceId: workspaceId ?? undefined },
       ),
     onSuccess: () =>
       client.invalidateQueries({ queryKey: queryKeys.members(workspaceId ?? '') }),

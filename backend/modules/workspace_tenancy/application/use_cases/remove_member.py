@@ -47,6 +47,11 @@ class RemoveMember:
         if membership is None:
             raise MembershipNotFoundError(command.membership_id)
 
+        # **Locked before counting.** Two owners removed concurrently would each
+        # read *two owners*, each compute *one remaining*, and both succeed —
+        # leaving an organization nobody can administer. The count is correct
+        # and not atomic across transactions; the lock is what makes it so.
+        await self._memberships.lock_membership_set(command.workspace_id)
         # **Counted inside the same transaction as the write.** The last-owner
         # rule spans every membership in the workspace, so the number is read
         # here and the aggregate refuses on it — the invariant belongs to the

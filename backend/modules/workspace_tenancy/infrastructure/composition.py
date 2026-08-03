@@ -16,6 +16,7 @@ from modules.workspace_tenancy.application.use_cases import (
     ListUserWorkspacesUseCase,
     ListWorkspaceMembersUseCase,
 )
+from modules.workspace_tenancy.application.use_cases.change_role import ChangeRole
 from modules.workspace_tenancy.application.use_cases.invite_member import (
     InviteMember,
     ListInvitations,
@@ -32,6 +33,7 @@ from modules.workspace_tenancy.infrastructure.query_service import WorkspaceQuer
 from modules.workspace_tenancy.infrastructure.repositories import (
     SqlAlchemyInvitationRepository,
     SqlAlchemyMembershipRepository,
+    SqlAlchemyRoleChangeLog,
     SqlAlchemyWorkspaceRepository,
 )
 from modules.workspace_tenancy.infrastructure.settings import load_tenancy_settings
@@ -50,6 +52,7 @@ class WorkspaceTenancyUseCases:
     revoke_invitation: RevokeInvitation
     remove_member: RemoveMember
     resend_invitation: ResendInvitation
+    change_role: ChangeRole
 
 
 def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
@@ -89,6 +92,10 @@ def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
         list_invitations=ListInvitations(invitations=invitation_repository),
         revoke_invitation=RevokeInvitation(invitations=invitation_repository),
         remove_member=RemoveMember(memberships=membership_repository),
+        change_role=ChangeRole(
+            memberships=membership_repository,
+            history=SqlAlchemyRoleChangeLog(session),
+        ),
         resend_invitation=ResendInvitation(
             workspaces=workspace_repository,
             invitations=invitation_repository,

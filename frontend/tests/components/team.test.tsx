@@ -21,6 +21,7 @@ const invite = vi.hoisted(() => vi.fn());
 const revoke = vi.hoisted(() => vi.fn());
 const resend = vi.hoisted(() => vi.fn());
 const removeMember = vi.hoisted(() => vi.fn());
+const changeRole = vi.hoisted(() => vi.fn());
 const members = vi.hoisted(() => vi.fn());
 const viewerRole = vi.hoisted(() => vi.fn());
 const session = vi.hoisted(() => vi.fn());
@@ -35,6 +36,7 @@ vi.mock('@/lib/query/hooks/team', () => ({
   useRevokeInvitation: () => ({ mutate: revoke, isPending: false }),
   useResendInvitation: () => ({ mutate: resend, isPending: false }),
   useRemoveMember: () => ({ mutate: removeMember, isPending: false }),
+  useChangeRole: () => ({ mutate: changeRole, isPending: false }),
   useWorkspaceMembers: members,
   useViewerRole: viewerRole,
 }));
@@ -200,13 +202,20 @@ describe('a forgotten invitation is raised, not waited for', () => {
 
 describe('the words are the customer’s', () => {
   it('describes a role by what it lets somebody do', () => {
-    // The same words in the roster and in the invited list, deliberately: a
-    // role means one thing whether somebody holds it or has been offered it.
+    // **The same words wherever a role appears**, whether it is held, offered,
+    // or being chosen — a role means one thing, and the roster's control and
+    // the invited list must not describe it differently.
     invitations.mockReturnValue({ ...IDLE, data: [invitation({ role: 'owner' })] });
 
     render(draw());
 
-    expect(screen.getAllByText('Can administer Signora')).toHaveLength(2);
+    // On an invitation, as text.
+    expect(screen.getByText('Can administer Signora')).toBeVisible();
+    // On a member, as the chosen option of the control that changes it.
+    expect(screen.getByLabelText('What ana@acme.com can do')).toHaveValue('owner');
+    expect(
+      screen.getByRole('option', { name: /Administer Signora/ }),
+    ).toBeInTheDocument();
   });
 
   it('says *Withdrawn* rather than *Revoked*', () => {
@@ -406,5 +415,93 @@ describe('removing somebody is offered only where it is real', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
 
     expect(screen.getByText(/already decided stays on the record/)).toBeVisible();
+  });
+});
+
+describe('changing what somebody can do', () => {
+  function twoPeople() {
+    members.mockReturnValue({
+      ...IDLE,
+      data: {
+        items: [
+          person(),
+          person({ id: 'm2', user_id: 'b', role: 'member', member_email: 'jo@acme.com' }),
+        ],
+      },
+    });
+  }
+
+  it('puts the control on the role itself rather than behind a menu', () => {
+    // An owner deciding whether somebody should administer Signora is already
+    // looking at this column.
+    twoPeople();
+
+    render(draw());
+
+    expect(screen.getByLabelText('What jo@acme.com can do')).toBeVisible();
+  });
+
+  it('a member reads roles and cannot change them', () => {
+    viewerRole.mockReturnValue({ role: 'member', resolved: true });
+    twoPeople();
+
+    render(draw());
+
+    expect(screen.queryByLabelText('What jo@acme.com can do')).toBeNull();
+    expect(screen.getAllByText('Works accounts').length).toBeGreaterThan(0);
+  });
+
+  it('explains the gain when promoting', () => {
+    twoPeople();
+
+    render(draw());
+    fireEvent.change(screen.getByLabelText('What jo@acme.com can do'), {
+      target: { value: 'owner' },
+    });
+
+    expect(screen.getByText(/will be able to invite people, remove them/)).toBeVisible();
+  });
+
+  it('explains what stays as well as what goes when demoting', () => {
+    // Not "are you sure". What changes, and what does not.
+    members.mockReturnValue({
+      ...IDLE,
+      data: {
+        items: [person(), person({ id: 'm2', user_id: 'b', member_email: 'jo@acme.com' })],
+      },
+    });
+
+    render(draw());
+    fireEvent.change(screen.getByLabelText('What jo@acme.com can do'), {
+      target: { value: 'member' },
+    });
+
+    expect(screen.getByText(/will keep working accounts, and will no longer be able to/)).toBeVisible();
+  });
+
+  it('warns you specifically when you are demoting yourself', () => {
+    // **The one irreversible-by-you case.** An owner may step back, and must
+    // be told they cannot step forward again alone.
+    render(draw());
+    fireEvent.change(screen.getByLabelText('What ana@acme.com can do'), {
+      target: { value: 'member' },
+    });
+
+    expect(screen.getByText(/That includes you — you will not be able to undo this yourself/)).toBeVisible();
+  });
+
+  it('sends the membership and the new role together', () => {
+    twoPeople();
+
+    render(draw());
+    fireEvent.change(screen.getByLabelText('What jo@acme.com can do'), {
+      target: { value: 'owner' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Let them administer' }));
+
+    expect(changeRole).toHaveBeenCalledWith(
+      { membershipId: 'm2', role: 'owner' },
+      expect.anything(),
+    );
   });
 });

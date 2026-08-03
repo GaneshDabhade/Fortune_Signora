@@ -63,12 +63,20 @@ class FakeMembershipRepository:
             None,
         )
 
+    async def lock_membership_set(self, workspace_id: UUID) -> None:
+        # In-process, single-threaded: there is nothing to serialise. The real
+        # repository's lock is asserted by an integration test, not here.
+        return None
+
     async def count_live_owners(self, workspace_id: UUID) -> int:
         return sum(
             1
             for m in self.memberships
             if m.workspace_id == workspace_id and m.is_live and m.role is WorkspaceRole.OWNER
         )
+
+    async def save_role(self, membership: Membership) -> None:
+        assert membership in self.memberships
 
     async def end(self, membership: Membership) -> None:
         # The domain mutated the instance this list already holds, so there is
@@ -107,3 +115,29 @@ class FakeEventPublisher:
     async def publish(self, events: Sequence[Any], *, correlation_id: UUID) -> None:
         self.published.extend(events)
         self.correlation_ids.append(correlation_id)
+
+
+class FakeRoleChangeLog:
+    def __init__(self) -> None:
+        self.entries: list[dict[str, Any]] = []
+
+    async def record(
+        self,
+        *,
+        workspace_id: UUID,
+        membership_id: UUID,
+        previous_role: WorkspaceRole,
+        new_role: WorkspaceRole,
+        changed_by: UUID,
+        at: Any,
+    ) -> None:
+        self.entries.append(
+            {
+                "workspace_id": workspace_id,
+                "membership_id": membership_id,
+                "previous_role": previous_role,
+                "new_role": new_role,
+                "changed_by": changed_by,
+                "at": at,
+            }
+        )

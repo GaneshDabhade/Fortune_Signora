@@ -82,6 +82,20 @@ class LastOwnerCannotLeaveError(Exception):
         self.workspace_id = workspace_id
 
 
+class RoleUnchangedError(Exception):
+    """Setting a role to the one it already holds.
+
+    **Refused rather than accepted as a no-op**, because it would write an audit
+    row saying somebody's authority changed when it did not — and a history with
+    entries that record nothing is one nobody trusts.
+    """
+
+    def __init__(self, membership_id: UUID, role: WorkspaceRole) -> None:
+        super().__init__(f"They already have this role ({role.value}).")
+        self.membership_id = membership_id
+        self.role = role
+
+
 class MembershipAlreadyEndedError(Exception):
     """Ending something that has already ended would claim an act that changed
     nothing, and would overwrite the moment it actually happened."""
@@ -117,6 +131,39 @@ class Membership:
     @property
     def is_live(self) -> bool:
         return self.ended_at is None
+
+    def change_role(
+        self,
+        *,
+        to: WorkspaceRole,
+        by: UUID,
+        at: datetime,
+        remaining_owners: int,
+    ) -> WorkspaceRole:
+        """Change what somebody is allowed to do, and return what they were.
+
+        **The same invariant as ending a membership**, and deliberately the same
+        argument: demoting the last owner leaves an organization nobody can
+        administer, which is the identical outcome to removing them. Two ways to
+        reach one failure, refused in one place.
+
+        **An owner may demote themselves** when another owner exists. Refusing
+        it would mean an administrator handing over could not then step back,
+        and the invariant already protects the case that matters.
+        """
+        if not self.is_live:
+            raise MembershipAlreadyEndedError(self.id)
+        if self.role is WorkspaceRole.OWNER and to is not WorkspaceRole.OWNER:
+            if remaining_owners == 0:
+                raise LastOwnerCannotLeaveError(self.workspace_id)
+        if to is self.role:
+            raise RoleUnchangedError(self.id, self.role)
+
+        previous = self.role
+        self.role = to
+        self.updated_at = at
+        self.updated_by = by
+        return previous
 
     def end(
         self,

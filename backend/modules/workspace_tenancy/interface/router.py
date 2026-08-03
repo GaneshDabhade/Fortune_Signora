@@ -20,11 +20,13 @@ from modules.workspace_tenancy.application.use_cases import (
     ListUserWorkspacesInput,
     ListWorkspaceMembersInput,
 )
+from modules.workspace_tenancy.application.use_cases.change_role import ChangeRoleCommand
 from modules.workspace_tenancy.application.use_cases.invite_member import InviteMemberCommand
 from modules.workspace_tenancy.application.use_cases.remove_member import RemoveMemberCommand
 from modules.workspace_tenancy.infrastructure.composition import build_use_cases
 from modules.workspace_tenancy.interface.schemas import (
     AddMemberRequest,
+    ChangeRoleRequest,
     CreateWorkspaceRequest,
     InvitationResponse,
     InviteMemberRequest,
@@ -286,6 +288,43 @@ async def revoke_invitation(context: CurrentWorkspace, invitation_id: UUID) -> I
         context.workspace_id, invitation_id, now=now
     )
     return InvitationResponse.from_domain(invitation, at=now)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/members/{membership_id}/role",
+    response_model=MembershipResponse,
+    summary="Change what somebody can do",
+)
+async def change_role(
+    context: CurrentWorkspace, membership_id: UUID, body: ChangeRoleRequest
+) -> MembershipResponse:
+    """**Organizational authority, not a field.**
+
+    Promoting a colleague hands them the ability to invite, remove and
+    administer; demoting one takes it away while they may be mid-task.
+
+    **An owner may demote themselves** when another owner exists — refusing it
+    would mean an administrator handing over could not then step back.
+    **Demoting the last owner is refused in the domain**, by the same invariant
+    that refuses removing them: two ways to reach one failure, refused in one
+    place.
+
+    **`member:add` authorizes it**, on the reading that already made inviting
+    `member:add` — granting somebody authority in this organization. Recorded
+    as *sufficient rather than fundamental*: the day a role may grant
+    membership but not administration, the two separate.
+    """
+    context.authorize(Resource.MEMBER, Action.ADD)
+    membership = await build_use_cases(context.session).change_role.execute(
+        ChangeRoleCommand(
+            workspace_id=context.workspace_id,
+            membership_id=membership_id,
+            new_role=body.role,
+            changed_by=context.principal.user_id,
+        ),
+        now=datetime.now(UTC),
+    )
+    return MembershipResponse.from_domain(membership)
 
 
 @router.post(

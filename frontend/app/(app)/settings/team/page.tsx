@@ -26,6 +26,7 @@ import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { ApiError } from '@/lib/api/client';
 import type { Invitation, Membership } from '@/lib/api/types';
 import {
+  useChangeRole,
   useInviteMember,
   useInvitations,
   useRemoveMember,
@@ -71,6 +72,7 @@ export default function TeamPage() {
   const revoke = useRevokeInvitation(workspaceId);
   const resend = useResendInvitation(workspaceId);
   const remove = useRemoveMember(workspaceId);
+  const changeRole = useChangeRole(workspaceId);
   const { data: session } = useSession();
   const viewerId = session?.user.id ?? null;
   const { data: roster, isLoading: rosterLoading, isError: rosterFailed } =
@@ -82,6 +84,10 @@ export default function TeamPage() {
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<'owner' | 'member'>('member');
   const [leaving, setLeaving] = useState<Membership | null>(null);
+  const [promoting, setPromoting] = useState<{
+    membership: Membership;
+    to: 'owner' | 'member';
+  } | null>(null);
 
   if (workspacesLoading) return <SkeletonText lines={4} />;
   if (!activeWorkspace) return <NoWorkspace />;
@@ -186,7 +192,29 @@ export default function TeamPage() {
                         <span className="ml-2 text-xs text-content-subtle">You</span>
                       ) : null}
                     </TD>
-                    <TD className="text-content-muted">{ROLE_WORDS[one.role]}</TD>
+                    <TD>
+                      {/* **The role is the control**, rather than a menu item
+                          beside a label. An owner reading the roster to decide
+                          whether somebody should be an administrator is
+                          already looking at this column. */}
+                      {myRole === 'owner' ? (
+                        <Select
+                          label={`What ${nameOf(one, viewerId)} can do`}
+                          labelHidden
+                          value={one.role}
+                          disabled={changeRole.isPending}
+                          onChange={(event) =>
+                            setPromoting({
+                              membership: one,
+                              to: event.target.value as 'owner' | 'member',
+                            })
+                          }
+                          options={ROLE_OPTIONS}
+                        />
+                      ) : (
+                        <span className="text-content-muted">{ROLE_WORDS[one.role]}</span>
+                      )}
+                    </TD>
                     <TD>
                       {/* **Absent, never disabled**, and absent for two
                           different reasons: a member is not offered a control
@@ -292,6 +320,61 @@ export default function TeamPage() {
           )}
         </CardBody>
       </Card>
+
+      <Dialog
+        open={promoting !== null}
+        onClose={() => setPromoting(null)}
+        title={
+          promoting?.to === 'owner' ? 'Let them administer Signora' : 'Remove administration'
+        }
+        // **A gain, then a loss, in that order** — and the loss sentence
+        // appears only when it is true.
+        description={
+          promoting
+            ? promoting.to === 'owner'
+              ? `${nameOf(promoting.membership, viewerId)} will be able to invite people, remove them, and change this organization\u2019s settings.`
+              : `${nameOf(promoting.membership, viewerId)} will keep working accounts, and will no longer be able to invite people or change settings.${
+                  promoting.membership.user_id === viewerId
+                    ? ' That includes you — you will not be able to undo this yourself.'
+                    : ''
+                }`
+            : ''
+        }
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setPromoting(null)}>
+              Cancel
+            </Button>
+            <Button
+              loading={changeRole.isPending}
+              onClick={() => {
+                if (!promoting) return;
+                changeRole.mutate(
+                  { membershipId: promoting.membership.id, role: promoting.to },
+                  {
+                    onSuccess: () => {
+                      setPromoting(null);
+                      toast({ tone: 'success', message: 'Their role has changed' });
+                    },
+                    onError: (error) => {
+                      setPromoting(null);
+                      toast({
+                        tone: 'error',
+                        message:
+                          error instanceof ApiError
+                            ? error.message
+                            : 'Could not change their role.',
+                      });
+                    },
+                  },
+                );
+              }}
+            >
+              {promoting?.to === 'owner' ? 'Let them administer' : 'Change role'}
+            </Button>
+          </>
+        }
+      />
 
       <Dialog
         open={leaving !== null}

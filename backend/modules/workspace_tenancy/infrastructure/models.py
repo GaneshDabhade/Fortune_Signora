@@ -106,3 +106,44 @@ class InvitationModel(Base, TimestampMixin, AuditMixin):
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class MembershipRoleChangeModel(Base, TimestampMixin, AuditMixin):
+    """What somebody was allowed to do, and when it changed.
+
+    **Append-only**, enforced by the grant in migration 0034 rather than by
+    convention: `SELECT` and `INSERT`, and no `UPDATE`.
+    """
+
+    __tablename__ = "membership_role_change"
+
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    workspace_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("workspace.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    membership_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("membership.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    previous_role: Mapped[WorkspaceRole] = mapped_column(
+        SqlEnum(
+            WorkspaceRole,
+            name="workspace_role",
+            native_enum=True,
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
+        nullable=False,
+    )
+    new_role: Mapped[WorkspaceRole] = mapped_column(
+        SqlEnum(
+            WorkspaceRole,
+            name="workspace_role",
+            native_enum=True,
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
+        nullable=False,
+    )

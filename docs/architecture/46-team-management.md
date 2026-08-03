@@ -788,3 +788,61 @@ An invitation is **two facts with two owners**, and separating them dissolves mo
 **The one pressure point.** `member_email` would then exist in two places: here, as *the address this membership was created with*, and in a profile, as *this person's current address*. **They can legitimately differ** — somebody changes their address after joining — and a future engineer will read that as duplicated truth.
 
 **It is not.** One is historical and one is current, which is the same relationship `ai_narration` has to today's evidence. **Recorded so the difference is found in this document rather than reasoned out from scratch**, and the fix if it ever confuses anybody is a rename — `joined_as_email` — not a schema change.
+
+
+---
+
+## 19 · TM-04 — role management, 2026-08-03
+
+**Organizational authority, not a field.** Promoting a colleague hands them the ability to invite, remove and administer; demoting one takes it away while they may be mid-task.
+
+### The questions, answered
+
+| | |
+|---|---|
+| **May an owner demote themselves?** | **Yes, when another owner exists.** Refusing it would mean an administrator handing over could not then step back, and the last-owner rule already protects what matters. **The dialog says *"That includes you — you will not be able to undo this yourself"***, because it is the one irreversible-by-you action on the page |
+| **Can two tabs race it?** | **They could, and it is fixed here.** See below |
+| **Can ownership disappear?** | **No.** Demoting the last owner is refused by the *same* invariant that refuses removing them — two ways to one failure, refused in one place |
+| **May every administrator promote another owner?** | **Yes.** Two roles, and `member:add` already grants it |
+| **Confirmation?** | **Yes, and it explains rather than asks.** A gain then a loss, and the loss sentence appears only when true |
+| **Audit history?** | **Yes — the table below** |
+| **Timeline · notifications?** | **No.** Timeline projects account activity; a role change is organizational, and putting it there would make the account feed a place two unrelated stories are told. Notifications are M14a's, and the event is deferred (§18) |
+| **Sessions invalidated?** | **Not needed.** The role is re-read from `membership` on every request, so a change takes effect on the next one — **no token carries a role**, which is why [ADR-0026](adr/0026-jwt-boundary-architecture.md)'s claim set deliberately carries no permissions |
+| **Somebody editing while their permissions change?** | **The write is refused by Casbin and the screen says so.** The client cache is invalidated by the mutation, so the person who *performed* the change sees it immediately; a **concurrent** demotion leaves stale controls for up to five minutes, which fail loudly rather than silently |
+
+### The race, and the fix reaches TM-02 as well
+
+**Counting is not enough.** Two owners demoted concurrently each read *two owners*, each compute *one remaining*, and both succeed — leaving an organization nobody can administer. **Neither transaction did anything wrong; the check simply is not atomic across them.**
+
+> **`SELECT workspace.id … FOR UPDATE` before the count.** Locking the **workspace** row is [§13](#13--the-invariants-and-which-aggregate-each-one-names) made executable: *Workspace is the aggregate root for anything that changes the shape of the membership set*, and this is what that means at runtime. It serialises only those operations, and only per workspace.
+
+**TM-02 had the same race and now takes the same lock.** Found by asking the product owner's question — *"should two browser tabs race ownership changes?"* — against code that was already merged.
+
+### The history is a record, not an event
+
+**`membership_role_change` is append-only**, and it exists because a role change *overwrites* `membership.role`: without it, *"who made Ravi an owner, and when?"* is unanswerable by anything, including replay. **§2 — a system cannot be improved using information it never recorded, and the record cannot be added retroactively.**
+
+**The distinction from §18's deferred events, stated because they look alike:** an event with no consumer is speculative; **a fact that becomes unrecoverable if unwritten is the opposite case.** One is deferred, the other is built, and the test is whether waiting destroys anything.
+
+### What the Security Invariants caught
+
+**Two registrations, and the suite refused both.** The table went into `TENANT_OWNED_TABLES` and the policy check demanded an `UPDATE` policy it must not have; registered as immutable, the check then demanded a `DELETE` **grant**.
+
+**The second refusal was the interesting one.** Every immutable table in the repository grants `DELETE`, and the reason is a distinction worth keeping: **immutability is about *editing*, not about permanence.** Erasability is a property of the tenancy model, so deleting a workspace must be able to delete its history. **The invariant knew the convention better than I did**, and the fix was to match it rather than to argue with it.
+
+### Beyond Day One — where the pressure begins
+
+| | Absorbed? |
+|---|---|
+| **Custom roles · department administrators · temporary administrators · delegated administration** | ✅ **A role is a Casbin subject.** Adding one is a `policy.csv` line and a `WorkspaceRole` value; the history table already stores *from* and *to* as roles rather than as a boolean |
+| **External consultants · guests** | ✅ A role with fewer grants, plus the time-bounded membership §4 already identified |
+| **Multiple owners** | ✅ **Already true today** |
+| **Suspended users** | ⚠️ Deferred with its trigger (D5). **A suspension is not a role**, and modelling it as one would make *"what can they do"* and *"can they sign in"* the same field |
+| **SCIM · SSO · Azure AD · Okta · Google Workspace** | ⚠️ **Where the pressure begins, and it is not the role model.** A directory *asserts* roles, so `membership.role` becomes a **projection of an external system** rather than a fact Signora owns — and `membership_role_change` then records *"the directory said so"*, whose actor is not a person. **The `opened_by` pattern is the answer** (§11, Challenge E), and the pressure point is `created_by` being a user id, not the roles themselves |
+| **Organization mergers** | ⚠️ **Genuinely unabsorbed**, and the honest answer: two workspaces merging means two membership sets, two role histories and two owners' claims over one organization. **Nothing here prevents it; nothing here anticipates it either.** It needs a design when somebody asks |
+
+### The future Team experience, checked not built
+
+**Profile cards · presence · activity summaries · workload · approvals · assignments · mentions · comments · ownership history · onboarding progress.**
+
+**All of them attach to a membership or to a Better Auth identity, and both already exist.** The roster row is the natural anchor: it has a stable id, an address, a role and a lifecycle. **The one that would strain today's layout is presence** — a per-row live indicator implies subscriptions the frontend has no mechanism for, and it is the first of these that is not simply another column.

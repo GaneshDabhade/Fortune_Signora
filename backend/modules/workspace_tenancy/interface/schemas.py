@@ -129,3 +129,9 @@ class RemoveMemberRequest(BaseModel):
     #: Why, in the customer's words, and optional — an administrator correcting
     #: a mistaken invitation should not be made to justify it.
     reason: str | None = Field(default=None, max_length=500)
+
+
+class ChangeRoleRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    role: WorkspaceRole

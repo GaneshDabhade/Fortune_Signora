@@ -6,10 +6,11 @@ free of framework coupling (docs/architecture/15-project-structure.md).
 """
 
 from collections.abc import Sequence
+from datetime import datetime
 from typing import Any, Protocol
 from uuid import UUID
 
-from modules.workspace_tenancy.domain.entities import Membership, Workspace
+from modules.workspace_tenancy.domain.entities import Membership, Workspace, WorkspaceRole
 from modules.workspace_tenancy.domain.invitation import Invitation
 from signora_platform.pagination import CursorPosition
 
@@ -37,7 +38,9 @@ class MembershipRepository(Protocol):
     async def add(self, membership: Membership) -> None: ...
     async def get(self, workspace_id: UUID, user_id: UUID) -> Membership | None: ...
     async def get_by_id(self, workspace_id: UUID, membership_id: UUID) -> Membership | None: ...
+    async def lock_membership_set(self, workspace_id: UUID) -> None: ...
     async def count_live_owners(self, workspace_id: UUID) -> int: ...
+    async def save_role(self, membership: Membership) -> None: ...
     async def end(self, membership: Membership) -> None: ...
     async def list_page_for_workspace(
         self, workspace_id: UUID, *, limit: int, after: CursorPosition | None
@@ -71,6 +74,22 @@ class InvitationRepository(Protocol):
     async def find_live(self, workspace_id: UUID, email: str) -> Invitation | None: ...
     async def list_for_workspace(self, workspace_id: UUID) -> list[Invitation]: ...
     async def settle(self, invitation: Invitation) -> None: ...
+
+
+class RoleChangeLog(Protocol):
+    """Append-only record of what somebody was allowed to do, and when it
+    changed. **No update method exists**, and that is the enforcement."""
+
+    async def record(
+        self,
+        *,
+        workspace_id: UUID,
+        membership_id: UUID,
+        previous_role: WorkspaceRole,
+        new_role: WorkspaceRole,
+        changed_by: UUID,
+        at: datetime,
+    ) -> None: ...
 
 
 class InvitationDelivery(Protocol):
