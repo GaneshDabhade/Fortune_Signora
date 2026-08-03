@@ -38,6 +38,7 @@ from signora_platform.event_bus import PostgresOutboxEventPublisher
 from tests.buying_score_engine.test_buying_score_pipeline import _scored  # noqa: F401
 from tests.pipeline import (
     opportunities,
+    project_all,
     qualify_all,
     score_all,
     set_opportunity_policy,
@@ -74,6 +75,12 @@ async def _tracked(
     # An opportunity records a commitment, and a commitment made against a
     # historical reading did not happen today.
     await qualify_all(factory, admin_factory, workspace_id, user_id, moment=moment)
+    # **The ninth stage, and it runs last on purpose.** Timeline projects
+    # whatever the eight stages above published, and its entries are idempotent
+    # on `event_id` — so projecting once at the end is identical to
+    # interleaving, and keeps the ordering of the stages that actually depend
+    # on each other readable (B-302).
+    await project_all(factory, admin_factory, workspace_id, user_id)
     return workspace_id, user_id, entity_id, moment
 
 

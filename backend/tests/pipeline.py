@@ -76,6 +76,9 @@ from modules.signal_engine.infrastructure.composition import (
     build_queries as build_signal_queries,
 )
 from modules.signal_engine.interface.handlers import generate_from_business_event
+from modules.timeline.domain.projection import PROJECTIONS
+from modules.timeline.infrastructure.composition import build_project_event
+from modules.timeline.interface.handlers import project_to_timeline
 from signora_platform.db import tenant_scoped_session
 from signora_platform.event_bus import (
     EventEnvelope,
@@ -433,3 +436,44 @@ async def qualify_all(
 
 def opportunities(session: AsyncSession, workspace_id: UUID) -> OpportunityQueries:
     return build_opportunity_queries(session, scores=buying_scores(session, workspace_id))
+
+
+async def project_all(
+    factory: async_sessionmaker[AsyncSession],
+    admin_factory: async_sessionmaker[AsyncSession],
+    workspace_id: UUID,
+    user_id: UUID,
+) -> int:
+    """Project every event Timeline has a rule for onto the account's history.
+
+    **The ninth stage, added after the other eight had run without it for a
+    milestone.** Timeline's domain, table, repository, read API and feed
+    component were all built, and this file — the composition root every
+    demonstration runs through — never wired the projection. So the account
+    brief's *"What has happened"* was empty on all twelve Playground accounts,
+    in the one environment the product is reviewed in ([B-302](../../docs/BUGS.md)).
+
+    **Reads `PROJECTIONS` rather than naming event types**, exactly as the
+    deployed worker does since [B-301](../../docs/BUGS.md): the projection table
+    is the single authoritative statement of what Timeline consumes, and a list
+    beside it drifts the first time a rule is added.
+
+    **Idempotent, so running it twice is safe.** The entry id derives from
+    `event_id`, and the insert is `ON CONFLICT DO NOTHING` — which is also why
+    this can run last rather than being interleaved with the stages that
+    produce the events.
+    """
+    envelopes = [
+        envelope
+        for event_type in PROJECTIONS
+        for envelope in await _published(admin_factory, event_type)
+        if envelope.workspace_id == workspace_id
+    ]
+
+    async with tenant_scoped_session(
+        factory, workspace_id=workspace_id, user_id=user_id
+    ) as session:
+        project = build_project_event(session)
+        for envelope in envelopes:
+            await project_to_timeline(envelope, project=project)
+    return len(envelopes)
