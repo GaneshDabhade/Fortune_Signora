@@ -2688,7 +2688,7 @@ Two scenarios were **excluded on principle rather than on effort**, and the reas
 | **Owner** | **Lane C** — Product Office & Architecture Office. *Governance workflow design* |
 | **Requesting lane** | **QE**, from a Repository Health measurement |
 | **Category** | Governance workflow · Change Budget · documentation synchronization |
-| **Status** | **`AWAITING LANE C`** — Lane C has no session yet. Deliberately not filed against a lane that cannot answer |
+| **Status** | **`READY FOR LANE C`** — 2026-08-03. **Lane C is operational and the product owner has assigned this as its first governance analysis.** Claimable now |
 | **Blocks** | Nothing being implemented. **It blocks `06-events.md` from staying true without a manual correction every time** |
 | **Raised** | 2026-08-03, by QE, after measuring the drift rather than encountering it |
 
