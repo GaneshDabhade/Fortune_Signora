@@ -112,6 +112,18 @@ test('a working morning at Signora', async ({ page, attention, brief }) => {
   const evidence = await brief.evidenceDialog.innerText();
   say('   the evidence says:', evidence.replace(/\n+/g, ' · ').slice(0, 160));
   await beat(page, 2500);
+
+  // ── 5a ────────────────────────────────────────────────────────────────────
+  // **A small thing, demonstrated because small things are what "premium"
+  // means.** Scrolling while reading a citation used to move the argument
+  // underneath it, so a reader came back to a page that had shifted and lost
+  // their place ([B-307](../../../../docs/BUGS.md)).
+  say(
+    '5a · The argument holds still while you check it',
+    'The page behind does not move, and returns you where you were.',
+  );
+  await page.mouse.wheel(0, 600);
+  await beat(page, 1500);
   await page.keyboard.press('Escape');
 
   // ── 6 ─────────────────────────────────────────────────────────────────────

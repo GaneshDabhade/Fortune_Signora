@@ -17,9 +17,9 @@ export class BriefPage {
 
   /** The account id currently in the address bar. */
   accountId(): string {
-    const match = /\/accounts\/([0-9a-f-]{36})/.exec(this.page.url());
-    if (!match) throw new Error(`Not on a brief: ${this.page.url()}`);
-    return match[1];
+    const id = /\/accounts\/([0-9a-f-]{36})/.exec(this.page.url())?.[1];
+    if (!id) throw new Error(`Not on a brief: ${this.page.url()}`);
+    return id;
   }
 
   get backToList(): Locator {

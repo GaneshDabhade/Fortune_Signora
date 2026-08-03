@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: environments reachability event-catalog workstation unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research
+.PHONY: environments reachability event-catalog workstation unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research e2e e2e-quick e2e-smoke product-demo product-demo-record endurance
 
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
@@ -341,6 +341,7 @@ E2E_DB  ?= signora_lane_b
 E2E_ENV := SIGNORA_TEST_APP_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5432/$(E2E_DB) \
            SIGNORA_TEST_ADMIN_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:5432/$(E2E_DB) \
            SIGNORA_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:5432/$(E2E_DB) \
+           SIGNORA_APP_URL=$(E2E_URL) \
            SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1
 
 e2e:
@@ -362,16 +363,44 @@ e2e-smoke:
 ##     make product-demo          watch it
 ##     make product-demo-record   headless, and keep the video and trace
 ##
+## **Demo modes are not built and the architecture already allows them.** The
+## `demo` project matches every spec under `tests/e2e/demo/`, and `ARGS` reaches
+## Playwright — so a future sales, investor, engineering or AI journey is a new
+## file plus a tag, and `make product-demo ARGS="--grep @investor"` selects it.
+## Nothing needs redesigning to add one; that is the whole check the product
+## owner asked for, and no more was built (2026-08-03).
+##
 ## The recording lands in `frontend/test-results/` and is the artifact worth
 ## keeping: a replayable account of how Signora behaves, for somebody who was
 ## not in the room.
 product-demo:
-	@python3 infra/environment-lease.py run product-demo -- sh -c 'cd backend && $(E2E_ENV) uv run python -m tests.playground.seed && cd ../frontend && HEADED=1 SIGNORA_APP_URL=$(E2E_URL) npx playwright test --project=demo --reporter=list'
+	@python3 infra/environment-lease.py run product-demo -- sh -c 'cd backend && $(E2E_ENV) uv run python -m tests.playground.seed && cd ../frontend && HEADED=1 SIGNORA_APP_URL=$(E2E_URL) npx playwright test --project=demo --reporter=list $(ARGS)'
 
 product-demo-record:
-	@python3 infra/environment-lease.py run product-demo -- sh -c 'cd backend && $(E2E_ENV) uv run python -m tests.playground.seed && cd ../frontend && SIGNORA_APP_URL=$(E2E_URL) npx playwright test --project=demo --reporter=list'
+	@python3 infra/environment-lease.py run product-demo -- sh -c 'cd backend && $(E2E_ENV) uv run python -m tests.playground.seed && cd ../frontend && SIGNORA_APP_URL=$(E2E_URL) npx playwright test --project=demo --reporter=list $(ARGS)'
 	@echo ""
 	@echo "  video and trace:  frontend/test-results/"
+
+## A working day in one tab — endurance, not regression.
+##
+## **The one question the suite cannot answer**: a seven-minute run says nothing
+## about what a tab looks like after an afternoon. This holds one open, repeats
+## one identical cycle of a seller's work, and records what happens to it.
+##
+##     make endurance                       twenty minutes
+##     make endurance MINUTES=180           an afternoon
+##     make endurance MINUTES=480 HEADED=1  a working day, watchable
+##
+## **Not part of `make e2e`, and never will be.** A gate nobody can afford to
+## run is a gate that gets skipped; this is run deliberately, before a release
+## or when a session-length question is actually being asked.
+##
+## It observes and does not assert — the judgement is arithmetic in
+## `frontend/tests/endurance/trend.ts`, unit-tested without a browser, and the
+## exit code carries it. Samples land in `frontend/test-results/endurance/` as
+## they are taken, so a session killed at hour six still has hours one to five.
+endurance:
+	@python3 infra/environment-lease.py run e2e -- sh -c 'cd backend && $(E2E_ENV) uv run python -m tests.playground.seed && cd ../frontend && SIGNORA_APP_URL=$(E2E_URL) npx tsx tests/endurance/record.ts'
 
 ## Prompt evaluation against a real model. Deliberately NOT part of `make test`.
 #

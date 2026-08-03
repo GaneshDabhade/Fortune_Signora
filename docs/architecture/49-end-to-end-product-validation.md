@@ -86,17 +86,31 @@ The E2E suite's only authenticated test was `test.skip(!hasOAuth)`. No local ins
 
 ```
 frontend/tests/e2e/
+  fixtures/environment.ts  which environment this suite may drive, and its refusals
   fixtures/personas.ts     reads infra/demo-users.json — the existing list
   fixtures/signora.ts      console evidence · real sign-in · page objects
-  pages/                   attention · brief · settings · business
+  pages/                   attention · brief · settings · business · sign-in
   auth.setup.ts            one real sign-in per persona; state reused
   auth-journey.spec.ts     the boundary, extended
   daily-usage.spec.ts      a seller's morning, end to end
   business-setup.spec.ts   declaring what the company sells
+  commercial-profile.spec.ts   the ICP surface
+  connections.spec.ts      what the product refuses to claim
+  workflow.spec.ts         decisions, and what they cost
   permissions.member.spec.ts   the same product, administering nothing
   resilience.spec.ts       refresh · back · tabs · double-click · failure
   consistency.spec.ts      does the product agree with itself?
   accessibility.spec.ts    keyboard · focus · dialogs · labels · structure
+  visual.spec.ts           semantic visual assertions, instead of snapshots
+  confidence.spec.ts       session expiry · slow API · offline · two tabs
+  perception.spec.ts       what a customer perceives, measured
+  interaction-boundaries.spec.ts   the nine questions every modal answers
+  demo/golden-journey.spec.ts      the Product Demonstration Suite
+
+frontend/tests/endurance/          a working day in one tab — not a test
+  record.ts                the recorder: observes for hours, asserts nothing
+  trend.ts                 the judgement: pure arithmetic, and the exit code
+frontend/tests/unit/endurance/     20 unit tests for that arithmetic, no browser
 ```
 
 **Four cadences, by tag:** `npm run test:e2e:smoke` · `:journey` · `:regression` · `:a11y`, and `npm run test:e2e` for all of it.
@@ -120,13 +134,15 @@ frontend/tests/e2e/
 **Run against a live stack: Next 15 dev server on 3400, FastAPI on 8400, PostgreSQL `signora_lane_b` at migration head `0031`, seeded with `playground@2` — twelve accounts through the real pipeline, four personas enrolled through Better Auth.**
 
 ```
-119 tests · 116 passed · 3 skipped · 0 failed  (118 regression + 1 demonstration)
-8.0 minutes through `make e2e` — leased, re-seeded, serial, zero retries
+129 tests · 126 passed · 3 skipped · 0 failed  (128 regression + 1 demonstration)
+8.1 minutes through `make e2e` — leased, re-seeded, serial, zero retries
 ```
 
-Skipped, both deliberately and visibly: the **OAuth round trip** (no provider credentials) and one **workflow move** when the seeded book has no account left in that state.
+Skipped, deliberately and visibly: the **OAuth round trip** (no provider credentials), one **workflow move** when the seeded book has no account left in that state, and one **ICP validation** when no segment is present to empty.
 
-Alongside it: **719 Vitest tests green**, `tsc --noEmit` clean, `eslint` clean, and the **production build succeeds** with `/api/proxy/[...path]` in the route manifest.
+**One test is a `test.fail()`**, and it is not a skip: it asserts [B-312](../BUGS.md) is *still* present and turns red the moment the defect is fixed.
+
+Alongside it: **757 Vitest tests green** (20 of them the endurance arithmetic), `tsc --noEmit` clean, `eslint` clean, `lint-imports` 34/34, `mypy --strict` clean across 623 files.
 
 ### What is proven to work, end to end
 
@@ -332,7 +348,30 @@ What it printed on its last run, unedited:
 
 ## 6f · Product Confidence Dashboard
 
-**The measurement the product owner asked for, replacing a test count.** *High* means a customer journey is proven end to end in a browser and I would put it in front of a buyer; *Medium* means it works and something about it would be questioned; *Low* means a customer would notice the gap; *Unknown* means nothing here can see it.
+**Rebuilt as decision support, on the product owner's direction (2026-08-03).** The first version graded twelve dimensions *High* to *Low*, and grading is not deciding: *"Explainability: medium-high"* tells nobody whether to book the demo. **A dashboard should answer the question somebody actually opened it with**, so it now leads with ten decisions and keeps the dimensions underneath as the evidence they always were.
+
+### Can we confidently…
+
+**Yes** means proven in a browser, by a named test, and I would stake the meeting on it. **Not yet** means it probably works and nothing has demonstrated it — which is a different thing from *no*, and the two are not blurred here.
+
+| Decision | | On what evidence, and what would change the answer |
+|---|---|---|
+| **Onboard a new customer?** | **Not yet** | **The one gap that would embarrass us in a first meeting.** Every journey starts from a seeded workspace with twelve accounts; **nothing walks sign-up → empty product → first ICP → first account.** The empty states exist and are asserted to be *absent* when data is present, which is the opposite test. *Changes when:* a first-run journey exists |
+| **Run a product demo?** | **Yes** | `make product-demo` — 35 seconds, real pipeline output, leaves a replayable video. It runs inside the normal suite, so it cannot rot between demos |
+| **Let an AE work for eight hours?** | **Partly, and now measured for the first time** | 40 minutes in one tab: heap flat, DOM flat, listeners flat, every cycle rendered. **Forty minutes is not eight hours**, and the harness that would answer it properly now exists — `make endurance MINUTES=480`. *Changes when:* somebody runs it overnight |
+| **Survive a flaky network?** | **Yes** | Offline and recovery without a reload, a three-second API that still says something, a request aborted mid-flight, a token refused mid-request and retried once |
+| **Survive expired credentials?** | **Yes** | A session ended server-side mid-edit never silently swallows the work; a 401 refreshes once and the customer never learns it happened |
+| **Survive browser refreshes?** | **Yes** | [B-306](../BUGS.md) was exactly this — F5 threw an owner out of Settings — and it is fixed with a regression test. Reload now also asserted with a dialog open, which is where a modal's side effects outlive it |
+| **Survive concurrent users?** | **No** | **Two tabs of one person is proven; two people at once is not tested at all.** The suite is deliberately serial (`workers: 1`) because the personas share one organization. *Changes when:* a journey drives two contexts against one workspace — which is real work, not a config flag |
+| **Survive re-seeding?** | **Yes, since this cycle** | [B-308](../BUGS.md) — re-seeding *added* a twelfth identical organization instead of replacing one. Fixed, and it matters more than its severity suggests: **re-seeding is the only cleanup an end-to-end suite is permitted** ([B-309](../BUGS.md)) |
+| **Survive slow providers?** | **Out of the browser's reach, and that is the answer** | Provider work is asynchronous by architecture (§14, Principle 13); the browser never waits on one. A slow provider shows up as *older data*, not as a slow screen — so the question belongs to the pipeline, and the browser's part is whether stale data is legible. It is not asserted |
+| **Survive provider outages?** | **Partly** | The honest half is proven: with no developer application configured, the Connection Center says *"Not connected"* and offers no button — **the product refuses to claim a capability it does not have.** What is untested is the *degraded* case: a connection that worked yesterday and failed today |
+
+**Two of these are the useful output of this cycle.** *Onboard a new customer* is a gap nobody had named, and it is the first thing a buyer does. *Survive concurrent users* is a gap the suite's own design creates, and saying so is better than a serial suite quietly implying it was covered.
+
+### The dimensions underneath
+
+Kept because the decisions above are assembled from them, and demoted because a grade is not a decision.
 
 | Dimension | | Why |
 |---|---|---|
@@ -381,11 +420,190 @@ The measurement underneath it is worth keeping, because it is what a customer's 
 
 ### What this dashboard cannot see, stated so it is not mistaken for confidence
 
-**Long sessions.** Nothing here runs for an hour, and memory leaks, stale polling and duplicate work do not appear in a six-minute suite. Designing that is real work — it needs a runner that survives longer than a test timeout — and it is **not attempted**, deliberately, rather than approximated with a sleep.
+**Sessions longer than forty minutes.** §6h below is the design study and the harness that came out of it; the longest observation so far is 40 minutes, and an eight-hour claim would be an extrapolation dressed as a measurement.
+
+**A first-run customer.** Every journey begins from a seeded workspace. Nothing here has ever seen the product with nothing in it.
+
+**Two people at once.** The suite is deliberately serial, and one person in two tabs is not two people.
 
 **A permission change mid-session**, because **no customer can make one**: `GET` and `POST /workspaces/{id}/members` exist and there is no `PATCH` and no `DELETE`. The journey has no path to exercise, and the absence is the finding.
 
 **Screen readers, contrast, and everything visual.** Structure is asserted; appearance is not.
+
+---
+
+## 6g · Interaction boundaries — B-307 generalised
+
+**[B-307](../BUGS.md) was reported as one defect and is not one defect.** *"The page scrolls behind an open dialog"* is one answer to one of nine questions every modal has to answer, and on the product owner's direction the useful unit became the boundary rather than the bug. `interaction-boundaries.spec.ts` asks all nine.
+
+| Question | Answer |
+|---|---|
+| Can the background **scroll**? | **It could.** B-307, fixed and now regression-tested |
+| Can the background take **focus**? | No — twenty tabs never reach a control behind the modal, in either dialog |
+| Can the background take **keyboard** events? | No |
+| Can the background be **clicked**? | No — a forced click on a nav link behind the modal does not navigate |
+| Can the background **update** while a reader is in a dialog? | No — six seconds with a citation open leaves the brief byte-identical |
+| Can **history** change? | No orphan: Back leaves the brief and never strands a dialog over the list |
+| Does **refresh** leave inconsistent state? | No — and this one is the B-307 fix's own risk: a locked scroller with no dialog above it would be a page a customer cannot use and cannot diagnose. Asserted directly |
+| Does **Escape** behave consistently? | Yes — closes exactly one dialog, navigates nowhere, and a stray Escape does nothing |
+| Does **focus return** on close? | Yes — never dropped to `<body>` |
+
+**Eight of the nine already held.** That is worth stating plainly: the finding is not a pile of new defects, it is that **nobody had ever asked**, and a product that keeps eight of nine promises still feels unfinished at the one it breaks. The editing dialog is asserted separately from the reading one although they share a component today — **a shared component is a reason to expect the same answer, never a reason to stop asking the question.**
+
+### The tenth question, which only appeared because the ninth was asked
+
+The keyboard-trap assertion failed, and **the product was right and the test was wrong** — but finding out why produced the more interesting result. Probing where focus actually goes:
+
+```
+reading dialog   BODY · BODY · BODY · BODY · BODY · BODY · BODY · BODY
+editing dialog   INPUT [inside] · BUTTON "Cancel" [inside] · BODY · INPUT [inside] · …
+```
+
+**The editing dialog's trap is working**; `body` at the wrap point is Chromium behaving correctly, and an assertion forbidding it would be deleted on the first browser upgrade. **The reading dialog contains nothing focusable at all** — no close button, no link, only text — so a keyboard user is stranded in a modal whose only exit is a key nothing on screen mentions. [B-312](../BUGS.md).
+
+> **A focus trap has two halves and almost everybody tests one.** *"Focus stays inside"* passed here **trivially**, because there was nowhere for focus to go. **A trap around an empty room is not protection** — the second half is *"the dialog contains something to reach"*, and it now has its own assertion.
+
+**Left open rather than fixed, and the reasoning is the useful part.** The fix belongs in the frozen shared `Dialog` — the defect class is *"a Dialog need not offer a way out"*, so fixing the one drawer leaves the next free to repeat it. §20c's accessibility clause would have permitted it, on the same basis as B-307. **It was written, and reverted**, because it broke a component test in a module this lane is not assigned and changed five screens at once. **The blast radius is the signal**: B-307 was self-contained, this reaches other modules' assertions, and that is the line between an accessibility fix and a design change.
+
+**Asserted executably in the meantime.** `test.fail()`, not `test.skip()` — it passes while the defect exists and **turns red the moment somebody fixes it**, which is the prompt to delete the annotation. A skip would assert nothing and be forgotten.
+
+### And a second one, from a test that timed out
+
+The reload assertion waited for a level-1 heading on the account brief and never found one. **The brief has no `<h1>` at all** — two orphaned `<h2>`s and nothing above them ([B-313](../BUGS.md)), on the screen a seller spends their day in.
+
+**`accessibility.spec.ts` asserts exactly one `<h1>` for the attention list, Your business and Settings — and not for the brief**, because that list was written from the screens that had one. **A suite written by looking at what exists inherits what is missing.** Reported to the product surface's assignee, not fixed here.
+
+### Four defects in my own tests, recorded because the failures were instructive
+
+| What I asserted | Why it was wrong |
+|---|---|
+| Focus is inside the dialog after every Tab | The platform parks focus on `body` at each cycle's wrap point. **The property that matters is that focus never reaches a control behind the modal**, which survives the wrap and a browser upgrade |
+| The page behind does not change | The baseline was taken while **the dialog itself** was still loading its evidence, so the dialog's own arrival read as the page moving |
+| Escape saved nothing, by diffing the whole page | Your business assembles from several independent reads, so a baseline taken at the heading is a half-built page. **Now names the product** instead of diffing the screen |
+| The page scrolls after a reload | Twice wrong: `mouse.wheel` fires wherever the pointer is, and after a reload that is `(0,0)` — over the sidebar. And a wheel is not instantaneous, so reading `scrollY` on the next line reports the position before the scroll |
+
+> **All four failed loudly and none was weakened to pass.** Each one accused the product of something it had not done, which is the most expensive kind of test to keep: it costs an investigation every time it runs. Two of the four investigations found real defects anyway.
+
+---
+
+## 6h · Long-session confidence — the design study, before the implementation
+
+**Requested as a study first, and it changed the design.** The instinctive answer was *"a long Playwright test"*, and it is wrong for a reason that only surfaces when the output is written down.
+
+### What a long-session run actually produces
+
+**Not a pass or a fail. A series** — heap, DOM nodes, listeners, requests, tokens, whether the screen still rendered — sampled over hours. The finding is a *trend*, and the first symptom is the least interesting point on the curve.
+
+That single observation decides between the three options.
+
+| | **A · a long Playwright test** | **B · a separate harness** | **C · hybrid — observe long, judge short** |
+|---|---|---|---|
+| **Failure model** | **Stops at the first failed assertion** — which is exactly right for a journey and exactly wrong here: it discards the curve at the moment it became interesting | Whatever it grows | **Observes without asserting**, then judges the whole series |
+| **Feedback** | **Nothing until it ends.** Eight hours to the first sign of life | As built | Samples appended as they are taken; a run killed at hour six keeps hours one to five |
+| **Artifact** | A trace no tool will open at eight hours | As built | A JSONL series and a one-page summary |
+| **Cost of a worker** | One worker held for eight hours | — | — |
+| **Reuse** | Everything | Page objects, personas, environment guard — **all take a bare `Page`, so all work under the library** | The same |
+| **New dependencies** | None | **None** — `tsx` is already a devDependency and already runs three repository scripts | None |
+| **How the judgement gets tested** | It cannot be, without leaking on purpose | Same problem | **Pure arithmetic, ordinary Vitest, no browser** |
+
+### The recommendation, and what it cost
+
+**Option C**, and the deciding argument is the last row. The trend logic is where the subtle mistakes live, and under A or B **the only way to test it is to make the product leak on purpose.** Split, it is twenty unit tests running in a second — and two of them immediately caught the thresholds being wrong:
+
+> **A ratio of second half to first measures the leak *and* the length of the run.** The identical defect passed at twenty minutes and failed at three hours — which would have made short runs quietly reassuring, and short runs are the ones anybody will actually do.
+>
+> **Normalising the ratio per hour was also wrong**, less obviously: a linear leak raises the baseline it is divided by, so its fractional rate *falls* the longer you watch.
+>
+> **Absolute growth per hour is invariant.** A tab gaining 100MB an hour is dead by the afternoon whether it started at 40MB or 400MB.
+
+Neither error was visible by reading. Both were found in seconds by a test that needed no browser — which is the whole case for the split, made by the split.
+
+### What was built
+
+```
+frontend/tests/endurance/record.ts      the recorder — long-lived, observes, never asserts
+frontend/tests/endurance/trend.ts       the judgement — pure, and the exit code
+frontend/tests/unit/endurance/          20 unit tests, no browser, one second
+make endurance MINUTES=n                wrapped in the environment lease, like everything else
+```
+
+**Reuse, per the audit:** page objects, personas, `resolveAppUrl()`, the Playground seeder, the environment lease and `tsx` — **all existing**. New: the cycle loop, the sample schema and the trend arithmetic. **No parallel test harness**, and nothing added to `package.json`.
+
+**Deliberately not a gate.** A check nobody can afford to run is a check that gets skipped, and a skipped gate in the suite is worse than an honest command outside it.
+
+### The first real measurement
+
+A 40-minute session, one tab, one identical cycle repeated — the list, a brief, a citation, the catalog, settings, back to the list, idle:
+
+```
+heap        flat        ~15.8MB across every cycle
+DOM nodes   flat        577
+listeners   flat        607
+rendered    every cycle
+tokens      one access token per data read, sustained
+```
+
+**No leak, measured rather than assumed** — and that is a real result, because *"probably fine"* was the only previous answer.
+
+**One finding it did confirm.** The 1:1 token-to-read ratio is not a page-load artifact; it is the resting state. Over 40 minutes the tab requested **one RS256 signature for every data read it made**, which over a working day is tens of thousands of signatures for a token valid for minutes. §6f already carried this as a perception number; the endurance run establishes it as a *rate*.
+
+### Two things a long session found that nothing shorter could
+
+**A 22-minute freeze.** Cycle 82 took **1301 seconds** to show the list, after eighty-one consecutive cycles at 1.5 seconds. It recovered on its own and the list rendered. **Not attributed** — one occurrence, at the end of a run, on a workstation that has already produced one operator incident today, and a single event is not a pattern. It is recorded rather than explained, which is the honest position.
+
+**What it exposed in the harness is the durable part.** The slowdown check averaged the second half and reported **+168801ms/hour** — *"the product is getting slower"* — about a product that had been perfectly steady and then stopped once. **A stall and a slowdown are different findings with different causes**, and a mean cannot tell them apart. The check now uses a **median** for *"what is it usually like?"* and a separate stall check that names the cycle and its duration. Three unit tests pin the distinction, using the real numbers.
+
+**And 111 console errors in fourteen minutes, which turned out to be the product working correctly.** The count alone said nothing, so the recorder now reports the distinct messages — and the paths behind them, because the browser's own message is only *"Failed to load resource: 404"*:
+
+```
+107×  Failed to load resource: … 404 (Not Found)
+ 28×  ↳ 404 GET  …/accounts/{id}/narration
+ 28×  ↳ 404 GET  …/accounts/{id}/research
+```
+
+**Two per brief, every brief.** And `ai_research_engine/interface/router.py` says why, deliberately: *"404 when nobody has ever asked — deliberately the same answer an account [you may not see] gives."* **It is a non-enumeration property, and the backend is right.**
+
+> **So the check was wrong, and it is the check that changed.** A verdict that fails every healthy session is switched off within a week — the exact failure this file's own threshold commentary warns about, committed by its own author two hours later. The session now fails on **uncaught exceptions and 5xx responses**, which are never intentional, and **reports** 4xx counts rather than asserting on them.
+>
+> **The obvious objection is that B-303 was a 404**, and this would now be quiet about it. It would not: a browser that cannot reach the API renders no list, and `rendered` fails on every cycle. **The strong signal was never the console.**
+
+**What remains genuinely open** is a product question rather than a defect, so it is recorded here and raised nowhere: **every account brief logs two errors during entirely normal use.** The cost is not the errors — it is that a real one is now indistinguishable from the background, and *"nobody looked at the console"* is precisely how B-303 survived eleven milestones. Making *"not generated yet"* a non-error answer for an account the caller can demonstrably already read would leak nothing. **That is the owning module's call, not this lane's.**
+
+### Two corrections the harness needed before it measured anything
+
+**It sampled the emptiest screen in the product.** The first cycle ended on Settings, so every measurement described 334 DOM nodes and drew a reassuring flat line that said nothing about the screen a seller actually leaves open. The cycle now returns to the list before idling.
+
+**It could not start a browser at all.** `chromium.launch()` defaults to `chrome-headless-shell`, a different binary from the one the suite drives, and neither it nor the full build starts here without a library path the **Playwright test runner injects and the Playwright library does not**. Both are handled in `record.ts` and both are workstation conditions rather than repository defects ([B-011](../BUGS.md)'s distinction).
+
+---
+
+## 6i · Customer psychology — the eleven questions, answered from the browser
+
+**Requested by the product owner (2026-08-03): begin thinking about what the customer can *tell*, not only about what is correct.** These often decide product quality more than correctness does, and a browser is the only place they can be assessed at all.
+
+Assessed against the running product. **Where nothing was tested, it says so** — an unevidenced answer here would be worth less than none.
+
+| The customer asks | | On what evidence |
+|---|---|---|
+| **What is happening?** | **Answered** | Three distinct loading phases, measured: empty shell → heading with skeleton → twelve accounts. The skeleton arrives before the data and says *something is happening* |
+| **Why is this happening?** | **Partly** | The brief decomposes into an arithmetic and every line opens its provider readings. But **[R1-01] — *"why now"* says the same thing on eleven of twelve rows**, which is the question the customer most wants answered and the one the product answers most blandly |
+| **What should I do next?** | **Answered** | The first screen is a ranked list of work, not a dashboard about work |
+| **Did my action succeed?** | **Answered** | A saved product appears in the list and survives a reload; a cancelled dialog records nothing. Both asserted |
+| **Can I recover?** | **Answered, and the answer is sometimes no** | Everything is undoable except a recorded decision, which is permanent **by design and says so on the screen**. A mis-click has no undo, and the product does not pretend otherwise |
+| **What changed?** | **Answered** | *"What has happened"* — the event record beneath the judgement |
+| **What is still loading?** | **Answered** | Skeletons, per region |
+| **What failed?** | **Not assessed** | The error envelope exists and `error-boundary.tsx` and `toast.tsx` exist. **No journey has yet made the product fail in a way a customer would see and then read what it said.** A gap, and a cheap one to close |
+| **Can I safely continue?** | **Not assessed** | Nothing has tested whether a customer can tell that it is safe to act on what they are reading |
+| **What assumptions is Signora making?** | **Weak** | Every score is relative to what the company declared it sells, and **the brief does not say so.** The demonstration has to narrate it (step 8) because the screen does not |
+| **What is Signora doing in the background?** | **No** — and this is the finding | **Nothing anywhere in the product says when its data was last refreshed.** No *"as of"*, no *"last synced"*, no indication that a provider read is in flight. Searched: no such string exists in `app/` or `components/` |
+
+### The one worth acting on
+
+> **A product whose entire promise is *"here is what changed"* never tells the customer when it last looked.**
+
+Everything upstream is asynchronous by architecture, and that is correct (Principle 13). But the consequence reaches the screen: a seller reading an account cannot distinguish *"nothing has happened at this account"* from *"nothing has been collected since Tuesday"*. The evidence states (`stale` · *"Evidence expired"*) carry part of this per-claim, which is the right instinct at the wrong altitude — **the customer's question is about the page, not about a line on it.**
+
+**Not raised as a defect**, because it is a product decision rather than a broken behaviour, and it is not this lane's to make. It is the strongest candidate this cycle produced for something that would change how the product *feels* without changing what it computes.
 
 ---
 
@@ -431,8 +649,42 @@ The measurement underneath it is worth keeping, because it is what a customer's 
 | **3** | **Human product review at `make demo`** | Nineteen of the assignment's deliverables need eyes on rendered screens, and the environment is worth reviewing for the first time | **Product owner** |
 | **4** | **O-1 — cache the access token for its lifetime** | Eight signatures per page load, on every page load, for every user | frontend foundation |
 | **5** | **O-3 — make `loadAuthConfig()` fail rather than default** | A hidden input that silently targets the wrong database | frontend foundation |
-| **6** | **Extend the suite to the connection centre and the ICP surface** | Both are built and neither is driven yet | Lane B |
+| **6** | ~~Extend the suite to the connection centre and the ICP surface~~ | **Done** — `connections.spec.ts`, `commercial-profile.spec.ts`, `workflow.spec.ts` | Lane B |
 | **7** | **O-2 — the first five minutes** | Already [C-007](../LANE_COORDINATION.md), and now measured rather than predicted | product owner |
+
+### The lane's direction, set by the product owner 2026-08-03
+
+> **This is Customer Confidence Engineering, not browser automation, and the two are not the same thing.**
+
+**Four confidence layers, and this lane owns the last two:**
+
+| | | |
+|---|---|---|
+| 1 | **Unit** | the logic is correct |
+| 2 | **Integration** | the systems work together |
+| **3** | **Workflow** | **the customer can complete the task** |
+| **4** | **Business** | **the customer achieves the outcome they wanted** |
+
+The questions that follow are confidence questions rather than automation ones, and they are the ones to keep asking: *can a new customer understand the product · can a salesperson demonstrate it confidently · can a reviewer reproduce a defect · can a release candidate be trusted · can a customer recover from a mistake · can somebody return after two weeks and still know where they were?*
+
+**Explicitly deprioritised until Production Readiness** (product owner, 2026-08-03): load testing · throughput benchmarking · browser performance tuning · micro-optimisation · latency work · production-scale concurrency. **The application is not yet in its final architecture, and tuning one that is still moving is work that gets thrown away.** Perceived-performance *observations* stay — §6f measures what a customer feels and costs nothing — but nothing here optimises for it. The standing priorities are **correctness · workflow confidence · usability · accessibility · recoverability · explainability · trust.**
+
+**Endurance has more dimensions than one tab.** Today's harness covers one browser, one tab, one user, one workspace, one navigation pattern. Recorded for later, not built: multiple tabs · a background tab resuming · reconnect after the laptop sleeps · a refresh 45 minutes in · intermittent network · authentication refresh over hours · memory after repeated account switching · memory after repeated brief generation · a tab idle for several hours.
+
+**Expected failures deserve a vocabulary.** This cycle's 404 correction was handled case by case; the general shape is a suite that distinguishes **expected** — authorization refusals, deliberately hidden resources, features not enabled — from **unexpected** — server errors, uncaught exceptions, failed assets, React crashes, hydration failures. That is what stops false positives from training people to ignore a red run.
+
+**The demonstration becomes playbooks, one runner.** Executive · SDR · Sales Leader · Enterprise Buyer · Product Tour · AI Intelligence · Customer Success · Technical Architecture. **The architecture already allows it** (§6e); nothing is built until a playbook is asked for.
+
+### Added 2026-08-03, and ordered by what a customer would notice
+
+| # | Work | Why it is here | Owner |
+|---|---|---|---|
+| **8** | **The first hour** — first sign-in · first organization · first watched account · first insight · first opportunity · first brief | **The largest hole in the dashboard, and the product owner has named it the priority.** Every journey today starts from a seeded workspace, so the empty states are only ever asserted to be *absent*. **That first hour decides whether a customer comes back**, and mature products neglect it precisely because their own people never see it | Lane B |
+| **9** | **Tell the customer when Signora last looked** (§6i) | A product whose promise is *"here is what changed"* has no *"as of"* anywhere in it. A product decision, not a defect | **Product owner** |
+| **10** | **[B-309](../BUGS.md) — decide the cleanup contract**, with the evidence now attached: 1.81M orphaned rows, 850 MB, 2671 tests, three candidate shapes | It is one change every module's suite depends on | **QE** |
+| **11** | **An eight-hour endurance run** | The harness exists and 40 minutes is clean. The claim needs the hours, not a better harness | Lane B, or anybody with an idle evening |
+| **12** | **Two concurrent people against one workspace** | The suite is serial by design, so *"survive concurrent users"* is honestly **No**. Real work, not a config flag | Lane B |
+| **13** | **Make the product fail, and read what it says** | `error-boundary.tsx` and `toast.tsx` exist and no journey has ever seen either | Lane B |
 
 ---
 
@@ -441,6 +693,6 @@ The measurement underneath it is worth keeping, because it is what a customer's 
 **Anybody continuing this work needs four things and nothing else:**
 
 1. **A stack on your lane's row of [`RUNNING.md`](../RUNNING.md#running-a-lane)** — database migrated, `auth:migrate`, `demo:users` **with `SIGNORA_AUTH_DATABASE_URL` set explicitly** (O-3), then the seeder.
-2. **`npx playwright install chromium`.** On a system without `libnss3`/`libnspr4`/`libasound2`, the browser needs them; where `sudo` is unavailable they can be unpacked into a user cache and reached with `LD_LIBRARY_PATH`.
-3. **`SIGNORA_APP_URL=http://localhost:<your web port>`** — otherwise the suite drives whatever is on 3000, which belongs to human review.
+2. **`npx playwright install chromium`.** On a system without `libnss3`/`libnspr4`/`libasound2`, the browser needs them; where `sudo` is unavailable they can be unpacked into a user cache. **Nothing needs setting** — `browserEnvironment()` finds the cache and hands it to every browser launch, because the suite used to depend on an exported `LD_LIBRARY_PATH` and therefore passed or failed by terminal ([B-311](../BUGS.md)).
+3. **`SIGNORA_APP_URL=http://localhost:<your web port>`** — otherwise the suite drives whatever is on 3000, which belongs to human review. The Playground seeder now reads it too ([B-310](../BUGS.md)).
 4. **This document, and §3 before writing anything.**

@@ -23,11 +23,12 @@
 
 import { test as base, expect, type Page } from '@playwright/test';
 
-import { PASSWORD, type Persona } from './personas';
+import { type Persona } from './personas';
 import { AttentionPage } from '../pages/attention';
 import { BriefPage } from '../pages/brief';
 import { BusinessPage } from '../pages/business';
 import { SettingsPage } from '../pages/settings';
+import { SignInPage } from '../pages/sign-in';
 
 export interface ConsoleEvidence {
   /** `console.error` lines, and failed resource loads the browser reports. */
@@ -85,16 +86,12 @@ export const test = base.extend<SignoraFixtures>({
     }
   },
 
+  // The flow itself lives in `pages/sign-in.ts`, because the endurance
+  // recorder signs in too and a second copy of it is a second thing to forget
+  // the next time the redirect changes (B-304).
   signIn: async ({ page }, use) => {
-    await use(async (persona: Persona) => {
-      await page.goto('/sign-in');
-      await page.getByLabel('Email').fill(persona.email);
-      await page.getByLabel('Password').fill(PASSWORD);
-      await page.getByRole('button', { name: 'Sign in' }).click();
-      // Synchronised on the destination rather than on a timeout. The
-      // destination *is* the assertion: signing in used to land on a 404.
-      await page.waitForURL((url) => url.pathname === '/', { timeout: 20_000 });
-    });
+    const signInPage = new SignInPage(page);
+    await use((persona: Persona) => signInPage.signIn(persona));
   },
 
   attention: async ({ page }, use) => use(new AttentionPage(page)),

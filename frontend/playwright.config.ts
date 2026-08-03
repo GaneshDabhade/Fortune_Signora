@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-import { resolveAppUrl } from './tests/e2e/fixtures/environment';
+import { browserEnvironment, resolveAppUrl } from './tests/e2e/fixtures/environment';
 import { OWNER, MEMBER, storageStatePath } from './tests/e2e/fixtures/personas';
 
 /**
@@ -113,7 +113,16 @@ export default defineConfig({
     // demonstration suite exists to be seen, and `HEADED=1` is what lets a
     // person watch Signora being used rather than read that it was.
     headless: process.env.HEADED !== '1',
-    ...(process.env.HEADED === '1' ? { launchOptions: { slowMo: 250 } } : {}),
+    // **`env` is not decoration and its absence was a hidden input.** The suite
+    // passed 119/119 in a terminal that happened to export `LD_LIBRARY_PATH`,
+    // and could not launch a browser at all in one that did not — a variable
+    // outside the declared contract deciding whether anything runs
+    // (`CLAUDE.md` §2). `browserEnvironment()` supplies it when this machine
+    // needs it and returns `undefined` when it does not.
+    launchOptions: {
+      env: browserEnvironment(),
+      ...(process.env.HEADED === '1' ? { slowMo: 250 } : {}),
+    },
     // Everything a failure needs, and nothing a pass pays for.
     trace: 'retain-on-failure',
     video: 'retain-on-failure',

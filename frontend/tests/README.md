@@ -14,7 +14,8 @@
 | `design-tokens` · `no-mock-data` · `vocabulary` | **QE** | **governance tests.** They assert no literal colour, no mock business data, and no internal vocabulary on a screen |
 | `unit/` | **QE** | the auth library — JWT minting, key generation, sign-in methods, auth events |
 | `contract/mint-token.ts` | **QE** | mints a real token for the backend's cross-tier JWT test |
-| `e2e/` | **QE**, except while the product owner has assigned End-to-End Product Validation to a lane — **Lane B holds it from 2026-08-03** ([C-308](../../docs/LANE_COORDINATION.md)) | Playwright, against the **real** application: real Better Auth, real API, real database, the seeded Playground. Seven specs, four cadences |
+| `e2e/` | **QE**, except while the product owner has assigned End-to-End Product Validation to a lane — **Lane B holds it from 2026-08-03** ([C-308](../../docs/LANE_COORDINATION.md)) | Playwright, against the **real** application: real Better Auth, real API, real database, the seeded Playground. Fifteen specs, four cadences |
+| `endurance/` | the same as `e2e/` | **A working day in one tab.** Not a test — a long-running recorder plus pure trend arithmetic. `make endurance`. Its unit tests live in `unit/endurance/`, because the arithmetic deserves a test that needs no browser |
 
 **The three governance tests are the enforcement behind three frozen decisions**, and are the reason those decisions are not merely documentation. `vocabulary.test.tsx` found a leak on its first run that a manual audit had missed ([ADR-0034](../../docs/architecture/adr/0034-ubiquitous-language.md)). Do not weaken one to make a component pass; the component is what is wrong.
 
@@ -50,7 +51,12 @@ make e2e-smoke              # ~40s, the shortest proof the product is alive
 make product-demo           # watch Signora being used, headed, at human pace
 make product-demo-record    # the same, headless, keeping the video and trace
 make e2e ARGS="--grep @a11y"
+
+make endurance                       # 20 minutes in one tab
+make endurance MINUTES=480           # a working day
 ```
+
+**`make endurance` is deliberately not part of `make e2e`.** It answers the one question a seven-minute suite cannot — what a tab looks like after an afternoon — and a check nobody can afford to run is a check that gets skipped. It **observes and never asserts**; the judgement is `tests/endurance/trend.ts`, which is pure arithmetic with twenty unit tests behind it and no browser. Samples are appended as they are taken, so a session killed at hour six still has hours one to five.
 
 **All of them run inside `infra/environment-lease.py`, unchanged.** Two browser runs against one database truncate each other mid-suite — the same failure that made cycle 25 record *"134 passed"* against a suite of 2589 ([`RELEASE_ENGINEERING.md`](../../docs/RELEASE_ENGINEERING.md) §7). The lease already prevents it.
 

@@ -36,6 +36,10 @@
  * twice declined to build (RE-05, deprioritised 2026-08-03).
  */
 
+import { existsSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
+
 /** Ports that belong to Human Review on `main`, and to no lane. */
 const REVIEW_PORTS = new Set(['3000', '8000']);
 
@@ -86,4 +90,41 @@ export function resolveAppUrl(): string {
   }
 
   return configured;
+}
+
+/**
+ * **The browser's system libraries, when they were installed without root.**
+ *
+ * `npx playwright install-deps` needs sudo, which a lane does not have, so on
+ * this workstation the shared objects Chromium links against live unpacked
+ * under `~/.cache/ms-playwright-deps/lib` rather than in the system paths.
+ *
+ * ### Why this belongs in the repository rather than in a shell
+ *
+ * It was working, and nothing here made it work: **`LD_LIBRARY_PATH` happened
+ * to be exported in one terminal.** The same suite that passed 119/119 in that
+ * terminal could not launch a browser at all in another, and the failure is
+ * `browserType.launch` on every test — which reads like a broken suite and is
+ * a missing environment variable.
+ *
+ * **That is a hidden input, and hidden inputs are architecture defects**
+ * (`CLAUDE.md` §2): the same declared inputs produced different results
+ * depending on something outside the declared contract. The fix is not to
+ * document the variable — it is to stop needing anybody to know it.
+ *
+ * Adds the directory when it exists and changes nothing when it does not, so a
+ * machine with the libraries properly installed is unaffected. **It remains a
+ * property of one workstation rather than of the repository** ([B-011](../../../../docs/BUGS.md)'s
+ * distinction: a workstation gap is never a repository defect) — what the
+ * repository owns is not *depending on somebody's shell*.
+ */
+export function browserEnvironment(): NodeJS.ProcessEnv | undefined {
+  const root =
+    process.env.PLAYWRIGHT_BROWSERS_PATH ?? join(homedir(), '.cache', 'ms-playwright');
+  const lib = `${root}-deps/lib`;
+  if (!existsSync(lib)) return undefined;
+  return {
+    ...process.env,
+    LD_LIBRARY_PATH: [lib, process.env.LD_LIBRARY_PATH].filter(Boolean).join(':'),
+  };
 }

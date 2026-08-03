@@ -150,7 +150,7 @@
 | [C-306](#c-306--the-opportunities-and-signals-experience-already-exists-and-lane-a-owns-half-of-it) | The Opportunities & Signals experience already exists, and Lane A owns half of it | Lane B | **Product owner** | `OPEN` | **The frontend half only.** The backend half is unassigned and Lane B can start it |
 | [C-303](#c-303--an-icp-is-not-an-addressable-thing-and-every-verb-the-brief-asks-for-needs-one) | An ICP is not an addressable thing, and every verb the brief asks for needs one | Lane B | **Product owner** | `ANSWERED` — ICP stays in Commercial Profile (2026-08-02). **The aggregate is [ADR-0041](architecture/adr/0041-icp-aggregate.md), proposed** | **Implementation, on ADR-0041's ratification** |
 | [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) | A notification is per-person, and workspace RLS is not enough | Lane B | **Product owner** (tenancy 🔴) | `OPEN` | **M14a N-01's migration.** The pattern exists; the ruling does not |
-| [C-308](#c-308--browser-to-api-is-in-no-gate-and-that-is-how-the-product-shipped-without-one) | Browser→API is in no gate, and that is how the product shipped without one | Lane B | **QE** | `OPEN` — **the strongest evidence yet for [C-301](#c-301--nothing-asserts-what-the-deployed-worker-consumes)** | Nothing today. **Every future frontend defect of this class** |
+| [C-308](#c-308--browser-to-api-is-in-no-gate-and-that-is-how-the-product-shipped-without-one) | Browser→API is in no gate, and that is how the product shipped without one | Lane B | **QE** | `OPEN` — **the strongest evidence yet for [C-301](#c-301--nothing-asserts-what-the-deployed-worker-consumes)**; a constraint on the answer appended 2026-08-03 ([B-311](BUGS.md)) | Nothing today. **Every future frontend defect of this class** |
 | [C-301](#c-301--nothing-asserts-what-the-deployed-worker-consumes) | Nothing asserts what the deployed worker consumes | Lane B | **QE** | `OPEN` | **Nothing today.** Every future consumer can ship [B-301](BUGS.md) again |
 | [C-002](#c-002--customer-language-has-no-anticorruption-layer) | Customer language has no anticorruption layer | Lane B | **Product owner** (ADR) | `OPEN` | Anything that matches an account against an ICP |
 | [C-003](#c-003--three-wire-codes-for-one-condition) | Three wire codes for one condition | Lane B | **Product owner** | `OPEN` | Nothing. **It stopped growing** — slice 5 cites no product |
@@ -3490,3 +3490,11 @@ USING (
 
 **Recorded in full in [48-customer-journey-review.md](architecture/48-customer-journey-review.md) §1**, with the stage-by-stage journey behind it.
 
+
+### A second consideration for C-308, from Lane B — 2026-08-03
+
+*Appended by the raising lane. **Nothing here changes C-308, its owner or its status.*** What is new is a constraint on the answer, found by running the suite from a clean terminal.
+
+**If `test:e2e:smoke` becomes a gate, it must be runnable by somebody who has read nothing.** [B-311](BUGS.md): the suite depended on an exported `LD_LIBRARY_PATH` that lived in one terminal and in no document, so the same commit passed 119/119 in one shell and failed 128/128 in another — **`browserType.launch` on every test, which reads as a catastrophically broken product rather than as a missing variable.**
+
+That is fixed at the root (`browserEnvironment()` in `tests/e2e/fixtures/environment.ts`), and the general point survives the fix: **a browser gate has a system-library surface that no other gate in this repository has.** WebKit still needs forty packages and `sudo`. Whatever QE decides C-308's answer is, *"the gate cannot start"* and *"the product is broken"* must not look the same from the outside — which argues for the gate to fail loudly on a launch failure with its own message, rather than reporting N red tests.

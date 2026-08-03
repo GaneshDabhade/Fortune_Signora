@@ -13,18 +13,15 @@
 
 import { expect, test as setup } from '@playwright/test';
 
-import { MEMBER, OWNER, PASSWORD, storageStatePath, type Persona } from './fixtures/personas';
+import { MEMBER, OWNER, storageStatePath, type Persona } from './fixtures/personas';
+import { SignInPage } from './pages/sign-in';
 
 async function signIn(page: import('@playwright/test').Page, persona: Persona) {
-  await page.goto('/sign-in');
-  await page.getByLabel('Email').fill(persona.email);
-  await page.getByLabel('Password').fill(PASSWORD);
-  await page.getByRole('button', { name: 'Sign in' }).click();
-
-  // **The destination is the assertion.** Signing in navigated to `/workspaces`
-  // — a route that has never existed — for every person who ever used this
-  // product, and nothing failed, because nothing had ever signed in.
-  await page.waitForURL((url) => url.pathname === '/', { timeout: 30_000 });
+  // **The destination is the assertion**, and it lives in the page object.
+  // Signing in navigated to `/workspaces` — a route that has never existed —
+  // for every person who ever used this product, and nothing failed, because
+  // nothing had ever signed in (B-304).
+  await new SignInPage(page).signIn(persona);
   await expect(page.getByRole('heading', { name: 'Attention', level: 1 })).toBeVisible();
   await page.context().storageState({ path: storageStatePath(persona.email) });
 }

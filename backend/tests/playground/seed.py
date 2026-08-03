@@ -158,6 +158,24 @@ async def _enrol_everyone(
         return len(users)
 
 
+def _app_url() -> str:
+    """Where to open the product that was just seeded.
+
+    **It used to say `http://localhost:3000` unconditionally**, which is Human
+    Review's port and belongs to no lane (`docs/RUNNING.md` § Running a lane).
+    A lane seeding its own database was told, in the same breath, to go and look
+    at somebody else's environment — where it would have found different data
+    and might well have acted on it.
+
+    Harmless-looking, and the same shape as the default this suite already
+    removed once (`frontend/tests/e2e/fixtures/environment.ts`): **an
+    instruction that is wrong for everybody except the one person who wrote
+    it.** `SIGNORA_APP_URL` is the variable every lane already sets; 3000 is
+    correct only when nothing else is.
+    """
+    return os.environ.get("SIGNORA_APP_URL", "http://localhost:3000")
+
+
 def _demo_roles() -> dict[str, str]:
     """Which workspace role each seeded persona holds.
 
@@ -285,14 +303,15 @@ async def main() -> int:
         print(f"\nworkspace   {workspace_id}")
         print(f"accounts    {opportunities} qualified opportunities")
         print(f"re-scored   {rescored} of {examined} readings had aged since they were opened")
+        app_url = _app_url()
         if enrolled:
             print(f"members     {enrolled} signed-in user(s) enrolled")
-            print("\nOpen http://localhost:3000")
+            print(f"\nOpen {app_url}")
         else:
             print("members     none — no accounts exist yet")
             print(
                 "\nCreate the demo accounts with `make demo-users`, or register at "
-                "http://localhost:3000/sign-up, then re-run this command."
+                f"{app_url}/sign-up, then re-run this command."
             )
         return 0
     finally:
