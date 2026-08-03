@@ -199,3 +199,43 @@ That is not a calendar panel. It is *"you have two meetings today; here is what 
 **Six of the other seven are composition over capabilities that are already built and read by nothing** — and the seventh reverses a ratified principle.
 
 > **The workspace does not need new intelligence. It needs the intelligence that already exists to reach a seller in one place, in the order they work.**
+
+---
+
+## 9 · The roadmap reordered, and why SW-02 moved
+
+**All four decisions were ratified by the product owner on 2026-08-03**, exactly as recommended: Recommended Outreach rejected · the workspace stays a Product Surface read model · *since you last looked* rather than *overnight* · Meetings, Emails, Calls and Tasks deferred as intelligence overlays.
+
+**SW-02 was then found to be blocked, and by something §3 identified but did not follow far enough.** The Timeline feed is not merely per-account at the endpoint — the repository query underneath is `WHERE workspace_id = … AND entity_id = …`, driven off a `(workspace, entity, occurred_at, id)` index. A workspace-scoped feed needs a new query, a new endpoint, a public contract and **a second index — a migration — inside `timeline`, which is Lane B's module.**
+
+> **A lane never changes a module it is not assigned.** That is [C-215](../LANE_COORDINATION.md), raised rather than built, and the discovery's own claim that *"none of the four decisions blocks SW-02"* was true about the decisions and wrong about the module boundary.
+
+**SW-03 was taken instead**, and needs nothing from anyone.
+
+### SW-03 — the list says what it is asking, not only what it ranked
+
+`GET /accounts` is already workspace-scoped and already carries every fact this needs: `evidence_state` from the Opportunity Engine, `contested` from identity resolution, `trend` from the Buying Score Engine.
+
+**The list is ordered by score, which is correct — and a seller scanning top-down reads the score first.** An account can rank high on evidence that has aged, or on a company two providers describe differently. The row shows both; **nothing said how many rows carry them.**
+
+Three questions, each a filter over a fact the server already computed:
+
+| Question | Filter | Why a seller cares |
+|---|---|---|
+| **Worth verifying** | `contested` | Providers describe this company differently |
+| **Ranked on ageing evidence** | `evidence ≠ current` | The score is built on old news |
+| **Rising** | `trend = rising` | The score last moved up |
+
+**It partitions; it never re-ranks.** The attention ranking already decides what matters most, and a second ordering here would be this surface inventing an urgency of its own — the refusal Sales Engagement makes in the same words (§22 of [50](50-sales-engagement.md)).
+
+**A question nobody raises is absent, never present at zero.** A strip showing three labels for every workspace is the defect **R1-06** named on the workflow line and **D6** named on a filter: *a control that always shows the same thing teaches people to ignore controls.* A reader who sees the strip knows, before reading it, that something needs a look.
+
+**Each line is a filter, not a statistic.** A count a seller cannot act on is a number; a count that narrows the list below it is a way of working. The question travels in the URL beside the owner scope — surviving a refresh, browser back and a second tab — and clicking the active question clears it.
+
+### What SW-03 deliberately did not build
+
+| | |
+|---|---|
+| **A *neglected* or *sitting too long* question** | ⛔ It needs a threshold, and a threshold is a judgement Signora has no basis for: it **cannot see a call, an email or a meeting** (LO-06). `HeldSince` renders the duration and **grades nothing**; reversing that one layer up would be quiet. |
+| **A server-side triage endpoint** | ⛔ Filtering a list the seller already holds costs no round trip and cannot return a differently-ordered list mid-triage. **The trigger is a portfolio large enough to paginate**, at which point the question has to travel to the server or the counts will lie about the pages not fetched. |
+| **A count of anything a seller cannot act on** | ⛔ That is the Overview page D38 retired, in a smaller font. |

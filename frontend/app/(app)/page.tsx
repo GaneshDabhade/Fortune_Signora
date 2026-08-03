@@ -15,6 +15,7 @@ import {
   ScoreMovement,
 } from '@/components/intelligence/attention';
 import { DecidedAccounts } from '@/components/intelligence/decided';
+import { TriageStrip } from '@/components/intelligence/triage';
 import { EntityName } from '@/components/intelligence/entity-name';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { Card, CardBody, EmptyState, SkeletonText } from '@/components/ui';
@@ -34,6 +35,7 @@ import {
   withScope,
   type OwnerScope,
 } from '@/lib/state/owner-scope';
+import { raisedFrom, raises, triage } from '@/lib/state/triage';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -66,7 +68,11 @@ export default function AttentionPage() {
   // **From the URL, so the view survives a refresh, browser back and a second
   // tab** — and so it can travel on the account link, which is what keeps the
   // brief's *next* inside the list a seller was working (D41).
-  const scope = scopeFrom(useSearchParams().get('owner'));
+  const params = useSearchParams();
+  const scope = scopeFrom(params.get('owner'));
+  // **Which question the list is narrowed to**, in the URL beside the scope and
+  // for the same three reasons: a refresh, a browser back and a second tab.
+  const raised = raisedFrom(params.get('raises'));
   const { data, isLoading, isError } = useAccounts(activeWorkspace?.id ?? null, scope);
   // Names arrive in a second request and the rows do not wait for them: the
   // score and the reason are what a seller triages on, and blocking the list
@@ -109,6 +115,17 @@ export default function AttentionPage() {
   // hook keys on the sorted ids, so folding them together would re-fetch every
   // open account's name each time somebody dismisses one. Empty until a
   // decision exists, and the hook asks nothing for an empty set.
+  // **Filtered here rather than re-fetched.** The question is a view over the
+  // list a seller already has; asking the server again would make a filter cost
+  // a round trip and could return a differently-ordered list mid-triage.
+  const shown = useMemo(
+    () =>
+      raised === null
+        ? (data?.items ?? [])
+        : (data?.items ?? []).filter((account) => raises(account, raised)),
+    [data, raised],
+  );
+
   const { data: decidedIdentities } = useAccountIdentities(
     activeWorkspace?.id ?? null,
     (decided?.items ?? []).map((account) => account.account_id),
@@ -161,6 +178,13 @@ export default function AttentionPage() {
           established wording rather than guessing — announcing *"nobody has
           told Signora anything"* to a workspace that has is the confident
           wrong answer this page already refuses elsewhere. */}
+      {/* **Above the list, and absent when the list raises nothing.** A count a
+          seller cannot act on is a statistic; each line here narrows the list
+          below it, which is a way of working rather than a dashboard. */}
+      {data && data.items.length > 0 ? (
+        <TriageStrip groups={triage(data.items)} active={raised} scope={scope} />
+      ) : null}
+
       {data && data.items.length === 0 ? (
         <Quiet
           scope={scope}
@@ -169,7 +193,7 @@ export default function AttentionPage() {
       ) : null}
       {data && data.items.length > 0 ? (
         <ol className="flex flex-col gap-2">
-          {data.items.map((account) => (
+          {shown.map((account) => (
             <li key={account.id}>
               <AccountRow
                 account={account}

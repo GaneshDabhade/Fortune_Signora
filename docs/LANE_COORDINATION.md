@@ -127,6 +127,26 @@
 
 **Implementation impact.** Blocks nothing. SE-09c ships complete under the divergence above.
 
+### C-215 — the Timeline feed is per-account, and the workspace needs it per-seller
+
+**Opened 2026-08-03 · Lane A · owner: Lane B (`timeline`) · 🟠**
+
+**The problem.** `GET /workspaces/{id}/accounts/{account_id}/timeline` is the only timeline endpoint, and the repository query underneath it is hard-scoped: `WHERE workspace_id = … AND entity_id = …`, ordered off a `(workspace, entity, occurred_at, id)` index.
+
+**The Sales Workspace's highest-value capability is workspace-scoped.** *"Three Target Accounts became significantly more active since you last looked"* is a query across everything a seller holds, and there is no way to ask it. The alternative — one request per account from the browser — is the N+1 pattern `CLAUDE.md` §14 names as *a defect at write time, not a future task*.
+
+**What is needed.** A feed for a workspace rather than an entity: same entry shape, same cursor, same ordering, filtered by `workspace_id` alone and optionally by a set of entity ids and an `occurred_at` lower bound. **It needs a second index** — `(workspace_id, occurred_at, id)` — because the existing one is entity-leading and cannot serve it.
+
+**Why this is not Lane A's to build.** It is production code, a public contract and a migration inside `timeline`, which Lane B built (M7 S01–S04a, [B-301](BUGS.md)). *A lane never changes a module it is not assigned* (`CLAUDE.md` §20e); this is a finding to raise.
+
+**Recommendation.** Lane B adds `feed_for_workspace(workspace_id, *, entity_ids=None, since=None, after, limit)` beside the existing `feed`, exposed as `GET /workspaces/{id}/timeline`. **Read-only, no new judgement** — Timeline ranks nothing and explains nothing, and this must not become the place that starts.
+
+**On `since`, and why it is a parameter rather than stored state.** *What changed since you last looked* also appears as [TASK-016](BACKLOG.md), `BLOCKED` on per-user read state that does not exist. **It does not need to exist for this contract**: `since` is a declared input, and who supplies it is a separate question — a client-held timestamp works today, and a server-side read state later changes no contract. **That keeps storage out of the design until something earns it**, which is the product owner's standing instruction.
+
+**Trade-offs.** Without it the workspace can say what each account's score did, but not *what happened*. Score movement is a number; a leadership appointment is the sentence a seller acts on.
+
+**Implementation impact.** Blocks SW-02 and SW-06. **Blocks nothing else** — SW-03, SW-04 and SW-05 are composition over `GET /accounts`, which is already workspace-scoped, and Lane A has taken SW-03 instead.
+
 ## Closed on repository evidence — no decision required
 
 
