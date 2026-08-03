@@ -323,6 +323,7 @@ databaseUrl: required(
 | [C-025 *(Lane A's — see the collision note)*](#c-025--the-catalog-explains-nine-words-to-nobody) | The catalog explains nine words to nobody | Lane A | **Product owner** + `signal_engine` | `OPEN` | [R5-04](architecture/39-product-review-findings.md). **Built and reverted; one sentence unblocks either outcome** |
 | [C-205](#c-205--is-signora-expected-to-work-on-a-phone) | Is Signora expected to work on a phone? | Lane A | **Product owner** | **`ANSWERED` 2026-08-03 — yes, a phone is in scope** | **Unblocks CX-07**, which is a milestone rather than a slice. [B-019](BUGS.md) is confirmed a defect |
 | [C-217](#c-217--lane-a-is-available-and-requests-its-next-product-surface-epic) | **Lane A is AVAILABLE and requests its next Product Surface epic** | Lane A | **Lane C** | `OPEN` — **awaiting an epic** | **Lane A's entire implementation capacity.** Carries four places where the register and the repository currently disagree |
+| [C-218](#c-218--a-lane-can-report-available-and-the-office-that-assigns-cannot-see-it) | **A lane can report `AVAILABLE`, and the office that assigns cannot see it** | Lane A | **Lane C** (model) · **QE** (mechanism) | `OPEN` | **Every lane's idle time, structurally.** [C-217](#c-217--lane-a-is-available-and-requests-its-next-product-surface-epic) is the worked example: raised, pushed, invisible |
 | [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | M14b is three concerns in one roadmap row, and none has a module | Lane A | **Product owner** (bounded context 🔴) | `OPEN` — **architectural** | **The whole of M14b.** [R-01](architecture/16-architecture-risks.md) has been waiting for it at High/High |
 | [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide) | Identifier allocation is still only *unlikely* to collide | Lane A | **QE** + product owner | `OPEN` — **directed by the product owner** | Nothing built. **The repository scaling past three actors without manual reconciliation** |
 | [C-202](#c-202--four-shared-documents-disagree-and-one-disagrees-with-itself) | Four shared documents disagree, and one disagrees with itself | Lane A | **QE** | `OPEN` — **directed by the product owner** | Nothing built. **A cold session trusting any status in the repository** |
@@ -4138,5 +4139,58 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 ### How this closes
 
 **When Lane C assigns an epic.** Lane A records the assignment on its own board row, sets it `ACTIVE`, and closes this item in the slice that begins the work.
+
+---
+
+---
+
+## C-218 · A lane can report AVAILABLE, and the office that assigns cannot see it
+
+| | |
+|---|---|
+| **Owner** | **Lane C** (the model) · **QE** (the mechanism) |
+| **Requesting lane** | Lane A |
+| **Category** | Coordination model |
+| **Status** | `OPEN` |
+| **Blocks** | **Every implementation lane's idle time, structurally.** Not one assignment — the signal that triggers all of them |
+| **Raised** | 2026-08-03, immediately after [C-217](#c-217--lane-a-is-available-and-requests-its-next-product-surface-epic) was pushed and turned out to be invisible |
+
+**The product owner's instruction is that a lane reports `AVAILABLE` and Lane C assigns. There is no path by which the report reaches Lane C.**
+
+### Measured, not inferred
+
+| | |
+|---|---|
+| **`C-217` on `origin/integration`** | **Absent.** It is on `lane-a-product-surface` only |
+| **Lane A's rows on `origin/integration`'s board** | **Four, and every one is stale** — Product Surface `ACTIVE`, `provider_platform` `BLOCKED`, Team Management `ACTIVE`, M14b `BLOCKED`. Dated `08226e5` |
+| **What Lane C therefore believes** | **Lane A is busy on four things.** Nothing from this session — LO, SE, SW, PS-09, CX-05 — is visible to it |
+
+**So the lane is idle and the board says it is working.** Proactive assignment does not fix this: Lane C has no reason to prepare an epic for a lane its board shows as `ACTIVE` four times over.
+
+### Why it happens, precisely
+
+**The repository already solved this once, for claims, and the fix does not generalise.**
+
+> *"`integration` is the one ref every lane pulls. A claim pushed only to `lane-a-product-surface` is invisible to every other lane, so the queue still reads as unclaimed and the race the protocol exists to prevent is still open."* — `CLAUDE.md` §20e, corrected 2026-08-02 **after watching it fail.**
+
+**That correction is narrow by construction, and correctly so.** `infra/certification-guard.py` recognises a claim as *a commit whose subject begins with `Claim TASK-`, touching `docs/ACTIVE_ASSIGNMENTS.md` and `docs/BACKLOG.md` and nothing else.* **An availability report is not a claim** — it names no task, because not having one is the point — so it has no path to `integration` and waits for QE to fast-forward the lane branch.
+
+**Which inverts the intended order.** The signal that is supposed to *start* the next assignment arrives **after** validation and certification of the previous slice — a full QE cycle later. **The pull model made the claim fast because a claim is a race. The assign model made availability the trigger and left it on the slow path.**
+
+### Three ways out, and the choice is not this lane's
+
+| | Change | Cost |
+|---|---|---|
+| **A** | **Widen the exception to a status commit.** Subject `Status <LANE> AVAILABLE`, same two files, same audit. **Smallest change, and it reuses a mechanism already proven** | The exception stops being one line and becomes a category. `--audit-claims` needs a second recognised subject |
+| **B** | **Lane C reads lane branches rather than `integration`.** The information exists — it is on `lane-a-product-surface` right now | **Makes an unvalidated branch load-bearing for scheduling**, and Lane C would be reading state QE has not seen |
+| **C** | **QE fast-forwards on availability rather than only on validation.** No rule changes | **Reintroduces the bottleneck the pull model removed** — every lane's next assignment waits on QE's cycle, which is the arithmetic that moved scheduling out of QE on 2026-08-02 |
+
+**Lane A recommends A**, and holds it lightly: it is the one that keeps `integration` authoritative, keeps QE out of the scheduling path, and stays inside the enforcement that already exists. **B and C both trade away something the repository has already paid for.**
+
+### What Lane A is not doing
+
+**Not pushing this to `integration`.** It is not a claim, and the exception is bounded to claims for a reason. **Not self-assigning while it waits** — the product owner was explicit that a coordination breakdown is a coordination issue rather than a licence to pick up work. **Not editing another lane's rows** to make the board describe reality.
+
+**Lane A is idle, correctly, and this item is the reason.**
 
 ---
