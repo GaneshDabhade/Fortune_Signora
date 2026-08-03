@@ -275,3 +275,41 @@ Three questions, each a filter over a fact the server already computed:
 > **If a third fact or any number enters one of these, it has stopped being arrangement** and belongs in the module that owns the conclusion. That is written in `lib/state/triage.ts` beside the code, where the next person to add a question will read it.
 
 **A finished account raises neither.** `closed_won`, `closed_lost` and `dismissed` are decisions, not divergences — pinned by a test, because a dismissed account whose score later rises would otherwise reappear as *unclaimed* forever.
+
+---
+
+## 11 · SW-05 — recognition before reading, and the stack a reviewer can open
+
+**A seller scans before they read.** The question line is therefore built to be recognised rather than parsed:
+
+```
+  1  Worth verifying   Northwind Traders · Contoso and 2 more     ← about a second
+     Providers describe this company differently.                 ← only if the
+                                                                    first line did
+                                                                    not settle it
+```
+
+**The accounts are named on the line itself**, up to three. *Which companies* is the fact a seller recognises fastest and the one that decides whether they open the question at all — **a count with no names is a number to act on trust; three names is a decision.**
+
+**Three, not more.** A fourth name wraps the line on a laptop, and a wrapped line is read rather than recognised — which is the property this whole strip optimises for.
+
+**The strip never waits for a name.** Identities arrive in a second request; the count and the question are the decision, and blocking on a label would trade the decision for the word — the rule the account rows already follow.
+
+### Progressive disclosure, in one step rather than three
+
+**There is deliberately no expander.** The disclosure *is* the list below, which the line filters. An accordion would put a second copy of the list inside a control that summarises it, and a seller would then have two places to read the same rows.
+
+### Verified against the running product, not only against fixtures
+
+The Lane A stack was stood up on its own allocation — **3300 / 8300, database `signora_lane_a`, Redis index 2** ([RUNNING.md](../RUNNING.md#running-a-lane)) — migrated, seeded with the twelve-account Playground, and the real `triage()` run over the **live API payload**:
+
+| | |
+|---|---|
+| Accounts on the attention list | **12** |
+| `1` **Worth verifying** | one contested identity |
+| `4` **Ranked on ageing evidence** | two cooling, two stale |
+| **Absent** | `rising` · `unclaimed` · `diverged` — **nothing raises them** |
+
+> **Three of the five questions are correctly absent on real data.** That is the R1-06/D6 rule holding outside a test: a workspace where everything is current and nobody has committed shows two lines, not five empty ones.
+
+**What could not be verified is a browser screenshot.** Chromium is installed but missing `libnspr4.so`, and installing OS packages needs root this environment does not grant (`CLAUDE.md` §20e — escalate when installation is blocked by operating-system permissions). **Rendering is covered by thirteen component tests against a real DOM**, and the data path by the live run above.

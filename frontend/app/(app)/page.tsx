@@ -182,7 +182,12 @@ export default function AttentionPage() {
           seller cannot act on is a statistic; each line here narrows the list
           below it, which is a way of working rather than a dashboard. */}
       {data && data.items.length > 0 ? (
-        <TriageStrip groups={triage(data.items)} active={raised} scope={scope} />
+        <TriageStrip
+          groups={triage(data.items)}
+          active={raised}
+          scope={scope}
+          identities={identities}
+        />
       ) : null}
 
       {data && data.items.length === 0 ? (

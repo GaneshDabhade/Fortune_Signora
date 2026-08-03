@@ -11,7 +11,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { TriageStrip } from '@/components/intelligence/triage';
-import type { AccountAttention } from '@/lib/api/types';
+import type { AccountAttention, AccountIdentity } from '@/lib/api/types';
 import { triage } from '@/lib/state/triage';
 
 function account(overrides: Partial<AccountAttention> = {}): AccountAttention {
@@ -81,6 +81,88 @@ describe('a list that raises something says what, and how many', () => {
 
     expect(container.textContent?.toLowerCase()).not.toContain('contested');
     expect(container.textContent?.toLowerCase()).not.toContain('evidence_state');
+  });
+});
+
+describe('a seller scans before they read', () => {
+  function identity(account_id: string, name: string): AccountIdentity {
+    return {
+      account_id,
+      name,
+      agreement: 'agreed',
+      source_count: 2,
+      source: 'simulated_provider',
+      observed_at: '2026-07-01T00:00:00Z',
+    };
+  }
+
+  const identities = new Map<string, AccountIdentity>([
+    ['a', identity('a', 'Northwind Traders')],
+    ['b', identity('b', 'Contoso')],
+    ['c', identity('c', 'Fabrikam')],
+    ['d', identity('d', 'Tailspin')],
+  ]);
+
+  function contested(id: string) {
+    return account({ account_id: id, id: `opp-${id}`, contested: true });
+  }
+
+  it('names the companies on the line itself', () => {
+    // **Which companies is the fact a seller recognises fastest**, and the one
+    // that decides whether they open the question at all. A count with no names
+    // is a number to act on trust.
+    render(
+      <TriageStrip
+        groups={triage([contested('a'), contested('b')])}
+        active={null}
+        scope="all"
+        identities={identities}
+      />,
+    );
+
+    expect(screen.getByText(/Northwind Traders · Contoso/)).toBeInTheDocument();
+  });
+
+  it('stops naming at three and says how many are left', () => {
+    // A fourth name wraps the line on a laptop, and a wrapped line is read
+    // rather than recognised.
+    render(
+      <TriageStrip
+        groups={triage([contested('a'), contested('b'), contested('c'), contested('d')])}
+        active={null}
+        scope="all"
+        identities={identities}
+      />,
+    );
+
+    expect(screen.getByText(/and 1 more/)).toBeInTheDocument();
+    expect(screen.queryByText(/Tailspin/)).not.toBeInTheDocument();
+  });
+
+  it('never waits for a name it does not have', () => {
+    // Names arrive in a second request. The count and the question are the
+    // decision; blocking on a label would trade the decision for the word.
+    render(
+      <TriageStrip groups={triage([contested('a')])} active={null} scope="all" />,
+    );
+
+    expect(screen.getByText('1')).toBeInTheDocument();
+    expect(screen.getByText(/worth verifying/i)).toBeInTheDocument();
+  });
+
+  it('keeps the count truthful when only some names have arrived', () => {
+    render(
+      <TriageStrip
+        groups={triage([contested('a'), contested('unknown-id')])}
+        active={null}
+        scope="all"
+        identities={identities}
+      />,
+    );
+
+    // Two accounts raise it; one name is known. The count says two.
+    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByText(/and 1 more/)).toBeInTheDocument();
   });
 });
 
