@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: environments reachability event-catalog workstation unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research e2e e2e-quick e2e-smoke product-demo product-demo-record endurance review-product
+.PHONY: environments reachability event-catalog workstation unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research e2e e2e-quick e2e-smoke product-demo product-demo-record endurance review-product review-messy
 
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
@@ -392,6 +392,16 @@ product-demo-record:
 ##     make review-product PACE=2000  slower, for a demonstration
 review-product:
 	@python3 infra/environment-lease.py run e2e -- sh -c 'cd backend && $(E2E_ENV) uv run python -m tests.playground.seed && cd ../frontend && SIGNORA_APP_URL=$(E2E_URL) npx tsx tests/review/walk.ts'
+
+## Review 2 — the accounts the product is not proud of, and the reading load.
+##
+##     make review-messy
+##
+## Opens the contested, disputed, expired and unnamed accounts rather than the
+## tidy one at the top, and measures words-per-screen against actions-per-screen
+## — because "too much text" is a number, not an opinion.
+review-messy:
+	@python3 infra/environment-lease.py run e2e -- sh -c 'cd backend && $(E2E_ENV) uv run python -m tests.playground.seed && cd ../frontend && SIGNORA_APP_URL=$(E2E_URL) npx tsx tests/review/messy.ts'
 
 ## A working day in one tab — endurance, not regression.
 ##

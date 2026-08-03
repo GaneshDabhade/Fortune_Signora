@@ -14,13 +14,17 @@
 
 **Every finding is classified twice.** What kind of problem it is, and what it costs a purchase decision — never how hard it is to fix.
 
-| Priority | Means |
+| Category | What belongs here |
 |---|---|
-| **Critical** | **Blocks adoption.** A trial ends here. Must be fixed before GA |
-| **High** | A customer will definitely notice, and it costs trust |
-| **Medium** | Improves the experience; schedule it |
-| **Future Module** | A real capability. Needs architecture. **Document thoroughly, never half-build** |
-| **Nice to have** | Captured, and then left alone |
+| **Critical Trust** | The customer stops believing the product |
+| **Product Contradiction** | Two parts of Signora disagree with each other |
+| **Missing Capability** | Not a bug and not polish — something a buyer expects and cannot find |
+| **UX** | Layout, density, hierarchy, wording, workflow |
+| **Enhancement** | Good, later, not a blocker |
+| **GA Blocker** | Signora does not feel production-ready without it |
+| **Future Product** | A real module. **Documented thoroughly, never half-built** |
+
+**And a strength register**, because a review that only complains cannot be trusted about what is wrong either.
 
 **Ten small frictions lose more customers than one large defect**, so nothing is too small to record. What is *not* recorded is anything unverified: three findings from the first walk turned out to be artifacts of the review instrument, and they are listed at the bottom rather than quietly dropped.
 
@@ -191,3 +195,164 @@ The walk found six products named `E2E Product 1785781052731`, a watched company
 | *"What contributed"* lists every line twice | The visible text plus its `sr-only` twin — the same pattern already known from `\d+ of \d+ points` |
 
 > **A review that reports its own artifacts as defects burns the credibility it needs.** The instrument reads `textContent`; a screen reads pixels; and the gap between them is exactly three findings wide on the first attempt.
+
+---
+
+## Review 2 — 2026-08-03 · the accounts the product is not proud of
+
+**Review 1 opened the account at the top of the list, which is the one Signora is proudest of.** This opened the four it is not: the account whose sources disagree about its own name, the one whose evidence has expired, the one being contested, and the one nobody has named.
+
+> **No new dataset was written, deliberately.** `playground@2` already produces every one of those states, and produces them honestly — from provider readings over five months, so *contested* and *stale* **emerge from the pipeline rather than being declared**. Authoring a second messy scenario before reading the first would have proved nothing.
+
+### 🔴 Critical Trust
+
+#### PX-316 · Signora invites you to work an account it cannot name
+
+```
+70b04700
+— no source has named this account yet
+Attention score 33 · 40 of 120 points
+
+  [ I'm working this ]   [ Lost without pursuing ]   [ Not a real opportunity ]
+```
+
+**This is [PX-301](#px-301--the-list-a-seller-works-from-contains-an-account-with-no-name), and it is much worse than a bad row in a list.** The account has a full brief, a score, a decomposition, and **three workflow buttons**. A seller can take ownership of it. *Call whom?*
+
+**And the shape of the problem is the interesting part.** Signora knows a great deal about this company:
+
+> *"Researching Design Systems — 4 weeks of elevated activity, peaking at 87"*
+
+**Identity resolution failed and intelligence succeeded.** The product surfaces the second without treating the first as a blocker to action — so the most confident thing on the screen is an invitation to act on a company nobody can identify.
+
+*Category: Critical Trust · GA Blocker. Module: Product Surface · `knowledge_graph`.*
+
+### 🟠 UX
+
+#### PX-317 · The delta sentence is broken in every state, not just one
+
+```
+Opened at 33, 5 weeks ago      unchanged since        ← the unnamed account
+Opened at 20, 5 weeks ago      -10 since              ← Adobe, cooling
+```
+
+[PX-305](#px-305--a-sentence-that-stops-halfway) found the first and assumed it was one screen's typo. **It is the component**: *"since"* trails off in the unchanged case *and* in the changed case. Every brief in the product has a sentence that stops mid-thought.
+
+*Category: UX. Module: Product Surface.*
+
+---
+
+## The reading load, measured rather than argued
+
+**The product owner's observation was *"far too much text… it doesn't feel like modern SaaS."*** That is a number, not an opinion, so here it is — measured on a freshly seeded organization at 238 words per minute.
+
+| Screen | Words | To read | Paragraphs ≥25 words | Things you can do | **Words per action** |
+|---|---|---|---|---|---|
+| **Attention list** | 169 | 0.7 min | **0** | 13 | **13** |
+| Settings | 68 | 0.3 min | 1 | 4 | 17 |
+| **Account brief** | **619** | **2.6 min** | 4 | 17 | **36** |
+| **Your business** | 344 | 1.4 min | 4 | 6 | **57** |
+| **Connections** | 138 | 0.6 min | 0 | **0** | **138** |
+
+### What the numbers actually say
+
+**The density problem is not uniform, and that matters more than the complaint.**
+
+> **The attention list is the best-designed screen in the product** — 169 words, thirteen actions, **not one paragraph over 25 words**. It is scannable, it ranks, and it gets out of the way. Whatever produced it should produce the rest.
+
+**The account brief costs 2.6 minutes of reading before a decision.** A seller with twelve accounts spends **31 minutes reading briefs** before doing any selling. That is the single most quotable number in this review, and it is why *"too much text"* is a commercial problem rather than a taste one.
+
+**Connections is 138 words and zero actions.** A screen that can only be read. Every provider says *"Connecting this is not available yet"*, which is honest — and a whole screen of honesty with nothing to press reads as a stub.
+
+**Your business is 57 words per action** — 24 paragraphs to support 6 controls.
+
+### The paragraph that proves the point
+
+> *"Budget unlocked rests on this business event too, already counted through a higher-weighted hypothesis. Counted once, so the same grounds read two ways cannot inflate the score."*
+
+**That is an engineer explaining a de-duplication rule to a salesperson**, on the screen where they are deciding whether to make a call. The *idea* is excellent — double-counting would inflate scores and Signora refuses to. **The idea deserves a badge, not two sentences.**
+
+### What this suggests, concretely
+
+| Today | Could be |
+|---|---|
+| Two sentences explaining de-duplication | A **`counted once`** chip, with the sentence on hover |
+| *"Exactly correct until Sep 22, 2026, when the oldest evidence beneath it changes band"* | **`accurate until 22 Sep`**, expandable |
+| *"What this cannot tell you"* × 3 per signal, all expanded | **One `limits` disclosure per signal**, collapsed by default — it is already collapsible for two of the three |
+| Eight full-width prose sections | **Three columns**: what changed · why it scores · what to do |
+| A section header plus a paragraph explaining the section | **Header only.** If a section needs a paragraph to justify existing, that is a finding about the section |
+
+*Category: UX. Module: Product Surface.*
+
+---
+
+## Product completeness — what a buyer expects and cannot find
+
+**Asked deliberately without looking at the implementation:** *if I had never seen this codebase, what would I expect from a Revenue Intelligence platform in 2026?*
+
+### The navigation answers most of it before I finish asking
+
+```
+Attention  → /
+Settings   → /settings
+```
+
+**Two items.** That is the entire product surface a customer can reach. Everything else is reached by clicking a row.
+
+### Missing capabilities, ranked by how early a trial hits them
+
+| # | Missing | When they notice | Why it matters |
+|---|---|---|---|
+| **MC-1** | **Search.** No way to find an account by name | **Minute two.** *"Show me Databricks"* | A ranked list is not a way to answer *"what about this one?"*, and it is the first thing anybody tries |
+| **MC-2** | **Filters and saved views** — by score, posture, owner, freshness | Minute five | Twelve accounts scroll. Two thousand do not. **This is the capability that decides whether Signora survives real volume** |
+| **MC-3** | **People.** The buying committee is *job titles*, never names | First real account | *"Who do I call?"* is the question a seller actually has. ZoomInfo and Apollo answer it; Signora describes the shape of the committee and not its members |
+| **MC-4** | **CRM write-back.** Salesforce and HubSpot read *"not available yet"* | During evaluation | Without it Signora is a second system to check. **Every competitor writes back**, and RevOps will ask in the first call |
+| **MC-5** | **Notification or digest** — nothing tells you something changed | Day two | A product whose value is *"here is what changed"* requires you to come and look. **The value is time-sensitive and the delivery is not** |
+| **MC-6** | **A manager view.** No roll-up, no team pipeline, no coverage | First demo to a VP | The buyer is a CRO. **There is no screen addressed to them** |
+| **MC-7** | **Export** — no CSV, no share, no link to a brief | First time they want to forward one | *"Can you send that to me?"* has no answer |
+| **MC-8** | **Guided first run.** A new organization gets correct empty states and no path | Minute one | The empty states are excellent (see strengths) and none of them *starts* anything |
+
+*Category: Missing Capability. MC-1, MC-2 and MC-4 are **GA Blockers** in my judgement; the rest are sequencing.*
+
+### Where Signora is genuinely ahead
+
+**This is not politeness — it is the part of the product a competitor cannot copy quickly.**
+
+| | |
+|---|---|
+| **Every claim decomposes to a provider reading with a date** | `open roles 300→480 · coresignal · Jul 26 2026`. **Gong, 6sense and Common Room all present scores; none lets you take one apart to a single reading.** |
+| **The product states its own limits, unprompted** | *"What this cannot tell you"* under every signal, twice more on expansion. **Nobody ships this**, because it reads as weakness until you have been burned by a confident wrong score |
+| **Disagreement is disclosed rather than resolved silently** | *"Your sources disagree on this name. Showing what crunchbase reported most recently, of 2 sources that named this account."* **This is the single best interaction in the product** |
+| **Decay is visible** | *"Evidence aged out"*, *"Cooling"*, *"-10"* — the score is allowed to fall, and says why |
+
+> **On messy data Signora is more impressive than on clean data**, which was the opposite of what I expected walking in. The disagreement disclosure and the ageing evidence are the strongest arguments for buying it — and both are only visible on the accounts a demo would avoid.
+
+---
+
+## Proposed information architecture
+
+**Not a redesign to implement — a shape to grow into**, revisited as modules land. The problem with two nav items is not that it is small; it is that **the first three additions will be appended rather than placed.**
+
+```
+INTELLIGENCE          what Signora thinks
+  Attention           the ranked list                    ← exists
+  Accounts            all of them, searchable, filtered  ← MC-1, MC-2
+  Signals             what changed, across the book      ← MC-5
+  Research            deep comparisons, and their results ← exists, buried on the brief
+
+SELL                  what a person does
+  My work             taken, contested, waiting
+  Team                roll-up for a manager              ← MC-6
+
+YOUR BUSINESS         what Signora needs from you
+  Products · Ideal customers · Buying committees · Focus · Watchlist
+                                                        ← exists, one long page today
+
+PLATFORM
+  Connections         providers                          ← exists
+  People              members and roles                  ← exists, buried in Settings
+  Organization        name, billing later
+```
+
+**Three judgements behind it.** *Intelligence* and *Sell* separate **what the product knows** from **what a person is doing** — the line every mature platform eventually draws, and the one that lets a manager view exist at all. **Your business is a section, not a page**: five capabilities on one scrolling page is why it measures 57 words per action. And **Research already exists but is reachable only from inside an account**, which is why nobody would discover it.
+
+*Category: UX / Future Product. Raised for the product owner; **nothing built.***
