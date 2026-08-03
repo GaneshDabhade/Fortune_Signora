@@ -120,8 +120,8 @@ frontend/tests/e2e/
 **Run against a live stack: Next 15 dev server on 3400, FastAPI on 8400, PostgreSQL `signora_lane_b` at migration head `0031`, seeded with `playground@2` — twelve accounts through the real pipeline, four personas enrolled through Better Auth.**
 
 ```
-93 tests · 91 passed · 2 skipped · 0 failed  (92 regression + 1 demonstration)
-6.9 minutes through `make e2e` — leased, re-seeded, serial, zero retries
+119 tests · 116 passed · 3 skipped · 0 failed  (118 regression + 1 demonstration)
+8.0 minutes through `make e2e` — leased, re-seeded, serial, zero retries
 ```
 
 Skipped, both deliberately and visibly: the **OAuth round trip** (no provider credentials) and one **workflow move** when the seeded book has no account left in that state.
@@ -327,6 +327,65 @@ What it printed on its last run, unedited:
 ```
 
 **5.5 MB of artifacts per run** — video, trace, screenshots — in `frontend/test-results/`, git-ignored. That is the living documentation the brief asked for, and it is replayable by somebody who was not in the room.
+
+---
+
+## 6f · Product Confidence Dashboard
+
+**The measurement the product owner asked for, replacing a test count.** *High* means a customer journey is proven end to end in a browser and I would put it in front of a buyer; *Medium* means it works and something about it would be questioned; *Low* means a customer would notice the gap; *Unknown* means nothing here can see it.
+
+| Dimension | | Why |
+|---|---|---|
+| **Authentication** | **High** | Sign-in, refusal, non-enumeration, sign-out, session end in every tab, token refresh after a 401 — all proven. All were broken this morning |
+| **Navigation** | **High** | Back, forward, reload, deep links, bookmarks, second tab. The largest defect cluster, now the most heavily asserted |
+| **Data integrity** | **High** | The list and the brief are asserted to agree on score, name, cooling and contested — across three accounts, because one can agree by accident |
+| **Explainability** | **Medium-high** | Score → arithmetic → contributions → provider readings, every step citable. **R1-01 holds it down**: *"why now"* says the same thing on eleven of twelve rows |
+| **Persistence** | **High** | Products, watched companies and decisions all survive a reload; a cancelled decision records nothing; a concurrent save loses nobody's work |
+| **Permissions** | **Medium** | The courtesy and the enforcement are asserted separately, and both hold. **Two roles where reviewers asked for five, and no way to change one** |
+| **Performance perception** | **Medium-low** | Measured, below. 2.4s to first action, **7 token mints for 7 data reads**, 11 for the brief |
+| **Layout integrity** | **High** | No sideways scroll, no clipped text, no invisible text, no broken image, layout shift under 0.1, one dialog at a time, and the page no longer scrolls under an open one ([B-307](../BUGS.md)) |
+| **Operator stability** | **Low, and it is mine** | A day of browser runs leaked four dev servers and twelve test workers, exhausted the host, and took the shared PostgreSQL into crash recovery ([B-308](../BUGS.md)). A second data point for the dimension `RELEASE_ENGINEERING.md` §8 says nothing measures |
+| **Resilience** | **High** | Slow API, offline and recovery, network abort, double-submit, session end mid-edit — all exercised, all recoverable |
+| **Recoverability** | **Medium-high** | Everything is undoable except a recorded decision, which is permanent **by design and says so**. A mis-click has no undo |
+| **Accessibility** | **Medium-high** | Keyboard reach, focus visibility, focus return, dialog labelling, one `h1`, no bare `svg`, no focus lost across twelve tabs. **No screen-reader testing, and no contrast measurement** |
+| **Cross-browser** | **Medium** | Chromium headless and headed ✅ · Firefox 16/16 identical ✅ · **WebKit blocked by 40 host libraries** |
+| **Demo readiness** | **High** | `make product-demo` walks the product in 35 seconds and leaves a video. It runs in the normal suite so it cannot rot |
+
+### Performance perception — measured, not estimated
+
+```
+the attention list       2364ms until a customer can act
+                         16 requests — 7 token mints, 7 data reads
+the account brief        4480ms until a customer can act
+                         24 requests — 11 token mints, 11 data reads
+loading phases           rows:0 skeleton:true → rows:12 skeleton:true → rows:12 skeleton:false
+cumulative layout shift  under 0.1
+```
+
+**One access token per data request**, each an RS256 signature, for a token valid for minutes. The target is **one per page**; the suite's ceiling is set to catch a regression rather than to bless the current number. **Three loading phases and no layout jump** is the good news in this table — the screen assembles once and does not move under the reader.
+
+### One observation the loading test produced on its way to passing
+
+**A skeleton has no text**, so a check on a page's words reports a blank screen for a screen that is correctly showing a loading state. My first assertion did exactly that and called the product broken.
+
+The measurement underneath it is worth keeping, because it is what a customer's eye sees during a slow request:
+
+```
+  366ms   main is empty          the shell is still booting
+  931ms   main is empty
+ 1404ms   heading + skeleton     "something is happening"
+ 4000ms   twelve accounts
+```
+
+**The blank second is the app shell booting, not the request.** It is the same second on a fast API, it is measured in a development build, and a production build boots differently — so it is recorded as an observation and **not claimed as a defect**. The part that matters passed: once the page paints, it says something.
+
+### What this dashboard cannot see, stated so it is not mistaken for confidence
+
+**Long sessions.** Nothing here runs for an hour, and memory leaks, stale polling and duplicate work do not appear in a six-minute suite. Designing that is real work — it needs a runner that survives longer than a test timeout — and it is **not attempted**, deliberately, rather than approximated with a sleep.
+
+**A permission change mid-session**, because **no customer can make one**: `GET` and `POST /workspaces/{id}/members` exist and there is no `PATCH` and no `DELETE`. The journey has no path to exercise, and the absence is the finding.
+
+**Screen readers, contrast, and everything visual.** Structure is asserted; appearance is not.
 
 ---
 

@@ -176,6 +176,57 @@ def _demo_roles() -> dict[str, str]:
     return {user["email"]: user["role"] for user in declared}
 
 
+async def _retire_previous(admin_factory: async_sessionmaker[AsyncSession]) -> int:
+    """Remove Playgrounds seeded by an earlier run, so *re*-seeding replaces.
+
+    **Every run used to add one.** `_tracked` creates a workspace and nothing
+    removed the last, so a database seeded twelve times held **twelve
+    organizations all named `Playground`** — and the product then had to choose
+    between them. The selector offered *Playground* twelve times, the active one
+    was whichever the browser had stored, and if that was an early one its
+    accounts had long since been superseded: **a reviewer opened the product and
+    found an empty list, in a database with twelve full ones.**
+
+    Harmless while nobody re-seeded, which is why it went unseen. It stopped
+    being harmless when `make e2e` began re-seeding before every run, and the
+    same trap was always waiting for anyone who ran `make demo-seed` twice.
+
+    ### One workspace per transaction, and that is not fussiness
+
+    The first version deleted them in a single statement. A seeded workspace is
+    the whole pipeline — provider records, observations, business events,
+    signals, scores, opportunities, timeline entries, outbox rows — and twelve
+    of them cascading at once **took the development PostgreSQL down**, into
+    crash recovery, on a machine three lanes share. It recovered with nothing
+    lost, and the lesson stands: *the normal case is one, so make the
+    pathological case twelve bounded steps rather than one unbounded one.*
+
+    Scoped to this seeder's own name, deliberately: a workspace somebody created
+    by hand is not this function's to delete. `CASCADE` is the schema's own
+    foreign keys doing the work; nothing here knows the table list, which would
+    be a second copy of the schema that drifts.
+    """
+    async with admin_factory() as session:
+        stale = [
+            row[0]
+            for row in (
+                await session.execute(
+                    text("SELECT id FROM workspace WHERE name = :name"),
+                    {"name": WORKSPACE_NAME},
+                )
+            ).all()
+        ]
+
+    for workspace_id in stale:
+        async with admin_factory() as session:
+            await session.execute(
+                text("DELETE FROM workspace WHERE id = :id"), {"id": workspace_id}
+            )
+            await session.commit()
+
+    return len(stale)
+
+
 async def main() -> int:
     if os.environ.get("SIGNORA_ALLOW_DESTRUCTIVE_TESTS") != "1":
         print(
@@ -195,6 +246,9 @@ async def main() -> int:
     admin_factory = async_sessionmaker(admin, expire_on_commit=False)
 
     try:
+        retired = await _retire_previous(admin_factory)
+        if retired:
+            print(f"replacing {retired} previous Playground(s)")
         print(f"seeding {len(subjects)} accounts through the real pipeline…")
         workspace_id, user_id, _, _ = await _tracked(
             factory,
