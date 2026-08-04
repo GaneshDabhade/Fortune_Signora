@@ -162,7 +162,7 @@
 |---|---|
 | **Objective** | **A connection reports whether its credential still works, not whether its record still looks right.** Today a token that is structurally valid but has lost a permission reads as healthy |
 | **Module** | `integrations` — **Lane B's**, via TASK-402 |
-| **Status** | **`CLAIMED` — Lane B**, 2026-08-04 |
+| **Status** | **`IN VALIDATION` — Lane B**, 2026-08-04. Pushed at `da874a5`. **`ConnectionState.VALIDATED` was written for this and had never been reachable** — the state was correct and nothing performed the call that earns it. **The first draft revoked a connection whose credential was rejected and that was wrong**: `REVOKED` means the customer withdrew Signora at the vendor, and a rotated secret is indistinguishable from a `401`. Degraded health carries it instead. **Nothing enters the pipeline**, asserted by counting `raw_provider_record`, `claim` and `outbox_event` across a check |
 | **Approved screen** | **CRM Integrations** — *"Health is checked every minute. Two consecutive failures pause writes"* |
 | **Scope** | A reachability probe against the connected system using the stored credential, its outcome classified by the **existing** error taxonomy, and the result surfaced on the connection. **Two consecutive failures mark the connection as degraded** |
 | **Dependencies** | **None, and this is the point.** ⚠️ **[C-326](LANE_COORDINATION.md) does not block it** — [419](architecture/419-c326-narrowed-and-lane-b.md) §2 measures C-326 as blocking exactly two artifacts, the source port and the runner. **This slice uses neither** |
