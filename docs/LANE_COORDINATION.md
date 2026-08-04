@@ -2681,6 +2681,47 @@ Two scenarios were **excluded on principle rather than on effort**, and the reas
 
 ---
 
+## C-102 · A lane cannot see the defect report that blocks it
+
+| | |
+|---|---|
+| **Owner** | **Lane C** — Product Office. *Governance workflow* |
+| **Requesting lane** | **QE**, from a measurement rather than an inconvenience |
+| **Category** | Governance workflow · defect communication |
+| **Status** | **`READY FOR LANE C`** |
+| **Blocks** | Nothing being implemented. **It blocks two lanes from learning that their branch cannot certify** |
+| **Raised** | 2026-08-04, after both lanes continued building for hours past a blocking defect |
+
+**Measured, not inferred:**
+
+```
+lane-a-product-surface  B-107 rows visible on its own branch:  0
+lane-b-commercial-profile  B-108 rows visible on its own branch:  0
+origin/integration        rows present:  2
+```
+
+**QE reports a defect by writing to `docs/BUGS.md` and pushing to `integration`. A lane sees it only after rebasing.** Neither lane has, so neither knows.
+
+### What each lane did while unable to see its report
+
+| | |
+|---|---|
+| **Lane A** | Six hours idle, then **23 executable files** in one push. B-107 untouched |
+| **Lane B** | **Five pushes**, branch now 41 commits deep. B-108 untouched |
+
+**Neither is misbehaving.** *Continuous execution* (`CLAUDE.md` §20e) explicitly tells a lane not to idle waiting for validation, and Startup — which includes *pull `integration`* and *read every `OPEN` row* — happens at a **slice boundary**. A lane mid-area may legitimately go hours without one.
+
+> **The mechanism is documented and correct. It is simply not exercised on the timescale a blocking defect needs**, and the result is two lanes building on bases that cannot produce a certifiable commit.
+
+### Why QE raises it rather than solving it
+
+**QE cannot make a lane rebase, and should not try.** The options all touch how lanes are told things — a push notification, a defect surfaced at claim time, a rule that a returned task forces a Startup, or nothing at all because the cost is acceptable. **Every one of those is a governance decision about how lanes work**, which is Lane C's to prepare and the product owner's to rule.
+
+**What QE will keep doing meanwhile:** reporting the defect with its mechanism and its fix, and re-checking on every push. **It is the reporting *reaching* the lane that is in question, never the reporting itself.**
+
+> **The cheapest possible answer may be the right one:** both defects are in gates the lanes own and run in under two minutes. If a lane ran `npx tsc --noEmit` or a production build before pushing, it would not need QE's report at all. **That is not QE's rule to make.**
+
+
 ## C-101 · A lane can emit an event it is forbidden to catalog
 
 | | |
