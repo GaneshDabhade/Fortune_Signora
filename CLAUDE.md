@@ -741,6 +741,26 @@ promoted commit SHA  ==  certified commit SHA
 
 **One lane per module still binds**, and it is what makes a claim refusable: if the item you are about to take needs a module somebody else is inside, you cannot take it, and the note saying so is more useful to the product owner than a silent skip.
 
+### Executable work comes from `integration`, and from nowhere else
+
+**Ratified 2026-08-04, product owner**, after Lane A idled for several reporting cycles waiting on three artifacts that existed only on a Product Office branch.
+
+> **An implementation lane derives executable work from exactly three things: `origin/integration` · a `READY` task row · certified repository state.**
+>
+> **Product Office branches are planning artifacts, not execution contracts.** **A lane does not monitor one, does not wait on one, and does not treat work found on one as claimable.**
+
+**Why the rule is worth stating rather than assuming.** Lane A behaved correctly throughout — it polled, it reported, it did not invent work. **But its unblock conditions named a Lane C branch**, so it waited on a ref the Task Claim Protocol never consults, and **no gate could see that it was waiting on nothing claimable.**
+
+**The corollary, and it is Lane C's:** **prepared work that has not reached `integration` does not exist for planning purposes.** It is not buffer, it is not capacity, and reporting it as either overstates what any lane can do (`CLAUDE.md` §20e, the five states).
+
+#### Synchronization becomes the highest repository priority
+
+> **Whenever an implementation lane has been idle for more than one reporting cycle because `READY` work exists only outside `integration`, synchronizing that work becomes the highest repository priority** — above further preparation, above new initiatives, above every planning activity.
+
+**It outranks the Product Office's own queue**, because a lane idling on work that has already been written is the most expensive state the repository can be in: **the cost is paid twice — once in the idle lane, and once in the preparation that ages while it waits.**
+
+**Lane C reports this condition itself and does not wait to be told.** It was reported by Lane A on 2026-08-04, not by the office that caused it.
+
 ### The Task Claim Protocol
 
 **Ratified 2026-08-02, product owner. Mandatory before any production code is written.**

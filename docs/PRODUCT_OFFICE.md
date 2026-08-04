@@ -597,6 +597,22 @@ Ideas → Architecture → Preparation → READY → Lane A / Lane B → QE → 
 
 > **Whenever one stage accumulates while the next is empty, name it explicitly** — with the stage, the reason, and a priority. **An empty stage downstream of a full one is the definition of a bottleneck**, and it is visible only to whoever is looking at both.
 
+### Prepared work that has not reached `integration` does not exist
+
+**Ratified 2026-08-04, product owner** — `CLAUDE.md` §20e, *Executable work comes from `integration`*.
+
+> **It is not buffer. It is not capacity. It is not a reason a lane should wait.**
+
+**Lane C caused an idle lane by treating its own branch as though it were the repository.** Lane A's unblock conditions named `TASK-405`, `TASK-406` and `ADR-0400` — **all three on `lane-c-sync`, none on `integration`** — so it polled correctly and waited on nothing claimable.
+
+**Two obligations follow, and both are this office's:**
+
+> **① Synchronization outranks the office's own queue** whenever a lane has been idle for more than one reporting cycle on work that exists only outside `integration`. **Above further preparation, above new initiatives, above everything.**
+>
+> **② Lane C reports the condition itself.** On 2026-08-04 it was reported by Lane A — **the lane that was starving noticed before the office that was starving it.**
+
+**And the measurement discipline that would have caught it:** *throughput is not availability.* The flow audit read commit history, saw five slices land, and concluded the lanes were flowing. **They had flowed, that morning, and then run out** — a lane's *availability* is what it can claim now, never what it shipped earlier.
+
 ### The dashboard reports execution state, never planning state
 
 **Corrected 2026-08-04, product owner, after Lane C reported `Claimable: 7` while both implementation lanes reported that nothing could be claimed.** **Both statements cannot be true, and the lanes were right.**

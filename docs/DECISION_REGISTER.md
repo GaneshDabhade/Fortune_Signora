@@ -57,6 +57,15 @@
 | **D-038** | **Knowledge Continuity Framework approved, five of eight documents refused as duplication** | `APPROVED` | `lane-c-sync` | Repository documentation | **[423](architecture/423-knowledge-continuity-framework.md).** This register is D-038's first output |
 | **D-039** | **Synchronization by rebuild, not rebase** — abandon the 57-commit branch, replay only what still has value | `APPROVED` | `lane-c-sync` | Repository | **[422](architecture/422-synchronization-plan.md).** Six commits replace fifty-seven |
 
+## 2026-08-04 — synchronization recovery
+
+| # | Decision | Status | Merged | Affected | Repository impact |
+|---|---|---|---|---|---|
+| **D-049** | **Do not force-push `lane-c-product-office`.** *"Treat `lane-c-sync` as the synchronization branch. Ask QE to validate it. Merge through the normal certification flow. After successful promotion, retire the old branch in a controlled cleanup. **Avoid rewriting published history unless absolutely necessary**"* | `APPROVED` | `lane-c-sync` | Repository | The rebuilt branch is **15 ahead, 0 behind** and fast-forwards. **Retirement of the old branch is deferred until after promotion** |
+| **D-050** | **Implementation lanes derive executable work only from `origin/integration`, `READY` task rows and certified repository state.** **Product Office branches are planning artifacts, not execution contracts** | `APPROVED` | `lane-c-sync` | All lanes | `CLAUDE.md` §20e. **Lane A's unblock conditions named a Lane C branch**, so it waited on a ref the Task Claim Protocol never consults |
+| **D-051** | **Synchronization becomes the highest repository priority whenever an implementation lane has been idle for more than one reporting cycle because `READY` work exists only outside `integration`** | `APPROVED` | `lane-c-sync` | Product Office | `CLAUDE.md` §20e. **It outranks the office's own queue** — the cost is paid twice, in the idle lane and in the preparation ageing while it waits |
+| **D-052** | **The synchronization conflict resolutions are accepted** — remove duplicate TASK-403/404, keep only new executable rows, retain integration's ADR-0300 state | `APPROVED` | `lane-c-sync` | `BACKLOG.md` · ADR-0300 | **Both conflicts resolved toward *less* Lane C content**, which is the reduction intended |
+
 ## 2026-08-04 — implementation flow
 
 | # | Decision | Status | Merged | Affected | Repository impact |
