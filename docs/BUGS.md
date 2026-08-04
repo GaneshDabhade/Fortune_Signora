@@ -129,7 +129,7 @@ REFUSED — 9a112ae is certified against migration head 0031,
 | **Module** | `sales_engagement` · `workspace_tenancy` · `provider_platform` — the modules the slice introduced or extended |
 | **Current assignee** | **Lane A** |
 | **Severity** | 🟠 — **Blocking Quality Defect.** No customer behaviour is wrong; the coverage gate refuses the commit |
-| **Status** | **`OPEN`** — found by QE validating `11457c7`, 2026-08-04 |
+| **Status** | **`VERIFIED`** — QE, 2026-08-04. Coverage 94.27% → **95.10%**, floor met, no introduced file at 0%. Certified at `a955016` and promoted |
 | **Found** | 2026-08-04, immediately after [B-107](#b-107) was fixed. **The suite itself is green** |
 
 **Steps to reproduce.** On Lane A's candidate rebased onto `integration`, against a database at its own migration head:
@@ -148,6 +148,12 @@ FAIL Required test coverage of 95.0% not reached. Total coverage: 94.27%
 ```
 
 **Every test passes.** This is not a behaviour defect — it is 0.73 percentage points of floor, and the gate refuses the commit.
+
+### Verified 2026-08-04 — coverage as a consequence, not a target
+
+**Lane A closed it by testing what the seams own**, not by chasing a percentage. Their own commits say what each test asserts: *"which envelope fields it reads, that the workspace comes from the envelope rather than the payload, that it opens its own tenant-scoped session as the platform rather than as a person, and that a skipped outcome is not a failure."*
+
+And in the slice whose only goal was a number: **"Every test writes to a copy of the prompt directory. The shipped manifest is never touched — a record of what was true then is not rewritten to pass a test."** That is `CLAUDE.md` §2 applied unprompted, where the easy version of the fix mutates the manifest and passes.
 
 ### Five files the slice introduced have never been executed by a test
 
