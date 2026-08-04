@@ -91,15 +91,17 @@ The backing services (`signora-v2-postgres-1`, `-redis-1`, `-minio-1`) are delib
    │  Human Review owns  │   │  Release Engineering owns    │   │  Human …
    │  the environment    │   │  the environment             │   │
    └─────────────────────┘   └──────────────────────────────┘   └───────────
-    QE waits. It does not     QE may stop review processes
-    stop a live session.      and reclaim 3000/8000.
+    Both run at once, on     Nobody has to wait, and
+    3000/8000 and 3100/8100.  nobody stops anybody.
 ```
 
 | | |
 |---|---|
-| **While a review is active** | **Human Review owns the environment.** Release Engineering waits — `make release-preflight` reports `WAITING`, and that is a correct, expected state rather than a failure |
-| **Once the review concludes** | **Release Engineering owns the environment** until the next review begins. QE performs the transition itself; it is a normal lifecycle step, not an escalation |
-| **The signal** | **The reviewer says the review is complete.** QE never infers it from an idle-looking port — a session paused for lunch looks identical to one that ended |
+| **While a review is active** | **Human Review owns 3000/8000.** Release Engineering no longer waits for it — it owns 3100/8100 and the two do not meet |
+| **Once the review concludes** | `make review-end` releases the ports and **waits until they are genuinely free** before saying so |
+| **The signal** | **The reviewer says the review is complete.** Nothing infers it from an idle-looking port — a session paused for lunch looks identical to one that ended |
+
+> **This section described a handover that no longer needs to happen.** It was written when the two modes shared ports; it is kept because the *ownership* question is still real — a review session is somebody's work — and only the waiting is gone.
 
 **The transition back to Release Mode, performed by QE:**
 
@@ -141,9 +143,8 @@ Measured on 2026-08-03, minutes after a promotion: every branch on this workstat
 
 ```bash
 # 0 — configuration
-cp backend/.env.example backend/.env         # local values only; never committed
-cp frontend/.env.example frontend/.env.local
-cd frontend && npm install && npm run keys:generate   # paste both halves in — see below
+cd frontend && npm install && cd ..
+make workstation      # generates one key pair and writes both .env files
 
 # 1 — everything else, in one command
 make review

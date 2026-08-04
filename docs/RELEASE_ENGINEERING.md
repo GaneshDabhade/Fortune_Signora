@@ -125,7 +125,7 @@
 | ~~**RE-04**~~ | ~~A connection preflight before `pytest`~~ | **✅ Shipped 2026-08-03**, by extending `release-preflight.py` rather than adding a checker — an **integration** gap, not a missing capability | **S** | A-5 |
 | **RE-05** | **Per-run compose project name** | **Deprioritised 2026-08-03.** The lease *serialises* what this would *parallelise*, and A-2 is prevented today. **Its remaining value is parallel certification** — a Stage 4 concern, not a now one | **S** | A-2, in parallel |
 | ~~**RE-06**~~ | ~~Certification stability metrics in `make kpi`~~ | **✅ Shipped with RE-01**, because a measurement nobody reads is not a measurement | **S** | — |
-| **RE-07** | **Resolve the duplicated suite run** | ~250s per cycle — **but it may be load-bearing for ADR-0032** | **S**, after a ruling | — |
+| ~~**RE-07**~~ | ~~Resolve the duplicated suite run~~ | **✅ Closed 2026-08-03 — not worth doing, on measurement.** The estimate was ~250s; the two extra runs cost **21s** combined (invariants 6s, scenario 15s) against a ~600s cycle. **They buy a separately attributable count for the record, which ADR-0032 wants — the duplication earns its 21 seconds** | — | — |
 | **RE-08** | **Flaky-test detection** — record per-test durations, flag non-determinism | No evidence of flakiness yet. **Listed so it is not forgotten, not because it is due** | **M** | — |
 | **RE-09** | **Ephemeral certification environments** | The shape a multi-lane, multi-branch future needs | **L** | A-1, A-2, A-4 together |
 
@@ -420,7 +420,7 @@ If a lane believes it has found a genuine performance problem, the test is the o
 | **Repository Consistency** | `state-check` · `registers` · duplicate-identifier detection | Governance documents disagreeing with the repository, or with each other |
 | **Release Integrity** | `certification-guard` — commit-bound certification · `--audit-main` · the branch guard · L-17 | An uncertified commit reaching `main`, or a certified one never getting there |
 | **Documentation Synchronization** | `doc-drift` · **`event-catalog`** *(new)* · `runtime-composition` · `reachability` | Implementation and its contract diverging silently |
-| **Configuration Safety** | `required()` with no fallback · `require_redis_url` · `release-preflight` prerequisites | A tier silently connecting to another environment's data |
+| **Configuration Safety** | `required()` with no fallback · `require_redis_url` · `release-preflight` prerequisites · **`certify` provisions its own database (RE-03)** · **`make workstation` (RS-2)** | A tier silently connecting to another environment's data |
 | **Environment Isolation** | `environments` · `environment-lease` · the 3100/8100 separation | One environment making another unusable |
 | **Certification Reliability** | `attempts.jsonl` (RE-01) · stage timings · memory pressure reporting | A run that cannot be explained afterwards, or one that vanishes |
 | **Historical Traceability** | The certification manifest · dated records · **aborted runs preserved** | A repository that records only its successes |
@@ -431,9 +431,9 @@ If a lane believes it has found a genuine performance problem, the test is the o
 | Category | Gap |
 |---|---|
 | **Documentation Synchronization** | `event-catalog` is advisory and cannot gate until [C-101](LANE_COORDINATION.md) rules the workflow. `04-modules.md` and `05-module-dependencies.md` have the same shape and no checker |
-| **Configuration Safety** | **RE-03.** `certify` still inherits its test database from the shell — the last hand-typed correctness requirement in the pipeline |
+| **Configuration Safety** | ~~RE-03~~ **closed**. Remaining: **RE-10/RE-11** — sixteen `process.env` reads across five frontend files with no typed object. **Frontend foundation (🔒), not QE's** |
 | **Environment Isolation** | Machine resources. Object storage, temp files, log directories and build caches are not per-environment; none has caused a conflict, so none is addressed |
-| **Certification Reliability** | An abort is *inferred* from a missing `finished` event rather than recorded as one. Compose profile and abort reason are absent from the attempt record |
+| **Certification Reliability** | **No gap found on inspection.** An abort is inferred from a missing `finished` event — which is the *only* possible mechanism, since a killed process cannot record why it died — and the inference lives in exactly one function (`attempts.stability`), which is the right shape. An earlier version of this row called that a defect; it is not |
 | **Historical Traceability** | Nothing yet measures trend — completion rate, abort rate, mean duration exist in `kpi` but are not tracked over time |
 
 > **A category with no gap listed is a category nobody has looked at hard enough.** These are findings, not a roadmap: each is built when it eliminates a class, and never because the table has an empty cell.

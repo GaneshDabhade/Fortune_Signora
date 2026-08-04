@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: environments reachability event-catalog unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research
+.PHONY: environments reachability event-catalog workstation unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
 # The executable bit is filesystem state, not repository state, and it does
@@ -195,6 +195,22 @@ environments:
 ## connection flow, so a customer could reach it only by already being there.
 reachability:
 	@python3 ./infra/reachability.py $(ARGS)
+
+## **Make this machine able to run Signora, and say what that cost.** (RS-2)
+#
+# Repository Health · Configuration Safety. Generates one RSA pair and writes
+# both halves to the tiers that need them — the public half to the backend, the
+# private half to the frontend — removing the transcription step where it used
+# to go wrong. A mismatched pair mints tokens the API rejects with no clue why.
+#
+# It never overwrites an existing configuration without --force, and --force
+# says what it is about to invalidate before doing it.
+#
+#     make workstation
+#     make workstation ARGS=--check     report, change nothing
+#     make workstation ARGS=--force     regenerate; signs everyone out
+workstation:
+	@python3 ./infra/workstation.py $(ARGS)
 
 ## **Does the platform emit an event the contract does not name?**
 #

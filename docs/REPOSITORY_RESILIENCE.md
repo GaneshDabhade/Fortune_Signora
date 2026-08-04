@@ -73,7 +73,9 @@ The product owner's taxonomy, with every artifact in this repository placed in i
 
 **⚠️ Review evidence is a versioned artifact stored as if it were disposable.** `review/` is git-ignored. The reasoning is recorded and still correct — committing it needs `--audit-main` to accept a new class of commit on `main`, which is governance — but *"we have not decided yet"* is a different state from *"disposable"*, and today the filesystem says the second.
 
-**⚠️ Local environment files are irreplaceable and are in none of the four states.** `backend/.env`, `frontend/.env.local` and `infra/.env.prod-local` hold generated key pairs. They are **correctly** never committed (§13), and they are **not** reproducible — regenerating a JWT pair invalidates every existing session, and a mismatched pair mints tokens that 401 with no clue why. **A machine rebuild loses them**, and the recovery is "generate a new pair and update both tiers", which nothing documents as a procedure.
+**⚠️ Local environment files were irreplaceable and in none of the four states — `make workstation` moved them into *generated*.** The state that was missing was never a fifth category; it was a command.
+
+**As it stood before RS-2:** `backend/.env`, `frontend/.env.local` and `infra/.env.prod-local` hold generated key pairs. They are **correctly** never committed (§13), and they are **not** reproducible — regenerating a JWT pair invalidates every existing session, and a mismatched pair mints tokens that 401 with no clue why. **A machine rebuild loses them**, and the recovery is "generate a new pair and update both tiers", which nothing documents as a procedure.
 
 > **A fifth state is not the answer.** `.env` files are *reproducible by regeneration, at a stated cost*. What is missing is the command, not the category — see R-5.
 
@@ -111,7 +113,7 @@ The product owner's taxonomy, with every artifact in this repository placed in i
 
 **A developer recreates a working environment from the repository plus documented commands.** Where a value cannot be committed — a key pair, a secret — the **procedure to regenerate it and the consequences of doing so** are documented as precisely as the value would have been.
 
-*Exposure:* real. QE reconstructed `frontend/.env.local` this cycle by reading four files and writing an ad-hoc script; **nothing in the repository describes that as a procedure**, and the consequence (every existing session invalidated, both tiers must be updated together) is stated nowhere. *Verified by:* the procedure existing and being run. *Retires when:* a `make workstation` exists and is exercised.
+*Exposure:* was real — QE reconstructed `frontend/.env.local` by reading four files and writing an ad-hoc script, and nothing described that as a procedure. **Closed 2026-08-03 by `make workstation`**, which generates one pair, writes both halves to the tiers that need them, and states the cost of `--force` before paying it. *Retires when:* never — it is now the documented first-run command.
 
 ### R-6 · Recovery is exercised, not assumed
 
@@ -128,7 +130,7 @@ The product owner's taxonomy, with every artifact in this repository placed in i
 | | | Why now | Size |
 |---|---|---|---|
 | ~~**RS-1**~~ | ~~An untracked-work check~~ | **✅ Shipped 2026-08-03** — `make unsaved`, `make unsaved ARGS=--workstation`. Always exits 0; `.gitignore` is the disposability classifier | **S** |
-| **RS-2** | **`make workstation`** — regenerate `.env` files and key pairs, with the consequences stated | R-5's gap, hit by QE this cycle | **M** |
+| ~~**RS-2**~~ | ~~`make workstation`~~ | **✅ Shipped 2026-08-03.** One key pair, both tiers, no transcription. Never overwrites without `--force`, and `--force` says what it invalidates first | **M** |
 | **RS-3** | **Decide where review evidence lives** — a product-owner decision, not an implementation | R-4 is blocked on it and cannot be built around it | **decision** |
 
 **Deliberately not proposed:**
