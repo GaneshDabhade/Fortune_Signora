@@ -4384,3 +4384,18 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 | **Scoring changes** | — | **None needed.** Finding 1 |
 
 **Everything Lane A owns in this epic sits behind ❓1.** That is not a scoping accident: ADR-0400 made identity the root deliberately, and finding 2 is why the shortcut around it does not exist.
+
+### Investigation closed — 2026-08-04
+
+**The product owner accepted the findings and moved Lane A off Epic C.** Recorded rather than left implied, because the next reader needs to know this item is *finished as an investigation* and not *abandoned mid-way*.
+
+| | |
+|---|---|
+| **What was achieved** | Repository reuse verified · every ADR-0400 assumption verified against source · implementation dependencies identified · risks documented |
+| **What is preserved** | Everything above. **No further repository investigation is required for Epic C unless requested** |
+| **Why Lane A stopped** | **Not a blocker it could engineer around.** Epic C waits on product direction, an architectural decision, and [E1](BACKLOG.md)'s progression — none of which an implementation lane supplies |
+| **Ownership** | **Historical ownership of the investigation stays with Lane A.** Implementation ownership is no longer its active priority, by the product owner's ruling |
+
+> **Whoever picks Epic C up inherits a validated starting point rather than a re-run.** The two findings that matter are above: **the buying score needs no change at all**, and **an interval cannot close without an identity** — which is why the tempting split into a blocked half and an executable half does not exist.
+
+---
