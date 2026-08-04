@@ -44,6 +44,8 @@
 | **Settings** — branding on exported artefacts, seats counted monthly, invoices | **Modules 3 and 8** |
 | — | **Internal:** *Connected Accounts* appears in **both Module 5 and Module 6** |
 
+> ⚠️ **Withdrawn 2026-08-04, when the designs arrived — and wrong in the best way.** **Every one of these surfaces defers explicitly.** Security Center: *"workspace-wide controls live in **Settings** and are shown here as context, **never as something you can change**."* System States: full-page errors *"keep the shell."* And the split is declared in each module's own subtitle — **`personal surface` versus `admin surface`.** **Nothing is specified twice.** The *Connected Accounts* internal overlap is withdrawn with it. **Evidence: [418](418-platform-foundation-assessment.md) §2.**
+
 **This is `CLAUDE.md` §2 — *truth has exactly one authoritative representation* — arriving at the design layer.** Two approved specifications describing one surface will eventually disagree, and **the copy nobody is maintaining is the one somebody will read.**
 
 > **Lane C is not asking for a redesign and is not proposing one.** It is reporting, at the cheapest possible moment, that seven surfaces will need one owner. **Raising it after both projects are ratified costs a reconciliation; raising it now costs a sentence in whichever document ends up owning each surface.**
