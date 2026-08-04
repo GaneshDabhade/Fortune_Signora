@@ -95,6 +95,27 @@ class SyncWatermark:
     capability: ProviderCapability
     subject: str
     position: datetime | None = None
+    #: When a provider last **completed** a read of this subject, whether or
+    #: not anything came back (**A7**). `position` cannot answer that: it
+    #: advances only when records arrive, so an account nobody has found
+    #: anything about is indistinguishable from one nobody has checked — and
+    #: those diverge exactly where a seller needs them to.
+    #:
+    #: **Completed, not attempted-and-failed.** A run that raised is recorded
+    #: on the sync, not here: the product would otherwise say *checked* about
+    #: a read that never happened, which is the false certainty this field
+    #: exists to remove rather than relocate.
+    attempted_at: datetime | None = None
+
+    def attempted(self, at: datetime) -> SyncWatermark:
+        """Record that a provider completed a read of this subject.
+
+        **Always moves, unlike `advanced_to`.** A position going backwards
+        would re-deliver evidence; a *later* attempt time going backwards is
+        simply untrue, and the two runs that could produce it — a retry and a
+        replay — both genuinely happened after the one before.
+        """
+        return replace(self, attempted_at=at)
 
     def advanced_to(self, position: datetime) -> SyncWatermark:
         """Move forward, never backwards.

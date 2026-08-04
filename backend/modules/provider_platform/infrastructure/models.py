@@ -60,6 +60,14 @@ class ProviderWatermarkModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMi
     #: before the column existed; those match no real subject and are inert.
     subject: Mapped[str] = mapped_column(String(512), nullable=False)
     position: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    #: When a provider last completed a read of this subject (**A7**).
+    #: Nullable, and null on every row written before the column existed —
+    #: which is honest rather than convenient: those subjects *were* read, and
+    #: nothing recorded when, so the product must say it does not know rather
+    #: than backfill a date it invented.
+    attempted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
 
 class RawProviderRecordModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMixin):

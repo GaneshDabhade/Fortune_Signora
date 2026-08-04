@@ -32,16 +32,16 @@ from modules.provider_platform.domain.events import (
     ProviderSyncStarted,
     new_event_id,
 )
+from modules.provider_platform.domain.pacing import RequestPace
 from modules.provider_platform.domain.provider import (
-    ProviderResponse,
     ProviderAdapter,
     ProviderCapability,
     ProviderPayloadInvalidError,
     ProviderPermanentError,
     ProviderRequest,
+    ProviderResponse,
     ProviderTransientError,
 )
-from modules.provider_platform.domain.pacing import RequestPace
 from modules.provider_platform.domain.sync import (
     ProviderSync,
     RawProviderRecord,
@@ -161,11 +161,25 @@ class RunProviderSync:
                 sync, SyncFailureKind.PERMANENT, str(exc), correlation_id, started=started
             )
 
-        sync.complete(now=datetime.now(UTC))
+        completed_at = datetime.now(UTC)
+        sync.complete(now=completed_at)
         await self._repository.save(sync)
 
+        # **The watermark is now written on every completed run** (A7), where
+        # before it was written only when the position moved. Those are two
+        # different facts and the row holds both: *how far we have read*, and
+        # *when we last looked*. A successful read that returned nothing left
+        # no trace at all before this, which is why an account nobody has
+        # found anything about was indistinguishable from one nobody had
+        # checked.
+        #
+        # **The position rule is untouched.** `attempted` always moves;
+        # `advanced_to` still refuses to go backwards, and still only runs
+        # under the same two conditions as before.
+        read = watermark.attempted(completed_at)
         if sync.may_advance_watermark and sync.high_water is not None:
-            await self._repository.save_watermark(watermark.advanced_to(sync.high_water))
+            read = read.advanced_to(sync.high_water)
+        await self._repository.save_watermark(read)
 
         await self._publish(
             ProviderSyncCompleted(

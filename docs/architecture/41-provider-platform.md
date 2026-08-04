@@ -17,8 +17,32 @@
 | | What it records | Why it is separate |
 |---|---|---|
 | `provider_sync` | One run: when, how many pages, how many records, how it ended | The history of what happened |
-| `provider_watermark` | **How far one subject has been read** | Resetting it is the standard recovery from a bad run, and **recovery must not destroy the record of what went wrong** |
+| `provider_watermark` | **How far one subject has been read**, and **when a provider last looked** | Resetting it is the standard recovery from a bad run, and **recovery must not destroy the record of what went wrong** |
 | `raw_provider_record` | What arrived, before interpretation | Evidence. Immutable, and cited by every conclusion downstream |
+
+### A watermark records *when we looked*, not only *what we found* — A7 *(2026-08-03)*
+
+**`position` could not answer whether Signora is still watching an account**, and that is a different question from how fresh the evidence is. It advances **only when records arrive**, so a successful read that returned nothing left no trace at all:
+
+> **An account nobody has found anything about is indistinguishable from one nobody has checked.**
+
+A seller reading *"Latest evidence · 5 weeks ago"* could not tell whether **the account went quiet or the pipeline did** — and those are opposite conclusions about whether to call.
+
+**`attempted_at` is written on every completed run**, regardless of `high_water`. One column, one write, no new table, and it keeps *how far we read* and *when we last tried* in the row that already knows the subject.
+
+| | |
+|---|---|
+| **Why not `subject` on `provider_sync`** | More faithful to *runs* — but it adds a per-subject row to a table whose grain is deliberately per-run |
+| **Why not a new table** | Nothing about the fact is independent of the watermark. Two tables keyed identically is the duplication §2 forbids |
+| **Why completed runs only** | A run that raised **did not successfully look.** Recording it here would relocate the false certainty this field exists to remove; what happened is on `provider_sync`, which is the record for it |
+
+**`SyncWatermark.attempted()` always moves, deliberately unlike `advanced_to()`.** A position going backwards would re-deliver evidence between the two; **an attempt time is a statement about when a run finished, and the run writing it finished last.** The asymmetry is the design, not an oversight, and it has a test.
+
+**A watermark row now exists where none did before**, and that is safe by a property the module already had: `subjects_with_a_position` filters on **`position IS NOT NULL`**, not on the row — *"a watermark with no position records an attempt that stored nothing"* ([ADR-0036](adr/0036-target-account-contract.md) §4). **A row created purely to record an attempt cannot make an unread subject look read.**
+
+**Not backfilled, and the null is the honest value.** Every existing row was read at some point and nothing recorded when. `now()` would assert every subject was checked at migration time; `created_at` would assert each was checked once and never since. **Both are false, so the product says it does not know.**
+
+> **What A7 does not yet deliver, and it is the open half.** `subject` is the customer's typed company name; the brief holds an entity id, and resolution is deliberately downstream ([ADR-0036](adr/0036-target-account-contract.md) §5). **Joining the two is unresolved** — [C-219](../LANE_COORDINATION.md), with Lane C. Until it is, **nothing renders this**, and **the word *checked* does not reach a screen**: A4 refuses it and `freshness.test.tsx` asserts the refusal, which is the contract the render slice updates rather than works around.
 
 ### A watermark belongs to one subject — PP-01, B-004 *(2026-08-02)*
 

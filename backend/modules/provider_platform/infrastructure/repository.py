@@ -78,6 +78,7 @@ class ProviderSyncRepository:
             capability=capability,
             subject=subject,
             position=model.position if model else None,
+            attempted_at=model.attempted_at if model else None,
         )
 
     async def save_watermark(self, watermark: SyncWatermark) -> None:
@@ -90,12 +91,16 @@ class ProviderSyncRepository:
                 capability=watermark.capability.value,
                 subject=watermark.subject,
                 position=watermark.position,
+                attempted_at=watermark.attempted_at,
                 created_by=SYSTEM_USER_ID,
                 updated_by=SYSTEM_USER_ID,
             )
             .on_conflict_do_update(
                 constraint="uq_provider_watermark_subject",
-                set_={"position": watermark.position},
+                set_={
+                    "position": watermark.position,
+                    "attempted_at": watermark.attempted_at,
+                },
             )
         )
         await self._session.execute(statement)
