@@ -2,6 +2,8 @@
 
 > Status: **As built, and paused.** M13 slices S01–S09 complete. Lane B.
 >
+> **Epic E1 was attempted against this document on 2026-08-04 and stopped at an architectural blocker** — see the note in §9 and [ADR-0300](adr/0300-inbound-customer-systems.md). The module itself is unchanged.
+>
 > **The paused state is the point of this document.** M13 stops at a deliberate boundary: everything that does not require a vendor's developer application is finished, and the one thing that does is not started. A lane picking this up months from now needs to know *what exists*, *what does not*, *why the line falls where it does*, and *what would have to be true to resume* — none of which is recoverable from the code, and all of which would otherwise live only in commit messages.
 >
 > [13-integrations.md](13-integrations.md) is the ratified architecture and is **not** superseded by this document. That one says *what the Integration Abstraction Layer is*; this says **what was built inside it**, in the manner of [22](22-knowledge-graph.md)–[29](29-ai-reasoning-engine.md) and [40](40-commercial-profile.md).
@@ -212,6 +214,16 @@ The callback route deliberately returns `provider_unavailable` rather than a stu
 5. Add the first real call so a connection can reach `VALIDATED`; that is also the natural home for the first `ProviderRevoker`.
 
 **No further product development is required.** If a resuming lane finds itself designing a screen, a state or a port, something has changed underneath this document and the change is the first thing to write down.
+
+> ### The resuming lane designed a port, 2026-08-04
+>
+> **This paragraph asked to be told, and it was right to.** Lane B took Epic E1 (*CRM OAuth and read*) and found that the five steps above describe **acquisition** completely and **synchronization** not at all — and that the sentence in §1, *"Provider Platform owns the synchronization and consumes the relationship through `public/`"*, has never been checked against Provider Platform's code.
+>
+> **It does not hold as written.** The Provider Port cannot express a customer-held system: `ProviderName` is a closed enum of five ratified suppliers, `ProviderRequest` carries no connection and so has nowhere to put a per-workspace credential, and `ProviderRequest.subject` is required while a CRM sync enumerates rather than asks about one company. `ClaimAttribute` has no CRM concept and says *RFC required to extend*.
+>
+> **What does hold, and is the useful half of the finding:** `NormalizeRawRecord` keys mappers by `provider: str` and `raw_provider_record.provider` is `String(64)`, so **the canonical shape is already open and no second normalization path is needed.** The gap is entirely in *acquiring* records, not in *interpreting* them. `ExecutionContext` turns out to be exactly the right shape for what an inbound adapter would take — which is why it was built and left unwired.
+>
+> **The design is [ADR-0300](adr/0300-inbound-customer-systems.md), proposed and not accepted; the blocker is [C-326](../LANE_COORDINATION.md).** Nothing was built against it. **Steps 1–5 above remain correct** — they describe the connection, and the connection is still what a developer application unblocks.
 
 ### Known limitations, stated rather than discovered later
 

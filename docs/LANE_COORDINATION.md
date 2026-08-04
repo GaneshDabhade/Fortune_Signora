@@ -3741,3 +3741,62 @@ KeyError: '0035'
 **B-400 named the first, on cost, and that reasoning still holds.** This lane is ready either way: `lane-b-commercial-profile` is rebased onto `1252d02` with its gates green, and the renumber is pre-verified.
 
 **What this lane is doing meanwhile.** **Epic E1**, which touches no migration yet. **If E1 adds one, this lane will number it after whatever head exists at that rebase and say so** — which is the same rule, applied at the only moment it can be applied correctly.
+
+## C-326 · Epic E1 has no path for a customer's own system to reach the pipeline
+
+| | |
+|---|---|
+| **Raised by** | Lane B, 2026-08-04, on claiming [TASK-402](BACKLOG.md) and auditing the existing foundation before writing code |
+| **Owner** | **The product owner.** Three of the four decisions are 🔴 and one is environmental; none is a lane's |
+| **Status** | `OPEN` — **an architectural blocker, not an implementation one.** Implementation of Epic E1 has stopped at [ADR-0300](architecture/adr/0300-inbound-customer-systems.md) |
+| **Blocks** | **All of Epic E1**, and through it D3, D1's two missing risk families, and E2 |
+
+**The full analysis is [ADR-0300](architecture/adr/0300-inbound-customer-systems.md).** This item carries the six things a blocker must state so a ruling needs no second round trip.
+
+### 1 · The problem
+
+**Epic E1 was sized on the belief that *"what remains is the read, not the plumbing"*. The plumbing is what is missing.** Measured against the code:
+
+| | |
+|---|---|
+| **`ProviderName` is a closed `StrEnum`** | Five ratified suppliers. `ProviderRecord.provider` and `ProviderRegistry` are typed by it, so **a CRM slug is unconstructable** — the type system doing exactly what §2 asks |
+| **`ProviderRequest` carries no connection** | A provider adapter holds *Signora's* credential from the composition root. **A customer's credential is per workspace, per connection, and expires**, and there is nowhere to put it |
+| **`ProviderRequest.subject` is required** | Providers are asked *about one company*. **A CRM is asked for the customer's accounts** — an enumeration with no subject, and `provider_watermark`'s fourth column has nothing truthful to hold |
+| **`ClaimAttribute` has no CRM concept** | Nothing for *is already a customer*, *contract value*, *renewal date*, *opportunity stage*. The file says **RFC required to extend** |
+| **No HubSpot developer application exists** | Environmental, named in E1's own specification as *"a product-owner action"* and again in [44-integrations.md](architecture/44-integrations.md) §9 |
+
+**One thing is not a problem, and it is the good news.** `NormalizeRawRecord` keys mappers by `provider: str` and `raw_provider_record.provider` is `String(64)`. **The canonical shape is already open**, so no second normalization path is needed — the constraint TASK-402 named first is satisfied by what exists. **The gap is entirely in acquiring records and not at all in interpreting them.**
+
+### 2 · The affected modules
+
+`integrations` **(Lane B)** — owns the connection, the credential and `ExecutionContext`, which already exists, is tested, and is deliberately unwired · `provider_platform` **(Lane A, itself in Implementation Waiting on [C-021](#c-021--the-dispatch-direction))** — owns synchronization, watermarks, raw records and `provider.record.received` · `provider_normalization` — owns the canonical vocabulary, and is the one module that needs no structural change.
+
+### 3 · The alternatives
+
+**Four, with the reasoning in the ADR.** A sibling port owned by Integrations · extending the Provider Port · a second ingestion path owned entirely by Integrations · deferring until the developer application exists.
+
+### 4 · The recommendation
+
+> **A customer-held system is a *source*, not a *provider*.** A sibling port — `IntegrationSourceAdapter` — defined in `integrations/domain/` because **a port belongs to the module that owns its language** (§6), taking the `ExecutionContext` that already exists. **Provider Platform drives it and writes the raw records and the event it already writes**, so nothing downstream of `raw_provider_record` changes at all.
+
+### 5 · The trade-offs
+
+**Gained:** one ingestion path · raw records, watermarks, pacing, sync history, failure classification and the entire downstream pipeline reused unchanged · `ProviderName` stays closed and keeps meaning what it says · a customer's credential never leaves `integrations`.
+
+**Given up:** a second port to maintain, deliberately parallel to the Provider Port and free to drift · Provider Platform learns that customer systems exist · **E1 needs two rulings rather than one**, because the vocabulary extension is separated deliberately.
+
+**And the reversal is cheap, which is the argument for deciding now:** the port would have one implementation and one caller, `raw_provider_record.provider` is already a string, and every row written stays valid. **No data migration, no re-normalization, no claim rewritten** — and that stays true only until the first customer connects.
+
+### 6 · The implementation impact
+
+| # | Work | Budget | Whose |
+|---|---|---|---|
+| 1 | The port and its types in `integrations` | 🟠 | **Lane B — ready now** |
+| 2 | The use case in `provider_platform`, and a watermark keyed on a connection | 🔴 | **This ruling**, then that module's assignee |
+| 3 | New `ClaimAttribute` members and probably a new `ClaimDomain` | 🔴 | **A separate ruling.** Deliberately not bundled |
+| 4 | A HubSpot adapter and a mapper registered under `"hubspot"` | 🟢 / 🟠 | Lane B |
+| 5 | **The HubSpot developer application** | environmental | **The product owner.** Nothing can be demonstrated without it |
+
+> **This lane has built nothing against any option, and will not.** *"I could just add it"* is how an architectural blocker becomes a silent design decision inside a feature slice, and the change that follows is always small — which is exactly why nobody notices it was a decision.
+
+**What Lane B is doing meanwhile.** Nothing in Epic E1 is startable without item 2 or item 5, and **the smaller slice inside it does not exist** — the acquisition half is complete and paused on a credential, and the read half is this ruling. **This lane is reporting `BLOCKED` rather than finding adjacent work**, per the product owner's standing direction not to manufacture implementation.
