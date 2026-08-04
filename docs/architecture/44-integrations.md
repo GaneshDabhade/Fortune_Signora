@@ -1,10 +1,10 @@
 # 44 — Integrations (module design)
 
-> Status: **As built, and paused.** M13 slices S01–S09 complete. Lane B.
+> Status: **Acquisition complete; the read blocked.** M13 slices S01–S09, plus Epic E1's connection surface (2026-08-04). Lane B.
 >
-> **Epic E1 was attempted against this document on 2026-08-04 and stopped at an architectural blocker** — see the note in §9 and [ADR-0300](adr/0300-inbound-customer-systems.md). The module itself is unchanged.
+> **Epic E1 found the module's pause was in the wrong place.** Everything between a customer's consent and a stored credential is now built — the connect route (§4), the code exchange and the hand-off (§5) — and what remains for *acquisition* is a developer application, not engineering. **What is genuinely blocked is the read**: no path exists for a customer-held system to deliver records into the pipeline, recorded as [ADR-0300](adr/0300-inbound-customer-systems.md) and [C-326](../LANE_COORDINATION.md).
 >
-> **The paused state is the point of this document.** M13 stops at a deliberate boundary: everything that does not require a vendor's developer application is finished, and the one thing that does is not started. A lane picking this up months from now needs to know *what exists*, *what does not*, *why the line falls where it does*, and *what would have to be true to resume* — none of which is recoverable from the code, and all of which would otherwise live only in commit messages.
+> **The paused state was the point of this document, and the note below is what it asked for.** M13 stops at a deliberate boundary: everything that does not require a vendor's developer application is finished, and the one thing that does is not started. A lane picking this up months from now needs to know *what exists*, *what does not*, *why the line falls where it does*, and *what would have to be true to resume* — none of which is recoverable from the code, and all of which would otherwise live only in commit messages.
 >
 > [13-integrations.md](13-integrations.md) is the ratified architecture and is **not** superseded by this document. That one says *what the Integration Abstraction Layer is*; this says **what was built inside it**, in the manner of [22](22-knowledge-graph.md)–[29](29-ai-reasoning-engine.md) and [40](40-commercial-profile.md).
 >
@@ -160,8 +160,12 @@ This looked like a conflict with [18-authentication.md](18-authentication.md):49
 
 | Concern | Where | Why |
 |---|---|---|
-| Redirect, consent, `state`, code exchange | **Next.js** (`app/api/integrations/[slug]/{start,callback}`) | 18-authentication.md:49. Signora users' authentication and external-system authorization remain completely separate grants |
+| Redirect, consent, `state`, **code exchange** | **Next.js** (`app/api/integrations/[slug]/{start,callback}`, `lib/integrations/{exchange,record}.ts`) | 18-authentication.md:49. Signora users' authentication and external-system authorization remain completely separate grants |
 | Storage, validation, refresh, revocation, lifecycle | **Python** (this module) | Workspace ownership, auditability and RLS |
+
+**The workspace travels inside the signed state, never in the query string.** It is decided when the flow starts, cannot be edited by whoever returns, and the API re-verifies membership regardless — which is what keeps it a routing hint rather than a grant (§13).
+
+**The callback mints its own access token rather than forwarding one.** A customer returning from a consent screen arrives on a redirect carrying cookies and no `Authorization` header, so there is nothing to forward. The session is exchanged exactly as `/api/token` does — same issuer, same key, same claims — because a second route to the API would be a second authentication surface.
 
 The `state` parameter is **HMAC-signed and single-use**, with a 10-minute TTL, compared in constant time, and **expiry checked before the nonce** so an expired state cannot be distinguished from an unknown one by timing.
 
@@ -220,23 +224,25 @@ Salesforce is next and was argued for at the time — it is the enterprise defau
 
 | Missing | Needs |
 |---|---|
-| **The HubSpot token exchange** | A HubSpot developer application — **client id, client secret, registered redirect URI** |
+| ~~**The HubSpot token exchange**~~ | **Built 2026-08-04.** RFC 6749 §4.1.3, tested against a fake `fetch`. The one step no RFC covers — *whose account is this token for* — is **configuration** in `providers.ts` and is the only part a live handshake has yet to confirm |
+| **Developer applications** | **Client id, client secret and a registered redirect URI, per provider.** Until they exist `credentialsFor()` returns `null`, every catalog entry stays `connectable: false`, and no customer can reach the flow |
 | **End-to-end verification** | The above, plus a real consent round trip |
 | **Production credential validation** | A first real call, which is what moves a connection `CONNECTED → VALIDATED` |
 
-The callback route deliberately returns `provider_unavailable` rather than a stub. **Nothing simulates a completed connection**, because a product that reports a connection it does not have is worse than one that admits it cannot connect yet.
+**Nothing simulates a completed connection.** The exchange is exercised against a substituted `fetch` in a test and never in the product; a real environment with no credentials refuses before reaching it. **A product that reports a connection it does not have is worse than one that admits it cannot connect yet**, and that has not changed — what changed is that the code between consent and storage now exists and is tested rather than being a comment describing itself.
 
 ### Resume conditions
 
-**When real credentials exist, the remaining work is one slice and it is small:**
+**Steps 2 and 3 were built on 2026-08-04. What remains is credentials and a first handshake:**
 
-1. Put `HUBSPOT_CLIENT_ID`, `HUBSPOT_CLIENT_SECRET` and the registered redirect URI in the frontend environment. `credentialsFor()` already returns `null` when they are absent, and that absence is what `connectable: false` currently reflects.
-2. Implement the token exchange in `app/api/integrations/[slug]/callback/route.ts`, at the single point that today returns `provider_unavailable`.
-3. Call `ConnectSystem` with the resulting `ConnectInput`. **The endpoint, the use case, the storage, the encryption, the lifecycle and every screen already exist and are tested.**
-4. Flip the catalog entry's `connectable` to `true` — **only once a real handshake has succeeded**, never in anticipation.
-5. Add the first real call so a connection can reach `VALIDATED`; that is also the natural home for the first `ProviderRevoker`.
+1. Put `SIGNORA_HUBSPOT_CLIENT_ID`, `SIGNORA_HUBSPOT_CLIENT_SECRET` and the registered redirect URI in the frontend environment. `credentialsFor()` returns `null` when they are absent, and that absence is what `connectable: false` reflects.
+2. ~~Implement the token exchange~~ — **`lib/integrations/exchange.ts`**, RFC 6749 §4.1.3, with §5.2 error codes translated into `ConnectOutcome`s. 22 tests against a substituted `fetch`.
+3. ~~Call `ConnectSystem`~~ — **`lib/integrations/record.ts`** posts to `POST /workspaces/{id}/connections` (§4), minting its own access token because a customer returning on a redirect carries cookies and no `Authorization` header.
+4. **Confirm the one unverified step.** `identityUrl` and `identityAccountField` in `providers.ts` answer *whose account is this token for*, which no RFC standardises. They are documented behaviour rather than observed behaviour, and a first handshake confirms or corrects them.
+5. Flip the catalog entry's `connectable` to `true` — **only once a real handshake has succeeded**, never in anticipation.
+6. Add the first real call so a connection can reach `VALIDATED`; that is also the natural home for the first `ProviderRevoker`.
 
-**No further product development is required.** If a resuming lane finds itself designing a screen, a state or a port, something has changed underneath this document and the change is the first thing to write down.
+**No further product development is required for acquisition.** If a resuming lane finds itself designing a screen, a state or a port, something has changed underneath this document and the change is the first thing to write down — as it was on 2026-08-04, below.
 
 > ### The resuming lane designed a port, 2026-08-04
 >

@@ -37,6 +37,25 @@ export interface ProviderConfig {
    * alongside the connection. Salesforce does; HubSpot does not.
    */
   usesInstanceEndpoint: boolean;
+  /**
+   * Where to ask *whose account is this token for*, with the token appended.
+   *
+   * **The one thing OAuth does not standardise, and Signora needs it**: a
+   * connection is keyed on the customer's own account identifier, and no RFC
+   * field carries one. Every provider publishes an endpoint for the question
+   * and they all answer it differently — which is precisely why it belongs in
+   * this table rather than as a branch in `exchange.ts`.
+   *
+   * **Unverified against a live provider.** No developer application exists
+   * for any system yet, so these three fields are the documented behaviour
+   * rather than observed behaviour, and a first real handshake is what
+   * confirms them.
+   */
+  identityUrl: string;
+  /** The field in that response carrying the account identifier. */
+  identityAccountField: string;
+  /** The field carrying a per-account host, for providers that move. */
+  identityEndpointField?: string;
 }
 
 export const PROVIDERS: Record<string, ProviderConfig> = {
@@ -49,6 +68,10 @@ export const PROVIDERS: Record<string, ProviderConfig> = {
     clientIdEnv: 'SIGNORA_HUBSPOT_CLIENT_ID',
     clientSecretEnv: 'SIGNORA_HUBSPOT_CLIENT_SECRET',
     usesInstanceEndpoint: false,
+    // `hub_id` is the portal — the customer's HubSpot account, and the thing
+    // two connections to the same portal would be two of.
+    identityUrl: 'https://api.hubapi.com/oauth/v1/access-tokens/',
+    identityAccountField: 'hub_id',
   },
   google_calendar: {
     slug: 'google_calendar',
@@ -59,6 +82,11 @@ export const PROVIDERS: Record<string, ProviderConfig> = {
     clientIdEnv: 'SIGNORA_GOOGLE_CLIENT_ID',
     clientSecretEnv: 'SIGNORA_GOOGLE_CLIENT_SECRET',
     usesInstanceEndpoint: false,
+    // `sub` is the Google account, stable across an email change — which
+    // `email` is not, and keying a connection on a mutable identifier is how
+    // a customer ends up with two of them after a rename.
+    identityUrl: 'https://oauth2.googleapis.com/tokeninfo?access_token=',
+    identityAccountField: 'sub',
   },
 };
 

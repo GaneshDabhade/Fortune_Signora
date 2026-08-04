@@ -7,6 +7,15 @@
  *
  * **The provider's own error codes are translated here and never shown.**
  * `access_denied` is not a customer's word for *"I changed my mind"*.
+ *
+ * **The exchange landed 2026-08-04 and this route is now complete.** It had
+ * stopped one line short of it since M13 — verifying the state and then
+ * returning `provider_unavailable` — because no developer application existed
+ * to test against. It still does not, and `credentialsFor()` still returns
+ * `null` without one, so **every catalog entry stays `connectable: false` and
+ * no customer can reach this path.** What changed is that the path exists and
+ * is exercised: the exchange is RFC 6749 and testable against a fake, and the
+ * only unverified step is the one no RFC covers, marked where it happens.
  */
 
 import { NextResponse } from 'next/server';
@@ -16,7 +25,13 @@ import {
   outcomeForProviderError,
   readCookie,
 } from '@/lib/integrations/callback';
-import { providerFor } from '@/lib/integrations/providers';
+import { loadAuthConfig } from '@/lib/auth/config';
+import { issueAccessToken } from '@/lib/auth/jwt';
+import { loadPrivateKey } from '@/lib/auth/keys';
+import { auth } from '@/lib/auth/server';
+import { exchangeAuthorizationCode } from '@/lib/integrations/exchange';
+import { credentialsFor, providerFor } from '@/lib/integrations/providers';
+import { recordConnection } from '@/lib/integrations/record';
 import { STATE_FAILURE_OUTCOME, verifyState } from '@/lib/integrations/state';
 
 export const runtime = 'nodejs';
@@ -60,10 +75,56 @@ export async function GET(
   const code = url.searchParams.get('code');
   if (!code) return done(origin, slug, 'unknown');
 
-  // **The one step that needs a real provider**, and the only one. Everything
-  // above is exercised without credentials; the exchange and the hand-off to
-  // the backend acquisition endpoint are what a HubSpot developer app unlocks.
-  // Deliberately not stubbed: a fake exchange would let this route report
-  // success it never achieved.
-  return done(origin, slug, 'provider_unavailable');
+  // **Read after the state is verified, not before.** An unconfigured provider
+  // and a forged callback are both refusals, and answering the cheaper one
+  // first would let an unauthenticated caller learn which systems Signora
+  // holds credentials for.
+  const credentials = credentialsFor(provider, process.env);
+  if (!credentials) return done(origin, slug, 'provider_unavailable');
+
+  // The session, not a forwarded token: a customer returning from a consent
+  // screen arrives on a redirect carrying cookies and no `Authorization`
+  // header. Exchanged for a short-lived access token exactly as `/api/token`
+  // does — same issuer, same key, same claims.
+  const session = await auth().api.getSession({ headers: request.headers });
+  if (!session?.user) return done(origin, slug, 'unknown');
+
+  const exchanged = await exchangeAuthorizationCode({
+    provider,
+    credentials,
+    code,
+    redirectUri: `${origin}/api/integrations/${slug}/callback`,
+  });
+  if (!exchanged.ok) return done(origin, slug, exchanged.outcome);
+
+  const config = loadAuthConfig();
+  const accessToken = await issueAccessToken(
+    {
+      userId: session.user.id,
+      sessionId: session.session.id,
+      email: session.user.email,
+      emailVerified: session.user.emailVerified ?? false,
+      activeWorkspaceId: verified.state.workspaceId,
+    },
+    {
+      issuer: config.jwtIssuer,
+      audience: config.jwtAudience,
+      privateKey: await loadPrivateKey(config.jwtPrivateKey),
+    },
+  );
+
+  const recorded = await recordConnection({
+    apiBaseUrl: config.apiBaseUrl,
+    accessToken,
+    // **From the signed state, never from the query string.** The workspace a
+    // connection lands in is decided when the flow starts and travels inside
+    // something the customer cannot edit; the API re-verifies membership
+    // regardless, which is what makes this a hint rather than a grant.
+    workspaceId: verified.state.workspaceId,
+    integration: slug,
+    label: provider.name,
+    grant: exchanged.grant,
+  });
+
+  return done(origin, slug, recorded.ok ? 'connected' : recorded.outcome);
 }
