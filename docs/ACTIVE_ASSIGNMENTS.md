@@ -137,7 +137,7 @@
 |---|---|---|---|---|---|
 | **Epic C · People** | **READY** | **100%** | ✅ **Yes** | **[ADR-0400](architecture/adr/0400-person-as-an-entity.md) ratification** · contact ruling ([C-408](LANE_COORDINATION.md) ❓2) | **B** — `knowledge_graph` + `commercial_profile` are its modules |
 | **Epic E1 · CRM read** | **READY** | **100%** | ✅ **Yes** | **Developer credentials — yours** · [ADR-0401](architecture/adr/0401-a-customers-crm-is-not-a-provider.md) *(phase 3 only)* | **B** — `integrations` is its module |
-| **Epic F · Workflow** | **Research** | **20%** | ❌ | **Rule-model ADR.** *82 events, outbox, workers, replay — all built; what is missing is a way to express a rule* | **B** |
+| **Epic F · Workflow** | **READY** | **100%** | ✅ **Yes** | **[ADR-0402](architecture/adr/0402-a-rule-is-data.md) ratification.** Nothing else — **phases 1–4 depend on nothing unbuilt** | **B** — backend; **A** for the builder screen |
 | **Epic D · Risk** | **Research** | **15%** | ❌ | D1/D3 gated on E1; **D2 independent.** Repository analysis not started | **B** |
 | **Epic G · Copilot** | **Discovery** | **10%** | ❌ | **A released `reasoning@1` prompt** ([TASK-013](BACKLOG.md)) · [ADR-0031](architecture/adr/0031-evidence-citation-protocol.md) already defines citation | **A/B** |
 | **M14b · Billing** | **Blocked** | **0%** | ❌ | **[C-200](LANE_COORDINATION.md) 🔴** — no bounded context. **Preparation cannot start before scope exists** | **A** |

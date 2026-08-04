@@ -65,6 +65,7 @@ Every ADR follows this structure:
 | [0036](0036-target-account-contract.md) | The Target Account Contract — the first Customer–Supplier edge, and four permanent ownership boundaries: **Commercial Profile owns intent, Provider Platform owns synchronization, Knowledge Graph owns understanding, Signal Engine owns intelligence** |
 | [0400](0400-person-as-an-entity.md) | **Proposed, not accepted.** A person becomes an entity — **Epic C's bounded context.** Drafted by Lane C ahead of implementation: `Person` identifies and computes nothing, and an **`Affiliation` is an interval, never a field**, because *"Priya left Acme"* is not a mutation of Priya. **Six modules already run people-shaped intelligence with no person in it** |
 | [0401](0401-a-customers-crm-is-not-a-provider.md) | **Proposed, not accepted.** A customer's CRM is not a provider — **CRM data is a workspace-scoped fact, never a claim.** A provider asserts an observation of the world; a customer's CRM asserts something **not falsifiable**, and feeding it to identity resolution makes a stale `closed-lost` compete with last week's observation |
+| [0402](0402-a-rule-is-data.md) | **Proposed, not accepted.** A rule is data, and it publishes one event — **Epic F's bounded context.** A condition tree rather than an expression language, because the repository audits its own rules as syntax trees and a customer's string cannot be. **`workflow` calls nothing**, so Epic F stops depending on Notifications, Slack, email and E2 — none of which exist |
 
 ## How to Propose a New ADR
 
