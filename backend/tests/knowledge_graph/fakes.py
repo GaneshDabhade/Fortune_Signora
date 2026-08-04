@@ -285,8 +285,16 @@ def claim(
 
 
 def bound_binding(
-    entity: Entity, *, provider: str, external_id: str, domain: str
+    entity: Entity, *, provider: str, external_id: str, domain: str | None = None
 ) -> IdentityBinding:
+    """**`domain` is optional because `IdentityBinding.domain` is.**
+
+    It was annotated `str` and had been narrower than the type it builds since
+    it was written — invisible until a caller used the type honestly, which
+    a `TECHNOLOGY` entity resolved from a technographic provider does: it has
+    no domain, and that is the case rather than an omission
+    ([B-115](../../../docs/BUGS.md)).
+    """
     decision = ResolutionDecision(
         id=uuid4(),
         workspace_id=entity.workspace_id,
