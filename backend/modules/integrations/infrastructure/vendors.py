@@ -27,20 +27,24 @@ from typing import Final
 
 @dataclass(frozen=True, slots=True)
 class RevocationEndpoint:
-    """Where a vendor's grant is destroyed, and which token names it.
+    """Where a vendor's grant is destroyed.
 
-    **`token_field` is not decoration.** HubSpot revokes a *refresh* token and
-    the access token will not do; Google accepts either. Getting it wrong
-    returns a cheerful `200` that revokes nothing, which is the worst available
-    outcome — the product would report success and the credential would still
-    work.
+    **The token is always the refresh token**, and that is a fact rather than a
+    setting. HubSpot revokes a refresh token and the access token will not do;
+    Google accepts either, so one value serves both. A configurable field here
+    carried a branch no vendor could take — **a guard that cannot fail is
+    documentation pretending to be code** (§2), and the note it was carrying is
+    worth more as this paragraph.
+
+    Getting it wrong would be the worst available outcome: a cheerful `200`
+    that revokes nothing, with the product reporting a credential withdrawn
+    while it still worked. **A vendor that genuinely needs the access token is
+    the moment to add the field back**, with a test that takes the branch.
     """
 
     #: `{token}` is replaced with the material, URL-encoded.
     url_template: str
     method: str
-    #: Which key of an `oauth2` credential this vendor wants.
-    token_field: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -63,7 +67,6 @@ VENDOR_ENDPOINTS: Final[dict[str, VendorEndpoints]] = {
         revocation=RevocationEndpoint(
             url_template="https://api.hubapi.com/oauth/v1/refresh-tokens/{token}",
             method="DELETE",
-            token_field="refresh_token",
         ),
         token_url="https://api.hubapi.com/oauth/v1/token",
     ),
@@ -71,7 +74,6 @@ VENDOR_ENDPOINTS: Final[dict[str, VendorEndpoints]] = {
         revocation=RevocationEndpoint(
             url_template="https://oauth2.googleapis.com/revoke?token={token}",
             method="POST",
-            token_field="refresh_token",
         ),
         token_url="https://oauth2.googleapis.com/token",
     ),

@@ -132,7 +132,7 @@ def _revoker(
         FakeGrants(_grant() if grant is _DEFAULT else grant),
         FakeSecrets(_oauth2() if credential is _DEFAULT else credential),
         WORKSPACE,
-        client=httpx.AsyncClient(transport=handler),
+        transport=handler,
     )
 
 

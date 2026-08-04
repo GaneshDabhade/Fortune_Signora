@@ -9,8 +9,20 @@ has stopped being a substrate.
 
 from __future__ import annotations
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class ClientCredentialPair(BaseModel):
+    """Signora's own registration with one vendor.
+
+    **Not a customer's grant, and never interchangeable with one** (§13). This
+    identifies the *application*: the same pair for every workspace, used to
+    acquire and to renew, and stored nowhere near a connection.
+    """
+
+    client_id: str
+    client_secret: str
 
 
 class IntegrationSettings(BaseSettings):
@@ -23,4 +35,17 @@ class IntegrationSettings(BaseSettings):
             "known key, which is worse than no encryption because it reads as "
             "protection."
         )
+    )
+
+    client_credentials: dict[str, ClientCredentialPair] = Field(
+        default_factory=dict,
+        description=(
+            "Signora's own OAuth registration per catalog slug, used to renew a "
+            "grant (RFC 6749 §6). **Empty by default and that is a working "
+            "state**: a vendor with nothing configured is one the product "
+            "declines to refresh, which is the same refusal the acquisition "
+            "tier performs when its own environment holds no client id. "
+            "Deliberately not defaulted per vendor — a defaulted client secret "
+            "is a known secret that reads as configuration."
+        ),
     )

@@ -9,10 +9,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from modules.integrations.application.ports import ConnectedAccountRepository, GrantStore
 from modules.integrations.application.connect import ConnectSystem
 from modules.integrations.application.disconnect import DisconnectSystem
+from modules.integrations.application.refresh import RefreshGrant
 from modules.integrations.application.queries import IntegrationQueries
 from modules.integrations.infrastructure.repository import (
     SqlConnectedAccountRepository,
     SqlGrantStore,
+)
+from modules.integrations.infrastructure.refreshing import (
+    HttpTokenRefresher,
+    SettingsClientCredentials,
 )
 from modules.integrations.infrastructure.revocation import HttpProviderRevoker
 from modules.integrations.infrastructure.secrets import EncryptedSecretStore
@@ -74,4 +79,28 @@ def build_connect_system(session: AsyncSession, settings: IntegrationSettings) -
         SqlConnectedAccountRepository(session),
         SqlGrantStore(session),
         EncryptedSecretStore(session, settings.secret_key),
+    )
+
+
+def build_refresh_grant(
+    session: AsyncSession, settings: IntegrationSettings
+) -> RefreshGrant:
+    """**With a real refresher only when one can work.**
+
+    A deployment that has configured no client credentials gets
+    `NoTokenRefresher`, which reports it could not renew — the same shape
+    `credentialsFor()` produces at the other tier when its environment holds no
+    client id, and the same honesty `NoRevoker` had. **A factory that returned
+    a refresher which could only fail per connection would be a wiring that
+    lies about what exists**, which is the reasoning that keeps
+    `ResolveExecutionContext` unwired above.
+    """
+    secrets = EncryptedSecretStore(session, settings.secret_key)
+    credentials = SettingsClientCredentials(settings)
+    return RefreshGrant(
+        SqlConnectedAccountRepository(session),
+        SqlGrantStore(session),
+        secrets,
+        secrets,
+        HttpTokenRefresher(credentials) if credentials.any_configured() else None,
     )

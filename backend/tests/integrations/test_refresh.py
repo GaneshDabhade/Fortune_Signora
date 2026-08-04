@@ -1,11 +1,10 @@
 """Renewing a grant before a customer has to notice it expired.
 
-**Everything on both sides of one port**, and that port is where the
-unresolved architectural boundary sits: a real refresher needs the OAuth
-*client* credentials, and where those live is the product owner's decision
-([C-327](../../../docs/LANE_COORDINATION.md)). Nothing below waits on it — the
-use case is exercised against a substituted `TokenRefresher`, exactly as the
-revoker is exercised against a substituted transport.
+**Everything on both sides of one port.** A real refresher needs the OAuth
+*client* credentials, which reach it through `ClientCredentialsStore` — so the
+use case below is exercised against a substituted `TokenRefresher`, exactly as
+the revoker is exercised against a substituted transport, and neither needs a
+vendor or a deployment to be proven.
 
 The properties worth stating in one place, because each is a way the obvious
 implementation loses a customer's connection:
@@ -362,11 +361,11 @@ class TestTheDefaultRefresher:
     async def test_it_reports_that_it_could_not_renew(self) -> None:
         """**Honest rather than incomplete**, exactly as `NoRevoker` was.
 
-        No adapter can run until the OAuth client credentials have somewhere to
-        live, which is an architectural decision and not this module's
-        ([C-327](../../../docs/LANE_COORDINATION.md)). A refresher that claimed
-        success would leave a connection reading healthy with material that had
-        stopped working — which is the one outcome worse than not refreshing.
+        This is what a deployment with no OAuth client credentials configured
+        gets, and it is the same rule `credentialsFor()` applies at the other
+        tier. A refresher that claimed success would leave a connection reading
+        healthy with material that had stopped working — which is the one
+        outcome worse than not refreshing.
         """
         assert await NoTokenRefresher().renew("hubspot", "a-token") is None
 

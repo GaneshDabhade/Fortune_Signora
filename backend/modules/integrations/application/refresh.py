@@ -1,18 +1,16 @@
 """Renewing a grant before a customer has to notice it expired.
 
-**Everything here is built and one thing is deliberately not decided.** A
-refresh needs the OAuth *client* credentials — the application's own id and
-secret, not the customer's — and **where those live is an architectural
-boundary, not this module's to choose**: they are frontend environment values
-today, and moving them is a change to credential ownership and to the trust
-boundary between the two tiers.
+A refresh needs the OAuth *client* credentials — **the application's own id and
+secret, not the customer's**. They are frontend environment values because
+acquisition happens there, and the Python tier has never needed them before.
 
-So the dependency is isolated to **one port**, `TokenRefresher`, and everything
-on either side of it is complete and tested. `NoTokenRefresher` is the default
-and reports that it could not act — the same honest shape `NoRevoker` held
-until an adapter existed. **The unresolved boundary is one wiring line, and
-nothing else waits on it.** Recorded as
-[C-327](../../../../docs/LANE_COORDINATION.md).
+**Isolated behind `ClientCredentialsStore` rather than decided here.** The
+interface says *what this module needs*; where it comes from is the
+implementation's business, and `IntegrationSettings` is where §6 already puts a
+module's own configuration. **A deployment that has not configured them gets
+`NoTokenRefresher`**, the same honest shape `NoRevoker` held — refusing rather
+than pretending, and it is the identical rule `credentialsFor()` applies at the
+other tier.
 
 ### Why a refresh is a new grant rather than an edit
 
@@ -63,12 +61,51 @@ class RenewedMaterial:
     expires_at: datetime | None
 
 
+@dataclass(frozen=True, slots=True)
+class ClientCredentials:
+    """Signora's own registration with a vendor, not a customer's grant.
+
+    **The distinction §13 exists to protect.** A sign-in token, a customer's
+    integration grant and this are three different things from the same vendor,
+    and the one thing they must never be is interchangeable. This pair
+    identifies *the application*; it is the same for every workspace and is
+    never stored per connection.
+
+    It refuses to render itself for the same reason `Credential` does.
+    """
+
+    client_id: str
+    client_secret: str
+
+    def __repr__(self) -> str:
+        return f"ClientCredentials(client_id={self.client_id!r}, client_secret=<redacted>)"
+
+    __str__ = __repr__
+
+
+class ClientCredentialsStore(Protocol):
+    """Where a vendor's client credentials come from.
+
+    **An interface so the answer can change without this module changing.**
+    They are frontend environment values today because acquisition happens
+    there; the implementation reads whatever the deployment provides, and
+    nothing above this line knows which.
+
+    `None` means *not configured for this vendor*, which is a legitimate state
+    and not an error — it is what produces `NoTokenRefresher` at the
+    composition root, exactly as `credentialsFor()` returning `null` is what
+    keeps a catalog entry unconnectable.
+    """
+
+    def for_integration(self, integration: str) -> ClientCredentials | None: ...
+
+
 class TokenRefresher(Protocol):
     """Exchanges a refresh token for new material.
 
-    **The one seam that needs the OAuth client credentials**, and therefore the
-    one place the unresolved boundary touches. An implementation needs the
-    application's own client id and secret; nothing above this line does.
+    **The one seam that needs the client credentials.** An implementation
+    resolves them through `ClientCredentialsStore`; nothing above this line
+    does, which is why the use case below can be exercised without either.
     """
 
     async def renew(self, integration: str, refresh_token: str) -> RenewedMaterial | None:
@@ -79,10 +116,10 @@ class TokenRefresher(Protocol):
 class NoTokenRefresher:
     """The default, and it reports that it could not renew.
 
-    **Honest rather than incomplete**, exactly as `NoRevoker` was: no adapter
-    can run until the client credentials have somewhere to live, and a refresher
+    **Honest rather than incomplete**, exactly as `NoRevoker` is: this is what
+    a deployment with no client credentials configured gets, and a refresher
     that claimed success would leave a connection reading healthy with material
-    that stopped working.
+    that had stopped working.
     """
 
     async def renew(self, integration: str, refresh_token: str) -> RenewedMaterial | None:
@@ -251,6 +288,8 @@ _CANNOT_HOLD_A_GRANT = frozenset(
 
 
 __all__ = [
+    "ClientCredentials",
+    "ClientCredentialsStore",
     "NoTokenRefresher",
     "RefreshGrant",
     "RefreshOutcome",

@@ -131,7 +131,9 @@ Found by the first test to run this against PostgreSQL rather than a double ([B-
 
 **Five outcomes rather than a boolean**, because a caller does something different with each: `RENEWED` is silent, `NOT_REFRESHABLE` means reconnect, `REFUSED` may mean the customer withdrew access at the vendor, `UNREADABLE` is an operational fault on Signora's side, and `UNUSABLE` means there was nothing to renew.
 
-> **What it stops at is one port.** `TokenRefresher` needs Signora's own OAuth *client* credentials, which live in the frontend environment because acquisition does. **Where they belong is credential ownership and a trust boundary, so it is the product owner's** — [C-327](../LANE_COORDINATION.md). Everything on both sides of that port is finished.
+**Signora's own client credentials reach it through an interface.** `ClientCredentialsStore` says *what this module needs*; `IntegrationSettings` says where it comes from, which is where §6 already puts a module's configuration. **A deployment that has configured none gets `NoTokenRefresher`** — the identical refusal `credentialsFor()` performs at the other tier, and the same honesty `NoRevoker` had. Empty is a working state and a defaulted client secret would be a known one.
+
+> **The renewal itself is RFC 6749 §6** — the same endpoint as the code exchange with a different `grant_type` — so no vendor-specific branch exists. A refresh-token grant is not a redirect, a consent screen or an authorization-code exchange, which is the precise reading §5 already relies on to keep credential *management* here.
 
 ### Reconnecting, and the disconnect that could not be undone
 
@@ -235,8 +237,8 @@ Salesforce is next and was argued for at the time — it is the enterprise defau
 | Layer | What |
 |---|---|
 | **Domain** | `ConnectionState`, `ConnectedAccount`, `IntegrationGrant`, `Credential`, `CatalogEntry`, `Capability`, `CATALOG` |
-| **Application** | `ConnectSystem`, `DisconnectSystem`, `ResolveExecutionContext`, `IntegrationQueries`; ports `ConnectedAccountRepository` (`get`, `find_identity`, `list_for_workspace`, `save`), `GrantStore`, `SecretStore`, `SecretWriter`, `SecretPurger`, `ProviderRevoker` |
-| **Infrastructure** | `SqlConnectedAccountRepository`, `SqlGrantStore`, `EncryptedSecretStore`, `IntegrationSettings`, composition |
+| **Application** | `ConnectSystem`, `DisconnectSystem`, `RefreshGrant`, `ResolveExecutionContext`, `IntegrationQueries`; ports `ConnectedAccountRepository` (`get`, `find_identity`, `list_for_workspace`, `save`), `GrantStore`, `SecretStore`, `SecretWriter`, `SecretPurger`, `ProviderRevoker` |
+| **Infrastructure** | `SqlConnectedAccountRepository`, `SqlGrantStore`, `EncryptedSecretStore`, `HttpProviderRevoker`, `HttpTokenRefresher`, `SettingsClientCredentials`, `VENDOR_ENDPOINTS`, `IntegrationSettings`, composition |
 | **Interface** | **4 routes**, purpose-built request and response schemas, `ERROR_MAPPING` |
 | **Public** | `ConnectedAccount`, `ConnectionState`, `ConnectionUnusable`, `Credential`, `ExecutionContext` |
 | **Migrations** | `0027` (`connected_account`, `integration_grant`), `0028` (`integration_secret`) — all three registered in `tenancy_policy.py`, RLS enabled and **forced** |
@@ -286,7 +288,8 @@ Salesforce is next and was argued for at the time — it is the enterprise defau
 
 - **No credential rotation on a live connection.** A working grant cannot be replaced in place; the customer disconnects and reconnects. **Reconnection itself works** (§4), so the path exists and costs two steps.
 - ~~**No `ProviderRevoker` adapter.**~~ **Built 2026-08-04** (§4). Two systems have endpoints; anything else still reports failure honestly.
-- **Refresh is built and unwired.** `RefreshGrant` performs the whole rotation and is tested; **`NoTokenRefresher` is the default and reports it could not act**, the shape `NoRevoker` held until an adapter existed. The one thing missing is an adapter, and it needs Signora's own OAuth **client** credentials — which live only in the frontend environment. **Where they belong is an architectural boundary and the product owner's**, recorded as [C-327](../LANE_COORDINATION.md) with four options and their costs. **It changes one wiring line and nothing else in this module.**
+- **Refresh has no trigger.** `RefreshGrant` and `HttpTokenRefresher` are built and tested, and **nothing calls them.** A renewal wants either a scheduled sweep — and `WorkerSettings` has no `cron_jobs`, so no scheduled-job pattern exists in the repository at all — or a refresh at the moment a credential is about to be used, which is `ResolveExecutionContext`'s job and waits on its first consumer. **Adding a scheduler is runtime composition and not this module's**; the honest state is that the capability exists and the moment to invoke it does not yet.
+- **Two client-credential values, one per tier.** Acquisition reads `SIGNORA_HUBSPOT_CLIENT_ID`/`_SECRET` from the Next environment; renewal reads `SIGNORA_INTEGRATIONS_CLIENT_CREDENTIALS` here. **Both are the same registration and a deployment must keep them in step.** It is stated rather than solved: a vault ([ADR-0022](adr/0022-devops-infrastructure-and-deployment-topology.md), M14.5) is what collapses them to one, and until then the interface means only `SettingsClientCredentials` changes.
 - **`ResolveExecutionContext` is not wired at the composition root.** It is complete and tested; a factory that could only raise would be a wiring that lies about what exists. Provider Platform wires it when it consumes a connection.
 - **Nothing synchronizes.** This module records relationships. The first consumer is Provider Platform, and it has not arrived.
 - **No navigation entry.** `/settings/connections` is reachable by URL and nothing links to it — the shell is Lane A's, recorded as a coordination item rather than edited across a boundary.

@@ -69,13 +69,13 @@ class HttpProviderRevoker:
         secrets: SecretStore,
         workspace_id: UUID,
         *,
-        client: httpx.AsyncClient | None = None,
+        transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
         self._accounts = accounts
         self._grants = grants
         self._secrets = secrets
         self._workspace_id = workspace_id
-        self._client = client
+        self._transport = transport
 
     async def revoke(self, connected_account_id: UUID) -> bool:
         account = await self._accounts.get(self._workspace_id, connected_account_id)
@@ -102,13 +102,13 @@ class HttpProviderRevoker:
         if grant is None:
             return False
 
-        token = await self._token(grant.secret_ref, endpoint.token_field)
+        token = await self._token(grant.secret_ref)
         if token is None:
             return False
 
         return await self._call(endpoint, token, account.integration)
 
-    async def _token(self, secret_ref: str, field: str) -> str | None:
+    async def _token(self, secret_ref: str) -> str | None:
         """The material the vendor wants, out of an opaque credential.
 
         **The one place `oauth2` material is read**, and it is an adapter —
@@ -123,26 +123,18 @@ class HttpProviderRevoker:
             return None
 
         material = OAuth2Material.read(credential)
-        if material is None:
-            return None
-        # Explicit rather than `getattr`: a table typo would otherwise resolve
-        # to `None` and read as *this vendor issued no refresh token*, which is
-        # a legitimate state and would hide the mistake indefinitely.
-        if field == "refresh_token":
-            return material.refresh_token
-        if field == "access_token":
-            return material.access_token
-        return None
+        return material.refresh_token if material else None
 
     async def _call(self, endpoint: RevocationEndpoint, token: str, integration: str) -> bool:
         # `safe=""` so a token containing `/` or `&` cannot escape its own
         # position and turn a path segment into a path, or a query value into
         # a second parameter.
         url = endpoint.url_template.replace("{token}", quote(token, safe=""))
-        client = self._client or httpx.AsyncClient(timeout=REVOCATION_TIMEOUT_SECONDS)
-        owns_client = self._client is None
         try:
-            response = await client.request(endpoint.method, url)
+            async with httpx.AsyncClient(
+                timeout=REVOCATION_TIMEOUT_SECONDS, transport=self._transport
+            ) as client:
+                response = await client.request(endpoint.method, url)
         except httpx.HTTPError as exc:
             # **Never raised.** `DisconnectSystem` catches broadly anyway, and
             # returning here keeps the reason in one log line rather than in a
@@ -156,9 +148,6 @@ class HttpProviderRevoker:
                 },
             )
             return False
-        finally:
-            if owns_client:
-                await client.aclose()
 
         # **A vendor that says the grant is already gone has revoked it.** 404
         # on a token that no longer exists is the outcome the customer wanted,
