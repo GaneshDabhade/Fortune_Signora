@@ -145,36 +145,46 @@ Product Owner decision required:
 
 ### The Implementation Portfolio — every Lane C report
 
-**Ratified 2026-08-04, product owner.** *"Lane A do TASK-400" is 10% of what a Product Office should do.* **The office maintains a living portfolio for every implementation lane** — not the next task, but **every task that lane could reasonably take**, ranked, with what it would cost and what it would collide with.
+**Ratified 2026-08-04, product owner, and amended the same day to raise its level of abstraction.** *"I do not want to allocate engineering tasks. I want to allocate major implementation initiatives."*
 
-| § | Section | Contents |
-|---|---|---|
-| **1** | **Lane capacity** | Current task · remaining work · **risk of idle** · queue depth |
-| **2** | **Executable portfolio** | **Every** eligible task per lane: id · epic · modules · effort **S/M/L/XL** · dependency · **conflict risk** · *why this lane is the best owner*. **Ordered by recommendation** |
-| **3** | **Blocked portfolio** | Task · blocking item · **blocking owner** · which lane takes it once unblocked |
-| **4** | **Parallel work opportunities** | What can start **now**, concurrently, at minimal merge risk |
-| **5** | **Module ownership view** | Module · owner · active work · next work · **whether another lane should avoid it** |
-| **6** | **Queue health** | **Target 5 executable per lane; below 3 raises it early** — before a lane idles, not after |
-| **7** | **Recommendation** | Per lane: now · next · then. **With reasoning, never as an instruction** |
+> **The unit is an epic or milestone, never a `TASK-nnn`.** *"Lane A could own the entire Responsive Product Surface initiative"* is an allocation the product owner can make in one sentence and then leave alone for two weeks. *"Lane A takes TASK-905, then TASK-903, then TASK-906"* is three decisions, three context rebuilds and three chances to idle between them.
 
-**Conflict risk is a claim about paths, and it is stated with them:**
+**Lane C's goal is to find large, cohesive pieces of work one lane can own end to end** — because **cohesion is what removes coordination.** An epic bounded to modules a single lane already holds generates no ownership negotiation, no contract handover and, measurably, no merge conflict.
+
+**Do not fragment an initiative into slices** *(product owner, 2026-08-04)*. **Decompose only when a milestone is genuinely too large for one lane to own** — the same standard §5 already applies to epics, now stated as the default rather than the exception.
+
+**Every opportunity carries:**
 
 ```
-TASK-401   🟢 Very Low     touches  knowledge_graph/ · commercial_profile/api/
-                           shares   nothing with Product Surface, Timeline or QE files
-CX-07      🟠 Medium       touches  navigation · layout · shell · responsive
-                           shares   the app shell with every Product Surface slice in flight
+Epic / milestone      the name a product owner would use, not the id
+Business objective    what a customer can do afterwards that they cannot now
+Recommended lane      and why that lane, in one clause
+Primary modules       and who holds each today
+Duration              S/M/L/XL, or days/weeks — marked as an estimate
+Dependencies          met · unmet, and who owns each unmet one
+Conflict probability  🟢/🟠/🔴, from measured path overlap against active branches
+Independent?          can one lane finish it without another lane's work
+Decisions required    what the product owner must rule before it can start
 ```
 
-> **🟢 / 🟠 / 🔴 is derived from measured path overlap against every active branch, never estimated.** A colour with no path list under it is an opinion, and the product owner cannot check an opinion. **Effort is marked as an estimate because it is one; conflict risk is not.**
+**Four horizons, maintained continuously:**
 
-**Parallel opportunity is the section with the most value in it.** Prefer work that **stays inside one module · has clear ownership · has no unresolved product decision · touches no shared infrastructure · collides with no active lane.** Four such tasks are worth more than one perfectly-sequenced critical-path slice, because they survive any allocation the product owner chooses.
+| Horizon | Contents |
+|---|---|
+| **Current** | **Ready now.** A lane could start today and run for days without intervention |
+| **Upcoming** | **Becoming ready** — the blocker has a named owner and a visible end |
+| **Blocked** | **Waiting on a decision or a dependency**, each with its owner |
+| **Strategic** | **Future roadmap needing product direction** before it can be scoped at all |
 
-**Alternate work is part of the portfolio, not a fallback.** If the top recommendation is blocked between the report and the reply, **the next item is already validated** — that is what makes the portfolio a portfolio rather than a queue.
+> **When one epic nears completion the next independent one is already identified and prepared.** That is the whole purpose: **lanes complete substantial capabilities rather than switching between small tasks or waiting to be told.**
+
+**Conflict probability is measured, never estimated.** A dry-run merge of the active lane branches gives the overlapping paths and the real conflicts; **the colour is derived from that and is reported with the paths under it.** Effort is marked as an estimate because it is one. **A colour with no path list is an opinion, and the product owner cannot check an opinion.**
+
+**Ownership boundaries are the deliverable behind the portfolio.** The office maintains, and reports when it changes, **which lane owns which initiative end to end** — because an epic with two owners is a coordination cost that was chosen, not discovered.
 
 > **Decisions needed is 0–2, not twenty.** A list long enough to triage is a list Lane C failed to triage. **Only what genuinely requires the product owner appears**; everything the office can determine objectively, it determines.
 
-**This is a report format, not a document.** It is written into the response and nowhere else — **no portfolio file, no dashboard file, and none should be created** *(product owner: this is not a new governance process or document)*. **[`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) holds the prepared queues; the portfolio is that data reported, not a second copy of it** (§2, *truth has exactly one authoritative representation*).
+**This is a report format, not a document.** It is written into the response and nowhere else — **no portfolio file, no dashboard file, and none should be created** *(product owner: this is not a new governance process or document)*. **[`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) holds the prepared portfolio; the report is that data presented, not a second copy of it** (§2, *truth has exactly one authoritative representation*).
 
 ---
 

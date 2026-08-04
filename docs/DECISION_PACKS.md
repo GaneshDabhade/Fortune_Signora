@@ -180,7 +180,11 @@
 | **Decision** | **Which of Epics B–G, if any, enter the backlog?** |
 | **Class** | **Product Decision** — scope, and therefore not Lane C's |
 
-**The queue is thin, and it is thin for a good reason.** Three `READY` rows turned out to be already built ([C-404](LANE_COORDINATION.md)); [TASK-400](BACKLOG.md) was queued from Epic A's own decomposition. **What remains unclaimed for an idle lane is [TASK-900](BACKLOG.md), a platform RFC, which Lane B has already declined as a different discipline.**
+> ⚠️ **The premise was wrong, corrected 2026-08-04 by Lane C against itself.** This pack was raised because *"the queue is running dry."* **It was not.** [CX-07](architecture/43-customer-experience.md) — responsive shell and screens, **XL, 2–3 weeks, Lane A's modules alone** — was **ruled executable on 2026-08-03** by [C-026](LANE_COORDINATION.md), which put phone in scope. **Lane C escalated an approval for scope that had already been approved**, and reported Lane A as nearly out of work while a multi-week initiative sat unallocated in its own architecture document.
+>
+> **What the mistake was, precisely:** the office tracked *"does this have a `TASK-nnn`?"* and treated the absence as *"unscoped."* **CX-07 had a ruling, an objective, named modules and an effort estimate — everything except an id.** That is the failure mode the epic-level portfolio exists to prevent *(product owner, 2026-08-04: do not optimize around backlog rows)*.
+
+**What is genuinely unapproved is narrower, and it is still worth deciding.** Three `READY` rows turned out to be already built ([C-404](LANE_COORDINATION.md)); [TASK-400](BACKLOG.md) decomposes Epic A, which is approved. **What no lane can start without you is a *new epic*.**
 
 **Meanwhile [51-implementation-specifications.md](architecture/51-implementation-specifications.md) carries 21 specified slices** — objective, module-assigned, effort-estimated — **of which only Epic A is approved.**
 
@@ -197,9 +201,16 @@
 >
 > **What survives:** **D2** alone is genuinely independent — a posture within the existing ledger, no CRM required. It stays a candidate and is not urgent.
 
-**Lane C's original recommendation, superseded above: approve *D2 and D3* only.** They are **S/M**, sit in modules with no open coordination item, need no new bounded context and no commercial ruling, and **D3 — *which accounts are already customers* — changes what the attention list means for every seller**, because an expansion opportunity and a net-new opportunity are not the same row.
+### Recommendation, restated at the epic level — **approve E, and nothing else yet**
 
-**Not recommended now:** **C** and **F** each need a new bounded context and an ADR; **E** is a commercial call; **B1** waits on Pack C; **G** waits on a released model.
+| | | |
+|---|---|---|
+| **Approve** | **Epic E1 — CRM OAuth and read** | **The single highest-leverage integration in the roadmap.** It unblocks pipeline intelligence, forecasting, expansion and customer risk — **four vision modules, on its own** — and **Epic D3 with one boolean.** `integrations` is Lane B's alone, so it is 🟢 and independent. **It needs one thing from you that is not an approval: developer credentials** |
+| **Keep as a candidate** | **Epic D2 — risk postures** | Genuinely independent — a posture inside the existing ledger, no CRM. **M**, not urgent, and it is where [TASK-905](BACKLOG.md) belongs |
+| **No decision needed** | **CX-07** | **Already ruled.** It needs allocation, not approval |
+| **Not yet** | **C · F · G · B1** | **C** and **F** each need a new bounded context and an ADR; **G** waits on a released model ([TASK-013](BACKLOG.md)); **B1** waits on [Pack C](#pack-c--where-does-customer-language-meet-canonical-data) |
+
+> **E is described above as *"a commercial decision — enterprise versus GA"*, and that is true of E3 and E4, not of E1.** SSO, SCIM and audit are the enterprise gate. **Reading a customer's CRM is the product working**, and it is what most of the vision is waiting on.
 
 > **This is escalated rather than queued because it is epic scope, and scope is the product owner's.** [TASK-400](BACKLOG.md) was different: it decomposes Epic A, which is already approved. **The line Lane C is holding is that decomposing approved work is coordination, and admitting new epics is not.**
 
