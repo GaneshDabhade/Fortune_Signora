@@ -80,6 +80,64 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-108 · The production image cannot build, because a root config imports a directory the image does not ship
+
+| | |
+|---|---|
+| **Module** | Frontend — `frontend/playwright.config.ts`, `frontend/tsconfig.json` |
+| **Current assignee** | **Lane B** — the lane that wrote it |
+| **Severity** | 🟠 — **Blocking Quality Defect.** No customer behaviour is wrong; **no production image can be built** |
+| **Status** | **`OPEN`** — found by QE certifying `b327b2c`, 2026-08-04 |
+| **Found** | 2026-08-04, at `make smoke` stage 1 of 24. **Every other gate on this candidate passed** |
+
+**Steps to reproduce.** On Lane B's candidate, rebased onto `integration`:
+
+```bash
+docker compose --env-file infra/.env.prod-local -f infra/docker-compose.prod.yml build
+```
+
+**Expected.** Images build.
+
+**Actual.**
+
+```
+Type error: Cannot find module './tests/e2e/fixtures/environment'
+           or its corresponding type declarations.
+ERROR: process "/bin/sh -c npm run build" did not complete successfully: exit code: 1
+```
+
+### The mechanism, and why nothing else could see it
+
+```
+frontend/playwright.config.ts:3
+import { browserEnvironment, resolveAppUrl } from './tests/e2e/fixtures/environment';
+
+frontend/.dockerignore:6
+tests/
+
+frontend/tsconfig.json:21
+"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"]
+"exclude": ["node_modules", "tests/e2e"]
+```
+
+**Three correct decisions that are wrong together.** `tests/` is excluded from the image because a production image has no business shipping tests. `playwright.config.ts` lives at the root because that is where Playwright looks for it. `tsconfig` includes `**/*.ts` because it should. **So the image contains a root config that imports a directory the image does not contain**, and `next build` type-checks it.
+
+**`tsconfig` excludes `tests/e2e` but not `playwright.config.ts`** — the config *importing* the excluded directory is itself included, which is why local `tsc` resolves it (the files are on disk) and the image does not (they are not).
+
+> **This is precisely the class `make smoke` exists for.** The candidate passed **2783 backend tests, 899 frontend tests, 372 Security Invariants, `mypy --strict` over 635 files and 34 import contracts** — and cannot produce a deployable image. **Only the gate that builds the production images sees it**, which is why that gate is not optional ([B-013](#b-013) was the same shape).
+
+### A second, independent defect in the same candidate
+
+**`tsc --noEmit` fails: 15 errors, all in `frontend/tests/unit/acquisition-exchange.test.ts`** — `TS2532: Object is possibly 'undefined'`.
+
+This is a gate the lane owns and runs itself (`CLAUDE.md` §19 — *type checking clean: `mypy --strict` · `tsc --noEmit`*). It is unrelated to the build failure above and must be fixed separately.
+
+### The fix is Lane B's to choose
+
+QE names the constraint, not the design. Any of these satisfies it: exclude `playwright.config.ts` from `tsconfig`'s `include`; move the fixture out of `tests/`; or keep the config free of imports from an excluded directory. **What must hold is that the production image builds without shipping tests.**
+
+**No regression test is required.** `make smoke` is the regression test, and it caught this on the first run.
+
 ### B-107 · Ten tests in the A7 slice have never passed, and they hang the suite for everyone
 
 | | |
@@ -453,6 +511,789 @@ verified = sum(1 for r in rows if "VERIFIED" in r.status)
 **The fix, in two parts.** The rows are repaired at integration, which is QE's job at Closeout anyway. **The durable half is `state-check` rule 5g**: the board's `Current — as of` SHA must be reachable from `main` and must not name a commit older than the one `PROJECT_STATUS.md` names. A stale board is now a finding rather than a thing somebody happens to notice.
 
 **What it does not fix.** Rule 5g catches the *header*. A lane that reverted only a row would still pass — the header is a proxy, not a proof. **Recorded rather than solved**: the real answer is RC-2's, which is to stop storing derivable state in a hand-merged file, and that is ADR-0039's to propose and the product owner's to schedule.
+
+### B-321 · `doc-drift` names one document per module, and two of those names are stale
+
+| | |
+|---|---|
+| **Module** | Repository tooling — `infra/doc-drift.py` |
+| **Current assignee** | **QE** — repository tooling and governance checks |
+| **Severity** | 🟡 — **it reports two findings that can never be cleared**, which is how a check stops being read |
+| **Status** | **`OPEN`** — reported by Lane B, **not fixed.** `infra/` decides whether a gate passes, so changing one is a slice ([B-014](#b-014--a-closeout-commit-changed-a-certification-gate)) |
+| **Found** | 2026-08-03, by Lane B, **while doing exactly what the check is for** — verifying Epic A's documentation was accurate rather than asserting it |
+
+**Steps to reproduce.** Change anything in `modules/provider_normalization/` or `modules/commercial_profile/`, document it correctly, and run `python3 infra/doc-drift.py`.
+
+**Expected.** Correct documentation clears the finding.
+
+**Actual.** It cannot. The map is one file per module and two entries point at documents that are no longer where those modules' design lives:
+
+| Module | `doc-drift` expects | Where the documentation actually is |
+|---|---|---|
+| `provider_normalization` | `34-knowledge-contract.md` | **`05-module-dependencies.md`** — the `ClaimReader` port and its methods, which is what a change to that module usually is |
+| `commercial_profile` | `adr/0035-commercial-profile.md` | **`40-commercial-profile.md`** (the module design doc) and **`adr/0041-icp-aggregate.md`** (its newest decision) |
+
+**Both fired against this branch while the correct documents were updated in the same commits** — `05` gained both new `ClaimReader` methods, `40` gained 62 lines and `0041` is a 541-line ADR written by the slice that changed the module.
+
+**The check is right about everything else, which is the evidence it works.** `observation_engine` → `23-observation-engine.md` is correct, A5 updated exactly that file, and A5 does not appear in the output.
+
+**Why it matters more than two lines of noise.** A standing false positive is the *"gate that cries wolf"* failure named in [B-316](#b-316--two-better-auth-session-tokens-were-committed-and-pushed-to-the-remote)'s retrospective: **two findings nobody can ever clear teach every lane to skim the output**, and the day a real drift appears it is in a list that has always had two entries. The tool's own footer is honest — *"this check sees whether a file changed, never whether what it says is true"* — and that honesty is exactly why the file list has to be right.
+
+**Fix shape.** Allow more than one document per module — the structure is already a tuple — and correct the two entries. **A lane changing `provider_normalization`'s public port should satisfy the check by documenting the port**, which is where the port is documented.
+
+### B-320 · Two modules naming a response model the same thing silently rename a shipped API contract
+
+| | |
+|---|---|
+| **Module** | Repository-wide — every module's `interface/schemas.py` |
+| **Current assignee** | **QE** — a repository-wide contract check, in the same family as `lint-imports` and `tenancy_policy.py` |
+| **Severity** | **🟠** — **it breaks a client and nothing reports it.** Not 🔴: no collision is currently live |
+| **Status** | **`OPEN`** — reported by Lane B. **The instance was fixed; the class was not** |
+| **Found** | 2026-08-03, by Lane B, **by causing it** while adding A5's endpoint |
+
+**Steps to reproduce.** Add a response model to any module whose class name matches one in another module. Fetch `/openapi.json`.
+
+**Expected.** A name collision across fifteen modules is caught by something.
+
+**Actual.** FastAPI qualifies both classes to disambiguate them, so **`components.schemas["ObservationResponse"]` stops existing** — and the Business Event Engine's evidence drawer, which has shipped under that name, is renamed on the wire by a change in a module it has never heard of. A generated client regenerates against a different type; a hand-written one 404s on a `$ref`.
+
+**What it survived.** `mypy --strict` (two classes in two modules is legal Python) · `lint-imports` (no import crosses anything) · OpenAPI generation itself (**the qualification is FastAPI working as designed**) · the module's own tests, which import the class rather than reading the schema.
+
+**What caught it.** `test_every_response_field_is_documented`, which iterates a **hardcoded list** of two schema names it happens to care about, and raised `KeyError`. **It found this by accident.** A collision between two names that list does not mention would ship silently.
+
+**The fix is one assertion, and the repository already has the shape for it.** Walk every `interface/schemas.py`, collect classes deriving from `BaseModel`, assert the names are unique — the same discipline as `TENANT_OWNED_TABLES` classifying every new table, and cheaper. It could equally read `/openapi.json` and assert that every registered response model's class name appears as a component key, which catches the qualification directly.
+
+**Not fixed by Lane B.** The check binds every module's naming and belongs beside the other repository-wide contracts. **The collision itself is fixed**: A5's model is `AccountObservationResponse`, and the *newer* name moved because the older one is already a client contract.
+
+### B-319 · The Playground produces no attribute transitions, so a company's history has nothing to draw
+
+| | |
+|---|---|
+| **Module** | Provider Simulation Framework — `signora_platform/simulation/`, and the Playground scenario it drives |
+| **Current assignee** | **QE** — the simulation framework and the Playground seeder are repository-wide test infrastructure |
+| **Severity** | **🟠** — **it makes a shipped capability look empty rather than wrong.** A5's screen would render correctly and show a customer nothing |
+| **Status** | **`OPEN`** — reported by Lane B, **not fixed.** Changing what the simulator emits changes every downstream fixture in the repository |
+| **Found** | 2026-08-03, by Lane B, while building A5's endpoint — **by a test asserting a transition and finding none** |
+
+**Steps to reproduce.** Seed the Playground, then `GET /workspaces/{id}/accounts/{account_id}/observations`.
+
+**Expected.** A company's history contains transitions — *"employee count went from 120 to 145 between 30 May and 1 July"*. That is what A5 exists to show and what the brief's *"Grew headcount 15% over 32 days"* is derived from.
+
+**Actual.** Every observation is `occurrence_observed` with `previous_value: null`:
+
+```
+occurrence_observed  headcount_change
+occurrence_observed  intent_topic_surge
+occurrence_observed  technology_detected
+occurrence_observed  technology_removed
+```
+
+**The architecture is right; the data does not exercise it.** `EMPLOYEE_COUNT` is classified `STATE` in `ATTRIBUTE_KINDS` and **does** produce transitions — `test_derivation.py` proves it with two constructed claims. A transition needs **one provider asserting the same state attribute twice**, and the scenario enriches each account **once**. `HEADCOUNT_CHANGE` is deliberately an occurrence because CoreSignal reports a delta directly, and deriving a transition from it would double-count against `EMPLOYEE_COUNT` — that reasoning is correct and must not be changed to make this pass.
+
+> **So the fix is a second enrichment pass at a later `observed_at`, not a reclassification.** Anything that turns an occurrence into a transition to fill a screen would corrupt the pipeline the screen is supposed to be showing.
+
+**Why every gate passed.** 2714 tests, and none of them asks *"does the demonstration data exercise the transition path?"* Unit tests construct their own claims and pass; the pipeline tests assert that occurrences were recorded correctly, which they were. **The gap is between a capability being correct and being demonstrable**, and it is exactly the class §2 added *"every completed slice is demoable by a non-engineer"* to catch.
+
+**Pinned executably.** `test_the_seeded_pipeline_records_occurrences_and_no_transitions` asserts the limitation and **fails the day it is fixed** — because that day is the day A5's screen becomes worth building, and nothing else in the repository would say so.
+
+**Not fixed by Lane B.** The simulator is shared infrastructure; a second enrichment pass changes claim counts, observation counts, signal inputs and score inputs in every fixture that seeds the Playground. **That is a repository-wide change with a coverage and certification blast radius**, and it belongs to whoever owns the framework.
+
+### B-318 · A Security Invariant matches text, so a comment fails it and an alias evades it
+
+| | |
+|---|---|
+| **Module** | `backend/tests/security_invariants/test_ai_platform.py` — `TestAnAccountsNameIsResolvedInExactlyOnePlace` |
+| **Current assignee** | **QE** — the Security Invariants suite is repository-wide and QE's |
+| **Severity** | 🟡 — **the guarantee is weaker than it reads, and it has never been wrong yet.** Not 🟠: nothing is currently evading it |
+| **Status** | **`OPEN`** — reported by Lane B, **not fixed.** A lane must never weaken a Security Invariant, and it should not silently rewrite one either |
+| **Found** | 2026-08-03, by Lane B, **by failing it with a docstring** while building A1 |
+
+**Steps to reproduce.** Write `select_name()` inside a comment or docstring in any file under `modules/`. Run `pytest tests/security_invariants -k ResolvedInExactlyOnePlace`.
+
+**Expected.** The invariant states *"`select_name` is called from one place"*. A comment calls nothing.
+
+**Actual.** It fails. The check is `if "select_name(" in path.read_text()`, so **a mention is indistinguishable from a call.** A1's claim-port docstring explained where the displayed name comes from and failed the build.
+
+**The half that matters more, and it points the other way.** The same text match means a genuine second caller can evade it entirely:
+
+```python
+from modules.knowledge_graph.domain.naming import select_name as pick
+winner = pick(claims)          # a second surface deciding which name wins
+```
+
+**No file contains `select_name(`, the invariant passes, and the property it protects is gone** — two surfaces choosing what a company is called, which is exactly the defect it exists to prevent.
+
+**Why it is written that way, and it is a defensible choice.** The docstring records that a broader rule *"could not be stated correctly"* and was narrowed deliberately rather than faked into passing (§2, decorative logic) — which is the right instinct. **The narrowing just landed one level short of the AST**: `ast.walk` looking for a `Call` whose func resolves to the imported name catches both problems and keeps the property honest. The neighbouring test in the same class already parses with `ast`, so the tool is present in the file.
+
+**Not fixed by Lane B.** *"Never delete, skip, or weaken one of these tests"* (§11) is a rule about not making them pass — and rewriting one to be stricter is still a change to a repository-wide guarantee that QE owns. **The A1 docstring was reworded instead**, which is the change that was Lane B's to make.
+
+### B-317 · `make test` takes no environment lease, so two runs in one lane silently corrupt each other
+
+| | |
+|---|---|
+| **Module** | Repository tooling — `Makefile`, `infra/environment-lease.py` |
+| **Current assignee** | **QE** — the lease, `RUNNING.md` and repository-wide test infrastructure are QE's |
+| **Severity** | 🟠 — **the failure is silent and the result looks like a normal run.** Not 🔴: it needs two concurrent runs in one lane, which is a mistake rather than a routine |
+| **Status** | **`OPEN`** — reported by Lane B, **not fixed.** It is a change to a gate every lane uses |
+| **Found** | 2026-08-03, by Lane B, **by causing it** — a `make test --cov` was running when a targeted `pytest tests/knowledge_graph` was started against the same lane database |
+
+**Steps to reproduce.** In one lane, run `make test`. Before it finishes, run `pytest tests/<anything>` in the same checkout.
+
+**Expected.** The second run refuses, exactly as `make certify`, `make smoke`, `make dr`, `make e2e` and `make product-demo` all do: *"BLOCKED — the environment is leased by another operation."*
+
+**Actual.** Both run. `tests/conftest.py` truncates every table after each test, so each run is deleting the other's fixtures mid-suite. **The output of both is unreliable and neither says so.**
+
+**This is the same failure the lease was built for.** The Makefile records it beside the lease itself — *"a second operation contaminated a certification"*, cycle 25's `pytest 134 passed` against a suite of 2589. **Eight targets take a lease and the one every lane runs most does not.**
+
+**Why it was not caught.** The lease was introduced for the targets that bind *ports* — the production stack, the review environment, Playwright. `make test` binds no port, so it looked unaffected. **It binds something scarcer: the one database whose tables it truncates.**
+
+**Not fixed by Lane B.** `make test` is the gate every lane and QE runs, `environment-lease.py` is repository tooling, and **a gate is a slice rather than a passing edit** ([B-014](#b-014--a-closeout-commit-changed-a-certification-gate)). The fix is one line by analogy with the eight that already have it; the judgement is whether `test` should share the existing lease names or hold its own, which decides whether a lane may run its suite while a review stack is up.
+
+**Lane B's own run was re-done cleanly**, single-run, after killing the concurrent one — the coverage figure reported for this slice is from that run and not from the contaminated pair.
+
+### B-316 · Two Better Auth session tokens were committed and pushed to the remote
+
+| | |
+|---|---|
+| **Module** | Repository — `frontend/tests/e2e/.auth/` |
+| **Current assignee** | **Lane B** — it committed them, and it has remediated the branch |
+| **Severity** | 🟡 — **the class is 🔴 and the instance is not.** See *impact*, which is stated rather than assumed |
+| **Status** | **`FIXED`** — Lane B, 2026-08-03. **`VERIFIED` is QE's**, and the residual question below is genuinely QE's to answer |
+| **Found** | 2026-08-03, by Lane B, when a rebase refused to overwrite two untracked files and the reason turned out to be that an earlier commit had tracked them |
+
+**Steps to reproduce (the original defect).** Run the E2E suite so Playwright writes its storage state, then commit before `2026-08-03`. `frontend/tests/e2e/.auth/` was not ignored, so `git add` took it.
+
+**Actual.** `81f6952` added `dana-reyes-northwind-example.json` and `marcus-hale-northwind-example.json`, each containing a live `better-auth.session_token`. **Both were pushed to `origin/lane-b-commercial-profile`.** `efce071` deleted them, which removed them from the tip and left them in the history.
+
+**Impact, measured rather than assumed.** `"domain": "localhost"`, `"secure": false`, expiring 2026-08-09, valid against **one lane's local database on one workstation**. There is no reachable service they authenticate to. **The exploitable risk is nil; the process defect is real**, and the two must not be conflated in either direction — inflating it teaches people to discount the register, and dismissing it teaches them the rule is soft.
+
+**Why every gate passed.** Nothing in the repository looks for a credential in a diff. `make certify`, `lint-imports`, `mypy` and the frontend suite are all indifferent to file *content* of this kind. **§13's rule — *"no credentials, API keys, or secrets are ever hardcoded or committed"* — is enforced by nothing.**
+
+**Fixed, in two parts.** `c35cd57` added `frontend/tests/e2e/.auth/` to `.gitignore`, so it cannot recur — **that landed before this row existed and is why the defect is already closed at the class level.** The branch history was then rewritten during the 2026-08-03 rebase so no commit on `lane-b-commercial-profile` contains either file, and the branch was force-pushed.
+
+**What is not fixed, and is QE's.** **A force-push removes the ref, not the object.** The two commits remain retrievable by SHA on the remote until it garbage-collects, and Lane B has no authority over the hosting account. **The durable answer is a gate, not a cleanup**: a pre-commit or certification check that refuses a diff containing a private-key header, an `.env` value or a session-token shape. That is repository-wide tooling and is recorded here rather than built.
+
+> ### Retrospective — requested by the product owner, 2026-08-03
+>
+> **How it happened.** Playwright writes storage state to `frontend/tests/e2e/.auth/` on every authenticated run. That directory did not exist when the ignore rules were written, and nothing added it when the E2E suite arrived. **The commit that carried the tokens was a documentation commit** — `git add -A` after a review session, which is when a working tree is fullest of things nobody is thinking about.
+>
+> **Why it was not detected.** Three layers each had a reason not to see it:
+>
+> | Layer | Why it was silent |
+> |---|---|
+> | `.gitignore` | **The rule that would have caught it was written four days later**, by this same lane, for an unrelated reason ([`c35cd57`](#) — stopping the suite touching the review environment). The fix preceded the report by accident |
+> | Every gate | `make certify`, `mypy`, `lint-imports`, `pytest`, `vitest` and `tsc` are all indifferent to file *content* of this kind. **§13's rule is enforced by nothing** — it is a sentence in a governance document |
+> | Review | A diff of *"+30 lines, two JSON files"* inside a 40-file documentation commit is exactly the shape a reader skims |
+>
+> **The lightweight improvement, and it is one gate rather than a policy.** A path-and-content check in `infra/`, run by `make certify`, that refuses a commit introducing: a `BEGIN ... PRIVATE KEY` header · a file named `.env` or `.env.*` (other than `.example`) · a Playwright storage-state shape (`"cookies": [` with a `"value"` beside it) · an `Authorization: Bearer` literal outside a test fixture.
+>
+> **Deliberately not a secret scanner.** A general entropy scanner produces false positives on UUIDs, hashes and fixture ids, and **a gate that cries wolf is a gate people learn to pass with `--no-verify`.** Four named shapes catch the classes this repository actually generates, and each can be explained in one line when it fires.
+>
+> **Deliberately not a hook, either.** A pre-commit hook lives on one workstation and is invisible to the repository (§20c-2's reasoning: the local run is the only run, so it must be the one that decides). **In `make certify` it binds every lane identically.**
+>
+> **What this cannot fix, stated plainly.** A gate catches the *next* one. Nothing in a lane's authority removes an object already on a remote — that needs the hosting account, and it is why the impact assessment above is the honest mitigation rather than the cleanup.
+
+### B-315 · Every dialog claims the same HTML id, so a screen reader can be told the wrong title
+
+| | |
+|---|---|
+| **Module** | Frontend foundation — `frontend/components/ui/dialog.tsx` (frozen, §20c) |
+| **Current assignee** | **QE** — `components/ui` is theirs. Reported by Lane B |
+| **Severity** | 🟡 — invisible to a sighted user, wrong for everybody else |
+| **Status** | `OPEN` |
+| **Found** | 2026-08-03, by Lane B, during the product review |
+
+**Steps to reproduce.** Open Your business and count duplicate ids:
+
+```js
+const ids = [...document.querySelectorAll('[id]')].map(e => e.id);
+ids.filter((v, i) => ids.indexOf(v) !== i)
+// ["dialog-title", "dialog-title"]
+```
+
+**Expected.** `aria-labelledby` on an open dialog resolves to that dialog's own title.
+
+**Actual.** `Dialog` hardcodes `id="dialog-title"` and points every instance's `aria-labelledby` at it. **Three dialogs are mounted on that page at once**, so the attribute resolves to whichever appears first in the document — **not the open one**. Also invalid HTML.
+
+**Fix shape.** A generated id per instance (`useId`), used by both the heading and the `aria-labelledby`. **Not fixed by Lane B**: same frozen component as [B-312](#b-312--a-dialog-a-keyboard-cannot-reach-anything-inside), same reasoning.
+
+---
+
+### B-314 · Every account brief carries a sentence that stops halfway
+
+| | |
+|---|---|
+| **Module** | **Product Surface** — the account brief |
+| **Current assignee** | **Lane A** — the product surface's assignee. Reported by Lane B, not fixed |
+| **Severity** | 🟡 — on every brief in the product, in every state |
+| **Status** | `OPEN` |
+| **Found** | 2026-08-03, by Lane B, during the product review |
+
+**Steps to reproduce.** Open any account brief and read the line under the score.
+
+**Expected.** A sentence that finishes.
+
+**Actual**, in both states, verified in the DOM rather than in a screenshot:
+
+```
+Opened at 33, 5 weeks ago      unchanged since      ← the score has not moved
+Opened at 20, 5 weeks ago      -10 since            ← the score has fallen
+```
+
+***Unchanged since* what?** The element contains those two fragments and nothing else, so nothing follows in either case.
+
+**Why it matters more than a typo.** It sits directly beneath the number the whole screen exists to justify, and it is the one line that describes the score's *history* — the thing a seller checks before deciding whether a change is worth acting on.
+
+---
+
+### B-313 · The account brief has no top-level heading, and it is the screen sellers live on
+
+| | |
+|---|---|
+| **Module** | **Product surface** — `frontend/app/(app)/accounts/[accountId]/page.tsx` |
+| **Current assignee** | **Lane A** — the product surface's assignee. **Reported by Lane B, not fixed** |
+| **Severity** | 🟡 — invisible to sighted users, and the page has no name at all for anybody navigating by structure |
+| **Status** | `OPEN` |
+| **Found** | 2026-08-03, by Lane B, when a reload assertion waited for an `<h1>` and timed out |
+
+**Steps to reproduce.** Open any account brief and list its headings:
+
+```js
+[...document.querySelectorAll('h1,h2,h3')].map(h => h.tagName + ' ' + h.textContent)
+// ["H2 What contributed", "H2 What has happened"]
+```
+
+**Expected.** One `<h1>` naming the account, with the sections beneath it — the structure every other screen has.
+
+**Actual.** **No `<h1>` anywhere on the page.** Two `<h2>`s hang under nothing. A screen-reader user who jumps by heading lands on *"What contributed"* with no idea which account they are looking at, and the document outline begins at level 2.
+
+**Why nothing caught it.** `accessibility.spec.ts` asserts *"exactly one level-1 heading"* for the attention list, Your business and Settings — **and not for the brief**, because the list was written from the screens that had one. **A test suite written by looking at what exists inherits what is missing**, which is the same shape as the `@smoke` list only covering screens somebody remembered.
+
+> **Not fixed by Lane B.** It is product-surface markup and the product surface has an assignee (`CLAUDE.md` §20e: *finding a defect outside your assignment is not permission to fix it*). It is a small change — a heading naming the account — and it should carry a `@a11y` assertion for the brief in the same commit, so the gap cannot reappear.
+
+---
+
+### B-312 · A dialog a keyboard cannot reach anything inside
+
+| | |
+|---|---|
+| **Module** | Frontend foundation — `frontend/components/ui/dialog.tsx` (frozen, §20c) |
+| **Current assignee** | **QE** — `components/ui` is theirs. **Reported by Lane B, attempted and reverted** (below) |
+| **Severity** | 🟡 — the modal works with a mouse and strands a keyboard |
+| **Status** | **`OPEN`** — and **asserted executably**: `interaction-boundaries.spec.ts` carries a `test.fail()` that passes while the defect exists and turns red the moment it is fixed |
+| **Found** | 2026-08-03, by Lane B, probing where focus actually goes during an open modal |
+
+**Steps to reproduce.** Open an account brief, open a citation, and press Tab eight times:
+
+```
+BODY · BODY · BODY · BODY · BODY · BODY · BODY · BODY
+```
+
+**Expected.** Something to land on, and something to press.
+
+**Actual.** **The evidence drawer contains no focusable element of any kind** — no close button, no link, only text. Every Tab lands on `document.body`. The isolation is intact (focus never reaches the page behind, which was verified separately), but a keyboard user is **stranded inside a modal whose only exit is a key nothing on screen mentions.**
+
+**Why the focus trap being "correct" hid it.** A trap is normally tested by checking focus stays inside. It did — trivially, because there was nowhere for it to go. **The half nobody asserts is that a dialog contains something to reach**, and a trap around an empty room is not protection.
+
+For contrast, the editing dialog is fine, and the probe shows why:
+
+```
+INPUT [in dialog] → BUTTON "Cancel" [in dialog] → BODY → INPUT [in dialog] → …
+```
+
+— it has controls, and `body` at the wrap point is Chromium behaving normally.
+
+**The fix, and why Lane B did not land it.** A close control in `Dialog`'s header, so **every** dialog has one rather than only those whose footer happens to carry a Cancel button — the defect class is *"a Dialog need not offer a way out"*, and fixing `evidence.tsx` alone leaves the next dialog free to repeat it.
+
+**It was written, and reverted.** §20c's accessibility clause would have permitted it, on the same basis as [B-307](#b-307--the-page-scrolls-underneath-an-open-dialog-and-the-component-says-it-does-not). **Three things say it is not this lane's to land:**
+
+| | |
+|---|---|
+| It **breaks a test in a module Lane B is not assigned** | `tests/components/narration.test.tsx` asserts a dialog contains no button when nothing resolves. Making the repository green would mean editing the product surface's test — outside the Change Budget |
+| It **changes every dialog in the product** | §20c requires a human to look at a changed screen, and five screens change at once |
+| The blast radius **is the signal** | B-307 was a self-contained fix inside one component. This one reaches other modules' assertions, which is the difference between an accessibility fix and a design change |
+
+> **Left open on purpose, with the evidence and the diff description attached rather than the diff.** Whoever holds `components/ui` can land it in minutes; what they cannot reconstruct is the eight-tabs-eight-`body`s probe that proves it matters.
+
+---
+
+### B-311 · The E2E suite passed or failed depending on which terminal it was run from
+
+| | |
+|---|---|
+| **Module** | None — `frontend/playwright.config.ts` |
+| **Current assignee** | **Lane B** — found and fixed in the same slice |
+| **Severity** | 🟠 — **every test fails, and the failure looks like a broken suite rather than a missing variable** |
+| **Status** | **`FIXED`** — 2026-08-03, Lane B. Awaiting QE verification |
+| **Found** | 2026-08-03, by Lane B, when a suite that had passed 119/119 the day before failed 128/128 |
+
+**Steps to reproduce.** From a shell that has not exported `LD_LIBRARY_PATH`:
+
+```
+$ make e2e
+  Running 128 tests using 1 worker
+  ✘ 1 [authenticate] › sign in as the owner (5ms)
+  ✘ 2 [authenticate] › sign in as a member (4ms)
+  … 128 failures, every one in 4–5ms
+```
+
+**Expected.** The suite behaves the same way twice.
+
+**Actual.** `browserType.launch: Target page, context or browser has been closed`, on every test, because Chromium cannot find `libnspr4.so`. **The same suite, the same commit, passed completely in a different terminal ten hours earlier.**
+
+**Cause.** `npx playwright install-deps` requires `sudo`, which a lane does not have, so the browser's shared objects were unpacked into `~/.cache/ms-playwright-deps/lib` and reached with an **exported shell variable**. Nothing in the repository knew about it.
+
+> **This is a hidden input, and hidden inputs are architecture defects** (`CLAUDE.md` §2): *"any input that influences behaviour without being part of the declared contract… makes the same declared inputs produce different results."* Here it decided whether **anything at all** ran.
+>
+> **The tempting fix was to document the variable in `RUNNING.md`.** That would have been the wrong one — a documented hidden input is still hidden the first time somebody does not read the document, and the whole point of §2 is to *remove* them rather than describe them.
+
+**Fix.** `browserEnvironment()` in `tests/e2e/fixtures/environment.ts` — the file that already owns *"which environment this suite may drive"* — supplies the path when the unpacked cache exists and returns `undefined` when it does not, so a properly provisioned machine is unaffected. Wired into `playwright.config.ts` (`use.launchOptions.env`) and into the endurance recorder. **Verified by running the suite with `env -u LD_LIBRARY_PATH`.**
+
+**One thing this corrects in my own record.** `record.ts` briefly carried a comment claiming *"the Playwright test runner adds that directory and the library does not"*. **That was wrong** — neither does; the runner had simply always been launched from a shell where it was set. The comment was written before the suite was tried from a clean environment, and it is exactly the kind of confident wrong explanation §2 warns about.
+
+---
+
+### B-310 · The Playground seeder tells every lane to go and open Human Review
+
+| | |
+|---|---|
+| **Module** | None — `backend/tests/playground/seed.py`, shared test infrastructure |
+| **Current assignee** | **Lane B** — found and fixed in the same slice |
+| **Severity** | 🟡 — wrong for everybody except the person who wrote it, and it points at the one environment nobody may write to |
+| **Status** | **`FIXED`** — 2026-08-03, Lane B. Awaiting QE verification |
+| **Found** | 2026-08-03, by Lane B, reading its own endurance run's output |
+
+**Steps to reproduce.** Seed any lane's Playground, from any lane:
+
+```
+$ make endurance            # Lane B: database signora_lane_b, app on 3400
+  …
+  members     4 signed-in user(s) enrolled
+
+  Open http://localhost:3000          ← Human Review, and not this lane's data
+```
+
+**Expected.** After seeding *this* database, be told where to see *this* data.
+
+**Actual.** Every lane, every time, is directed at `http://localhost:3000` — **Human Review's port, which belongs to the product owner and to no lane** (`RUNNING.md` § Running a lane). A lane that followed the instruction would find a different organization, conclude the seed had not worked, and might act on rows it did not create. The `else` branch is worse: it sends the reader to `http://localhost:3000/sign-up` **to create accounts**, which is a write.
+
+**Cause.** Two hardcoded strings, correct only on the one stack that happens to sit on the default ports.
+
+**Fix.** `_app_url()` reads `SIGNORA_APP_URL` — the variable every lane already sets — and falls back to 3000 only when nothing else is known. The Makefile now passes it to the seed step as well as to the browser.
+
+> **This is the third instance of one shape, and the shape is worth naming.** The suite defaulted to port 3000 ([the environment guard](../frontend/tests/e2e/fixtures/environment.ts)), the auth database was shared because it was never allocated ([B-104](#b-104)), and now the seeder printed it. **Each was a default that was right for whoever wrote it and wrong for everybody who came after** — and the product owner's rule covers all three: *if a mistake is predictable, the repository should refuse to make it.* A default cannot refuse; only a required value can. This one still has a fallback because a print statement cannot safely refuse to print, and that is the weaker fix, stated as such.
+
+---
+
+### B-309 · `clean_database` truncates five tables and relies on a cascade that cannot happen
+
+| | |
+|---|---|
+| **Module** | None — `backend/tests/conftest.py`, shared test infrastructure |
+| **Current assignee** | **QE** — repository-wide test infrastructure, and every lane's database is affected |
+| **Severity** | 🟡 — **no test is wrong and nothing is slow; every environment's database grows without bound and stops describing anything** |
+| **Status** | **`OPEN`** — reported by Lane B, not fixed. It is one change affecting every lane's suite |
+| **Found** | 2026-08-03, by Lane B, while investigating why a browser suite had become slow |
+
+**Steps to reproduce.** Run any backend suite against any database a few dozen times, then count what is left behind:
+
+```sql
+select count(*) from opportunity o
+  where not exists (select 1 from workspace w where w.id = o.workspace_id);
+```
+
+**Expected.** A truncating fixture leaves the database as it found it.
+
+**Actual — measured 2026-08-03, across every database on this workstation.**
+
+| Database | Rows in tenant tables | Orphaned | Live workspaces | On disk |
+|---|---|---|---|---|
+| `signora` (Human Review) | 1,100,278 | **1,100,278** | **0** | 486 MB |
+| `signora_lane_a` | 481,989 | **481,989** | 0 | 232 MB |
+| `signora_lane_b` | 225,428 | **223,918** | 1 | 119 MB |
+| `signora_lane_qe` | 0 | 0 | 0 | 13 MB |
+| | | **1.81 million** | | **850 MB** |
+
+> **Two corrections to this row's first version, both made by measuring rather than by re-reading it.**
+>
+> **The count was a fraction of the truth.** It said *"4164 orphaned rows across 1673 dead workspaces"* and named 28 tables; that was one table's figure — `opportunity` — presented as the total. **43 tables carry `workspace_id`**, and the real figure is **1.81 million rows in 850 MB**, three orders of magnitude larger.
+>
+> **And the stated symptom was wrong.** It said the suite *"gets slower"*. **It does not, and that is now measured**: every table carrying `workspace_id` has an index that includes it, so a workspace-scoped read of the bloated `claim` table (56,874 rows, 149 of them live) is an index-only scan returning in **0.14 ms**. Nothing is slow. The wrong version was the more alarming one, which is exactly why it needed checking.
+
+**Cause.**
+
+```python
+"TRUNCATE membership, workspace, outbox_event, "
+"processed_event, dead_letter_event CASCADE"
+```
+
+**`CASCADE` follows foreign keys, and there are none to follow.** Twenty-eight tables carry `workspace_id` and **not one has a foreign key to `workspace`**:
+
+```
+ai_inference · ai_narration · ai_reasoning · business_event · buying_committee
+buying_score · claim · commercial_focus · connected_account · entity
+icp_declaration · icp_segment · icp_segment_product · icp_segment_state
+icp_segment_version · identity_binding · integration_grant · integration_secret
+normalization_outcome · observation · opportunity · opportunity_state
+product_catalog · provider_sync · provider_watermark · …
+```
+
+> **That absence is correct and should not be "fixed".** A foreign key from every module's table to `workspace_tenancy`'s table would couple every module's schema to another module's, and Principle 5 requires any module to be extractable into its own service without changing its domain or application layers. **The schema is right; the fixture's assumption about it is wrong.**
+
+**Why it has never been noticed.** Nothing reads the orphans. Every query filters by `workspace_id`, RLS scopes to the live one, and every such column is indexed — so the rows are invisible to correctness *and* to performance. **The only thing they affect is what the database is a description of**, and nothing asserts that.
+
+---
+
+#### How often, and how widely — the frequency evidence
+
+| | |
+|---|---|
+| **The fixture** | `clean_database` in `backend/tests/conftest.py`, **`autouse=True` at function scope in the top-level conftest** |
+| **Tests that run it** | **All 2671.** Autouse in the root conftest means every test in `backend/tests/` truncates on teardown — including pure unit tests that never opened a connection |
+| **Suites affected** | **Every one.** `security_invariants` has its own conftest but inherits this fixture; the Playground seeder, `make smoke`, `make dr` and `make certify` all run against databases this has been leaking into |
+| **Leak per test** | Every row a test wrote to any of the other 40 tenant-owned tables |
+| **Cost of the truncate itself** | 8 ms, on the bloated `signora_lane_b`. **2671 tests × 8 ms ≈ 21 seconds a run**, paid by every test including those that never touch a database |
+| **Environments affected** | Four of four on this workstation, including **Human Review**, whose database is the largest of them |
+
+#### Why the assumption is wrong, precisely
+
+`TRUNCATE ... CASCADE` extends only along **foreign keys that reference the truncated tables**. There is exactly one in the whole schema:
+
+```
+membership.workspace_id → workspace.id
+```
+
+and `membership` is **already named in the statement**. **`CASCADE` therefore reaches nothing that the explicit list does not already reach.** Removing the keyword changes no behaviour at all — which makes it textbook Decorative Logic (`CLAUDE.md` §2): *implementation that appears to enforce a property but whose removal does not change the property it claims to protect.* It reads as a cleanup guarantee, and there has never been one.
+
+> **The missing foreign keys are correct and must not be added.** 42 tables are classified tenant-owned in `tenancy_policy.py`; a foreign key from each to `workspace` would couple every module's schema to Workspace & Tenancy's, and Principle 5 requires any module to be extractable into its own service without changing its domain or application layers. **The schema is right. The fixture's assumption about the schema is wrong.**
+
+#### What cleanup should mean — proposed semantics, for QE to decide
+
+Stated as a contract rather than as an implementation, because the implementation is QE's call:
+
+1. **A test leaves the database as it found it, or the fixture is not a cleanup.** Partial cleanup is worse than none: it looks like the guarantee while providing a fraction of it.
+2. **The table list is derived, never written by hand.** A hand-maintained list is the same defect one migration later — and the derivation already exists in `TENANT_OWNED_TABLES` and `PLATFORM_INFRASTRUCTURE_TABLES`, which `CLAUDE.md` §8 already requires every new table to join in the migration that creates it. **A new table is then cleaned up because it was classified, not because somebody remembered two files.**
+3. **Whatever cleans up must fail loudly when it is incomplete.** A Security Invariant asserting *"no table carrying `workspace_id` holds a row after teardown"* would have caught this on the day it was introduced, and would catch the next table to escape the list.
+4. **Cost is bounded per test, not per suite.** 2671 truncates of 42 tables is a different proposition from 2671 truncates of 5; a per-session schema reset (RE-03's disposable database) may well be cheaper than either.
+
+#### How future end-to-end suites should think about cleanup — and why they are different
+
+**An E2E suite must not use this fixture, and Lane B's does not.** The reasoning generalises, so it is recorded here rather than in one lane's design doc:
+
+| | Backend suite | End-to-end suite |
+|---|---|---|
+| **Writes through** | fixtures, directly | **the product, as a customer** |
+| **Can it truncate?** | Yes — it created the rows | **No.** It never learned which rows it caused; the product decided that |
+| **So it isolates by** | truncation between tests | **re-seeding a fresh workspace before the suite** |
+| **And its unit of isolation is** | the test | **the run** |
+
+**The rule this suggests: an end-to-end suite owns an environment, never a table.** It re-seeds through the same door a customer's data enters (`20-provider-simulation.md`), asserts against what that produced, and deletes nothing — because a suite that reached into tables to tidy up would be doing the one thing the product-owner rule forbids: *"you are not allowed to bypass the product / manually insert rows into the database."* **Deleting is bypassing too.**
+
+That is why [B-308](#b-308--re-seeding-the-playground-adds-an-organization-instead-of-replacing-one) mattered enough to fix immediately: **re-seeding is the only cleanup an E2E suite is permitted**, so a re-seed that accumulates rather than replaces takes the mechanism away.
+
+**Not fixed by Lane B, deliberately.** The fix changes a fixture every module's suite depends on, its correct form is a decision between three shapes (derive the list · reset the schema per session · RE-03's disposable database), and **shared test infrastructure is QE's**. Reported with the measurement, the frequency, the cost and the proposed semantics so the decision can be made on evidence rather than on a hunch.
+
+---
+
+### B-308 · Re-seeding the Playground adds an organization instead of replacing one
+
+| | |
+|---|---|
+| **Module** | None — `backend/tests/playground/seed.py`, the demonstration seeder |
+| **Current assignee** | **Lane B**, End-to-End Product Confidence |
+| **Severity** | 🟠 — **a reviewer opens the product and finds an empty list, in a database holding twelve full ones** |
+| **Status** | **`FIXED`** — Lane B, 2026-08-03. **`VERIFIED` is QE's** |
+| **Found** | 2026-08-03, by Lane B — **by the browser suite failing, not by reading the seeder** |
+
+**Steps to reproduce.** Run `make demo-seed` twice. Open the product.
+
+**Expected.** One organization, freshly seeded.
+
+**Actual.** Two, both named *Playground*. After twelve runs:
+
+```
+select name, count(*) from workspace group by name;
+ Playground | 12
+```
+
+The organization selector offers *Playground* twelve times, indistinguishably. The active one is whichever the browser stored — and if that is an early one, **its accounts were superseded long ago and the attention list is empty.** That is what the suite hit: `main a[href^="/accounts/"]` found nothing, on a database with twelve fully seeded organizations in it.
+
+**Why it went unseen.** `_tracked` creates a workspace and nothing removed the last. Harmless while nobody re-seeded — and **`make e2e` re-seeds before every run**, which is what turned a latent trap into a daily one. The same trap was always waiting for anybody who ran `make demo-seed` twice.
+
+**Fix.** The seeder retires previous Playgrounds before seeding. **This is what *re*-seed has always meant**; accumulating is the surprising reading, and it was the one implemented. Scoped to the seeder's own workspace name — a workspace somebody created by hand is not its to delete.
+
+### The fix's own incident, and the correction to my first account of it
+
+**The development PostgreSQL went into crash recovery while the first version of this fix ran.**
+
+```
+LOG:  database system was not properly shut down; automatic recovery in progress
+LOG:  redo starts at 4/9BD8CA98 … redo done … 3.40 s
+LOG:  database system is ready to accept connections
+```
+
+**My first explanation was that a twelve-workspace bulk delete was too heavy. That was wrong, and the real cause is worse.**
+
+The host had **14 of 15 GiB of memory in use and a load average of 54**, because this lane had accumulated **four `next dev` servers, five orphaned Playwright workers and seven vitest workers** across a day of runs — every one of them mine, none of them cleaned up. The delete was the *trigger*; **the exhausted host was the cause**, and PostgreSQL was one of several things about to fall over.
+
+> **Recorded in full because the wrong version was more flattering.** *"A heavy query crashed the database"* is a database story. *"I leaked processes until the machine ran out of memory and something died"* is an operator story, and operator stability is a dimension [`RELEASE_ENGINEERING.md`](RELEASE_ENGINEERING.md) §8 already names as unmeasured — *"cycle 25 was entirely this, and nothing distinguishes it."* **This is a second data point for that, from a different lane.**
+
+**Nothing was lost.** `signora`, `signora_lane_a` and `signora_lane_qe` were verified intact afterwards and no other lane was mid-operation. After reclaiming the leaked processes, memory went 14 GiB → 8.6 GiB and load 54 → 19.
+
+**The fix is kept anyway, and rewritten to delete one workspace per transaction**: the normal case is one, so the pathological case becomes twelve bounded steps rather than one unbounded one. That is correct regardless of how much memory the host has.
+
+**The operator lesson, which is the transferable one:** a lane that runs a browser suite repeatedly must reclaim its dev servers and its browsers, and `pkill` between runs is not optional housekeeping — it is what keeps the shared PostgreSQL alive.
+
+---
+
+### B-307 · The page scrolls underneath an open dialog, and the component says it does not
+
+| | |
+|---|---|
+| **Module** | None — `frontend/components/ui/dialog.tsx`, the frozen design system |
+| **Current assignee** | **Lane B**, End-to-End Product Confidence |
+| **Severity** | 🟡 — **wrong but survivable.** A reader loses their place in the argument they were checking; nothing is lost or misstated |
+| **Status** | **`FIXED`** — Lane B, 2026-08-03. **`VERIFIED` is QE's** |
+| **Found** | 2026-08-03, by Lane B, driving a real browser — and **only on the second run**, which is the more interesting half |
+
+**Steps to reproduce.** Open an account brief long enough to scroll. Click any citation. Scroll the wheel.
+
+**Expected.** Nothing behind the dialog moves.
+
+**Actual.** The page scrolls underneath it — measured `scrollY` 886 → 1458. The reader closes the drawer and returns to a page that has moved.
+
+**Cause.** `Dialog` is built on the native `<dialog>` element and `showModal()`. That gives focus trapping, top-layer stacking and Escape handling, and it makes background content inert **to pointer and keyboard interaction** — it does *not* stop the root scroller. A wheel gesture over an open modal scrolls the page behind it.
+
+> **The comment is the finding.** The component's docstring claimed the platform provided *"inertness of the background"*. It provides most of it, and **the sentence asserted a property the code did not have** — the defect class `CLAUDE.md` §2 names: *a comment beside it is then a false claim that survives review*. The docstring is now correct about what `showModal()` does and does not do.
+
+**Fix.** Lock `document.body.style.overflow` while open, restoring the **previous** value rather than clearing it — something else may legitimately have set it, and clobbering it would be this component deciding a page-level concern on its way out.
+
+**Why a frozen component was changed.** §20c permits it for *"an accessibility issue — a missing label, an unreachable control, a lost focus state. These are defects, not enhancements, and never wait for a business milestone to justify them."* Background content that is not inert is that class: it is the WAI-ARIA modal pattern's central requirement. **Announced 🟠 in the commit; QE to verify.**
+
+**And the test that found it had already passed once, vacuously.** Its first run opened a brief shorter than the window, so there was nowhere to scroll and the assertion held for a dialog that locked nothing. It now skips when the page cannot scroll rather than passing. **A test that can pass vacuously is documentation pretending to be code**, and this one proved it by doing so.
+
+---
+
+### B-306 · An owner is thrown out of Settings by pressing F5
+
+| | |
+|---|---|
+| **Module** | None — `frontend/app/(app)/authenticated-shell.tsx`, the application shell |
+| **Current assignee** | **Lane B**, End-to-End Product Validation |
+| **Severity** | 🟠 — **the entire administrative surface is unreachable by address**: products, the ideal customer, the buying committee, target accounts, connections. Not bookmarkable, not shareable, gone on refresh |
+| **Status** | **`FIXED`** — Lane B, 2026-08-03. **`VERIFIED` is QE's** |
+| **Found** | 2026-08-03, by Lane B. **Every Settings test in the new E2E suite failed at once**, which is how a systematic redirect announces itself |
+
+**Steps to reproduce.** Sign in as an owner. Click **Settings** in the sidebar — it opens. **Press F5.**
+
+**Expected.** Settings, still.
+
+**Actual.** The attention list. The same for `/settings/products`, `/settings/connections`, and any link a colleague pastes.
+
+```
+owner   /settings             ->  /   | Attention
+owner   /settings/products    ->  /   | Attention
+owner   /settings/connections ->  /   | Attention
+```
+
+**Cause, in two halves — and the second is why an obvious fix would not have worked.**
+
+**1.** `useViewerRole` answers `{ role: null, resolved: true }` when there is no workspace, correctly: *"no workspace means nothing to have a role in."* **On a fresh page load there is no workspace yet** — the list is in flight, `activeWorkspace` is legitimately `null` — so the hook reported a resolved *"not a member"*, `RouteGuard` evaluated `can(null, 'workspace:update')` as false, and redirected.
+
+> The hook's own comment says `resolved` exists so that nobody is *"sent to the front page for the half-second before their own membership arrived."* **The defect arrived through the other input**: the workspace, not the membership.
+
+**2.** Gating on `isLoading` alone is **not sufficient**, and the first fix attempt proved it by still redirecting. `WorkspaceProvider` chooses the active workspace in an effect that runs *after* the list resolves, so there is a render where loading is finished and `activeWorkspace` is still `null`.
+
+**Fix.** The shell answers both questions before anything is guarded:
+
+```ts
+const workspaceKnown =
+  !workspacesLoading && (activeWorkspace !== null || workspaces.length === 0);
+const resolved = viewer.resolved && workspaceKnown;
+```
+
+*Which organization is this* and *what is this person in it* — an active organization, or a list that came back empty. **Genuinely open in between.**
+
+**Not weakened for anybody.** Verified in the same run: a member is still redirected out of all three routes, and the server still refuses their write with `403`.
+
+**Regression tests.** `business-setup.spec.ts` — *"the administrative surface is reachable by address"*, three direct loads plus a reload; `permissions.member.spec.ts` holds the other side.
+
+---
+
+### B-305 · Clicking Sign out showed a page of vendor JSON and left the person signed in
+
+| | |
+|---|---|
+| **Module** | None — `frontend/app/(app)/authenticated-shell.tsx`, the application shell |
+| **Current assignee** | **Lane B**, End-to-End Product Validation |
+| **Severity** | 🔴 — **a session-termination control that does not terminate the session.** On a shared machine, a person who signed out was still signed in, and the product had told them otherwise by navigating away from itself |
+| **Status** | **`FIXED`** — Lane B, 2026-08-03. **`VERIFIED` is QE's** |
+| **Found** | 2026-08-03, by Lane B, on the first run of an authenticated Playwright journey |
+
+**Steps to reproduce.** Sign in. Click **Sign out**.
+
+**Expected.** The session ends and the sign-in page is shown.
+
+**Actual.** The browser navigates to a page of raw JSON:
+
+```json
+{"message":"Content-Type \"application/x-www-form-urlencoded\" is not allowed. Allowed types: application/json","code":"UNSUPPORTED_MEDIA_TYPE"}
+```
+
+**and the session is still valid.** Reloading the product signs straight back in.
+
+**Cause.** The control was a native `<form action="/api/auth/sign-out" method="post">`. A browser submits a form as `application/x-www-form-urlencoded`; Better Auth accepts `application/json` only, so the request was rejected before it reached the vendor's sign-out handler.
+
+**Fix.** Call `signOut()` from `lib/auth/client.ts`, which has always done this correctly — the vendor's own client sends JSON and then navigates to `/sign-in`. **Nothing new was written: one duplicate of a behaviour was removed in favour of the one that works.**
+
+**Regression test.** `frontend/tests/e2e/auth-journey.spec.ts` — *"signing out ends the session and the product is closed again"*, which asserts the redirect **and** that `/api/token` then refuses to mint. `resilience.spec.ts` asserts a second tab is closed too.
+
+**Why nothing caught it.** No test had ever signed in. See [B-303](#b-303--the-browsers-only-route-to-the-api-has-never-existed).
+
+---
+
+### B-304 · Every sign-in landed on a 404, and the fix that recorded it never worked
+
+| | |
+|---|---|
+| **Module** | None — `frontend/lib/auth/client.ts`, the authentication client |
+| **Current assignee** | **Lane B**, End-to-End Product Validation |
+| **Severity** | 🔴 — **the first screen after authentication was *"That address does not lead anywhere"*, for every person, by every method** |
+| **Status** | **`FIXED`** — Lane B, 2026-08-03. **`VERIFIED` is QE's** |
+| **Found** | 2026-08-03, by Lane B, driving the real sign-in form in a browser |
+
+**Steps to reproduce.** Sign in with an address and a password.
+
+**Expected.** The attention list.
+
+**Actual.** `http://localhost:3400/workspaces` → **404**, *"That address does not lead anywhere"*. `/workspaces` has never been a route in this application.
+
+**Cause, and the part worth keeping.** `AFTER_SIGN_IN = '/workspaces'` was passed as Better Auth's `callbackURL`. **D38 recorded exactly this defect and fixed only half of it**: `sign-in-form.tsx` gained a `router.push('/')` after a successful sign-in, which reads like the defect was closed. It never could be — **Better Auth performs its own navigation to `callbackURL`, and it wins the race.**
+
+> **This is Decorative Logic** (CLAUDE.md §2): implementation that appears to enforce a property, whose removal would not change the property it claims to protect — with a comment beside it asserting the correction. It survived three further slices because the constant read as fixed.
+
+**Fix.** `AFTER_SIGN_IN = '/'`. The `router.push` stays, because it is still the right destination when the vendor does not navigate, and it is now the same one.
+
+**Regression test.** `auth-journey.spec.ts` — *"@smoke a person with an address and a password reaches their morning"*, and `auth.setup.ts`, which asserts the destination on every run of every project.
+
+---
+
+### B-303 · The browser's only route to the API has never existed, so no screen has ever shown real data
+
+| | |
+|---|---|
+| **Module** | None — `frontend/lib/api/client.ts` named a route; `frontend/app/api/proxy/` was never built |
+| **Current assignee** | **Lane B**, End-to-End Product Validation |
+| **Severity** | 🔴 — **the entire product, in every environment, since M1.2.** Every screen rendered its shell and its empty state and never once its own data |
+| **Status** | **`FIXED`** — Lane B, 2026-08-03. **`VERIFIED` is QE's** |
+| **Found** | 2026-08-03, by Lane B, watching the network while a signed-in owner opened the attention list |
+
+**Steps to reproduce.** Sign in as the owner of a seeded organization and open `/`.
+
+**Expected.** Twelve accounts, ranked.
+
+**Actual.** *"You are not part of an organization yet"*, and in the network panel:
+
+```
+200 GET  /api/auth/get-session
+200 POST /api/token
+404 GET  /api/proxy/workspaces        ← HTML, from Next's not-found handler
+```
+
+**Cause.** `lib/api/client.ts` has chosen `/api/proxy` as the browser's base URL since **`ad52e66` — M1.2, the Authentication Boundary** — deliberately, because the API is not internet-facing in the deployed topology (ADR-0022). **The route it named was never implemented**, and no rewrite exists in `next.config.ts`. One reference, no route, for eleven milestones.
+
+Confirmed against the **production** stack as well as the dev server, so it is not a dev-mode artifact:
+
+```
+prod /api/token           -> 401   (the route exists and refuses)
+prod /api/proxy/workspaces -> 404  (the route does not exist)
+```
+
+**Fix.** `frontend/app/api/proxy/[...path]/route.ts` — a transport hop that forwards method, path, query and body and returns the API's response untouched, including the error envelope `ApiError` parses. It makes **no authorization decision**; the caller's own Bearer token is forwarded and the API verifies it, re-verifies membership and applies Casbin exactly as before. It requires a session so it is not an open forwarder into a service that is otherwise unreachable, and it forwards two headers — notably **not `Cookie`**.
+
+> **🟠 announced, and larger than a lane normally takes.** A new route in the frontend foundation is close to 🔴. It was taken because §20c permits a change for *"a production defect — the foundation is demonstrably wrong"*, because it restores behaviour the code has declared since M1.2 rather than deciding anything new, and because **the assigned work was impossible without it** — an E2E suite against this product could only ever have asserted empty states.
+>
+> **Ratified by the product owner, 2026-08-03**, on the reasoning that it *"completes architecture that has already existed since M1.2"* — the missing implementation was a production defect, not an architectural decision, and the route restores the declared architecture rather than inventing one. **QE still verifies the security characteristics** at validation: session required, caller's own token forwarded, no cookie forwarded, no authorization decision made.
+
+**Why nothing caught it, and this is the finding under the finding.**
+
+| Gate | Why it passed |
+|---|---|
+| ~2000 backend tests | call the API directly |
+| Vitest component tests | mock the hooks |
+| `frontend/tests/e2e/` | one file, and it never signed in |
+| `make smoke` | mints a real token through the real frontend path and then calls **the API directly** — the browser→Next→API hop is in no gate |
+
+**Every component was proven and the composition between them was never exercised.** That is now the fourth instance of one pattern — [B-024](#b-024) (fakes accepted a row the database refused), [B-301](#b-301) (the deployed worker never registered a handler), [B-302](#b-302) (the Playground never composed one), and this. **[C-301](LANE_COORDINATION.md) is the assertion that catches the class**, and this is the strongest evidence yet for it.
+
+---
+
+### B-302 · The Playground's account brief shows no history, and it is the only place anybody reviews the product
+
+| | |
+|---|---|
+| **Module** | `timeline` — the defect is in `backend/tests/pipeline.py`, the pipeline composition root the Playground runs |
+| **Current assignee** | **Lane B**, Timeline's feature lead. **The composition root is shared** — see below |
+| **Severity** | 🟠 — **a shipped capability is empty in the environment human product review uses.** Not 🔴 only because no customer runs a deployed environment yet |
+| **Status** | **`FIXED`** — Lane B, 2026-08-03, **on the product owner's explicit ruling** that a small, customer-facing composition gap is an implementation opportunity rather than a reason to stop. **`VERIFIED` is QE's** |
+| **Found** | 2026-08-03, by Lane B, **running the product rather than reading it** — the Complete Product Experience Audit |
+
+**Steps to reproduce.**
+
+```bash
+make demo                       # or: python -m tests.playground.seed
+# open any of the twelve accounts → "What has happened"
+grep -c timeline backend/tests/pipeline.py     # 0
+```
+
+**Expected.** An account brief seeded with observations, business events, signals, a score and an opportunity shows a history of them. Lane A mounted the section in `CX-03` and it is correct.
+
+**Actual.** **Empty, for all twelve accounts.** `tests/pipeline.py` — the composition root the Playground runs — wires provider ingestion, normalization, knowledge graph, observations, business events, signals, buying scores and opportunities, and **does not wire Timeline's projection.** Its only mention of the word is in a docstring.
+
+Measured on a freshly seeded database:
+
+```
+signal          6311        timeline_entry  156
+buying_score    4090        …and every one of those 156 came from
+opportunity     3956           Lane B's integration tests, not the Playground
+workspaces with buying scores   1703
+workspaces with timeline entries   52   ← all of them test workspaces
+```
+
+**Why this is B-301's twin, and why it matters more.** [B-301](#b-301--timeline-is-promoted-wired-and-consumes-nothing) was the *deployed worker* not registering the projection. This is the *Playground* not composing it. **Two composition roots, the same module missing from both, found a day apart** — and this one is worse in one specific way: **the deployed worker has no customers yet, and the Playground is where the product owner reviews the product.** A capability that is empty there reads as a capability that does not work.
+
+**It also makes a real capability look like a stub.** *"What has happened"* is the section that answers **R9-04** and **[C-024](LANE_COORDINATION.md)**, both of which were treated as high-value; a reviewer opening the brief today would conclude Timeline had not shipped.
+
+### Fix — Lane B, 2026-08-03
+
+**Originally reported without a fix**, on the ground that `tests/pipeline.py` belongs to no module. **The product owner ruled otherwise**, and the rule is worth quoting because it now applies generally:
+
+> *"If the issue is clearly customer-facing, the implementation is small, does not violate module boundaries, does not duplicate logic, and fixing it preserves repository integrity, then implement it even if it lives in a shared composition root. The ownership model exists to prevent architectural erosion, not to prevent obvious improvements."*
+
+**`project_all` — the ninth stage**, added to `tests/pipeline.py` beside the eight already there, and called from `_tracked` after `qualify_all`. **Reads `PROJECTIONS` rather than naming event types**, exactly as the deployed worker does since [B-301](#b-301--timeline-is-promoted-wired-and-consumes-nothing), so the projection table stays the single authoritative statement of what Timeline consumes.
+
+**It runs last, and that is safe rather than convenient.** Entry ids derive from `event_id` and the insert is `ON CONFLICT DO NOTHING`, so projecting once at the end is identical to interleaving — and it keeps the ordering of the stages that genuinely depend on each other readable.
+
+**No new architecture, no duplicated logic, no boundary crossed.** It composes two already-approved capabilities that had never been introduced to each other.
+
+**Verified by re-seeding the Playground**, not by reading the diff:
+
+```
+timeline entries in the seeded workspace: 121      (was 0)
+   observation_recorded      60      accounts with any history: 12 of 12
+   business_event_detected   20      entries per account: 17, 13, 12, 12 …
+   signal_generated          17
+   buying_score_updated      12
+   opportunity_created       12
+```
+
+**108 tests pass** across `opportunity_engine`, `timeline` and the explanation-source suite that shares `_tracked`. `mypy --strict` clean.
+
+**QE is notified by this row**: the shared composition root gained a stage, and every future Playground seed produces account history. **The Playground itself is unchanged** — it calls `_tracked`, which is where the stage was added.
+
+**The general finding, and it now has three instances.** [B-024](#b-024--the-credential-store-that-must-not-be-readable-has-no-tests-at-all) — fakes accepted a row the database refused. [B-301](#b-301--timeline-is-promoted-wired-and-consumes-nothing) — the worker never registered a handler. **B-302** — the Playground never composed one. **Every component proven, the composition never exercised**, three times in two days, and [C-301](LANE_COORDINATION.md) is the assertion that would catch all three.
+
+---
 
 ### B-301 · Timeline is promoted, wired and consumes nothing — the deployed worker never registers its projection
 
@@ -1718,8 +2559,27 @@ tests/components/timeline-feed.test.tsx(80,19): error TS2345: (the same)
 | **Module** | `integrations` (4 files) · `timeline` (1 file) |
 | **Current assignee** | **Lane B**, which is assigned both modules |
 | **Severity** | **🟠** — raised from 🟡 by Lane A, 2026-08-02. **See the note below**: it was 🟡 while both modules were unreachable, and CX-03 put one of them on the most-visited screen in the product |
-| **Status** | `OPEN` |
+| **Status** | **`FIXED`** — Lane B, 2026-08-03. **`VERIFIED` is QE's** |
 | **Found** | 2026-08-02, by Lane A during the repository-wide customer experience audit |
+
+> ### Fixed 2026-08-03 — Lane B
+>
+> **All 44 uses replaced**: `text-muted-foreground` → `text-content-muted` (30) and `text-foreground` → `text-content` (14), across the five files listed below. `tsc` clean; 857 frontend tests pass.
+>
+> **The reporting lane's count was right and the fixing lane's first count was wrong.** Lane B initially measured 30, having grepped only for `muted-foreground` — the row says *"two colour tokens"* in its own title, and **there were two.** The 14 remaining were found by the new assertion rather than by re-reading the row, which is the argument for writing the check before believing the count.
+>
+> **The regression test is the part that matters**, because the fix is a rename and the gap is what let it happen. `design-tokens.test.tsx` gains two things:
+>
+> | | |
+> |---|---|
+> | **Four directories** | `integrations`, `timeline`, `commercial` and **`app/(app)`** — the last carried four of the 44. The list had been correct on the day it was written and silently incomplete every day after |
+> | **A check for the opposite defect** | Every assertion in that file caught a component **pinning** a colour a theme swap cannot reach. **None could catch one naming a colour that does not exist**, which generates no CSS at all and inherits silently |
+>
+> **The check is load-bearing, and that was verified rather than assumed** (§2 — *a guard that cannot fail is documentation pretending to be code*). Run against the unfixed tree it produces **five failures naming five files**; after the fix, 183 pass. **The legal token names are read from `tailwind.config.ts` rather than restated**, so the test cannot pass against its own stale copy of the palette.
+>
+> **What it still cannot see, stated rather than implied.** It catches the `-foreground` family and any undefined *variant* of a defined root (`text-content-mutd`). **A shadcn root this repository never defines at all — `bg-muted`, `bg-card`, `border-input` — would still pass**, because there is nothing to compare it against. None are present today; the residual gap is recorded here rather than papered over.
+>
+> **Why no colour is worse than a wrong colour.** A wrong colour is visible and somebody files it. **No colour looks like a design decision somebody made** — which is how this survived a repository-wide customer-experience audit, three product reviews and every gate in the repository.
 
 **Steps to reproduce.** Open `/settings/connections`. Compare the description under the heading with the equivalent line on `/settings` or `/settings/products`.
 
