@@ -118,12 +118,21 @@ EOF
 
 ### B-400 · Two lanes both created migration `0031`, and Alembic cannot load either
 
+> ### ✅ RESOLVED upstream 2026-08-04 — verified against `origin/integration`
+>
+> **One `0031` remains** — `0031_commercial_profile_segment.py` — and Lane A's chain was renumbered to **`0032`–`0035`**. **The Alembic revision map is linear again and the collision is gone.**
+>
+> **Resolved the opposite way to this row's recommendation**, which proposed moving Lane B's migration. **Moving Lane A's was the better call** and it is recorded here so the reasoning is not re-derived: Lane A's four migrations had not been promoted, Lane B's single one had a dependent already, **and renumbering the unpromoted chain touches fewer things.**
+>
+> ⚠️ **This row never reached `integration`.** It was opened on `lane-c-product-office`, `BUGS.md` is not in `CLAIM_PATHS`, and the defect was found and fixed independently. **[C-406](LANE_COORDINATION.md) is the cause and it is unchanged** — a 🔴 defect stayed invisible to the branch that certifies, and was fixed by somebody who never saw the row.
+
+
 | | |
 |---|---|
 | **Module** | Repository — `backend/migrations/versions/` |
 | **Current assignee** | **Lane B** — the later claim moves, by the existing rule. **Not Lane C**, which does not touch production code |
 | **Severity** | 🔴 — **Blocking Quality Defect.** A broken migration graph prevents promotion (`CLAUDE.md` §20e) |
-| **Status** | `OPEN` — **Blocking Quality Defect.** Formatted unbolded deliberately; see [B-401](#b-401--the-promotion-blocking-check-can-be-defeated-by-bold-markdown) |
+| **Status** | **`FIXED`** — resolved upstream 2026-08-04, verified against `origin/integration`. See the note above |
 | **Found** | 2026-08-03, by **Lane C**, verifying `READY` backlog tasks against branch reality before preparing assignments — not by a gate |
 
 **Steps to reproduce.** Merge either lane branch after the other, then run any Alembic command:

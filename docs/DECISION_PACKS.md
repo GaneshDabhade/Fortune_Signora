@@ -258,6 +258,25 @@
 | **4** | **[C-021](LANE_COORDINATION.md)** | ✅ Valid — **but it needs no ruling of its own** | **None. It is gated on [C-010](LANE_COORDINATION.md)**, and ruling that unblocks both |
 | **5** | **[C-200](LANE_COORDINATION.md)** | ✅ Yes | **Is M14b one module, two, or three?** Lane A's discovery says *"one module and two integrations"* |
 
+### Verified against `origin/integration` — 2026-08-04, and it closed two more
+
+**Rule 5 applied: every finding below is read from `origin/integration`, not from this branch.** A rebase was attempted, hit a conflict on a claim commit already upstream, and was **aborted on the product owner's direction** — *documentation conflicts and historical Product Office commits are not engineering effort worth spending.* **Nothing here rests on local state.**
+
+| Item | Verified on integration | Outcome |
+|---|---|---|
+| **[C-223](LANE_COORDINATION.md)** | **`competitor_entry` is in the catalog (10 types).** `commercial_profile/public/` exports `DeclaredCompetitorView`, `DeclaredCompetitorListView` and `DeclaredCompetitorReader.current(workspace_id) -> …\| None`. **`signal_engine/application/generate.py` imports it** | ✅ **Answered by implementation.** [ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md)'s contract was built exactly as specified |
+| **[B-400](BUGS.md)** 🔴 | **One `0031` remains**; Lane A's chain renumbered to `0032`–`0035`. **The revision map is linear** | ✅ **Closed.** Fixed the opposite way to the recommendation, and **the better way** — the unpromoted chain moved |
+| **[C-025](LANE_COORDINATION.md)** | Already **`ANSWERED`** — *"all four decisions"*; blocks *"nothing. The remaining work needs a HubSpot developer application, not a decision"* | ✅ **Not a queue item** |
+| **[C-023](LANE_COORDINATION.md)** | Its own row: *"Overlaps Lane B's [C-025](LANE_COORDINATION.md) in substance — two lanes reached it independently"* | ✅ **Duplicate.** Resolves against C-025, which is answered. **No separate ruling** |
+
+> **[ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md)'s §Validation 2 claim is confirmed by what shipped: no import contract was amended.** Integration has 35 contracts to this branch's 34, and **the new one is `sales_engagement`** — unrelated. `signal_engine` was already named a permitted source of `commercial_profile.public`, exactly as the validation found.
+
+### ⚠️ A register defect on integration — reported, not fixed
+
+**[C-326](LANE_COORDINATION.md) is in three states at once on `origin/integration`:** its **body sits after the `## Closed` marker** (line 4020, marker at 2556), its **`Status` field says `OPEN`**, and it has **no index row at all.**
+
+**It is genuinely open** — Lane B is waiting on it and its content is current. **Lane C is not fixing it**: this branch is 151 commits behind, and editing a shared register from here creates exactly the conflict the product owner directed should not be spent on. **Raised for whoever reconciles the register next.**
+
 ### Category 1 — resolved by Lane C, no ruling needed
 
 **Two items were carrying claims the repository has since falsified. Neither is closed** — both still hold a real question — **but the argument that made them urgent is gone, and that is what was making them look bigger than they are.**

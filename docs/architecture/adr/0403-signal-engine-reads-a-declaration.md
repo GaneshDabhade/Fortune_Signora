@@ -4,6 +4,8 @@
 
 **RATIFIED — 2026-08-04, by the product owner.** Drafted by Lane C — Product Office, taking ownership of **[C-223](../../LANE_COORDINATION.md)**. **Nothing is implemented; this ADR authorises the boundary and records the contract.**
 
+✅ **IMPLEMENTED — verified on `origin/integration` 2026-08-04.** `competitor_entry` is in the signal catalog, `commercial_profile/public/` exports the three types **exactly as §Validation 3 specified**, and `signal_engine/application/generate.py` imports `DeclaredCompetitorReader`. **No import contract was amended**, confirming §Validation 2.
+
 **The dependency graph is updated** — [05-module-dependencies.md](../05-module-dependencies.md) carries the edge, the module table row, the relationship pattern and the synchronous-read entry.
 
 **Five validations were run against source before this status was set** (§Validation). **All five hold, and two of them corrected claims in the first draft** — the change needs **no import-linter amendment**, because the contract that permits it already names `signal_engine`.
