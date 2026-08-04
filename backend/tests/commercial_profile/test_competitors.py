@@ -12,6 +12,11 @@ from uuid import UUID, uuid4
 
 import pytest
 
+from modules.commercial_profile.application.declare_competitors import (
+    CompetitorsVersionConflictError,
+    DeclareCompetitors,
+    DeclareCompetitorsInput,
+)
 from modules.commercial_profile.domain.competitors import (
     MAX_COMPETITORS,
     MAX_NAME,
@@ -20,6 +25,7 @@ from modules.commercial_profile.domain.competitors import (
     DeclaredCompetitors,
     first_competitors,
 )
+from modules.commercial_profile.domain.declaration import UNDECLARED
 
 WORKSPACE = UUID("11111111-1111-4111-8111-111111111111")
 ACTOR = UUID("22222222-2222-4222-8222-222222222222")
@@ -157,6 +163,108 @@ class TestRevising:
         duplicate = competitor("HubSpot")
         with pytest.raises(CompetitorsError, match="listed twice"):
             first.revise((duplicate, duplicate), id=uuid4(), by=ACTOR, now=NOW)
+
+
+class FakeRepository:
+    """In memory, because a declaration's rules need no database."""
+
+    def __init__(self, current: DeclaredCompetitors | None = None) -> None:
+        self._current = current
+        self.saved: list[DeclaredCompetitors] = []
+
+    async def current(self, workspace_id: UUID) -> DeclaredCompetitors | None:
+        return self._current
+
+    async def save(self, competitors: DeclaredCompetitors) -> None:
+        self.saved.append(competitors)
+        self._current = competitors
+
+
+class TestDeclaring:
+    async def test_the_first_declaration_expects_version_zero(self) -> None:
+        repository = FakeRepository()
+        use_case = DeclareCompetitors(competitors=repository)
+        result = await use_case.execute(
+            DeclareCompetitorsInput(
+                workspace_id=WORKSPACE,
+                competitors=(competitor("Salesforce"),),
+                expected_version=UNDECLARED,
+                actor_id=ACTOR,
+            )
+        )
+        assert (result.version, result.supersedes) == (1, None)
+        assert repository.saved == [result]
+
+    async def test_a_revision_supersedes_the_version_it_replaces(self) -> None:
+        first = declared("Salesforce")
+        repository = FakeRepository(first)
+        use_case = DeclareCompetitors(competitors=repository)
+        result = await use_case.execute(
+            DeclareCompetitorsInput(
+                workspace_id=WORKSPACE,
+                competitors=(competitor("HubSpot"),),
+                expected_version=1,
+                actor_id=ACTOR,
+            )
+        )
+        assert (result.version, result.supersedes) == (2, first.id)
+
+    async def test_refuses_a_stale_caller(self) -> None:
+        """The lost update two people editing one page produce."""
+        repository = FakeRepository(declared("Salesforce"))
+        use_case = DeclareCompetitors(competitors=repository)
+        with pytest.raises(CompetitorsVersionConflictError) as raised:
+            await use_case.execute(
+                DeclareCompetitorsInput(
+                    workspace_id=WORKSPACE,
+                    competitors=(),
+                    expected_version=UNDECLARED,
+                    actor_id=ACTOR,
+                )
+            )
+        assert (raised.value.expected, raised.value.actual) == (UNDECLARED, 1)
+
+    async def test_saves_nothing_when_the_version_conflicts(self) -> None:
+        repository = FakeRepository(declared("Salesforce"))
+        use_case = DeclareCompetitors(competitors=repository)
+        with pytest.raises(CompetitorsVersionConflictError):
+            await use_case.execute(
+                DeclareCompetitorsInput(
+                    workspace_id=WORKSPACE,
+                    competitors=(),
+                    expected_version=99,
+                    actor_id=ACTOR,
+                )
+            )
+        assert repository.saved == []
+
+    async def test_records_the_verified_caller_as_the_author(self) -> None:
+        """There is no request field that could name somebody else."""
+        repository = FakeRepository()
+        use_case = DeclareCompetitors(competitors=repository)
+        result = await use_case.execute(
+            DeclareCompetitorsInput(
+                workspace_id=WORKSPACE,
+                competitors=(),
+                expected_version=UNDECLARED,
+                actor_id=ACTOR,
+            )
+        )
+        assert result.created_by == ACTOR
+
+    async def test_declaring_nothing_is_a_statement_that_gets_saved(self) -> None:
+        repository = FakeRepository()
+        use_case = DeclareCompetitors(competitors=repository)
+        result = await use_case.execute(
+            DeclareCompetitorsInput(
+                workspace_id=WORKSPACE,
+                competitors=(),
+                expected_version=UNDECLARED,
+                actor_id=ACTOR,
+            )
+        )
+        assert result.competitors == ()
+        assert len(repository.saved) == 1
 
 
 class TestTheModuleBoundary:

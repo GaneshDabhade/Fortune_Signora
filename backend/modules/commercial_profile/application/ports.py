@@ -13,6 +13,7 @@ from uuid import UUID
 
 from modules.commercial_profile.domain.catalog import ProductCatalog
 from modules.commercial_profile.domain.committee import BuyingCommittee
+from modules.commercial_profile.domain.competitors import DeclaredCompetitors
 from modules.commercial_profile.domain.focus import CommercialFocus
 from modules.commercial_profile.domain.icp import IcpDeclaration
 from modules.commercial_profile.domain.target_accounts import TargetAccountList
@@ -66,3 +67,17 @@ class TargetAccountListRepository(Protocol):
         ...
 
     async def save(self, accounts: TargetAccountList) -> None: ...
+
+
+class DeclaredCompetitorsRepository(Protocol):
+    async def current(self, workspace_id: UUID) -> DeclaredCompetitors | None:
+        """The declaration in force, or ``None`` when nothing has been declared.
+
+        **`None` and an empty declaration are different answers**, and both are
+        legitimate: nobody has said anything, versus somebody said *"we do not
+        track competitors"*. A caller that collapses them reports an empty
+        result where the truth is an empty input.
+        """
+        ...
+
+    async def save(self, competitors: DeclaredCompetitors) -> None: ...
