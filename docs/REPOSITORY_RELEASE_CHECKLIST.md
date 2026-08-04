@@ -147,9 +147,32 @@ make doc-drift ARGS="main..HEAD"
 # and 2325/95.59% against the lane's own database. A gate pointed at the wrong
 # database is not a gate.
 make certify        # writes certification/manifest.json — no options, deliberately
-# migration reversibility, and disaster recovery against the running stack
+
+# `make dr` runs against an already-running stack and starts nothing itself —
+# and `make certify` runs `smoke`, which **tears the stack down when it
+# finishes**. So the step immediately before `dr` is always `up`, or `dr`
+# aborts at its baseline with "API did not become ready within 90s", having
+# never evaluated the repository at all (B-114, found 2026-08-04).
+make up
 make dr
+make down           # leave the workstation as the cycle found it
+
+# Migration reversibility — to base and back, against a database this check
+# creates. Never against a shared one: `downgrade base` drops every table.
+cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run python -c "
+import os, subprocess, sys
+sys.path.insert(0, '.')
+from tests.certification import database
+with database.disposable('signora_reversibility_check') as t:
+    env = {**os.environ, **t.environment}
+    for step in (['upgrade','head'], ['downgrade','base'], ['upgrade','head']):
+        r = subprocess.run(['uv','run','alembic',*step], env=env, capture_output=True, text=True)
+        print(f'  alembic {\" \".join(step):<16} {\"ok\" if r.returncode==0 else \"FAILED\"}')
+        if r.returncode: print(r.stderr[-1500:]); sys.exit(1)
+"
 ```
+
+> **`make dr` aborting is not `make dr` failing**, and the record must not say it was. An abort means the gate never evaluated the repository — its precondition was absent — and rerunning after establishing that precondition is the correct response. **A failure is a statement about the commit; an abort is a statement about the run** (product owner, 2026-08-04). Investigate which one you have *before* rerunning: the same output line can mean either, and only one of them is allowed to be retried.
 
 > **Certify from a clean tree.** `tree_is_clean` is a recorded condition, so a run with anything uncommitted — including the report a previous run just wrote — records *"the tree certified was never stored"* and cannot certify. **Commit the slice first, certify second, then commit the record it produces.**
 

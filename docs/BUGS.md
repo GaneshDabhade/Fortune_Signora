@@ -94,6 +94,56 @@ Such a row names the code, records **Current assignee: none — not assignable**
 **Both are fixed on `integration`** at `b332aea`. Nothing is left for this row to track, and two rows for one defect is the register drifting from the repository.
 
 
+### B-114 · The release runbook's `make dr` step cannot succeed as written
+
+| | |
+|---|---|
+| **Module** | QE's operating procedure — `docs/REPOSITORY_RELEASE_CHECKLIST.md` stage 2 |
+| **Current assignee** | **QE** — the runbook is QE's |
+| **Severity** | 🟠 — **a documented gate that aborts as written**, and whose abort output reads like a product failure |
+| **Status** | **`FIXED`** 2026-08-04. **`VERIFIED` is another lane's** |
+| **Found** | 2026-08-04 by QE, running cycle 45 |
+
+**Steps to reproduce.** Follow stage 2 of the runbook exactly:
+
+```bash
+make certify   # passes
+make dr        # the next line in the runbook
+```
+
+**Expected.** Disaster Recovery Validation runs.
+
+**Actual.**
+
+```
+Baseline
+  ✗ API did not become ready within 90s
+make: *** [Makefile:62: dr] Error 1
+```
+
+**Three individually correct decisions, combining into an unrunnable step** — the same shape as [B-108](#b-108--the-production-image-cannot-build-because-a-root-config-imports-a-directory-the-image-does-not-ship):
+
+| | |
+|---|---|
+| `make certify` runs `smoke` | which **tears the stack down when it finishes** — correct; it is what leaves the workstation clean |
+| `make dr` runs against an **already-running** stack | correct, and documented in the Makefile: its precondition is the *inverse* of `release-preflight`'s, which is why it is deliberately not preflighted |
+| The runbook puts them adjacent | with no `make up` between them |
+
+**So `dr` has never been runnable straight from the runbook.** Earlier cycles passed it because QE brought the stack up from memory of the sequence — which is precisely the knowledge a runbook exists to stop depending on, and the next session would not have had it.
+
+### Why this is filed rather than shrugged off
+
+**The abort is indistinguishable from a failure in the output.** `API did not become ready within 90s` reads as *the product cannot start*, and the honest reading is *the gate was asked to test a stack nobody started*. **A failure is a statement about the commit; an abort is a statement about the run** — the distinction the product owner ratified, and the first thing this defect destroys.
+
+**A runbook that requires memory to execute is a runbook that has stopped telling the truth** (§2). The next QE session reads it cold.
+
+### Fixed 2026-08-04
+
+`make up` before and `make down` after, with the reason stated inline so the pair is not later "tidied up"; the migration-reversibility command written out, since the checklist asked for it and named no command; and a note that an abort must be diagnosed before it is retried.
+
+**Verified by the run that found it** — aborted as written, passed once the precondition was established: 5 stages, every guarantee held, 379 Security Invariants against the restarted stack.
+
+
 ### B-113 · Every claim audit refuses, on a commit from 2026-08-02 that can never be fixed
 
 | | |

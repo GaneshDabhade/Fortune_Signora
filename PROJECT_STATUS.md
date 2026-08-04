@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `bd57c7c`, 2026-08-02.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `f7439ca`, 2026-08-04.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,43 +12,43 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `d392ed5`, 2026-08-04.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `f7439ca`, 2026-08-04.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`d392ed5`** — the certified commit itself |
-| **`integration`** | `d392ed5` — level with `main` |
-| **Release candidate** | **None pinned.** Cycle 44 promoted **Lane B's register closures and the C-103 union** |
-| **Certification** | ✅ [`d392ed5326da`](certification/reports/d392ed5326da.md) · migration head **`0037`** · protocol **v2** |
+| **`main`** | **`f7439ca`** — the certified commit itself |
+| **`integration`** | `f7439ca` — level with `main` |
+| **Release candidate** | **None pinned.** Cycle 45 promoted **the stale-clone refusal in the promotion guard**, carrying Lane B's accumulated board update |
+| **Certification** | ✅ [`f7439ca0258b`](certification/reports/f7439ca0258b.md) · migration head **`0037`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **277 commits, none outside a certified snapshot** |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **318 commits, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
-| **Implementation waiting** | **Both lanes.** Five separate rulings, all the product owner's — see §1c |
-| **Validation queue** | Lane A's and Lane B's branches, **both awaiting a rebase by their lane** |
-| **Customer value this cycle** | ⚠️ **Indirectly.** No product capability changed, but **reviewing the product is now one command** rather than six steps and two terminals — the product owner is the customer of that |
-| **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for five cycles, correctly** |
+| **Implementation waiting** | **Lane A and Lane B**, on the product owner's rulings — see §1c. **Lane C is working**, and its output is those rulings' inputs |
+| **Validation queue** | **Empty.** Lane A is level with `main`; Lane B fast-forwarded onto this commit; Lane C is documentation-only and 153 behind |
+| **Customer value this cycle** | ⚠️ **None directly.** No product capability changed. **What changed is that the release check can no longer say "nothing to do" when there is something to do** |
+| **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
-> ⚠️ **The cycle's finding outweighs its feature.** Running the suite in a shell that did not export `SIGNORA_DATABASE_URL` produced **three failures on the commit certified hours earlier** — a certification gate had a hidden input, so the run that certified `909374a` and the run reproducing it were measuring different things, and nothing in the record said so ([B-106](docs/BUGS.md)). It is fixed and verified by removing the variable entirely. **[B-022](docs/BUGS.md) predicted this class and stayed open; this is the first time it was observed rather than reasoned about.**
+> ⚠️ **The cycle exists because of the defect it fixes.** Assessing Lane B's push, QE asked `certification-guard.py --next-cycle` whether a cycle was warranted and was told **"Repository Ready — nothing awaits certification"** — while a commit sat on `origin/integration`. The guard reads *local* refs, and the continuous gatekeeper loop fetches every 60 seconds and fast-forwards nothing. **The staleness of a local ref was a hidden input** (`CLAUDE.md` §2): it changed the answer without appearing in the question, and it changed it toward the reassuring one ([B-112](docs/BUGS.md)). Lane B's commit was a board update; had it been executable, this cycle would not have happened.
 
-**Repository health:** **3256 backend tests** · **95.50% coverage** *(floor 95)* · 719 frontend tests · 360 Security Invariants · mypy strict over **707 files** · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
+**Repository health:** **3263 backend tests** · **95.10% coverage** *(floor 95)* · **1162 frontend tests** across 55 files · **379 Security Invariants** · mypy strict over **708 files** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
 ## 1a · Lane dashboard — who is moving what, right now
 
-| | **Lane A** | **Lane B** | **QE** |
-|---|---|---|---|
-| **Module** | Product Surface · Provider Platform · Connection Experience | Integrations · Timeline | The repository |
-| **Milestone** | M12.3 · M2.1 · M13 (frontend) | M13 · M7 · M14a | — |
-| **Current slice** | **Team Management** — Phases 1–3, discovery complete | **ADR-0041** — the ICP aggregate | Cycle 23 Closeout |
-| **Execution phase** | **Discovery** | **Discovery** | **Certified · Promoted** |
-| **Blocked?** | **Yes — 4 rulings** ([C-021](docs/LANE_COORDINATION.md) · [C-200](docs/LANE_COORDINATION.md) · [C-206](docs/LANE_COORDINATION.md) · [C-207](docs/LANE_COORDINATION.md)) | **Yes — ADR-0041 ratification** | No |
-| **Waiting?** | Level with `main` | **Branch needs a rebase** before QE can take it | No |
-| **Validation status** | 6 commits promoted — **all documentation** | 2 commits held — **all documentation** | — |
-| **Major objective** | Make the product surface usable end to end | Make a customer's own systems reachable | Keep `main` certified and moving |
-| **Next executable work** | **TM invitations — buildable now**, no ruling needed | Blocked pending ADR-0041 | Next candidate on arrival |
+| | **Lane A** | **Lane B** | **Lane C** | **QE** |
+|---|---|---|---|---|
+| **Module** | Product Surface · Provider Platform · Connection Experience | Integrations · Timeline | **None — prepares, never builds** | The repository |
+| **Milestone** | M12.3 · M2.1 · M13 (frontend) | M13 · M7 · M14a | — | — |
+| **Current slice** | **Team Management** — Phases 1–3, discovery complete | **AVAILABLE** — both held tasks are with QE | **Wave 1 packaging** — Account 360, Platform Foundation | Cycle 45 Closeout |
+| **Execution phase** | **Discovery** | **Available** | **Preparing** | **Certified · Promoted** |
+| **Blocked?** | **Yes — rulings** ([C-021](docs/LANE_COORDINATION.md) · [C-200](docs/LANE_COORDINATION.md) · [C-206](docs/LANE_COORDINATION.md) · [C-207](docs/LANE_COORDINATION.md)) | On one signature for Epic E1 | No | No |
+| **Branch** | Level with `main` | **Fast-forwarded onto `f7439ca`** | **153 behind** — rebases at its next Startup | Level with `main` |
+| **Validation status** | Promoted — **all documentation** | Promoted | **Deferred** — documentation-only, nothing to certify | — |
+| **Major objective** | Make the product surface usable end to end | Make a customer's own systems reachable | **Turn open questions into decisions the product owner can sign** | Keep `main` certified and moving |
+| **Next executable work** | **TM invitations — buildable now**, no ruling needed | Next `READY` task | Not applicable | Next candidate on arrival |
 
-> **Both lanes are in discovery, and neither chose to be.** Lane A's Team Management row is the one bright spot: the lane challenged its own recommendation, found that the access token already carries `email` and `email_verified`, and **removed its own blocker**. That slice is buildable today.
+> **Two lanes are waiting on rulings, and Lane C exists to shorten that wait.** Its four pushes this cycle are decision packages — *"five blocking items reduced to four decisions, three of them signatures"* — which is the routing model working exactly as designed: implementation stops less often because the investigation is delegated rather than queued behind the product owner.
 >
 > **This is not idling and must not be read as it.** A lane whose next step needs a ruling is correct to write the discovery and stop. **The cost lands on the repository, not the lane** — and §1c is where it is counted.
 
@@ -101,35 +101,48 @@
 
 ---
 
-## 1d · Release summary — 2026-08-04, cycle 44
+## 1d · Release summary — 2026-08-04, cycle 45
 
-**Derived from the promoted commit `d392ed5`.** A small cycle, and the first one today where the gate set was complete before the candidate arrived.
+**Derived from the promoted commit `f7439ca`.** **The cycle exists because of the defect it fixes** — the check that decides whether a cycle is warranted said no while a commit was waiting.
 
 ### What was promoted
 
-**Lane B's register closures and the [C-103](docs/LANE_COORDINATION.md) union.** Four commits, one executable file: `test_public_contract.py` now carries **both lanes' assertions**, which is how Lane B resolved a collision QE had said it would not adjudicate.
+**The gatekeeper stops answering from a stale clone** ([B-112](docs/BUGS.md)). `--next-cycle` derives its answer from **local** refs, and the continuous gatekeeper loop fetches every 60 seconds and fast-forwards nothing — so between cycles `integration` sits behind `origin/integration` by exactly the commits worth asking about. Asked in that state, it printed *"Repository Ready — nothing awaits certification."*
 
-**Their commit title carries the part worth reading**: *"B-201 and B-202 closed on evidence, and one of them was never this lane's."*
+> **A confident false negative on the one question the gatekeeper exists to answer**, and indistinguishable from the true answer. Lane B's commit was a board update; had it been executable, QE would have concluded no cycle was needed and gone back to waiting.
 
-### The first cycle validated by the completed gate set
+`--next-cycle` now refuses and names the fast-forward. **The audits deliberately do not** — `integration` moves while QE certifies *by design*, and an audit that refused for staleness would be wrong exactly when it is most used. **Not fixed by fetching inside the tool**: a gate that reaches the network fails offline and swaps one hidden input for another.
+
+Lane B's accumulated board update rode along, which is what *"documentation accumulates until it accompanies executable work"* is for.
+
+### Two defects found by running the gates, and only one was fixable
+
+| | |
+|---|---|
+| **[B-114](docs/BUGS.md)** — `make dr` cannot succeed as written | `make certify` runs `smoke`, which **tears the stack down**; `make dr` runs against an **already-running** stack and starts nothing. The runbook puts them adjacent. **Fixed** — and earlier cycles passed it only because QE brought the stack up from memory, which is precisely what a runbook exists to stop depending on |
+| **[B-113](docs/BUGS.md)** — `--audit-claims` can never pass | A claim commit from 2026-08-02 that also touched the coordination register, 235 commits back on `main`. **Reported, not fixed.** All three routes — rewriting history, baselining past it, declaring a historic exception — are the product owner's, not a lane's |
+
+> **`make dr` aborting is not `make dr` failing.** The output reads *"API did not become ready within 90s"*, which looks like the product cannot start; the truth was that nothing had started it. **A failure is a statement about the commit; an abort is a statement about the run** — the distinction this cycle's runbook fix now protects.
+
+### The full gate set, and every stage of it ran
 
 ```
-make validate     migrate → tsc → suite, on a disposable database
+make validate     migrate → tsc → suite, on a database the run created
 certification     pytest · coverage · invariants · mypy · import-linter · tsc · smoke · scenario
+make up / dr      5 restart stages — nothing lost, 379 invariants against the restarted stack
+reversibility     upgrade head → downgrade base → upgrade head, on a disposable database
 ```
-
-**Both `make validate` and the `tsc` gate existed for the first time when this candidate arrived** — the three QE defects closed in cycle 43 were all fixed before the next candidate needed them, rather than after it exposed them again.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3256 backend** · 1162 frontend · **95.10%** · 379 invariants · 707 files typed · `tsc` clean and gated |
-| **Release** | **Fourteen consecutive cycles with no process failure** · **four promotions today** |
-| **Architecture** | Reachability 0 doorless · migration `0037` reversible · event catalog 1 known drift |
-| **Dependency** | 55 items, 25 closed |
-| **Customer Value** | ⚠️ **Indirect** — register hygiene and a test union. Three feature promotions preceded it today |
-| **Process** | Clean |
+| **Technical** | **3263 backend** · 1162 frontend · **95.10%** · 379 invariants · **708 files typed** · 35 contracts · `tsc` clean and gated |
+| **Release** | **Fifteen consecutive cycles with no process failure** · `promoted == certified` ✓ · **318 commits audited, 0 outside a snapshot** |
+| **Architecture** | Reachability 0 doorless · migration `0037` **reversible, verified this cycle** · event catalog 1 known drift |
+| **Dependency** | 69 items, 31 closed |
+| **Customer Value** | ⚠️ **None directly.** A release-integrity fix. The honest reading is that the gatekeeper spent a cycle on itself, and the alternative was a gatekeeper that says "nothing to do" when there is |
+| **Process** | Clean — **two defects found by running the gates, one fixed, one escalated rather than quietly resolved** |
 
 ### Repository Health Trend
 
@@ -139,7 +152,8 @@ certification     pytest · coverage · invariants · mypy · import-linter · t
 | **Unexplained variance** | 3 events | **0** |
 | **Process failure modes** | 2 open | **0 — both guarded** |
 | **Smoke duration** | unexplained 104–4830s | **129–186s, and diagnosable** |
-| **Gates with a hidden input** | unknown | **1 found, 1 fixed** — [B-106](docs/BUGS.md) |
+| **Gates with a hidden input** | unknown | **2 found, 2 fixed** — [B-106](docs/BUGS.md) the shell's database, [B-112](docs/BUGS.md) the local ref's position |
+| **Runbook steps that cannot run as written** | unmeasured | **1 found, 1 fixed** — [B-114](docs/BUGS.md); it had been passing on memory |
 | **Steps to review the product** | 6, across two terminals | **1** — `make review` |
 | **Work in one physical location** | unmeasured | **27 files, measured and surfaced** — `make unsaved` |
 | **Review vs certification** | mutually exclusive | **concurrent, proven** — 3000/8000 vs 3100/8100 |
