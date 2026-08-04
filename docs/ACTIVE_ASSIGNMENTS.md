@@ -136,7 +136,7 @@
 | Initiative | Maturity | Blocking questions **and** decisions |
 |---|---|---|
 | **CX-07 · Responsive Surface** | ✅ **COMPLETED** | — |
-| **E1 · CRM read** | 🔨 **ACTIVE** | Credentials — acquisition only |
+| **E1 · CRM read** | 🔨 **ACTIVE** | **[C-326](LANE_COORDINATION.md) — the inbound source port. Contract delivered as [409](architecture/409-inbound-source-port-contract.md), 🧊 frozen.** Steps 1–5 need nothing from the product owner · developer application for step 6 |
 | **G · Copilot** | 🔨 **ACTIVE** | [C-222](LANE_COORDINATION.md) — blocks only a live G1 inference |
 | **D · Risk** | 🔨 **ACTIVE** | Nothing |
 | **F · Workflow** | 🧊 **FROZEN — READY** | Nothing for phase 0. [ADR-0402](architecture/adr/0402-a-rule-is-data.md) from phase 2 |
@@ -159,6 +159,7 @@
 |---|---|---|
 | **F · Workflow** | [402](architecture/402-epic-f-workflow.md) + [ADR-0402](architecture/adr/0402-a-rule-is-data.md) | **2026-08-04**, after the phase-0 readiness review |
 | **E2 · CRM write-back** | [406](architecture/406-epic-e2-crm-write-back.md) | **2026-08-04**, after the write-surface review confirmed its input exists |
+| **The inbound source port** | [409](architecture/409-inbound-source-port-contract.md) | **2026-08-04**, on delivery. Scope is [C-326](LANE_COORDINATION.md) and nothing else |
 
 > **Freezing is the point at which preparation stops being useful and starts being motion.** Both packages have been through the three-question heuristic, the reuse audit, cross-cutting review and a readiness pass. **Another revision would change wording rather than reduce uncertainty.**
 
