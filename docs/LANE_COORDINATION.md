@@ -328,7 +328,7 @@ databaseUrl: required(
 | [C-220](#c-220--two-lanes-have-both-written-a-document-50-and-a-document-51) | **Two lanes have both written a document `50` and a document `51`** | Lane A | **QE** · Lane C | `OPEN` | Nothing today. **`state-check` at the merge that brings both branches together** |
 | [C-221](#c-221--epic-cs-first-open-question-is-answered-and-the-answer-blocks-the-epic) | **Epic C's first open question is answered, and the answer blocks the epic** | Lane A | **Product owner** · Lane C | `OPEN` — [TASK-201](BACKLOG.md) claimed and blocked | **All of Epic C's Phases 1–3.** No person name enters the platform at any point |
 | [C-222](#c-222--reasoning1-earns-a-release-under-protocol-2-on-a-model-this-workstation-cannot-measure-in-time) | **`reasoning@1` earns a release under protocol 2, on a model this workstation cannot measure in time** | Lane A | **Product owner** · QE | `OPEN` — [TASK-202](BACKLOG.md) claimed, Epic G proceeds | **Only a live G1 inference.** The prompt is refused at runtime until a protocol-2 release exists |
-| [C-223](#c-223--competitor_entry-needs-an-edge-the-dependency-graph-does-not-have) | **`competitor_entry` needs an edge the dependency graph does not have** | Lane A | **Product owner** | `OPEN` — [TASK-203](BACKLOG.md) claimed, everything else built | **Only the detection half of Epic D phase 1.** The declaration, its API and its screen are shipped |
+| [C-223](#c-223--competitor_entry-cannot-be-implemented-across-the-current-dependency-graph) | **`competitor_entry` cannot be implemented across the current dependency graph** | Lane A | **Product office** · Product owner | `OPEN` — [TASK-203](BACKLOG.md) claimed, everything else built | **Only the detection half of Epic D phase 1.** The declaration, its API and its screen are shipped |
 | [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | M14b is three concerns in one roadmap row, and none has a module | Lane A | **Product owner** (bounded context 🔴) | `OPEN` — **architectural** | **The whole of M14b.** [R-01](architecture/16-architecture-risks.md) has been waiting for it at High/High |
 | [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide) | Identifier allocation is still only *unlikely* to collide | Lane A | **QE** + product owner | `OPEN` — **directed by the product owner** | Nothing built. **The repository scaling past three actors without manual reconciliation** |
 | [C-202](#c-202--four-shared-documents-disagree-and-one-disagrees-with-itself) | Four shared documents disagree, and one disagrees with itself | Lane A | **QE** | `OPEN` — **directed by the product owner** | Nothing built. **A cold session trusting any status in the repository** |
@@ -4442,49 +4442,58 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 - **Re-measure on hardware that fits the model.** Changes nothing about the benchmark; needs a machine with ≥ 6 GiB of VRAM.
 
 **Lane A recommends the first**, and is not blocked meanwhile: everything in G1 except a live inference is buildable, and the refusal path is testable precisely because the refusal is real.
-
-## C-223 · `competitor_entry` needs an edge the dependency graph does not have
+## C-223 · `competitor_entry` cannot be implemented across the current dependency graph
 
 | | |
 |---|---|
-| **Owner** | **Product owner** (the graph change + ADR) |
+| **Owner** | **Product office** — the boundary question. **Product owner** — the ruling |
 | **Requesting lane** | Lane A |
 | **Category** | Module dependency · architecture boundary |
-| **Status** | `OPEN` — **[TASK-203](BACKLOG.md) claimed; everything not behind this edge is built** |
-| **Blocks** | **Only the detection half of Epic D phase 1** — the catalog row, the scoring weight and the rule. The declaration, its API and its screen are shipped |
+| **Status** | `OPEN` — **[TASK-203](BACKLOG.md) implementation-complete to this boundary** |
+| **Blocks** | **Only the detection half of Epic D phase 1.** The declaration, its API and its screen are shipped |
 | **Raised** | 2026-08-04, after the declaration was complete and the consumer could not be written |
 
-### The problem
+> **This item states facts and stops.** Lane A's responsibility ends at identifying the boundary; **how it is crossed is Product Office's**, and nothing below proposes a direction, a mechanism or a contract.
 
-**`competitor_entry` fires when a target account adopts a technology the customer has declared a competitor.** The detection half exists — `business_event_engine` has emitted `TECHNOLOGY_ADOPTED` since M4 and two signals already consume it. **The declaration now exists too**, in `commercial_profile`.
+### Which module owns the declaration today
 
-**Nothing may join them.** `signal_engine` cannot read `commercial_profile`, and the edge is absent from [05-module-dependencies.md](architecture/05-module-dependencies.md) in both directions. The only `Commercial Profile` edge documented is **`CP → Provider Platform`**, by event, for the target account list.
+**`commercial_profile`.** Aggregate `DeclaredCompetitors`, table `declared_competitors`, migration `0036`, endpoints `GET`/`PUT /workspaces/{id}/competitors`. Shipped and gated.
 
-### The affected modules
+### Which module needs to consume it
 
-**`signal_engine`** (the consumer) · **`commercial_profile`** (the producer). No third module is involved, and no existing behaviour changes either way.
+**`signal_engine`.** The `competitor_entry` signal is its catalog row, its detection rule and its scoring weight.
 
-### Why this is not a lane's to decide
+### The minimal data that must become visible
 
-**A new cross-module dependency is 🔴 — product owner and ADR** (§20e Change Budget, §5). The change is small, which is exactly why it needs saying out loud: *"I could just add it"* is how an architectural blocker becomes a silent design decision inside a feature slice.
+**Per workspace: the set of declared competitor names, and each entry's stable id.**
 
-### Alternatives
+Nothing else in the aggregate is needed by the consumer — not the version, not `created_by`, not `created_at`, not `supersedes`. Volume is bounded at `MAX_COMPETITORS = 200`.
 
-| | Option | Assessment |
-|---|---|---|
-| **A** ✅ | **`commercial_profile` publishes `competitors_changed`; `signal_engine` consumes and projects it** | **Recommended.** It is the **same shape the graph already has** for `CP → Provider Platform` — event-driven, no synchronous call, no read port. `signal_engine` already owns a customer-declaration table (`signal_profile`, migration 0012), so holding a projection is not a new capability for it |
-| **B** | A synchronous read port, `signal_engine → commercial_profile.public` | Cheaper to write and worse to own: it puts a live cross-module read inside signal detection, which runs per event. §5 keeps synchronous calls as the rare exception, and nothing here is rare |
-| **C** | Move the declaration into `signal_profile` | **Refused on evidence.** `SignalProfile` is one entry per `signal_type` carrying a *relevance*; it has no shape for a list of customer nouns. `focus.py` already draws this line: `signal_profile` is *"what Signora should treat as interesting"*, and a competitor list is a fact about the customer's business |
-| **D** | Detect in `commercial_profile` | It records and evaluates nobody. Signal detection is `signal_engine`'s bounded context |
+### The current dependency path
 
-### Trade-offs of the recommendation
+**There is none.** `signal_engine` reads nothing from `commercial_profile` today, in either direction.
 
-**For:** matches an existing edge shape · no synchronous coupling · the projection is rebuildable, so it is derived intelligence rather than a second copy of a declaration · `ForgetWorkspace` semantics are unchanged.
+The only `Commercial Profile` edge in [05-module-dependencies.md](architecture/05-module-dependencies.md) is **`Commercial Profile → Provider Platform`**, for the target account list.
 
-**Against:** a projection is eventually consistent, so a competitor declared this second is detectable a moment later — **acceptable, because `TECHNOLOGY_ADOPTED` arrives on a provider sync measured in hours.** And it is one more consumer to register, which [TASK-901](BACKLOG.md) already reports as under-wired (2 of 9).
+### The dependency that is missing
 
-### Implementation impact
+**Any path by which `signal_engine` can observe `commercial_profile`'s competitor declaration.**
 
-**Small, and entirely additive.** One event in [06-events.md](architecture/06-events.md) · one publisher in `commercial_profile` (the outbox path already exists, and the watch list is the worked example) · one consumer, one projection table and one migration in `signal_engine` · one catalog row and one `scoring_model@1.json` weight · the graph edge in `05-module-dependencies.md` and an ADR recording it.
+### Why the current graph prevents implementation
 
-> **Lane A has built everything that does not cross this line and is not idle behind it.** The recommendation is architectural input, never authority to proceed.
+Two enforcements, either of which is sufficient on its own:
+
+- **`pyproject.toml`** — the contract *"signal_engine reaches upstream modules only through `public/`"* lists the modules it may reach, and `commercial_profile` is not among them. `lint-imports` fails on the attempt.
+- **§5 and the Change Budget** — a cross-module dependency may be added only where it *"matches an edge already present in the dependency graph, or is proposed and approved as a graph change first."* No such edge is present, and **a new cross-module dependency is 🔴 — product owner and ADR.**
+
+**The change would be small, which is why it is raised rather than made.** *"I could just add it"* is how an architectural blocker becomes a silent design decision inside a feature slice.
+
+### What is waiting behind the boundary
+
+| | |
+|---|---|
+| **The catalog row** | `competitor_entry` in `signal_engine/catalog/signals@1.json` — contractionary, and **no detection strategy currently expresses *"only when the adopted technology is one the customer declared"***; the catalog has `single_event` and `composite` |
+| **The scoring weight** | `competitor_entry` in `scoring/scoring_model@1.json` |
+| **The detection rule** | The join between `TECHNOLOGY_ADOPTED` and the declared set |
+
+**Nothing else.** Everything in Epic D phase 1 that does not cross this boundary is built, tested and pushed — the declaration, its persistence, its tenancy, its API and its screen.
