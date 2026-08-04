@@ -159,7 +159,7 @@
 |---|---|---|
 | **F · Workflow** | [402](architecture/402-epic-f-workflow.md) + [ADR-0402](architecture/adr/0402-a-rule-is-data.md) | **2026-08-04**, after the phase-0 readiness review |
 | **E2 · CRM write-back** | [406](architecture/406-epic-e2-crm-write-back.md) | **2026-08-04**, after the write-surface review confirmed its input exists |
-| **The inbound source port** | [409](architecture/409-inbound-source-port-contract.md) | **2026-08-04**, on delivery. Scope is [C-326](LANE_COORDINATION.md) and nothing else |
+| **The inbound source port** | [409](architecture/409-inbound-source-port-contract.md) | **Re-frozen 2026-08-04** after Lane B landed `HubSpotCompanies` — **the wrapper signature is the seam that evidence created**, and it completes port · runner · wrapper. Scope is [C-326](LANE_COORDINATION.md) and nothing else |
 
 > **Freezing is the point at which preparation stops being useful and starts being motion.** Both packages have been through the three-question heuristic, the reuse audit, cross-cutting review and a readiness pass. **Another revision would change wording rather than reduce uncertainty.**
 

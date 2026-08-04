@@ -110,6 +110,73 @@ IntegrationSourceError
 
 **One case the Provider Port has no equivalent for, and it must not be swallowed:** **a connection that is revoked, expired or disconnected.** `ExecutionContext` resolution already raises **`ConnectionUnusable`**, and it is **not** an adapter error — **it is resolved before `fetch` is called, and the sync never starts.** A revoked connection is a customer decision, not a failure.
 
+### The wrapper — how a vendor fetcher becomes the port
+
+**Added 2026-08-04 on new repository evidence.** Lane B has built **`integrations/infrastructure/hubspot.py` — `HubSpotCompanies`**, and it deliberately *"holds no port, publishes no event, writes no row."* **The wrapper is the seam between it and §3**, and it is the last thing E1 needed specified.
+
+**`modules/integrations/infrastructure/hubspot_source.py`:**
+
+```python
+class HubSpotCompanySource:                      # implements IntegrationSourceAdapter
+    def __init__(self, companies: HubSpotCompanies) -> None: ...
+
+    def describe(self) -> IntegrationSourceDescriptor: ...
+
+    async def fetch(self, request: IntegrationFetchRequest) -> IntegrationPage: ...
+```
+
+**Four responsibilities, and nothing else.** It is a translation layer; **it fetches nothing and decides nothing.**
+
+| # | Responsibility | Contract |
+|---|---|---|
+| **1** | **Unwrap the credential** | `request.context.credential.material` → `access_token`. **The wrapper is the only place `ExecutionContext` meets a vendor client**, which is what keeps `HubSpotCompanies` ignorant of connections |
+| **2** | **Pass through the loop parameters** | `since` · `cursor` · `limit` map **one-to-one** onto `HubSpotCompanies.page(...)`. **No reinterpretation** — the fetcher already owns *which endpoint runs*, and a wrapper that chose would reimplement the choice |
+| **3** | **Lift each payload into `IntegrationRecord`** | §below — **the only place vendor field names appear in this direction** |
+| **4** | **Translate the error hierarchy** | `CrmReadError` → `IntegrationSourceError`, one-to-one (§below) |
+
+#### Lifting a payload — the two fields the port requires
+
+`CompanyPage.records` is `tuple[dict[str, Any], ...]` — raw HubSpot objects. `IntegrationRecord` requires `external_id` and `occurred_at`, and **extracting them is vendor knowledge, so it belongs here and not in the runner:**
+
+| Port field | From | Rule |
+|---|---|---|
+| `external_id` | `payload["id"]` | **Required.** Absent ⇒ `IntegrationPayloadInvalidError` — a record with no identity cannot be deduplicated |
+| `occurred_at` | `payload["properties"]["hs_lastmodifieddate"]` | **Required.** Absent ⇒ `IntegrationPayloadInvalidError`. It is the field the watermark advances on, and **guessing `now()` would make every backfill look like today** |
+| `payload` | the object **unchanged** | **Nothing is stripped, renamed or normalised.** Interpretation is `HubSpotCompanyMapper`'s |
+
+> **`occurred_at` is `hs_lastmodifieddate`, and that is the same field the fetcher filters on** — *"`GT`, not `GTE`… a record modified in the same millisecond as the previous boundary was already delivered."* **Watermark, filter and record timestamp must be one field, or a sync re-reads or skips.** This is the single most important line in the wrapper.
+
+#### Error translation
+
+| `HubSpotCompanies` raises | Wrapper raises | Resulting `SyncFailureKind` |
+|---|---|---|
+| `CrmRateLimited` *(carries the vendor's own wait)* | `IntegrationSourceRateLimitedError`, **wait preserved** | `TRANSIENT` |
+| `CrmTransient` | `IntegrationSourceTransientError` | `TRANSIENT` |
+| `CrmCredentialRejected` | `IntegrationSourcePermanentError` | `PERMANENT` |
+| `CrmPermanent` *(missing permission)* | `IntegrationSourcePermanentError` | `PERMANENT` |
+| `CrmPayloadInvalid` | `IntegrationPayloadInvalidError` | `PERMANENT` |
+
+> **Lane B's separation is preserved and must not be collapsed:** *"a rejected credential is separate from a missing permission, because **reconnecting fixes one and not the other**."* Both map to `PERMANENT` for the *platform's* retry decision — **and the distinct types survive to the surface that tells a customer what to do.**
+
+#### Who supplies the properties — the composition root, from the mapper
+
+**`HubSpotCompanies.__init__` takes `properties: frozenset[str]`, and `HubSpotCompanyMapper.translated_properties()` publishes exactly that set** — *"a CRM returns only the properties you ask for. A mapper that knows `industry` and a client that never requests it produce a claim that silently never appears, and nothing fails."*
+
+> **Contract: the composition root wires `HubSpotCompanies(properties=HubSpotCompanyMapper.translated_properties())`.** **Neither the wrapper nor the runner may hold a property list** — a second copy is the defect Lane B's own test was written to catch, and duplicating it here would defeat that test by putting the truth in a third place.
+>
+> **This is the one edge in the contract that crosses modules** — `integrations` fetching, `provider_normalization` declaring. **It is a composition-root wiring, not an import**: `integrations` does not depend on the mapper, and `apps/api/composition/` is *"the only place that may see two modules' infrastructure at once."*
+
+#### `IntegrationSourceDescriptor`
+
+```python
+@dataclass(frozen=True, slots=True)
+class IntegrationSourceDescriptor:
+    integration: str                       # the catalog slug — "hubspot"
+    capabilities: tuple[Capability, ...]   # what this source can be asked for
+```
+
+**Deliberately smaller than `ProviderDescriptor`.** A provider descriptor carries qualification metadata because a provider is a supplier Signora chose; **a source is a system the customer chose, and Signora qualifies nothing about it.**
+
 ---
 
 ## 4 · The use case
@@ -168,11 +235,14 @@ class RunIntegrationSyncInput:
 | **3** | **Widen `provider: ProviderName` → `str`** on the four sync events | `provider_platform` | 🟢 | Nothing |
 | **4** | **`RunIntegrationSync`** + the watermark widening and its documentation | `provider_platform` | 🔴 | Steps 1–3 |
 | **5** | **A `simulated` source adapter**, proving the path end to end with no vendor | `provider_platform` | 🟠 | Step 4 |
-| **6** | **The HubSpot adapter** | `provider_platform` | 🟠 | Step 5 · **developer application** |
+| **6** | **`HubSpotCompanySource`** — the wrapper (§3), wired to `HubSpotCompanies` | `integrations` | 🟢 | Steps 1–2 |
+| **7** | **Composition-root wiring**, properties from `HubSpotCompanyMapper.translated_properties()` | `apps/api` | 🟢 | Steps 4 · 6 · **developer application** to run against the vendor |
+
+> **The wrapper is 🟢 and depends on no ruling.** `HubSpotCompanies` is built and tested; §3's wrapper is translation only, and **Lane B can write it the moment steps 1–2 exist.**
 
 > **Step 5 is the one to insist on, and it is the same argument [401](401-epic-e1-crm-read.md) §8 makes about the consumption edge.** A simulated source adapter drives the whole path — port, use case, watermark, raw record, event, `HubSpotCompanyMapper`, claims — **with no vendor, no credential and no developer application.** It is the only step that proves the contract before anything external is involved, and **a lane that merges 5 and 6 debugs OAuth and the ingestion path at once.**
 
-**Steps 1–5 need nothing from the product owner.** Step 6 needs the developer application, which is environmental and already recorded.
+**Steps 1–6 need nothing from the product owner.** **Only step 7's live run against the vendor needs the developer application**, which is environmental and already recorded — and steps 1–6 are verifiable without it.
 
 > ⚠️ **Step 4 is 🔴 and touches `provider_platform`, which is in Implementation Waiting on [C-021](../LANE_COORDINATION.md).** **That is an assignment question, not an architectural one** — the contract is complete either way, and who executes step 4 is the product owner's.
 
