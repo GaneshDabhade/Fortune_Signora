@@ -4,6 +4,21 @@ node_modules/
 .env.*
 !.env.example
 tests/
+# **The config goes with the tests it configures** ([B-108](../docs/BUGS.md)).
+#
+# `tests/` was excluded because a production image has no business shipping
+# tests — correct. `playwright.config.ts` lives at the root because that is
+# where Playwright looks for it — also correct. And `tsconfig` type-checks
+# `**/*.ts` — correct again. **Together they put a root config that imports
+# `tests/e2e/fixtures/` into an image that does not contain it**, and
+# `next build` type-checked it and failed.
+#
+# Excluded here rather than from `tsconfig` deliberately: excluding it from
+# the typecheck would stop `tsc --noEmit` from ever checking this file, and it
+# is a file with real imports and real logic. **It is not in the image because
+# nothing in the image runs it** — which is the true statement, and it leaves
+# the local gate checking it exactly as before.
+playwright.config.ts
 playwright-report/
 test-results/
 *.tsbuildinfo

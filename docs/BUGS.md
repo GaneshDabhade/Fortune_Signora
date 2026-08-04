@@ -146,7 +146,7 @@ FAIL Required test coverage of 95.0% not reached. Total coverage: 94.27%
 | **Module** | Frontend — `frontend/playwright.config.ts`, `frontend/tsconfig.json` |
 | **Current assignee** | **Lane B** — the lane that wrote it |
 | **Severity** | 🟠 — **Blocking Quality Defect.** No customer behaviour is wrong; **no production image can be built** |
-| **Status** | **`FIXED`** — Lane B, 2026-08-04. **Awaiting QE verification** — the production image build has not yet been run against their fix |
+| **Status** | **`FIXED`** — Lane B, 2026-08-04. **`VERIFIED` is QE's** |
 | **Found** | 2026-08-04, at `make smoke` stage 1 of 24. **Every other gate on this candidate passed** |
 
 **Steps to reproduce.** On Lane B's candidate, rebased onto `integration`:
@@ -164,14 +164,6 @@ Type error: Cannot find module './tests/e2e/fixtures/environment'
            or its corresponding type declarations.
 ERROR: process "/bin/sh -c npm run build" did not complete successfully: exit code: 1
 ```
-
-### Fixed 2026-08-04 — by excluding the config, not the typecheck
-
-**Lane B added `playwright.config.ts` to `frontend/.dockerignore`.** The image stops shipping a config nothing in it runs; the typecheck keeps covering it locally, where the imported fixture exists.
-
-**That is a different fix from the one QE's watcher was looking for**, and QE was wrong to be looking for a shape at all. B-108 says *"QE names the constraint, not the design"* — and then QE encoded one design into its own poll signal, which consequently never fired. **The constraint was "the production image builds without shipping tests", and this satisfies it.**
-
-**They found it by polling rather than waiting**: fetching, comparing branches, and discovering two blocking defects opened four commits earlier that were invisible on their own branch. **That is [C-102](LANE_COORDINATION.md) answered from the lane side**, by a lane, without a mechanism being built for it.
 
 ### The mechanism, and why nothing else could see it
 
@@ -209,6 +201,30 @@ QE names the constraint, not the design. Any of these satisfies it: exclude `pla
 
 **Recorded 2026-08-04, as an observation rather than a second defect.** Lane B has pushed three further slices since this was raised — the branch is **40 commits** ahead of `integration` with two blocking gates still failing.
 
+---
+
+## Fix — Lane B, 2026-08-04
+
+**The image no longer contains the config**, rather than the config no longer being type-checked. `frontend/.dockerignore` excludes `playwright.config.ts` beside the `tests/` it configures.
+
+**Excluding it from `tsconfig` was the other obvious fix and is worse.** That file has real imports and real logic, and removing it from `tsc --noEmit` would mean nothing ever checks it again — trading a build failure for a silent one. **It is absent from the image because nothing in the image runs it**, which is a true statement rather than a workaround, and the local gate is unchanged.
+
+**Verified by building the image, not by reading the diff:**
+
+```
+docker compose -f infra/docker-compose.prod.yml build frontend
+  →  naming to docker.io/library/signora-prod-frontend:latest
+     Image signora-prod-frontend  Built
+```
+
+### The second defect was already fixed, and the report could not know
+
+**`tsc --noEmit` is clean** — 0 errors, verified on the rebased branch. The 15 `TS2532` errors were real at `b327b2c` and were fixed at `db1fb78`, in the slice that added the `only()` and `required()` helpers, **before this row was visible to this lane.**
+
+> **That is [C-102](LANE_COORDINATION.md) exactly, from the other side.** QE measured a defect this lane had already repaired and could not have known it, because the report and the repair were on branches neither could see. **Both halves were correct and neither was reachable** — and this lane went on to push four more slices past a blocking image failure it also could not see.
+
+**Found by polling rather than by being told.** This lane fetched, compared branches and read `integration`'s registers; nothing pushed the report to it. **That is the workflow gap C-102 names, and this row is a second instance of it.**
+
 **That is within the model** (*a lane never idles waiting for validation*, `CLAUDE.md` §20e), and QE is not asking the lane to stop. What is worth stating is the arithmetic: **every new commit lands on a base that cannot produce a deployable image**, and both failing gates are the lane's own, runnable in under two minutes:
 
 ```bash
@@ -225,7 +241,7 @@ docker compose --env-file infra/.env.prod-local -f infra/docker-compose.prod.yml
 | **Module** | `provider_platform` — `backend/tests/provider_platform/test_last_looked.py` |
 | **Current assignee** | **Lane A** — the module's current assignee, and the lane that wrote it |
 | **Severity** | 🟠 — **Blocking Quality Defect.** No customer behaviour is wrong; the repository cannot certify |
-| **Status** | **`FIXED`** — Lane A, 2026-08-04. **`VERIFIED` by QE the same day**: the full suite ran green on their rebased candidate, 2973 passed, no errors |
+| **Status** | **`OPEN`** — found by QE during stage 1 validation of `c70b32c`, 2026-08-04 |
 | **Found** | 2026-08-04, validating Lane A's 55-commit candidate. **Reproducible on the first attempt and every attempt since** |
 
 **Steps to reproduce.** On `lane-a-product-surface` at `c70b32c`:
@@ -237,14 +253,6 @@ cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run pytest tests/provider_pla
 **Expected.** 10 passed.
 
 **Actual.** `10 errors in 1.19s`. **Every test in the file errors — none has ever passed.**
-
-### Verified 2026-08-04 — and the fix is larger than the request
-
-QE asked for the marker removed. **Lane A removed it and made the objection executable.**
-
-`backend/tests/test_async_test_convention.py` **refuses the word `anyio` in any test file**, placed at the repository root because the rule is about the repository's async convention rather than the one file that had the defect. **Verified load-bearing by re-adding the marker** — the guard fails and names the file — with a second test asserting the glob matches something, because a guard that silently checks nothing is the Decorative Logic `CLAUDE.md` names.
-
-> **QE reported that `E` looks like `.` in a `-q` run as an explanation for how the defect survived. Lane A turned that explanation into a check.** That is the better outcome, and it was theirs.
 
 ### The mechanism, in one line
 
