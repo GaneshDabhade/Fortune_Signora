@@ -164,6 +164,18 @@
 | **Blocked by** | **[C-221](LANE_COORDINATION.md) — ADR-0400's own ❓1, checked first as the ADR instructs, and the answer is *no*.** The platform receives no person name at any point, so an identity model has nothing to identify |
 | **On claiming** | **ADR-0400 is `PROPOSED`, not ratified**, and it says so in its own status block. A new bounded context is 🔴. The product owner's assignment is the epic approval; **the ADR still needs its ratification stamp, which only the product owner can apply** |
 
+### TASK-202 · Epic G — Copilot
+
+| | |
+|---|---|
+| **Epic** | **Epic G**, [404-epic-g-copilot.md](architecture/404-epic-g-copilot.md). **Assigned whole** |
+| **Module** | `ai_reasoning_engine` · `ai_platform` (evaluation) · Product Surface |
+| **Status** | **`CLAIMED` — Lane A**, 2026-08-04, by the Task Claim Protocol |
+| **Assigned** | **Lane A, directly by the product owner, 2026-08-04.** No ADR: no boundary moves and every decision it needs is already ratified |
+| **Validated on claiming** | **Every claim in Lane C's preparation checked against the manifests, and all hold.** `reasoning@1` has four recorded evaluations, **all against `explanation_narration`'s dataset**, on 2B and 3B models; **no `reasoning` dataset exists**; the three sibling prompts hold protocol-2 releases on `llama3.1:8b` at coverage 1.0 with zero grounding failures; and **all twelve evaluations across four manifests are Ollama models** |
+| **First slice** | **Author a `reasoning` dataset and evaluate `reasoning@1` under protocol 2** — the work [TASK-013](#task-013) records as a product decision when it is a measurement nobody has taken |
+| **Known workstation limit** | ⚠️ **`llama3.1:8b` was measured *unmeasurable* on this machine during SE-09c** — 7 of 10 calls exceeded the 90s budget and the harness abandoned the run. The pinned model is part of the benchmark and is **not** a lane's to change ([ADR-0028](architecture/adr/0028-model-runtime-by-environment.md)); reported as an observation about the machine |
+
 ### TASK-900 · The platform learns to compose a module into the runtime
 
 | | |
