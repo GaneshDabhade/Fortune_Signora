@@ -432,3 +432,40 @@ Decisions required    what the product owner must rule before it can start
 > **This table was published wrong on its first measurement and is corrected here.** The lane row read **5,102** — the four registers *only*, under a label saying *"the above plus"*. **The metric's first published figure understated its own headline by a third**, which is the failure mode it exists to catch, found by re-running it rather than by rereading it. **Re-measure; never transcribe.**
 
 **Re-measured whenever a governance change lands.** A change that reduces size but raises reading cost has failed, and this is the number that shows it.
+
+---
+
+## 11 · How Lane C reports
+
+**Ratified 2026-08-04, product owner. Permanent, and reporting-only** — it changes no responsibility, no methodology and no governance rule.
+
+> **The Product Owner must be able to tell, within fifteen seconds and without reading implementation detail, whether any action is required.**
+>
+> **The dashboard is the authoritative summary. Implementation detail is secondary.** Ordering is what changes; **depth, evidence and repository analysis do not.**
+
+### The order, and it is fixed
+
+**1** Lane Status · **2** Product Owner Dashboard · **3** Executive Summary *(≤5 bullets)* · **4** Priority Dashboard *(P0–P4)* · **5** Dependency Matrix *(a table)* · **6** Lane Availability · **7** Implementation Detail · **8** Decisions Made · **9** Risks *(≤3)* · **10** Final Status Line *(one sentence)*.
+
+### The rules that carry the weight
+
+| | |
+|---|---|
+| **§2 is mandatory and binary** | 🔴 **action required** — with the decision, why, options, recommendation and cost of delay — or 🟢 **no action required.** Never absent, never hedged |
+| **No hidden decisions** | If §2 says no action is required, **the report asks nothing later.** A question buried in implementation detail is a decision the Product Owner never saw |
+| **Not everything is urgent** | Implementation · monitoring · polling · validation · background preparation · blocked work · decisions **are different states and must read differently.** A report that sounds the same every time carries no information in its tone |
+| **§8 exists because of this office's own history** | Corrections and withdrawals were previously found inside implementation prose. **Accepted · rejected · withdrawn · corrected · clarified**, listed — because a correction nobody noticed is a correction that did not happen |
+| **§9 is risks, not observations** | Three maximum. **A finding is not a risk unless it can still cost something** |
+| **Confidence below High needs one sentence** | Stating *why* is the whole value; a bare *Medium* is a mood |
+
+### Its relationship to the Standard Lane Header
+
+**`CLAUDE.md` §20e binds every lane, including this one, to the Standard Lane Header. This format is a superset of it and does not replace it** — §1 carries the same facts, and where a field appears in both it is **one fact reported once**, not two records to keep in step (§2, *truth has exactly one authoritative representation*).
+
+### Repository-wide adoption is not Lane C's to take
+
+**The product owner has directed Lane C to use this format and to leave Lane A, Lane B and QE unchanged until it is proven.** Recorded here so the sequence is not lost:
+
+> **Use it · evaluate whether it genuinely improves decision-making · recommend only if it does.**
+
+**And if it is recommended, adopting it repository-wide is a `CLAUDE.md` amendment** — the Standard Lane Header lives there. **That is the product owner's, and Lane C may draft it only once approved.** The office does not widen its own reporting rule into everyone else's.
