@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `ea35fbe`, 2026-08-04.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `c60bb39`, 2026-08-04.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `ea35fbe`, 2026-08-04.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `c60bb39`, 2026-08-04.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`ea35fbe`** — the certified commit itself |
-| **`integration`** | `ea35fbe` — level with `main` |
-| **Release candidate** | **None pinned.** Cycle 49 promoted **Epic E1's Integrations half** — infrastructure, and deliberately not a customer-visible slice |
-| **Certification** | ✅ [`ea35fbec15b3`](certification/reports/ea35fbec15b3.md) · migration head **`0038`** · protocol **v2** |
+| **`main`** | **`c60bb39`** — the certified commit itself |
+| **`integration`** | `c60bb39` — level with `main` |
+| **Release candidate** | **None pinned.** Cycle 50 promoted **a lane's correction of its own documentation claim** — no code changed |
+| **Certification** | ✅ [`c60bb3991beb`](certification/reports/c60bb3991beb.md) · migration head **`0038`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -28,7 +28,7 @@
 | **Customer value this cycle** | ⚠️ **None, and the lane said so first**: *"Nothing a customer can see yet, and that is stated rather than dressed up."* Under §2 this is correct work that has not reached a customer, **recorded as infrastructure rather than reported as a capability** |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
-> ⚠️ **A cycle that delivered no customer value, recorded as such.** Epic E1's Integrations half publishes the port a customer's CRM will arrive through; **nothing drives it yet, and the runner belongs to another module.** The lane's own `Delivered` line says *"Nothing a customer can see yet, and that is stated rather than dressed up"* — so under §2 it is **correct work that has not reached a customer**, and the dashboard says that instead of inventing a demonstration. **It was built to a ruling** ([ADR-0300](docs/architecture/adr/0300-inbound-customer-systems.md), Option A) rather than an assumption, and steps 3–5 of the contract were left untouched because they belong to `provider_platform`.
+> ✅ **A lane corrected a claim about the repository, and the promotion guard caught QE.** [ADR-0300](docs/architecture/adr/0300-inbound-customer-systems.md) read `RATIFIED` while `integration` still read `Status: Proposed` — **the decision was real; the claim about the repository was not**, and a cold session would reasonably have assumed the record existed. Lane B found it in its own work and fixed the wording without reverting anything. **Then the guard refused a promotion**: QE built the target SHA by padding a 12-character report filename with invented hex instead of reading the manifest, and `main` did not move. **That is the failure mode commit-bound certification exists to prevent, catching its author.**
 
 **Repository health:** **3374 backend tests** · **95.22% coverage** *(floor 95)* · **1171 frontend tests** across 55 files · **383 Security Invariants** · mypy strict over **722 files** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
@@ -101,34 +101,37 @@
 
 ---
 
-## 1d · Release summary — 2026-08-04, cycle 49
+## 1d · Release summary — 2026-08-04, cycle 50
 
-**Derived from the promoted commit `ea35fbe`.** **Five promotions today**, and this is the one with nothing to demonstrate.
+**Derived from the promoted commit `c60bb39`.** **Six promotions today.** No code changed in this one, and it is here because a document had stopped telling the truth.
 
 ### What was promoted
 
-**Epic E1's Integrations half** — the contract a customer's CRM will arrive through: `IntegrationSourceAdapter`, `Capability.CRM_RECORDS`, and `HubSpotCompanySource`. **Steps 1, 2 and 6 of [409](docs/architecture/409-inbound-source-port-contract.md).**
+**A lane's correction of its own documentation claim.** [ADR-0300](docs/architecture/adr/0300-inbound-customer-systems.md) said `RATIFIED`; `integration` said `Status: Proposed`.
 
-### Two things the lane did that are harder than the alternative
+> **The decision was real. The claim about the repository was not.** *"Product Owner Approved and Merged to Integration are different states, and I wrote the first as if it were the second."*
 
-| | |
-|---|---|
-| **It waited for the ruling** | [C-326](docs/LANE_COORDINATION.md) was decided by the product owner as **ADR-0300 Option A** *before* this slice. The port was built to a specification, not designed in place — which is the whole reason the coordination register exists |
-| **It left the other module's half alone** | Steps 3–5 belong to `provider_platform`. **The lane was already inside the files that needed them** and stopped, recording [C-300](docs/LANE_COORDINATION.md) instead |
+It now reads `PRODUCT OWNER APPROVED, awaiting integration synchronization`, and names which instruction the implementation proceeded under and where the code is held. **The standing instruction stands, the implementation stands, and only the wording moved** — nothing was reverted, and no lane was slowed.
 
-### And it declined to claim customer value it had not delivered
+**QE verified the "no code changed" claim rather than accepting it**: every changed line inside a `.py` file is docstring prose, with no executable statement moved. The touched module's suite ran (244 passed) instead of a duplicate full pass, since certification runs everything regardless.
 
-> *"Nothing a customer can see yet, and that is stated rather than dressed up."*
-> *"Demo: None. The capability is deliberately absent from the Connection Center until something drives the port."*
+### The promotion guard refused QE, and it was right to
 
-**§2 says a slice that needs a module, a table or a port named to demonstrate it is infrastructure that has not reached a customer — correct work, but not a completed product slice, and it must not be reported as one.** The lane applied that rule to itself before QE could. **This dashboard therefore records infrastructure**, and the *Customer value this cycle* row above says none.
+```
+REFUSED — c60bb39 has no certification record.
+merge: c60bb3991beb01d02bb95c1c0bab97e4bb01e6b9 - not something we can merge
+```
+
+**QE constructed the target SHA by padding the 12-character report filename with invented hex** instead of reading it from the manifest. **`main` did not move.**
+
+> **This is exactly what the rule was written for.** Had the guard been lax about an unknown commit — or had QE used `git merge --ff-only integration`, the form §20e explicitly forbids — a commit nobody certified would have reached `main` under a promotion record that named a different one. **The guarantee held against the person operating it**, which is the only test that matters.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
 | **Technical** | **3374 backend** · 1171 frontend · **95.22%** · **383 invariants** · **722 files typed** · 35 contracts · `tsc` clean and gated |
-| **Release** | **Nineteen consecutive cycles with no process failure** · `promoted == certified` ✓ · **0 commits outside a snapshot** |
+| **Release** | **Twenty consecutive cycles with no process failure** · `promoted == certified` ✓ · **the guard refused a malformed promotion this cycle** |
 | **Architecture** | Reachability 0 doorless · migration `0038` **reversible, verified this cycle** · event catalog 1 known drift |
 | **Dependency** | 69 items, 31 closed |
 | **Customer Value** | ✅ **Direct.** A renamed company's search result now explains itself. **The first slice today that a salesperson would notice** |
