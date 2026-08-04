@@ -493,3 +493,29 @@ Decisions required    what the product owner must rule before it can start
 > **Estimated** — module and epic progress percentages. **Lane C's judgement about maturity, marked as such, and never a planning commitment.** Where one would contradict `PROJECT_STATUS.md`, **the measurement wins and the estimate is wrong.**
 
 **A percentage that starts being quoted as a measurement has become the defect this rule prevents.** The Operational Reading Cost table (§10) is the worked example of getting this wrong once already: **its first published figure understated its own headline by a third, and it was found by re-running rather than rereading.**
+
+### 11b · The UI Implementation Dashboard
+
+**Ratified 2026-08-04, product owner. Permanent, reporting-only, and in every future report.**
+
+> **At any point the product owner should understand, in under a minute, how much of the approved product has actually been implemented.**
+
+**Seven parts:** summary counts · per screen · module summary · overall progress · wave summary · **READY FOR IMPLEMENTATION** · **BLOCKED SCREENS**.
+
+#### The rule that makes it worth having
+
+> **Measure against the approved design project. Never estimate from assumption.**
+
+**A screen is `DONE` when it matches the approved specification** — not when something with its name exists. **The repository contains provisional UI built before the design project existed, and [413](architecture/413-migration-inventory.md) classifies all of it `REPLACE`.** Counting it as progress would make the dashboard describe a product nobody approved.
+
+**So on the day convergence begins the honest number is zero, and the dashboard says zero.** A dashboard that opens at 40% because screens with matching names exist has failed at its only job.
+
+#### Its relationship to the other dashboards
+
+**It does not restate them** (§2). The Portfolio Dashboard (§11a) reports **modules, epics and decisions**; this reports **screens against a specification**. Where a fact belongs to one, the other references it.
+
+| | |
+|---|---|
+| **Informational only** | **It assigns nothing, creates no slice, and estimates nothing from opinion.** A screen appearing under **READY FOR IMPLEMENTATION** is a measurement, not an allocation — allocation is still the product owner's |
+| **State changes are reported** | Every move — `READY → IN PROGRESS → BACKEND COMPLETE → INTEGRATED → QE → DONE` — appears under *Changes Since Last Report*. **A screen that changed state silently is the thing this dashboard exists to prevent** |
+| **Backend and frontend readiness are separate axes** | Because they diverge, and the repository's whole history is that divergence: **46 endpoints behind 11 routes.** Collapsing them into one percentage would hide the only interesting fact |
