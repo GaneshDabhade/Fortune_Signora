@@ -6,6 +6,8 @@
 >
 > **Nothing here is approved.** Epic C is unapproved scope ([Pack I](../DECISION_PACKS.md)); this is preparation so that the approval decision, when it is taken, is taken with the facts. **The ADR it needs is drafted separately as [ADR-0400](adr/0400-person-as-an-entity.md) and is `Proposed`.**
 
+> **Observability, testing, operations and deployment: [405-cross-cutting-concerns.md](405-cross-cutting-concerns.md)** — written once for every prepared package rather than five times. **Epic C's deltas are in its §6 row.** In short: **Redaction must reach personal data before the first `Person` exists** — the pattern is credential-shaped and matches no name, email or phone. **`ForgetPerson` must be observable**, because a silent no-op is worse than no feature.
+
 ---
 
 ## 0 · Cross-validated 2026-08-04 — ❓1 is answered, and the answer is *no*

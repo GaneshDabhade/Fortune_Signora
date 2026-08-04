@@ -4,6 +4,8 @@
 >
 > ⚠️ **Links to [51-implementation-specifications.md](51-implementation-specifications.md) and [50-product-capability-audit.md](50-product-capability-audit.md) do not resolve on this branch** — both live on `lane-b-commercial-profile` and reach `main` at the next merge. **Everything relied on is quoted inline**, and the event counts below were measured against code on this branch rather than taken from either document.
 
+> **Observability, testing, operations and deployment: [405-cross-cutting-concerns.md](405-cross-cutting-concerns.md)** — written once for every prepared package rather than five times. **Epic F's deltas are in its §6 row.** In short: **Add nothing for delivery** — the outbox, dispatch and dead-letter metrics already cover the substrate this epic reuses. **Matched-but-undelivered is the metric that makes §2's honesty claim true.**
+
 ---
 
 ## 1 · Two findings, and the second one changes the epic

@@ -6,6 +6,8 @@
 >
 > **No ADR is prepared for Epic D, deliberately.** It needs no new bounded context, no new dependency and no reversal of an existing decision — **it is a fifth declaration in an existing module and rows in two existing catalogs.** *An ADR is required when a boundary moves; manufacturing one here would be process for its own sake.*
 
+> **Observability, testing, operations and deployment: [405-cross-cutting-concerns.md](405-cross-cutting-concerns.md)** — written once for every prepared package rather than five times. **Epic D's deltas are in its §6 row.** In short: **Measure the `contested` rate** — it is the property the whole ledger exists to protect. **And say what the Playground shows**, or repeat [B-319](../BUGS.md).
+
 ---
 
 ## 1 · The finding: D2 is already built

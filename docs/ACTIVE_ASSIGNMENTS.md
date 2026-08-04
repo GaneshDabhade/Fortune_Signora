@@ -150,21 +150,21 @@
 
 > ⚠️ **Percentages were dropped, and the reason is a miss worth recording.** [Epic C](architecture/400-epic-c-people.md) was reported **READY, 100%**, with blockers given as *"ADR-0400 ratification · contact ruling."* **Its own ❓1 — *does the provider return a person's name?* — was documented in the package and omitted from the portfolio row.** Lane A checked it first, as the ADR instructed, and **the answer blocked the epic.** A percentage said *ready*; an unanswered question said *maybe not*, and only one of them reached the summary a reader allocates from. **The column now carries blocking *questions* alongside blocking *decisions*.**
 
-### Section coverage — measured against the 2026-08-04 template
+### Section coverage — against the 2026-08-04 template
 
-**The definition of READY expanded on 2026-08-04.** Reported against the new template rather than the one the packages were written to:
-
-| Package | Product · Reuse · Architecture · Domain · Phases · Risks · Edge cases | Security | Performance | Observability | Testing | API · Data | UI/UX |
+| Package | Product · Reuse · Architecture · Domain · Phases · Risks · Edge cases | Security | Perf | **Observability** | Testing | API · Data | UI/UX |
 |---|---|---|---|---|---|---|---|
-| **[C · People](architecture/400-epic-c-people.md)** | ✅ | ✅ *(erasure, tenancy)* | ✅ | ❌ | ✅ *(as gates)* | ✅ | ⚠️ partial |
-| **[E1 · CRM](architecture/401-epic-e1-crm-read.md)** | ✅ | ✅ *(§7, token separation)* | ✅ | ❌ | ✅ *(as gates)* | ✅ | ⚠️ partial |
-| **[F · Workflow](architecture/402-epic-f-workflow.md)** | ✅ | ✅ *(§4)* | ✅ | ❌ | ⚠️ | ✅ | ⚠️ partial |
-| **[D · Risk](architecture/403-epic-d-risk.md)** | ✅ | n/a | ⚠️ | ❌ | ✅ *(as gates)* | ✅ | ⚠️ partial |
-| **[G · Copilot](architecture/404-epic-g-copilot.md)** | ✅ | ✅ | ⚠️ *(cost)* | ❌ | ✅ | ✅ | ⚠️ partial |
+| **[C · People](architecture/400-epic-c-people.md)** | ✅ | ✅ | ✅ | ✅ **[405](architecture/405-cross-cutting-concerns.md)** | ✅ | ✅ | ⚠️ |
+| **[E1 · CRM](architecture/401-epic-e1-crm-read.md)** | ✅ | ✅ | ✅ | ✅ **405** | ✅ | ✅ | ⚠️ |
+| **[F · Workflow](architecture/402-epic-f-workflow.md)** | ✅ | ✅ | ✅ | ✅ **405** | ✅ | ✅ | ⚠️ |
+| **[D · Risk](architecture/403-epic-d-risk.md)** | ✅ | n/a | ⚠️ | ✅ **405** | ✅ | ✅ | ⚠️ |
+| **[G · Copilot](architecture/404-epic-g-copilot.md)** | ✅ | ✅ | ⚠️ *(cost)* | ✅ **405** | ✅ | ✅ | ⚠️ |
 
-> **Observability is absent from all five, and that is a real gap rather than a formatting one.** No package says what a lane should log, measure, trace or alert on. **`signora_platform/observability/` exists and is unread by any of them.** It is the first backfill.
->
-> **UI/UX is partial by intent and stated so:** each package describes information architecture, states and the customer journey; **none specifies screens, loading, empty or error states.** For [D](architecture/403-epic-d-risk.md) and [G](architecture/404-epic-g-copilot.md) that is the larger share of the remaining work.
+**Observability, testing, operations and deployment are backfilled** — as **[405-cross-cutting-concerns.md](architecture/405-cross-cutting-concerns.md)**, written **once** with a per-epic delta table, rather than five near-identical sections that would drift apart within a week (§2, *truth has exactly one authoritative representation*). **Each package links to it and states only its own deltas.**
+
+> **The backfill found something the five packages had all missed.** Log redaction is **credential-shaped** — `password|secret|token|authorization|api_key|private_key|credential|cookie`, plus JWT and `Bearer` patterns in free text. **Nothing in it matches a name, an email or a phone number.** The guarantee *"no line ever carries a secret"* is intact and **does not extend to personal data**, because personal data has never been in the repository. **[Epic C](architecture/400-epic-c-people.md) changes that on its first commit**, in the module carrying the heaviest compliance obligation. **A phase-1 obligation, not a hardening task.**
+
+**UI/UX stays ⚠️ deliberately.** Each package covers information architecture, states and the customer journey; **none specifies screens, loading, empty or error states.** That is where implementation genuinely owns the decomposition — **and for [D](architecture/403-epic-d-risk.md) and [G](architecture/404-epic-g-copilot.md) it is the larger share of what remains.**
 
 > **The office names a technically suitable owner and stops there** *(product owner, 2026-08-04)*. **It does not sequence lanes, does not assign, and does not wait for one to be free.** The column above is guidance about *modules*, not a plan for *people*.
 
