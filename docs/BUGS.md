@@ -94,6 +94,59 @@ Such a row names the code, records **Current assignee: none — not assignable**
 **Both are fixed on `integration`** at `b332aea`. Nothing is left for this row to track, and two rows for one defect is the register drifting from the repository.
 
 
+### B-115 · TASK-301 fails `mypy --strict`, on a test helper narrower than the type it builds
+
+| | |
+|---|---|
+| **Module** | `knowledge_graph` — `backend/tests/knowledge_graph/fakes.py` |
+| **Current assignee** | **Lane B** — the module's current assignee, and the author of the slice |
+| **Severity** | 🟠 · **Blocking Quality Defect** — a failing type check prevents promotion (`CLAUDE.md` §20e) |
+| **Status** | **`FIXED`** by Lane B 2026-08-04, in the shape named — and **`VERIFIED` by QE** on the revalidation: `mypy --strict` clean over 708 files |
+| **Found** | 2026-08-04 by QE, validating TASK-301 at `81df236` |
+
+**Steps to reproduce.**
+
+```bash
+cd backend && uv run mypy --strict .
+```
+
+— the identical invocation certification runs (`tests/certification/__main__.py:130`).
+
+**Expected.** Clean. `CLAUDE.md` §19 lists `mypy --strict` among the conditions for a slice to be implementation-complete, and **the Slice Handoff claims it**: *"mypy --strict clean"*.
+
+**Actual.**
+
+```
+tests/knowledge_graph/test_use_cases.py:767: error:
+  Argument "domain" to "bound_binding" has incompatible type "None"; expected "str"  [arg-type]
+Found 1 error in 1 file (checked 708 source files)
+```
+
+### The fix is one annotation, and the helper is the wrong half
+
+`IdentityBinding.domain` is **`str | None = None`** ([`domain/identity.py:296`](../backend/modules/knowledge_graph/domain/identity.py)). The new test is right to pass `None` — a `TECHNOLOGY` entity resolved from `builtwith` has no domain, which is the whole point of the case it asserts. **`bound_binding`'s annotation is narrower than the type it constructs**:
+
+```python
+# backend/tests/knowledge_graph/fakes.py:288
+def bound_binding(entity: Entity, *, provider: str, external_id: str, domain: str) -> IdentityBinding:
+                                                                   # ^^^ str | None = None
+```
+
+**Do not change the call site.** The test is asserting the correct thing — *the kind is the entity's and not a constant* — and narrowing it to satisfy the helper would delete the case that makes the field a derivation rather than a decoration.
+
+### Everything else passed
+
+**Nothing else is wrong with this slice**, and the rest of it is measured green: **3269 backend** (+6), **1163 frontend** (+1), **95.06%** coverage, 379 Security Invariants, `tsc --noEmit` clean, **35 import contracts kept, 0 broken** — including the amber `ClaimReader` return-type change, which the contracts accept.
+
+### Fixed within the hour, and the docstring is the part that lasts
+
+Lane B widened `domain` to `str | None = None` and **wrote down why it had been wrong** — *"it was annotated `str` and had been narrower than the type it builds since it was written — invisible until a caller used the type honestly."* **That sentence is what stops it being re-narrowed** by a future reader who sees an optional parameter with one `None` caller and tidies it.
+
+**Revalidated in full**, not just on the failing gate: 3269 backend, 1163 frontend, 95.06%, 379 invariants, `mypy --strict` clean over 708 files, `tsc` clean, 35 contracts kept.
+
+> **The runtime is unaffected** — the suite passes, because `None` is a legitimate value at runtime and always was. **This is exactly the class `mypy --strict` exists to catch and nothing else can**: a helper that has been quietly lying about its own contract since it was written, found by the first caller to use the type honestly.
+
+
 ### B-114 · The release runbook's `make dr` step cannot succeed as written
 
 | | |
