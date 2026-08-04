@@ -18,6 +18,7 @@ This document defines the **allowed dependency directions** between modules defi
 flowchart LR
     WS["Workspace & Tenancy"] -.scopes.-> ALL[All Modules]
     CP[Commercial Profile] --> PP
+    CP -.read.-> SE
 
     PP[Provider Platform] --> PN[Provider Normalization]
     PN --> KG[Knowledge Graph]
@@ -62,7 +63,7 @@ This graph is, by design, **acyclic**. No module depends on a module downstream 
 | Knowledge Graph | Provider Normalization |
 | Observation Engine | Knowledge Graph |
 | Business Event Engine | Observation Engine |
-| Signal Engine | Business Event Engine |
+| Signal Engine | Business Event Engine · **Commercial Profile (synchronous read, for the declared-competitor list — [ADR-0403](adr/0403-signal-engine-reads-a-declaration.md))** |
 | Buying Score Engine | Signal Engine |
 | Opportunity Engine | Buying Score Engine |
 | AI Platform | *(none from domain/application)* · Opportunity Engine `public/` **from `infrastructure/` only**, behind a Protocol |
@@ -112,6 +113,8 @@ Per Principle 3, event-driven is the default. Approved synchronous dependencies:
 - AI Reasoning Engine → Buying Score Engine's published vocabulary: synchronous read of `ScoreTrigger`, `Trend` and the score's own temporal fields when composing a Decision Package. **Recorded 2026-07-30 (T125), and flagged as a correction rather than a new decision.** [ADR-0030](adr/0030-the-decision-package.md) already ratified M9 deriving *why now* from `BuyingScore.trigger`, *why not earlier* from `basis_at`, *what changed* from `delta`/`trend`, and Support from `contested`/`dissenting_signal_ids` — so the dependency was approved when the ADR was; this row simply predated it. The alternative, redefining those enums inside M9, would be duplicate truth for a vocabulary the Buying Score Engine owns and answers.
 
   **Note the contrast with the AI Platform's edge**, which is genuinely narrower: M8 reads buying-score data *transitively* through `OpportunityExplanation` and imports nothing, because a substrate must name no pipeline concept. M9 is a pipeline stage and legitimately speaks the pipeline's vocabulary.
+- **Signal Engine → Commercial Profile's declared competitors: synchronous read of `DeclaredCompetitorReader` when generating signals. Approved 2026-08-04 ([ADR-0403](adr/0403-signal-engine-reads-a-declaration.md)), and shipped.** A declaration is *what the customer said*, not evidence — projecting it into the pipeline would make a customer's sentence look like something Signora observed. **The read is on demand, returns a view, and stores nothing.**
+
 - AI Reasoning Engine → Signal Engine's published catalog: synchronous read of signal-type definitions when composing a Decision Package. **Added 2026-07-30 (T122).** A signal type's *limitations* and *suggested validation* — what a conclusion does not imply, and how a human independently checks it — are properties of the type, authored once by a domain expert and versioned like the business event taxonomy (ADR-0030, Decision 5). The alternative, a parallel catalog inside AI Reasoning keyed by `SignalType`, would put a type's limitations somewhere other than where the type is defined. Read-only, no new storage, and the definitions already reach M9 transitively through `SignalExplanation`; this edge makes the *catalog itself* readable rather than only the definitions attached to signals that fired.
 - AI Reasoning Engine → AI Research Engine's stored artifact: synchronous read of an already-completed research artifact when composing a reasoning request, if available at request time (falls back to reasoning without it if not yet complete — AI Research Engine is not a blocking dependency of the pipeline).
 - Business Event Engine → its own taxonomy (internal, no longer cross-module per the v1→v2 consolidation — see [ADR-0025](adr/0025-module-boundary-evolution.md)).

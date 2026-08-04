@@ -65,6 +65,10 @@ Every ADR follows this structure:
 | [0041](0041-icp-aggregate.md) | **Proposed, not accepted.** The ICP aggregate — **a named customer segment naming one or more products.** Reverses the recommendation the reuse audit made hours earlier: the argument against an optional product was applied to a *multiple* product and the two were never separated. **Duplicated truth is the failure mode B forces** |
 | [0036](0036-target-account-contract.md) | The Target Account Contract — the first Customer–Supplier edge, and four permanent ownership boundaries: **Commercial Profile owns intent, Provider Platform owns synchronization, Knowledge Graph owns understanding, Signal Engine owns intelligence** |
 | [0300](0300-inbound-customer-systems.md) | **Proposed, not accepted.** How a customer's own system delivers evidence into the pipeline — **a customer-held system is a *source*, not a *provider***. Measured for Epic E1: `ProviderName` is closed, `ProviderRequest` carries no connection and requires a subject a CRM does not have, and `ClaimAttribute` has no CRM concept. **Normalization is already open** (`provider: str`), so the gap is acquisition and not interpretation |
+| [0400](0400-person-as-an-entity.md) | **PRODUCT OWNER APPROVED 2026-08-04.** A person becomes an entity — **Epic C's bounded context.** |
+| [0401](0401-a-customers-crm-is-not-a-provider.md) | **PRODUCT OWNER APPROVED 2026-08-04.** A customer's CRM is not a provider — falsifiability is tested **per field**. |
+| [0402](0402-a-rule-is-data.md) | **PRODUCT OWNER APPROVED 2026-08-04.** A rule is data, and it publishes one event — **Epic F's bounded context.** |
+| [0403](0403-signal-engine-reads-a-declaration.md) | **Accepted 2026-08-04.** Signal Engine reads a declaration through its owner's public read port. **Implemented.** |
 
 ## How to Propose a New ADR
 

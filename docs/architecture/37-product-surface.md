@@ -1,6 +1,8 @@
 # 37 — The Product Surface: making nine stages of pipeline reachable
 
 > Written 2026-07-31, at the product owner's direction to move from platform engineering to product implementation. This document is the design for **M12**, brought forward ahead of M11 and M7 — a Category 1 roadmap change ([IMPLEMENTATION_ROADMAP.md §5c](../../IMPLEMENTATION_ROADMAP.md)), and the product owner's to make.
+>
+> ⚠️ **Its two halves aged differently, and the distinction matters (2026-08-04).** **The backend design shipped and is true** — this document is why 46 endpoints across 12 routers exist, and its central claim, *"the missing layer is each module's `interface/` layer and the frontend"*, is still the correct diagnosis; [412](412-backend-capability-matrix.md) finds two modules still in exactly that state. **Its UI half is superseded** by the [Fortune Signora Design Project](410-approved-ui-specification.md), which is now authoritative for frontend behaviour.
 
 ## The finding, stated plainly
 
