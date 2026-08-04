@@ -92,11 +92,11 @@
 >
 > **Genuine blockers are acceptable; late coordination is not.** *"No lane waits for work because coordination was late"* is the metric, not *"every lane is always busy"*.
 
-**When a lane does report `AVAILABLE` with nothing prepared**, Lane C investigates immediately and assigns; **only if the next action cannot be objectively determined does it escalate.** That should be rare.
+**When a lane does report `AVAILABLE` with nothing prepared**, Lane C investigates immediately and recommends; **only if the next action cannot be objectively determined does it escalate.** That should be rare.
 
 **Verified against the repository, never against the register.** The register lags; branches do not.
 
-**Assign a coherent epic, not an isolated slice** *(product owner, 2026-08-03)*. **Decompose only when architecture, dependencies, certification or a change of implementation ownership requires it** — otherwise the epic is the lane's and the momentum is the point. **The lane's reply to an assignment should be able to be *"claimed, starting implementation"*** and nothing else; anything it must ask first was missing from the assignment.
+**Recommend a coherent epic, not an isolated slice** *(product owner, 2026-08-03)*. **Decompose only when architecture, dependencies, certification or a change of implementation ownership requires it** — otherwise the epic is the lane's and the momentum is the point. **The lane's reply to an allocation should be able to be *"claimed, starting implementation"*** and nothing else; anything it must ask first was missing from the recommendation.
 
 **And the module owner's reading of their own module outranks the office's inference** *(product owner, 2026-08-03)* **until repository evidence proves otherwise.** Lane C keeps validating; it does not overrule ownership without evidence. **Learned by getting it wrong**: TASK-905 was marked built from a marking that turned out to be promoted months earlier, and Lane A — which owns the module — was right.
 
@@ -114,29 +114,26 @@ Open questions:        anything the lane would have to assume
 Product Owner decision required:
 ```
 
-**An assignment is not made until the receiving lane can consume it** *(product owner, 2026-08-03)*. **Preparing it is not sufficient. Recording it is not sufficient. Reporting it is not sufficient.**
+### Lane C recommends. It never delivers.
+
+**Ratified 2026-08-04, product owner — *the model was becoming over-coordinated*.** Lane C recommends to the product owner, who allocates in one reply. **There is no assignment delivery, no assignment commit, no propagation, no acknowledgement and no "did the lane receive it?"**
 
 ```
-  lane reports AVAILABLE ─▶ validate reality ─▶ select ─▶ update the artifacts
-                                                                  │
-   begin preparing the next ◀─ implementation starts ◀─ notify ◀─ verify the lane can see it
+  lane reports AVAILABLE ─▶ Lane C analyses the repository ─▶ Lane C reports to the product owner
+                                                                            │
+        lane claims, then builds ◀────── product owner replies once ◀────────┘
+                                          "A → TASK-401 · B → Epic E"
 ```
 
-**The last two steps are the ones Lane C skipped**, and skipping them cost Lane A an idle cycle: the assignment existed on `lane-c-product-office`, where no lane reads, and Lane C reported it as made. **Verification means reading it back from where the lane will look, not from where it was written.**
+> **The product owner is the shared channel, and that is the whole mechanism.** Every lane already talks to them. **A defect, a finding or a blocker reaches the lane that needs it the same way an allocation does** — which is why [C-406](LANE_COORDINATION.md)'s four incidents need no new machinery, and why its narrow question about `integration` is withdrawn rather than answered.
 
-| Step | Done when |
-|---|---|
-| **Record** | The task exists in [`BACKLOG.md`](BACKLOG.md) with everything a lane needs to start |
-| **Notify** | **Lane C replies directly to that lane: `Assigned: TASK-nnn`.** Not a ref to read, not an item to find — **a lane cannot claim work it has never been told it owns** |
-| **Verify** | **The lane has acknowledged and created its claim.** Lane C's responsibility ends there; execution is the lane's |
+**What this deleted, and it was all Lane C's own** *(2026-08-03 → 2026-08-04, one day)*: assignment delivery · assignment commits · assignment synchronization · assignment visibility · assignment acknowledgement · assignment routing · assignment notification. **None of it had reached [`CLAUDE.md`](../CLAUDE.md)**, so the constitution is untouched.
 
-> **Lane C does not push assignments to `integration`, does not create claims, and does not wait for QE.** The lane creates `Claim TASK-nnn` and pushes it — **the existing protocol, unchanged** — and that claim is what puts the assignment on the shared branch.
+> **The failure it corrects is Lane C's, not the lanes'.** Making delivery Lane C's responsibility turned *visibility* into an engineering problem and put a dispatcher between a lane and its work — **a second bottleneck, built while removing the first.** The office is a planner; the moment it routes, it is a queue.
 
-> **Delivery uses no new mechanism** ([Pack K](DECISION_PACKS.md)). **The lane's own claim commit is the delivery to `integration`** — it already touches exactly `ACTIVE_ASSIGNMENTS.md` and `BACKLOG.md`, which is `CLAIM_PATHS`. **Lane C never pushes to `integration`**, and QE's authority over it is untouched.
+**Target five prepared *executable* tasks per active lane; fewer than three is raised to the product owner early** *(product owner, 2026-08-04)*. **Prepared, not assigned.** Preparation starts when the queue thins, **not when the lane finishes.**
 
-**Maintain at least three prepared *executable* tasks per active lane** *(product owner, 2026-08-03)*. **Fewer than three starts preparation immediately** — not when the lane finishes.
-
-> **Assignment is not the end of the work; it starts preparing the next one.** The office runs continuously: monitor every lane, track progress against epics, verify reality, prepare ahead, and **resolve dependencies before they become blockers.**
+> **Allocation is not the end of the work; it starts preparing the next one.** The office runs continuously: monitor every lane, track progress against epics, verify reality, prepare ahead, and **resolve dependencies before they become blockers.**
 
 **Executable is the word that matters.** A `READY` row nobody can take does not count — **it makes the queue lie about its own depth.** [TASK-003](BACKLOG.md) reads `READY` while [C-018](LANE_COORDINATION.md) is open and Lane A has already skipped it; it is excluded from every depth Lane C reports.
 
@@ -145,6 +142,39 @@ Product Owner decision required:
 **Sequencing within a prepared queue is the office's; [`BACKLOG.md`](BACKLOG.md)'s priority order is the product owner's.** Reordering a lane's *prepared* work to prevent a stall is coordination. Reordering the *queue* is not.
 
 **Alternatives are not decoration.** A recommendation without them is a decision presented as an inevitability, and the product owner cannot rank what they cannot see.
+
+### The Implementation Portfolio — every Lane C report
+
+**Ratified 2026-08-04, product owner.** *"Lane A do TASK-400" is 10% of what a Product Office should do.* **The office maintains a living portfolio for every implementation lane** — not the next task, but **every task that lane could reasonably take**, ranked, with what it would cost and what it would collide with.
+
+| § | Section | Contents |
+|---|---|---|
+| **1** | **Lane capacity** | Current task · remaining work · **risk of idle** · queue depth |
+| **2** | **Executable portfolio** | **Every** eligible task per lane: id · epic · modules · effort **S/M/L/XL** · dependency · **conflict risk** · *why this lane is the best owner*. **Ordered by recommendation** |
+| **3** | **Blocked portfolio** | Task · blocking item · **blocking owner** · which lane takes it once unblocked |
+| **4** | **Parallel work opportunities** | What can start **now**, concurrently, at minimal merge risk |
+| **5** | **Module ownership view** | Module · owner · active work · next work · **whether another lane should avoid it** |
+| **6** | **Queue health** | **Target 5 executable per lane; below 3 raises it early** — before a lane idles, not after |
+| **7** | **Recommendation** | Per lane: now · next · then. **With reasoning, never as an instruction** |
+
+**Conflict risk is a claim about paths, and it is stated with them:**
+
+```
+TASK-401   🟢 Very Low     touches  knowledge_graph/ · commercial_profile/api/
+                           shares   nothing with Product Surface, Timeline or QE files
+CX-07      🟠 Medium       touches  navigation · layout · shell · responsive
+                           shares   the app shell with every Product Surface slice in flight
+```
+
+> **🟢 / 🟠 / 🔴 is derived from measured path overlap against every active branch, never estimated.** A colour with no path list under it is an opinion, and the product owner cannot check an opinion. **Effort is marked as an estimate because it is one; conflict risk is not.**
+
+**Parallel opportunity is the section with the most value in it.** Prefer work that **stays inside one module · has clear ownership · has no unresolved product decision · touches no shared infrastructure · collides with no active lane.** Four such tasks are worth more than one perfectly-sequenced critical-path slice, because they survive any allocation the product owner chooses.
+
+**Alternate work is part of the portfolio, not a fallback.** If the top recommendation is blocked between the report and the reply, **the next item is already validated** — that is what makes the portfolio a portfolio rather than a queue.
+
+> **Decisions needed is 0–2, not twenty.** A list long enough to triage is a list Lane C failed to triage. **Only what genuinely requires the product owner appears**; everything the office can determine objectively, it determines.
+
+**This is a report format, not a document.** It is written into the response and nowhere else — **no portfolio file, no dashboard file, and none should be created** *(product owner: this is not a new governance process or document)*. **[`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) holds the prepared queues; the portfolio is that data reported, not a second copy of it** (§2, *truth has exactly one authoritative representation*).
 
 ---
 

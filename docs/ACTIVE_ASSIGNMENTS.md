@@ -85,74 +85,67 @@
 
 > **Lane C owns the coordination of implementation, not the implementation itself.**
 
-**This board is now an input to Lane C, not only a record.** When a lane's row reaches `AVAILABLE`, `BLOCKED` or `WAITING`, **Lane C reads it and prepares the next recommendation for the product owner to approve** — the lane no longer selects for itself.
+**This board is an input to Lane C, not only a record.** When a lane's row reaches `AVAILABLE`, `BLOCKED` or `WAITING`, **Lane C reads it and recommends to the product owner** — the lane does not select for itself, and **Lane C does not assign.**
 
 | | |
 |---|---|
-| **Current** | **Assignment preparation and B-400 coordination** |
-| **Delivered** | [C-400](LANE_COORDINATION.md) doc-number collisions · [C-401](LANE_COORDINATION.md) merge-risk measurement · [C-403](LANE_COORDINATION.md) QE's action list · [C-404](LANE_COORDINATION.md) backlog reality · [B-400](BUGS.md) 🔴 migration collision · [B-401](BUGS.md) the blocking check |
-| **Next** | Assign on `AVAILABLE`, after [B-400](BUGS.md) clears |
+| **Current** | Continuous planning — queue depth, dependency horizon, blocking items |
+| **Delivered** | [C-400](LANE_COORDINATION.md) doc-number collisions · [C-401](LANE_COORDINATION.md) merge-risk measurement · [C-403](LANE_COORDINATION.md) QE's action list · [C-404](LANE_COORDINATION.md) backlog reality · [C-406](LANE_COORDINATION.md) branch-visibility cause · [B-400](BUGS.md) 🔴 migration collision · [B-401](BUGS.md) the blocking check |
+| **Next** | Recommend on `AVAILABLE`; **the product owner allocates** |
 
-### Prepared queues — planning artifacts; only the first item is assigned
+### Prepared queues — recommendations, not assignments
 
-**Maintained continuously by Lane C, not when a lane finishes.** **Verified against branches, never against the queue.**
+**Ratified 2026-08-04, product owner: Lane C recommends and never delivers** ([`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §5). **Nothing in this section is an assignment.** It is what each lane *could* start today, ranked, so the product owner can allocate in one reply. **Maintained continuously, verified against branches rather than against the queue.**
 
 | | **Lane A** | **Lane B** |
 |---|---|---|
-| **Current** | **[TASK-400](BACKLOG.md)** — **A7 only**; A6 withdrawn, blocked on [C-321](LANE_COORDINATION.md) · *claimed `9cc57e2`* | **[B-400](BUGS.md)** — renumber to `0035` · **not yet visible to Lane B** |
-| **Next** | [TASK-903](BACKLOG.md) stage 2 | **[TASK-401](BACKLOG.md)** — A5 backend · **S** |
-| **Then** | [TASK-905](BACKLOG.md) — posture on the attention row | [TASK-902](BACKLOG.md) — M7 Timeline S05+ |
-| **Then** | **A5 render** — needs [TASK-401](BACKLOG.md) | [TASK-402](BACKLOG.md) — Epic E1, the CRM read |
-| **Future** | **CX-07 responsive** — no task id, **needs scope** ([Pack I](DECISION_PACKS.md)) | Epic D, **after E1** |
-| **Depth** | **4 executable + 1 pending scope** | **4 executable** |
+| **Executing** | **[TASK-400](BACKLOG.md)** — **A7 only**; A6 withdrawn on [C-321](LANE_COORDINATION.md) · *claimed `9cc57e2`* | **[TASK-300](BACKLOG.md)** — Epic A; **A1, A4 and A5's backend built** |
+| **1** | [TASK-903](BACKLOG.md) stage 2 — brief-side surface; **CX-05 already shipped** · **M** · 🟠 *reads `commercial_profile`, Lane B's* | **[B-400](BUGS.md)** — renumber `0031_commercial_profile_segment.py` → `0035` · **XS** · 🟢 |
+| **2** | [TASK-905](BACKLOG.md) — posture on the attention row · **S** · 🟢 *Product Surface only* | [TASK-902](BACKLOG.md) — M7 Timeline S05+ · **L** · 🟢 *`timeline` alone* |
+| **3** | [TASK-906](BACKLOG.md) — M14b names its bounded context · **M** · 🟢 *discovery, no shared code* | [TASK-402](BACKLOG.md) — Epic E1, the CRM read · **L** · 🟢 *`integrations`* |
+| **4** | — **queue ends here** | **[B-319](BUGS.md)** 🟠 · **[B-320](BUGS.md)** 🟠 · **[B-317](BUGS.md)** 🟠 — own modules, self-contained · **S** each |
+| **Blocked** | **A6** → [C-321](LANE_COORDINATION.md) *(product owner)* · **A5 render** → [C-324](LANE_COORDINATION.md) **and [B-319](BUGS.md)** | **Epic D** → after E1 · **[TASK-003](BACKLOG.md)** → [C-018](LANE_COORDINATION.md) |
+| **Needs scope** | **CX-07 responsive** — no task id ([Pack I](DECISION_PACKS.md)) | **Epics F/G** ([Pack I](DECISION_PACKS.md)) |
+| **Executable depth** | **3** ⚠️ **below the alarm line** | **6** ✅ |
 
-**Two sequencing decisions, both made to prevent a stall rather than to react to one:**
+> ⚠️ **Lane A is at three executable and cannot reach five without a product-owner input.** Both of its remaining candidates need one: **A6 needs [C-321](LANE_COORDINATION.md)**, and **CX-07 has no agreed scope** ([Pack I](DECISION_PACKS.md)). **Everything the office could determine objectively, it has.**
 
-- **[TASK-401](BACKLOG.md) moved ahead of [TASK-402](BACKLOG.md) in Lane B's queue.** A5's *render* is Lane A's fourth item and needs A5's *backend*, which sat behind **Epic E1 — an L**. **Lane A would have reached A5 while Lane B was mid-epic and stalled.** TASK-401 is **S**; moving it costs Lane B days and saves Lane A a stop. **Sequencing within a prepared queue is the office's; [`BACKLOG.md`](BACKLOG.md)'s priority order is untouched.**
-- **[TASK-905](BACKLOG.md) inserted as Lane A's third**, which is where Lane A itself ranked it in [C-217](LANE_COORDINATION.md). It is Product Surface's, self-contained, and needs nothing from anyone.
+**[TASK-401](BACKLOG.md) left this queue by being built before it was written** — Lane B shipped A5's backend in `145345f` on 2026-08-03. **Lane C had named the wrong module**: the row said `knowledge_graph`, the specification says **Observation Engine**, and Lane B built it there. **Lane C's *"verified unbuilt"* was verified against the wrong module** — the second time in two days that the module owner's reading beat the office's inference, and the second time the module owner was right.
 
-**Predicted blockers, and what is being done now rather than when they land:**
+> **A5's render did not become available when its backend landed, and that is the more useful half.** It is blocked by **[C-324](LANE_COORDINATION.md)** *(where Epic A's rendering stops being Lane B's)* and by **[B-319](BUGS.md) 🟠** — the Playground produces **no attribute transitions at all**, so **the endpoint is correct and its screen would be empty.** Lane B found that while building the endpoint. **Neither blocker was visible to Lane C when the row was written.**
 
-| Horizon | Risk | Action taken |
-|---|---|---|
-| **Immediate** | **[B-400](BUGS.md) blocks promotion for both lanes.** Nothing certifies until it clears | Assigned first, ahead of all feature work |
-| **~2 slices** | Lane A reaches **A5's render** before Lane B ships the backend | **Resequenced above** |
-| **~4 slices** | **Lane A runs out of approved scope.** CX-07 is its only remaining candidate and has none | **Escalated** ([Pack I](DECISION_PACKS.md)) — the one item genuinely needing the product owner |
-| **Standing** | **[TASK-003](BACKLOG.md) reads `READY` and is not claimable** — [C-018](LANE_COORDINATION.md) is still `OPEN` and Lane A skipped it with its reason recorded | **Flagged as stale.** A `READY` row nobody can take is the queue lying about its own depth |
-
-> **Queue health is the measure, not assignment count.** **Fewer than three prepared executable tasks for any lane starts preparation immediately** — and the number that matters is *executable*, which is why [TASK-003](BACKLOG.md) is excluded from both depths above.
-
-### Lane C — referenced, not rowed
-
-**Lane C — Product Office, Architecture Governance & Cross-Lane Coordination** holds `lane-c-product-office` and is **deliberately absent from the table above** (product owner, 2026-08-03). **This board measures implementation; Lane C produces none.** It holds no `TASK-nnn` and claims nothing from [`BACKLOG.md`](BACKLOG.md). Its remit and boundaries are [`CLAUDE.md` §20e *Lane C*](../CLAUDE.md).
-
-> **Lane C owns the coordination of implementation, not the implementation itself.**
-
-**This board is now an input to Lane C, not only a record.** When a lane's row reaches `AVAILABLE`, `BLOCKED` or `WAITING`, **Lane C reads it and prepares the next recommendation for the product owner to approve** — the lane no longer selects for itself.
+**Measured conflict risk — a dry-run merge of both lane branches, 2026-08-04:**
 
 | | |
 |---|---|
-| **Current** | **Assignment preparation and B-400 coordination** |
-| **Delivered** | [C-400](LANE_COORDINATION.md) doc-number collisions · [C-401](LANE_COORDINATION.md) merge-risk measurement · [C-403](LANE_COORDINATION.md) QE's action list · [C-404](LANE_COORDINATION.md) backlog reality · [B-400](BUGS.md) 🔴 migration collision · [B-401](BUGS.md) the blocking check |
-| **Next** | Assign on `AVAILABLE`, after [B-400](BUGS.md) clears |
+| **Files changed** | Lane A **140** · Lane B **114** · **14 paths overlap** |
+| **Real conflicts** | **5** — `Makefile` · `backend/tests/integration/test_api_accounts.py` · and **three registers** (`ACTIVE_ASSIGNMENTS.md`, `BACKLOG.md`, `LANE_COORDINATION.md`) |
+| **Clean** | **Every shared frontend path auto-merges** — `lib/api/types.ts`, `lib/query/keys.ts`, `accounts/[accountId]/page.tsx`, `timeline/feed.tsx` |
 
-### Next assignments — prepared, and what each is waiting on
+> **The taxonomy holds, measured rather than asserted** ([`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §3). **Three of five conflicts are structural** — the registers, which every lane must write and which conflict by design. **One is [C-006](LANE_COORDINATION.md)**, the test file no lane owns. **And [B-400](BUGS.md), the only 🔴, produces no textual conflict at all**: two files named `0031_*.py` merge cleanly and break Alembic on the next migration run. **Semantic risk is invisible to git, and this is the cleanest example the repository has produced.**
 
-**Verified against branches, not against the queue** ([`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §10). **Neither lane is `AVAILABLE` today; both are carrying large unmerged branches.**
+**Sequencing, and one decision that reality overtook:**
 
-| | **Lane B** | **Lane A** |
+- **[TASK-401](BACKLOG.md) was moved ahead of [TASK-402](BACKLOG.md) to stop Lane A stalling on A5's render. The move was unnecessary** — Lane B had already built the backend, and **the render is blocked by [C-324](LANE_COORDINATION.md) and [B-319](BUGS.md) rather than by the backend.** The prediction was wrong in both directions and is recorded rather than quietly dropped.
+- **[TASK-905](BACKLOG.md) sits second for Lane A**, which is where Lane A itself ranked it in [C-217](LANE_COORDINATION.md). Product Surface's, self-contained, needs nothing from anyone.
+- **[B-400](BUGS.md) is first for Lane B ahead of all feature work**, because nothing certifies until it clears.
+
+> **Sequencing within a prepared queue is the office's; [`BACKLOG.md`](BACKLOG.md)'s priority order is the product owner's.** Reordering *prepared* work to prevent a stall is coordination. Reordering the *queue* is not.
+
+**Predicted blockers, and what is being done now rather than when they land:**
+
+| Horizon | Risk | Action |
 |---|---|---|
-| **ASSIGNED NOW** | **[B-400](BUGS.md) — renumber `0031_commercial_profile_segment.py` to `0035`** | **[TASK-400](BACKLOG.md) — Epic A completion (**A6** + **A7**), assigned whole |
-| **Why** | 🔴 **Blocking Quality Defect.** Alembic cannot build the revision map with two `0031`s, so **neither lane can be certified** until it clears. One file, one line | **`provider_platform` is Lane A's**, the slice is **S**, it is **verified unbuilt** on every branch, and it sits inside **Epic A, which the product owner already approved** — so it needs no new ruling |
-| **Prepared next** | **[TASK-902](BACKLOG.md) — M7 Timeline S05+**, an epic rather than a slice: `timeline` is Lane B's, [ADR-0038](architecture/adr/0038-timeline.md) is ratified, the surface is mounted, nothing open blocks it | **[TASK-903](BACKLOG.md) stage 2.** Lane A shipped **CX-05**, so the first half is done; the remainder is the brief-side surface, scoped by Lane A in [C-217](LANE_COORDINATION.md) |
-| **Then** | **[TASK-402](BACKLOG.md) — Epic E1, the CRM read.** Assigned fresh by Lane C; **most of the connection half is already built**, and it unblocks Epic D, E2 and the expansion/renewal half of the vision · then **[TASK-401](BACKLOG.md) — A5 backend.** `knowledge_graph` was unassigned and A5 was stalled behind it; **routed to Lane B**, which already built A1 and A4 there. **A5's render returns to Lane A** | **A5 render**, once TASK-401 lands |
-| **Escalated, not assigned** | [TASK-900](BACKLOG.md) platform RFC — **a different discipline**, and Lane B declined it on 2026-08-02 | **CX-07 responsive** — Lane A's own first choice, and **it has no task id and no agreed scope.** [Pack I](DECISION_PACKS.md) carries it; **new scope is the product owner's, not the office's** |
+| **Immediate** | **[B-400](BUGS.md) blocks promotion for both lanes.** Nothing certifies until it clears | **Recommended first, ahead of all feature work** |
+| **Immediate** | **A6 is blocked by its own specification**, twice in its own words — [C-321](LANE_COORDINATION.md) | **Withdrawn from TASK-400**; the ruling is the product owner's |
+| **Now** | **Lane A is at three executable**, the alarm line. Its 4th and 5th both need a product-owner input | **Raised in this report** — [C-321](LANE_COORDINATION.md) and [Pack I](DECISION_PACKS.md) |
+| **Now** | **Twenty bug rows exist only on `lane-b-commercial-profile`** ([B-302](BUGS.md)–[B-321](BUGS.md)), and **[B-204](BUGS.md) only on Lane A's.** `integration` sees none of them | **Reported.** Three are 🟠 and open in Lane B's own modules — **they are queue depth, not just debt** |
+| **~4 slices** | **Lane A runs out of approved scope.** CX-07 is its only remaining candidate and has none | **Escalated** ([Pack I](DECISION_PACKS.md)) |
+| **Standing** | **[TASK-003](BACKLOG.md) reads `READY` and is not claimable** — [C-018](LANE_COORDINATION.md) is open and Lane A skipped it with its reason recorded | **Flagged as stale.** A `READY` row nobody can take is the queue lying about its own depth |
 
-> **[C-217](LANE_COORDINATION.md) is answered by this row.** Lane A asked the office for its next epic and is assigned **[TASK-400](BACKLOG.md)**, with **[TASK-903](BACKLOG.md) stage 2 prepared behind it** so the lane does not wait twice. **Lane A records the assignment on its own row, sets it `ACTIVE`, and closes C-217 in the slice that begins the work.**
+> **Queue health is the measure, not assignment count.** **Target five prepared executable tasks per lane; below three is raised to the product owner early**, before a lane idles rather than after. The number that matters is *executable*, which is why [TASK-003](BACKLOG.md) is excluded from both depths above.
 
-> **The honest finding: with three rows corrected, the `READY` queue has little Lane A can take.** [TASK-900](BACKLOG.md) is the only substantial unclaimed item and it is a platform RFC. **That is a queue-depth observation for the product owner, not a request** — and it is what *"lanes rarely wait for work"* looks like when it stops being true.
-
-> **One reference, not an assignment.** If this ever needs a `Status`, a `Slice` and a `Next action`, Lane C has drifted into implementation and the drift should be corrected rather than accommodated by widening the table.
+> **One reference, not an assignment.** If this section ever needs a `Status`, a `Slice` and a `Next action`, Lane C has drifted into implementation and the drift should be corrected rather than accommodated by widening the table.
 
 > **This file has changed hands twice in one day, and has ended up where it started.** Lane A created it as a **claim board** — a lane writes its own row before starting, so two lanes cannot take the same slice. It then became QE's, written at Closeout, with eight questions per row. It is now **claim-based again**, with QE reconciling rather than deciding: the eight questions were the improvement worth keeping, and **QE scheduling was the part that would not scale.** The claim it prevents has been the same one throughout.
 

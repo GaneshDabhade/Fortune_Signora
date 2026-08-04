@@ -191,7 +191,8 @@
 | [C-403](#c-403--every-outstanding-qe-action-from-lane-c-in-one-place) | Every outstanding QE action from Lane C, in one place | Lane C | **QE** | `OPEN` | **Nothing.** Two are latent defects that pass today and will not later |
 | [C-404](#c-404--two-ready-tasks-are-already-built-and-the-queue-cannot-see-it) | **Three** `READY` tasks were already built | Lane C | Lane C | `IMPLEMENTED` — backlog corrected 2026-08-03. **`VERIFIED` is QE's** | **Nothing.** It would have caused duplicate implementation three times |
 | [C-405](#c-405--assignment-delivery--answered-without-a-new-mechanism-and-c-217-with-it) | Assignment delivery, and Lane A's assignment | Lane C | **Product owner** (one sentence) | `ANSWERED` — assignments published; rule awaiting ratification | **Nothing, once a lane reads this ref** |
-| [C-406](#c-406--every-lane-has-its-own-view-of-the-repository-and-qes-merge-is-the-only-synchronization-point) | Every lane has its own view; QE's merge is the only sync point | Lane C | **Product owner** | `OPEN` | **Nothing directly.** It is why four separate things went wrong today |
+| [C-406](#c-406--every-lane-has-its-own-view-of-the-repository-and-qes-merge-is-the-only-synchronization-point) | Every lane has its own view; QE's merge is the only sync point | Lane C | **Product owner** | **`ANSWERED`** | **Nothing** — dissolved 2026-08-04; all four incidents closed by one answer |
+| [C-407](#c-407--the-operating-model-changed-and-lane-c-may-not-verify-its-own-governance) | **The 2026-08-04 operating model — verification request** | Lane C | **QE** | `OPEN` | **Nothing.** Lane C may not be the final verifier of governance it authored |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
 >
@@ -2763,8 +2764,8 @@ Every lane's rows sit **adjacent in one table**, and each lane's branch carries 
 | **Classification** | **Repository Decision** |
 | **Owner** | **Product owner** — it is the cause behind several items already ruled on separately |
 | **Requester** | **Lane C — Product Office** |
-| **Status** | `OPEN` |
-| **Blocks** | **Nothing directly. It is why four separate things went wrong today** |
+| **Status** | **`ANSWERED` 2026-08-04** — dissolved, not ruled |
+| **Blocks** | **Nothing. All four incidents are closed by one answer** |
 
 **Four incidents in one session, each reported separately, all one cause:**
 
@@ -2784,8 +2785,56 @@ Every lane's rows sit **adjacent in one table**, and each lane's branch carries 
 - **[C-403](#c-403--every-outstanding-qe-action-from-lane-c-in-one-place) item 2** — `state-check` reading every `lane-*` ref. **It was raised as an identifier check and is the general answer**: it makes cross-branch divergence *visible* without moving anything.
 - **More frequent integration.** Incidents 2 and 3 both had a window measured in hours between the record being written and QE merging it. **A shorter cycle shrinks every one of these without a single new rule.**
 
-**The question for the product owner is narrow:** **is a 🔴 blocking defect allowed to reach `integration` the way a claim does** — bounded to `BUGS.md`, by the lane that opened it — **or does it wait for QE like everything else?** **Lane C has no recommendation it is confident in**, and says so rather than inventing one: the claim exception exists because a race needed arbitrating, and *"a blocking defect is urgent"* is a different argument that may not deserve the same answer.
+**The question Lane C put to the product owner was narrow:** is a 🔴 blocking defect allowed to reach `integration` the way a claim does — bounded to `BUGS.md`, by the lane that opened it — or does it wait for QE? **Lane C said it had no recommendation it was confident in.**
 
+> ### Answered 2026-08-04 by dissolving the question, product owner
+>
+> **`ANSWERED`. No push exception, and no new mechanism of any kind.** The 2026-08-04 operating model makes **the product owner the shared channel**: every lane already talks to them, so a defect, a finding or a blocker reaches the lane that needs it exactly the way an allocation does.
+>
+> **That closes all four incidents with one answer**, which is the test a cause-level item should meet:
+>
+> | # | Now closed by | |
+> |---|---|---|
+> | **1** — Lane A idled | The product owner allocates in one reply | **no delivery to build** |
+> | **2** — [B-400](BUGS.md) unseen by Lane B | Relayed with the allocation | **`CLAIM_PATHS` untouched** |
+> | **3** — [C-220](#c-220) duplicated [C-400](#c-400--three-architecture-document-numbers-are-already-collided-and-the-check-that-catches-them-cannot-fire-yet) | The office reports findings upward, once | **one investigation, not two** |
+> | **4** — A6 assigned into [C-321](#c-321) | The office recommends; **the module owner still holds the veto**, and used it correctly | **evidence beat inference** |
+>
+> **The two things already in flight still stand and are still worth doing** — [C-403](#c-403--every-outstanding-qe-action-from-lane-c-in-one-place) item 2 (`state-check` reading every `lane-*` ref) and shorter integration cycles. **Neither is now load-bearing for coordination**; both remain useful for making divergence visible.
+>
+> **The generalisable lesson, recorded because Lane C got it wrong twice in one day:** *when a coordination problem seems to need a channel built, check first whether a channel already exists that nobody thought to use.* **Packs J and K were both answers to invented channels.**
+
+
+## C-407 · The operating model changed, and Lane C may not verify its own governance
+
+| | |
+|---|---|
+| **Classification** | **Governance verification** |
+| **Owner** | **QE** |
+| **Requester** | **Lane C — Product Office** |
+| **Status** | `OPEN` |
+| **Blocks** | **Nothing.** No lane waits on this |
+
+**Ratified by the product owner 2026-08-04: *the model was becoming over-coordinated*.** Lane C recommends; the product owner allocates in one reply; **there is no assignment delivery.** Verification is requested under the standing rule *(2026-08-03)*: **a lane may not be the final verifier of governance changes it authored.**
+
+**What changed, and every file is Lane C's own:**
+
+| File | Change |
+|---|---|
+| [`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §5 | Delivery apparatus **deleted**; recommend-only model and the Implementation Portfolio format added; prepared-queue target **3 → 5**, alarm below **3** |
+| [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) | Lane C's block deduplicated — **`### Lane C — referenced, not rowed` appeared twice with identical bodies**; assignment tables collapsed into one recommendation table |
+| [`DECISION_PACKS.md`](DECISION_PACKS.md) | **Packs J and K dissolved** — neither needed a ruling; a two-item decision queue added |
+| [`LANE_COORDINATION.md`](LANE_COORDINATION.md) | **[C-406](#c-406--every-lane-has-its-own-view-of-the-repository-and-qes-merge-is-the-only-synchronization-point) `ANSWERED`** by dissolving its question |
+
+> **[`CLAUDE.md`](../CLAUDE.md) is untouched, and that is the useful finding.** The delivery apparatus never reached the constitution — it lived one day, entirely inside Lane C's own documents. **§20e *Nobody assigns; lanes are routed through Lane C* already said *Lane C recommends and the product owner approves*;** what drifted was Lane C's procedure beneath it, not the rule above it.
+
+**What QE is asked to check** — three things, none of them a judgement about whether the model is right:
+
+1. **No document still describes assignment delivery**, notification or acknowledgement as Lane C's.
+2. **`CLAIM_PATHS` and `--audit-claims` are unchanged**, and no push exception was created or implied.
+3. **The prepared-queue numbers agree** across `PRODUCT_OFFICE.md` and `ACTIVE_ASSIGNMENTS.md` — **target 5, alarm below 3.**
+
+> **Net effect on documentation mass: −101 lines**, with no capability lost. **The model got simpler by deleting a mechanism, not by adding one to manage it.**
 
 ## Closed
 

@@ -6,7 +6,7 @@
 >
 > **Lane C owns the process, never the decision.** Every pack states a recommendation because a pack without one is a question wearing a suit; **none of them is acted on until you rule.**
 
-**Reviewed against `main` at `d39b136`, 2026-08-03. Retirement pass 2026-08-03 — 183 lines to 68.**
+**Reviewed against `main` at `d39b136`, 2026-08-03. Retirement pass 2026-08-03 — 183 lines to 68. Dissolution pass 2026-08-04 — Packs J and K removed as questions, not answers.**
 
 ---
 
@@ -205,104 +205,27 @@
 
 ---
 
-## PACK J · A lane can report `AVAILABLE` and the office that assigns it cannot see the signal
+## PACK J · The availability signal — **dissolved 2026-08-04, not ruled**
 
-**Raised by Lane A as [C-218](LANE_COORDINATION.md); investigated by Lane C 2026-08-03, at the product owner's direction.** *"Do not assume Lane A's proposed solution is correct. Do not assume it is wrong either."*
+**Raised by Lane A as [C-218](LANE_COORDINATION.md); investigated by Lane C 2026-08-03.** *"Do not assume Lane A's proposed solution is correct. Do not assume it is wrong either."*
 
-| | |
-|---|---|
-| **Class** | **Repository Decision** |
-| **Implementation** | **QE's**, if any is required |
-
-### Is the problem real? — **Partly, and the precise version matters**
-
-**The claim:** *Lane C reads `integration`; availability exists only on the lane branch; therefore Lane C never receives the signal.*
-
-**Measured, and the last clause is false.** Lane A's `AVAILABLE` commit `31f22e7` is on `lane-a-product-surface` and **Lane C read it** — that is how [C-217](LANE_COORDINATION.md) was answered. Every lane's board is readable from `refs/remotes/origin/lane-*` in **18 milliseconds**.
-
-> **What is true is narrower and still real: nothing obliges Lane C to look, and nothing tells it when.** Lane A idled not because the signal was unreachable but because **the office was analysing something else and had no defined moment to check.** The defect is in Lane C's operating procedure, **not in the repository's plumbing.**
-
-**How widespread:** structural rather than one-off — **it recurs every time any lane finishes**, for every lane, and it gets worse with lane count. **But it is one-sided:** the `IN VALIDATION` → QE path is unaffected, because QE is *told* by a push it already watches for.
-
-**One measurement nuance for whoever implements:** naive `grep` on a board returns the **legend row**, not the lane's status — all four refs report `IN VALIDATION` that way. **Parsing is required**, and `infra/registers.py` already does exactly this for `BUGS.md`.
-
-### The options
-
-| | Flow | Advantages | Disadvantages | Repository impact | Certification impact | Complexity | Maintainability |
-|---|---|---|---|---|---|---|---|
-| **A** ✅ | **Lane C reads every `lane-*` ref** at a defined cadence — at each assignment, and after every push of its own | **Zero repository change. Zero QE work. Works today; it is what already happened.** No new file, workflow, state or commit type | **Pull, not push** — Lane C must look. Nothing happens if Lane C is not running | **None** | **None** | **Procedure only** | **Highest** — nothing to maintain |
-| **B** | **A lane pushes a status commit to `integration`**, bounded to the two registers like a claim | Signal on the shared ref, **visible to every lane and QE**, and auditable | **Widens the one exception a feature lane may push.** `--audit-claims` greps `^Claim TASK-`, so a status commit **is neither permitted nor audited today** — the guard must change | Guard + `CLAUDE.md` | Low, but **it touches the promotion guard** | QE change | Medium |
-| **C** | **QE relays availability at Closeout** | No new mechanism | **Couples assignment latency to the certification cycle** — a lane finishing mid-cycle waits for a promotion. **Directly contradicts the objective** | None | Adds coupling | Low | Poor |
-| **D** | **A dedicated signal file or queue** | Explicit | **A new coordination artifact for a fact two registers already hold.** Rejected on `CLAUDE.md` §12 and the standing principle | New artifact | None | Medium | Worst |
-
-### Recommendation — **A**
-
-**It is the only option that reduces latency, and B does not.** The signal arriving on `integration` rather than on a lane ref **changes nothing about when Lane C notices**, because both are pull — Lane C reads either one when it looks. **B buys visibility to other lanes, which nobody has asked for, at the cost of widening the one exception a feature lane may push to a shared branch.**
-
-**A also preserves every principle named:** `integration` stays the source of truth for *merged work* — a lane ref is the source of truth for *that lane's state*, which is what is being read. **No certification guarantee moves, QE is not bypassed, no manual coordination is added, and no governance is created.**
-
-**What Lane C changes in its own procedure, and nothing else:**
-
-- **Read every `lane-*` ref at the start of every assignment cycle**, parsing the board rather than grepping it.
-- **Re-read after pushing** — the moment Lane C's own attention returns to the repository is the cheapest moment to notice a lane that finished meanwhile.
-- **Treat a lane at `AVAILABLE` with no prepared assignment as a finding against Lane C**, not against the lane.
-
-> **If A proves insufficient — if a lane idles again despite it — B is the fallback**, and the evidence for it will be an *observed* idle gap rather than a forecast one. **That is the same standard `CLAUDE.md` sets for changing governance at all: not one lane's inconvenience, but demonstrated recurrence.**
-
-**Lane C has implemented nothing.** If B is ever chosen, the guard and `CLAUDE.md` are QE's and the product owner's respectively.
+> **It needed no ruling, and taking one off the product owner's queue is the point.** The measured finding stands: **every lane's board is readable from `refs/remotes/origin/lane-*` in 18 milliseconds**, so Lane A's claim that the signal was *unreachable* was false — Lane C had already read `31f22e7` and answered [C-217](LANE_COORDINATION.md) with it. **What was true is narrower: nothing obliged Lane C to look, and nothing told it when.**
+>
+> **The 2026-08-04 model answers it without any repository change.** A lane reports `AVAILABLE` **to the product owner**, who asks the office for a recommendation. **The signal is a message on a channel that already exists**, and the three build-something options (a status commit to `integration`, QE relaying at Closeout, a dedicated signal file) are all moot.
+>
+> **What Lane C keeps as procedure, costing nothing:** read every `lane-*` ref at the start of each planning pass, **parsing the board rather than grepping it** — naive `grep` returns the legend row and reports all four refs as `IN VALIDATION`. **Treat a lane at `AVAILABLE` with nothing prepared as a finding against Lane C**, not against the lane.
+>
+> **Lane C implemented nothing, and the promotion guard is untouched.**
 
 ---
 
-## PACK K · Assignment delivery — and the mechanism already exists
+## PACK K · Assignment delivery — **dissolved 2026-08-04, not ruled**
 
-**Raised and investigated by Lane C 2026-08-03, after Lane A held at `AVAILABLE` while its assignment sat on Lane C's branch.** *"An assignment is not made until the receiving lane can consume it."*
-
-| | |
-|---|---|
-| **Class** | **Repository Decision** — and the recommendation needs **no new exception, no guard change and no QE workflow** |
-
-### What actually failed
-
-**Lane C prepared TASK-400, TASK-401 and TASK-402 on `lane-c-product-office` and reported the lanes assigned.** Lane A checked `integration`, found nothing, and held. **Lane A was right.**
-
-> **This is [C-218](LANE_COORDINATION.md) in the opposite direction, and [Pack J](#pack-j--a-lane-can-report-available-and-the-office-that-assigns-it-cannot-see-the-signal) analysed only one half.** C-218 asks how the office sees a lane report `AVAILABLE`. **This asks how a lane sees the assignment that answers it.** One channel, two directions, and only one was examined.
-
-### The finding: nothing needs inventing
-
-**A lane's own claim commit already does the delivery.** `710c9d3 Claim TASK-300` touches **`docs/ACTIVE_ASSIGNMENTS.md` and `docs/BACKLOG.md`, and nothing else**, and pushes to `integration` — which is exactly `CLAIM_PATHS` in `infra/certification-guard.py`.
-
-> **The assignment does not need Lane C to push it. The receiving lane pushes it, as its claim** — which is the atomic arbitration point the protocol was built around. **What was missing was never a channel. It was that the lane did not know where to read.**
-
-### The options
-
-| | Mechanism | New exception? | Guard change? | QE work? | Latency |
-|---|---|---|---|---|---|
-| **A** ✅ | **A lane at `AVAILABLE` reads its assignment from `origin/lane-c-product-office`, then runs the existing Task Claim Protocol unchanged** | **None** | **None** | **None** | **One pull** |
-| **B** | Lane C pushes an `Assign TASK-nnn` commit to `integration`; widen the guard's grep | **Yes** — a second commit type a non-QE lane may push to a shared branch | Yes | Yes | One pull |
-| **C** | QE publishes assignment commits during its cycle | No | No | **Yes, every assignment** | **Couples assignment to the certification cycle** |
-| **D** | A dedicated assignment file or queue | Yes | — | Yes | One pull |
-
-> ⚠️ **Superseded 2026-08-03, product owner, before ratification — and the ruling is simpler than the recommendation.** **Lane C notifies the lane directly; the lane creates its own `Claim TASK-nnn` and pushes it.** No `CLAUDE.md` amendment is needed, and **no lane has to discover anything.**
+> **The product owner dissolved the question rather than answering it.** *"The current model is becoming over-coordinated"* — Lane C recommends, the product owner allocates in one reply, and **there is nothing to deliver.** Assignment delivery, commits, propagation, synchronization, visibility, acknowledgement and routing are all deleted; **the shared channel is the product owner, who already talks to every lane.**
 >
-> **What Option A got wrong:** it still required the lane to *go looking* on a ref, and **a lane cannot claim work it has never been told it owns.** Reading is discovery; **an assignment is a message.** The claim protocol is preserved exactly — only the notification changes, and it was never a repository artifact.
+> **Both of this pack's answers were right about the wrong problem.** Option A had lanes read a ref; the direct-reply supersession had Lane C send a message. **Each made delivery a mechanism, and the correct move was to have no delivery.** Kept as one paragraph because the mistake generalises: **when a coordination problem needs a channel built, check first whether a channel already exists that nobody thought to use.**
 >
-> **What survives:** the delivery insight is unchanged and is what makes the ruling work — **the lane's own claim commit is the delivery to `integration`**, touching exactly `CLAIM_PATHS`, and **Lane C still never pushes there.**
-
-**Original recommendation, superseded above: A.** It is the only option that changes **no mechanism at all** — the claim protocol, the guard, `CLAIM_PATHS`, QE's authority over `integration` and the one-exception rule all stand exactly as written. **The lane still claims, the claim still arbitrates, and QE still owns every other arrival on `integration`.**
-
-**B is what Lane C nearly did**, and it is worth naming as rejected: it would have put a second commit type on a shared branch to solve a problem that a `git show` already solves.
-
-### The whole change, and it is one sentence
-
-**`CLAUDE.md` §20e Startup step 7** currently sends an `AVAILABLE` lane to [`BACKLOG.md`](BACKLOG.md) to choose. **It should send it to Lane C's ref to read what it has been assigned**, then into the Task Claim Protocol unchanged:
-
-> **If you are `AVAILABLE`, read your assignment from `origin/lane-c-product-office:docs/ACTIVE_ASSIGNMENTS.md` — Lane C prepares it before you finish — then run the Task Claim Protocol to record it. If no assignment is prepared, say so; that is a finding against Lane C, not a licence to choose.**
-
-**That is the entire proposal.** It generalises the same principle [Pack J](#pack-j--a-lane-can-report-available-and-the-office-that-assigns-it-cannot-see-the-signal) recommends for the other direction — **read refs, not only `integration`** — so **one rule now covers both halves of the channel.**
-
-**Lane C has implemented nothing and pushed nothing to `integration`.** The `CLAUDE.md` amendment is the product owner's; **the drafted sentence is above, ready to paste.**
-
----
+> **What survives, and it is not part of this pack:** the lane's own `Claim TASK-nnn` commit remains the only thing a feature lane pushes to `integration`, bounded by `CLAIM_PATHS`. **That was true before Pack K and is untouched by dissolving it.**
 
 ## What remains open
 
@@ -311,6 +234,17 @@
 **Also open and deliberately unruled**, each with its reason recorded in ADR-0100: **C-203** *(how the product names a person)* · **C-302** *(a notification is per-person, and workspace RLS is not enough — tenancy is never decided inside a session)* · **C-003** and **C-005**, both re-validated and confirmed non-blocking.
 
 ---
+
+## The decision queue, as of 2026-08-04
+
+**Two items genuinely need the product owner. Not twenty** — and the office's job is to keep it that way.
+
+| | Item | Blocking | Why it cannot be determined objectively |
+|---|---|---|---|
+| 🔴 | **[C-321](LANE_COORDINATION.md)** | **A6, now** | Its specification says twice that A6 *"depends entirely on the C-321 ruling"*. **What to render *is* the ruling** — narrowing the slice does not escape it |
+| 🟠 | **[Pack I](#pack-i--epics-bg-are-specified-and-unapproved-and-the-queue-is-running-dry)** — Epics B–G scope | **Lane A's 5th slice · Lane B's 5th** | **New scope is the product owner's**, never the office's. Both queues hold four executable items and stop there |
+
+> **Everything else the office could determine, it determined.** Packs J and K were dissolved rather than escalated, Pack F was ruled, Pack H adopted. **A decision list long enough to need triage is a list Lane C failed to triage.**
 
 ---
 

@@ -112,17 +112,18 @@
 | **Effort** | **S** (A7 column) + **M** (A6 render) · **M** if A7's join needs a design |
 | **A5 is not in scope** | Its backend is unbuilt in an unassigned module. **Lane C has routed the backend to Lane B**, which already owns A1 and A4 in `knowledge_graph`. **A5's render returns to Lane A once the endpoint exists** — sequencing, not a blocker |
 
-### TASK-401 · A5 backend — a company's history, from the claims that already hold it
+### TASK-401 · A5 backend — **BUILT 2026-08-03 by Lane B, before this row was written**
 
 | | |
 |---|---|
 | **Epic** | **Epic A, slice A5's backend half.** [51-implementation-specifications.md](architecture/51-implementation-specifications.md) |
-| **Module** | `knowledge_graph` — **unassigned; routed to Lane B by Lane C 2026-08-03**, which already built **A1** and **A4** there |
-| **Status** | `READY` — **after [B-400](BUGS.md)**, which blocks promotion for every lane |
-| **Notes** | **Verified unbuilt**: `knowledge_graph/interface/router.py` exposes `account_identities` and `account_search` and **no history endpoint**; `observed_at` appears in `schemas.py` but nothing serves a series |
-| **Customer value** | *"Employee count 2024 → 350, 2025 → 500."* **The claim model already holds every attribute's history with its source and observation time** — this exposes what the platform computed years of design to be able to say |
-| **Why it is cheap** | **No new storage and no new concept.** [50-product-capability-audit.md](architecture/50-product-capability-audit.md) records it exactly: *"not a feature to add; it is a `SELECT` over claims ordered by `observed_at`"* |
-| **On claiming** | **The render is Lane A's** and returns to it once this endpoint exists. Open a `C-` item to hand over the contract rather than assuming its shape |
+| **Module** | **`observation_engine`** — *not* `knowledge_graph`. **Lane C named the wrong module; the specification says Observation Engine and Lane B built it there** |
+| **Status** | **`DONE` — superseded by `145345f`**, which shipped `GET /workspaces/{id}/accounts/{account_id}/observations?attribute=`, the Observation Engine's first HTTP surface, with a response-shape suite |
+| **Notes** | **Lane C's *"verified unbuilt"* was verified against the wrong module.** `knowledge_graph/interface/router.py` genuinely has no history endpoint — **and never should have; the history lives in `observation_engine`**, which had carried thirteen fields since M4 with no interface layer at all |
+| **Customer value** | *"Employee count 2024 → 350, 2025 → 500."* **Delivered.** The claim model already held every attribute's history with its source and observation time; the endpoint exposes what the platform computed years of design to be able to say |
+| **Why it was cheap** | **No new storage and no new concept**, exactly as [50-product-capability-audit.md](architecture/50-product-capability-audit.md) predicted: *"not a feature to add; it is a `SELECT` over claims ordered by `observed_at`"* |
+| **The render is not next** | **It is blocked twice**, and neither blocker was visible when this row was written: **[C-324](LANE_COORDINATION.md)** — where Epic A's rendering stops being Lane B's — and **[B-319](BUGS.md) 🟠**, which finds the Playground produces **no attribute transitions at all**. **The endpoint is correct and its screen would be empty.** Building it now ships a blank chart |
+| **Two constraints any render must respect**, both recorded in [23-observation-engine.md](architecture/23-observation-engine.md) | **One series per provider** — Apollo saying 120 and CoreSignal saying 145 is *disagreement, not growth of 25* · **`previous_observed_at`…`observed_at` is an interval**, so a single dated point claims precision the evidence does not have |
 
 ### TASK-402 · Epic E1 — a customer's CRM becomes a source Signora can read
 
