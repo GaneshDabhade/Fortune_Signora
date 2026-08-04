@@ -232,6 +232,8 @@ And in the slice whose only goal was a number: **"Every test writes to a copy of
 
 **`CLAUDE.md` §19 names this exactly**: *"no file the slice introduced sits at 0%, and the slice does not push the repository under the floor."* Both halves are violated.
 
+> **One of the five is Lane B's, and is fixed.** `modules/integrations/public/__init__.py` belongs to `integrations`, so it is that module's assignee's regardless of which row it was found in. **It was at 0% because nothing in the repository imports it** — its only intended consumer is whatever synchronizes through a connection, which [C-326](LANE_COORDINATION.md) decides — so the contract has been correct and unused since it was written. Now pinned by `tests/integrations/test_public_contract.py`: the five published names, that none of them is a use case or names where credentials live, and that importing the contract reaches neither this module's infrastructure nor any other module. **A contract with no consumer is the one nothing else would notice drifting.** *Recorded by Lane B, 2026-08-04; the row and its other four files remain Lane A's.*
+
 ### And the largest single contributors below 80%
 
 | | |
