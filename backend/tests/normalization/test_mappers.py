@@ -24,6 +24,7 @@ from modules.provider_normalization.domain.vocabulary import (
     TechnologyValue,
 )
 from modules.provider_normalization.infrastructure.mappers import MAPPERS
+from modules.provider_platform.public import ProviderName
 
 WORKSPACE = uuid4()
 OBSERVED = datetime(2026, 2, 23, tzinfo=UTC)
@@ -315,8 +316,34 @@ class TestTranslationOnly:
 
         assert not hasattr(outcome.claims[0], "confidence")
 
-    def test_every_provider_has_a_mapper(self) -> None:
-        assert set(MAPPERS) == {"apollo", "builtwith", "crunchbase", "coresignal", "bombora"}
+    def test_every_ratified_provider_has_a_mapper(self) -> None:
+        """**Asserted against `ProviderName` rather than a literal set.**
+
+        This read `== {"apollo", …}` and was correct until the registry
+        acquired something that is not a provider. `hubspot` is a *customer's*
+        system, keyed by a catalog slug rather than a ratified qualification
+        record ([ADR-0300](../../../docs/architecture/adr/0300-inbound-customer-systems.md)),
+        so a literal set could only be widened — and widening it would have
+        left the test asserting *the registry contains these six strings*,
+        which is a restatement of the registry rather than a property of it.
+
+        **What it was actually protecting is that no ratified provider can
+        reach normalization with nothing to translate it**, and that is now
+        what it says. It also gets stronger for free: adding a `ProviderName`
+        member without a mapper fails here, which the literal set could never
+        have caught.
+        """
+        assert {provider.value for provider in ProviderName} <= set(MAPPERS)
+
+    def test_the_registry_also_carries_sources_that_are_not_providers(self) -> None:
+        """**The distinction the test above stopped hard-coding.**
+
+        Signora holds a provider's credential; a customer holds their own
+        system's. Normalization cannot tell the two apart and must not learn
+        to — a claim carries where it came from, and nothing downstream
+        branches on it.
+        """
+        assert "hubspot" in set(MAPPERS) - {provider.value for provider in ProviderName}
 
 
 class TestOutcomeAlwaysProduced:

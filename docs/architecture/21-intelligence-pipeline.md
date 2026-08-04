@@ -101,6 +101,10 @@ Three properties carry the design:
 
 **The vocabulary is a controlled language.** Adding a canonical attribute requires an RFC; adding a *mapper* is routine engineering. That asymmetry is what lets provider integrations churn while the platform's language stays stable.
 
+**A source need not be one of Signora's suppliers** (2026-08-04, Epic E1). `HubSpotCompanyMapper` translates a system the **customer** owns and holds the credential for, and this stage cannot tell the difference — nor should it. A claim carries which source asserted it, and no downstream module branches on that. **Six of the seven firmographic attributes map straight from a CRM company record with no vocabulary extension**, which is why a customer's CRM became translatable before the architecture for *acquiring* its records existed ([ADR-0300](adr/0300-inbound-customer-systems.md), proposed).
+
+> **What a CRM cannot yet say is the more interesting half.** *Is this already a customer*, *contract value*, *renewal date*, *opportunity stage* — the facts Epic D needs — have **no canonical attribute**, and the sentence above is why: adding one is an RFC, and a translation file is the quietest place in the codebase to make a language decision. A test asserts the mapper produces nothing outside the firmographic domain.
+
 **Owned by:** Provider Normalization · **Table:** `claim` (immutable) · **Publishes:** `claim.recorded` · **Read port:** `ClaimReader`
 
 > **Why claims and not "normalized records".** One normalized record per company would mean choosing a headcount at the earliest possible moment — before anything knows the two sources disagree. The disagreement *is* product value.

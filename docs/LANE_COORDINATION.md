@@ -3799,4 +3799,10 @@ KeyError: '0035'
 
 > **This lane has built nothing against any option, and will not.** *"I could just add it"* is how an architectural blocker becomes a silent design decision inside a feature slice, and the change that follows is always small — which is exactly why nobody notices it was a decision.
 
-**What Lane B is doing meanwhile.** Nothing in Epic E1 is startable without item 2 or item 5, and **the smaller slice inside it does not exist** — the acquisition half is complete and paused on a credential, and the read half is this ruling. **This lane is reporting `BLOCKED` rather than finding adjacent work**, per the product owner's standing direction not to manufacture implementation.
+**What Lane B is doing meanwhile — and the sentence that was here on 2026-08-04 was wrong.**
+
+It read *"the smaller slice inside it does not exist."* **It did.** That claim came from asking what a CRM *could* contribute, and the right question was what the canonical vocabulary *already accepts*. The answer is **six of the seven firmographic attributes** — legal name, employee count, revenue band, industry, country, founded year — all of which a HubSpot company record carries and none of which needs an RFC.
+
+**`HubSpotCompanyMapper` is therefore built, registered and tested**, and it encodes nothing about the ruling above: a mapper receives a stored record and translates it, and has never been able to ask who fetched it or how. **The gap this item describes is in acquiring records, not in interpreting them**, and that is what makes the interpretation half safe to finish first.
+
+**What remains genuinely gated on this ruling** is everything that would put a record in front of that mapper — and it is now the *only* thing standing between a customer's CRM and the whole pipeline behind it.
