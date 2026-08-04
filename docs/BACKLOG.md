@@ -68,7 +68,7 @@
 |---|---|
 | **Module** | **Six slices across four modules** — see the table below. **Not one claimable unit**, which is the finding |
 | **Slice** | A4 · A1 · A2 · A5 · A6, specified in [51-implementation-specifications.md](architecture/51-implementation-specifications.md) |
-| **Status** | **`CLAIMED` — Lane B**, 2026-08-03. **Assigned directly by the product owner**, who named Lane B implementation owner for Epic A and set A4 as the first slice. Recorded here by Lane B because the row did not exist; **the priority is the product owner's, not this lane's** |
+| **Status** | **`IN VALIDATION` — Lane B**, 2026-08-03. **A4, A1 and A5's backend are pushed**; **A2 and B2 were struck as already built by Lane A**; **A6 is held on [C-321](LANE_COORDINATION.md)**, which is the product owner's. Claimed 2026-08-03 on the product owner's direct assignment, and recorded here by Lane B because the row did not exist |
 | **Notes** | **Verified against Lane A's branch before claiming, not against this register.** Of the six slices, **one is built, one is substantially built by Lane A this week, and every remaining one needs at least one module Lane A holds.** [C-323](LANE_COORDINATION.md) carries the evidence and a recommendation |
 
 | Slice | Verified status, 2026-08-03 | Blocked on |
@@ -116,6 +116,29 @@
 |---|---|
 | **Recorded here by Lane A on claiming** | **The row is Lane C's, copied verbatim from `lane-c-product-office` at `c681ab9`**, with only `Status` changed. It did not exist on `integration`, and under the product owner's direction of 2026-08-03 **a lane claims on Lane C's assignment rather than waiting for the row to arrive** — Lane C is the source of truth for assignment, `integration` for claims and history. **No scope was added, reworded or reordered**; if Lane C's wording moves, Lane C's wins |
 | **Known gate** | **[B-400](BUGS.md) is 🔴 and blocks promotion for every lane.** It does not block implementation, and Lane C did not gate this row on it — unlike [TASK-401](#task-401--a5-backend--a-companys-history-from-the-claims-that-already-hold-it) and [TASK-402](#task-402--epic-e1--a-customers-crm-becomes-a-source-signora-can-read), which it marked `READY — after B-400`. **A7 adds a migration, so this lane expects to renumber on rebase and will say so** |
+
+### TASK-402 · Epic E1 — a customer's CRM becomes a source Signora can read
+
+| | |
+|---|---|
+| **Epic** | **E1**, [51-implementation-specifications.md](architecture/51-implementation-specifications.md). **Assigned whole** |
+| **Module** | `integrations` — **Lane B's**, which built S01, S02 and S09 |
+| **Status** | **`CLAIMED` — Lane B**, 2026-08-04, by the Task Claim Protocol |
+| **Assigned** | **Lane B, directly by the product owner, 2026-08-04** — *"Your next major initiative is Epic E1 — CRM Integration… own this epic end-to-end."* Lane C had prepared the row and marked it `READY — after [B-400](BUGS.md)`; **the product owner's sequencing supersedes that gate and is recorded here rather than argued** |
+
+**Why this epic.** Lane C verified it against the catalog before offering it: of D1's four risk families, **`contraction_risk` and `decision_maker_departed` already exist**, and the two that do not — *usage decline* and *renewal approaching* — **need contract and usage data that only a CRM carries.** **Epic D is gated on this epic**, so this one comes first. D3's own specification says *"depends on E1"*.
+
+**The reuse audit changes the size.** The specification calls E1 **XL**; **most of the connection half is already built** — OAuth start and callback (`frontend/app/api/integrations/[slug]/{start,callback}/route.ts`, a separate OAuth client from Better Auth's), connection, grant, catalog, resolve, connect and disconnect (`modules/integrations/{domain,application}`), encrypted credential storage (`infrastructure/secrets.py`, migration `0028`), and the public contract, router and schemas.
+
+> **What remains is the *read*, not the plumbing:** a CRM adapter behind the existing port, normalization of accounts and opportunities into the canonical shape, and the events that carry them.
+
+| | |
+|---|---|
+| **Customer value** | The specification's own words: **the single highest-leverage integration in the roadmap — it unblocks pipeline intelligence, forecasting, expansion and customer risk on its own** |
+| **Unblocks** | **D3** directly · **D1's** two missing risk families · **E2** write-back · the whole expansion and renewal half of the vision |
+| **Non-negotiable** | **A sign-in OAuth token must never be reused as an integration token** (§13). Separate grants, separate scopes, separate storage — **already the shape `integration_secret` and the separate OAuth client enforce** |
+| **On claiming** | **Provider Normalization owns the canonical shape**, not `integrations` — a CRM payload is normalized the same way a provider payload is (§10, the anticorruption layer). **Do not invent a second normalization path**; open a `C-` item if the existing one does not fit |
+| **Recorded here by Lane B on claiming** | **The row is Lane C's, copied from `lane-c-product-office`**, with `Status` and `Assigned` changed to record the product owner's direct assignment and this claim. It did not exist on `integration`. **No scope was added, reworded or reordered**; if Lane C's wording moves, Lane C's wins |
 
 ### TASK-200 · CX-07 — the Responsive Product Surface
 
