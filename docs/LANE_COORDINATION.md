@@ -103,6 +103,14 @@
 
 **Implementation impact.** Blocks SE-03 onward. Blocks nothing in SE-02.
 
+> **Still open, and it now blocks an approved slice — Lane A, 2026-08-04.** [TASK-205](BACKLOG.md) — 417 §4's **A-ii**, the Sales Engagement interface layer — was approved by the product owner and **cannot be built while this is open.**
+>
+> **417 §2c rated A-ii *"built, tested, unreachable"* with the reuse column reading *"25+ exported types, unchanged."* That is true of the contract and not of the module.** `AssembleApproach` requires three ports — `CommitteeReader`, `EvidenceReader`, `PortfolioReader` — and **not one has an implementation anywhere in the repository.** So the module is not merely unreachable; the half that would reach outward was deliberately never written, and `application/ports.py` says so in its own docstring: *"the adapter that satisfies it is a separate, small change **once the export exists**."*
+>
+> **Two of the three are blocked by this item.** `commercial_profile.public` today exports `TargetAccountReader`, `TargetAccountView`, `TargetAccountListView` and — since Epic D — `DeclaredCompetitorReader` and its two views. **Nothing about the Buying Committee, and nothing about the product portfolio.**
+>
+> **Lane A is not proceeding**, and the reason is the rule rather than the difficulty: *a lane may proceed past an open item only where proceeding encodes no assumption about the answer* (§20e). Writing the adapter now would mean inventing the shape of an export Lane B has not written, inside a module Lane A may not touch — **which is how two lanes ship incompatible halves of one contract.** The recommendation above is unchanged and is still Lane B's to take.
+
 ### C-214 — `Evaluation` assumes one rendering protocol, and a second now exists
 
 **Opened 2026-08-03 · Lane A · owner: whoever is assigned `ai_platform` · 🟡**
