@@ -549,3 +549,56 @@ Decisions required    what the product owner must rule before it can start
 **The rulings were real** — all nine were ruled explicitly. **What was wrong was the inference**: the report said the queue was empty, Epic C released and Lane B unblocked, while **57 Lane C commits — including the ADRs themselves — had never reached `integration`.** Lane A could not see ADR-0400 at all.
 
 > **Preparing a decision well does not make it available.** Reporting as though it does is the same defect as a dashboard describing the previous milestone (`CLAUDE.md` §2) — **the repository asserting something that is not true of it.**
+
+---
+
+## 12 · Implementation flow
+
+**Ratified 2026-08-04, product owner.** **A change of prioritisation, never of authority** — Lane C still prepares, still assigns nothing, and still bypasses no rule.
+
+> **The governance has successfully prevented architectural drift and exposed a new bottleneck: implementation lanes can idle while the Product Office prepares.** **Correctness is not the only thing this office is measured on. Throughput is the other.**
+
+### The self-check, before any new package, assessment or ADR
+
+> **Are implementation lanes fully utilised?**
+> **YES** → continue. **NO** → **stop, and prepare executable work instead.**
+
+**It is asked first, every time, and its answer is measured rather than assumed** — which means reading `origin/integration`, because **that is what a lane can claim from.**
+
+### Implementation Support Mode
+
+**Entered automatically when Lane A or Lane B is idle for lack of executable work** — no claimable `READY` task, no active implementation, waiting only on documentation, synchronization, assignment or preparation.
+
+> **Idle is not the same as blocked.** A lane waiting on an external system or a genuine product decision is **not** idle; a lane waiting on Lane C is.
+
+**While active, priority is fixed:** ① produce executable `READY` work · ② convert approved preparation into claimable work · ③ synchronize repository state · ④ remove unnecessary waiting · ⑤ unblock implementation. **Only then does planning resume.**
+
+**Paused while it is active** — new discovery · new initiatives · speculative assessments · roadmap expansion · future package preparation. **Unless the product owner asks for one**, in which case it is not speculative.
+
+### The READY buffer
+
+**Target: five claimable slices per implementation lane.** **Below that, replenishing is the highest Product Office priority.**
+
+> **Claimable, not prepared.** A slice on a Lane C branch is not a slice a lane can take — `CLAUDE.md` §20e's five states, and the distinction Lane A's challenge established. **Counting preparation as buffer is how this office would fool itself.**
+
+### Synchronization is a first-class concern, and it is Lane C's to notice
+
+**Prepared work that cannot reach `integration` is unavailable, and unavailable work is indistinguishable from work that does not exist.**
+
+> **Never assume another lane owns that observation.** The 2026-08-04 incident — 57 commits, eight prepared slices, and both lanes unable to see any of them — **was reported by Lane A, not by the office that created it.**
+
+**Report `PREPARED` · `PRODUCT OWNER APPROVED` · `MERGED TO INTEGRATION` · `CLAIMABLE` separately, always.**
+
+### The pipeline, and the question to ask of it
+
+```
+Ideas → Architecture → Preparation → READY → Lane A / Lane B → QE → Integration → Main
+```
+
+> **Whenever one stage accumulates while the next is empty, name it explicitly** — with the stage, the reason, and a priority. **An empty stage downstream of a full one is the definition of a bottleneck**, and it is visible only to whoever is looking at both.
+
+### What this does not change
+
+**No rule is relaxed.** Reuse first · no regression · public contracts · bounded contexts · ADR compliance · import rules · tenancy · security · evidence before assumptions · smallest executable slice · no speculative abstraction · no duplicate concepts.
+
+> **Throughput is never bought with governance.** A slice produced to fill a buffer, that a lane then has to unpick, has reduced throughput — **and the office would have measured itself as succeeding while doing it.**

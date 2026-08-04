@@ -57,6 +57,12 @@
 | **D-038** | **Knowledge Continuity Framework approved, five of eight documents refused as duplication** | `APPROVED` | `lane-c-sync` | Repository documentation | **[423](architecture/423-knowledge-continuity-framework.md).** This register is D-038's first output |
 | **D-039** | **Synchronization by rebuild, not rebase** — abandon the 57-commit branch, replay only what still has value | `APPROVED` | `lane-c-sync` | Repository | **[422](architecture/422-synchronization-plan.md).** Six commits replace fifty-seven |
 
+## 2026-08-04 — implementation flow
+
+| # | Decision | Status | Merged | Affected | Repository impact |
+|---|---|---|---|---|---|
+| **D-048** | **Product Office owns implementation flow.** *"It is also measured by implementation throughput. A successful Product Office is one where implementation lanes almost never become idle because executable work is unavailable."* **Implementation Support Mode · a five-slice READY buffer per lane · the self-check before any new package · synchronization as a first-class concern** | `APPROVED` | `lane-c-sync` | Product Office | [`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §12 · the Implementation Flow dashboard in every report. **A change of prioritisation, never of authority** — no rule is relaxed |
+
 ## 2026-08-04 — usage metering
 
 | # | Decision | Status | Merged | Affected | Repository impact |
