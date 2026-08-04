@@ -234,6 +234,44 @@
 | **Validation** | Module suite · a test that a zero-sample criterion is reported as unmeasured rather than neutral · **no new table** |
 | **Escalate if** | The measurement requires reading `opportunity_engine`'s tables rather than its `public/`. **That is never permitted** (§5) |
 
+### TASK-407 · B-i — a connection says whether it actually works
+
+> **Drafted by Lane C on the product owner's instruction, 2026-08-04**, from [419](architecture/419-c326-narrowed-and-lane-b.md). **Position is grouping, not priority.**
+
+| | |
+|---|---|
+| **Objective** | **A connection reports whether its credential still works, not whether its record still looks right.** Today a token that is structurally valid but has lost a permission reads as healthy |
+| **Module** | `integrations` — **Lane B's**, via TASK-402 |
+| **Status** | `READY` |
+| **Approved screen** | **CRM Integrations** — *"Health is checked every minute. Two consecutive failures pause writes"* |
+| **Scope** | A reachability probe against the connected system using the stored credential, its outcome classified by the **existing** error taxonomy, and the result surfaced on the connection. **Two consecutive failures mark the connection as degraded** |
+| **Dependencies** | **None, and this is the point.** ⚠️ **[C-326](LANE_COORDINATION.md) does not block it** — [419](architecture/419-c326-narrowed-and-lane-b.md) §2 measures C-326 as blocking exactly two artifacts, the source port and the runner. **This slice uses neither** |
+| **Affected modules** | `integrations` only. Possibly one migration for the probe outcome |
+| **Repository reuse** | **Everything it needs is built.** `ResolveExecutionContext` supplies the credential · **`HubSpotCompanies`** makes the call · `CrmTransient` · `CrmRateLimited` · `CrmCredentialRejected` · `CrmPayloadInvalid` · `CrmPermanent` already classify the outcome · `ConnectionResponse.attention` and `.reason` already exist to carry it. **Do not introduce a second error taxonomy** |
+| **Non-goals** | **No pausing of writes** — there are no writes; that is E2. **No signal to admins** — notification delivery is [ADR-0040](architecture/adr/0040-notifications.md) and unratified. **No sync, no records read into the pipeline, no source port, no runner.** **No `connectable: true`** — that flips only after a real handshake, and never in anticipation ([44](architecture/44-integrations.md) §9) |
+| **Acceptance** | A connection whose credential has been revoked or downgraded **reports degraded rather than healthy** · a transient failure does not degrade a connection on its own — **two consecutive** · the probe never writes a claim, a raw record or an event · **no credential material is logged** (§16) · workspace-scoped throughout |
+| **Implementation order** | **First for this lane.** Independent of TASK-408 |
+| **Validation** | Module suite · a test that a `CrmCredentialRejected` outcome degrades and a single `CrmTransient` does not · **a test that nothing enters the pipeline** |
+| **Escalate if** | The probe needs a scheduler this repository does not have. **ARQ exists; a new scheduling mechanism is 🔴** |
+
+### TASK-408 · B-ii — search results are grouped and the ranking is explainable
+
+| | |
+|---|---|
+| **Objective** | **A search result says what kind of thing it is and why it ranked where it did.** `account-search` returns a flat list |
+| **Module** | `knowledge_graph` — **Lane B's**, via TASK-300 |
+| **Status** | `READY` |
+| **Approved screen** | **Global Search** — *"groups are typed and ordered by intent, never by score"*; *"within a group, score is a weighted sum of six factors, and the dominant one is shown on the row when it is not lexical"* |
+| **Scope** | Typed grouping of results · a ranking whose **dominant factor is reported per row** · the ordering rule stated in the response rather than implied |
+| **Dependencies** | **None.** `GET /workspaces/{id}/account-search` exists |
+| **Affected modules** | `knowledge_graph` only |
+| **Repository reuse** | The existing search endpoint and its query path. **`AccountIdentityResponse.agreement` already models identity confidence** and is the natural non-lexical factor — **reuse it rather than inventing a second confidence notion** |
+| **Non-goals** | **No people, calls or deals as searchable types** — people are blocked by [O1](DECISION_PACKS.md), calls have no source, and deals are `opportunity_engine`'s. **No saved or monitored searches** — monitoring produces a notification, which is ADR-0040. **No natural-language routing to the assistant** — that is the Copilot's, and shell-scoped |
+| **Acceptance** | Results carry their type and are grouped by it · **the dominant ranking factor is present on a row whenever it is not lexical** · **a zero-match group is returned rather than omitted** — the approved screen requires absence to be visible · ordering is deterministic for identical input (§2) |
+| **Implementation order** | **Second for this lane** |
+| **Validation** | Module suite · a test that identical input yields identical order · **a test that an empty group is returned, not dropped** |
+| **Escalate if** | Grouping requires reading another module's tables. **Never permitted** (§5) — open a `C-` item |
+
 ### TASK-900 · The platform learns to compose a module into the runtime
 
 | | |
