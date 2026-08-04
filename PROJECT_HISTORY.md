@@ -3,11 +3,11 @@
 > ⚙️ **GENERATED — do not edit by hand.** Rebuild with `python3 infra/project-history.py`.
 > **Manual edits are lost on the next run.**
 
-> Built at `1fa9fd1`. **Significant events only** — ADRs, completed repository cycles and schema changes.
+> Built at `a2f0c2d`. **Significant events only** — ADRs, completed repository cycles and schema changes.
 > **This is not a changelog.** `git log` is the complete record; **a second copy of it would be a duplicate
 > representation** (`CLAUDE.md` §2), and a history listing every commit teaches the reader to stop reading.
 
-**48 ADRs · 39 decided · 39 completed cycles · 38 migrations.**
+**48 ADRs · 39 decided · 45 completed cycles · 39 migrations.**
 
 ## Architectural decisions, in order
 
@@ -100,19 +100,25 @@
 | 2026-08-03 | Repository Closeout — ebcf690, and a gate I broke by not checking what it needed |
 | 2026-08-03 | Repository Closeout — f034364, and a gate that had been reading the shell |
 | 2026-08-03 | Repository Closeout — fd2d942, and the second structural check the repository has |
+| 2026-08-04 | Repository Closeout — 7a95403, a seller can read what Signora concluded |
+| 2026-08-04 | Repository Closeout — 85845c6, a renamed company explains itself |
 | 2026-08-04 | Repository Closeout — 9a112ae, and two lanes that did more than QE asked |
 | 2026-08-04 | Repository Closeout — a955016, and the only open defect is QE's own |
 | 2026-08-04 | Repository Closeout — b332aea, and three checks that were trusted rather than exercised |
 | 2026-08-04 | Repository Closeout — ba46132, and the deleted step proving itself |
+| 2026-08-04 | Repository Closeout — c60bb39, and the guard refused its own operator |
 | 2026-08-04 | Repository Closeout — d392ed5, and a gate set that was ready before the candidate |
+| 2026-08-04 | Repository Closeout — dd91c62, a connection says whether it actually works |
+| 2026-08-04 | Repository Closeout — ea35fbe, and a cycle with nothing to demonstrate |
+| 2026-08-04 | Repository Closeout — f7439ca, and a runbook step that had been passing on memory |
 
 ## Schema history
 
-**38 migrations.** The chain is linear by construction — Alembic's `down_revision` makes a gap a
+**39 migrations.** The chain is linear by construction — Alembic's `down_revision` makes a gap a
 broken graph rather than a cosmetic oddity, which is why migrations are the one identifier exempt from the
 per-lane block rule (`CLAUDE.md` §20e).
 
-First: `0000_platform_event_bus_outbox`  ·  Latest: `0037_commercial_profile_competitors`
+First: `0000_platform_event_bus_outbox`  ·  Latest: `0038_connection_probe`
 
 ## What is deliberately absent
 
