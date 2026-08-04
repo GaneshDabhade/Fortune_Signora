@@ -18,6 +18,7 @@ from fastapi import Depends
 from modules.commercial_profile.application.declare_committee import (
     DeclareBuyingCommittee,
 )
+from modules.commercial_profile.application.declare_competitors import DeclareCompetitors
 from modules.commercial_profile.application.declare_focus import DeclareFocus
 from modules.commercial_profile.application.declare_icp import DeclareIcp
 from modules.commercial_profile.application.declare_target_accounts import (
@@ -26,6 +27,7 @@ from modules.commercial_profile.application.declare_target_accounts import (
 from modules.commercial_profile.application.ports import (
     BuyingCommitteeRepository,
     CommercialFocusRepository,
+    DeclaredCompetitorsRepository,
     IcpDeclarationRepository,
     ProductCatalogRepository,
     TargetAccountListRepository,
@@ -35,7 +37,9 @@ from modules.commercial_profile.application.segment_queries import SegmentQuerie
 from modules.commercial_profile.infrastructure.composition import (
     build_buying_committees,
     build_catalogs,
+    build_competitors,
     build_declare_buying_committee,
+    build_declare_competitors,
     build_declare_focus,
     build_declare_icp,
     build_declare_target_accounts,
@@ -98,6 +102,14 @@ def declare_target_accounts(context: CurrentWorkspace) -> DeclareTargetAccounts:
     return build_declare_target_accounts(context.session, publisher=PostgresOutboxEventPublisher())
 
 
+def competitors(context: CurrentWorkspace) -> DeclaredCompetitorsRepository:
+    return build_competitors(context.session)
+
+
+def declare_competitors(context: CurrentWorkspace) -> DeclareCompetitors:
+    return build_declare_competitors(context.session)
+
+
 CatalogRead = Annotated[ProductCatalogRepository, Depends(catalogs)]
 CatalogWrite = Annotated[PublishProductCatalog, Depends(publish_catalog)]
 IcpRead = Annotated[IcpDeclarationRepository, Depends(icp_declarations)]
@@ -108,9 +120,13 @@ FocusRead = Annotated[CommercialFocusRepository, Depends(focuses)]
 FocusWrite = Annotated[DeclareFocus, Depends(declare_focus)]
 TargetAccountsRead = Annotated[TargetAccountListRepository, Depends(target_accounts)]
 TargetAccountsWrite = Annotated[DeclareTargetAccounts, Depends(declare_target_accounts)]
+CompetitorsRead = Annotated[DeclaredCompetitorsRepository, Depends(competitors)]
+CompetitorsWrite = Annotated[DeclareCompetitors, Depends(declare_competitors)]
 
 __all__ = [
     "CatalogRead",
+    "CompetitorsRead",
+    "CompetitorsWrite",
     "CatalogWrite",
     "CommitteeRead",
     "CommitteeWrite",

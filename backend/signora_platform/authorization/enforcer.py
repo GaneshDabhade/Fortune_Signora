@@ -78,6 +78,12 @@ class Resource(StrEnum):
     #: anything Signora supplies: seeing which systems are connected is
     #: everyday, and connecting one spends a credential and is administrative.
     INTEGRATION = "integration"
+    #: Registered by Epic D phase 1, on the same terms as every member above —
+    #: a *use* of the platform, not a change to it (§20a). Its own resource
+    #: rather than a reuse of `TARGET_ACCOUNT`: who a company watches and who
+    #: it believes it is losing to are different admissions, and the second is
+    #: the one a customer is most likely to want held more narrowly.
+    COMPETITOR = "competitor"
 
 
 class Action(StrEnum):

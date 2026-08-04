@@ -27,6 +27,14 @@ from modules.commercial_profile.domain.committee import (
     CommitteeRole,
     ProductCommittee,
 )
+from modules.commercial_profile.domain.competitors import (
+    MAX_COMPETITORS,
+    Competitor,
+    DeclaredCompetitors,
+)
+from modules.commercial_profile.domain.competitors import (
+    MAX_NAME as MAX_COMPETITOR_NAME,
+)
 from modules.commercial_profile.domain.declaration import UNDECLARED
 from modules.commercial_profile.domain.focus import MAX_OBJECTIVE, CommercialFocus
 from modules.commercial_profile.domain.icp import (
@@ -659,8 +667,121 @@ class TargetAccountListResponse(BaseModel):
         )
 
 
+class CompetitorRequest(BaseModel):
+    """One technology the customer competes against."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    id: UUID = Field(
+        description=(
+            "**Chosen by the client and stable across every revision.** It is what lets "
+            "a consumer tell a *rename* from a *remove and re-add*, and what makes "
+            "saving the same list twice produce the same list."
+        )
+    )
+    name: str = Field(
+        min_length=1,
+        max_length=MAX_COMPETITOR_NAME,
+        description=(
+            "The competing product, **as you would say it**. Signora does not ask for a "
+            "vendor or a website: working out which technology you mean is our job, not "
+            "yours."
+        ),
+    )
+
+    def to_domain(self) -> Competitor:
+        return Competitor(id=self.id, name=self.name)
+
+
+class DeclareCompetitorsRequest(BaseModel):
+    """A complete statement of who this workspace competes against."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    expected_version: int = Field(
+        ge=UNDECLARED,
+        description=(
+            "The version being replaced — **0 when declaring the first list.** Sending "
+            "the version you read turns a colleague's concurrent edit into a refusal "
+            "you can act on instead of an overwrite neither of you sees."
+        ),
+    )
+    competitors: tuple[CompetitorRequest, ...] = Field(
+        max_length=MAX_COMPETITORS,
+        description=(
+            "The whole list, not a change to it. A technology absent from this list is "
+            "one you no longer consider a rival — and the version that contained it is "
+            "still readable. **No order, no rank and no threat level**: Signora records "
+            "who you are up against and grades none of them."
+        ),
+    )
+
+
+class CompetitorResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID = Field(description="Stable across every revision of the list.")
+    name: str = Field(description="As the customer typed it. Never resolved.")
+
+    @classmethod
+    def from_domain(cls, entry: Competitor) -> CompetitorResponse:
+        return cls(id=entry.id, name=entry.name)
+
+
+class DeclaredCompetitorsResponse(BaseModel):
+    """Who this workspace competes against, and who last said so."""
+
+    model_config = ConfigDict(frozen=True)
+
+    version: int = Field(
+        description=(
+            "**0 when nothing has been declared**, which is the ordinary state of a new "
+            "workspace. Every save increments it."
+        )
+    )
+    competitors: tuple[CompetitorResponse, ...] = Field(
+        description=(
+            "In the order the customer arranged them, which carries no rank. **Never a "
+            "score**: how much a competitor moves an account is decided elsewhere, from "
+            "a reviewed model a customer can read."
+        )
+    )
+    updated_at: datetime | None = Field(
+        description="When this version was declared. Null only at version 0."
+    )
+    updated_by: UUID | None = Field(
+        description=(
+            "Who declared it. Null only at version 0. The row is never edited, so this "
+            "cannot be reattributed."
+        )
+    )
+
+    @classmethod
+    def empty(cls) -> DeclaredCompetitorsResponse:
+        """A workspace that has named no competitors.
+
+        **Distinct from a workspace that declared an empty list**, which reads
+        version 1 — *"we do not track competitors"* is a statement with an
+        author, and version 0 is the absence of one.
+        """
+        return cls(version=UNDECLARED, competitors=(), updated_at=None, updated_by=None)
+
+    @classmethod
+    def from_domain(cls, declaration: DeclaredCompetitors) -> DeclaredCompetitorsResponse:
+        return cls(
+            version=declaration.version,
+            competitors=tuple(CompetitorResponse.from_domain(c) for c in declaration.competitors),
+            updated_at=declaration.created_at,
+            updated_by=declaration.created_by,
+        )
+
+
 __all__ = [
     "BuyingCommitteeResponse",
+    "CompetitorRequest",
+    "CompetitorResponse",
+    "DeclareCompetitorsRequest",
+    "DeclaredCompetitorsResponse",
     "DeclareTargetAccountsRequest",
     "CommercialFocusResponse",
     "CommitteeRoleRequest",

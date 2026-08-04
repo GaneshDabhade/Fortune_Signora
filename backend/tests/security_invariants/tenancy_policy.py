@@ -163,6 +163,11 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # declaration anything downstream reads. A leak here tells a
         # competitor exactly which accounts a company is pursuing.
         "target_account_list",
+        # Commercial Profile (Epic D phase 1), migration 0036. Which
+        # technologies a customer competes against — **the fact only the
+        # customer has**, and a leak here tells a competitor exactly who a
+        # company believes it is losing to.
+        "declared_competitors",
         # Timeline (M7 slice 1), migration 0026. **The first table that is a
         # projection**: every row is derived from an event whose source of
         # truth is another module's table, so losing it loses an index over
@@ -325,6 +330,8 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         "commercial_focus",
         # Migration 0025, likewise.
         "target_account_list",
+        # Migration 0036, likewise.
+        "declared_competitors",
         # Migration 0026. A projected entry records what an upstream module
         # said at one moment; a correction is a new entry naming the event it
         # came from. No `UPDATE` grant, `DELETE` granted on the same terms.

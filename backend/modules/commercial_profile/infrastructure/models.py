@@ -262,3 +262,32 @@ class SegmentStateModel(Base, WorkspaceScopedMixin):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=text("now()")
     )
+
+
+class DeclaredCompetitorsModel(DeclarationModel):
+    """Which technologies the workspace competes against.
+
+    **The sixth, and the first that is about a risk rather than an ambition.**
+    Still customer-authored and still regenerable from nothing: a pipeline
+    rebuild replays what the providers returned and must not invent the list
+    that made one of those technologies matter.
+    """
+
+    __tablename__ = "declared_competitors"
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "version", name="uq_declared_competitors_version"),
+        CheckConstraint("version > 0", name="ck_declared_competitors_version_positive"),
+    )
+
+    #: JSONB, read whole, like every other declaration here — and for the
+    #: reason the watch list gives out loud. **Nothing joins on a name inside
+    #: it**: matching *"Salesforce"* to a technology is the Knowledge Graph's
+    #: job, and a relational shape here would invite the query that does it in
+    #: the wrong module. **No column holds a weight**, which is the property
+    #: this table most needs to keep.
+    competitors: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, nullable=False)
+    supersedes: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("declared_competitors.id", ondelete="SET NULL"),
+        nullable=True,
+    )

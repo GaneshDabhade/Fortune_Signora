@@ -18,6 +18,8 @@ from apps.api.composition.products import (
     CatalogWrite,
     CommitteeRead,
     CommitteeWrite,
+    CompetitorsRead,
+    CompetitorsWrite,
     FocusRead,
     FocusWrite,
     IcpRead,
@@ -29,6 +31,9 @@ from apps.api.composition.products import (
 from modules.commercial_profile.application.declare_committee import (
     DeclareBuyingCommitteeInput,
 )
+from modules.commercial_profile.application.declare_competitors import (
+    DeclareCompetitorsInput,
+)
 from modules.commercial_profile.application.declare_focus import DeclareFocusInput
 from modules.commercial_profile.application.declare_icp import DeclareIcpInput
 from modules.commercial_profile.application.declare_target_accounts import (
@@ -39,6 +44,8 @@ from modules.commercial_profile.interface.schemas import (
     BuyingCommitteeResponse,
     CommercialFocusResponse,
     DeclareBuyingCommitteeRequest,
+    DeclareCompetitorsRequest,
+    DeclaredCompetitorsResponse,
     DeclareFocusRequest,
     DeclareIcpRequest,
     DeclareTargetAccountsRequest,
@@ -370,6 +377,63 @@ async def declare_target_accounts(
         correlation_id=context.correlation_id,
     )
     return TargetAccountListResponse.from_domain(declaration)
+
+
+@router.get(
+    "/workspaces/{workspace_id}/competitors",
+    response_model=DeclaredCompetitorsResponse,
+    summary="Which technologies this workspace competes against",
+)
+async def competitors(
+    context: CurrentWorkspace, declared: CompetitorsRead
+) -> DeclaredCompetitorsResponse:
+    """The list in force.
+
+    **Never a 404, and never a score.** It reports the technologies the
+    customer named. How much any of them moves an account is decided by the
+    reviewed scoring model, and this response has no field that could carry
+    one.
+    """
+    context.authorize(Resource.COMPETITOR, Action.READ)
+    declaration = await declared.current(context.workspace_id)
+    return (
+        DeclaredCompetitorsResponse.empty()
+        if declaration is None
+        else DeclaredCompetitorsResponse.from_domain(declaration)
+    )
+
+
+@router.put(
+    "/workspaces/{workspace_id}/competitors",
+    response_model=DeclaredCompetitorsResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Declare which technologies this workspace competes against",
+)
+async def declare_competitors(
+    context: CurrentWorkspace,
+    declare: CompetitorsWrite,
+    body: DeclareCompetitorsRequest,
+) -> DeclaredCompetitorsResponse:
+    """Record a complete statement of the competitor list, as a new version.
+
+    **Nothing is announced.** Unlike the watch list, no downstream module is
+    waiting on this yet — and publishing an event nobody consumes would be a
+    contract with no counterparty. The consumer arrives with the
+    `competitor_entry` signal, and the event arrives with it.
+
+    **409 when somebody else saved first**, with the version actually in force.
+    """
+    context.authorize(Resource.COMPETITOR, Action.UPDATE)
+    declaration = await declare.execute(
+        DeclareCompetitorsInput(
+            workspace_id=context.workspace_id,
+            competitors=tuple(entry.to_domain() for entry in body.competitors),
+            expected_version=body.expected_version,
+            # Taken from the verified caller, never from the request.
+            actor_id=context.principal.user_id,
+        )
+    )
+    return DeclaredCompetitorsResponse.from_domain(declaration)
 
 
 __all__ = ["router"]

@@ -32,6 +32,9 @@ p, owner, *, commercial_focus, update
 p, owner, *, target_account, read
 p, member, *, target_account, read
 p, owner, *, target_account, update
+p, owner, *, competitor, read
+p, member, *, competitor, read
+p, owner, *, competitor, update
 p, owner, *, timeline, read
 p, member, *, timeline, read
 p, owner, *, integration, read

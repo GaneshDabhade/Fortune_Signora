@@ -10,6 +10,9 @@ from fastapi import status
 from modules.commercial_profile.application.declare_committee import (
     CommitteeVersionConflictError,
 )
+from modules.commercial_profile.application.declare_competitors import (
+    CompetitorsVersionConflictError,
+)
 from modules.commercial_profile.application.declare_focus import FocusVersionConflictError
 from modules.commercial_profile.application.declare_icp import IcpVersionConflictError
 from modules.commercial_profile.application.declare_target_accounts import (
@@ -22,6 +25,7 @@ from modules.commercial_profile.application.declaring import (
 )
 from modules.commercial_profile.application.publish import CatalogVersionConflictError
 from modules.commercial_profile.domain.committee import BuyingCommitteeError
+from modules.commercial_profile.domain.competitors import CompetitorsError
 from modules.commercial_profile.domain.declaration import CommercialProfileError
 from modules.commercial_profile.domain.focus import CommercialFocusError
 from modules.commercial_profile.domain.icp import IcpError
@@ -61,6 +65,13 @@ ERROR_MAPPING: ErrorMapping = {
         status.HTTP_409_CONFLICT,
         "target_accounts_version_conflict",
     ),
+    CompetitorsVersionConflictError: (
+        status.HTTP_409_CONFLICT,
+        "competitors_version_conflict",
+    ),
+    # Everything the competitor list refuses: a blank name, a name past the
+    # limit, the same entry twice, two rivals sharing a name.
+    CompetitorsError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "competitors_refused"),
     FocusUnknownProductError: (
         status.HTTP_422_UNPROCESSABLE_CONTENT,
         "focus_unknown_product",

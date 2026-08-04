@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from modules.commercial_profile.application.declare_committee import (
     DeclareBuyingCommittee,
 )
+from modules.commercial_profile.application.declare_competitors import DeclareCompetitors
 from modules.commercial_profile.application.declare_focus import DeclareFocus
 from modules.commercial_profile.application.declare_icp import DeclareIcp
 from modules.commercial_profile.application.declare_target_accounts import (
@@ -23,6 +24,7 @@ from modules.commercial_profile.application.segment_queries import SegmentQuerie
 from modules.commercial_profile.infrastructure.repository import (
     SqlBuyingCommitteeRepository,
     SqlCommercialFocusRepository,
+    SqlDeclaredCompetitorsRepository,
     SqlIcpDeclarationRepository,
     SqlProductCatalogRepository,
     SqlTargetAccountListRepository,
@@ -114,3 +116,11 @@ def build_target_account_reader(session: AsyncSession) -> SqlTargetAccountReader
 def build_segment_queries(session: AsyncSession) -> SegmentQueries:
     """The segments read surface. One level deep, like everything here."""
     return SegmentQueries(SqlSegmentReader(session))
+
+
+def build_competitors(session: AsyncSession) -> SqlDeclaredCompetitorsRepository:
+    return SqlDeclaredCompetitorsRepository(session)
+
+
+def build_declare_competitors(session: AsyncSession) -> DeclareCompetitors:
+    return DeclareCompetitors(competitors=build_competitors(session))

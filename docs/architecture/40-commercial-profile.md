@@ -22,6 +22,7 @@ Several small ones, each versioned independently — never one profile object. P
 | 3 | `BuyingCommittee` | `buying_committee` | `/workspaces/{id}/buying-committee` | 3 ✅ |
 | 4 | `CommercialFocus` | `commercial_focus` | `/workspaces/{id}/focus` | 4 ✅ |
 | 5 | `TargetAccountList` | `target_account_list` | `/workspaces/{id}/target-accounts` | 5 ✅ |
+| 6 | `DeclaredCompetitors` | `declared_competitors` | `/workspaces/{id}/competitors` | Epic D ✅ |
 
 Every one is **versioned, immutable and superseded**: a revision is a new row naming the one it replaces, the app role holds no `UPDATE` grant, and the repository offers no method the database would refuse. `DELETE` *is* granted — erasability is a property of the tenancy model, not a statement about what a row means.
 
@@ -313,6 +314,45 @@ Adding fields is compatible; removing or repurposing one is not, and a breaking 
 4. Empty-state consolidation, confirmation on destructive actions, and the route name — genuine, and none of them is worth a slice on its own.
 
 **Not proposed:** the guided flow ([C-007](../LANE_COORDINATION.md#c-007--the-guided-first-run-is-a-two-lane-build), two lanes, after slice 5) and read access for sellers ([C-008](../LANE_COORDINATION.md#c-008--sellers-cannot-see-what-their-company-sells), frozen foundation).
+
+## Epic D phase 1 — the competitor declaration
+
+**The sixth, and the first that is about a risk rather than an ambition.** The other five say what a customer wants; this says what they are up against.
+
+**It exists because the pipeline was missing a fact, not a mechanism.** `business_event_engine` has emitted `TECHNOLOGY_ADOPTED` and `TECHNOLOGY_RETIRED` since M4, and `displacement_opportunity` and `modernization_underway` already consume them. What no provider can report is **which of those technologies the customer is losing deals to** — that is knowledge only the customer has, and this holds their answer.
+
+### It resolves nothing, and could not
+
+**A competitor is a technology name exactly as typed, with a client-chosen stable id** — the same two fields as a `TargetAccount`, for the reason [ADR-0036](adr/0036-target-account-contract.md) gives about that one: asking for a vendor or a website would be *asking a customer to do resolution*, and resolution quality is Signora's competence, not theirs.
+
+**The preparation package recommended the opposite** — *"a competitor declaration should reference a resolvable technology, not a free string"* — and two things in this repository refuse it:
+
+- the import contract **`"commercial_profile declares; it never reads the pipeline"`** (`pyproject.toml`) forbids reaching the Knowledge Graph; and
+- **`knowledge_graph/public/` publishes nothing to reach.**
+
+> **That is the boundary working, not a gap.** Matching *"Salesforce"*, *"salesforce.com"* and *"SFDC"* to one technology is exactly the job the graph exists to do, and a second resolver here would be free to disagree with the first. **The match between a declared name and a detected `TECHNOLOGY_ADOPTED` belongs to `signal_engine`**, reading this list through `public/` — which is where the reuse was wanted all along.
+
+The stable id survives for the watch list's reason: without one, a customer *renaming* an entry is indistinguishable from *removing one and adding another*.
+
+### It grades nobody, and a test says so
+
+**No `threat_level`, no `severity`, no rank, no ordinal.** A technology is a competitor or it is not.
+
+This is the module's standing temptation arriving in its sharpest form: a competitor is *about* a threat, so a number feels natural — and it would be a weight in the head of the pipeline, declared by a customer, consumed by a score, reviewed by nobody. **What a `competitor_entry` signal contributes belongs in `scoring_model@1.json`**, a reviewed artifact with a content hash that a diff can argue with. That is the least powerful author capable of getting it right.
+
+`test_competitors.py` refuses the vocabulary in the file somebody would add it to, and the integration test refuses it in the response body. `test_boundary.py` already refuses `priority` and `rank` module-wide.
+
+### An empty declaration is legal, and is not version 0
+
+*"We do not track competitors"* reads as **version 1 with an empty list**; never having said anything reads as **version 0**. A consumer that collapsed them would report an empty *result* where the truth is an empty *input* — the defect D6 already names on the attention list, and the same distinction `focus.py` keeps.
+
+### Nothing is announced
+
+**Unlike the watch list, this write publishes no event.** No downstream module consumes it yet, and an event with no counterparty is the speculative half-contract the roadmap forbids twice. **The event arrives with the `competitor_entry` signal**, which is the next slice.
+
+### What is not here
+
+**No *lost to* or *won against*.** That is an outcome with a date, an account and an amount — a fact about one deal, where this is a standing statement about a market. Recording it here would be a workflow event stored as configuration. **Trigger for adding one: [E1](../BACKLOG.md) landing**, at which point a customer's own CRM already holds it and this module should read rather than restate.
 
 ## Deliberately deferred
 

@@ -24,6 +24,10 @@ from modules.commercial_profile.domain.committee import (
     CommitteeRole,
     ProductCommittee,
 )
+from modules.commercial_profile.domain.competitors import (
+    Competitor,
+    DeclaredCompetitors,
+)
 from modules.commercial_profile.domain.focus import CommercialFocus
 from modules.commercial_profile.domain.icp import (
     EmployeeRange,
@@ -37,6 +41,7 @@ from modules.commercial_profile.domain.target_accounts import (
 from modules.commercial_profile.infrastructure.models import (
     BuyingCommitteeModel,
     CommercialFocusModel,
+    DeclaredCompetitorsModel,
     IcpDeclarationModel,
     ProductCatalogModel,
     TargetAccountListModel,
@@ -332,6 +337,52 @@ class SqlTargetAccountListRepository:
                 supersedes=accounts.supersedes,
                 created_by=accounts.created_by,
                 updated_by=accounts.created_by,
+            )
+        )
+        await self._session.flush()
+
+
+def _to_competitor(raw: dict[str, Any]) -> Competitor:
+    return Competitor(id=UUID(raw["id"]), name=raw["name"])
+
+
+def _to_competitors(row: DeclaredCompetitorsModel) -> DeclaredCompetitors:
+    return DeclaredCompetitors(
+        id=row.id,
+        workspace_id=row.workspace_id,
+        version=row.version,
+        competitors=tuple(_to_competitor(raw) for raw in row.competitors),
+        created_at=row.created_at,
+        created_by=row.created_by,
+        supersedes=row.supersedes,
+    )
+
+
+class SqlDeclaredCompetitorsRepository:
+    """Persistence for the competitor list, on the same terms as the rest."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def current(self, workspace_id: UUID) -> DeclaredCompetitors | None:
+        result = await self._session.execute(latest(DeclaredCompetitorsModel, workspace_id))
+        row = result.scalar_one_or_none()
+        return None if row is None else _to_competitors(row)
+
+    async def save(self, competitors: DeclaredCompetitors) -> None:
+        """Insert the new version. Nothing is updated, ever."""
+        self._session.add(
+            DeclaredCompetitorsModel(
+                id=competitors.id,
+                workspace_id=competitors.workspace_id,
+                version=competitors.version,
+                competitors=[
+                    {"id": str(entry.id), "name": entry.name}
+                    for entry in competitors.competitors
+                ],
+                supersedes=competitors.supersedes,
+                created_by=competitors.created_by,
+                updated_by=competitors.created_by,
             )
         )
         await self._session.flush()
