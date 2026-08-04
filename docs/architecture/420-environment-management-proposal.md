@@ -74,7 +74,9 @@ prepare → validate → seed → present → record        …then end
 
 **This proposal is the largest piece of work yet proposed for exactly that gap.** Phase 1 and phase 2 were written by whoever was nearest; **phase 3 is bigger than both and cannot be.**
 
-> **So the P0 is real and its blocker is not technical.** Lane C's recommendation is that **C-010 is ruled before phase 3 is scheduled** — not because the work is unclear, but because *"whoever was nearest"* is how the last four defects arrived.
+> ✅ **Ruled 2026-08-04. C-010 is resolved and phase 3 has an owner: Lane C.** *"Do not create another engineering lane. Lane C's responsibilities are formally expanded to include Platform Foundation work that belongs to no product bounded context."* Recorded in [`CLAUDE.md`](../../CLAUDE.md) §20e.
+>
+> **So §8's slices are now claimable, and Lane C claims them like any other lane** — rowed on the board, validated and certified by QE. **Slices 1 and 3 depend on nothing.**
 
 ## 6 · Environment profile matrix
 

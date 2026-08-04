@@ -2,7 +2,9 @@
 
 ## Status
 
-**READY FOR RATIFICATION — 2026-08-04**, drafted by Lane C — Product Office. **Not ratified, and nothing is implemented.**
+**RATIFIED — 2026-08-04, product owner.** Drafted by Lane C — Product Office. **Epic F is unblocked from a Product Office perspective.**
+
+> **Phases 1–4 depend on nothing unbuilt**, which is what this ADR was written to achieve: §2 makes `workflow` publish an event rather than call a notifier, so **Notifications stops being a blocker and becomes a subscriber.** ❓1 remains a phase-5 sequencing question and blocks nothing.
 
 **Complete: five alternatives assessed, one recommended, no unresolved alternative.** Its two open questions are downstream — ❓1 affects phase 5 only, ❓2 is engineering's. **Phases 1–4 depend on nothing unbuilt.**
 

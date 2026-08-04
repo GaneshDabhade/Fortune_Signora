@@ -6,6 +6,9 @@
 >
 > **Nothing here is approved.** Epic C is unapproved scope ([Pack I](../DECISION_PACKS.md)); this is preparation so that the approval decision, when it is taken, is taken with the facts. **The ADR it needs is drafted separately as [ADR-0400](adr/0400-person-as-an-entity.md) and is `Proposed`.**
 
+> ✅ **UNBLOCKED 2026-08-04 — [ADR-0400](adr/0400-person-as-an-entity.md) is RATIFIED.** *"Person becomes a first-class entity within the approved bounded context. Proceed on that assumption for all future preparation."* **❓1 and [C-221](../LANE_COORDINATION.md) are answered by the ruling.** This package stops being preparation-against-a-question and becomes the implementation of a decision that has been taken.
+
+
 > **Approved UI** — **People Intelligence**. The [Fortune Signora Design Project](410-approved-ui-specification.md) is authoritative for frontend behaviour (2026-08-04). **This package no longer states what the screen looks like; it states what the backend must provide for it.** **The approved screen and this package's blocking question ❓1 are the same question.** The screen is entirely named individuals — roles, stances, an org chart marked confirmed-versus-inferred, a relationship graph, departures. **This package stops being a proposal about whether people are needed; it becomes the implementation of a decision the product has already made, pending [O1](../DECISION_PACKS.md).**
 
 

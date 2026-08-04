@@ -538,10 +538,31 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 
 | | |
 |---|---|
-| **Owns** | Task-assignment coordination · ownership resolution · cross-lane dependency analysis · feature decomposition · decision preparation ([`DECISION_PACKS.md`](docs/DECISION_PACKS.md)) · roadmap stewardship · governance coordination · product architecture and ADR preparation |
-| **Never** | **Writes production code · modifies business logic · implements · merges · certifies · changes module ownership · reprioritizes the roadmap · approves an architectural decision · overrides a lane · bypasses the product owner · **verifies governance it authored itself** |
+| **Owns — coordination** | Task-assignment coordination · ownership resolution · cross-lane dependency analysis · feature decomposition · decision preparation ([`DECISION_PACKS.md`](docs/DECISION_PACKS.md)) · roadmap stewardship · governance coordination · product architecture and ADR preparation |
+| **Owns — Platform Foundation** *(2026-08-04)* | **Repository process · the Environment Framework · bootstrap · doctor · cleanup tooling · launch automation · developer tooling · the demo lifecycle**, and platform infrastructure belonging to no product bounded context |
+| **Never** | **Writes code inside a product module · modifies business logic · implements a feature · merges · certifies · changes module ownership · reprioritizes the roadmap · approves an architectural decision · overrides a lane · bypasses the product owner · **verifies governance it authored itself** |
 | **Branch** | `lane-c-product-office`. Identifier block `400`+ |
-| **Board** | **Referenced, never rowed** — [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) measures implementation, and Lane C produces none |
+| **Board** | **Rowed for Platform Foundation work only** — coordination and preparation remain referenced rather than rowed |
+
+#### Platform Foundation — Lane C's second responsibility
+
+**Ratified 2026-08-04, product owner, resolving [C-010](docs/LANE_COORDINATION.md) / TASK-006.** *"Do not create another engineering lane. Lane C's responsibilities are formally expanded to include Platform Foundation work that belongs to no product bounded context."*
+
+> **The gap it closes.** `infra/`, the `Makefile` and repository process had **no assignable lane**, and four defects landed there — [B-007](docs/BUGS.md), [B-012](docs/BUGS.md), [B-013](docs/BUGS.md), [B-014](docs/BUGS.md). **Environment Framework phases 1 and 2 were written by whoever was nearest**, and phase 3 is larger than both.
+
+**The line, and it is exact:**
+
+| Lane C now builds | Lane C still never builds |
+|---|---|
+| `infra/**` · the `Makefile` · environment profiles and launchers · doctor and cleanup tooling · the demo lifecycle · `signora_platform/simulation/**` | **Anything in `backend/modules/**`** · business logic · a feature a customer buys · `frontend/**` product screens |
+
+**Every existing constraint still binds, and three matter most:**
+
+- **`signora_platform/` stays frozen** (§20a) **except `simulation/`**, which is the demo and scenario machinery Lane C now owns. **A platform change outside it is still an RFC.**
+- **§20c-2 is absolute.** No CI, no scheduled or remote execution, no publishing — **and a launcher, a profile or a "preview environment" must never become one by another name.**
+- **Test data still enters the way a customer's data enters** (§20e). Owning the seeder is not permission to bypass a business rule, the API or the Provider Port.
+
+> **The separation that created Lane C is unchanged: it prepares decisions and the product owner makes them.** Owning tooling does not make Lane C an implementation lane for product work, and **it may not verify governance it authored** — that remains QE's. **A Platform Foundation slice is validated, certified and promoted by QE exactly like any other.**
 
 **A lane never verifies governance it authored** *(ratified 2026-08-03, product owner)*.
 
@@ -938,7 +959,7 @@ Together these appear in roughly two thirds of all commits. **A lane does not ed
 | `PROJECT_STATUS.md` | **The executive dashboard** — *"where are we?"*, measured | **QE**, at Closeout |
 | [`docs/SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) | **Operational context** — *"what should the next session know?"* | **QE**, at Closeout |
 | [`docs/BACKLOG.md`](docs/BACKLOG.md) | **The READY queue** — *"what is available, and in what order?"* | **Product owner.** A lane writes **only** its claim; QE writes nothing |
-| [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) | **The execution board, and nothing else** — who is working · on which `TASK-nnn` · on which branch · at what execution status. **It does not define priority** | **The claiming lane**, at once. **QE** reconciles it at Closeout. **Lane C is referenced, never rowed** — it holds no `TASK-nnn` and its investigation is named in one line outside the assignment table |
+| [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) | **The execution board, and nothing else** — who is working · on which `TASK-nnn` · on which branch · at what execution status. **It does not define priority** | **The claiming lane**, at once. **QE** reconciles it at Closeout. **Lane C is rowed for Platform Foundation work and referenced otherwise** *(amended 2026-08-04)* — it claims a `TASK-nnn` when the work is `infra/`, tooling or the Environment Framework, and its coordination work is named in one line outside the assignment table |
 | `docs/architecture/38` · `39` | Design decisions · review findings | **QE**, at merge |
 | The roadmaps | *Scope* is the product owner's · *progress* is QE's | Both, as marked |
 | `PRODUCT_DIFFERENTIATORS.md` | Product strategy | Product owner |

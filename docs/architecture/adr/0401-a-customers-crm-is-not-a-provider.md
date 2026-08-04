@@ -2,7 +2,9 @@
 
 ## Status
 
-**READY FOR RATIFICATION — 2026-08-04**, drafted by Lane C — Product Office. **Not ratified, and nothing is implemented.**
+**RATIFIED — 2026-08-04, product owner.** Drafted by Lane C — Product Office. **The per-field falsifiability model stands exactly as documented.**
+
+> **Ratified alongside [C-326](../../LANE_COORDINATION.md).** They are the same epic's two architectural questions — C-326 is *how a customer's data gets in*, this is *what it means once it is in*.
 
 **Complete: four alternatives assessed, one recommended, and amended the same day on Lane B's implementation evidence.** Its open questions are downstream of the decision rather than inside it.
 

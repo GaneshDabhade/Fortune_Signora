@@ -25,7 +25,7 @@
 | **`commercial_profile`** | **13** | 1 | ICP Builder · Account 360 · Companies | Criterion lift vs closed-won · fitted weights · backtest · TAM | 🟠 |
 | **`opportunity_engine`** | 5 | 2 | Opportunity Intelligence · Executive Dashboard · Companies · Account 360 | Probability model · quarter aggregates · movement · competitors | 🟠 |
 | **`integrations`** | 4 | 0 | CRM Integrations · App Shell | **The inbound read path — [409](409-inbound-source-port-contract.md) defines it** · field mapping · sync health | 🟠 |
-| **`knowledge_graph`** | 2 | **6** | Global Search · Companies · Account 360 · People | **Person as an entity** · 3 more searchable types | 🔴 |
+| **`knowledge_graph`** | 2 | **6** | Global Search · Companies · Account 360 · People | **`EntityKind.PERSON`** — ADR-0400 ratified, so this is now implementation · 3 more searchable types | 🟠 |
 | **`signal_engine`** | 2 | 2 | Signal Center · Account 360 · ICP Builder | **Triage state** — assign, snooze, dismiss-with-reason · rule precision | 🟠 |
 | **`ai_research_engine`** | 2 | 2 | AI Research · Account 360 | Sections · preserved edits · recorded refusals | 🟩 |
 | **`ai_platform`** | 1 | 1 | AI Copilot · Account 360 | Nothing structural | 🟩 |
@@ -37,7 +37,7 @@
 | **`ai_reasoning_engine`** | **0** | 1 | AI Copilot | **An `interface/` layer. Nothing else** | 🟠 |
 | **`provider_normalization`** | — | 1 | *(none — pipeline stage)* | CRM claim vocabulary, **if [ADR-0300](adr/0300-inbound-source.md) part 3 is ruled on** | — |
 | **`provider_platform`** | — | **4** | *(none — pipeline stage)* | The runner for the inbound port | — |
-| **`workflow`** | — | — | Workflow Automation | **The whole module. [ADR-0402](adr/0402-a-rule-is-data.md) specifies it** | 🔴 |
+| **`workflow`** | — | — | Workflow Automation | The whole module. **[ADR-0402](adr/0402-a-rule-is-data.md) is RATIFIED — specified and unblocked** | 🟠 |
 | **`notifications`** | — | — | App Shell · Signal Center · Global Search · Workflow | **The whole module. [ADR-0040](adr/0040-notifications.md) is `Proposed`** | 🔴 |
 | ***shell services*** | — | — | **All 16** | Global scope · saved views · system status · impersonation · sandbox. **No module owns these** | 🔴 |
 
@@ -49,7 +49,7 @@
 
 ```
                      ┌─────────────────────────┐
-                     │  ADR-0400 · Person       │ ◀── the only architectural blocker
+                     │  ADR-0400 · Person       │ ✅ RATIFIED 2026-08-04 — no longer a blocker
                      └────────────┬─────────────┘
                           │                │
                   knowledge_graph      observation_engine
@@ -60,7 +60,7 @@
                      AI Copilot (committee reasoning)
 
   ┌──────────────────────┐        ┌──────────────────────────┐
-  │  ADR-0040 · Notify   │        │  O3 · shell services      │
+  │  ADR-0040 ⏸ DEFERRED │        │  O3 ⏸ DEFERRED            │
   └──────────┬───────────┘        └────────────┬──────────────┘
              │                                  │
       App Shell notifications          global scope · saved views
@@ -69,7 +69,7 @@
       workflow subscribers              ─── ALL 16 SCREENS ───
 
   ┌──────────────────────┐        ┌──────────────────────────┐
-  │  C-326 · ADR-0300    │        │  ADR-0402 · rule is data │
+  │  C-326 ✅ RATIFIED   │        │  ADR-0402 ✅ RATIFIED     │
   └──────────┬───────────┘        └────────────┬──────────────┘
              │                                  │
    integrations inbound port              workflow module
@@ -80,7 +80,9 @@
   (no decision needed)  ai_reasoning_engine ┴──▶ AI Copilot
 ```
 
-**Four decisions gate eleven screens. Nothing else in the assessment gates anything.**
+> ✅ **Amended 2026-08-04 — the product owner ruled the whole queue.** **Three of the four are ratified; two are deferred with an instruction not to prepare them further.**
+
+**What gated eleven screens now gates two.** ADR-0040 and O3 are deferred by decision, and everything they gate waits on implementation reaching them rather than on a signature. **The remaining graph is dependency, not decision.**
 
 > **The graph's shape is the finding.** Screens do not depend on each other — **they depend on four rulings and two interface layers.** That is why waves are organised around unblocking rather than around screen value.
 
@@ -136,7 +138,7 @@
 
 > **People Intelligence · Global Search**
 
-**ADR-0400 unblocks both, and nothing else does.** Global Search's account group is buildable in wave 3 if wanted; the full four-type surface is here.
+> ✅ **Unblocked 2026-08-04 — ADR-0400 is ratified.** **This wave's blocker is gone.** Its position is now argued from dependency alone: People supplies the entity Global Search's people group needs, so the order inside the wave stands. Global Search's account group is buildable in wave 3 if wanted; the full four-type surface is here.
 
 ### Wave 7 — Reports
 

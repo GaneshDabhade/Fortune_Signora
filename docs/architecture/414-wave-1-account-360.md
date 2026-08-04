@@ -32,8 +32,8 @@
 | **Timeline** — 412 entries | `timeline` — `kind`, `occurred_at`, `source_module`, `source_ref`, `detail` | 🟩 |
 | **Technology stack** — Salesforce, SAP, Azure, Okta | `knowledge_graph`, `EntityKind.TECHNOLOGY` | 🟩 |
 | **Competitors** — Cadenza, Orbital, in-house build | `commercial_profile` `GET /competitors` — **[ADR-0403](adr/0403-signal-engine-reads-a-declaration.md), ratified and shipped** | 🟩 |
-| **Contacts** — 24 known, 6 on the committee | **Person** | 🔴 **O1** |
-| **Org chart** — confirmed vs inferred | **Person** | 🔴 **O1** |
+| **Contacts** — 24 known, 6 on the committee | **Person** — ✅ **ADR-0400 ratified 2026-08-04** | 🟠 |
+| **Org chart** — confirmed vs inferred | **Person** — ✅ **ADR-0400 ratified 2026-08-04** | 🟠 |
 | **Next actions** — *"Approve the drafted procurement intro"* | `sales_engagement` — built, no `interface/` | ➡️ **wave 2** |
 | **Meetings** — QBR, procurement introduction | `MEETINGS` is in `LIVE_CAPABILITIES`; **nothing is connected** | ➡️ **wave 5** |
 | **Product usage** — licence utilisation, weekly actives, support tickets, NPS | **No telemetry source anywhere in the repository** | ⬜ |
@@ -44,7 +44,9 @@
 | **Key facts** — account tier, procurement threshold, security review status, data residency | **Mixed.** Some are customer declarations; none is declared today | ⬜ |
 | **Relationship history** — 2021 to today, collapsed to milestones | Derivable from `timeline` + `opportunity_engine`; **no aggregate exists** | ⬜ |
 
-**Eleven 🟩 · two 🔴 · two ➡️ · seven ⬜.**
+**Eleven 🟩 · two 🟠 · two ➡️ · seven ⬜.**
+
+> ✅ **Amended 2026-08-04.** The two 🔴 were contacts and the org chart, blocked on O1. **ADR-0400 is ratified, so they are no longer blocked — they are unbuilt.** **They stay out of wave 1 regardless**: wave 1 is a read composition over what exists, and `EntityKind.PERSON` does not exist yet. **The boundary is unchanged; only its reason is.**
 
 ## 2 · What wave 1 delivers
 
@@ -62,7 +64,7 @@
 
 | | Why not |
 |---|---|
-| **A contacts table, or a `PERSON` member on `EntityKind`** | **O1 is unruled.** A slice that adds Person to make one section render has taken the decision |
+| **A contacts table, or a `PERSON` member on `EntityKind`** | ⚠️ **Reason changed 2026-08-04, prohibition unchanged.** O1 is now ruled, so this is no longer taking a decision — **it is Epic C's slice, and wave 1 is a read composition that builds no new domain.** Adding Person here would be a second implementation of it |
 | **Product usage, intent, calls, documents, notes** | ⬜ means *no source*, not *no endpoint*. **Building a screen section against invented data is exactly what `no-mock-data.test.tsx` exists to refuse** |
 | **A second narration, score or research call** | All three exist and are published. **Reuse, do not re-derive** |
 | **A single-account identity lookup** | The batch endpoint answers a request for one perfectly well, and `knowledge_graph` says so in the file |

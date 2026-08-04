@@ -81,7 +81,9 @@
 
 ### Lane C — referenced, not rowed
 
-**Lane C — Product Office, Architecture Governance & Cross-Lane Coordination** holds `lane-c-product-office` and is **deliberately absent from the table above** (product owner, 2026-08-03). **This board measures implementation; Lane C produces none.** It holds no `TASK-nnn` and claims nothing from [`BACKLOG.md`](BACKLOG.md). Its remit and boundaries are [`CLAUDE.md` §20e *Lane C*](../CLAUDE.md).
+**Lane C — Product Office, Architecture Governance & Cross-Lane Coordination** holds `lane-c-product-office` and is **deliberately absent from the table above** (product owner, 2026-08-03). ⚠️ **Amended 2026-08-04, product owner** — resolving [C-010](LANE_COORDINATION.md). **Lane C now owns Platform Foundation work** — repository process, the Environment Framework, bootstrap, doctor, cleanup, launch automation, developer tooling and the demo lifecycle. **It is rowed for that work like any other lane, and referenced for its coordination work as before.** The sentence below is superseded for Platform Foundation and stands for everything else:
+
+> **This board measures implementation; Lane C produces none of the *product* kind.** It holds no `TASK-nnn` and claims nothing from [`BACKLOG.md`](BACKLOG.md). Its remit and boundaries are [`CLAUDE.md` §20e *Lane C*](../CLAUDE.md).
 
 > **Lane C owns the coordination of implementation, not the implementation itself.**
 

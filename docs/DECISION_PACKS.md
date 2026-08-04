@@ -424,28 +424,35 @@
 
 ---
 
-## The decision queue, as of 2026-08-04
+## The decision queue, as of 2026-08-04 — **ruled**
 
-**Nine items genuinely need the product owner, and two of the eleven collapsed into others** — the office's job is to keep finding those.
+> **The product owner ruled the whole queue on 2026-08-04.** Five approved, one partially approved, three deferred. **Nothing is awaiting a decision.**
 
-> **Two reductions, 2026-08-04.** **[C-221](LANE_COORDINATION.md) is carried by O1**: *"park Epic C or drop it"* has no independent answer, because ratifying ADR-0400 removes its premise and refusing it settles it as *drop*. **[C-021](LANE_COORDINATION.md) is carried by O4**: Pack N already recorded it as *"gated on C-010, and ruling that unblocks both."* **Neither needs a separate ruling and neither is listed below.**
+### Approved
 
-| | Item | Blocking | Why it cannot be determined objectively |
-|---|---|---|---|
-| 🔴 | **[O1](#pack-o--the-approved-ui-needs-three-things-the-repository-has-not-decided)** — ratify ADR-0400 | **People Intelligence, and half of Global Search** | **The only architectural blocker in the approved product.** The architecture excludes Person deliberately; the approved UI requires it |
-| 🔴 | **[C-321](LANE_COORDINATION.md)** | **A6, now** | Its specification says twice that A6 *"depends entirely on the C-321 ruling"*. **What to render *is* the ruling** — narrowing the slice does not escape it |
-| 🟠 | **[O2](#pack-o--the-approved-ui-needs-three-things-the-repository-has-not-decided)** — ratify ADR-0040 | **Notification Center · Signal Center routing · monitored searches** | **Hold lifted — Module 7 is delivered and the wait was justified.** The approved module is far larger than the popover ADR-0040 was written against. **Read it against [418](architecture/418-platform-foundation-assessment.md) §3 first** |
-| 🔴 | **[O4](#pack-o--the-approved-ui-needs-three-things-the-repository-has-not-decided)** — rule C-010, `infra/` ownership | **Environment Framework phase 3 · the saved-view store · the A360 batch composition** | **Three pieces of work now wait on one unruled question**, and four defects already landed in the gap. **Raised in urgency by the P0 proposal, not newly discovered** |
-| 🟠 | **[O3](#pack-o--the-approved-ui-needs-three-things-the-repository-has-not-decided)** — where the Shell's services live | **Every screen after priority 3** | A boundary question, so it decides whether an ADR is needed |
-| 🔴 | **[C-326](LANE_COORDINATION.md)** — ratify [ADR-0300](architecture/adr/0300-inbound-customer-systems.md) §1 | **Epic E1's read · E2 · CRM Integrations** | **Narrowed 2026-08-04** ([419](architecture/419-c326-narrowed-and-lane-b.md)): it blocks **the source port and the runner, and nothing else.** Both ends are already built |
-| 🟠 | **[ADR-0401](architecture/adr/0401-a-customers-crm-is-not-a-provider.md)** — is a CRM field a claim? | **E1's normalization** | **Sign it with C-326.** Same epic, adjacent question — C-326 is *how data gets in*, this is *what it means once in* |
-| 🟠 | **[ADR-0402](architecture/adr/0402-a-rule-is-data.md)** — a rule is data | **Epic F entirely** | **Complete: five alternatives assessed, one recommended, no unresolved alternative.** Phases 1–4 depend on nothing unbuilt |
-| 🟡 | **[C-200](LANE_COORDINATION.md)** — is M14b one module, two, or three? | **Billing · M14b** | Lane A's discovery says *"one module and two integrations"*. **Module 8's approved design is new evidence** ([418](architecture/418-platform-foundation-assessment.md) §5a) |
-| 🟠 | **[Pack I](#pack-i--epics-bg-are-specified-and-unapproved-and-the-queue-is-running-dry)** — Epics B–G scope | — | ⚠️ **Superseded in practice.** Epics C, D, E1, F and G were all approved and assigned directly between 2026-08-03 and 2026-08-04. **What remains of it is Epic B**, which [C-322](LANE_COORDINATION.md) already carries |
+| | Ruling | Effect |
+|---|---|---|
+| **O1** | **[ADR-0400](architecture/adr/0400-person-as-an-entity.md) ratified.** *"Person becomes a first-class entity within the approved bounded context. Proceed on that assumption for all future preparation."* | **The only architectural blocker in all 26 approved screens is gone.** Releases Epic C · People Intelligence · half of Global Search · 4 ICP *Decision makers* criteria · Account 360's contacts and org chart. **[C-221](LANE_COORDINATION.md) is answered by it** |
+| **O4** | **[C-010](LANE_COORDINATION.md) resolved.** *"Do not create another engineering lane. Lane C's responsibilities are formally expanded to include Platform Foundation work that belongs to no product bounded context."* | **`infra/`, repository process, the Environment Framework, bootstrap, doctor, cleanup, launch automation, developer tooling and the demo lifecycle now have an owner.** Recorded in [`CLAUDE.md`](../CLAUDE.md) §20e. **[C-021](LANE_COORDINATION.md) is carried by it** |
+| **C-326** | **[ADR-0300](architecture/adr/0300-inbound-customer-systems.md) Option A ratified** — the sibling source port | **Lane B's E1 read is unblocked.** [409](architecture/409-inbound-source-port-contract.md) is the contract, and [419](architecture/419-c326-narrowed-and-lane-b.md) measured the remaining slice as **small** — both ends are already built |
+| **ADR-0401** | **Ratified.** *"Continue using the per-field falsifiability model exactly as documented."* | E1's normalization proceeds |
+| **ADR-0402** | **Ratified.** *"Epic F is now considered unblocked from a Product Office perspective."* | **Epic F is buildable.** Phases 1–4 depend on nothing unbuilt |
 
-> **The engineering-blocking queue is [Pack N](#pack-n--the-engineering-blocking-queue-reduced-to-four-decisions), and it is four decisions.** Everything below this line is either ruled, dissolved or blocking nothing.
+### Partially approved
 
-> **Everything else the office could determine, it determined.** Packs J and K were dissolved rather than escalated, Pack F was ruled, Pack H adopted. **A decision list long enough to need triage is a list Lane C failed to triage.**
+> **C-321** — *"Accept the documented recommendations as the default product behaviour. Only return to Product Owner if a recommendation materially changes customer-visible behaviour beyond what has already been documented. Do not reopen the entire package."*
+>
+> **A6 is unblocked.** **The escalation test is now narrow and specific:** not *"is this uncertain?"* but **"does this change customer-visible behaviour beyond what the recommendation already documents?"** Anything else proceeds.
+
+### Deferred — and deferral is a ruling, not an absence
+
+| | Ruling | What continues |
+|---|---|---|
+| **O2** — [ADR-0040](architecture/adr/0040-notifications.md) | **Do not ratify yet.** Review it *together with* the finished Notification package | **Lane C's hold was correct and is extended by the owner.** [ADR-0402](architecture/adr/0402-a-rule-is-data.md) already ensures Epic F does not wait on it |
+| **O3** — shell services | **Deferred until implementation reaches the shared shell foundation. No further preparation required** | **Wave 3 planning stops at the boundary.** Do not prepare the shell services further |
+| **C-200** — M14b | **Deferred. Continue discovery; do not force a module boundary until implementation naturally reaches M14b** | Discovery only. **[42-billing-and-entitlements.md](architecture/42-billing-and-entitlements.md) stays discovery, and Module 8's design is evidence for it** |
+
+> **Two of these carry an instruction to *stop preparing*, and Lane C obeys it.** O3 says *"no further preparation is required at this stage"*; C-200 says *"do not force a module boundary."* **Continuing to prepare either would be the office manufacturing work the owner has explicitly deferred.**
 
 ---
 

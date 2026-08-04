@@ -272,6 +272,40 @@
 | **Validation** | Module suite · a test that identical input yields identical order · **a test that an empty group is returned, not dropped** |
 | **Escalate if** | Grouping requires reading another module's tables. **Never permitted** (§5) — open a `C-` item |
 
+### TASK-409 · Platform Foundation — a `demo` profile in the allocation table
+
+> **Drafted 2026-08-04 after [O4](DECISION_PACKS.md) resolved [C-010](LANE_COORDINATION.md).** **Lane C now owns Platform Foundation work** (`CLAUDE.md` §20e) and claims these like any other lane. From [420](architecture/420-environment-management-proposal.md) §8.
+
+| | |
+|---|---|
+| **Objective** | **`make demo` stops printing two commands for a human to run.** Today it prepares and then prints `uvicorn …` and `npm run dev`; `make review` needs neither |
+| **Module** | `infra/` — **Lane C's**, from 2026-08-04 |
+| **Status** | `READY` |
+| **Scope** | A `demo` entry in `infra/environments.py`'s profile table — slot, purpose, owner, port slot, coexistence. **The model only** |
+| **Dependencies** | **None** |
+| **Repository reuse** | **`environments.py` is Phase 1 of the Environment Framework and already models exactly this.** Adding a profile is a row, not a design |
+| **Non-goals** | **No launcher yet** — that is TASK-410's shape and belongs to the generalisation, not to this row. **No new ports invented**: [`RUNNING.md`](RUNNING.md#running-a-lane) owns the allocation convention |
+| **Acceptance** | `make environments` reports the new profile and its allocation · **no existing profile's allocation changes** · demo no longer runs inside a lane's slots |
+| **Implementation order** | First of the Platform Foundation slices |
+| **Validation** | `make environments --check` · **a test that two profiles cannot share a slot** |
+| **Escalate if** | The allocation convention needs changing rather than extending. **That is `RUNNING.md`'s and QE's** |
+
+### TASK-410 · Platform Foundation — one `make doctor`
+
+| | |
+|---|---|
+| **Objective** | **One command answers *"is this environment ready?"*** Five tools answer it today and nothing asks all five |
+| **Module** | `infra/` — **Lane C's** |
+| **Status** | `READY` |
+| **Scope** | A single target composing the **existing** checks and reporting one verdict |
+| **Dependencies** | **None** |
+| **Repository reuse** | **`workstation.py` · `reachability.py` · `state-check.py` · `runtime-composition.py` · `validate.py` all exist and all pass or fail on their own.** This composes; **it re-implements nothing** |
+| **Non-goals** | **No new check.** ⚠️ **No repair** — `state-check.py` reports and never repairs, *because every inconsistency it finds has more than one correct resolution*, and a doctor that fixes things inherits that problem. **No CI, no scheduling** (§20c-2) |
+| **Acceptance** | One command, one verdict, **every underlying tool still runnable alone** · a failure names which check failed and what to run · **exit code is the verdict** |
+| **Implementation order** | Second. Independent of TASK-409 |
+| **Validation** | A test that the composite fails when any component fails · **that it repairs nothing** |
+| **Escalate if** | Two checks disagree. **That is a finding about the checks, not something the doctor resolves** |
+
 ### TASK-900 · The platform learns to compose a module into the runtime
 
 | | |

@@ -2,7 +2,9 @@
 
 ## Status
 
-**READY FOR RATIFICATION — 2026-08-04**, drafted by Lane C — Product Office. **Not ratified, and nothing is implemented.**
+**RATIFIED — 2026-08-04, product owner.** Drafted by Lane C — Product Office. **Person becomes a first-class entity within the approved bounded context, and all future preparation proceeds on that assumption.**
+
+> **It was the only architectural blocker in all 26 approved screens.** Ratification releases Epic C, People Intelligence, half of Global Search, the four *Decision makers* criteria in the ICP Builder, and Account 360's contacts and org-chart sections. **[C-221](../../LANE_COORDINATION.md) is answered by it and needs no separate ruling.**
 
 **Complete: five alternatives assessed, one recommended.** ⚠️ **❓1 is now answered — the provider returns no person name** ([C-221](../../LANE_COORDINATION.md)), which blocks the *epic*. **Ratifying this ADR records the bounded context so it is not re-derived when the epic resumes; it neither approves nor unblocks Epic C.**
 
