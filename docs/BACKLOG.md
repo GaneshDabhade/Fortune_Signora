@@ -283,7 +283,8 @@
 |---|---|
 | **Objective** | **Every signal leaves the queue by being actioned, assigned, snoozed or dismissed with a reason** — and the resolution is durable and auditable |
 | **Module** | `signal_engine` — **Lane A's**, via TASK-203 |
-| **Status** | `READY` |
+| **Status** | **`CLAIMED` — Lane A**, 2026-08-04, by the Task Claim Protocol |
+| **Assigned** | **Lane A, by the product owner, 2026-08-04** — *"you may proceed with A-iii and A-iv when their corresponding READY task rows exist on integration."* **The rows landed with Lane C's synchronization at `3ab3111`**, which is the condition the ruling named |
 | **Approved screen** | **Signal Center** — *"a triage queue, not a notification list"* |
 | **Scope** | Resolution state for a signal: **assign · snooze-until · dismiss-with-reason · actioned**, each attributed and timestamped. A workspace-scoped read of the queue by state |
 | **Dependencies** | **None. [O2](DECISION_PACKS.md) does not block this** — ADR-0040 governs notification *delivery*; **this is resolution state, which `signal_engine` owns** |
@@ -301,7 +302,8 @@
 |---|---|
 | **Objective** | **A criterion states what it predicts, measured against closed-won.** The ICP is declarable today and **nothing tells a customer whether it is any good** |
 | **Module** | `commercial_profile` — **Lane A's**, via TASK-203 |
-| **Status** | `READY` |
+| **Status** | **`CLAIMED` — Lane A**, 2026-08-04, by the Task Claim Protocol |
+| **Assigned** | **Lane A, by the product owner, 2026-08-04** — *"you may proceed with A-iii and A-iv when their corresponding READY task rows exist on integration."* **The rows landed with Lane C's synchronization at `3ab3111`**, which is the condition the ruling named |
 | **Approved screen** | **ICP Builder** — *"every criterion is scored against closed-won evidence, not opinion"* |
 | **Scope** | Per-criterion lift against decided opportunities, with its sample size · the aggregate backtest — **win rate and median cycle, in-ICP versus outside** |
 | **Dependencies** | **None.** `opportunity_engine` `GET /accounts/decided` supplies the outcomes and is published |
