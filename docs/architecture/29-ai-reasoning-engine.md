@@ -280,6 +280,35 @@ Seven of eight runs measured **0.667 against a 0.66 floor**. Because each case h
 
 **The benchmark says the prompt passed, and the benchmark is accepted.** This is recorded so a future prompt revision can improve robustness deliberately — and explicitly **not** as a reason to modify `reasoning@1`, which would be tuning a prompt to widen a margin rather than to fix a defect.
 
+### The re-run this section asked for — protocol 2, 2026-08-04 (Lane A, Epic G)
+
+**The section above ends with an instruction: *"the comparison should be re-run once the protocol inconsistency is corrected."*** [ADR-0031](adr/0031-evidence-citation-protocol.md) corrected it, `PROMPT_RENDERING_PROTOCOL_VERSION` became **2**, and the comparison was never re-run. **`reasoning@1` is refused at runtime today**, and the code says why in its own words:
+
+> `_refuse_stale_protocol` — *"passed for this pairing under rendering protocol [1], but this process renders at protocol 2… **Re-evaluate under the current protocol — do not re-author the prompt.**"*
+
+**The certified model did not survive the correction.** The manifest's one protocol-2 row is `granite3.3:2b` at **coverage 0.0 with 2 grounding failures** — the model whose release rested on *"a stylistic habit rather than a capability"* lost it the moment the renderer stopped rewarding the habit. **The section predicted this outcome and named the reason before it happened.**
+
+**`llama3.1:8b` was re-measured, and it passes protocol 2 cleanly:**
+
+```
+prompt   reasoning@1  9bc851470552      model    llama3.1:8b
+dataset  explanation_narration@1  2cce0492a6bc
+rubric   v1    render protocol v2       run on 2026-08-04
+
+  ok   northwind   coverage 0.67        grounding failures  0
+  ok   contoso     coverage 0.67        schema failures     0
+                                        transport failures  0
+sample size 2       coverage 0.667      release  EARNED
+```
+
+**It is not recorded, and the reason is the whole finding.** The run needed **172.8 s for two cases — ~86 s each** — against `InferencePolicy.timeout_seconds = 60`. Under the committed policy this same pairing reports **UNMEASURABLE**, and Ollama's log shows why: generation was healthy at **4.7 tokens/sec and 270 tokens decoded** when the client hung up at exactly 60 s. **The `500` is the client disconnecting, not the provider failing.**
+
+> **The table above lists `llama3.1:8b` as UNMEASURABLE and stops there. That was a fact about the clock, not about the model** — and no one had established what it would score if allowed to finish. It scores a release.
+
+**So the constraint is unchanged and better understood.** A Quadro T1000 holds 4 GiB; `llama3.1:8b` is a 4.9 GiB weight file, so it runs 58% on an i7-10750H. **The one model that satisfies protocol 2 is the one that does not fit in VRAM**, and the one that fits no longer satisfies protocol 2. Every locally-runnable model is now on one side or the other of that line.
+
+**Nothing was tuned and nothing was recorded.** The measurement above was taken by a throwaway script outside the repository, altering the client timeout and **nothing else** — same prompt fingerprint, same dataset, same rubric, same schema, same protocol. It is a fact about this workstation, and it is deliberately **not** in the manifest: [TASK-013](../BACKLOG.md) forbids adjusting the timeout in writing, and recording a row the committed policy cannot reproduce would make the manifest claim a release this repository cannot re-measure. **Raised as [C-222](../LANE_COORDINATION.md).**
+
 ---
 
 ## T130 — four findings, every one from the repository saying no

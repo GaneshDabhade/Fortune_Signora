@@ -327,6 +327,7 @@ databaseUrl: required(
 | [C-219](#c-219--task-400s-two-halves-are-not-equally-buildable) | **TASK-400's two halves are not equally buildable** | Lane A | **Product owner** (A6) · **Lane C** (A7 join) | `OPEN` — **A7 proceeding, A6 held** | **A6 only.** Its own specification says [C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name) *"must be answered first"* |
 | [C-220](#c-220--two-lanes-have-both-written-a-document-50-and-a-document-51) | **Two lanes have both written a document `50` and a document `51`** | Lane A | **QE** · Lane C | `OPEN` | Nothing today. **`state-check` at the merge that brings both branches together** |
 | [C-221](#c-221--epic-cs-first-open-question-is-answered-and-the-answer-blocks-the-epic) | **Epic C's first open question is answered, and the answer blocks the epic** | Lane A | **Product owner** · Lane C | `OPEN` — [TASK-201](BACKLOG.md) claimed and blocked | **All of Epic C's Phases 1–3.** No person name enters the platform at any point |
+| [C-222](#c-222--reasoning1-earns-a-release-under-protocol-2-on-a-model-this-workstation-cannot-measure-in-time) | **`reasoning@1` earns a release under protocol 2, on a model this workstation cannot measure in time** | Lane A | **Product owner** · QE | `OPEN` — [TASK-202](BACKLOG.md) claimed, Epic G proceeds | **Only a live G1 inference.** The prompt is refused at runtime until a protocol-2 release exists |
 | [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | M14b is three concerns in one roadmap row, and none has a module | Lane A | **Product owner** (bounded context 🔴) | `OPEN` — **architectural** | **The whole of M14b.** [R-01](architecture/16-architecture-risks.md) has been waiting for it at High/High |
 | [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide) | Identifier allocation is still only *unlikely* to collide | Lane A | **QE** + product owner | `OPEN` — **directed by the product owner** | Nothing built. **The repository scaling past three actors without manual reconciliation** |
 | [C-202](#c-202--four-shared-documents-disagree-and-one-disagrees-with-itself) | Four shared documents disagree, and one disagrees with itself | Lane A | **QE** | `OPEN` — **directed by the product owner** | Nothing built. **A cold session trusting any status in the repository** |
@@ -4399,3 +4400,44 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 > **Whoever picks Epic C up inherits a validated starting point rather than a re-run.** The two findings that matter are above: **the buying score needs no change at all**, and **an interval cannot close without an identity** — which is why the tempting split into a blocked half and an executable half does not exist.
 
 ---
+
+## C-222 · `reasoning@1` earns a release under protocol 2, on a model this workstation cannot measure in time
+
+| | |
+|---|---|
+| **Owner** | **Product owner** (recording the measurement) · **QE** (whether the manifest may hold it) |
+| **Requesting lane** | Lane A |
+| **Category** | Release rule · evaluation policy |
+| **Status** | `OPEN` — **[TASK-202](BACKLOG.md) claimed; Epic G proceeds on everything this does not block** |
+| **Blocks** | **Only a live G1 inference.** `require_model` refuses `reasoning@1` at runtime until a protocol-2 release exists |
+| **Raised** | 2026-08-04, running the re-run [29-ai-reasoning-engine.md](architecture/29-ai-reasoning-engine.md) asked for |
+
+### The measurement
+
+**`reasoning@1` on `llama3.1:8b`, rendering protocol 2: 0 grounding failures, 0 schema failures, coverage 0.667 — `EARNED`.** Same prompt fingerprint, same dataset, same rubric, same schema. **One variable differed: the client timeout.**
+
+**It took 172.8 s for two cases — ~86 s each.** `InferencePolicy.timeout_seconds` is **60**. Under the committed policy the identical pairing reports **UNMEASURABLE**.
+
+### Why this is a decision and not an engineering choice
+
+**[TASK-013](BACKLOG.md) forbids it in writing** — *"Do not tune the prompt, delimiter, schema or timeout to make it pass."* **A timeout was changed and it passed.** That the change cannot affect the numbers — a call either completes and is scored, or does not complete and is scored by nobody — is an argument, and **an argument is exactly what that prohibition exists to refuse from a lane.**
+
+**The manifest carries no timeout field.** A recorded row would therefore be indistinguishable from one measured under the committed policy, and **this repository could not re-measure it.** Recording it also *derives a release*, which changes what `Prompt.is_released_for` answers at runtime. **Both are above a lane's authority.** Nothing was recorded.
+
+### The state this leaves `reasoning@1` in
+
+| | |
+|---|---|
+| **`granite3.3:2b`** | Certified under protocol **1**; under protocol **2** it scores **0.0 with 2 grounding failures** |
+| **`llama3.1:8b`** | Passes protocol **2**; needs **~86 s** where policy allows **60 s** |
+| **Runtime today** | **Refused** — `_refuse_stale_protocol`, and its message is *"Re-evaluate under the current protocol — do not re-author the prompt"* |
+
+> **The model that fits in 4 GiB of VRAM no longer satisfies protocol 2. The model that satisfies protocol 2 does not fit.** Every locally-runnable model is on one side or the other of that line, so **no local re-measurement closes this**.
+
+### What would close it, in order of cost
+
+- **A hosted-model evaluation.** [ADR-0028](architecture/adr/0028-model-runtime-by-environment.md) says production runs hosted models regardless, `--model claude-sonnet-4-5` already works as configuration, and a hosted model returns well inside 60 s. **This is [C-410](#c-410)'s question arriving with a concrete first caller** — and it settles the release honestly rather than by exception.
+- **Accept the measurement above with the timeout stated on the row.** Needs a manifest field that does not exist, and QE should rule on whether a release may cite a policy the default cannot reproduce.
+- **Re-measure on hardware that fits the model.** Changes nothing about the benchmark; needs a machine with ≥ 6 GiB of VRAM.
+
+**Lane A recommends the first**, and is not blocked meanwhile: everything in G1 except a live inference is buildable, and the refusal path is testable precisely because the refusal is real.
