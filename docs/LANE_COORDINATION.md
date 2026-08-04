@@ -4166,6 +4166,28 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 
 **Nothing depends on this row.** It is left in place rather than deleted because a register that quietly loses a row is worse than one that records a withdrawal — but no implementation, document or task references it.
 
+## C-412 · Three backlog rows say `READY` and are not claimable
+
+| | |
+|---|---|
+| **Raised by** | Lane C, 2026-08-04 |
+| **Status** | **`OPEN`** — for the product owner, who owns [`BACKLOG.md`](BACKLOG.md) |
+| **Class** | **Dependency Resolution** ([`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §1) — *what is actually blocking* |
+
+**Found by measuring the READY buffer against `origin/integration` rather than assuming it.** Lane C reported seven claimable tasks; both implementation lanes reported that nothing could be claimed. **The lanes were right, and three rows are why.**
+
+| Row | Says | Is |
+|---|---|---|
+| **TASK-902** — M7 Timeline | **`READY` — *"ADR-0038 is ratified"*** | ⚠️ **[TASK-017](BACKLOG.md) in the same file says the same work *"is not executable until the architecture is agreed"*** — [C-020](#c-020) names two open decisions and Meilisearch unprovisioned. **One file, two answers** |
+| **TASK-906** — M14b names its bounded context | **`READY`** · Module: *"Undecided — that is the deliverable"* | ⚠️ **Deferred by [D-029](DECISION_REGISTER.md)**: *"do not force a module boundary until implementation naturally reaches M14b."* **A row whose deliverable is a boundary the product owner deferred is not claimable** |
+| **TASK-900** — the platform composition RFC | **`READY`** · Module: **`signora_platform` — 🔴** | ⚠️ **The platform is frozen** (§20a) and the row's own work is an RFC. **Claimable is the wrong word for something whose output is a decision** |
+
+**TASK-901 is correctly `BLOCKED` on TASK-900 and is listed here only so the chain is visible.**
+
+> **What remains genuinely claimable is four, split by module ownership rather than pooled:** **Lane A** — TASK-903 and TASK-905 *(Product Surface, `commercial_profile`, `buying_score_engine`)*; **Lane B** — TASK-003 and TASK-904 *(`knowledge_graph`, `workspace_tenancy`)*. **Both below the five-slice target.**
+
+> **The general finding, and it is worth more than the three rows:** **`READY` is a status a row carries; *claimable* is a fact about a particular lane on a particular day.** One-lane-per-module means a pooled count is always wrong, and **a status that its own file contradicts is worse than an absent one** — a lane reads it, plans around it, and discovers the truth after claiming.
+
 ## C-411 · Three findings reported but recorded nowhere a lane would look
 
 | | |

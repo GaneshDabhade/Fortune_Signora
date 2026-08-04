@@ -597,6 +597,41 @@ Ideas → Architecture → Preparation → READY → Lane A / Lane B → QE → 
 
 > **Whenever one stage accumulates while the next is empty, name it explicitly** — with the stage, the reason, and a priority. **An empty stage downstream of a full one is the definition of a bottleneck**, and it is visible only to whoever is looking at both.
 
+### The dashboard reports execution state, never planning state
+
+**Corrected 2026-08-04, product owner, after Lane C reported `Claimable: 7` while both implementation lanes reported that nothing could be claimed.** **Both statements cannot be true, and the lanes were right.**
+
+#### Claimable has one definition
+
+> **A task is `Claimable` only if it is on `origin/integration`, `READY`, unclaimed, in a module the claiming lane holds or that no lane holds, with no unmet dependency and no deferral against it.**
+
+**Everything else is a different stage and is counted as one.** The failure was counting `READY` in a file as claimable by anybody — **`READY` is a status; claimable is a fact about a particular lane on a particular day.**
+
+#### Activity and capacity are separate rows
+
+**Never report a lane as `Working` when it is polling.** Both, always:
+
+```text
+Lane A
+  Current Activity:        Polling
+  Implementation Capacity: Idle
+  Reason:                  No claimable work on integration
+```
+
+> **A lane that is busy and a lane that has capacity are different facts**, and collapsing them hides the only one that needs action.
+
+#### The Synchronization Pipeline is a permanent section
+
+**Prepared → Product Owner Approved → Merged to Integration → Claimable → Claimed → In Progress → QE → Main.** **Actual repository state at every stage, counted, never planned.**
+
+> **A full stage above an empty one is a bottleneck**, and the pipeline exists so it cannot be described any other way.
+
+#### Implementation Support Mode triggers on either condition
+
+**Either implementation lane has no executable work on `integration`** — **or synchronization is the bottleneck between Product Office and implementation.** **The second is the one this office will miss**, because from inside the preparation stage everything looks full.
+
+> **Prefer operational truth over planned capacity. An optimistic count is worse than no count** — it reports health that the lanes can see is absent, and the office loses the credibility its numbers depend on.
+
 ### What this does not change
 
 **No rule is relaxed.** Reuse first · no regression · public contracts · bounded contexts · ADR compliance · import rules · tenancy · security · evidence before assumptions · smallest executable slice · no speculative abstraction · no duplicate concepts.
