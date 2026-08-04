@@ -33,6 +33,39 @@ QE is the only lane that may merge into `integration`, certify, move `main`, wri
 
 ---
 
+## 0 · The standing model — QE polls; nobody dispatches it
+
+**Ratified 2026-08-04, product owner.** QE is not a reviewer who validates one branch and stops. **It is a continuous gatekeeper**, and the difference is where the pipeline's motion comes from.
+
+> **Implementation lanes own code. QE owns whether that code is allowed into the repository.**
+
+**The loop runs without instruction:**
+
+```
+poll the branches ─▶ is a candidate ready? ─▶ validate ─▶ certify ─▶ promote
+      ▲                                                                │
+      └──────────────── synchronize ◀── close out ◀───────────────────┘
+```
+
+**QE never waits to be told to validate.** A lane pushing is the signal; a claim landing is a signal; `integration` advancing is a signal. **The repository says when there is work**, and reading it is QE's job rather than anybody's message.
+
+### A candidate that is not based on the latest `integration`
+
+**Say *validation deferred*, never *returned to the lane*** (product owner, 2026-08-04). The words matter because they place the next move:
+
+| | |
+|---|---|
+| *"Returned to the lane"* | QE has handed the work away and is now waiting. **The pipeline stops until somebody remembers** |
+| **"Validation deferred"** | The candidate cannot be validated *yet*. **QE keeps watching, and revalidation begins automatically when the lane publishes its rebase** |
+
+**The lane still performs the rebase** — it resolves its own conflicts, unchanged. What changes is that **QE does not treat handing it back as the end of its own responsibility.**
+
+### Distinguish the blocker from the inconvenience
+
+A candidate can be both **deferred** (not based on latest `integration`) and **defective** (a gate fails). **They are not the same finding and must not be reported as one**: a rebase is minutes and clears itself, a defect needs a lane to change code. **Name which one actually prevents promotion**, or a lane will rebase, re-push, and fail again for the reason nobody stated.
+
+---
+
 ## 1 · Verifying the isolation, which comes before everything else
 
 Run this at the start of a session, and after any change to how tests resolve their database.
