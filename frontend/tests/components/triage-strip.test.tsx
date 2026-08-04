@@ -93,6 +93,11 @@ describe('a seller scans before they read', () => {
       source_count: 2,
       source: 'simulated_provider',
       observed_at: '2026-07-01T00:00:00Z',
+      // **Newer than `observed_at`, deliberately** (B-111). The name was last
+      // reported in July and something else about the account was reported
+      // since — which is the ordinary case, and the one a fixture pinning both
+      // to the same instant would quietly stop exercising.
+      last_observed_at: '2026-07-28T00:00:00Z',
     };
   }
 

@@ -127,6 +127,8 @@ Lane B reported it as a **combination** defect: *"each branch type-checked clean
 
 **The type error — Lane A's.** One fixture missing one required field. **Not urgent for a lane's branch and urgent for `main`**, which is currently in a state the repository's own rules would reject.
 
+> **Lane A's half is done, 2026-08-04.** `triage-strip.test.tsx`'s fixture now carries `last_observed_at`, set **newer than `observed_at`** rather than equal to it — the ordinary case is that a name was reported once and something else about the account has been reported since, and a fixture pinning both to the same instant would quietly stop exercising the difference. `tsc --noEmit` is clean; 1162 frontend tests pass. **No regression test is added because `tsc --noEmit` is the regression test** — the defect was never that the check failed, only that nothing ran it. **The gate half is QE's and the row stays theirs; `Status` is deliberately untouched.**
+
 ### B-110 · The promotion guard refuses any commit that adds a migration
 
 | | |
