@@ -195,6 +195,7 @@
 | [C-407](#c-407--the-operating-model-changed-and-lane-c-may-not-verify-its-own-governance) | **The 2026-08-04 operating model — verification request** | Lane C | **QE** | `OPEN` | **Nothing.** Lane C may not be the final verifier of governance it authored |
 | [C-408](#c-408--epic-c-is-prepared-and-two-of-its-questions-are-not-lane-cs) | **Epic C · People — prepared; ADR-0400 awaits ratification** | Lane C | **Product owner** | `OPEN` | **Nothing today.** Epic C is unapproved scope; this is preparation, not a request to start |
 | [C-409](#c-409--adr-0014-is-accepted-and-contradicted-by-shipped-code) | **ADR-0014 rules four CRMs at launch; the catalog ships two** | Lane C | **Product owner** | `OPEN` | **Nothing.** But a lane starting [E1](architecture/401-epic-e1-crm-read.md) reads both |
+| [C-410](#c-410--no-prompt-has-ever-been-evaluated-against-a-production-model) | **Every AI release is measured on a local model; production runs hosted ones** | Lane C | **Product owner** | `OPEN` | **Nothing today.** Blocks the *first customer-facing inference*, whichever epic reaches it |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
 >
@@ -2901,6 +2902,30 @@ Every lane's rows sit **adjacent in one table**, and each lane's branch carries 
 | **C** | Leave it | **The option that costs a lane an hour and a wrong assumption** |
 
 **Also worth ruling in the same pass, because it is the same document:** ADR-0014 describes the adapter surface as *"opportunity/activity sync"*, while the shipped `Capability` enum models **`CRM_ACTIVITY` only** and **Epic D3 needs records**. Analysed in [401-epic-e1-crm-read.md](architecture/401-epic-e1-crm-read.md) §5, where **records are recommended for E1's first read**.
+
+## C-410 · No prompt has ever been evaluated against a production model
+
+| | |
+|---|---|
+| **Classification** | **Repository Decision** — a release-readiness gap, not a defect |
+| **Owner** | **Product owner** |
+| **Requester** | **Lane C — Product Office**, found while preparing [Epic G](architecture/404-epic-g-copilot.md) |
+| **Status** | `OPEN` |
+| **Blocks** | **Nothing today.** It blocks **the first customer-facing inference**, in whichever epic reaches one first |
+
+**Measured, not inferred.** All nine evaluations across the three prompt manifests name an **Ollama** model — `llama3.1:8b`, `granite3.3:2b`, `qwen2.5:3b`, `llama3.2:3b`.
+
+**[ADR-0028](architecture/adr/0028-model-runtime-by-environment.md) is unambiguous:** *"**Development: Ollama, running locally. Production: hosted commercial models** — every customer-facing inference."* And `Prompt.require_model` refuses any pair a prompt has not passed.
+
+> **Every AI capability in Signora is released for development and for nothing else.** **No module is misbehaving** — each is doing exactly what the release rule says, and **the rule is what makes this visible instead of a production surprise.** But the first customer-facing inference requires an evaluation nobody has run, and **it will be discovered by whichever epic gets there first** unless it is scheduled deliberately.
+
+**What it affects:** **M9** narration · **M10** research · **M11** recommendation · **[Epic G](architecture/404-epic-g-copilot.md)** most of all, because an assistant that degrades gracefully is not an assistant.
+
+**What it needs, and none of it is large:** **API credentials for a ratified vendor** (ADR-0012 — a product-owner action, the same shape as [E1](architecture/401-epic-e1-crm-read.md)'s) · an evaluation run per prompt · the manifest entries that follow. **The harness exists** — `make eval`, `make eval-reasoning`.
+
+> **Lane C is not recommending when.** It is recommending that it be **chosen rather than discovered**, and that whichever epic first needs customer-facing inference carries the cost explicitly in its plan rather than meeting `require_model`'s refusal at runtime.
+
+**A second, smaller finding in the same sweep, and it is not this item:** **[TASK-013](BACKLOG.md) is filed as a product-owner decision and appears to be an unrun measurement.** `reasoning@1`'s four evaluations all borrow `explanation_narration`'s dataset — **there is no `reasoning` dataset** — and the model every sibling prompt passes on, `llama3.1:8b`, **was never tried against it.** Analysed in [404-epic-g-copilot.md](architecture/404-epic-g-copilot.md) §1, where **reclassifying it to `READY` is recommended.**
 
 ## Closed
 

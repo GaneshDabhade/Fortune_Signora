@@ -180,7 +180,9 @@ Decisions required    what the product owner must rule before it can start
 
 **Conflict probability is measured, never estimated.** A dry-run merge of the active lane branches gives the overlapping paths and the real conflicts; **the colour is derived from that and is reported with the paths under it.** Effort is marked as an estimate because it is one. **A colour with no path list is an opinion, and the product owner cannot check an opinion.**
 
-**Ownership boundaries are the deliverable behind the portfolio.** The office maintains, and reports when it changes, **which lane owns which initiative end to end** — because an epic with two owners is a coordination cost that was chosen, not discovered.
+**Ownership boundaries are the deliverable behind the portfolio.** The office maintains, and reports when it changes, **which lane is *technically best suited* to an initiative** — because an epic with two owners is a coordination cost that was chosen, not discovered.
+
+> **The office names a technically suitable owner. It does not sequence lanes and it does not assign** *(product owner, 2026-08-04)*. **`Epic F → Lane B backend, Lane A builder` is ownership guidance; `Lane B → B-400, then E1` is an assignment**, and the second is the product owner's alone. **Lane C also does not wait for an implementation lane** — preparation is independent of who is free.
 
 > **Decisions needed is 0–2, not twenty.** A list long enough to triage is a list Lane C failed to triage. **Only what genuinely requires the product owner appears**; everything the office can determine objectively, it determines.
 

@@ -133,18 +133,22 @@
 
 **Ratified 2026-08-04, product owner: preparation is continuous and does not wait for a decision.** *"Implementation lanes should never wait for discovery."* **Lane C prepares the next initiative the moment one becomes ready, without approval and without allocation.**
 
-| Initiative | Status | Prep | Impl-ready | Blocking its readiness | Lane candidate |
+| Initiative | Status | Prep | Impl-ready | Blocking its readiness | **Technically best suited** |
 |---|---|---|---|---|---|
-| **Epic C · People** | **READY** | **100%** | ✅ **Yes** | **[ADR-0400](architecture/adr/0400-person-as-an-entity.md) ratification** · contact ruling ([C-408](LANE_COORDINATION.md) ❓2) | **B** — `knowledge_graph` + `commercial_profile` are its modules |
-| **Epic E1 · CRM read** | **READY** | **100%** | ✅ **Yes** | **Developer credentials — yours** · [ADR-0401](architecture/adr/0401-a-customers-crm-is-not-a-provider.md) *(phase 3 only)* | **B** — `integrations` is its module |
-| **Epic F · Workflow** | **READY** | **100%** | ✅ **Yes** | **[ADR-0402](architecture/adr/0402-a-rule-is-data.md) ratification.** Nothing else — **phases 1–4 depend on nothing unbuilt** | **B** — backend; **A** for the builder screen |
-| **Epic D · Risk** | **Research** | **15%** | ❌ | D1/D3 gated on E1; **D2 independent.** Repository analysis not started | **B** |
-| **Epic G · Copilot** | **Discovery** | **10%** | ❌ | **A released `reasoning@1` prompt** ([TASK-013](BACKLOG.md)) · [ADR-0031](architecture/adr/0031-evidence-citation-protocol.md) already defines citation | **A/B** |
-| **M14b · Billing** | **Blocked** | **0%** | ❌ | **[C-200](LANE_COORDINATION.md) 🔴** — no bounded context. **Preparation cannot start before scope exists** | **A** |
+| **C · People** | **READY** | **100%** | ✅ | **[ADR-0400](architecture/adr/0400-person-as-an-entity.md)** · contact ruling ([C-408](LANE_COORDINATION.md) ❓2) | **Lane B** — `knowledge_graph` · `commercial_profile` |
+| **E1 · CRM read** | **READY** | **100%** | ✅ | **Developer credentials** · [ADR-0401](architecture/adr/0401-a-customers-crm-is-not-a-provider.md) *(phase 3 only)* | **Lane B** — `integrations` · `provider_platform` |
+| **F · Workflow** | **READY** | **100%** | ✅ | **[ADR-0402](architecture/adr/0402-a-rule-is-data.md)** — and nothing else | **Lane B** backend · **Lane A** builder |
+| **D · Risk** | **READY** | **100%** | ✅ | **Nothing.** Phase 1 is [TASK-905](BACKLOG.md), already `READY`; **no ADR required** | **Lane A** phase 1 *(Product Surface)* · **Lane B** phases 2–3 |
+| **G · Copilot** | **READY** | **100%** | ✅ | **Nothing for phase 1.** [TASK-013](BACKLOG.md) is an **unrun measurement**, not a decision — [404](architecture/404-epic-g-copilot.md) §1 | **Lane B** — `ai_reasoning_engine` |
+| **M14b · Billing** | **Blocked** | **0%** | ❌ | **[C-200](LANE_COORDINATION.md) 🔴** — no bounded context. **Preparation cannot start before scope exists** | **Lane A** |
 
-> **Percentages are honest, not encouraging.** *Research* means the repository sweep has begun; *Discovery* means the initiative has been read and nothing more. **Lane C does not report progress it has not made** — the number that matters is the two at 100%, because those are the only ones a lane could receive today.
+> **Five epics are implementation-ready. `M14b` is the only one that cannot be prepared**, because [C-200](LANE_COORDINATION.md) leaves it without a bounded context — **and preparation cannot invent scope.**
 
-**Preparation order, and the reasoning:** **F next.** Its reuse story is the strongest in the roadmap — the entire event infrastructure exists and only the expression of a rule is missing — and it is **independent of E1**, which both C and D lean on. **D follows F**, because D2 is the only genuinely independent slice and the rest waits on E1 landing anyway.
+> **The office names a technically suitable owner and stops there** *(product owner, 2026-08-04)*. **It does not sequence lanes, does not assign, and does not wait for one to be free.** The column above is guidance about *modules*, not a plan for *people*.
+
+**Every prepared epic turned out smaller than its specification, and always for the same reason:** the expensive half was already built. **C** — six modules run people-shaped intelligence with no person in it. **E1** — the connection model is complete and nothing consumes it. **F** — the whole event substrate exists; only rule expression is missing. **D** — `Posture` and the Contribution Ledger already implement D2. **G** — the module, grammar, validator, harness and prompt all exist; one evaluation does not.
+
+**What preparation now owes:** **re-validating prepared epics against repository changes**, so a package does not quietly go stale between preparation and allocation — the failure that produced [TASK-401](BACKLOG.md), where a task was built before its row was written.
 
 #### Ownership boundaries — who owns what, end to end
 
