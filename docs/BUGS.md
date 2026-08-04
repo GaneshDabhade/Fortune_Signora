@@ -882,7 +882,7 @@ ids.filter((v, i) => ids.indexOf(v) !== i)
 | **Module** | **Product Surface** — the account brief |
 | **Current assignee** | **Lane A** — the product surface's assignee. Reported by Lane B, not fixed |
 | **Severity** | 🟡 — on every brief in the product, in every state |
-| **Status** | `OPEN` |
+| **Status** | **`FIXED`** — Lane A, 2026-08-04, in `9cf1973`, **promoted at `178697e`**. The line now reads *"unchanged since it opened"* and *"−10 since it opened"*. **`VERIFIED` is QE's** |
 | **Found** | 2026-08-03, by Lane B, during the product review |
 
 **Steps to reproduce.** Open any account brief and read the line under the score.
@@ -909,7 +909,7 @@ Opened at 20, 5 weeks ago      -10 since            ← the score has fallen
 | **Module** | **Product surface** — `frontend/app/(app)/accounts/[accountId]/page.tsx` |
 | **Current assignee** | **Lane A** — the product surface's assignee. **Reported by Lane B, not fixed** |
 | **Severity** | 🟡 — invisible to sighted users, and the page has no name at all for anybody navigating by structure |
-| **Status** | `OPEN` |
+| **Status** | **`FIXED`** — Lane A, 2026-08-04, in `9cf1973`, **promoted at `178697e`**. The brief now carries one `<h1>` naming the account, with both `<h2>`s beneath it. **`VERIFIED` is QE's** |
 | **Found** | 2026-08-03, by Lane B, when a reload assertion waited for an `<h1>` and timed out |
 
 **Steps to reproduce.** Open any account brief and list its headings:
