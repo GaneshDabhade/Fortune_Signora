@@ -317,6 +317,24 @@
 
 ---
 
+### CX-07 complete — the shape of the whole milestone, 2026-08-03
+
+**Four slices, and the pattern is one sentence:** *the product is a column of stacked cards, and the only thing that broke was a row pairing a name with a fixed-width block.* That shape appeared **five times** — the attention row, the brief's header, and the headers on Settings, Team and Your business — and got the same fix each time: stack below `sm`, unchanged above it.
+
+| Slice | What it was |
+|---|---|
+| **1** | **Navigation on a phone** — [B-203](../BUGS.md). The only *defect*; the rest were absences |
+| **2 · 3** | The attention row and the brief's header, where the account name was being compressed to a few characters |
+| **4** | Settings · Team · Your business — the same header shape, fixed identically |
+
+**Nothing needed a new component, a new token, or a dependency.** The design system already carried what this needed: `Table` wraps itself in `overflow-x-auto`, `Card` and `EmptyState` are width-agnostic, and every screen was already a single `max-w-3xl` column.
+
+> **The milestone's real cost was one line in the shell.** `hidden … md:block` removed the navigation and nothing replaced it — **that** was the reason the product could not be used on a phone, not the layouts. Everything after slice 1 was refinement, and saying so is more useful to the next lane than a list of five diffs.
+
+**What is not covered, and it is the same gap throughout.** **No test in this repository can see a reflow.** jsdom computes no layout, so every assertion here is on markup and class strings; *what a screen looks like at 320px* is verifiable only in a browser, and Playwright cannot start on this machine. **A Playwright viewport check is the missing half**, recorded for QE rather than left implied.
+
+---
+
 ## 5 · UX Principles
 
 **These emerged from the reviews rather than being decided in advance**, and each one is here because a slice was built or refused on its strength. They are recorded for the next lane, not proposed as new rules — [38-product-design-principles.md](38-product-design-principles.md) remains the ratified set, and these are the ones this lane's reviews have kept reaching for.
@@ -375,7 +393,7 @@
 | **CX-04** | **The signal glossary** | J2 · J3 | Nine words a first-time reader cannot look up. **Built and reverted** | **[C-025](../LANE_COORDINATION.md)** |
 | **CX-05** | **A seller can read the commercial profile** | **J7** | Every AE and SDR, every day | ✅ **Shipped** — stage 1. **Stage 2 (option D) remains** |
 | **CX-06** | **The Team page** | **J9** | An owner cannot see who is in their organization | ✅ **Shipped** — as TM-03a |
-| **CX-07** | **Responsive shell and screens** | All | The product on a device other than a laptop | **Unblocked 2026-08-03** — [C-026](../LANE_COORDINATION.md) ruled: **phone is in scope.** Now the largest executable slice on this page |
+| **CX-07** | **Responsive shell and screens** | All | The product on a device other than a laptop | ✅ **Shipped 2026-08-03** — [TASK-200](../BACKLOG.md), four slices. [B-203](../BUGS.md) fixed; the supported viewport recorded in §4a |
 | **CX-08** | **Target accounts actually get watched** | J7 | The one place the product accepts an instruction and does nothing with it | **[C-021](../LANE_COORDINATION.md)** |
 | **TM-03a** | **An organization can grow** | **J10** | Every workspace was permanently whoever created it. Invite · list · withdraw, with a Team card on Settings | ✅ **Shipped** |
 

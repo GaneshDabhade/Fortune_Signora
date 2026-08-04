@@ -146,7 +146,7 @@
 |---|---|
 | **Epic** | **CX-07**, [43-customer-experience.md](architecture/43-customer-experience.md) §6. **Assigned whole, not sliced** |
 | **Module** | **Product Surface** — every screen, plus the application shell |
-| **Status** | **`CLAIMED` — Lane A**, 2026-08-03, by the Task Claim Protocol |
+| **Status** | **`IN VALIDATION` — Lane A**, 2026-08-03. **All four slices shipped**; [B-203](BUGS.md) fixed and the supported viewport recorded in [43 §4a](architecture/43-customer-experience.md) |
 | **Assigned** | **Lane A, directly by the product owner, 2026-08-03** — *"I want Lane A to complete the Responsive Product Surface (CX-07) first"*. **Priority is the product owner's**; this row records the assignment rather than creating it |
 | **Unblocked by** | **[C-205](LANE_COORDINATION.md), ruled 2026-08-03: a phone is in scope.** That item's own analysis then binds — **this is a milestone, not a slice** |
 | **Scope** | The shell's navigation below `768px` · every screen's layout · the account brief's eleven sections in one column · touch targets and focus order · the interaction patterns that differ on a small viewport |
