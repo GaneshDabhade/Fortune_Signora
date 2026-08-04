@@ -16,7 +16,7 @@
 # There is no remote gate. A green local run is the decision, not a preview
 # of one.
 
-.PHONY: environments reachability event-catalog workstation unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research e2e e2e-quick e2e-smoke product-demo product-demo-record endurance review-product review-messy review-first-hour
+.PHONY: environments reachability event-catalog workstation validate unsaved review review-status review-end smoke smoke-keep dr up down test certify certified kpi doc-drift state-check coverage-debt release-preflight runtime-composition demo demo-prepare demo-seed demo-users demo-narrate eval eval-reasoning eval-research e2e e2e-quick e2e-smoke product-demo product-demo-record endurance review-product review-messy review-first-hour
 
 
 # These are invoked as `bash <script>` rather than `./<script>` deliberately.
@@ -212,6 +212,23 @@ reachability:
 #     make workstation ARGS=--force     regenerate; signs everyone out
 workstation:
 	@python3 ./infra/workstation.py $(ARGS)
+
+## **Stage 1 validation, against a database this run creates.** (the RE-03 sibling)
+#
+# Repository Health · Configuration Safety. A bare `pytest` resolves its target
+# from the shell, which on a multi-lane workstation points at a shared database
+# carrying whichever lane migrated it last. That produced three misleading
+# failure lists in one day — one of them 13 Security Invariants reporting a
+# missing `workspace_id` on a table whose migration creates one.
+#
+# Creates signora_validate_<commit>, migrates it, runs the suite, drops it.
+#
+#     make validate
+#     make validate ARGS=--quick     no coverage; faster for a first look
+# Run inside the backend venv: it provisions the database through
+# `tests/certification/database.py`, which imports asyncpg.
+validate:
+	@cd backend && uv run python ../infra/validate.py $(ARGS)
 
 ## **Does the platform emit an event the contract does not name?**
 #
