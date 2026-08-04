@@ -182,7 +182,7 @@ Decisions required    what the product owner must rule before it can start
 
 **Ownership boundaries are the deliverable behind the portfolio.** The office maintains, and reports when it changes, **which lane is *technically best suited* to an initiative** — because an epic with two owners is a coordination cost that was chosen, not discovered.
 
-> **The office names a technically suitable owner. It does not sequence lanes and it does not assign** *(product owner, 2026-08-04)*. **`Epic F → Lane B backend, Lane A builder` is ownership guidance; `Lane B → B-400, then E1` is an assignment**, and the second is the product owner's alone. **Lane C also does not wait for an implementation lane** — preparation is independent of who is free.
+> **The office does not assign, does not sequence, and does not recommend who should build** *(product owner, 2026-08-04, superseding the *"names a technically suitable owner"* rule of the same day)*. **A package names the modules an initiative touches; who holds those modules is the product owner's.** Naming a preferred lane was leaning on that decision while claiming not to make it. **Lane C also does not wait for an implementation lane** — preparation is independent of who is free.
 
 > **Decisions needed is 0–2, not twenty.** A list long enough to triage is a list Lane C failed to triage. **Only what genuinely requires the product owner appears**; everything the office can determine objectively, it determines.
 
@@ -223,6 +223,21 @@ Decisions required    what the product owner must rule before it can start
 **Cross-validation is standing, not occasional** *(product owner, 2026-08-04)*. **Every time a lane completes a milestone, every prepared package is re-checked against it** — new reusable APIs, UI, workflows, events or entities · changed dependencies · **removed blockers** · and assumptions that stopped being true. **A package that is not re-validated is a package quietly going stale**, and preparation that lags the repository is worse than none because it is trusted.
 
 > **It earns its place immediately.** On its first run: [ADR-0401](architecture/adr/0401-a-customers-crm-is-not-a-provider.md) was **amended within hours of being drafted** because Lane B's mapper showed the boundary was per *field*, not per *source*; [Epic C](architecture/400-epic-c-people.md) moved to **`Waiting on Product Decisions`** because Lane A answered ❓1 and the answer was *no*; and two Lane A findings **removed a phase and closed off a tempting shortcut** that would have cost a week.
+
+### Repository cleanup, and freezing
+
+**The Product Office's first responsibility, ahead of preparation** *(product owner, 2026-08-04)*. **Duplicated · conflicting · superseded · dead documentation**, and **one authoritative source for each topic** — which is `CLAUDE.md` §2 applied to the repository rather than to a register.
+
+| Class | Test | Action |
+|---|---|---|
+| **Duplicated** | Two files, one topic | **Keep the referenced one; delete the other** |
+| **Conflicting** | Two documents state incompatible facts | **Raise it** — one of them is somebody's ratified record |
+| **Superseded** | A newer decision replaced it | **Note the supersession where the old one lives** |
+| **Dead** | Nothing references it and it describes a model no longer in force | **Delete, with the evidence in the commit** |
+
+> **Dead documentation is worse than absent documentation**, because it is read. The root `ACTIVE_ASSIGNMENTS.md` declared itself *"the authoritative record of work allocation"* and described **a governance model superseded twice** — *"the product owner assigns; the integrator maintains."* **Zero references, two days stale against a live file 15× its size.** A cold session opening it inherited a model nobody runs.
+
+**Freezing.** **A package reaches `🧊 FROZEN` when another revision would change wording rather than reduce uncertainty.** It reopens on **new repository evidence only** — never for a better idea or a tidier structure. **Preparation that never freezes is motion**, and motion is what the office exists to remove from engineering rather than add to itself.
 
 ### What Lane C reports, and what it stops reporting
 

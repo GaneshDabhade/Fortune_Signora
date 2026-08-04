@@ -246,6 +246,27 @@
 
 ---
 
+## PACK L · Repository architecture — a decision that has been waiting outside the queue
+
+**Surfaced 2026-08-04 by Lane C during repository cleanup. Not authored by Lane C** — [`REPOSITORY_ARCHITECTURE_PROPOSAL.md`](REPOSITORY_ARCHITECTURE_PROPOSAL.md) was written **2026-07-30** and has read **`PROPOSED — awaiting approval`** for five days.
+
+| | |
+|---|---|
+| **Class** | **Repository Decision** |
+| **Why it is here** | **It is a decision, and it was not in the decision queue.** Nothing in this document pointed at it, so it aged where no queue could show it |
+
+**Part 1 — documentation organisation.** Recommends **four directories rather than the brief's seven**, moving **7 files and 0 directories**, leaving the 58 highest-linked documents on their existing paths. **`docs/architecture/` and `adr/` do not move at all.**
+
+> **Its strongest argument is an objection to its own brief**, and it is worth reading before anyone proposes this again: moving `22`–`28` out of `architecture/` *"looks most obviously right"* and is recommended **against**, because moving coherently requires renumbering, renumbering falsifies existing references, **and commit messages cannot be updated** — *"renaming `26-buying-score-engine.md` makes `ed7f9e9`'s message point at nothing."*
+
+**Part 2 — business scenario tests.** Recommends **three scenarios rather than eleven**, chosen to exercise disjoint machinery. **Neither clearly built nor clearly superseded**: `backend/tests/simulation/test_scenario.py` exists; whether it is these three was not established.
+
+**Relationship to what has since been ratified.** [`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §8's **three-purpose model** classifies documents by *purpose*; this proposal organises them by *location*. **They are compatible and neither references the other** — which is the coordination gap, not a conflict.
+
+> **Lane C makes no recommendation on the merits.** It did not author this, the reasoning is the original author's and is strong, and **surfacing it into the queue is the cleanup — deciding it is not Lane C's.** The narrow question is whether it is still live at all, five days on.
+
+---
+
 ## The decision queue, as of 2026-08-04
 
 **Two items genuinely need the product owner. Not twenty** — and the office's job is to keep it that way.

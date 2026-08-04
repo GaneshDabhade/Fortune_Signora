@@ -133,21 +133,34 @@
 
 **Ratified 2026-08-04, product owner: preparation is continuous and does not wait for a decision.** *"Implementation lanes should never wait for discovery."* **Lane C prepares the next initiative the moment one becomes ready, without approval and without allocation.**
 
-| Initiative | Maturity | Blocking questions **and** decisions | **Technically best suited** |
-|---|---|---|---|
-| **CX-07 · Responsive Surface** | ✅ **COMPLETED** | — *(Lane A, TASK-200, slice 4 closed the milestone)* | — |
-| **E1 · CRM read** | 🔨 **ACTIVE IMPLEMENTATION** | **Credentials** — acquisition only. **[ADR-0401](architecture/adr/0401-a-customers-crm-is-not-a-provider.md) amended**; the firmographic mapper has landed | **Lane B** (TASK-402) |
-| **G · Copilot** | 🔨 **ACTIVE IMPLEMENTATION** | **[C-222](LANE_COORDINATION.md)** — `reasoning@1` **earns a protocol-2 release on `llama3.1:8b`** and the repository cannot record it under its own 60 s timeout. **Blocks only a live G1 inference** | **Lane A** (TASK-202) |
-| **F · Workflow** | 🟩 **READY** | **Nothing for phase 0** *(new)*. **[ADR-0402](architecture/adr/0402-a-rule-is-data.md)** from phase 2 onward | **Lane B** backend · **Lane A** builder |
-| **D · Risk** | 🔨 **ACTIVE IMPLEMENTATION** | **Nothing** — claimed as **TASK-203** | **Lane A** ph. 1 · **Lane B** ph. 2–3 |
-| **C · People** | ⏸️ **WAITING ON PRODUCT DECISIONS** | **❓1 answered — the provider returns no name.** ADR-0400 ratification · contact ruling · **E1's progression** — §7 route B is now the only path to a named person | **Lane B** *(one remnant: the committee role id)* |
-| **M14a · Notifications** | 🔷 **ARCHITECTURE** *(not Lane C's)* | **[ADR-0040](architecture/adr/0040-notifications.md) `Proposed`.** Designed by Lane B; **F's phase 5 consumes it** | **Lane B** |
-| **M14b · Billing** | 🔎 **DISCOVERY — cannot proceed** | **[C-200](LANE_COORDINATION.md) 🔴** — no bounded context. **Preparation cannot invent scope** | **Lane A** |
-| **RIP · Revenue Intelligence** | ⛔ **RECOMMEND RETIRING** — [408](architecture/408-revenue-intelligence-platform.md) | **[C-411](LANE_COORDINATION.md)** — its job is `apps/api/composition/`, already built. **Nothing to implement** | — |
-| **M14.5 · Cloud Infrastructure** | 🔎 **DISCOVERY** | **Scope, technology and topology already ratified** in [ADR-0022](architecture/adr/0022-devops-infrastructure-and-deployment-topology.md) — *"nothing removed or redesigned, only its position in the order."* **Preparation would restate a ratified ADR** | **QE / platform** |
-| **M15 · GA readiness** | 🔎 **DISCOVERY** | **Depends on a deployed environment** (M14.5) for load testing at volume. **Three of its four workstreams already have live findings feeding them** — see below | **QE / platform** |
-| **E2 · CRM write-back** | 🟩 **READY** — [406](architecture/406-epic-e2-crm-write-back.md) | **[E1](architecture/401-epic-e1-crm-read.md) acquisition** must land first. **Zero cross-lane crossings** | **Lane B** |
-| **M11 · Recommendation** | 🔷 **ARCHITECTURE** — [407](architecture/407-m11-recommendation.md) | **Its input has never fired.** `reasoning@1` unreleased ([404](architecture/404-epic-g-copilot.md) §1) · **[C-410](LANE_COORDINATION.md)** | **Lane B** |
+| Initiative | Maturity | Blocking questions **and** decisions |
+|---|---|---|
+| **CX-07 · Responsive Surface** | ✅ **COMPLETED** | — |
+| **E1 · CRM read** | 🔨 **ACTIVE** | Credentials — acquisition only |
+| **G · Copilot** | 🔨 **ACTIVE** | [C-222](LANE_COORDINATION.md) — blocks only a live G1 inference |
+| **D · Risk** | 🔨 **ACTIVE** | Nothing |
+| **F · Workflow** | 🧊 **FROZEN — READY** | Nothing for phase 0. [ADR-0402](architecture/adr/0402-a-rule-is-data.md) from phase 2 |
+| **E2 · CRM write-back** | 🧊 **FROZEN — READY** | [E1](architecture/401-epic-e1-crm-read.md) acquisition must land |
+| **C · People** | ⏸️ **WAITING** | ❓1 answered — **the provider returns no name** · ratification · contact ruling |
+| **M11 · Recommendation** | 🔷 **ARCHITECTURE** | Its input has never fired |
+| **M14a · Notifications** | 🔷 **ARCHITECTURE** *(not Lane C's)* | [ADR-0040](architecture/adr/0040-notifications.md) `Proposed` |
+| **M14b · Billing** | 🔎 **DISCOVERY — cannot proceed** | [C-200](LANE_COORDINATION.md) 🔴 — no bounded context |
+| **M14.5 · Cloud Infrastructure** | 🔎 **DISCOVERY** | Design already a ratified ADR |
+| **M15 · GA readiness** | 🔎 **DISCOVERY** | Needs a deployed environment |
+| **RIP · Revenue Intelligence** | ⛔ **RECOMMEND RETIRING** | [C-411](LANE_COORDINATION.md) |
+
+> **The *technically best suited owner* column is removed** *(product owner, 2026-08-04)*. **Lane C does not assign, does not sequence and does not recommend who should build.** The packages name the modules an initiative touches; **who holds those modules is the product owner's to decide, and stating a preference was Lane C leaning on that decision.**
+
+### 🧊 Frozen packages
+
+**A frozen package is finished preparation.** Its scope, phases, reuse analysis and risks are settled, and **Lane C will not churn it further.** It reopens for exactly one reason: **new repository evidence** — a lane lands something that changes an assumption, and cross-validation catches it. **Not for a better idea, a tidier structure, or another pass.**
+
+| Frozen | Package | Frozen at |
+|---|---|---|
+| **F · Workflow** | [402](architecture/402-epic-f-workflow.md) + [ADR-0402](architecture/adr/0402-a-rule-is-data.md) | **2026-08-04**, after the phase-0 readiness review |
+| **E2 · CRM write-back** | [406](architecture/406-epic-e2-crm-write-back.md) | **2026-08-04**, after the write-surface review confirmed its input exists |
+
+> **Freezing is the point at which preparation stops being useful and starts being motion.** Both packages have been through the three-question heuristic, the reuse audit, cross-cutting review and a readiness pass. **Another revision would change wording rather than reduce uncertainty.**
 
 **Maturity states:** 🔎 Discovery → Research → 🔷 Architecture → Repository Validation → Reuse Analysis → Technical Design → 🟩 **READY** → 🔨 Active Implementation → ✅ Completed · ⏸️ Waiting on Product Decisions · ⛔ Recommend retiring *(any state may enter the last two)*.
 
