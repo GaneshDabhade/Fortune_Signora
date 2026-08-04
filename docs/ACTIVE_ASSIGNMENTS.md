@@ -104,7 +104,7 @@
 | **A1** | **Responsive Product Surface** — [CX-07](architecture/43-customer-experience.md) | **A** | Product Surface · shell · navigation · layout | **XL** · 2–3 wks | **none** | 🟢 | ✅ |
 | **A2** | **Business Workspace** — [TASK-903](BACKLOG.md) stage 2 | **A** | Product Surface + `commercial_profile` **(Lane B's)** | **M** | none | 🟠 | ⚠️ read-only crossing |
 | **B1** | **Timeline Intelligence** — [TASK-902](BACKLOG.md), M7 S05+ | **B** | `timeline` alone | **L** · ~2 wks | none | 🟢 | ✅ |
-| **B2** | **CRM Integration** — [Epic E1](architecture/51-implementation-specifications.md) | **B** | `integrations` | **XL** · 2–3 wks | **credentials — yours** | 🟢 | ✅ |
+| **B2** | **CRM Integration** — [Epic E1](architecture/401-epic-e1-crm-read.md) ✅ **prepared** | **B** | `integrations` · `provider_platform` | **XL** · 2–3 wks | **credentials — yours** | 🟢 | ✅ |
 | **B3** | **Observation Intelligence** — [A5](architecture/51-implementation-specifications.md) render + [B-319](BUGS.md) | **B** | `observation_engine` · Product Surface | **M** | **[C-324](LANE_COORDINATION.md)** | 🟢 | ✅ *if C-324 says yes* |
 
 > **A1 is the recommendation, and it is the correction this pass produced.** Lane C reported CX-07 as *"no agreed scope, escalated to Pack I"* twice. **It was ruled on 2026-08-03**: [C-026](LANE_COORDINATION.md) put **phone in scope**, and [43-customer-experience.md](architecture/43-customer-experience.md) records it as *"the largest executable slice on this page — executable, unbuilt."* **Lane C escalated a decision that had already been made**, and in doing so reported Lane A's queue as three deep when a two-to-three week initiative was sitting in it.
@@ -129,14 +129,22 @@
 | **Knowledge Graph vocabulary** ([TASK-003](BACKLOG.md)) | **[C-018](LANE_COORDINATION.md)** — nobody owns an attribute's customer-facing name | **You** ([Pack C](DECISION_PACKS.md)) |
 | **Epic D3** — which accounts are already customers | **E1** — one boolean from the CRM, **and it unblocks the whole expansion/renewal half of the vision** | Sequencing |
 
-#### Strategic — needs product direction before it can be scoped
+#### Preparation portfolio — researched ahead of implementation
 
-| Initiative | Why it cannot be prepared | Needs |
-|---|---|---|
-| **Epic C · People** — *"who do I call?"* | ✅ **PREPARED 2026-08-04** — [400-epic-c-people.md](architecture/400-epic-c-people.md) + **[ADR-0400](architecture/adr/0400-person-as-an-entity.md) `Proposed`**. **Six modules already run people-shaped intelligence with no person in it**; the epic is *give it a subject*, not *build it* | **Ratify [ADR-0400](architecture/adr/0400-person-as-an-entity.md)**, and rule on contact data ([C-408](LANE_COORDINATION.md) ❓2) |
-| **Epic F · Workflow automation** | **82 catalogued events, outbox, workers, replay — all built.** What is missing is a way for a customer to express a rule | **An ADR** — new `workflow` module |
-| **Epic G · Copilot** | Grounded explanation; [ADR-0031](architecture/adr/0031-evidence-citation-protocol.md) already defines citation | **A released prompt** — `reasoning@1` has none ([TASK-013](BACKLOG.md)) |
-| **Platform composition** ([TASK-900](BACKLOG.md)) | 🔴 `signora_platform`, **explicitly approved by ADR-0100** | **An RFC**; Lane B declined it as a different discipline |
+**Ratified 2026-08-04, product owner: preparation is continuous and does not wait for a decision.** *"Implementation lanes should never wait for discovery."* **Lane C prepares the next initiative the moment one becomes ready, without approval and without allocation.**
+
+| Initiative | Status | Prep | Impl-ready | Blocking its readiness | Lane candidate |
+|---|---|---|---|---|---|
+| **Epic C · People** | **READY** | **100%** | ✅ **Yes** | **[ADR-0400](architecture/adr/0400-person-as-an-entity.md) ratification** · contact ruling ([C-408](LANE_COORDINATION.md) ❓2) | **B** — `knowledge_graph` + `commercial_profile` are its modules |
+| **Epic E1 · CRM read** | **READY** | **100%** | ✅ **Yes** | **Developer credentials — yours** · [ADR-0401](architecture/adr/0401-a-customers-crm-is-not-a-provider.md) *(phase 3 only)* | **B** — `integrations` is its module |
+| **Epic F · Workflow** | **Research** | **20%** | ❌ | **Rule-model ADR.** *82 events, outbox, workers, replay — all built; what is missing is a way to express a rule* | **B** |
+| **Epic D · Risk** | **Research** | **15%** | ❌ | D1/D3 gated on E1; **D2 independent.** Repository analysis not started | **B** |
+| **Epic G · Copilot** | **Discovery** | **10%** | ❌ | **A released `reasoning@1` prompt** ([TASK-013](BACKLOG.md)) · [ADR-0031](architecture/adr/0031-evidence-citation-protocol.md) already defines citation | **A/B** |
+| **M14b · Billing** | **Blocked** | **0%** | ❌ | **[C-200](LANE_COORDINATION.md) 🔴** — no bounded context. **Preparation cannot start before scope exists** | **A** |
+
+> **Percentages are honest, not encouraging.** *Research* means the repository sweep has begun; *Discovery* means the initiative has been read and nothing more. **Lane C does not report progress it has not made** — the number that matters is the two at 100%, because those are the only ones a lane could receive today.
+
+**Preparation order, and the reasoning:** **F next.** Its reuse story is the strongest in the roadmap — the entire event infrastructure exists and only the expression of a rule is missing — and it is **independent of E1**, which both C and D lean on. **D follows F**, because D2 is the only genuinely independent slice and the rest waits on E1 landing anyway.
 
 #### Ownership boundaries — who owns what, end to end
 

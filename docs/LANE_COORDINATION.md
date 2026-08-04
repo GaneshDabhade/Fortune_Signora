@@ -194,6 +194,7 @@
 | [C-406](#c-406--every-lane-has-its-own-view-of-the-repository-and-qes-merge-is-the-only-synchronization-point) | Every lane has its own view; QE's merge is the only sync point | Lane C | **Product owner** | **`ANSWERED`** | **Nothing** — dissolved 2026-08-04; all four incidents closed by one answer |
 | [C-407](#c-407--the-operating-model-changed-and-lane-c-may-not-verify-its-own-governance) | **The 2026-08-04 operating model — verification request** | Lane C | **QE** | `OPEN` | **Nothing.** Lane C may not be the final verifier of governance it authored |
 | [C-408](#c-408--epic-c-is-prepared-and-two-of-its-questions-are-not-lane-cs) | **Epic C · People — prepared; ADR-0400 awaits ratification** | Lane C | **Product owner** | `OPEN` | **Nothing today.** Epic C is unapproved scope; this is preparation, not a request to start |
+| [C-409](#c-409--adr-0014-is-accepted-and-contradicted-by-shipped-code) | **ADR-0014 rules four CRMs at launch; the catalog ships two** | Lane C | **Product owner** | `OPEN` | **Nothing.** But a lane starting [E1](architecture/401-epic-e1-crm-read.md) reads both |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
 >
@@ -2871,6 +2872,35 @@ Every lane's rows sit **adjacent in one table**, and each lane's branch carries 
 > **Lane C's recommendation on ❓2, and it is the cheapest option as well as the safest: no contact channel in Epic C.** Read contacts from the customer's own CRM when **[E1](architecture/51-implementation-specifications.md)** lands, under the customer's own lawful basis. **Never buy contact data without an explicit ruling.** It reuses an integration already recommended for approval on its own merits — **two epics, one integration.**
 
 **What Lane C is not asking for.** Not approval of Epic C, not a lane, not a schedule. **Ratifying [ADR-0400](architecture/adr/0400-person-as-an-entity.md) and approving Epic C are separate decisions and neither implies the other.**
+
+## C-409 · ADR-0014 is `Accepted`, and contradicted by shipped code
+
+| | |
+|---|---|
+| **Classification** | **Architecture Decision** — documentation drift against a ratified ADR |
+| **Owner** | **Product owner** — **Lane C does not amend a ratified ADR** |
+| **Requester** | **Lane C — Product Office**, found while preparing [E1](architecture/401-epic-e1-crm-read.md) |
+| **Status** | `OPEN` |
+| **Blocks** | **Nothing.** But **a lane starting E1 would read both and they disagree** |
+
+| Source | Says | Status |
+|---|---|---|
+| **[ADR-0014](architecture/adr/0014-crm-integration-strategy.md)** | *"Four active CRM integrations at launch: **Salesforce, HubSpot, Pipedrive, Zoho**"* — and **explicitly rejects** narrowing, on the reasoning that launching CRM-exclusive *"would materially narrow addressable market at exactly the stage market breadth matters most"* | **`Accepted`** |
+| **`integrations/domain/catalog.py`** | *"**Day One is one CRM and one calendar** (ruled 2026-08-02)… **HubSpot is the first CRM, and Salesforce is the second.**"* **`CATALOG` contains two CRMs. Pipedrive and Zoho appear nowhere in the repository** | **Shipped** |
+
+**The later ruling is almost certainly the right one**, and the module argues it well — HubSpot suits Signora's stated ICP band, it is the simpler acquisition, and *"two integrations that work beat seven that are listed."* **The module even records the counter-argument against itself.**
+
+> **This is not a request to change the decision. It is a request to make one document true.** An `Accepted` ADR that shipped code contradicts is the drift class `CLAUDE.md` §2 names, and **the cost lands on whoever starts E1** — they read a ratified ADR promising four adapters and a catalog offering two, with nothing saying which governs.
+
+**Three routes, and Lane C recommends the first:**
+
+| | Route | Note |
+|---|---|---|
+| **A** ✅ | **Amend ADR-0014's status** to record the 2026-08-02 ruling as a supersession, keeping the original text | **Cheapest, and the repository's own convention** — a dated record is not rewritten. **Pipedrive and Zoho become demand-triggered**, which is exactly how ADR-0014 already treats Dynamics 365 |
+| **B** | A new ADR superseding it | Heavier; the decision has not changed enough to need a full one |
+| **C** | Leave it | **The option that costs a lane an hour and a wrong assumption** |
+
+**Also worth ruling in the same pass, because it is the same document:** ADR-0014 describes the adapter surface as *"opportunity/activity sync"*, while the shipped `Capability` enum models **`CRM_ACTIVITY` only** and **Epic D3 needs records**. Analysed in [401-epic-e1-crm-read.md](architecture/401-epic-e1-crm-read.md) §5, where **records are recommended for E1's first read**.
 
 ## Closed
 

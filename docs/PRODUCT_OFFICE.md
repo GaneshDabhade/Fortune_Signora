@@ -186,6 +186,24 @@ Decisions required    what the product owner must rule before it can start
 
 **This is a report format, not a document.** It is written into the response and nowhere else — **no portfolio file, no dashboard file, and none should be created** *(product owner: this is not a new governance process or document)*. **[`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) holds the prepared portfolio; the report is that data presented, not a second copy of it** (§2, *truth has exactly one authoritative representation*).
 
+### Continuous implementation preparation
+
+**Ratified 2026-08-04, product owner, as a standing responsibility.** *"Implementation lanes should never wait for discovery."* **Lane C stays one or more epics ahead of implementation, permanently.**
+
+> **It does not wait for a decision, an allocation, an idle lane, or approval to begin.** When one initiative reaches **READY**, preparation of the next starts immediately. **Preparation is independent of implementation** — that independence is the whole mechanism.
+
+**The loop:** roadmap → specifications → repository → **what already exists?** → reuse → architecture → competitors → workflows → documentation → ADR → boundaries → contracts → risks → phases → **READY** → *begin the next*.
+
+**READY means a lane could start tomorrow and ask nothing.** It requires **product** (problem, value, personas, workflows, UX) · **repository** (existing capability, modules, APIs, events, projections, intelligence) · **architecture** (bounded context, ownership, interactions, contracts, ADR, dependencies) · **domain** (entities, aggregates, value objects, commands, events, read models) · **implementation** (phases, sequencing, dependencies, parallelisation, risks, edge cases) · **and *things NOT to build*.**
+
+> **The *things NOT to build* section has become the most valuable output the office produces** *(product owner, 2026-08-04)*. It is written first, from the repository, and it is usually longer than the design.
+
+**Never begin from a blank page.** The first question is always *what already exists?* — and twice now it has changed what the epic **is**: [Epic C](architecture/400-epic-c-people.md) found six modules running people-shaped intelligence with no person in it; [E1](architecture/401-epic-e1-crm-read.md) found a complete connection model that **nothing consumes**.
+
+**Report preparation honestly.** A percentage is a claim about work done, not encouragement — **`Discovery` means the initiative has been read; `Research` means the repository sweep has begun; `READY` means 100% and nothing less counts.**
+
+**Preparation confers no implementation authority whatever.** Lane C does not implement what it prepared, does not claim it, and does not cross module ownership to explain it. **Its responsibility ends when the package is complete.**
+
 ---
 
 ## 6 · Feature decomposition

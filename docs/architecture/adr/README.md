@@ -64,6 +64,7 @@ Every ADR follows this structure:
 | [0040](0040-notifications.md) | **Proposed, not accepted.** Notifications — *what changed since I last looked*. The bounded context ADR-0017 did not decide: **delivery was bought, notification was not**. Attention is derived and never stored; a notification is workflow state and cannot be derived — **they are different products and must never converge** |
 | [0036](0036-target-account-contract.md) | The Target Account Contract — the first Customer–Supplier edge, and four permanent ownership boundaries: **Commercial Profile owns intent, Provider Platform owns synchronization, Knowledge Graph owns understanding, Signal Engine owns intelligence** |
 | [0400](0400-person-as-an-entity.md) | **Proposed, not accepted.** A person becomes an entity — **Epic C's bounded context.** Drafted by Lane C ahead of implementation: `Person` identifies and computes nothing, and an **`Affiliation` is an interval, never a field**, because *"Priya left Acme"* is not a mutation of Priya. **Six modules already run people-shaped intelligence with no person in it** |
+| [0401](0401-a-customers-crm-is-not-a-provider.md) | **Proposed, not accepted.** A customer's CRM is not a provider — **CRM data is a workspace-scoped fact, never a claim.** A provider asserts an observation of the world; a customer's CRM asserts something **not falsifiable**, and feeding it to identity resolution makes a stale `closed-lost` compete with last week's observation |
 
 ## How to Propose a New ADR
 
