@@ -80,6 +80,20 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-322 · Duplicate of [B-111](#b-111--tsc---noemit-is-in-no-gate-qe-runs-and-main-is-red) — withdrawn
+
+| | |
+|---|---|
+| **Status** | **`CLOSED` — duplicate.** The id is retired and never reused |
+| **Found** | 2026-08-04, by Lane B, rebasing onto `integration` |
+
+**Lane B opened this for the `tsc` failure in `triage-strip.test.tsx`. QE opened [B-111](#b-111--tsc---noemit-is-in-no-gate-qe-runs-and-main-is-red) for the same failure within the hour, and split it better than this row did.**
+
+**The split is the part worth keeping.** This row treated it as one defect in a fixture. B-111 separates two: **the type error, which is Lane A's**, and **the gate gap, which is QE's** — `tsc --noEmit` is in the Definition of Done for every lane and in no gate QE runs, which is how `main` reached a red state through a passing certification. **The second is the one that would have recurred.**
+
+**Both are fixed on `integration`** at `b332aea`. Nothing is left for this row to track, and two rows for one defect is the register drifting from the repository.
+
+
 ### B-111 · `tsc --noEmit` is in no gate QE runs, and `main` is red
 
 | | |
