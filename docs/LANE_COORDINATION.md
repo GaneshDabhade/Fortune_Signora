@@ -2942,6 +2942,50 @@ Two scenarios were **excluded on principle rather than on effort**, and the reas
 
 ---
 
+## C-104 · May a request handler call a vendor synchronously, when the answer *is* the request?
+
+| | |
+|---|---|
+| **Owner** | **Product owner** — an architectural interpretation, not a defect |
+| **Requesting lane** | **QE**, validating TASK-407 |
+| **State** | `OPEN` |
+| **Raised** | 2026-08-04 |
+| **Blocks** | **Nothing today.** TASK-407 passes every gate and was promoted. **This asks whether it should become precedent** |
+
+### The question
+
+`POST /workspaces/{id}/connections/{id}/check` makes a **real HubSpot call inside the request handler** and returns what came back.
+
+**`CLAUDE.md` §7 names that shape explicitly:**
+
+> *"Endpoints that would trigger pipeline processing (**provider calls**, AI reasoning, etc.) synchronously are not permitted — that work is dispatched to background workers."*
+
+**Lane B anticipated the objection and answered it in the route's own docstring**, which is why this is a question rather than a bug row:
+
+> *"Nothing about the customer's data moves. No record is read into the pipeline, nothing is stored about their companies, and no synchronization starts. **This asks whether the door opens and closes it again.**"*
+
+### Why QE is asking rather than ruling
+
+| | |
+|---|---|
+| **No gate fails** | 3344 backend, 382 invariants, coverage above floor, contracts kept, migration reversible. **QE's authority is to run the gates faithfully and act on the result, not to judge whether the result matters** |
+| **The call is bounded** | It reuses `HubSpotCompanies` and its `READ_TIMEOUT_SECONDS`. **There is no unbounded-request defect here**, which is the concrete risk §7 exists to prevent |
+| **The abstraction holds** | `HubSpotReachability` implements a module-owned port. No vendor SDK reaches domain or application code |
+| **It is genuinely arguable** | §7's stated subject is *pipeline processing*. A liveness probe ingests nothing, starts nothing and stores nothing about the customer's records |
+
+> **The reason to ask is precedent, not this slice.** *"Architecture is agreed explicitly or it is inferred, and inferred architecture is two lanes shipping incompatible halves of one contract"* (§20e). **The next lane that wants a synchronous vendor call will cite this endpoint**, and it should be citing a ruling instead.
+
+### The alternatives, so a ruling needs no second round-trip
+
+| | | |
+|---|---|---|
+| **A** | **§7 means pipeline processing; a bounded liveness probe is outside it** | The product stays as built. Worth writing the boundary into §7 explicitly, so the next lane reads a rule rather than an endpoint |
+| **B** | **§7 means every provider call** | The check dispatches to a worker and the screen polls. **A worse product for the customer**, who clicked *Check* and wants an answer, and considerably more machinery |
+| **C** | **A named exception, bounded by conditions** | e.g. *user-initiated · bounded timeout · ingests nothing · writes only its own result.* Keeps the rule strict and makes this case legible |
+
+**QE recommends C**, and notes it is a recommendation rather than a position: it is the option that leaves §7 as strong as it is today while making the one legitimate case checkable rather than argued afresh each time. **The choice is the product owner's.**
+
+
 ## C-103 · Two lanes wrote the same file, from the same bug row, within hours
 
 | | |
