@@ -94,6 +94,8 @@
 
 **Five 🟩 modules and one already carrying its interface layer.** Account 360 reuses eight endpoints across eight modules; AI Research reuses a router that already exists. **Nothing in this wave waits on a signature, a port, or a module that does not exist.**
 
+> ⚠️ **Corrected 2026-08-04, before anything was built.** *"Needs no decision from anybody"* is true of what wave 1 **delivers** and false of Account 360 as a whole. **Its 27 sections are eleven served, two blocked by O1, two owned by later waves and seven with no source at all.** [414](414-wave-1-account-360.md) draws the boundary and is the package; **wave 1 is that bounded subset, and it is still the right first slice.**
+
 **Why it is first and not merely easy:** Account 360 is the flagship record page, and it is the surface that makes every 🟩 module *reachable by a customer for the first time*. **It converts existing intelligence into product without adding any.**
 
 ### Wave 2 — the two interface layers
