@@ -205,6 +205,35 @@
 | **Not in scope** | **Usage decline** — Lane C recommends dropping it and Lane A agrees on the evidence: it needs product telemetry the platform has never had. **Champion departure** is blocked on Epic C (no person name exists); **renewal approaching** on E1 (only a CRM knows contract dates) |
 | **Related** | **[TASK-905](#task-905) delivers most of Epic D's visible value with no new signal** — two contractionary signals already score and the attention list does not distinguish them. Not claimed here; reported as the cheaper half |
 
+### TASK-204 · A-i — the AI Reasoning Engine reaches a customer
+
+| | |
+|---|---|
+| **Recommendation** | **[417 §4, slice A-i](architecture/417-executable-slice-audit.md)** — *"`interface/` for `ai_reasoning_engine`"*, Lane C, 2026-08-04. **Priority 1** in [417 §6](architecture/417-executable-slice-audit.md) |
+| **Module** | `ai_reasoning_engine` — **Lane A's**, via [TASK-202](#task-202) |
+| **Slice** | one slice |
+| **Status** | **`CLAIMED` — Lane A**, 2026-08-04, by the Task Claim Protocol |
+| **Assigned** | **Lane A, by the product owner, 2026-08-04** — *"The Product Owner approves the READY implementation slices prepared by Product Office. Claim the READY items in priority order."* |
+| **What is missing** | **The module concludes and nothing can read the conclusion.** `domain/` and `application/` are complete — `Reason` produces a Decision Package, stores it and publishes `ReasoningCompleted` — and there is **no `interface/` directory**, so no endpoint exists. It is one of only two modules in the repository without one |
+| **Scope correction, recorded on claiming** | ⚠️ **417 names the reuse as *"the module's own `public/`"*, and that surface is empty** — `__all__: list[str] = []`, deliberately, because the module was scaffolded with its boundary registered before it had anything to publish. **The slice is therefore larger than 417 states**: the read path must be exposed before it can be served. **No scope was added beyond that** — the correction is reported here rather than absorbed silently |
+| **In scope** | A read path to a Decision Package a customer already owns · whatever the module must publish for its own interface layer to serve it · the endpoint conventions of [19-api-conventions.md](architecture/19-api-conventions.md) |
+| **Not in scope** | **Triggering reasoning from a request.** §7 forbids an endpoint that synchronously starts pipeline work, and `Reason` is dispatched by the pipeline. **No new inference, no second call path, no cross-account ranking** — the module's `public/` docstring rules all three out |
+| **On claiming** | **Follow the six existing interface layers; do not invent a seventh shape.** The response is a purpose-built schema, never a domain type (§7). **Nothing here re-derives a fact the package already holds** — a Decision Package is a composition of fifteen parts and fourteen of them were authored by somebody better placed to be right |
+
+### TASK-205 · A-ii — Sales Engagement reaches a customer
+
+| | |
+|---|---|
+| **Recommendation** | **[417 §4, slice A-ii](architecture/417-executable-slice-audit.md)** — *"`interface/` for `sales_engagement`"*, Lane C, 2026-08-04. **Priority 1**, paired with [TASK-204](#task-204) |
+| **Module** | `sales_engagement` — **Lane A's**, which built it ([50-sales-engagement.md](architecture/50-sales-engagement.md)) |
+| **Slice** | one slice |
+| **Status** | **`CLAIMED` — Lane A**, 2026-08-04, by the Task Claim Protocol. **Begins only when [TASK-204](#task-204) is `IN VALIDATION`** — two slices under construction at once is a finding (`CLAUDE.md` §20e) |
+| **Assigned** | **Lane A, by the product owner, 2026-08-04**, in the same ruling as [TASK-204](#task-204) |
+| **What is missing** | **The contract is already published and unreachable.** `public/` exports 39 names — `Approach`, `ApproachBrief`, `NextAction`, `Recommendation`, `Risk`, `ProductFit`, `RankedRole` among them — **every one of which an approved screen renders**, and the module has **no `interface/` directory** |
+| **In scope** | An interface layer over the module's **existing** `public/` · the endpoint conventions of [19-api-conventions.md](architecture/19-api-conventions.md) |
+| **Not in scope** | **Any change to `public/`.** It is complete, 39 names, and this slice consumes it rather than growing it. **No new domain concept** — 417's own finding is that the pattern has never once required a domain change across six instances |
+| **On claiming** | **Reuse before extension.** If a type the screen needs appears absent, it is more likely already exported under this module's vocabulary than genuinely missing (§4) |
+
 ### TASK-900 · The platform learns to compose a module into the runtime
 
 | | |
