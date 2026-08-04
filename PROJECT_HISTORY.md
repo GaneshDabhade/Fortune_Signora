@@ -3,11 +3,11 @@
 > ⚙️ **GENERATED — do not edit by hand.** Rebuild with `python3 infra/project-history.py`.
 > **Manual edits are lost on the next run.**
 
-> Built at `68d20d9`. **Significant events only** — ADRs, completed repository cycles and schema changes.
+> Built at `94c159f`. **Significant events only** — ADRs, completed repository cycles and schema changes.
 > **This is not a changelog.** `git log` is the complete record; **a second copy of it would be a duplicate
 > representation** (`CLAUDE.md` §2), and a history listing every commit teaches the reader to stop reading.
 
-**48 ADRs · 39 decided · 45 completed cycles · 39 migrations.**
+**48 ADRs · 39 decided · 46 completed cycles · 39 migrations.**
 
 ## Architectural decisions, in order
 
@@ -100,6 +100,7 @@
 | 2026-08-03 | Repository Closeout — ebcf690, and a gate I broke by not checking what it needed |
 | 2026-08-03 | Repository Closeout — f034364, and a gate that had been reading the shell |
 | 2026-08-03 | Repository Closeout — fd2d942, and the second structural check the repository has |
+| 2026-08-04 | Repository Closeout — 3ab3111, and infra/ finally has an owner |
 | 2026-08-04 | Repository Closeout — 7a95403, a seller can read what Signora concluded |
 | 2026-08-04 | Repository Closeout — 85845c6, a renamed company explains itself |
 | 2026-08-04 | Repository Closeout — 9a112ae, and two lanes that did more than QE asked |

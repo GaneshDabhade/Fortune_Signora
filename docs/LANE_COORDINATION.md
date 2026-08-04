@@ -89,7 +89,9 @@
 
 ### C-213 — the Buying Committee is not exported from `commercial_profile.public`
 
-**Opened 2026-08-03 · Lane A · owner: Lane B (`commercial_profile`) · 🟠**
+**Opened 2026-08-03 · Lane A · current module assignee: Lane A (`commercial_profile`) · 🟠**
+
+> ⚠️ **Reassigned 2026-08-04, by rule rather than by ruling** ([C-414](#c-414--c-213-is-unfixable-by-anyone-and-that-is-why-the-lanes-stopped)). This row read *"owner: Lane B"*, which was correct when `commercial_profile` was Lane B's. **`CLAUDE.md` §20e — *module assignment is authoritative*: responsibility follows the module.** Lane A holds `commercial_profile` and therefore holds this.
 
 **The problem.** `commercial_profile.public` exports `TargetAccountReader`, `TargetAccountView` and `TargetAccountListView` — and **nothing about the Buying Committee**. Sales Engagement's whole capability is the join between a declared committee role and an observed appointment at a Target Account, and it cannot read the declaration.
 
@@ -137,7 +139,9 @@
 
 ### C-215 — the Timeline feed is per-account, and the workspace needs it per-seller
 
-**Opened 2026-08-03 · Lane A · owner: Lane B (`timeline`) · 🟠**
+**Opened 2026-08-03 · Lane A · current module assignee: unassigned (`timeline`) · 🟠**
+
+> ⚠️ **Corrected 2026-08-04** ([C-414](#c-414--c-213-is-unfixable-by-anyone-and-that-is-why-the-lanes-stopped)). This read *"owner: Lane B"*; **`timeline` is assigned to no lane today.** Under `CLAUDE.md` §20e — *module assignment is authoritative* — **whichever lane claims [TASK-902](BACKLOG.md) inherits this item with the module.** Naming a lane that does not hold it is the same defect C-213 carried.
 
 **The problem.** `GET /workspaces/{id}/accounts/{account_id}/timeline` is the only timeline endpoint, and the repository query underneath it is hard-scoped: `WHERE workspace_id = … AND entity_id = …`, ordered off a `(workspace, entity, occurred_at, id)` index.
 
@@ -4194,6 +4198,9 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 
 ## C-415 · Lane B is thin because its modules drifted, not because work ran out
 
+> ✅ **ANSWERED 2026-08-04.** `commercial_profile` and `knowledge_graph` are **Lane A's**; **Lane B's implementation ownership becomes `integrations`, `provider_normalization`, CRM integrations, provider connectors, ingestion, normalization and future adapters.** **Dual ownership of an implementation module is no longer permitted.**
+
+
 | | |
 |---|---|
 | **Raised by** | Lane C, 2026-08-04 |
@@ -4217,6 +4224,9 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 **The smallest question for the product owner:** **does Lane B keep `commercial_profile` and `knowledge_graph`, or does Lane A?** Either answer restores flow; **the current state — where both are Lane A's in practice and Lane B's in the register — is the only one that does not.**
 
 ## C-413 · Two lanes are assigned `knowledge_graph`
+
+> ✅ **ANSWERED 2026-08-04 — `knowledge_graph` is Lane A's.** The product owner standardised module assignment ([`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md)). **Option A, which Lane C recommended, on the evidence Lane B's own row called its hold *"(claimed — unassigned)"*.**
+
 
 | | |
 |---|---|

@@ -57,6 +57,14 @@
 | **D-038** | **Knowledge Continuity Framework approved, five of eight documents refused as duplication** | `APPROVED` | `lane-c-sync` | Repository documentation | **[423](architecture/423-knowledge-continuity-framework.md).** This register is D-038's first output |
 | **D-039** | **Synchronization by rebuild, not rebase** — abandon the 57-commit branch, replay only what still has value | `APPROVED` | `lane-c-sync` | Repository | **[422](architecture/422-synchronization-plan.md).** Six commits replace fifty-seven |
 
+## 2026-08-04 — module assignment
+
+| # | Decision | Status | Merged | Affected | Repository impact |
+|---|---|---|---|---|---|
+| **D-055** | **[C-414](LANE_COORDINATION.md) accepted as a clarification, not a decision.** *"Coordination items belong to the current assignee of the affected module, not to the lane that originally opened or previously owned it."* **C-213 is Lane A's** | `APPROVED` | `lane-c-sync` | `commercial_profile` · TASK-205 | **TASK-205 unblocks itself.** No ownership, boundary, ADR or governance rule changed |
+| **D-056** | **Module assignment standardised** — **`commercial_profile` → Lane A**, **`knowledge_graph` → Lane A**. Lane B's implementation ownership becomes `integrations`, `provider_normalization`, CRM integrations, provider connectors, ingestion, normalization and future adapters. **Dual ownership of an implementation module is no longer permitted** | `APPROVED` | `lane-c-sync` | Lane A · Lane B | **Answers [C-415](LANE_COORDINATION.md) and [C-413](LANE_COORDINATION.md).** The authoritative table lives on [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) |
+| **D-057** | **Module assignment is authoritative.** When ownership changes, **coordination items, backlog ownership and implementation responsibility all follow the module; historical authorship does not.** Write **current module assignee**, never **owner**, unless the responsibility is permanent and independent of assignment | `APPROVED` | `lane-c-sync` | All lanes | **`CLAUDE.md` §20e.** *One implementation module → one lane → one current assignee → one source of truth* |
+
 ## 2026-08-04 — validation
 
 | # | Decision | Status | Merged | Affected | Repository impact |

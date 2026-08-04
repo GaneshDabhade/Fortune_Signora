@@ -752,6 +752,18 @@ promoted commit SHA  ==  certified commit SHA
 
 **One lane per module still binds**, and it is what makes a claim refusable: if the item you are about to take needs a module somebody else is inside, you cannot take it, and the note saying so is more useful to the product owner than a silent skip.
 
+### Module assignment is authoritative
+
+**Ratified 2026-08-04, product owner**, after [C-213](docs/LANE_COORDINATION.md) became unfixable by any lane: it named an owner that had been correct on 2026-08-03 and had moved by 2026-08-04, so **the lane that could act would not and the lane named could not.**
+
+> **When module assignment changes, responsibility moves with it.** Coordination items, backlog ownership and implementation responsibility **all follow the module. Historical authorship does not.**
+
+**Write *current module assignee*, never *owner*, wherever responsibility is meant to move with the module.** **Reserve *owner* for what genuinely does not move** — the module that owns a table, an event, a bounded context, a piece of vocabulary. §20e already draws that distinction; **C-213 is what it costs when a register ignores it.**
+
+**One implementation module → one implementation lane → one current assignee → one source of truth.** **Dual ownership of an implementation module is not permitted**, and a board showing two lanes on one module is a finding, not a negotiation.
+
+> **Why a stale assignee is worse than a missing one.** A row with no owner is visibly unclaimed and somebody asks. **A row naming a lane that has moved on looks answered** — every lane reads it, believes it, and routes around the work. **C-213 blocked TASK-205 for two days on one word.**
+
 ### Executable work comes from `integration`, and from nowhere else
 
 **Ratified 2026-08-04, product owner**, after Lane A idled for several reporting cycles waiting on three artifacts that existed only on a Product Office branch.

@@ -68,6 +68,23 @@
 
 ## Current — as of 2026-08-04, `3ab3111`
 
+## Module assignment — the product owner's ruling, 2026-08-04
+
+> **One implementation module → one implementation lane → one current assignee → one source of truth.** **Dual ownership of an implementation module is not permitted** (`CLAUDE.md` §20e, *module assignment is authoritative*).
+>
+> **Responsibility follows the module.** A coordination item, a backlog row or a defect against a module belongs to **its current assignee**, whoever opened it.
+
+| Module | Current assignee |
+|---|---|
+| `commercial_profile` | **Lane A** *(ruled 2026-08-04 — [C-415](LANE_COORDINATION.md))* |
+| `knowledge_graph` | **Lane A** *(ruled 2026-08-04 — resolves [C-413](LANE_COORDINATION.md))* |
+| `signal_engine` · `opportunity_engine` · `ai_reasoning_engine` · `sales_engagement` · `ai_platform` · `provider_platform` · Product Surface | **Lane A** |
+| `integrations` · `provider_normalization` — **and CRM integrations, provider connectors, ingestion, normalization, future integration adapters** | **Lane B** |
+| `infra/` · `Makefile` · repository process · `signora_platform/simulation` | **Lane C** *(Platform Foundation — [D-022](DECISION_REGISTER.md))* |
+| `timeline` · `workspace_tenancy` · `observation_engine` · `business_event_engine` · `buying_score_engine` · `ai_research_engine` | **Unassigned** — claimable by either implementation lane |
+
+**In-flight work inside a reassigned module** either **transfers**, **completes before transfer if already in progress**, or is **explicitly re-planned.**
+
 | Lane | Task | Branch | Module | Slice | Status | Blocked by | Next action | Started |
 |---|---|---|---|---|---|---|---|---|
 | **Lane A** | **[TASK-205](BACKLOG.md) — A-ii, Sales Engagement reaches a customer** *(approved by the product owner 2026-08-04, from [417 §4](architecture/417-executable-slice-audit.md))* | `lane-a-product-surface` | `sales_engagement` — **Lane A's**, which built it | one slice | **`BLOCKED`** | **[C-213](LANE_COORDINATION.md)** · owner **Lane B** · open since **2026-08-03** | **Started when TASK-204 reached `IN VALIDATION`, and stopped at the first read.** `AssembleApproach` needs `CommitteeReader`, `EvidenceReader` and `PortfolioReader`, and **none has an implementation anywhere in the repository** — two of them need Buying Committee and portfolio exports `commercial_profile.public` does not have, which is C-213. `application/ports.py` predicted it: *"the adapter is a separate, small change once the export exists."* **Not proceeding**: writing it would invent the shape of an export Lane B has not written, inside a module Lane A may not touch. ⚠️ **417 §4 rated A-ii executable with reuse *"25+ exported types, unchanged"*** — true of the contract, not of the module. Original note follows: the contract is published and unreachable, 39 exported names — `Approach`, `ApproachBrief`, `NextAction`, `Recommendation`, `Risk`, `ProductFit`, `RankedRole` — **every one rendered by an approved screen**, and no `interface/` to serve them. **`public/` is not changed by this slice**; 417's finding is that the pattern has never required a domain change across six instances | 2026-08-04 |
