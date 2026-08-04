@@ -323,7 +323,7 @@
 |---|---|
 | **Objective** | **`make demo` stops printing two commands for a human to run.** Today it prepares and then prints `uvicorn …` and `npm run dev`; `make review` needs neither |
 | **Module** | `infra/` — **Lane C's**, from 2026-08-04 |
-| **Status** | `READY` |
+| **Status** | **`CLAIMED` — Lane C**, 2026-08-04, by the Task Claim Protocol |
 | **Scope** | A `demo` entry in `infra/environments.py`'s profile table — slot, purpose, owner, port slot, coexistence. **The model only** |
 | **Dependencies** | **None** |
 | **Repository reuse** | **`environments.py` is Phase 1 of the Environment Framework and already models exactly this.** Adding a profile is a row, not a design |

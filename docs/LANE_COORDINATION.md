@@ -4166,6 +4166,56 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 
 **Nothing depends on this row.** It is left in place rather than deleted because a register that quietly loses a row is worse than one that records a withdrawal — but no implementation, document or task references it.
 
+## C-414 · C-213 is unfixable by anyone, and that is why the lanes stopped
+
+| | |
+|---|---|
+| **Raised by** | Lane C, 2026-08-04 |
+| **Status** | **`ANSWERED` — Category 1 repository clarification.** The constitution already resolves it; no ruling is required |
+| **Class** | **Dependency Resolution** ([`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §1) |
+
+**The deadlock, and every step of it is in the register:**
+
+| | |
+|---|---|
+| **1** | **[TASK-205](BACKLOG.md) is `BLOCKED` on [C-213](#c-213--the-buying-committee-is-not-exported-from-commercial_profilepublic)** — `sales_engagement`'s interface layer cannot read the buying committee |
+| **2** | **C-213 needs one export from `commercial_profile.public`** — a `BuyingCommitteeReader` shaped like the `TargetAccountReader` beside it |
+| **3** | **C-213's row reads *"owner: Lane B (`commercial_profile`)"***, written 2026-08-03 when Lane B held that module |
+| **4** | **Lane A holds `commercial_profile` today** — TASK-203 and TASK-406, both on the board |
+| **5** | So **Lane B will not touch it** *(one assignee per module)* and **Lane A will not touch it** *(the row names Lane B)*. **Nobody can move it** |
+
+> **The constitution already answers this, and the rule is one sentence:** ***"Any lane opens. **The module's current assignee fixes.** Only QE sets `VERIFIED`."***
+>
+> **And §20e names the trap directly:** ***"Say current assignee, not owner, whenever the subject is active development work. Owner is reserved for what genuinely does not move."*** **C-213's row says *owner* about something that moved.**
+
+**The clarification: C-213 is Lane A's to fix, because Lane A is `commercial_profile`'s current assignee.** It changes no ownership, no boundary, no contract and no invariant — **it corrects a stale word in a register row**, which is exactly what §1 says Lane C resolves rather than escalates.
+
+**Lane A therefore unblocks itself.** The export is 🟠, it is inside a module Lane A already holds, and **TASK-205 was blocked on a row rather than on engineering.**
+
+## C-415 · Lane B is thin because its modules drifted, not because work ran out
+
+| | |
+|---|---|
+| **Raised by** | Lane C, 2026-08-04 |
+| **Status** | **`OPEN` — product owner.** Every assignment involved is theirs |
+| **Class** | **Ownership Decision** |
+
+**Measured from the board on `origin/integration`:**
+
+| Module | 2026-08-03 | Today |
+|---|---|---|
+| **`commercial_profile`** | Lane B | **Lane A** — TASK-203, TASK-406 |
+| **`knowledge_graph`** | Lane B — *"(claimed — unassigned)"* | **Lane A** — TASK-201 |
+| **`provider_platform`** | — | ⚠️ **collision: Lane A / Lane B** |
+
+**Lane B holds `integrations` and `provider_normalization`. `integrations` is with QE. So Lane B's claimable set is what sits in *unassigned* modules — `TASK-902` (`timeline`) and `TASK-904` (`workspace_tenancy`).**
+
+> **Nobody reassigned anything.** **Each move was a separate direct assignment, and the drift is only visible when the board is read as a whole** — which is what `infra/repository-dashboard.py` now does, and how [C-413](#c-413--two-lanes-are-assigned-knowledge_graph) was found.
+
+**Lane B is not starved of rows. It is starved of modules**, and **more backlog rows will not fix that** — which is why this is an ownership decision and not an Implementation Support Mode task.
+
+**The smallest question for the product owner:** **does Lane B keep `commercial_profile` and `knowledge_graph`, or does Lane A?** Either answer restores flow; **the current state — where both are Lane A's in practice and Lane B's in the register — is the only one that does not.**
+
 ## C-413 · Two lanes are assigned `knowledge_graph`
 
 | | |
