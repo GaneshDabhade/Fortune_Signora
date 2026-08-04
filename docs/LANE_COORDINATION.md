@@ -4166,6 +4166,38 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 
 **Nothing depends on this row.** It is left in place rather than deleted because a register that quietly loses a row is worse than one that records a withdrawal — but no implementation, document or task references it.
 
+## C-413 · Two lanes are assigned `knowledge_graph`
+
+| | |
+|---|---|
+| **Raised by** | Lane C, 2026-08-04 |
+| **Status** | **`OPEN`** — **product owner**, because both assignments are theirs |
+| **Class** | **Ownership Decision** ([`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §1) |
+| **Severity** | ⚠️ **It breaches §20e's hardest invariant** — *one session per lane, and **one assignee per module at a time*** |
+
+**Found by `infra/repository-dashboard.py` on its first run**, reading the execution board on `origin/integration`. **Verified against the board rather than trusted** — the same run reported a second collision on `commercial_profile` that was a parsing artifact, and the tool was fixed before this row was written.
+
+| Lane | Row | Module column |
+|---|---|---|
+| **Lane A** | [TASK-201](BACKLOG.md) — Epic C, People Intelligence *(assigned directly by the product owner, 2026-08-04)* | **`knowledge_graph`** · Product Surface |
+| **Lane B** | [TASK-300](BACKLOG.md) — Epic A *(assigned by the product owner, 2026-08-03)* | **`knowledge_graph` — *"(claimed — unassigned)"*** · `observation_engine` |
+
+**How it arose, and nobody behaved incorrectly.** Lane B claimed `knowledge_graph` on 2026-08-03 **because the module was unassigned**, and recorded exactly that in its own row. **Epic C was assigned to Lane A the next day**, and Epic C's bounded context is `knowledge_graph`.
+
+> **Why it is urgent now rather than tomorrow.** **[D-021](DECISION_REGISTER.md) approved ADR-0400 — `EntityKind` gains `PERSON`** — which is Epic C's unblock and lands squarely in `knowledge_graph`. **The moment TASK-201 resumes, two lanes are inside one module**, and the invariant exists precisely because that is the failure git cannot detect.
+
+**Options, for the product owner:**
+
+| | |
+|---|---|
+| **A** | **Lane A takes `knowledge_graph`**; Lane B's remaining `knowledge_graph` work (A5, A6 backends) transfers or is deferred |
+| **B** | **Lane B keeps it**, and Epic C's `EntityKind` change is a coordination item between the two lanes rather than a claim |
+| **C** | **Split by slice with an explicit handover point** — ⚠️ **Lane C does not recommend this.** §20e calls one-assignee-per-module the hardest invariant, and a negotiated split is how it erodes without anybody deciding to erode it |
+
+**Lane C recommends A**, on one piece of evidence: **Lane B's own row marks its hold as *"(claimed — unassigned)"***, which reads as provisional, and **Epic C cannot proceed without the module** whereas Lane B's A5 and A6 are render-blocked on Lane A regardless ([TASK-300](BACKLOG.md)).
+
+> **The general finding is the tool, not the row.** **This collision has existed since 2026-08-04 and no gate reported it** — `state-check` validates identifiers and cross-references, not module ownership. **A dashboard that reads the board mechanically found in one run what four reports of prose did not.**
+
 ## C-412 · Three backlog rows say `READY` and are not claimable
 
 | | |
