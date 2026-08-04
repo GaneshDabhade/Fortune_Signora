@@ -73,6 +73,11 @@
       "key": "decision_maker_departed",
       "posture": "contractionary",
       "base_weight": 15
+    },
+    {
+      "key": "competitor_entry",
+      "posture": "contractionary",
+      "base_weight": 25
     }
   ]
 }

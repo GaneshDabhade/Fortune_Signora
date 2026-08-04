@@ -10,12 +10,12 @@ from uuid import UUID
 from fastapi import APIRouter
 
 from apps.api.composition.validation import SignalRead
+from modules.signal_engine.domain.catalog import Relevance
 from modules.signal_engine.interface.schemas import (
     AccountValidationResponse,
     HypothesisValidationResponse,
     SignalCatalogResponse,
 )
-from modules.signal_engine.domain.catalog import Relevance
 from signora_platform.api import CurrentWorkspace
 from signora_platform.authorization import Action, Resource
 

@@ -346,9 +346,17 @@ This is the module's standing temptation arriving in its sharpest form: a compet
 
 *"We do not track competitors"* reads as **version 1 with an empty list**; never having said anything reads as **version 0**. A consumer that collapsed them would report an empty *result* where the truth is an empty *input* — the defect D6 already names on the attention list, and the same distinction `focus.py` keeps.
 
+### It has a second reader, and that changes what `public/` is
+
+**`signal_engine` reads the competitor list through this module's `public/`** — `DeclaredCompetitorView`, `DeclaredCompetitorListView`, `DeclaredCompetitorReader`, mirroring the target-account triple exactly, implemented in `infrastructure/competitor_reader.py` and injected by the composition root. Authorised by **[ADR-0403](adr/0403-signal-engine-reads-a-declaration.md)**; the ADR's own validation found the existing `lint-imports` contracts already permit it, so **no contract amendment was needed.**
+
+> **This module now has two consumers**, which is the point at which its `public/` stops being a courtesy and becomes a contract whose stability matters. Add fields, never remove or repurpose them.
+
+**`DeclaredCompetitorListView` carries no `version`, and the asymmetry is deliberate.** `TargetAccountListView` carries one because the same integer travels on `target_accounts_changed`, so a consumer handling that event can confirm which declaration it is acting on. **Nothing announces the competitor list**, so a version here would be a number with nothing to compare it against.
+
 ### Nothing is announced
 
-**Unlike the watch list, this write publishes no event.** No downstream module consumes it yet, and an event with no counterparty is the speculative half-contract the roadmap forbids twice. **The event arrives with the `competitor_entry` signal**, which is the next slice.
+**Unlike the watch list, this write publishes no event.** No downstream module consumes it yet, and an event with no counterparty is the speculative half-contract the roadmap forbids twice. **And it stayed that way when the consumer arrived.** ADR-0403 ruled that `signal_engine` needs no trigger: detection already runs on `business_event.detected`, and the declaration is configuration consulted *during* that run — exactly as `SignalProfile` is. Adding `CompetitorsChanged` would create a trigger nothing needs.
 
 ### What is not here
 

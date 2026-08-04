@@ -212,6 +212,30 @@
         "Check whether the decline is company-wide or confined to one division.",
         "Look for a divestiture announcement that would explain the figures without indicating distress."
       ]
+    },
+    {
+      "key": "competitor_entry",
+      "title": "Competitor entry",
+      "hypothesis": "A rival appearing inside an account you are watching suggests an evaluation is underway, or one that has already been decided.",
+      "why_it_matters": "A competitor arriving is the one risk that is specific, dated and citable — it names what happened rather than describing a mood, and the window in which it can still be answered is short.",
+      "detection_strategy": "declared_match",
+      "contributing_event_types": [
+        "technology_adopted"
+      ],
+      "minimum_contributors": 1,
+      "window_days": 180,
+      "relevance_window_days": 180,
+      "default_relevance": "primary",
+      "limitations": [
+        "Adoption is not displacement — a company can run your product and a rival's for years, and detection cannot tell an evaluation from a rollout.",
+        "The match is on the name the customer typed. A rival deployed under a product name they did not declare is invisible, and a name they declared loosely may match something unrelated.",
+        "It says nothing about which part of the company adopted it, or whether that part is the one you sell to.",
+        "A provider reports adoption when it becomes observable, which can be long after the decision that caused it."
+      ],
+      "suggested_validation": [
+        "Ask which team is using it and what it replaced — a departmental trial and a company standard are different conversations.",
+        "Check whether the rival's product overlaps the one you sell, or sits beside it."
+      ]
     }
   ]
 }

@@ -18,6 +18,10 @@ from modules.business_event_engine.public import (
     BusinessEvent,
     BusinessEventType,
 )
+from modules.commercial_profile.public import (
+    DeclaredCompetitorListView,
+    DeclaredCompetitorView,
+)
 from modules.signal_engine.application.generate import (
     GenerateSignals,
     GenerateSignalsInput,
@@ -123,6 +127,7 @@ def _event(
     *,
     domain: BusinessDomain = BusinessDomain.WORKFORCE,
     summary: str = "Something happened",
+    facts: dict[str, object] | None = None,
 ) -> BusinessEvent:
     when = START + timedelta(days=day)
     return BusinessEvent(
@@ -136,7 +141,7 @@ def _event(
         window_end=when,
         detected_at=when,
         summary=summary,
-        facts={},
+        facts=dict(facts or {}),
         evidence_observation_ids=(uuid4(),),
         corroborating_providers=("coresignal",),
         taxonomy_version=1,
@@ -154,10 +159,27 @@ def _profile(version: int, *entries: ProfileEntry) -> SignalProfile:
     )
 
 
+class FakeCompetitorReader:
+    """A declaration this module reads but does not own (ADR-0403).
+
+    `None` is the default because it is the state every existing test was
+    written in — no workspace in this suite has ever declared a rival, and a
+    fake returning an empty list instead would quietly assert that *"we
+    compete with nobody"* and *"nobody has asked"* behave the same.
+    """
+
+    def __init__(self, declaration: DeclaredCompetitorListView | None = None) -> None:
+        self._declaration = declaration
+
+    async def current(self, workspace_id: UUID) -> DeclaredCompetitorListView | None:
+        return self._declaration
+
+
 def _engine(
     repository: FakeSignalRepository,
     events: Sequence[BusinessEvent],
     profile: SignalProfile | None = None,
+    competitors: DeclaredCompetitorListView | None = None,
 ) -> tuple[GenerateSignals, RecordingPublisher, FakeProfileRepository]:
     publisher = RecordingPublisher()
     profiles = FakeProfileRepository(profile)
@@ -165,6 +187,7 @@ def _engine(
         GenerateSignals(
             repository=repository,
             profiles=profiles,
+            competitors=FakeCompetitorReader(competitors),
             business_events=FakeBusinessEvents(events),  # type: ignore[arg-type]
             catalog=load_catalog(),
             publisher=publisher,
@@ -600,3 +623,131 @@ def _signal_replacing_something() -> Signal:
         contributing_event_types=(BusinessEventType.FUNDING_ROUND_CLOSED,),
         supersedes=uuid4(),
     )
+
+
+def _input() -> GenerateSignalsInput:
+    return GenerateSignalsInput(workspace_id=WORKSPACE, entity_id=ENTITY)
+
+
+def _adopted(day: int, technology: str) -> BusinessEvent:
+    return _event(
+        BusinessEventType.TECHNOLOGY_ADOPTED,
+        day,
+        domain=BusinessDomain.TECHNOLOGY,
+        summary=f"Started using {technology}",
+        facts={"technology": technology, "category": "crm"},
+    )
+
+
+def _declared(*names: str) -> DeclaredCompetitorListView:
+    return DeclaredCompetitorListView(
+        workspace_id=WORKSPACE,
+        competitors=tuple(DeclaredCompetitorView(id=uuid4(), name=name) for name in names),
+    )
+
+
+def _entries(repository: FakeSignalRepository) -> list[SignalType]:
+    return [row.signal_type for row in repository.rows]
+
+
+class TestCompetitorEntry:
+    """The third detection strategy: evidence that is not grounds on its own.
+
+    *A company started using CloudCRM* is a fact about them. Whether it is a
+    risk depends on a sentence the customer typed, which is why this is the
+    first signal type whose grounds live outside the evidence.
+    """
+
+    async def test_an_adopted_rival_is_grounds(self) -> None:
+        repository = FakeSignalRepository()
+        engine, _, _ = _engine(
+            repository, [_adopted(1, "CloudCRM")], competitors=_declared("CloudCRM")
+        )
+
+        await engine.execute(_input(), correlation_id=uuid4())
+
+        assert SignalType.COMPETITOR_ENTRY in _entries(repository)
+
+    async def test_an_adoption_nobody_declared_is_not(self) -> None:
+        """The same event, and the customer said nothing about it."""
+        repository = FakeSignalRepository()
+        engine, _, _ = _engine(
+            repository, [_adopted(1, "CloudCRM")], competitors=_declared("Salesforce")
+        )
+
+        await engine.execute(_input(), correlation_id=uuid4())
+
+        assert SignalType.COMPETITOR_ENTRY not in _entries(repository)
+
+    async def test_a_workspace_that_declared_nobody_grounds_nothing(self) -> None:
+        repository = FakeSignalRepository()
+        engine, _, _ = _engine(
+            repository, [_adopted(1, "CloudCRM")], competitors=_declared()
+        )
+
+        await engine.execute(_input(), correlation_id=uuid4())
+
+        assert SignalType.COMPETITOR_ENTRY not in _entries(repository)
+
+    async def test_a_workspace_that_was_never_asked_grounds_nothing(self) -> None:
+        """`None` and an empty list reach the rule the same way.
+
+        They are different facts to the surface that asks and the same
+        instruction to the rule that grounds — see `_resolve_competitors`.
+        """
+        repository = FakeSignalRepository()
+        engine, _, _ = _engine(repository, [_adopted(1, "CloudCRM")], competitors=None)
+
+        await engine.execute(_input(), correlation_id=uuid4())
+
+        assert SignalType.COMPETITOR_ENTRY not in _entries(repository)
+
+    async def test_the_match_ignores_case_and_surrounding_space(self) -> None:
+        repository = FakeSignalRepository()
+        engine, _, _ = _engine(
+            repository, [_adopted(1, "CloudCRM")], competitors=_declared("  cloudcrm ")
+        )
+
+        await engine.execute(_input(), correlation_id=uuid4())
+
+        assert SignalType.COMPETITOR_ENTRY in _entries(repository)
+
+    async def test_it_resolves_nothing_beyond_that(self) -> None:
+        """**No second resolver.** *Salesforce* and *salesforce.com* are one
+        thing to the Knowledge Graph and two here, deliberately — a cleverer
+        comparison in this module would quietly disagree with the one that
+        owns resolution. The catalog records the consequence as a limitation.
+        """
+        repository = FakeSignalRepository()
+        engine, _, _ = _engine(
+            repository, [_adopted(1, "Salesforce")], competitors=_declared("salesforce.com")
+        )
+
+        await engine.execute(_input(), correlation_id=uuid4())
+
+        assert SignalType.COMPETITOR_ENTRY not in _entries(repository)
+
+    async def test_two_rivals_arriving_are_two_signals(self) -> None:
+        """Merging them would hide the second, as `_single` says of its own."""
+        repository = FakeSignalRepository()
+        engine, _, _ = _engine(
+            repository,
+            [_adopted(1, "CloudCRM"), _adopted(2, "HubSpot")],
+            competitors=_declared("CloudCRM", "HubSpot"),
+        )
+
+        await engine.execute(_input(), correlation_id=uuid4())
+
+        assert _entries(repository).count(SignalType.COMPETITOR_ENTRY) == 2
+
+    async def test_a_declaration_grounds_nothing_without_an_adoption(self) -> None:
+        repository = FakeSignalRepository()
+        engine, _, _ = _engine(
+            repository,
+            [_event(BusinessEventType.HEADCOUNT_DECLINE, 1)],
+            competitors=_declared("CloudCRM"),
+        )
+
+        await engine.execute(_input(), correlation_id=uuid4())
+
+        assert SignalType.COMPETITOR_ENTRY not in _entries(repository)

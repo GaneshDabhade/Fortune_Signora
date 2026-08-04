@@ -23,13 +23,13 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from modules.business_event_engine.public import BusinessEvent
 from modules.signal_engine.domain.catalog import (
     Relevance,
     SignalCatalog,
     SignalType,
     SignalTypeDefinition,
 )
-from modules.business_event_engine.public import BusinessEvent
 from modules.signal_engine.domain.signal import Signal
 
 

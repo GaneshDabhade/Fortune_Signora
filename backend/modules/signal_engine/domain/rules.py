@@ -22,6 +22,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from typing import Final
 
 from modules.business_event_engine.public import BusinessEvent, BusinessEventType
 from modules.signal_engine.domain.catalog import DetectionStrategy, SignalTypeDefinition
@@ -61,8 +62,17 @@ def ground(
     events: Sequence[BusinessEvent],
     definition: SignalTypeDefinition,
     entry: ProfileEntry,
+    *,
+    declared: frozenset[str] = frozenset(),
 ) -> tuple[Grounding, ...]:
-    """Everything in this evidence that supports this hypothesis."""
+    """Everything in this evidence that supports this hypothesis.
+
+    `declared` is what the customer said, folded to compare — the competitor
+    names for a `DECLARED_MATCH` type, and empty for every other strategy,
+    which ignores it. **Passed in rather than read**, on the same terms as the
+    profile: this module performs no I/O, so the same evidence and the same
+    declaration yield the same hypothesis on every machine.
+    """
     relevant = tuple(
         event for event in events if event.type_key in definition.contributing_event_types
     )
@@ -71,7 +81,55 @@ def ground(
 
     if definition.detection_strategy is DetectionStrategy.SINGLE_EVENT:
         return _single(relevant)
+    if definition.detection_strategy is DetectionStrategy.DECLARED_MATCH:
+        return _declared_match(relevant, declared)
     return _composite(relevant, definition, entry)
+
+
+#: Where a point rule records the thing it saw. `TechnologyAdopted` writes
+#: `{"technology": …, "category": …}`, and the name is the only part a
+#: declaration can be compared against.
+_SUBJECT: Final = "technology"
+
+
+def fold(name: str) -> str:
+    """How a declared name and an observed one are compared.
+
+    **Case and surrounding space only.** Nothing here resolves *Salesforce*,
+    *salesforce.com* and *SFDC* to one thing — that is the Knowledge Graph's
+    work, and a cleverer comparison in this module would be a second resolver
+    quietly disagreeing with the first. A customer who types a name the
+    provider does not report gets no signal, and the catalog says so out loud
+    in its limitations.
+
+    Exported because the boundary is only kept if both sides fold identically.
+    """
+    return name.strip().casefold()
+
+
+def _declared_match(
+    events: tuple[BusinessEvent, ...], declared: frozenset[str]
+) -> tuple[Grounding, ...]:
+    """One contributing event naming something the customer declared.
+
+    **An empty declaration grounds nothing, and that is the correct answer
+    rather than a missing one.** A customer who has named no rivals has said
+    that adopting anything is not a competitive event for them; a customer who
+    has never been asked has said nothing at all. Both reach here as an empty
+    set, and both mean *no grounds* — the difference between them matters to
+    the surface that asks, not to the rule that grounds.
+
+    Each match stands alone, as in `_single`: two rivals arriving in one
+    account are two events worth reading, and merging them would hide the
+    second.
+    """
+    if not declared:
+        return ()
+    return tuple(
+        Grounding(events=(event,))
+        for event in sorted(events, key=lambda e: (e.occurred_at, str(e.id)))
+        if fold(str(event.facts.get(_SUBJECT, ""))) in declared
+    )
 
 
 def _single(events: tuple[BusinessEvent, ...]) -> tuple[Grounding, ...]:

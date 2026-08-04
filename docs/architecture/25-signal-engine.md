@@ -224,7 +224,7 @@ Signal(id, workspace_id, entity_id, signal_type, relevance,
 
 ---
 
-## Proposed catalog v1 — nine types
+## Proposed catalog v1 — nine types, and a tenth added in Epic D
 
 Every one is derivable from the eleven business event types without inventing meaning, and every one passes the CRO test.
 
@@ -239,10 +239,35 @@ Every one is derivable from the eleven business event types without inventing me
 | `ACTIVE_EVALUATION` | single | buying intent surge | Research precedes purchase; an evaluation may already be under way |
 | `CONSOLIDATION_UNDERWAY` | single | acquisition announced | Acquisitions force system and budget consolidation |
 | `CONTRACTION_RISK` | composite (≥1) | headcount decline · revenue contraction | Spending authority and priorities are being re-scoped |
+| `COMPETITOR_ENTRY` | **declared match** | technology adopted · **and a name the customer declared** | A rival appearing inside a watched account suggests an evaluation is underway, or already decided |
 
 **Overlap is deliberate.** An acquisition produces both `BUDGET_UNLOCKED` and `CONSOLIDATION_UNDERWAY` — two hypotheses from one fact, both preserved, neither resolved. That is the module working correctly, not a modelling error.
 
 **`DECISION_MAKER_DEPARTED`, not "champion lost"** — Signora does not know whether they were a champion, and a vocabulary that claims more than the evidence supports is exactly what the CRO test exists to catch.
+
+### The tenth type, and the third strategy — Epic D phase 1
+
+**`COMPETITOR_ENTRY` is the first type whose grounds live outside the evidence.**
+
+*A company started using CloudCRM* is a fact about them, and every other type in this catalog can decide from facts like it alone. **Whether that adoption is a risk depends on a sentence the customer typed** — and no window, count or contributing-type list expresses that.
+
+**So `DetectionStrategy` gains `DECLARED_MATCH`**, on the enum's own terms: it is still a statement about *what kind of evidence supports a hypothesis*, not about how the evidence is found. One contributing event, naming something the customer declared.
+
+**The declaration is read, never owned.** `commercial_profile` owns `DeclaredCompetitors`; this module resolves it through that module's `public/` read port, injected by the composition root — **[ADR-0403](adr/0403-signal-engine-reads-a-declaration.md)**, which authorises the one dependency edge and rules out the event, the projection and the cache on evidence. Nothing here learns it is backed by SQL.
+
+**Resolved per run, beside the profile.** `_resolve_competitors` runs at the same moment `_resolve_profile` does, for the same reason: both are customer-authored configuration consulted during a run triggered by something else. **One timing story rather than two.**
+
+#### Three things the strategy deliberately does not do
+
+**It does not resolve.** The comparison folds case and surrounding space and stops. *Salesforce*, *salesforce.com* and *SFDC* are one thing to the Knowledge Graph and three here — **a cleverer comparison in this module would be a second resolver quietly disagreeing with the one that owns resolution**, and the catalog records the consequence as a limitation a seller can read.
+
+**It does not distinguish *declared nobody* from *never asked*.** Both reach the rule as an empty set and both mean *no grounds*. The difference is real and matters to the surface that asks — `DeclaredCompetitorReader.current()` returns `None` for one and an empty tuple for the other — but branching on it here would invent a behaviour neither state asks for.
+
+**It records no version.** A profile version is recorded on every signal because it changes what a signal *means*; a competitor list changes only whether one exists, and the signal's own evidence already names the technology that matched.
+
+#### What it costs downstream
+
+`competitor_entry` enters `scoring_model@1.json` as **contractionary, base weight 25** — the same as `contraction_risk`, and above `decision_maker_departed` at 15. The reasoning is in the diff, which is where a weight is argued about: it is specific and dated in the way a contraction is, and unlike a departure it names what happened. **`Posture.CONTRACTIONARY` and the unsigned weight are unchanged** — a contraction risk earns attention exactly as an expansion opportunity does, and the ledger keeps them apart rather than netting them.
 
 ---
 

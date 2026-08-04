@@ -21,6 +21,9 @@ from modules.commercial_profile.application.declare_target_accounts import (
 )
 from modules.commercial_profile.application.publish import PublishProductCatalog
 from modules.commercial_profile.application.segment_queries import SegmentQueries
+from modules.commercial_profile.infrastructure.competitor_reader import (
+    SqlDeclaredCompetitorReader,
+)
 from modules.commercial_profile.infrastructure.repository import (
     SqlBuyingCommitteeRepository,
     SqlCommercialFocusRepository,
@@ -124,3 +127,13 @@ def build_competitors(session: AsyncSession) -> SqlDeclaredCompetitorsRepository
 
 def build_declare_competitors(session: AsyncSession) -> DeclareCompetitors:
     return DeclareCompetitors(competitors=build_competitors(session))
+
+
+def build_declared_competitor_reader(session: AsyncSession) -> SqlDeclaredCompetitorReader:
+    """The module's second published read side.
+
+    Built here for the reason the first one is: a consumer depends on the
+    `DeclaredCompetitorReader` Protocol in `public/`, its composition root
+    calls this, and the consumer never learns that any of it is backed by SQL.
+    """
+    return SqlDeclaredCompetitorReader(session)

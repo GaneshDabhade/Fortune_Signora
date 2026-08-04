@@ -46,6 +46,20 @@ class DetectionStrategy(StrEnum):
     hiring surges are one phenomenon reported repeatedly, not three
     independent grounds for believing a company is expanding."""
 
+    DECLARED_MATCH = "declared_match"
+    """One contributing event **naming something the customer declared.**
+
+    The third strategy, and the first whose evidence is not sufficient on its
+    own: *a company started using CloudCRM* is a fact about them, and whether
+    it is a risk depends on a sentence the customer typed. Adopting a rival is
+    grounds; adopting anything else is not, and no window or count expresses
+    that.
+
+    **It is still a statement about the kind of evidence, not about how it is
+    found** — which is why it belongs here beside the other two. The declared
+    set is resolved per run and passed in, exactly as the workspace profile
+    is; nothing about which names are declared lives in code."""
+
 
 class SignalType(StrEnum):
     """The global vocabulary. **Adding one is a product decision.**"""
@@ -56,6 +70,7 @@ class SignalType(StrEnum):
     MODERNIZATION_UNDERWAY = "modernization_underway"
     NEW_DECISION_MAKER = "new_decision_maker"
     DECISION_MAKER_DEPARTED = "decision_maker_departed"
+    COMPETITOR_ENTRY = "competitor_entry"
     ACTIVE_EVALUATION = "active_evaluation"
     CONSOLIDATION_UNDERWAY = "consolidation_underway"
     CONTRACTION_RISK = "contraction_risk"

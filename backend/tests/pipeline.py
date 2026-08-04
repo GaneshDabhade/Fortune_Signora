@@ -38,6 +38,9 @@ from modules.buying_score_engine.infrastructure.composition import (
 )
 from modules.buying_score_engine.infrastructure.repository import SqlBuyingScoreRepository
 from modules.buying_score_engine.interface.handlers import compute_from_signal
+from modules.commercial_profile.infrastructure.composition import (
+    build_declared_competitor_reader,
+)
 from modules.knowledge_graph.application.queries import GraphQueries
 from modules.knowledge_graph.infrastructure.composition import (
     build_derive_relationships,
@@ -274,6 +277,10 @@ async def signal_all(
         generate = build_generate_signals(
             session,
             business_events=business_events(session, workspace_id),
+            # The pipeline composition root is the one place that may see two
+            # modules' infrastructure at once, which is what it exists for
+            # (ADR-0403 §Validation 1).
+            competitors=build_declared_competitor_reader(session),
             publisher=PostgresOutboxEventPublisher(),
         )
         for envelope in envelopes:

@@ -107,4 +107,73 @@ class TargetAccountReader(Protocol):
         ...
 
 
-__all__ = ["TargetAccountListView", "TargetAccountReader", "TargetAccountView"]
+@dataclass(frozen=True, slots=True)
+class DeclaredCompetitorView:
+    """One technology a customer named as a rival.
+
+    `name` is **exactly what they typed** — unresolved, unnormalised, and not
+    guaranteed to identify anything. Matching it against an adopted technology
+    is the consumer's judgement, on the same terms as a target account's name.
+
+    `id` is stable across every revision of the list, which is what lets a
+    consumer tell a rename from a remove-and-add.
+
+    **It carries no judgement, and cannot grow one.** Nothing here says how
+    much a rival matters: that is a weight in a reviewed scoring model, and a
+    field on this view would be the recording module grading its own input.
+    """
+
+    id: UUID
+    name: str
+
+
+@dataclass(frozen=True, slots=True)
+class DeclaredCompetitorListView:
+    """Every technology a workspace competes against, in the version in force.
+
+    **The whole list, never a delta** — see the module docstring.
+
+    **No `version`, and the asymmetry with `TargetAccountListView` is the
+    point.** That one carries a version because the same integer travels on
+    `commercial_profile.target_accounts_changed`, so a consumer handling that
+    event can confirm which declaration it is acting on. **Nothing announces
+    this list** ([ADR-0403](../../../../docs/architecture/adr/\
+0403-signal-engine-reads-a-declaration.md)):
+    it is resolved on demand during a run that was triggered by something
+    else, so there is no event to reconcile a version against and a version
+    here would be a number with nothing to compare it to.
+    """
+
+    workspace_id: UUID
+    competitors: tuple[DeclaredCompetitorView, ...]
+
+
+class DeclaredCompetitorReader(Protocol):
+    """The read side of the competitor list.
+
+    Implemented in this module's `infrastructure/` and injected by the
+    composition root, so a consumer never learns that this is backed by SQL —
+    and never learns anything else about this module either.
+    """
+
+    async def current(self, workspace_id: UUID) -> DeclaredCompetitorListView | None:
+        """The list in force, or ``None`` when the workspace has never
+        declared one.
+
+        **`None` rather than an empty list**, for the reason the target
+        account reader gives: *"they have not told us yet"* is a state to wait
+        in, and *"they told us they compete with nobody"* is an instruction to
+        act on. A consumer that collapsed them would treat a considered answer
+        as an unanswered question.
+        """
+        ...
+
+
+__all__ = [
+    "DeclaredCompetitorListView",
+    "DeclaredCompetitorReader",
+    "DeclaredCompetitorView",
+    "TargetAccountListView",
+    "TargetAccountReader",
+    "TargetAccountView",
+]

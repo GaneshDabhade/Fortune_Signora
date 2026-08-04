@@ -29,6 +29,7 @@ from uuid import UUID, uuid4
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.business_event_engine.public import BusinessEventQueries
+from modules.commercial_profile.public import DeclaredCompetitorReader
 from modules.signal_engine.application.ports import ProfileRepository, SignalRepository
 from modules.signal_engine.domain.catalog import (
     SignalCatalog,
@@ -42,7 +43,7 @@ from modules.signal_engine.domain.profile import (
     SignalProfile,
     resolve_entry,
 )
-from modules.signal_engine.domain.rules import Grounding, ground
+from modules.signal_engine.domain.rules import Grounding, fold, ground
 from modules.signal_engine.domain.signal import Signal, relevant_until, signal_id
 from signora_platform.event_bus import EventPublisher
 from signora_platform.observability import get_logger
@@ -77,6 +78,7 @@ class GenerateSignals:
         *,
         repository: SignalRepository,
         profiles: ProfileRepository,
+        competitors: DeclaredCompetitorReader,
         business_events: BusinessEventQueries,
         catalog: SignalCatalog,
         publisher: EventPublisher,
@@ -85,6 +87,11 @@ class GenerateSignals:
     ) -> None:
         self._repository = repository
         self._profiles = profiles
+        # **The one declaration this module reads that it does not own.**
+        # Resolved through `commercial_profile.public`, injected by the
+        # composition root, and consulted at the same moment as the profile —
+        # ADR-0403. Nothing here learns that it is backed by SQL.
+        self._competitors = competitors
         # Business events are referenced directly through their public
         # contract, never re-derived from observations: two definitions of
         # one concept diverge within a year.
@@ -106,6 +113,7 @@ class GenerateSignals:
         )
         profile = await self._resolve_profile(request)
         version = profile.version if profile is not None else DEFAULT_PROFILE_VERSION
+        declared = await self._resolve_competitors(request.workspace_id)
 
         if not events:
             return GenerateSignalsResult(generated=0, superseded=0, profile_version=version)
@@ -125,7 +133,7 @@ class GenerateSignals:
                 # IGNORED means the hypothesis is not held here at all.
                 continue
 
-            for grounding in ground(events, definition, entry):
+            for grounding in ground(events, definition, entry, declared=declared):
                 signal = self._build(request, definition, entry, grounding, now, version)
                 if definition.is_composite:
                     composites.append((signal, grounding))
@@ -166,6 +174,26 @@ class GenerateSignals:
         return GenerateSignalsResult(
             generated=generated, superseded=superseded, profile_version=version
         )
+
+    async def _resolve_competitors(self, workspace_id: UUID) -> frozenset[str]:
+        """The declared rivals, folded for comparison.
+
+        **`None` and an empty list collapse here, deliberately.** *"Nobody has
+        told us"* and *"we compete with nobody"* are different facts and the
+        surface that asks must tell them apart — but to a rule deciding
+        whether an adoption is grounds, both mean **no declared rival**, and
+        branching on the difference would invent a behaviour neither state
+        asks for.
+
+        **Not versioned into the signal.** A profile version is recorded
+        because it changes what a signal *means*; a competitor list changes
+        only whether one exists at all, and the signal's own evidence already
+        names the technology that matched.
+        """
+        declaration = await self._competitors.current(workspace_id)
+        if declaration is None:
+            return frozenset()
+        return frozenset(fold(competitor.name) for competitor in declaration.competitors)
 
     async def _resolve_profile(self, request: GenerateSignalsInput) -> SignalProfile | None:
         if request.profile_version is None:
