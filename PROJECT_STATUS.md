@@ -12,16 +12,16 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `630fc79`, 2026-08-03.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `ba46132`, 2026-08-03.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`630fc79`** — the certified commit itself |
-| **`integration`** | `630fc79` — level with `main` |
-| **Release candidate** | **None pinned.** Cycle 39 promoted **RE-03** — certification provisions its own database |
-| **Certification** | ✅ [`630fc79b7d3f`](certification/reports/630fc79b7d3f.md) · migration head **`0030`** · protocol **v2** · **run against a database it created** |
+| **`main`** | **`ba46132`** — the certified commit itself |
+| **`integration`** | `ba46132` — level with `main` |
+| **Release candidate** | **None pinned.** Cycle 40 promoted **RS-2** — `make workstation` |
+| **Certification** | ✅ [`ba46132495da`](certification/reports/ba46132495da.md) · migration head **`0030`** · protocol **v2** · **run against a database it created** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **175 commits, none outside a certified snapshot** |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **179 commits, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Both lanes.** Five separate rulings, all the product owner's — see §1c |
 | **Validation queue** | Lane A's and Lane B's branches, **both awaiting a rebase by their lane** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The cycle's finding outweighs its feature.** Running the suite in a shell that did not export `SIGNORA_DATABASE_URL` produced **three failures on the commit certified hours earlier** — a certification gate had a hidden input, so the run that certified `909374a` and the run reproducing it were measuring different things, and nothing in the record said so ([B-106](docs/BUGS.md)). It is fixed and verified by removing the variable entirely. **[B-022](docs/BUGS.md) predicted this class and stayed open; this is the first time it was observed rather than reasoned about.**
 
-**Repository health:** **2659 backend tests** · **95.50% coverage** *(floor 95)* · 719 frontend tests · 360 Security Invariants · mypy strict over **623 files** · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
+**Repository health:** **2665 backend tests** · **95.50% coverage** *(floor 95)* · 719 frontend tests · 360 Security Invariants · mypy strict over **624 files** · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
 
 ---
 
@@ -101,54 +101,50 @@
 
 ---
 
-## 1d · Release summary — 2026-08-03, cycle 39
+## 1d · Release summary — 2026-08-03, cycle 40
 
-**Derived from the promoted commit `630fc79`.** The last hand-typed correctness requirement leaves the pipeline.
+**Derived from the promoted commit `ba46132`.** One command that makes a machine usable, one backlog item closed by measuring it instead of doing it, and a check that nearly told somebody to break a working configuration.
 
-### RE-03 — certification provisions its own database and destroys it
+### `make workstation` — RS-2
 
-The suite resolved its target from `SIGNORA_TEST_APP_DATABASE_URL`, so a run launched from a shell that did not export it **silently measured the shared `signora` database** — and certified correctly at that setting every time it was tried, **which is what made it dangerous rather than obvious.**
+`backend/.env` and `frontend/.env.local` hold a generated RSA pair that is **correctly never committed** and **not reproducible**. They sat in none of the four resilience states.
 
-**The evidence was machine-written, not argued.** An attempt record from cycle 36, written before the first gate:
+> **The state that was missing was never a fifth category. It was a command.**
 
-```
-"test_database": "(unset — defaults to shared)"
-```
+One pair, both tiers, **no transcription step** — the quickstart used to say *"paste both halves in"*, and pasting is where it went wrong: a mismatched pair mints tokens the API rejects with **no clue why**. It never overwrites without `--force`, and `--force` states what it invalidates before paying it.
 
-The same field, one cycle later:
+**The exposure was measured on QE itself** — I reconstructed `frontend/.env.local` this session by reading four files and writing a throwaway script, and nothing described that as a procedure.
 
-```
-"test_database": "signora_certify_630fc79b7d3f"
-```
+### The check nearly told somebody to destroy a working setup
 
-> **Fixed by removal, not by discipline.** There is no longer a variable to forget — the environment is constructed by the run rather than inherited from the shell that launched it. **[B-022](docs/BUGS.md) is closed**, having predicted the class and then produced an instance of it.
+The mismatch detector produced a **false positive on the first workstation it ran against**. `.env.example` writes the PEM escaped onto one line; a value pasted from `openssl` arrives as real newlines inside quotes. **Two encodings of one key are the same key.**
 
-**Three decisions worth reading:**
+> **That is the worst possible false positive here**, because the advice it prints is `--force` — which regenerates the pair. **It would have told somebody to destroy the working configuration it failed to recognise.** Caught by verifying the finding rather than trusting it; both the false positive and its control are now tests, because fixing it by comparing nothing would have been easy and useless.
+
+### RE-07 closed without doing it
 
 | | |
 |---|---|
-| **A fresh database, not a fresh schema** | Migrations are the thing being certified. `0002` creates the least-privileged `signora_app` role and its grants; running the chain against an empty database proves it works **from nothing**, which a schema reset does not — it inherits grants somebody else applied |
-| **Named for the commit, not a UUID** | A killed run leaves a database whose name says which commit it belonged to, and the next run at that commit drops it first. A UUID leaves an orphan nobody can attribute |
-| **`DROP … WITH (FORCE)`** | A gate that fails mid-run can leave a pooled connection open, and `DROP` refuses while one exists. Without it **one failed certification would block every future run at that commit** — a single failure turned into a stuck pipeline |
+| **Estimated** | ~250s per cycle for the duplicated suite runs |
+| **Measured** | **21s** — invariants 6s, scenario 15s — against a ~600s cycle |
+| **And** | the duplication buys a separately attributable count that ADR-0032 wants |
 
-**Scope held.** `make smoke` and `make dr` build their own PostgreSQL inside their own compose project and are untouched. `make test` still uses whatever the developer configured — **a developer wants their data to persist between runs, and certification never does.**
+**It earns its 21 seconds.** *Removing an item from a backlog on evidence is worth as much as completing one.*
 
-### The principle it completes
+### Measuring first stopped a duplicate, twice
 
-> **The workstation may affect execution speed. It must never affect execution correctness.**
-
-Measured against that, the repository had two known violations. **Both are now closed** — [B-106](docs/BUGS.md) by declaring a test's input, [B-022](docs/BUGS.md) by removing the input entirely.
+Before building a table-classification checker, QE checked whether one existed. **`test_every_table_is_classified` already enforces it.** And two `§12` gap entries were corrected because they overstated problems — *"an abort is inferred rather than recorded"* is not a defect: **a killed process cannot record why it died**, so inference is the only possible mechanism, and it already lives in exactly one function.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **2659 backend** · 719 frontend · **95.50%** · 360 invariants · **623 files typed** |
-| **Release** | **Nine consecutive cycles with no process failure** |
+| **Technical** | **2665 backend** · 719 frontend · **95.50%** · 360 invariants · **624 files typed** |
+| **Release** | **Ten consecutive cycles with no process failure** |
 | **Architecture** | Runtime composition 0 unexpected · Reachability 0 doorless · event catalog 1 known drift, tracked |
-| **Dependency** | 39 items, 9 closed · C-100 with Lane B · **C-101 with Lane C** |
-| **Customer Value** | ⚠️ **Indirect — eleven cycles** |
-| **Process** | Clean. **Certification no longer inherits anything from the shell that starts it** |
+| **Dependency** | 39 items, 9 closed · C-100 with Lane B · C-101 with Lane C |
+| **Customer Value** | ⚠️ **Indirect — twelve cycles.** Lane C and Lane A are now moving on Epic A |
+| **Process** | Clean. **The Release Engineering backlog is nearly exhausted, and that is reported rather than filled** |
 
 ### Repository Health Trend
 
@@ -372,18 +368,18 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`630fc79b7d3f`](certification/reports/630fc79b7d3f.md) · 2026-08-03 · ✅ CERTIFIED**
+**Latest certification — [`ba46132495da`](certification/reports/ba46132495da.md) · 2026-08-03 · ✅ CERTIFIED**
 
-**Certified commit `630fc79` · promoted commit `630fc79`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
+**Certified commit `ba46132` · promoted commit `ba46132`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
 
 | Gate | Recorded |
 |---|---|
-| **pytest** | **2659 passed** |
+| **pytest** | **2665 passed** |
 | **coverage** | **95.5%** *(floor 95%)* |
 | **Security Invariants** | **360 invariants**, each proven to fail when its guarantee is removed |
 | **import-linter** | **34 kept, 0 broken** |
-| **MyPy** | **strict, clean over 623 files** |
-| **`make smoke`** | **24 stages in 120s, slowest 2. Startup 19s** |
+| **MyPy** | **strict, clean over 624 files** |
+| **`make smoke`** | **24 stages in 113s, slowest 2. Startup 19s** |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0030`** · scenario set `0cf6b2c581e4` · working tree clean.
@@ -423,7 +419,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Indicator | Value |
 |---|---|
 | **Certification** | |
-| Certification cycles | 36 |
+| Certification cycles | 37 |
 | Certified | 29 of 30 |
 | Mean time to certify (last 5) | 13.3 min |
 | Mean smoke duration | 327.9 s |
