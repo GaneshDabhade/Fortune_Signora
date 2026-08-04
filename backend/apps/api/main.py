@@ -17,6 +17,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
 from modules.ai_platform.interface.router import router as narration_router
+from modules.ai_reasoning_engine.interface.router import router as reasoning_router
 from modules.ai_research_engine.interface.errors import (
     ERROR_MAPPING as AI_RESEARCH_ENGINE_ERRORS,
 )
@@ -150,6 +151,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(observation_router)
     app.include_router(buying_score_router)
     app.include_router(narration_router)
+    app.include_router(reasoning_router)
     app.include_router(validation_router)
     app.include_router(evidence_router)
     app.include_router(products_router)

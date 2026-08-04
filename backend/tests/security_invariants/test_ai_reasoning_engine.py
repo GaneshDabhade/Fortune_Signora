@@ -39,6 +39,9 @@ import pytest
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
 MODULE_ROOT = BACKEND_ROOT / "modules" / "ai_reasoning_engine"
 PYPROJECT = BACKEND_ROOT / "pyproject.toml"
+#: The composition root, read as text: whether a router is *mounted* is a
+#: structural fact, and importing the app to find out would need a database.
+_MAIN = BACKEND_ROOT / "apps" / "api" / "main.py"
 
 pytestmark = pytest.mark.security_invariant
 
@@ -114,12 +117,43 @@ class TestTheModuleIsScaffoldedUnderCleanArchitecture:
         for layer in ("domain", "application", "infrastructure", "public"):
             assert (MODULE_ROOT / layer).is_dir(), f"missing layer: {layer}"
 
-    def test_interface_is_absent_until_it_has_a_caller(self) -> None:
-        """``interface/`` is optional in the layering contract and is created
-        when M9 gains its event handlers (T130). A directory made for a caller
-        that does not exist is the speculative structure CLAUDE.md §6
-        forbids — the same call M8 made and kept."""
-        assert not (MODULE_ROOT / "interface").exists()
+    def test_the_interface_exists_and_has_a_caller(self) -> None:
+        """**This guard replaced one that had done its job.**
+
+        It read ``assert not (MODULE_ROOT / "interface").exists()``, and its
+        reason was that *"a directory made for a caller that does not exist is
+        the speculative structure §6 forbids."* A-i gave it a caller — the
+        router is mounted at the composition root — so the original condition
+        can no longer occur, and **a guard that cannot fail is documentation
+        pretending to be code** (§2).
+
+        Replaced rather than deleted, and pointed at the property that is now
+        the one at risk: the layer exists *and* something reaches it. A layer
+        nobody mounted is the same speculative structure wearing the opposite
+        coat.
+        """
+        assert (MODULE_ROOT / "interface").is_dir()
+        assert "ai_reasoning_engine.interface.router" in _MAIN.read_text()
+
+    def test_the_module_publishes_no_route_that_writes(self) -> None:
+        """**The invariant the slice above actually needs.**
+
+        Reaching a conclusion is a model call. §7 forbids an API handler
+        blocking on pipeline work and Principle 13 puts it in a background
+        worker — so a ``POST`` here would be the most tempting shortcut in the
+        product and the most expensive one. It would also make M9 the agentic
+        thing the M9/M10 split exists to keep it from becoming, which no import
+        contract would notice.
+
+        Asserted over the decorators rather than the mounted app: this suite is
+        structural and must not need a database to answer (*"the two-tier
+        guarantee"*).
+        """
+        source = (MODULE_ROOT / "interface" / "router.py").read_text()
+
+        for verb in ("post", "put", "patch", "delete"):
+            assert f"@router.{verb}(" not in source, verb
+        assert "@router.get(" in source, "a router that serves nothing is not a surface"
 
     def test_the_public_contract_exports_nothing_yet(self) -> None:
         """Scaffolded, not started. Asserted so that the first export is a

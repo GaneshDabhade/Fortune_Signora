@@ -362,3 +362,50 @@ Five rulings settled, all as proposed:
 Plus [ADR-0030](adr/0030-the-decision-package.md): the Decision Package, partitioned by author, under **Deterministic Explainability**.
 
 **No change to `ai_platform`** — no new violation kind, no loosened grounding, no altered release rule, no rewritten harness. If implementation appears to require one, that is the halt, and the question to bring back is *"is this genuinely an M8 defect, or is M9 absorbing another milestone?"*
+
+---
+
+## A-i — the conclusion becomes readable, 2026-08-04 (Lane A)
+
+**The module has concluded since T130 and nothing could read the conclusion.** [417 §2c](417-executable-slice-audit.md) found it as one of only two modules in the repository with a complete `domain/` and `application/` and no `interface/` — *"built, tested, unreachable."* This slice is the layer, and only the layer.
+
+### One endpoint, and it is a read
+
+```
+GET /workspaces/{workspace_id}/accounts/{account_id}/decision-package
+```
+
+**The most recent package for an account, or `404`.** Packages accumulate and are never edited, so *most recent* is derived from the rows rather than from a stored current flag — `latest_for` already worked that way and needed no change.
+
+**There is no `POST`, and a Security Invariant now says so.** Reaching a conclusion is a model call: §7 forbids an API handler blocking on pipeline work and Principle 13 puts it in a background worker. `test_the_module_publishes_no_route_that_writes` asserts it over the router's decorators, and was verified by adding a `POST` and watching it fail.
+
+**`404` when nothing has been concluded** — the ordinary state of a new account, and the same answer an account in another workspace receives, so the endpoint cannot be used to discover that a workspace holds one.
+
+### What the response carries, and why it is shaped that way
+
+**ADR-0030's split is the shape of the response, not a note beside it.** The three model-authored statements are grouped and carry their citations; the twelve derived and catalog parts are returned as the facts they are.
+
+| | |
+|---|---|
+| **Authored, and grounded** | `proposition` · `summary` · `stated_reasoning` — each with its evidence tokens, and **no flattened paragraph.** Joining them would discard the mapping from claim to evidence, which is the only reason to trust any of it |
+| **Derived** | `supporting_evidence` · `support` · `temporal` · `alternative_readings` |
+| **Snapshotted from the catalog** | `limitations` · `suggested_validation` · `catalog_version` |
+| **Provenance** | `model` · `vendor` · `prompt_name` · `prompt_version` · `created_at` |
+
+**Facts travel; sentences are the frontend's.** `SupportBasis.explain()`, `TemporalExplanation.why_now()` and `DecisionPackage.answers()` phrase things for a reader — that is presentation, and [ADR-0034](adr/0034-ubiquitous-language.md) puts presentation at the frontend edge. The response therefore carries `contested`, `dissenting_signals`, `alternative_readings`, `trend` and `delta` rather than the sentences built from them, and **nothing in this layer re-implements a phrasing the domain already owns.**
+
+**`support.level` is derived on the way out, exactly as it is on the way in.** The table's `support_level` column stays inert: the repository does not read it and neither does this layer, so a drift between the two still cannot reach a customer.
+
+**What is deliberately absent**, following the precedent `ai_platform`'s narration schema set: `id`, `correlation_id`, `inference_id`, `prompt_fingerprint` and `evidence_digest`. The first four are how an engineer traces a call, not how a seller decides anything. The digest is a hash a customer cannot recompute — the verifiable form of *"which evidence"* is the citation tokens, which are on every statement.
+
+### Three findings, all of them the repository refusing something
+
+**1 · `public/` is still empty, and that is correct.** 417 named A-i's reuse as *"the module's own `public/`"*, and that surface exports nothing. It turned out not to matter: **an interface layer serves its own module's use cases and is not a cross-module consumer**, so it imports `application/` and `domain/` directly, exactly as the six existing interface layers do. `public/` stays empty until something outside this module consumes a Decision Package, and `test_the_public_contract_exports_nothing_yet` still holds.
+
+**2 · The import contract caught a reach past `ai_platform.public`.** The schema first imported `GroundedStatement` from `ai_platform.domain.grounding`, which compiles and runs perfectly well. `lint-imports` refused it. Fixed at the import, not at the contract.
+
+**3 · A Security Invariant expired, and was replaced rather than deleted.** `test_interface_is_absent_until_it_has_a_caller` asserted this directory did not exist, because *"a directory made for a caller that does not exist is the speculative structure §6 forbids."* A-i gave it a caller, so **the condition can no longer occur and the guard could no longer fail** (§2). It now asserts that the layer exists *and* is mounted at the composition root, and the no-write invariant above was added beside it — which is the property genuinely at risk from here.
+
+### What this slice did not do
+
+**No new conclusion, no second inference path, no cross-account ranking, no recommendation** — all four are ruled out by the module's own contract and none was approached. **The domain was not changed.** The one fixture that failed did so because `TemporalExplanation` refuses a first reading with a non-zero delta, which is the invariant working; the fixture was corrected.

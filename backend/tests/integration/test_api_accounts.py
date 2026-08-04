@@ -2689,3 +2689,220 @@ class TestADecidedRowNamesItsAuthor:
         (entry,) = [d for d in decided if UUID(d["account_id"]) == entity_id]
         assert entry["owner_id"] is None, "this account was never held, which is the case"
         assert UUID(entry["decided_by"]) == user_id
+
+
+async def _decision_package(
+    client: AsyncClient, key_pair: KeyPair, user_id: UUID, workspace_id: UUID, account_id: UUID
+) -> Any:
+    return await client.get(
+        f"/workspaces/{workspace_id}/accounts/{account_id}/decision-package",
+        headers=_auth(key_pair, user_id),
+    )
+
+
+class TestTheConclusionCanBeRead:
+    """`GET …/accounts/{account_id}/decision-package` — what Signora concluded.
+
+    **The module reasoned for weeks with no way to be read** (417 §2c). These
+    assert the boundary that changed: a stored conclusion comes back whole,
+    with its citations, its objections and what produced it — and an account
+    nobody has concluded about says so rather than inventing one.
+    """
+
+    async def _stored(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        workspace_id: UUID,
+        account_id: UUID,
+    ) -> None:
+        from datetime import UTC, datetime, timedelta
+
+        from modules.ai_platform.public import AIVendor, GroundedStatement
+        from modules.ai_reasoning_engine.domain.package import (
+            AlternativeReading,
+            DecisionPackage,
+        )
+        from modules.ai_reasoning_engine.domain.support import SupportBasis
+        from modules.ai_reasoning_engine.domain.temporal import TemporalExplanation
+        from modules.ai_reasoning_engine.infrastructure.repository import (
+            SqlDecisionPackageRepository,
+        )
+        from modules.buying_score_engine.public import ScoreTrigger, Trend
+        from modules.opportunity_engine.public import EvidenceState
+        from signora_platform.db import tenant_scoped_session
+
+        now = datetime(2026, 8, 4, tzinfo=UTC)
+        cited = f"buying_score:{uuid4()}"
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=uuid4()
+        ) as session:
+            await SqlDecisionPackageRepository(session).save(
+                DecisionPackage(
+                    id=uuid4(),
+                    workspace_id=workspace_id,
+                    correlation_id=uuid4(),
+                    subject_kind="account",
+                    subject_id=account_id,
+                    summary=GroundedStatement(
+                        text="They are replacing a retiring platform.", evidence=(cited,)
+                    ),
+                    proposition=GroundedStatement(
+                        text="A replacement evaluation is underway.", evidence=(cited,)
+                    ),
+                    stated_reasoning=(
+                        GroundedStatement(
+                            text="Two independent sources saw the same move.",
+                            evidence=(cited,),
+                        ),
+                    ),
+                    supporting_evidence=(cited,),
+                    support=SupportBasis(
+                        corroborating_providers=frozenset({"zoominfo", "apollo"}),
+                        contributing_events=3,
+                        evidence_state=EvidenceState.CURRENT,
+                        contested=True,
+                        dissenting_signals=1,
+                    ),
+                    temporal=TemporalExplanation(
+                        trigger=ScoreTrigger.SIGNAL_GENERATED,
+                        basis_at=now - timedelta(days=9),
+                        computed_at=now,
+                        delta=12,
+                        trend=Trend.RISING,
+                        evidence_state=EvidenceState.CURRENT,
+                        valid_until=now + timedelta(days=14),
+                        # Named, not None: `TemporalExplanation` refuses a
+                        # first reading that differs by 12 from a reading that
+                        # does not exist, which is the invariant doing its job.
+                        supersedes=uuid4(),
+                    ),
+                    alternative_readings=(
+                        AlternativeReading(
+                            signal_type="hiring_surge",
+                            reason="Only one source saw it.",
+                        ),
+                    ),
+                    limitations=("Signora cannot see a conversation.",),
+                    suggested_validation=("Ask the account owner what they heard.",),
+                    catalog_version=1,
+                    prompt_name="reasoning",
+                    prompt_version=1,
+                    prompt_fingerprint="a" * 64,
+                    model="llama3.1:8b",
+                    vendor=AIVendor.OLLAMA,
+                    evidence_digest="b" * 64,
+                    inference_id=uuid4(),
+                    originating_buying_score_id=uuid4(),
+                    created_at=now,
+                )
+            )
+
+    async def test_the_conclusion_arrives_with_its_citations(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**The grounding guarantee, end to end.** A conclusion a customer
+        cannot check is the one thing this product must never ship."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        await self._stored(session_factory, workspace_id, entity_id)
+
+        response = await _decision_package(client, key_pair, user_id, workspace_id, entity_id)
+
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert body["proposition"]["evidence"], "an uncited conclusion reached the wire"
+        assert body["summary"]["evidence"]
+        for step in body["stated_reasoning"]:
+            assert step["evidence"], "an uncited reasoning step reached the wire"
+
+    async def test_what_argues_against_it_arrives_too(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """A Decision Package is a decision *input*, not a verdict. An endpoint
+        that served the conclusion without its objections would have turned it
+        into one."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        await self._stored(session_factory, workspace_id, entity_id)
+
+        body = (
+            await _decision_package(client, key_pair, user_id, workspace_id, entity_id)
+        ).json()
+
+        assert body["support"]["contested"] is True
+        assert body["support"]["dissenting_signals"] == 1
+        assert body["alternative_readings"][0]["signal_type"] == "hiring_surge"
+        assert body["limitations"], "a conclusion with no stated blind spot"
+        assert body["suggested_validation"], "no way to check it independently"
+
+    async def test_the_response_says_what_produced_it(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        await self._stored(session_factory, workspace_id, entity_id)
+
+        body = (
+            await _decision_package(client, key_pair, user_id, workspace_id, entity_id)
+        ).json()
+
+        assert body["model"] == "llama3.1:8b"
+        assert body["prompt_name"] == "reasoning"
+        assert body["vendor"]
+
+    async def test_an_account_nobody_has_concluded_about_says_so(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**The ordinary state of a new account.** A package is produced by a
+        background worker after the pipeline has a score worth explaining, so
+        404 here is the truth rather than a gap."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+
+        response = await _decision_package(client, key_pair, user_id, workspace_id, entity_id)
+
+        assert response.status_code == 404
+
+    async def test_another_workspaces_conclusion_is_not_reachable(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**404, not 403** — the same answer an account that was never
+        concluded about receives, so the endpoint cannot be used to discover
+        that a workspace holds one (§7)."""
+        owner_workspace, _, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        await self._stored(session_factory, owner_workspace, entity_id)
+        outsider_workspace, outsider, _, _ = await _tracked(
+            session_factory, admin_session_factory, "contoso"
+        )
+
+        response = await _decision_package(
+            client, key_pair, outsider, outsider_workspace, entity_id
+        )
+
+        assert response.status_code == 404
