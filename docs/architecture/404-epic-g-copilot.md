@@ -10,6 +10,29 @@
 
 ---
 
+## 0 · Cross-validated 2026-08-04 — the measurement was run, it passed, and it cannot be recorded
+
+> **Lane A claimed Epic G as TASK-202 and ran exactly the evaluation §1 recommends. `reasoning@1` on `llama3.1:8b`, protocol 2: 0 grounding failures, 0 schema failures, coverage 0.667 — `EARNED`.** **The hypothesis held.** The three models previously tried were 2B and 3B; the 8B model every sibling prompt passes on had never been run against it, and it passes.
+>
+> **And `granite3.3:2b` is confirmed as §1 suspected** — its one protocol-2 row is coverage **0.0** with two grounding failures. `29-ai-reasoning-engine.md` had already recorded that granite passed on *"a stylistic habit rather than a capability."*
+
+**Nothing was recorded, and Lane A was right not to record it.** The manifest still holds four evaluations. **The run took 172.8 s for two cases — ~86 s each — against `InferencePolicy.timeout_seconds = 60`.** Under the committed policy **the identical pairing reports `UNMEASURABLE`.** A timeout was changed and it passed; **[TASK-013](../BACKLOG.md) forbids adjusting the timeout in writing**, and *"that the change cannot affect the numbers is an argument, and an argument is what that prohibition exists to refuse from a lane."*
+
+> **Raised as [C-222](../LANE_COORDINATION.md)** — owner **product owner** (recording the measurement) and **QE** (whether the manifest may hold a row carrying a timeout the manifest has no field for). **Blocks only a live G1 inference**; Epic G proceeds on everything else.
+
+### Where this package was right, and where it was not
+
+| | |
+|---|---|
+| ✅ **Right** | *"The missing thing is an evaluation run."* **It was**, and running it produced a pass |
+| ✅ **Right** | *"It is possible `reasoning@1` fails on `llama3.1:8b` too and a genuine decision follows."* **A genuine decision did follow — for a reason this package did not anticipate** |
+| ❌ **Wrong** | *"…engineering work — **not a product ruling**."* **Half wrong.** The measurement was engineering; **recording it is a policy question**, and [TASK-013](../BACKLOG.md) returns to the product owner rather than leaving it |
+| ⚠️ **Unused** | The recommendation bundled *"author a `reasoning` dataset"* with the evaluation. **Lane A ran the existing one and passed** — **`ai_reasoning_engine/evaluation/` still has no `datasets/` directory**, so the observation stands as fact and **was not the blocker.** Two things were bundled and only one mattered |
+
+> **The reclassification recommendation holds, with its scope corrected.** [TASK-013](../BACKLOG.md) is not *"no released model"* — it is **"a release is earned and the repository cannot record it under its own timeout policy."** That is a sharper question and it arrives with a measurement attached, which is what §1 said the reclassification would buy.
+
+---
+
 ## 1 · The finding: Epic G's blocker is not the one recorded
 
 **[TASK-013](../BACKLOG.md) says:** *"`reasoning@1` has no released model — **the product owner.** The Decision Package would refuse at runtime."* **It is filed under WAITING, on a decision.**

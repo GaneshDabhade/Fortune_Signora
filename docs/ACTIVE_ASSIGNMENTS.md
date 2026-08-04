@@ -137,9 +137,9 @@
 |---|---|---|---|
 | **CX-07 · Responsive Surface** | ✅ **COMPLETED** | — *(Lane A, TASK-200, slice 4 closed the milestone)* | — |
 | **E1 · CRM read** | 🔨 **ACTIVE IMPLEMENTATION** | **Credentials** — acquisition only. **[ADR-0401](architecture/adr/0401-a-customers-crm-is-not-a-provider.md) amended**; the firmographic mapper has landed | **Lane B** (TASK-402) |
-| **G · Copilot** | 🔨 **ACTIVE IMPLEMENTATION** | **None for phase 1** — [TASK-013](BACKLOG.md) is an unrun measurement, not a decision | **Lane A** (TASK-202) |
+| **G · Copilot** | 🔨 **ACTIVE IMPLEMENTATION** | **[C-222](LANE_COORDINATION.md)** — `reasoning@1` **earns a protocol-2 release on `llama3.1:8b`** and the repository cannot record it under its own 60 s timeout. **Blocks only a live G1 inference** | **Lane A** (TASK-202) |
 | **F · Workflow** | 🟩 **READY** | **[ADR-0402](architecture/adr/0402-a-rule-is-data.md)** ratification — and nothing else | **Lane B** backend · **Lane A** builder |
-| **D · Risk** | 🟩 **READY** | **Nothing.** Phase 1 is [TASK-905](BACKLOG.md), already `READY`; no ADR required | **Lane A** ph. 1 · **Lane B** ph. 2–3 |
+| **D · Risk** | 🔨 **ACTIVE IMPLEMENTATION** | **Nothing** — claimed as **TASK-203** | **Lane A** ph. 1 · **Lane B** ph. 2–3 |
 | **C · People** | ⏸️ **WAITING ON PRODUCT DECISIONS** | **❓1 answered — the provider returns no name.** ADR-0400 ratification · contact ruling · **E1's progression** — §7 route B is now the only path to a named person | **Lane B** *(one remnant: the committee role id)* |
 | **M14a · Notifications** | 🔷 **ARCHITECTURE** *(not Lane C's)* | **[ADR-0040](architecture/adr/0040-notifications.md) `Proposed`.** Designed by Lane B; **F's phase 5 consumes it** | **Lane B** |
 | **M14b · Billing** | 🔎 **DISCOVERY — cannot proceed** | **[C-200](LANE_COORDINATION.md) 🔴** — no bounded context. **Preparation cannot invent scope** | **Lane A** |
@@ -182,6 +182,9 @@
 | ⚠️ **Newly exposed gap** | **Data export · account deletion** | **No owner anywhere in the repository.** Epic C raises the stakes; M15 nominally covers it and sits behind an unbuilt environment — [C-412](LANE_COORDINATION.md) |
 | ⚠️ **Newly exposed gap** | **PII in logs** | Redaction is credential-shaped — [405](architecture/405-cross-cutting-concerns.md) §2 |
 | 🏷️ **Naming collision** | **Epic F** | `apps/api/composition/workflow.py` already means *the Opportunity Engine's write surface* |
+| 🔁 **Recurring pattern** | **Three epics** | **Capability with no way in** — A5's observations · E1's firmographic read · E1's connect route. **All three found by implementation lanes after Lane C reported the gap as unbuilt** |
+| 🔀 **Blocker changed shape** | **Epic G** | [TASK-013](BACKLOG.md) is no longer *"no released model"*. **A release is `EARNED` and cannot be recorded under a 60 s timeout** — [C-222](LANE_COORDINATION.md) |
+| 🐛 **Hidden defect surfaced** | **E1 / E2** | Disconnect was irreversible. **[406](architecture/406-epic-e2-crm-write-back.md) §6 listed reconnection as an edge case to decide; it was already broken** |
 
 > **The two recommendations that change future engineering effort are the retirement and the rename**, and they pull in opposite directions: **one removes a module nobody should build; the other reveals a differentiator that is already built and unlabelled.** Both cost a decision and no engineering.
 

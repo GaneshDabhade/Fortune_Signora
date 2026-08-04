@@ -22,6 +22,16 @@
 
 **And it refuses everything commercial**, pinned by a test: *"is-a-customer, contract value, renewal date, opportunity stage have no canonical attribute, and a test fails the day one is added here rather than through the RFC the vocabulary requires."*
 
+**Second pass, later the same day — Lane B found another slice this package did not see, and a defect behind it.**
+
+**`POST /workspaces/{id}/connections` — the connect route.** Lane B: *"Found a use case that had been complete and tested since M13 S01 with nothing exposing it: a customer who finished a consent flow had nowhere to land. **Same shape as the Observation Engine's thirteen computed fields with no interface layer, one module over.**"*
+
+> **That is the third instance of one pattern in two days** — A5's observations, the firmographic mapper, and now the connect route. **The repository's recurring defect is not missing capability; it is capability with no way in.** §1's *"nothing consumes it"* was the same observation from the other end, and **this package should have looked for the unexposed use case rather than only the unbuilt one.**
+
+**And building the route made a defect reachable within one test.** `connected_account` is unique on `(workspace, integration, external account)` **across every state**, so a disconnected connection kept the identity permanently — **disconnect was irreversible, and the same portal could never be reconnected.** *"Nothing had noticed, because no route could connect anything in the first place."*
+
+> **A missing entrance was hiding a broken exit.** [406](406-epic-e2-crm-write-back.md) §6 lists *"re-connecting after disconnect"* as an edge case to decide; **it was already a defect, and it took the entrance to expose it.**
+
 ### What this changes
 
 | | |

@@ -200,6 +200,12 @@ Decisions required    what the product owner must rule before it can start
 
 > **The *things NOT to build* section has become the most valuable output the office produces** *(product owner, 2026-08-04)*. It is written first, from the repository, and it is usually longer than the design.
 
+**Look for the capability with no way in, not only the capability that is missing** *(learned 2026-08-04, three instances in two days)*. **A5's Observation Engine had thirteen fields computed since M4 and no interface layer. The firmographic CRM read was six canonical attributes the vocabulary already accepted. The connect route had been complete and tested since M13 S01 with nothing exposing it** — *"a customer who finished a consent flow had nowhere to land."*
+
+> **Each was found by an implementation lane, after Lane C had prepared the epic and reported the gap as something unbuilt.** The office kept asking *what does not exist?* when the more productive question was **what exists and cannot be reached?** — and the audit that founded this whole approach said so first: *fifteen modules, eighty-two events and twenty-four endpoints behind five screens.*
+
+> **A missing entrance hides more than a feature.** Building the connect route made a defect reachable within one test — `connected_account` was unique across every state, so **disconnect was irreversible and nothing had noticed, because no route could connect anything in the first place.**
+
 **Never begin from a blank page.** The first question is always *what already exists?* — and twice now it has changed what the epic **is**: [Epic C](architecture/400-epic-c-people.md) found six modules running people-shaped intelligence with no person in it; [E1](architecture/401-epic-e1-crm-read.md) found a complete connection model that **nothing consumes**.
 
 **Report preparation honestly.** A percentage is a claim about work done, not encouragement — **`Discovery` means the initiative has been read; `Research` means the repository sweep has begun; `READY` means 100% and nothing less counts.**
