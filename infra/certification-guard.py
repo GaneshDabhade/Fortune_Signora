@@ -59,6 +59,27 @@ def _git(*args: str) -> str:
     return result.stdout.strip() if result.returncode == 0 else ""
 
 
+def _behind_origin() -> list[tuple[str, int]]:
+    """Which shared branches this clone holds an older answer for than `origin` does.
+
+    **A fetch updates `origin/integration`; it does not move `integration`.** QE
+    fetches constantly — the gatekeeper loop does nothing else — and
+    fast-forwards the local branch only when a cycle begins, so between cycles
+    the local ref is routinely behind by exactly the commits worth asking about.
+
+    Only *behind* counts. A local branch ahead of `origin` is a promotion not yet
+    pushed, which is a normal intermediate state and not a stale answer.
+    """
+    behind: list[tuple[str, int]] = []
+    for ref in ("main", "integration"):
+        if not _git("rev-parse", "--verify", "--quiet", f"origin/{ref}"):
+            continue  # no remote-tracking ref: nothing to compare against
+        count = _git("rev-list", "--count", f"{ref}..origin/{ref}")
+        if count.isdigit() and int(count):
+            behind.append((ref, int(count)))
+    return behind
+
+
 def _migration_head(commit: str | None = None) -> str | None:
     """The highest migration revision — **in the tree being asked about.**
 
@@ -180,8 +201,22 @@ def _claim_commits(rev_range: str) -> list[str]:
     return _git("rev-list", "--reverse", rev_range, "--grep=^Claim TASK-").splitlines()
 
 
+def _scope_note() -> None:
+    """Say what this clone could not see, and carry on.
+
+    **An audit reports what it examined; `--next-cycle` decides.** Refusing an
+    audit for staleness would be actively wrong during a cycle: `integration`
+    moves while QE certifies *by design*, and the snapshot rule forbids chasing
+    it. So the audits name the gap and proceed — the finding they might miss is
+    on a commit that belongs to the next cycle anyway.
+    """
+    for ref, count in _behind_origin():
+        print(f"  note — {count} commit(s) on `origin/{ref}` are not in this clone's `{ref}`.\n")
+
+
 def _audit_claims() -> int:
     """Every claim commit on `integration` touches the registers and nothing else."""
+    _scope_note()
     commits = _claim_commits("main..integration") + _claim_commits(
         f"{RULE_RATIFIED_AT}..main"
     )
@@ -237,7 +272,26 @@ def _next_cycle() -> int:
     triggered a cycle for three documentation commits. The test is now the same
     one `_is_closeout` applies: **does anything here change what the software
     does?**
+
+    **It refuses to answer from a stale clone**, because the wrong answer here is
+    the reassuring one. Asked while `integration` sat a commit behind
+    `origin/integration`, it printed *"Repository Ready — nothing awaits
+    certification"* — a confident false negative on the gatekeeper's central
+    question, and indistinguishable from the true one. Found live on 2026-08-04,
+    by a monitoring loop that fetches and never fast-forwards.
     """
+    stale = [(ref, count) for ref, count in _behind_origin() if ref == "integration"]
+    if stale:
+        _, count = stale[0]
+        print(f"REFUSED — `integration` is {count} commit(s) behind `origin/integration`.\n")
+        print(
+            "  This answer is derived from local refs, so a stale clone produces a\n"
+            "  confident wrong answer rather than a visible failure — and the wrong\n"
+            "  answer here is `Repository Ready`.\n\n"
+            "  git checkout integration && git merge --ff-only origin/integration\n"
+        )
+        return 1
+
     pending = _git("rev-list", "--reverse", "main..integration").splitlines()
     if not pending:
         print("Repository Ready — `integration` == `main`. Nothing awaits certification.")
@@ -306,6 +360,7 @@ def _audit_main() -> int:
         )
         return 2
 
+    _scope_note()
     commits = _git("rev-list", "--reverse", f"{RULE_RATIFIED_AT}..main").splitlines()
     certified_all = {str(run.get("commit", "")) for run in _runs() if _satisfied(run)[0]}
     # Only certified commits that were actually promoted can vouch for anything.

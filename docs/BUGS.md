@@ -94,6 +94,96 @@ Such a row names the code, records **Current assignee: none — not assignable**
 **Both are fixed on `integration`** at `b332aea`. Nothing is left for this row to track, and two rows for one defect is the register drifting from the repository.
 
 
+### B-113 · Every claim audit refuses, on a commit from 2026-08-02 that can never be fixed
+
+| | |
+|---|---|
+| **Module** | Repository governance history — `infra/certification-guard.py --audit-claims` |
+| **Current assignee** | **none — not assignable.** The offending commit is 235 commits back on `main`, and rewriting it is ⚫ (`CLAUDE.md` §20e). **The product owner rules on the disposition** |
+| **Severity** | 🟡 — wrong but survivable. `--audit-claims` is not a certification gate, so nothing is blocked. **What it costs is the audit itself** |
+| **Status** | **`OPEN`** — reported, deliberately not fixed by QE |
+| **Found** | 2026-08-04 by QE, running the audits after changing the guard |
+
+**Steps to reproduce.**
+
+```bash
+python3 infra/certification-guard.py --audit-claims
+```
+
+**Expected.** `every one touches only ACTIVE_ASSIGNMENTS.md and BACKLOG.md.`
+
+**Actual.**
+
+```
+REFUSED — 1 claim commit(s) carried more than a claim:
+  · 9af1641  Claim TASK-004 — and why TASK-003 was not taken
+      also changed docs/LANE_COORDINATION.md
+```
+
+`9af1641` is dated **2026-08-02** — the day the Task Claim Protocol was ratified. The lane recorded *why it skipped a task* in the coordination register within the same commit, which the protocol had just bounded to the two registers.
+
+### Why QE is reporting this rather than fixing it
+
+**Three routes exist and QE may take none of them.**
+
+| | |
+|---|---|
+| **Rewrite the commit** | ⚫ — *"rewrite a dated record"*, and it is an ancestor of 235 promoted commits |
+| **Baseline the audit past it** | **A gate quietly narrowed to stop it failing.** The authority QE has is *to make a documented gate runnable, never to make it pass* (§20e) |
+| **Add a named historic exception** | Defensible, and **a governance decision** — it declares one past deviation permanently accepted, which is the product owner's to declare, not a lane's |
+
+> **The real cost is that the audit can never pass.** A check with a permanent known failure stops being read: the next genuine violation arrives underneath a `REFUSED` everybody has learned to scroll past. **That is the same defect class as a guard that cannot fail** (§2) — inverted, and quieter, because nothing about it looks broken.
+
+**What is *not* wrong.** The audit is correct — the commit really did carry a third file, and `RULE_RATIFIED_AT` already baselines the check properly at ratification. **Nothing here is a defect in the tool.**
+
+
+### B-112 · The gatekeeper reported `Repository Ready` while a commit waited on `origin/integration`
+
+| | |
+|---|---|
+| **Module** | Repository tooling — `infra/certification-guard.py` |
+| **Current assignee** | **QE** — its own tooling |
+| **Severity** | 🟠 — **a confident false negative on the question the gatekeeper exists to answer**, indistinguishable from the true answer |
+| **Status** | **`FIXED`** 2026-08-04, with a regression test. **`VERIFIED` is another lane's** |
+| **Found** | 2026-08-04 by QE, live, assessing Lane B's push to `integration` |
+
+**Steps to reproduce.** In a clone whose `integration` is behind `origin/integration` — which is every clone that fetches without fast-forwarding:
+
+```bash
+git fetch origin                                  # moves origin/integration
+python3 infra/certification-guard.py --next-cycle  # never touches it
+```
+
+**Expected.** Either the pending commits, or a refusal to answer.
+
+**Actual.**
+
+```
+Repository Ready — `integration` == `main`. Nothing awaits certification.
+```
+
+`origin/integration` was one commit ahead at the time.
+
+### Why it survived thirty-nine cycles
+
+**Because the workflow that exposes it is the one QE only recently adopted.** The continuous gatekeeper loop **fetches every 60 seconds and fast-forwards nothing** — a local branch is moved only when a cycle begins. So between cycles the local ref is routinely behind by exactly the commits worth asking about, and the older workflow (fetch, then immediately ff, then ask) never produced the gap.
+
+> **The staleness of a local ref was a hidden input** (`CLAUDE.md` §2). It changed the answer without appearing in the question, and it changed it toward the reassuring one — **the direction that gets acted on**. Had Lane B's commit been executable rather than a board update, QE would have concluded no cycle was needed and gone back to waiting.
+
+### The fix
+
+**Refuse for `--next-cycle`; note it for the audits**, and the asymmetry is the design rather than a compromise:
+
+| | |
+|---|---|
+| **`--next-cycle` refuses** | It *decides*. An answer derived from stale refs is worthless, and its wrong answer is the comfortable one |
+| **`--audit-claims` / `--audit-main` report the gap and proceed** | `integration` **moves while QE certifies, by design** (§20e). An audit that refused for staleness would be wrong exactly when it is most used — and would push QE to chase the head mid-cycle, which the Certification Snapshot forbids |
+
+**Not by fetching inside the tool.** A gate that reaches the network fails offline and acquires a second hidden input in place of the first. It compares against what `origin` last returned and says so.
+
+**Verified by watching it refuse**, on the real clone: reset `integration` back one commit → `REFUSED`, exit 1, with the fast-forward command named; restored → the real assessment, exit 0. Seven regression tests in `backend/tests/test_promotion_guard_stale_refs.py` build a real clone with a real remote, because the premise under test is a property of git — *a fetch leaves the local branch behind* — and that premise is asserted as its own control.
+
+
 ### B-111 · `tsc --noEmit` is in no gate QE runs, and `main` is red
 
 | | |
