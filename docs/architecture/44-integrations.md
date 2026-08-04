@@ -91,6 +91,10 @@ Before implementation, the model was tested against API keys, OAuth 2.1, Device 
 
 `integration_secret` — its own table, **encrypted at rest with Fernet**, behind the same `SecretStore` port a vault will implement.
 
+**`kind` says what the material is, and the acquisition flow stores `oauth2`** — a JSON object carrying the access token and, when the provider issued one, the refresh token. `Credential` is opaque by construction precisely so that a kind can be more than one string, and there is exactly one `secret_ref` per grant, so a refresh token has nowhere else to live.
+
+> **The first version of the exchange discarded the refresh token while recording `refreshable: true`** — a flag nothing could ever act on, which is the Decorative Logic §2 names. It was worse than untidy: **HubSpot access tokens expire in 1800 seconds**, so every connection would have died within half an hour with no way back but reconnecting by hand. Found by sweeping the epic rather than by a test, and now pinned by one asserting the two can never disagree.
+
 **Its own table rather than a column on `integration_grant`.** The grant is lifecycle — read on every connections screen, listed, counted. Material is read only when a call is about to be made. Separating them keeps ciphertext out of the common query and makes the eventual move to AWS Secrets Manager ([ADR-0022](adr/0022-devops-infrastructure-and-deployment-topology.md), provisioned at M14.5) a dropped table rather than a column migrated out of a hot aggregate.
 
 **The key has no default.** A default would ship a known key, which is worse than no encryption because it reads as protection. `IntegrationSettings` is the module's own typed object (§6), constructed only at the composition root.
@@ -148,7 +152,19 @@ Found by the first test to run this against PostgreSQL rather than a double ([B-
 
 **It is idempotent.** A second disconnect is a customer clicking twice. It returns success, touches nothing, and does not move the first one's timestamp.
 
-`NoRevoker` is the default and **reports failure**. No adapter calls a vendor's revocation endpoint yet, and claiming a revocation that never happened would tell a customer their access was withdrawn at the vendor while the credential is still live there — the more dangerous of the two available lies. The Connection Center passes that through verbatim: *"Signora could not tell HubSpot… you may also want to remove Signora from your HubSpot settings."*
+**`HttpProviderRevoker` is the default from 2026-08-04**, and it closes the gap the dialog had been apologising for. `NoRevoker` remains for a system with no revocation endpoint, and still reports failure — because claiming a revocation that never happened would tell a customer their access was withdrawn while the credential is still live at the vendor, which is the more dangerous of the two available lies.
+
+**Its endpoints live in Python, not beside the acquisition ones.** `providers.ts` holds where a customer is *sent* and where a code is *exchanged* — acquisition, which §5 reserves to the Next tier. `revocation.py` holds where a grant is *destroyed* — management, which §5 puts here. **No URL appears in both tables and neither tier could use the other's.**
+
+**Three properties, each of which the obvious implementation gets wrong:**
+
+| | |
+|---|---|
+| **The vendor is sent the token it asks for** | HubSpot revokes a *refresh* token and the access token will not do. Sending the wrong one returns a cheerful success that revokes nothing — **the product would report the credential withdrawn while it still worked** |
+| **A `404` counts as revoked** | The grant is already gone, which is the outcome the customer wanted. Reporting failure would send them to tidy up something already tidy |
+| **Nothing raises** | Every failure — a refusal, an unreachable host, unreadable material, a system with no endpoint — returns `False` and is logged with its reason. `DisconnectSystem` catches broadly anyway, so a raise would still not stop a customer; it would arrive as a discarded traceback instead of a line naming the cause |
+
+**Material it cannot read is a refusal, never a guess.** A `bearer` credential, malformed JSON, JSON that is not an object, an object with no refresh token — each reports failure rather than sending part of something to a vendor on the chance it works.
 
 ---
 
@@ -257,8 +273,8 @@ Salesforce is next and was argued for at the time — it is the enterprise defau
 ### Known limitations, stated rather than discovered later
 
 - **No credential rotation on a live connection.** A working grant cannot be replaced in place; the customer disconnects and reconnects. **Reconnection itself works** (§4), so the path exists and costs two steps.
-- **No `ProviderRevoker` adapter.** Disconnect always reports `revoked_at_provider: false`, and the dialog tells the customer to tidy up at the vendor. Honest, and it stops being necessary the moment an adapter exists.
-- **No refresh.** `refreshable` is recorded and nothing acts on it. A grant that expires reads `NOW` on the Connection Center and needs reconnecting by hand.
+- ~~**No `ProviderRevoker` adapter.**~~ **Built 2026-08-04** (§4). Two systems have endpoints; anything else still reports failure honestly.
+- **No refresh.** `refreshable` is recorded, **the refresh token is now stored** (§3), and nothing yet acts on either. A grant that expires reads `NOW` on the Connection Center and needs reconnecting by hand. **This is the next executable slice in the module and needs neither a ruling nor a credential** — RFC 6749 §6 is the same standard as the exchange, and the only open question is where the client secret lives for a Python-side refresh, since it is a frontend environment value today.
 - **`ResolveExecutionContext` is not wired at the composition root.** It is complete and tested; a factory that could only raise would be a wiring that lies about what exists. Provider Platform wires it when it consumes a connection.
 - **Nothing synchronizes.** This module records relationships. The first consumer is Provider Platform, and it has not arrived.
 - **No navigation entry.** `/settings/connections` is reachable by URL and nothing links to it — the shell is Lane A's, recorded as a coordination item rather than edited across a boundary.

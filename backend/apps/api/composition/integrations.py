@@ -37,7 +37,7 @@ def _settings() -> IntegrationSettings:
 
 
 def disconnect_system(context: CurrentWorkspace) -> DisconnectSystem:
-    return build_disconnect_system(context.session, _settings())
+    return build_disconnect_system(context.session, _settings(), context.workspace_id)
 
 
 IntegrationDisconnect = Annotated[DisconnectSystem, Depends(disconnect_system)]

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from uuid import UUID
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.integrations.application.ports import ConnectedAccountRepository, GrantStore
@@ -12,6 +14,7 @@ from modules.integrations.infrastructure.repository import (
     SqlConnectedAccountRepository,
     SqlGrantStore,
 )
+from modules.integrations.infrastructure.revocation import HttpProviderRevoker
 from modules.integrations.infrastructure.secrets import EncryptedSecretStore
 from modules.integrations.infrastructure.settings import IntegrationSettings
 
@@ -33,15 +36,28 @@ def build_integration_queries(session: AsyncSession) -> IntegrationQueries:
 # could only raise would be a wiring that lies about what exists.
 
 
-def build_disconnect_system(session: AsyncSession, settings: IntegrationSettings) -> DisconnectSystem:
-    """**No revoker, and that is honest rather than incomplete.** No adapter
-    exists to call a vendor's revocation endpoint, and `NoRevoker` reports
-    failure — so a customer is told their access was removed here and may still
-    need removing at the vendor, which is true."""
+def build_disconnect_system(
+    session: AsyncSession, settings: IntegrationSettings, workspace_id: UUID
+) -> DisconnectSystem:
+    """**With a revoker, since 2026-08-04.** Until then `NoRevoker` reported
+    failure and the product said so honestly — a customer was told their access
+    was removed here and may still need removing at the vendor, which was true
+    and left them holding a live credential.
+
+    **The revoker takes the workspace** because the port is
+    `revoke(connected_account_id)` and an adapter that read a connection
+    without scoping it would be reaching across a tenant boundary to do it.
+    RLS would refuse, and depending on that refusal rather than passing the
+    scope is exactly the defence-in-depth §8 declines to skip.
+    """
+    accounts = SqlConnectedAccountRepository(session)
+    grants = SqlGrantStore(session)
+    secrets = EncryptedSecretStore(session, settings.secret_key)
     return DisconnectSystem(
-        SqlConnectedAccountRepository(session),
-        SqlGrantStore(session),
-        EncryptedSecretStore(session, settings.secret_key),
+        accounts,
+        grants,
+        secrets,
+        revoker=HttpProviderRevoker(accounts, grants, secrets, workspace_id),
     )
 
 

@@ -66,12 +66,33 @@ export async function recordConnection(
           external_account_id: grant.externalAccountId,
           label: input.label,
           endpoint: grant.endpoint,
-          credential: { kind: 'bearer', material: grant.accessToken },
+          credential: {
+            // **`oauth2`, not `bearer`, and the refresh token is why.**
+            //
+            // A `bearer` credential is one string, so recording the refresh
+            // token alongside it needs somewhere to put it — and there is
+            // exactly one `secret_ref` per grant. `Credential` is opaque by
+            // construction for this reason: `kind` tells a client factory what
+            // it is holding, and this kind is a JSON object.
+            //
+            // **The version before this one discarded the refresh token while
+            // recording `refreshable: true`** — a flag that could never be
+            // acted on, which is the Decorative Logic §2 names. HubSpot access
+            // tokens expire in 1800 seconds, so it also meant every connection
+            // died within half an hour with no way back except reconnecting by
+            // hand.
+            kind: 'oauth2',
+            material: JSON.stringify({
+              access_token: grant.accessToken,
+              refresh_token: grant.refreshToken,
+            }),
+          },
           scopes: grant.scopes,
           expires_at: grant.expiresAt ? grant.expiresAt.toISOString() : null,
-          // **A property, not a special case.** A grant with no refresh token
-          // is one that cannot be renewed without the customer, which is true
-          // of an API key and of every provider that declines to issue one.
+          // **A property, not a special case**, and now a true one: it is
+          // exactly whether the material above carries something to renew
+          // with. An API key is a grant that is neither refreshable nor
+          // expiring, and it arrives through this same call.
           refreshable: grant.refreshToken !== null,
         }),
         cache: 'no-store',

@@ -16,12 +16,38 @@
 import { describe, expect, it } from 'vitest';
 
 import { exchangeAuthorizationCode, type Fetcher } from '@/lib/integrations/exchange';
-import { PROVIDERS } from '@/lib/integrations/providers';
+import { providerFor, type ProviderConfig } from '@/lib/integrations/providers';
 import { recordConnection } from '@/lib/integrations/record';
 
-const HUBSPOT = PROVIDERS.hubspot;
+/**
+ * **Narrowed rather than asserted.** `providerFor` returns `null` for a slug
+ * the table does not hold, and a test that reached for `!` would fail with
+ * *cannot read property of undefined* three assertions later instead of
+ * saying which system went missing.
+ */
+function required(slug: string): ProviderConfig {
+  const config = providerFor(slug);
+  if (config === null) throw new Error(`${slug} is not in the provider table`);
+  return config;
+}
+
+const HUBSPOT = required('hubspot');
 const CREDENTIALS = { clientId: 'client-id', clientSecret: 'client-secret' };
 const NOW = () => Date.parse('2026-08-04T12:00:00Z');
+
+/**
+ * The one call a test meant to inspect.
+ *
+ * `calls[0]` is possibly-undefined under `noUncheckedIndexedAccess`, and
+ * silencing that with `!` would hide the case worth catching: a test asserting
+ * a request that was never made passes vacuously.
+ */
+function only<T>(calls: T[]): T {
+  expect(calls).toHaveLength(1);
+  const first = calls[0];
+  if (first === undefined) throw new Error('no request was made');
+  return first;
+}
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -70,9 +96,11 @@ describe('exchanging a customer’s consent for credentials', () => {
       now: NOW,
     });
 
-    const sent = new URLSearchParams(String(calls[0].init.body));
-    expect(calls[0].url).toBe(HUBSPOT.tokenUrl);
-    expect(calls[0].init.method).toBe('POST');
+    const token = calls[0];
+    if (token === undefined) throw new Error('the token endpoint was never called');
+    const sent = new URLSearchParams(String(token.init.body));
+    expect(token.url).toBe(HUBSPOT.tokenUrl);
+    expect(token.init.method).toBe('POST');
     expect(Object.fromEntries(sent)).toEqual({
       grant_type: 'authorization_code',
       client_id: 'client-id',
@@ -205,7 +233,9 @@ describe('a token Signora cannot attribute', () => {
       now: NOW,
     });
 
-    expect(calls[1].url).toBe(`${HUBSPOT.identityUrl}the-token`);
+    const identity = calls[1];
+    if (identity === undefined) throw new Error('the identity endpoint was never called');
+    expect(identity.url).toBe(`${HUBSPOT.identityUrl}the-token`);
   });
 });
 
@@ -243,13 +273,20 @@ describe('handing the grant to the tier that keeps it', () => {
     const { result, calls } = record(json({ id: 'c-1' }, 201));
     await result;
 
-    expect(calls[0].url).toBe('http://api.test/workspaces/ws-1/connections');
-    expect(JSON.parse(String(calls[0].init.body))).toEqual({
+    const call = only(calls);
+    expect(call.url).toBe('http://api.test/workspaces/ws-1/connections');
+    expect(JSON.parse(String(call.init.body))).toEqual({
       integration: 'hubspot',
       external_account_id: '24601',
       label: 'HubSpot',
       endpoint: null,
-      credential: { kind: 'bearer', material: 'the-access-token' },
+      credential: {
+        kind: 'oauth2',
+        material: JSON.stringify({
+          access_token: 'the-access-token',
+          refresh_token: 'the-refresh-token',
+        }),
+      },
       scopes: ['crm.objects.companies.read'],
       expires_at: '2026-08-04T12:30:00.000Z',
       refreshable: true,
@@ -260,7 +297,7 @@ describe('handing the grant to the tier that keeps it', () => {
     const { result, calls } = record(json({ id: 'c-1' }, 201));
     await result;
 
-    expect(calls[0].init.headers).toMatchObject({
+    expect(only(calls).init.headers).toMatchObject({
       authorization: 'Bearer signora-jwt',
     });
   });
@@ -293,5 +330,70 @@ describe('handing the grant to the tier that keeps it', () => {
     });
 
     expect(result).toEqual({ ok: false, outcome: 'unknown' });
+  });
+});
+
+describe('the refresh token is not thrown away', () => {
+  /**
+   * **The first version of `record.ts` discarded it while recording
+   * `refreshable: true`** — a flag nothing could ever act on, and with
+   * HubSpot's 1800-second access tokens it meant every connection died within
+   * half an hour with no way back except reconnecting by hand.
+   *
+   * These pin the property rather than the encoding: what matters is that
+   * material carrying a renewable grant can be renewed, and that a grant with
+   * nothing to renew says so.
+   */
+  const BASE = {
+    accessToken: 'the-access-token',
+    expiresAt: null,
+    scopes: [],
+    externalAccountId: '24601',
+    endpoint: null,
+  };
+
+  async function sent(refreshToken: string | null): Promise<Record<string, unknown>> {
+    const calls: Array<{ url: string; init: RequestInit }> = [];
+    await recordConnection({
+      apiBaseUrl: 'http://api.test',
+      accessToken: 'signora-jwt',
+      workspaceId: 'ws-1',
+      integration: 'hubspot',
+      label: 'HubSpot',
+      grant: { ...BASE, refreshToken },
+      fetcher: async (url, init) => {
+        calls.push({ url, init });
+        return json({ id: 'c-1' }, 201);
+      },
+    });
+    return JSON.parse(String(only(calls).init.body)) as Record<string, unknown>;
+  }
+
+  it('keeps it, so a renewable grant can actually be renewed', async () => {
+    const body = await sent('the-refresh-token');
+    const credential = body.credential as { kind: string; material: string };
+
+    expect(body.refreshable).toBe(true);
+    expect(JSON.parse(credential.material)).toMatchObject({
+      access_token: 'the-access-token',
+      refresh_token: 'the-refresh-token',
+    });
+  });
+
+  it('says a grant with nothing to renew is not refreshable', async () => {
+    const body = await sent(null);
+    const credential = body.credential as { kind: string; material: string };
+
+    expect(body.refreshable).toBe(false);
+    expect(JSON.parse(credential.material).refresh_token).toBeNull();
+  });
+
+  it('never records refreshable without something to refresh with', async () => {
+    // The invariant, stated once so neither half can drift from the other.
+    for (const token of ['a-token', null]) {
+      const body = await sent(token);
+      const material = JSON.parse((body.credential as { material: string }).material);
+      expect(body.refreshable).toBe(material.refresh_token !== null);
+    }
   });
 });
