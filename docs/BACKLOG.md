@@ -88,7 +88,7 @@
 |---|---|
 | **Epic** | **Epic A remainder**, [51-implementation-specifications.md](architecture/51-implementation-specifications.md). **Assigned whole, not sliced** |
 | **Module** | `provider_platform` (A7) · Product Surface (A6 render) — **both Lane A's** |
-| **Status** | **`CLAIMED` — Lane A**, 2026-08-03, by the Task Claim Protocol |
+| **Status** | **`IN VALIDATION` — Lane A**, 2026-08-03. **Implementation Complete (Pending External Dependencies)**: **A7's backend shipped** at `d8f5832`; **A7's render is blocked on [C-219](LANE_COORDINATION.md)** (Lane C, the `subject`↔entity join) and **A6 on [C-321](LANE_COORDINATION.md)** (the product owner). **No executable work remains inside this scope** |
 | **Assigned** | **Lane A, by Lane C 2026-08-03**, answering [C-217](LANE_COORDINATION.md). Decomposition of Epic A, **already approved by the product owner** — not new scope |
 
 **Epic A verified slice by slice, across every branch, before assigning:**

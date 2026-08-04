@@ -322,7 +322,7 @@ databaseUrl: required(
 | [C-024 *(Lane A's — see the collision note)*](#c-024--nothing-in-the-product-can-render-a-persons-name) | Nothing in the product can render a person's name | Lane A | **Product owner** | `OPEN` — **architectural** | **TS-01, the Team page.** And how *anything* names a user: AI attribution, audit actors, notifications, mentions |
 | [C-025 *(Lane A's — see the collision note)*](#c-025--the-catalog-explains-nine-words-to-nobody) | The catalog explains nine words to nobody | Lane A | **Product owner** + `signal_engine` | `OPEN` | [R5-04](architecture/39-product-review-findings.md). **Built and reverted; one sentence unblocks either outcome** |
 | [C-205](#c-205--is-signora-expected-to-work-on-a-phone) | Is Signora expected to work on a phone? | Lane A | **Product owner** | **`ANSWERED` 2026-08-03 — yes, a phone is in scope** | **Unblocks CX-07**, which is a milestone rather than a slice. [B-019](BUGS.md) is confirmed a defect |
-| [C-217](#c-217--lane-a-is-available-and-requests-its-next-product-surface-epic) | **Lane A is AVAILABLE and requests its next Product Surface epic** | Lane A | **Lane C** | `OPEN` — **awaiting an epic** | **Lane A's entire implementation capacity.** Carries four places where the register and the repository currently disagree |
+| [C-217](#c-217--lane-a-is-available-and-requests-its-next-product-surface-epic) | **Lane A is AVAILABLE and requests its next Product Surface epic** | Lane A | **Lane C** | **`OPEN` — answered once, re-opened 2026-08-03.** [TASK-400](BACKLOG.md) assigned and its executable half shipped; **Lane A is `AVAILABLE` again** | **Lane A's entire implementation capacity.** TASK-400 is *Implementation Complete (Pending External Dependencies)* — the rest is [C-219](#c-219--task-400s-two-halves-are-not-equally-buildable) and [C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name), neither Lane A's |
 | [C-218](#c-218--a-lane-can-report-available-and-the-office-that-assigns-cannot-see-it) | **A lane can report `AVAILABLE`, and the office that assigns cannot see it** | Lane A | **Lane C** (model) · **QE** (mechanism) | `OPEN` | **Every lane's idle time, structurally.** [C-217](#c-217--lane-a-is-available-and-requests-its-next-product-surface-epic) is the worked example: raised, pushed, invisible |
 | [C-219](#c-219--task-400s-two-halves-are-not-equally-buildable) | **TASK-400's two halves are not equally buildable** | Lane A | **Product owner** (A6) · **Lane C** (A7 join) | `OPEN` — **A7 proceeding, A6 held** | **A6 only.** Its own specification says [C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name) *"must be answered first"* |
 | [C-220](#c-220--two-lanes-have-both-written-a-document-50-and-a-document-51) | **Two lanes have both written a document `50` and a document `51`** | Lane A | **QE** · Lane C | `OPEN` | Nothing today. **`state-check` at the merge that brings both branches together** |
@@ -4141,6 +4141,36 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 ### How this closes
 
 **When Lane C assigns an epic.** Lane A records the assignment on its own board row, sets it `ACTIVE`, and closes this item in the slice that begins the work.
+
+---
+
+### Answered, and re-opened the same day — 2026-08-03
+
+**Lane C assigned [TASK-400](BACKLOG.md), Epic A's remainder.** Claimed at `7194edf` on `integration`, confirmed first. **That part worked exactly as intended**, and the round trip from *"I am free"* to *implementing* was minutes rather than a cycle.
+
+**TASK-400 is now `Implementation Complete (Pending External Dependencies)`**, in the product owner's words, and **Lane A is AVAILABLE again.** This item is reused rather than replaced, because *"assign me the next thing"* is one recurring question and **a register that gains a row per availability cycle has become the discussion log it is not allowed to be.**
+
+| TASK-400 | |
+|---|---|
+| **A7 backend** | ✅ **Shipped** at `d8f5832` — `attempted_at` on `provider_watermark`, written on every completed run. 52 module tests, mypy strict, 35/35 contracts, migration `0035` reversible |
+| **A7 render** | ⏸ **Blocked — [C-219](#c-219--task-400s-two-halves-are-not-equally-buildable), Lane C.** The `subject` ↔ entity join. **The word *checked* does not reach a screen until it is true** |
+| **A6** | ⏸ **Blocked — [C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name), the product owner's.** Its own specification says this ruling *"must be answered first"* |
+
+**No executable work remains inside the assigned scope**, which is the condition the product owner set for returning to `AVAILABLE` rather than a shortage of effort.
+
+### What Lane C needs in order to sequence the next one
+
+**Two of Lane A's three blockers are not Lane A's to move**, and neither is a reason to hold the next assignment:
+
+| | Owner | What unblocks it |
+|---|---|---|
+| **[C-219](#c-219--task-400s-two-halves-are-not-equally-buildable)** | **Lane C** | An agreed join, or a decision to surface the fact **per target account** rather than per account entity. Lane A will bring a proposal rather than assume one |
+| **[C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name)** | **Product owner** | One ruling, six sub-questions, and Lane B has already recorded a recommendation against each |
+| **[C-220](#c-220--two-lanes-have-both-written-a-document-50-and-a-document-51)** | **QE**, at merge | Nothing blocks on it today; it fails `state-check` when both branches land |
+
+**Lane A is free now and does not need any of them answered to start something else.**
+
+> ⚠️ **This notification has the same visibility problem [C-218](#c-218--a-lane-can-report-available-and-the-office-that-assigns-cannot-see-it) describes**, and it is the second time in one day. It is on `lane-a-product-surface`; **Lane C reads `integration`.** A claim may be pushed there and an availability report may not, so **this reaches Lane C when QE fast-forwards** — after validation of a slice that has nothing to do with it. **C-218 is no longer a prediction.**
 
 ---
 
