@@ -79,6 +79,16 @@ Claude must:
 
 - Every module owns its own bounded context, its own ubiquitous language, and its own aggregates, as defined in `docs/architecture/04-modules.md`. Claude must use that document's glossary terms exactly as defined — never invent a synonym, never repurpose a term from one module inside another.
 - **The product has a second ubiquitous language, and it is the customer's** (ratified 2026-08-01, `docs/architecture/adr/0034-ubiquitous-language.md`). The rule above governs the language *between engineers*; it was silent on the language *between the product and the person paying for it*, and that silence shipped screens telling a salesperson *"You are not in a workspace yet"* and explaining Row-Level Security in a dialog. **A customer says Organization, Team, Product, ICP, Buying Committee, Account, Signal, Opportunity, Evidence, Research, Workflow. The platform says workspace, tenant, provider, pipeline, entity, claim, observation, business event, buying score, outbox, port, adapter.** Both are correct; exactly one reaches a screen. The test is *"would a salesperson use this word unprompted to describe their own job?"* — which is why `Signal` and `Opportunity` are deliberately identical on both sides. **The translation lives at the frontend edge and never travels inward:** no table, column, API path, JWT claim, module, type or architecture document is renamed, because `workspace` is precise about isolation in a way `organization` is not. Enforced by `frontend/tests/components/vocabulary.test.tsx`, because a glossary nobody can violate is documentation pretending to be code.
+- **The brand is Fortune. The product is Signora. They are two concepts and the repository keeps them apart** (ratified 2026-08-04, product owner; drafted by Lane C on that instruction). The pattern is Microsoft→Teams, Adobe→Photoshop: **a customer buys from the Fortune portfolio and uses Signora.**
+
+  > **Wherever the product speaks — the assistant, notifications, emails, tooltips, help, empty states, system messages, UI copy, API documentation, prompts, examples — it is `Signora`, alone.** *Signora found · Signora recommends · Ask Signora.* **Never *"Fortune Signora recommends"*.**
+  >
+  > **`Fortune Signora` is the combined brand, reserved for branding surfaces** — landing and marketing pages, splash, logo, **application and browser title**, installer, licence, copyright, legal, press. **Once the application is open, the experience belongs to Signora.** The AI assistant is `Signora`, never `Fortune Signora`.
+
+  **Prospective, never a rename exercise.** No repository-wide sweep, no standalone cosmetic commit. **The inventory is [421](docs/architecture/421-product-naming-inventory.md), and it is empty: `git grep "Fortune Signora"` returns zero matches.**
+
+  **This is [ADR-0034](docs/architecture/adr/0034-ubiquitous-language.md) applied to the product's own name**, landing in the same place: **the translation lives at the frontend edge and never travels inward.** No module, table, column, package, API path or architecture document is renamed — `signora_platform`, `signora-frontend` and `signora_app` are correct and stay.
+
 - Domain logic lives in a module's domain layer and is expressed in domain vocabulary, not in database or transport vocabulary. A repository, a controller, or an event handler is never the place to make a domain decision.
 - Aggregates are the unit of consistency. Claude must not design a change that requires two modules' aggregates to be updated as if they were one transaction — that need is a signal the event-driven boundary is being violated (see §5).
 - Anemic domain models (structs with no behavior, all logic pushed into services) are a smell in a DDD codebase. Domain behavior belongs on domain objects unless there is a specific, stated reason it doesn't.
@@ -510,7 +520,21 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 >   implementation resumes  ◀──  product owner decides  ◀───┘
 > ```
 
-**Lane C owns no production module, no bounded context, and no implementation responsibility.** It does not write production code until explicitly assigned, and **it must never silently become the owner of roadmap priority, commercial priority, release sequencing or product direction** — those are the product owner's, and a lane that prepares a decision is not the lane that takes it.
+#### Platform Foundation — Lane C's second responsibility
+
+**Ratified 2026-08-04, product owner, resolving [C-010](docs/LANE_COORDINATION.md) / TASK-006.** *"Do not create another engineering lane. Lane C's responsibilities are formally expanded to include Platform Foundation work that belongs to no product bounded context."*
+
+> **The gap it closes.** `infra/`, the `Makefile` and repository process had **no assignable lane**, and four defects landed there — [B-007](docs/BUGS.md), [B-012](docs/BUGS.md), [B-013](docs/BUGS.md), [B-014](docs/BUGS.md). **Environment Framework phases 1 and 2 were written by whoever was nearest**, and phase 3 is larger than both.
+
+| Lane C now builds | Lane C still never builds |
+|---|---|
+| `infra/**` · the `Makefile` · environment profiles and launchers · doctor and cleanup tooling · the demo lifecycle · `signora_platform/simulation/**` | **Anything in `backend/modules/`** · business logic · a feature a customer buys · `frontend/` product screens |
+
+**Every existing constraint still binds, and three matter most:** **`signora_platform/` stays frozen** (§20a) **except `simulation/`** · **§20c-2 is absolute** — a launcher, a profile or a *preview environment* must never become CI by another name · **test data still enters the way a customer's data enters** (§20e). **Lane C is rowed on the execution board for Platform Foundation work, and referenced as before for coordination.**
+
+> **The separation that created Lane C is unchanged — it prepares decisions and the product owner makes them.** Owning tooling does not make it an implementation lane for product work, and **it may not verify governance it authored.** A Platform Foundation slice is validated, certified and promoted by QE exactly like any other.
+
+**Beyond Platform Foundation, Lane C owns no production module and no bounded context.** It does not write production code until explicitly assigned, and **it must never silently become the owner of roadmap priority, commercial priority, release sequencing or product direction** — those are the product owner's, and a lane that prepares a decision is not the lane that takes it.
 
 **Where the line falls in practice**, because the first case arrived within hours of Lane C existing:
 
@@ -1069,6 +1093,74 @@ Slice-Handoff:
 **`Docs` names what a lane arriving cold would need**, and QE checks it is not empty on a slice that changed behaviour — under rotation the module's design doc is the next assignee's only inherited context (§12). **`Bugs` must account for every row against the module**, fixed or deferred with its reason (Startup step 4). **`Coordination` names every item the slice opened or closed** — QE audits the register against it, because an item closed in a commit but left `OPEN` in the file is worse than one that was never raised. **`Limitations` is where a lane states what it knowingly left undone** — QE reports it as a known limitation rather than discovering it as a defect three slices later.
 
 > **The handoff is input, never the record.** QE measures every figure from the promoted commit. A lane that reports a test count is offering a claim; QE publishes a measurement.
+
+### The Standard Lane Report
+
+**Ratified 2026-08-04, product owner. It binds every lane without exception — Lane A, Lane B, Lane C and QE.** Drafted by Lane C on the product owner's instruction, which is the only route by which this file is amended.
+
+> **The product owner must never read several pages to learn whether a lane needs attention.** The first screen answers six questions and nothing else: **what is this lane doing · is it blocked · does it need me · is it waiting · can it continue · what happens next.**
+
+**Every status update, pause, completion report, blocker report and handoff opens with this block and closes with the two below.** The engineering discussion between them is **unchanged in depth, evidence and repository analysis** — only its position moves.
+
+```text
+Lane:
+Role:
+Current Module:
+Current Epic:
+Current Slice:
+
+Overall Status:            🟢 ACTIVE · 🟡 WAITING · 🟠 BLOCKED · 🔵 VALIDATING
+                           🟣 MONITORING · ⚪ READY FOR NEW WORK · ✅ COMPLETED
+
+Current Activity:          one sentence
+Waiting On:                None · Product Owner · Lane A · Lane B · Lane C · QE
+                           · External System · Architecture · Repository State
+                           · Multiple (list)
+Blocking Reason:           one sentence, or None.
+Needs Product Owner?       YES — with one sentence of why · or NO
+Can Continue Without PO?   YES — naming what continues · or NO — naming why
+Next Immediate Action:     one sentence
+Estimated Repository Impact:  Small · Medium · Large · Repository-wide
+```
+
+**Then the Executive Summary.** The report closes with **Lane State** — current status · completed this report (≤5) · remaining work (≤5) · waiting on, with an explicit owner · requires Product Owner (YES/NO) · priority (P0–P3) · next update — and then **exactly one** Product Owner Action:
+
+| | |
+|---|---|
+| 🟢 **NO ACTION REQUIRED** | Continue reading only if interested |
+| 🟡 **OPTIONAL REVIEW** | Useful information. **No engineering blocked** |
+| 🟠 **REVIEW SOON** | A decision is needed later. **Engineering still progressing** |
+| 🔴 **ACTION REQUIRED NOW** | **Engineering cannot proceed** |
+
+#### The rules
+
+- **Every field is present; `None` and `NO` are values and silence is not.** An absent field reads as *nobody looked*.
+- **Do not invent statuses.** **A lane that needs an eighth has a state the model does not describe, and that is a finding to raise.**
+- **`Blocking Reason` and `Waiting On` are different questions.** A blocker stops the work; *waiting on* names who owes an answer. **A lane can be 🟡 WAITING on QE and not blocked at all.**
+- **Never hide a waiting state, a blocker or a decision inside narrative.** **If a lane does not need the product owner, say so explicitly** — and then **ask nothing later in the report.**
+- **Not every report is urgent, and the format must show that.** Implementation, monitoring, polling, validation, background preparation, blocked work and decisions are different states and must read differently. **A report that sounds the same every time carries no information in its tone.**
+- **Any progress figure is the lane's estimate and is marked as one.** It never contradicts `PROJECT_STATUS.md`, which is QE's and measured from the promoted commit.
+- **`Next Immediate Action` is input, never authority.**
+
+#### The five states of a decision, which reports must never conflate
+
+**Adopted 2026-08-04 after Lane A challenged a Lane C report and was right.**
+
+| State | Set by | A lane may act? |
+|---|---|---|
+| **PREPARED** | Lane C | **No** — a recommendation is not a decision |
+| **READY FOR PRODUCT OWNER** | Lane C | **No** |
+| **PRODUCT OWNER APPROVED** | **Product owner** | **In principle — see below** |
+| **MERGED TO INTEGRATION** | QE | **Yes** |
+| **AVAILABLE FOR IMPLEMENTATION** | — | **Yes, and only here** |
+
+> **A decision is authoritative when the product owner rules it. It is *actionable* when `integration` records it.** Those are different days, and **every lane reports both.**
+
+**The Task Claim Protocol claims from `integration`**, so **a `TASK-nnn` existing only on a lane branch is invisible to every lane.** Never write *"ratified"* alone where *"ruled, not yet on `integration`"* is the truth, and **never write *"unblocked"* to mean *"a ruling exists"*.**
+
+> **This is not a second Slice Handoff, and the two never restate each other** (§2). **The Slice Handoff lives in a commit message and addresses QE and the next assignee.** The Standard Lane Report lives in a *report* and addresses the product owner.
+>
+> **Lane C additionally carries a Portfolio Dashboard and a UI Implementation Dashboard** inside its Executive Summary ([`PRODUCT_OFFICE.md`](docs/PRODUCT_OFFICE.md) §11a, §11b) — **the repository-wide views, which only the Product Office produces. No other lane owes one.**
 
 ### Repository Closeout
 
