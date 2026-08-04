@@ -3,7 +3,7 @@
 > ⚙️ **GENERATED — do not edit by hand.** Rebuild with `python3 infra/implementation-status.py`.
 > **Manual edits are lost on the next run, and a generated file carrying them drifts while nobody trusts the regeneration.**
 
-> Counted at `c9d6089`. **Every figure is arithmetic over the repository, never a claim about intent.**
+> Counted at `72b5d18`. **Every figure is arithmetic over the repository, never a claim about intent.**
 > **What a screen looks like is not counted here** — the approved specification is
 > [`410`](docs/architecture/410-approved-ui-specification.md), and UI convergence is tracked in
 > [`412`](docs/architecture/412-backend-capability-matrix.md).
