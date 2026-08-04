@@ -4346,3 +4346,41 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 **[ADR-0400](architecture/adr/0400-person-as-an-entity.md) is `PROPOSED`, not ratified**, and says so in its own status block: *"Not ratified, and nothing is implemented."* **A new bounded context is 🔴** (product owner + ADR). The assignment is the epic approval; **the ratification stamp is a separate act and only the product owner can apply it.** Recorded rather than assumed, because the ADR is explicit that the two are separate.
 
 ---
+
+### Investigation continued — every ADR-0400 repository claim validated, 2026-08-04
+
+**On the product owner's direction: the epic is not handed back, and one blocked phase does not stop the rest.** Every claim ADR-0400 makes about this repository was checked against source.
+
+| ADR-0400 claim | Verified |
+|---|---|
+| `identity.py:32` — *"Person is deliberately absent… no person identifier, so there is no identity to resolve"* | ✅ **Exact, at that line.** `EntityKind` holds `COMPANY` and `TECHNOLOGY` |
+| `committee.py:116` — no stable role id; *"trigger: the first consumer that needs to cite a particular seat"* | ✅ **Exact.** And the asymmetry with `Product` is argued in place |
+| `LEADERSHIP_APPOINTED` / `LEADERSHIP_DEPARTED` exist | ✅ `taxonomy.py:71–72`, with detection rules at `rules/point.py:186,192` |
+| `new_decision_maker` / `decision_maker_departed` exist | ✅ `signal_engine/domain/catalog.py:57–58` |
+| *"The buying score consumes both"* | ✅ **True, and better than stated** — see below |
+| *"`make runtime-composition` reports 2 of 9 consumers wired"* | ✅ **2 of 9**, and *unexpected missing wiring* is **0** |
+
+**Two findings that change the epic's shape.**
+
+#### 1 · The score is signal-type-agnostic, so a person costs it nothing
+
+`scoring.py:78` weights a signal by `model.weight_for(signal.signal_type)` — **generic over the catalog, with no branch per type.** The ADR says the score *consumes* both signals; the stronger fact is that **it would consume a person-subjected signal with no change at all.** **Epic C adds no scoring work**, which removes a phase most people would have planned.
+
+#### 2 · An interval cannot close without an identity — and that is *why* `Person` is the root
+
+**Worth stating because the obvious workaround does not survive contact.** `Affiliation` is the ADR's *"where the intelligence lives"*, and it is tempting to read it as buildable without ❓1: the platform has `title`, `direction` and `occurred_on`, so *"a VP of Engineering joined Acme in July"* is already expressible.
+
+**It is not, beyond one end.** Pairing an appointment with a departure requires knowing they concern **the same person**, and with no identifier two VPs of Engineering appointed and one departing is unresolvable. **A single-ended interval is exactly today's behaviour** — which is the degradation the ADR predicted, reached from the other direction.
+
+> **So the epic does not split into a blocked half and an executable half.** `Person` is the root because the interval depends on it, and the ADR was right to make it so. **Recorded because the split is the first thing a reader will reach for**, and it costs a week to discover it does not work.
+
+#### What is executable today, and by whom
+
+| | Owner | Depends on ❓1 |
+|---|---|---|
+| **A stable role id on `commercial_profile`'s committee** | **Lane B** — the module's own recorded trigger has fired | **No.** Small, independent, and useful to Epic C whichever route wins |
+| **`EntityKind.PERSON` in the graph** | `knowledge_graph`, **unassigned** | **Yes** — the docstring's own condition is the identifier |
+| **Person storage, repository, API, UI, events** | Lane A | **Yes** — all of it is structure around an identity |
+| **Scoring changes** | — | **None needed.** Finding 1 |
+
+**Everything Lane A owns in this epic sits behind ❓1.** That is not a scoping accident: ADR-0400 made identity the root deliberately, and finding 2 is why the shortcut around it does not exist.
