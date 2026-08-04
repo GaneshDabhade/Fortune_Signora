@@ -156,6 +156,45 @@
 | **Position is not a priority claim** | Placed beside the other Lane C-prepared Lane B row rather than at a rank. **Lane C's own order puts it fourth** ([417 §6](architecture/417-executable-slice-audit.md)); if the product owner wants it elsewhere in this queue, the position is theirs to set |
 | **Recorded here by Lane B on claiming** | **The slice is Lane C's, quoted from `lane-c-product-office` at `9d72630`.** It did not exist on `integration`, and under the product owner's direction of 2026-08-03 **a lane claims on Lane C's assignment rather than waiting for the row to arrive.** **No scope was added, reworded or reordered** |
 
+### TASK-407 · B-i — a connection says whether it actually works
+
+| | |
+|---|---|
+| **Objective** | **A connection reports whether its credential still works, not whether its record still looks right.** Today a token that is structurally valid but has lost a permission reads as healthy |
+| **Module** | `integrations` — **Lane B's**, via TASK-402 |
+| **Status** | **`CLAIMED` — Lane B**, 2026-08-04 |
+| **Approved screen** | **CRM Integrations** — *"Health is checked every minute. Two consecutive failures pause writes"* |
+| **Scope** | A reachability probe against the connected system using the stored credential, its outcome classified by the **existing** error taxonomy, and the result surfaced on the connection. **Two consecutive failures mark the connection as degraded** |
+| **Dependencies** | **None, and this is the point.** ⚠️ **[C-326](LANE_COORDINATION.md) does not block it** — [419](architecture/419-c326-narrowed-and-lane-b.md) §2 measures C-326 as blocking exactly two artifacts, the source port and the runner. **This slice uses neither** |
+| **Affected modules** | `integrations` only. Possibly one migration for the probe outcome |
+| **Repository reuse** | **Everything it needs is built.** `ResolveExecutionContext` supplies the credential · **`HubSpotCompanies`** makes the call · `CrmTransient` · `CrmRateLimited` · `CrmCredentialRejected` · `CrmPayloadInvalid` · `CrmPermanent` already classify the outcome · `ConnectionResponse.attention` and `.reason` already exist to carry it. **Do not introduce a second error taxonomy** |
+| **Non-goals** | **No pausing of writes** — there are no writes; that is E2. **No signal to admins** — notification delivery is [ADR-0040](architecture/adr/0040-notifications.md) and unratified. **No sync, no records read into the pipeline, no source port, no runner.** **No `connectable: true`** — that flips only after a real handshake, and never in anticipation ([44](architecture/44-integrations.md) §9) |
+| **Acceptance** | A connection whose credential has been revoked or downgraded **reports degraded rather than healthy** · a transient failure does not degrade a connection on its own — **two consecutive** · the probe never writes a claim, a raw record or an event · **no credential material is logged** (§16) · workspace-scoped throughout |
+| **Implementation order** | **First for this lane.** Independent of TASK-408 |
+| **Validation** | Module suite · a test that a `CrmCredentialRejected` outcome degrades and a single `CrmTransient` does not · **a test that nothing enters the pipeline** |
+| **Escalate if** | The probe needs a scheduler this repository does not have. **ARQ exists; a new scheduling mechanism is 🔴** |
+| **Recorded here by Lane B on claiming** | **The row is Lane C's, copied verbatim from `lane-c-product-office` at `04faf32`**, with only `Status` changed. It did not exist on `integration`. **No scope was added, reworded or reordered** |
+
+### TASK-408 · B-ii — search results are grouped and the ranking is explainable
+
+| | |
+|---|---|
+| **Objective** | **A search result says what kind of thing it is and why it ranked where it did.** `account-search` returns a flat list |
+| **Module** | `knowledge_graph` — **Lane B's**, via TASK-300 |
+| **Status** | **`READY` — partly delivered.** See the note below |
+| **Approved screen** | **Global Search** — *"groups are typed and ordered by intent, never by score"*; *"within a group, score is a weighted sum of six factors, and the dominant one is shown on the row when it is not lexical"* |
+| **Scope** | Typed grouping of results · a ranking whose **dominant factor is reported per row** · the ordering rule stated in the response rather than implied |
+| **Dependencies** | **None.** `GET /workspaces/{id}/account-search` exists |
+| **Affected modules** | `knowledge_graph` only |
+| **Repository reuse** | The existing search endpoint and its query path. **`AccountIdentityResponse.agreement` already models identity confidence** and is the natural non-lexical factor — **reuse it rather than inventing a second confidence notion** |
+| **Non-goals** | **No people, calls or deals as searchable types** — people are blocked by [O1](DECISION_PACKS.md), calls have no source, and deals are `opportunity_engine`'s. **No saved or monitored searches** — monitoring produces a notification, which is ADR-0040. **No natural-language routing to the assistant** — that is the Copilot's, and shell-scoped |
+| **Acceptance** | Results carry their type and are grouped by it · **the dominant ranking factor is present on a row whenever it is not lexical** · **a zero-match group is returned rather than omitted** — the approved screen requires absence to be visible · ordering is deterministic for identical input (§2) |
+| **Implementation order** | **Second for this lane** |
+| **Validation** | Module suite · a test that identical input yields identical order · **a test that an empty group is returned, not dropped** |
+| **Escalate if** | Grouping requires reading another module's tables. **Never permitted** (§5) — open a `C-` item |
+| ⚠️ **Reported by Lane B, not rescoped** | **[TASK-301](#task-301--global-search--a-result-says-what-kind-of-thing-it-is-and-why-it-matched) delivered part of this an hour before the row was drafted**, and was promoted in cycle 46. Already shipped: **every result carries `result_type`**, read from the entity rather than assumed · the **matched name and its source** on every row, with `is_renamed` marking the rows where it differs from the displayed name · **deterministic ordering, stated in the response schema**. **Lane C measured against an `integration` that predates the promotion.** Still outstanding: the **grouped shape**, and the **dominant ranking factor** — which needs the six-factor score the approved screen names, and TASK-301 deliberately shipped none. **The row is left `READY` and its scope untouched**; deciding what remains of it is Lane C's and the product owner's, not this lane's |
+| ⚠️ **One acceptance criterion contradicts a shipped decision** | *"A zero-match group is returned rather than omitted"* is the opposite of TASK-301's *"an absent type is absent, never an empty group"*, and **both may be right about different cases**: an empty group is honest for a type Signora **searched** and found nothing in, and false for a type it **cannot search at all** — `people: []` would claim it looked. **Flagged rather than resolved**, because reconciling an approved screen with a shipped decision is a product ruling |
+
 ### TASK-200 · CX-07 — the Responsive Product Surface
 
 | | |
