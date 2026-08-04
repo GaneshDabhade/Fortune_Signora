@@ -469,3 +469,29 @@ Decisions required    what the product owner must rule before it can start
 > **Use it · evaluate whether it genuinely improves decision-making · recommend only if it does.**
 
 **And if it is recommended, adopting it repository-wide is a `CLAUDE.md` amendment** — the Standard Lane Header lives there. **That is the product owner's, and Lane C may draft it only once approved.** The office does not widen its own reporting rule into everyone else's.
+
+### 11a · The Portfolio Dashboard
+
+**Ratified 2026-08-04, product owner. Permanent, and reporting-only.** **It sits inside the Executive Summary, between §3 and the detail** — eight sections: module portfolio · epics · active slices · decision queue · implementation readiness · module health · **priority for the Product Owner** · changes since last report.
+
+> **The repository has outgrown narrative updates.** The dashboard exists so the whole portfolio is legible in under a minute. **It never replaces the detailed report, which remains the authoritative explanation.**
+
+**Three rules, and the third is the one that protects the repository:**
+
+| | |
+|---|---|
+| **No separate dashboard document** | It lives **only** in the report. A dashboard file would be a fourth record of repository state, and there are already three with one responsibility each |
+| **Every item gets exactly one priority** | 🔴 action now · 🟠 review soon · 🟡 information · 🟢 no action. **Priorities are never mixed within an item** |
+| **Lane C's figures are estimates, and must say so** | — |
+
+#### Why the third rule exists, and it is not pedantry
+
+**`CLAUDE.md` §20e gives repository-wide state to QE, exclusively, measured from the promoted commit:** *"a dashboard assembled from lane reports is a sum of intentions."* **`PROJECT_STATUS.md` is that dashboard and this is not a second one.**
+
+**So the Portfolio Dashboard reports two kinds of number and never blurs them:**
+
+> **Counted** — register rows, task ids, endpoints, contracts, ADRs. **Read from the repository at report time, and re-read every time.** Never transcribed from the last report.
+>
+> **Estimated** — module and epic progress percentages. **Lane C's judgement about maturity, marked as such, and never a planning commitment.** Where one would contradict `PROJECT_STATUS.md`, **the measurement wins and the estimate is wrong.**
+
+**A percentage that starts being quoted as a measurement has become the defect this rule prevents.** The Operational Reading Cost table (§10) is the worked example of getting this wrong once already: **its first published figure understated its own headline by a third, and it was found by re-running rather than rereading.**
