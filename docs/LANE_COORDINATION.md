@@ -2705,6 +2705,52 @@ Two scenarios were **excluded on principle rather than on effort**, and the reas
 
 ---
 
+## C-103 · Two lanes wrote the same file, from the same bug row, within hours
+
+| | |
+|---|---|
+| **Owner** | **Lane C** — Product Office. *Duplicate-engineering prevention* |
+| **Requesting lane** | **QE**, from a merge-collision check rather than a merge |
+| **Category** | Duplicate engineering · cross-lane coordination |
+| **Status** | **`READY FOR LANE C`** |
+| **Blocks** | Nothing today. **It will be a merge conflict the moment both candidates are promoted** |
+| **Raised** | 2026-08-04, before either candidate reached `integration` |
+
+**Measured:**
+
+```
+backend/tests/integrations/test_public_contract.py
+  on integration            absent
+  lane-a-product-surface     62 lines
+  lane-b-commercial-profile 128 lines
+```
+
+**Both lanes created the same path, independently, in response to the same row.** [B-109](BUGS.md) listed `modules/integrations/public/__init__.py` among five files at 0%; each lane read it and each wrote a test.
+
+### Neither lane did anything wrong, and their reasoning differs interestingly
+
+| | |
+|---|---|
+| **Lane A** | *"A `public/` module is the one file whose **absences** are load-bearing."* Asserts what the contract refuses to expose |
+| **Lane B** | *"Nothing in the repository imports it… the contract has been correct and unused since it was written."* Explains **why** it was uncovered, and names [ADR-0300](architecture/adr/0300-inbound-customer-systems.md) as what decides its consumer |
+
+**Both are good, and they are not the same test.** Whoever merges second will conflict on the whole file, and the resolution is a judgement about which assertions matter — not something QE may make.
+
+### Why this is Lane C's rather than a bug
+
+**Nothing is broken.** This is **duplicate engineering**, which the Product Office charter names directly: *"Prevent duplicate engineering. Continuously ask: do we already have this capability?"*
+
+**The mechanism that produced it is worth more than the instance.** A QE bug row naming five uncovered files is, in effect, **a work item visible to every lane with no owner attached**. Two lanes claimed the same one without either knowing.
+
+> **`integrations` has no current assignee** — it appears in Lane B's assignments and in Lane A's B-109 fix. **A file at 0% in an unassigned module is work anybody may take, and therefore work two lanes may take.**
+
+### What QE will do meanwhile
+
+**Nothing to the file.** QE reports the collision, and whichever candidate certifies first is promoted unchanged. **The second lane resolves the conflict at its own rebase**, which is where a code conflict belongs.
+
+**QE will not choose between two lanes' tests**, and will say so again if asked — the same line drawn when Lane A's rebase conflicted in `test_api_accounts.py`.
+
+
 ## C-102 · A lane cannot see the defect report that blocks it
 
 | | |
