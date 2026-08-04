@@ -204,6 +204,12 @@ Decisions required    what the product owner must rule before it can start
 
 **Report preparation honestly.** A percentage is a claim about work done, not encouragement — **`Discovery` means the initiative has been read; `Research` means the repository sweep has begun; `READY` means 100% and nothing less counts.**
 
+**Cross-validation is standing, not occasional** *(product owner, 2026-08-04)*. **Every time a lane completes a milestone, every prepared package is re-checked against it** — new reusable APIs, UI, workflows, events or entities · changed dependencies · **removed blockers** · and assumptions that stopped being true. **A package that is not re-validated is a package quietly going stale**, and preparation that lags the repository is worse than none because it is trusted.
+
+> **It earns its place immediately.** On its first run: [ADR-0401](architecture/adr/0401-a-customers-crm-is-not-a-provider.md) was **amended within hours of being drafted** because Lane B's mapper showed the boundary was per *field*, not per *source*; [Epic C](architecture/400-epic-c-people.md) moved to **`Waiting on Product Decisions`** because Lane A answered ❓1 and the answer was *no*; and two Lane A findings **removed a phase and closed off a tempting shortcut** that would have cost a week.
+
+**Report blocking *questions* alongside blocking *decisions*** *(learned 2026-08-04)*. **Epic C was reported READY at 100% while carrying an open question that could block it outright** — documented in the package, omitted from the portfolio row. **A summary that lists only decisions understates risk**, and the row is what a reader allocates from.
+
 **Preparation confers no implementation authority whatever.** Lane C does not implement what it prepared, does not claim it, and does not cross module ownership to explain it. **Its responsibility ends when the package is complete.**
 
 ---

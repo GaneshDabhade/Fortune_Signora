@@ -8,6 +8,30 @@
 
 ---
 
+## 0 · Cross-validated 2026-08-04 — the interpretation half was already free
+
+> **Lane B claimed E1 as TASK-402 and found a slice this package said did not exist.** **It was right, and the correction is Lane C's.**
+
+**`HubSpotCompanyMapper` is built, registered and tested** (`provider_normalization/infrastructure/mappers/crm.py`, verified against source). **Six firmographic fields map straight onto existing canonical attributes** — `LEGAL_NAME`, `INDUSTRY`, `COUNTRY`, `EMPLOYEE_COUNT`, `FOUNDED_YEAR`, `REVENUE_BAND` — **with no RFC, no new table, no new event and no migration.**
+
+**Lane B's own account of the error is the useful part:** *"That claim came from asking what a CRM could contribute; the right question was what the canonical vocabulary already accepts."* **This package asked the first question in §5 and reached a scope debate; the second question had an answer sitting in the vocabulary.**
+
+**Three things the vendor forced, recorded because they generalise to the next CRM:** every value arrives as a **string** — `"350"`, not `350` — so the mapper parses and **an unreadable value is reported rather than dropped**; the **properties bag** is checked for unknown fields, not just the fixed top level, or the guarantee is *"formally satisfied and practically decorative"*; and **revenue arrives as a figure where the vocabulary holds bands** — placing a known figure in a declared band **loses precision and invents nothing**, which is the legal direction of a conversion `RevenueBand` otherwise forbids.
+
+**And it refuses everything commercial**, pinned by a test: *"is-a-customer, contract value, renewal date, opportunity stage have no canonical attribute, and a test fails the day one is added here rather than through the RFC the vocabulary requires."*
+
+### What this changes
+
+| | |
+|---|---|
+| **[ADR-0401](adr/0401-a-customers-crm-is-not-a-provider.md) is amended** | **It was too broad.** *"CRM data is never a claim"* → **a CRM field is a claim exactly when it is falsifiable and about the world.** A CRM is **two sources wearing one credential**, and Lane B applied this document's own falsifiability test *per field* where Lane C applied it *per source* |
+| **§5's scope question is narrower** | *Records or activity* still stands for the **commercial** read. **The firmographic read is neither, and it is done** |
+| **§1's three-part shape holds, and is sharper** | Lane B: *"The gap Epic E1 found is in **acquiring** records, not in **interpreting** them — which is exactly what makes the interpretation half safe to finish first."* **The consumption edge and acquisition remain the whole of the work** |
+
+> **The `HubSpotCompanyMapper` encodes nothing about acquisition** — *"a mapper receives a stored record and translates it; who fetched it, with whose credential, through which port, is a question this layer has never been able to ask."* **The layering held, and it is why this slice could land ahead of the credential decision.**
+
+---
+
 ## 1 · The finding that should decide everything else
 
 **The business half of integrations is built and excellent. The consumption half does not exist, and nothing says so.**

@@ -133,16 +133,38 @@
 
 **Ratified 2026-08-04, product owner: preparation is continuous and does not wait for a decision.** *"Implementation lanes should never wait for discovery."* **Lane C prepares the next initiative the moment one becomes ready, without approval and without allocation.**
 
-| Initiative | Status | Prep | Impl-ready | Blocking its readiness | **Technically best suited** |
-|---|---|---|---|---|---|
-| **C · People** | **READY** | **100%** | ✅ | **[ADR-0400](architecture/adr/0400-person-as-an-entity.md)** · contact ruling ([C-408](LANE_COORDINATION.md) ❓2) | **Lane B** — `knowledge_graph` · `commercial_profile` |
-| **E1 · CRM read** | **READY** | **100%** | ✅ | **Developer credentials** · [ADR-0401](architecture/adr/0401-a-customers-crm-is-not-a-provider.md) *(phase 3 only)* | **Lane B** — `integrations` · `provider_platform` |
-| **F · Workflow** | **READY** | **100%** | ✅ | **[ADR-0402](architecture/adr/0402-a-rule-is-data.md)** — and nothing else | **Lane B** backend · **Lane A** builder |
-| **D · Risk** | **READY** | **100%** | ✅ | **Nothing.** Phase 1 is [TASK-905](BACKLOG.md), already `READY`; **no ADR required** | **Lane A** phase 1 *(Product Surface)* · **Lane B** phases 2–3 |
-| **G · Copilot** | **READY** | **100%** | ✅ | **Nothing for phase 1.** [TASK-013](BACKLOG.md) is an **unrun measurement**, not a decision — [404](architecture/404-epic-g-copilot.md) §1 | **Lane B** — `ai_reasoning_engine` |
-| **M14b · Billing** | **Blocked** | **0%** | ❌ | **[C-200](LANE_COORDINATION.md) 🔴** — no bounded context. **Preparation cannot start before scope exists** | **Lane A** |
+| Initiative | Maturity | Blocking questions **and** decisions | **Technically best suited** |
+|---|---|---|---|
+| **CX-07 · Responsive Surface** | ✅ **COMPLETED** | — *(Lane A, TASK-200, slice 4 closed the milestone)* | — |
+| **E1 · CRM read** | 🔨 **ACTIVE IMPLEMENTATION** | **Credentials** — acquisition only. **[ADR-0401](architecture/adr/0401-a-customers-crm-is-not-a-provider.md) amended**; the firmographic mapper has landed | **Lane B** (TASK-402) |
+| **G · Copilot** | 🔨 **ACTIVE IMPLEMENTATION** | **None for phase 1** — [TASK-013](BACKLOG.md) is an unrun measurement, not a decision | **Lane A** (TASK-202) |
+| **F · Workflow** | 🟩 **READY** | **[ADR-0402](architecture/adr/0402-a-rule-is-data.md)** ratification — and nothing else | **Lane B** backend · **Lane A** builder |
+| **D · Risk** | 🟩 **READY** | **Nothing.** Phase 1 is [TASK-905](BACKLOG.md), already `READY`; no ADR required | **Lane A** ph. 1 · **Lane B** ph. 2–3 |
+| **C · People** | ⏸️ **WAITING ON PRODUCT DECISIONS** | **❓1 answered — the provider returns no name.** ADR-0400 ratification · contact ruling · **E1's progression** — §7 route B is now the only path to a named person | **Lane B** *(one remnant: the committee role id)* |
+| **M14a · Notifications** | 🔷 **ARCHITECTURE** *(not Lane C's)* | **[ADR-0040](architecture/adr/0040-notifications.md) `Proposed`.** Designed by Lane B; **F's phase 5 consumes it** | **Lane B** |
+| **M14b · Billing** | 🔎 **DISCOVERY — cannot proceed** | **[C-200](LANE_COORDINATION.md) 🔴** — no bounded context. **Preparation cannot invent scope** | **Lane A** |
+| **E2 · CRM write-back** | 🔎 **DISCOVERY** | Depends on E1 landing. **Next in preparation** | **Lane B** |
+| **M11 · Recommendation** | 🔎 **DISCOVERY** | **[C-410](LANE_COORDINATION.md)** — no prompt is released for a production model | **Lane B** |
 
-> **Five epics are implementation-ready. `M14b` is the only one that cannot be prepared**, because [C-200](LANE_COORDINATION.md) leaves it without a bounded context — **and preparation cannot invent scope.**
+**Maturity states:** 🔎 Discovery → Research → 🔷 Architecture → Repository Validation → Reuse Analysis → Technical Design → 🟩 **READY** → 🔨 Active Implementation → ✅ Completed · ⏸️ Waiting on Product Decisions *(any state may enter it)*.
+
+> ⚠️ **Percentages were dropped, and the reason is a miss worth recording.** [Epic C](architecture/400-epic-c-people.md) was reported **READY, 100%**, with blockers given as *"ADR-0400 ratification · contact ruling."* **Its own ❓1 — *does the provider return a person's name?* — was documented in the package and omitted from the portfolio row.** Lane A checked it first, as the ADR instructed, and **the answer blocked the epic.** A percentage said *ready*; an unanswered question said *maybe not*, and only one of them reached the summary a reader allocates from. **The column now carries blocking *questions* alongside blocking *decisions*.**
+
+### Section coverage — measured against the 2026-08-04 template
+
+**The definition of READY expanded on 2026-08-04.** Reported against the new template rather than the one the packages were written to:
+
+| Package | Product · Reuse · Architecture · Domain · Phases · Risks · Edge cases | Security | Performance | Observability | Testing | API · Data | UI/UX |
+|---|---|---|---|---|---|---|---|
+| **[C · People](architecture/400-epic-c-people.md)** | ✅ | ✅ *(erasure, tenancy)* | ✅ | ❌ | ✅ *(as gates)* | ✅ | ⚠️ partial |
+| **[E1 · CRM](architecture/401-epic-e1-crm-read.md)** | ✅ | ✅ *(§7, token separation)* | ✅ | ❌ | ✅ *(as gates)* | ✅ | ⚠️ partial |
+| **[F · Workflow](architecture/402-epic-f-workflow.md)** | ✅ | ✅ *(§4)* | ✅ | ❌ | ⚠️ | ✅ | ⚠️ partial |
+| **[D · Risk](architecture/403-epic-d-risk.md)** | ✅ | n/a | ⚠️ | ❌ | ✅ *(as gates)* | ✅ | ⚠️ partial |
+| **[G · Copilot](architecture/404-epic-g-copilot.md)** | ✅ | ✅ | ⚠️ *(cost)* | ❌ | ✅ | ✅ | ⚠️ partial |
+
+> **Observability is absent from all five, and that is a real gap rather than a formatting one.** No package says what a lane should log, measure, trace or alert on. **`signora_platform/observability/` exists and is unread by any of them.** It is the first backfill.
+>
+> **UI/UX is partial by intent and stated so:** each package describes information architecture, states and the customer journey; **none specifies screens, loading, empty or error states.** For [D](architecture/403-epic-d-risk.md) and [G](architecture/404-epic-g-copilot.md) that is the larger share of the remaining work.
 
 > **The office names a technically suitable owner and stops there** *(product owner, 2026-08-04)*. **It does not sequence lanes, does not assign, and does not wait for one to be free.** The column above is guidance about *modules*, not a plan for *people*.
 

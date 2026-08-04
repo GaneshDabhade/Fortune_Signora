@@ -8,6 +8,30 @@
 
 ---
 
+## 0 · Cross-validated 2026-08-04 — ❓1 is answered, and the answer is *no*
+
+> **Lane A claimed Epic C as TASK-201, did exactly what [ADR-0400](adr/0400-person-as-an-entity.md) ❓1 instructed — *"check this before writing any code"* — and stopped.** **No production code was written. That is the preparation working, not failing.**
+
+**The answer: the production provider does not return a person's name.** Verified by Lane A against source — the mapper reads `title`, `type`, `seniority`, `occurred_on`; `RoleChangeValue` has no field to carry a name; the simulator emits exactly those four keys; **the only real data in the repository is two `employee_change` records carrying exactly those four keys**; and no person-name field exists anywhere outside tests.
+
+**This blocks the epic rather than shrinking it**, and the reason is precise: **ADR-0400's aggregate root is an identity whose first component is *"names as claims"*, and there are no name claims to make.** It is the same condition `knowledge_graph` recorded as its reason for excluding people — *no person identifier, so no identity to resolve* — **and this ADR's case was that Epic C supplies it. Nothing does.**
+
+### Three findings from Lane A that change the package, all verified
+
+| | Finding | Effect on this document |
+|---|---|---|
+| **1** | **The buying score needs no change at all.** `scoring.py` weights by `weight_for(signal.signal_type)` with **no branch per type**, so it would consume a person-subjected signal unmodified | **Removes a phase most planners would have added.** §1's *"→ Score"* row is stronger than stated: not *"already consumes both"* but *"cannot notice the difference"* |
+| **2** | **The epic does not split into a blocked half and an executable half.** An interval cannot close without an identity: **pairing an appointment with a departure requires knowing they concern the same person**, and with no identifier, two VPs of Engineering appointed and one departing is unresolvable. **A single-ended interval is exactly today's behaviour** | **Corrects §9.** Phase 2 was listed as depending only on phase 1; **it depends on the name.** The tempting shortcut *"build `Affiliation` without names"* **costs a week to discover it is not there** |
+| **3** | **One item remains executable, and it is Lane B's:** a **stable `CommitteeRole` id**, whose own recorded trigger has now fired — useful whichever route wins | §1's second extension trigger is now **actionable independently of the rest of the epic** |
+
+> **Finding 2 is worth more than the split would have been.** It is the shortcut every reader reaches for first, and it does not survive contact.
+
+**Where the epic now sits:** **`Waiting on Product Decisions`.** What remains is product direction, an architectural ratification, and **[E1](401-epic-e1-crm-read.md)'s progression** — §7 route B, which is now the only path to a named person. **None of the three is an implementation lane's to supply.**
+
+**And a correction to Lane C's own portfolio reporting:** this package was listed as **READY, 100%**, with its blocking items given as *"ADR-0400 ratification · contact ruling."* **❓1 was documented in the package and omitted from the portfolio row** — a question that could block the epic outright was not carried into the summary a reader allocates from. **The portfolio now carries every blocking question, not only the decisions.**
+
+---
+
 ## 1 · The finding that should decide everything else
 
 **Signora already has complete people-shaped intelligence, and there is not one person in it.**
