@@ -428,6 +428,10 @@
 
 > **The product owner ruled the whole queue on 2026-08-04.** Five approved, one partially approved, three deferred. **Nothing is awaiting a decision.**
 
+> ⚠️ **Every row below is `PRODUCT OWNER APPROVED` and none is `MERGED TO INTEGRATION`** ([`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §11c). **The ADRs, the rulings and TASK-403–410 exist only on `lane-c-product-office`, which is 151 commits behind and 57 ahead.** Lane A cannot see ADR-0400 at all.
+>
+> **So: the decisions are authoritative and none of them is actionable yet.** *Nothing is awaiting a decision*" is true; **"lanes may proceed" is not**, and the two were conflated in Lane C's 2026-08-04 report. **Corrected on Lane A's challenge.**
+
 ### Approved
 
 | | Ruling | Effect |

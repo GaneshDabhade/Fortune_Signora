@@ -519,3 +519,33 @@ Decisions required    what the product owner must rule before it can start
 | **Informational only** | **It assigns nothing, creates no slice, and estimates nothing from opinion.** A screen appearing under **READY FOR IMPLEMENTATION** is a measurement, not an allocation — allocation is still the product owner's |
 | **State changes are reported** | Every move — `READY → IN PROGRESS → BACKEND COMPLETE → INTEGRATED → QE → DONE` — appears under *Changes Since Last Report*. **A screen that changed state silently is the thing this dashboard exists to prevent** |
 | **Backend and frontend readiness are separate axes** | Because they diverge, and the repository's whole history is that divergence: **46 endpoints behind 11 routes.** Collapsing them into one percentage would hide the only interesting fact |
+
+### 11c · Five states, never conflated
+
+**Ratified 2026-08-04, product owner, after Lane A challenged a Lane C report.** **The challenge was correct and the correction is recorded here rather than argued.**
+
+> **Prepared · Ruled · Recorded are three different facts, and a report that blurs them tells a lane it may proceed when the repository does not yet say so.**
+
+| State | Means | Set by | A lane may act? |
+|---|---|---|---|
+| **PREPARED** | Lane C has produced the analysis, options and recommendation | **Lane C** | **No.** A recommendation is not a decision |
+| **READY FOR PRODUCT OWNER** | Complete, alternatives assessed, nothing unresolved left in it | **Lane C** | **No** |
+| **PRODUCT OWNER APPROVED** | **The product owner has ruled.** Authoritative from that moment | **Product owner** | **In principle — but see the next row** |
+| **MERGED TO INTEGRATION** | Recorded where lanes read: `origin/integration` | **QE** | **Yes** |
+| **AVAILABLE FOR IMPLEMENTATION** | Approved **and** merged **and** its `TASK-nnn` is claimable | — | **Yes, and only here** |
+
+#### The rule that follows
+
+> **A decision is authoritative when the product owner rules it. It is *actionable* when `integration` records it.** Those are different days, and **Lane C reports both, always.**
+
+**The Task Claim Protocol claims from `integration`** (`CLAUDE.md` §20e, step 1: *synchronize*). **A `TASK-nnn` existing only on `lane-c-product-office` is invisible to every lane, and reporting it as `READY` overstates what any lane can do.**
+
+**Never write *"ratified"* alone.** Write **"ruled 2026-08-04; not yet on `integration`"** — a cold session reading `RATIFIED` reasonably assumes the repository agrees, and until the merge it does not.
+
+**Never write *"unblocked"* to mean *"a ruling exists"*.** **`Blocked: 0` is a claim about `integration`, not about the product owner's inbox.**
+
+#### Why this was Lane C's error, not a labelling preference
+
+**The rulings were real** — all nine were ruled explicitly. **What was wrong was the inference**: the report said the queue was empty, Epic C released and Lane B unblocked, while **57 Lane C commits — including the ADRs themselves — had never reached `integration`.** Lane A could not see ADR-0400 at all.
+
+> **Preparing a decision well does not make it available.** Reporting as though it does is the same defect as a dashboard describing the previous milestone (`CLAUDE.md` §2) — **the repository asserting something that is not true of it.**

@@ -2,7 +2,7 @@
 
 ## Status
 
-**RATIFIED — 2026-08-04, product owner.** Drafted by Lane C — Product Office. **Person becomes a first-class entity within the approved bounded context, and all future preparation proceeds on that assumption.**
+**PRODUCT OWNER APPROVED — 2026-08-04.** ⚠️ **Not yet on `origin/integration`** — this file does not exist there. **The ruling is authoritative; the repository does not yet record it.** A lane may act on it only once QE has merged this branch ([`PRODUCT_OFFICE.md`](../../PRODUCT_OFFICE.md) §11c). Drafted by Lane C — Product Office. **Person becomes a first-class entity within the approved bounded context, and all future preparation proceeds on that assumption.**
 
 > **It was the only architectural blocker in all 26 approved screens.** Ratification releases Epic C, People Intelligence, half of Global Search, the four *Decision makers* criteria in the ICP Builder, and Account 360's contacts and org-chart sections. **[C-221](../../LANE_COORDINATION.md) is answered by it and needs no separate ruling.**
 

@@ -2,7 +2,7 @@
 
 ## Status
 
-**RATIFIED — 2026-08-04, product owner.** Drafted by Lane C — Product Office. **The per-field falsifiability model stands exactly as documented.**
+**PRODUCT OWNER APPROVED — 2026-08-04.** ⚠️ **Not yet on `origin/integration`** — this file does not exist there. **The ruling is authoritative; the repository does not yet record it.** A lane may act on it only once QE has merged this branch ([`PRODUCT_OFFICE.md`](../../PRODUCT_OFFICE.md) §11c). Drafted by Lane C — Product Office. **The per-field falsifiability model stands exactly as documented.**
 
 > **Ratified alongside [C-326](../../LANE_COORDINATION.md).** They are the same epic's two architectural questions — C-326 is *how a customer's data gets in*, this is *what it means once it is in*.
 
