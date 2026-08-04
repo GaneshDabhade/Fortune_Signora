@@ -288,6 +288,18 @@ Decisions required    what the product owner must rule before it can start
 
 **Preparation confers no implementation authority whatever.** Lane C does not implement what it prepared, does not claim it, and does not cross module ownership to explain it. **Its responsibility ends when the package is complete.**
 
+### 5a · Lane C no longer prepares UI assumptions
+
+**Ratified 2026-08-04, product owner — the Product Transition Directive.** Recorded in [410](architecture/410-approved-ui-specification.md); the assessment it produced is [411](architecture/411-ui-convergence-assessment.md).
+
+> **The Fortune Signora Design Project is the authoritative specification for frontend behaviour.** It is read the way a ratified ADR is read — **not analysed, not redesigned, not critiqued, not simplified, not improved.**
+
+**One half of the preparation template is retired.** A package described *backend capability required* **and** *how the screen should behave*. **The second is now an input rather than an output**: a package references the approved screen and states what the backend must provide for it.
+
+**Nothing else about preparation changed.** The thirteen-area template, the reuse audit, the Change Budget, the aggregate test, the three-question heuristic and the two-category test all bind unchanged — **and the reuse audit binds harder, because a screen that looks new is not evidence that the capability behind it is new.** The assessment found the opposite: eleven of sixteen screens are mostly a read surface over intelligence that already exists.
+
+**The trap this creates, named before it is fallen into.** A sixteen-screen design project is an invitation to open sixteen decisions. **It produced three** — because the two-category test was applied to every gap, and a gap that a repository document already answers is a clarification, not a decision. **A transition is not a licence to refill a queue the office spent a week emptying.**
+
 ---
 
 ## 6 · Feature decomposition

@@ -405,13 +405,34 @@
 
 ---
 
+## PACK O · The approved UI needs three things the repository has not decided
+
+> **Opened 2026-08-04**, on the Product Transition Directive. **Assessment: [411](architecture/411-ui-convergence-assessment.md). Nothing here is new work Lane C invented — each item was already prepared and is now a precondition rather than a proposal.**
+
+**The transition itself required no decision.** The design project is authoritative by the product owner's direction; [410](architecture/410-approved-ui-specification.md) records it. **The assessment then reduced sixteen screens to three questions.**
+
+| | Decision | Form | Why it cannot be determined objectively |
+|---|---|---|---|
+| **O1** | **Ratify [ADR-0400](architecture/adr/0400-person-as-an-entity.md) — Person as an entity** | **Yes / No** | **`EntityKind` deliberately excludes Person**, and the docstring says so. The approved **People Intelligence** screen is entirely named individuals, and half of **Global Search** depends on it. **The architecture and the approved product disagree, and only the product owner can say which moves** |
+| **O2** | **Ratify [ADR-0040](architecture/adr/0040-notifications.md) — Notifications** | **Yes / No** | It has been `Proposed` with no module for weeks. **The approved App Shell specifies a three-tab notification popover**, so this stopped being only Epic F's dependency and became the shell's |
+| **O3** | **Are the Shell's own services a platform concern or a frontend concern?** | **A or B** | Global scope, saved views, system status, impersonation, sandbox. **A is a new bounded context and needs an ADR; B does not.** Building them inside any one module produces sixteen copies, which is the one outcome both answers reject |
+
+> **O1 is the one that unblocks the most.** It is the only architectural blocker in the entire sixteen-screen assessment.
+
+**What this pack deliberately does not contain.** No screen was redesigned, no priority was invented, and **no new decision was manufactured from repository ambiguity** — the two-category test was applied to every gap found, and only these three cleared it.
+
+---
+
 ## The decision queue, as of 2026-08-04
 
-**Two items genuinely need the product owner. Not twenty** — and the office's job is to keep it that way.
+**Five items genuinely need the product owner. Not twenty** — and the office's job is to keep it that way.
 
 | | Item | Blocking | Why it cannot be determined objectively |
 |---|---|---|---|
+| 🔴 | **[O1](#pack-o--the-approved-ui-needs-three-things-the-repository-has-not-decided)** — ratify ADR-0400 | **People Intelligence, and half of Global Search** | **The only architectural blocker in the approved product.** The architecture excludes Person deliberately; the approved UI requires it |
 | 🔴 | **[C-321](LANE_COORDINATION.md)** | **A6, now** | Its specification says twice that A6 *"depends entirely on the C-321 ruling"*. **What to render *is* the ruling** — narrowing the slice does not escape it |
+| 🟠 | **[O2](#pack-o--the-approved-ui-needs-three-things-the-repository-has-not-decided)** — ratify ADR-0040 | **The App Shell's notification surface** | Now a shell dependency, not only Epic F's |
+| 🟠 | **[O3](#pack-o--the-approved-ui-needs-three-things-the-repository-has-not-decided)** — where the Shell's services live | **Every screen after priority 3** | A boundary question, so it decides whether an ADR is needed |
 | 🟠 | **[Pack I](#pack-i--epics-bg-are-specified-and-unapproved-and-the-queue-is-running-dry)** — Epics B–G scope | — | ⚠️ **Superseded in practice.** Epics C, D, E1, F and G were all approved and assigned directly between 2026-08-03 and 2026-08-04. **What remains of it is Epic B**, which [C-322](LANE_COORDINATION.md) already carries |
 
 > **The engineering-blocking queue is [Pack N](#pack-n--the-engineering-blocking-queue-reduced-to-four-decisions), and it is four decisions.** Everything below this line is either ruled, dissolved or blocking nothing.
