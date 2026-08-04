@@ -11,6 +11,7 @@ from uuid import UUID
 from apps.api.composition.integrations import (
     IntegrationConnect,
     IntegrationDisconnect,
+    IntegrationProbe,
     IntegrationRead,
 )
 from modules.integrations.interface.schemas import (
@@ -185,3 +186,57 @@ async def connect(
             at=at,
         )
     )
+
+
+@router.post(
+    "/workspaces/{workspace_id}/connections/{connection_id}/check",
+    response_model=ConnectionResponse,
+    summary="Check whether a connected system still works",
+)
+async def check_connection(
+    workspace_id: UUID,
+    connection_id: UUID,
+    context: CurrentWorkspace,
+    prober: IntegrationProbe,
+    queries: IntegrationRead,
+) -> ConnectionResponse:
+    """*"It says connected — is it actually working?"*
+
+    Everything else on this screen is worked out from records: a credential
+    exists, it has not expired, nobody revoked it. **None of that is evidence.**
+    The commonest way an integration breaks is a credential that authenticates
+    perfectly and has quietly lost a permission, and no record anywhere can see
+    it — which is why this makes a real call and reports what came back.
+
+    **A failed check is an answer, not an error.** This returns `200` with the
+    connection reading *not working*; it does not fail the request. A `500`
+    would say Signora broke, when what actually happened is that the customer's
+    system said no.
+
+    **One bad answer is not a verdict.** A timeout or a rate limit establishes
+    nothing, so it takes two consecutive inconclusive checks before a connection
+    is reported as not working — a vendor having a bad afternoon must not send
+    somebody to reconnect a CRM that is fine.
+
+    **Nothing about the customer's data moves.** No record is read into the
+    pipeline, nothing is stored about their companies, and no synchronization
+    starts. This asks whether the door opens and closes it again.
+
+    **A `POST` because it does something**: it spends a call against the
+    customer's own API quota and writes a record of the result. A `GET` that
+    did that would be a `GET` a proxy could repeat.
+    """
+    context.authorize(Resource.INTEGRATION, Action.UPDATE)
+    at = datetime.now(UTC)
+    await prober.execute(context.workspace_id, connection_id, at=at)
+    # Health is derived from the probe *run*, not from the one that just
+    # happened — a connection is degraded only once the run says so.
+    # Read back through the same query the list uses. **`execute` already
+    # refused an unknown connection**, so the row is here; a fallback branch
+    # for its absence would be a guard that cannot fail (§2).
+    view = next(
+        v
+        for v in await queries.connections(context.workspace_id, at=at)
+        if v.id == connection_id
+    )
+    return ConnectionResponse.from_domain(view)

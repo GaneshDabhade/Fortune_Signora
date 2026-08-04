@@ -5,11 +5,32 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
+from typing import Protocol
 from uuid import UUID
 
 from modules.integrations.application.ports import ConnectedAccountRepository, GrantStore
 from modules.integrations.domain.catalog import CATALOG, Capability, entry_for
 from modules.integrations.domain.connection import ConnectedAccount, ConnectionState
+from modules.integrations.domain.health import (
+    CONSECUTIVE_FAILURES_FOR_DEGRADED,
+    ConnectionHealth,
+    ConnectionProbe,
+    health_from,
+)
+
+
+class ProbeReader(Protocol):
+    """The read half of `ProbeStore`.
+
+    **Narrower than the store on purpose.** A screen answering *"is this
+    working?"* must not be handed the ability to record a probe — the same
+    separation Timeline draws between `EntryStore` and `FeedReader`, and for
+    the same reason.
+    """
+
+    async def recent_for(
+        self, workspace_id: UUID, connected_account_id: UUID, *, limit: int
+    ) -> tuple[ConnectionProbe, ...]: ...
 
 
 class Attention(StrEnum):
@@ -49,6 +70,11 @@ class ConnectionView:
     #: when nothing is needed. **Not a rendered sentence** — the wording is the
     #: presentation layer's, on the same rule Timeline established.
     reason: str | None
+    #: **What happened when the platform last actually tried**, as opposed to
+    #: what the records imply. `UNKNOWN` until a probe has run, which is
+    #: absence rather than health: reporting an unprobed connection as working
+    #: is the same lie the record-derived view already tells.
+    health: ConnectionHealth
 
     @classmethod
     def of(
@@ -58,6 +84,7 @@ class ConnectionView:
         expires_at: datetime | None,
         refreshable: bool,
         at: datetime,
+        health: ConnectionHealth = ConnectionHealth.UNKNOWN,
     ) -> ConnectionView:
         """**The one place attention is derived**, and it has two callers.
 
@@ -73,8 +100,9 @@ class ConnectionView:
             label=account.label,
             state=account.state,
             connected_at=account.connected_at,
-            attention=_attention(account, expires_at, refreshable, at),
-            reason=_reason(account, expires_at, refreshable, at),
+            attention=_attention(account, expires_at, refreshable, at, health),
+            reason=_reason(account, expires_at, refreshable, at, health),
+            health=health,
         )
 
 
@@ -107,9 +135,15 @@ class SystemView:
         **Not "has a connection"** — a revoked Salesforce is a connection, and
         answering *"is my CRM connected?"* with *yes* would be the screen's
         worst possible lie.
+
+        **Nor "has a connection in a good state"**, which was the same lie one
+        step quieter: a connection whose credential lost a permission holds a
+        perfect state and does not work. A connection the platform has *tried*
+        and failed to use does not count, whatever its record says.
         """
         return any(
             c.state in {ConnectionState.CONNECTED, ConnectionState.VALIDATED}
+            and c.health is not ConnectionHealth.DEGRADED
             for c in self.connections
         )
 
@@ -122,9 +156,20 @@ EXPIRY_WARNING = 60 * 60 * 24 * 3
 
 
 class IntegrationQueries:
-    def __init__(self, accounts: ConnectedAccountRepository, grants: GrantStore) -> None:
+    def __init__(
+        self,
+        accounts: ConnectedAccountRepository,
+        grants: GrantStore,
+        probes: ProbeReader | None = None,
+    ) -> None:
         self._accounts = accounts
         self._grants = grants
+        #: **Optional, and the default is honest rather than convenient.**
+        #: Without a reader every connection reports `UNKNOWN`, which is what
+        #: a caller that cannot see probes actually knows. A default of
+        #: `HEALTHY` would have made an unwired composition indistinguishable
+        #: from a working one.
+        self._probes = probes
 
     async def connections(self, workspace_id: UUID, *, at: datetime) -> list[ConnectionView]:
         """Every connection this workspace has, in any state.
@@ -140,10 +185,27 @@ class IntegrationQueries:
             refreshable = grant.refreshable if grant else False
             views.append(
                 ConnectionView.of(
-                    account, expires_at=expires_at, refreshable=refreshable, at=at
+                    account,
+                    expires_at=expires_at,
+                    refreshable=refreshable,
+                    at=at,
+                    health=await self._health_of(workspace_id, account.id),
                 )
             )
         return views
+
+    async def _health_of(
+        self, workspace_id: UUID, connected_account_id: UUID
+    ) -> ConnectionHealth:
+        if self._probes is None:
+            return ConnectionHealth.UNKNOWN
+        return health_from(
+            await self._probes.recent_for(
+                workspace_id,
+                connected_account_id,
+                limit=CONSECUTIVE_FAILURES_FOR_DEGRADED,
+            )
+        )
 
     async def systems(self, workspace_id: UUID, *, at: datetime) -> list[SystemView]:
         """Every system Signora understands, with what this organization has.
@@ -182,10 +244,17 @@ def _attention(
     expires_at: datetime | None,
     refreshable: bool,
     at: datetime,
+    health: ConnectionHealth,
 ) -> Attention:
     if account.state in {ConnectionState.REVOKED, ConnectionState.EXPIRED}:
         return Attention.NOW
     if account.state is ConnectionState.AUTHORIZING:
+        return Attention.NOW
+    if account.is_usable and health is ConnectionHealth.DEGRADED:
+        # **The case no record could reach.** The connection looks perfect —
+        # usable state, unexpired grant — and the last thing the platform
+        # learned by trying is that it does not work. Only the customer can
+        # fix it, and until this existed the screen said nothing was wrong.
         return Attention.NOW
     if not account.is_usable:
         # Not connected or deliberately disconnected: nothing is broken, and
@@ -202,6 +271,7 @@ def _reason(
     expires_at: datetime | None,
     refreshable: bool,
     at: datetime,
+    health: ConnectionHealth,
 ) -> str | None:
     if account.state is ConnectionState.REVOKED:
         return "permission_withdrawn"
@@ -209,6 +279,13 @@ def _reason(
         return "credential_expired"
     if account.state is ConnectionState.AUTHORIZING:
         return "authorization_unfinished"
+    if account.is_usable and health is ConnectionHealth.DEGRADED:
+        # **Deliberately not more specific than this.** Which probe result
+        # degraded it is in `connection_probe`, and a customer-facing reason
+        # that named a vendor status code would be Signora's diagnosis
+        # dressed as the customer's problem. What they can act on is that it
+        # stopped working.
+        return "not_working"
     if (
         account.is_usable
         and expires_at is not None

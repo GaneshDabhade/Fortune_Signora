@@ -12,9 +12,12 @@ from modules.integrations.application.disconnect import DisconnectSystem
 from modules.integrations.application.refresh import RefreshGrant
 from modules.integrations.application.resolve import ResolveExecutionContext
 from modules.integrations.application.queries import IntegrationQueries
+from modules.integrations.application.probe import ProbeConnection
+from modules.integrations.infrastructure.reachability import HubSpotReachability
 from modules.integrations.infrastructure.repository import (
     SqlConnectedAccountRepository,
     SqlGrantStore,
+    SqlProbeStore,
 )
 from modules.integrations.infrastructure.refreshing import (
     HttpTokenRefresher,
@@ -33,8 +36,21 @@ def build_grants(session: AsyncSession) -> GrantStore:
     return SqlGrantStore(session)
 
 
+def build_probes(session: AsyncSession) -> SqlProbeStore:
+    return SqlProbeStore(session)
+
+
 def build_integration_queries(session: AsyncSession) -> IntegrationQueries:
-    return IntegrationQueries(build_connected_accounts(session), build_grants(session))
+    """**With the probe reader, so the screen answers from evidence.**
+
+    Without it every connection reads `UNKNOWN`, which is what a caller with
+    no probes actually knows — but it is not what this deployment knows, and a
+    composition that withheld a reader it could build would make the screen
+    understate what the platform had established.
+    """
+    return IntegrationQueries(
+        build_connected_accounts(session), build_grants(session), build_probes(session)
+    )
 
 
 # `ResolveExecutionContext` is wired at the end of this file, now that it can
@@ -103,6 +119,24 @@ def build_refresh_grant(
         secrets,
         secrets,
         HttpTokenRefresher(credentials) if credentials.any_configured() else None,
+    )
+
+
+def build_probe_connection(
+    session: AsyncSession, settings: IntegrationSettings
+) -> ProbeConnection:
+    """The probe, wired to the vendor it can currently ask.
+
+    **`HubSpotReachability` rather than a lookup by slug**, because HubSpot is
+    the one system with an adapter. A registry keyed by integration would be
+    the speculative generalization §6 refuses — the second vendor is the change
+    that earns it, and it will arrive with its own adapter to put in one.
+    """
+    return ProbeConnection(
+        SqlConnectedAccountRepository(session),
+        build_resolve_execution_context(session, settings),
+        HubSpotReachability(),
+        build_probes(session),
     )
 
 

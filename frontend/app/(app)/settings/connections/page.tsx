@@ -9,7 +9,11 @@ import { NoWorkspace } from '@/components/workspace/no-workspace';
 import { SkeletonText } from '@/components/ui';
 import type { Connection } from '@/lib/api/types';
 import { outcomeFor } from '@/lib/integrations/outcomes';
-import { useDisconnect, useIntegrations } from '@/lib/query/hooks/integrations';
+import {
+  useCheckConnection,
+  useDisconnect,
+  useIntegrations,
+} from '@/lib/query/hooks/integrations';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
 
 /**
@@ -37,7 +41,11 @@ export default function ConnectionsPage() {
   const workspaceId = activeWorkspace?.id ?? null;
   const { data, isLoading, isError } = useIntegrations(workspaceId);
   const disconnect = useDisconnect(workspaceId);
+  const check = useCheckConnection(workspaceId);
   const [target, setTarget] = useState<Connection | null>(null);
+  // Which row is being checked, so only that one says so. A single boolean
+  // would make every row on the page claim to be checking.
+  const [checking, setChecking] = useState<string | null>(null);
 
   const params = useSearchParams();
   const returned = params.get('outcome');
@@ -75,6 +83,13 @@ export default function ConnectionsPage() {
         isLoading={isLoading}
         isError={isError}
         onDisconnect={setTarget}
+        onCheck={(connection) => {
+          setChecking(connection.id);
+          // `onSettled`, not `onSuccess`: a check that fails to reach the
+          // server must still release the row, or it says *Checking…* forever.
+          check.mutate(connection.id, { onSettled: () => setChecking(null) });
+        }}
+        checkingId={checking}
       />
 
       {target ? (

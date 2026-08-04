@@ -190,6 +190,12 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # column on the grant: the grant is read on every connections screen
         # and this is read only when a call is about to be made.
         "integration_secret",
+        # Integrations (TASK-407), migration 0038. **What happened when the
+        # platform actually tried to use a connection** — the only evidence
+        # that a credential still works, as opposed to still looking right.
+        # Tenant-owned because a probe names one workspace's connection, and
+        # its `detail` describes that customer's system.
+        "connection_probe",
     }
 )
 
@@ -309,6 +315,11 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         # Migration 0020, on identical terms: no `UPDATE` grant, `DELETE`
         # granted because erasability is a tenancy property.
         "icp_declaration",
+        # Migration 0038. **A probe records a moment and is never
+        # corrected** — a later probe supersedes it by being later, and
+        # health is derived from the run rather than stored. `DELETE` on the
+        # same erasability grounds as every other table here.
+        "connection_probe",
         # Migration 0031, and the whole aggregate is append-only: content is
         # superseded, lifecycle is appended, and nothing is edited. `DELETE`
         # is granted on the same erasability grounds as every other table

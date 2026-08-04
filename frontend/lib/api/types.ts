@@ -896,6 +896,18 @@ export type IntegrationCapability =
 
 export type ConnectionAttention = 'none' | 'soon' | 'now';
 
+/**
+ * What happened when Signora last actually tried to use a connection.
+ *
+ * **Distinct from `state`, and the distinction is the whole point.** `state`
+ * says what the records imply — a grant exists, nothing expired, nobody
+ * revoked it — and a credential that quietly lost a permission holds a perfect
+ * state and does not work.
+ *
+ * **`unknown` means nothing has been tried. It does not mean working.**
+ */
+export type ConnectionHealth = 'healthy' | 'degraded' | 'unknown';
+
 export interface Connection {
   id: string;
   integration: string;
@@ -904,6 +916,7 @@ export interface Connection {
   connected_at: string | null;
   attention: ConnectionAttention;
   reason: string | null;
+  health: ConnectionHealth;
 }
 
 export interface IntegrationSystem {

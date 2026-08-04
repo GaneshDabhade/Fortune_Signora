@@ -11,8 +11,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from modules.integrations.application.connect import AlreadyConnected
 from modules.integrations.domain.connection import ConnectedAccount, ConnectionState
 from modules.integrations.domain.grant import IntegrationGrant
+from modules.integrations.domain.health import ConnectionProbe, ProbeResult
 from modules.integrations.infrastructure.models import (
     ConnectedAccountModel,
+    ConnectionProbeModel,
     IntegrationGrantModel,
 )
 
@@ -182,3 +184,56 @@ class SqlGrantStore:
         row.revoked_at = grant.revoked_at
         row.secret_ref = grant.secret_ref
         row.updated_by = grant.actor_id
+
+
+class SqlProbeStore:
+    """Where probes live. **Append and read; there is no update.**
+
+    The absent `UPDATE` grant in migration `0038` is the enforcement; offering
+    no method that would need one means nobody writes code that fails at
+    runtime — the same reasoning the Knowledge Graph's decision store records.
+    """
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def record(self, probe: ConnectionProbe) -> None:
+        self._session.add(
+            ConnectionProbeModel(
+                id=probe.id,
+                workspace_id=probe.workspace_id,
+                connected_account_id=probe.connected_account_id,
+                result=probe.result.value,
+                detail=probe.detail,
+                probed_at=probe.probed_at,
+            )
+        )
+        await self._session.flush()
+
+    async def recent_for(
+        self, workspace_id: UUID, connected_account_id: UUID, *, limit: int
+    ) -> tuple[ConnectionProbe, ...]:
+        rows = await self._session.execute(
+            select(ConnectionProbeModel)
+            .where(
+                ConnectionProbeModel.workspace_id == workspace_id,
+                ConnectionProbeModel.connected_account_id == connected_account_id,
+            )
+            # `id` breaks the tie, so two probes recorded in the same instant
+            # order the same way on every run. **Without it the newest of the
+            # two is whichever the planner returned first**, which is a hidden
+            # input (§2) and would make health flap between identical reads.
+            .order_by(ConnectionProbeModel.probed_at.desc(), ConnectionProbeModel.id.desc())
+            .limit(limit)
+        )
+        return tuple(
+            ConnectionProbe(
+                id=row.id,
+                workspace_id=row.workspace_id,
+                connected_account_id=row.connected_account_id,
+                result=ProbeResult(row.result),
+                detail=row.detail,
+                probed_at=row.probed_at,
+            )
+            for row in rows.scalars()
+        )

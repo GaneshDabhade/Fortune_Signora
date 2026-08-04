@@ -67,6 +67,11 @@ const ATTENTION_REASON: Record<string, string> = {
   credential_expired: 'The connection has lapsed. Reconnect to restore it.',
   authorization_unfinished: 'Connecting was never finished. Start again to complete it.',
   credential_expiring: 'This will stop working soon. Reconnect to keep it running.',
+  // **Deliberately says what happened, not what Signora thinks caused it.**
+  // A rejected token, a lost permission and a vendor authentication incident
+  // are indistinguishable from here, and naming one of them would be a
+  // diagnosis nobody established.
+  not_working: 'Signora tried to use this and could not. Reconnect to restore it.',
 };
 
 const CONNECTION_STATE: Record<string, string> = {
@@ -94,6 +99,8 @@ export function ConnectionCenter({
   isLoading,
   isError,
   onDisconnect,
+  onCheck,
+  checkingId,
 }: {
   systems: readonly IntegrationSystem[];
   isLoading: boolean;
@@ -102,6 +109,11 @@ export function ConnectionCenter({
    * rather than rendered disabled. A disabled button invites somebody to
    * discover they lack permission by pressing it. */
   onDisconnect?: (connection: Connection) => void;
+  /** Absent on the same terms: checking spends the organization's API quota
+   * and writes a record, so it needs the authority connecting does. */
+  onCheck?: (connection: Connection) => void;
+  /** Which connection is being checked, so only that row says so. */
+  checkingId?: string | null;
 }) {
   if (isError) {
     return (
@@ -131,7 +143,12 @@ export function ConnectionCenter({
       <ul className="flex flex-col gap-4">
         {systems.map((system) => (
           <li key={system.integration}>
-            <SystemCard system={system} onDisconnect={onDisconnect} />
+            <SystemCard
+              system={system}
+              onDisconnect={onDisconnect}
+              onCheck={onCheck}
+              checkingId={checkingId}
+            />
           </li>
         ))}
       </ul>
@@ -142,9 +159,13 @@ export function ConnectionCenter({
 function SystemCard({
   system,
   onDisconnect,
+  onCheck,
+  checkingId,
 }: {
   system: IntegrationSystem;
   onDisconnect?: (connection: Connection) => void;
+  onCheck?: (connection: Connection) => void;
+  checkingId?: string | null;
 }) {
   return (
     <Card>
@@ -175,6 +196,8 @@ function SystemCard({
               key={connection.id}
               connection={connection}
               onDisconnect={onDisconnect}
+              onCheck={onCheck}
+              isChecking={checkingId === connection.id}
             />
           ))}
 
@@ -199,14 +222,23 @@ function StatusBadge({ system }: { system: IntegrationSystem }) {
 function ConnectionRow({
   connection,
   onDisconnect,
+  onCheck,
+  isChecking,
 }: {
   connection: Connection;
   onDisconnect?: (connection: Connection) => void;
+  onCheck?: (connection: Connection) => void;
+  isChecking?: boolean;
 }) {
   const reason = connection.reason ? ATTENTION_REASON[connection.reason] : null;
   // Already disconnected: nothing to withdraw, and offering the control again
   // would invite a customer to fix something that is not broken.
   const canDisconnect = onDisconnect && connection.state !== 'disconnected';
+  // **Only a connection there is any point asking about.** Checking one that
+  // was never finished or has been turned off would spend a call to learn what
+  // the row already says.
+  const canCheck =
+    onCheck && !['disconnected', 'not_connected', 'authorizing'].includes(connection.state);
   return (
     <div className="flex flex-col gap-0.5 border-l-2 border-border pl-3">
       <div className="flex items-baseline justify-between gap-3">
@@ -215,6 +247,16 @@ function ConnectionRow({
           <Badge tone={attentionTone(connection.attention)}>
             {CONNECTION_STATE[connection.state] ?? connection.state}
           </Badge>
+          {canCheck ? (
+            <Button
+              variant="ghost"
+              onClick={() => onCheck(connection)}
+              disabled={isChecking}
+              aria-label={`Check ${connection.label}`}
+            >
+              {isChecking ? 'Checking…' : 'Check'}
+            </Button>
+          ) : null}
           {canDisconnect ? (
             <Button
               variant="ghost"
@@ -227,6 +269,12 @@ function ConnectionRow({
         </div>
       </div>
       {reason ? <span className="text-xs text-content-muted">{reason}</span> : null}
+      {/* **Said only once it is true.** A connection nobody has checked says
+          nothing here rather than claiming to be working — the same refusal
+          the server makes by reporting `unknown` instead of `healthy`. */}
+      {connection.health === 'healthy' ? (
+        <span className="text-xs text-content-subtle">Checked and working</span>
+      ) : null}
     </div>
   );
 }

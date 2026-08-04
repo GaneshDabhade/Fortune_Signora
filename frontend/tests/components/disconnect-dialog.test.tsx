@@ -155,6 +155,7 @@ describe('the disconnect control on the Connection Center', () => {
       connected_at: null,
       attention: 'none',
       reason: null,
+      health: 'unknown',
       ...overrides,
     };
   }

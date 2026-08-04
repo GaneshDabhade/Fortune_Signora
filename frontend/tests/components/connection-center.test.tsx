@@ -1,5 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
   ATTENTION_REASON,
@@ -18,6 +19,10 @@ function connection(overrides: Partial<Connection> = {}): Connection {
     connected_at: '2026-07-01T09:00:00+00:00',
     attention: 'none',
     reason: null,
+    // **`unknown`, not `healthy`.** A fixture that defaulted to healthy would
+    // make every existing test assert the state of a connection nobody has
+    // checked, which is precisely the claim this slice removed.
+    health: 'unknown',
     ...overrides,
   };
 }
@@ -202,5 +207,135 @@ describe('states a customer can reach', () => {
     for (const name of ['Jane', 'Sam', 'Ravi']) {
       expect(within(card).getByText(name)).toBeInTheDocument();
     }
+  });
+});
+
+/** The sentence for a connection that does not work. **Fetched rather than
+ * indexed inline**: an index into a `Record` is `string | undefined`, and a
+ * test that silently asserted against `undefined` would pass while asserting
+ * nothing. */
+function notWorking(): string {
+  const sentence = ATTENTION_REASON.not_working;
+  if (sentence === undefined) throw new Error('not_working has no sentence');
+  return sentence;
+}
+
+describe('whether a connection actually works, as opposed to looking right', () => {
+  it('offers to check a connection that could be asked', async () => {
+    const user = userEvent.setup();
+    const checked = vi.fn();
+    const row = connection({ label: 'Acme production' });
+
+    render(
+      <ConnectionCenter
+        systems={[system({ connections: [row] })]}
+        isLoading={false}
+        isError={false}
+        onCheck={checked}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Check Acme production' }));
+
+    expect(checked).toHaveBeenCalledWith(row);
+  });
+
+  it('does not offer to check something that was never finished', () => {
+    // Spending a call to learn what the row already says, on a customer's own
+    // API quota.
+    render(
+      <ConnectionCenter
+        systems={[system({ connections: [connection({ state: 'authorizing' })] })]}
+        isLoading={false}
+        isError={false}
+        onCheck={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.queryByRole('button', { name: /^Check/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('says nothing about a connection nobody has checked', () => {
+    /** **The refusal that makes the claim worth anything.** `unknown` is
+     * absence, not health — a row that said "working" because nothing had
+     * been tried would be the same lie the screen already told. */
+    render(
+      <ConnectionCenter
+        systems={[system({ connections: [connection({ health: 'unknown' })] })]}
+        isLoading={false}
+        isError={false}
+      />,
+    );
+
+    expect(screen.queryByText('Checked and working')).not.toBeInTheDocument();
+  });
+
+  it('says so once it has been checked and works', () => {
+    render(
+      <ConnectionCenter
+        systems={[system({ connections: [connection({ health: 'healthy' })] })]}
+        isLoading={false}
+        isError={false}
+      />,
+    );
+
+    expect(screen.getByText('Checked and working')).toBeInTheDocument();
+  });
+
+  it('explains a connection that looks perfect and does not work', () => {
+    /** **The whole point of the slice, from the customer's side.** State
+     * `validated`, nothing expired, nothing revoked — and Signora tried and
+     * could not. Before this the screen said nothing was wrong. */
+    render(
+      <ConnectionCenter
+        systems={[
+          system({
+            needs_attention: true,
+            working: false,
+            connections: [
+              connection({
+                state: 'validated',
+                health: 'degraded',
+                attention: 'now',
+                reason: 'not_working',
+              }),
+            ],
+          }),
+        ]}
+        isLoading={false}
+        isError={false}
+      />,
+    );
+
+    expect(screen.getByText(notWorking())).toBeInTheDocument();
+    expect(screen.getByText('1 connection needs your attention.')).toBeInTheDocument();
+  });
+
+  it('blames nobody it cannot name', () => {
+    /** A rejected token, a lost permission and a vendor authentication
+     * incident are indistinguishable from here. The sentence says what
+     * happened and never diagnoses which. */
+    expect(notWorking()).not.toMatch(/permission|revoke|expire/i);
+  });
+
+  it('says only the row being checked is checking', async () => {
+    const user = userEvent.setup();
+    const first = connection({ label: 'Acme production' });
+    const second = connection({ label: 'Acme sandbox' });
+
+    render(
+      <ConnectionCenter
+        systems={[system({ connections: [first, second] })]}
+        isLoading={false}
+        isError={false}
+        onCheck={vi.fn()}
+        checkingId={first.id}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Check Acme sandbox' }));
+
+    expect(screen.getByRole('button', { name: 'Check Acme production' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Check Acme sandbox' })).toBeEnabled();
   });
 });

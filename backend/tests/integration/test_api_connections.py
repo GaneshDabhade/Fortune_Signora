@@ -440,6 +440,11 @@ class TestTheResponseShapeIsPurposeBuilt:
             "connected_at",
             "attention",
             "reason",
+            # **`state` and `health` are both here on purpose.** One says what
+            # the records imply, the other what happened when the platform
+            # last actually tried — and a credential that lost a permission
+            # holds a perfect `state` and does not work.
+            "health",
         }
 
 
@@ -694,6 +699,7 @@ class TestTheCredentialNeverComesBack:
             "connected_at",
             "attention",
             "reason",
+            "health",
         }
 
     async def test_a_rejected_request_does_not_echo_it_either(
@@ -754,3 +760,167 @@ class TestConnectingIsAnOwnersDecision:
         )
 
         assert response.status_code == 404, response.text
+
+
+class TestCheckingWhetherAConnectionWorks:
+    """`POST /connections/{id}/check` — the route that stops the screen
+    answering from records alone.
+
+    **The credential these connect with is a bearer token, not OAuth2**, so
+    the adapter refuses it before any network call. That is the point rather
+    than a limitation of the fixture: it exercises the whole route — Casbin,
+    RLS, the probe, the recorded row and the derived health — **without
+    reaching HubSpot**, which is what §10 requires of a deterministic test.
+    """
+
+    async def test_a_connection_that_cannot_be_used_reports_not_working(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        owner = uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+        connection = await _connect(session_factory, workspace, owner)
+
+        before = (
+            await client.get(
+                f"/workspaces/{workspace}/connections", headers=_auth(key_pair, owner)
+            )
+        ).json()[0]
+        assert before["health"] == "unknown", "nothing has been tried yet"
+        assert before["attention"] == "none"
+
+        response = await client.post(
+            f"/workspaces/{workspace}/connections/{connection}/check",
+            headers=_auth(key_pair, owner),
+        )
+
+        assert response.status_code == 200, response.text
+        assert response.json()["health"] == "degraded"
+        assert response.json()["attention"] == "now"
+        assert response.json()["reason"] == "not_working"
+        # **The connection is not revoked**, and that is deliberate: a
+        # rejected credential is not evidence the customer withdrew Signora
+        # at the vendor, and saying so would be a diagnosis nobody
+        # established.
+        assert response.json()["state"] == "connected"
+
+    async def test_a_failed_check_is_an_answer_rather_than_an_error(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**A `500` would say Signora broke.** What actually happened is that
+        the customer's system said no, and those are different sentences to
+        somebody deciding whether to call support."""
+        owner = uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+        connection = await _connect(session_factory, workspace, owner)
+
+        response = await client.post(
+            f"/workspaces/{workspace}/connections/{connection}/check",
+            headers=_auth(key_pair, owner),
+        )
+
+        assert response.status_code == 200, response.text
+
+    async def test_the_answer_survives_the_request_that_produced_it(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**The probe is a record, not a return value.** A check whose result
+        vanished with the response would leave the Connection Center saying
+        everything was fine the moment somebody navigated away."""
+        owner = uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+        connection = await _connect(session_factory, workspace, owner)
+
+        await client.post(
+            f"/workspaces/{workspace}/connections/{connection}/check",
+            headers=_auth(key_pair, owner),
+        )
+        later = (
+            await client.get(
+                f"/workspaces/{workspace}/connections", headers=_auth(key_pair, owner)
+            )
+        ).json()[0]
+
+        assert later["health"] == "degraded"
+
+    async def test_a_member_may_not_check_a_connection(
+        self, client: AsyncClient, key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """It spends the organization's API quota and writes a record, which
+        is the same authority connecting and disconnecting need."""
+        owner, member = uuid4(), uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+        await _add_member(client, key_pair, owner, workspace, member)
+        connection = await _connect(session_factory, workspace, owner)
+
+        response = await client.post(
+            f"/workspaces/{workspace}/connections/{connection}/check",
+            headers=_auth(key_pair, member),
+        )
+
+        assert response.status_code == 403, response.text
+
+    async def test_a_connection_in_another_workspace_is_a_404(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**404, never 403**, and it is the same rule everywhere: naming a
+        connection you cannot see teaches you nothing about whether it is
+        there."""
+        mine, theirs = uuid4(), uuid4()
+        my_workspace = await _workspace(client, key_pair, mine)
+        their_workspace = await _workspace(client, key_pair, theirs)
+        their_connection = await _connect(session_factory, their_workspace, theirs)
+
+        response = await client.post(
+            f"/workspaces/{my_workspace}/connections/{their_connection}/check",
+            headers=_auth(key_pair, mine),
+        )
+
+        assert response.status_code == 404, response.text
+
+    async def test_nothing_a_customer_owns_is_touched(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**The acceptance criterion that keeps this out of C-326's way.**
+        A check writes a probe and nothing else — no raw record, no claim, no
+        event on the outbox."""
+        owner = uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+        connection = await _connect(session_factory, workspace, owner)
+
+        async with admin_session_factory() as session:
+            before = await _counts(session)
+
+        await client.post(
+            f"/workspaces/{workspace}/connections/{connection}/check",
+            headers=_auth(key_pair, owner),
+        )
+
+        async with admin_session_factory() as session:
+            after = await _counts(session)
+
+        assert after == before
+
+
+async def _counts(session: AsyncSession) -> dict[str, int]:
+    """Everything a sync would have written, and a probe must not."""
+    return {
+        table: (await session.execute(text(f"SELECT count(*) FROM {table}"))).scalar_one()
+        for table in ("raw_provider_record", "claim", "outbox_event")
+    }

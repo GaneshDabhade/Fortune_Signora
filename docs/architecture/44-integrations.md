@@ -315,6 +315,8 @@ Everything in §6 answers *is it connected?* The questions a customer actually h
 
 **What this module can honestly contribute is the input, not the verdict:** the connection's state, its grant's lifetime, and eventually the result of a real call — which is exactly what `VALIDATED` was reserved for and what nothing yet produces.
 
+> **The third input arrived on 2026-08-04 as [TASK-407](../BACKLOG.md), and §12 below is it.** *Can I trust this connection?* is now answerable from evidence rather than from records. The rest of the list above is unchanged and still not this module's — freshness is Provider Platform's, *what changed* is Timeline's, and *will this affect my recommendations* crosses into the pipeline.
+
 **The trigger to revisit** is the first consumer: when Provider Platform synchronizes through a Connected Account, *"is Signora receiving fresh data?"* becomes answerable from a watermark it already owns, and the composition of the two into one confidence answer is a design question for whichever module owns that screen. **It is not a reason to add a field here first.**
 
 ## 11 · The tests, and what each layer is for
@@ -324,3 +326,46 @@ Domain and application against **fakes**; infrastructure and interface against *
 Three defects came out of closing it, none of which a fake could have surfaced: the missing audit columns, the write ordering against the foreign keys (§4), and `ConnectionNotFound` escaping as a `500` because it had no entry in the central error mapping.
 
 **The lesson is general enough to state here:** a fake that reimplements a rule can only agree with itself. Where the rule lives in the database — a constraint, an ordering, a keyset predicate, RLS — the test has to be there too.
+
+---
+
+## 12 · The connection that looks perfect and does not work
+
+**Built 2026-08-04, [TASK-407](../BACKLOG.md)**, from Lane C's [417 §4 slice B-i](417-executable-slice-audit.md), against the approved **CRM Integrations** screen: *"Health is checked every minute. Two consecutive failures pause writes."*
+
+**Everything §6 answers is derived from records** — a grant exists, it has not expired, nobody revoked it. **None of that is evidence.** The commonest way an integration breaks is a credential that authenticates perfectly and has quietly lost a permission, and no record anywhere can see it. Until this slice the Connection Center reported such a connection as healthy, which is the failure the whole screen exists to prevent.
+
+**`ConnectionState.VALIDATED` was written for this and had never been reachable.** Its docstring already said *"a real call succeeded with it… a grant that authenticates but lacks a scope is the commonest integration failure and is indistinguishable from healthy until the first sync."* The state was correct; nothing performed the call that earns it. **It is earned here and nowhere else.**
+
+### What the slice is
+
+| | |
+|---|---|
+| **`ProbeResult`** | The adapter's `Crm*` taxonomy expressed once in this module's words — reachable · credential rejected · permission missing · unusable response · unavailable. **No third vocabulary between them** |
+| **`ConnectionProbe`** | One recorded attempt. **Immutable**, migration `0038`, no `UPDATE` grant, registered in `tenancy_policy.py` |
+| **`health_from`** | What a *run* of probes means. **Derived on every read, never stored** — a `health` column would be wrong the moment a credential was revoked without anybody writing to it |
+| **`ProbeConnection`** | Resolves, asks, records, and moves the connection when the answer settles something |
+| **`HubSpotReachability`** | The anticorruption layer. One company, one property — the question is whether the door opens |
+| **`POST /connections/{id}/check`** | Owner-only. **A `POST` because it does something**: it spends the customer's own API quota and writes a record |
+
+### Four decisions worth keeping
+
+**A single transient failure is not a verdict.** It takes **two consecutive** inconclusive results to report a connection as not working. A vendor having a bad minute must not send somebody to reconnect a CRM that is fine — and *consecutive* means consecutive: a success in between breaks the run.
+
+**Nothing tried is `UNKNOWN`, never healthy.** An unprobed connection is one nobody has established anything about, and reporting it as working would be the same lie the record-derived view already tells. The screen says nothing rather than claiming *Checked and working*.
+
+**A probe does not revoke a connection, and the first draft did.** `REVOKED` means *the customer withdrew permission at the vendor* and reaches a screen as *access was removed in the other system*. **A rejected credential is not evidence of that** — a rotated secret, an unreadable stored material and a vendor authentication incident are indistinguishable from a `401`, and telling a customer they revoked Signora when they did not is a worse failure than the one this slice set out to fix. Degraded health carries it instead, with the reason `not_working`: what happened, and no diagnosis nobody established.
+
+**A missing permission is not a rejected credential.** The adapter's own distinction between `401` and `403` survives all the way to what the platform does: reconnecting with the same permissions would fail identically, so a `403` never asks a customer to reconnect.
+
+### Why this could be built while C-326 is open
+
+**The probe reads, classifies and discards.** No raw record, no claim, no event, no watermark — asserted by a test that counts `raw_provider_record`, `claim` and `outbox_event` across a check and finds them unchanged. **[C-326](../LANE_COORDINATION.md) decides how a customer's records *travel*; this decides whether the door is open**, and the two share no artifact. [419 §2](419-c326-narrowed-and-lane-b.md) is the measurement that made the distinction visible.
+
+### Its limits, stated rather than discovered later
+
+- **Nothing schedules it.** The approved screen says *"checked every minute"*; this is checked when somebody asks. **A scheduler is 🔴 and this repository does not have one** — ARQ exists and a periodic sweep is a slice with its own trigger, not something to add inside this one.
+- **One vendor.** `HubSpotReachability` is wired directly rather than through a registry keyed by slug: the second adapter is the change that earns a registry, and it will arrive with one to put in it.
+- **No writes are paused, because there are no writes.** That is E2.
+- **No signal to admins.** Notification delivery is [ADR-0040](adr/0040-notifications.md) and unratified.
+- **`connectable` is still `false` for every catalog entry.** It flips after a real handshake against a real developer application, never in anticipation (§9).

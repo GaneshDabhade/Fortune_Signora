@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import DateTime, ForeignKey, Index, String, UniqueConstraint
+from sqlalchemy import DateTime, ForeignKey, Index, String, Text, UniqueConstraint, text
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -84,3 +84,42 @@ class IntegrationGrantModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMix
     revoked_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+
+
+class ConnectionProbeModel(Base, WorkspaceScopedMixin, TimestampMixin):
+    """One recorded attempt to use a connection.
+
+    **No `AuditMixin`, and that is a decision rather than an omission** — the
+    same one Timeline's projection made. `AuditMixin` requires a non-nullable
+    `created_by`, and **a probe has no actor**: nobody *did* this, the platform
+    checked. Filling the column with a system UUID would invent an author for
+    an audit trail, which is worth less than the honest absence.
+
+    **Immutable**, enforced where enforcement lives: migration `0038` grants no
+    `UPDATE`, and this class offers no method that would need one.
+    """
+
+    __tablename__ = "connection_probe"
+    __table_args__ = (
+        Index(
+            "ix_connection_probe_recent",
+            "workspace_id",
+            "connected_account_id",
+            text("probed_at DESC"),
+        ),
+    )
+
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    connected_account_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("connected_account.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    result: Mapped[str] = mapped_column(Text, nullable=False)
+    #: The adapter's own message. **Never a response body and never a
+    #: credential** — a column that recorded what the vendor said would
+    #: eventually record a token in an error string.
+    detail: Mapped[str | None] = mapped_column(Text, nullable=True)
+    #: When the platform tried, supplied by the caller. Distinct from
+    #: `created_at`: one is a fact about the attempt, the other about the row.
+    probed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

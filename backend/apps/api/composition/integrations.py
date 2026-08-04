@@ -12,11 +12,13 @@ from functools import lru_cache
 
 from modules.integrations.application.connect import ConnectSystem
 from modules.integrations.application.disconnect import DisconnectSystem
+from modules.integrations.application.probe import ProbeConnection
 from modules.integrations.application.queries import IntegrationQueries
 from modules.integrations.infrastructure.composition import (
     build_connect_system,
     build_disconnect_system,
     build_integration_queries,
+    build_probe_connection,
 )
 from modules.integrations.infrastructure.settings import IntegrationSettings
 from signora_platform.api import CurrentWorkspace
@@ -48,3 +50,10 @@ def connect_system(context: CurrentWorkspace) -> ConnectSystem:
 
 
 IntegrationConnect = Annotated[ConnectSystem, Depends(connect_system)]
+
+
+def probe_connection(context: CurrentWorkspace) -> ProbeConnection:
+    return build_probe_connection(context.session, _settings())
+
+
+IntegrationProbe = Annotated[ProbeConnection, Depends(probe_connection)]

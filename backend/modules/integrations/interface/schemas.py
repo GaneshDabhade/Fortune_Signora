@@ -53,6 +53,16 @@ class ConnectionResponse(BaseModel):
             "sentence; the API sends no prose."
         ),
     )
+    health: str = Field(
+        description=(
+            "What happened when Signora last actually tried to use this "
+            "connection: healthy, degraded, or unknown. Distinct from `state`, "
+            "and the distinction is the point — `state` says what the records "
+            "imply, and a credential that lost a permission is in a perfect "
+            "state and does not work. `unknown` means nothing has been tried "
+            "yet; it does not mean working."
+        )
+    )
 
     @classmethod
     def from_domain(cls, view: ConnectionView) -> ConnectionResponse:
@@ -64,6 +74,7 @@ class ConnectionResponse(BaseModel):
             connected_at=view.connected_at,
             attention=view.attention.value,
             reason=view.reason,
+            health=view.health.value,
         )
 
 
