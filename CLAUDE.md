@@ -1121,47 +1121,71 @@ Slice-Handoff:
 
 > **The handoff is input, never the record.** QE measures every figure from the promoted commit. A lane that reports a test count is offering a claim; QE publishes a measurement.
 
-### The Standard Lane Header
+### The Standard Lane Report
 
-**Ratified 2026-08-03, product owner. It binds every lane without exception, including QE and Lane C.**
+**Ratified 2026-08-04, product owner, replacing the Standard Lane Header of 2026-08-03.** **It binds every lane without exception — Lane A, Lane B, Lane C and QE.** Drafted by Lane C on the product owner's instruction, which is the only route by which this file is amended.
 
-**Every status update, pause, completion report, blocker report and handoff begins with this block.** The detailed engineering discussion follows it unchanged — the header does not replace the report, it makes the report navigable.
+> **The product owner must never read several pages to learn whether a lane needs attention.** The first screen answers six questions and nothing else: **what is this lane doing · is it blocked · does it need me · is it waiting · can it continue · what happens next.**
+
+**Every status update, pause, completion report, blocker report and handoff opens with this block and closes with the two below.** The engineering discussion between them is **unchanged in depth, evidence and repository analysis** — only its position moves.
+
+#### 1 · The header
 
 ```text
 Lane:
-Current Feature:
+Role:
+Current Module:
 Current Epic:
 Current Slice:
-Current Status:
-Current Branch:
-Current Commit:
 
-Short Summary:
-(3–5 lines)
+Overall Status:            🟢 ACTIVE · 🟡 WAITING · 🟠 BLOCKED · 🔵 VALIDATING
+                           🟣 MONITORING · ⚪ READY FOR NEW WORK · ✅ COMPLETED
 
-Current Progress:
-
-Blockers:
-
-Waiting On:
-
-Ready For New Work:
-
-Recommended Next Action:
+Current Activity:          one sentence
+Waiting On:                None · Product Owner · Lane A · Lane B · Lane C · QE
+                           · External System · Architecture · Repository State
+                           · Multiple (list)
+Blocking Reason:           one sentence, or None.
+Needs Product Owner?       YES — with one sentence of why · or NO
+Can Continue Without PO?   YES — naming what continues · or NO — naming why
+Next Immediate Action:     one sentence
+Estimated Repository Impact:  Small · Medium · Large · Repository-wide
 ```
 
-**The reason is arithmetic, not formality.** At four or more concurrent lanes the product owner reads four or more reports before deciding anything, and **the decision usually needs six facts that are currently spread through several pages of prose.** The header puts them first so a lane's state is legible in thirty seconds and the prose is read by choice rather than to extract a status.
+**Then the Executive Summary, exactly as before.**
 
-**The rules, and they are short:**
+#### 2 · The close — Lane State
 
-- **Every field is present; `none` and `n/a` are valid values and silence is not.** An absent field reads as *nobody looked*, which is the same failure the Slice Handoff's `none`-is-a-value rule prevents.
-- **`Current Progress` is the lane's estimate and is marked as one.** It is not a measurement and never contradicts `PROJECT_STATUS.md`, which is QE's and measured.
-- **Amended 2026-08-03 to the product owner's form** — `Status` became `Current Status`, the summary tightened to 3–5 lines, and `Currently Working On` and `Next Planned Work` were dropped as restatements of `Current Slice` and `Recommended Next Action`. **One version exists; the earlier one is superseded, not kept alongside.**
-- **`Blockers` and `Waiting On` are different questions.** A blocker stops the work; *waiting on* names who owes an answer. A row in one is not a row in the other, and an architectural blocker still carries its six fields (*Two kinds of blocker*).
-- **`Ready For New Work` is `YES` only when the four conditions in *Continuous execution* permit a claim.** A lane carrying `CHANGES REQUESTED` is `NO`.
-- **`Recommended Next Action` is input, never authority.** Proposing is expected; proceeding on it is not — the product owner owns priority.
+**Current Status** *(ACTIVE · WAITING · BLOCKED · VALIDATING · MONITORING · READY)* · **Completed this report** *(≤5)* · **Remaining work** *(≤5)* · **Waiting on**, with an explicit owner · **Requires Product Owner** *(YES/NO)* · **Priority** *(P0–P3)* · **Next update**.
 
-> **This is not a second Slice Handoff, and the two never restate each other** (§2, *truth has exactly one authoritative representation*). **The Slice Handoff lives in a commit message, is written once per slice, and addresses QE and the next assignee.** The Standard Lane Header lives in a *report*, describes the lane's whole current state, and addresses the product owner. Where a figure belongs to one, the other references it.
+#### 3 · The last line — Product Owner Action
+
+**Exactly one, and never two:**
+
+| | |
+|---|---|
+| 🟢 **NO ACTION REQUIRED** | Continue reading only if interested |
+| 🟡 **OPTIONAL REVIEW** | Useful information. **No engineering blocked** |
+| 🟠 **REVIEW SOON** | A decision is needed later. **Engineering still progressing** |
+| 🔴 **ACTION REQUIRED NOW** | **Engineering cannot proceed** |
+
+#### The rules
+
+**The reason is arithmetic, not formality.** At four concurrent lanes the product owner reads four reports before deciding anything, and the decision usually needs six facts spread through pages of prose.
+
+- **Every field is present; `None` and `NO` are values and silence is not.** An absent field reads as *nobody looked* — the same failure the Slice Handoff's `none`-is-a-value rule prevents.
+- **Do not invent statuses.** Seven exist in the header, six in the close, four in the closing line. **A lane that needs an eighth has a state the model does not describe, and that is a finding to raise.**
+- **`Blocking Reason` and `Waiting On` are different questions.** A blocker stops the work; *waiting on* names who owes an answer. **A lane can be `🟡 WAITING` on QE and not blocked at all.**
+- **Never hide a waiting state, a blocker or a decision inside narrative.** If a lane is polling, say so. If it is working independently, say so. **If it does not need the product owner, say so explicitly** — and then **ask nothing later in the report.**
+- **Not every report is urgent, and the format must show that.** Implementation, monitoring, polling, validation, background preparation, blocked work and decisions are different states and must read differently. **A report that sounds the same every time carries no information in its tone.**
+- **Any progress figure is the lane's estimate and is marked as one.** It is never a measurement and never contradicts `PROJECT_STATUS.md`, which is QE's and measured from the promoted commit.
+- **`Next Immediate Action` is input, never authority.** Proposing is expected; proceeding on it is not — the product owner owns priority.
+
+> **This is not a second Slice Handoff, and the two never restate each other** (§2, *truth has exactly one authoritative representation*). **The Slice Handoff lives in a commit message, is written once per slice, and addresses QE and the next assignee.** The Standard Lane Report lives in a *report*, describes the lane's whole current state, and addresses the product owner. Where a figure belongs to one, the other references it.
+>
+> **The 2026-08-03 header is superseded, not kept alongside.** One version exists. A lane still emitting `Current Feature:` is reading a rule this file no longer states.
+>
+> **Lane C additionally carries a Portfolio Dashboard** inside its Executive Summary ([`PRODUCT_OFFICE.md`](docs/PRODUCT_OFFICE.md) §11a) — **the repository-wide view, which only the Product Office produces.** It is an extension of this format for one lane, never a replacement of it, and **no other lane owes one.**
 
 ### Repository Closeout
 

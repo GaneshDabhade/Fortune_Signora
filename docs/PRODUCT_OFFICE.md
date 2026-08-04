@@ -458,17 +458,15 @@ Decisions required    what the product owner must rule before it can start
 | **§9 is risks, not observations** | Three maximum. **A finding is not a risk unless it can still cost something** |
 | **Confidence below High needs one sentence** | Stating *why* is the whole value; a bare *Medium* is a mood |
 
-### Its relationship to the Standard Lane Header
+### Its relationship to the Standard Lane Report
 
-**`CLAUDE.md` §20e binds every lane, including this one, to the Standard Lane Header. This format is a superset of it and does not replace it** — §1 carries the same facts, and where a field appears in both it is **one fact reported once**, not two records to keep in step (§2, *truth has exactly one authoritative representation*).
+**`CLAUDE.md` §20e — the Standard Lane Report — binds every lane and is authoritative for the header, the close and the closing line.** **This section does not restate it** (§2). What lives here is only what is **Lane C's alone**: the ten-section body order, and §11a's Portfolio Dashboard.
 
-### Repository-wide adoption is not Lane C's to take
+> **Adopted repository-wide 2026-08-04.** The sequence the product owner set — *use it · evaluate whether it genuinely improves decision-making · recommend only if it does* — **completed in one step**, because the product owner directed adoption before Lane C reached the evaluation. **The recommendation was never made, and the record says so rather than implying the office earned the outcome.**
+>
+> **Lane C drafted the amendment; it did not decide it.** `CLAUDE.md` is the product owner's and the drafting route is the one §20e names — *only when the product owner has approved it, never on its own initiative.*
 
-**The product owner has directed Lane C to use this format and to leave Lane A, Lane B and QE unchanged until it is proven.** Recorded here so the sequence is not lost:
-
-> **Use it · evaluate whether it genuinely improves decision-making · recommend only if it does.**
-
-**And if it is recommended, adopting it repository-wide is a `CLAUDE.md` amendment** — the Standard Lane Header lives there. **That is the product owner's, and Lane C may draft it only once approved.** The office does not widen its own reporting rule into everyone else's.
+**Notification is the amendment.** Lane C has no channel to Lane A, Lane B or QE — **the product owner is the shared channel**, and `CLAUDE.md` is what every lane reads at Startup step 1. **A lane that rebases onto this commit has been told.**
 
 ### 11a · The Portfolio Dashboard
 
