@@ -12,16 +12,16 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `ba46132`, 2026-08-03.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `9a112ae`, 2026-08-04.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`ba46132`** — the certified commit itself |
-| **`integration`** | `ba46132` — level with `main` |
-| **Release candidate** | **None pinned.** Cycle 40 promoted **RS-2** — `make workstation` |
-| **Certification** | ✅ [`ba46132495da`](certification/reports/ba46132495da.md) · migration head **`0030`** · protocol **v2** · **run against a database it created** |
+| **`main`** | **`9a112ae`** — the certified commit itself |
+| **`integration`** | `9a112ae` — level with `main` |
+| **Release candidate** | **None pinned.** Cycle 41 promoted **Lane B's 44-commit candidate** — the first feature promotion in eleven hours |
+| **Certification** | ✅ [`9a112ae3c2b2`](certification/reports/9a112ae3c2b2.md) · migration head **`0031`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **179 commits, none outside a certified snapshot** |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **200 commits, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Both lanes.** Five separate rulings, all the product owner's — see §1c |
 | **Validation queue** | Lane A's and Lane B's branches, **both awaiting a rebase by their lane** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The cycle's finding outweighs its feature.** Running the suite in a shell that did not export `SIGNORA_DATABASE_URL` produced **three failures on the commit certified hours earlier** — a certification gate had a hidden input, so the run that certified `909374a` and the run reproducing it were measuring different things, and nothing in the record said so ([B-106](docs/BUGS.md)). It is fixed and verified by removing the variable entirely. **[B-022](docs/BUGS.md) predicted this class and stayed open; this is the first time it was observed rather than reasoned about.**
 
-**Repository health:** **2665 backend tests** · **95.50% coverage** *(floor 95)* · 719 frontend tests · 360 Security Invariants · mypy strict over **624 files** · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
+**Repository health:** **2870 backend tests** · **95.50% coverage** *(floor 95)* · 719 frontend tests · 360 Security Invariants · mypy strict over **644 files** · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
 
 ---
 
@@ -101,50 +101,45 @@
 
 ---
 
-## 1d · Release summary — 2026-08-03, cycle 40
+## 1d · Release summary — 2026-08-04, cycle 41
 
-**Derived from the promoted commit `ba46132`.** One command that makes a machine usable, one backlog item closed by measuring it instead of doing it, and a check that nearly told somebody to break a working configuration.
+**Derived from the promoted commit `9a112ae`.** The first feature promotion in eleven hours, four defects found, and two lanes that each did more than QE asked.
 
-### `make workstation` — RS-2
+### What was promoted
 
-`backend/.env` and `frontend/.env.local` hold a generated RSA pair that is **correctly never committed** and **not reproducible**. They sat in none of the four resilience states.
+**Lane B's 44-commit candidate** — ICP segments with migration `0031`, the CRM acquisition exchange, refresh-token revocation, and the connect/disconnect route. **2870 backend tests, 902 frontend, 372 Security Invariants, 95.51% coverage, mypy over 644 files.**
 
-> **The state that was missing was never a fifth category. It was a command.**
+### Four defects, three closed the same day
 
-One pair, both tiers, **no transcription step** — the quickstart used to say *"paste both halves in"*, and pasting is where it went wrong: a mismatched pair mints tokens the API rejects with **no clue why**. It never overwrites without `--force`, and `--force` states what it invalidates before paying it.
+| | | |
+|---|---|---|
+| **[B-107](docs/BUGS.md)** | Lane A | **✅ VERIFIED.** Ten tests that had never passed, stalling the suite at 68%. One `pytest.mark.anyio` in the only file in the repository that used it |
+| **[B-108](docs/BUGS.md)** | Lane B | **✅ VERIFIED.** The production image could not build — a root config importing a directory `.dockerignore` excludes |
+| **[B-109](docs/BUGS.md)** | Lane A | 🔴 **Open.** 2973 tests pass and coverage is 94.27% against a 95% floor; five introduced files at 0% |
+| **[B-110](docs/BUGS.md)** | QE | 🟡 **Open.** The promotion guard refuses any commit that adds a migration |
 
-**The exposure was measured on QE itself** — I reconstructed `frontend/.env.local` this session by reading four files and writing a throwaway script, and nothing described that as a procedure.
+### Both lanes exceeded the request, and that is the cycle's real result
 
-### The check nearly told somebody to destroy a working setup
+**QE asked Lane A to remove a marker. They removed it and made the objection executable** — a guard refusing `anyio` in any test file, at the repository root because the rule is about the convention rather than the file, **verified load-bearing by re-adding the marker.**
 
-The mismatch detector produced a **false positive on the first workstation it ran against**. `.env.example` writes the PEM escaped onto one line; a value pasted from `openssl` arrives as real newlines inside quotes. **Two encodings of one key are the same key.**
+> QE reported that `E` looks like `.` in a `-q` run as an *explanation* for how the defect survived. **Lane A turned the explanation into a check.**
 
-> **That is the worst possible false positive here**, because the advice it prints is `--force` — which regenerates the pair. **It would have told somebody to destroy the working configuration it failed to recognise.** Caught by verifying the finding rather than trusting it; both the false positive and its control are now tests, because fixing it by comparing nothing would have been easy and useless.
+**Lane B found their own defect before QE's report reached them.** They polled rather than waited — fetched, compared branches, discovered two blocking defects opened four commits earlier that were invisible on their branch, and fixed both. **That is [C-102](docs/LANE_COORDINATION.md) answered from the lane side, by a lane, without a mechanism being built for it.**
 
-### RE-07 closed without doing it
+### And QE was wrong about the fix it was watching for
 
-| | |
-|---|---|
-| **Estimated** | ~250s per cycle for the duplicated suite runs |
-| **Measured** | **21s** — invariants 6s, scenario 15s — against a ~600s cycle |
-| **And** | the duplication buys a separately attributable count that ADR-0032 wants |
-
-**It earns its 21 seconds.** *Removing an item from a backlog on evidence is worth as much as completing one.*
-
-### Measuring first stopped a duplicate, twice
-
-Before building a table-classification checker, QE checked whether one existed. **`test_every_table_is_classified` already enforces it.** And two `§12` gap entries were corrected because they overstated problems — *"an abort is inferred rather than recorded"* is not a defect: **a killed process cannot record why it died**, so inference is the only possible mechanism, and it already lives in exactly one function.
+B-108 says *"QE names the constraint, not the design"* — **and QE then encoded one design into its own poll signal**, watching for the import to leave `playwright.config.ts`. Lane B excluded the config from the image instead. **The signal never fired; the constraint was satisfied.** Branch-move events are the reliable signal, and assessment belongs with QE rather than in a grep.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **2665 backend** · 719 frontend · **95.50%** · 360 invariants · **624 files typed** |
-| **Release** | **Ten consecutive cycles with no process failure** |
-| **Architecture** | Runtime composition 0 unexpected · Reachability 0 doorless · event catalog 1 known drift, tracked |
-| **Dependency** | 39 items, 9 closed · C-100 with Lane B · C-101 with Lane C |
-| **Customer Value** | ⚠️ **Indirect — twelve cycles.** Lane C and Lane A are now moving on Epic A |
-| **Process** | Clean. **The Release Engineering backlog is nearly exhausted, and that is reported rather than filled** |
+| **Technical** | **2870 backend** · 902 frontend · **95.51%** · **372 invariants** · **644 files typed** |
+| **Release** | **Eleven consecutive cycles with no process failure** |
+| **Architecture** | Runtime composition 0 unexpected · Reachability 0 doorless · migration `0031` reversible to base |
+| **Dependency** | 40 items, 10 closed · **C-102** with Lane C |
+| **Customer Value** | ✅ **Yes — first in twelve cycles.** ICP segments, CRM acquisition, refresh-token revocation |
+| **Process** | **One defect found in QE's own guard**, by the first migration-bearing promotion since RE-03 |
 
 ### Repository Health Trend
 
@@ -368,18 +363,18 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`ba46132495da`](certification/reports/ba46132495da.md) · 2026-08-03 · ✅ CERTIFIED**
+**Latest certification — [`9a112ae3c2b2`](certification/reports/9a112ae3c2b2.md) · 2026-08-04 · ✅ CERTIFIED**
 
-**Certified commit `ba46132` · promoted commit `ba46132`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
+**Certified commit `9a112ae` · promoted commit `9a112ae`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
 
 | Gate | Recorded |
 |---|---|
-| **pytest** | **2665 passed** |
+| **pytest** | **2870 passed** |
 | **coverage** | **95.5%** *(floor 95%)* |
-| **Security Invariants** | **360 invariants**, each proven to fail when its guarantee is removed |
+| **Security Invariants** | **372 invariants**, each proven to fail when its guarantee is removed |
 | **import-linter** | **34 kept, 0 broken** |
-| **MyPy** | **strict, clean over 624 files** |
-| **`make smoke`** | **24 stages in 113s, slowest 2. Startup 19s** |
+| **MyPy** | **strict, clean over 644 files** |
+| **`make smoke`** | **24 stages in 143s, slowest 14k. Researched account 21s** |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0030`** · scenario set `0cf6b2c581e4` · working tree clean.
@@ -419,7 +414,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Indicator | Value |
 |---|---|
 | **Certification** | |
-| Certification cycles | 37 |
+| Certification cycles | 38 |
 | Certified | 29 of 30 |
 | Mean time to certify (last 5) | 13.3 min |
 | Mean smoke duration | 327.9 s |

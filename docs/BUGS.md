@@ -80,6 +80,48 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-110 · The promotion guard refuses any commit that adds a migration
+
+| | |
+|---|---|
+| **Module** | Repository tooling — `infra/certification-guard.py` |
+| **Current assignee** | **QE** |
+| **Severity** | 🟡 — wrong but survivable. **It refuses a valid promotion**, and the operator must know to stand somewhere else |
+| **Status** | **`OPEN`** — found by QE promoting `9a112ae`, 2026-08-04 |
+| **Found** | 2026-08-04, the first promotion since RE-03 to carry a migration |
+
+**Steps to reproduce.** With `main` at migration head `0030` and a certified commit that adds `0031`:
+
+```bash
+git checkout main
+python3 infra/certification-guard.py <the certified sha>
+```
+
+**Expected.** `CERTIFIED — <sha> may be promoted.`
+
+**Actual.**
+
+```
+REFUSED — 9a112ae is certified against migration head 0031,
+          and the repository is at 0030.
+```
+
+**Run the identical command from a tree at the certified commit and it passes.** Same SHA, same manifest, opposite verdict.
+
+### The mechanism
+
+**The guard compares the record's conditions against the *checked-out tree*, not against the commit it is being asked about.** For every promotion that does not change the migration head those are the same thing, which is why this has never fired in thirty-odd cycles.
+
+**A migration-bearing promotion breaks the equivalence**: `main` is by definition at the *old* head at the moment you ask, so the check refuses exactly the commits it should be scrutinising most carefully.
+
+> **The condition itself is right and must stay.** *"A certification expires by derivation — add a migration and `is_certified` reads false"* is the rule that stops a stale record certifying a changed repository. **What is wrong is which tree it reads**, and the documented promotion sequence — `git checkout main && git merge --ff-only <sha>` — puts the operator in the one place where the answer is false.
+
+### Why it is 🟡 rather than 🟠
+
+**It refuses; it never wrongly permits.** A false REFUSED costs an operator a diagnosis. The inverse would be a false CERTIFIED, and nothing here can produce one.
+
+**Worked around for this promotion by running the guard from `integration`**, which was already at the certified commit — and `--audit-main` confirmed the guarantee held afterwards across 200 commits.
+
 ### B-109 · The candidate pushes the repository below the coverage floor, and five new files have never been executed
 
 | | |
@@ -146,7 +188,7 @@ FAIL Required test coverage of 95.0% not reached. Total coverage: 94.27%
 | **Module** | Frontend — `frontend/playwright.config.ts`, `frontend/tsconfig.json` |
 | **Current assignee** | **Lane B** — the lane that wrote it |
 | **Severity** | 🟠 — **Blocking Quality Defect.** No customer behaviour is wrong; **no production image can be built** |
-| **Status** | **`FIXED`** — Lane B, 2026-08-04. **`VERIFIED` is QE's** |
+| **Status** | **`VERIFIED`** — QE, 2026-08-04. All four production images build; `tsc --noEmit` clean; certified at `9a112ae` and promoted to `main` |
 | **Found** | 2026-08-04, at `make smoke` stage 1 of 24. **Every other gate on this candidate passed** |
 
 **Steps to reproduce.** On Lane B's candidate, rebased onto `integration`:
@@ -241,7 +283,7 @@ docker compose --env-file infra/.env.prod-local -f infra/docker-compose.prod.yml
 | **Module** | `provider_platform` — `backend/tests/provider_platform/test_last_looked.py` |
 | **Current assignee** | **Lane A** — the module's current assignee, and the lane that wrote it |
 | **Severity** | 🟠 — **Blocking Quality Defect.** No customer behaviour is wrong; the repository cannot certify |
-| **Status** | **`OPEN`** — found by QE during stage 1 validation of `c70b32c`, 2026-08-04 |
+| **Status** | **`FIXED`** — Lane A, 2026-08-04. **`VERIFIED` by QE**: their rebased candidate ran 2973 tests green with no errors in that file |
 | **Found** | 2026-08-04, validating Lane A's 55-commit candidate. **Reproducible on the first attempt and every attempt since** |
 
 **Steps to reproduce.** On `lane-a-product-surface` at `c70b32c`:
@@ -253,6 +295,12 @@ cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run pytest tests/provider_pla
 **Expected.** 10 passed.
 
 **Actual.** `10 errors in 1.19s`. **Every test in the file errors — none has ever passed.**
+
+### Verified 2026-08-04 — and the fix exceeded the request
+
+QE asked for a marker removed. **Lane A removed it and made the objection executable**: `backend/tests/test_async_test_convention.py` refuses `anyio` in any test file, placed at the repository root because the rule is about the repository's async convention rather than the one file that had the defect. **Verified load-bearing by re-adding the marker**, with a second test asserting the glob matches something.
+
+> QE reported that `E` looks like `.` in a `-q` run as an *explanation* for how ten never-passing tests survived. **Lane A turned the explanation into a check.**
 
 ### The mechanism, in one line
 
