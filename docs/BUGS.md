@@ -94,6 +94,55 @@ Such a row names the code, records **Current assignee: none — not assignable**
 **Both are fixed on `integration`** at `b332aea`. Nothing is left for this row to track, and two rows for one defect is the register drifting from the repository.
 
 
+### B-116 · The safe database route existed only for the whole suite, so every narrower question left it
+
+| | |
+|---|---|
+| **Module** | Repository tooling — `infra/validate.py` |
+| **Current assignee** | **QE** — its own tooling |
+| **Severity** | 🟠 — **it reproduced the exact defect it was written to prevent**, in QE's own hands |
+| **Status** | **`FIXED`** 2026-08-04, with two regression tests. **`VERIFIED` is another lane's** |
+| **Found** | 2026-08-04 by QE, **by committing it** while validating Lane A's A-i slice |
+
+**Steps to reproduce.** Ask a narrower question than the whole suite:
+
+```bash
+make validate ARGS="-m security_invariant"
+```
+
+**Expected.** The subset, against a database the run creates.
+
+**Actual.**
+
+```
+usage: validate.py [-h] [--quick]
+validate.py: error: unrecognized arguments: -m security_invariant
+```
+
+**So the only way to ask was `pytest` by hand** — no disposable database, straight at whatever the shell resolves.
+
+### How it was found, which is the part worth keeping
+
+A-i replaces a Security Invariant and adds one, and the handoff claimed **+1 net**. QE went to verify that count and ran:
+
+```bash
+cd backend && uv run pytest -m security_invariant -q
+→ 12 failed, 368 passed
+```
+
+**Every one of those failures was the invocation's.** The same suite had passed inside `make validate` minutes earlier, and re-run against a migrated disposable database it gave **380 passed** — precisely the number the lane claimed.
+
+> **This is [B-022](#b-022--tests-resolve-their-database-from-the-shell-that-launched-them)'s class, for the fourth time**, and the first time in QE's own hands *after* the tool existed to prevent it. It was caught only because a full green run existed to compare against. **With no full run to contradict them, twelve fabricated failures against `test_tenancy_policy.py` would have looked exactly like a tenancy defect** — which is how this class nearly cost Lane B a fabricated bug report.
+
+### The fix, and the one judgement inside it
+
+`parse_known_args()`, and everything unrecognised is forwarded to pytest.
+
+**Coverage is dropped when a subset is requested.** A partial run cannot satisfy a repository-wide floor, and failing the gate for that reason says nothing about the code — worse, **the habit it teaches is `--quick`, reflexively**, including on the full runs where the floor is the entire point.
+
+**The progress line was also lying.** It read *"with coverage"* while the code correctly dropped it, because it consulted `--quick` and not what the command actually contained. It now reports the scope and what was measured, derived from the command itself.
+
+
 ### B-115 · TASK-301 fails `mypy --strict`, on a test helper narrower than the type it builds
 
 | | |

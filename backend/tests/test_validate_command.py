@@ -122,6 +122,39 @@ def test_it_runs_the_two_gates_it_claims_and_no_others(validate: ModuleType) -> 
         )
 
 
+def test_a_subset_can_reach_the_same_safe_database(validate: ModuleType) -> None:
+    """**The safe route must exist for a narrower question too.**
+
+    It did not until 2026-08-04. `argparse` rejected anything it did not
+    recognise, so `make validate ARGS="-m security_invariant"` exited 2 and the
+    only way to ask a narrower question was `pytest` by hand — **at the shared
+    database**, which is the whole defect this file exists to remove.
+
+    > QE then made exactly that mistake, checking one slice's claim about the
+    > Security Invariant count: **12 failures, every one of them the
+    > invocation's**, against a full suite that had passed minutes earlier
+    > ([B-116](../../docs/BUGS.md)). A safe path that covers only the expensive
+    > case is a safe path people leave.
+    """
+    source = (REPO_ROOT / "infra" / "validate.py").read_text()
+    assert "parse_known_args()" in source, "unrecognised arguments are rejected again"
+    assert "*forwarded" in source, "arguments are parsed but not passed to pytest"
+
+
+def test_a_subset_does_not_measure_itself_against_a_whole_repository_floor(
+    validate: ModuleType,
+) -> None:
+    """**Coverage is dropped when a subset is requested, and that is not a weakening.**
+
+    A partial run cannot satisfy a repository-wide floor, so leaving `--cov` on
+    would fail the gate for a reason that says nothing about the code — and the
+    habit it teaches is `--quick`, reflexively, including on the full runs where
+    the floor is the point.
+    """
+    source = (REPO_ROOT / "infra" / "validate.py").read_text()
+    assert "if not args.quick and not forwarded:" in source
+
+
 def _is_docstring(node: object) -> bool:
     import ast
 

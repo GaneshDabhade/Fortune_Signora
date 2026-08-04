@@ -28,8 +28,17 @@ runs the suite against it, and drops it in a `finally` — the same shape as
 `tests/certification/database.py`, and deliberately not a second implementation
 of it: this imports that module.
 
-    python3 infra/validate.py            # the suite, with coverage
-    python3 infra/validate.py --quick    # no coverage — faster, for a first look
+    python3 infra/validate.py                        # the suite, with coverage
+    python3 infra/validate.py --quick                # no coverage — a first look
+    python3 infra/validate.py -m security_invariant  # a subset, same safe database
+
+**The third form was added on 2026-08-04, after QE made the very mistake this
+file exists to prevent.** Checking one slice's claim about the Security
+Invariant count, QE ran `pytest -m security_invariant` by hand — no disposable
+database, straight at the shared one — and read **12 failures that were
+entirely the invocation's**. The full suite had passed minutes earlier. **The
+safe route existed only for the whole suite**, so any narrower question left it
+([B-116](../docs/BUGS.md)).
 
 **It is not a second certification.** It runs the suite, because that is the
 gate that needs a database — plus **`tsc --noEmit`**, added 2026-08-04 for the
@@ -70,7 +79,7 @@ def _disposable() -> object:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--quick", action="store_true", help="skip coverage")
-    args = parser.parse_args()
+    args, forwarded = parser.parse_known_args()
 
     database = _disposable()
     commit = subprocess.run(
@@ -100,8 +109,16 @@ def main() -> int:
             return 1
         print("     applied to head")
 
-        command = ["uv", "run", "pytest", "-q", "-p", "no:randomly"]
-        if not args.quick:
+        # **Anything unrecognised goes to pytest**, so a *subset* has a safe
+        # route too. Until 2026-08-04 only the whole suite did, and QE ran
+        # `pytest -m security_invariant` by hand to check one slice's claim —
+        # straight at the shared database, producing **12 failures that were
+        # entirely the invocation's**. Caught only because a full green run
+        # existed to compare against. Coverage is dropped for a subset: a
+        # partial run cannot meet a whole-repository floor, and failing the
+        # gate for that reason teaches people to pass `--quick` reflexively.
+        command = ["uv", "run", "pytest", "-q", "-p", "no:randomly", *forwarded]
+        if not args.quick and not forwarded:
             command.insert(3, "--cov")
         # **Before the suite: seconds, and it needs nothing.** A five-minute
         # suite that passes while the frontend does not compile is five minutes
@@ -119,7 +136,9 @@ def main() -> int:
             return 1
         print("     clean")
 
-        print(f"  3  suite         {'without' if args.quick else 'with'} coverage\n")
+        measured = "--cov" in command
+        scope = " ".join(forwarded) if forwarded else "the whole suite"
+        print(f"  3  suite         {scope}, {'with' if measured else 'without'} coverage\n")
         result = subprocess.run(command, cwd=BACKEND, env=environment, check=False)
 
     print(
