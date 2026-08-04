@@ -80,6 +80,65 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-109 · The candidate pushes the repository below the coverage floor, and five new files have never been executed
+
+| | |
+|---|---|
+| **Module** | `sales_engagement` · `workspace_tenancy` · `provider_platform` — the modules the slice introduced or extended |
+| **Current assignee** | **Lane A** |
+| **Severity** | 🟠 — **Blocking Quality Defect.** No customer behaviour is wrong; the coverage gate refuses the commit |
+| **Status** | **`OPEN`** — found by QE validating `11457c7`, 2026-08-04 |
+| **Found** | 2026-08-04, immediately after [B-107](#b-107) was fixed. **The suite itself is green** |
+
+**Steps to reproduce.** On Lane A's candidate rebased onto `integration`, against a database at its own migration head:
+
+```bash
+cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run pytest --cov
+```
+
+**Expected.** `Required test coverage of 95.0% reached.`
+
+**Actual.**
+
+```
+2973 passed
+FAIL Required test coverage of 95.0% not reached. Total coverage: 94.27%
+```
+
+**Every test passes.** This is not a behaviour defect — it is 0.73 percentage points of floor, and the gate refuses the commit.
+
+### Five files the slice introduced have never been executed by a test
+
+```
+  0%  modules/sales_engagement/evaluation/__main__.py        missing 24-110
+  0%  modules/sales_engagement/evaluation/release.py         missing 45-130
+  0%  modules/sales_engagement/infrastructure/model.py       missing 34-89
+  0%  modules/provider_platform/interface/handlers.py        missing 21-89
+  0%  modules/integrations/public/__init__.py                missing 14-21
+```
+
+**`CLAUDE.md` §19 names this exactly**: *"no file the slice introduced sits at 0%, and the slice does not push the repository under the floor."* Both halves are violated.
+
+### And the largest single contributors below 80%
+
+| | |
+|---|---|
+| **43%** | `modules/workspace_tenancy/infrastructure/query_service.py` — missing 71–191, **121 lines** |
+| **49%** | `modules/workspace_tenancy/application/use_cases/invite_member.py` — missing 169–177 |
+| **63–73%** | six `interface/router.py` files, `apps/worker/main.py`, `apps/worker/subscriptions.py` |
+
+**`query_service.py` alone is the largest block of unexecuted lines in the candidate**, and Team Management is the capability it serves.
+
+### Why the lane could have seen this in seconds
+
+**`make coverage-debt` reads the data `pytest --cov` already wrote** — it runs nothing. `CLAUDE.md` §19 puts it in the lane's own Definition of Done, before handover:
+
+> *"A coverage gap found at certification is the same gap that was visible to the lane in seconds. **Quality moves left because it is cheaper there, not because QE minds looking.**"*
+
+### A QE finding from the same investigation
+
+**`infra/coverage-debt.py` could not read this run's data.** `backend/.coverage` exists and is 1.2 MB, and the tool reports *"No coverage data"* from both the repository root and `backend/`. **The one tool built to make this cheap for a lane did not work when QE reached for it**, which is worth more than the coverage number — a lane that tried it would conclude the gap was not theirs. **QE's to fix, tracked here rather than opened separately, and it does not block Lane A.**
+
 ### B-108 · The production image cannot build, because a root config imports a directory the image does not ship
 
 | | |
@@ -87,7 +146,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | Frontend — `frontend/playwright.config.ts`, `frontend/tsconfig.json` |
 | **Current assignee** | **Lane B** — the lane that wrote it |
 | **Severity** | 🟠 — **Blocking Quality Defect.** No customer behaviour is wrong; **no production image can be built** |
-| **Status** | **`OPEN`** — found by QE certifying `b327b2c`, 2026-08-04 |
+| **Status** | **`FIXED`** — Lane B, 2026-08-04. **Awaiting QE verification** — the production image build has not yet been run against their fix |
 | **Found** | 2026-08-04, at `make smoke` stage 1 of 24. **Every other gate on this candidate passed** |
 
 **Steps to reproduce.** On Lane B's candidate, rebased onto `integration`:
@@ -105,6 +164,14 @@ Type error: Cannot find module './tests/e2e/fixtures/environment'
            or its corresponding type declarations.
 ERROR: process "/bin/sh -c npm run build" did not complete successfully: exit code: 1
 ```
+
+### Fixed 2026-08-04 — by excluding the config, not the typecheck
+
+**Lane B added `playwright.config.ts` to `frontend/.dockerignore`.** The image stops shipping a config nothing in it runs; the typecheck keeps covering it locally, where the imported fixture exists.
+
+**That is a different fix from the one QE's watcher was looking for**, and QE was wrong to be looking for a shape at all. B-108 says *"QE names the constraint, not the design"* — and then QE encoded one design into its own poll signal, which consequently never fired. **The constraint was "the production image builds without shipping tests", and this satisfies it.**
+
+**They found it by polling rather than waiting**: fetching, comparing branches, and discovering two blocking defects opened four commits earlier that were invisible on their own branch. **That is [C-102](LANE_COORDINATION.md) answered from the lane side**, by a lane, without a mechanism being built for it.
 
 ### The mechanism, and why nothing else could see it
 
@@ -158,7 +225,7 @@ docker compose --env-file infra/.env.prod-local -f infra/docker-compose.prod.yml
 | **Module** | `provider_platform` — `backend/tests/provider_platform/test_last_looked.py` |
 | **Current assignee** | **Lane A** — the module's current assignee, and the lane that wrote it |
 | **Severity** | 🟠 — **Blocking Quality Defect.** No customer behaviour is wrong; the repository cannot certify |
-| **Status** | **`OPEN`** — found by QE during stage 1 validation of `c70b32c`, 2026-08-04 |
+| **Status** | **`FIXED`** — Lane A, 2026-08-04. **`VERIFIED` by QE the same day**: the full suite ran green on their rebased candidate, 2973 passed, no errors |
 | **Found** | 2026-08-04, validating Lane A's 55-commit candidate. **Reproducible on the first attempt and every attempt since** |
 
 **Steps to reproduce.** On `lane-a-product-surface` at `c70b32c`:
@@ -170,6 +237,14 @@ cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run pytest tests/provider_pla
 **Expected.** 10 passed.
 
 **Actual.** `10 errors in 1.19s`. **Every test in the file errors — none has ever passed.**
+
+### Verified 2026-08-04 — and the fix is larger than the request
+
+QE asked for the marker removed. **Lane A removed it and made the objection executable.**
+
+`backend/tests/test_async_test_convention.py` **refuses the word `anyio` in any test file**, placed at the repository root because the rule is about the repository's async convention rather than the one file that had the defect. **Verified load-bearing by re-adding the marker** — the guard fails and names the file — with a second test asserting the glob matches something, because a guard that silently checks nothing is the Decorative Logic `CLAUDE.md` names.
+
+> **QE reported that `E` looks like `.` in a `-q` run as an explanation for how the defect survived. Lane A turned that explanation into a check.** That is the better outcome, and it was theirs.
 
 ### The mechanism, in one line
 
