@@ -80,6 +80,71 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-107 · Ten tests in the A7 slice have never passed, and they hang the suite for everyone
+
+| | |
+|---|---|
+| **Module** | `provider_platform` — `backend/tests/provider_platform/test_last_looked.py` |
+| **Current assignee** | **Lane A** — the module's current assignee, and the lane that wrote it |
+| **Severity** | 🟠 — **Blocking Quality Defect.** No customer behaviour is wrong; the repository cannot certify |
+| **Status** | **`OPEN`** — found by QE during stage 1 validation of `c70b32c`, 2026-08-04 |
+| **Found** | 2026-08-04, validating Lane A's 55-commit candidate. **Reproducible on the first attempt and every attempt since** |
+
+**Steps to reproduce.** On `lane-a-product-surface` at `c70b32c`:
+
+```bash
+cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run pytest tests/provider_platform/test_last_looked.py -q
+```
+
+**Expected.** 10 passed.
+
+**Actual.** `10 errors in 1.19s`. **Every test in the file errors — none has ever passed.**
+
+### The mechanism, in one line
+
+```python
+backend/tests/provider_platform/test_last_looked.py:145
+pytestmark = pytest.mark.anyio
+```
+
+**This is the only file in the repository that touches `anyio`**, and `backend/pyproject.toml` says why that matters in its own comment:
+
+```toml
+asyncio_mode = "auto"
+# Session-scoped loop for both tests and fixtures: the integration suite
+# shares session-scoped asyncpg engines, and asyncpg connections cannot be
+# used across event loops.
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+```
+
+`pytest.mark.anyio` makes **anyio** drive the test on **its own loop**, while every fixture the test depends on was built on the session loop. The result is the error asyncpg raises when exactly that happens:
+
+```
+RuntimeError: Task <Task pending name='Task-12003' …> got Future <Future pending …>
+attached to a different loop
+```
+
+### Why it is a *blocking* defect rather than ten failing tests
+
+**It does not merely fail — it stalls the whole run.** Three full-suite attempts stopped at **68%**, each at the same point, with `E.E.E.E.E.E..` and then no further progress. A suite that normally completes in ~4 minutes ran for 25 without finishing. **Nothing else in the candidate is at fault**: deselecting this one file gives
+
+```
+2922 passed, 10 deselected, in 308s
+```
+
+So the candidate is otherwise green — `mypy --strict` clean over 673 files, `lint-imports` 35/35, frontend 945 passing, reachability 0 unreachable.
+
+### Why it reached `IN VALIDATION`
+
+**Not carelessness, and worth recording because QE made the same mistake reading it.** `E` markers in a `-q` run are visually near-identical to `.` — QE's own first pass reported this candidate as green on everything but the backend suite, having read past the same characters. **Anything that hides a failure behind a character that looks like success will be missed by whoever is going fastest**, which on a 55-commit candidate is everybody.
+
+### The fix
+
+**Remove the `anyio` marker.** The repository's convention is `asyncio_mode = "auto"` — an `async def` test needs no marker at all, which is why no other file has one. The tests themselves look correct; only the driver is wrong.
+
+**QE does not fix it** (`CLAUDE.md` §20e — QE reports, feature lanes fix). **A regression test is not required**: the file *is* the test, and it passing is the proof.
+
 ### B-106 · A certification gate read a variable nobody declared, and two runs of one commit disagreed
 
 | | |
@@ -1625,9 +1690,9 @@ tests/components/timeline-feed.test.tsx(80,19): error TS2345: (the same)
 | | |
 |---|---|
 | **Module** | Frontend foundation — `frontend/components/shell/app-shell.tsx` |
-| **Current assignee** | **none — not assignable.** The foundation is frozen (§20c) and, like `apps/`, has no lane. See [C-026](LANE_COORDINATION.md) |
+| **Current assignee** | **Lane A**, from 2026-08-03 — [TASK-200](BACKLOG.md) / CX-07. **It became assignable when [C-205](LANE_COORDINATION.md) was ruled**: a phone is in scope, so this is a defect rather than a non-goal, and §20c names *an unreachable control* as a class the frozen foundation is changed for |
 | **Severity** | 🟠 — **an unreachable control**, which is §20c's own example of a foundation defect. Whether it is a *defect* or a *non-goal* depends on a product decision nobody has made |
-| **Status** | `OPEN` |
+| **Status** | **`FIXED`** — Lane A, 2026-08-03. A bottom navigation bar below `md`, reading the same `ITEMS` and applying the same guard as the sidebar. **`VERIFIED` is QE's** |
 | **Found** | `9d6635e`, by Lane A during a production-UI review |
 
 **Steps to reproduce.** Sign in. Narrow the viewport below `768px`, or open the product on a phone.
@@ -1753,3 +1818,31 @@ tests/components/timeline-feed.test.tsx(80,19): error TS2345: (the same)
 **And it produced a rule.** The product owner ratified `CLAUDE.md` §20e *QE removes its own blockers* the same day: **when a documented prerequisite is missing and installing it is within QE's authority, QE installs it rather than stopping the workflow**, and escalates only when the OS, policy or an unavailable dependency genuinely refuses. Leaving a gate unrun because a tool needed installing is not an acceptable outcome.
 
 **Kept as a row rather than deleted** because the finding was real and the reasoning that reclassified it is worth being able to find. *Correct a claim about the present; date a record of the past.*
+
+---
+
+### B-204 · The demo environment shows intelligence about accounts and nothing about the business
+
+| | |
+|---|---|
+| **Module** | The Product Playground — `backend/tests/playground/seed.py` |
+| **Current assignee** | Whoever holds the Playground. **Not claimed by Lane A** — finding a defect outside an assignment is an obligation to report it, not permission to fix it (`CLAUDE.md` §20e) |
+| **Severity** | **🟠** — wrong behaviour a reviewer hits on the first screen they open |
+| **Status** | `OPEN` |
+| **Found** | 2026-08-03, by Lane A, the moment **CX-05** built the first screen that reads this data |
+
+**Steps to reproduce.** `make demo`, sign in as any demo user, open **Your business**.
+
+**Expected.** The products the demo company sells, who buys them, and who has to agree — the declarations every score on the attention list is supposed to be relative to.
+
+**Actual.** *"Nothing declared yet."* **All five declarations are empty in every seeded workspace**, measured directly: `product_catalog`, `icp_declaration`, `buying_committee`, `commercial_focus` and `target_account_list` all return version 0.
+
+**The seeder runs the whole intelligence pipeline and declares no business.** `seed.py` drives provider simulation → ingestion → normalization → knowledge graph → observations → business events → signals → buying scores → opportunities across twelve accounts, and its own docstring is right that *"no state here is set"* — every band is computed. **The customer's own side of the story was simply never part of it**, because until CX-05 no screen read it and nothing made the absence visible.
+
+**Why it matters more than a thin demo.** Signora's whole claim is that it compares what a company sells against what it finds. **A demo environment where the first half is blank cannot demonstrate that claim**, and it quietly invites a reviewer to read the scores as absolute rather than as relative to a declared business.
+
+**Why no gate caught it.** Every check asks whether a route is served, called, or written to. **None can ask whether the demo tells a coherent story** — the same limit already recorded against the endpoint census in [43-customer-experience.md](architecture/43-customer-experience.md) §8.1.
+
+**Worked around for review, not fixed.** Lane A declared a coherent profile for the Playground workspace **through the real `PUT` endpoints, as an owner, with a signed-in session** — the customer's door, and the only one `CLAUDE.md` §20e permits. **It is runtime state and a re-seed loses it**, which is exactly why the row stays open: the fix is five declarations in the seeder, so the demo is reproducible rather than repaired by hand.
+
+**Suggested fix.** Two products, an ideal customer for each, a buying committee for each, one focus, three target accounts — enough that the read surface has shape, and coherent with the twelve accounts the scenario already seeds, which are technology companies.
