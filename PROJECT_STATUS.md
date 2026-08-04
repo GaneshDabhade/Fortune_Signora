@@ -12,16 +12,16 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `a955016`, 2026-08-04.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `b332aea`, 2026-08-04.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`a955016`** — the certified commit itself |
-| **`integration`** | `a955016` — level with `main` |
-| **Release candidate** | **None pinned.** Cycle 42 promoted **Lane A's 66-commit candidate** — Sales Engagement, Sales Workspace, Team Management, Epic D |
-| **Certification** | ✅ [`a955016e577b`](certification/reports/a955016e577b.md) · migration head **`0037`** · protocol **v2** |
+| **`main`** | **`b332aea`** — the certified commit itself |
+| **`integration`** | `b332aea` — level with `main` |
+| **Release candidate** | **None pinned.** Cycle 43 promoted **three QE gate fixes** — B-110, `make validate`, and `tsc` as a required gate |
+| **Certification** | ✅ [`b332aea69c12`](certification/reports/b332aea69c12.md) · migration head **`0037`** · protocol **v2** · **first record carrying a `tsc` gate** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
-| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **266 commits, none outside a certified snapshot** |
+| **Promotion** | `promoted == certified` ✓ · `--audit-main`: **273 commits, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Both lanes.** Five separate rulings, all the product owner's — see §1c |
 | **Validation queue** | Lane A's and Lane B's branches, **both awaiting a rebase by their lane** |
@@ -30,7 +30,7 @@
 
 > ⚠️ **The cycle's finding outweighs its feature.** Running the suite in a shell that did not export `SIGNORA_DATABASE_URL` produced **three failures on the commit certified hours earlier** — a certification gate had a hidden input, so the run that certified `909374a` and the run reproducing it were measuring different things, and nothing in the record said so ([B-106](docs/BUGS.md)). It is fixed and verified by removing the variable entirely. **[B-022](docs/BUGS.md) predicted this class and stayed open; this is the first time it was observed rather than reasoned about.**
 
-**Repository health:** **3243 backend tests** · **95.50% coverage** *(floor 95)* · 719 frontend tests · 360 Security Invariants · mypy strict over **705 files** · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
+**Repository health:** **3252 backend tests** · **95.50% coverage** *(floor 95)* · 719 frontend tests · 360 Security Invariants · mypy strict over **707 files** · 34 import-linter contracts · migrations `0000`–`0030` reversible · **runtime composition 2 of 2 expected, 0 unexpected** · **15 module directories** · **40 ADRs** · **46 numbered architecture documents**.
 
 ---
 
@@ -101,57 +101,52 @@
 
 ---
 
-## 1d · Release summary — 2026-08-04, cycle 42
+## 1d · Release summary — 2026-08-04, cycle 43
 
-**Derived from the promoted commit `a955016`.** Both lanes promoted within hours of each other, every lane defect closed, and three findings that lanes resolved without QE mediating.
+**Derived from the promoted commit `b332aea`.** Three defects, all QE's own, found in one day — and the third had put `main` in a state the repository's own rules reject.
 
-### What was promoted
+### The gate set had a hole, and `main` fell through it
 
-**Lane A's 66-commit candidate** — Sales Engagement Intelligence (a new module with its own prompt, evaluation harness and release recorder), the Sales Workspace, Team Management, Epic D's competitor signals, and migration `0037`.
+**`tsc --noEmit` is named in the Definition of Done (`CLAUDE.md` §19) beside `mypy --strict`. It was in no gate QE ran** — not certification, not stage 1 validation. `main` at `178697e` failed it.
 
 ```
-3243 backend (+373) · 1162 frontend (+260) · 379 invariants (+7) · 95.10% · 705 files typed
+tests/components/triage-strip.test.tsx(89,5): error TS2741:
+  Property 'last_observed_at' is missing … but required in type 'AccountIdentity'
 ```
 
-### Every lane defect found today is closed
+**`make smoke` could not see it.** The production image type-checks during `next build`, but `.dockerignore` excludes `tests/` — so an error in a *test* file is invisible to the one gate that compiles the frontend.
 
-| | | |
-|---|---|---|
-| **[B-107](docs/BUGS.md)** | Lane A | ✅ Ten tests that had never passed |
-| **[B-108](docs/BUGS.md)** | Lane B | ✅ The production image could not build |
-| **[B-109](docs/BUGS.md)** | Lane A | ✅ Coverage 94.27% → **95.10%** |
-| **[B-110](docs/BUGS.md)** | **QE** | 🟡 Open — QE's own guard, non-blocking |
+> **A check named in the Definition of Done and absent from every gate is a check nobody performs.** The lane is asked for it, QE never verifies it, certification cannot see it — and the only thing behind it is that a lane remembered.
 
-**The only open defect belongs to QE.**
+**Found by Lane B while rebasing.** QE confirmed it independently, added it to both gates, and **watched it refuse the red tree on its first run** — a gate verified by a refusal rather than by a green. `b332aea69c12` is **the first certification record in this repository to carry a `tsc` gate.**
 
-### Three things lanes resolved without QE mediating
+### Two more QE defects, same day
 
-**Lane B found B-108's sibling before QE's report reached them** — polled, compared branches, discovered two blocking defects invisible on their own branch, fixed both. **[C-102](docs/LANE_COORDINATION.md) answered from the lane side.**
+| | |
+|---|---|
+| **[B-110](docs/BUGS.md)** | The promotion guard compared the record against the **checked-out tree** rather than the commit it was asked about — so it refused **any** commit adding a migration. Thirty-odd cycles hid it; it fired twice in one day |
+| **`make validate`** | Stage 1 resolved its database from the shell. **Three misleading failure lists in one day**, one of them 13 Security Invariants reporting a missing `workspace_id` on a table whose migration creates one — **QE was one step from filing a fabricated tenancy defect against Lane B** |
 
-**Lane A turned an explanation into a check.** QE reported that `E` looks like `.` in a `-q` run as the *reason* ten never-passing tests survived. Lane A wrote a guard refusing `anyio` in any test file, at the repository root because the rule is about the convention rather than the file, **verified load-bearing by re-adding the marker.**
+### The pattern worth naming
 
-**[C-103](docs/LANE_COORDINATION.md) closed itself in under an hour.** Two lanes independently wrote `test_public_contract.py` from the same bug row. QE raised it saying *"QE will not choose between two lanes' tests"* — **Lane B compared both and deferred to Lane A's.**
+**All three are the same shape: a check that was trusted rather than exercised.**
 
-> **The register is working as a communication channel rather than a queue**, and that is worth more than any of the three fixes.
+- A guard nobody had run against a migration-bearing promotion
+- A validation step nobody had run against a database it provisioned
+- A Definition-of-Done item nobody had wired into a gate
 
-### Coverage as a consequence rather than a target
-
-Lane A's B-109 fix is worth reading for how it was done. In the slice whose only goal was a percentage:
-
-> *"Every test writes to a copy of the prompt directory. **The shipped manifest is never touched — a record of what was true then is not rewritten to pass a test.**"*
-
-**That is `CLAUDE.md` §2 applied unprompted**, where the easy version of the fix mutates the manifest and passes.
+**Each was invisible precisely because the conditions that expose it are rare** — and each became visible the week three lanes started merging into one branch daily.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3243 backend** · **1162 frontend** · **95.10%** · **379 invariants** · **705 files typed** |
-| **Release** | **Twelve consecutive cycles with no process failure** · two promotions in one day |
-| **Architecture** | Reachability 0 doorless · migration `0037` reversible to base · event catalog 1 known drift |
-| **Dependency** | 55 items, 25 closed · C-102 and C-103 with Lane C |
-| **Customer Value** | ✅ **Yes, twice.** ICP segments and CRM acquisition; then Sales Engagement, the Sales Workspace and Team Management |
-| **Process** | **The only open defect is QE's own** |
+| **Technical** | **3252 backend** · 1162 frontend · **95.10%** · 379 invariants · **707 files typed** · **`tsc` clean, and now gated** |
+| **Release** | **Thirteen consecutive cycles with no process failure** |
+| **Architecture** | Reachability 0 doorless · migration `0037` reversible · event catalog 1 known drift |
+| **Dependency** | 55 items, 25 closed |
+| **Customer Value** | ⚠️ **No — this cycle is entirely gate repair.** Two feature promotions preceded it today |
+| **Process** | **Every defect found today was QE's own**, and the gate set is measurably stronger for it |
 
 ### Repository Health Trend
 
@@ -375,18 +370,18 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 > measured is the defect the certification record exists to remove, so this
 > section names its evidence and stops.
 
-**Latest certification — [`a955016e577b`](certification/reports/a955016e577b.md) · 2026-08-04 · ✅ CERTIFIED**
+**Latest certification — [`b332aea69c12`](certification/reports/b332aea69c12.md) · 2026-08-04 · ✅ CERTIFIED**
 
-**Certified commit `a955016` · promoted commit `a955016`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
+**Certified commit `b332aea` · promoted commit `b332aea`.** Identical, checked by `infra/certification-guard.py` before the fast-forward.
 
 | Gate | Recorded |
 |---|---|
-| **pytest** | **3243 passed** |
+| **pytest** | **3252 passed** |
 | **coverage** | **95.5%** *(floor 95%)* |
 | **Security Invariants** | **379 invariants**, each proven to fail when its guarantee is removed |
 | **import-linter** | **34 kept, 0 broken** |
-| **MyPy** | **strict, clean over 705 files** |
-| **`make smoke`** | **24 stages in 182s, slowest 1. Build 57s** |
+| **MyPy** | **strict, clean over 707 files** |
+| **`make smoke`** | **24 stages in 143s, slowest 2. Startup 19s** |
 | **Scenario — `baseline@1` research lifecycle** | **179 assertions** |
 
 **Conditions the certification is bound to:** rendering protocol **v2** · migration head **`0030`** · scenario set `0cf6b2c581e4` · working tree clean.
@@ -426,7 +421,7 @@ Set by the product owner on 2026-08-01. Gates prove a screen is correct; only a 
 | Indicator | Value |
 |---|---|
 | **Certification** | |
-| Certification cycles | 39 |
+| Certification cycles | 40 |
 | Certified | 29 of 30 |
 | Mean time to certify (last 5) | 13.3 min |
 | Mean smoke duration | 327.9 s |

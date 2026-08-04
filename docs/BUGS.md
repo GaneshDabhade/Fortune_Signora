@@ -87,7 +87,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | Repository tooling — `backend/tests/certification/__main__.py`, and QE's stage 1 practice |
 | **Current assignee** | **QE** — the gate set is QE's. **The type error itself is Lane A's** (below) |
 | **Severity** | 🟠 — **`main` currently fails a check the Definition of Done requires of every lane**, and reached that state through a passing certification |
-| **Status** | **`OPEN`** — found by Lane B, confirmed by QE, 2026-08-04 |
+| **Status** | **`FIXED`** — the gate by QE, the fixture by Lane A, 2026-08-04. **`VERIFIED` is another lane's** |
 | **Found** | 2026-08-04 by **Lane B** while rebasing. QE verified it independently on `main` |
 
 **Steps to reproduce.** On `main` at `178697e`:
@@ -105,6 +105,14 @@ tests/components/triage-strip.test.tsx(89,5): error TS2741:
   Property 'last_observed_at' is missing in type '{ … }'
   but required in type 'AccountIdentity'.
 ```
+
+### Fixed 2026-08-04, in both halves
+
+**The gate — QE.** `tsc --noEmit` is now a **required** certification gate, so a record omitting it is a run that *cannot certify* rather than one that quietly skipped, and `make validate` runs it **before** the suite because it needs nothing and takes seconds.
+
+**Verified by watching it refuse.** It failed on its first run against the red tree and passed after the fixture landed — a gate confirmed by a refusal rather than by a green.
+
+**The fixture — Lane A.** One field, within an hour of the row. `main` type-checks again, and `b332aea69c12` is **the first certification record in this repository to carry a `tsc` gate.**
 
 ### Two gaps, and the second is the one that let it through
 
