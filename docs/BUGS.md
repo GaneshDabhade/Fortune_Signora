@@ -2703,7 +2703,7 @@ ModuleNotFoundError: No module named 'httpx'
 | **Module** | Repository tooling — `infra/state-check.py` |
 | **Current assignee** | **Lane B** — it holds [TASK-005](BACKLOG.md), which added this check and is `IN VALIDATION` |
 | **Severity** | 🟡 — advisory output only; nothing is blocked. **But it is a false positive that now fires on every completed task**, and an advisory nobody believes is worse than none |
-| **Status** | `OPEN` |
+| **Status** | **`FIXED`** — no longer reproduces, 2026-08-04. **`VERIFIED` is QE's** |
 | **Found** | `bff371b`, by Lane A while rescanning the backlog after TASK-004 |
 
 **Steps to reproduce.** Have one task appear both in `ACTIVE_ASSIGNMENTS.md`'s **Current** table and in its **Recently completed** table. Run `python3 infra/state-check.py`.
@@ -2727,6 +2727,17 @@ ModuleNotFoundError: No module named 'httpx'
 
 ---
 
+
+### No longer reproduces — Lane B, 2026-08-04
+
+**Measured on `integration` at `2242820`:** `python3 infra/state-check.py` reports **no task claimed twice.** The double-claim advisory this row describes does not fire; the only collisions it now reports are architecture document numbers, which are [C-201](LANE_COORDINATION.md)'s class and awaiting a ruling.
+
+**Two corrections to the row while closing it.**
+
+**Its assignee was wrong, and stating that matters more than the fix.** The row reads *"Lane B — it holds [TASK-005](BACKLOG.md), which added this check."* **TASK-005 is `DONE`, held by QE**, and `infra/state-check.py` is repository tooling, which is QE's ([ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) R-4). A row can outlive the assignment that produced it, and this one did — **it sat against a lane that could not have edited the file it names.**
+
+**Closed on evidence rather than on work**, like [B-202](#b-202--tsc---noemit-fails-on-integration) above. Neither was fixed for its own sake; both were carried away by other changes and stayed `OPEN` because nothing was positioned to notice.
+
 ### B-202 · `tsc --noEmit` fails on `integration`
 
 > **Renumbered from `B-018` by QE at merge, 2026-08-02.** `B-018` was already allocated to a different finding; the later claim moves, and Lane A's block is `200`+ (`CLAUDE.md` §20e). **The original `B-018` is untouched.**
@@ -2736,7 +2747,7 @@ ModuleNotFoundError: No module named 'httpx'
 | **Module** | `timeline` (frontend tests) — `frontend/tests/components/timeline-feed.test.tsx` |
 | **Current assignee** | **Lane B** — it holds `timeline` |
 | **Severity** | 🟠 — **a lane gate is red on `integration`.** Every lane that rebases inherits it, and the honest response to a failing gate you did not cause is hard to distinguish from ignoring one you did |
-| **Status** | `OPEN` |
+| **Status** | **`FIXED`** — no longer reproduces, 2026-08-04. **`VERIFIED` is QE's** |
 | **Found** | `4714496`, by Lane A while type-checking the Team slice |
 
 **Steps to reproduce.** From `integration`, `cd frontend && npx tsc --noEmit`.
@@ -2760,6 +2771,20 @@ tests/components/timeline-feed.test.tsx(80,19): error TS2345: (the same)
 ---
 
 ---
+
+
+### No longer reproduces — Lane B, 2026-08-04
+
+**Measured on `integration` at `2242820`:**
+
+```bash
+cd frontend && npx tsc --noEmit
+  →  (no output)
+```
+
+**Clean, including `timeline-feed.test.tsx`.** This row was opened at `4714496` on 2026-08-02 against a `timeline` fixture, and the file has changed hands and shapes several times since. **Nothing here was fixed deliberately for this row** — it was carried away by other work, which is why it sat `OPEN` while green.
+
+> **That is the more useful finding, and it is [B-111](#b-111--tsc---noemit-is-in-no-gate-qe-runs-and-main-is-red)'s.** A gate nobody runs cannot close its own defects: `tsc --noEmit` was in the Definition of Done and in no gate QE ran, so a row raised against it could neither be confirmed still-broken nor observed fixed. **B-111 put it in the gate**, and this row is the first thing that gate can now retire.
 
 ### B-203 · Below 768px the product has no navigation at all
 
