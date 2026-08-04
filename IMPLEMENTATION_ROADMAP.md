@@ -955,6 +955,26 @@ Rationale: cheap unblocking work first (T1, T2, T6); logging (T3) before the rel
 
 **Sequential order:** T19 → T20 → T21 → T21b
 
+### M14c — Usage Accounting *(sequenced, 2026-08-04)*
+
+> **Trigger: the Billing screen is scheduled for implementation.** Not a date, and not a lane becoming available.
+
+**[D-042](docs/DECISION_REGISTER.md) stands** — *"do not force a module boundary until implementation naturally reaches it."* **No bounded context is named**, and if Billing eventually requires one it is introduced then.
+
+**The finding that sizes it: Signora already meters.** `ai_inference` records tokens, latency, retries, outcome, model and vendor **per workspace, immutably, indexed on `(workspace_id, outcome, created_at)`**; `provider_sync` and `membership` do the same for their domains. **Most of this milestone is reads** — [424](docs/architecture/424-usage-metering-assessment.md) §9a, six slices.
+
+**One table only: a closed billing period**, immutable, the `ai_narration` pattern. **No `usage_event` table, no per-action event, no second datastore** ([D-044](docs/DECISION_REGISTER.md)).
+
+**Build the accounting; buy the invoicing** ([D-045](docs/DECISION_REGISTER.md)). **Stripe Billing first; Lago only on objective scale evidence.**
+
+### M14d — Usage & Billing Observability *(sequenced)*
+
+> **Trigger: M14c's closed-period slices are complete.**
+
+**Four audiences — customers, engineering, finance, support.** Dashboards, daily and monthly summaries, forecasting, quotas, limit warnings, cost transparency, **meter health**, reconciliation, audit tooling. [424](docs/architecture/424-usage-metering-assessment.md) §9b.
+
+> **Meter health is the item nobody asks for until it has failed.** A meter that silently stops recording produces a **smaller** invoice, **so the failure is invisible from the billing side** — which is why reconciliation is built rather than bought.
+
 ### M14.5 — Cloud Infrastructure *(deferred from M1.3B)*
 
 | ID | Task | Complexity | Depends on |

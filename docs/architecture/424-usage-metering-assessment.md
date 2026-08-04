@@ -4,6 +4,8 @@
 >
 > **The brief asked to be challenged where repository evidence disagrees. It does, in three places.**
 
+> ✅ **Ruled 2026-08-04, product owner.** **[D-029](../DECISION_REGISTER.md) stands — no Usage Accounting bounded context at this stage.** The architectural direction, the OpenMeter refusal and *meter first, bill later* are accepted; **the scope is expanded to every billable operational fact, and a second initiative is sequenced after this one.** §7–§9 record what changed.
+
 ## 1 · The three findings, before the detail
 
 > **1 · Signora already meters.** Per workspace, immutably, with forced RLS. **`ai_inference` records `input_tokens`, `output_tokens`, `latency_ms`, `retries`, `outcome`, `served_model` and `vendor`, indexed on `(workspace_id, outcome, created_at)`** — which is a time-window usage aggregation index and nothing else.
@@ -135,7 +137,81 @@
 
 **Three small read slices, no new module, no new table, no ADR.** They make the numbers *available*, which is the whole gap, and **they commit to no boundary** — so D-029 stays honoured.
 
-## 7 · Risks
+## 7 · Expanded scope — every billable operational fact
+
+**Ruled: prepare so Signora can eventually meter anything billable, not only AI.** **The classification is unchanged and the list is longer.**
+
+| Meter | Source today | |
+|---|---|---|
+| **AI inference · AI tokens** | `ai_inference` — `outcome`, `input_tokens`, `output_tokens` | 🟩 |
+| **Research jobs** | `research_request` · `research_task` | 🟩 |
+| **CRM synchronizations** | `provider_sync` — once E1's inbound port lands ([D-023](../DECISION_REGISTER.md)) | 🟩 |
+| **Companies processed** | `entity` · `raw_provider_record`, workspace-scoped | 🟠 derivable |
+| **People processed** | `entity`, **once `EntityKind.PERSON` exists** ([D-021](../DECISION_REGISTER.md)) | 🟠 |
+| **Storage** | Row counts across workspace-scoped tables | 🟠 derivable |
+| **Seats** | `membership` · `membership_role_change` | 🟠 derivable |
+| **Exports** | — **no export path exists** | 🔴 |
+| **Workflow executions** | — `workflow` unbuilt ([D-025](../DECISION_REGISTER.md) approved) | 🔴 |
+| **Notifications** | — `notifications` deferred ([D-027](../DECISION_REGISTER.md)) | 🔴 |
+| **API usage** | — no request log | 🔴 |
+
+> **The rule that keeps this from becoming speculative abstraction:** **a meter is added when the thing it meters exists, never before.** Six meters exist or are derivable today; **five wait on capabilities that are unbuilt or deferred, and building their meters now would meter nothing.**
+
+**What preparation means here, concretely:** every future capability adds **a `UsageReader` port on its own module's `public/`** — *a port belongs to the module that owns the language it represents* (§6). **There is no central registry to edit**, which is what makes the list extensible without a bounded context.
+
+## 8 · Build vs buy — refined
+
+| **Build** | **Buy** |
+|---|---|
+| Usage accounting · aggregation · **reconciliation** · **snapshots** · **audit trail** | Subscription management · invoicing · payment processing · taxes · customer billing portal · **dunning** · collection |
+
+**The line is unchanged and now stated in the owner's words.** **Only Signora can say what a workspace consumed; everything downstream of that number is a commodity** (§9, *build the advantage, buy the commodity*).
+
+> **Reconciliation and audit trail sit on the *build* side deliberately.** They are the questions *"does our meter agree with the invoice?"* and *"why was this workspace charged for that?"* — **and neither can be answered by a system that does not hold the operational facts.** A vendor's dispute tool would be reasoning about numbers it received rather than the runs that produced them.
+
+**Stripe Billing is the preferred first integration.** An API rather than a datastore, so it adds nothing to operate and **consumes the aggregation Signora must build regardless** — nothing is wasted if it is later replaced.
+
+**Lago is the future self-hosted option, revisited only on scale evidence.** §14 and [12-scalability.md](12-scalability.md): **performance and platform changes are evidence-triggered, never scheduled.** The trigger is stated rather than left to judgement — **a billing volume or contract structure Stripe cannot express**, not a preference for self-hosting.
+
+## 9 · The two initiatives, sequenced
+
+### 9a · Usage Accounting — first, and it is mostly reads
+
+**No new module. No new event per action. One table, and only at period close.**
+
+| | Slice | Depends on |
+|---|---|---|
+| **1** | `UsageReader` on `ai_platform` — AI actions and tokens per workspace per window | — |
+| **2** | `UsageReader` on `provider_platform` — sync runs, records received | — |
+| **3** | Seat counting from `membership` — unique active users per month | — |
+| **4** | A closed billing period — **the one materialization**, immutable, the `ai_narration` pattern | 1–3 |
+| **5** | `usage.period_closed` | 4 |
+| **6** | Stripe Billing integration | 4, 5 |
+
+### 9b · Usage & Billing Observability — second
+
+**Ruled 2026-08-04. It serves four audiences and that is why it follows rather than accompanies.**
+
+| Audience | Needs |
+|---|---|
+| **Customers** | Usage dashboard · cost transparency · limit warnings · daily and monthly summaries |
+| **Engineering** | **Meter health** · reconciliation · audit tooling |
+| **Finance** | Reconciliation · forecasting · monthly summaries |
+| **Support** | *"Why was this workspace charged for that?"* — the audit trail, per row |
+
+> **Meter health is the item worth naming, because it is the one nobody asks for until it has failed.** A meter that silently stops recording produces a **smaller** invoice, so **the failure is invisible from the billing side and only detectable against the operational history.** That is the argument for building reconciliation rather than buying it.
+
+**Three constraints carried from the assessment:**
+
+**Quotas and limit warnings are *entitlement*, not metering** — §3c. They read usage and belong to whoever owns the plan. **Forecasting is a projection over recorded facts, never a model** — §2's least-powerful-author rule: a projection that infers has climbed a rung it did not need. **Anomaly detection is out of scope entirely** — it is `signal_engine`'s shape, and a meter that decides something is anomalous has started inferring.
+
+### The trigger, stated so it is checkable
+
+> **Neither initiative starts until Billing naturally reaches this stage.** **The trigger is the Billing screen being scheduled for implementation** — not a date, and not a lane becoming available.
+>
+> **[D-029](../DECISION_REGISTER.md) is why**: *"do not force a module boundary until implementation naturally reaches it."* **Preparation is complete; nothing is claimable.**
+
+## 10 · Risks
 
 | | |
 |---|---|

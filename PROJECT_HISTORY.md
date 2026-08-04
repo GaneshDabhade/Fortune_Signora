@@ -3,7 +3,7 @@
 > ⚙️ **GENERATED — do not edit by hand.** Rebuild with `python3 infra/project-history.py`.
 > **Manual edits are lost on the next run.**
 
-> Built at `72b5d18`. **Significant events only** — ADRs, completed repository cycles and schema changes.
+> Built at `1fa9fd1`. **Significant events only** — ADRs, completed repository cycles and schema changes.
 > **This is not a changelog.** `git log` is the complete record; **a second copy of it would be a duplicate
 > representation** (`CLAUDE.md` §2), and a history listing every commit teaches the reader to stop reading.
 

@@ -36,6 +36,7 @@
 | `WAITING` | Needs a **decision** from the product owner or another lane. **Named, always** |
 | `BLOCKED` | Needs a **capability** that does not exist yet. **The capability is named** |
 | `DONE` | Promoted to `main`. Removed at the next Closeout |
+| `SEQUENCED` | **Prepared, and waiting on a named trigger** — not `WAITING`, because nothing is undecided, and not `READY`, because nothing may be claimed. **The trigger is stated in the row and is checkable** *(added 2026-08-04, [D-042](DECISION_REGISTER.md))* |
 
 **`WAITING` and `BLOCKED` differ in who unblocks them**: one needs somebody to answer, the other needs somebody to build. A task nobody can move in either direction is a finding, not a backlog row.
 
@@ -465,6 +466,32 @@
 | **Notes** | Assert that no task is claimed twice and that every `CLAIMED` row has a matching lane on the board. **A slice, not a Closeout** — `infra/` decides whether gates pass ([B-014](BUGS.md)). *Partly delivered 2026-08-02; what remains is the id-level checking* |
 
 ---
+
+## SEQUENCED — prepared, and waiting on a named trigger
+
+> **Not `WAITING`, because nothing is undecided, and not `READY`, because nothing may be claimed.** These carry a **trigger** rather than an owner: the work begins when the condition fires, and until then it is preparation the repository holds rather than loses.
+
+### TASK-411 · Usage Accounting — meter what a workspace consumed
+
+| | |
+|---|---|
+| **Status** | **`SEQUENCED`** — **trigger: the Billing screen is scheduled for implementation** |
+| **Preparation** | [424](architecture/424-usage-metering-assessment.md) §9a — six slices, most of them reads |
+| **Module** | ⚠️ **Deliberately unnamed.** [D-042](DECISION_REGISTER.md): *"do not force a module boundary until implementation naturally reaches it"* |
+| **Reuse** | **`ai_inference` · `provider_sync` · `membership` already meter, per workspace, immutably.** Slices 1–3 are `UsageReader` ports over tables and indexes that exist |
+| **Non-goals** | **No `usage_event` table and no per-action usage event** — two representations of one call (§2). **No new datastore** ([D-044](DECISION_REGISTER.md)). **No pricing on an operational row** (§10) |
+| **The one materialization** | **A closed billing period**, immutable — the `ai_narration` pattern. **Deriving it means a later data change silently re-prices a shipped invoice** |
+
+### TASK-412 · Usage & Billing Observability
+
+| | |
+|---|---|
+| **Status** | **`SEQUENCED`** — **trigger: TASK-411 slices 4–5 complete** |
+| **Preparation** | [424](architecture/424-usage-metering-assessment.md) §9b |
+| **Serves** | Customers · engineering · finance · support |
+| **Reuse** | Every figure derives from TASK-411's readers. **No second aggregation** |
+| **Non-goals** | **Quotas are entitlement, not metering** · **forecasting is a projection over recorded facts, never a model** · **anomaly detection is out of scope** — it is `signal_engine`'s shape, and a meter that decides something is anomalous has started inferring |
+| **Worth naming** | **Meter health.** A meter that silently stops recording produces a *smaller* invoice, **so the failure is invisible from the billing side** and detectable only against operational history — which is the argument for building reconciliation rather than buying it |
 
 ## WAITING — on a decision, and on whom
 
