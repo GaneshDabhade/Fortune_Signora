@@ -64,7 +64,9 @@
 
 > **`grep -rln "competitor" backend/modules/` returns nothing.** The concept does not exist anywhere in the repository.
 
-**And there is an obvious, cheap home for it.** `commercial_profile` holds **four declarations** — catalog, ICP, buying committee, commercial focus — each *"a sentence somebody typed about their own business"*, each immutably versioned with `supersedes`, each with the same shape. **A fifth is a well-trodden path**: `focus.py` is 163 lines and `declare_focus.py` is 113.
+**And there is an obvious, cheap home for it.** `commercial_profile` holds **five declarations** — products, ICP, buying committee, commercial focus, target accounts — each *"a sentence somebody typed about their own business"*, each immutably versioned with `supersedes`, each with the same shape. **A sixth is a well-trodden path**: `focus.py` is 163 lines and `declare_focus.py` is 113.
+
+> **Verified by readiness review, 2026-08-04 — the path is better trodden than this package first said.** **All five declarations already carry a `GET` *and* a `POST`** on `/workspaces/{id}/{products,icp,buying-committee,focus,target-accounts}`. **The customer-entry half — the part that is missing four times over elsewhere in this repository — is the part that already exists here five times.** A competitor declaration inherits a route pair, a versioned aggregate, a repository and a screen pattern.
 
 ```
   customer declares competitors  →  TECHNOLOGY_ADOPTED for a declared competitor

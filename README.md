@@ -65,8 +65,8 @@ docs/architecture/adr/        40 decisions. Never edited; a reversal is a new AD
 | `business_event_engine` · `signal_engine` · `buying_score_engine` | ✅ Built | — | [`24`](docs/architecture/24-business-event-engine.md) · [`25`](docs/architecture/25-signal-engine.md) · [`26`](docs/architecture/26-buying-score-engine.md) |
 | `opportunity_engine` | ✅ Built | — | [`27`](docs/architecture/27-opportunity-engine.md) |
 | `ai_platform` | ✅ Built | 🔒 since M10 | [`28`](docs/architecture/28-ai-platform.md) |
-| `ai_reasoning_engine` | 🔴 **`reasoning@1` unreleased** — would refuse at runtime | — | [`29`](docs/architecture/29-ai-reasoning-engine.md) |
-| `ai_research_engine` | ✅ Built · no HTTP entry point yet | — | [`33`](docs/architecture/33-ai-research-engine-scope.md) |
+| `ai_reasoning_engine` | 🔴 **`reasoning@1` unreleased** — would refuse at runtime · **and no `interface/` layer, so nothing can reach it** ([404](docs/architecture/404-epic-g-copilot.md)) | — | [`29`](docs/architecture/29-ai-reasoning-engine.md) |
+| `ai_research_engine` | ✅ Built — **two routes**: *ask Signora to research this account* · *what research has found* | — | [`33`](docs/architecture/33-ai-research-engine-scope.md) |
 | The product surface — pipeline `interface/` layers, `frontend/app/(app)/` | 🔵 In progress | — | [`37`](docs/architecture/37-product-surface.md) · [`38`](docs/architecture/38-product-design-principles.md) |
 | `signora_platform` | ✅ Built | 🔒 §20a | **Not assignable** — [C-010](docs/LANE_COORDINATION.md) |
 | Frontend foundation | ✅ Built | 🔒 §20c | **Not assignable** — [C-010](docs/LANE_COORDINATION.md) |

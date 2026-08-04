@@ -200,6 +200,10 @@ Decisions required    what the product owner must rule before it can start
 
 > **The *things NOT to build* section has become the most valuable output the office produces** *(product owner, 2026-08-04)*. It is written first, from the repository, and it is usually longer than the design.
 
+**Never stop at *"I found something."*** *(product owner, 2026-08-04)*. **The next question is always: can the implementation package be updated right now?** If no product decision is required, **update it and move on** — a finding recorded in a report is an observation; **a finding folded into the package is readiness.**
+
+> **The test is narrow and answerable:** does acting on it need a ruling, a bounded context, or scope nobody has approved? **If not, it is preparation, and preparation is Lane C's own work rather than something to propose.** Epic F's phase 0 needed no ADR, no bounded context and no new aggregate — **so it became a phase, not a paragraph.**
+
 **Three questions before declaring anything unbuilt** *(adopted 2026-08-04, product owner)*:
 
 > **1 · Does the capability already exist? 2 · Can a customer actually reach it? 3 · Is it already consumed somewhere else?**

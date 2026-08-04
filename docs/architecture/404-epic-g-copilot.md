@@ -87,7 +87,13 @@
 | **The explanation to ground in** | **The Contribution Ledger** — *"the authoritative explanation of a score"* | `buying_score_engine/domain/ledger.py` |
 | **The prompt** | **`reasoning@1` is authored and fingerprinted** — it is unreleased, not unwritten | `manifest.json` |
 
-> **G1 — *"ask about this account, explanation only, grounded in the contribution ledger"* — is a released prompt away from existing.** The module, the grammar, the validator, the ledger, the harness and the prompt are all built.
+> ⚠️ **Corrected 2026-08-04 by readiness review — *"a released prompt away"* was wrong.** **`ai_reasoning_engine/` has no `interface/` directory at all**: it holds `application`, `domain`, `evaluation`, `infrastructure`, `prompts` and `public`, and **nothing mounts it in `apps/api/main.py`.** **The AI Reasoning Engine is unreachable from the product.**
+>
+> **G1 is a released prompt *and an interface layer* away** — and that is **the fifth instance of the pattern this repository keeps producing** ([`PRODUCT_OFFICE.md`](../PRODUCT_OFFICE.md) §5): a module complete to its `public/` boundary with no way in. **A5's Observation Engine was the same shape, one module over, and its remedy was `interface/router.py` plus `schemas.py`.**
+>
+> **The precedent is one module over and it is exact.** `ai_research_engine/interface/router.py` already exposes **two routes** — *"Ask Signora to research this account"* and *"What research on this account has found"* — **which is the shape G1 needs, built by the same layering, in a sibling module.** So the interface layer is a known quantity rather than a design problem, and **G1's phase 3 should be scoped as *an interface layer modelled on `ai_research_engine`*, not as *a screen***.
+
+**The module, the grammar, the validator, the ledger, the harness and the prompt are all built** — **and the layer that would let a customer reach any of it is not.**
 
 ---
 
@@ -124,7 +130,7 @@
 |---|---|---|---|---|
 | **1** | **A `reasoning` dataset, and an evaluation** | **`reasoning@1` released, or a measured reason it cannot be** | **S** | Nothing — §1 |
 | **2** | **A production-model evaluation** | The first prompt released for a hosted model | **M** | **API credentials** · [C-410](../LANE_COORDINATION.md) |
-| **3** | **G1 — ask about this account** | Grounded explanation on the brief | **L** | Phase 1 · Product Surface for the render |
+| **3** | **G1 — ask about this account** | Grounded explanation on the brief. **Includes `ai_reasoning_engine/interface/` — router and schemas, modelled on `ai_research_engine`'s two routes** | **L** | Phase 1 · Product Surface for the render |
 | **4** | **G2 — draft an approach** | An addressed draft | **L** | Phase 3 · **[Epic C](400-epic-c-people.md) C2** |
 
 > **Phase 1 is small, blocked by nothing, and decides whether Epic G is blocked at all.** It should happen regardless of when Epic G is scheduled — **it converts a recorded product-owner decision into either a release or evidence.**
