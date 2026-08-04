@@ -374,7 +374,7 @@ Three defects came out of closing it, none of which a fake could have surfaced: 
 
 ## 13 · The inbound source port — how a customer's system reaches the pipeline
 
-**Built 2026-08-04**, the moment [ADR-0300](adr/0300-inbound-customer-systems.md) was ratified as **Option A**, to the contract in [409](409-inbound-source-port-contract.md). **This module's half only** — steps 1, 2 and 6 of that document's seven.
+**Built 2026-08-04**, the moment [ADR-0300](adr/0300-inbound-customer-systems.md) was approved as **Option A** by the product owner, to the contract in [409](409-inbound-source-port-contract.md). **The ADR is awaiting integration synchronization**, and this code is held on its lane branch until Product Office's set reaches `integration` ([`PRODUCT_OFFICE.md`](../PRODUCT_OFFICE.md) §11c). **This module's half only** — steps 1, 2 and 6 of that document's seven.
 
 **The sentence it turns on** is the one §1 already records: *a provider is Signora's supplier and Signora holds the credential; an integration is the customer's own system and the customer holds it.* The Provider Port asks a supplier **about one company**. This asks a customer's system for **the customer's own records** — and **an enumeration has no subject**, which is why a sibling exists rather than an extension.
 

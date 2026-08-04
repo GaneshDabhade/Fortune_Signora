@@ -7,9 +7,12 @@ Provider Port asks a supplier *about one company*. This asks a customer's
 system for *the customer's own records*, and **an enumeration has no subject** —
 which is the difference that makes this a sibling rather than an extension.
 
-**Ratified as Option A of [ADR-0300](../../../../docs/architecture/adr/0300-inbound-customer-systems.md)
-on 2026-08-04**, specified by [409](../../../../docs/architecture/409-inbound-source-port-contract.md),
-and built to that contract rather than to a fresh design.
+**Approved as Option A of [ADR-0300](../../../../docs/architecture/adr/0300-inbound-customer-systems.md)
+by the product owner on 2026-08-04**, specified by
+[409](../../../../docs/architecture/409-inbound-source-port-contract.md), and built to that
+contract rather than to a fresh design. **The ADR is awaiting integration
+synchronization** — the decision is authoritative, the repository does not yet
+record it, and this code is held on its lane branch until it does.
 
 **Defined here because a port belongs to the module that owns the language it
 represents** (`CLAUDE.md` §6). *Connected Account*, *grant*, *scope*,

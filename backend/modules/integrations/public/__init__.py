@@ -11,7 +11,7 @@ usable, and how to obtain an execution context — never how a credential was
 acquired, stored or refreshed.
 
 **The source port joined it on 2026-08-04**, when [ADR-0300](../../../../docs/architecture/adr/0300-inbound-customer-systems.md)
-was ratified. It is published here **because a port belongs to the module that
+Option A was approved by the product owner. It is published here **because a port belongs to the module that
 owns the language it represents** (`CLAUDE.md` §6) and its driver lives in
 another module — Provider Platform runs it, and this module does not know that.
 **Nothing about credential acquisition, storage or renewal joined it**: the

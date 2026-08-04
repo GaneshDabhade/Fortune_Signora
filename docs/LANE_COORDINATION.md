@@ -4075,7 +4075,7 @@ KeyError: '0035'
 |---|---|
 | **Raised by** | Lane B, 2026-08-04, on claiming [TASK-402](BACKLOG.md) and auditing the existing foundation before writing code |
 | **Owner** | **The product owner.** Three of the four decisions are 🔴 and one is environmental; none is a lane's |
-| **Status** | **`CLOSED` — ruled 2026-08-04 by the product owner: [ADR-0300](architecture/adr/0300-inbound-customer-systems.md) **Option A**, the sibling source port.** Closed by the requesting lane, as the register requires. **Steps 1, 2 and 6 of [409](architecture/409-inbound-source-port-contract.md) are built** — the port, `Capability.CRM_RECORDS`, and `HubSpotCompanySource`. **Steps 3, 4 and 5 are `provider_platform`'s and were not touched**; see [C-300](#c-300--provider-platform-owns-the-half-of-the-inbound-path-lane-b-may-not-build) |
+| **Status** | **`CLOSED` — the product owner ruled it 2026-08-04: [ADR-0300](architecture/adr/0300-inbound-customer-systems.md) **Option A**, the sibling source port.** Closed by the requesting lane, as the register requires. ⚠️ **The ruling is awaiting integration synchronization** — Product Office's document set has not reached `origin/integration`, so a reader there still sees ADR-0300 as `Proposed`. **The decision is authoritative; the repository is not yet converged** ([`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §11c). **Steps 1, 2 and 6 of [409](architecture/409-inbound-source-port-contract.md) are built and held on `lane-b-commercial-profile`** — the port, `Capability.CRM_RECORDS`, and `HubSpotCompanySource` — **on the product owner's explicit standing instruction that a ruling authorizes implementation while synchronization authorizes convergence.** **Steps 3, 4 and 5 are `provider_platform`'s and were not touched**; see [C-300](#c-300--provider-platform-owns-the-half-of-the-inbound-path-lane-b-may-not-build) |
 | **Blocks** | **Nothing now.** It blocked the read path only — records arriving — and through it D3, D1's two missing risk families, and E2 |
 
 ### What has been built since, and the correction it forces
@@ -4575,7 +4575,7 @@ Two enforcements, either of which is sufficient on its own:
 |---|---|
 | **Raised by** | **Lane B**, 2026-08-04, on building the Integrations half of [409](architecture/409-inbound-source-port-contract.md) after [C-326](#c-326--epic-e1-has-no-path-for-a-customers-own-system-to-reach-the-pipeline) was ruled |
 | **Owner** | **The product owner** — it is an assignment question, and step 4 is 🔴 |
-| **State** | `OPEN` |
+| **State** | `OPEN` — **and Lane B is holding**, on the ruling of 2026-08-04: *"do not begin steps 3–5 until ownership has been established through the normal Product Office assignment process."* |
 | **Blocks** | **Nothing today.** Both halves are specified and one is built. **This asks who builds the other** |
 
 ### The situation, in one line

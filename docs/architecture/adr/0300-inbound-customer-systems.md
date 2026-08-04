@@ -1,6 +1,8 @@
 # ADR-0300: How a customer's own system delivers evidence into the pipeline
 
-> **Status: RATIFIED — 2026-08-04, product owner. Option A.**
+> **Status: PRODUCT OWNER APPROVED — 2026-08-04. Option A.** ⚠️ **Awaiting integration synchronization** — this ruling is not yet recorded on `origin/integration`, and the lifecycle that distinguishes the two is [`PRODUCT_OFFICE.md`](../../PRODUCT_OFFICE.md) §11c: **a decision is authoritative when the product owner rules it, and *recorded* when `integration` carries it.**
+>
+> **The implementation proceeded on the product owner's explicit standing instruction** — *"a product owner decision authorizes implementation; integration synchronization authorizes repository convergence, and implementation should not remain idle solely because synchronization has not completed."* **The work is held on `lane-b-commercial-profile` until Product Office's synchronization reaches `integration`** and normal QE promotion follows.
 >
 > *Original note, kept because a dated record is not rewritten (§2):* **Written by Lane B, 2026-08-04**, on being assigned Epic E1 (CRM OAuth and read) and finding that **no path exists for a customer-held system to reach the intelligence pipeline.** It was proposed rather than accepted because every option below is 🔴 — a ratified port, a closed domain type, or the canonical vocabulary — and none of those is a coding session's to decide (`CLAUDE.md` §20e). **Nothing was built against any option while it was open**; Epic E1's read stopped at this document, which is what an architectural blocker requires: *"implementation stops, architecture discussion begins."* **It stopped for eleven hours and everything around it shipped meanwhile** — interpretation, acquisition, the grant lifecycle and the vendor read all reached `main` on the same day.
 
@@ -53,9 +55,11 @@ adapter.fetch()  →  raw_provider_record  →  provider.record.received
 
 ## Decision
 
-**RATIFIED — 2026-08-04, product owner. Option A: the sibling source port.**
+**PRODUCT OWNER APPROVED — 2026-08-04. Option A: the sibling source port. Awaiting integration synchronization.**
 
-> **Recorded here, not decided here.** The ruling is the product owner's, taken on 2026-08-04 alongside [ADR-0401](0401-a-customers-crm-is-not-a-provider.md) and recorded in [`DECISION_PACKS.md`](../../DECISION_PACKS.md); this status line is the ADR catching up with a decision that already exists. **[C-326](../../LANE_COORDINATION.md) is closed by it**, and [409](../409-inbound-source-port-contract.md) is the implementation contract that follows.
+> **Recorded here, not decided here.** The ruling is the product owner's, taken on 2026-08-04 alongside [ADR-0401](0401-a-customers-crm-is-not-a-provider.md) and recorded in [`DECISION_PACKS.md`](../../DECISION_PACKS.md); this status is the ADR catching up with a decision that already exists. **[C-326](../../LANE_COORDINATION.md) is answered by it**, and [409](../409-inbound-source-port-contract.md) is the implementation contract that follows.
+>
+> **The word *ratified* was used here first and was wrong** — not about the decision, which is real, but about the repository, which does not yet record it. **A cold session reading `RATIFIED` reasonably assumes `integration` agrees**, and until the merge it does not (§11c).
 >
 > **§3 remains unruled and is deliberately separable** — what a CRM contributes to the canonical language is its own question, and [409 §5](../409-inbound-source-port-contract.md) measured it as **not on E1's critical path**: `HubSpotCompanyMapper` needs no vocabulary extension.
 

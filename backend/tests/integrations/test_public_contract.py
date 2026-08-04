@@ -51,7 +51,7 @@ PUBLISHED = {
     "ExecutionContext",
     # **The inbound source port, published 2026-08-04** when
     # [ADR-0300](../../../docs/architecture/adr/0300-inbound-customer-systems.md)
-    # Option A was ratified. **It belongs here on the rule this module already
+    # Option A was approved. **It belongs here on the rule this module already
     # follows**: a port belongs to the module that owns the language it
     # represents, and its driver is another module — Provider Platform runs
     # it, and `integrations` does not know that.

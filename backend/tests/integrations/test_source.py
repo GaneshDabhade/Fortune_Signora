@@ -1,7 +1,8 @@
 """The inbound source port, and HubSpot wearing it.
 
 **[ADR-0300](../../../docs/architecture/adr/0300-inbound-customer-systems.md)
-Option A, ratified 2026-08-04**, specified by
+Option A, approved by the product owner 2026-08-04** and awaiting integration
+synchronization, specified by
 [409](../../../docs/architecture/409-inbound-source-port-contract.md).
 
 **Two things are under test and they are different.** The port's *boundaries*
