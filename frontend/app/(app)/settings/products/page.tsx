@@ -2,6 +2,7 @@
 
 import { BuyingCommitteeEditor } from '@/components/commercial/committee';
 import { CommercialFocusEditor } from '@/components/commercial/focus';
+import { CompetitorsEditor } from '@/components/commercial/competitors';
 import { TargetAccountsEditor } from '@/components/commercial/target-accounts';
 import { IcpEditor } from '@/components/commercial/icp';
 import { SegmentList } from '@/components/commercial/segments';
@@ -14,6 +15,7 @@ import {
   useIcpDeclaration,
   useIcpSegments,
   useProductCatalog,
+  useCompetitors,
   useTargetAccounts,
 } from '@/lib/query/hooks/commercial';
 import { useWorkspaceContext } from '@/lib/state/workspace-provider';
@@ -42,6 +44,8 @@ export default function ProductsPage() {
   const committee = useBuyingCommittee(activeWorkspace?.id ?? null);
   const focus = useCommercialFocus(activeWorkspace?.id ?? null);
   const targets = useTargetAccounts(activeWorkspace?.id ?? null);
+  // The sixth declaration, and like the fifth it cites no product.
+  const competitors = useCompetitors(activeWorkspace?.id ?? null);
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
@@ -120,6 +124,15 @@ export default function ProductsPage() {
       {targets.data ? (
         <TargetAccountsEditor
           accounts={targets.data}
+          workspaceId={activeWorkspace?.id ?? null}
+        />
+      ) : null}
+      {/* **Last, because it is the only one about a risk.** A customer
+          describes their business before they describe what threatens it, and
+          the order of the page is the order of that conversation. */}
+      {competitors.data ? (
+        <CompetitorsEditor
+          declared={competitors.data}
           workspaceId={activeWorkspace?.id ?? null}
         />
       ) : null}

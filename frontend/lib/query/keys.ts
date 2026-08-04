@@ -76,6 +76,10 @@ export const queryKeys = {
   targetAccounts: (workspaceId: string) =>
     ['workspace', workspaceId, 'target-accounts'] as const,
 
+  /** Who this workspace competes against. */
+  competitors: (workspaceId: string) =>
+    ['workspace', workspaceId, 'competitors'] as const,
+
   signalCatalog: (workspaceId: string) =>
     ['workspace', workspaceId, 'signal-catalog'] as const,
 

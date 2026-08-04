@@ -798,6 +798,36 @@ export interface DeclareTargetAccounts {
   accounts: TargetAccount[];
 }
 
+/** One technology this workspace competes against. */
+export interface Competitor {
+  id: string;
+  name: string;
+}
+
+/**
+ * Who this workspace competes against, and who last said so.
+ *
+ * **The sixth declaration, and the first about a risk.** Signora records the
+ * names and grades none of them: how much a rival moves an account is decided
+ * by a reviewed model, not by anything a customer types here.
+ */
+export interface DeclaredCompetitors {
+  /** **0 when nothing has been declared** — which is different from a customer
+   * who declared an empty list, and that reads as version 1. */
+  version: number;
+  competitors: Competitor[];
+  /** Null only at version 0. */
+  updated_at: string | null;
+  /** Null only at version 0. */
+  updated_by: string | null;
+}
+
+/** A complete statement of the competitor list, replacing `expected_version`. */
+export interface DeclareCompetitors {
+  expected_version: number;
+  competitors: Competitor[];
+}
+
 /**
  * What has happened with an account, newest first.
  *

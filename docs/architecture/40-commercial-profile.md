@@ -373,6 +373,7 @@ Sign in as an owner and open **Settings → Your business → Products**. Three 
 3. **Say who has to agree** — add *Chief Financial Officer* as the economic buyer, *Head of Security* as a gatekeeper, whatever your deals actually look like.
 4. **Say what you are pushing** — tap the products you are actively selling, and write what you are trying to do this quarter.
 5. **Name the companies you are watching** — type them the way you say them. No website, no legal name, no lookup.
+6. **Name who you compete against** — the products you lose deals to, again the way you say them. **Signora records them and ranks none of them**, and it promises no alert, because nothing consumes the list yet.
 
 Each section shows your own words back to you, each version line names you and the date, and every earlier version is still stored. The five are versioned separately: renaming the product leaves the other four where they were.
 

@@ -18,6 +18,8 @@ import type {
   CommercialFocus,
   CursorPage,
   DeclareBuyingCommittee,
+  DeclareCompetitors,
+  DeclaredCompetitors,
   DeclareFocus,
   DeclareIcp,
   DeclareTargetAccounts,
@@ -293,5 +295,50 @@ export function useIcpSegments(
         { workspaceId: workspaceId ?? undefined },
       ),
     enabled: workspaceId !== null,
+  });
+}
+
+/**
+ * Who this workspace competes against.
+ *
+ * **Never 404s.** A workspace that has named nobody gets version 0 and an
+ * empty list — and that is deliberately distinct from a customer who saved an
+ * empty list, which reads as version 1. *"We do not track competitors"* is a
+ * statement; version 0 is the absence of one.
+ */
+export function useCompetitors(workspaceId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.competitors(workspaceId ?? ''),
+    queryFn: () =>
+      apiRequest<DeclaredCompetitors>(`/workspaces/${workspaceId}/competitors`, {
+        workspaceId: workspaceId ?? undefined,
+      }),
+    enabled: workspaceId !== null,
+  });
+}
+
+/**
+ * Declare the competitor list, as a complete statement.
+ *
+ * **Announces nothing, unlike the watch list.** Nothing downstream consumes
+ * this yet, so the server records it and stops.
+ *
+ * **Deliberately does not retry**, for the reason the other five give: a retry
+ * would re-send a version the server has already rejected once.
+ */
+export function useDeclareCompetitors(workspaceId: string | null) {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: (declaration: DeclareCompetitors) =>
+      apiRequest<DeclaredCompetitors>(`/workspaces/${workspaceId}/competitors`, {
+        method: 'PUT',
+        body: declaration,
+        workspaceId: workspaceId ?? undefined,
+      }),
+    // Not optimistic, for the same reason as the other five.
+    onSuccess: (declared) => {
+      client.setQueryData(queryKeys.competitors(workspaceId ?? ''), declared);
+    },
   });
 }

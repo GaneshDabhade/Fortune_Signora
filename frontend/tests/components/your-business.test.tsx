@@ -21,6 +21,7 @@ const icp = vi.hoisted(() => vi.fn());
 const committee = vi.hoisted(() => vi.fn());
 const focus = vi.hoisted(() => vi.fn());
 const targets = vi.hoisted(() => vi.fn());
+const competitors = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/state/workspace-provider', () => ({
   useWorkspaceContext: workspaceContext,
@@ -36,6 +37,7 @@ vi.mock('@/lib/query/hooks/commercial', () => ({
   // page's per-section failure reporting (B-006), and a section that is
   // neither loading nor failing must not change what the others report.
   useIcpSegments: () => ({ data: undefined, isLoading: false, isError: false }),
+  useCompetitors: competitors,
   usePublishProductCatalog: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
   useDeclareIcp: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
   useDeclareBuyingCommittee: () => ({
@@ -44,6 +46,7 @@ vi.mock('@/lib/query/hooks/commercial', () => ({
     isError: false,
   }),
   useDeclareFocus: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
+  useDeclareCompetitors: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
   useDeclareTargetAccounts: () => ({
     mutate: vi.fn(),
     isPending: false,
@@ -84,6 +87,7 @@ beforeEach(() => {
   committee.mockReturnValue(IDLE);
   focus.mockReturnValue(IDLE);
   targets.mockReturnValue(IDLE);
+  competitors.mockReturnValue(IDLE);
 });
 
 describe('a section that could not be loaded', () => {
