@@ -118,6 +118,35 @@ def _owners(board: str, modules: list[str]) -> dict[str, str]:
     return out
 
 
+def board_rows(board: str) -> list[dict[str, str]]:
+    """Assignment rows, parsed by column position.
+
+    The board is a table: lane · task · branch · module · slice · status ·
+    blocked-by · next · started. **The branch column is what makes a row an
+    assignment** — dependency and waiting tables begin with the same markup,
+    and matching on the lane name alone reported collisions that were not real.
+    """
+    out = []
+    for line in board.splitlines():
+        if not line.startswith("| **Lane") and not line.startswith("| **QE"):
+            continue
+        c = [x.strip() for x in line.split("|")]
+        if len(c) < 8 or not re.search(r"`lane-[a-z]", line):
+            continue
+        task = re.search(r"TASK-\d+", c[2])
+        status = re.search(r"`([A-Z][A-Z ]+)`", c[6])
+        blocked = re.search(r"(C-\d+|B-\d+)", c[7]) if len(c) > 7 else None
+        out.append({
+            "lane": c[1].strip("* "),
+            "task": task.group(0) if task else "—",
+            "module": (re.search(r"`([a-z_]+)`", c[4]).group(1) if re.search(r"`([a-z_]+)`", c[4]) else "—"),
+            "epic": (re.search(r"Epic ([A-Z0-9]+)", c[2]).group(0) if re.search(r"Epic ([A-Z0-9]+)", c[2]) else "—"),
+            "status": status.group(1).strip() if status else "—",
+            "blocker": blocked.group(0) if blocked else "—",
+        })
+    return out
+
+
 def bar(pct: int, width: int = 10) -> str:
     filled = max(0, min(width, round(pct / 100 * width)))
     return "█" * filled + "░" * (width - filled)
@@ -128,89 +157,104 @@ def section(title: str) -> str:
     return f"\n{'=' * (pad // 2)} {title} {'=' * (pad - pad // 2)}"
 
 
-def build(ref: str) -> str:
-    t = tasks(ref)
-    by = Counter(s for _, _, s in t)
+def build(ref: str, since: str | None = None) -> str:
+    tk = tasks(ref)
+    by = Counter(s for _, _, s in tk)
+    board = show(ref, "docs/ACTIVE_ASSIGNMENTS.md")
+    rows = board_rows(board)
     coord = show(ref, "docs/LANE_COORDINATION.md")
     bugs = show(ref, "docs/BUGS.md")
-    board = show(ref, "docs/ACTIVE_ASSIGNMENTS.md")
 
-    modules = sorted({p.split("/")[2] for p in ls(ref, "backend/modules") if p.count("/") > 2})
-    endpoints = sum(
-        len(re.findall(r"^@router\.(get|post|put|patch|delete)\(", show(ref, f"backend/modules/{m}/interface/router.py"), re.M))
-        for m in modules
-    )
-    tables = len(set(re.findall(r'__tablename__ = "([a-z_]+)"', sh("git", "grep", "-h", "__tablename__", ref, "--", "backend"))))
-    contracts = show(ref, "backend/pyproject.toml").count("[[tool.importlinter.contracts]]")
-    adrs = [p for p in ls(ref, "docs/architecture/adr") if re.search(r"/\d{4}-", p)]
-    routes = len([p for p in ls(ref, "frontend/app") if p.endswith("page.tsx")])
-    be_tests = len([p for p in ls(ref, "backend/tests") if "/test_" in p])
-    fe_tests = len([p for p in ls(ref, "frontend/tests") if p.endswith((".test.tsx", ".spec.ts", ".test.ts"))])
+    modules = sorted({q.split("/")[2] for q in ls(ref, "backend/modules") if q.count("/") > 2})
+    owners = _owners(board, modules)
+    endpoints = sum(len(re.findall(r"^@router\.", show(ref, f"backend/modules/{m}/interface/router.py"), re.M)) for m in modules)
+    adrs = [q for q in ls(ref, "docs/architecture/adr") if re.search(r"/\d{4}-", q)]
+    routes = len([q for q in ls(ref, "frontend/app") if q.endswith("page.tsx")])
+    lanes = sorted({r["lane"] for r in rows})
+    epics = sorted({r["epic"] for r in rows if r["epic"] != "—"})
+    blockers = sorted({r["blocker"] for r in rows if r["blocker"] != "—"})
     head = sh("git", "rev-parse", "--short", ref).strip()
+    main_head = sh("git", "rev-parse", "--short", "origin/main").strip()
+
+    # A task is claimable when it is READY and no board row already holds it.
+    held = {r["task"] for r in rows}
+    claimable = [(i, ti) for i, ti, s in tk if s == "READY" and i not in held]
 
     o: list[str] = []
     a = o.append
+    a(section("1 · REPOSITORY OVERVIEW"))
+    a(f"  Measured        {ref} @ {head}   (main @ {main_head})")
+    a(f"  Modules {len(modules)}   Epics {len(epics)}   Tasks {len(tk)}   ADRs {len(adrs)}")
+    a(f"  Endpoints {endpoints}   Frontend routes {routes}   Active lanes {len(lanes)}")
+    a(f"  Approved UI screens 26   Implemented 0")
+    a(f"  Open blockers on the board: {', '.join(blockers) if blockers else 'none'}")
+    a(f"  Repository health          {J}")
+    a(f"  Overall implementation     {J}  (estimate)")
+    a(f"  Highest priority work      {J}")
 
-    a(section("REPOSITORY HEALTH"))
-    a(f"  Measured from {ref} @ {head}")
-    a(f"  Repository Status        {J}")
-    a(f"  Overall Progress         {J}")
-    a(f"  Current Delivery Wave    {J}")
-    a(f"  Implementation Velocity  {J}")
-    a(f"  Highest Priority         {J}")
-    a(f"  Largest Bottleneck       {J}")
+    a(section("2 · MODULE PORTFOLIO"))
+    a(f"  {'Module':<23}{'Lane':<23}{'Epic':<9}{'Task':<10}{'Status':<14}Blocker")
+    for m in modules:
+        r = next((x for x in rows if x["module"] == m), None)
+        a(f"  {m:<23}{owners.get(m,'—')[:22]:<23}{(r['epic'] if r else '—'):<9}"
+          f"{(r['task'] if r else '—'):<10}{(r['status'] if r else '—'):<14}{(r['blocker'] if r else '—')}")
 
-    a(section("SYNCHRONIZATION"))
-    a("  Stage                    Count   Note")
-    a(f"  Prepared (Lane C)        {J:<7} on a lane branch — NOT claimable")
-    a(f"  Product Owner Approved   {J:<7} authoritative, not yet actionable")
-    a(f"  Merged to Integration    {len(t):<7} tasks visible on {ref}")
-    a(f"  Claimable                {J:<7} READY, unclaimed, module free to that lane")
-    a(f"  Claimed                  {by['CLAIMED']:<7}")
-    a(f"  Implementing             {by['IN PROGRESS']:<7}")
-    a(f"  QE                       {by['IN VALIDATION'] + by['VERIFIED'] + by['CERTIFIED']:<7}")
-    a(f"  Main                     {by['DONE'] + by['PROMOTED']:<7}")
+    a(section("3 · EPIC DASHBOARD"))
+    a(f"  {'Epic':<10}{'Owner':<9}{'Status':<14}{'Task':<10}Blocker")
+    for e in epics:
+        r = next(x for x in rows if x["epic"] == e)
+        a(f"  {e:<10}{r['lane']:<9}{r['status']:<14}{r['task']:<10}{r['blocker']}")
 
-    a(section("TASK STATUS"))
-    a(f"  Total {len(t)}")
+    a(section("4 · LANE DASHBOARD"))
+    for ln in lanes:
+        mine = [r for r in rows if r["lane"] == ln]
+        working = [r for r in mine if r["status"] in ("CLAIMED", "IN PROGRESS", "ACTIVE")]
+        blocked = [r for r in mine if r["status"] == "BLOCKED"]
+        val = [r for r in mine if r["status"] in ("IN VALIDATION", "VERIFIED")]
+        a(f"  {ln}")
+        a(f"    rows {len(mine):<3} working {len(working):<3} blocked {len(blocked):<3} with QE {len(val)}")
+        if working:
+            a(f"    active:  {', '.join(r['task'] for r in working if r['task'] != '—') or '—'}")
+        if blocked:
+            a(f"    blocked: {', '.join(r['task'] + ' (' + r['blocker'] + ')' for r in blocked)}")
+
+    a(section("5 · TASK ASSIGNMENT"))
+    a(f"  {'State':<20}Count")
     for w in STATE_WORDS + ("UNKNOWN",):
         if by[w]:
-            a(f"    {w:<20} {by[w]}")
+            a(f"  {w:<20}{by[w]}")
+    a(f"  {'TOTAL':<20}{len(tk)}")
 
-    owners = _owners(board, modules)
+    a(section("6 · IMPLEMENTATION READINESS"))
+    a(f"  Claimable (READY, unheld)  {len(claimable)}")
+    for i, ti in claimable:
+        a(f"    {i}  {ti[:52]}")
+    a(f"  Target READY buffer        5 per implementation lane")
+    a(f"  Product Office intervention required?  {J}")
 
-    a(section("MODULE PORTFOLIO"))
-    a(f"  {'Module':<24}{'Router':>7}{'Endpoints':>11}{'Tests':>7}   Owner")
-    for m in modules:
-        has = "yes" if show(ref, f"backend/modules/{m}/interface/router.py") else "—"
-        n = len(re.findall(r"^@router\.", show(ref, f"backend/modules/{m}/interface/router.py"), re.M))
-        tests = len([p for p in ls(ref, f"backend/tests/{m}") if "/test_" in p])
-        a(f"  {m:<24}{has:>7}{n:>11}{tests:>7}   {owners.get(m, '—')}")
+    a(section("7 · UI IMPLEMENTATION"))
+    a("  Approved 26 · Implemented 0 · Integrated 0 · QE certified 0")
+    a(f"  Frontend routes on {ref}: {routes}  (all classified REPLACE — 413)")
+    a(f"  READY for implementation   {J}   Deferred by ruling 3")
 
-    a(section("LANE ASSIGNMENT"))
-    for lane in ("Lane A", "Lane B", "Lane C", "QE"):
-        rows = [ln for ln in board.splitlines() if ln.startswith(f"| **{lane}**")]
-        a(f"  {lane:<8} board rows: {len(rows)}")
+    a(section("8 · DECISIONS"))
+    a(f"  Coordination items {len(set(re.findall(r'C-\d+', coord)))}   open blockers cited on board {len(blockers)}")
+    a(f"  Bug ids {len(set(re.findall(r'B-\d+', bugs)))}")
+    a(f"  Open / deferred / awaiting merge   {J}  (DECISION_REGISTER.md — not yet on {ref})")
 
-    a(section("REPOSITORY METRICS"))
-    a(f"  Modules {len(modules)}   ADRs {len(adrs)}   Endpoints {endpoints}   Tables {tables}")
-    a(f"  Import contracts {contracts}   Frontend routes {routes}")
-    a(f"  Backend test files {be_tests}   Frontend test files {fe_tests}")
-    a(f"  Coordination items {len(set(re.findall(r'C-\\d+', coord)))}   Bug ids {len(set(re.findall(r'B-\\d+', bugs)))}")
-    a(f"  Approved UI screens 26  (410 — the design project; not countable from git)")
-
-    a(section("ROADMAP PROGRESS"))
-    a(f"  Wave 1  {bar(0)}  {J}")
-    a(f"  Wave 2  {bar(0)}  {J}")
-    a(f"  Wave 3  {bar(0)}  {J}")
-
-    a(section("PRODUCT OWNER"))
-    a(f"  Requires Action          {J}")
-    a(f"  Biggest Repository Risk  {J}")
-    a(f"  Highest ROI Decision     {J}")
-    a(f"  Highest Priority Task    {J}")
+    a(section("9 · RECENT CHANGES"))
+    if since:
+        prev = {i: s for i, _, s in tasks(since)}
+        cur = {i: s for i, _, s in tk}
+        moved = [(i, prev.get(i, "—"), s) for i, s in cur.items() if prev.get(i) != s]
+        a(f"  Since {since}: {len(moved)} task state change(s)")
+        for i, was, now in moved:
+            a(f"    {i}  {was} -> {now}")
+        a(f"  Commits: {sh('git','rev-list','--count',f'{since}..{ref}').strip()}")
+    else:
+        a("  (pass --since <ref> to diff task states against an earlier commit)")
     a("")
-    a(f"  {J} = judgement, filled in by Lane C. A script that computed these")
+    a(f"  {J} = judgement, filled in by Lane C. A script computing these")
     a("  would state opinion in the voice of arithmetic.")
     a("=" * 52)
     return "\n".join(o) + "\n"
@@ -219,6 +263,7 @@ def build(ref: str) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--ref", default="origin/integration", help="ref to measure (default: origin/integration)")
+    ap.add_argument("--since", help="earlier ref to diff task states against")
     ap.add_argument("--no-fetch", action="store_true", help="skip the freshness fetch (offline; the reading may be stale)")
     args = ap.parse_args()
     if not sh("git", "rev-parse", "--verify", args.ref).strip():
@@ -238,7 +283,7 @@ def main() -> int:
             n = sh("git", "rev-list", "--count", f"{before}..{after}").strip() or "?"
             print(f"repository-dashboard: {args.ref} advanced {n} commit(s) on fetch "
                   f"({before[:8]} -> {after[:8]}). The previous reading was stale.", file=sys.stderr)
-    print(build(args.ref))
+    print(build(args.ref, args.since))
     return 0
 
 
