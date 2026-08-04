@@ -4023,8 +4023,23 @@ KeyError: '0035'
 |---|---|
 | **Raised by** | Lane B, 2026-08-04, on claiming [TASK-402](BACKLOG.md) and auditing the existing foundation before writing code |
 | **Owner** | **The product owner.** Three of the four decisions are 🔴 and one is environmental; none is a lane's |
-| **Status** | `OPEN` — **an architectural blocker, not an implementation one.** Implementation of Epic E1 has stopped at [ADR-0300](architecture/adr/0300-inbound-customer-systems.md) |
-| **Blocks** | **All of Epic E1**, and through it D3, D1's two missing risk families, and E2 |
+| **Status** | `OPEN` — **an architectural blocker, and it blocks less than it did.** Written when it appeared to stop Epic E1 entirely; **it does not.** See *What has been built since*, below |
+| **Blocks** | **The read path only** — records arriving. Through it: D3, D1's two missing risk families, and E2 |
+
+### What has been built since, and the correction it forces
+
+**This row said implementation had stopped. It had not, and the product owner should rule with that in front of them.** On the product owner's direction — *a blocker blocks only the implementation that truly depends on it* — Epic E1 continued, and the following reached `main` on 2026-08-04:
+
+| | |
+|---|---|
+| **Interpretation** | `HubSpotCompanyMapper` — a customer's CRM as a firmographic source. **Six of the seven firmographic attributes needed no vocabulary extension** |
+| **Acquisition** | `POST /connections` · the RFC 6749 §4.1.3 code exchange · the hand-off. **Complete**; what remains is a developer application, not engineering |
+| **Grant lifecycle** | Revocation · renewal (§6) · refresh-on-use. **Complete** |
+| **The vendor read** | `HubSpotCompanies` — paged, incremental, every failure typed. **Complete** |
+
+**What this row still blocks is exactly one thing: how a fetched record reaches `raw_provider_record`.** The source port, the runner, and the fixture and merge test that need records to arrive. `HubSpotCompanies` sits provisionally in `integrations/infrastructure/` and **the ruling moves a file and rewrites a wrapper — no behaviour moves with it.**
+
+> **Four times in this epic, work was filed here that depended on the ruling only for its *placement*.** The pattern is worth naming in the row the ruling will be read from: *"blocked on C-326"* was absorbing code whose behaviour is identical under all three options. What is genuinely gated is where the *signature* of the thing is what is being decided.
 
 **The full analysis is [ADR-0300](architecture/adr/0300-inbound-customer-systems.md).** This item carries the six things a blocker must state so a ruling needs no second round trip.
 
@@ -4081,6 +4096,8 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 **`HubSpotCompanyMapper` is therefore built, registered and tested**, and it encodes nothing about the ruling above: a mapper receives a stored record and translates it, and has never been able to ask who fetched it or how. **The gap this item describes is in acquiring records, not in interpreting them**, and that is what makes the interpretation half safe to finish first.
 
 **What remains genuinely gated on this ruling** is everything that would put a record in front of that mapper — and it is now the *only* thing standing between a customer's CRM and the whole pipeline behind it.
+
+**Everything else was built and promoted.** Acquisition, the grant lifecycle and the vendor read are on `main`; the inventory was closed once on the product owner's direction rather than re-swept. **This lane holds Epic E1 and waits on this ruling alone.**
 
 ## C-327 · Withdrawn — the OAuth client credential question was not a decision pack
 
