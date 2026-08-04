@@ -117,6 +117,19 @@
 | **Recorded here by Lane A on claiming** | **The row is Lane C's, copied verbatim from `lane-c-product-office` at `c681ab9`**, with only `Status` changed. It did not exist on `integration`, and under the product owner's direction of 2026-08-03 **a lane claims on Lane C's assignment rather than waiting for the row to arrive** — Lane C is the source of truth for assignment, `integration` for claims and history. **No scope was added, reworded or reordered**; if Lane C's wording moves, Lane C's wins |
 | **Known gate** | **[B-400](BUGS.md) is 🔴 and blocks promotion for every lane.** It does not block implementation, and Lane C did not gate this row on it — unlike [TASK-401](#task-401--a5-backend--a-companys-history-from-the-claims-that-already-hold-it) and [TASK-402](#task-402--epic-e1--a-customers-crm-becomes-a-source-signora-can-read), which it marked `READY — after B-400`. **A7 adds a migration, so this lane expects to renumber on rebase and will say so** |
 
+### TASK-200 · CX-07 — the Responsive Product Surface
+
+| | |
+|---|---|
+| **Epic** | **CX-07**, [43-customer-experience.md](architecture/43-customer-experience.md) §6. **Assigned whole, not sliced** |
+| **Module** | **Product Surface** — every screen, plus the application shell |
+| **Status** | **`CLAIMED` — Lane A**, 2026-08-03, by the Task Claim Protocol |
+| **Assigned** | **Lane A, directly by the product owner, 2026-08-03** — *"I want Lane A to complete the Responsive Product Surface (CX-07) first"*. **Priority is the product owner's**; this row records the assignment rather than creating it |
+| **Unblocked by** | **[C-205](LANE_COORDINATION.md), ruled 2026-08-03: a phone is in scope.** That item's own analysis then binds — **this is a milestone, not a slice** |
+| **Scope** | The shell's navigation below `768px` · every screen's layout · the account brief's eleven sections in one column · touch targets and focus order · the interaction patterns that differ on a small viewport |
+| **Makes [B-203](BUGS.md) a defect** | It was 🟠 *"an unreachable control — whether it is a defect or a non-goal depends on a product decision nobody has made"*. **The decision has been made.** §20c permits a foundation change for exactly this: *"an accessibility issue — a missing label, an unreachable control, a lost focus state. These are defects, not enhancements"* |
+| **On claiming** | **The frontend foundation is frozen (§20c) and this touches it deliberately and narrowly.** Every such change is announced in its commit message with the ruling that permits it. **No shared component is bent to suit one page** |
+
 ### TASK-900 · The platform learns to compose a module into the runtime
 
 | | |
