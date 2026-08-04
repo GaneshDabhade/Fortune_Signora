@@ -296,10 +296,24 @@
 |---|---|
 | **Files carrying any responsive rule** | **5** of 65 |
 | **The shell's only rule** | **`hidden … md:block`** — the one that *removes* the navigation |
-| **Tables at risk of horizontal overflow** | 2 — `/settings`, `/settings/team` |
-| **`overflow-x` containers in the product** | **1** |
+| **Tables at risk of horizontal overflow** | **None — the audit was wrong here.** `components/ui/table.tsx` already wraps every table in `overflow-x-auto`, *"so a wide table never forces the page body to scroll sideways"*. The one `overflow-x` container in the product is that wrapper, covering all three tables |
 
 > **The product was not partly responsive; it was desktop-only with one line that hid a sidebar.** That is a cleaner starting point than a half-converted surface — there is no half-measure to unpick.
+
+---
+
+### What one column actually cost — slices 2 and 3, 2026-08-03
+
+**Two structural changes, and the audit over-counted the work.** Most of the product is a single `max-w-3xl` column of stacked cards, which survives a narrow viewport unchanged. **What breaks is any row that pairs a name with a fixed-width block**, and there are exactly two:
+
+| Where | What broke | The fix |
+|---|---|---|
+| **The attention row** | The right-hand block is `shrink-0` — four badges and a score, roughly 180px. At `320px` it takes more than half the row and **squeezes the account name to a few characters** | Stack below `sm`. The badges keep `justify-between`, so **the score is still the rightmost thing on the row** and the column property survives the reflow |
+| **The brief's header** | Same shape: a company name — the longest string on the page — sharing a row with the score block | Stack below `sm` |
+
+**The hierarchy is what the fix protects, not the layout.** *The account leads* is the attention row's whole design — *"a seller scans names, not numbers"* — and a name compressed to six characters inverts it. **Giving the name the full width and dropping the rest to a second line preserves the ordering; shrinking either would have broken it silently.**
+
+**And the foundation was better than the audit credited.** `components/ui/table.tsx` already wraps every table in `overflow-x-auto` — the audit counted one `overflow-x` container and read it as a gap, when it is the library covering all three tables. **Corrected above rather than left standing.**
 
 ---
 

@@ -162,7 +162,11 @@ export default function AccountBriefPage() {
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <BackToList />
 
-      <header className="flex items-start justify-between gap-4">
+      {/* **The name gets the width it needs before the score takes any.** A
+          company name is the longest thing on this page and the one a reader
+          is looking for; at 320px, sharing the row with the score block leaves
+          it a few characters. Stacked below `sm`, side by side above it. */}
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="min-w-0">
           <EntityName
             identity={identity}

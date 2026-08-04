@@ -284,7 +284,13 @@ function AccountRow({
     // that lit up under the cursor anywhere would teach a reader the whole row
     // is clickable — then fail them everywhere but one word.
     <Card>
-      <CardBody className="flex items-start gap-4 py-3.5">
+      {/* **Two rows on a phone, one on a laptop.** The block on the right is
+          `shrink-0` — four badges and a score, roughly 180px — and at 320px it
+          takes more than half the row, squeezing the account name to a few
+          characters. **The name leading is the whole hierarchy of this row**
+          (below), so the fix is to give it the full width and drop the rest
+          onto a second line rather than to shrink either. */}
+      <CardBody className="flex flex-col gap-2 py-3.5 sm:flex-row sm:items-start sm:gap-4">
         {/* **The account leads.** A seller scans names, not numbers — the
             number tells them the order, and the order is already the list's.
             A score competing with the name for weight makes every row equally
@@ -315,7 +321,11 @@ function AccountRow({
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-3 pt-0.5">
+        {/* `justify-between` only while stacked: the badges stay left and the
+            score stays right, so **the score is still the rightmost thing on
+            the row** at either width and the column property below survives
+            the reflow. */}
+        <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-start sm:pt-0.5">
           <div className="flex items-center gap-2">
             {/* **What the seller did, beside what the evidence says.** The
                 one action Signora offers had no visible consequence on the
