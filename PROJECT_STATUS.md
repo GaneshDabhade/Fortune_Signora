@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `dd91c62`, 2026-08-04.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `ea35fbe`, 2026-08-04.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `dd91c62`, 2026-08-04.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `ea35fbe`, 2026-08-04.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`dd91c62`** — the certified commit itself |
-| **`integration`** | `dd91c62` — level with `main` |
-| **Release candidate** | **None pinned.** Cycle 48 promoted **TASK-407 — a connection says whether it actually works** |
-| **Certification** | ✅ [`dd91c62ef203`](certification/reports/dd91c62ef203.md) · migration head **`0038`** · protocol **v2** |
+| **`main`** | **`ea35fbe`** — the certified commit itself |
+| **`integration`** | `ea35fbe` — level with `main` |
+| **Release candidate** | **None pinned.** Cycle 49 promoted **Epic E1's Integrations half** — infrastructure, and deliberately not a customer-visible slice |
+| **Certification** | ✅ [`ea35fbec15b3`](certification/reports/ea35fbec15b3.md) · migration head **`0038`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Lane A and Lane B**, on the product owner's rulings — see §1c. **Lane C is working**, and its output is those rulings' inputs |
 | **Validation queue** | **Empty.** Lane A and Lane B are both building claimed tasks; **Lane C is documentation-only** and carries nothing to certify |
-| **Customer value this cycle** | ✅ **Yes.** A customer can ask whether a connected system **still works** — and a connection that looks perfect but does not work now says so, instead of reading as healthy |
+| **Customer value this cycle** | ⚠️ **None, and the lane said so first**: *"Nothing a customer can see yet, and that is stated rather than dressed up."* Under §2 this is correct work that has not reached a customer, **recorded as infrastructure rather than reported as a capability** |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
-> ✅ **The fourth customer-visible slice today, and the first migration-bearing promotion since [B-110](docs/BUGS.md) fixed the guard.** Asked from `main` at migration head `0037` whether a candidate at `0038` could be promoted, the guard **read the candidate's tree and permitted it**. Before the fix that exact call refused — it compared against the tree it was standing in, **so it rejected precisely the commits deserving most scrutiny**, and thirty-odd cycles hid it because none carried a migration.
+> ⚠️ **A cycle that delivered no customer value, recorded as such.** Epic E1's Integrations half publishes the port a customer's CRM will arrive through; **nothing drives it yet, and the runner belongs to another module.** The lane's own `Delivered` line says *"Nothing a customer can see yet, and that is stated rather than dressed up"* — so under §2 it is **correct work that has not reached a customer**, and the dashboard says that instead of inventing a demonstration. **It was built to a ruling** ([ADR-0300](docs/architecture/adr/0300-inbound-customer-systems.md), Option A) rather than an assumption, and steps 3–5 of the contract were left untouched because they belong to `provider_platform`.
 
-**Repository health:** **3344 backend tests** · **95.19% coverage** *(floor 95)* · **1171 frontend tests** across 55 files · **383 Security Invariants** · mypy strict over **718 files** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **3374 backend tests** · **95.22% coverage** *(floor 95)* · **1171 frontend tests** across 55 files · **383 Security Invariants** · mypy strict over **722 files** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -101,48 +101,34 @@
 
 ---
 
-## 1d · Release summary — 2026-08-04, cycle 48
+## 1d · Release summary — 2026-08-04, cycle 49
 
-**Derived from the promoted commit `dd91c62`.** **Four customer-visible slices today**, and the first new table in this run of cycles.
+**Derived from the promoted commit `ea35fbe`.** **Five promotions today**, and this is the one with nothing to demonstrate.
 
 ### What was promoted
 
-**TASK-407 — a customer can ask whether a connected system still works.** Everything else on the connections screen is worked out from records: a credential exists, it has not expired, nobody revoked it. **None of that is evidence.** The commonest way an integration breaks is a credential that authenticates perfectly and has quietly lost a permission, **and no record anywhere can see it** — so the check makes a real call and reports what came back.
+**Epic E1's Integrations half** — the contract a customer's CRM will arrive through: `IntegrationSourceAdapter`, `Capability.CRM_RECORDS`, and `HubSpotCompanySource`. **Steps 1, 2 and 6 of [409](docs/architecture/409-inbound-source-port-contract.md).**
 
-Two decisions in it worth keeping:
-
-| | |
-|---|---|
-| **A failed check is an answer, not an error** | It returns `200` with the connection reading *not working*. A `500` would say Signora broke, when what happened is that the customer's system said no |
-| **One bad answer is not a verdict** | Two consecutive inconclusive checks before a connection is reported as broken — **a vendor having a bad afternoon must not send somebody to reconnect a CRM that is fine** |
-
-### The new table, checked against the tenancy policy
-
-`connection_probe`, migration `0038`: non-nullable `workspace_id` · RLS **enabled and forced** · policies for `SELECT`, `INSERT` and `DELETE` · **deliberately no `UPDATE`**, which is correct for a row recording an operational fact (§2, *immutability is the default for anything that records a fact*) · **registered in `tenancy_policy.py` in the same change**, so it could not have been exempted by omission. **Reverses to base and back.**
-
-### One question raised, and QE did not answer it
-
-**[C-104](docs/LANE_COORDINATION.md)** — the check endpoint calls HubSpot **inside the request handler**, and §7 names provider calls among what must not be synchronous.
-
-> **QE raised it rather than ruling on it.** No gate fails, the call is bounded by the adapter's existing read timeout, the port abstraction holds, and **the lane argued the case explicitly in the route's own docstring** rather than arriving there by accident. **The concern is precedent, not this slice**: the next lane wanting a synchronous vendor call will cite this endpoint, and it should be citing a ruling. Three options are on the item; QE recommends one and says plainly that it is a recommendation.
-
-### Two guard fixes from earlier today were exercised for real
+### Two things the lane did that are harder than the alternative
 
 | | |
 |---|---|
-| **[B-110](docs/BUGS.md)** | The promotion guard, asked from `main` at `0037` about a candidate at `0038`, **read the candidate's tree and permitted it.** The first migration-bearing promotion since the fix |
-| **[B-116](docs/BUGS.md)** | QE counted the new table's Security Invariants with `make validate ARGS="-m security_invariant"` — **the path that did not exist an hour earlier**, and whose absence had already produced twelve fabricated failures |
+| **It waited for the ruling** | [C-326](docs/LANE_COORDINATION.md) was decided by the product owner as **ADR-0300 Option A** *before* this slice. The port was built to a specification, not designed in place — which is the whole reason the coordination register exists |
+| **It left the other module's half alone** | Steps 3–5 belong to `provider_platform`. **The lane was already inside the files that needed them** and stopped, recording [C-300](docs/LANE_COORDINATION.md) instead |
 
-### A figure that differed, and why that is the system working
+### And it declined to claim customer value it had not delivered
 
-Lane B's handoff claimed **382** Security Invariants; the merged tree measures **383**. **Their arithmetic was correct** — Lane A's A-i added one after Lane B branched. **A lane reports what it built; QE measures what merged**, and the gap between those two numbers is exactly the reason the split exists.
+> *"Nothing a customer can see yet, and that is stated rather than dressed up."*
+> *"Demo: None. The capability is deliberately absent from the Connection Center until something drives the port."*
+
+**§2 says a slice that needs a module, a table or a port named to demonstrate it is infrastructure that has not reached a customer — correct work, but not a completed product slice, and it must not be reported as one.** The lane applied that rule to itself before QE could. **This dashboard therefore records infrastructure**, and the *Customer value this cycle* row above says none.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3344 backend** · 1171 frontend · **95.19%** · **383 invariants** · **718 files typed** · 35 contracts · `tsc` clean and gated |
-| **Release** | **Eighteen consecutive cycles with no process failure** · `promoted == certified` ✓ · **0 commits outside a snapshot** |
+| **Technical** | **3374 backend** · 1171 frontend · **95.22%** · **383 invariants** · **722 files typed** · 35 contracts · `tsc` clean and gated |
+| **Release** | **Nineteen consecutive cycles with no process failure** · `promoted == certified` ✓ · **0 commits outside a snapshot** |
 | **Architecture** | Reachability 0 doorless · migration `0038` **reversible, verified this cycle** · event catalog 1 known drift |
 | **Dependency** | 69 items, 31 closed |
 | **Customer Value** | ✅ **Direct.** A renamed company's search result now explains itself. **The first slice today that a salesperson would notice** |
