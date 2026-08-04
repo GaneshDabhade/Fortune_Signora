@@ -199,6 +199,7 @@
 | [C-411](#c-411--revenue-intelligence-platform-is-a-planned-module-whose-job-is-already-done) | **RIP is a planned module whose job `apps/api/composition/` already does** | Lane C | **Product owner** | `OPEN` | **Nothing.** It prevents future work rather than unblocking any |
 | [C-412](#c-412--data-export-and-account-deletion-have-no-owner-and-epic-c-raises-the-stakes) | **Data export and account deletion have no owner anywhere** | Lane C | **Product owner** | `OPEN` | **Nothing today.** [Epic C](architecture/400-epic-c-people.md) raises the stakes materially |
 | [C-413](#c-413--the-python-tiers-credential-prohibition-has-never-been-scoped) | ~~The Python tier's credential prohibition has never been scoped~~ | Lane C | — | **`CLOSED` — withdrawn 2026-08-04** | **Never a decision.** Repository clarification, recorded in [18-authentication.md](architecture/18-authentication.md) |
+| [C-414](#c-414--adr-0403-is-ratified--the-architecture-records-are-updated) | **ADR-0403 ratified — architecture records updated** | Lane C | **QE** | `OPEN` | **Nothing.** Governance verification only |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
 >
@@ -2980,6 +2981,32 @@ Every lane's rows sit **adjacent in one table**, and each lane's branch carries 
 
 > **The narrow question: does account deletion and data export get an owner before [Epic C](architecture/400-epic-c-people.md) ships, or does it stay with M15 behind M14.5?** **Lane C has no recommendation it is confident in** — the compliance argument says *before*, the sequencing argument says M15 exists for exactly this, and **the two do not resolve against each other on repository evidence.**
 
+
+## C-414 · ADR-0403 is ratified — the architecture records are updated
+
+| | |
+|---|---|
+| **Classification** | **Architecture Decision** — recorded, not decided |
+| **Owner** | **QE**, for governance verification |
+| **Requester** | **Lane C — Product Office** |
+| **Status** | `OPEN` — **verification request only** |
+| **Blocks** | **Nothing** |
+
+**[ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md) was ratified by the product owner on 2026-08-04**, resolving [C-223](#c-223). **Lane C has updated the records and performed no implementation.**
+
+| Document | Change |
+|---|---|
+| [ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md) | Status → **`RATIFIED`** |
+| [adr/README.md](architecture/adr/README.md) | Index row → **`Accepted 2026-08-04`** |
+| [05-module-dependencies.md](architecture/05-module-dependencies.md) | **Four places** — the mermaid edge `CP -.read.-> SE` · a `Signal Engine` row in the module table · a **Customer–Supplier** row in the relationship table · a **synchronous-read** entry with the full rationale |
+| [25-signal-engine.md](architecture/25-signal-engine.md) | Platform-vs-workspace table gains the competitor row, and a note that **this module holds no competitor list and must never acquire one** |
+| [40-commercial-profile.md](architecture/40-commercial-profile.md) | Records that its `public/` **now has two consumers**, both reading on demand and neither projecting |
+
+**What was not touched, deliberately:** no code · no backlog status · no assignment · no sequencing · **and no `importlinter` contract, because the ratified one already permits the import** — it names `modules.signal_engine` among the source modules allowed to reach `commercial_profile.public`.
+
+> **The graph was the only thing genuinely missing.** [ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md) §Validation 2 established that enforcement anticipated this consumer and documentation had not caught up. **It has now.**
+
+**For QE:** Lane C may not be the final verifier of records it authored. **The check is that the five documents agree with each other and with `backend/pyproject.toml`**, and that nothing in the change is implementation.
 
 ## Closed
 

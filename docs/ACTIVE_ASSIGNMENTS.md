@@ -138,7 +138,7 @@
 | **CX-07 · Responsive Surface** | ✅ **COMPLETED** | — |
 | **E1 · CRM read** | 🔨 **ACTIVE** | **[C-326](LANE_COORDINATION.md) — the inbound source port. Contract delivered as [409](architecture/409-inbound-source-port-contract.md), 🧊 frozen.** Steps 1–5 need nothing from the product owner · developer application for step 6 |
 | **G · Copilot** | 🔨 **ACTIVE** | [C-222](LANE_COORDINATION.md) — blocks only a live G1 inference |
-| **D · Risk** | 🔨 **ACTIVE** | **[C-223](LANE_COORDINATION.md)** — phase 1's detection half. **Architecture delivered as [ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md), `Proposed`.** The declaration, its API and its screen are shipped |
+| **D · Risk** | 🔨 **ACTIVE** | **Nothing architectural.** [C-223](LANE_COORDINATION.md) resolved — **[ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md) `RATIFIED` 2026-08-04**, records updated, **no import contract needed** |
 | **F · Workflow** | 🧊 **FROZEN — READY** | Nothing for phase 0. [ADR-0402](architecture/adr/0402-a-rule-is-data.md) from phase 2 |
 | **E2 · CRM write-back** | 🧊 **FROZEN — READY** | [E1](architecture/401-epic-e1-crm-read.md) acquisition must land |
 | **C · People** | ⏸️ **WAITING** | ❓1 answered — **the provider returns no name** · ratification · contact ruling |

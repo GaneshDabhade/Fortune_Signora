@@ -18,6 +18,7 @@ This document defines the **allowed dependency directions** between modules defi
 flowchart LR
     WS["Workspace & Tenancy"] -.scopes.-> ALL[All Modules]
     CP[Commercial Profile] --> PP
+    CP -.read.-> SE
 
     PP[Provider Platform] --> PN[Provider Normalization]
     PN --> KG[Knowledge Graph]
@@ -57,6 +58,7 @@ This graph is, by design, **acyclic**. No module depends on a module downstream 
 |---|---|
 | Workspace & Tenancy | none |
 | Commercial Profile | Workspace & Tenancy (sync, for workspace scope) |
+| Signal Engine | Business Event Engine · **Commercial Profile (sync read, for the competitor declaration — [ADR-0403](adr/0403-signal-engine-reads-a-declaration.md))** |
 | Provider Platform | Workspace & Tenancy (sync, for workspace scope) · Commercial Profile (event, for the target account list — **slice 5**) |
 | Provider Normalization | Provider Platform |
 | Knowledge Graph | Provider Normalization |
@@ -91,6 +93,7 @@ This is the M5B `SignalReader` finding applied deliberately rather than discover
 |---|---|---|
 | **Workspace & Tenancy → all** | Conformist | Every module conforms to `workspace_id`; none influences it |
 | **Commercial Profile → Provider Platform** | Customer–Supplier | Downstream's needs shape the contract. Negotiable between lanes |
+| **Commercial Profile → Signal Engine** | Customer–Supplier | **A declaration read on demand, never projected** ([ADR-0403](adr/0403-signal-engine-reads-a-declaration.md)). *The event is the trigger and the port is the payload* — **and this consumer needs only the payload**, because detection already runs on `business_event.detected` |
 | **Provider Platform → Provider Normalization** | **Anticorruption Layer** | The clearest ACL in the codebase — it exists so vendor models cannot leak inward, and *"any judgement of which claim is true"* is explicitly refused |
 | **Provider Normalization → Knowledge Graph** | **Published Language** | The canonical claim vocabulary; [34-knowledge-contract.md](34-knowledge-contract.md) is its specification |
 | Knowledge Graph → Observation → Business Event | Customer–Supplier | Stages, negotiated at the boundary |
@@ -115,6 +118,7 @@ Per Principle 3, event-driven is the default. Approved synchronous dependencies:
 - AI Reasoning Engine → Signal Engine's published catalog: synchronous read of signal-type definitions when composing a Decision Package. **Added 2026-07-30 (T122).** A signal type's *limitations* and *suggested validation* — what a conclusion does not imply, and how a human independently checks it — are properties of the type, authored once by a domain expert and versioned like the business event taxonomy (ADR-0030, Decision 5). The alternative, a parallel catalog inside AI Reasoning keyed by `SignalType`, would put a type's limitations somewhere other than where the type is defined. Read-only, no new storage, and the definitions already reach M9 transitively through `SignalExplanation`; this edge makes the *catalog itself* readable rather than only the definitions attached to signals that fired.
 - AI Reasoning Engine → AI Research Engine's stored artifact: synchronous read of an already-completed research artifact when composing a reasoning request, if available at request time (falls back to reasoning without it if not yet complete — AI Research Engine is not a blocking dependency of the pipeline).
 - Business Event Engine → its own taxonomy (internal, no longer cross-module per the v1→v2 consolidation — see [ADR-0025](adr/0025-module-boundary-evolution.md)).
+- **Signal Engine → Commercial Profile's declared competitors: synchronous read of `DeclaredCompetitorReader` when generating signals. Approved 2026-08-04 — [ADR-0403](adr/0403-signal-engine-reads-a-declaration.md), on [C-223](../LANE_COORDINATION.md).** `competitor_entry` asks whether an adopted technology is one *this customer* declared, and that is a fact only the declaration holds. **Read on demand, per generation run, never projected**: a stored copy would be a second opinion about what a customer said, and *"a second opinion about a fact is how two surfaces start disagreeing about one account."* **No event, because the trigger already exists** — detection runs on `business_event.detected`, and the declaration is configuration consulted during that run, exactly as the workspace's own `SignalProfile` is. **`None` means never declared and an empty list means declared as empty**, the distinction `TargetAccountReader` already draws. **The import was already permitted** by the contract *"other modules reach commercial_profile only through public/"*, which names `signal_engine` among its source modules; **this row is the graph catching up to an enforcement that anticipated it.**
 - Revenue Intelligence Platform → Timeline: synchronous query when composing a workspace intelligence view.
 
 Everything else in the pipeline is **event-driven and asynchronous**, dispatched through the transport defined in [06-events.md](06-events.md).

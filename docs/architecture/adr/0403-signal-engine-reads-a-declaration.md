@@ -2,7 +2,9 @@
 
 ## Status
 
-**READY FOR RATIFICATION — 2026-08-04.** Drafted by Lane C — Product Office, taking ownership of **[C-223](../../LANE_COORDINATION.md)**. **Not ratified, and nothing is implemented.**
+**RATIFIED — 2026-08-04, by the product owner.** Drafted by Lane C — Product Office, taking ownership of **[C-223](../../LANE_COORDINATION.md)**. **Nothing is implemented; this ADR authorises the boundary and records the contract.**
+
+**The dependency graph is updated** — [05-module-dependencies.md](../05-module-dependencies.md) carries the edge, the module table row, the relationship pattern and the synchronous-read entry.
 
 **Five validations were run against source before this status was set** (§Validation). **All five hold, and two of them corrected claims in the first draft** — the change needs **no import-linter amendment**, because the contract that permits it already names `signal_engine`.
 

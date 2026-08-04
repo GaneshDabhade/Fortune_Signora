@@ -70,6 +70,7 @@ The most consequential question in this milestone. Getting it wrong in either di
 | **Detection rules** — single-event vs composite, window traversal | ✅ | |
 | **Which types are relevant, and how central** | | ✅ |
 | **Tuning within catalog-declared bounds** — window length, minimum contributors | | ✅ |
+| **Which technologies count as a competitor** — read from [Commercial Profile](40-commercial-profile.md)'s declaration, **never stored here** ([ADR-0403](adr/0403-signal-engine-reads-a-declaration.md)) | | ✅ |
 | **Signal instances** | | ✅ (data, RLS) |
 
 > **A workspace can never invent a signal type.** It configures *relevance* over a global catalog.
@@ -92,6 +93,8 @@ M4 put its taxonomy in a **repository artifact**; M5A puts its profile in the **
 The **signal catalog** — the global half — stays a repository artifact for exactly M4's reasons.
 
 ---
+
+> **One workspace-owned input is read rather than authored here, and the distinction matters** *(ADR-0403, ratified 2026-08-04)*. **A signal profile is this module's own aggregate**; **the competitor declaration is [Commercial Profile](40-commercial-profile.md)'s**, and `competitor_entry` reads it through `DeclaredCompetitorReader` at generation time — the same moment, and the same *absent-versus-empty* semantics, as `ProfileRepository.current()`. **Nothing is copied, projected or cached**: a stored copy would be a second opinion about what a customer said. **This module holds no competitor list and must never acquire one.**
 
 ## Configuration alternatives, evaluated
 
