@@ -597,6 +597,16 @@ Ideas → Architecture → Preparation → READY → Lane A / Lane B → QE → 
 
 > **Whenever one stage accumulates while the next is empty, name it explicitly** — with the stage, the reason, and a priority. **An empty stage downstream of a full one is the definition of a bottleneck**, and it is visible only to whoever is looking at both.
 
+### A clarification is answered, not escalated — the QE gates case
+
+**2026-08-04.** QE asked whether three `infra/` defects it had just fixed — `certification-guard.py`, the runbook, `validate.py` — become Lane C's under [D-022](DECISION_REGISTER.md).
+
+**It is a Category 1 repository clarification and was answered rather than escalated**, because both rules already exist and reading them together changes no ownership, boundary, concept, contract or invariant: **§20e's *QE removes its own blockers* is untouched by D-022**, and §20e already classes *fixing a gate* as a slice.
+
+> **D-022 filled a gap; it did not take QE's instruments.** `infra/` had no assignable lane and four defects landed there. **QE's gates were never in that gap.**
+
+**Worth recording for how QE raised it, not only what it asked.** It declined to open a coordination item **because the ruling is on a lane branch and not on `integration`** — *"filing against text that hasn't merged is precisely the 'approved is not merged' confusion"*. **That is §11c applied correctly by a lane that did not write it**, which is the strongest evidence the rule is legible.
+
 ### Prepared work that has not reached `integration` does not exist
 
 **Ratified 2026-08-04, product owner** — `CLAUDE.md` §20e, *Executable work comes from `integration`*.

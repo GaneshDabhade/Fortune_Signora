@@ -530,6 +530,17 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 |---|---|
 | `infra/**` · the `Makefile` · environment profiles and launchers · doctor and cleanup tooling · the demo lifecycle · `signora_platform/simulation/**` | **Anything in `backend/modules/`** · business logic · a feature a customer buys · `frontend/` product screens |
 
+**QE keeps its gates, and this ruling did not move them** *(clarified 2026-08-04, Lane C, on QE's question — a **Category 1 repository clarification**, deriving one reading from two rules that both already exist)*.
+
+| | Whose |
+|---|---|
+| **A defect in a gate that stops QE certifying** — `certification-guard.py` · `validate.py` · `smoke.sh` · `state-check.py` · `disaster-recovery.sh` · the compose files | **QE's to fix, unchanged.** *"A gate that cannot run is not a gate"* (§20e, **QE removes its own blockers**), and **§20e already classes fixing a gate as a slice** |
+| **New tooling** — the Environment Framework, launchers, profiles, doctor, cleanup, the demo lifecycle, developer tooling | **Lane C's to build** |
+
+> **D-022 filled a gap; it did not take QE's instruments.** `infra/` had **no assignable lane** and four defects landed there — that is what was resolved. **QE's gates were never in that gap: they have always been QE's**, and §20e says so in the sentence that makes fixing one a slice rather than a Closeout.
+>
+> **The test is not the directory. It is whether the change alters what a gate *means* or merely whether it *runs*.** A repair so QE can certify is QE's; a new capability is Lane C's. **And the symmetry is the point: Lane C may not verify governance it authored, and QE may not be made to wait on Lane C to repair the instrument it certifies with.**
+
 **Every existing constraint still binds, and three matter most:** **`signora_platform/` stays frozen** (§20a) **except `simulation/`** · **§20c-2 is absolute** — a launcher, a profile or a *preview environment* must never become CI by another name · **test data still enters the way a customer's data enters** (§20e). **Lane C is rowed on the execution board for Platform Foundation work, and referenced as before for coordination.**
 
 > **The separation that created Lane C is unchanged — it prepares decisions and the product owner makes them.** Owning tooling does not make it an implementation lane for product work, and **it may not verify governance it authored.** A Platform Foundation slice is validated, certified and promoted by QE exactly like any other.
