@@ -143,8 +143,8 @@
 | **C · People** | ⏸️ **WAITING ON PRODUCT DECISIONS** | **❓1 answered — the provider returns no name.** ADR-0400 ratification · contact ruling · **E1's progression** — §7 route B is now the only path to a named person | **Lane B** *(one remnant: the committee role id)* |
 | **M14a · Notifications** | 🔷 **ARCHITECTURE** *(not Lane C's)* | **[ADR-0040](architecture/adr/0040-notifications.md) `Proposed`.** Designed by Lane B; **F's phase 5 consumes it** | **Lane B** |
 | **M14b · Billing** | 🔎 **DISCOVERY — cannot proceed** | **[C-200](LANE_COORDINATION.md) 🔴** — no bounded context. **Preparation cannot invent scope** | **Lane A** |
-| **E2 · CRM write-back** | 🔎 **DISCOVERY** | Depends on E1 landing. **Next in preparation** | **Lane B** |
-| **M11 · Recommendation** | 🔎 **DISCOVERY** | **[C-410](LANE_COORDINATION.md)** — no prompt is released for a production model | **Lane B** |
+| **E2 · CRM write-back** | 🟩 **READY** — [406](architecture/406-epic-e2-crm-write-back.md) | **[E1](architecture/401-epic-e1-crm-read.md) acquisition** must land first. **Zero cross-lane crossings** | **Lane B** |
+| **M11 · Recommendation** | 🔷 **ARCHITECTURE** — [407](architecture/407-m11-recommendation.md) | **Its input has never fired.** `reasoning@1` unreleased ([404](architecture/404-epic-g-copilot.md) §1) · **[C-410](LANE_COORDINATION.md)** | **Lane B** |
 
 **Maturity states:** 🔎 Discovery → Research → 🔷 Architecture → Repository Validation → Reuse Analysis → Technical Design → 🟩 **READY** → 🔨 Active Implementation → ✅ Completed · ⏸️ Waiting on Product Decisions *(any state may enter it)*.
 
@@ -159,6 +159,8 @@
 | **[F · Workflow](architecture/402-epic-f-workflow.md)** | ✅ | ✅ | ✅ | ✅ **405** | ✅ | ✅ | ⚠️ |
 | **[D · Risk](architecture/403-epic-d-risk.md)** | ✅ | n/a | ⚠️ | ✅ **405** | ✅ | ✅ | ⚠️ |
 | **[G · Copilot](architecture/404-epic-g-copilot.md)** | ✅ | ✅ | ⚠️ *(cost)* | ✅ **405** | ✅ | ✅ | ⚠️ |
+| **[E2 · write-back](architecture/406-epic-e2-crm-write-back.md)** | ✅ | ✅ | ✅ | ✅ **405** | ✅ | ✅ | ⚠️ |
+| **[M11 · Recommendation](architecture/407-m11-recommendation.md)** | ✅ | n/a | ⚠️ | ✅ **405** | ✅ | ✅ | ⚠️ |
 
 **Observability, testing, operations and deployment are backfilled** — as **[405-cross-cutting-concerns.md](architecture/405-cross-cutting-concerns.md)**, written **once** with a per-epic delta table, rather than five near-identical sections that would drift apart within a week (§2, *truth has exactly one authoritative representation*). **Each package links to it and states only its own deltas.**
 
