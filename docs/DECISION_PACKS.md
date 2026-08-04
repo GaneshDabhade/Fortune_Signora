@@ -246,6 +246,80 @@
 
 ---
 
+## PACK N · The engineering-blocking queue, reduced to four decisions
+
+**Produced 2026-08-04 on the product owner's direction: *shrink the decision queue*.** Five items were named in priority order; **each was verified against source, and one of the five needs no ruling of its own.** No new architecture, no replacement `C-` items.
+
+| # | Item | Still valid? | **The smallest decision** |
+|---|---|---|---|
+| **1** | **[C-326](LANE_COORDINATION.md)** | ✅ **Yes, and much smaller than when raised** | **Ratify [ADR-0300](architecture/adr/0300-inbound-customer-systems.md) §1 — *a customer-held system is a source, not a provider*.** One sentence; everything else follows |
+| **2** | **[C-221](LANE_COORDINATION.md)** | ✅ Yes — **Lane C's half is done** *(below)* | **Park Epic C until [E1](architecture/401-epic-e1-crm-read.md) lands, or drop it.** Nothing else can move it |
+| **3** | **[C-321](LANE_COORDINATION.md)** | ✅ Yes | **Accept the six recommendations as a set, or name the ones you would change.** They are already yes/no |
+| **4** | **[C-021](LANE_COORDINATION.md)** | ✅ Valid — **but it needs no ruling of its own** | **None. It is gated on [C-010](LANE_COORDINATION.md)**, and ruling that unblocks both |
+| **5** | **[C-200](LANE_COORDINATION.md)** | ✅ Yes | **Is M14b one module, two, or three?** Lane A's discovery says *"one module and two integrations"* |
+
+---
+
+### 1 · C-326 — the ruling moves a file and rewrites a wrapper
+
+**Lane B's own row already narrowed it, and the narrowing is the important part:** *"This row said implementation had stopped. **It had not.**"* Interpretation, acquisition, grant lifecycle and the vendor read **all reached `main` on 2026-08-04.**
+
+> **What remains gated is exactly one thing: how a fetched record reaches `raw_provider_record`.** Lane B: *"the ruling **moves a file and rewrites a wrapper — no behaviour moves with it**."*
+
+**[ADR-0300](architecture/adr/0300-inbound-customer-systems.md) is `Proposed`, and that is the whole blocker.** **[409](architecture/409-inbound-source-port-contract.md) is the contract that follows from its §1**, specified so implementation resumes without inventing architecture — and it establishes that the change needs **no migration, no new event, no vocabulary addition and no downstream change**, because `raw_provider_record.provider` is already `String(64)` and normalization already keys on a `str`.
+
+**So the decision is a yes/no on one sentence**, and the cost of *yes* has already been measured at near zero.
+
+### 2 · C-221 — Lane C's half is complete; the remaining half is a route
+
+**C-221's owner is split — *product owner (the epic) · Lane C (the specification)*. The specification half is done** and needs nothing further:
+
+| | |
+|---|---|
+| **[400-epic-c-people.md](architecture/400-epic-c-people.md) §0** | Records that ❓1 is answered **no**, that phases 1–3 do not split into a blocked and an executable half, and that the buying score needs no change at all |
+| **[ADR-0400](architecture/adr/0400-person-as-an-entity.md)** | Carries the model, the alternatives and the three open questions |
+
+**What is left is one choice, and no work of any kind changes it:** **the provider returns no person name**, so Epic C's phases 1–3 have no input. **Route B — read people from the customer's own CRM once [E1](architecture/401-epic-e1-crm-read.md) lands — is the only path**, and Lane C recommended it in ADR-0400 ❓2 for independent reasons.
+
+> **Park or drop. There is no third option that repository evidence supports**, and holding [TASK-201](BACKLOG.md) claimed-and-blocked costs Lane A a row on its board.
+
+### 3 · C-321 — already six yes/no answers awaiting a signature
+
+**Lane B reduced it to six sub-questions with recommendations**, and the A6 reuse audit *"settled two things so the ruling does not have to."*
+
+| | Recommended |
+|---|---|
+| Should an unnamed company appear at all? | **Yes** — hiding it discards real intelligence |
+| On the working list? | **No** — that list answers *"who should I call?"* |
+| Contribute to a score? | **Yes** — the score measures evidence, and the evidence is real |
+| Become an opportunity? | **No** — an opportunity is something a person can pursue |
+| Be workable? | **Never.** Today it is |
+| What is it, then? | **`Needs identity` — a queue with its own workflow**, not a filter |
+
+**Lane C adds nothing and recommends nothing here** — the analysis is Lane B's and is complete. **The smallest decision is to accept the set or name exceptions.**
+
+### 4 · C-021 — valid, and it is not a decision
+
+**Verified still valid:** `provider_platform/application/sync_targets.py` is **179 lines, built and tested**, and **`apps/worker/subscriptions.py` does not wire it** — grep for `sync_targets`, `target_accounts_changed` and `SyncTargets` returns nothing. **Nothing yet reads a company a customer declared. The row is accurate.**
+
+> **But its stated owner reason is *"`apps/worker/` has no assignable lane ([C-010](LANE_COORDINATION.md))"*** — and that is [C-010](LANE_COORDINATION.md)'s question, not a second one. **C-021 is C-010 wearing a slice's name.**
+
+**No ruling is needed on C-021.** Ruling C-010 — *how is code that belongs to no module assigned when it needs a fix?* — unblocks PP-02's last wire, PP-03, and [C-007](LANE_COORDINATION.md) with it. **Two items, one decision. That is the reduction.**
+
+**Not merged and not closed**, because C-021 also records a genuine technical finding an implementer needs. **It is marked as gated on C-010 rather than carried as an independent decision.**
+
+### 5 · C-200 — one question, three candidate answers
+
+**M14b is three concerns in one roadmap row** — billing, analytics, feature flags — **and none has a module.** Lane A's discovery reached a specific answer: ***"It is one module and two integrations, not one and not three."***
+
+**The smallest decision is which of the three that is.** **Lane C makes no recommendation** — M14b's scope is product scope, and Lane C's own [408](architecture/408-revenue-intelligence-platform.md) test would only tell you whether the result owns an aggregate, which cannot be applied until the boundary is chosen.
+
+---
+
+> **Net effect: five priority items → four decisions**, and **three of the four are a signature rather than a design** — C-326 is one sentence, C-321 is six yes/no answers already written, C-221 is park-or-drop. **Only C-200 requires original product thinking.**
+
+---
+
 ## PACK M · OAuth client credentials — **withdrawn 2026-08-04, a clarification rather than a decision**
 
 **Opened and withdrawn the same day.** Lane B's [C-327](LANE_COORDINATION.md) asked where Signora's own OAuth client credentials live; Lane C prepared it as a decision and **that was the misclassification**, not the analysis.
@@ -290,7 +364,9 @@
 | | Item | Blocking | Why it cannot be determined objectively |
 |---|---|---|---|
 | 🔴 | **[C-321](LANE_COORDINATION.md)** | **A6, now** | Its specification says twice that A6 *"depends entirely on the C-321 ruling"*. **What to render *is* the ruling** — narrowing the slice does not escape it |
-| 🟠 | **[Pack I](#pack-i--epics-bg-are-specified-and-unapproved-and-the-queue-is-running-dry)** — Epics B–G scope | **Lane A's 5th slice · Lane B's 5th** | **New scope is the product owner's**, never the office's. Both queues hold four executable items and stop there |
+| 🟠 | **[Pack I](#pack-i--epics-bg-are-specified-and-unapproved-and-the-queue-is-running-dry)** — Epics B–G scope | — | ⚠️ **Superseded in practice.** Epics C, D, E1, F and G were all approved and assigned directly between 2026-08-03 and 2026-08-04. **What remains of it is Epic B**, which [C-322](LANE_COORDINATION.md) already carries |
+
+> **The engineering-blocking queue is [Pack N](#pack-n--the-engineering-blocking-queue-reduced-to-four-decisions), and it is four decisions.** Everything below this line is either ruled, dissolved or blocking nothing.
 
 > **Everything else the office could determine, it determined.** Packs J and K were dissolved rather than escalated, Pack F was ruled, Pack H adopted. **A decision list long enough to need triage is a list Lane C failed to triage.**
 
