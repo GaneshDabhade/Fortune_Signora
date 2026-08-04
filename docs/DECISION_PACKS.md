@@ -426,7 +426,9 @@
 
 ## The decision queue, as of 2026-08-04
 
-**Five items genuinely need the product owner. Not twenty** — and the office's job is to keep it that way.
+**Nine items genuinely need the product owner, and two of the eleven collapsed into others** — the office's job is to keep finding those.
+
+> **Two reductions, 2026-08-04.** **[C-221](LANE_COORDINATION.md) is carried by O1**: *"park Epic C or drop it"* has no independent answer, because ratifying ADR-0400 removes its premise and refusing it settles it as *drop*. **[C-021](LANE_COORDINATION.md) is carried by O4**: Pack N already recorded it as *"gated on C-010, and ruling that unblocks both."* **Neither needs a separate ruling and neither is listed below.**
 
 | | Item | Blocking | Why it cannot be determined objectively |
 |---|---|---|---|
@@ -435,6 +437,10 @@
 | 🟠 | **[O2](#pack-o--the-approved-ui-needs-three-things-the-repository-has-not-decided)** — ratify ADR-0040 | **Notification Center · Signal Center routing · monitored searches** | **Hold lifted — Module 7 is delivered and the wait was justified.** The approved module is far larger than the popover ADR-0040 was written against. **Read it against [418](architecture/418-platform-foundation-assessment.md) §3 first** |
 | 🔴 | **[O4](#pack-o--the-approved-ui-needs-three-things-the-repository-has-not-decided)** — rule C-010, `infra/` ownership | **Environment Framework phase 3 · the saved-view store · the A360 batch composition** | **Three pieces of work now wait on one unruled question**, and four defects already landed in the gap. **Raised in urgency by the P0 proposal, not newly discovered** |
 | 🟠 | **[O3](#pack-o--the-approved-ui-needs-three-things-the-repository-has-not-decided)** — where the Shell's services live | **Every screen after priority 3** | A boundary question, so it decides whether an ADR is needed |
+| 🔴 | **[C-326](LANE_COORDINATION.md)** — ratify [ADR-0300](architecture/adr/0300-inbound-customer-systems.md) §1 | **Epic E1's read · E2 · CRM Integrations** | **Narrowed 2026-08-04** ([419](architecture/419-c326-narrowed-and-lane-b.md)): it blocks **the source port and the runner, and nothing else.** Both ends are already built |
+| 🟠 | **[ADR-0401](architecture/adr/0401-a-customers-crm-is-not-a-provider.md)** — is a CRM field a claim? | **E1's normalization** | **Sign it with C-326.** Same epic, adjacent question — C-326 is *how data gets in*, this is *what it means once in* |
+| 🟠 | **[ADR-0402](architecture/adr/0402-a-rule-is-data.md)** — a rule is data | **Epic F entirely** | **Complete: five alternatives assessed, one recommended, no unresolved alternative.** Phases 1–4 depend on nothing unbuilt |
+| 🟡 | **[C-200](LANE_COORDINATION.md)** — is M14b one module, two, or three? | **Billing · M14b** | Lane A's discovery says *"one module and two integrations"*. **Module 8's approved design is new evidence** ([418](architecture/418-platform-foundation-assessment.md) §5a) |
 | 🟠 | **[Pack I](#pack-i--epics-bg-are-specified-and-unapproved-and-the-queue-is-running-dry)** — Epics B–G scope | — | ⚠️ **Superseded in practice.** Epics C, D, E1, F and G were all approved and assigned directly between 2026-08-03 and 2026-08-04. **What remains of it is Epic B**, which [C-322](LANE_COORDINATION.md) already carries |
 
 > **The engineering-blocking queue is [Pack N](#pack-n--the-engineering-blocking-queue-reduced-to-four-decisions), and it is four decisions.** Everything below this line is either ruled, dissolved or blocking nothing.
