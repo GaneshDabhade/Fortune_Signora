@@ -326,6 +326,7 @@ databaseUrl: required(
 | [C-218](#c-218--a-lane-can-report-available-and-the-office-that-assigns-cannot-see-it) | **A lane can report `AVAILABLE`, and the office that assigns cannot see it** | Lane A | **Lane C** (model) · **QE** (mechanism) | `OPEN` | **Every lane's idle time, structurally.** [C-217](#c-217--lane-a-is-available-and-requests-its-next-product-surface-epic) is the worked example: raised, pushed, invisible |
 | [C-219](#c-219--task-400s-two-halves-are-not-equally-buildable) | **TASK-400's two halves are not equally buildable** | Lane A | **Product owner** (A6) · **Lane C** (A7 join) | `OPEN` — **A7 proceeding, A6 held** | **A6 only.** Its own specification says [C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name) *"must be answered first"* |
 | [C-220](#c-220--two-lanes-have-both-written-a-document-50-and-a-document-51) | **Two lanes have both written a document `50` and a document `51`** | Lane A | **QE** · Lane C | `OPEN` | Nothing today. **`state-check` at the merge that brings both branches together** |
+| [C-221](#c-221--epic-cs-first-open-question-is-answered-and-the-answer-blocks-the-epic) | **Epic C's first open question is answered, and the answer blocks the epic** | Lane A | **Product owner** · Lane C | `OPEN` — [TASK-201](BACKLOG.md) claimed and blocked | **All of Epic C's Phases 1–3.** No person name enters the platform at any point |
 | [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | M14b is three concerns in one roadmap row, and none has a module | Lane A | **Product owner** (bounded context 🔴) | `OPEN` — **architectural** | **The whole of M14b.** [R-01](architecture/16-architecture-risks.md) has been waiting for it at High/High |
 | [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide) | Identifier allocation is still only *unlikely* to collide | Lane A | **QE** + product owner | `OPEN` — **directed by the product owner** | Nothing built. **The repository scaling past three actors without manual reconciliation** |
 | [C-202](#c-202--four-shared-documents-disagree-and-one-disagrees-with-itself) | Four shared documents disagree, and one disagrees with itself | Lane A | **QE** | `OPEN` — **directed by the product owner** | Nothing built. **A cold session trusting any status in the repository** |
@@ -4286,5 +4287,62 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 **This is [B-400](BUGS.md) again in a different costume** — two lanes independently taking the next free number, both correctly, from a register that could not show them each other's. **`CLAUDE.md` §20e allocates blocks for `B-`, `C-`, `TASK-` and ADR numbers and is silent on architecture documents**, which is the whole gap: migrations are deliberately exempt and dense, ADRs are blocked, and this class is neither.
 
 **Lane A is not renumbering its own documents unilaterally** — both sets are cited from commit messages, board rows and other documents, and choosing which moves is QE's at merge, by the existing later-claim-moves rule.
+
+---
+
+---
+
+## C-221 · Epic C's first open question is answered, and the answer blocks the epic
+
+| | |
+|---|---|
+| **Owner** | **Product owner** (the epic) · **Lane C** (the specification) |
+| **Requesting lane** | Lane A |
+| **Category** | Product scope · provider contract |
+| **Status** | `OPEN` — **[TASK-201](BACKLOG.md) claimed and blocked** |
+| **Blocks** | **All of Epic C's Phases 1–3.** Phase 4 was already conditional |
+| **Raised** | 2026-08-04, doing exactly what [ADR-0400](architecture/adr/0400-person-as-an-entity.md) instructs before any code |
+
+**ADR-0400 marks ❓1 *"Check this before writing any code."*** It was checked before any was written. **The answer is no**, and the ADR had already named the consequence.
+
+### The trace, end to end
+
+| Where | What it carries |
+|---|---|
+| `provider_normalization/.../mappers/enrichment.py` | Reads `title`, `type`, `seniority`, `occurred_on` from `employee_changes`. **No name is read** |
+| `RoleChangeValue` (`domain/vocabulary.py:144`) | `title` · `seniority` · `direction`. **No name field exists to carry one** |
+| `simulation/generators/enrichment.py:149` | Emits exactly those four keys. **The simulator models no name** |
+| **Every dataset and scenario in the repository** | **2 real `employee_change` records**, in `playground@2.json`, keys `occurred_on · seniority · title · type` |
+| Repository-wide search | **No `person_name`, `contact_name`, `full_name` or `first_name` anywhere outside tests** |
+
+> **No person's name enters the platform at any point.** Not from the provider contract, not from the simulator, not from any recorded data.
+
+### Why that blocks the epic rather than merely shrinking it
+
+**ADR-0400's aggregate root is an identity**: *"`Person` — identity · **names as claims** · provider identities · resolution state."* **There are no name claims to make, and no field that could carry one.**
+
+**This is precisely the condition `knowledge_graph` wrote down as the reason people were excluded** — *"claims carry role changes but no person **identifier**, so there is no identity to resolve"* (`domain/identity.py:32`). **The ADR's case was that Epic C supplies that identifier. Nothing in the repository does.**
+
+**Building `Person` and `Affiliation` now would be an identity model with nothing to identify** — speculative structure for an input that does not exist (§6, *do not add abstractions for requirements that do not yet exist*), and it would introduce **personal-data storage with no personal data and no lawful basis declared** (❓2).
+
+### What the ADR itself says happens now
+
+> *"If the answer is no, Phase 2 of the strategy degrades to **'a VP of Engineering left'** — **today's behaviour** — and ❓2's route B becomes the only path to a named person."*
+
+**Route B is [E1](BACKLOG.md) — read contacts from the customer's own CRM, under the customer's own lawful basis.** It is **Lane B's, and unbuilt.** Lane C recommended it on its own merits and it is already `READY` in the queue.
+
+### Three ways forward, and none is Lane A's to choose
+
+| | | |
+|---|---|---|
+| **A** | **Answer the provider-contract question** — does the *production* provider return a name? | **Nothing in this repository can.** It needs the vendor contract, which is a product-owner input |
+| **B** | **Sequence [E1](BACKLOG.md) first**, then Epic C reads people from the customer's CRM | **Lane C's recommendation in ❓2, for independent reasons.** It is Lane B's epic |
+| **C** | **Build the context now against no input** | **Lane A recommends against.** It is structure for a capability with no data, in the module class with the heaviest compliance obligation |
+
+**Lane A is not asking for a different assignment and has not started one.** [TASK-201](BACKLOG.md) is claimed and recorded blocked. **This is the epic's own gate returning *stop*, checked in the order the ADR set.**
+
+### One governance note, separate from the above
+
+**[ADR-0400](architecture/adr/0400-person-as-an-entity.md) is `PROPOSED`, not ratified**, and says so in its own status block: *"Not ratified, and nothing is implemented."* **A new bounded context is 🔴** (product owner + ADR). The assignment is the epic approval; **the ratification stamp is a separate act and only the product owner can apply it.** Recorded rather than assumed, because the ADR is explicit that the two are separate.
 
 ---
