@@ -4,7 +4,9 @@
 >
 > **Originally: Proposed.** Written by Lane B, 2026-08-04, on being assigned Epic E1 (CRM OAuth and read) and finding that **no path exists for a customer-held system to reach the intelligence pipeline.** It is proposed rather than accepted because every option below is 🔴 — a ratified port, a closed domain type, or the canonical vocabulary — and none of those is a coding session's to decide (`CLAUDE.md` §20e).
 >
-> **Nothing was built against any option here.** Epic E1's implementation is stopped at this document, which is what an architectural blocker requires: *"implementation stops, architecture discussion begins."*
+> *Both paragraphs above are dated records and are kept unedited (§2).* **Neither is true of today**, and this line says so rather than leaving a reader to find out: **Option A is built.** `IntegrationSourceAdapter`, `Capability.CRM_RECORDS` and `HubSpotCompanySource` — [409](../409-inbound-source-port-contract.md) steps 1, 2 and 6 — were implemented by Lane B on 2026-08-04 and **promoted to `main`**, on the product owner's standing instruction that *"a product owner decision authorizes implementation; integration synchronization authorizes repository convergence."*
+>
+> **What remains is [409](../409-inbound-source-port-contract.md) steps 3–5 in `provider_platform`** — the event annotation, the runner, and a simulated adapter — which are another module's and are held on [C-300](../../LANE_COORDINATION.md). **The port exists and nothing drives it.**
 
 ---
 
