@@ -75,6 +75,39 @@
 
 ---
 
+## 2b · Readiness review, 2026-08-04 — **the precedent Epic F needs already exists, and no customer can reach it**
+
+**Found by applying the three-question heuristic** ([`PRODUCT_OFFICE.md`](../PRODUCT_OFFICE.md) §5) to this package after it was written: *does the capability exist · can a customer reach it · is it consumed elsewhere?*
+
+> **`signal_engine/domain/profile.py` — the signal profile — is described in its own docstring as *"the first genuinely customer-authored configuration in the platform."*** It is **immutable, versioned, superseded rather than edited**, and every signal records the profile version that produced it. **It lives in the database rather than a repository artifact**, and the stated reason is precisely Epic F's reason for existing: *"a customer cannot be asked to wait for a Signora release to say that hiring surges matter to them. The deciding criterion is **ownership, not technology**."*
+
+**And a customer cannot author one.**
+
+| Question | Answer |
+|---|---|
+| **Does it exist?** | ✅ Domain type, repository, `ProfileEntry`, versioning, `default_profile` fallback |
+| **Is it consumed?** | ✅ `signal_engine/application/generate.py` resolves it per run; `buying_score_engine` reads through it; the router hides *"profile-deactivated"* hypotheses |
+| **Can a customer reach it?** | ❌ **No route. No screen. No use case.** `signal_engine/application/` is `generate` · `ports` · `queries` — **read-only**. **`SignalProfile(` is constructed nowhere but tests** |
+
+> **Every workspace silently runs on catalog defaults**, because *"an absent profile falls back to the catalog's declared defaults."* **The product works and gives every customer identical interpretation** — which is the one thing the module was built to avoid: *"identical signals in two workspaces with identical ones."*
+
+### What this changes for Epic F
+
+**1 · The domain precedent is `SignalProfile`, not a `commercial_profile` declaration.** §5 modelled `Rule` on the declarations, and they are the *weaker* analogue: a declaration is **a customer statement that drives nothing**, while a profile is **customer-authored configuration that drives an engine** — which is exactly what a rule is. **Same versioning, same immutability, same ownership criterion, and it is already load-bearing in the pipeline.**
+
+**2 · Epic F gains a phase 0 that is small, independent, and proves the pattern.** *Give the signal profile a way in.* **No new bounded context, no new domain type, no ADR** — an application use case, a route and a screen, over a versioned aggregate that already exists and is already consumed.
+
+| # | Phase | Delivers | Effort | Depends on |
+|---|---|---|---|---|
+| **0** | **The signal profile becomes reachable** | **A customer changes what their own signals mean** — the module's stated purpose, unreachable today | **M** | **Nothing** |
+| 1–5 | *(as §5)* | | | **[ADR-0402](adr/0402-a-rule-is-data.md)** for phase 2 onward |
+
+> **Phase 0 delivers customer value with no ruling outstanding, and it de-risks the rest.** It exercises customer-authored, versioned, engine-driving configuration **end to end, on an aggregate that already exists** — so by the time `Rule` is built, the pattern has shipped once. **It is also the only part of Epic F that needs no ADR.**
+
+**Stated plainly: this is a readiness improvement to a package Lane C had already called READY.** The heuristic that found it was adopted *after* this package was written, and **running it retroactively is why the phase exists.**
+
+---
+
 ## 3 · Repository reuse — what must NOT be built
 
 | ❌ Do not build | ✅ Exists as | Consequence |

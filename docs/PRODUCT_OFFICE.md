@@ -200,6 +200,12 @@ Decisions required    what the product owner must rule before it can start
 
 > **The *things NOT to build* section has become the most valuable output the office produces** *(product owner, 2026-08-04)*. It is written first, from the repository, and it is usually longer than the design.
 
+**Three questions before declaring anything unbuilt** *(adopted 2026-08-04, product owner)*:
+
+> **1 · Does the capability already exist? 2 · Can a customer actually reach it? 3 · Is it already consumed somewhere else?**
+
+**Three independent implementations demonstrated this produces better packages than searching only for missing code.** It is now part of standard preparation, run before the reuse audit rather than after it.
+
 **Look for the capability with no way in, not only the capability that is missing** *(learned 2026-08-04, three instances in two days)*. **A5's Observation Engine had thirteen fields computed since M4 and no interface layer. The firmographic CRM read was six canonical attributes the vocabulary already accepted. The connect route had been complete and tested since M13 S01 with nothing exposing it** — *"a customer who finished a consent flow had nowhere to land."*
 
 > **Each was found by an implementation lane, after Lane C had prepared the epic and reported the gap as something unbuilt.** The office kept asking *what does not exist?* when the more productive question was **what exists and cannot be reached?** — and the audit that founded this whole approach said so first: *fifteen modules, eighty-two events and twenty-four endpoints behind five screens.*
@@ -213,6 +219,22 @@ Decisions required    what the product owner must rule before it can start
 **Cross-validation is standing, not occasional** *(product owner, 2026-08-04)*. **Every time a lane completes a milestone, every prepared package is re-checked against it** — new reusable APIs, UI, workflows, events or entities · changed dependencies · **removed blockers** · and assumptions that stopped being true. **A package that is not re-validated is a package quietly going stale**, and preparation that lags the repository is worse than none because it is trusted.
 
 > **It earns its place immediately.** On its first run: [ADR-0401](architecture/adr/0401-a-customers-crm-is-not-a-provider.md) was **amended within hours of being drafted** because Lane B's mapper showed the boundary was per *field*, not per *source*; [Epic C](architecture/400-epic-c-people.md) moved to **`Waiting on Product Decisions`** because Lane A answered ❓1 and the answer was *no*; and two Lane A findings **removed a phase and closed off a tempting shortcut** that would have cost a week.
+
+### What Lane C reports, and what it stops reporting
+
+**A decision Lane C has fully prepared is finished work, and it leaves the report** *(product owner, 2026-08-04)*. **Once a finding is incorporated into the package, the register and the portfolio, the office moves on.** Whether the decision is then taken — and by whom — is not Product Office work.
+
+> **[C-222](LANE_COORDINATION.md) is the example that produced the rule.** Lane C ran the analysis, [404](architecture/404-epic-g-copilot.md) absorbed the measurement, the blocker was refined from *"no released model"* to a policy question, and the portfolio was updated. **At that point Lane C's work on it was complete.** Whether QE may record a release whose measurement needed a longer timeout is **Lane A's, QE's and the product owner's** — and re-surfacing it every cycle is noise that makes the genuinely new items harder to see.
+
+| | Belongs in **Attention Required** | Belongs in the **standing decision list** |
+|---|---|---|
+| **New** since the last report | ✅ | |
+| **Blocks Lane C's own work** | ✅ | |
+| Blocks an implementation lane | | ✅ |
+| Already prepared, awaiting a ruling | | ✅ |
+| Lane C is tracking it out of interest | ❌ **neither** | |
+
+**The standing list is stated once and marked unchanged.** It is a queue, not a request.
 
 ### Roadmap integrity
 
