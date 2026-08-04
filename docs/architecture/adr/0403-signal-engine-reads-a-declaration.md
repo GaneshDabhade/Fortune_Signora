@@ -2,7 +2,9 @@
 
 ## Status
 
-**PROPOSED — 2026-08-04, drafted by Lane C — Product Office**, taking ownership of **[C-223](../../LANE_COORDINATION.md)**. **Not ratified, and nothing is implemented.**
+**READY FOR RATIFICATION — 2026-08-04.** Drafted by Lane C — Product Office, taking ownership of **[C-223](../../LANE_COORDINATION.md)**. **Not ratified, and nothing is implemented.**
+
+**Five validations were run against source before this status was set** (§Validation). **All five hold, and two of them corrected claims in the first draft** — the change needs **no import-linter amendment**, because the contract that permits it already names `signal_engine`.
 
 > **Scope is C-223 and nothing else.** Lane A reduced the item to facts and stopped; **how the boundary is crossed is Product Office's, and whether it may be crossed is the product owner's.** A new cross-module dependency is 🔴.
 
@@ -10,7 +12,7 @@
 
 **`signal_engine` cannot see `commercial_profile`'s competitor declaration, and `competitor_entry` cannot be written without it.**
 
-Established by Lane A and verified independently: the declaration is **`commercial_profile`** — aggregate `DeclaredCompetitors`, table `declared_competitors`, migration `0036`, `GET`/`PUT /workspaces/{id}/competitors`, **shipped**. The consumer is **`signal_engine`** — `competitor_entry` is its catalog row, its detection rule and its scoring weight. **The minimal data is the set of declared names and each entry's stable id**, bounded at `MAX_COMPETITORS = 200`. **No dependency path exists in either direction**, and two enforcements each independently prevent one: the `lint-imports` contract, and §5's rule that a cross-module dependency must match an edge already in the graph.
+Established by Lane A and verified independently: the declaration is **`commercial_profile`** — aggregate `DeclaredCompetitors`, table `declared_competitors`, migration `0036`, `GET`/`PUT /workspaces/{id}/competitors`, **shipped**. The consumer is **`signal_engine`** — `competitor_entry` is its catalog row, its detection rule and its scoring weight. **The minimal data is the set of declared names and each entry's stable id**, bounded at `MAX_COMPETITORS = 200`. **No dependency path exists in either direction.** ⚠️ **C-223 records two enforcements as preventing one; validation found that only one does** — §5's rule that a cross-module dependency must match an edge already in the graph. **The `lint-imports` contracts already permit this import** (§Validation 2).
 
 ### Four verifications, run before proposing anything
 
@@ -67,9 +69,87 @@ class ProfileRepository(Protocol):
 
 **Positive.** `competitor_entry` becomes writable. **The declaration stays under one owner**, and adding a field to it is still not an event-contract change. **`signal_engine` resolves it exactly as it resolves `SignalProfile`**, so there is one timing story rather than two. **200 rows per workspace, read once per generation run** — no caching question worth opening.
 
-**Negative, and stated plainly.** **A second module now depends on `commercial_profile`**, which makes that module's `public/` a genuine contract with two consumers rather than one — the point at which its stability starts to matter. **And the `lint-imports` contract must be amended**, which is the mechanical part of a 🔴 change and is not a lane's.
+**Negative, and stated plainly.** **A second module now depends on `commercial_profile`**, which makes that module's `public/` a genuine contract with two consumers rather than one — the point at which its stability starts to matter. **The dependency graph in [05-module-dependencies.md](../05-module-dependencies.md) gains an edge**, which is documentation the ruling produces.
+
+> ⚠️ **Corrected on validation: no `lint-imports` amendment is required.** The first draft of this ADR said the contract *"must be amended."* **It must not** — see §Validation 2. The mechanical cost of this change is **zero**; what remains is the architectural judgement and the graph edge.
 
 **Neutral.** No event, no projection, no table, no migration. **Nothing downstream of `signal.generated` is affected.**
+
+## Validation
+
+**Five checks run against source on 2026-08-04, before this ADR was marked ready.**
+
+### 1 · Every existing consumer follows the same ownership model — with one class of exception, and it is not one
+
+**Exactly one module consumes `commercial_profile`:** `provider_platform/application/sync_targets.py`, importing `TargetAccountReader` from `commercial_profile.public`. **No module reaches `domain`, `application`, `infrastructure` or `interface`.**
+
+**Recorded so the claim is precise rather than absolute:** `apps/api/composition/products.py` and `apps/api/main.py` **do** import `commercial_profile.application`, `.infrastructure` and `.interface`. **That is the composition root doing what it exists for** — *"the only place that may see two modules' infrastructure at once"* — and it is outside every `importlinter` contract by construction, because each names only `modules.*` in `source_modules`. **It is not an exception to the ownership model; it is the place the model is assembled.**
+
+### 2 · No new cycle, and **no contract amendment** — this corrects the first draft
+
+**Two ratified contracts settle it, and neither needs changing.**
+
+> **`"other modules reach commercial_profile only through public/"`** — a `forbidden` contract whose **`source_modules` explicitly names `modules.signal_engine`**, with `commercial_profile`'s four non-public layers forbidden. **`signal_engine → commercial_profile.public` is therefore already permitted**, and the contract's own comment states the intent: *"Nothing consumes it yet, and the contract exists now so that when something does, **it arrives through `public/` rather than by reaching inside**."*
+
+> **`"commercial_profile declares; it never reads the pipeline"`** — `source_modules = ["modules.commercial_profile"]`, **with `modules.signal_engine` among its forbidden modules.** **A cycle is structurally impossible**, enforced independently of this decision.
+
+**Two premises are corrected by this.** [C-223](../../LANE_COORDINATION.md) records that *"the contract… lists the modules it may reach, and `commercial_profile` is not among them"* — **that contract is `type = "forbidden"`, so its list is what `signal_engine` may *not* reach, and `commercial_profile` is absent from it.** And this ADR's own first draft claimed the contract *"must be amended."* **Neither holds.**
+
+> **What remains genuinely new is the *graph*, not the *permission*.** [05-module-dependencies.md](../05-module-dependencies.md) has no `Signal Engine → Commercial Profile` edge, and §5 requires a graph change to be approved first. **The enforcement anticipated this consumer; the documentation has not caught up.** That is what ratification produces.
+
+**No other contract is affected.** Of 34 contracts, the seven mentioning `commercial_profile` are: the layering container, the two above, and four that forbid *other* modules from reaching it or it from reaching them — **none of which this change touches.**
+
+### 3 · The exact public contract to be added
+
+```python
+@dataclass(frozen=True, slots=True)
+class DeclaredCompetitorView:
+    id: UUID          # stable across every revision of the list
+    name: str         # exactly what the customer typed — unresolved, unnormalised
+
+@dataclass(frozen=True, slots=True)
+class DeclaredCompetitorListView:
+    workspace_id: UUID
+    competitors: tuple[DeclaredCompetitorView, ...]
+
+class DeclaredCompetitorReader(Protocol):
+    async def current(self, workspace_id: UUID) -> DeclaredCompetitorListView | None: ...
+```
+
+**Semantics, stated because they are the contract and not the shape:**
+
+| | |
+|---|---|
+| **`None` vs empty** | **`None` means never declared; an empty tuple means declared as empty.** The same distinction `TargetAccountReader` draws — *"'they have not told us yet' is a state to wait in, and 'they told us to watch nobody' is an instruction to act on"* |
+| **`name`** | **Uninterpreted.** Matching it against an adopted technology is the consumer's judgement, exactly as `ProviderRequest.subject` is *"opaque to the platform"* |
+| **`id`** | **Stable across revisions**, which is what lets a consumer tell a rename from a remove-and-add |
+| **Resolution** | **On demand, per generation run.** No caching contract, no freshness guarantee beyond *the version in force when it was called* |
+| **Implementation** | **`commercial_profile/infrastructure/`, injected by the composition root** — *"so a consumer never learns that this is backed by SQL"* |
+
+**`__all__` gains three names. Nothing existing changes.**
+
+### 4 · Why no event, projection, cache or replicated state — on evidence
+
+| | Repository evidence |
+|---|---|
+| **No event** | `sync_targets.py`: ***"The event is the trigger and the port is the payload… nothing about accounts travels on the bus, so adding a field to a declaration is never an event-contract change."*** `provider_platform` needs a trigger because a sync is a scheduled action. **`signal_engine`'s trigger already exists** — detection runs on `business_event.detected`, and the declaration is configuration consulted *during* that run |
+| **No projection or replicated state** | The `timeline` contract states the cost in the repository's own words: a module that could re-derive what an owner already decided *"would be one convenience away from re-deriving meaning the owning module has already decided — and **a second opinion about a fact is how two surfaces start disagreeing about one account**."* **A projected copy of a declaration is a second opinion about what a customer said** |
+| **No cache** | **`MAX_COMPETITORS = 200`**, one row-set per workspace, read once per generation run — **and `signal_engine` already performs exactly one such read per run** for `SignalProfile` via `ProfileRepository.current()`, uncached. **A cache here would be a second freshness model for the second thing read at the same moment** |
+| **No eventual consistency** | A synchronous read cannot be stale relative to itself. **A projection would introduce a window in which a customer has declared a competitor and detection has not yet seen it** — a window the current design does not have and would have to explain |
+
+### 5 · Compatibility impact — additive only
+
+| | |
+|---|---|
+| **Existing consumers** | **Unchanged.** `provider_platform`'s use of `TargetAccountReader` is untouched; `__all__` grows and nothing in it is modified |
+| **Migration** | **None.** `declared_competitors` and migration `0036` are shipped; this adds a read path over existing rows |
+| **Event contracts** | **None.** No event is added, removed or altered. `TargetAccountsChanged` is untouched |
+| **Persistence** | **None.** No table, column, index or constraint |
+| **Import contracts** | **None** — §Validation 2 |
+| **Public API** | **None.** `GET`/`PUT /workspaces/{id}/competitors` are unchanged; this is a module-to-module read |
+| **Net** | **Additive only.** Three types, one `__all__` entry set, one graph edge in documentation |
+
+---
 
 ## Out of scope, deliberately
 
@@ -77,4 +157,4 @@ class ProfileRepository(Protocol):
 
 ## Compliance
 
-**`Proposed`. Nothing to comply with yet.** On ratification: **`signal_engine` imports from `commercial_profile.public` and nowhere else in that module** — the existing `lint-imports` contract, extended by one entry, is what checks it · **`current()` returns `None` for *never declared*, never an empty list** · **no `CompetitorsChanged` event exists** · **the declaration carries no judgement field**, which is `commercial_profile`'s own standing invariant and unaffected by being read.
+**`Proposed`. Nothing to comply with yet.** On ratification: **`signal_engine` imports from `commercial_profile.public` and nowhere else in that module** — **the existing `lint-imports` contract already checks this and needs no entry added** · **`current()` returns `None` for *never declared*, never an empty list** · **no `CompetitorsChanged` event exists** · **the declaration carries no judgement field**, which is `commercial_profile`'s own standing invariant and unaffected by being read.
