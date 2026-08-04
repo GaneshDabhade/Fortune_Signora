@@ -275,6 +275,34 @@
 
 ---
 
+## 4a · The supported viewport — *ruled 2026-08-03*
+
+**[C-205](../LANE_COORDINATION.md) asked one question and it has an answer: a phone is in scope.** The repository had never stated a supported viewport, so every screen was reviewed against an assumption rather than a target — which is what the item said the value of ruling would be, whichever way it went.
+
+| | |
+|---|---|
+| **Supported** | **`320px` and up.** A phone in portrait is a first-class viewport, not a courtesy |
+| **The breakpoint that matters** | **`768px` (`md`)** — the sidebar appears above it, the bottom bar below it. **Exactly one navigation exists at any width** |
+| **Touch target floor** | **`44px`** (`min-h-11`). A control smaller than that is one a thumb misses |
+| **What this makes of [B-203](../BUGS.md)** | **A defect**, not a non-goal. It was 🟠 and explicitly undecided; the decision closes it |
+
+**§20c permits the foundation change this needs, and names it.** *"An accessibility issue — a missing label, an unreachable control, a lost focus state. These are defects, not enhancements, and never wait for a business milestone to justify them."* **A navigation that vanishes below `768px` is an unreachable control**, which is that clause's own example.
+
+**Responsiveness is now a defect class rather than a retrofit.** Every Product Surface slice from here carries it; the alternative is paying for it once per screen, later, on a surface that has grown.
+
+### Measured before building — 2026-08-03
+
+| | |
+|---|---|
+| **Files carrying any responsive rule** | **5** of 65 |
+| **The shell's only rule** | **`hidden … md:block`** — the one that *removes* the navigation |
+| **Tables at risk of horizontal overflow** | 2 — `/settings`, `/settings/team` |
+| **`overflow-x` containers in the product** | **1** |
+
+> **The product was not partly responsive; it was desktop-only with one line that hid a sidebar.** That is a cleaner starting point than a half-converted surface — there is no half-measure to unpick.
+
+---
+
 ## 5 · UX Principles
 
 **These emerged from the reviews rather than being decided in advance**, and each one is here because a slice was built or refused on its strength. They are recorded for the next lane, not proposed as new rules — [38-product-design-principles.md](38-product-design-principles.md) remains the ratified set, and these are the ones this lane's reviews have kept reaching for.
