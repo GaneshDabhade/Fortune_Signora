@@ -138,6 +138,19 @@ QE names the constraint, not the design. Any of these satisfies it: exclude `pla
 
 **No regression test is required.** `make smoke` is the regression test, and it caught this on the first run.
 
+### The branch is growing on a base that cannot certify
+
+**Recorded 2026-08-04, as an observation rather than a second defect.** Lane B has pushed three further slices since this was raised — the branch is **40 commits** ahead of `integration` with two blocking gates still failing.
+
+**That is within the model** (*a lane never idles waiting for validation*, `CLAUDE.md` §20e), and QE is not asking the lane to stop. What is worth stating is the arithmetic: **every new commit lands on a base that cannot produce a deployable image**, and both failing gates are the lane's own, runnable in under two minutes:
+
+```bash
+npx tsc --noEmit
+docker compose --env-file infra/.env.prod-local -f infra/docker-compose.prod.yml build
+```
+
+**The defect is not getting harder to fix; it is getting further from the top of the branch.**
+
 ### B-107 · Ten tests in the A7 slice have never passed, and they hang the suite for everyone
 
 | | |
