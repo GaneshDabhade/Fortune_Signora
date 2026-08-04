@@ -246,42 +246,19 @@
 
 ---
 
-## PACK M · Where do Signora's OAuth client credentials live — and does the prohibition even bind?
+## PACK M · OAuth client credentials — **withdrawn 2026-08-04, a clarification rather than a decision**
 
-**Raised by Lane B as [C-327](LANE_COORDINATION.md), 2026-08-04. Lane B's analysis is not repeated here** — four options, costs stated, and a reading offered *"as input and not as authority."* **This pack adds three things Lane B could not see from inside E1**, and it changes what kind of question this is.
+**Opened and withdrawn the same day.** Lane B's [C-327](LANE_COORDINATION.md) asked where Signora's own OAuth client credentials live; Lane C prepared it as a decision and **that was the misclassification**, not the analysis.
 
-| | |
-|---|---|
-| **Class** | **Architecture Decision** — trust boundary |
-| **Blocks** | **One wiring line.** `RefreshGrant` is built, tested against a substituted `TokenRefresher`, and unwired |
-
-### 1 · The constraint may not bind, and nobody has ever said
-
-**Lane B treats [18-authentication.md](architecture/18-authentication.md):49 as binding on this question.** Read in context, **all four of its absolutes are about user identity**, and the sentence immediately above them is: *"**FastAPI owns** signature verification, claim validation, principal construction… **and nothing else related to identity.**"* The section is titled *"Hard prohibitions on the Python tier"* and sits inside a document about **authenticating a Signora user.**
-
-> **And the repository has already chosen a reading, without recording that it did.** *"Never store passwords or **any credential material**"* is absolute on its face — **and `integration_secret` stores encrypted customer OAuth tokens in the Python tier, shipped, on `main`.** Either the prohibition is scoped to identity, or **it has been violated for a milestone and nothing flagged it.**
+> **The repository already held one consistent interpretation.** **[13-integrations.md](architecture/13-integrations.md) — ratified — states that integration OAuth grants are *"stored per-tenant, RLS-scoped, distinct from Better Auth's sign-in credentials"* and names *"reusing a Better Auth sign-in credential as an integration OAuth token"* an anti-pattern.** And the reading was already load-bearing: **`integration_secret` stores encrypted third-party credential material in the Python tier, and `IntegrationSettings` holds a Signora-owned long-lived secret there** — both shipped, neither ever flagged.
 >
-> **The first reading is almost certainly right.** What is missing is that **it has never been stated**, so every question in this area gets re-argued from an absolute that may not apply. **This is the decision worth taking, and it is larger than C-327.**
+> **So [18-authentication.md](architecture/18-authentication.md):49's prohibitions govern *identity* credentials.** Recorded there as a scope note; **[C-413](LANE_COORDINATION.md) withdrawn.**
 
-### 2 · One word is doing two jobs
+**What survives, and it is the part worth keeping:** *"never implement an OAuth flow, callback handler, or authorization-code exchange"* **binds regardless of whose credential it is**, which is why acquisition stays in Next even for integrations. **The clarification narrows one prohibition and leaves the other untouched.**
 
-**[18-authentication.md](architecture/18-authentication.md) lists *"token refresh"* among Next's responsibilities. It means a Signora user's session.** **C-327 is about refreshing a customer's third-party grant.** **Two unrelated operations, one word, one document** — and the collision is load-bearing, because reading *"Next owns token refresh"* as covering grant refresh is what makes option C look boundary-preserving.
+**Also fixed, because it was doing real damage in the argument:** [18-authentication.md](architecture/18-authentication.md) listed *"token refresh"* among Next's responsibilities meaning **a Signora user's session**, while [C-327](LANE_COORDINATION.md) concerns **a customer's third-party grant.** One word, two operations — **now *"session token refresh."***
 
-> **This is [ADR-0034](architecture/adr/0034-ubiquitous-language.md)'s territory** — and that ADR's enforcement scans *customer-visible* strings, so an internal collision like this is exactly what it does not catch.
-
-### 3 · Neither document cited can settle it
-
-**[44-integrations.md](architecture/44-integrations.md) §5 places *"storage, validation, refresh, revocation, lifecycle"* in Python** — which reads like an answer. **It is not one:** that document's own header states *"[13-integrations.md](architecture/13-integrations.md) is the ratified architecture and is **not** superseded by this document. That one says what the Integration Abstraction Layer is; this says **what was built inside it**."* **It is a design record. Lane B was right not to lean on it**, and equally right that moving the boundary is not a lane's.
-
-### What this changes about the options
-
-| | Lane B's cost | With the above |
-|---|---|---|
-| **A** — pair moves to Python, Next keeps its own | *"Two tiers hold the same vendor secret"* | **Unchanged, and the cost is real.** But if the prohibition is identity-scoped, **A is configuration rather than a boundary change** |
-| **C** — refresh at the Next tier | *"The smallest thing that changes no boundary"* | ⚠️ **It does change one.** §5 assigns grant refresh to Python, and C reads as boundary-preserving **only through the word collision in §2** |
-| **D** — a vault | *"Correct, and unavailable until M14.5"* | **Agreed, and unaffected** |
-
-> **Lane C's recommendation is not on A/B/C/D.** It is that **the prohibition's scope be stated first**, because it is one sentence, it unblocks this question, and **it stops the next three questions in this area being argued from an absolute nobody has scoped.** If it is identity-scoped, C-327 becomes a small configuration choice between A and D and Lane B can finish it. If it is not, then `integration_secret` is a live violation and **that is a much larger finding than a wiring line.**
+> **The one thing genuinely left to decide is not architectural.** Holding the client pair in both tiers means **two rotation targets** until a vault arrives at M14.5. **That is an operational trade-off with a known end state, not a boundary question** — and it is Lane B's and QE's to weigh, not a product-owner decision.
 
 ---
 

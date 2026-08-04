@@ -12,6 +12,19 @@
 
 ## 1 · The coordination taxonomy
 
+**First, the question that decides whether an item exists at all** *(ratified 2026-08-04, product owner)*:
+
+> **Does the repository already contain enough evidence to derive one consistent interpretation — without changing architecture, module ownership, public contracts, bounded contexts or invariants?**
+
+| | | Action |
+|---|---|---|
+| **Category 1 · Repository clarification** | **Yes** | **Record it in the owning architecture document or ADR**, update what is affected, tell the lane the clarified reading. **No `C-nnn`. Implementation continues immediately** |
+| **Category 2 · Architectural decision** | **No** — answering it would change **ownership · a boundary · a concept · a public contract · an invariant · repository-wide behaviour** | **Only then** does it become a product-owner decision |
+
+> **The error this exists to prevent is Lane C's own, made once and recorded** ([C-413](LANE_COORDINATION.md)). The office read *"the repository has never stated this"* as *"therefore the product owner must state it."* **The correct test is whether stating it changes anything.** It changed no ownership, no boundary, no contract and no invariant — **a clarification costing one paragraph became a decision on the product owner's queue**, which inverts this lane's purpose.
+>
+> **Ambiguous wording is not a decision. It is a documentation gap**, and closing it is Lane C's own work rather than something to escalate. **The objective is to reduce governance work, not to create it.**
+
 **Every coordination item is classified before it reaches the product owner** (ratified 2026-08-03). An unclassified item costs the reader the work of deciding what *kind* of question it is before they can decide anything else — and that work is identical every time, which is why it belongs here.
 
 | Class | It is asking | Routed to | Typical output |

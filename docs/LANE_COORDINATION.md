@@ -198,7 +198,7 @@
 | [C-410](#c-410--no-prompt-has-ever-been-evaluated-against-a-production-model) | **Every AI release is measured on a local model; production runs hosted ones** | Lane C | **Product owner** | `OPEN` | **Nothing today.** Blocks the *first customer-facing inference*, whichever epic reaches it |
 | [C-411](#c-411--revenue-intelligence-platform-is-a-planned-module-whose-job-is-already-done) | **RIP is a planned module whose job `apps/api/composition/` already does** | Lane C | **Product owner** | `OPEN` | **Nothing.** It prevents future work rather than unblocking any |
 | [C-412](#c-412--data-export-and-account-deletion-have-no-owner-and-epic-c-raises-the-stakes) | **Data export and account deletion have no owner anywhere** | Lane C | **Product owner** | `OPEN` | **Nothing today.** [Epic C](architecture/400-epic-c-people.md) raises the stakes materially |
-| [C-413](#c-413--the-python-tiers-credential-prohibition-has-never-been-scoped) | **The Python tier's credential prohibition has never been scoped, and shipped code depends on the answer** | Lane C | **Product owner** | `OPEN` | **Nothing directly.** It is what [C-327](#c-327) is being argued from |
+| [C-413](#c-413--the-python-tiers-credential-prohibition-has-never-been-scoped) | ~~The Python tier's credential prohibition has never been scoped~~ | Lane C | — | **`CLOSED` — withdrawn 2026-08-04** | **Never a decision.** Repository clarification, recorded in [18-authentication.md](architecture/18-authentication.md) |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
 >
@@ -2980,15 +2980,35 @@ Every lane's rows sit **adjacent in one table**, and each lane's branch carries 
 
 > **The narrow question: does account deletion and data export get an owner before [Epic C](architecture/400-epic-c-people.md) ships, or does it stay with M15 behind M14.5?** **Lane C has no recommendation it is confident in** — the compliance argument says *before*, the sequencing argument says M15 exists for exactly this, and **the two do not resolve against each other on repository evidence.**
 
+
+## Closed
+
 ## C-413 · The Python tier's credential prohibition has never been scoped
 
 | | |
 |---|---|
-| **Classification** | **Architecture Decision** — the scope of a ratified absolute |
-| **Owner** | **Product owner** |
-| **Requester** | **Lane C — Product Office**, preparing Lane B's [C-327](#c-327) |
-| **Status** | `OPEN` |
-| **Blocks** | **Nothing directly** — but it is the sentence [C-327](#c-327) is being argued from, and the next questions in this area will be too |
+| **Classification** | ~~Architecture Decision~~ → **Repository clarification.** Misclassified by Lane C |
+| **Owner** | — |
+| **Requester** | **Lane C — Product Office** |
+| **Status** | **`CLOSED` — withdrawn 2026-08-04, the day it was opened** |
+| **Blocks** | **Nothing, and it never did** |
+
+> ### Withdrawn — this was never a decision, and opening it was the error
+>
+> **Ratified 2026-08-04, product owner: *do not create a Product Office decision simply because repository wording is ambiguous.*** A question is a **repository clarification** when the repository already contains enough evidence to derive one consistent interpretation **without changing architecture, module ownership, public contracts, bounded contexts or invariants** — and this one did, four times over:
+>
+> | Evidence | Where |
+> |---|---|
+> | Integration OAuth grants are *"stored per-tenant, RLS-scoped, **distinct from Better Auth's sign-in credentials**"* | **[13-integrations.md](architecture/13-integrations.md):117 — ratified** |
+> | *"Reusing a Better Auth sign-in credential as an integration OAuth token"* is **an anti-pattern** | **[13-integrations.md](architecture/13-integrations.md):141 — ratified** |
+> | **`integration_secret` stores encrypted third-party credential material in the Python tier** | Shipped, M13-S04 |
+> | **`IntegrationSettings` holds a Signora-owned, long-lived, non-per-workspace secret** in the Python tier | Shipped |
+>
+> **The interpretation was already in force and already relied upon. Only the sentence saying so was missing** — and a missing sentence is a documentation gap, not a decision. **Recorded where it belongs: [18-authentication.md](architecture/18-authentication.md), as a scope note on the section it clarifies.**
+>
+> **What Lane C got wrong.** It read *"the repository has never stated this"* as *"therefore the product owner must."* **The correct test is whether stating it changes anything** — and here it changes no ownership, no boundary, no contract, no invariant and no concept. **A clarification that costs a paragraph became a decision on the product owner's queue, which is the opposite of this lane's purpose.**
+>
+> **Kept rather than deleted**, because the misclassification is more useful recorded than removed. See [`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §1.
 
 **[18-authentication.md](architecture/18-authentication.md):49 states an absolute:** *"**Never store passwords or any credential material.**"* Its section is titled *"Hard prohibitions on the Python tier"*, and the sentence above it reads *"FastAPI owns signature verification, claim validation, principal construction… **and nothing else related to identity.**"*
 
@@ -3006,8 +3026,6 @@ Every lane's rows sit **adjacent in one table**, and each lane's branch carries 
 **A related collision, recorded because it is doing damage in the same argument.** [18-authentication.md](architecture/18-authentication.md) lists *"token refresh"* among Next's responsibilities and means **a Signora user's session**; [C-327](#c-327) concerns **refreshing a customer's third-party grant.** **Two unrelated operations, one word.** Reading the first as covering the second is what makes *"refresh at the Next tier"* look boundary-preserving. **[ADR-0034](architecture/adr/0034-ubiquitous-language.md) owns naming, and its enforcement scans customer-visible strings — so an internal collision is precisely what it does not catch.**
 
 > **Lane C proposes no wording.** The prohibition is ratified and the amendment is the product owner's. **What is being asked for is one sentence saying which class of credential it governs** — and it is worth taking ahead of [C-327](#c-327) rather than inside it, because it is smaller and it settles more.
-
-## Closed
 
 ## C-016 · Two branch names encode a permanent module assignment that no longer exists
 
