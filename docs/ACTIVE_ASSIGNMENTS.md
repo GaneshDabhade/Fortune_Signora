@@ -99,7 +99,7 @@
 
 | | **Lane A** | **Lane B** |
 |---|---|---|
-| **Current** | **[TASK-400](BACKLOG.md)** — Epic A completion (A6 + A7) · *assigned* | **[B-400](BUGS.md)** — renumber to `0035` · *assigned* |
+| **Current** | **[TASK-400](BACKLOG.md)** — **A7 only**; A6 withdrawn, blocked on [C-321](LANE_COORDINATION.md) · *claimed `9cc57e2`* | **[B-400](BUGS.md)** — renumber to `0035` · **not yet visible to Lane B** |
 | **Next** | [TASK-903](BACKLOG.md) stage 2 | **[TASK-401](BACKLOG.md)** — A5 backend · **S** |
 | **Then** | [TASK-905](BACKLOG.md) — posture on the attention row | [TASK-902](BACKLOG.md) — M7 Timeline S05+ |
 | **Then** | **A5 render** — needs [TASK-401](BACKLOG.md) | [TASK-402](BACKLOG.md) — Epic E1, the CRM read |

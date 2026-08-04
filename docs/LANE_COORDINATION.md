@@ -191,6 +191,7 @@
 | [C-403](#c-403--every-outstanding-qe-action-from-lane-c-in-one-place) | Every outstanding QE action from Lane C, in one place | Lane C | **QE** | `OPEN` | **Nothing.** Two are latent defects that pass today and will not later |
 | [C-404](#c-404--two-ready-tasks-are-already-built-and-the-queue-cannot-see-it) | **Three** `READY` tasks were already built | Lane C | Lane C | `IMPLEMENTED` — backlog corrected 2026-08-03. **`VERIFIED` is QE's** | **Nothing.** It would have caused duplicate implementation three times |
 | [C-405](#c-405--assignment-delivery--answered-without-a-new-mechanism-and-c-217-with-it) | Assignment delivery, and Lane A's assignment | Lane C | **Product owner** (one sentence) | `ANSWERED` — assignments published; rule awaiting ratification | **Nothing, once a lane reads this ref** |
+| [C-406](#c-406--every-lane-has-its-own-view-of-the-repository-and-qes-merge-is-the-only-synchronization-point) | Every lane has its own view; QE's merge is the only sync point | Lane C | **Product owner** | `OPEN` | **Nothing directly.** It is why four separate things went wrong today |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
 >
@@ -2752,6 +2753,38 @@ Every lane's rows sit **adjacent in one table**, and each lane's branch carries 
 ### What QE is asked for — nothing new
 
 **No publication workflow, no guard change, no assignment commits.** [C-403](#c-403--every-outstanding-qe-action-from-lane-c-in-one-place)'s nine items stand unchanged, and **item 2 — `state-check` reading every `lane-*` ref — is the one that makes both directions of this channel checkable** rather than a matter of remembering.
+
+---
+
+## C-406 · Every lane has its own view of the repository, and QE's merge is the only synchronization point
+
+| | |
+|---|---|
+| **Classification** | **Repository Decision** |
+| **Owner** | **Product owner** — it is the cause behind several items already ruled on separately |
+| **Requester** | **Lane C — Product Office** |
+| **Status** | `OPEN` |
+| **Blocks** | **Nothing directly. It is why four separate things went wrong today** |
+
+**Four incidents in one session, each reported separately, all one cause:**
+
+| # | What happened | What was invisible, and where it lived |
+|---|---|---|
+| **1** | **Lane A idled** while its assignment sat unread | The assignment — `lane-c-product-office` |
+| **2** | **[B-400](BUGS.md) is 🔴 and Lane B has not fixed it** | The defect row — `lane-c-product-office`. **`BUGS.md` is not in `CLAIM_PATHS`**, so a blocking defect reaches `integration` only when QE merges |
+| **3** | **Lane A raised [C-220](#c-220) — the same `50`/`51` collision Lane C raised as [C-400](#c-400--three-architecture-document-numbers-are-already-collided-and-the-check-that-catches-them-cannot-fire-yet)** | The finding — each lane's own branch. **Two lanes spent the same investigation twice** |
+| **4** | **Lane C assigned A6, which its own specification says is blocked** | [C-321](#c-321) — `lane-b-commercial-profile`. **Lane C could not see the blocker it was assigning into** |
+
+> **Nobody was careless in any of the four.** Each lane read every register it is required to read, and each register was correct **on the branch that lane could see.** **With four lanes there are four repositories, and they reconcile only when QE merges.**
+
+**Why the direct-reply ruling does not close this.** It fixed **incident 1**, and it is the right fix for assignments — *a lane cannot claim work it has never been told it owns.* **It does nothing for 2, 3 or 4**, because a defect, a finding and a blocker are not addressed to one lane: **they are addressed to whoever happens to need them.**
+
+**What Lane C is *not* proposing.** No new register, no broadcast mechanism, no push exception, no new artifact. **Two things already in flight cover most of it:**
+
+- **[C-403](#c-403--every-outstanding-qe-action-from-lane-c-in-one-place) item 2** — `state-check` reading every `lane-*` ref. **It was raised as an identifier check and is the general answer**: it makes cross-branch divergence *visible* without moving anything.
+- **More frequent integration.** Incidents 2 and 3 both had a window measured in hours between the record being written and QE merging it. **A shorter cycle shrinks every one of these without a single new rule.**
+
+**The question for the product owner is narrow:** **is a 🔴 blocking defect allowed to reach `integration` the way a claim does** — bounded to `BUGS.md`, by the lane that opened it — **or does it wait for QE like everything else?** **Lane C has no recommendation it is confident in**, and says so rather than inventing one: the claim exception exists because a race needed arbitrating, and *"a blocking defect is urgent"* is a different argument that may not deserve the same answer.
 
 
 ## Closed

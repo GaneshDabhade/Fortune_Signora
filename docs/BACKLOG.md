@@ -88,7 +88,7 @@
 |---|---|
 | **Epic** | **Epic A remainder**, [51-implementation-specifications.md](architecture/51-implementation-specifications.md). **Assigned whole, not sliced** |
 | **Module** | `provider_platform` (A7) · Product Surface (A6 render) — **both Lane A's** |
-| **Status** | `READY` |
+| **Status** | **`IN PROGRESS` — Lane A, narrowed to A7 by Lane C 2026-08-03.** **A6 is withdrawn from this task and Lane A was right to hold it.** `51-implementation-specifications.md` §A6 states twice that its backend *"depends entirely on the [C-321] ruling"* — and **[C-321](LANE_COORDINATION.md) is `OPEN` and the product owner's.** **Lane C assigned A6 without reading that line**; narrowing the render does not escape it, because *what to render* **is** the ruling. **A6 returns when C-321 is answered** |
 | **Assigned** | **Lane A, by Lane C 2026-08-03**, answering [C-217](LANE_COORDINATION.md). Decomposition of Epic A, **already approved by the product owner** — not new scope |
 
 **Epic A verified slice by slice, across every branch, before assigning:**
