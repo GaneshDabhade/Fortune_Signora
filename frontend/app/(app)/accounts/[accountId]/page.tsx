@@ -168,17 +168,36 @@ export default function AccountBriefPage() {
           it a few characters. Stacked below `sm`, side by side above it. */}
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="min-w-0">
-          <EntityName
-            identity={identity}
-            fallbackId={accountId}
-            isLoading={nameLoading}
-            className="text-lg"
-          />
+          {/* **The page's only level-1 heading** (B-313). The brief had none,
+              so its two `<h2>`s hung under nothing and a reader navigating by
+              structure landed on *"What contributed"* without learning which
+              account they were looking at.
+
+              **The heading is here rather than inside `EntityName`**, which is
+              shared with the attention list — a name that is a page title on
+              one screen and a row label on another cannot be one element, and
+              bending the component to suit this caller would make it slightly
+              wrong for every other (§20c). The `<h1>` carries no styling of
+              its own: preflight resets it, so the name looks exactly as it
+              did. */}
+          <h1 className="min-w-0">
+            <EntityName
+              identity={identity}
+              fallbackId={accountId}
+              isLoading={nameLoading}
+              className="text-lg"
+            />
+          </h1>
           {/* **Directly under the name, because it qualifies the whole page**
               rather than any one card. Everything below — the score, its
               contributions, the narration, the validations — is built on
               evidence, and a reader who does not know how old that evidence is
               cannot calibrate any of it.
+
+              **Outside the heading**, deliberately: freshness qualifies the
+              page, but it is not part of the page's name, and a document
+              outline that read "Northwind Health — collected 3 days ago"
+              would be an outline entry that changes under the reader.
 
               **Only once the identity has actually arrived.** Absent means
               *we do not know yet, or the request failed*; rendering "No

@@ -207,7 +207,7 @@ function SinceOpen({ change }: { change: number | null }) {
     );
   }
   if (change === 0) {
-    return <span className="text-sm text-content-muted">unchanged since</span>;
+    return <span className="text-sm text-content-muted">unchanged since it opened</span>;
   }
 
   const Icon = change > 0 ? ArrowUpRight : ArrowDownRight;
@@ -219,7 +219,7 @@ function SinceOpen({ change }: { change: number | null }) {
       )}
     >
       <Icon aria-hidden className="h-3.5 w-3.5" />
-      {change > 0 ? `+${change}` : change} since
+      {change > 0 ? `+${change}` : change} since it opened
     </span>
   );
 }

@@ -66,7 +66,7 @@ describe('the brief says what changed since somebody committed', () => {
     const { unmount } = render(
       <OpportunityMomentum opportunity={commitment({ score_change_since_open: 0 })} />,
     );
-    expect(screen.getByText('unchanged since')).toBeInTheDocument();
+    expect(screen.getByText('unchanged since it opened')).toBeInTheDocument();
     unmount();
 
     render(
@@ -75,7 +75,26 @@ describe('the brief says what changed since somebody committed', () => {
       />,
     );
     expect(screen.getByText(/no current score to compare/)).toBeInTheDocument();
-    expect(screen.queryByText('unchanged since')).not.toBeInTheDocument();
+    expect(screen.queryByText('unchanged since it opened')).not.toBeInTheDocument();
+  });
+
+  it('finishes the sentence it starts', () => {
+    // **B-314.** The line read "Opened at 33, 5 weeks ago · unchanged since"
+    // — since *what*? It sits directly beneath the number the whole screen
+    // exists to justify, and it is the one line describing the score's
+    // history. A trailing "since" is not a typo; it is the sentence stopping
+    // before the fact it was about to state.
+    const { unmount } = render(
+      <OpportunityMomentum opportunity={commitment({ score_change_since_open: 0 })} />,
+    );
+    expect(document.body.textContent).not.toMatch(/\bsince\s*$/);
+    unmount();
+
+    render(
+      <OpportunityMomentum opportunity={commitment({ score_change_since_open: -10 })} />,
+    );
+    expect(document.body.textContent).not.toMatch(/\bsince\s*$/);
+    expect(screen.getByText(/-10 since it opened/)).toBeInTheDocument();
   });
 
   it('never recomputes the movement from the two scores it is given', () => {

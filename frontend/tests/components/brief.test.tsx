@@ -135,6 +135,33 @@ beforeEach(() => {
   });
 });
 
+describe('the brief has a document outline — B-313', () => {
+  it('names the account in a level-1 heading', () => {
+    // **The screen sellers live on had no `<h1>` at all.** Its two `<h2>`s
+    // hung under nothing, so a reader navigating by heading landed on *"What
+    // contributed"* without learning which account they were looking at, and
+    // the document outline began at level 2.
+    render(withQuery(<AccountBriefPage />));
+
+    const headings = screen.getAllByRole('heading', { level: 1 });
+    expect(headings).toHaveLength(1);
+    expect(headings[0]?.textContent).toBeTruthy();
+  });
+
+  it('puts every other heading beneath it', () => {
+    // The regression that matters: an outline is only useful if the sections
+    // hang off the page's name rather than off nothing.
+    render(withQuery(<AccountBriefPage />));
+
+    const levels = screen
+      .getAllByRole('heading')
+      .map((heading) => Number(heading.tagName.slice(1)));
+
+    expect(Math.min(...levels)).toBe(1);
+    expect(levels.filter((level) => level === 1)).toHaveLength(1);
+  });
+});
+
 describe('the brief and the list say the same thing about the same account — R1-04', () => {
   it('shows the cooling badge the list has always shown', () => {
     render(withQuery(<AccountBriefPage />));
