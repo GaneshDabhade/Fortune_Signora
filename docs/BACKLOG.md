@@ -140,6 +140,22 @@
 | **On claiming** | **Provider Normalization owns the canonical shape**, not `integrations` — a CRM payload is normalized the same way a provider payload is (§10, the anticorruption layer). **Do not invent a second normalization path**; open a `C-` item if the existing one does not fit |
 | **Recorded here by Lane B on claiming** | **The row is Lane C's, copied from `lane-c-product-office`**, with `Status` and `Assigned` changed to record the product owner's direct assignment and this claim. It did not exist on `integration`. **No scope was added, reworded or reordered**; if Lane C's wording moves, Lane C's wins |
 
+### TASK-301 · Global Search — a result says what kind of thing it is, and why it matched
+
+| | |
+|---|---|
+| **Recommendation** | **[417 §4, slice B-i](architecture/417-executable-slice-audit.md)** — *"Global Search — typed grouping and explainable ranking over accounts"*, Lane C, 2026-08-04. **The only slice Lane C describes as Lane B's clean, unambiguous capacity**; B-ii, the saved-view store, is **not** taken here because Lane C attached a placement caveat to it and placement is the product owner's |
+| **Module** | **`knowledge_graph`** — Lane B's, which built `account-search` |
+| **Slice** | one slice |
+| **Status** | **`CLAIMED` — Lane B**, 2026-08-04 |
+| **Assigned** | **Lane B**, on **Lane C's recommendation** and the product owner's standing direction of 2026-08-04 — *"I want to work on tasks given by Lane C"* |
+| **What is missing** | `GET /account-search` returns a **flat, untyped list ordered by matched name**. The approved Global Search screen needs a result to say **what kind of thing it is** and **why it matched** — and this endpoint's own docstring names the reason: *"a result may not visibly contain the search text, and that is the feature rather than a bug to hide."* **A row a customer cannot explain is a row they will not click** |
+| **In scope** | Typed grouping over the object types that exist today · the matched name carried onto the result so a rename is explicable · a deterministic, stated ranking |
+| **Not in scope** | **People, calls and deals.** People is blocked on [C-221](LANE_COORDINATION.md) and calls need conversation intelligence, which has never existed. **The approved specification's own structure allows a group to be absent** ([411 §3d](architecture/411-ui-convergence-assessment.md)) — the absent groups are not stubbed, and the endpoint must not imply it searched something it did not |
+| **On claiming** | **Extend the existing endpoint's vocabulary; do not add a second search path.** `account-search` already refused to become `/account-identities` with a parameter, and the reasoning binds in this direction too. **Nothing here ranks by relevance a model invented** — the ordering stays derivable and repeatable (§2, *determinism outranks convenience*) |
+| **Position is not a priority claim** | Placed beside the other Lane C-prepared Lane B row rather than at a rank. **Lane C's own order puts it fourth** ([417 §6](architecture/417-executable-slice-audit.md)); if the product owner wants it elsewhere in this queue, the position is theirs to set |
+| **Recorded here by Lane B on claiming** | **The slice is Lane C's, quoted from `lane-c-product-office` at `9d72630`.** It did not exist on `integration`, and under the product owner's direction of 2026-08-03 **a lane claims on Lane C's assignment rather than waiting for the row to arrive.** **No scope was added, reworded or reordered** |
+
 ### TASK-200 · CX-07 — the Responsive Product Surface
 
 | | |
