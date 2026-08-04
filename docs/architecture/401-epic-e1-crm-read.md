@@ -6,6 +6,9 @@
 >
 > ⚠️ **Links to [51-implementation-specifications.md](51-implementation-specifications.md) do not resolve on this branch** — Epic E's specification lives on `lane-b-commercial-profile`. Everything relied on is quoted inline.
 
+> **Approved UI** — **CRM Integrations**. The [Fortune Signora Design Project](410-approved-ui-specification.md) is authoritative for frontend behaviour (2026-08-04). **This package no longer states what the screen looks like; it states what the backend must provide for it.** The approved screen specifies connect, per-object direction, field mapping, sync health, held writes and disconnect. **Its governing sentence — *"the CRM stays the system of record; Signora writes only what it declares"* — is [ADR-0401](adr/0401-a-customers-crm-is-not-a-provider.md) arriving from the design side.**
+
+
 > **Observability, testing, operations and deployment: [405-cross-cutting-concerns.md](405-cross-cutting-concerns.md)** — written once for every prepared package rather than five times. **Epic E1's deltas are in its §6 row.** In short: **Verify `Credential.__repr__`'s refusal survives the logging path**, and **measure connection-state transitions** — §10's *silently dead connection* is unmeasurable without it. **Sync metrics already exist; add none.**
 
 ---

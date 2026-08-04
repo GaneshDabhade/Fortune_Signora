@@ -1,6 +1,10 @@
 # The Customer Experience Blueprint
 
-> **The authoritative description of Signora as a customer meets it** — every screen, every route, every journey, and the gap between what the backend can do and what a customer can reach.
+> ⚠️ **Superseded as the authority on screens, 2026-08-04.** The [Fortune Signora Design Project](410-approved-ui-specification.md) is now authoritative for frontend behaviour, on the product owner's Product Transition Directive. **This document is no longer authoritative for what a screen is or contains.**
+>
+> **What remains true and remains valuable is its second half** — *the gap between what the backend can do and what a customer can reach*. That measurement is what [411](411-ui-convergence-assessment.md) extends rather than replaces, and the gap it named is the same gap, now measured against an approved design instead of an inferred one.
+>
+> **The description of Signora as a customer meets it** — every screen, every route, every journey, and the gap between what the backend can do and what a customer can reach.
 >
 > **Created 2026-08-02** on the product owner's direction, after Human Review made the gap visible: *"the repository contains considerably more functionality than the application currently exposes."* This document measures that claim rather than restating it.
 >

@@ -4,6 +4,9 @@
 >
 > **Observability, testing, operations and deployment: [405-cross-cutting-concerns.md](405-cross-cutting-concerns.md).** M11's deltas are in §9.
 
+> **Approved UI** — **Opportunity Intelligence** · **Companies**. The [Fortune Signora Design Project](410-approved-ui-specification.md) is authoritative for frontend behaviour (2026-08-04). **This package no longer states what the screen looks like; it states what the backend must provide for it.** *"Ranked by expected effect on this quarter · you approve, Signora drafts"* and *"Nothing sends without your approval. Reversible for 24 hours."* **`sales_engagement` already produces `Recommendation`, `Risk` and `NextAction`; it has no `interface/` layer** ([412](412-backend-capability-matrix.md)).
+
+
 ---
 
 ## 1 · Executive summary, and the finding

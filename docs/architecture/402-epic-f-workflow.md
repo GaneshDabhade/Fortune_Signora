@@ -4,6 +4,9 @@
 >
 > ⚠️ **Links to [51-implementation-specifications.md](51-implementation-specifications.md) and [50-product-capability-audit.md](50-product-capability-audit.md) do not resolve on this branch** — both live on `lane-b-commercial-profile` and reach `main` at the next merge. **Everything relied on is quoted inline**, and the event counts below were measured against code on this branch rather than taken from either document.
 
+> **Approved UI** — **Workflow Automation**. The [Fortune Signora Design Project](410-approved-ui-specification.md) is authoritative for frontend behaviour (2026-08-04). **This package no longer states what the screen looks like; it states what the backend must provide for it.** *"Simulated before it runs, approved before it writes, reversible after it does."* **[ADR-0402](adr/0402-a-rule-is-data.md) §2 is compatible with all three and was written without seeing the screen.** The screen also specifies a marketplace, versioning with canary and rollback, and 72-hour approval expiry — **none of which contradicts a rule being data.**
+
+
 > **Observability, testing, operations and deployment: [405-cross-cutting-concerns.md](405-cross-cutting-concerns.md)** — written once for every prepared package rather than five times. **Epic F's deltas are in its §6 row.** In short: **Add nothing for delivery** — the outbox, dispatch and dead-letter metrics already cover the substrate this epic reuses. **Matched-but-undelivered is the metric that makes §2's honesty claim true.**
 
 ---

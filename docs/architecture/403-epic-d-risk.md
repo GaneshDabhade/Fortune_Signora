@@ -6,6 +6,9 @@
 >
 > **No ADR is prepared for Epic D, deliberately.** It needs no new bounded context, no new dependency and no reversal of an existing decision — **it is a fifth declaration in an existing module and rows in two existing catalogs.** *An ADR is required when a boundary moves; manufacturing one here would be process for its own sake.*
 
+> **Approved UI** — **Opportunity Intelligence** · **Executive Dashboard**. The [Fortune Signora Design Project](410-approved-ui-specification.md) is authoritative for frontend behaviour (2026-08-04). **This package no longer states what the screen looks like; it states what the backend must provide for it.** Risk surfaces as ranked exposure, contribution bars and the *at risk* register. **Both screens are wave 4** ([412](412-backend-capability-matrix.md)), because they share a probability model and quarter aggregates that do not exist.
+
+
 > **Observability, testing, operations and deployment: [405-cross-cutting-concerns.md](405-cross-cutting-concerns.md)** — written once for every prepared package rather than five times. **Epic D's deltas are in its §6 row.** In short: **Measure the `contested` rate** — it is the property the whole ledger exists to protect. **And say what the Playground shows**, or repeat [B-319](../BUGS.md).
 
 ---

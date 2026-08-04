@@ -6,6 +6,9 @@
 >
 > ⚠️ **Links to [51-implementation-specifications.md](51-implementation-specifications.md) do not resolve on this branch.** Everything relied on is quoted inline.
 
+> **Approved UI** — **CRM Integrations**. The [Fortune Signora Design Project](410-approved-ui-specification.md) is authoritative for frontend behaviour (2026-08-04). **This package no longer states what the screen looks like; it states what the backend must provide for it.** *"Signora writes to 3 fields in total across 8,412 accounts. Everything else is read-only by design."* **The approved screen bounds write-back more tightly than this package assumed.**
+
+
 ---
 
 ## 1 · Executive summary

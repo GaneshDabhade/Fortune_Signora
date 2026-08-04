@@ -300,6 +300,20 @@ Decisions required    what the product owner must rule before it can start
 
 **The trap this creates, named before it is fallen into.** A sixteen-screen design project is an invitation to open sixteen decisions. **It produced three** — because the two-category test was applied to every gap, and a gap that a repository document already answers is a clarification, not a decision. **A transition is not a licence to refill a queue the office spent a week emptying.**
 
+### 5b · The module is the planning unit; the screen is a consumer
+
+**Revision 2 of the directive, 2026-08-04. This is the standing working style and needs no further steering unless the product itself changes.**
+
+> **Think in backend modules, not screens · in capabilities, not layouts · in convergence, not redesign · in reuse before invention.**
+
+**Preparation proceeds module by module, never screen by screen.** A screen is a *consumer* of capability; **many screens map to one capability**, and preparing per screen is how one capability gets prepared four times. [412](architecture/412-backend-capability-matrix.md) is the matrix, and it is the artifact a package is cut from — not the design project's file list.
+
+**Implementation is organised in waves, not in screen order.** A wave maximises reuse and minimises dependency risk; **its position is argued from backend readiness and unblocking, never from where a screen appears in the project or how impressive it looks.** Executive Dashboard is the screen a buyer sees first and sits in wave 4, because it needs aggregates that would otherwise be built twice.
+
+**Two boundaries this does not move.** Lane C still identifies **only** missing APIs, events, workflows, orchestration, repositories, permissions, integrations, security, validation, public contracts and dependency edges — **and nothing else.** It does not redesign UX, and it still prepares rather than decides.
+
+**Cleanup happens when a replacement exists, never in anticipation of one.** [413](architecture/413-migration-inventory.md) classifies 104 frontend artifacts and 87 tests and **deletes none of them today** — because an inventory is a plan, and a plan executed early is just deletion with a document attached.
+
 ---
 
 ## 6 · Feature decomposition

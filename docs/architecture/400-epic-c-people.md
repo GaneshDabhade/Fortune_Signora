@@ -6,6 +6,9 @@
 >
 > **Nothing here is approved.** Epic C is unapproved scope ([Pack I](../DECISION_PACKS.md)); this is preparation so that the approval decision, when it is taken, is taken with the facts. **The ADR it needs is drafted separately as [ADR-0400](adr/0400-person-as-an-entity.md) and is `Proposed`.**
 
+> **Approved UI** — **People Intelligence**. The [Fortune Signora Design Project](410-approved-ui-specification.md) is authoritative for frontend behaviour (2026-08-04). **This package no longer states what the screen looks like; it states what the backend must provide for it.** **The approved screen and this package's blocking question ❓1 are the same question.** The screen is entirely named individuals — roles, stances, an org chart marked confirmed-versus-inferred, a relationship graph, departures. **This package stops being a proposal about whether people are needed; it becomes the implementation of a decision the product has already made, pending [O1](../DECISION_PACKS.md).**
+
+
 > **Observability, testing, operations and deployment: [405-cross-cutting-concerns.md](405-cross-cutting-concerns.md)** — written once for every prepared package rather than five times. **Epic C's deltas are in its §6 row.** In short: **Redaction must reach personal data before the first `Person` exists** — the pattern is credential-shaped and matches no name, email or phone. **`ForgetPerson` must be observable**, because a silent no-op is worse than no feature.
 
 ---

@@ -11,7 +11,7 @@
 | Measured on `origin/integration` | |
 |---|---|
 | Backend modules | **16** |
-| HTTP endpoints across 12 module routers | **38** |
+| HTTP endpoints across 12 module routers | **46** |
 | Frontend routes | **11**, of which 5 are authentication |
 | Frontend test files | **87** — zero Storybook, zero Cypress, zero pixel snapshots |
 
@@ -23,7 +23,7 @@
 
 | Screen | Reuses | Missing backend capability | |
 |---|---|---|---|
-| **Account 360** | `buying_score_engine` · `observation_engine` · `timeline` · `opportunity_engine` · `ai_research_engine` · `ai_platform` · `signal_engine` · `business_event_engine` — **8 endpoints** | Notes with mentions · contacts · product-usage and intent panels | 🟩 |
+| **Account 360** | `buying_score_engine` · `observation_engine` · `timeline` · `opportunity_engine` · `ai_research_engine` · `ai_platform` · `signal_engine` · `business_event_engine` — **8 endpoints, 8 modules** | Notes with mentions · contacts · product-usage and intent panels | 🟩 |
 | **AI Research** | `ai_research_engine` POST+GET `/research` — **built, with an interface layer** | Document sections · preserved edits through regeneration · recorded refusals | 🟩 |
 | **Companies** | `opportunity_engine` `GET /accounts` · `knowledge_graph` `account-identities`, `account-search` | Saved views and segments · bulk actions with 24h reversal · import · export with field-level permissions | 🟠 |
 | **Signal Center** | `signal_engine` `signal-catalog`, `validation` | **Triage state** — assign, snooze, dismiss-with-reason, and the audit of each · rule precision and retune proposals | 🟠 |

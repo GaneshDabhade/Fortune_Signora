@@ -6,6 +6,9 @@
 >
 > **No ADR is prepared for Epic G, deliberately.** No boundary moves, no dependency is added, and the decisions it would need — [ADR-0028](adr/0028-model-runtime-by-environment.md), [ADR-0030](adr/0030-the-decision-package.md), [ADR-0031](adr/0031-evidence-citation-protocol.md), [ADR-0012](adr/0012-ai-platform-architecture.md) — **are all already ratified.** *An ADR is required when a boundary moves.*
 
+> **Approved UI** — **AI Copilot**. The [Fortune Signora Design Project](410-approved-ui-specification.md) is authoritative for frontend behaviour (2026-08-04). **This package no longer states what the screen looks like; it states what the backend must provide for it.** **Six verbs and no others — Explain · Summarize · Predict · Recommend · Generate · Reason — across 17 surfaces sharing one contract.** That is a tighter specification than this package carried, and it **narrows the epic rather than widening it.**
+
+
 > **Observability, testing, operations and deployment: [405-cross-cutting-concerns.md](405-cross-cutting-concerns.md)** — written once for every prepared package rather than five times. **Epic G's deltas are in its §6 row.** In short: **Grounding failure rate is already called *"the one number this platform most needs about itself"* and is not emitted as a metric.** Refusal rate and cost per question join it.
 
 ---

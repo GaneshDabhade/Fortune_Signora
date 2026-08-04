@@ -4,6 +4,9 @@
 >
 > **This package is short because its finding is short.** Most of RIP should not be built, and the remainder is already built. **A longer document would not reduce implementation uncertainty; it would only look like more preparation.**
 
+> **Approved UI** — *(none)*. The [Fortune Signora Design Project](410-approved-ui-specification.md) is authoritative for frontend behaviour (2026-08-04). **This package no longer states what the screen looks like; it states what the backend must provide for it.** **No approved screen consumes RIP.** The sixteen screens map to existing modules throughout. **This is independent evidence for the recommendation this package already makes** — the aggregate test, applied by the design project without being asked to.
+
+
 ---
 
 ## 1 · The finding
