@@ -471,6 +471,20 @@
 
 ## SEQUENCED — prepared, and waiting on a named trigger
 
+### TASK-414 · Impact analysis, reported and nothing skipped
+
+| | |
+|---|---|
+| **Status** | **`READY`** — **no trigger, no decision outstanding.** Step 1 of [427](architecture/427-impact-based-validation.md) |
+| **Module** | `infra/` · `backend/tests/certification/` — **Lane C's** under [D-022](DECISION_REGISTER.md), **and QE's gates stay QE's** |
+| **Objective** | **Every certification reports which validations the change required. Every validation still runs.** |
+| **Scope** | Extend `--next-cycle`'s path classifier to emit the impact set and the computed profile. **Report only** |
+| **Reuse** | **`make certified ARGS="--next-cycle"` already classifies a diff by path**, and `certification-guard.py --audit-main` already checks paths rather than commit messages. **Extend one; do not write a second** |
+| **Non-goals** | **Nothing is skipped.** **`REQUIRED_GATES` is not yet computed.** **No option on `make certify`.** No profile is applied |
+| **Acceptance** | The report names impacts detected and the profile that *would* apply · **an unrecognised path reports `platform`, never `none`** · **a change touching `infra/`, the `Makefile` or `tests/certification/` reports `platform` unconditionally** · **every existing gate still runs, and the record is unchanged** |
+| **Why it is `READY` and TASK-413 is not** | **It removes nothing.** Its whole value is evidence: **if the classifier disagrees with reality even once, the framework is not ready — and finding that out costs nothing, because everything still ran** |
+| **Validation** | A test that an unknown path escalates · a test that `infra/` escalates · **a test that the reported profile never omits a Security Invariant** |
+
 ### TASK-413 · Change-aware validation — `frontend/`-only skips `dr`
 
 | | |

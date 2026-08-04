@@ -61,6 +61,11 @@
 
 | # | Decision | Status | Merged | Affected | Repository impact |
 |---|---|---|---|---|---|
+| **D-054** | **Repository Impact–Based Validation accepted as a framework.** *"The objective is not to run fewer tests… the repository decides."* | `APPROVED` | `lane-c-sync` | Certification · `infra/` · QE | **[427](architecture/427-impact-based-validation.md).** **Supersedes [426](architecture/426-change-aware-validation.md)'s narrow scope.** `REQUIRED_GATES` becomes **computed and recorded**, never passed. **Step 1 — [TASK-414](BACKLOG.md), report impact and skip nothing — is `READY`; steps 3–5 are gated on its evidence.** **An ADR is required when applied**, because it changes what a certification asserts |
+
+
+| # | Decision | Status | Merged | Affected | Repository impact |
+|---|---|---|---|---|---|
 | **D-053** | **Change-Aware Validation Profiles — principle accepted, scope narrowed, timing deferred.** Mechanical and repository-driven, never discretionary; `make dr` mandatory for platform-affecting changes and every release candidate | `PARTIALLY APPROVED` | `lane-c-sync` | `infra/` · certification | **[426](architecture/426-change-aware-validation.md) · [TASK-413](BACKLOG.md) `SEQUENCED`.** Narrowed to **one rule** — `frontend/`-only skips `dr`. **Reuses `--next-cycle`'s classifier.** Deferred under §14: **no trigger has fired**, and the measured bottleneck is that certification is not being asked for |
 
 ## 2026-08-04 — synchronization recovery
