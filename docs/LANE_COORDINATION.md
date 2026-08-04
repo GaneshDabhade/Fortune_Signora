@@ -4166,6 +4166,24 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 
 **Nothing depends on this row.** It is left in place rather than deleted because a register that quietly loses a row is worse than one that records a withdrawal — but no implementation, document or task references it.
 
+## C-411 · Three findings reported but recorded nowhere a lane would look
+
+| | |
+|---|---|
+| **Raised by** | Lane C, 2026-08-04 |
+| **Status** | **`OPEN`** — for whoever owns each, named per row |
+| **Class** | **Not a Coordination Item, three times over** ([`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §1) — none is a dependency. **They are here because they had no other home**, which is itself the finding |
+
+**Each of these was found during Product Office work, reported in a commit message, and recorded in no document a lane reads.** [423](architecture/423-knowledge-continuity-framework.md) §8 names that class: *findings reported but not fixed*, which today live only in commit messages.
+
+| # | Finding | Owner | Evidence |
+|---|---|---|---|
+| **1** | **`CLAUDE.md` §20e is titled *"Nobody assigns; lanes pull"* and its body carries no amendment to that model** — while [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) on the same branch records `TASK-200`–`203` as *"assigned directly by the product owner"*. **The constitution describes a model the repository is not using** | **Product owner** — `CLAUDE.md` is theirs | Found while hand-merging the three approved amendments ([422](architecture/422-synchronization-plan.md) commit 5). **Deliberately not fixed**: it was outside the three amendments approved |
+| **2** | **[C-326](#c-326--epic-e1-has-no-path-for-a-customers-own-system-to-reach-the-pipeline) is in three states at once** — its body sits after the `## Closed` marker, its `Status` field says `OPEN`, and **it has no index row.** It is genuinely open | **QE**, at register reconciliation | Found 2026-08-04 reading `origin/integration`. **Reported rather than fixed from a branch 151 commits behind** |
+| **3** | **`51-implementation-specifications.md` and `51-sales-workspace.md` both claim number `51`** — two lanes numbered independently and git merged both, **the collision class [C-201](#c-201) names.** `state-check` reports it every run | **QE**, at merge — *"the later claim moves, decided by author timestamp"* | `python3 infra/state-check.py` |
+
+> **Why one row rather than three.** None is a dependency between lanes, so none earns an item on its own terms. **What they share is the defect: a finding that exists only in a commit message has not been reported** — `git log` is searchable but nobody searches it before a slice. **Closing this row means each finding has reached the document that owns it.**
+
 ## C-217 · Lane A is AVAILABLE and requests its next Product Surface epic
 
 | | |
