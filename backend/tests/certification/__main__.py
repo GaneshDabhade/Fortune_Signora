@@ -131,6 +131,28 @@ def _mypy() -> _Outcome:
     return _Outcome(passed=code == 0, detail=files_checked(output))
 
 
+def _typescript() -> _Outcome:
+    """`tsc --noEmit` over the frontend.
+
+    **Added 2026-08-04, after `main` was found red** ([B-111](../../../docs/BUGS.md)).
+    `CLAUDE.md` §19 lists it beside `mypy --strict` among the conditions for a
+    slice to be complete — and it was in no gate QE ran, neither stage 1 nor
+    certification.
+
+    **`smoke` does not cover it.** The production image type-checks during
+    `next build`, but `.dockerignore` excludes `tests/`, so an error in a test
+    file is invisible to the one gate that compiles the frontend. The error that
+    reached `main` was in a test file.
+
+    > A check named in the Definition of Done and absent from every gate is a
+    > check nobody performs: the lane is asked for it, QE never verifies it, and
+    > certification cannot see it.
+    """
+    code, output = _run(["npx", "tsc", "--noEmit"], cwd=REPOSITORY_ROOT / "frontend")
+    errors = len(re.findall(r"error TS\d+", output))
+    return _Outcome(passed=code == 0, detail="clean" if code == 0 else f"{errors} error(s)")
+
+
 def _import_linter() -> _Outcome:
     code, output = _run(["uv", "run", "lint-imports"], cwd=BACKEND_ROOT)
     return _Outcome(passed=code == 0, detail=contracts_of(output))
@@ -253,12 +275,15 @@ def _certify(target: disposable_database.Disposable) -> int:
     print(f"  mypy                {types.detail}")
     contracts = _import_linter()
     print(f"  import-linter       {contracts.detail}")
+    typescript = _typescript()
+    print(f"  tsc --noEmit        {typescript.detail}")
 
     gates = [
         GateResult(name="pytest", passed=suite.passed, detail=suite.detail),
         GateResult(name="security-invariants", passed=invariants.passed, detail=invariants.detail),
         GateResult(name="mypy", passed=types.passed, detail=types.detail),
         GateResult(name="import-linter", passed=contracts.passed, detail=contracts.detail),
+        GateResult(name="tsc", passed=typescript.passed, detail=typescript.detail),
     ]
     smoke = _smoke()
     print(f"  smoke               {smoke.detail}")

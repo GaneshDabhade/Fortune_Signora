@@ -80,6 +80,53 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-111 · `tsc --noEmit` is in no gate QE runs, and `main` is red
+
+| | |
+|---|---|
+| **Module** | Repository tooling — `backend/tests/certification/__main__.py`, and QE's stage 1 practice |
+| **Current assignee** | **QE** — the gate set is QE's. **The type error itself is Lane A's** (below) |
+| **Severity** | 🟠 — **`main` currently fails a check the Definition of Done requires of every lane**, and reached that state through a passing certification |
+| **Status** | **`OPEN`** — found by Lane B, confirmed by QE, 2026-08-04 |
+| **Found** | 2026-08-04 by **Lane B** while rebasing. QE verified it independently on `main` |
+
+**Steps to reproduce.** On `main` at `178697e`:
+
+```bash
+cd frontend && npx tsc --noEmit
+```
+
+**Expected.** Clean — `CLAUDE.md` §19 lists *"Type checking clean: `mypy --strict` · `tsc --noEmit`"* among the conditions for a slice to be implementation-complete.
+
+**Actual.**
+
+```
+tests/components/triage-strip.test.tsx(89,5): error TS2741:
+  Property 'last_observed_at' is missing in type '{ … }'
+  but required in type 'AccountIdentity'.
+```
+
+### Two gaps, and the second is the one that let it through
+
+| | |
+|---|---|
+| **Certification does not run it** | `make certify` runs pytest, coverage, Security Invariants, `mypy`, `import-linter`, `smoke` and the scenario. **There is no frontend type check.** `smoke` builds the production image, which *does* type-check — but `.dockerignore` excludes `tests/`, so an error in a test file is invisible to it |
+| **QE's stage 1 does not run it either** | QE validated Lane A's candidate with the vitest suite, `mypy` and `lint-imports`. **`tsc --noEmit` was never run**, so QE could not have caught what the lane missed |
+
+> **A check named in the Definition of Done and absent from every gate is a check nobody performs.** The lane is asked for it, QE never verifies it, and certification cannot see it — so the only thing standing behind it is that a lane remembered.
+
+### What is *not* true, and Lane B's framing deserves the correction
+
+Lane B reported it as a **combination** defect: *"each branch type-checked cleanly alone… no lane gate can see it, because a lane gate runs on a lane branch."* **That class is real and worth watching** — it is [C-103](LANE_COORDINATION.md)'s neighbour.
+
+**This instance is not one.** Both halves are Lane A's: `AccountIdentity.last_observed_at` was added in A4, and `triage-strip.test.tsx` was last written in `1e28f33` — SW-05a, **also Lane A**. The fixture predates the field, in the same lane's own branch. **Their own `tsc --noEmit` would have caught it**, which is exactly why §19 asks for it.
+
+### The fix, in two parts
+
+**Gate set — QE's.** Add `tsc --noEmit` to certification, and run it in stage 1 validation. It is seconds, it needs no database, and it is already the repository's stated standard.
+
+**The type error — Lane A's.** One fixture missing one required field. **Not urgent for a lane's branch and urgent for `main`**, which is currently in a state the repository's own rules would reject.
+
 ### B-110 · The promotion guard refuses any commit that adds a migration
 
 | | |

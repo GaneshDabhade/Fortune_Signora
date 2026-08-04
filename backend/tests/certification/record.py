@@ -54,7 +54,7 @@ from typing import Final
 #: nine shipped CHECK constraints, where `array_length(x, 1) >= 1` cannot reject
 #: the empty array.
 REQUIRED_GATES: Final = frozenset(
-    {"pytest", "mypy", "import-linter", "security-invariants", "smoke"}
+    {"pytest", "mypy", "tsc", "import-linter", "security-invariants", "smoke"}
 )
 
 #: The coverage floor, mirroring `fail_under` in `pyproject.toml`.

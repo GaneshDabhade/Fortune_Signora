@@ -31,9 +31,12 @@ of it: this imports that module.
     python3 infra/validate.py            # the suite, with coverage
     python3 infra/validate.py --quick    # no coverage — faster, for a first look
 
-**It is not a second certification.** It runs one gate — the suite — because
-that is the gate that needs a database. `mypy`, `lint-imports`, the frontend
-suite and the image build do not, and are run directly.
+**It is not a second certification.** It runs the suite, because that is the
+gate that needs a database — plus **`tsc --noEmit`**, added 2026-08-04 for the
+opposite reason: it needs *nothing*, takes seconds, and was in no gate QE ran.
+`main` reached a state where it failed a check the Definition of Done requires
+of every lane ([B-111](../docs/BUGS.md)), and QE's own stage 1 could not have
+caught it.
 """
 
 from __future__ import annotations
@@ -100,7 +103,23 @@ def main() -> int:
         command = ["uv", "run", "pytest", "-q", "-p", "no:randomly"]
         if not args.quick:
             command.insert(3, "--cov")
-        print(f"  2  suite         {'without' if args.quick else 'with'} coverage\n")
+        # **Before the suite: seconds, and it needs nothing.** A five-minute
+        # suite that passes while the frontend does not compile is five minutes
+        # spent measuring the wrong thing (B-111).
+        print("  2  tsc --noEmit")
+        typescript = subprocess.run(
+            ["npx", "tsc", "--noEmit"],
+            cwd=REPO_ROOT / "frontend",
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if typescript.returncode:
+            print(f"     FAILED\n\n{typescript.stdout}{typescript.stderr}")
+            return 1
+        print("     clean")
+
+        print(f"  3  suite         {'without' if args.quick else 'with'} coverage\n")
         result = subprocess.run(command, cwd=BACKEND, env=environment, check=False)
 
     print(

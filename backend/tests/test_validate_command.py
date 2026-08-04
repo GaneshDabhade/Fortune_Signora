@@ -81,16 +81,23 @@ def test_the_database_is_named_for_the_commit_and_not_for_certification(
     assert 'replace("certify", "validate")' in source
 
 
-def test_it_runs_one_gate_rather_than_becoming_a_second_certification(
-    validate: ModuleType,
-) -> None:
+def test_it_runs_the_two_gates_it_claims_and_no_others(validate: ModuleType) -> None:
     """**Scope, asserted so it cannot drift.**
 
-    `make validate` exists because the *suite* needs a database. `mypy`,
-    `lint-imports`, the frontend suite and the image build do not, and folding
-    them in would produce a command that looks like certification, takes as long
-    as certification, and records nothing — which is the shape of a gate people
-    learn to skip.
+    **Two gates, and the reasons are opposite.** The suite is here because it
+    needs a database; `tsc --noEmit` is here because it needs *nothing* — it
+    takes seconds, and it was in no gate QE ran until `main` was found failing
+    it ([B-111](../../docs/BUGS.md)).
+
+    **Everything else stays out.** `lint-imports` and `mypy` belong to
+    certification; the image build needs a Docker stack. Folding them in would
+    produce a command that looks like certification, takes as long, and records
+    nothing — the shape of a gate people learn to skip.
+
+    > **This test was written asserting *one* gate and passed on a technicality
+    > when the second arrived** — `npx` is not `npm`. A guard that survives the
+    > change it was written to catch is Decorative Logic, so its premise is
+    > restated rather than left to coincidence.
 
     **Parsed, not grepped.** A first version searched the file text and failed
     on the module docstring, which *names* those gates in the sentence saying it
@@ -107,9 +114,11 @@ def test_it_runs_one_gate_rather_than_becoming_a_second_certification(
         for node in ast.walk(tree)
         if isinstance(node, ast.Constant) and isinstance(node.value, str)
     }
-    for absent in ("lint-imports", "mypy", "docker", "npm"):
+    assert any("tsc" in text for text in literals), "the tsc gate disappeared"
+    assert any("pytest" in text for text in literals), "the suite gate disappeared"
+    for absent in ("lint-imports", "mypy", "docker", "npm run"):
         assert not any(absent in text for text in literals), (
-            f"validate.py has grown a {absent!r} gate; it runs the suite and nothing else"
+            f"validate.py has grown a {absent!r} gate; it runs the suite and tsc, nothing else"
         )
 
 
