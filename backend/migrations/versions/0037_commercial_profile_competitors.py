@@ -1,7 +1,7 @@
 """commercial_profile: declared_competitors
 
-Revision ID: 0036
-Revises: 0035
+Revision ID: 0037
+Revises: 0036
 Create Date: 2026-08-04
 
 **The sixth declaration, and the first that is about a risk.** The catalog says
@@ -40,8 +40,8 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
 
-revision: str = "0036"
-down_revision: str | None = "0035"
+revision: str = "0037"
+down_revision: str | None = "0036"
 branch_labels: Sequence[str] | None = None
 depends_on: Sequence[str] | None = None
 

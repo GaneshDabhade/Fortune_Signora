@@ -1,7 +1,7 @@
 """workspace_tenancy: what somebody was allowed to do, and when it changed
 
-Revision ID: 0034
-Revises: 0033
+Revision ID: 0035
+Revises: 0034
 Create Date: 2026-08-03
 
 **A role change overwrites `membership.role`.** Without this table the previous
@@ -41,8 +41,8 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
 
-revision: str = "0034"
-down_revision: str | None = "0033"
+revision: str = "0035"
+down_revision: str | None = "0034"
 branch_labels: Sequence[str] | None = None
 depends_on: Sequence[str] | None = None
 

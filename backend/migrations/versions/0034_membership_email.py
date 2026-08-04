@@ -1,7 +1,7 @@
 """workspace_tenancy: a membership remembers the address it was created with
 
-Revision ID: 0033
-Revises: 0032
+Revision ID: 0034
+Revises: 0033
 Create Date: 2026-08-03
 
 **The roster could not name anybody.** `GET /members` returned `user_id` and
@@ -41,8 +41,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0033"
-down_revision: str | None = "0032"
+revision: str = "0034"
+down_revision: str | None = "0033"
 branch_labels: Sequence[str] | None = None
 depends_on: Sequence[str] | None = None
 

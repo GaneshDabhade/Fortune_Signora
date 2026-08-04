@@ -1,7 +1,7 @@
 """workspace_tenancy: a membership ends rather than disappearing
 
-Revision ID: 0032
-Revises: 0031
+Revision ID: 0033
+Revises: 0032
 Create Date: 2026-08-02
 
 **Somebody leaving an organization is a business event, not a deletion.**
@@ -44,8 +44,8 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
 
-revision: str = "0032"
-down_revision: str | None = "0031"
+revision: str = "0033"
+down_revision: str | None = "0032"
 branch_labels: Sequence[str] | None = None
 depends_on: Sequence[str] | None = None
 

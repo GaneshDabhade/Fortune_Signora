@@ -1,7 +1,7 @@
 """workspace_tenancy: an organization can grow
 
-Revision ID: 0031
-Revises: 0030
+Revision ID: 0032
+Revises: 0031
 Create Date: 2026-08-02
 
 **Until now every workspace was permanently whoever created it.**
@@ -53,8 +53,8 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
 
-revision: str = "0031"
-down_revision: str | None = "0030"
+revision: str = "0032"
+down_revision: str | None = "0031"
 branch_labels: Sequence[str] | None = None
 depends_on: Sequence[str] | None = None
 
