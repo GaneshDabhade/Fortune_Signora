@@ -1,118 +1,33 @@
 # Decision Packs — architectural decisions, grouped
 
-> **For the product owner. Prepared and maintained by QE.**
+> **For the product owner. Prepared and maintained by Lane C** — transferred from QE on 2026-08-03, when decision preparation became the Product Office's (`CLAUDE.md` §20e *Lane C*). **QE's authorship of everything below this line is preserved and is not rewritten**; what changes is who maintains it next.
 >
-> **The problem this solves:** thirty-two open coordination items, presented one at a time over weeks, each needing context rebuilt from scratch. **They are not thirty-two decisions.** Grouped by the question actually being asked, they are **five** — and three of the five have a recommendation the repository's own evidence supports.
+> **The problem this solves:** thirty-two open coordination items, presented one at a time over weeks, each needing context rebuilt from scratch. **They are not thirty-two decisions.** Grouped by the question actually being asked, they were **five** — **four are now ruled and retired below, and one remains.**
 >
-> **QE owns the process, never the decision.** Every pack states a recommendation because a pack without one is a question wearing a suit; **none of them is acted on until you rule.**
+> **Lane C owns the process, never the decision.** Every pack states a recommendation because a pack without one is a question wearing a suit; **none of them is acted on until you rule.**
 
-**Reviewed against `main` at `d39b136`, 2026-08-03.**
-
----
-
-## 0 · What the review changed before any decision was needed
-
-**Seven items were closed on repository evidence, not on your time.** Each was verified against shipped code, not against its own description.
-
-| Item | Why it is closed | Evidence |
-|---|---|---|
-| **C-024** — Timeline has nowhere to mount | **Implementation answered it.** The feed is mounted on the account brief | `accounts/[accountId]/page.tsx:335` renders `AccountHistory`; the rationale is in the file, Option A chosen, B and C ruled out |
-| **C-026** — Connection Center reachable only by URL | **Shipped as CX-01** | `settings/page.tsx:148` links it |
-| **C-019** — a claim is invisible to arbitration | **Superseded by governance** | Claims now push to `integration`; `certification-guard.py --audit-claims` enforces the boundary |
-| **C-006** — which lane owns `test_api_<module>.py` | **Answered by `CLAUDE.md` §20e** | *"QE creates repository-wide automated tests; lanes own the tests specific to the slices they implement"* |
-| **C-022** — which governance rules are in force | **The governance is on `main`** | *Execution ownership ends at `IN VALIDATION`* and *Continuous execution* are both promoted |
-| **C-201** — identifier collision is only *unlikely* | **Made impossible** | Block allocation ratified in `CLAUDE.md`; `state-check` rules 5e/5f detect any residue |
-| **C-001** — the target-account contract | **Ratified as ADR-0036** | Already `ANSWERED`; only the move to `Closed` was outstanding |
-
-> ⚠️ **C-024 is the one I got wrong, and it is worth stating plainly.** I escalated it in **two consecutive cycle reports** as *"the sharpest item — ten lines of routing separate a working capability from a customer."* **Lane A had already mounted it**, and said so in its handoff. I was reading the register instead of the repository, which is the exact failure [L-2](../ENGINEERING_LAWS.md) exists to prevent — **written by me, violated by me, in the same week.**
-
-**Net effect: 32 open items → 25**, with no decision required from you.
+**Reviewed against `main` at `d39b136`, 2026-08-03. Retirement pass 2026-08-03 — 183 lines to 68. Dissolution pass 2026-08-04 — Packs J and K removed as questions, not answers.**
 
 ---
 
-## 1 · The consolidation — 25 items, 5 decisions
+## Retired — decisions taken, and where each answer now lives
 
-**The largest finding of this review is that most remaining items are not independent.** They are one architectural question surfacing in several modules, and answering them one at a time means answering the same question repeatedly with no guarantee of consistency.
+**Four packs retired 2026-08-03 by Lane C**, under this document's own rule: *a pack is deleted when its decision is taken, and the answer lives in the ADR or document it produced — never here.*
 
-```
-  PACK A · The platform freeze          C-012 · C-013 · C-021 · C-207
-  PACK B · Roadmap row → milestone      C-020 · C-023 · C-200
-  PACK C · Customer vocabulary          C-002 · C-018 · C-204 · ADR-0041
-  PACK D · Unassignable code            C-010 · C-004 · C-014 · C-006*
-  PACK E · Product surface calls        C-008 · C-011 · C-017 · C-205 · C-206
-                                        ( * C-006 closed above; listed for its ruling history )
-  Independent, not packable             C-003 · C-005 · C-007 · C-009 · C-025 · C-203
-```
+**Three gates were verified before each retirement**, on the product owner's direction: the decision is fully ratified · the follow-up work is tracked elsewhere · no coordination item still sits `OPEN` against it.
 
----
+| Pack | Items | Decision | Ratified in | Follow-up now tracked as |
+|---|---|---|---|---|
+| **A** — platform composition | C-012 · C-013 · C-021 · C-207 | One platform amendment, one RFC, four capabilities | [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) **R-1** | [TASK-900](BACKLOG.md) *(the RFC)* → [TASK-901](BACKLOG.md) *(seven rewirings)* |
+| **B** — roadmap → milestone | C-020 · C-023 · C-200 | A roadmap row is not claimable until it names its bounded context; ADR-0038 ratified | **R-2 · R-3** | [TASK-902](BACKLOG.md) *(M7)* · [TASK-906](BACKLOG.md) *(M14b context)* |
+| **D** — unassignable code | C-010 · C-004 · C-014 | QE owns it; a rotating lane verifies QE's fixes | **R-4** | Governance only — no code |
+| **E** — five product calls | C-008 · C-011 · C-017 · C-205 · C-206 | Five independent rulings | **R-5 · R-6 · R-7 · R-8 · R-9** | [TASK-903](BACKLOG.md) · [TASK-904](BACKLOG.md) · [TASK-905](BACKLOG.md) |
 
-## 0b · Prioritized — by customer value unlocked, not by dependency count
+> **Retiring them was blocked by a defect, and finding it was the more useful half.** All four decisions were ruled on 2026-08-03, and **every one of the fourteen coordination items was still `OPEN` or `WAITING` in the register's own index** — the body recorded the rulings and the index never caught up. **A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names**, and this register has recorded that exact failure against itself once before.
+>
+> **The index is reconciled to `ANSWERED`, citing the ruling, and no item was moved to `CLOSED`** — that belongs to the requesting lane once the work is built, and it is the difference between *a decision exists* and *the work is done*.
 
-**Re-validated against `7e43841`, 2026-08-03.** Two items moved on evidence; the estimates below are QE's and are marked as estimates.
-
-| Pack | Customer value unlocked | Modules unblocked | Journeys unblocked | Reversible? | Risk if delayed | Effort after approval |
-|---|---|---|---|---|---|---|
-| **A** — platform composition | **None directly. Everything indirectly** — no pipeline stage is independently scalable or observable | **7** | 0 today | **Yes** — additive | **Compounding.** 13+ files now carry the workaround, up from 8 | RFC + 2–3 slices, then 7 one-slice rewirings |
-| **B** — roadmap → milestone | **None directly.** Releases three stalled milestones | 3 milestones | — | **Yes** — a queue rule | **High.** Three lanes have hit it independently | **Governance only. No code** |
-| **C** — customer vocabulary | **High and direct.** Nothing can match an account against an ICP until it is answered — the commercial-profile value proposition | 2 | **ICP → account matching** | Partly — a catalog is diffable | High | 1 slice + a reviewed catalog |
-| **D** — unassignable code | None directly | `apps/` · `signora_platform/` · frontend foundation | — | Yes | **Compounding.** 8 defects have landed here | **Governance only** |
-| **E** — five product calls | **[C-008](LANE_COORDINATION.md) is the highest single-item customer value on this page** — every AE and SDR, every day | 1–2 each | 1–3 each | Yes | Low each | 1 slice each |
-
-> **If the objective is customer value rather than a shorter register, the order is C → E(C-008) → B → A → D.** That is *not* the order by dependency count, and the difference is the point: **Pack A unblocks the most modules and ships nothing a customer can see**, while [C-017](LANE_COORDINATION.md) is a paste and [C-206](LANE_COORDINATION.md) is one question.
-
-**Two items moved on re-validation** ([`LANE_COORDINATION.md`](LANE_COORDINATION.md)): **C-020 narrowed** — Timeline's design doc now exists, so only ADR-0038's ratification remains — and **C-023 closes**, because it asked whether M13 was executable and Lane B executed three slices of it.
-
----
-
-## PACK A · Does the platform freeze admit a composition amendment?
-
-**Four items. One question. It is the most expensive open decision in the repository.**
-
-| | |
-|---|---|
-| **Decision** | **May `signora_platform/` be amended to let a module compose itself into the runtime?** |
-| **Background** | §20a froze the platform on completion of M1.3A, permitting only security fixes, production defects and approved architectural change. **Four modules have since hit the same wall from four directions** |
-| **Current implementation** | `EventHandler` receives no session ([C-012](LANE_COORDINATION.md), open since **M3A**) · `PublishableEvent` cannot be satisfied by a frozen dataclass ([C-013](LANE_COORDINATION.md)) · an event handler cannot reach a provider adapter ([C-021](LANE_COORDINATION.md)) · Casbin cannot express an action on yourself ([C-207](LANE_COORDINATION.md)) |
-| **Repository evidence** | **`make runtime-composition` measures the cost every cycle: 7 of 9 modules that declare consumers are unwired**, and every one names C-012. The deployed worker consumes **2** of them |
-| **Options** | **A** — amend the platform once, under one RFC covering all four · **B** — four separate RFCs · **C** — keep the freeze; modules work around it individually · **D** — reclassify the freeze as expired now the platform is proven |
-| **Trade-offs** | **A** is one review, one migration, one consistent shape — and a larger single change. **B** guarantees four inconsistent shapes for one problem. **C** is the status quo, and its cost is measured above. **D** discards the guarantee that a module written in M7 behaves like one written in M2 |
-| **Repository impact** | 🔴 — `signora_platform/**`, frozen |
-| **Customer impact** | **None directly. Everything indirectly**: the pipeline runs in-process, so no stage is independently scalable or independently observable |
-| **Engineering impact** | Unblocks 7 modules' event consumption, PP-02's last wire, all of PP-03, C-007's guided first run, and leaving an organization |
-| **Migration impact** | Additive. No customer data; no schema change |
-| **Risk** | **Low to make, high to defer.** The workaround cost compounds: *"every new event pays it"* (C-013) |
-| **Recommendation** | **Option A.** One RFC, four capabilities, one shape. **The freeze is doing its job — it is why this is a decision and not four silent commits** — and a single amendment preserves that while paying the debt once |
-| **Future pressure** | **This is the largest architectural pressure in the next six months.** Every module added meets the same wall |
-| **Rollback** | The amendment is additive; a module not using the new capability is unaffected |
-| **Deadline · urgency** | **Highest urgency of any pack.** Open since M3A — **the longest-running blocker in the repository** |
-| **Dependencies created** | An ADR superseding part of §20a |
-| **Dependencies removed** | **C-012 · C-013 · C-021 · C-207**, and unblocks C-007 |
-| **Effort** | RFC ~1 slice · implementation ~2–3 slices · **7 module re-wirings, one slice each, independently certifiable** |
-| **Order** | RFC → platform amendment → re-wire modules one at a time, measuring `runtime-composition` after each |
-| **Rejected** | **B**, because four solutions to one problem is the duplication [L-1](../ENGINEERING_LAWS.md) forbids. **D**, because *"a frozen platform is not a finished one — it is one where change requires a stated reason"*, and that sentence is still right |
-
----
-
-## PACK B · How does a roadmap row become an executable milestone?
-
-**Three items, identical shape: a milestone exists on the roadmap with no scope, no module and no bounded context.**
-
-| | |
-|---|---|
-| **Decision** | **What must exist before a roadmap row may be claimed?** |
-| **Background** | [C-020](LANE_COORDINATION.md) (M7) · [C-023](LANE_COORDINATION.md) (M13) · [C-200](LANE_COORDINATION.md) (M14b). **Three lanes hit this independently**, which by `CLAUDE.md` §20e is the threshold at which governance may evolve |
-| **Current implementation** | A roadmap row is prose. `BACKLOG.md` carries `TASK-nnn` with a module. **Nothing connects them**, so a lane claiming a milestone-level task discovers the gap after claiming |
-| **Repository evidence** | M14b has *"two roadmap table rows and no scope section, no module and no bounded context"*. **Lane A stopped rather than choosing one** — correctly, because *"every route into implementation decides the boundary by implementing it"* |
-| **Options** | **A** — a milestone is not `READY` until it names a bounded context and a module · **B** — a discovery slice is the first slice of every milestone · **C** — case by case, as now |
-| **Trade-offs** | **A** front-loads your decision and guarantees no lane discovers a 🔴 mid-slice. **B** legitimises what the lanes already do (all three wrote a discovery document) but spends a slice before scope is agreed. **C** has produced three identical blockers |
-| **Repository impact** | 🔴 — the roadmap and `CLAUDE.md` |
-| **Customer impact** | None directly. **Three milestones are stalled behind it** |
-| **Risk** | Low. It is a queue-admission rule |
-| **Recommendation** | **A, with B as the fallback.** A roadmap row becomes `READY` only when it names its bounded context; where you would rather not decide up front, commission an explicit discovery slice. **This is what all three lanes did unprompted** — the rule just stops them discovering it separately |
-| **Deadline · urgency** | **High.** M7, M13 and M14b are all held |
-| **Dependencies removed** | **C-020 · C-023 · C-200** |
-| **Effort** | Governance only — one `CLAUDE.md` amendment. **No code** |
-| **Rejected** | **C**, on evidence: three lanes, three identical blockers, three separate discovery documents |
+**The deliberation is not lost.** Each pack's options, trade-offs and rejected alternatives are preserved verbatim in `git log` and, where they became architecture, in [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) — which states for every ruling whether it rests on **evidence or judgement**, so the judgement ones stay cheap to reverse.
 
 ---
 
@@ -134,48 +49,421 @@
 
 ---
 
-## PACK D · Who owns code that belongs to no module?
+---
+
+## PACK F · How should the execution board be structured?
+
+**Commissioned by the product owner 2026-08-03, after [C-401](LANE_COORDINATION.md) measured it as the only textual conflict in 77 commits.**
 
 | | |
 |---|---|
-| **Decision** | **Assign an owner for `apps/`, `signora_platform/`, the frontend foundation and repository process.** |
-| **Background** | [C-010](LANE_COORDINATION.md), open **8 cycles** — the longest-waiting item after C-012 |
-| **Repository evidence** | **Eight defects have now landed in this gap**: B-007, B-012, B-013, B-014, B-022, B-025, B-100, B-101. **The last three were all found and fixed by QE in three consecutive cycles** |
-| **The compounding cost, precisely** | QE fixes them because nobody else may. **QE cannot verify its own fixes**, so each one waits for a lane to volunteer — which is why [TASK-001](BACKLOG.md) had to be created and why three rows sat unverified for two days |
-| **Options** | **A** — QE owns it, and a nominated lane verifies QE's fixes each cycle · **B** — rotate it like any module · **C** — a standing Lane C · **D** — leave it; QE fixes and verification queues |
-| **Trade-offs** | **A** matches what already happens and fixes only the verification half. **B** applies the rotation model the repository already runs on. **C** costs a lane. **D** is the status quo, measured above |
-| **Recommendation** | **A.** QE already does the work; **name a verifying lane and the gap closes without changing anything else.** [C-004](LANE_COORDINATION.md) and [C-014](LANE_COORDINATION.md) resolve as consequences |
-| **Effort** | Governance only |
-| **Dependencies removed** | **C-010 · C-004 · C-014** |
+| **Decision** | **How is [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) arranged so two lanes stop conflicting on it?** |
+| **Background** | Every lane's rows sit **adjacent in one table**, and each lane's branch carries a snapshot of *every other lane's rows* — including QE's. The conflict hunk read `Cycle 28` against `Cycle 35`, neither of which the conflicting lanes wrote |
+| **Repository evidence** | **77 commits · 211 file-touches · +31,623 lines · exactly one conflicting file, both times.** `CLAUDE.md` says *"update only your own row"*, and **the file's shape makes that unexpressible as a non-conflicting diff** |
+| **Class** | **Structural risk** ([`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §3) — *design it away*, rather than resolve it every cycle |
+
+| | Option | Readability | Merge behaviour | Maintenance | Discoverability | Scalability |
+|---|---|---|---|---|---|---|
+| **A** | **One table** *(today)* | **Best** — every lane visible in one glance, sortable by eye | **Worst** — adjacent rows guarantee a conflict whenever two lanes both update | Low, but **a conflict every multi-lane cycle**, resolved by QE who wrote neither row | Best | **Degrades linearly** — each lane added raises collision probability |
+| **B** ✅ | **One section per lane**, fixed order, one file | Slightly worse — a heading between lanes; **still one screen at five lanes** | **Disjoint line ranges; git has nothing to reconcile** | **Lowest** — a lane edits only under its own heading | Best — same file, same path | **Flat** — a new lane appends a section |
+| **C** | **One file per lane** | **Worst** — no single view; the board stops being a board | **Perfect** — separate files never conflict | Higher — *n* files to open, and a cold session must know they exist | **Worst** — the one document a session reads first becomes a directory | Flat, but the fragmentation compounds |
+
+**Recommendation: B.** It removes the structural cause rather than managing the symptom, **keeps the single-file readability that makes the board useful**, and is a one-off reshape with no new mechanism — `CLAUDE.md`'s *"update only your own row"* becomes true rather than aspirational.
+
+**Rejected: A**, because the conflict is not a git problem and will recur every cycle at increasing cost. **C**, because it solves merges by destroying the property the document exists for — and [`CLAUDE.md`](../CLAUDE.md) §12 forbids new documentation files where an existing one serves.
+
+**Effort** — one reshape of one file, by **QE**, who owns the board's reconciliation. **No lane branch needs to rebase**; the shape changes at merge.
 
 ---
 
-## PACK E · Five independent product calls
+## PACK G · The repository's documentation is growing faster than its code
 
-**Not consolidatable — each is a genuine product judgement, and none blocks the others.** Listed with the single question each needs.
+**Raised by the product owner 2026-08-03: *"each file is getting too much inflated… make sure we are not losing any important piece."***
 
-| Item | The one question | Blocks |
+| | |
+|---|---|
+| **Decision** | **What limits documentation growth without losing a single recorded fact?** |
+| **Class** | **Repository Decision** |
+
+**Measured, not estimated:**
+
+| | |
+|---|---|
+| **Markdown** | **37,267 lines** against 97,437 lines of backend Python |
+| **Growth** | `LANE_COORDINATION.md` **0 → 2,968 lines in under three days** · `BUGS.md` **84 → 1,737** · `CLAUDE.md` **561 → 1,371** |
+| **Concentration** | **Four files are 20% of all documentation.** In the coordination register, **12 items are 52% of the file**, and the largest — C-025, at 408 lines — **is already closed** |
+| **Cold-start cost** | **2,891 lines** before a first commit |
+| **Composition** | **§20e is 67% of `CLAUDE.md`.** The constitution is now mostly *how lanes coordinate* rather than *how software is built* |
+
+> **The register's own rule already says it should shrink. The mechanism to make it shrink was never built** — that is the whole finding. Nothing is being lost today; **everything is being kept in the reading path**, which is a different problem with a different fix.
+
+| | Option | Consequence |
 |---|---|---|
-| **[C-008](LANE_COORDINATION.md)** | Who sees the commercial profile — options A/B/C/D stated | Every AE and SDR, every day |
-| **[C-011](LANE_COORDINATION.md)** | Should a contraction risk look different from an opportunity? | R9-03 only |
-| **[C-017](LANE_COORDINATION.md)** | Ratify the onboarding honesty principle — **text ready to paste as `D39`** | Every future onboarding flow |
-| **[C-205](LANE_COORDINATION.md)** | Is Signora expected to work on a phone? | [B-019](BUGS.md) and every responsive decision |
-| **[C-206](LANE_COORDINATION.md)** | How is an invitation email delivered? | **Narrowed by Lane A to this alone** |
+| **A** | **Do nothing** | Growth is ~3 days old and steep. **The cold-start cost is the tax**, paid by every lane on every rotation, and rotation is the model |
+| **B** | **Separate the reading path from the record** — a closed item's *deliberation* retires to a dated archive; the register keeps its **decision and link** | **Loses nothing** — the decision stays visible, the deliberation stays verbatim and dated. It is what §2 already requires: *correct a claim about the present; date a record of the past* |
+| **C** | **Operational content leaves the constitution** for the owning lane's procedure document | **Proven this session**: `DECISION_PACKS.md` 183 → 68 · Lane C's `CLAUDE.md` section 92 → 39, **with nothing deleted** — both moved to their owner |
+| **D** | **Split large documents by topic** | **Rejected.** Fragmentation raises discoverability cost, and §12 forbids new files where an existing one serves. It converts one big file into five a session must know about |
+| **E** | **Summarise in place, keep full text only in git** | **Rejected.** `git log` is not a reading path — *"a record nobody can cite"*. It is the one option that genuinely risks losing something |
 
-> **[C-017](LANE_COORDINATION.md) and [C-206](LANE_COORDINATION.md) are the two cheapest decisions in this document.** One is a paste; the other is a single choice Lane A has already reduced from a plugin adoption to an email question.
+**Recommendation: C now, B next.**
+
+**C is already demonstrated and costs nothing** — it is the `QUALITY_ENGINEERING.md` pattern applied consistently, and `CLAUDE.md` already states the principle: *where another document owns operational content, this one references it and never restates it.*
+
+**B is the larger win and needs one ruling:** *where does a closed item's deliberation go?* **Lane C recommends a dated archive per register** — `docs/archive/coordination-2026-08.md` — appended to, never rewritten, with the register keeping one row per closed item naming its decision and linking the archive. **Retiring C-025 alone recovers 408 lines from the path every lane reads before every slice.**
+
+**Not recommended, and stated so it is not proposed later:** a line limit, a documentation gate, or a periodic prune. **A gate on prose measures the wrong thing**, and the repository has just spent a cycle proving that size metrics predict nothing.
+
+**Effort** — C is done. **B is one archive file per register plus a retirement pass**, and is Lane C's to perform once the ruling exists.
 
 ---
 
-## If you answer only three
+## PACK H · The coordination register has no retirement — **APPROVED, migration deferred**
 
-1. **PACK A** — it has been waiting since M3A and its cost is measured every cycle.
-2. **PACK B** — governance only, no code, and it releases three stalled milestones.
-3. **[C-017](LANE_COORDINATION.md)** — ratifiable text, already written.
+> **Approved in principle 2026-08-03, product owner.** The lifecycle **is adopted** and is recorded in [`LANE_COORDINATION.md`](LANE_COORDINATION.md) and `CLAUDE.md` §20e *Coordination*.
+>
+> **The migration is deliberately not run.** *"Do not begin large-scale archival until the governance model has stabilized — otherwise you'll be moving documents every week."* **Lane C continues measuring and naming candidates and moves nothing.** The resume condition is a cycle passing with no change to the coordination model.
+>
+> **Retained below as the record of what was approved and why** — it is retired from the staging area once the migration runs.
+
+**Commissioned by the product owner 2026-08-03: *"prepare a simple lifecycle for coordination items… before implementation."***
+
+| | |
+|---|---|
+| **Decision** | **What lifecycle retires a coordination item, and where does a retired one live?** |
+| **Class** | **Governance Decision** |
+| **Evidence** | [`LANE_COORDINATION.md`](LANE_COORDINATION.md) is **2,972 lines — 58% of the 5,102 a lane must read before every slice.** Its own rule says it *should shrink*; it has only grown. **12 items are 52% of it, and the largest — C-025 at 408 lines — has been closed since 2026-08-03** |
+
+### The proposed lifecycle
+
+```
+  OPEN  ──▶  ANSWERED  ──▶  IMPLEMENTED  ──▶  VERIFIED  ──▶  ARCHIVED
+   │            │                │               │              │
+ raised    a decision       the work is      QE confirms    leaves the
+           exists           built            it holds       reading path
+```
+
+**Two states are new. The existing five are unchanged in meaning**, which is what makes this cheap:
+
+| State | Set by | Means | New? |
+|---|---|---|---|
+| `OPEN` · `WAITING` | Any lane | Raised · the owner has it | |
+| `ANSWERED` | The named owner | **A decision exists.** Implementation may not have started | |
+| `IMPLEMENTING` → **`IMPLEMENTED`** | The requesting lane | **The work is built and pushed** | **Renamed** — a state, not an activity |
+| **`VERIFIED`** | **QE** | The answer holds in the promoted repository | **New** |
+| **`ARCHIVED`** | **Lane C**, at Closeout | **Moved out of the reading path**, fully searchable | **New** |
+
+> **`VERIFIED` is the gate that makes archiving safe.** Without it, an item leaves the register on the *claim* that it was built — which is the failure `ANSWERED` vs `CLOSED` already exists to prevent, one step later.
+
+### Where an archived item goes
+
+| | Option | Consequence |
+|---|---|---|
+| **A** ✅ | **`docs/archive/coordination-YYYY-MM.md`**, append-only, dated. The register keeps **one row**: id · title · decision · link | **Historical, not invisible** (§8). Full deliberation preserved verbatim; `grep` still finds it; the reading path loses 58% of its bulk. **Reuses the dated-record convention `CLAUDE.md` §2 already requires** |
+| **B** | Keep everything; collapse closed items behind detail markers | **Rejected.** The bytes stay in the file a lane opens, and the rule becomes *"scroll past"* — which is the current state with extra syntax |
+| **C** | Delete; rely on `git log` | **Rejected.** *"A record nobody can cite."* It is the one option that genuinely loses something |
+| **D** | One file per item | **Rejected.** Trades a long file for a directory nobody can scan, and §12 forbids new files where an existing one serves |
+
+**Recommendation: A, archiving only at `VERIFIED`, monthly, by Lane C at Closeout.**
+
+**Immediate effect if approved:** the nine items already closed on evidence plus C-025 leave the path — **roughly 900 lines, ~30% of the register**, on the first pass alone.
+
+**What this does not change.** Ids are never reused. An archived item keeps its `C-nnn` and its anchor. **Archiving is not closing** — only a `VERIFIED` item is eligible, and verification is QE's.
+
+---
+
+## PACK I · Epics B–G are specified and unapproved, and the queue is running dry
+
+**Raised by Lane C 2026-08-03 — an *epic approval* decision, which the escalation criteria reserve for the product owner.**
+
+| | |
+|---|---|
+| **Decision** | **Which of Epics B–G, if any, enter the backlog?** |
+| **Class** | **Product Decision** — scope, and therefore not Lane C's |
+
+> ⚠️ **The premise was wrong, corrected 2026-08-04 by Lane C against itself.** This pack was raised because *"the queue is running dry."* **It was not.** [CX-07](architecture/43-customer-experience.md) — responsive shell and screens, **XL, 2–3 weeks, Lane A's modules alone** — was **ruled executable on 2026-08-03** by [C-026](LANE_COORDINATION.md), which put phone in scope. **Lane C escalated an approval for scope that had already been approved**, and reported Lane A as nearly out of work while a multi-week initiative sat unallocated in its own architecture document.
+>
+> **What the mistake was, precisely:** the office tracked *"does this have a `TASK-nnn`?"* and treated the absence as *"unscoped."* **CX-07 had a ruling, an objective, named modules and an effort estimate — everything except an id.** That is the failure mode the epic-level portfolio exists to prevent *(product owner, 2026-08-04: do not optimize around backlog rows)*.
+
+**What is genuinely unapproved is narrower, and it is still worth deciding.** Three `READY` rows turned out to be already built ([C-404](LANE_COORDINATION.md)); [TASK-400](BACKLOG.md) decomposes Epic A, which is approved. **What no lane can start without you is a *new epic*.**
+
+**Meanwhile [51-implementation-specifications.md](architecture/51-implementation-specifications.md) carries 21 specified slices** — objective, module-assigned, effort-estimated — **of which only Epic A is approved.**
+
+| Epic | What it closes | Modules | Note |
+|---|---|---|---|
+| **B** · Close the contradictions | The ICP is declared and **nothing consumes it**; the first-run path | `commercial_profile` · `buying_score_engine` · Product Surface | **B1 is the commercial-profile value proposition** and is gated by [Pack C](#pack-c--where-does-customer-language-meet-canonical-data) |
+| **C** · People | *"Who do I call?"* — the gap every persona names first | **A new bounded context** (C1, XL) | ✅ **Prepared 2026-08-04** — [400-epic-c-people.md](architecture/400-epic-c-people.md), **[ADR-0400](architecture/adr/0400-person-as-an-entity.md) drafted and `Proposed`** ([C-408](LANE_COORDINATION.md)). **Narrowed, not confirmed XL**: the intelligence already runs and lacks only a subject |
+| **D** · Risk | Risk signal families, risk postures, who is already a customer | `signal_engine` · `buying_score_engine` · `integrations` | **D2 and D3 are S/M and unblocked** |
+| **E** · Enterprise | CRM OAuth and write-back, SSO, SCIM, audit | `integrations` · QE | **Commercial decision** — enterprise versus GA |
+| **F** · Workflow | Rules, safe actions, a builder | **A new `workflow` module** | 🔴 — new bounded context |
+| **G** · Assistance | Ask about an account; draft an approach | `ai_reasoning_engine` | Gated by `reasoning@1` having no released model ([TASK-013](BACKLOG.md)) |
+
+> ⚠️ **Corrected 2026-08-03, and the correction is Lane C's own.** This pack recommended **D2 and D3** as *"S/M and unblocked"*. **D3's specification says plainly that it depends on E1**, and verification of the signal catalog showed **D1's two missing risk families need contract and usage data only a CRM carries.** **Epic D is gated on Epic E1**, so the sequencing below is wrong and E1 comes first — queued as [TASK-402](BACKLOG.md) under the authority to assign a fresh epic.
+>
+> **What survives:** **D2** alone is genuinely independent — a posture within the existing ledger, no CRM required. It stays a candidate and is not urgent.
+
+### Recommendation, restated at the epic level — **approve E, and nothing else yet**
+
+| | | |
+|---|---|---|
+| **Approve** | **Epic E1 — CRM OAuth and read** | **The single highest-leverage integration in the roadmap.** It unblocks pipeline intelligence, forecasting, expansion and customer risk — **four vision modules, on its own** — and **Epic D3 with one boolean.** `integrations` is Lane B's alone, so it is 🟢 and independent. **It needs one thing from you that is not an approval: developer credentials** |
+| **Keep as a candidate** | **Epic D2 — risk postures** | Genuinely independent — a posture inside the existing ledger, no CRM. **M**, not urgent, and it is where [TASK-905](BACKLOG.md) belongs |
+| **No decision needed** | **CX-07** | **Already ruled.** It needs allocation, not approval |
+| **Not yet** | **C · F · G · B1** | **C** and **F** each need a new bounded context and an ADR; **G** waits on a released model ([TASK-013](BACKLOG.md)); **B1** waits on [Pack C](#pack-c--where-does-customer-language-meet-canonical-data) |
+
+> **E is described above as *"a commercial decision — enterprise versus GA"*, and that is true of E3 and E4, not of E1.** SSO, SCIM and audit are the enterprise gate. **Reading a customer's CRM is the product working**, and it is what most of the vision is waiting on.
+
+> **This is escalated rather than queued because it is epic scope, and scope is the product owner's.** [TASK-400](BACKLOG.md) was different: it decomposes Epic A, which is already approved. **The line Lane C is holding is that decomposing approved work is coordination, and admitting new epics is not.**
+
+---
+
+## PACK J · The availability signal — **dissolved 2026-08-04, not ruled**
+
+**Raised by Lane A as [C-218](LANE_COORDINATION.md); investigated by Lane C 2026-08-03.** *"Do not assume Lane A's proposed solution is correct. Do not assume it is wrong either."*
+
+> **It needed no ruling, and taking one off the product owner's queue is the point.** The measured finding stands: **every lane's board is readable from `refs/remotes/origin/lane-*` in 18 milliseconds**, so Lane A's claim that the signal was *unreachable* was false — Lane C had already read `31f22e7` and answered [C-217](LANE_COORDINATION.md) with it. **What was true is narrower: nothing obliged Lane C to look, and nothing told it when.**
+>
+> **The 2026-08-04 model answers it without any repository change.** A lane reports `AVAILABLE` **to the product owner**, who asks the office for a recommendation. **The signal is a message on a channel that already exists**, and the three build-something options (a status commit to `integration`, QE relaying at Closeout, a dedicated signal file) are all moot.
+>
+> **What Lane C keeps as procedure, costing nothing:** read every `lane-*` ref at the start of each planning pass, **parsing the board rather than grepping it** — naive `grep` returns the legend row and reports all four refs as `IN VALIDATION`. **Treat a lane at `AVAILABLE` with nothing prepared as a finding against Lane C**, not against the lane.
+>
+> **Lane C implemented nothing, and the promotion guard is untouched.**
+
+---
+
+## PACK K · Assignment delivery — **dissolved 2026-08-04, not ruled**
+
+> **The product owner dissolved the question rather than answering it.** *"The current model is becoming over-coordinated"* — Lane C recommends, the product owner allocates in one reply, and **there is nothing to deliver.** Assignment delivery, commits, propagation, synchronization, visibility, acknowledgement and routing are all deleted; **the shared channel is the product owner, who already talks to every lane.**
+>
+> **Both of this pack's answers were right about the wrong problem.** Option A had lanes read a ref; the direct-reply supersession had Lane C send a message. **Each made delivery a mechanism, and the correct move was to have no delivery.** Kept as one paragraph because the mistake generalises: **when a coordination problem needs a channel built, check first whether a channel already exists that nobody thought to use.**
+>
+> **What survives, and it is not part of this pack:** the lane's own `Claim TASK-nnn` commit remains the only thing a feature lane pushes to `integration`, bounded by `CLAIM_PATHS`. **That was true before Pack K and is untouched by dissolving it.**
+
+## What remains open
+
+**One pack, and it is the one the product owner declined to consolidate.** [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) **R-10** kept ADR-0041 and C-002 separate: *"ADR-0041 defines how customer intent is modeled, versioned, governed and referenced. C-002 defines how that intent is interpreted against normalized provider data. They are complementary capabilities, not one combined decision."*
+
+**Also open and deliberately unruled**, each with its reason recorded in ADR-0100: **C-203** *(how the product names a person)* · **C-302** *(a notification is per-person, and workspace RLS is not enough — tenancy is never decided inside a session)* · **C-003** and **C-005**, both re-validated and confirmed non-blocking.
+
+---
+
+## PACK N · The engineering-blocking queue, reduced to four decisions
+
+**Produced 2026-08-04 on the product owner's direction: *shrink the decision queue*.** Five items were named in priority order; **each was verified against source, and one of the five needs no ruling of its own.** No new architecture, no replacement `C-` items.
+
+| # | Item | Still valid? | **The smallest decision** |
+|---|---|---|---|
+| **1** | **[C-326](LANE_COORDINATION.md)** | ✅ **Yes, and much smaller than when raised** | **Ratify [ADR-0300](architecture/adr/0300-inbound-customer-systems.md) §1 — *a customer-held system is a source, not a provider*.** One sentence; everything else follows |
+| **2** | **[C-221](LANE_COORDINATION.md)** | ✅ Yes — **Lane C's half is done** *(below)* | **Park Epic C until [E1](architecture/401-epic-e1-crm-read.md) lands, or drop it.** Nothing else can move it |
+| **3** | **[C-321](LANE_COORDINATION.md)** | ✅ Yes | **Accept the six recommendations as a set, or name the ones you would change.** They are already yes/no |
+| **4** | **[C-021](LANE_COORDINATION.md)** | ✅ Valid — **but it needs no ruling of its own** | **None. It is gated on [C-010](LANE_COORDINATION.md)**, and ruling that unblocks both |
+| **5** | **[C-200](LANE_COORDINATION.md)** | ✅ Yes | **Is M14b one module, two, or three?** Lane A's discovery says *"one module and two integrations"* |
+
+### Verified against `origin/integration` — 2026-08-04, and it closed two more
+
+**Rule 5 applied: every finding below is read from `origin/integration`, not from this branch.** A rebase was attempted, hit a conflict on a claim commit already upstream, and was **aborted on the product owner's direction** — *documentation conflicts and historical Product Office commits are not engineering effort worth spending.* **Nothing here rests on local state.**
+
+| Item | Verified on integration | Outcome |
+|---|---|---|
+| **[C-223](LANE_COORDINATION.md)** | **`competitor_entry` is in the catalog (10 types).** `commercial_profile/public/` exports `DeclaredCompetitorView`, `DeclaredCompetitorListView` and `DeclaredCompetitorReader.current(workspace_id) -> …\| None`. **`signal_engine/application/generate.py` imports it** | ✅ **Answered by implementation.** [ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md)'s contract was built exactly as specified |
+| **[B-400](BUGS.md)** 🔴 | **One `0031` remains**; Lane A's chain renumbered to `0032`–`0035`. **The revision map is linear** | ✅ **Closed.** Fixed the opposite way to the recommendation, and **the better way** — the unpromoted chain moved |
+| **[C-025](LANE_COORDINATION.md)** | Already **`ANSWERED`** — *"all four decisions"*; blocks *"nothing. The remaining work needs a HubSpot developer application, not a decision"* | ✅ **Not a queue item** |
+| **[C-023](LANE_COORDINATION.md)** | Its own row: *"Overlaps Lane B's [C-025](LANE_COORDINATION.md) in substance — two lanes reached it independently"* | ✅ **Duplicate.** Resolves against C-025, which is answered. **No separate ruling** |
+
+> **[ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md)'s §Validation 2 claim is confirmed by what shipped: no import contract was amended.** Integration has 35 contracts to this branch's 34, and **the new one is `sales_engagement`** — unrelated. `signal_engine` was already named a permitted source of `commercial_profile.public`, exactly as the validation found.
+
+### ⚠️ A register defect on integration — reported, not fixed
+
+**[C-326](LANE_COORDINATION.md) is in three states at once on `origin/integration`:** its **body sits after the `## Closed` marker** (line 4020, marker at 2556), its **`Status` field says `OPEN`**, and it has **no index row at all.**
+
+**It is genuinely open** — Lane B is waiting on it and its content is current. **Lane C is not fixing it**: this branch is 151 commits behind, and editing a shared register from here creates exactly the conflict the product owner directed should not be spent on. **Raised for whoever reconciles the register next.**
+
+### Category 1 — resolved by Lane C, no ruling needed
+
+**Two items were carrying claims the repository has since falsified. Neither is closed** — both still hold a real question — **but the argument that made them urgent is gone, and that is what was making them look bigger than they are.**
+
+| Item | The claim it carried | What the repository says now |
+|---|---|---|
+| **[C-012](LANE_COORDINATION.md)** | *"**The deployed worker consumes nothing**"* — the reason it survived since M3A | ⚠️ **Obsolete.** The deployed worker consumes. **`_project_to_timeline` and `_run_requested_research` are wired**, each binding a session at call time via `tenant_scoped_session(current.session_factory, …)`. [B-301](BUGS.md) and README record it: *"the deployed worker consumes it"* |
+| **[C-003](LANE_COORDINATION.md)** | *"Blocks nothing — **but it gets worse with every slice**"*, predicting a fourth wire code at slice 5 | ⚠️ **Disproven.** There are still **exactly three** — `icp_`, `committee_`, `focus_`. **Slice 5 added none.** The growth argument has not materialised across every slice since |
+
+> **C-012 is reduced but deliberately not closed, and the item itself is why.** It warned: *"**Not to be worked around inside a product milestone, which is how it would become permanent.**" **A pattern did ship, and whether it is the answer or the predicted workaround is exactly the judgement C-012 reserved.** Closing it on Lane C's reading would be the office deciding the thing the item exists to protect.
+>
+> **So it reduces from an RFC to a yes/no:** *is binding a session in the worker's wrapper the answer, or the workaround C-012 named?* **What is no longer true is that anything is blocked** — every module that wants to consume an event now has a working precedent, twice.
+
+**C-003 reduces to a permission with no urgency:** rename three wire codes, or leave them. **⚫ under the Change Budget, every consumer is Lane B's own frontend, and nothing degrades while it waits.**
+
+### Category 2 — ADRs ready for ratification, and processing continues past them
+
+**Three are complete, carry no unresolved alternatives, and need only a signature.** **Lane C is not waiting beside them.**
+
+| ADR | Alternatives | Open questions | Status |
+|---|---|---|---|
+| **[ADR-0402](architecture/adr/0402-a-rule-is-data.md)** — a rule is data | **Five assessed, one recommended** | ❓1 🟡 M14a sequencing *(phase 5 only)* · ❓2 🟢 *(engineering answers)* | **READY FOR RATIFICATION** |
+| **[ADR-0401](architecture/adr/0401-a-customers-crm-is-not-a-provider.md)** — CRM is not a provider | **Four assessed, one recommended, amended on Lane B's evidence** | ❓1–❓3 downstream of the decision | **READY FOR RATIFICATION** |
+| **[ADR-0400](architecture/adr/0400-person-as-an-entity.md)** — a person becomes an entity | **Five assessed, one recommended** | **❓1 is now answered — *no***. ❓2 is [C-221](LANE_COORDINATION.md)'s route choice · ❓3 affects phase 4 only | **READY FOR RATIFICATION** |
+
+> **Ratifying [ADR-0400](architecture/adr/0400-person-as-an-entity.md) does not approve Epic C and does not unblock it** — it records the bounded context so the decision is not re-derived whenever the epic resumes. **The two acts were separated in the ADR itself and remain separate.**
+
+> **[ADR-0402](architecture/adr/0402-a-rule-is-data.md) is the highest-value signature on the board.** It is the only one that turns a **`🧊 FROZEN — READY`** epic into a startable one, **and Epic F's phase 0 needs nothing at all.**
+
+---
+
+### 1 · C-326 — the ruling moves a file and rewrites a wrapper
+
+**Lane B's own row already narrowed it, and the narrowing is the important part:** *"This row said implementation had stopped. **It had not.**"* Interpretation, acquisition, grant lifecycle and the vendor read **all reached `main` on 2026-08-04.**
+
+> **What remains gated is exactly one thing: how a fetched record reaches `raw_provider_record`.** Lane B: *"the ruling **moves a file and rewrites a wrapper — no behaviour moves with it**."*
+
+**[ADR-0300](architecture/adr/0300-inbound-customer-systems.md) is `Proposed`, and that is the whole blocker.** **[409](architecture/409-inbound-source-port-contract.md) is the contract that follows from its §1**, specified so implementation resumes without inventing architecture — and it establishes that the change needs **no migration, no new event, no vocabulary addition and no downstream change**, because `raw_provider_record.provider` is already `String(64)` and normalization already keys on a `str`.
+
+**So the decision is a yes/no on one sentence**, and the cost of *yes* has already been measured at near zero.
+
+### 2 · C-221 — Lane C's half is complete; the remaining half is a route
+
+**C-221's owner is split — *product owner (the epic) · Lane C (the specification)*. The specification half is done** and needs nothing further:
+
+| | |
+|---|---|
+| **[400-epic-c-people.md](architecture/400-epic-c-people.md) §0** | Records that ❓1 is answered **no**, that phases 1–3 do not split into a blocked and an executable half, and that the buying score needs no change at all |
+| **[ADR-0400](architecture/adr/0400-person-as-an-entity.md)** | Carries the model, the alternatives and the three open questions |
+
+**What is left is one choice, and no work of any kind changes it:** **the provider returns no person name**, so Epic C's phases 1–3 have no input. **Route B — read people from the customer's own CRM once [E1](architecture/401-epic-e1-crm-read.md) lands — is the only path**, and Lane C recommended it in ADR-0400 ❓2 for independent reasons.
+
+> **Park or drop. There is no third option that repository evidence supports**, and holding [TASK-201](BACKLOG.md) claimed-and-blocked costs Lane A a row on its board.
+
+### 3 · C-321 — already six yes/no answers awaiting a signature
+
+**Lane B reduced it to six sub-questions with recommendations**, and the A6 reuse audit *"settled two things so the ruling does not have to."*
+
+| | Recommended |
+|---|---|
+| Should an unnamed company appear at all? | **Yes** — hiding it discards real intelligence |
+| On the working list? | **No** — that list answers *"who should I call?"* |
+| Contribute to a score? | **Yes** — the score measures evidence, and the evidence is real |
+| Become an opportunity? | **No** — an opportunity is something a person can pursue |
+| Be workable? | **Never.** Today it is |
+| What is it, then? | **`Needs identity` — a queue with its own workflow**, not a filter |
+
+**Lane C adds nothing and recommends nothing here** — the analysis is Lane B's and is complete. **The smallest decision is to accept the set or name exceptions.**
+
+### 4 · C-021 — valid, and it is not a decision
+
+**Verified still valid:** `provider_platform/application/sync_targets.py` is **179 lines, built and tested**, and **`apps/worker/subscriptions.py` does not wire it** — grep for `sync_targets`, `target_accounts_changed` and `SyncTargets` returns nothing. **Nothing yet reads a company a customer declared. The row is accurate.**
+
+> **But its stated owner reason is *"`apps/worker/` has no assignable lane ([C-010](LANE_COORDINATION.md))"*** — and that is [C-010](LANE_COORDINATION.md)'s question, not a second one. **C-021 is C-010 wearing a slice's name.**
+
+**No ruling is needed on C-021.** Ruling C-010 — *how is code that belongs to no module assigned when it needs a fix?* — unblocks PP-02's last wire, PP-03, and [C-007](LANE_COORDINATION.md) with it. **Two items, one decision. That is the reduction.**
+
+**Not merged and not closed**, because C-021 also records a genuine technical finding an implementer needs. **It is marked as gated on C-010 rather than carried as an independent decision.**
+
+### 5 · C-200 — one question, three candidate answers
+
+**M14b is three concerns in one roadmap row** — billing, analytics, feature flags — **and none has a module.** Lane A's discovery reached a specific answer: ***"It is one module and two integrations, not one and not three."***
+
+**The smallest decision is which of the three that is.** **Lane C makes no recommendation** — M14b's scope is product scope, and Lane C's own [408](architecture/408-revenue-intelligence-platform.md) test would only tell you whether the result owns an aggregate, which cannot be applied until the boundary is chosen.
+
+---
+
+> **Net effect: five priority items → four decisions**, and **three of the four are a signature rather than a design** — C-326 is one sentence, C-321 is six yes/no answers already written, C-221 is park-or-drop. **Only C-200 requires original product thinking.**
+
+---
+
+## PACK M · OAuth client credentials — **withdrawn 2026-08-04, a clarification rather than a decision**
+
+**Opened and withdrawn the same day.** Lane B's [C-327](LANE_COORDINATION.md) asked where Signora's own OAuth client credentials live; Lane C prepared it as a decision and **that was the misclassification**, not the analysis.
+
+> **The repository already held one consistent interpretation.** **[13-integrations.md](architecture/13-integrations.md) — ratified — states that integration OAuth grants are *"stored per-tenant, RLS-scoped, distinct from Better Auth's sign-in credentials"* and names *"reusing a Better Auth sign-in credential as an integration OAuth token"* an anti-pattern.** And the reading was already load-bearing: **`integration_secret` stores encrypted third-party credential material in the Python tier, and `IntegrationSettings` holds a Signora-owned long-lived secret there** — both shipped, neither ever flagged.
+>
+> **So [18-authentication.md](architecture/18-authentication.md):49's prohibitions govern *identity* credentials.** Recorded there as a scope note; **[C-413](LANE_COORDINATION.md) withdrawn.**
+
+**What survives, and it is the part worth keeping:** *"never implement an OAuth flow, callback handler, or authorization-code exchange"* **binds regardless of whose credential it is**, which is why acquisition stays in Next even for integrations. **The clarification narrows one prohibition and leaves the other untouched.**
+
+**Also fixed, because it was doing real damage in the argument:** [18-authentication.md](architecture/18-authentication.md) listed *"token refresh"* among Next's responsibilities meaning **a Signora user's session**, while [C-327](LANE_COORDINATION.md) concerns **a customer's third-party grant.** One word, two operations — **now *"session token refresh."***
+
+> **The one thing genuinely left to decide is not architectural.** Holding the client pair in both tiers means **two rotation targets** until a vault arrives at M14.5. **That is an operational trade-off with a known end state, not a boundary question** — and it is Lane B's and QE's to weigh, not a product-owner decision.
+
+---
+
+## PACK L · Repository architecture — a decision that has been waiting outside the queue
+
+**Surfaced 2026-08-04 by Lane C during repository cleanup. Not authored by Lane C** — [`REPOSITORY_ARCHITECTURE_PROPOSAL.md`](REPOSITORY_ARCHITECTURE_PROPOSAL.md) was written **2026-07-30** and has read **`PROPOSED — awaiting approval`** for five days.
+
+| | |
+|---|---|
+| **Class** | **Repository Decision** |
+| **Why it is here** | **It is a decision, and it was not in the decision queue.** Nothing in this document pointed at it, so it aged where no queue could show it |
+
+**Part 1 — documentation organisation.** Recommends **four directories rather than the brief's seven**, moving **7 files and 0 directories**, leaving the 58 highest-linked documents on their existing paths. **`docs/architecture/` and `adr/` do not move at all.**
+
+> **Its strongest argument is an objection to its own brief**, and it is worth reading before anyone proposes this again: moving `22`–`28` out of `architecture/` *"looks most obviously right"* and is recommended **against**, because moving coherently requires renumbering, renumbering falsifies existing references, **and commit messages cannot be updated** — *"renaming `26-buying-score-engine.md` makes `ed7f9e9`'s message point at nothing."*
+
+**Part 2 — business scenario tests.** Recommends **three scenarios rather than eleven**, chosen to exercise disjoint machinery. **Neither clearly built nor clearly superseded**: `backend/tests/simulation/test_scenario.py` exists; whether it is these three was not established.
+
+**Relationship to what has since been ratified.** [`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §8's **three-purpose model** classifies documents by *purpose*; this proposal organises them by *location*. **They are compatible and neither references the other** — which is the coordination gap, not a conflict.
+
+> **Lane C makes no recommendation on the merits.** It did not author this, the reasoning is the original author's and is strong, and **surfacing it into the queue is the cleanup — deciding it is not Lane C's.** The narrow question is whether it is still live at all, five days on.
+
+---
+
+## PACK O · The approved UI needs three things the repository has not decided
+
+> **Opened 2026-08-04**, on the Product Transition Directive. **Assessment: [411](architecture/411-ui-convergence-assessment.md). Nothing here is new work Lane C invented — each item was already prepared and is now a precondition rather than a proposal.**
+
+**The transition itself required no decision.** The design project is authoritative by the product owner's direction; [410](architecture/410-approved-ui-specification.md) records it. **The assessment then reduced sixteen screens to three questions.**
+
+| | Decision | Form | Why it cannot be determined objectively |
+|---|---|---|---|
+| **O1** | **Ratify [ADR-0400](architecture/adr/0400-person-as-an-entity.md) — Person as an entity** | **Yes / No** | **`EntityKind` deliberately excludes Person**, and the docstring says so. The approved **People Intelligence** screen is entirely named individuals, and half of **Global Search** depends on it. **The architecture and the approved product disagree, and only the product owner can say which moves** |
+| **O2** | **Ratify [ADR-0040](architecture/adr/0040-notifications.md) — Notifications** | 🟠 **Ready — read it against Module 7 first** | It has been `Proposed` with no module for weeks. **The approved App Shell specifies a three-tab notification popover**, so this stopped being only Epic F's dependency and became the shell's. **The hold is lifted 2026-08-04 — Module 7 is delivered, and the wait was justified.** It is an **event×channel matrix with per-person volume measured from the delivery log**, digests defined as *"the difference since the last one"*, quiet hours that **hold rather than drop**, mutes that **expire by default**, and custom rules carrying their own precision figure. **That is not the App Shell's popover, and ADR-0040 was written before any of it.** ⚠️ **Read the ADR against [418](architecture/418-platform-foundation-assessment.md) §3 and §5b before signing** — §5b names a concept it would otherwise duplicate |
+| **O4** | **Rule [C-010](LANE_COORDINATION.md) — who owns `infra/`, the `Makefile` and repository process?** | **Name a lane** | **Raised in urgency 2026-08-04 by the P0 Environment Management proposal** ([420](architecture/420-environment-management-proposal.md) §5). The backlog already calls it *"the highest-value decision on this page"* and records **four defects that landed in this gap** — B-007, B-012, B-013, B-014. **Environment Framework phases 1 and 2 were written by whoever was nearest; phase 3 is larger than both and cannot be.** ⚠️ **It also owns the saved-view store and the Account 360 batch composition** — three separate pieces of work now wait on one unruled question |
+| **O3** | **Are the Shell's own services a platform concern or a frontend concern?** | **A or B** | Global scope, saved views, system status, impersonation, sandbox. **A is a new bounded context and needs an ADR; B does not.** Building them inside any one module produces sixteen copies, which is the one outcome both answers reject |
+
+> **O1 is the one that unblocks the most.** It is the only architectural blocker in the entire sixteen-screen assessment.
+
+**What this pack deliberately does not contain.** No screen was redesigned, no priority was invented, and **no new decision was manufactured from repository ambiguity** — the two-category test was applied to every gap found, and only these three cleared it.
+
+---
+
+## The decision queue, as of 2026-08-04 — **ruled**
+
+> **The product owner ruled the whole queue on 2026-08-04.** Five approved, one partially approved, three deferred. **Nothing is awaiting a decision.**
+
+> ⚠️ **Every row below is `PRODUCT OWNER APPROVED` and none is `MERGED TO INTEGRATION`** ([`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §11c). **The ADRs, the rulings and TASK-403–410 exist only on `lane-c-product-office`, which is 151 commits behind and 57 ahead.** Lane A cannot see ADR-0400 at all.
+>
+> **So: the decisions are authoritative and none of them is actionable yet.** *Nothing is awaiting a decision*" is true; **"lanes may proceed" is not**, and the two were conflated in Lane C's 2026-08-04 report. **Corrected on Lane A's challenge.**
+
+### Approved
+
+| | Ruling | Effect |
+|---|---|---|
+| **O1** | **[ADR-0400](architecture/adr/0400-person-as-an-entity.md) ratified.** *"Person becomes a first-class entity within the approved bounded context. Proceed on that assumption for all future preparation."* | **The only architectural blocker in all 26 approved screens is gone.** Releases Epic C · People Intelligence · half of Global Search · 4 ICP *Decision makers* criteria · Account 360's contacts and org chart. **[C-221](LANE_COORDINATION.md) is answered by it** |
+| **O4** | **[C-010](LANE_COORDINATION.md) resolved.** *"Do not create another engineering lane. Lane C's responsibilities are formally expanded to include Platform Foundation work that belongs to no product bounded context."* | **`infra/`, repository process, the Environment Framework, bootstrap, doctor, cleanup, launch automation, developer tooling and the demo lifecycle now have an owner.** Recorded in [`CLAUDE.md`](../CLAUDE.md) §20e. **[C-021](LANE_COORDINATION.md) is carried by it** |
+| **C-326** | **[ADR-0300](architecture/adr/0300-inbound-customer-systems.md) Option A ratified** — the sibling source port | **Lane B's E1 read is unblocked.** [409](architecture/409-inbound-source-port-contract.md) is the contract, and [419](architecture/419-c326-narrowed-and-lane-b.md) measured the remaining slice as **small** — both ends are already built |
+| **ADR-0401** | **Ratified.** *"Continue using the per-field falsifiability model exactly as documented."* | E1's normalization proceeds |
+| **ADR-0402** | **Ratified.** *"Epic F is now considered unblocked from a Product Office perspective."* | **Epic F is buildable.** Phases 1–4 depend on nothing unbuilt |
+
+### Partially approved
+
+> **C-321** — *"Accept the documented recommendations as the default product behaviour. Only return to Product Owner if a recommendation materially changes customer-visible behaviour beyond what has already been documented. Do not reopen the entire package."*
+>
+> **A6 is unblocked.** **The escalation test is now narrow and specific:** not *"is this uncertain?"* but **"does this change customer-visible behaviour beyond what the recommendation already documents?"** Anything else proceeds.
+
+### Deferred — and deferral is a ruling, not an absence
+
+| | Ruling | What continues |
+|---|---|---|
+| **O2** — [ADR-0040](architecture/adr/0040-notifications.md) | **Do not ratify yet.** Review it *together with* the finished Notification package | **Lane C's hold was correct and is extended by the owner.** [ADR-0402](architecture/adr/0402-a-rule-is-data.md) already ensures Epic F does not wait on it |
+| **O3** — shell services | **Deferred until implementation reaches the shared shell foundation. No further preparation required** | **Wave 3 planning stops at the boundary.** Do not prepare the shell services further |
+| **C-200** — M14b | **Deferred. Continue discovery; do not force a module boundary until implementation naturally reaches M14b** | Discovery only. **[42-billing-and-entitlements.md](architecture/42-billing-and-entitlements.md) stays discovery, and Module 8's design is evidence for it** |
+
+> **Two of these carry an instruction to *stop preparing*, and Lane C obeys it.** O3 says *"no further preparation is required at this stage"*; C-200 says *"do not force a module boundary."* **Continuing to prepare either would be the office manufacturing work the owner has explicitly deferred.**
 
 ---
 
 ## How this document is maintained
 
-**Refreshed by QE at every Repository Closeout**, against the promoted commit. **Every item is re-challenged, never merely carried forward:** is it still real · still blocking · narrowable · splittable · already answered by implementation, an ADR or a repository rule.
+**Owned by Lane C** *(QE until 2026-08-03)*. **Refreshed against the promoted commit at every Repository Closeout, and whenever a ruling lands** — because a pack that outlives its decision turns the decision queue from operational into historical, which is what this document was doing until today.
 
-**A pack is deleted when its decision is taken**, and the answer lives in the ADR or document it produced — never here. **This is a staging area, not a record.**
+**Every item is re-challenged, never merely carried forward:** is it still real · still blocking · narrowable · splittable · **already answered by implementation, an ADR or a repository rule.**
+
+> **This is a staging area, not a record.** A pack is deleted when its decision is taken — after the three gates above — and the answer lives in the ADR or document it produced.

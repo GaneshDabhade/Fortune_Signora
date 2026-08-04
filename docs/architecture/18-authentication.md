@@ -37,7 +37,7 @@ flowchart LR
     API -.->|"public key only"| API
 ```
 
-**Next.js owns** user authentication, OAuth flows with Google and Microsoft, session management, token issuance, and token refresh.
+**Next.js owns** user authentication, OAuth flows with Google and Microsoft, session management, token issuance, and **session** token refresh.
 
 **FastAPI owns** signature verification, claim validation, principal construction, workspace-context resolution, RLS establishment, and Casbin delegation — and nothing else related to identity.
 
@@ -45,7 +45,13 @@ flowchart LR
 
 These are absolute. A pull request violating any of them should be rejected outright.
 
-- **Never store passwords or any credential material.**
+> **Scope, clarified 2026-08-04 — these govern *identity* credentials.** Everything in this document concerns authenticating **a Signora user**, and this section is the Python tier's part in that. **A third-party integration credential is a different class and is governed by [13-integrations.md](13-integrations.md)**, which is explicit: per-workspace OAuth grants are *"stored per-tenant, RLS-scoped, **distinct from Better Auth's sign-in credentials**"*, and *"reusing a Better Auth sign-in credential as an integration OAuth token"* is listed there as an anti-pattern.
+>
+> **This is a clarification, not an amendment.** The repository has depended on this reading since M13: **`integration_secret` stores encrypted third-party credential material in the Python tier**, and **`IntegrationSettings` holds `SIGNORA_INTEGRATIONS_secret_key`** — a Signora-owned, long-lived, non-per-workspace secret — **both shipped, both in Python, neither ever flagged.** The reading was already in force; only the sentence saying so was missing.
+>
+> **Nothing below is relaxed for identity.** A Signora user's password, session, or signing key remains absolutely prohibited here, and *"never implement an OAuth flow, callback handler, or authorization-code exchange"* **binds regardless of whose credential it is** — which is why acquisition stays in Next even for integrations ([13-integrations.md](13-integrations.md), [44-integrations.md](44-integrations.md) §5).
+
+- **Never store passwords or any credential material** — **identity credentials**; see the scope note above.
 - **Never implement an OAuth flow**, callback handler, or authorization-code exchange.
 - **Never authenticate a user directly** — no login endpoint, no credential comparison.
 - **Never mint or sign a token.** The API is configured with a public key only and is cryptographically incapable of issuing a token it would accept. Do not add a private key to its configuration for any reason, including tests — test tokens are signed with an ephemeral key pair generated inside the test itself.
