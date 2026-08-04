@@ -176,6 +176,19 @@
 | **First slice** | **Author a `reasoning` dataset and evaluate `reasoning@1` under protocol 2** — the work [TASK-013](#task-013) records as a product decision when it is a measurement nobody has taken |
 | **Known workstation limit** | ⚠️ **`llama3.1:8b` was measured *unmeasurable* on this machine during SE-09c** — 7 of 10 calls exceeded the 90s budget and the harness abandoned the run. The pinned model is part of the benchmark and is **not** a lane's to change ([ADR-0028](architecture/adr/0028-model-runtime-by-environment.md)); reported as an observation about the machine |
 
+### TASK-203 · Epic D — Risk Intelligence
+
+| | |
+|---|---|
+| **Epic** | **Epic D**, [403-epic-d-risk.md](architecture/403-epic-d-risk.md). **Assigned whole**; Phase 1 is the independent slice |
+| **Module** | `commercial_profile` (a fifth declaration) · `signal_engine` (a catalog row) · Product Surface |
+| **Status** | **`CLAIMED` — Lane A**, 2026-08-04, by the Task Claim Protocol |
+| **Assigned** | **Lane A, directly by the product owner, 2026-08-04.** No ADR, deliberately: no boundary moves, no new bounded context, no new dependency |
+| **First slice** | **Competitor entry** — the customer declares which technologies are competitors; `TECHNOLOGY_ADOPTED` for a declared competitor raises a **contractionary** `competitor_entry` signal, and the account becomes `contested`. **The detection half already exists** |
+| **On claiming** | **Validate before building**, in this order: that `competitor` genuinely appears nowhere · that the four existing declarations share one shape a fifth can follow · that `TECHNOLOGY_ADOPTED` carries a resolvable technology identity rather than a free string · and that **no threshold enters code** — `signal_engine` keeps them in a reviewed catalog |
+| **Not in scope** | **Usage decline** — Lane C recommends dropping it and Lane A agrees on the evidence: it needs product telemetry the platform has never had. **Champion departure** is blocked on Epic C (no person name exists); **renewal approaching** on E1 (only a CRM knows contract dates) |
+| **Related** | **[TASK-905](#task-905) delivers most of Epic D's visible value with no new signal** — two contractionary signals already score and the attention list does not distinguish them. Not claimed here; reported as the cheaper half |
+
 ### TASK-900 · The platform learns to compose a module into the runtime
 
 | | |
