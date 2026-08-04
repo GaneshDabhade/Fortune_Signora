@@ -133,7 +133,7 @@
 
 | Initiative | Why it cannot be prepared | Needs |
 |---|---|---|
-| **Epic C · People** — *"who do I call?"* | **XL, and the only new bounded context Epics A–B avoid.** Every persona in the review asked for it and nothing answers | **An ADR, and your direction** |
+| **Epic C · People** — *"who do I call?"* | ✅ **PREPARED 2026-08-04** — [400-epic-c-people.md](architecture/400-epic-c-people.md) + **[ADR-0400](architecture/adr/0400-person-as-an-entity.md) `Proposed`**. **Six modules already run people-shaped intelligence with no person in it**; the epic is *give it a subject*, not *build it* | **Ratify [ADR-0400](architecture/adr/0400-person-as-an-entity.md)**, and rule on contact data ([C-408](LANE_COORDINATION.md) ❓2) |
 | **Epic F · Workflow automation** | **82 catalogued events, outbox, workers, replay — all built.** What is missing is a way for a customer to express a rule | **An ADR** — new `workflow` module |
 | **Epic G · Copilot** | Grounded explanation; [ADR-0031](architecture/adr/0031-evidence-citation-protocol.md) already defines citation | **A released prompt** — `reasoning@1` has none ([TASK-013](BACKLOG.md)) |
 | **Platform composition** ([TASK-900](BACKLOG.md)) | 🔴 `signora_platform`, **explicitly approved by ADR-0100** | **An RFC**; Lane B declined it as a different discipline |

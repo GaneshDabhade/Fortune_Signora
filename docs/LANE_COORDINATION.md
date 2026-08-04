@@ -193,6 +193,7 @@
 | [C-405](#c-405--assignment-delivery--answered-without-a-new-mechanism-and-c-217-with-it) | Assignment delivery, and Lane A's assignment | Lane C | **Product owner** (one sentence) | `ANSWERED` — assignments published; rule awaiting ratification | **Nothing, once a lane reads this ref** |
 | [C-406](#c-406--every-lane-has-its-own-view-of-the-repository-and-qes-merge-is-the-only-synchronization-point) | Every lane has its own view; QE's merge is the only sync point | Lane C | **Product owner** | **`ANSWERED`** | **Nothing** — dissolved 2026-08-04; all four incidents closed by one answer |
 | [C-407](#c-407--the-operating-model-changed-and-lane-c-may-not-verify-its-own-governance) | **The 2026-08-04 operating model — verification request** | Lane C | **QE** | `OPEN` | **Nothing.** Lane C may not be the final verifier of governance it authored |
+| [C-408](#c-408--epic-c-is-prepared-and-two-of-its-questions-are-not-lane-cs) | **Epic C · People — prepared; ADR-0400 awaits ratification** | Lane C | **Product owner** | `OPEN` | **Nothing today.** Epic C is unapproved scope; this is preparation, not a request to start |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
 >
@@ -2835,6 +2836,41 @@ Every lane's rows sit **adjacent in one table**, and each lane's branch carries 
 3. **The prepared-queue numbers agree** across `PRODUCT_OFFICE.md` and `ACTIVE_ASSIGNMENTS.md` — **target 5, alarm below 3.**
 
 > **Net effect on documentation mass: −101 lines**, with no capability lost. **The model got simpler by deleting a mechanism, not by adding one to manage it.**
+
+## C-408 · Epic C is prepared, and two of its questions are not Lane C's
+
+| | |
+|---|---|
+| **Classification** | **Architecture Decision** — preparation complete, ratification outstanding |
+| **Owner** | **Product owner** |
+| **Requester** | **Lane C — Product Office** |
+| **Status** | `OPEN` |
+| **Blocks** | **Nothing.** No lane is waiting; Epic C is unapproved scope ([Pack I](DECISION_PACKS.md)) |
+
+**Prepared 2026-08-04 on the product owner's direction**, under the new standing responsibility: *the Product Office stays one or more epics ahead, so implementation lanes receive researched work packages rather than ambiguity.* **No code was written.**
+
+| Deliverable | |
+|---|---|
+| [400-epic-c-people.md](architecture/400-epic-c-people.md) | Product research · repository research · **reuse and what not to build** · domain · data model · workflows · UX · integration · risks · edge cases · phased strategy · definition of done |
+| [ADR-0400](architecture/adr/0400-person-as-an-entity.md) | **`Proposed`.** The bounded context, five alternatives assessed, three questions left open |
+
+**The finding that reframes the epic, verified against source rather than against a design document:**
+
+> **Six modules already run people-shaped intelligence end to end, and not one of them knows a person's name.** `ROLE_CHANGE` claims → occurrences → **`LEADERSHIP_APPOINTED` / `LEADERSHIP_DEPARTED`** → **`new_decision_maker` / `decision_maker_departed`** → the buying score. **Epic C is not *build people intelligence*; it is *give it a subject*.**
+
+**And the repository named its own extension trigger, twice.** `knowledge_graph` excluded people because *"claims carry role changes but no person identifier, so there is no identity to resolve"*; `commercial_profile` gave its committee roles no id because *"nothing cites a role… trigger for adding one: the first consumer that needs to cite a particular seat."* **Each is waiting for the other, and Epic C supplies both.**
+
+**Two questions are the product owner's, and one is a contract check anybody can run:**
+
+| ❓ | Question | Owner |
+|---|---|---|
+| **1** | **Does the production provider return a person's name?** The mapper reads `title`, `type`, `seniority`; the simulator models no name. **It sizes C1** | **Verification** — cheap, and first |
+| **2** | **May Signora hold contact channels for people who have not consented?** The repository has **no lawful basis declared for personal data** | **Product owner**, with a legal dimension |
+| **3** | Does deriving a committee seat from a job title need [Pack C](DECISION_PACKS.md) first? | Affects **phase 4 only** |
+
+> **Lane C's recommendation on ❓2, and it is the cheapest option as well as the safest: no contact channel in Epic C.** Read contacts from the customer's own CRM when **[E1](architecture/51-implementation-specifications.md)** lands, under the customer's own lawful basis. **Never buy contact data without an explicit ruling.** It reuses an integration already recommended for approval on its own merits — **two epics, one integration.**
+
+**What Lane C is not asking for.** Not approval of Epic C, not a lane, not a schedule. **Ratifying [ADR-0400](architecture/adr/0400-person-as-an-entity.md) and approving Epic C are separate decisions and neither implies the other.**
 
 ## Closed
 

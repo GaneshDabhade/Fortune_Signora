@@ -191,7 +191,7 @@
 | Epic | What it closes | Modules | Note |
 |---|---|---|---|
 | **B** · Close the contradictions | The ICP is declared and **nothing consumes it**; the first-run path | `commercial_profile` · `buying_score_engine` · Product Surface | **B1 is the commercial-profile value proposition** and is gated by [Pack C](#pack-c--where-does-customer-language-meet-canonical-data) |
-| **C** · People | *"Who do I call?"* — the gap every persona names first | **A new bounded context** (C1, XL) | 🔴 — needs an ADR before it is claimable ([ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) R-2) |
+| **C** · People | *"Who do I call?"* — the gap every persona names first | **A new bounded context** (C1, XL) | ✅ **Prepared 2026-08-04** — [400-epic-c-people.md](architecture/400-epic-c-people.md), **[ADR-0400](architecture/adr/0400-person-as-an-entity.md) drafted and `Proposed`** ([C-408](LANE_COORDINATION.md)). **Narrowed, not confirmed XL**: the intelligence already runs and lacks only a subject |
 | **D** · Risk | Risk signal families, risk postures, who is already a customer | `signal_engine` · `buying_score_engine` · `integrations` | **D2 and D3 are S/M and unblocked** |
 | **E** · Enterprise | CRM OAuth and write-back, SSO, SCIM, audit | `integrations` · QE | **Commercial decision** — enterprise versus GA |
 | **F** · Workflow | Rules, safe actions, a builder | **A new `workflow` module** | 🔴 — new bounded context |
