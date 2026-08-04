@@ -219,10 +219,25 @@ def build(ref: str) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--ref", default="origin/integration", help="ref to measure (default: origin/integration)")
+    ap.add_argument("--no-fetch", action="store_true", help="skip the freshness fetch (offline; the reading may be stale)")
     args = ap.parse_args()
     if not sh("git", "rev-parse", "--verify", args.ref).strip():
         print(f"repository-dashboard: ref {args.ref!r} not found", file=sys.stderr)
         return 1
+    if not args.no_fetch and args.ref.startswith("origin/"):
+        # **The defect this exists to prevent, and it happened.** A remote ref
+        # is only as fresh as the last `git fetch`, and a dashboard reading a
+        # stale one reports idleness at lanes that are shipping. Four Lane C
+        # reports on 2026-08-04 did exactly that. **Fetch before measuring, or
+        # say plainly that the figure may be stale** — never report a number
+        # whose age is unknown to the reader.
+        before = sh("git", "rev-parse", args.ref).strip()
+        sh("git", "fetch", "--quiet", args.ref.split("/", 1)[0], args.ref.split("/", 1)[1])
+        after = sh("git", "rev-parse", args.ref).strip()
+        if before != after:
+            n = sh("git", "rev-list", "--count", f"{before}..{after}").strip() or "?"
+            print(f"repository-dashboard: {args.ref} advanced {n} commit(s) on fetch "
+                  f"({before[:8]} -> {after[:8]}). The previous reading was stale.", file=sys.stderr)
     print(build(args.ref))
     return 0
 
