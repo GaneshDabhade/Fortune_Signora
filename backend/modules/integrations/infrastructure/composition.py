@@ -10,6 +10,7 @@ from modules.integrations.application.ports import ConnectedAccountRepository, G
 from modules.integrations.application.connect import ConnectSystem
 from modules.integrations.application.disconnect import DisconnectSystem
 from modules.integrations.application.refresh import RefreshGrant
+from modules.integrations.application.resolve import ResolveExecutionContext
 from modules.integrations.application.queries import IntegrationQueries
 from modules.integrations.infrastructure.repository import (
     SqlConnectedAccountRepository,
@@ -36,9 +37,8 @@ def build_integration_queries(session: AsyncSession) -> IntegrationQueries:
     return IntegrationQueries(build_connected_accounts(session), build_grants(session))
 
 
-# `ResolveExecutionContext` is deliberately not wired here. Its `SecretStore`
-# has no production implementation until the vault arrives, and a factory that
-# could only raise would be a wiring that lies about what exists.
+# `ResolveExecutionContext` is wired at the end of this file, now that it can
+# do its whole job — see `build_resolve_execution_context`.
 
 
 def build_disconnect_system(
@@ -103,4 +103,29 @@ def build_refresh_grant(
         secrets,
         secrets,
         HttpTokenRefresher(credentials) if credentials.any_configured() else None,
+    )
+
+
+def build_resolve_execution_context(
+    session: AsyncSession, settings: IntegrationSettings
+) -> ResolveExecutionContext:
+    """Resolution, with a renewal attached to it.
+
+    **Refresh-on-use, because that is the only moment a renewal is needed.** A
+    credential is renewed when something is about to use it, and this is that
+    moment — so the capability needs no scheduler, which the repository does
+    not have and which would not be this module's to add.
+
+    **Still called by nothing.** Its consumer is whatever synchronizes through
+    a connection, which is
+    [ADR-0300](../../../../docs/architecture/adr/0300-inbound-customer-systems.md)'s
+    to decide. The factory exists because it can now do its whole job — which
+    is exactly the condition the note it replaced was waiting for, and the
+    reason that note was not simply a deferral.
+    """
+    return ResolveExecutionContext(
+        SqlConnectedAccountRepository(session),
+        SqlGrantStore(session),
+        EncryptedSecretStore(session, settings.secret_key),
+        build_refresh_grant(session, settings),
     )

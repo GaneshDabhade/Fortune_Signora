@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from typing import Any
 from uuid import UUID, uuid4
 
 import pytest
 
 from modules.integrations.application.ports import SecretNotFound
+from modules.integrations.application.refresh import RefreshOutcome, RefreshResult
 from modules.integrations.application.resolve import (
+    SYSTEM_ACTOR_ID,
     ConnectionUnusable,
     CredentialUnreadable,
     ExecutionContext,
@@ -124,9 +127,14 @@ def _resolver(
     grant: IntegrationGrant | None,
     *,
     secrets_hold: bool = True,
+    grants: FakeGrants | None = None,
+    refresher: Any = None,
 ) -> ResolveExecutionContext:
     return ResolveExecutionContext(
-        FakeAccounts(account), FakeGrants(grant), FakeSecrets(holds=secrets_hold)
+        FakeAccounts(account),
+        grants or FakeGrants(grant),
+        FakeSecrets(holds=secrets_hold),
+        refresher,
     )
 
 
@@ -268,3 +276,127 @@ class TestResolution:
             await _resolver(account, _grant(account), secrets_hold=False).execute(
                 WORKSPACE, account.id, at=NOW
             )
+
+
+class TestAnExpiredGrantRenewsItself:
+    """**Refresh-on-use, and it is the only moment a renewal is needed.**
+
+    A credential is renewed when something is about to use it, so the
+    capability needs no scheduler — which the repository does not have and
+    which is not this module's to add.
+
+    The property worth protecting hardest is the last one: **revocation is
+    never refreshed.** `check_usable` raises revoked before expired, so a
+    customer who withdrew Signora at the vendor is not quietly reconnected.
+    """
+
+    class _Refresher:
+        """A `RefreshGrant` that answers without a vendor, and can renew."""
+
+        def __init__(self, outcome: RefreshOutcome, grants: FakeGrants | None = None) -> None:
+            self._outcome = outcome
+            self._grants = grants
+            self._renewed: IntegrationGrant | None = None
+            self.asked: list[tuple[UUID, UUID]] = []
+
+        def renewing_to(self, grant: IntegrationGrant) -> Any:
+            self._renewed = grant
+            return self
+
+        async def execute(
+            self,
+            workspace_id: UUID,
+            connected_account_id: UUID,
+            *,
+            at: datetime,
+            actor_id: UUID,
+        ) -> RefreshResult:
+            self.asked.append((workspace_id, actor_id))
+            if self._outcome is RefreshOutcome.RENEWED and self._grants and self._renewed:
+                await self._grants.save(self._renewed)
+            return RefreshResult(self._outcome)
+
+    def _setup(
+        self, outcome: RefreshOutcome, *, renewed_expiry: datetime | None
+    ) -> tuple[ResolveExecutionContext, Any, UUID]:
+        account = _account()
+        grants = FakeGrants(_grant(account, expires_at=NOW - timedelta(minutes=1)))
+        refresher = self._Refresher(outcome, grants)
+        if renewed_expiry is not None:
+            refresher.renewing_to(_grant(account, expires_at=renewed_expiry))
+        return (
+            _resolver(account, None, grants=grants, refresher=refresher),
+            refresher,
+            account.id,
+        )
+
+    async def test_a_caller_never_learns_the_credential_lapsed(self) -> None:
+        resolver, _, account_id = self._setup(
+            RefreshOutcome.RENEWED, renewed_expiry=NOW + timedelta(hours=1)
+        )
+
+        context = await resolver.execute(WORKSPACE, account_id, at=NOW)
+
+        assert context.credential.material == b"s3cret"
+
+    async def test_the_renewal_is_attributed_to_the_platform(self) -> None:
+        """**Nobody asked for it**, and the audit columns take no default.
+
+        Attributing an unattended renewal to the customer who consented months
+        earlier would put a name on an action they did not take, which is the
+        one thing an audit column exists to prevent.
+        """
+        resolver, refresher, account_id = self._setup(
+            RefreshOutcome.RENEWED, renewed_expiry=NOW + timedelta(hours=1)
+        )
+
+        await resolver.execute(WORKSPACE, account_id, at=NOW)
+
+        assert refresher.asked == [(WORKSPACE, SYSTEM_ACTOR_ID)]
+
+    async def test_a_refusal_leaves_the_expiry_standing(self) -> None:
+        """**The caller's situation is unchanged, so the exception is too.**
+
+        A new type would make *we tried and could not* look different from *we
+        never could*, when the customer does the same thing about both.
+        """
+        resolver, _, account_id = self._setup(RefreshOutcome.REFUSED, renewed_expiry=None)
+
+        with pytest.raises(GrantExpired):
+            await resolver.execute(WORKSPACE, account_id, at=NOW)
+
+    async def test_material_that_arrives_already_expired_is_refused(self) -> None:
+        """Checked again rather than assumed. A vendor returning something
+        already past its expiry would otherwise reach an adapter as working."""
+        resolver, _, account_id = self._setup(
+            RefreshOutcome.RENEWED, renewed_expiry=NOW - timedelta(seconds=1)
+        )
+
+        with pytest.raises(GrantExpired):
+            await resolver.execute(WORKSPACE, account_id, at=NOW)
+
+    async def test_without_a_refresher_the_expiry_is_unchanged(self) -> None:
+        """The behaviour every existing caller had, preserved exactly."""
+        account = _account()
+        resolver = _resolver(account, _grant(account, expires_at=NOW - timedelta(minutes=1)))
+
+        with pytest.raises(GrantExpired):
+            await resolver.execute(WORKSPACE, account.id, at=NOW)
+
+    async def test_a_revoked_grant_is_never_renewed(self) -> None:
+        """**Revocation outranks expiry**, and this is where that matters most.
+
+        A customer who withdrew Signora at the vendor must not be quietly
+        reconnected by a renewal running on their behalf.
+        """
+        account = _account()
+        grants = FakeGrants(
+            _grant(account, expires_at=NOW - timedelta(minutes=1), revoked_at=NOW)
+        )
+        refresher = self._Refresher(RefreshOutcome.RENEWED, grants)
+
+        with pytest.raises(GrantRevoked):
+            await _resolver(account, None, grants=grants, refresher=refresher).execute(
+                WORKSPACE, account.id, at=NOW
+            )
+        assert refresher.asked == []

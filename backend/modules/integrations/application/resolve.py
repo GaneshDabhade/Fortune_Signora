@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Final
 from uuid import UUID
 
 from modules.integrations.application.ports import (
@@ -12,8 +13,22 @@ from modules.integrations.application.ports import (
     SecretNotFound,
     SecretStore,
 )
+from modules.integrations.application.refresh import RefreshGrant, RefreshOutcome
 from modules.integrations.domain.connection import ConnectedAccount, ConnectionState
-from modules.integrations.domain.grant import Credential
+from modules.integrations.domain.grant import Credential, GrantExpired, IntegrationGrant
+
+#: Who a renewal is attributed to when nobody asked for it.
+#:
+#: **A renewal is not a person's action.** `transition()` and every audit column
+#: demand an actor with no default, deliberately — *"who disconnected our CRM?"*
+#: is asked during an incident — and the honest answer here is *the platform*,
+#: not the customer who happened to consent months earlier.
+#:
+#: The same constant and the same value `provider_platform` already uses for
+#: its own unattended writes. **Declared here rather than imported**: a module
+#: does not reach into another's internals, and the convention is the shared
+#: thing, not the symbol.
+SYSTEM_ACTOR_ID: Final = UUID("00000000-0000-0000-0000-000000000001")
 
 
 class CredentialUnreadable(Exception):
@@ -96,10 +111,12 @@ class ResolveExecutionContext:
         accounts: ConnectedAccountRepository,
         grants: GrantStore,
         secrets: SecretStore,
+        refresher: RefreshGrant | None = None,
     ) -> None:
         self._accounts = accounts
         self._grants = grants
         self._secrets = secrets
+        self._refresher = refresher
 
     async def execute(
         self, workspace_id: UUID, connected_account_id: UUID, *, at: datetime
@@ -119,8 +136,19 @@ class ResolveExecutionContext:
                 account.state, "the connection has no grant to act with"
             )
         # Raises `GrantExpired` or `GrantRevoked` — distinct on purpose, because
-        # one is refreshed and the other needs the customer back.
-        grant.check_usable(at=at)
+        # one is refreshed and the other needs the customer back. **This is
+        # where that distinction stops being commentary**: an expired grant is
+        # renewed here and the caller never learns it lapsed, which is the
+        # entire reason `refreshable` is recorded.
+        #
+        # **Revocation is untouched.** `check_usable` raises revoked before
+        # expired, so a customer who withdrew Signora at the vendor is never
+        # quietly reconnected — the same refusal `RefreshGrant` applies again
+        # one layer down.
+        try:
+            grant.check_usable(at=at)
+        except GrantExpired:
+            grant = await self._renewed(workspace_id, connected_account_id, at=at)
 
         try:
             credential = await self._secrets.resolve(grant.secret_ref)
@@ -138,6 +166,37 @@ class ResolveExecutionContext:
             scopes=grant.scopes,
             credential=credential,
         )
+
+    async def _renewed(
+        self, workspace_id: UUID, connected_account_id: UUID, *, at: datetime
+    ) -> IntegrationGrant:
+        """Renew in place, or let the expiry stand.
+
+        **Refresh-on-use rather than a scheduled sweep.** A renewal is only
+        ever needed at the moment a credential is about to be used, and this is
+        that moment — so the capability needs no scheduler, which the
+        repository does not have and which would not be this module's to add.
+
+        Every failure re-raises the original `GrantExpired`: the caller's
+        situation is unchanged, and a new exception type would make *we tried
+        and could not* look different from *we never could*, when the customer
+        does the same thing about both.
+        """
+        if self._refresher is None:
+            raise
+        result = await self._refresher.execute(
+            workspace_id, connected_account_id, at=at, actor_id=SYSTEM_ACTOR_ID
+        )
+        if result.outcome is not RefreshOutcome.RENEWED:
+            raise
+        renewed = await self._grants.current_for(workspace_id, connected_account_id)
+        if renewed is None:
+            raise
+        # Checked again rather than assumed. A vendor that returned material
+        # already past its expiry would otherwise be handed to an adapter as
+        # though it worked.
+        renewed.check_usable(at=at)
+        return renewed
 
     @staticmethod
     def _refuse_if_unusable(account: ConnectedAccount) -> None:
