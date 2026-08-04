@@ -26,7 +26,9 @@ So `modules/integrations/` owns the **relationship**; Provider Platform owns the
 
 **What the module owns:** Connected Account · Integration Grant · Credential storage · the connection lifecycle · the catalog of systems Signora understands · the read model behind the Connection Center.
 
-**What it does not own:** synchronization, scheduling, polling, watermarks, rate limits, cost (Provider Platform) · what the synced data *means* (Provider Normalization onwards) · **credential acquisition** (the frontend edge, §5) · any vendor's API shape (an adapter, when one exists).
+**What it does not own:** synchronization, scheduling, polling, watermarks, rate limits, cost (Provider Platform) · what the synced data *means* (Provider Normalization onwards) · **credential acquisition** (the frontend edge, §5).
+
+> **`HubSpotCompanies` sits here provisionally, and the qualifier is the point.** This line used to end *"any vendor's API shape (an adapter, when one exists)"*, which was written when the only vendor call imagined was a sync. Three now exist — revoke, renew, read — and the first two are unambiguously grant management, which is this module's. **The read is the one [ADR-0300](adr/0300-inbound-customer-systems.md) decides**: it is vendor logic with no port, no event and no storage, taking a token and a cursor and returning raw payloads, so **all three options in that ADR call something that does exactly what it does.** The ruling moves a file and rewrites a wrapper. It is written here because this module already holds the credential, and because writing it inside a module another lane is assigned would be the boundary violation.
 
 ---
 
@@ -238,7 +240,7 @@ Salesforce is next and was argued for at the time — it is the enterprise defau
 |---|---|
 | **Domain** | `ConnectionState`, `ConnectedAccount`, `IntegrationGrant`, `Credential`, `CatalogEntry`, `Capability`, `CATALOG` |
 | **Application** | `ConnectSystem`, `DisconnectSystem`, `RefreshGrant`, `ResolveExecutionContext`, `IntegrationQueries`; ports `ConnectedAccountRepository` (`get`, `find_identity`, `list_for_workspace`, `save`), `GrantStore`, `SecretStore`, `SecretWriter`, `SecretPurger`, `ProviderRevoker` |
-| **Infrastructure** | `SqlConnectedAccountRepository`, `SqlGrantStore`, `EncryptedSecretStore`, `HttpProviderRevoker`, `HttpTokenRefresher`, `SettingsClientCredentials`, `VENDOR_ENDPOINTS`, `IntegrationSettings`, composition |
+| **Infrastructure** | `SqlConnectedAccountRepository`, `SqlGrantStore`, `EncryptedSecretStore`, `HttpProviderRevoker`, `HttpTokenRefresher`, `SettingsClientCredentials`, **`HubSpotCompanies`** *(provisionally — see §1)*, `VENDOR_ENDPOINTS`, `IntegrationSettings`, composition |
 | **Interface** | **4 routes**, purpose-built request and response schemas, `ERROR_MAPPING` |
 | **Public** | `ConnectedAccount`, `ConnectionState`, `ConnectionUnusable`, `Credential`, `ExecutionContext` |
 | **Migrations** | `0027` (`connected_account`, `integration_grant`), `0028` (`integration_secret`) — all three registered in `tenancy_policy.py`, RLS enabled and **forced** |
@@ -288,6 +290,7 @@ Salesforce is next and was argued for at the time — it is the enterprise defau
 
 - **No credential rotation on a live connection.** A working grant cannot be replaced in place; the customer disconnects and reconnects. **Reconnection itself works** (§4), so the path exists and costs two steps.
 - ~~**No `ProviderRevoker` adapter.**~~ **Built 2026-08-04** (§4). Two systems have endpoints; anything else still reports failure honestly.
+- **The read has no caller.** `HubSpotCompanies` fetches and translates every failure, and nothing invokes it: **who calls it is exactly what [ADR-0300](adr/0300-inbound-customer-systems.md) decides.** The properties it requests come from `HubSpotCompanyMapper.translated_properties()` and a test asserts the two sets are equal — **a CRM returns only what you ask for**, so a mapped property nobody requests is a claim that silently never appears.
 - **Refresh has no trigger.** `RefreshGrant` and `HttpTokenRefresher` are built and tested, and **nothing calls them.** A renewal wants either a scheduled sweep — and `WorkerSettings` has no `cron_jobs`, so no scheduled-job pattern exists in the repository at all — or a refresh at the moment a credential is about to be used, which is `ResolveExecutionContext`'s job and waits on its first consumer. **Adding a scheduler is runtime composition and not this module's**; the honest state is that the capability exists and the moment to invoke it does not yet.
 - **Two client-credential values, one per tier.** Acquisition reads `SIGNORA_HUBSPOT_CLIENT_ID`/`_SECRET` from the Next environment; renewal reads `SIGNORA_INTEGRATIONS_CLIENT_CREDENTIALS` here. **Both are the same registration and a deployment must keep them in step.** It is stated rather than solved: a vault ([ADR-0022](adr/0022-devops-infrastructure-and-deployment-topology.md), M14.5) is what collapses them to one, and until then the interface means only `SettingsClientCredentials` changes.
 - **`ResolveExecutionContext` is not wired at the composition root.** It is complete and tested; a factory that could only raise would be a wiring that lies about what exists. Provider Platform wires it when it consumes a connection.

@@ -191,14 +191,27 @@ class HubSpotCompanyMapper(ProviderMapper):
             else:
                 yield MappedClaim(ClaimAttribute.REVENUE_BAND, _band_for(revenue), observed_at)
 
-    def _unexpected_properties(self, properties: Mapping[str, Any]) -> Iterator[Rejection]:
-        """Every property this mapper neither translates nor ignores."""
-        translated = (
-            set(self._TEXT_PROPERTIES)
-            | set(self._INTEGER_PROPERTIES)
-            | self._SUBJECT_PROPERTIES
+    @classmethod
+    def translated_properties(cls) -> frozenset[str]:
+        """Every property this mapper reads, published for whoever fetches them.
+
+        **A CRM returns only the properties you ask for.** A mapper that knows
+        `industry` and a client that never requests it produce a claim that
+        silently never appears — and nothing fails, which is why this is
+        published rather than duplicated in the fetcher. The two are asserted
+        equal by a test, so adding a property here without requesting it
+        breaks loudly.
+        """
+        return frozenset(
+            set(cls._TEXT_PROPERTIES)
+            | set(cls._INTEGER_PROPERTIES)
+            | cls._SUBJECT_PROPERTIES
             | {"annualrevenue"}
         )
+
+    def _unexpected_properties(self, properties: Mapping[str, Any]) -> Iterator[Rejection]:
+        """Every property this mapper neither translates nor ignores."""
+        translated = self.translated_properties()
         for key in properties:
             if key not in translated and key not in _IGNORED_PROPERTIES:
                 yield Rejection(
