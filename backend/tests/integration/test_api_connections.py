@@ -13,7 +13,7 @@ disconnect names the caller — exist nowhere else.
 """
 
 from collections.abc import AsyncIterator
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -441,3 +441,316 @@ class TestTheResponseShapeIsPurposeBuilt:
             "attention",
             "reason",
         }
+
+
+def _connect_body(**overrides: Any) -> dict[str, Any]:
+    body: dict[str, Any] = {
+        "integration": "hubspot",
+        "external_account_id": "24601",
+        "label": "Acme production",
+        "credential": {"kind": "bearer", "material": "a-real-looking-access-token"},
+        "scopes": ["crm.objects.companies.read"],
+        "refreshable": True,
+    }
+    body.update(overrides)
+    return body
+
+
+class TestConnectingOneOfYourOwnSystems:
+    """**The use case existed and nothing exposed it.**
+
+    `ConnectSystem` has been complete and tested since M13 S01, reachable only
+    from a test helper — so a customer who finished a consent flow had nowhere
+    to land. These exercise the route, which is the part that was missing.
+    """
+
+    async def test_a_connection_is_recorded_and_readable(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        owner = uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+
+        created = await client.post(
+            f"/workspaces/{workspace}/connections",
+            json=_connect_body(),
+            headers=_auth(key_pair, owner),
+        )
+
+        assert created.status_code == 201, created.text
+        assert created.json()["integration"] == "hubspot"
+        assert created.json()["label"] == "Acme production"
+        assert created.json()["state"] == "connected"
+
+        listed = await client.get(
+            f"/workspaces/{workspace}/connections", headers=_auth(key_pair, owner)
+        )
+        assert [row["id"] for row in listed.json()] == [created.json()["id"]]
+
+    async def test_the_system_stops_reading_as_missing(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """The customer's actual question — *is my CRM connected?* — changes."""
+        owner = uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+
+        def hubspot(payload: list[dict[str, Any]]) -> dict[str, Any]:
+            return next(row for row in payload if row["integration"] == "hubspot")
+
+        before = await client.get(
+            f"/workspaces/{workspace}/integrations", headers=_auth(key_pair, owner)
+        )
+        assert hubspot(before.json())["working"] is False
+
+        await client.post(
+            f"/workspaces/{workspace}/connections",
+            json=_connect_body(),
+            headers=_auth(key_pair, owner),
+        )
+
+        after = await client.get(
+            f"/workspaces/{workspace}/integrations", headers=_auth(key_pair, owner)
+        )
+        assert hubspot(after.json())["working"] is True
+
+    async def test_a_system_signora_does_not_understand_is_refused(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """**422 rather than 404**: the route exists and the request is
+        well-formed; what does not exist is a system Signora understands. A
+        caller fixes this by naming a different one, which is a different
+        action from retrying."""
+        owner = uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+
+        response = await client.post(
+            f"/workspaces/{workspace}/connections",
+            json=_connect_body(integration="pipedrive"),
+            headers=_auth(key_pair, owner),
+        )
+
+        assert response.status_code == 422, response.text
+        assert response.json()["error"]["code"] == "unknown_integration"
+
+        listed = await client.get(
+            f"/workspaces/{workspace}/connections", headers=_auth(key_pair, owner)
+        )
+        assert listed.json() == []
+
+    async def test_an_expiring_credential_says_so_immediately(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """**Attention is derived, and the connect path must derive it the same
+        way the list does.** A grant that expires within the warning window is
+        `soon` on the response that creates it, not only on the next read."""
+        owner = uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+        soon = datetime.now(UTC).replace(microsecond=0) + timedelta(days=2)
+
+        response = await client.post(
+            f"/workspaces/{workspace}/connections",
+            json=_connect_body(refreshable=False, expires_at=soon.isoformat()),
+            headers=_auth(key_pair, owner),
+        )
+
+        assert response.status_code == 201, response.text
+        assert response.json()["attention"] == "soon"
+        assert response.json()["reason"] == "credential_expiring"
+
+    async def test_connecting_the_same_account_twice_is_refused(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """**The database decided this, and it decided it before I did.**
+
+        This test was written asserting a second connection would be created,
+        on a docstring I had just written saying so. PostgreSQL refused it:
+        `connected_account` is unique on `(workspace, integration, external
+        account)`, because one HubSpot portal is one relationship however many
+        times somebody consents to it — and the grant table's own comment had
+        anticipated the sequel all along, *"a connection may accumulate revoked
+        grants across reconnections."*
+
+        The B-024 lesson again, one layer out: **a fake would have accepted
+        this, and every caller of a route that did not yet exist would have got
+        a `500` the first time a customer re-consented.**
+        """
+        owner = uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+
+        first = await client.post(
+            f"/workspaces/{workspace}/connections",
+            json=_connect_body(),
+            headers=_auth(key_pair, owner),
+        )
+        assert first.status_code == 201, first.text
+
+        second = await client.post(
+            f"/workspaces/{workspace}/connections",
+            json=_connect_body(label="Acme sandbox"),
+            headers=_auth(key_pair, owner),
+        )
+
+        assert second.status_code == 409, second.text
+        assert second.json()["error"]["code"] == "integration_already_connected"
+
+    async def test_a_second_portal_of_the_same_system_is_allowed(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """**The constraint is about the account, never the system.**
+
+        An organization with two HubSpot portals has two connections, and a
+        rule keyed on `integration` alone would have refused the second — which
+        is why the unique index names the external account too.
+        """
+        owner = uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+
+        await client.post(
+            f"/workspaces/{workspace}/connections",
+            json=_connect_body(),
+            headers=_auth(key_pair, owner),
+        )
+        second = await client.post(
+            f"/workspaces/{workspace}/connections",
+            json=_connect_body(external_account_id="24602", label="Acme EMEA"),
+            headers=_auth(key_pair, owner),
+        )
+
+        assert second.status_code == 201, second.text
+        listed = await client.get(
+            f"/workspaces/{workspace}/connections", headers=_auth(key_pair, owner)
+        )
+        assert len(listed.json()) == 2
+
+    async def test_disconnecting_then_connecting_again_works(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """**Disconnect was irreversible, and building this route is what made
+        it reachable enough to notice.**
+
+        The unique index spans every state, so a disconnected connection kept
+        the identity forever and the same portal could never be connected
+        again. The transition table had allowed `DISCONNECTED → AUTHORIZING`
+        and `REVOKED → AUTHORIZING` since it was written — *"the route back is
+        re-authorization"* — and nothing had ever used either edge, because the
+        use case always minted a new id.
+
+        **The fix was to use the lifecycle that was already there**, which is
+        why this asserts the same connection comes back rather than a second
+        one appearing beside it.
+        """
+        owner = uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+
+        first = await client.post(
+            f"/workspaces/{workspace}/connections",
+            json=_connect_body(),
+            headers=_auth(key_pair, owner),
+        )
+        await client.post(
+            f"/workspaces/{workspace}/connections/{first.json()['id']}/disconnect",
+            headers=_auth(key_pair, owner),
+        )
+
+        again = await client.post(
+            f"/workspaces/{workspace}/connections",
+            json=_connect_body(),
+            headers=_auth(key_pair, owner),
+        )
+
+        assert again.status_code == 201, again.text
+        assert again.json()["id"] == first.json()["id"]
+        assert again.json()["state"] == "connected"
+
+        listed = await client.get(
+            f"/workspaces/{workspace}/connections", headers=_auth(key_pair, owner)
+        )
+        assert len(listed.json()) == 1
+
+
+class TestTheCredentialNeverComesBack:
+    async def test_no_response_field_carries_the_material(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """**The one thing this endpoint must never do.**
+
+        A screen renders what the API returns, a browser caches it, and a proxy
+        logs it. The material goes in and nothing about it comes out.
+        """
+        owner = uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+
+        created = await client.post(
+            f"/workspaces/{workspace}/connections",
+            json=_connect_body(),
+            headers=_auth(key_pair, owner),
+        )
+
+        assert "a-real-looking-access-token" not in created.text
+        assert set(created.json()) == {
+            "id",
+            "integration",
+            "label",
+            "state",
+            "connected_at",
+            "attention",
+            "reason",
+        }
+
+    async def test_a_rejected_request_does_not_echo_it_either(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """**The property that lets this endpoint take a credential at all.**
+
+        The platform's validation handler reports a field path and a message
+        and never the input that failed. If that ever changes, a malformed
+        connect request starts returning material to whoever sent it — so the
+        guarantee is asserted here rather than assumed from
+        `signora_platform/api/errors.py`.
+        """
+        owner = uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+
+        response = await client.post(
+            f"/workspaces/{workspace}/connections",
+            json=_connect_body(label=""),
+            headers=_auth(key_pair, owner),
+        )
+
+        assert response.status_code == 422, response.text
+        assert "a-real-looking-access-token" not in response.text
+
+
+class TestConnectingIsAnOwnersDecision:
+    async def test_a_member_may_not_connect_a_system(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """**Symmetric with disconnecting**, and for the same reason: handing
+        an organization's CRM to a third party is not something one member of
+        the team decides for everybody."""
+        owner, member = uuid4(), uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+        await _add_member(client, key_pair, owner, workspace, member)
+
+        response = await client.post(
+            f"/workspaces/{workspace}/connections",
+            json=_connect_body(),
+            headers=_auth(key_pair, member),
+        )
+
+        assert response.status_code == 403, response.text
+
+    async def test_a_stranger_cannot_connect_into_a_workspace_they_named(
+        self, client: AsyncClient, key_pair: KeyPair
+    ) -> None:
+        """**404, never 403.** A caller who is not a member must not learn
+        whether the organization exists."""
+        owner, stranger = uuid4(), uuid4()
+        workspace = await _workspace(client, key_pair, owner)
+
+        response = await client.post(
+            f"/workspaces/{workspace}/connections",
+            json=_connect_body(),
+            headers=_auth(key_pair, stranger),
+        )
+
+        assert response.status_code == 404, response.text

@@ -28,6 +28,18 @@ class ConnectedAccountRepository(Protocol):
         """
         ...
 
+    async def find_identity(
+        self, workspace_id: UUID, integration: str, external_account_id: str
+    ) -> ConnectedAccount | None:
+        """The connection for one account of one system, whatever state it is in.
+
+        **Keyed the way the unique index is keyed**, because the question it
+        answers is the one the index decides: *does this workspace already have
+        a relationship with this portal?* A lookup on `integration` alone would
+        refuse an organization its second HubSpot portal.
+        """
+        ...
+
     async def save(self, account: ConnectedAccount) -> None: ...
 
 

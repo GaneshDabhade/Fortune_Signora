@@ -50,6 +50,33 @@ class ConnectionView:
     #: presentation layer's, on the same rule Timeline established.
     reason: str | None
 
+    @classmethod
+    def of(
+        cls,
+        account: ConnectedAccount,
+        *,
+        expires_at: datetime | None,
+        refreshable: bool,
+        at: datetime,
+    ) -> ConnectionView:
+        """**The one place attention is derived**, and it has two callers.
+
+        Extracted when the connect route needed to answer *did it work?* for a
+        connection it had just written. The alternative was deriving attention
+        a second time from the same three inputs — and two derivations of one
+        fact are two derivations that eventually disagree, which is the defect
+        §2 names rather than a style preference.
+        """
+        return cls(
+            id=account.id,
+            integration=account.integration,
+            label=account.label,
+            state=account.state,
+            connected_at=account.connected_at,
+            attention=_attention(account, expires_at, refreshable, at),
+            reason=_reason(account, expires_at, refreshable, at),
+        )
+
 
 @dataclass(frozen=True, slots=True)
 class SystemView:
@@ -112,14 +139,8 @@ class IntegrationQueries:
             expires_at = grant.expires_at if grant else None
             refreshable = grant.refreshable if grant else False
             views.append(
-                ConnectionView(
-                    id=account.id,
-                    integration=account.integration,
-                    label=account.label,
-                    state=account.state,
-                    connected_at=account.connected_at,
-                    attention=_attention(account, expires_at, refreshable, at),
-                    reason=_reason(account, expires_at, refreshable, at),
+                ConnectionView.of(
+                    account, expires_at=expires_at, refreshable=refreshable, at=at
                 )
             )
         return views

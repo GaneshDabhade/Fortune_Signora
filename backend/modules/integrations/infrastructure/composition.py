@@ -5,6 +5,7 @@ from __future__ import annotations
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.integrations.application.ports import ConnectedAccountRepository, GrantStore
+from modules.integrations.application.connect import ConnectSystem
 from modules.integrations.application.disconnect import DisconnectSystem
 from modules.integrations.application.queries import IntegrationQueries
 from modules.integrations.infrastructure.repository import (
@@ -38,6 +39,22 @@ def build_disconnect_system(session: AsyncSession, settings: IntegrationSettings
     failure — so a customer is told their access was removed here and may still
     need removing at the vendor, which is true."""
     return DisconnectSystem(
+        SqlConnectedAccountRepository(session),
+        SqlGrantStore(session),
+        EncryptedSecretStore(session, settings.secret_key),
+    )
+
+
+def build_connect_system(session: AsyncSession, settings: IntegrationSettings) -> ConnectSystem:
+    """The same encrypted store the disconnect path purges from.
+
+    One `SecretStore` implementation behind three ports — write here, read for
+    execution, destroy on disconnect — so material written by this path is
+    material `purge_for` can find. Two implementations would eventually be two
+    key configurations, and the failure would surface as a credential nobody
+    could decrypt on the day somebody needed to revoke it.
+    """
+    return ConnectSystem(
         SqlConnectedAccountRepository(session),
         SqlGrantStore(session),
         EncryptedSecretStore(session, settings.secret_key),

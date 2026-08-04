@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from fastapi import status
 
-from modules.integrations.application.connect import UnknownIntegration
+from modules.integrations.application.connect import AlreadyConnected, UnknownIntegration
 from modules.integrations.application.disconnect import ConnectionNotFound
 from signora_platform.api import ErrorMapping
 
@@ -32,4 +32,9 @@ ERROR_MAPPING: ErrorMapping = {
         status.HTTP_422_UNPROCESSABLE_CONTENT,
         "unknown_integration",
     ),
+    # 409 rather than 422: the request is valid and would have been correct
+    # a moment earlier. What a caller does about it is different too — not
+    # *fix the request* but *this already exists, and here is the one you
+    # meant*, which is the distinction the status codes carry.
+    AlreadyConnected: (status.HTTP_409_CONFLICT, "integration_already_connected"),
 }

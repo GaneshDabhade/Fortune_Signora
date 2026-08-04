@@ -4,16 +4,22 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 
 from uuid import UUID
 
-from apps.api.composition.integrations import IntegrationDisconnect, IntegrationRead
+from apps.api.composition.integrations import (
+    IntegrationConnect,
+    IntegrationDisconnect,
+    IntegrationRead,
+)
 from modules.integrations.interface.schemas import (
     ConnectionResponse,
+    ConnectRequest,
     DisconnectResponse,
     SystemResponse,
 )
+from modules.integrations.application.queries import ConnectionView
 from signora_platform.api import CurrentWorkspace
 from signora_platform.authorization import Action, Resource
 
@@ -114,3 +120,68 @@ async def disconnect(
         actor_id=context.principal.user_id,
     )
     return DisconnectResponse.from_domain(result)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/connections",
+    response_model=ConnectionResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Start using one of your own systems",
+)
+async def connect(
+    request: ConnectRequest,
+    context: CurrentWorkspace,
+    connector: IntegrationConnect,
+) -> ConnectionResponse:
+    """*"Signora may read this."*
+
+    **The last step of a consent the customer already gave elsewhere.** The
+    redirect, the consent screen and the authorization-code exchange happen at
+    the frontend edge, where
+    [18-authentication.md](../../../../docs/architecture/18-authentication.md)
+    puts them; this records the result. **Nothing in the request names OAuth** —
+    an API key, a service account or a certificate arrives through the same
+    door, which is the property that lets a second mechanism ship without a
+    second endpoint.
+
+    **Owner only, the same permission as disconnecting.** Handing an
+    organization's CRM to a third party and withdrawing it are the same
+    decision seen from two sides, and it is not a decision a single member of
+    the team makes for everybody.
+
+    **The credential is stored encrypted and is never returned.** The response
+    is the connection a customer reads — no `secret_ref`, no grant id, no
+    material. A caller that needs to know whether it worked reads `state`.
+
+    **A slug Signora does not understand is refused with `422`**, not stored.
+    A connection nothing can ever act on is a permanent row on a customer's
+    screen promising something that will never happen.
+
+    **Connecting the same account twice is refused with `409`, and that is the
+    schema's decision rather than a rule invented here.** One HubSpot portal is
+    one relationship however many times somebody consents to it, and
+    `connected_account` is unique on `(workspace, integration, external
+    account)` to say so. **Reconnection — a new grant on the existing
+    connection — is not built**, so a customer whose credential expired
+    disconnects and connects again. Two steps, both of which work, and neither
+    of which pretends to be a refresh.
+    """
+    context.authorize(Resource.INTEGRATION, Action.UPDATE)
+    at = datetime.now(UTC)
+    connection = await connector.execute(
+        request.to_input(
+            workspace_id=context.workspace_id, actor_id=context.principal.user_id
+        ),
+        at=at,
+    )
+    # Built from what was just written rather than read back, and through the
+    # same factory the connections list uses — so `attention` has one
+    # derivation, not two that agree today.
+    return ConnectionResponse.from_domain(
+        ConnectionView.of(
+            connection,
+            expires_at=request.expires_at,
+            refreshable=request.refreshable,
+            at=at,
+        )
+    )

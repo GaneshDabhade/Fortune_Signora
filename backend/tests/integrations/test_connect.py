@@ -32,6 +32,20 @@ class FakeAccounts:
     async def list_for_workspace(self, workspace_id: UUID) -> list[ConnectedAccount]:
         return [a for a in self.saved if a.workspace_id == workspace_id]
 
+    async def find_identity(
+        self, workspace_id: UUID, integration: str, external_account_id: str
+    ) -> ConnectedAccount | None:
+        return next(
+            (
+                a
+                for a in self.saved
+                if a.workspace_id == workspace_id
+                and a.integration == integration
+                and a.external_account_id == external_account_id
+            ),
+            None,
+        )
+
     async def save(self, account: ConnectedAccount) -> None:
         self.saved.append(account)
 

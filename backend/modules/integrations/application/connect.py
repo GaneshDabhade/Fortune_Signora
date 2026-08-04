@@ -31,6 +31,26 @@ class SecretWriter(Protocol):
     ) -> None: ...
 
 
+class AlreadyConnected(Exception):
+    """This workspace has already connected this account of this system.
+
+    **The schema decided this, not a rule written here.** `connected_account`
+    is unique on `(workspace_id, integration, external_account_id)` because one
+    HubSpot portal is one relationship, however many times somebody consents to
+    it — and the grant table's own comment has always anticipated the sequel:
+    *"a connection may accumulate revoked grants across reconnections."*
+
+    **Raised only while the existing connection is still usable.** A
+    disconnected or revoked one is *reconnected* rather than refused — that is
+    the sequel the comment anticipated, and the transition table has allowed it
+    all along. What this refuses is replacing a **working** grant, because a
+    customer re-consenting with wider scopes would otherwise lose the one that
+    currently works in order to find out whether the new one does.
+
+    **The way out is the same either way**: disconnect, then connect.
+    """
+
+
 class UnknownIntegration(Exception):
     """A slug the catalog does not contain.
 
@@ -80,21 +100,55 @@ class ConnectSystem:
         if entry_for(request.integration) is None:
             raise UnknownIntegration(request.integration)
 
+        # **A returning customer reconnects the relationship they already
+        # had.** `connected_account` is unique on the identity below, and the
+        # transition table has allowed `DISCONNECTED → AUTHORIZING` and
+        # `REVOKED → AUTHORIZING` since it was written — *"the route back is
+        # re-authorization"*. Nothing used either edge, because this use case
+        # always minted a new id, so a customer who disconnected HubSpot could
+        # never connect it again. Found by building the route that made it
+        # reachable, and fixed by using the lifecycle that was already there.
+        existing = await self._accounts.find_identity(
+            request.workspace_id, request.integration, request.external_account_id
+        )
+        if existing is not None and existing.is_usable:
+            # A live connection is not something to silently replace: the
+            # customer may be re-consenting with wider scopes, and discarding
+            # the working grant to find out would be the expensive way to
+            # learn. Refused, and they disconnect first if they meant to.
+            # **No identifier in the message.** It reaches a customer verbatim
+            # through `ERROR_MAPPING`, and a vendor's account id is Signora's
+            # bookkeeping rather than anything they asked to see — the same
+            # rule that keeps `external_account_id` off `ConnectionView`.
+            # Asserted by a Security Invariant, which is how this was caught.
+            raise AlreadyConnected("this system is already connected to this workspace")
+
         # Through `AUTHORIZING` rather than straight to `CONNECTED`: the
         # lifecycle says a connection is authorized before it exists, and a use
         # case that skipped its own state machine would make the machine
         # decorative.
-        authorizing = ConnectedAccount(
-            id=uuid4(),
-            workspace_id=request.workspace_id,
-            integration=request.integration,
-            external_account_id=request.external_account_id,
-            endpoint=request.endpoint,
-            label=request.label,
-            state=ConnectionState.NOT_CONNECTED,
-            connected_at=None,
-            actor_id=request.actor_id,
+        authorizing = (
+            existing
+            if existing is not None
+            else ConnectedAccount(
+                id=uuid4(),
+                workspace_id=request.workspace_id,
+                integration=request.integration,
+                external_account_id=request.external_account_id,
+                endpoint=request.endpoint,
+                label=request.label,
+                state=ConnectionState.NOT_CONNECTED,
+                connected_at=None,
+                actor_id=request.actor_id,
+            )
         ).transition(ConnectionState.AUTHORIZING, at=at, by=request.actor_id)
+        # **A reconnection keeps the customer's own name for the relationship**
+        # and its recorded `connected_at`. Both are facts about a relationship
+        # that persisted through a gap, and the acquisition flow does not ask
+        # for a label a second time. **Its `endpoint` is also kept**, which is
+        # correct for every shipped system and would not be for one whose host
+        # can move between authorizations — Salesforce is the case, and it is
+        # not shipped. Noted in 44-integrations.md rather than guessed at here.
 
         # **The connection is written first, and the order is not stylistic.**
         # Material and grants are children of a connection — `integration_secret`
@@ -112,7 +166,13 @@ class ConnectSystem:
         # line.
         await self._accounts.save(authorizing)
 
-        secret_ref = f"integration/{authorizing.id}"
+        # **A ref per grant, never per connection.** A reconnection stores new
+        # material for a connection that may still hold the old, and §3's rule
+        # is that a rotation *writes a new ref and leaves the old to be purged*
+        # rather than editing material in place — which is exactly what makes a
+        # rotation diagnosable while it is happening.
+        grant_id = uuid4()
+        secret_ref = f"integration/{authorizing.id}/{grant_id}"
         # Material before the grant. A grant naming a credential that was never
         # stored would read as usable and fail at the vendor.
         await self._secrets.store(
@@ -123,7 +183,7 @@ class ConnectSystem:
         )
         await self._grants.save(
             IntegrationGrant(
-                id=uuid4(),
+                id=grant_id,
                 workspace_id=request.workspace_id,
                 connected_account_id=authorizing.id,
                 secret_ref=secret_ref,

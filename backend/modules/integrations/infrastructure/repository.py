@@ -5,8 +5,10 @@ from __future__ import annotations
 from uuid import UUID
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from modules.integrations.application.connect import AlreadyConnected
 from modules.integrations.domain.connection import ConnectedAccount, ConnectionState
 from modules.integrations.domain.grant import IntegrationGrant
 from modules.integrations.infrastructure.models import (
@@ -27,6 +29,12 @@ def _to_account(row: ConnectedAccountModel) -> ConnectedAccount:
         connected_at=row.connected_at,
         actor_id=row.updated_by,
     )
+
+
+#: The unique index that makes one portal one relationship. Matched by name
+#: rather than by parsing a driver message: the wording is asyncpg's and
+#: changes with the driver, while the constraint name is ours (migration 0027).
+_IDENTITY_CONSTRAINT = "uq_connected_account_identity"
 
 
 class SqlConnectedAccountRepository:
@@ -62,6 +70,20 @@ class SqlConnectedAccountRepository:
         )
         return [_to_account(row) for row in rows]
 
+    async def find_identity(
+        self, workspace_id: UUID, integration: str, external_account_id: str
+    ) -> ConnectedAccount | None:
+        row = (
+            await self._session.execute(
+                select(ConnectedAccountModel).where(
+                    ConnectedAccountModel.workspace_id == workspace_id,
+                    ConnectedAccountModel.integration == integration,
+                    ConnectedAccountModel.external_account_id == external_account_id,
+                )
+            )
+        ).scalar_one_or_none()
+        return _to_account(row) if row is not None else None
+
     async def save(self, account: ConnectedAccount) -> None:
         row = await self._session.get(ConnectedAccountModel, account.id)
         if row is None:
@@ -79,6 +101,17 @@ class SqlConnectedAccountRepository:
                     updated_by=account.actor_id,
                 )
             )
+            # **Flushed here so the constraint decides, rather than at commit
+            # where the caller can no longer say what went wrong.** The unique
+            # index is the single guard — a pre-read would be a second rule
+            # with a race between the two, and the race is exactly the case
+            # worth getting right: two consent callbacks arriving together.
+            try:
+                await self._session.flush()
+            except IntegrityError as exc:
+                if _IDENTITY_CONSTRAINT not in str(exc.orig):
+                    raise
+                raise AlreadyConnected("this system is already connected to this workspace") from exc
             return
         # A connection is a live relationship, so this is one of the few places
         # in the repository that updates rather than supersedes (migration 0027).

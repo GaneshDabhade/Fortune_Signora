@@ -10,9 +10,11 @@ from fastapi import Depends
 
 from functools import lru_cache
 
+from modules.integrations.application.connect import ConnectSystem
 from modules.integrations.application.disconnect import DisconnectSystem
 from modules.integrations.application.queries import IntegrationQueries
 from modules.integrations.infrastructure.composition import (
+    build_connect_system,
     build_disconnect_system,
     build_integration_queries,
 )
@@ -39,3 +41,10 @@ def disconnect_system(context: CurrentWorkspace) -> DisconnectSystem:
 
 
 IntegrationDisconnect = Annotated[DisconnectSystem, Depends(disconnect_system)]
+
+
+def connect_system(context: CurrentWorkspace) -> ConnectSystem:
+    return build_connect_system(context.session, _settings())
+
+
+IntegrationConnect = Annotated[ConnectSystem, Depends(connect_system)]

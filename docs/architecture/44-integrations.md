@@ -107,6 +107,8 @@ Three ports rather than one — `SecretStore` (read), `SecretWriter` (write), `S
 
 ### Connecting
 
+**`POST /workspaces/{id}/connections` is the route, added 2026-08-04.** The use case had been complete and tested since S01 and nothing exposed it, so a customer finishing a consent flow had nowhere to land — the same shape as the Observation Engine's thirteen computed fields with no interface layer.
+
 The write order is **connection → material → grant → connection again**, and it is not stylistic.
 
 `integration_secret` and `integration_grant` both carry a foreign key to `connected_account`, so writing either first is refused by the database. The first version wrote material first, reasoning that a grant with no credential behind it would make the screen say *Ready to use* about something that does not exist. **That reasoning is right and the ordering was wrong** — it passed only because the tests used fakes, and a fake cannot refuse an insert.
@@ -114,6 +116,27 @@ The write order is **connection → material → grant → connection again**, a
 The resolution keeps the property and satisfies the schema: the connection lands first **in `AUTHORIZING`**, so a failure anywhere below leaves a row reading *you started connecting this and did not finish* — which is true, is what the Connection Center already says, and is already something a customer can remove. `CONNECTED` is written last, once material and grant both exist.
 
 Found by the first test to run this against PostgreSQL rather than a double ([B-024](../BUGS.md)).
+
+### Reconnecting, and the disconnect that could not be undone
+
+**`connected_account` is unique on `(workspace, integration, external_account_id)`** — one HubSpot portal is one relationship however many times somebody consents to it. The index spans *every* state, so a disconnected connection keeps the identity permanently.
+
+**That made disconnect irreversible, and nothing had ever noticed**, because no route could connect anything. Building one made it reachable within a single test.
+
+**The fix was already in the domain.** The transition table has allowed `DISCONNECTED → AUTHORIZING` and `REVOKED → AUTHORIZING` since it was written — §2's *"the route back is re-authorization"* — and no code had used either edge, because `ConnectSystem` always minted a fresh id. It now **reuses the existing connection** when one exists and is not usable, and refuses with `AlreadyConnected` → `409` when it is.
+
+| The customer did | What happens |
+|---|---|
+| Connected HubSpot for the first time | A new connection |
+| Disconnected, then connected again | **The same connection**, a new grant, and their label survives |
+| Re-consented while it was still working | **`409`.** Discarding a grant that works to find out whether a new one does is the expensive way to learn |
+| Connected a second HubSpot portal | A second connection — the index names the *account*, never the system |
+
+**A reconnection keeps the connection's label and `endpoint`.** The label is the customer's own name for a relationship that persisted through a gap, and the acquisition flow does not ask twice. **Keeping the endpoint is correct for every shipped system and would not be for one whose host can move between authorizations** — Salesforce is that case and is not shipped.
+
+**`secret_ref` is per *grant*, not per connection** (`integration/{connection}/{grant}`). A reconnection writes new material while the old may still exist, which is §3's rotation rule rather than a new one: *a rotation writes a new ref and leaves the old to be purged.*
+
+**The unique index is the single guard, and it decides.** The repository flushes on insert and translates the constraint violation into `AlreadyConnected`; there is no second pre-read rule to race with it. Before that translation existed the violation escaped as an unhandled `500` — *the platform broke* — when in fact it had refused the caller, which is the same defect class as `ConnectionNotFound` in §11.
 
 ### Disconnecting
 
@@ -180,14 +203,14 @@ Salesforce is next and was argued for at the time — it is the enterprise defau
 | Layer | What |
 |---|---|
 | **Domain** | `ConnectionState`, `ConnectedAccount`, `IntegrationGrant`, `Credential`, `CatalogEntry`, `Capability`, `CATALOG` |
-| **Application** | `ConnectSystem`, `DisconnectSystem`, `ResolveExecutionContext`, `IntegrationQueries`; ports `ConnectedAccountRepository`, `GrantStore`, `SecretStore`, `SecretWriter`, `SecretPurger`, `ProviderRevoker` |
+| **Application** | `ConnectSystem`, `DisconnectSystem`, `ResolveExecutionContext`, `IntegrationQueries`; ports `ConnectedAccountRepository` (`get`, `find_identity`, `list_for_workspace`, `save`), `GrantStore`, `SecretStore`, `SecretWriter`, `SecretPurger`, `ProviderRevoker` |
 | **Infrastructure** | `SqlConnectedAccountRepository`, `SqlGrantStore`, `EncryptedSecretStore`, `IntegrationSettings`, composition |
-| **Interface** | 3 routes, purpose-built response schemas, `ERROR_MAPPING` |
+| **Interface** | **4 routes**, purpose-built request and response schemas, `ERROR_MAPPING` |
 | **Public** | `ConnectedAccount`, `ConnectionState`, `ConnectionUnusable`, `Credential`, `ExecutionContext` |
 | **Migrations** | `0027` (`connected_account`, `integration_grant`), `0028` (`integration_secret`) — all three registered in `tenancy_policy.py`, RLS enabled and **forced** |
 | **Frontend** | `/settings/connections` · `ConnectionCenter` · `ConnectPanel` · `DisconnectDialog` · `useIntegrations` / `useDisconnect` · the OAuth client routes · 9 `ConnectOutcome`s |
 
-**Authorization:** `integration:read` for owner and member; `integration:update` (disconnect) for owner only. Withdrawing an organization's access to its own CRM is an owner's decision; the client hides the control as a courtesy, and Casbin is what decides.
+**Authorization:** `integration:read` for owner and member; `integration:update` (**connect and disconnect**) for owner only. Withdrawing an organization's access to its own CRM is an owner's decision; the client hides the control as a courtesy, and Casbin is what decides.
 
 ---
 
@@ -227,6 +250,7 @@ The callback route deliberately returns `provider_unavailable` rather than a stu
 
 ### Known limitations, stated rather than discovered later
 
+- **No credential rotation on a live connection.** A working grant cannot be replaced in place; the customer disconnects and reconnects. **Reconnection itself works** (§4), so the path exists and costs two steps.
 - **No `ProviderRevoker` adapter.** Disconnect always reports `revoked_at_provider: false`, and the dialog tells the customer to tidy up at the vendor. Honest, and it stops being necessary the moment an adapter exists.
 - **No refresh.** `refreshable` is recorded and nothing acts on it. A grant that expires reads `NOW` on the Connection Center and needs reconnecting by hand.
 - **`ResolveExecutionContext` is not wired at the composition root.** It is complete and tested; a factory that could only raise would be a wiring that lies about what exists. Provider Platform wires it when it consumes a connection.

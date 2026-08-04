@@ -187,8 +187,15 @@ class TestAConnectionSurvivesTheDatabase:
         self, session_factory: async_sessionmaker[AsyncSession]
     ) -> None:
         """Two rows for one Salesforce org is two grants racing to refresh one
-        token. The constraint is the control; this proves it is live."""
-        from sqlalchemy.exc import IntegrityError
+        token. **The constraint is still the control**; what changed is that it
+        now speaks the domain's language instead of the driver's.
+
+        It previously escaped as a raw `IntegrityError`, which reached a caller
+        as a `500` — the platform broke — when in fact it had refused them. The
+        repository flushes and translates, so the same constraint decides and
+        the answer is a `409` a customer can act on.
+        """
+        from modules.integrations.application.connect import AlreadyConnected
 
         workspace = uuid4()
         async with tenant_scoped_session(
@@ -198,7 +205,7 @@ class TestAConnectionSurvivesTheDatabase:
             await repository.save(_account(workspace, external="dup"))
             await session.commit()
 
-        with pytest.raises(IntegrityError):
+        with pytest.raises(AlreadyConnected):
             async with tenant_scoped_session(
                 session_factory, workspace_id=workspace, user_id=ACTOR
             ) as session:
@@ -509,12 +516,16 @@ class TestConnectAndDisconnectOverTheRealSchema:
         ) as session:
             stored = await SqlConnectedAccountRepository(session).get(workspace, account.id)
             grant = await SqlGrantStore(session).current_for(workspace, account.id)
-            credential = await EncryptedSecretStore(session, key).resolve(
-                f"integration/{account.id}"
-            )
+            assert grant is not None
+            # **Resolved through the grant's own ref rather than a reconstructed
+            # one.** The format changed when a reconnection needed new material
+            # beside old — it is per *grant* now, not per connection — and a
+            # test that rebuilds the string pins a naming convention while
+            # proving nothing about the link the product actually follows.
+            credential = await EncryptedSecretStore(session, key).resolve(grant.secret_ref)
 
         assert stored is not None and stored.state is ConnectionState.CONNECTED
-        assert grant is not None and grant.secret_ref == f"integration/{account.id}"
+        assert grant.secret_ref.startswith(f"integration/{account.id}/")
         assert credential.material == b"token"
 
     async def test_disconnecting_leaves_nothing_to_read_with(

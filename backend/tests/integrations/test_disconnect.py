@@ -66,6 +66,27 @@ class FakeAccounts:
     async def list_for_workspace(self, workspace_id: UUID) -> list[ConnectedAccount]:
         return [self.account] if self.account else []
 
+    async def find_identity(
+        self, workspace_id: UUID, integration: str, external_account_id: str
+    ) -> ConnectedAccount | None:
+        """Unused by this file's subject, and present because the port has it.
+
+        **The cost of a Protocol growing**, paid honestly: a double that
+        declined to implement it would type-check only by loosening the
+        annotation on the thing under test, which is how a fake stops
+        resembling the contract it stands in for.
+        """
+        return next(
+            (
+                a
+                for a in ([self.account] if self.account else [])
+                if a.workspace_id == workspace_id
+                and a.integration == integration
+                and a.external_account_id == external_account_id
+            ),
+            None,
+        )
+
     async def save(self, account: ConnectedAccount) -> None:
         self.account = account
 
