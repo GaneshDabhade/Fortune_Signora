@@ -246,6 +246,45 @@
 
 ---
 
+## PACK M · Where do Signora's OAuth client credentials live — and does the prohibition even bind?
+
+**Raised by Lane B as [C-327](LANE_COORDINATION.md), 2026-08-04. Lane B's analysis is not repeated here** — four options, costs stated, and a reading offered *"as input and not as authority."* **This pack adds three things Lane B could not see from inside E1**, and it changes what kind of question this is.
+
+| | |
+|---|---|
+| **Class** | **Architecture Decision** — trust boundary |
+| **Blocks** | **One wiring line.** `RefreshGrant` is built, tested against a substituted `TokenRefresher`, and unwired |
+
+### 1 · The constraint may not bind, and nobody has ever said
+
+**Lane B treats [18-authentication.md](architecture/18-authentication.md):49 as binding on this question.** Read in context, **all four of its absolutes are about user identity**, and the sentence immediately above them is: *"**FastAPI owns** signature verification, claim validation, principal construction… **and nothing else related to identity.**"* The section is titled *"Hard prohibitions on the Python tier"* and sits inside a document about **authenticating a Signora user.**
+
+> **And the repository has already chosen a reading, without recording that it did.** *"Never store passwords or **any credential material**"* is absolute on its face — **and `integration_secret` stores encrypted customer OAuth tokens in the Python tier, shipped, on `main`.** Either the prohibition is scoped to identity, or **it has been violated for a milestone and nothing flagged it.**
+>
+> **The first reading is almost certainly right.** What is missing is that **it has never been stated**, so every question in this area gets re-argued from an absolute that may not apply. **This is the decision worth taking, and it is larger than C-327.**
+
+### 2 · One word is doing two jobs
+
+**[18-authentication.md](architecture/18-authentication.md) lists *"token refresh"* among Next's responsibilities. It means a Signora user's session.** **C-327 is about refreshing a customer's third-party grant.** **Two unrelated operations, one word, one document** — and the collision is load-bearing, because reading *"Next owns token refresh"* as covering grant refresh is what makes option C look boundary-preserving.
+
+> **This is [ADR-0034](architecture/adr/0034-ubiquitous-language.md)'s territory** — and that ADR's enforcement scans *customer-visible* strings, so an internal collision like this is exactly what it does not catch.
+
+### 3 · Neither document cited can settle it
+
+**[44-integrations.md](architecture/44-integrations.md) §5 places *"storage, validation, refresh, revocation, lifecycle"* in Python** — which reads like an answer. **It is not one:** that document's own header states *"[13-integrations.md](architecture/13-integrations.md) is the ratified architecture and is **not** superseded by this document. That one says what the Integration Abstraction Layer is; this says **what was built inside it**."* **It is a design record. Lane B was right not to lean on it**, and equally right that moving the boundary is not a lane's.
+
+### What this changes about the options
+
+| | Lane B's cost | With the above |
+|---|---|---|
+| **A** — pair moves to Python, Next keeps its own | *"Two tiers hold the same vendor secret"* | **Unchanged, and the cost is real.** But if the prohibition is identity-scoped, **A is configuration rather than a boundary change** |
+| **C** — refresh at the Next tier | *"The smallest thing that changes no boundary"* | ⚠️ **It does change one.** §5 assigns grant refresh to Python, and C reads as boundary-preserving **only through the word collision in §2** |
+| **D** — a vault | *"Correct, and unavailable until M14.5"* | **Agreed, and unaffected** |
+
+> **Lane C's recommendation is not on A/B/C/D.** It is that **the prohibition's scope be stated first**, because it is one sentence, it unblocks this question, and **it stops the next three questions in this area being argued from an absolute nobody has scoped.** If it is identity-scoped, C-327 becomes a small configuration choice between A and D and Lane B can finish it. If it is not, then `integration_secret` is a live violation and **that is a much larger finding than a wiring line.**
+
+---
+
 ## PACK L · Repository architecture — a decision that has been waiting outside the queue
 
 **Surfaced 2026-08-04 by Lane C during repository cleanup. Not authored by Lane C** — [`REPOSITORY_ARCHITECTURE_PROPOSAL.md`](REPOSITORY_ARCHITECTURE_PROPOSAL.md) was written **2026-07-30** and has read **`PROPOSED — awaiting approval`** for five days.

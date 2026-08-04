@@ -198,6 +198,7 @@
 | [C-410](#c-410--no-prompt-has-ever-been-evaluated-against-a-production-model) | **Every AI release is measured on a local model; production runs hosted ones** | Lane C | **Product owner** | `OPEN` | **Nothing today.** Blocks the *first customer-facing inference*, whichever epic reaches it |
 | [C-411](#c-411--revenue-intelligence-platform-is-a-planned-module-whose-job-is-already-done) | **RIP is a planned module whose job `apps/api/composition/` already does** | Lane C | **Product owner** | `OPEN` | **Nothing.** It prevents future work rather than unblocking any |
 | [C-412](#c-412--data-export-and-account-deletion-have-no-owner-and-epic-c-raises-the-stakes) | **Data export and account deletion have no owner anywhere** | Lane C | **Product owner** | `OPEN` | **Nothing today.** [Epic C](architecture/400-epic-c-people.md) raises the stakes materially |
+| [C-413](#c-413--the-python-tiers-credential-prohibition-has-never-been-scoped) | **The Python tier's credential prohibition has never been scoped, and shipped code depends on the answer** | Lane C | **Product owner** | `OPEN` | **Nothing directly.** It is what [C-327](#c-327) is being argued from |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
 >
@@ -2978,6 +2979,33 @@ Every lane's rows sit **adjacent in one table**, and each lane's branch carries 
 **What Lane C is not doing:** proposing a design, an owner or a milestone. **Scope and sequencing are the product owner's**, and a compliance obligation is exactly the class where an office inventing an answer is worse than an office naming the gap.
 
 > **The narrow question: does account deletion and data export get an owner before [Epic C](architecture/400-epic-c-people.md) ships, or does it stay with M15 behind M14.5?** **Lane C has no recommendation it is confident in** — the compliance argument says *before*, the sequencing argument says M15 exists for exactly this, and **the two do not resolve against each other on repository evidence.**
+
+## C-413 · The Python tier's credential prohibition has never been scoped
+
+| | |
+|---|---|
+| **Classification** | **Architecture Decision** — the scope of a ratified absolute |
+| **Owner** | **Product owner** |
+| **Requester** | **Lane C — Product Office**, preparing Lane B's [C-327](#c-327) |
+| **Status** | `OPEN` |
+| **Blocks** | **Nothing directly** — but it is the sentence [C-327](#c-327) is being argued from, and the next questions in this area will be too |
+
+**[18-authentication.md](architecture/18-authentication.md):49 states an absolute:** *"**Never store passwords or any credential material.**"* Its section is titled *"Hard prohibitions on the Python tier"*, and the sentence above it reads *"FastAPI owns signature verification, claim validation, principal construction… **and nothing else related to identity.**"*
+
+> **The repository has already chosen a reading and never recorded that it did.** **`integration_secret` stores encrypted customer OAuth tokens in the Python tier** — shipped, on `main`, since M13. **Either the prohibition is scoped to identity, or it has been violated for a milestone and nothing flagged it.**
+
+**The first reading is almost certainly correct** — the surrounding section is entirely about authenticating a Signora user, and the other three absolutes (*never implement an OAuth flow · never authenticate a user · never mint a token*) are unambiguously identity concerns. **What is missing is that nobody has said so**, which is why [C-327](#c-327) is being argued from an absolute that may not apply to it.
+
+**Two consequences, and the second is the reason this is raised separately from C-327:**
+
+| | |
+|---|---|
+| **For [C-327](#c-327)** | If identity-scoped, *"where do the OAuth client credentials live?"* stops being a boundary change and becomes **a configuration choice** between holding them in two tiers now and a vault at M14.5 |
+| **Standing** | **Every future question in this area re-argues the same sentence.** Refresh today; token rotation, vault integration, service-to-service credentials and [E2](architecture/406-epic-e2-crm-write-back.md)'s write scopes next |
+
+**A related collision, recorded because it is doing damage in the same argument.** [18-authentication.md](architecture/18-authentication.md) lists *"token refresh"* among Next's responsibilities and means **a Signora user's session**; [C-327](#c-327) concerns **refreshing a customer's third-party grant.** **Two unrelated operations, one word.** Reading the first as covering the second is what makes *"refresh at the Next tier"* look boundary-preserving. **[ADR-0034](architecture/adr/0034-ubiquitous-language.md) owns naming, and its enforcement scans customer-visible strings — so an internal collision is precisely what it does not catch.**
+
+> **Lane C proposes no wording.** The prohibition is ratified and the amendment is the product owner's. **What is being asked for is one sentence saying which class of credential it governs** — and it is worth taking ahead of [C-327](#c-327) rather than inside it, because it is smaller and it settles more.
 
 ## Closed
 
