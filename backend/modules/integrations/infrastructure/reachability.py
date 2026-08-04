@@ -19,7 +19,7 @@ from typing import Final
 import httpx
 
 from modules.integrations.application.probe import Reachability
-from modules.integrations.application.resolve import ExecutionContext
+from modules.integrations.domain.execution import ExecutionContext
 from modules.integrations.domain.grant import OAuth2Material
 from modules.integrations.domain.health import ProbeResult
 from modules.integrations.infrastructure.hubspot import (

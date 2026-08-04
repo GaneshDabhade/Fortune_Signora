@@ -21,10 +21,8 @@ import pytest
 from modules.integrations.application.disconnect import ConnectionNotFound
 from modules.integrations.application.probe import ProbeConnection, Reachability
 from modules.integrations.application.queries import Attention, IntegrationQueries
-from modules.integrations.application.resolve import (
-    ExecutionContext,
-    ResolveExecutionContext,
-)
+from modules.integrations.application.resolve import ResolveExecutionContext
+from modules.integrations.domain.execution import ExecutionContext
 from modules.integrations.domain.connection import ConnectedAccount, ConnectionState
 from modules.integrations.domain.grant import Credential, IntegrationGrant
 from modules.integrations.domain.health import (

@@ -369,3 +369,48 @@ Three defects came out of closing it, none of which a fake could have surfaced: 
 - **No writes are paused, because there are no writes.** That is E2.
 - **No signal to admins.** Notification delivery is [ADR-0040](adr/0040-notifications.md) and unratified.
 - **`connectable` is still `false` for every catalog entry.** It flips after a real handshake against a real developer application, never in anticipation (§9).
+
+---
+
+## 13 · The inbound source port — how a customer's system reaches the pipeline
+
+**Built 2026-08-04**, the moment [ADR-0300](adr/0300-inbound-customer-systems.md) was ratified as **Option A**, to the contract in [409](409-inbound-source-port-contract.md). **This module's half only** — steps 1, 2 and 6 of that document's seven.
+
+**The sentence it turns on** is the one §1 already records: *a provider is Signora's supplier and Signora holds the credential; an integration is the customer's own system and the customer holds it.* The Provider Port asks a supplier **about one company**. This asks a customer's system for **the customer's own records** — and **an enumeration has no subject**, which is why a sibling exists rather than an extension.
+
+### What is here
+
+| | |
+|---|---|
+| **`domain/source.py`** | `IntegrationSourceAdapter` · `IntegrationFetchRequest` · `IntegrationRecord` · `IntegrationPage` · `IntegrationSourceDescriptor` · the error hierarchy, mirroring the Provider Port's exactly |
+| **`domain/execution.py`** | `ExecutionContext`, **moved out of `application/`** — a domain port cannot name a type defined in an outer layer |
+| **`Capability.CRM_RECORDS`** | Added, and **deliberately not in `LIVE_CAPABILITIES`** |
+| **`infrastructure/hubspot_source.py`** | `HubSpotCompanySource` — the wrapper, translation only |
+| **`public/`** | The port is published, because its driver is another module |
+
+### The four properties worth keeping
+
+**No `subject`.** Asserted structurally, because a `subject` field appearing here would be the Provider Port arriving under a different name, and it would look like ordinary code.
+
+**This module's `Capability`, never `ProviderCapability`.** One enumerates what suppliers sell — enrichment, technographics, workforce — and a CRM read is none of them. **Two vocabularies with two owners, kept apart by the type rather than by a comment.**
+
+**`integrations` imports nothing from `provider_platform`.** The port is defined by the module that owns its language; the driver depends on the port and not the reverse. **`ProviderName` stays closed** and no catalog slug is ever added to it — it means *"a supplier with a ratified qualification record"*, and that guarantee is worth more than one shared enum.
+
+**`occurred_at` is `hs_lastmodifieddate`, and it is the same field the fetcher filters on.** Watermark, filter and record timestamp must be one field or a sync re-reads or silently skips — [B-004](../BUGS.md)'s class. **An unreadable one raises rather than defaulting to `now()`**, which would advance the position past records nobody has seen.
+
+### Why `CRM_RECORDS` is not live
+
+**The port exists and nothing drives it.** The runner is [409](409-inbound-source-port-contract.md) step 4, in `provider_platform`. Advertising the capability now would be the Connection Center promising something the pipeline cannot deliver — **the one thing `LIVE_CAPABILITIES` exists to prevent** (§9). It joins the set when the runner lands, and a test asserts the absence rather than a comment requesting it.
+
+### What is not here, and whose it is
+
+| Step | | |
+|---|---|---|
+| **3** | Widen `provider: ProviderName` → `str` on the four sync events | `provider_platform` — **Lane A's** |
+| **4** | `RunIntegrationSync`, and the watermark's widened meaning | `provider_platform` — **🔴, and the product owner's to assign** |
+| **5** | A simulated source adapter driving the whole path with no vendor | `provider_platform` |
+| **7** | The live run | Needs the **HubSpot developer application**, which is environmental |
+
+> **Step 5 is the one to insist on.** It proves the contract end to end — port, runner, watermark, raw record, event, mapper, claims — **with no credential and no developer application**, and a lane that merges it with step 7 debugs OAuth and ingestion at once.
+
+**`build_hubspot_source(properties)` is wired and called by nothing**, exactly as `build_resolve_execution_context` was before the probe. **The properties are a parameter** because they are `HubSpotCompanyMapper.translated_properties()` and that mapper is Provider Normalization's: the composition root is the only place that may see two modules' infrastructure at once, and a second property list here would defeat the test that keeps the fetcher and the mapper in step.

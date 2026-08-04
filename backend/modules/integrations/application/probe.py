@@ -30,9 +30,9 @@ from modules.integrations.application.ports import ConnectedAccountRepository
 from modules.integrations.application.resolve import (
     ConnectionUnusable,
     CredentialUnreadable,
-    ExecutionContext,
     ResolveExecutionContext,
 )
+from modules.integrations.domain.execution import ExecutionContext
 from modules.integrations.domain.connection import ConnectedAccount, ConnectionState
 from modules.integrations.domain.health import ConnectionProbe, ProbeResult
 

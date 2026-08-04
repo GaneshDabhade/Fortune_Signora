@@ -43,6 +43,11 @@ class Capability(StrEnum):
     EMAIL_ENGAGEMENT = "email_engagement"
     #: Delivering what Signora concludes into a team's own channels.
     MESSAGE_DELIVERY = "message_delivery"
+    #: The customer's own account and opportunity records, enumerated rather
+    #: than asked about one at a time. **What [E1](../../../../docs/architecture/401-epic-e1-crm-read.md)
+    #: reads**, and deliberately not `CRM_ACTIVITY`, which is logged calls and
+    #: emails and remains exactly what it always was.
+    CRM_RECORDS = "crm_records"
 
 
 #: Capabilities the pipeline can actually act on today.
@@ -52,6 +57,13 @@ class Capability(StrEnum):
 #: reaches a conclusion. **`MESSAGE_DELIVERY` is not**: its consumers —
 #: Recommendation Engine and Revenue Intelligence Platform — are deferred and
 #: unbuilt, so Signora has nothing to deliver.
+#: **`CRM_RECORDS` is deliberately absent.** The port that would read it exists
+#: as of 2026-08-04, and **nothing drives it yet** — the runner is
+#: [409](../../../../docs/architecture/409-inbound-source-port-contract.md)
+#: step 4, in `provider_platform`. Advertising it now would be the Connection
+#: Center promising a capability the pipeline cannot deliver, which is the one
+#: thing `LIVE_CAPABILITIES` exists to prevent. **It joins this set when the
+#: runner lands, and not before.**
 LIVE_CAPABILITIES: Final[frozenset[Capability]] = frozenset(
     {Capability.CRM_ACTIVITY, Capability.MEETINGS, Capability.EMAIL_ENGAGEMENT}
 )

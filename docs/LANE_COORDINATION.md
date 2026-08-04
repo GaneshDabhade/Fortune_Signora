@@ -4075,8 +4075,8 @@ KeyError: '0035'
 |---|---|
 | **Raised by** | Lane B, 2026-08-04, on claiming [TASK-402](BACKLOG.md) and auditing the existing foundation before writing code |
 | **Owner** | **The product owner.** Three of the four decisions are 🔴 and one is environmental; none is a lane's |
-| **Status** | `OPEN` — **an architectural blocker, and it blocks less than it did.** Written when it appeared to stop Epic E1 entirely; **it does not.** See *What has been built since*, below |
-| **Blocks** | **The read path only** — records arriving. Through it: D3, D1's two missing risk families, and E2 |
+| **Status** | **`CLOSED` — ruled 2026-08-04 by the product owner: [ADR-0300](architecture/adr/0300-inbound-customer-systems.md) **Option A**, the sibling source port.** Closed by the requesting lane, as the register requires. **Steps 1, 2 and 6 of [409](architecture/409-inbound-source-port-contract.md) are built** — the port, `Capability.CRM_RECORDS`, and `HubSpotCompanySource`. **Steps 3, 4 and 5 are `provider_platform`'s and were not touched**; see [C-300](#c-300--provider-platform-owns-the-half-of-the-inbound-path-lane-b-may-not-build) |
+| **Blocks** | **Nothing now.** It blocked the read path only — records arriving — and through it D3, D1's two missing risk families, and E2 |
 
 ### What has been built since, and the correction it forces
 
@@ -4566,3 +4566,38 @@ Two enforcements, either of which is sufficient on its own:
 | **The detection rule** | The join between `TECHNOLOGY_ADOPTED` and the declared set |
 
 **Nothing else.** Everything in Epic D phase 1 that does not cross this boundary is built, tested and pushed — the declaration, its persistence, its tenancy, its API and its screen.
+
+---
+
+## C-300 · Provider Platform owns the half of the inbound path Lane B may not build
+
+| | |
+|---|---|
+| **Raised by** | **Lane B**, 2026-08-04, on building the Integrations half of [409](architecture/409-inbound-source-port-contract.md) after [C-326](#c-326--epic-e1-has-no-path-for-a-customers-own-system-to-reach-the-pipeline) was ruled |
+| **Owner** | **The product owner** — it is an assignment question, and step 4 is 🔴 |
+| **State** | `OPEN` |
+| **Blocks** | **Nothing today.** Both halves are specified and one is built. **This asks who builds the other** |
+
+### The situation, in one line
+
+> **The port exists and nothing drives it.** `IntegrationSourceAdapter` is published from `integrations/public/`, `HubSpotCompanySource` implements it, and **`provider_platform` is where a runner would live.**
+
+**Lane B built steps 1, 2 and 6 and stopped exactly at the module boundary**, which is what §20e requires: *"if a lane needs a change inside a module it is not assigned, that is a finding to raise, never a change to make."*
+
+| Step | What | Module | Budget |
+|---|---|---|---|
+| **3** | Widen `provider: ProviderName` → `str` on the four sync events. **No payload changes** — `to_payload()` already emits `self.provider.value` | `provider_platform` | 🟢 |
+| **4** | `RunIntegrationSync`, writing the same `raw_provider_record` and publishing the same `provider.record.received`. **The watermark's `subject` widens from *"the company this position is about"* to *"the scope this position is for"*, and holds the `connected_account_id`** | `provider_platform` | 🔴 |
+| **5** | A **simulated** source adapter, driving port → runner → watermark → raw record → event → mapper → claims **with no vendor and no credential** | `provider_platform` | 🟠 |
+
+### Why the ordering matters more than the assignment
+
+**Step 5 is the one to insist on.** It proves the whole contract before anything external is involved. **A lane that merges 5 and 7 debugs OAuth and the ingestion path at once**, and the second failure always looks like the first.
+
+**Step 7 — the live run — needs the HubSpot developer application**, which is environmental and already recorded. **Steps 3, 4 and 5 need nothing from anybody.**
+
+### What Lane B is not doing, and why it is saying so
+
+**Not building it.** `provider_platform` is Lane A's and is in Implementation Waiting on [C-021](#c-021). **Not proposing to take the module either** — that is an ownership transfer, and those need their own ruling rather than arriving inside a slice.
+
+> **The contract is complete either way.** [409](architecture/409-inbound-source-port-contract.md) specifies all seven steps; **who executes steps 3–5 is the product owner's, and until it is answered the customer's CRM has a door and nobody to open it.**

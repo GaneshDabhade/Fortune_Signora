@@ -13,6 +13,8 @@ from modules.integrations.application.refresh import RefreshGrant
 from modules.integrations.application.resolve import ResolveExecutionContext
 from modules.integrations.application.queries import IntegrationQueries
 from modules.integrations.application.probe import ProbeConnection
+from modules.integrations.infrastructure.hubspot import HubSpotCompanies
+from modules.integrations.infrastructure.hubspot_source import HubSpotCompanySource
 from modules.integrations.infrastructure.reachability import HubSpotReachability
 from modules.integrations.infrastructure.repository import (
     SqlConnectedAccountRepository,
@@ -120,6 +122,28 @@ def build_refresh_grant(
         secrets,
         HttpTokenRefresher(credentials) if credentials.any_configured() else None,
     )
+
+
+def build_hubspot_source(properties: frozenset[str]) -> HubSpotCompanySource:
+    """HubSpot wearing the inbound source port.
+
+    **The properties are a parameter, not a constant here.** They are
+    `HubSpotCompanyMapper.translated_properties()`, and that mapper belongs to
+    Provider Normalization — *"a CRM returns only the properties you ask for,
+    and a mapper that knows `industry` while the client never requests it
+    produces a claim that silently never appears."*
+
+    **The composition root supplies them, because it is the only place that
+    may see two modules' infrastructure at once.** This module gains no
+    dependency on the mapper, and there is no second copy of the list to
+    drift from the first ([409 §3](../../../../docs/architecture/409-inbound-source-port-contract.md)).
+
+    **Nothing calls this yet.** Its consumer is the runner in
+    `provider_platform` — [409](../../../../docs/architecture/409-inbound-source-port-contract.md)
+    step 4 — and the factory exists because it can now do its whole job, which
+    is the same condition `build_resolve_execution_context` waited for.
+    """
+    return HubSpotCompanySource(HubSpotCompanies(properties))
 
 
 def build_probe_connection(

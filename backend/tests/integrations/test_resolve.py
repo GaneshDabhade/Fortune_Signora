@@ -14,10 +14,10 @@ from modules.integrations.application.resolve import (
     SYSTEM_ACTOR_ID,
     ConnectionUnusable,
     CredentialUnreadable,
-    ExecutionContext,
     ResolveExecutionContext,
 )
 from modules.integrations.domain.connection import ConnectedAccount, ConnectionState
+from modules.integrations.domain.execution import ExecutionContext
 from modules.integrations.domain.grant import (
     Credential,
     GrantExpired,

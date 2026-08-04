@@ -1,8 +1,8 @@
 # ADR-0300: How a customer's own system delivers evidence into the pipeline
 
-> **Status: Proposed.** Written by Lane B, 2026-08-04, on being assigned Epic E1 (CRM OAuth and read) and finding that **no path exists for a customer-held system to reach the intelligence pipeline.** It is proposed rather than accepted because every option below is 🔴 — a ratified port, a closed domain type, or the canonical vocabulary — and none of those is a coding session's to decide (`CLAUDE.md` §20e).
+> **Status: RATIFIED — 2026-08-04, product owner. Option A.**
 >
-> **Nothing was built against any option here.** Epic E1's implementation is stopped at this document, which is what an architectural blocker requires: *"implementation stops, architecture discussion begins."*
+> *Original note, kept because a dated record is not rewritten (§2):* **Written by Lane B, 2026-08-04**, on being assigned Epic E1 (CRM OAuth and read) and finding that **no path exists for a customer-held system to reach the intelligence pipeline.** It was proposed rather than accepted because every option below is 🔴 — a ratified port, a closed domain type, or the canonical vocabulary — and none of those is a coding session's to decide (`CLAUDE.md` §20e). **Nothing was built against any option while it was open**; Epic E1's read stopped at this document, which is what an architectural blocker requires: *"implementation stops, architecture discussion begins."* **It stopped for eleven hours and everything around it shipped meanwhile** — interpretation, acquisition, the grant lifecycle and the vendor read all reached `main` on the same day.
 
 ---
 
@@ -53,7 +53,11 @@ adapter.fetch()  →  raw_provider_record  →  provider.record.received
 
 ## Decision
 
-**Proposed, for the product owner's ruling.**
+**RATIFIED — 2026-08-04, product owner. Option A: the sibling source port.**
+
+> **Recorded here, not decided here.** The ruling is the product owner's, taken on 2026-08-04 alongside [ADR-0401](0401-a-customers-crm-is-not-a-provider.md) and recorded in [`DECISION_PACKS.md`](../../DECISION_PACKS.md); this status line is the ADR catching up with a decision that already exists. **[C-326](../../LANE_COORDINATION.md) is closed by it**, and [409](../409-inbound-source-port-contract.md) is the implementation contract that follows.
+>
+> **§3 remains unruled and is deliberately separable** — what a CRM contributes to the canonical language is its own question, and [409 §5](../409-inbound-source-port-contract.md) measured it as **not on E1's critical path**: `HubSpotCompanyMapper` needs no vocabulary extension.
 
 > **A customer-held system is a *source*, not a *provider*, and it delivers into the same pipeline through a port of its own.**
 

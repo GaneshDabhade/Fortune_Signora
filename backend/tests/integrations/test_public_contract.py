@@ -7,6 +7,12 @@ intended consumer is whatever synchronizes through a connection, and that is
 [ADR-0300](../../../docs/architecture/adr/0300-inbound-customer-systems.md)'s to
 decide — so the contract has been correct and unused since it was written.
 
+**It has a consumer now.** [ADR-0300](../../../docs/architecture/adr/0300-inbound-customer-systems.md)
+was ratified on 2026-08-04 and the contract gained the inbound source port,
+which `provider_platform` will implement against. **The assertions below did not
+soften for it** — the widened `PUBLISHED` set is the question this file exists
+to force, and the answer is recorded beside it.
+
 **A contract with no consumer is exactly the one worth pinning.** Nothing else
 would notice it drifting: an internal type added to `__all__`, an import that
 quietly drags infrastructure along behind it, a name removed while a future
@@ -37,16 +43,39 @@ import modules.integrations.public as public
 #: here is that widening the contract requires editing a test, which is where
 #: somebody asks whether the new name belongs to another module's business.
 PUBLISHED = {
+    # What a consumer needs to know a connection exists and is usable.
     "ConnectedAccount",
     "ConnectionState",
     "ConnectionUnusable",
     "Credential",
     "ExecutionContext",
+    # **The inbound source port, published 2026-08-04** when
+    # [ADR-0300](../../../docs/architecture/adr/0300-inbound-customer-systems.md)
+    # Option A was ratified. **It belongs here on the rule this module already
+    # follows**: a port belongs to the module that owns the language it
+    # represents, and its driver is another module — Provider Platform runs
+    # it, and `integrations` does not know that.
+    #
+    # **Widening this set is the question this test exists to force**, and the
+    # answer is that every name below says *what a consumer may do*, never
+    # *how a credential came to exist*. That line has not moved.
+    "Capability",
+    "IntegrationCapabilityUnsupportedError",
+    "IntegrationFetchRequest",
+    "IntegrationPage",
+    "IntegrationPayloadInvalidError",
+    "IntegrationRecord",
+    "IntegrationSourceAdapter",
+    "IntegrationSourceDescriptor",
+    "IntegrationSourceError",
+    "IntegrationSourcePermanentError",
+    "IntegrationSourceRateLimitedError",
+    "IntegrationSourceTransientError",
 }
 
 
 class TestTheContractIsExactlyWhatItSays:
-    def test_it_publishes_these_five_names_and_no_others(self) -> None:
+    def test_it_publishes_exactly_these_names_and_no_others(self) -> None:
         assert set(public.__all__) == PUBLISHED
 
     def test_every_published_name_resolves(self) -> None:

@@ -21,7 +21,7 @@ from uuid import uuid4
 import httpx
 import pytest
 
-from modules.integrations.application.resolve import ExecutionContext
+from modules.integrations.domain.execution import ExecutionContext
 from modules.integrations.domain.grant import OAUTH2_KIND, Credential
 from modules.integrations.domain.health import ProbeResult
 from modules.integrations.infrastructure.reachability import HubSpotReachability

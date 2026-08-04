@@ -15,6 +15,7 @@ from modules.integrations.application.ports import (
 )
 from modules.integrations.application.refresh import RefreshGrant, RefreshOutcome
 from modules.integrations.domain.connection import ConnectedAccount, ConnectionState
+from modules.integrations.domain.execution import ExecutionContext
 from modules.integrations.domain.grant import Credential, GrantExpired, IntegrationGrant
 
 #: Who a renewal is attributed to when nobody asked for it.
@@ -57,44 +58,6 @@ class ConnectionUnusable(Exception):
     def __init__(self, state: ConnectionState, detail: str) -> None:
         self.state = state
         super().__init__(detail)
-
-
-@dataclass(frozen=True, slots=True)
-class ExecutionContext:
-    """Everything an adapter needs to act, and nothing about how it was
-    obtained.
-
-    **The unit of resolution, deliberately larger than a credential.** Resolving
-    only a credential would couple every future concern — region, throttling,
-    retry policy, audit context — to the one that happened to be first. An
-    adapter receives a context and reads what it needs from it, so adding a
-    field later changes no signature.
-
-    **It carries no vendor identity a caller can branch on.** `integration` is
-    the catalog slug an adapter was chosen *by*; nothing above the adapter is
-    expected to read it, and business behaviour that varied on it would be the
-    vendor leaking upward — the rule the AI Platform already holds.
-    """
-
-    workspace_id: UUID
-    connected_account_id: UUID
-    integration: str
-    #: Where to reach this account, when the vendor is not one fixed host.
-    endpoint: str | None
-    #: What the customer permitted, so a missing scope is a readable refusal.
-    scopes: tuple[str, ...]
-    credential: Credential
-
-    def __repr__(self) -> str:
-        # The credential redacts itself; this stops a careless container from
-        # rendering it by rendering the whole context.
-        return (
-            f"ExecutionContext(workspace_id={self.workspace_id!r}, "
-            f"connected_account_id={self.connected_account_id!r}, "
-            f"integration={self.integration!r}, credential=<redacted>)"
-        )
-
-    __str__ = __repr__
 
 
 class ResolveExecutionContext:
