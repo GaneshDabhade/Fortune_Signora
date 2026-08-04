@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `85845c6`, 2026-08-04.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `7a95403`, 2026-08-04.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `85845c6`, 2026-08-04.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `7a95403`, 2026-08-04.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`85845c6`** — the certified commit itself |
-| **`integration`** | `85845c6` — level with `main` |
-| **Release candidate** | **None pinned.** Cycle 46 promoted **TASK-301 — Global Search explainability**, Lane B's first slice through the full lifecycle today |
-| **Certification** | ✅ [`85845c63f73d`](certification/reports/85845c63f73d.md) · migration head **`0037`** · protocol **v2** |
+| **`main`** | **`7a95403`** — the certified commit itself |
+| **`integration`** | `7a95403` — level with `main` |
+| **Release candidate** | **None pinned.** Cycle 47 promoted **A-i — the decision package reaches a seller**, with a QE tooling fix riding along |
+| **Certification** | ✅ [`7a95403cd88a`](certification/reports/7a95403cd88a.md) · migration head **`0037`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Lane A and Lane B**, on the product owner's rulings — see §1c. **Lane C is working**, and its output is those rulings' inputs |
-| **Validation queue** | **Lane A's A-i slice**, pushed after this cycle's snapshot and therefore cycle 47's input — 8 executable files, needs a rebase. **Lane C is documentation-only** and carries nothing to certify |
-| **Customer value this cycle** | ✅ **Yes.** Searching for a company by a name it no longer goes by now **says so on the row** — instead of returning a result that looks like it does not match what was typed |
+| **Validation queue** | **Empty.** Lane A and Lane B are both building claimed tasks; **Lane C is documentation-only** and carries nothing to certify |
+| **Customer value this cycle** | ✅ **Yes.** A seller can now read **what Signora concluded about an account** — the evidence behind every sentence, what argues against it, what it cannot see, and how to check it. The decision package the account brief has never been able to show |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
-> ✅ **A customer-visible slice, and one correction on the way through.** Lane B's Global Search explainability passed every gate but `mypy --strict`, which caught a test helper annotated narrower than the type it constructs — invisible at runtime, and invisible until the first caller used the type honestly ([B-115](docs/BUGS.md)). **Reported, fixed and revalidated inside an hour**, and the fix carries a docstring saying why, which is what stops it being re-narrowed.
+> ✅ **The third customer-visible slice in a row, and the cycle's finding is QE's own.** Verifying Lane A's claim that A-i adds one Security Invariant, QE ran `pytest -m security_invariant` by hand and read **12 failures — every one of them the invocation's**, against the shared database. The same suite had passed inside `make validate` minutes earlier, and against a migrated disposable database it gives **380**, precisely the number the lane claimed. **The safe path existed only for the whole suite**, so every narrower question left it ([B-116](docs/BUGS.md)). Caught only because a full green run existed to contradict it.
 
-**Repository health:** **3269 backend tests** · **95.06% coverage** *(floor 95)* · **1163 frontend tests** across 55 files · **379 Security Invariants** · mypy strict over **708 files** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **3294 backend tests** · **95.09% coverage** *(floor 95)* · **1163 frontend tests** across 55 files · **380 Security Invariants** · mypy strict over **713 files** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -101,43 +101,52 @@
 
 ---
 
-## 1d · Release summary — 2026-08-04, cycle 46
+## 1d · Release summary — 2026-08-04, cycle 47
 
-**Derived from the promoted commit `85845c6`.** **The first customer-visible slice of the day**, and the first this cycle-count where a lane's correction and QE's revalidation both happened inside an hour.
+**Derived from the promoted commit `7a95403`.** **Two lanes shipped customer-visible slices within the hour**, and the only defect found was in QE's own tooling.
 
 ### What was promoted
 
-**TASK-301 — a search result says what kind of thing it is, and why it matched.** Search matches every name a source has ever claimed and shows the newest, so **a company that renamed came back under a name the customer did not type and could not see on the row.** The surface handled that by refusing to highlight anything — honest, and it left an unexplained row.
+**A-i — a seller can read what Signora concluded about an account**: the evidence behind every sentence, what argues against it, what it cannot see, and how to check it. **The decision package the account brief has never been able to show.** The reasoning, the repository and the event were all already there; what was missing was a way in — a new `interface/` layer and its composition root, and **no domain type at all.**
 
-**The matched name was already read from the database.** It is what `ORDER BY` sorts on, and it was discarded one line later. Carrying it turns the refusal into a disclosure: a row now says *matched "Northwind Traders"* under a company called *Northwind Group*, and **says nothing at all when the name speaks for itself** — a list that explains every row is one people stop reading.
+**B-116** rode along: `make validate` now provisions its own database for a *subset* too, not only the whole suite.
 
-Every result also states **its own type, read from the entity rather than assumed from the endpoint that answered.** An absent type is absent, never an empty group: an empty `people: []` would claim Signora looked and found nothing, which is a different statement and a false one.
+### The cycle's finding is QE's, and it was found by committing it
 
-### One correction, and the class of defect it belongs to
-
-**[B-115](docs/BUGS.md)** — `mypy --strict` failed on a test helper annotated `domain: str` while the `IdentityBinding` it constructs takes an optional domain. **The call site was right**: a `TECHNOLOGY` entity resolved from a technographic provider genuinely has no domain, which is the point of the case it asserts.
-
-> **The runtime was never affected** — the suite passed, because `None` was always legal at runtime. **This is the class `mypy --strict` exists to catch and nothing else can**: a helper that had been quietly lying about its own contract since it was written, found by the first caller to use the type honestly. Lane B widened it and **recorded why**, which is what stops a future reader tidying it back.
-
-### The runbook fix from cycle 45 paid immediately
-
-`make dr` ran first time, with `make up` before it as [B-114](docs/BUGS.md) now requires. **Last cycle it aborted at the baseline** and the output read like a product failure.
-
-### The full gate set, and every stage of it ran
+A-i replaces a Security Invariant and adds one. **Replacing one is normally refused**, so QE went to verify the arithmetic — and ran `pytest -m security_invariant` by hand:
 
 ```
-make validate     migrate → tsc → suite, on a database the run created
-certification     pytest · coverage · invariants · mypy · import-linter · tsc · smoke · scenario
-make up / dr      5 restart stages — nothing lost, 379 invariants against the restarted stack
-reversibility     upgrade head → downgrade base → upgrade head, on a disposable database
+12 failed, 368 passed          ← every failure the invocation's
+380 passed                     ← against a migrated disposable database
 ```
+
+> **This is [B-022](docs/BUGS.md)'s class for the fourth time**, and the first in QE's own hands *after* the tool existed to prevent it. **Twelve fabricated failures against `test_tenancy_policy.py` look exactly like a tenancy defect** — which is how this class nearly cost Lane B a fabricated bug report. It was caught only because a full green run existed to contradict it.
+
+### The invariant replacement was correct, and it is worth recording why
+
+| | |
+|---|---|
+| **The old guard** | `assert not (MODULE_ROOT / "interface").exists()` — right while the module was scaffolded: a directory made for a caller that does not exist is speculative structure |
+| **What A-i changed** | It gave the layer a caller. **The old condition can no longer occur**, and a guard that cannot fail is documentation pretending to be code (§2) |
+| **What replaced it** | The property now at risk — the layer exists **and** something mounts it — plus a genuinely new one: **the module publishes no route that writes** |
+
+**That second one is the valuable one.** Reaching a conclusion is a model call; a `POST` there would be the most tempting shortcut in the product, would violate §7 and Principle 13, and **no import contract would notice.**
+
+### Two rebases, and the difference between them decided the work
+
+| | |
+|---|---|
+| **Lane B, cycle 46** | Rebased mid-validation. Trees compared: **identical apart from two markdown files** → nothing re-run |
+| **Lane A, cycle 47** | Rebased to fast-forward. Trees compared: **the rebase pulled QE's own B-116 change into their tree** → full revalidation, and the combination passed at 3294 |
+
+> **The habit is to diff the trees and let that decide**, adopted after comparing `old_tip..new_tip` gave a misleading answer earlier in the day. It said *don't re-run* once and *re-run* once, and both were right.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3269 backend** · 1163 frontend · **95.06%** · 379 invariants · **708 files typed** · 35 contracts · `tsc` clean and gated |
-| **Release** | **Sixteen consecutive cycles with no process failure** · `promoted == certified` ✓ · **0 commits outside a snapshot** |
+| **Technical** | **3294 backend** · 1163 frontend · **95.09%** · **380 invariants** · **713 files typed** · 35 contracts · `tsc` clean and gated |
+| **Release** | **Seventeen consecutive cycles with no process failure** · `promoted == certified` ✓ · **0 commits outside a snapshot** |
 | **Architecture** | Reachability 0 doorless · migration `0037` **reversible, verified this cycle** · event catalog 1 known drift |
 | **Dependency** | 69 items, 31 closed |
 | **Customer Value** | ✅ **Direct.** A renamed company's search result now explains itself. **The first slice today that a salesperson would notice** |
