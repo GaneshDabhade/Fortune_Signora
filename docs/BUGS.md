@@ -87,7 +87,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | Repository tooling — `infra/certification-guard.py` |
 | **Current assignee** | **QE** |
 | **Severity** | 🟡 — wrong but survivable. **It refuses a valid promotion**, and the operator must know to stand somewhere else |
-| **Status** | **`OPEN`** — found by QE promoting `9a112ae`, 2026-08-04 |
+| **Status** | **`FIXED`** — QE, 2026-08-04. **`VERIFIED` is another lane's** |
 | **Found** | 2026-08-04, the first promotion since RE-03 to carry a migration |
 
 **Steps to reproduce.** With `main` at migration head `0030` and a certified commit that adds `0031`:
@@ -107,6 +107,14 @@ REFUSED — 9a112ae is certified against migration head 0031,
 ```
 
 **Run the identical command from a tree at the certified commit and it passes.** Same SHA, same manifest, opposite verdict.
+
+### Fixed 2026-08-04 — by narrowing which tree counts, not by removing the check
+
+`_migration_head()` now takes the commit it is being asked about and reads **that commit's tree** via `git ls-tree`. With no argument it still globs the working directory, because `make certified` with no argument asks about `main`'s head and that *is* the checked-out tree.
+
+**The expiry rule is untouched.** A record whose conditions have moved still refuses — and a test asserts the comparison survives, because deleting it would have been the easy way to stop the false refusals.
+
+**Verified against the two commits that exposed it:** `9a112ae` reads `0031` and `a955016` reads `0037` from a single working tree, and both now certify from `main` where both previously refused. A control test asserts the two heads genuinely differ, because if they ever converge every other assertion passes while the defect is fully present.
 
 ### The mechanism
 

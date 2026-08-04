@@ -59,9 +59,35 @@ def _git(*args: str) -> str:
     return result.stdout.strip() if result.returncode == 0 else ""
 
 
-def _migration_head() -> str | None:
-    heads = sorted(p.name.split("_")[0] for p in MIGRATIONS.glob("[0-9]*_*.py"))
-    return heads[-1] if heads else None
+def _migration_head(commit: str | None = None) -> str | None:
+    """The highest migration revision — **in the tree being asked about.**
+
+    **Reading the working tree is right for *"is `main` certified?"* and wrong
+    for *"may this commit be promoted?"***, and until 2026-08-04 it did the
+    former in both cases.
+
+    A promotion is by definition performed while standing on the *old* `main`,
+    so a candidate that adds a migration is compared against a head it has not
+    reached yet, and the guard refuses it. **It therefore refused exactly the
+    commits it should scrutinise most carefully** — hit twice in one day, the
+    first migration-bearing promotions since the check was written
+    ([B-110](../docs/BUGS.md)).
+
+    **The expiry rule it enforces is unchanged and must stay**: a record has
+    stopped describing a repository once the conditions it names have moved. The
+    correction is only *which* tree counts as the repository — for a promotion
+    decision, it is the commit being promoted.
+    """
+    if commit is None:
+        heads = sorted(p.name.split("_")[0] for p in MIGRATIONS.glob("[0-9]*_*.py"))
+        return heads[-1] if heads else None
+    listed = _git("ls-tree", "--name-only", commit, f"{MIGRATIONS.relative_to(REPO_ROOT)}/")
+    names = [
+        Path(line).name.split("_")[0]
+        for line in listed.splitlines()
+        if line.strip().endswith(".py") and Path(line).name[:1].isdigit()
+    ]
+    return sorted(names)[-1] if names else None
 
 
 def _runs() -> list[dict[str, object]]:
@@ -407,11 +433,13 @@ def main() -> int:
     # describe the repository, or the record has stopped being about it.
     conditions = run.get("conditions")
     certified_head = conditions.get("migration_head") if isinstance(conditions, dict) else None
-    head = _migration_head()
+    # **The commit's own tree, not the one checked out.** A promotion runs from
+    # `main`, which is at the old head by definition — see `_migration_head`.
+    head = _migration_head(target)
     if certified_head and head and certified_head != head:
         print(
             f"REFUSED — {short} is certified against migration head {certified_head}, "
-            f"and the repository is at {head}.\n"
+            f"and that commit's tree is at {head}.\n"
         )
         print(
             "  `is_certified` reads false by derivation. Nothing is wrong with the\n"
