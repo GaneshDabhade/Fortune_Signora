@@ -276,6 +276,77 @@
 | **Not in scope** | **Any change to `public/`.** It is complete, 39 names, and this slice consumes it rather than growing it. **No new domain concept** — 417's own finding is that the pattern has never once required a domain change across six instances |
 | **On claiming** | **Reuse before extension.** If a type the screen needs appears absent, it is more likely already exported under this module's vocabulary than genuinely missing (§4) |
 
+### TASK-405 · A-iii — a signal ends in a decision
+
+| | |
+|---|---|
+| **Objective** | **Every signal leaves the queue by being actioned, assigned, snoozed or dismissed with a reason** — and the resolution is durable and auditable |
+| **Module** | `signal_engine` — **Lane A's**, via TASK-203 |
+| **Status** | `READY` |
+| **Approved screen** | **Signal Center** — *"a triage queue, not a notification list"* |
+| **Scope** | Resolution state for a signal: **assign · snooze-until · dismiss-with-reason · actioned**, each attributed and timestamped. A workspace-scoped read of the queue by state |
+| **Dependencies** | **None. [O2](DECISION_PACKS.md) does not block this** — ADR-0040 governs notification *delivery*; **this is resolution state, which `signal_engine` owns** |
+| **Affected modules** | `signal_engine` · one migration · `tenancy_policy.py` registration |
+| **Repository reuse** | ⚠️ **`opportunity_engine` already owns the dismissal concept** — `DISMISSED`, *"deliberately distinct from `CLOSED_LOST`… one is feedback about Signora's judgement, the other is a sales outcome."* **A signal-level dismissal is that concept one level down. Reuse the vocabulary; do not define a second one** (§4). ⚠️ **`frontend/lib/state/triage.ts` is a naming collision, not prior art** — it *"counts and groups"* over server-computed facts and resolves nothing |
+| **Non-goals** | **No notification, email, digest or alert rule** — that is ADR-0040 and unratified. **No rule retuning, no precision metrics, no threshold proposals** — the screen shows them; they are a later slice. **No deletion**: *"nothing is deleted — every resolution is auditable"* |
+| **Acceptance** | A signal can be assigned, snoozed and dismissed, each recorded immutably with actor and time · **a dismissal cannot be recorded without a reason** — enforce in the type, not a check · **a snoozed signal returns at the stated time with its original evidence intact** · resolution never mutates the signal or its evidence · new table registered in `tenancy_policy.py` with forced RLS in the creating migration |
+| **Implementation order** | **Third. The largest of the four, and entirely self-contained** |
+| **Validation** | Module suite · **a Security Invariant for the new table** · migration reversible to base and back · a test that resolution history is append-only |
+| **Escalate if** | The reuse of `DISMISSED` requires a cross-module dependency the graph does not have. **Open a `C-` item; do not copy the enum** |
+
+### TASK-406 · A-iv — an ICP criterion is scored against outcomes
+
+| | |
+|---|---|
+| **Objective** | **A criterion states what it predicts, measured against closed-won.** The ICP is declarable today and **nothing tells a customer whether it is any good** |
+| **Module** | `commercial_profile` — **Lane A's**, via TASK-203 |
+| **Status** | `READY` |
+| **Approved screen** | **ICP Builder** — *"every criterion is scored against closed-won evidence, not opinion"* |
+| **Scope** | Per-criterion lift against decided opportunities, with its sample size · the aggregate backtest — **win rate and median cycle, in-ICP versus outside** |
+| **Dependencies** | **None.** `opportunity_engine` `GET /accounts/decided` supplies the outcomes and is published |
+| **Affected modules** | `commercial_profile` · a read of `opportunity_engine`'s **`public/`** — **verify the edge exists in [05](architecture/05-module-dependencies.md) before writing it; if it does not, that is a `C-` item, not a new import** |
+| **Repository reuse** | The ICP declaration, its versioning and `GET /icp-segments` all exist. **`/accounts/decided` exists.** No new persistence is expected — **lift is derived, not stored** (§2, *truth has exactly one authoritative representation*) |
+| **Non-goals** | **No fitted weights, no refit, no drift markers** — the screen shows them; they are a model, not a measurement, and are a later slice. **No TAM funnel** — it needs a market database that does not exist. **No *Decision makers* criteria** — those are person-existence and are blocked by [O1](DECISION_PACKS.md). **No AI suggestions** |
+| **Acceptance** | Each criterion reports lift and **its sample size** · a small sample is visibly small — the screen's own discipline is *"2.2× lift on only 22 deals; treat as directional, not settled"* · **the backtest reports both cohorts, never in-ICP alone** · a criterion no outcome data supports says so rather than reporting `1.0×` |
+| **Implementation order** | **Fourth.** Independent of the other three |
+| **Validation** | Module suite · a test that a zero-sample criterion is reported as unmeasured rather than neutral · **no new table** |
+| **Escalate if** | The measurement requires reading `opportunity_engine`'s tables rather than its `public/`. **That is never permitted** (§5) |
+
+### TASK-409 · Platform Foundation — a `demo` profile in the allocation table
+
+> **Drafted 2026-08-04 after [O4](DECISION_PACKS.md) resolved [C-010](LANE_COORDINATION.md).** **Lane C now owns Platform Foundation work** (`CLAUDE.md` §20e) and claims these like any other lane. From [420](architecture/420-environment-management-proposal.md) §8.
+
+| | |
+|---|---|
+| **Objective** | **`make demo` stops printing two commands for a human to run.** Today it prepares and then prints `uvicorn …` and `npm run dev`; `make review` needs neither |
+| **Module** | `infra/` — **Lane C's**, from 2026-08-04 |
+| **Status** | `READY` |
+| **Scope** | A `demo` entry in `infra/environments.py`'s profile table — slot, purpose, owner, port slot, coexistence. **The model only** |
+| **Dependencies** | **None** |
+| **Repository reuse** | **`environments.py` is Phase 1 of the Environment Framework and already models exactly this.** Adding a profile is a row, not a design |
+| **Non-goals** | **No launcher yet** — that is TASK-410's shape and belongs to the generalisation, not to this row. **No new ports invented**: [`RUNNING.md`](RUNNING.md#running-a-lane) owns the allocation convention |
+| **Acceptance** | `make environments` reports the new profile and its allocation · **no existing profile's allocation changes** · demo no longer runs inside a lane's slots |
+| **Implementation order** | First of the Platform Foundation slices |
+| **Validation** | `make environments --check` · **a test that two profiles cannot share a slot** |
+| **Escalate if** | The allocation convention needs changing rather than extending. **That is `RUNNING.md`'s and QE's** |
+
+### TASK-410 · Platform Foundation — one `make doctor`
+
+| | |
+|---|---|
+| **Objective** | **One command answers *"is this environment ready?"*** Five tools answer it today and nothing asks all five |
+| **Module** | `infra/` — **Lane C's** |
+| **Status** | `READY` |
+| **Scope** | A single target composing the **existing** checks and reporting one verdict |
+| **Dependencies** | **None** |
+| **Repository reuse** | **`workstation.py` · `reachability.py` · `state-check.py` · `runtime-composition.py` · `validate.py` all exist and all pass or fail on their own.** This composes; **it re-implements nothing** |
+| **Non-goals** | **No new check.** ⚠️ **No repair** — `state-check.py` reports and never repairs, *because every inconsistency it finds has more than one correct resolution*, and a doctor that fixes things inherits that problem. **No CI, no scheduling** (§20c-2) |
+| **Acceptance** | One command, one verdict, **every underlying tool still runnable alone** · a failure names which check failed and what to run · **exit code is the verdict** |
+| **Implementation order** | Second. Independent of TASK-409 |
+| **Validation** | A test that the composite fails when any component fails · **that it repairs nothing** |
+| **Escalate if** | Two checks disagree. **That is a finding about the checks, not something the doctor resolves** |
+
+
 ### TASK-900 · The platform learns to compose a module into the runtime
 
 | | |
