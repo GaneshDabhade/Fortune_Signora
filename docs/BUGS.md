@@ -179,7 +179,13 @@ FAIL Required test coverage of 95.0% not reached. Total coverage: 94.27%
 
 ### A QE finding from the same investigation
 
-**`infra/coverage-debt.py` could not read this run's data.** `backend/.coverage` exists and is 1.2 MB, and the tool reports *"No coverage data"* from both the repository root and `backend/`. **The one tool built to make this cheap for a lane did not work when QE reached for it**, which is worth more than the coverage number — a lane that tried it would conclude the gap was not theirs. **QE's to fix, tracked here rather than opened separately, and it does not block Lane A.**
+**`infra/coverage-debt.py` reported *"No coverage data"* while `backend/.coverage` existed and was 1.2 MB.** QE recorded the tool as broken.
+
+**Corrected 2026-08-04, same day.** The tool was not broken. The same command succeeded minutes later — its `coverage json` subprocess had failed transiently under memory pressure, and **every failure inside the reader collapsed into one message advising *"run the suite"***. That is correct for exactly one cause and misleading for the rest.
+
+> **It answered *five minutes of suite* to a problem that was not the suite.** A lane following that advice would have run it twice and learned nothing — and would reasonably conclude the coverage gap was not theirs.
+
+**Fixed by making it say which failure occurred**, and by refusing to advise a re-run when the data is present. Four tests assert the distinction, including that the reader returns a reason rather than `None` — because `None` carries no information and every caller then invents the same wrong one.
 
 ### B-108 · The production image cannot build, because a root config imports a directory the image does not ship
 

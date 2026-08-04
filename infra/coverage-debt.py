@@ -30,15 +30,30 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 BACKEND = REPO_ROOT / "backend"
 
 
-def _coverage_json() -> dict | None:
-    """The data pytest already produced, rendered as JSON.
+def _coverage_json() -> dict | str:
+    """The data pytest already produced, rendered as JSON — or **why not**.
 
     `coverage json` is used rather than parsing the text report because the
     text table truncates long paths, and a truncated path is not something a
     lane can act on.
+
+    **Returns a reason rather than `None`, and that is the whole change.**
+    Every failure here used to collapse into one message — *"No coverage
+    data. cd backend && uv run pytest --cov"* — which is correct advice for
+    exactly one of the causes and misleading for the rest.
+
+    **QE hit it on 2026-08-04 and recorded the tool as broken.** It was not:
+    `backend/.coverage` existed and was 1.2 MB, and the same command succeeded
+    minutes later. The subprocess had failed transiently under memory pressure,
+    and the tool said *run the suite* — **a five-minute answer to a problem that
+    was not the suite.** A lane following that advice would have run it twice
+    and learned nothing.
+
+    **A diagnostic that misdiagnoses is worse than one that says nothing**, and
+    this one was confidently wrong in the direction of wasted work.
     """
     if not (BACKEND / ".coverage").exists():
-        return None
+        return "no `.coverage` file — the suite has not been run with `--cov` here"
     result = subprocess.run(
         ["uv", "run", "coverage", "json", "-o", "-", "--pretty-print"],
         cwd=BACKEND,
@@ -46,12 +61,19 @@ def _coverage_json() -> dict | None:
         text=True,
         check=False,
     )
-    if result.returncode != 0 or not result.stdout.strip():
-        return None
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout).strip().splitlines()
+        return (
+            f"`coverage json` exited {result.returncode}. "
+            f"**The data may be fine** — this is the reader failing, not the run.\n"
+            + "\n".join(f"      {line}" for line in detail[-4:])
+        )
+    if not result.stdout.strip():
+        return "`coverage json` produced nothing, and did not report an error"
     try:
         return json.loads(result.stdout)
-    except json.JSONDecodeError:
-        return None
+    except json.JSONDecodeError as broken:
+        return f"`coverage json` produced output that is not JSON: {broken}"
 
 
 def main() -> int:
@@ -62,12 +84,19 @@ def main() -> int:
     args = parser.parse_args()
 
     data = _coverage_json()
-    if data is None:
-        print(
-            "\n  No coverage data.\n\n"
-            "    cd backend && uv run pytest --cov\n\n"
-            "  This reads what that run leaves behind; it never runs the suite itself."
-        )
+    if isinstance(data, str):
+        print(f"\n  Cannot read coverage:\n\n    {data}\n")
+        if data.startswith("no `.coverage`"):
+            print(
+                "    cd backend && uv run pytest --cov\n\n"
+                "  This reads what that run leaves behind; it never runs the suite itself."
+            )
+        else:
+            # **Do not send somebody to re-run a five-minute suite** when the
+            # data is present and the reader failed. That advice cost QE two
+            # runs on 2026-08-04 and produced a bug row against a working tool.
+            print("  The data is present. Re-running the suite will not help; the reader failed.")
+        print()
         return 1
 
     files = data.get("files", {})
