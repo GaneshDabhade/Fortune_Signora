@@ -234,7 +234,9 @@ class TestAFailedSyncIsMeasuredToo:
         look healthiest exactly when a provider started timing out."""
         recorded = Recorded()
 
-        await _run(StubAdapter(error=ProviderTransientError(ProviderName.APOLLO, "timeout")), recorded)
+        await _run(
+            StubAdapter(error=ProviderTransientError(ProviderName.APOLLO, "timeout")), recorded
+        )
 
         assert int(str(recorded.failed[0]["duration_ms"])) >= 0
 
