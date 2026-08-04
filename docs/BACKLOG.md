@@ -471,6 +471,21 @@
 
 ## SEQUENCED — prepared, and waiting on a named trigger
 
+### TASK-413 · Change-aware validation — `frontend/`-only skips `dr`
+
+| | |
+|---|---|
+| **Status** | **`SEQUENCED`** — **trigger: a measured certification wall-clock that demonstrably delayed a promotion, recorded at least twice** |
+| **Preparation** | [426](architecture/426-change-aware-validation.md) |
+| **Module** | `infra/` — **Lane C's**, under [D-022](DECISION_REGISTER.md) |
+| **Scope** | **One rule.** A slice touching only `frontend/**` skips `make dr`; everything else runs it; **a release candidate always runs it** |
+| **Reuse** | ⚠️ **`make certified ARGS="--next-cycle"` already classifies a diff mechanically, and `certification-guard.py --audit-main` already checks paths rather than commit messages.** **Extend that classifier — do not write a second one.** Two would eventually disagree, and the one nobody maintains would be the one deciding what to skip |
+| **Non-goals** | **No profile system** — a framework for one boundary is speculative abstraction. **No option on `make certify`**: the suite is *computed*, never *passed*. *"A command whose convenient path yields worthless evidence teaches people to use it"* |
+| **Inherited constraint** | **`infra/` is never in the harmless set** — `smoke.sh`, `disaster-recovery.sh`, `state-check.py` and the compose files decide whether a gate passes. **Learned from [B-014](BUGS.md)** |
+| **Acceptance** | The certification record **states which profile ran and why** · a `backend/`, `migrations/`, `infra/` or compose change always runs `dr` · **no flag exists to skip it** · a docs-only change still never opens a cycle |
+| **Why not now** | §14 — **no scalability trigger has fired, and nothing in the repository records `dr` as costly.** The measured bottleneck is that certification is not being *asked for*, not that it is slow |
+
+
 > **Not `WAITING`, because nothing is undecided, and not `READY`, because nothing may be claimed.** These carry a **trigger** rather than an owner: the work begins when the condition fires, and until then it is preparation the repository holds rather than loses.
 
 ### TASK-411 · Usage Accounting — meter what a workspace consumed

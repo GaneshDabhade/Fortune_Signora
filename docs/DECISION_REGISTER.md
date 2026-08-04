@@ -57,6 +57,12 @@
 | **D-038** | **Knowledge Continuity Framework approved, five of eight documents refused as duplication** | `APPROVED` | `lane-c-sync` | Repository documentation | **[423](architecture/423-knowledge-continuity-framework.md).** This register is D-038's first output |
 | **D-039** | **Synchronization by rebuild, not rebase** — abandon the 57-commit branch, replay only what still has value | `APPROVED` | `lane-c-sync` | Repository | **[422](architecture/422-synchronization-plan.md).** Six commits replace fifty-seven |
 
+## 2026-08-04 — validation
+
+| # | Decision | Status | Merged | Affected | Repository impact |
+|---|---|---|---|---|---|
+| **D-053** | **Change-Aware Validation Profiles — principle accepted, scope narrowed, timing deferred.** Mechanical and repository-driven, never discretionary; `make dr` mandatory for platform-affecting changes and every release candidate | `PARTIALLY APPROVED` | `lane-c-sync` | `infra/` · certification | **[426](architecture/426-change-aware-validation.md) · [TASK-413](BACKLOG.md) `SEQUENCED`.** Narrowed to **one rule** — `frontend/`-only skips `dr`. **Reuses `--next-cycle`'s classifier.** Deferred under §14: **no trigger has fired**, and the measured bottleneck is that certification is not being asked for |
+
 ## 2026-08-04 — synchronization recovery
 
 | # | Decision | Status | Merged | Affected | Repository impact |
