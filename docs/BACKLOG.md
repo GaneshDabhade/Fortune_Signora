@@ -155,6 +155,85 @@
 | **On claiming** | **Provider Normalization owns the canonical shape**, not `integrations` — a CRM payload is normalized the same way a provider payload is (§10, the anticorruption layer). **Do not invent a second normalization path**; open a `C-` item if the existing one does not fit |
 | **Escalate if** | The read requires a new bounded context, or a commercial ruling about which CRMs are GA versus enterprise. **Neither is expected — E3 and E4 are the enterprise gate, not E1** |
 
+### TASK-403 · A-i — the Decision Package becomes reachable
+
+> **Drafted by Lane C on the product owner's instruction, 2026-08-04, from [417](architecture/417-executable-slice-audit.md) §4.** **Position here is grouping with the other `4xx` rows, not priority — ordering these four against the rest of `READY` is the product owner's.**
+
+| | |
+|---|---|
+| **Objective** | **A customer can read a Decision Package.** The module that *"concludes"* has produced them since M10 and **nothing can reach one** |
+| **Module** | `ai_reasoning_engine` — **Lane A's**, via TASK-202 |
+| **Status** | `READY` |
+| **Approved screen** | **AI Copilot** — the *Reason* verb, and the reasoning/evidence/confidence/sources apparatus |
+
+> ⚠️ **This slice is larger than [417](architecture/417-executable-slice-audit.md) §2c implied, and Lane C corrects it here rather than letting the claiming lane find it.** 417 described *"an interface layer over a module's own `public/`."* **`ai_reasoning_engine/public/__init__.py` ends `__all__: list[str] = []`** — *"nothing here is exported yet: the module is scaffolded and its boundary contracts are registered."* **There is nothing to expose yet.**
+
+| | |
+|---|---|
+| **Scope** | **Two ordered parts, one slice.** ① Publish the Decision Package read contract through `public/` — 🟠, the module's own. ② An `interface/` layer over it, modelled on `ai_research_engine/interface/` (`errors` · `handlers` · `router` · `schemas`) |
+| **Dependencies** | **None.** [C-222](LANE_COORDINATION.md) governs *live inference*; **reading a package that already exists needs no model call** |
+| **Affected modules** | `ai_reasoning_engine` only. One composition file, one router registration |
+| **Repository reuse** | `ai_research_engine/interface/` **is the pattern** — four files, `202`/`200` split, `CurrentWorkspace`, purpose-built response schemas. `knowledge_graph/interface/router.py` for the batch argument |
+| **Non-goals** | **No recommendation, no message, no cross-account ranking, no next action** — the module's own docstring refuses all four and names M11 as their owner. **No live inference. No prompt change. No new event. No write path** |
+| **Acceptance** | A stored Decision Package is readable over HTTP, workspace-scoped, with **all fifteen parts** and their provenance · **the three model-authored parts are distinguishable from the twelve derived** ([ADR-0030](architecture/adr/0030-deterministic-explainability.md)) · `lint-imports` and `mypy --strict` clean · no `UPDATE` path |
+| **Implementation order** | **First of the four.** ① then ② |
+| **Validation** | Module suite · an API test asserting workspace isolation returns `404` not `403` · **a test that the surface exposes no recommendation or action field** — the refusal is the design, so assert it |
+| **Escalate if** | Publishing the contract turns out to require a domain change, **or ② proves large enough to be its own slice** — split it and open a `C-` item rather than growing this row |
+
+### TASK-404 · A-ii — Sales Engagement reaches a customer
+
+| | |
+|---|---|
+| **Objective** | **The approach, its brief, its risks and its next actions become readable.** Built, tested, prompt-versioned, evaluated — **and unreachable** |
+| **Module** | `sales_engagement` — **Lane A's**, which built it ([50-sales-engagement.md](architecture/50-sales-engagement.md)) |
+| **Status** | `READY` |
+| **Approved screens** | **AI Copilot** · **Opportunity Intelligence** — *"ranked by expected effect on this quarter · you approve, Signora drafts"* |
+| **Scope** | An `interface/` layer over the **existing** `public/`. **Read-only** |
+| **Dependencies** | **None** |
+| **Affected modules** | `sales_engagement` only |
+| **Repository reuse** | **`public/` already exports what the screens render** — `Approach`, `ApproachBrief`, `ApproachReasoning`, `NextAction`, `Recommendation`, `Risk`, `RiskKind`, `ProductFit`, `FitDimension`, `FitReason`, `RankedRole`, `Evidence`, `Passage`, `STALE_AFTER_DAYS`. **Nothing in `domain/` or `application/` changes.** `ai_research_engine/interface/` is the pattern |
+| **Non-goals** | **No send, no draft-commit, no approval workflow** — *"nothing sends without your approval"* is a later slice and belongs to whoever owns the send. **No new model call. No ranking invented here** — the module already refuses cross-account urgency (`50-sales-engagement.md` §22) |
+| **Acceptance** | An approach is readable per account, workspace-scoped · **`STALE_AFTER_DAYS` is honoured and staleness is visible**, never silently served · every rendered claim carries its `Evidence` · `lint-imports` and `mypy --strict` clean |
+| **Implementation order** | **Second.** Independent of TASK-403 — order is preference, not dependency |
+| **Validation** | Module suite · API test for workspace isolation · **a test that a stale approach is marked rather than hidden** |
+| **Escalate if** | A screen needs a field `public/` does not export. **Do not widen `public/` to fit a layout** |
+
+### TASK-405 · A-iii — a signal ends in a decision
+
+| | |
+|---|---|
+| **Objective** | **Every signal leaves the queue by being actioned, assigned, snoozed or dismissed with a reason** — and the resolution is durable and auditable |
+| **Module** | `signal_engine` — **Lane A's**, via TASK-203 |
+| **Status** | `READY` |
+| **Approved screen** | **Signal Center** — *"a triage queue, not a notification list"* |
+| **Scope** | Resolution state for a signal: **assign · snooze-until · dismiss-with-reason · actioned**, each attributed and timestamped. A workspace-scoped read of the queue by state |
+| **Dependencies** | **None. [O2](DECISION_PACKS.md) does not block this** — ADR-0040 governs notification *delivery*; **this is resolution state, which `signal_engine` owns** |
+| **Affected modules** | `signal_engine` · one migration · `tenancy_policy.py` registration |
+| **Repository reuse** | ⚠️ **`opportunity_engine` already owns the dismissal concept** — `DISMISSED`, *"deliberately distinct from `CLOSED_LOST`… one is feedback about Signora's judgement, the other is a sales outcome."* **A signal-level dismissal is that concept one level down. Reuse the vocabulary; do not define a second one** (§4). ⚠️ **`frontend/lib/state/triage.ts` is a naming collision, not prior art** — it *"counts and groups"* over server-computed facts and resolves nothing |
+| **Non-goals** | **No notification, email, digest or alert rule** — that is ADR-0040 and unratified. **No rule retuning, no precision metrics, no threshold proposals** — the screen shows them; they are a later slice. **No deletion**: *"nothing is deleted — every resolution is auditable"* |
+| **Acceptance** | A signal can be assigned, snoozed and dismissed, each recorded immutably with actor and time · **a dismissal cannot be recorded without a reason** — enforce in the type, not a check · **a snoozed signal returns at the stated time with its original evidence intact** · resolution never mutates the signal or its evidence · new table registered in `tenancy_policy.py` with forced RLS in the creating migration |
+| **Implementation order** | **Third. The largest of the four, and entirely self-contained** |
+| **Validation** | Module suite · **a Security Invariant for the new table** · migration reversible to base and back · a test that resolution history is append-only |
+| **Escalate if** | The reuse of `DISMISSED` requires a cross-module dependency the graph does not have. **Open a `C-` item; do not copy the enum** |
+
+### TASK-406 · A-iv — an ICP criterion is scored against outcomes
+
+| | |
+|---|---|
+| **Objective** | **A criterion states what it predicts, measured against closed-won.** The ICP is declarable today and **nothing tells a customer whether it is any good** |
+| **Module** | `commercial_profile` — **Lane A's**, via TASK-203 |
+| **Status** | `READY` |
+| **Approved screen** | **ICP Builder** — *"every criterion is scored against closed-won evidence, not opinion"* |
+| **Scope** | Per-criterion lift against decided opportunities, with its sample size · the aggregate backtest — **win rate and median cycle, in-ICP versus outside** |
+| **Dependencies** | **None.** `opportunity_engine` `GET /accounts/decided` supplies the outcomes and is published |
+| **Affected modules** | `commercial_profile` · a read of `opportunity_engine`'s **`public/`** — **verify the edge exists in [05](architecture/05-module-dependencies.md) before writing it; if it does not, that is a `C-` item, not a new import** |
+| **Repository reuse** | The ICP declaration, its versioning and `GET /icp-segments` all exist. **`/accounts/decided` exists.** No new persistence is expected — **lift is derived, not stored** (§2, *truth has exactly one authoritative representation*) |
+| **Non-goals** | **No fitted weights, no refit, no drift markers** — the screen shows them; they are a model, not a measurement, and are a later slice. **No TAM funnel** — it needs a market database that does not exist. **No *Decision makers* criteria** — those are person-existence and are blocked by [O1](DECISION_PACKS.md). **No AI suggestions** |
+| **Acceptance** | Each criterion reports lift and **its sample size** · a small sample is visibly small — the screen's own discipline is *"2.2× lift on only 22 deals; treat as directional, not settled"* · **the backtest reports both cohorts, never in-ICP alone** · a criterion no outcome data supports says so rather than reporting `1.0×` |
+| **Implementation order** | **Fourth.** Independent of the other three |
+| **Validation** | Module suite · a test that a zero-sample criterion is reported as unmeasured rather than neutral · **no new table** |
+| **Escalate if** | The measurement requires reading `opportunity_engine`'s tables rather than its `public/`. **That is never permitted** (§5) |
+
 ### TASK-900 · The platform learns to compose a module into the runtime
 
 | | |

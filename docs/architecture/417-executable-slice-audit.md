@@ -100,7 +100,7 @@
 
 | | Slice | Why this lane | Reuse |
 |---|---|---|---|
-| **A-i** | **`interface/` for `ai_reasoning_engine`** | **Already holds it** — TASK-202, Epic G | The module's own `public/` |
+| **A-i** | **`interface/` for `ai_reasoning_engine`** | **Already holds it** — TASK-202, Epic G | ⚠️ **Corrected in [TASK-403](../BACKLOG.md).** Its `public/` ends `__all__: list[str] = []` — **there is nothing to expose yet.** The slice is *publish the contract, then expose it*, and is larger than this row implied |
 | **A-ii** | **`interface/` for `sales_engagement`** | **Built it** (`50-sales-engagement.md`) | 25+ exported types, unchanged |
 | **A-iii** | **Signal Center triage state** | **Holds `signal_engine`** via Epic D | `opportunity_engine`'s dismissal vocabulary — **reuse, do not redefine** |
 | **A-iv** | **ICP criterion lift and backtest** | **Holds `commercial_profile`** via Epic D | `/accounts/decided` · existing ICP declaration |
