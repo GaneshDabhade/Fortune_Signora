@@ -13,12 +13,12 @@
 | **API routes** — `app/api/**/route.ts` | 6 | **KEEP** | Auth callback, token, health, integration OAuth start/callback, proxy. **Not presentational. The approved design changes none of them** |
 | **`lib/` — client, auth, query, state, design** | 33 | **KEEP** | A redesign does not touch a query key, a JWT verifier or a permission gate. **The single largest KEEP in the repository** |
 | **Query hooks** — `lib/query/hooks/**` | 8 | **KEEP** | Typed against backend contracts, not against layout |
-| **Auth pages and forms** — `(auth)/**` | 11 | **KEEP** | **The approved design project contains no authentication screens.** Nothing supersedes them |
+| **Auth pages and forms** — `(auth)/**` | 11 | ⚠️ **PENDING** | **Corrected 2026-08-04.** This read `KEEP`, on the grounds that *"the approved design project contains no authentication screens."* **True of the first project, false of the programme** — [415](415-platform-foundation-incoming.md) records an incoming **Authentication** module specifying 16 screens. **Not KEEP, not yet REPLACE** |
 | **`components/ui/`** | 9 | **REPLACE** | Design System v2 specifies **18 canonical components**. These nine converge into that set; the directory stays |
 | **Feature components** — `commercial/`, `intelligence/`, `integrations/`, `shell/`, `timeline/`, `feedback/`, `workspace/`, `team/` | 37 | **REPLACE** | Each backs a capability the approved design keeps. **The capability survives; the markup converges** |
 | **App pages** — `(app)/**/page.tsx` | 7 | **REPLACE** | Overview, business, accounts/[id], settings ×4. Every one has an approved successor |
 | **Layouts and shells** | 4 | **REPLACE** | The approved **App Shell** is a 22-section specification. **This is where the largest single change lands** |
-| **`error.tsx` · `not-found.tsx`** | 2 | **REPLACE** | App Shell §17 specifies error pages render *inside* the shell |
+| **`error.tsx` · `not-found.tsx`** | 2 | **REPLACE** | App Shell §17 specifies error pages render *inside* the shell. **The incoming Module 10 also specifies them** — [415](415-platform-foundation-incoming.md) §3. The classification stands; the owner does not |
 | | | **DELETE: 0** | — |
 
 > **Nothing is classified `DELETE`, and the wording *Superseded by Approved UI Specification* is applied nowhere.** It is reserved for functionality genuinely replaced, and **no shipped screen has an approved successor that removes it.** Applying the phrase early would make it meaningless at the point it is actually needed.

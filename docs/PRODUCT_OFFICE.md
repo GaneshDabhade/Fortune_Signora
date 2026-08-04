@@ -314,6 +314,18 @@ Decisions required    what the product owner must rule before it can start
 
 **Cleanup happens when a replacement exists, never in anticipation of one.** [413](architecture/413-migration-inventory.md) classifies 104 frontend artifacts and 87 tests and **deletes none of them today** — because an inventory is a plan, and a plan executed early is just deletion with a document attached.
 
+### 5c · A design that is coming is not a design that is missing
+
+**Recorded 2026-08-04 — the Transition Update. Ten platform-foundation modules are being produced; [415](architecture/415-platform-foundation-incoming.md) holds the line.**
+
+> **Lane C does not pause, and it does not speculate.** For an area whose design is *announced but not yet delivered*, it prepares **everything that does not depend on the design** — existing backend capability, dependencies, architecture, reuse, missing APIs, domain requirements — and **finalises nothing that does.**
+
+**No temporary UI. No placeholder screen specification. No proposed alternative.** A placeholder becomes the contract before the real one arrives, which is `no-mock-data.test.tsx`'s argument applied one layer up: *"the mock becomes the contract, the real model arrives, and the page is rewritten twice."*
+
+**The most valuable thing to produce in this window is not a package — it is a conflict found early.** [415](architecture/415-platform-foundation-incoming.md) §3 records seven surfaces the incoming modules share with the already-approved App Shell and Settings. **Raising that before either design is ratified costs a sentence; raising it after costs a reconciliation.**
+
+**A pending design can also make an open decision *less* urgent, and saying so is part of the job.** O2 was ready to sign; **a Notification Center module is being designed, so Lane C recommends waiting.** An ADR amended in its first week costs the ADR's authority, and **nothing is lost by waiting for a design that was announced.**
+
 ---
 
 ## 6 · Feature decomposition
