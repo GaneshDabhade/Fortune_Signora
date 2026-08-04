@@ -18,8 +18,6 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
-import pytest
-
 from modules.provider_platform.application.ports import NoPacer, NoSyncReporter
 from modules.provider_platform.application.run_sync import (
     RunProviderSync,
@@ -141,8 +139,6 @@ async def _run(adapter: StubAdapter, repository: FakeRepository) -> None:
         correlation_id=uuid4(),
     )
 
-
-pytestmark = pytest.mark.anyio
 
 
 class TestASuccessfulReadRecordsThatItHappened:
