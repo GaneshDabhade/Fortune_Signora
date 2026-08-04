@@ -610,8 +610,8 @@ class TestFindingAnAccountByName:
 
         found = await self._queries(repository).find_accounts(WORKSPACE, "databr", limit=10)
 
-        assert [identity.entity_id for identity in found] == [ids["Databricks, Inc."]]
-        assert found[0].name == "Databricks, Inc."
+        assert [match.account.entity_id for match in found] == [ids["Databricks, Inc."]]
+        assert found[0].account.name == "Databricks, Inc."
 
     async def test_a_company_is_found_under_the_name_it_used_to_have(self) -> None:
         """**The behaviour, not a defect.** Matching claims rather than the
@@ -632,8 +632,8 @@ class TestFindingAnAccountByName:
 
         found = await self._queries(repository).find_accounts(WORKSPACE, "Traders", limit=10)
 
-        assert [identity.entity_id for identity in found] == [ids["Northwind Traders"]]
-        assert found[0].name == "Northwind Group", "shown under what it is called now"
+        assert [match.account.entity_id for match in found] == [ids["Northwind Traders"]]
+        assert found[0].account.name == "Northwind Group", "shown under what it is called now"
 
     async def test_a_blank_search_finds_nothing_rather_than_everything(self) -> None:
         """**The failure that would look like a feature.** An empty pattern
@@ -674,7 +674,110 @@ class TestFindingAnAccountByName:
 
         found = await self._queries(repository).find_accounts(WORKSPACE, "acme", limit=10)
 
-        assert [identity.entity_id for identity in found] == [entity.id]
+        assert [match.account.entity_id for match in found] == [entity.id]
+
+    async def test_the_first_identity_to_name_it_is_the_one_that_explains_it(self) -> None:
+        """Two providers matched; the row can only carry one explanation, and
+        it must be the better-ranked one. Taking the last would show the worse
+        match as the reason the row is there."""
+        repository = FakeGraphRepository()
+        entity = Entity.create(workspace_id=WORKSPACE, kind=EntityKind.COMPANY, now=NOW)
+        repository.entities[entity.id] = entity
+        for provider, external_id in (("apollo", "acme-a"), ("coresignal", "acme-c")):
+            repository.bindings.append(
+                bound_binding(entity, provider=provider, external_id=external_id, domain="acme.example")
+            )
+        self._claims = [
+            claim(
+                provider="coresignal",
+                external_id="acme-c",
+                attribute=ClaimAttribute.LEGAL_NAME,
+                value="Acme Worldwide",
+            ),
+            claim(
+                provider="apollo",
+                external_id="acme-a",
+                attribute=ClaimAttribute.LEGAL_NAME,
+                value="Acme Corporation",
+            ),
+        ]
+
+        found = await self._queries(repository).find_accounts(WORKSPACE, "acme", limit=10)
+
+        # "Acme Corporation" sorts before "Acme Worldwide", so Apollo's
+        # identity is the one the ranking put first.
+        assert [(m.matched_name, m.matched_source) for m in found] == [
+            ("Acme Corporation", "apollo")
+        ]
+
+    async def test_a_result_says_which_name_matched(self) -> None:
+        """**The disclosure that replaces a refusal.** The surface would not
+        highlight a matched substring because the match is sometimes not in
+        the displayed text — so the row said nothing at all. Carrying the
+        matched name lets it say *matched «Northwind Traders»* instead."""
+        repository, _ = self._named(("apollo", "nw", "Northwind Traders"))
+        self._claims.append(
+            claim(
+                provider="apollo",
+                external_id="nw",
+                attribute=ClaimAttribute.LEGAL_NAME,
+                value="Northwind Group",
+                observed_at=datetime(2026, 6, 1, tzinfo=UTC),
+            )
+        )
+
+        found = await self._queries(repository).find_accounts(WORKSPACE, "Traders", limit=10)
+
+        assert found[0].matched_name == "Northwind Traders"
+        assert found[0].account.name == "Northwind Group"
+        assert found[0].is_renamed, "matched under a name it is not shown under"
+        assert found[0].matched_source == "apollo"
+
+    async def test_a_result_matched_under_its_own_name_needs_no_explanation(self) -> None:
+        """`is_renamed` is what stops every row being annotated. A surface
+        that explains a match nobody questioned teaches people to stop
+        reading the explanations."""
+        repository, _ = self._named(("apollo", "dbx", "Databricks, Inc."))
+
+        found = await self._queries(repository).find_accounts(WORKSPACE, "databr", limit=10)
+
+        assert found[0].matched_name == "Databricks, Inc."
+        assert not found[0].is_renamed
+
+    async def test_a_result_says_what_kind_of_thing_it_is(self) -> None:
+        """**Read from the entity, never assumed from the endpoint.** A caller
+        grouping results by type must be told the type — inferring it from
+        which URL was called breaks the first time one URL answers for two
+        kinds, and puts the graph's vocabulary in a caller's hands."""
+        repository, _ = self._named(("apollo", "dbx", "Databricks, Inc."))
+
+        found = await self._queries(repository).find_accounts(WORKSPACE, "databr", limit=10)
+
+        assert found[0].kind is EntityKind.COMPANY
+
+    async def test_the_kind_is_the_entitys_and_not_a_constant(self) -> None:
+        """The assertion above passes for a hardcoded `company` too. This one
+        does not: the same search over an entity of another kind must report
+        that kind, which is what makes the field a derivation rather than a
+        decoration (§2)."""
+        repository = FakeGraphRepository()
+        entity = Entity.create(workspace_id=WORKSPACE, kind=EntityKind.TECHNOLOGY, now=NOW)
+        repository.entities[entity.id] = entity
+        repository.bindings.append(
+            bound_binding(entity, provider="builtwith", external_id="snowflake", domain=None)
+        )
+        self._claims = [
+            claim(
+                provider="builtwith",
+                external_id="snowflake",
+                attribute=ClaimAttribute.LEGAL_NAME,
+                value="Snowflake",
+            )
+        ]
+
+        found = await self._queries(repository).find_accounts(WORKSPACE, "snow", limit=10)
+
+        assert found[0].kind is EntityKind.TECHNOLOGY
 
     async def test_an_identity_that_resolved_to_nothing_is_not_a_result(self) -> None:
         """An ambiguous identity binds to no entity, so there is no account to

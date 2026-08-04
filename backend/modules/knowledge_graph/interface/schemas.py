@@ -15,7 +15,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from modules.knowledge_graph.application.queries import AccountIdentity
+from modules.knowledge_graph.application.queries import AccountIdentity, AccountMatch
+from modules.knowledge_graph.domain.identity import EntityKind
 from modules.knowledge_graph.domain.naming import NameAgreement
 
 
@@ -76,4 +77,52 @@ class AccountIdentityResponse(BaseModel):
         )
 
 
-__all__ = ["AccountIdentityResponse"]
+class SearchResultResponse(BaseModel):
+    """One search result: **the account, its type, and why it is here.**
+
+    **A wrapper rather than three more fields on `AccountIdentityResponse`.**
+    That schema answers *"who is this account?"* and is returned by two other
+    surfaces which have no match to explain; giving it `matched_name` would
+    make the field null on every one of them, and a field that is null
+    wherever it is not a search is a field in the wrong schema.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    account: AccountIdentityResponse = Field(
+        description="Who this account is — the same shape the accounts list and "
+        "the brief return, so a caller reads one identity everywhere."
+    )
+    result_type: EntityKind = Field(
+        description="What kind of thing this result is. Group your results by it "
+        "rather than by which endpoint you called: this one answers for companies "
+        "today, and a type Signora cannot search yet is absent rather than returned "
+        "empty — an empty group would claim it looked and found nothing."
+    )
+    matched_name: str = Field(
+        description="The name that actually matched, exactly as a source claimed it. "
+        "Often the same as the name being displayed; when it differs, this is why the "
+        "row is in the list — a company found under a name it no longer goes by."
+    )
+    matched_source: str = Field(
+        description="Which provider claimed the matched name. Read it to weigh a "
+        "match you did not expect."
+    )
+    is_renamed: bool = Field(
+        description="Whether this row matched under a name it is not being shown "
+        "under. The one case worth annotating in a list; the rest need no explanation, "
+        "and a surface that annotates every row teaches people to stop reading it."
+    )
+
+    @classmethod
+    def from_domain(cls, match: AccountMatch) -> "SearchResultResponse":
+        return cls(
+            account=AccountIdentityResponse.from_domain(match.account),
+            result_type=match.kind,
+            matched_name=match.matched_name,
+            matched_source=match.matched_source,
+            is_renamed=match.is_renamed,
+        )
+
+
+__all__ = ["AccountIdentityResponse", "SearchResultResponse"]

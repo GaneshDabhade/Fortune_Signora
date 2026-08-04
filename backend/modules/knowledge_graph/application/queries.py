@@ -24,6 +24,7 @@ from uuid import UUID
 from modules.knowledge_graph.application.ports import GraphRepository
 from modules.knowledge_graph.domain.identity import (
     Entity,
+    EntityKind,
     IdentityBinding,
     Relationship,
     ResolutionDecision,
@@ -186,6 +187,59 @@ class AccountIdentity:
         return self.agreement is NameAgreement.DISPUTED
 
 
+@dataclass(frozen=True, slots=True)
+class AccountMatch:
+    """A search result: **an account, what kind of thing it is, and why it is
+    here.**
+
+    ### Why `matched_name` exists
+
+    The search matches every name a source has ever given; the product
+    displays the newest one. **So a company that renamed comes back under a
+    name the customer did not type and cannot see on the row.** The surface
+    handled that by refusing to highlight anything — *"highlighting would
+    promise the match is in the text, and sometimes it is not"* — which is
+    honest and leaves the customer with an unexplained row.
+
+    **Carrying the matched name replaces a refusal with a disclosure.** The
+    row can say *matched «Facebook, Inc.»* exactly when that is not what it
+    is showing, and stay silent when the name speaks for itself.
+
+    ### Why `kind` is read and not assumed
+
+    A caller grouping results by type must be told the type. Deriving it
+    from *which endpoint was called* is the assumption that breaks the first
+    time one endpoint answers for two kinds — and it puts the graph's own
+    vocabulary in a caller's hands rather than in the graph's.
+
+    ### What is deliberately absent
+
+    **A score.** The order is the matched name, ascending; it is derivable,
+    repeatable and stated. A number here would be a ranking nobody could
+    defend, which is the door `MatchStrength` closes in resolution and the
+    same one stays shut here.
+    """
+
+    account: AccountIdentity
+    kind: EntityKind
+    #: The name that matched, exactly as some source claimed it.
+    matched_name: str
+    #: Which source claimed it. **The provider, never a person** — a claim is
+    #: made by a source about the world, and naming it is what lets a
+    #: customer weigh the match.
+    matched_source: str
+
+    @property
+    def is_renamed(self) -> bool:
+        """Whether the row matched under a name it is not being shown under.
+
+        **The one case worth explaining to a customer**, and the reason the
+        surface can stay quiet the rest of the time: a search that found what
+        it looks like it found needs no annotation.
+        """
+        return self.matched_name != self.account.name
+
+
 class GraphQueries:
     """Read-only. Every method is scoped to one workspace, explicitly."""
 
@@ -262,18 +316,29 @@ class GraphQueries:
 
     async def find_accounts(
         self, workspace_id: UUID, text: str, *, limit: int
-    ) -> tuple[AccountIdentity, ...]:
-        """Accounts some source has called something matching `text`.
+    ) -> tuple[AccountMatch, ...]:
+        """Accounts some source has called something matching `text`, **each
+        saying what kind of thing it is and which name matched**.
 
         **Three steps, and none of them is a join across a module boundary.**
         Provider Normalization finds the identities a `legal_name` claim
-        matched; this module maps those to accounts through its own bindings;
-        `identities()` then resolves each account's *displayed* name.
+        matched, and says what each was named; this module maps those to
+        accounts through its own bindings; `identities()` then resolves each
+        account's *displayed* name.
 
         **So a result can be named something other than what was searched
         for**, and that is the behaviour rather than a defect: a company that
         renamed is found by its old name and shown under its new one, which is
         precisely what somebody who has not heard about the rename needs.
+        **The matched name travels with the row so the difference can be
+        shown** instead of leaving the customer to wonder.
+
+        **Ranking is the matched name, ascending, and nothing else.** It is
+        decided by Provider Normalization's ordering and preserved through
+        both later steps — so the same query returns the same rows in the same
+        order on every run, and the field the order was computed from is on
+        every row. **That is what makes it explicable**; a relevance score
+        would make it neither.
 
         **Blank input finds nothing, and does not find everything.** An empty
         pattern matches every claim in the workspace, so the guard is here
@@ -291,16 +356,36 @@ class GraphQueries:
         if not text.strip():
             return ()
 
-        subjects = await self._claims.subjects_named_like(text, limit=limit)
-        entity_ids = await self._repository.entities_for_subjects(workspace_id, subjects)
-        if not entity_ids:
+        matches = await self._claims.subjects_named_like(text, limit=limit)
+        resolved = await self._repository.entities_for_subjects(
+            workspace_id, [match.subject for match in matches]
+        )
+        if not resolved:
             return ()
 
-        found = await self.identities(workspace_id, entity_ids[:limit])
+        resolved = resolved[:limit]
+        found = await self.identities(
+            workspace_id, tuple(subject.entity_id for subject in resolved)
+        )
+        # The name each identity matched under, keyed the way the binding
+        # names it. Built from the same list the resolution walked, so a
+        # result can never be annotated with another identity's name.
+        named = {(match.subject.provider, match.subject.provider_external_id): match.name
+                 for match in matches}
+
         # `identities()` returns a mapping, and a mapping has no order worth
         # relying on. The order that means something is the one the match
         # produced, so it is re-imposed here.
-        return tuple(found[entity_id] for entity_id in entity_ids[:limit] if entity_id in found)
+        return tuple(
+            AccountMatch(
+                account=found[subject.entity_id],
+                kind=subject.kind,
+                matched_name=named[(subject.provider, subject.provider_external_id)],
+                matched_source=subject.provider,
+            )
+            for subject in resolved
+            if subject.entity_id in found
+        )
 
     async def relationships(
         self,

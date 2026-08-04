@@ -30,6 +30,7 @@ from modules.knowledge_graph.domain.identity import (
     ResolutionOutcome,
     ResolutionReason,
     ResolutionRule,
+    ResolvedSubject,
 )
 from modules.knowledge_graph.domain.resolution import ResolutionCandidate
 from modules.provider_normalization.public import SubjectRef
@@ -281,16 +282,24 @@ class SqlGraphRepository:
 
     async def entities_for_subjects(
         self, workspace_id: UUID, subjects: Sequence[SubjectRef]
-    ) -> tuple[UUID, ...]:
+    ) -> tuple[ResolvedSubject, ...]:
         if not subjects:
             return ()
         rows = await self._session.execute(
+            # **Joined to the entity for its kind, rather than read in a
+            # second pass.** A caller grouping results by type needs it for
+            # every row, and fetching it per account is the N+1 §14 calls a
+            # defect at write time.
             select(
                 IdentityBindingModel.entity_id,
                 IdentityBindingModel.provider,
                 IdentityBindingModel.provider_external_id,
-            ).where(
+                EntityModel.kind,
+            )
+            .join(EntityModel, EntityModel.id == IdentityBindingModel.entity_id)
+            .where(
                 IdentityBindingModel.workspace_id == workspace_id,
+                EntityModel.workspace_id == workspace_id,
                 IdentityBindingModel.superseded_by.is_(None),
                 IdentityBindingModel.entity_id.is_not(None),
                 tuple_(
@@ -304,14 +313,31 @@ class SqlGraphRepository:
         # here, or letting the planner decide, would make the same query
         # return the same accounts in a different order on a different day.
         found = {
-            (provider, external_id): entity_id
-            for entity_id, provider, external_id in rows.all()
+            (provider, external_id): (entity_id, kind)
+            for entity_id, provider, external_id, kind in rows.all()
         }
-        ordered: list[UUID] = []
+        # **The first identity to name an account is the one that explains
+        # it.** Two of a company's providers can both match one search, and
+        # the earlier is the better-ranked — collapsing to the later would
+        # quietly show a worse match as the reason.
+        ordered: list[ResolvedSubject] = []
+        seen: set[UUID] = set()
         for subject in subjects:
-            entity_id = found.get((subject.provider, subject.provider_external_id))
-            if entity_id is not None and entity_id not in ordered:
-                ordered.append(entity_id)
+            resolved = found.get((subject.provider, subject.provider_external_id))
+            if resolved is None:
+                continue
+            entity_id, kind = resolved
+            if entity_id in seen:
+                continue
+            seen.add(entity_id)
+            ordered.append(
+                ResolvedSubject(
+                    provider=subject.provider,
+                    provider_external_id=subject.provider_external_id,
+                    entity_id=entity_id,
+                    kind=EntityKind(kind),
+                )
+            )
         return tuple(ordered)
 
     async def decisions_for_entity(

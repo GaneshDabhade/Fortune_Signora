@@ -27,6 +27,13 @@ import { cn } from '@/lib/design/cn';
  * matched substring: highlighting would promise the match is in the text, and
  * sometimes it is not.
  *
+ * **That refusal is now a disclosure.** The server says which name matched, so
+ * a row that came back under a name it is not being shown under says so —
+ * *matched «Northwind Traders»* under a company now called Northwind Group.
+ * **Only those rows are annotated.** A row that matched under its own name
+ * needs no explanation, and a list that explains every row is one people stop
+ * reading.
+ *
  * ### The keyboard is the point, not an accessibility afterthought
  *
  * A seller who has learned this control never touches the mouse for it. **⌘K**
@@ -98,7 +105,7 @@ export function AccountSearch() {
     } else if (event.key === 'Enter') {
       event.preventDefault();
       const chosen = rows[active];
-      if (chosen) go(chosen.account_id);
+      if (chosen) go(chosen.account.account_id);
     }
   }
 
@@ -139,21 +146,34 @@ export function AccountSearch() {
         >
           {rows.map((row, index) => (
             <button
-              key={row.account_id}
+              key={row.account.account_id}
               type="button"
               role="option"
               aria-selected={index === active}
               onMouseEnter={() => setActive(index)}
-              onClick={() => go(row.account_id)}
+              onClick={() => go(row.account.account_id)}
               className={cn(
-                'block w-full truncate px-3 py-2 text-left text-sm text-content',
+                'block w-full px-3 py-2 text-left text-sm text-content',
                 index === active && 'bg-surface-raised',
               )}
             >
               {/* **An account nobody has named is still a result.** It is a
                   company the pipeline is watching, and hiding it would make
                   search quietly disagree with the list that shows it. */}
-              {row.name ?? <span className="text-content-subtle">Unnamed account</span>}
+              <span className="block truncate">
+                {row.account.name ?? (
+                  <span className="text-content-subtle">Unnamed account</span>
+                )}
+              </span>
+              {/* **Only the rows that need explaining.** `is_renamed` is the
+                  server's answer to *"did this match under something other
+                  than what you are reading?"*, and it is false for almost
+                  every row. */}
+              {row.is_renamed ? (
+                <span className="block truncate text-xs text-content-muted">
+                  matched “{row.matched_name}”
+                </span>
+              ) : null}
             </button>
           ))}
 

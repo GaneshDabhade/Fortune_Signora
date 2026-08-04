@@ -200,6 +200,30 @@ export interface AccountIdentity {
   last_observed_at: string | null;
 }
 
+/** What kind of thing a search result is.
+ *
+ * **Read it from the result, never from the endpoint you called.** Signora
+ * searches companies today; a type it cannot search yet is **absent from the
+ * results rather than returned as an empty group**, because an empty group
+ * would claim it looked and found nothing. */
+export type SearchResultType = 'company' | 'technology';
+
+/** One search result: the account, its type, and **why it is here**.
+ *
+ * A search matches every name a source has ever claimed, while the list shows
+ * the newest one — so a company that renamed comes back under a name the
+ * customer did not type and cannot see on the row. `matched_name` is that
+ * name, and `is_renamed` marks the rows where the two differ. **Those are the
+ * only rows worth annotating**: a surface that explains every match teaches
+ * people to stop reading the explanations. */
+export interface SearchResult {
+  account: AccountIdentity;
+  result_type: SearchResultType;
+  matched_name: string;
+  matched_source: string;
+  is_renamed: boolean;
+}
+
 /** What a reading implies commercially. **Never a sign in the arithmetic** —
  * two accounts can score the same and mean opposite things, and this is the
  * only place that difference survives. */

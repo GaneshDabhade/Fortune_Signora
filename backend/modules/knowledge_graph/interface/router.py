@@ -23,7 +23,10 @@ from uuid import UUID
 from fastapi import APIRouter, Query
 
 from apps.api.composition.accounts import GraphRead
-from modules.knowledge_graph.interface.schemas import AccountIdentityResponse
+from modules.knowledge_graph.interface.schemas import (
+    AccountIdentityResponse,
+    SearchResultResponse,
+)
 from signora_platform.api import CurrentWorkspace
 from signora_platform.authorization import Action, Resource
 from signora_platform.pagination import MAX_PAGE_LIMIT
@@ -74,7 +77,7 @@ LimitParam = Annotated[int, Query(ge=1, le=MAX_PAGE_LIMIT)]
 
 @router.get(
     "/workspaces/{workspace_id}/account-search",
-    response_model=list[AccountIdentityResponse],
+    response_model=list[SearchResultResponse],
     summary="Find an account by name",
 )
 async def account_search(
@@ -82,7 +85,7 @@ async def account_search(
     queries: GraphRead,
     q: QueryParam,
     limit: LimitParam = 10,
-) -> list[AccountIdentityResponse]:
+) -> list[SearchResultResponse]:
     """*"Show me Databricks."* — the question a ranked list cannot answer.
 
     **Its own path rather than a parameter on `/account-identities`.** That
@@ -96,7 +99,14 @@ async def account_search(
     A company that renamed is found under its old name and shown under its
     new one — which is what somebody who has not heard about the rename is
     typing. It also means a result may not visibly contain the search text,
-    and that is the feature rather than a bug to hide.
+    so **every row says which name matched**: `is_renamed` marks the rows
+    where that differs from what is being shown, and those are the only rows
+    worth annotating.
+
+    **Every row says what kind of thing it is**, so results can be grouped by
+    type rather than by which endpoint returned them. **A type Signora cannot
+    search is absent, never an empty group** — an empty group would claim it
+    looked and found nothing, which is a different statement and a false one.
 
     **Empty is an answer.** No match returns `[]` rather than a 404: the
     customer asked a well-formed question and *nothing here is called that* is
@@ -104,11 +114,13 @@ async def account_search(
 
     **Ordered by matched name**, so the same query returns the same rows in the
     same order on every run — a list that reshuffles between keystrokes is one
-    a customer cannot click.
+    a customer cannot click. **There is no relevance score**, and `matched_name`
+    is the field the order was computed from, so the ranking can be read off
+    the results rather than taken on trust.
     """
     context.authorize(Resource.ACCOUNT, Action.READ)
     found = await queries.find_accounts(context.workspace_id, q, limit=limit)
-    return [AccountIdentityResponse.from_domain(identity) for identity in found]
+    return [SearchResultResponse.from_domain(match) for match in found]
 
 
 __all__ = ["router"]

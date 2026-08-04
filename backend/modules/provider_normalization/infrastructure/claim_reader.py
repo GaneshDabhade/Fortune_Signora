@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.provider_normalization.domain.vocabulary import ClaimAttribute
 from modules.provider_normalization.infrastructure.models import ClaimModel
-from modules.provider_normalization.public.claims import ClaimView, SubjectRef
+from modules.provider_normalization.public.claims import ClaimView, NameMatch, SubjectRef
 
 
 def _escape_like(text: str) -> str:
@@ -88,7 +88,7 @@ class SqlClaimReader:
         )
         return tuple(_view(row) for row in rows.scalars())
 
-    async def subjects_named_like(self, text: str, *, limit: int) -> tuple[SubjectRef, ...]:
+    async def subjects_named_like(self, text: str, *, limit: int) -> tuple[NameMatch, ...]:
         pattern = f"%{_escape_like(text)}%"
         name = ClaimModel.value["v"].astext
 
@@ -106,9 +106,15 @@ class SqlClaimReader:
             .order_by(name, ClaimModel.provider, ClaimModel.subject_external_id)
             .limit(limit)
         )
+        # The matched name was always read — it is what `order_by` sorts on —
+        # and was discarded one line later. Carrying it is what lets a caller
+        # say *why* a row is in the list rather than only that it is.
         return tuple(
-            SubjectRef(provider=provider, provider_external_id=external_id)
-            for provider, external_id, _ in rows.all()
+            NameMatch(
+                subject=SubjectRef(provider=provider, provider_external_id=external_id),
+                name=matched,
+            )
+            for provider, external_id, matched in rows.all()
         )
 
     async def latest_observed_at(

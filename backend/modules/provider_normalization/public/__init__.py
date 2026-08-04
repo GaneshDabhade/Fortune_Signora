@@ -24,6 +24,7 @@ from modules.provider_normalization.domain.vocabulary import (
 from modules.provider_normalization.public.claims import (
     ClaimReader,
     ClaimView,
+    NameMatch,
     SubjectRef,
     TechnologyRef,
 )
@@ -37,6 +38,7 @@ __all__ = [
     "ClaimView",
     "FundingValue",
     "IntentSurgeValue",
+    "NameMatch",
     "RevenueBand",
     "RoleChangeValue",
     "RoleDirection",

@@ -305,6 +305,26 @@ class IdentityBinding:
 
 
 @dataclass(frozen=True, slots=True)
+class ResolvedSubject:
+    """One provider identity, and the entity it currently resolves to.
+
+    **`IdentityBinding` read in the other direction**, narrowed to what a
+    caller starting from an identity needs: which entity, and what kind of
+    thing that entity is. It is not a second representation of a binding —
+    it holds no state, no decision and no hints, and cannot be persisted.
+
+    **Provider and identifier are plain strings, as they are on
+    `IdentityBinding`.** The domain does not import another module's
+    contract to say what a provider called something.
+    """
+
+    provider: str
+    provider_external_id: str
+    entity_id: UUID
+    kind: EntityKind
+
+
+@dataclass(frozen=True, slots=True)
 class Relationship:
     """An edge between entities, derived from claims and citing them.
 

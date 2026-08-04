@@ -18,6 +18,7 @@ from modules.knowledge_graph.domain.identity import (
     IdentityBinding,
     Relationship,
     ResolutionDecision,
+    ResolvedSubject,
 )
 from modules.knowledge_graph.domain.resolution import ResolutionCandidate
 from modules.provider_normalization.public import SubjectRef
@@ -71,13 +72,23 @@ class GraphRepository(Protocol):
 
     async def entities_for_subjects(
         self, workspace_id: UUID, subjects: Sequence[SubjectRef]
-    ) -> tuple[UUID, ...]:
+    ) -> tuple[ResolvedSubject, ...]:
         """Which accounts these provider identities resolved to, in order,
         with duplicates collapsed.
 
         The inverse of `bindings_for_entities`, and the direction search
         needs: a match is found on a *claim about an identity*, and what a
         customer is looking for is the account.
+
+        **Which identity produced which account is carried, not discarded.**
+        Returning bare entity ids made the two orderings correspond by
+        position and nothing else, so a caller could not say *which* of an
+        account's several identities was the one that matched — which is
+        exactly the sentence a search result needs.
+
+        **The entity's kind travels with it**, because a caller grouping
+        results by type must read that from the entity rather than assume it
+        from the endpoint it called.
 
         **An unresolved or ambiguous identity contributes nothing.** Its
         binding holds no `entity_id`, and there is genuinely no account to

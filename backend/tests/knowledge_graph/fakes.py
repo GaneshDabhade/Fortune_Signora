@@ -22,9 +22,15 @@ from modules.knowledge_graph.domain.identity import (
     Relationship,
     ResolutionDecision,
     ResolutionOutcome,
+    ResolvedSubject,
 )
 from modules.knowledge_graph.domain.resolution import ResolutionCandidate
-from modules.provider_normalization.public import ClaimAttribute, ClaimView, SubjectRef
+from modules.provider_normalization.public import (
+    ClaimAttribute,
+    ClaimView,
+    NameMatch,
+    SubjectRef,
+)
 
 
 class FakeGraphRepository:
@@ -99,17 +105,31 @@ class FakeGraphRepository:
 
     async def entities_for_subjects(
         self, workspace_id: UUID, subjects: Sequence[SubjectRef]
-    ) -> tuple[UUID, ...]:
+    ) -> tuple[ResolvedSubject, ...]:
         live = {
             (b.provider, b.provider_external_id): b.entity_id
             for b in self.bindings
             if b.superseded_by is None and b.entity_id is not None
         }
-        ordered: list[UUID] = []
+        # **Kind is read from the entity, exactly as the SQL join does.** A
+        # fake that assumed `COMPANY` would make the derivation untestable and
+        # turn a real field into one nothing could ever contradict.
+        kinds = {entity.id: entity.kind for entity in self.entities.values()}
+        ordered: list[ResolvedSubject] = []
+        seen: set[UUID] = set()
         for subject in subjects:
             entity_id = live.get((subject.provider, subject.provider_external_id))
-            if entity_id is not None and entity_id not in ordered:
-                ordered.append(entity_id)
+            if entity_id is None or entity_id in seen or entity_id not in kinds:
+                continue
+            seen.add(entity_id)
+            ordered.append(
+                ResolvedSubject(
+                    provider=subject.provider,
+                    provider_external_id=subject.provider_external_id,
+                    entity_id=entity_id,
+                    kind=kinds[entity_id],
+                )
+            )
         return tuple(ordered)
 
     async def decisions_for_entity(
@@ -178,11 +198,15 @@ class FakeClaimReader:
             and (attribute is None or c.attribute is attribute)
         )
 
-    async def subjects_named_like(self, text: str, *, limit: int) -> tuple[SubjectRef, ...]:
+    async def subjects_named_like(self, text: str, *, limit: int) -> tuple[NameMatch, ...]:
         """Case-insensitive substring over LEGAL_NAME claims, ordered by the
         matched name — the same contract the SQL reader implements, because a
         fake that orders differently would let a caller depend on an order the
-        database does not produce."""
+        database does not produce.
+
+        **The name carried is the one that matched, not the newest**, which is
+        the whole point of the field: an identity claimed under two names
+        matches on whichever the customer typed."""
         matched = [
             c
             for c in self.claims
@@ -190,12 +214,15 @@ class FakeClaimReader:
             and isinstance(c.value, str)
             and text.lower() in c.value.lower()
         ]
-        seen: list[SubjectRef] = []
+        found: list[NameMatch] = []
+        seen: set[SubjectRef] = set()
         for claim in sorted(matched, key=lambda c: (str(c.value), c.provider, c.subject_external_id)):
             ref = SubjectRef(provider=claim.provider, provider_external_id=claim.subject_external_id)
-            if ref not in seen:
-                seen.append(ref)
-        return tuple(seen[:limit])
+            if ref in seen:
+                continue
+            seen.add(ref)
+            found.append(NameMatch(subject=ref, name=str(claim.value)))
+        return tuple(found[:limit])
 
     async def latest_observed_at(
         self, subjects: Sequence[SubjectRef]

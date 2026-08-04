@@ -62,6 +62,28 @@ class TechnologyRef:
 
 
 @dataclass(frozen=True, slots=True)
+class NameMatch:
+    """A provider identity, and **the name that actually matched**.
+
+    The name is here rather than left to be looked up, because it is the one
+    fact a caller cannot recover afterwards. A search matches *every* name a
+    source has ever given, and the Knowledge Graph displays the newest one —
+    so a company that renamed comes back under a name the customer did not
+    type and cannot see. **Which name matched is therefore the whole
+    explanation of why the row is there**, and it was already read from the
+    database to order the results.
+
+    **Not a relevance score, and there is deliberately nowhere to put one.**
+    The ordering is by the matched name, which is derivable and repeatable;
+    a number here would be the first step of a ranking nobody could defend,
+    the same door `MatchStrength` closes in identity resolution.
+    """
+
+    subject: SubjectRef
+    name: str
+
+
+@dataclass(frozen=True, slots=True)
 class ClaimView:
     """One piece of evidence, with its provenance intact.
 
@@ -130,12 +152,15 @@ class ClaimReader(Protocol):
         """
         ...
 
-    async def subjects_named_like(self, text: str, *, limit: int) -> tuple[SubjectRef, ...]:
-        """Provider identities some source has called something matching `text`.
+    async def subjects_named_like(self, text: str, *, limit: int) -> tuple[NameMatch, ...]:
+        """Provider identities some source has called something matching `text`,
+        **each carrying the name that matched**.
 
         Case-insensitive substring over `LEGAL_NAME` claims, ordered by the
         matched name then by identity, so the same query returns the same
-        rows on every run and every machine.
+        rows on every run and every machine. **That order is the ranking**,
+        and returning the name it sorted on is what makes it explicable
+        rather than merely stable.
 
         **Every name a source has ever given, not the one being displayed.**
         The displayed name is chosen by the Knowledge Graph's selection rule

@@ -12,7 +12,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AccountSearch } from '@/components/intelligence/account-search';
-import type { AccountIdentity } from '@/lib/api/types';
+import type { AccountIdentity, SearchResult } from '@/lib/api/types';
 
 const push = vi.hoisted(() => vi.fn());
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
@@ -42,7 +42,19 @@ function identity(id: string, name: string | null): AccountIdentity {
   };
 }
 
-function found(...rows: AccountIdentity[]) {
+/** A result matched under the name it is being shown by — the ordinary case,
+ * and the one that needs no explanation on the row. */
+function result(id: string, name: string | null, matched?: string): SearchResult {
+  return {
+    account: identity(id, name),
+    result_type: 'company',
+    matched_name: matched ?? name ?? '',
+    is_renamed: matched !== undefined && matched !== name,
+    matched_source: 'apollo',
+  };
+}
+
+function found(...rows: SearchResult[]) {
   return { data: rows, isFetching: false };
 }
 
@@ -54,7 +66,7 @@ beforeEach(() => {
 
 describe('finding an account by name', () => {
   it('opens the account it was asked for', async () => {
-    search.mockReturnValue(found(identity('acc-1', 'Databricks, Inc.')));
+    search.mockReturnValue(found(result('acc-1', 'Databricks, Inc.')));
 
     render(<AccountSearch />);
     await userEvent.type(screen.getByRole('combobox'), 'databr');
@@ -67,7 +79,7 @@ describe('finding an account by name', () => {
     // **The keyboard path is the product, not the accessible alternative to
     // it.** A seller who has learned this control never touches the mouse.
     search.mockReturnValue(
-      found(identity('acc-1', 'Acme Corporation'), identity('acc-2', 'Acme Software')),
+      found(result('acc-1', 'Acme Corporation'), result('acc-2', 'Acme Software')),
     );
 
     render(<AccountSearch />);
@@ -83,7 +95,7 @@ describe('finding an account by name', () => {
      * list — but the highlight was on index 1, so Enter opens whatever has
      * arrived in that position. Silent, and wrong every time. */
     search.mockReturnValue(
-      found(identity('acc-1', 'Acme Corporation'), identity('acc-2', 'Acme Software')),
+      found(result('acc-1', 'Acme Corporation'), result('acc-2', 'Acme Software')),
     );
 
     render(<AccountSearch />);
@@ -91,29 +103,44 @@ describe('finding an account by name', () => {
     await userEvent.type(box, 'acme');
     await userEvent.keyboard('{ArrowDown}');
 
-    search.mockReturnValue(found(identity('acc-9', 'Acmex Holdings')));
+    search.mockReturnValue(found(result('acc-9', 'Acmex Holdings')));
     await userEvent.type(box, 'x');
     await userEvent.keyboard('{Enter}');
 
     expect(push).toHaveBeenCalledWith('/accounts/acc-9');
   });
 
-  it('lists a renamed company under what it is called now', async () => {
+  it('lists a renamed company under what it is called now, and says why it is there', async () => {
     // Searched by a name the server matched on a historical claim; the row
     // shows the current one. **The list never highlights a matched substring**
-    // for exactly this reason — the match is sometimes not in the text.
-    search.mockReturnValue(found(identity('acc-1', 'Northwind Group')));
+    // for exactly this reason — the match is sometimes not in the text — so
+    // the matched name is stated instead of pointed at.
+    search.mockReturnValue(found(result('acc-1', 'Northwind Group', 'Northwind Traders')));
 
     render(<AccountSearch />);
     await userEvent.type(screen.getByRole('combobox'), 'Traders');
 
-    expect(screen.getByRole('option', { name: 'Northwind Group' })).toBeInTheDocument();
+    const row = screen.getByRole('option', { name: /Northwind Group/ });
+    expect(row).toHaveTextContent('Northwind Group');
+    expect(row).toHaveTextContent('matched “Northwind Traders”');
+  });
+
+  it('says nothing extra about a row that matched under its own name', async () => {
+    /** **The half of the feature that keeps it readable.** A list that
+     * explains every row is one people stop reading, so only a row whose
+     * match is invisible in its own text gets a second line. */
+    search.mockReturnValue(found(result('acc-1', 'Databricks, Inc.')));
+
+    render(<AccountSearch />);
+    await userEvent.type(screen.getByRole('combobox'), 'databr');
+
+    expect(screen.getByRole('option', { name: /Databricks/ })).not.toHaveTextContent('matched');
   });
 
   it('still offers an account nobody has named', async () => {
     // It is a company the pipeline is watching. Hiding it would make search
     // quietly disagree with the list that shows it.
-    search.mockReturnValue(found(identity('acc-1', null)));
+    search.mockReturnValue(found(result('acc-1', null)));
 
     render(<AccountSearch />);
     await userEvent.type(screen.getByRole('combobox'), 'acme');
@@ -133,7 +160,7 @@ describe('finding an account by name', () => {
   it('shows no list at all until a question has been asked', async () => {
     // One character is not a question. The server refuses it too — this stops
     // the browser sending a request it knows will be refused.
-    search.mockReturnValue(found(identity('acc-1', 'Acme Corporation')));
+    search.mockReturnValue(found(result('acc-1', 'Acme Corporation')));
 
     render(<AccountSearch />);
     await userEvent.type(screen.getByRole('combobox'), 'a');
@@ -142,7 +169,7 @@ describe('finding an account by name', () => {
   });
 
   it('closes on Escape without navigating anywhere', async () => {
-    search.mockReturnValue(found(identity('acc-1', 'Acme Corporation')));
+    search.mockReturnValue(found(result('acc-1', 'Acme Corporation')));
 
     render(<AccountSearch />);
     await userEvent.type(screen.getByRole('combobox'), 'acme');

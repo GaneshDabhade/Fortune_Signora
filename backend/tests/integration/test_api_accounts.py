@@ -2085,7 +2085,7 @@ class TestFindingAnAccountByName:
         )
 
         assert response.status_code == 200, response.text
-        assert entity_id in {UUID(row["account_id"]) for row in response.json()}
+        assert entity_id in {UUID(row["account"]["account_id"]) for row in response.json()}
 
     async def test_a_search_never_crosses_a_workspace(
         self,
@@ -2122,7 +2122,7 @@ class TestFindingAnAccountByName:
         )
 
         assert response.status_code == 200, response.text
-        returned = {UUID(row["account_id"]) for row in response.json()}
+        returned = {UUID(row["account"]["account_id"]) for row in response.json()}
         assert their_entity not in returned
         assert returned <= {my_entity} or returned, "only this workspace's accounts"
 
@@ -2189,6 +2189,43 @@ class TestFindingAnAccountByName:
         )
 
         assert response.status_code == 422, response.text
+
+    async def test_every_result_says_what_it_is_and_why_it_is_here(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        session_factory: async_sessionmaker[AsyncSession],
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**Against the real reader**, because the matched name is read out of
+        a JSONB accessor and thrown away by one careless unpack — which is
+        exactly what the previous implementation did."""
+        workspace_id, user_id, entity_id, _ = await _tracked(
+            session_factory, admin_session_factory, "northwind"
+        )
+        named = (
+            await client.get(
+                f"/workspaces/{workspace_id}/account-identities",
+                params={"ids": [str(entity_id)]},
+                headers=_auth(key_pair, user_id),
+            )
+        ).json()[0]
+
+        response = await client.get(
+            f"/workspaces/{workspace_id}/account-search",
+            params={"q": named["name"][:4]},
+            headers=_auth(key_pair, user_id),
+        )
+
+        assert response.status_code == 200, response.text
+        row = next(
+            r for r in response.json() if r["account"]["account_id"] == str(entity_id)
+        )
+        assert row["result_type"] == "company"
+        assert row["matched_name"], "a row that cannot say what matched explains nothing"
+        assert named["name"][:4].lower() in row["matched_name"].lower()
+        assert row["matched_source"], "somebody claimed that name"
+        assert row["is_renamed"] is (row["matched_name"] != row["account"]["name"])
 
 
 class TestHowACompanyHasChanged:

@@ -246,7 +246,7 @@ resolve_entity(workspace_id, hint) -> Entity
 claim_set(workspace_id, entity_id, attribute) -> ClaimSet
 entity_evidence(workspace_id, entity_id) -> list[Claim]
 identities(workspace_id, entity_ids) -> dict[UUID, AccountIdentity]
-find_accounts(workspace_id, text, limit) -> tuple[AccountIdentity, ...]
+find_accounts(workspace_id, text, limit) -> tuple[AccountMatch, ...]
 relationships(workspace_id, entity_id, kind=None, as_of=None) -> list[Relationship]
 resolution_history(workspace_id, entity_id) -> list[ResolutionDecision]
 ```
@@ -265,7 +265,7 @@ resolution_history(workspace_id, entity_id) -> list[ResolutionDecision]
 
 | | |
 |---|---|
-| **A result may not contain the search text** | The customer typed a former name. **The list must never highlight a matched substring** — highlighting promises the match is in the visible text, and sometimes it is not. If explainability is wanted later, say *"matched previous name: Acme Software Ltd."* rather than decorating |
+| **A result may not contain the search text** | The customer typed a former name. **The list must never highlight a matched substring** — highlighting promises the match is in the visible text, and sometimes it is not. **Explainability arrived as this section predicted**, below: the row *states* the matched name instead of decorating the text |
 | **A blank query returns nothing** | An empty pattern matches every claim in the workspace. The guard is in `find_accounts` rather than only in the browser, so every future caller inherits it |
 
 **`identity_binding.legal_name` is not the searchable text, and it looks like it should be.** It is a resolution hint frozen at binding time (`resolve.py` takes the first non-null `subject_legal_name`), and claims recorded afterwards never update it. **Searching it would return accounts under a name the product does not display** — the two-representations defect (§2) presenting as a search with the wrong labels.
@@ -273,6 +273,23 @@ resolution_history(workspace_id, entity_id) -> list[ResolutionDecision]
 **The bound is on identities considered, not accounts returned.** Several providers naming one company are several matches, so a workspace where one account has many sources can return fewer than `limit` accounts while more exist. A known limitation rather than a hidden one: collapsing in the database would need the cross-module join this deliberately does not have.
 
 **Wildcards are escaped.** `_` and `%` are `LIKE` syntax; unescaped, a customer searching for a name containing `%` receives their entire book of business and it looks like the search working.
+
+### `AccountMatch` — what kind of thing it is, and why it is here
+
+**Added 2026-08-04 by [TASK-301](../BACKLOG.md), from Lane C's [417 §4 slice B-i](417-executable-slice-audit.md).** `find_accounts` returns `AccountMatch` rather than `AccountIdentity`: the account, its `kind`, the `matched_name`, the `matched_source`, and `is_renamed`.
+
+**This is the explainability the section above said to build, built the way it said to build it.** The surface refused to highlight because *"the match is sometimes not in the text"* — an honest refusal that left a customer with an unexplained row. **Stating the matched name replaces a refusal with a disclosure**, and `is_renamed` is what keeps it readable: only a row whose match is invisible in its own text is annotated, because a list that explains every row is one people stop reading.
+
+**The matched name cost nothing to obtain and was being discarded.** `SqlClaimReader.subjects_named_like` already selected it — it is what `ORDER BY` sorts on — and dropped it one line later. `ClaimReader` now returns `NameMatch(subject, name)`, which is a 🟠 change to Provider Normalization's published contract with one consumer.
+
+| | |
+|---|---|
+| **`kind` is read from the entity, never assumed from the endpoint** | A caller grouping results by type must be told the type. Inferring it from *which URL was called* breaks the first time one URL answers for two kinds, and puts this module's vocabulary in a caller's hands. `entities_for_subjects` therefore returns `ResolvedSubject` — which identity resolved to which entity, **and what kind that entity is** — joined in the one query rather than read in a second pass |
+| **Which identity explains the row is the first one, not the last** | Two of a company's providers can both match one search. The ranking is by matched name, so the **earlier** is the better match; collapsing to the later would show the worse match as the reason the row is there |
+| **There is no relevance score, and nowhere to put one** | The order is the matched name, ascending — derivable, repeatable, and now *readable off the results*, because the field it sorted on is on every row. **That is what makes the ranking explicable**; a number would make it neither. Same door `MatchStrength` closes in resolution (§2) |
+| **An absent type is absent, never an empty group** | Signora searches companies. **An empty `people: []` would claim it looked and found nothing**, which is a different statement and a false one — so the response is a flat, typed list and a caller groups by `result_type` |
+
+**The grouped *rendering* is not built, deliberately, and this is the slice's stated limitation.** Only one type is reachable by this search: technology entities are created by `find_or_create_canonical_entity` and hold no provider binding, so they never resolve through `entities_for_subjects` in practice. **A grouping branch no production data can enter is Decorative Logic** (§2) — the contract carries the type so the approved Global Search screen can group, and the shell's typeahead renders the one group that exists. **The second group arrives with the second searchable type, and Global Search's screen is Product Surface's.**
 
 ### `AccountIdentity.last_observed_at` — how current the account's evidence is
 
