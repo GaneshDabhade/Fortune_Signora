@@ -196,6 +196,7 @@
 | [C-408](#c-408--epic-c-is-prepared-and-two-of-its-questions-are-not-lane-cs) | **Epic C · People — prepared; ADR-0400 awaits ratification** | Lane C | **Product owner** | `OPEN` | **Nothing today.** Epic C is unapproved scope; this is preparation, not a request to start |
 | [C-409](#c-409--adr-0014-is-accepted-and-contradicted-by-shipped-code) | **ADR-0014 rules four CRMs at launch; the catalog ships two** | Lane C | **Product owner** | `OPEN` | **Nothing.** But a lane starting [E1](architecture/401-epic-e1-crm-read.md) reads both |
 | [C-410](#c-410--no-prompt-has-ever-been-evaluated-against-a-production-model) | **Every AI release is measured on a local model; production runs hosted ones** | Lane C | **Product owner** | `OPEN` | **Nothing today.** Blocks the *first customer-facing inference*, whichever epic reaches it |
+| [C-411](#c-411--revenue-intelligence-platform-is-a-planned-module-whose-job-is-already-done) | **RIP is a planned module whose job `apps/api/composition/` already does** | Lane C | **Product owner** | `OPEN` | **Nothing.** It prevents future work rather than unblocking any |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
 >
@@ -2926,6 +2927,28 @@ Every lane's rows sit **adjacent in one table**, and each lane's branch carries 
 > **Lane C is not recommending when.** It is recommending that it be **chosen rather than discovered**, and that whichever epic first needs customer-facing inference carries the cost explicitly in its plan rather than meeting `require_model`'s refusal at runtime.
 
 **A second, smaller finding in the same sweep, and it is not this item:** **[TASK-013](BACKLOG.md) is filed as a product-owner decision and appears to be an unrun measurement.** `reasoning@1`'s four evaluations all borrow `explanation_narration`'s dataset — **there is no `reasoning` dataset** — and the model every sibling prompt passes on, `llama3.1:8b`, **was never tried against it.** Analysed in [404-epic-g-copilot.md](architecture/404-epic-g-copilot.md) §1, where **reclassifying it to `READY` is recommended.**
+
+## C-411 · Revenue Intelligence Platform is a planned module whose job is already done
+
+| | |
+|---|---|
+| **Classification** | **Repository Decision** — roadmap scope |
+| **Owner** | **Product owner** — **retiring a planned module is a scope change, and not Lane C's** |
+| **Requester** | **Lane C — Product Office** |
+| **Status** | `OPEN` |
+| **Blocks** | **Nothing.** This item exists to **prevent** work, not to unblock any |
+
+**Full analysis: [408-revenue-intelligence-platform.md](architecture/408-revenue-intelligence-platform.md).**
+
+**RIP's stated job** — *"cross-module composition/aggregation for presentation… the primary read APIs consumed by the frontend"* — **is `backend/apps/api/composition/`, twelve files, already built.** And that layer's shape was chosen deliberately: *"a single shared module here was the first shape tried, and **import-linter refused it** — a router importing it inherits every import it makes."* **`modules/revenue_intelligence_platform/` is that refused shape with a module wrapper around it.**
+
+**The test that decides a bounded context here is not *"is it composition?"*** — that argument was made in [C-025](#c-025--m13-is-not-a-module-and-its-consumers-do-not-exist-yet) about Integrations **and it lost**, correctly: `ConnectedAccount` owns an aggregate with a lifecycle. **The test is whether it owns an aggregate, and RIP fails every part of it** — no aggregate, no lifecycle, no invariant, no state, **no published events**, and `05-module-dependencies.md` says of it *"they own none of what they display."* Its three Core Concepts are **three views.**
+
+> **Recommendation: retire the entry from `04-modules.md`, `05-module-dependencies.md` and README, replacing it with a note naming `apps/api/composition/` as the composition boundary.** **A registry entry for an unbuilt module is a standing instruction to build it**, and the cheapest moment to prevent that is before somebody starts.
+
+**The capability is not being dropped.** Composition, workspace-level reads and reporting all continue exactly where they are — **the question is only whether they need a bounded context, and the evidence says they already have one.**
+
+**One genuine gap, and it is a product question rather than an architectural one.** Two of RIP's three Core Concepts already ship — the *Prioritized Opportunity List* is the attention list, the *Workspace Intelligence View* is the brief and accounts list. **The third, *Revenue Intelligence Report*, has no screen, no endpoint, no spec and no acceptance criterion anywhere.** *What is it, who reads it, and what decision does it change?* **Unanswerable from repository evidence; nothing waits on it today.**
 
 ## Closed
 

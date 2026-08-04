@@ -71,6 +71,8 @@
 
 > **The alternative — F1 invoking actions directly — makes the workflow module a caller of five other modules, which is the god-module the two-layer split exists to prevent** ([C-025](../LANE_COORDINATION.md) makes exactly this argument about Integrations).
 
+> ⚠️ **A naming collision, found 2026-08-04 and worth ten seconds before it costs more.** **`apps/api/composition/workflow.py` already exists** and means something different: *"composing the **Opportunity Engine's write surface** — progressing an opportunity needs the workflow tables and a membership check, and nothing else at all."* **Two meanings of *workflow*, one repository.** Not a blocker and not worth an ADR; **a lane building `modules/workflow/` will meet this file, and knowing beforehand costs nothing.** [ADR-0034](adr/0034-ubiquitous-language.md) owns naming if it turns out to matter.
+
 ---
 
 ## 3 · Repository reuse — what must NOT be built

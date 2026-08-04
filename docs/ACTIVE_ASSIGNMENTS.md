@@ -143,10 +143,26 @@
 | **C · People** | ⏸️ **WAITING ON PRODUCT DECISIONS** | **❓1 answered — the provider returns no name.** ADR-0400 ratification · contact ruling · **E1's progression** — §7 route B is now the only path to a named person | **Lane B** *(one remnant: the committee role id)* |
 | **M14a · Notifications** | 🔷 **ARCHITECTURE** *(not Lane C's)* | **[ADR-0040](architecture/adr/0040-notifications.md) `Proposed`.** Designed by Lane B; **F's phase 5 consumes it** | **Lane B** |
 | **M14b · Billing** | 🔎 **DISCOVERY — cannot proceed** | **[C-200](LANE_COORDINATION.md) 🔴** — no bounded context. **Preparation cannot invent scope** | **Lane A** |
+| **RIP · Revenue Intelligence** | ⛔ **RECOMMEND RETIRING** — [408](architecture/408-revenue-intelligence-platform.md) | **[C-411](LANE_COORDINATION.md)** — its job is `apps/api/composition/`, already built. **Nothing to implement** | — |
+| **M14.5 · Cloud Infrastructure** | 🔎 **DISCOVERY** | **Scope, technology and topology already ratified** in [ADR-0022](architecture/adr/0022-devops-infrastructure-and-deployment-topology.md) — *"nothing removed or redesigned, only its position in the order."* **Preparation would restate a ratified ADR** | **QE / platform** |
+| **M15 · GA readiness** | 🔎 **DISCOVERY** | **Depends on a deployed environment** (M14.5) for load testing at volume. **Three of its four workstreams already have live findings feeding them** — see below | **QE / platform** |
 | **E2 · CRM write-back** | 🟩 **READY** — [406](architecture/406-epic-e2-crm-write-back.md) | **[E1](architecture/401-epic-e1-crm-read.md) acquisition** must land first. **Zero cross-lane crossings** | **Lane B** |
 | **M11 · Recommendation** | 🔷 **ARCHITECTURE** — [407](architecture/407-m11-recommendation.md) | **Its input has never fired.** `reasoning@1` unreleased ([404](architecture/404-epic-g-copilot.md) §1) · **[C-410](LANE_COORDINATION.md)** | **Lane B** |
 
-**Maturity states:** 🔎 Discovery → Research → 🔷 Architecture → Repository Validation → Reuse Analysis → Technical Design → 🟩 **READY** → 🔨 Active Implementation → ✅ Completed · ⏸️ Waiting on Product Decisions *(any state may enter it)*.
+**Maturity states:** 🔎 Discovery → Research → 🔷 Architecture → Repository Validation → Reuse Analysis → Technical Design → 🟩 **READY** → 🔨 Active Implementation → ✅ Completed · ⏸️ Waiting on Product Decisions · ⛔ Recommend retiring *(any state may enter the last two)*.
+
+> **Every roadmap initiative is now at the highest maturity repository evidence honestly allows.** Four sit below READY and **none of them is under-prepared** — [M11](architecture/407-m11-recommendation.md)'s input has never fired, [M14b](LANE_COORDINATION.md)'s scope does not exist, **M14.5's design is already a ratified ADR**, and **M15 needs a deployed environment that M14.5 has not built.** *Forcing any of them to READY would produce a package a lane discovers is hollow.*
+
+**M15 is not prepared, and three of its four workstreams already have findings waiting for it** — recorded here rather than in a package nobody can act on yet:
+
+| M15 workstream | What already feeds it |
+|---|---|
+| **PII** | **[405](architecture/405-cross-cutting-concerns.md) §2** — log redaction is credential-shaped and matches no name, email or phone. **[Epic C](architecture/400-epic-c-people.md) changes that on its first commit** |
+| **Spend governance** | **[404](architecture/404-epic-g-copilot.md) §7** — **cost per inference is unmodelled anywhere**, and Epic G is active |
+| **SOC 2** | **[406](architecture/406-epic-e2-crm-write-back.md) §9** — the write log, *"a feature, not a metric"*; and **[C-410](LANE_COORDINATION.md)**'s release-evidence trail |
+| **Load testing** | **Nothing yet** — it needs M14.5's environment, and that is the whole dependency |
+
+> **M15 becomes preparable the day M14.5 lands.** Until then, **the useful Product Office work is making sure each finding above is still true when it gets there** — which is cross-validation, not a new document.
 
 > ⚠️ **Percentages were dropped, and the reason is a miss worth recording.** [Epic C](architecture/400-epic-c-people.md) was reported **READY, 100%**, with blockers given as *"ADR-0400 ratification · contact ruling."* **Its own ❓1 — *does the provider return a person's name?* — was documented in the package and omitted from the portfolio row.** Lane A checked it first, as the ADR instructed, and **the answer blocked the epic.** A percentage said *ready*; an unanswered question said *maybe not*, and only one of them reached the summary a reader allocates from. **The column now carries blocking *questions* alongside blocking *decisions*.**
 
