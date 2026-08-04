@@ -24,6 +24,9 @@ arrive without touching this type.
 
 from __future__ import annotations
 
+import json
+from typing import Final
+
 from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
@@ -55,6 +58,56 @@ class Credential:
         return f"Credential(kind={self.kind!r}, material=<redacted>)"
 
     __str__ = __repr__
+
+
+#: The kind the OAuth acquisition flow stores: a JSON object carrying the
+#: access token and, when the provider issued one, the refresh token.
+#:
+#: **Named here because it is the credential's own vocabulary**, not an
+#: adapter's. `Credential` is opaque so that a kind can be more than one
+#: string, and there is exactly one `secret_ref` per grant — so a refresh
+#: token has nowhere else to live.
+OAUTH2_KIND: Final = "oauth2"
+
+
+@dataclass(frozen=True, slots=True)
+class OAuth2Material:
+    """What an `oauth2` credential carries, once read.
+
+    **One parser, and it refuses rather than guessing.** Both the revoker and
+    the refresher need to look inside the same material, and two readers of one
+    shape are two readers that eventually disagree about it (§2). Anything it
+    cannot read returns `None`, because sending part of a credential to a
+    vendor on the chance it works is how an operation reports success it never
+    achieved.
+    """
+
+    access_token: str
+    refresh_token: str | None
+
+    @classmethod
+    def read(cls, credential: Credential) -> "OAuth2Material | None":
+        if credential.kind != OAUTH2_KIND:
+            return None
+        try:
+            payload = json.loads(credential.material)
+        except (ValueError, UnicodeDecodeError):
+            return None
+        if not isinstance(payload, dict):
+            return None
+        access = payload.get("access_token")
+        if not isinstance(access, str) or not access:
+            return None
+        refresh = payload.get("refresh_token")
+        return cls(access, refresh if isinstance(refresh, str) and refresh else None)
+
+    def as_credential(self) -> Credential:
+        return Credential(
+            kind=OAUTH2_KIND,
+            material=json.dumps(
+                {"access_token": self.access_token, "refresh_token": self.refresh_token}
+            ).encode(),
+        )
 
 
 class GrantExpired(Exception):

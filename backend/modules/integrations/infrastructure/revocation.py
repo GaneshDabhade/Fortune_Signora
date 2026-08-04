@@ -28,10 +28,8 @@ down would hold a security action hostage to the system it protects them from.
 
 from __future__ import annotations
 
-import json
-from dataclasses import dataclass
-from urllib.parse import quote
 from typing import Final
+from urllib.parse import quote
 from uuid import UUID
 
 import httpx
@@ -42,6 +40,8 @@ from modules.integrations.application.ports import (
     SecretNotFound,
     SecretStore,
 )
+from modules.integrations.domain.grant import OAuth2Material
+from modules.integrations.infrastructure.vendors import VENDOR_ENDPOINTS, RevocationEndpoint
 from signora_platform.observability import get_logger
 
 logger = get_logger(__name__)
@@ -50,46 +50,6 @@ logger = get_logger(__name__)
 #: local disconnect proceeds regardless, and a customer watching a spinner
 #: while a dead host times out is the worst version of this.
 REVOCATION_TIMEOUT_SECONDS: Final = 5.0
-
-
-@dataclass(frozen=True, slots=True)
-class RevocationEndpoint:
-    """Where a vendor's grant is destroyed, and which token names it.
-
-    **`token_field` is not decoration.** HubSpot revokes a *refresh* token and
-    the access token will not do; Google accepts either. Getting it wrong
-    returns a cheerful `200` that revokes nothing, which is the worst available
-    outcome — the product would report success and the credential would still
-    work.
-    """
-
-    #: `{token}` is replaced with the material, URL-encoded.
-    url_template: str
-    method: str
-    #: Which key of an `oauth2` credential this vendor wants.
-    token_field: str
-
-
-#: **Management endpoints only.** Acquisition lives at the frontend edge (§5),
-#: and a system absent from this table simply has no revoker — which reports
-#: failure, which is what `NoRevoker` already did and is still honest.
-REVOCATION_ENDPOINTS: Final[dict[str, RevocationEndpoint]] = {
-    "hubspot": RevocationEndpoint(
-        url_template="https://api.hubapi.com/oauth/v1/refresh-tokens/{token}",
-        method="DELETE",
-        token_field="refresh_token",
-    ),
-    "google_calendar": RevocationEndpoint(
-        url_template="https://oauth2.googleapis.com/revoke?token={token}",
-        method="POST",
-        token_field="refresh_token",
-    ),
-}
-
-#: The credential kind this revoker understands. **A factory reads `kind`; the
-#: adapter does not branch on a vendor** — anything else here is a credential
-#: this revoker was not built for, and saying so beats guessing.
-OAUTH2_KIND: Final = "oauth2"
 
 
 class HttpProviderRevoker:
@@ -122,7 +82,8 @@ class HttpProviderRevoker:
         if account is None:
             return False
 
-        endpoint = REVOCATION_ENDPOINTS.get(account.integration)
+        vendor = VENDOR_ENDPOINTS.get(account.integration)
+        endpoint = vendor.revocation if vendor else None
         if endpoint is None:
             # A system Signora can connect but not revoke at. Logged rather
             # than silent: it is the difference between *we tried and failed*
@@ -161,18 +122,17 @@ class HttpProviderRevoker:
             # and the disconnect proceeds — the material is already gone.
             return None
 
-        if credential.kind != OAUTH2_KIND:
+        material = OAuth2Material.read(credential)
+        if material is None:
             return None
-
-        try:
-            payload = json.loads(credential.material)
-        except (ValueError, UnicodeDecodeError):
-            return None
-
-        if not isinstance(payload, dict):
-            return None
-        value = payload.get(field)
-        return value if isinstance(value, str) and value else None
+        # Explicit rather than `getattr`: a table typo would otherwise resolve
+        # to `None` and read as *this vendor issued no refresh token*, which is
+        # a legitimate state and would hide the mistake indefinitely.
+        if field == "refresh_token":
+            return material.refresh_token
+        if field == "access_token":
+            return material.access_token
+        return None
 
     async def _call(self, endpoint: RevocationEndpoint, token: str, integration: str) -> bool:
         # `safe=""` so a token containing `/` or `&` cannot escape its own
@@ -217,10 +177,4 @@ class HttpProviderRevoker:
         return revoked
 
 
-__all__ = [
-    "OAUTH2_KIND",
-    "REVOCATION_ENDPOINTS",
-    "REVOCATION_TIMEOUT_SECONDS",
-    "HttpProviderRevoker",
-    "RevocationEndpoint",
-]
+__all__ = ["REVOCATION_TIMEOUT_SECONDS", "HttpProviderRevoker"]

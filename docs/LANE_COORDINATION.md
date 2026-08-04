@@ -3806,3 +3806,43 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 **`HubSpotCompanyMapper` is therefore built, registered and tested**, and it encodes nothing about the ruling above: a mapper receives a stored record and translates it, and has never been able to ask who fetched it or how. **The gap this item describes is in acquiring records, not in interpreting them**, and that is what makes the interpretation half safe to finish first.
 
 **What remains genuinely gated on this ruling** is everything that would put a record in front of that mapper — and it is now the *only* thing standing between a customer's CRM and the whole pipeline behind it.
+
+## C-327 · Where do Signora's own OAuth client credentials live?
+
+| | |
+|---|---|
+| **Raised by** | Lane B, 2026-08-04, on the product owner's direction that this is an architectural boundary rather than an implementation detail |
+| **Owner** | **The product owner.** Credential ownership and the trust boundary between the two tiers |
+| **Status** | `OPEN` — **blocking one wiring line and nothing else.** Grant refresh is built, tested and unwired |
+| **Blocks** | The `TokenRefresher` adapter. **Not** the use case, the port, the vendor table, the outcomes, the tests, or anything else in Epic E1 |
+
+### The problem
+
+**A refresh needs the *client* credentials, not the customer's.** RFC 6749 §6 posts `grant_type=refresh_token` with the refresh token **and the application's own `client_id` and `client_secret`** — the same pair the authorization-code exchange uses.
+
+**Today those live only in the frontend environment** (`SIGNORA_HUBSPOT_CLIENT_ID`, `SIGNORA_HUBSPOT_CLIENT_SECRET`, read by `credentialsFor()`), because acquisition happens at the Next tier and [18-authentication.md](architecture/18-authentication.md) puts it there. **Nothing in the Python tier can read them**, and a refresher that runs there needs to.
+
+> **This is not a missing environment variable.** Deciding where the pair lives decides which tier holds a long-lived vendor secret, which tier is in the blast radius of its disclosure, and which one a rotation touches. That is credential ownership and a trust boundary — **and [44-integrations.md](architecture/44-integrations.md) §5 already draws exactly one line through this area**, so moving it is amending a ruling rather than configuring around it.
+
+### What was built anyway
+
+**Everything on both sides of one port.** `RefreshGrant` performs the whole rotation — reads the live grant, refuses a withdrawn connection, writes a new `secret_ref`, saves the new grant before revoking the old, carries the scopes forward, and revives an `EXPIRED` connection through a transition the table already allowed. **20 tests**, against a substituted `TokenRefresher`.
+
+**`NoTokenRefresher` is the default and reports that it could not act** — the shape `NoRevoker` held until an adapter existed. Nothing claims a refresh that did not happen.
+
+### The alternatives, and none is this lane's to choose
+
+| | What it means | The cost |
+|---|---|---|
+| **A** · The pair moves to the Python tier | `IntegrationSettings` gains it; Next keeps its own copy for acquisition | **Two tiers hold the same vendor secret.** Two rotation targets, two blast radii, and the first one somebody forgets is the one that breaks |
+| **B** · The pair moves to Python **only** | Acquisition's code exchange also moves — but §5 and [18-authentication.md](architecture/18-authentication.md):49 forbid an authorization-code exchange in Python | **Amends a ratified boundary.** Not a small edit |
+| **C** · Refresh runs at the Next tier | A route that renews and calls the connect surface; the secret stays in one place | **Puts a scheduled background operation in the tier that has no scheduler.** ARQ is Python's, and every other recurring job in the repository lives there |
+| **D** · The secret arrives from a vault at call time | Both tiers read it from one place, neither holds it | **Correct, and unavailable.** AWS Secrets Manager is provisioned at M14.5 ([ADR-0022](architecture/adr/0022-devops-infrastructure-and-deployment-topology.md)) |
+
+**Lane B's reading, offered as input and not as authority.** **D is where this ends up**, and the question is what happens between now and M14.5. **C is the smallest thing that changes no boundary** — the secret does not move, no ratified document is amended, and the cost is that a renewal needs a trigger from the tier that has one. **A is the smallest thing that changes no *code path*** and pays for it with a duplicated secret, which is the failure mode §2 names.
+
+**What is not in doubt:** the port, the use case and everything either side of them are finished, and the answer changes one wiring line.
+
+### What Lane B is doing meanwhile
+
+**Continuing.** No other part of Epic E1 waits on this, and none of the four options above would change a line of what is already built — which is the point of having isolated it.

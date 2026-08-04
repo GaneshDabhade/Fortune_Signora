@@ -121,6 +121,18 @@ The resolution keeps the property and satisfies the schema: the connection lands
 
 Found by the first test to run this against PostgreSQL rather than a double ([B-024](../BUGS.md)).
 
+### Refreshing, and the boundary it stops at
+
+**A refresh is a new grant, never an edit.** New `secret_ref`, new grant saved *before* the old is revoked so `current_for` never returns nothing, scopes carried forward — a refresh asks the customer for nothing, so it cannot widen or narrow what they permitted. **A provider that issues no new refresh token has not withdrawn the old one**; Google does exactly that, and overwriting with `None` would destroy the only thing that could renew the grant again.
+
+**It revives an expired connection** through `EXPIRED → CONNECTED`, an edge the transition table already held. That is what makes a refresh invisible to the customer, which is the entire reason `refreshable` is recorded.
+
+**It never renews a withdrawn connection.** `DISCONNECTED` and `REVOKED` are refused outright — renewing either would resurrect access a customer or a vendor deliberately removed, and `REVOKED` is the sharper case: the customer withdrew Signora *at the vendor*, and quietly restoring it would be the product overriding them.
+
+**Five outcomes rather than a boolean**, because a caller does something different with each: `RENEWED` is silent, `NOT_REFRESHABLE` means reconnect, `REFUSED` may mean the customer withdrew access at the vendor, `UNREADABLE` is an operational fault on Signora's side, and `UNUSABLE` means there was nothing to renew.
+
+> **What it stops at is one port.** `TokenRefresher` needs Signora's own OAuth *client* credentials, which live in the frontend environment because acquisition does. **Where they belong is credential ownership and a trust boundary, so it is the product owner's** — [C-327](../LANE_COORDINATION.md). Everything on both sides of that port is finished.
+
 ### Reconnecting, and the disconnect that could not be undone
 
 **`connected_account` is unique on `(workspace, integration, external_account_id)`** — one HubSpot portal is one relationship however many times somebody consents to it. The index spans *every* state, so a disconnected connection keeps the identity permanently.
@@ -274,7 +286,7 @@ Salesforce is next and was argued for at the time — it is the enterprise defau
 
 - **No credential rotation on a live connection.** A working grant cannot be replaced in place; the customer disconnects and reconnects. **Reconnection itself works** (§4), so the path exists and costs two steps.
 - ~~**No `ProviderRevoker` adapter.**~~ **Built 2026-08-04** (§4). Two systems have endpoints; anything else still reports failure honestly.
-- **No refresh.** `refreshable` is recorded, **the refresh token is now stored** (§3), and nothing yet acts on either. A grant that expires reads `NOW` on the Connection Center and needs reconnecting by hand. **This is the next executable slice in the module and needs neither a ruling nor a credential** — RFC 6749 §6 is the same standard as the exchange, and the only open question is where the client secret lives for a Python-side refresh, since it is a frontend environment value today.
+- **Refresh is built and unwired.** `RefreshGrant` performs the whole rotation and is tested; **`NoTokenRefresher` is the default and reports it could not act**, the shape `NoRevoker` held until an adapter existed. The one thing missing is an adapter, and it needs Signora's own OAuth **client** credentials — which live only in the frontend environment. **Where they belong is an architectural boundary and the product owner's**, recorded as [C-327](../LANE_COORDINATION.md) with four options and their costs. **It changes one wiring line and nothing else in this module.**
 - **`ResolveExecutionContext` is not wired at the composition root.** It is complete and tested; a factory that could only raise would be a wiring that lies about what exists. Provider Platform wires it when it consumes a connection.
 - **Nothing synchronizes.** This module records relationships. The first consumer is Provider Platform, and it has not arrived.
 - **No navigation entry.** `/settings/connections` is reachable by URL and nothing links to it — the shell is Lane A's, recorded as a coordination item rather than edited across a boundary.

@@ -14,7 +14,6 @@ not happen"*, never as an exception that stops a customer withdrawing access.
 
 from __future__ import annotations
 
-import json
 from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
@@ -24,11 +23,13 @@ import pytest
 
 from modules.integrations.application.ports import SecretNotFound
 from modules.integrations.domain.connection import ConnectedAccount, ConnectionState
-from modules.integrations.domain.grant import Credential, IntegrationGrant
-from modules.integrations.infrastructure.revocation import (
+from modules.integrations.domain.grant import (
     OAUTH2_KIND,
-    HttpProviderRevoker,
+    Credential,
+    IntegrationGrant,
+    OAuth2Material,
 )
+from modules.integrations.infrastructure.revocation import HttpProviderRevoker
 
 WORKSPACE = uuid4()
 ACTOR = uuid4()
@@ -109,10 +110,7 @@ class FakeSecrets:
 
 
 def _oauth2(access: str = "at", refresh: str | None = "rt") -> Credential:
-    return Credential(
-        kind=OAUTH2_KIND,
-        material=json.dumps({"access_token": access, "refresh_token": refresh}).encode(),
-    )
+    return OAuth2Material(access_token=access, refresh_token=refresh).as_credential()
 
 
 #: **A sentinel, because `None` is a value these tests need to pass.**
