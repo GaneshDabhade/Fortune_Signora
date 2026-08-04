@@ -258,6 +258,35 @@
 | **4** | **[C-021](LANE_COORDINATION.md)** | ✅ Valid — **but it needs no ruling of its own** | **None. It is gated on [C-010](LANE_COORDINATION.md)**, and ruling that unblocks both |
 | **5** | **[C-200](LANE_COORDINATION.md)** | ✅ Yes | **Is M14b one module, two, or three?** Lane A's discovery says *"one module and two integrations"* |
 
+### Category 1 — resolved by Lane C, no ruling needed
+
+**Two items were carrying claims the repository has since falsified. Neither is closed** — both still hold a real question — **but the argument that made them urgent is gone, and that is what was making them look bigger than they are.**
+
+| Item | The claim it carried | What the repository says now |
+|---|---|---|
+| **[C-012](LANE_COORDINATION.md)** | *"**The deployed worker consumes nothing**"* — the reason it survived since M3A | ⚠️ **Obsolete.** The deployed worker consumes. **`_project_to_timeline` and `_run_requested_research` are wired**, each binding a session at call time via `tenant_scoped_session(current.session_factory, …)`. [B-301](BUGS.md) and README record it: *"the deployed worker consumes it"* |
+| **[C-003](LANE_COORDINATION.md)** | *"Blocks nothing — **but it gets worse with every slice**"*, predicting a fourth wire code at slice 5 | ⚠️ **Disproven.** There are still **exactly three** — `icp_`, `committee_`, `focus_`. **Slice 5 added none.** The growth argument has not materialised across every slice since |
+
+> **C-012 is reduced but deliberately not closed, and the item itself is why.** It warned: *"**Not to be worked around inside a product milestone, which is how it would become permanent.**" **A pattern did ship, and whether it is the answer or the predicted workaround is exactly the judgement C-012 reserved.** Closing it on Lane C's reading would be the office deciding the thing the item exists to protect.
+>
+> **So it reduces from an RFC to a yes/no:** *is binding a session in the worker's wrapper the answer, or the workaround C-012 named?* **What is no longer true is that anything is blocked** — every module that wants to consume an event now has a working precedent, twice.
+
+**C-003 reduces to a permission with no urgency:** rename three wire codes, or leave them. **⚫ under the Change Budget, every consumer is Lane B's own frontend, and nothing degrades while it waits.**
+
+### Category 2 — ADRs ready for ratification, and processing continues past them
+
+**Three are complete, carry no unresolved alternatives, and need only a signature.** **Lane C is not waiting beside them.**
+
+| ADR | Alternatives | Open questions | Status |
+|---|---|---|---|
+| **[ADR-0402](architecture/adr/0402-a-rule-is-data.md)** — a rule is data | **Five assessed, one recommended** | ❓1 🟡 M14a sequencing *(phase 5 only)* · ❓2 🟢 *(engineering answers)* | **READY FOR RATIFICATION** |
+| **[ADR-0401](architecture/adr/0401-a-customers-crm-is-not-a-provider.md)** — CRM is not a provider | **Four assessed, one recommended, amended on Lane B's evidence** | ❓1–❓3 downstream of the decision | **READY FOR RATIFICATION** |
+| **[ADR-0400](architecture/adr/0400-person-as-an-entity.md)** — a person becomes an entity | **Five assessed, one recommended** | **❓1 is now answered — *no***. ❓2 is [C-221](LANE_COORDINATION.md)'s route choice · ❓3 affects phase 4 only | **READY FOR RATIFICATION** |
+
+> **Ratifying [ADR-0400](architecture/adr/0400-person-as-an-entity.md) does not approve Epic C and does not unblock it** — it records the bounded context so the decision is not re-derived whenever the epic resumes. **The two acts were separated in the ADR itself and remain separate.**
+
+> **[ADR-0402](architecture/adr/0402-a-rule-is-data.md) is the highest-value signature on the board.** It is the only one that turns a **`🧊 FROZEN — READY`** epic into a startable one, **and Epic F's phase 0 needs nothing at all.**
+
 ---
 
 ### 1 · C-326 — the ruling moves a file and rewrites a wrapper

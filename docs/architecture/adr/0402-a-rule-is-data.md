@@ -2,7 +2,9 @@
 
 ## Status
 
-**PROPOSED — 2026-08-04, drafted by Lane C — Product Office.** **Not ratified, and nothing is implemented.**
+**READY FOR RATIFICATION — 2026-08-04**, drafted by Lane C — Product Office. **Not ratified, and nothing is implemented.**
+
+**Complete: five alternatives assessed, one recommended, no unresolved alternative.** Its two open questions are downstream — ❓1 affects phase 5 only, ❓2 is engineering's. **Phases 1–4 depend on nothing unbuilt.**
 
 > Prepared ahead of allocation so the lane that owns [Epic F](../402-epic-f-workflow.md) inherits these decisions rather than making them while writing the first evaluator. **An ADR is required here and is not being manufactured: `workflow` is a new bounded context, which is 🔴 under `CLAUDE.md` §6.**
 

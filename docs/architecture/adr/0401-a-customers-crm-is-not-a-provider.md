@@ -2,7 +2,9 @@
 
 ## Status
 
-**PROPOSED — 2026-08-04, drafted by Lane C — Product Office.** **Not ratified, and nothing is implemented.**
+**READY FOR RATIFICATION — 2026-08-04**, drafted by Lane C — Product Office. **Not ratified, and nothing is implemented.**
+
+**Complete: four alternatives assessed, one recommended, and amended the same day on Lane B's implementation evidence.** Its open questions are downstream of the decision rather than inside it.
 
 > **Prepared ahead of allocation, so the lane that owns [Epic E1](../401-epic-e1-crm-read.md) inherits this decision rather than making it accidentally on its third day.** Lane C prepares decisions; the product owner makes them.
 >

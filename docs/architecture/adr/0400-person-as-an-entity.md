@@ -2,7 +2,9 @@
 
 ## Status
 
-**PROPOSED — 2026-08-04, drafted by Lane C — Product Office.** **Not ratified, and nothing is implemented.**
+**READY FOR RATIFICATION — 2026-08-04**, drafted by Lane C — Product Office. **Not ratified, and nothing is implemented.**
+
+**Complete: five alternatives assessed, one recommended.** ⚠️ **❓1 is now answered — the provider returns no person name** ([C-221](../../LANE_COORDINATION.md)), which blocks the *epic*. **Ratifying this ADR records the bounded context so it is not re-derived when the epic resumes; it neither approves nor unblocks Epic C.**
 
 > **Lane C prepares decisions; the product owner makes them.** This ADR exists so the lane that eventually owns Epic C **inherits a decision rather than re-debating one**. It follows the route [ADR-0035](0035-commercial-profile.md) and [ADR-0038](0038-timeline.md) took: draft first, ratify, then build — **never the other way round.**
 >
