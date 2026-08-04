@@ -208,6 +208,22 @@ Decisions required    what the product owner must rule before it can start
 
 > **It earns its place immediately.** On its first run: [ADR-0401](architecture/adr/0401-a-customers-crm-is-not-a-provider.md) was **amended within hours of being drafted** because Lane B's mapper showed the boundary was per *field*, not per *source*; [Epic C](architecture/400-epic-c-people.md) moved to **`Waiting on Product Decisions`** because Lane A answered ❓1 and the answer was *no*; and two Lane A findings **removed a phase and closed off a tempting shortcut** that would have cost a week.
 
+### Roadmap integrity
+
+**A standing responsibility from 2026-08-04, product owner.** **Do not assume every roadmap initiative should become an implementation package.** Challenge the roadmap with repository evidence — **never with opinion** — and bring a recommendation to **retire · merge · split · rename · re-scope · simplify · postpone.**
+
+> **The objective is to prevent engineering effort before it starts.** *"Repository evolution has eliminated the need for module X"* is worth more than a prepared package for module X, and it is the harder thing to notice.
+
+**The test for whether a planned module is a bounded context, derived from a case the repository already settled:**
+
+> **Does it own an aggregate with a lifecycle and invariants of its own?** — **not** *"is it composition?"* **That weaker argument was made in [C-025](LANE_COORDINATION.md) about Integrations and it lost, correctly**: `ConnectedAccount` is a business relationship existing before, during and after any sync. **Integrations passed the test. [RIP](architecture/408-revenue-intelligence-platform.md) fails every part of it** — no aggregate, no lifecycle, no invariant, no state, no published events.
+
+**Ask of every initiative:** does it still solve a real customer problem · **has another implementation already solved it** · has repository evolution made it obsolete · should it merge into another epic · has it become materially smaller or larger · **is its original architectural assumption still true** · does it own aggregates, invariants, lifecycle, events — **or only orchestration?**
+
+**And check the roadmap against the differentiators, not only against the code.** [PRODUCT_DIFFERENTIATORS.md](../PRODUCT_DIFFERENTIATORS.md) *"governs every future feature, engineering decision, roadmap item and architectural investment"*, and **a capability can be a governing differentiator while appearing in zero milestones** — *deprioritization intelligence* was, and turned out to be **mostly built and already `READY` as [TASK-905](BACKLOG.md)** ([403](architecture/403-epic-d-risk.md)). **The differentiator was not missing; it was unlabelled.**
+
+> **A registry entry for an unbuilt module is a standing instruction to build it.** Retiring one is cheaper than the investigation that follows somebody starting it — **and retiring is a roadmap scope change, so it is always the product owner's.**
+
 **Report blocking *questions* alongside blocking *decisions*** *(learned 2026-08-04)*. **Epic C was reported READY at 100% while carrying an open question that could block it outright** — documented in the package, omitted from the portfolio row. **A summary that lists only decisions understates risk**, and the row is what a reader allocates from.
 
 **Preparation confers no implementation authority whatever.** Lane C does not implement what it prepared, does not claim it, and does not cross module ownership to explain it. **Its responsibility ends when the package is complete.**

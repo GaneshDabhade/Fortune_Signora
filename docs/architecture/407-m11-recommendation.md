@@ -99,7 +99,9 @@
 
 **Seller:** a recommendation appears on the account or opportunity it concerns, **citing the reasoning that produced it** → the seller acts, dismisses, or ignores → **dismissal is signal, and `recommendation.status_changed` already lists `Signal Engine (feedback loop)` as a consumer.**
 
-> **The feedback loop is catalogued and should stay unbuilt in v1.** A dismissal-weighted signal model is a second scoring system learned from behaviour, in a repository whose scoring is deliberately a **reviewed artifact** a customer can argue with. **Recording dismissals is v1; learning from them is a decision, not a slice.**
+> **The feedback loop is catalogued and should stay unbuilt in v1 — *deferred, not dropped*, and the distinction matters.** A dismissal-weighted signal model is a second scoring system learned from behaviour, in a repository whose scoring is deliberately a **reviewed artifact** a customer can argue with. **Recording dismissals is v1; learning from them is a decision, not a slice.**
+>
+> ⚠️ **Corrected on roadmap-integrity review:** [PRODUCT_DIFFERENTIATORS.md](../../PRODUCT_DIFFERENTIATORS.md) names the ***Self-Improving Recommendation Loop*** — *"`recommendation.status_changed` feeds back into Signal Engine… **near-impossible to copy quickly**"* — and calls it ***"the mechanism behind the Product Flywheel"***, rated **High, long-term.** **This package initially read as though it were an optional extra. It is a governing differentiator.** The v1 deferral stands on its architectural merits; **what changes is that `recommendation.status_changed` must be designed as the flywheel's input from the first commit**, not retrofitted — which is free if known, and expensive if not.
 
 **Failure paths:** reasoning fails → **no recommendation, and no placeholder** · a citation does not resolve → **refuse to show it**, per ADR-0031's *validates, never repairs* · the opportunity closes → **outstanding recommendations expire**, machine-authored and correct · **the same conclusion recurs → supersede rather than duplicate**, exactly as `signal.superseded` and `business_event.superseded` already do.
 

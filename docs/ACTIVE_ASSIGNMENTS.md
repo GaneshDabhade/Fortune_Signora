@@ -166,6 +166,25 @@
 
 > ⚠️ **Percentages were dropped, and the reason is a miss worth recording.** [Epic C](architecture/400-epic-c-people.md) was reported **READY, 100%**, with blockers given as *"ADR-0400 ratification · contact ruling."* **Its own ❓1 — *does the provider return a person's name?* — was documented in the package and omitted from the portfolio row.** Lane A checked it first, as the ADR instructed, and **the answer blocked the epic.** A percentage said *ready*; an unanswered question said *maybe not*, and only one of them reached the summary a reader allocates from. **The column now carries blocking *questions* alongside blocking *decisions*.**
 
+### Roadmap evolution — 2026-08-04
+
+**Standing section.** What changed about *what should be built*, as distinct from what is ready to build.
+
+| | Initiative | Evidence |
+|---|---|---|
+| ⛔ **Recommend retiring** | **RIP** | Its job is `apps/api/composition/`, built. **The shape it would take was tried and import-linter refused it.** Fails every part of the aggregate test — [C-411](LANE_COORDINATION.md) |
+| 🏷️ **Recommend renaming** | **Epic D phase 1 = the *Deprioritization Intelligence* differentiator** | A **governing differentiator in zero milestones**, and **already `READY` as [TASK-905](BACKLOG.md)**. The differentiator doc's own estimate — *"a policy decision more than a new module"* — matches what the code says |
+| 📉 **Became smaller** | **E1** | Lane B's firmographic mapper: **six attributes, no RFC, no table, no event, no migration.** The interpretation half was free |
+| 📉 **Became smaller** | **Epic C** | **The buying score needs no change at all** — it weights signals generically, so a person-subjected signal costs zero scoring work |
+| 📈 **Became larger** | **Epic C** | **Its own ❓1 blocks it.** Not larger in code — **larger in what must be decided before any is written** |
+| 🔗 **Newly independent** | **Epic F** | [ADR-0402](architecture/adr/0402-a-rule-is-data.md) — publishing an event instead of invoking actions **removes its dependency on Notifications, Slack, email and E2**, none of which exist |
+| ♻️ **Newly discovered reuse** | **M11 · E2** | Both inherit **`MACHINE_AUTHORED`** — the enforced *"intelligence suggests, humans commit"* boundary — rather than inventing a guard |
+| ⚠️ **Newly exposed gap** | **Data export · account deletion** | **No owner anywhere in the repository.** Epic C raises the stakes; M15 nominally covers it and sits behind an unbuilt environment — [C-412](LANE_COORDINATION.md) |
+| ⚠️ **Newly exposed gap** | **PII in logs** | Redaction is credential-shaped — [405](architecture/405-cross-cutting-concerns.md) §2 |
+| 🏷️ **Naming collision** | **Epic F** | `apps/api/composition/workflow.py` already means *the Opportunity Engine's write surface* |
+
+> **The two recommendations that change future engineering effort are the retirement and the rename**, and they pull in opposite directions: **one removes a module nobody should build; the other reveals a differentiator that is already built and unlabelled.** Both cost a decision and no engineering.
+
 ### Section coverage — against the 2026-08-04 template
 
 | Package | Product · Reuse · Architecture · Domain · Phases · Risks · Edge cases | Security | Perf | **Observability** | Testing | API · Data | UI/UX |

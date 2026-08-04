@@ -29,6 +29,16 @@
 
 > **D2's remaining work is not in the score. It is on the screen** — *"a contraction risk must never be confusable with a low-scoring opportunity, because they mean opposite things to a CRO scanning a list."* **That is [TASK-905](../BACKLOG.md), it is Product Surface's, and it is already `READY` in the backlog.**
 
+> ### Roadmap integrity, 2026-08-04 — **Epic D *is* a governing differentiator that appears in zero milestones**
+>
+> **[PRODUCT_DIFFERENTIATORS.md](../../PRODUCT_DIFFERENTIATORS.md) names *"Negative Signal / Deprioritization Intelligence"*** — *"the system explicitly tells reps which accounts are **not** worth pursuing right now, with reasoning, rather than only surfacing positive signals."* Its own assessment: **cost *"Low-Medium — a policy/product decision more than a new module"*; value *"Medium-High — cheap to build, high differentiation, currently unclaimed territory."***
+>
+> **README records it among the unowned capabilities as *"deprioritization intelligence (owner exists, no milestone)"***, and [SESSION_HANDOFF.md](../SESSION_HANDOFF.md) is blunter: **a governing differentiator in zero milestones**, one of four capabilities that entered through a Demo Scenario rather than a Scope entry.
+>
+> **It is not missing. It is unlabelled, and it is mostly built.** `Posture.CONTRACTIONARY`, `contraction_risk` and `decision_maker_departed` are scored today; **what remains is exactly §1's finding — the screen, which is [TASK-905](../BACKLOG.md), already `READY`.** The differentiator document's own cost estimate — *"a policy/product decision more than a new module"* — **is the same conclusion this package reached from the code.**
+>
+> **The recommendation is a rename, not a build:** *Epic D phase 1 delivers the Deprioritization Intelligence differentiator.* **Saying so converts a governing differentiator with no milestone into a `READY` task with an owner**, at no engineering cost.
+
 ---
 
 ## 2 · D1 is four families, and they are in four different conditions

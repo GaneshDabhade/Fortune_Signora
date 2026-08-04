@@ -197,6 +197,7 @@
 | [C-409](#c-409--adr-0014-is-accepted-and-contradicted-by-shipped-code) | **ADR-0014 rules four CRMs at launch; the catalog ships two** | Lane C | **Product owner** | `OPEN` | **Nothing.** But a lane starting [E1](architecture/401-epic-e1-crm-read.md) reads both |
 | [C-410](#c-410--no-prompt-has-ever-been-evaluated-against-a-production-model) | **Every AI release is measured on a local model; production runs hosted ones** | Lane C | **Product owner** | `OPEN` | **Nothing today.** Blocks the *first customer-facing inference*, whichever epic reaches it |
 | [C-411](#c-411--revenue-intelligence-platform-is-a-planned-module-whose-job-is-already-done) | **RIP is a planned module whose job `apps/api/composition/` already does** | Lane C | **Product owner** | `OPEN` | **Nothing.** It prevents future work rather than unblocking any |
+| [C-412](#c-412--data-export-and-account-deletion-have-no-owner-and-epic-c-raises-the-stakes) | **Data export and account deletion have no owner anywhere** | Lane C | **Product owner** | `OPEN` | **Nothing today.** [Epic C](architecture/400-epic-c-people.md) raises the stakes materially |
 
 > **Nine rows were added on 2026-08-02 for items that existed in the body and not in this table.** They were opened by Lane A across five slices and each was written as a section without its summary row, so **this table under-reported what was waiting by nine.** A register whose index disagrees with its own contents is the defect class `CLAUDE.md` §2 names — recorded rather than quietly fixed, because the omission is worth noticing.
 >
@@ -2949,6 +2950,34 @@ Every lane's rows sit **adjacent in one table**, and each lane's branch carries 
 **The capability is not being dropped.** Composition, workspace-level reads and reporting all continue exactly where they are — **the question is only whether they need a bounded context, and the evidence says they already have one.**
 
 **One genuine gap, and it is a product question rather than an architectural one.** Two of RIP's three Core Concepts already ship — the *Prioritized Opportunity List* is the attention list, the *Workspace Intelligence View* is the brief and accounts list. **The third, *Revenue Intelligence Report*, has no screen, no endpoint, no spec and no acceptance criterion anywhere.** *What is it, who reads it, and what decision does it change?* **Unanswerable from repository evidence; nothing waits on it today.**
+
+## C-412 · Data export and account deletion have no owner, and Epic C raises the stakes
+
+| | |
+|---|---|
+| **Classification** | **Repository Decision** — a compliance obligation with no assigned owner |
+| **Owner** | **Product owner** |
+| **Requester** | **Lane C — Product Office**, found during a roadmap-integrity review |
+| **Status** | `OPEN` |
+| **Blocks** | **Nothing today.** It is raised now because **[Epic C](architecture/400-epic-c-people.md) changes what it costs to have ignored it** |
+
+**Measured, not inferred.** `grep -rlniE "data export\|account deletion\|right to erasure\|delete my account" backend/ docs/architecture/*.md` **returns nothing.** No module, no ADR, no architecture document and no milestone.
+
+**README already records it**, in the list kept *"so they stop disappearing"*: *"…**data export and account deletion (no owner)**."* **The list did its job — the capability is still visible. What it has never had is an owner.**
+
+**Why now rather than at GA.** Three things converged this week:
+
+| | |
+|---|---|
+| **[Epic C](architecture/400-epic-c-people.md)** | Introduces **personal data about people who never consented** — the first such data in the repository. **[ADR-0400](architecture/adr/0400-person-as-an-entity.md) designs `ForgetPerson` for *one person*. It says nothing about a *customer* leaving and taking their workspace with them** |
+| **[405](architecture/405-cross-cutting-concerns.md) §2** | Log redaction is **credential-shaped** and matches no name, email or phone. **Erasing a row does not erase a log line** |
+| **M15** | Lists **SOC 2 and PII** among four workstreams — and **M15 depends on M14.5, which has not been built.** The milestone nominally covering this is behind an environment that does not exist |
+
+> **Two separate obligations are hiding under one bullet**, and they have different owners and different costs. **Erasure** — a person, or a workspace, asking to be removed. **Portability** — a customer asking for their data back. **`ForgetPerson` addresses a slice of the first and none of the second.**
+
+**What Lane C is not doing:** proposing a design, an owner or a milestone. **Scope and sequencing are the product owner's**, and a compliance obligation is exactly the class where an office inventing an answer is worse than an office naming the gap.
+
+> **The narrow question: does account deletion and data export get an owner before [Epic C](architecture/400-epic-c-people.md) ships, or does it stay with M15 behind M14.5?** **Lane C has no recommendation it is confident in** — the compliance argument says *before*, the sequencing argument says M15 exists for exactly this, and **the two do not resolve against each other on repository evidence.**
 
 ## Closed
 
