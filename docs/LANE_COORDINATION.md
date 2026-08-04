@@ -3681,3 +3681,63 @@ A record can be highly significant and unidentifiable — `70b04700` has four we
 **What Lane B is doing meanwhile.** Continuing on work inside its boundaries on **either** reading — A5's backend is a `knowledge_graph` read over `claim.observed_at` and is unambiguously Lane B's. **The screen is not started until this is answered.**
 
 > **A layer boundary makes every Epic A slice a coordination item**, which is the exact cost the product owner rejected when ruling on C-323. That reasoning has not changed; only its application to the frontend is unclear.
+
+## C-325 · B-400's renumber cannot be performed by either lane on its own branch
+
+| | |
+|---|---|
+| **Raised by** | Lane B, 2026-08-04, on being assigned [B-400](BUGS.md) as priority 1 |
+| **Owner** | **QE** — the merge order is the integration authority's, and it is the only input the fix is missing |
+| **Status** | `OPEN` — **blocking [B-400](BUGS.md), which blocks promotion for every lane** |
+| **Blocks** | Nothing this lane is implementing. **Epic E1 proceeds** |
+
+**[B-400](BUGS.md) is real, and this lane measured it rather than reading it.** With both branches' migration files in one tree:
+
+```
+UserWarning: Revision 0031 is present more than once
+alembic heads    →  0031, 0035 (two heads)
+alembic history  →  FAILED: Requested revision 0035 overlaps with other requested revisions 0031
+alembic upgrade head
+                 →  FAILED: Multiple head revisions are present for given argument 'head'
+```
+
+**Three corrections to the row, all measured.**
+
+| | |
+|---|---|
+| **The target has moved** | B-400 says *"the cheaper renumber is Lane B's single file to `0035`"*. **Lane A took `0035` after that row was written** — `0035_watermark_attempted_at.py`, A7, commit `d8f5832`. The correct target today is **`0036`**, and it will move again the next time either lane adds a migration. **A renumber target computed against a branch you cannot see has a shelf life** |
+| **The failure is not a load error** | The row says *"every `alembic` command fails to build the revision map — a hard load error"*. It is a **`UserWarning`**, and the map builds with one of the two `0031` files silently dropped. Commands that name `head` then fail on multiple heads. **The distinction matters**: the first thing a reader tries is `alembic heads`, which *succeeds* and prints two lines |
+| **Neither lane can fix it alone** | Measured both ways, below |
+
+### The fix is verified, and it is one file
+
+Renumbering `0031_commercial_profile_segment.py` to `0036` with `down_revision = "0035"`, **in a tree containing Lane A's chain**, gives a single head and a linear graph:
+
+```
+0030 -> 0031 invitation -> 0032 -> 0033 -> 0034 -> 0035 watermark -> 0036 segment (head)
+```
+
+### And it cannot be applied here
+
+The same file on `lane-b-commercial-profile` alone:
+
+```
+KeyError: '0035'
+```
+
+**`down_revision` must name a revision that exists in the tree, and Lane A's chain exists only on Lane A's branch.** The symmetry is exact: Lane A cannot renumber its five files onto Lane B's `0031` either, for the same reason.
+
+> **B-400 is not a code defect with an owner. It is a merge-order decision with a consequence**, and the consequence lands on whichever lane rebases second — which is precisely what `CLAUDE.md` §20e already says: *"a lane that finds its number taken renumbers on rebase and says so in the commit message."* **Assigning it to a named lane in advance made it look like an actionable 🔴 when the missing input is a sequencing decision.**
+
+### What QE is being asked for
+
+**One choice, and either resolves it.**
+
+| Order | Who renumbers | Cost |
+|---|---|---|
+| **Lane A first, then Lane B** | **Lane B**, one file to `0036` | **Verified above.** Minutes, at this lane's next rebase |
+| **Lane B first, then Lane A** | **Lane A**, five files to `0032`–`0036` | Larger, and not this lane's to estimate |
+
+**B-400 named the first, on cost, and that reasoning still holds.** This lane is ready either way: `lane-b-commercial-profile` is rebased onto `1252d02` with its gates green, and the renumber is pre-verified.
+
+**What this lane is doing meanwhile.** **Epic E1**, which touches no migration yet. **If E1 adds one, this lane will number it after whatever head exists at that rebase and say so** — which is the same rule, applied at the only moment it can be applied correctly.
