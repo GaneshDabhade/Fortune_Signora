@@ -153,6 +153,17 @@
 | **Makes [B-203](BUGS.md) a defect** | It was 🟠 *"an unreachable control — whether it is a defect or a non-goal depends on a product decision nobody has made"*. **The decision has been made.** §20c permits a foundation change for exactly this: *"an accessibility issue — a missing label, an unreachable control, a lost focus state. These are defects, not enhancements"* |
 | **On claiming** | **The frontend foundation is frozen (§20c) and this touches it deliberately and narrowly.** Every such change is announced in its commit message with the ruling that permits it. **No shared component is bent to suit one page** |
 
+### TASK-201 · Epic C — People Intelligence
+
+| | |
+|---|---|
+| **Epic** | **Epic C**, [ADR-0400](architecture/adr/0400-person-as-an-entity.md) · [400-epic-c-people.md](architecture/400-epic-c-people.md). **Assigned whole** |
+| **Module** | **A new bounded context — `people`** · `knowledge_graph` (`EntityKind.PERSON`) · `commercial_profile` (a stable role id, Lane B's) · Product Surface |
+| **Status** | **`CLAIMED` — Lane A**, 2026-08-04. **Immediately `BLOCKED`** — see below |
+| **Assigned** | **Lane A, directly by the product owner, 2026-08-04**, on Lane C's prepared research, ADR and specification |
+| **Blocked by** | **[C-221](LANE_COORDINATION.md) — ADR-0400's own ❓1, checked first as the ADR instructs, and the answer is *no*.** The platform receives no person name at any point, so an identity model has nothing to identify |
+| **On claiming** | **ADR-0400 is `PROPOSED`, not ratified**, and it says so in its own status block. A new bounded context is 🔴. The product owner's assignment is the epic approval; **the ADR still needs its ratification stamp, which only the product owner can apply** |
+
 ### TASK-900 · The platform learns to compose a module into the runtime
 
 | | |
