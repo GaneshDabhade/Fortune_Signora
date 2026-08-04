@@ -326,6 +326,21 @@ Decisions required    what the product owner must rule before it can start
 
 **A pending design can also make an open decision *less* urgent, and saying so is part of the job.** O2 was ready to sign; **a Notification Center module is being designed, so Lane C recommends waiting.** An ADR amended in its first week costs the ADR's authority, and **nothing is lost by waiting for a design that was announced.**
 
+### 5d · An endpoint's existence is evidence about the backend, never about the screen
+
+**Learned 2026-08-04, twice in one day, and both times before implementation.**
+
+**[412](architecture/412-backend-capability-matrix.md) placed two screens in wave 1 by counting the routers that appeared to serve them.** Reading the screens instead:
+
+| | |
+|---|---|
+| **Account 360** | Eight endpoints, yes — **and 27 sections, of which eleven are served, two are blocked by O1, and seven have no source anywhere** ([414](architecture/414-wave-1-account-360.md) §0) |
+| **AI Research** | A built router, yes — **researching one account, where the approved screen researches a cohort and reports what its members share** ([416](architecture/416-ai-research-scope-gap.md) §0) |
+
+> **The matrix's unit — routers and events — is right for planning and wrong for placement.** A module can be complete, tested and published and still not answer the question its apparent screen asks.
+
+**So: before a screen enters a wave, read its sections against the contracts that would serve them.** Not the module's name, not its endpoint count, not whether it has an `interface/` layer. **Each correction cost a document because it was caught early; either would have cost a slice if caught during implementation.**
+
 ---
 
 ## 6 · Feature decomposition

@@ -90,11 +90,15 @@
 
 ### Wave 1 — needs no decision from anybody
 
-> **Account 360 · AI Research**
+> **Account 360.** *(One screen. See both corrections below.)*
 
-**Five 🟩 modules and one already carrying its interface layer.** Account 360 reuses eight endpoints across eight modules; AI Research reuses a router that already exists. **Nothing in this wave waits on a signature, a port, or a module that does not exist.**
+**Eleven sections across eight modules, five of them 🟩 and needing nothing structural.** **Nothing in this wave waits on a signature, a port, or a module that does not exist.**
 
-> ⚠️ **Corrected 2026-08-04, before anything was built.** *"Needs no decision from anybody"* is true of what wave 1 **delivers** and false of Account 360 as a whole. **Its 27 sections are eleven served, two blocked by O1, two owned by later waves and seven with no source at all.** [414](414-wave-1-account-360.md) draws the boundary and is the package; **wave 1 is that bounded subset, and it is still the right first slice.**
+> ⚠️ **Correction 1, 2026-08-04, before anything was built.** *"Needs no decision from anybody"* is true of what wave 1 **delivers** and false of Account 360 as a whole. **Its 27 sections are eleven served, two blocked by O1, two owned by later waves and seven with no source at all.** [414](414-wave-1-account-360.md) draws the boundary and is the package.
+
+> ⚠️ **Correction 2, same day — AI Research moves to wave 3.** It was placed here because `ai_research_engine` is built and has a router. **The built endpoint researches one account; the approved screen researches a cohort and reports what its members share** — a different question, and the screen also inherits shell scope, which is **O3**. [416](416-ai-research-scope-gap.md) measures it. **The built endpoint still reaches a customer in wave 1, as Account 360's Research section.**
+
+> **Both corrections came from reading the approved screen's sections instead of counting the endpoints that appeared to serve it.** The rule that follows is in [416](416-ai-research-scope-gap.md) §6: **an endpoint's existence is evidence about the backend, never about the screen.**
 
 **Why it is first and not merely easy:** Account 360 is the flagship record page, and it is the surface that makes every 🟩 module *reachable by a customer for the first time*. **It converts existing intelligence into product without adding any.**
 
@@ -108,7 +112,9 @@
 
 ### Wave 3 — the shell, and it is a prerequisite not a screen
 
-> **Shell services · Companies · Signal Center · ICP Builder**
+> **Shell services · Companies · Signal Center · ICP Builder · AI Research**
+
+**AI Research joins here** ([416](416-ai-research-scope-gap.md)): it inherits shell scope, so it cannot precede the service that supplies it, and **its substantive gap — cohort-scoped research — is larger than the screen and independent of O3.**
 
 **The shell is here because every later wave inherits it.** Global scope is applied before a module renders; building waves 4–6 first means writing it sixteen times. **O3 decides whether it needs an ADR, and that is the only thing holding it.**
 
