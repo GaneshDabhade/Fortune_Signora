@@ -26,7 +26,6 @@ from modules.workspace_tenancy.application.use_cases.accept_invitation import (
     UnverifiedEmailError,
 )
 from modules.workspace_tenancy.domain.entities import Membership, WorkspaceRole
-from modules.workspace_tenancy.domain.exceptions import WorkspaceNotFoundError
 from modules.workspace_tenancy.domain.invitation import (
     Invitation,
     InvitationNotPendingError,
@@ -116,13 +115,11 @@ def publisher() -> FakeEventPublisher:
 def use_case(
     invitations: FakeInvitationRepository,
     memberships: FakeMembershipRepository,
-    workspaces: FakeWorkspaceRepository,
     publisher: FakeEventPublisher,
 ) -> AcceptInvitationUseCase:
     return AcceptInvitationUseCase(
         invitations=invitations,
         memberships=memberships,
-        workspaces=workspaces,
         event_publisher=publisher,
     )
 
@@ -311,10 +308,19 @@ class TestNamingTheLinkIsNotAuthorityToUseIt:
 
         assert str(missing.value) == str(theirs.value)
 
-    async def test_an_unknown_workspace_is_refused(
+    async def test_an_unknown_workspace_is_refused_as_a_missing_invitation(
         self, use_case: AcceptInvitationUseCase
     ) -> None:
-        with pytest.raises(WorkspaceNotFoundError):
+        """**There is no separate "no such workspace" answer, deliberately.**
+
+        The first draft checked the workspace existed. `workspace`'s row-level
+        security is membership-based, so the accepter could never pass it and
+        every acceptance answered `workspace_not_found` — caught by an
+        integration test, not by this file, because a fake repository has no
+        RLS to fail. It also leaked a distinct code for a workspace the caller
+        cannot see. **The invitation read is the existence proof.**
+        """
+        with pytest.raises(InvitationNotFoundError):
             await use_case.execute(_input(uuid4(), uuid4()), now=NOW, correlation_id=uuid4())
 
 

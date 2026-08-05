@@ -59,10 +59,8 @@ from modules.workspace_tenancy.application.ports import (
     EventPublisher,
     InvitationRepository,
     MembershipRepository,
-    WorkspaceRepository,
 )
 from modules.workspace_tenancy.domain.entities import Membership
-from modules.workspace_tenancy.domain.exceptions import WorkspaceNotFoundError
 from modules.workspace_tenancy.domain.invitation import (
     InvitationError,
     normalize_email,
@@ -131,12 +129,10 @@ class AcceptInvitationUseCase:
         *,
         invitations: InvitationRepository,
         memberships: MembershipRepository,
-        workspaces: WorkspaceRepository,
         event_publisher: EventPublisher,
     ) -> None:
         self._invitations = invitations
         self._memberships = memberships
-        self._workspaces = workspaces
         self._event_publisher = event_publisher
 
     async def execute(
@@ -145,17 +141,23 @@ class AcceptInvitationUseCase:
         """**Order matters, and it is the order of increasing disclosure.**
 
         The verification check runs first and answers about the caller alone.
-        Everything after it answers about the workspace, and every one of those
-        failures returns the same sentence — so the sequence cannot be used to
-        learn anything by watching which error comes back.
+        **Everything after it returns one sentence and one status**, so the
+        order cannot be used to learn anything by watching which error comes
+        back — and there is no separate *"no such workspace"* to distinguish.
         """
         if not input_.email_verified:
             raise UnverifiedEmailError()
 
-        workspace = await self._workspaces.get(input_.workspace_id)
-        if workspace is None:
-            raise WorkspaceNotFoundError(input_.workspace_id)
-
+        # **There is deliberately no workspace-existence check.** The first
+        # draft had one, and an integration test caught it: `workspace`'s
+        # row-level security is *membership-based*, so the accepter — who is by
+        # definition not a member — could never pass it, and every acceptance
+        # answered `workspace_not_found`. It also leaked a distinct code for a
+        # workspace the caller cannot see.
+        #
+        # **The invitation read is the existence proof.** An invitation cannot
+        # exist without its workspace, and one that cannot be found is
+        # `InvitationNotFoundError` — the same 404 as every other refusal here.
         invitation = await self._invitations.get(input_.workspace_id, input_.invitation_id)
         if invitation is None:
             raise InvitationNotFoundError()

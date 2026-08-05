@@ -20,12 +20,16 @@ from modules.workspace_tenancy.application.use_cases import (
     ListUserWorkspacesInput,
     ListWorkspaceMembersInput,
 )
+from modules.workspace_tenancy.application.use_cases.accept_invitation import (
+    AcceptInvitationInput,
+)
 from modules.workspace_tenancy.application.use_cases.change_role import ChangeRoleCommand
 from modules.workspace_tenancy.application.use_cases.invite_member import InviteMemberCommand
 from modules.workspace_tenancy.application.use_cases.remove_member import RemoveMemberCommand
 from modules.workspace_tenancy.application.use_cases.transfer_ownership import (
     TransferOwnershipCommand,
 )
+from modules.workspace_tenancy.infrastructure.acceptance import accepting_workspace
 from modules.workspace_tenancy.infrastructure.composition import (
     build_query_service,
     build_use_cases,
@@ -430,3 +434,53 @@ async def remove_member(
 
 
 __all__ = ["router"]
+
+
+@router.post(
+    "/workspaces/{workspace_id}/invitations/{invitation_id}/accept",
+    response_model=MembershipResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Join an organization you were invited to",
+)
+async def accept_invitation(
+    context: CurrentUser, workspace_id: UUID, invitation_id: UUID
+) -> MembershipResponse:
+    """**The one handler in Signora served to somebody outside the workspace.**
+
+    Everything else on this router takes `CurrentWorkspace`, which verifies
+    membership before the handler runs. **That dependency would refuse this
+    caller, correctly** — they are not a member, and membership is what they
+    are asking for. So this takes `CurrentUser`: authenticated, and nothing
+    more ([C-208](../../../../docs/LANE_COORDINATION.md)).
+
+    **There is no `context.authorize` call, and its absence is deliberate.**
+    Casbin answers *"may this role do this?"*, and the caller has no role in
+    this workspace to answer about. Authority here is the **verified email
+    claim**: the invitation names an address, and the use case refuses unless
+    the caller is proved to be it.
+
+    **Naming a workspace and an invitation is not authority.** Both travel in a
+    URL — forwarded, screenshotted, left in a shared browser — and neither is a
+    secret. Guessing them yields a transaction that can read one row the
+    guesser cannot act on.
+
+    **Following the link twice succeeds.** Somebody who already holds the
+    membership the invitation offered gets it back rather than an error, and
+    nothing is published a second time.
+    """
+    async with accepting_workspace(context.session, workspace_id=workspace_id) as session:
+        membership = await build_use_cases(session).accept_invitation.execute(
+            AcceptInvitationInput(
+                workspace_id=workspace_id,
+                invitation_id=invitation_id,
+                # **All three from the verified token, never from a body.** A
+                # user id a caller could supply is a user id they would supply
+                # somebody else's.
+                user_id=context.principal.user_id,
+                email=context.principal.email,
+                email_verified=context.principal.email_verified,
+            ),
+            now=datetime.now(UTC),
+            correlation_id=context.correlation_id,
+        )
+    return MembershipResponse.from_domain(membership)

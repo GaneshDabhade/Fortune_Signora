@@ -16,6 +16,9 @@ from modules.workspace_tenancy.application.use_cases import (
     ListUserWorkspacesUseCase,
     ListWorkspaceMembersUseCase,
 )
+from modules.workspace_tenancy.application.use_cases.accept_invitation import (
+    AcceptInvitationUseCase,
+)
 from modules.workspace_tenancy.application.use_cases.change_role import ChangeRole
 from modules.workspace_tenancy.application.use_cases.invite_member import (
     InviteMember,
@@ -45,6 +48,7 @@ from signora_platform.event_bus import PostgresOutboxEventPublisher
 class WorkspaceTenancyUseCases:
     create_workspace: CreateWorkspaceUseCase
     add_member: AddMemberUseCase
+    accept_invitation: AcceptInvitationUseCase
     get_workspace: GetWorkspaceUseCase
     list_workspace_members: ListWorkspaceMembersUseCase
     list_user_workspaces: ListUserWorkspacesUseCase
@@ -77,6 +81,15 @@ def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
         add_member=AddMemberUseCase(
             workspace_repository=workspace_repository,
             membership_repository=membership_repository,
+            event_publisher=event_publisher,
+        ),
+        # **Reachable only from the acceptance endpoint**, which is the only
+        # handler that establishes workspace context without membership
+        # (C-208). It is built here like everything else; what makes it a named
+        # single-purpose path is `infrastructure/acceptance.py`, not this line.
+        accept_invitation=AcceptInvitationUseCase(
+            invitations=invitation_repository,
+            memberships=membership_repository,
             event_publisher=event_publisher,
         ),
         get_workspace=GetWorkspaceUseCase(workspace_repository=workspace_repository),
