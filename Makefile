@@ -311,6 +311,27 @@ runtime-composition:
 coverage-debt:
 	@python3 ./infra/coverage-debt.py $(ARGS)
 
+## **Is this environment ready?** One command, one verdict, one exit code.
+##
+## Composes the checks that already exist — workstation, environments,
+## state-check, reachability, runtime-composition — and re-implements none of
+## them: each runs as a subprocess and each remains runnable alone.
+##
+## It repairs NOTHING. `workstation.py` is invoked as `--check`, and no check
+## here carries a flag that writes. A doctor that fixed things would be making
+## governance decisions on behalf of every tool it wraps, which is the reason
+## state-check refuses to repair.
+##
+## Blocking failures set the exit code; advisory findings are reported and do
+## not. A check not run is printed as `not run` with its reason — absence is
+## never allowed to read as a pass.
+##
+##     make doctor
+##     make doctor ARGS=--full     also runs `make validate` (minutes)
+##     make doctor ARGS=--list     what it would run, and runs nothing
+doctor:
+	@python3 ./infra/doctor.py $(ARGS)
+
 ## Advisory: do the governance documents agree with the repository?
 ## Run at Repository Closeout, before declaring Repository Ready (CLAUDE.md
 ## §20e). Reports; never repairs — each inconsistency it finds has more than

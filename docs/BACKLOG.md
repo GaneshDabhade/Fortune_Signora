@@ -350,7 +350,7 @@
 |---|---|
 | **Objective** | **One command answers *"is this environment ready?"*** Five tools answer it today and nothing asks all five |
 | **Module** | `infra/` — **Lane C's** |
-| **Status** | `READY` |
+| **Status** | **`IN VALIDATION` — Lane C**, 2026-08-04. **`make doctor`, and it re-implements nothing** — every check runs as a subprocess and every one is still runnable alone. **Repairs nothing**: `workstation.py` is invoked `--check`, and a test asserts no check carries `--force`/`--fix`/`--write`. **Blocking and advisory are separated** — read from what the repository already says about each tool, not invented — so an advisory finding reports and does not fail the verdict, which is the `event-catalog` lesson. **`make validate` is deliberately not in the default run** and is printed as `not run` with its reason; **absence is never allowed to read as a pass.** ⚠️ **The verdict names its subject** — *"NOT READY to run Signora here"* — because Lane C holds no runtime by governance and a plain *"NOT READY"* would misdiagnose a clone that is correctly unable to run the product. **Seven tests** |
 | **Scope** | A single target composing the **existing** checks and reporting one verdict |
 | **Dependencies** | **None** |
 | **Repository reuse** | **`workstation.py` · `reachability.py` · `state-check.py` · `runtime-composition.py` · `validate.py` all exist and all pass or fail on their own.** This composes; **it re-implements nothing** |
