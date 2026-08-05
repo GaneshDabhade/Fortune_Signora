@@ -25,6 +25,7 @@ from modules.workspace_tenancy.application.use_cases.accept_invitation import (
 )
 from modules.workspace_tenancy.application.use_cases.change_role import ChangeRoleCommand
 from modules.workspace_tenancy.application.use_cases.invite_member import InviteMemberCommand
+from modules.workspace_tenancy.application.use_cases.leave_workspace import LeaveWorkspaceCommand
 from modules.workspace_tenancy.application.use_cases.remove_member import RemoveMemberCommand
 from modules.workspace_tenancy.application.use_cases.transfer_ownership import (
     TransferOwnershipCommand,
@@ -427,6 +428,50 @@ async def remove_member(
             membership_id=membership_id,
             removed_by=context.principal.user_id,
             reason=body.reason,
+        ),
+        now=datetime.now(UTC),
+    )
+    return MembershipResponse.from_domain(membership)
+
+
+@router.post(
+    "/workspaces/{workspace_id}/membership/leave",
+    response_model=MembershipResponse,
+    summary="Leave this organization",
+)
+async def leave_workspace(context: CurrentWorkspace) -> MembershipResponse:
+    """*"I no longer work here."*
+
+    **The half of team management the product never had.** `member:remove` let
+    an administrator end somebody's involvement; nothing let a person end their
+    own, so the only way out of an organization was to ask somebody else.
+
+    **It takes no target, and that is the security property rather than a
+    convenience.** There is no `membership_id` to substitute, so there is no
+    check that the caller owns the one they named — the membership is found
+    from the workspace and the verified token. **`Action.LEAVE`'s two grants
+    therefore need no self-scoping**, exactly as the enum says: *"the scoping to
+    self is the endpoint's, not the policy's."*
+
+    **An owner may leave. A workspace may never become ownerless.** The refusal
+    is the domain's, not this handler's — ADR-0404 ruled it into the
+    application layer because *"a workspace invariant hidden
+    in the policy model is invisible to anyone reading the workspace"*, and a
+    check in an interface can be raced by a second tab.
+
+    `POST` and not `DELETE`, for the same reason `remove` is: **nothing is
+    deleted.** The membership is ended and returned, because decision history,
+    the timeline and every audit question cite it.
+
+    **No reason is asked for.** An administrator removing a colleague records
+    why; a person leaving owes the organization no explanation, and
+    `ended_by == user_id` is what tells the two apart afterwards.
+    """
+    context.authorize(Resource.MEMBER, Action.LEAVE)
+    membership = await build_use_cases(context.session).leave_workspace.execute(
+        LeaveWorkspaceCommand(
+            workspace_id=context.workspace_id,
+            user_id=context.principal.user_id,
         ),
         now=datetime.now(UTC),
     )

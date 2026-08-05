@@ -68,6 +68,18 @@ class MembershipResponse(BaseModel):
     #: the screen says *"Somebody here"*, which is the wording D23 established
     #: rather than an identifier dressed as information.
     member_email: str | None = None
+    #: When this person stopped belonging, and `None` while they still do.
+    #:
+    #: **Added 2026-08-05 with the leave endpoint, because two endpoints were
+    #: already claiming it.** `remove_member` says in its own docstring that
+    #: *"the response returns the ended membership rather than `204`"* — and
+    #: the response could not express endedness, so an ended membership was
+    #: byte-for-byte indistinguishable from a live one. **A contract that
+    #: cannot say what the endpoint says it says.**
+    #:
+    #: Additive and optional: every existing caller reads `None` and nothing
+    #: about a live membership changes.
+    ended_at: datetime | None = None
 
     @classmethod
     def from_domain(cls, membership: Membership) -> "MembershipResponse":
@@ -78,6 +90,7 @@ class MembershipResponse(BaseModel):
             user_id=membership.user_id,
             role=membership.role,
             created_at=membership.created_at,
+            ended_at=membership.ended_at,
         )
 
 

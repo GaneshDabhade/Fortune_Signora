@@ -26,6 +26,7 @@ from modules.workspace_tenancy.application.use_cases.invite_member import (
     ResendInvitation,
     RevokeInvitation,
 )
+from modules.workspace_tenancy.application.use_cases.leave_workspace import LeaveWorkspace
 from modules.workspace_tenancy.application.use_cases.remove_member import RemoveMember
 from modules.workspace_tenancy.application.use_cases.transfer_ownership import TransferOwnership
 from modules.workspace_tenancy.infrastructure.adapters import (
@@ -55,6 +56,7 @@ class WorkspaceTenancyUseCases:
     invite_member: InviteMember
     list_invitations: ListInvitations
     revoke_invitation: RevokeInvitation
+    leave_workspace: LeaveWorkspace
     remove_member: RemoveMember
     resend_invitation: ResendInvitation
     change_role: ChangeRole
@@ -106,6 +108,7 @@ def build_use_cases(session: AsyncSession) -> WorkspaceTenancyUseCases:
         ),
         list_invitations=ListInvitations(invitations=invitation_repository),
         revoke_invitation=RevokeInvitation(invitations=invitation_repository),
+        leave_workspace=LeaveWorkspace(memberships=membership_repository),
         remove_member=RemoveMember(memberships=membership_repository),
         transfer_ownership=TransferOwnership(
             memberships=membership_repository,

@@ -1102,3 +1102,38 @@ An invitation is **two facts with two owners**, and separating them dissolves mo
 **Nothing new in `components/ui`. No new `Resource`, no new `Action`, no policy line.** Reused: `policy.csv`'s three grants · `AuthenticatedPrincipal.email` · the JWT's verified claim · Better Auth's email verification · `WorkflowState`'s who/when/why shape · `Opportunity.opened_by`'s actor pattern · D23's *"Somebody here"* · the `evidence_state` derived-state discipline · Commercial Profile's versioned-immutable rule · the immutable-table convention and its `DELETE` grant · `set_workspace_context` · `lib/auth/email.ts`'s port shape · CX-01's Settings card · the route census, which caught the new page unedited.
 
 **Created only where nothing existed:** the invitation aggregate, the role-change record, one domain function, six use cases, four migrations, two components, seven hooks.
+
+---
+
+## Leaving — TASK-437, 2026-08-05
+
+**§2 of this document complained that `member:remove` was *"a reviewed authorization grant for an operation the system cannot perform."*** [TASK-418](../BACKLOG.md) capability ④ then shipped `Action.LEAVE` and its two policy grants, which is that shape a second time. **This row is what stopped it becoming one.**
+
+**`POST /workspaces/{workspace_id}/membership/leave`.** No target, no body, no reason.
+
+### It takes no target, and that is a security property
+
+`remove` names a `membership_id` because an administrator is pointing at somebody. **Nothing here points at anybody** — the membership is found from the workspace and the verified token — so there is no identifier to substitute and **no ownership check that could be written wrongly.** The safest parameter is the one that does not exist, and a test asserts the command carries exactly two fields.
+
+**That is also why the two grants need no self-scoping.** `Action.LEAVE`'s own comment says it: *"the scoping to self is the endpoint's, not the policy's… identity never enters the request tuple."*
+
+### The invariant is the application layer's
+
+**An owner may leave. A workspace may never become ownerless.** [ADR-0404](adr/0404-platform-composition.md) ruled it there rather than into the authorization engine, because *"a workspace invariant hidden in the policy model is invisible to anyone reading the workspace"* — and `Membership.end` already enforced it for `remove` and `change_role`, so leaving reuses it rather than restating it. **Two ways to end a membership with two implementations would eventually disagree about the one rule that matters.**
+
+### No reason is recorded, and that is deliberate
+
+`remove` records why, because it is somebody's sentence about a colleague. **A person leaving owes the organization no explanation**, and `ended_by == user_id` is exactly what distinguishes a departure from a removal afterwards — derived rather than stored (§2).
+
+### Two defects the slice found in its own module
+
+| | |
+|---|---|
+| 🔴 **[B-206](../BUGS.md) — removal did not revoke access** | `WorkspaceQueryService.get_membership`, which powers the request-time membership check, **never filtered ended memberships.** `SqlMembershipRepository.get` did, and documented exactly this outcome as its reason. **Two reads of one fact and only one filtered**, with authorization consulting the unfiltered one. Found by an acceptance test that expected `404` and got `200` |
+| 🟠 **`LastOwnerCannotLeaveError` was mapped to no status code** | So the platform's fail-closed handler turned *"Make somebody else an owner first"* into **500 "An unexpected error occurred."** The domain has raised it since M1, from `end` and from `change_role`. Now `409 last_owner_cannot_leave`, and **the mapping repairs `remove` and `demote` as a side effect** |
+
+**`MembershipResponse` also gained `ended_at`**, because `remove`'s own docstring claimed *"the response returns the ended membership rather than `204`"* and the schema could not say so — an ended membership was byte-for-byte indistinguishable from a live one.
+
+### Still open in this document's §2
+
+**The `remove` endpoint's own gap is closed** — it exists. **What §2 raised and this row deliberately did not take** is membership suspension and notification, both out of scope and neither blocked.

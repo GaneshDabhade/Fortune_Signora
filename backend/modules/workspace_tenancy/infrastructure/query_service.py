@@ -44,9 +44,28 @@ class WorkspaceQueryService:
         return membership.role if membership is not None else None
 
     async def get_membership(self, workspace_id: UUID, user_id: UUID) -> MembershipView | None:
+        """The caller's **live** membership, and the filter is a security
+        control rather than a tidiness.
+
+        ⚠️ **`ended_at IS NULL` was missing until 2026-08-05 ([B-206](../../../../docs/BUGS.md)).**
+        This is the authoritative membership check on every authenticated
+        request, so without it **a person who was removed from an organization
+        kept full access to it** — the exact outcome
+        `SqlMembershipRepository.get` documents itself as existing to prevent:
+        *"an ended membership that still resolved here would keep somebody
+        signed in to an organization they had been removed from."* Two reads of
+        one fact, and only one of them was filtered.
+
+        **Both callers want live-only**, which is why the filter belongs here
+        rather than at each of them: this powers `resolve_role` for every
+        request, and `opportunity_engine` asks it before handing an account to
+        a colleague — handing one to somebody who has left is the same defect
+        wearing different clothes.
+        """
         stmt = select(MembershipModel).where(
             MembershipModel.workspace_id == workspace_id,
             MembershipModel.user_id == user_id,
+            MembershipModel.ended_at.is_(None),
         )
         model = (await self._session.execute(stmt)).scalar_one_or_none()
         if model is None:

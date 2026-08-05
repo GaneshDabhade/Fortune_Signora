@@ -3784,6 +3784,54 @@ cd frontend && npx tsc --noEmit
 
 ---
 
+### B-206 · A removed member kept full access, because the request-time membership check never filtered ended memberships
+
+| | |
+|---|---|
+| **Module** | **`workspace_tenancy`** — [`infrastructure/query_service.py`](../backend/modules/workspace_tenancy/infrastructure/query_service.py), `WorkspaceQueryService.get_membership` |
+| **Current assignee** | **Lane A**, joined from [`modules.toml`](coordination/modules.toml) |
+| **Severity** | 🔴 · **Blocking Quality Defect.** **Removal did not revoke access.** A tenancy control that records an intention and does not enforce it is the failure `CLAUDE.md` §13 exists to prevent |
+| **Status** | **`FIXED` — Lane A**, 2026-08-05, in the [TASK-437](BACKLOG.md) slice that found it. **`VERIFIED` is QE's** |
+| **Found** | 2026-08-05, building the leave endpoint, by an acceptance test that asserted a leaver could no longer read the organization — **and got `200`** |
+
+**Steps to reproduce**, before the fix:
+
+```
+owner creates a workspace · invites somebody · they accept
+owner POSTs /workspaces/{id}/members/{membership_id}/remove   → 200, membership ended
+removed person GETs /workspaces/{id}/members                  → 200  ← should be 404
+```
+
+**Expected.** An ended membership authenticates into nothing. `resolve_role` is *"the authoritative membership check performed on every authenticated request"* — its own docstring — and `active_workspace_id` in the token is only a hint ([18-authentication.md](architecture/18-authentication.md)).
+
+**Actual.** It resolved a role for somebody whose membership had ended, so **every workspace-scoped route in the product kept serving them.**
+
+### The cause, and why it survived review
+
+**Two reads of one fact, and only one was filtered.**
+
+| | |
+|---|---|
+| `SqlMembershipRepository.get` | **Filters `ended_at IS NULL`**, and says why in its own docstring: *"an ended membership that still resolved here would keep somebody signed in to an organization they had been removed from."* |
+| `WorkspaceQueryService.get_membership` | Selected on `(workspace_id, user_id)` and **nothing else** |
+
+**The second is the one the request path uses.** The correct behaviour was written down, tested, and implemented — in the object that authorization does not consult.
+
+**Nothing detected it because nothing asked.** `member:remove` shipped with no integration test at all; the module's unit tests use a fake whose `get` *is* live-only, so every double behaved correctly while the deployed system did not — **the fake was more correct than the code it stood in for.**
+
+### Blast radius
+
+**Both callers were affected and both wanted live-only**, which is why the filter belongs in the query rather than at each of them:
+
+* **`signora_platform/api/dependencies.py`** — `resolve_role`, on every authenticated request.
+* **`modules/opportunity_engine/application/transition.py`** — the check before handing an account to a colleague. **Handing one to somebody who has left is the same defect wearing different clothes.**
+
+### The fix
+
+**One `WHERE` clause**, plus the docstring that says it is a security control rather than a tidiness.
+
+**Regression tests are end-to-end and asserted through the customer's door**: a removed member and a departed member each get `404` from the members list and from the workspace itself. **The first attempt seeded a membership row directly and PostgreSQL refused it** — row-level security doing its job — which is §20e's *"test data enters the way a customer's data enters"* arriving as an error rather than as a rule somebody remembered. **The end-to-end version is the stronger assertion anyway**, because it travels the dependency chain a request actually travels.
+
 ### B-205 · Three documents disagree about whether the People bounded context is buildable
 
 | | |

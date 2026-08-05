@@ -12,6 +12,8 @@ from modules.workspace_tenancy.application.use_cases.accept_invitation import (
     InvitationNotFoundError,
     UnverifiedEmailError,
 )
+from modules.workspace_tenancy.application.use_cases.leave_workspace import NotAMemberError
+from modules.workspace_tenancy.domain.entities import LastOwnerCannotLeaveError
 from modules.workspace_tenancy.domain.exceptions import (
     DuplicateMembershipError,
     InvalidWorkspaceNameError,
@@ -40,4 +42,20 @@ ERROR_MAPPING: ErrorMapping = {
     # A settled offer, with the aggregate's own sentence: withdrawn, expired
     # and already accepted are different things to say to a person.
     InvitationNotPendingError: (status.HTTP_409_CONFLICT, "invitation_not_pending"),
+    # **409, and the mapping is the point of the row that added it.** The
+    # domain has raised this since M1 — from `end`, from `change_role`, and now
+    # from leaving — and it was mapped nowhere, so the platform's fail-closed
+    # handler turned *"Make somebody else an owner first"* into **500 "An
+    # unexpected error occurred."** A refusal a customer can act on, delivered
+    # as a fault they cannot.
+    #
+    # **A conflict with the workspace's state rather than a bad request**: the
+    # request is well-formed and would be correct the moment a second owner
+    # exists, which is exactly what 409 means and what the sentence tells them
+    # to go and do.
+    LastOwnerCannotLeaveError: (status.HTTP_409_CONFLICT, "last_owner_cannot_leave"),
+    # **404, consistent with every other *"you cannot see this"* in this
+    # module.** Reachable when a second tab has already left, or an
+    # administrator removed the caller mid-request.
+    NotAMemberError: (status.HTTP_404_NOT_FOUND, "not_a_member"),
 }
