@@ -178,6 +178,45 @@ Found 3 errors in 1 file (checked 733 source files)
 **Both are fixed on `integration`** at `b332aea`. Nothing is left for this row to track, and two rows for one defect is the register drifting from the repository.
 
 
+### B-121 · QE validated on the shared stack all day, because its branch name derives nothing
+
+| | |
+|---|---|
+| **Module** | QE's own operating practice — the validation branch |
+| **Current assignee** | **QE.** `infra/` is correct and nothing is asked of Lane C |
+| **Severity** | 🟠 — **it made QE's own measurements untrustworthy**, which is [B-118](#b-118--lanes-share-one-postgresql-so-two-suites-running-at-once-fabricate-each-others-failures)'s severity for B-118's reason |
+| **Status** | **`FIXED`** 2026-08-05 — QE's stack is up (`signora-lane-qe`, PostgreSQL 5632) and the practice is [§0d](QUALITY_ENGINEERING.md). **`VERIFIED` is another lane's** |
+| **Found** | 2026-08-05 by QE, after a validation dissolved into `FEFEFEFE` with one other suite running |
+
+**Steps to reproduce.**
+
+```bash
+git checkout qe-validate && python3 infra/environments.py --exports
+→ # no environment derived (not on a lane branch) — historical shared stack
+→ COMPOSE_PROJECT_NAME=signora-v2 · SIGNORA_POSTGRES_PORT=5432
+
+git checkout lane-qe    && python3 infra/environments.py --exports
+→ COMPOSE_PROJECT_NAME=signora-lane-qe · SIGNORA_POSTGRES_PORT=5632
+```
+
+**QE validates a lane's tree by pointing a throwaway branch — `qe-validate` — at their tip.** The derivation keys off the *branch name*, so **every QE validation today used the shared stack** while the lanes moved onto their own. **That is why [B-118](#b-118--lanes-share-one-postgresql-so-two-suites-running-at-once-fabricate-each-others-failures) kept reproducing after it was fixed: the fix worked and QE was not standing in it.**
+
+> **`environments.py` announced it every single time**, in the line above the value — *"Named, not silent. Falling back is correct on `integration`; doing it without saying so is how four clones came to share one server."* **It said so. QE did not read it.**
+
+### This row was filed once, destroyed, and written again
+
+**The original filing was lost to QE's own `git reset --hard`** while cleaning the working tree, and QE did not notice — **then published a commit message announcing the row was closed when the row did not exist.** Caught by `grep -c "B-121" docs/BUGS.md` returning `0` during that same commit's verification.
+
+**That is the third time in this session a git command of QE's destroyed uncommitted work**, and the second time a claim was published before it was checked. **The register is the record; a commit message asserting something about it is not.**
+
+### The fix, and the half that must not be copied
+
+| | |
+|---|---|
+| **`make validate`** | **QE's own stack.** A six-minute suite that runs while lanes work |
+| **`make certify`** | **The default stack, unforced.** Certify also drives the production stack on 3100/8100; overriding `COMPOSE_PROJECT_NAME` made `smoke` fail at *4 stages in 27s* |
+
+
 ### B-120 · The repository's self-describing generators have no tests, and have been wrong three times
 
 | | |
