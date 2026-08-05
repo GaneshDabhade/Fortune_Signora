@@ -271,6 +271,42 @@ Found 3 errors in 1 file (checked 733 source files)
 **Both are fixed on `integration`** at `b332aea`. Nothing is left for this row to track, and two rows for one defect is the register drifting from the repository.
 
 
+### B-127 · The revocation guarantee lives in a feature test, and not in the Security Invariants
+
+| | |
+|---|---|
+| **Module** | `backend/tests/security_invariants/` — the suite, which is QE's |
+| **Current assignee** | **QE** |
+| **Severity** | 🟡 · **Non-blocking.** The behaviour is correct and tested. The *guarantee* is not where §11 puts it |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-05 by QE, certifying cycle 69 — the invariant count did not move while a tenancy defect was being fixed |
+
+**Steps to reproduce.**
+
+```bash
+make certify | grep security-invariants
+→ 387 invariants        # 387 before TASK-437, 387 after
+grep -rn "ended" backend/tests/security_invariants/ | wc -l
+→ 0
+```
+
+**[B-206](#b-206) was a live authorization defect**: `WorkspaceQueryService.get_membership` selected on `(workspace_id, user_id)` only, so **an ended membership still resolved on every authenticated request** and `member:remove` — shipped in M1 — revoked nothing. Lane A found it, fixed it, and covered it **through the customer's door** in `tests/integration/test_api_leave_workspace.py`.
+
+**That test is correct and it is the wrong home for this guarantee.**
+
+### Why §11 wants it in both places
+
+> *"The Security Invariants suite states architectural guarantees — token verification, Casbin enforcement, workspace isolation, RLS … rather than feature behaviour. **Deliberate overlap with feature tests is intended so that rewriting a feature cannot remove its guarantee.**"*
+
+**The feature here is *leaving*. The guarantee is *an ended membership grants nothing*** — and those have different lifetimes. A future slice that reshapes the leave endpoint, or replaces `test_api_leave_workspace.py` wholesale, **takes the only proof of the guarantee with it**, and nothing would notice: the defect it protects against was invisible for the entire life of the repository precisely because nothing asked.
+
+### What QE will add
+
+**One invariant, asserted at the authorization boundary rather than through the endpoint** — `resolve_role` refuses an ended membership — so it holds whatever route ends one. **QE writes tests in any module's suite; it does not change that module's production code**, and here there is nothing to change: the fix is already in.
+
+> **This row exists rather than the test, because adding the test is an executable change and needs its own certified cycle.** Filing it is how it survives the gap.
+
+
 ### B-126 · Four architecture document numbers are claimed twice, and QE promoted the newest without seeing the warning
 
 | | |
