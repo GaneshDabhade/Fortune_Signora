@@ -2051,6 +2051,26 @@ class TestTheRowSaysWhatKindOfAttentionThisIs:
             )
 
 
+def _rows(payload: object) -> list[dict[str, Any]]:
+    """Every match across every group, in group order.
+
+    **Search returns groups from TASK-408**, one per `EntityKind`, each saying
+    whether Signora looked. These tests were written against the flat list that
+    preceded the ruling and assert facts about *matches* rather than about
+    grouping — so they read through this rather than being rewritten to care
+    about a shape they are not testing. **The grouping itself is asserted in
+    `TestTheGroupsSayWhatWasSearched` below**, which is where it belongs.
+    """
+    assert isinstance(payload, list)
+    rows: list[dict[str, Any]] = []
+    for group in payload:
+        assert isinstance(group, dict)
+        results = group["results"]
+        assert isinstance(results, list)
+        rows.extend(results)
+    return rows
+
+
 class TestFindingAnAccountByName:
     """`GET /workspaces/{id}/account-search` — A1.
 
@@ -2085,7 +2105,7 @@ class TestFindingAnAccountByName:
         )
 
         assert response.status_code == 200, response.text
-        assert entity_id in {UUID(row["account"]["account_id"]) for row in response.json()}
+        assert entity_id in {UUID(row["account"]["account_id"]) for row in _rows(response.json())}
 
     async def test_a_search_never_crosses_a_workspace(
         self,
@@ -2122,7 +2142,7 @@ class TestFindingAnAccountByName:
         )
 
         assert response.status_code == 200, response.text
-        returned = {UUID(row["account"]["account_id"]) for row in response.json()}
+        returned = {UUID(row["account"]["account_id"]) for row in _rows(response.json())}
         assert their_entity not in returned
         assert returned <= {my_entity} or returned, "only this workspace's accounts"
 
@@ -2148,7 +2168,7 @@ class TestFindingAnAccountByName:
         )
 
         assert response.status_code == 200, response.text
-        assert response.json() == []
+        assert _rows(response.json()) == []
 
     async def test_no_match_is_an_empty_list_not_a_404(
         self,
@@ -2168,7 +2188,7 @@ class TestFindingAnAccountByName:
         )
 
         assert response.status_code == 200, response.text
-        assert response.json() == []
+        assert _rows(response.json()) == []
 
     async def test_one_character_is_refused_before_it_reaches_the_database(
         self,
@@ -2219,7 +2239,7 @@ class TestFindingAnAccountByName:
 
         assert response.status_code == 200, response.text
         row = next(
-            r for r in response.json() if r["account"]["account_id"] == str(entity_id)
+            r for r in _rows(response.json()) if r["account"]["account_id"] == str(entity_id)
         )
         assert row["result_type"] == "company"
         assert row["matched_name"], "a row that cannot say what matched explains nothing"

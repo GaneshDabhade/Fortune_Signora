@@ -448,3 +448,48 @@ Both concern `signora_platform/`, which is frozen (CLAUDE.md §20a). Neither was
 1. **Is the identity/truth split right?** Everything above rests on it. If the graph *should* resolve attribute conflict, this design is wrong at its root and better rejected now.
 2. **Should `AMBIGUOUS` block downstream processing for that entity, or proceed with the unmerged entities?** I lean toward proceeding — a partially-resolved company is more useful than none, and the ambiguity is visible — but it means downstream may briefly see two entities for one company.
 3. **Is deferring people acceptable for M3A?** It scopes the milestone honestly, but the Timeline (M7) and role-change signals will eventually want person identity, and adding an entity kind later is cheaper than adding it wrongly now.
+
+---
+
+## TASK-408 — search says what it looked for, not only what it found
+
+**Delivered 2026-08-05 by Lane B**, on the product owner's ruling the same day. **The row was skipped four times before this, with the reason recorded each time**, and the ruling is why that was right rather than merely cautious.
+
+### The contradiction, and why no lane could resolve it
+
+TASK-408's acceptance said *"a zero-match group is returned rather than omitted"*. [TASK-301](../BACKLOG.md) had already shipped and promoted the opposite — *"an absent type is absent, never an empty group"* — with a good reason: an empty group claims Signora looked.
+
+**Both were right about different cases, and neither shape could express both.** The ruling:
+
+> **"Return the group with zero matches rather than omitting it. The absence of results and the absence of the group represent different business meanings."**
+>
+> **Three states the UI must distinguish, and they may not be collapsed:** the group exists and contains zero matching accounts · the group is not applicable · the group was not requested.
+
+**The answer was a third option neither row contained.** A lane choosing between the two rules it could see would have shipped a two-state model and closed the question — which is the specific failure §2 names when a slice makes a product decision quietly.
+
+### What shipped
+
+`SearchCoverage` carries the three states and `AccountMatchGroup` pairs one with its results. **The combination that would lie is unconstructable**: a group reporting both *"I did not look"* and *"here is what I found"* raises rather than serialising, because a guard that cannot fail is documentation pretending to be code.
+
+| Kind | Coverage | Because |
+|---|---|---|
+| `COMPANY` | `SEARCHED` | `subjects_named_like` matches a **legal name** claim, and a company is what has one |
+| `TECHNOLOGY` | `NOT_APPLICABLE` | It is in the graph and has no legal name. **Not a miss — the question does not apply** |
+
+**`NOT_REQUESTED` is defined and never produced**, because this endpoint takes no kind filter. It exists so the surface that eventually adds one has a state to report rather than inventing a fourth meaning for an empty list.
+
+### Why this is not the decorative grouping it resembles
+
+**This lane's own earlier objection was that grouping is Decorative Logic**: only one `EntityKind` is reachable, so every group but one would be empty and the shape would carry no information. **That objection was correct about the flat list and wrong about the remedy.**
+
+With one searchable kind, a flat list is **indistinguishable from a search that covered everything** — a seller cannot tell that Signora never looked for technologies. **`technology · not_applicable` is precisely the information that was missing**, and it only becomes sayable once the group survives having no results.
+
+### `SEARCH_COVERAGE` is a mapping rather than a branch
+
+Adding a member to `EntityKind` without deciding what search does about it **fails a test** rather than silently omitting a group — which is the omission the ruling closed. The map is also the render order, fixed rather than derived from result counts: a group that moves when its results change makes the same query look different for a reason nobody asked about.
+
+### Known limitation, and it is the row's other half
+
+**The dominant ranking factor is not reported.** TASK-408 also asks that *"the dominant ranking factor is present on a row whenever it is not lexical"*, which needs the six-factor weighted score the approved screen names. **Ordering today is the matched name ascending and nothing else** — so every row's dominant factor *is* lexical, and there is nothing yet to disclose. **Defining six factors and their weights is a reviewed scoring model, not a lane's invention** (§2, *domain experts own static knowledge*), and it is left unbuilt rather than approximated.
+
+*+4 tests. 3577 backend passed, coverage 95.36%.*

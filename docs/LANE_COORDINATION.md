@@ -4168,6 +4168,122 @@ KeyError: '0035'
 
 **What this lane is doing meanwhile.** **Epic E1**, which touches no migration yet. **If E1 adds one, this lane will number it after whatever head exists at that rebase and say so** — which is the same rule, applied at the only moment it can be applied correctly.
 
+## C-331 · TASK-003 changes what the model is shown, which un-releases the narration prompt
+
+| | |
+|---|---|
+| **Raised by** | **Lane B**, 2026-08-05, on claiming TASK-003 and tracing the change through before writing |
+| **Owner** | **Product owner** — it needs an evaluation run this workstation cannot perform, which is a resourcing question |
+| **Status** | `OPEN` — **TASK-003 is `IN PROGRESS` and the code is not written.** The change itself is small and understood |
+| **Blocks** | ⚠️ **Three rows, not one — consolidated 2026-08-05 rather than raised three times.** **[TASK-003](BACKLOG.md)** needs a re-evaluation to keep `explanation_narration` released · **[TASK-202](BACKLOG.md)** — Epic G — has *"author a `reasoning` dataset and evaluate `reasoning@1` under protocol 2"* as its **first slice** · **[C-222](#c-222--reasoning1-earns-a-release-under-protocol-2-on-a-model-this-workstation-cannot-measure-in-time)** has been open since 2026-08-04 on the same measurement. **One missing input gates all three** |
+
+> **This is why it is worth a decision rather than a workaround.** Lane B's queue currently holds **TASK-408** (needs a product ruling), **TASK-406** (`BLOCKED`, [C-330](#c-330--task-406-measures-icp-fit-against-outcomes-and-nothing-can-say-which-accounts-are-in-the-icp)), **TASK-201/427** (need ADR-0400 ratified), **TASK-902** (`WAITING`), and **TASK-003 and TASK-202 — both of which this item gates.** **A single hosted evaluation credential converts two of the six into executable work**, and it is the only one of the blockers that is not a decision about the product.
+
+### The task is one file. Its consequence is a release cycle.
+
+**[C-018](#c-018) ruled the *where* and it is correct**: *"customer-facing terminology belongs in `explanation.py`; business language should never leak inward."* That is the only place it can go, and [R11-06](architecture/39-product-review-findings.md) says why in its own words:
+
+> *"These are **verbatim what the model was shown**, and the digest covers their textual form. Prettifying `false` into 'No' would show the reader something different from what was cited — a second vocabulary, and the one place where a second vocabulary would defeat the panel's entire purpose. **The verbatim-ness is the value.**"*
+
+**So the fix is not a label map over the output. It is a change to the evidence the model reads** — and that is exactly what makes it correct, because the seller and the model then read one vocabulary rather than two.
+
+### What follows, traced rather than assumed
+
+| # | | |
+|---|---|---|
+| **1** | `assemble()` emits different attribute text | `contested` · `delta` · `ceiling` · `value` · `contested_at_creation` all change |
+| **2** | **The golden dataset stops describing what the pipeline emits** | `datasets/explanation_narration@1.json` **pins those exact keys and values** and is `seeded_from` assembly. Leaving it would leave a benchmark measuring a shape the product no longer produces — **a stale benchmark is worse than an absent one**, because it keeps passing |
+| **3** | **A re-seeded dataset is a new version** | `dataset_version` is on every `Evaluation`, and AC-73: *"a result that cannot name the expectations it was measured against is not evidence of anything"* |
+| **4** | ⚠️ **The prompt's only releases are against dataset v1** | `manifest.json`: `explanation_narration@1` holds **two evaluations, both `(explanation_narration, v1, llama3.1:8b)`**. A v2 dataset is a pairing absent from that record |
+| **5** | **`require_model` then refuses it at runtime** | §10: *"a prompt may never be used with a pairing absent from that record."* **Shipping steps 1–3 without step 6 breaks narration in the product** |
+| **6** | **So the slice needs a real-model evaluation to complete** | And §10 again: *"a quality measurement taken against a fake measures the fake"* — the deterministic mock cannot earn this release |
+
+### Why this is a resourcing question rather than an architectural one
+
+**Nothing here is undecided.** [C-222](#c-222--reasoning1-earns-a-release-under-protocol-2-on-a-model-this-workstation-cannot-measure-in-time) was ruled 2026-08-04 — **the evaluation provider is configurable** — and [TASK-416](BACKLOG.md) now records which provider served a run, so a hosted evaluation is both permitted and attributable. **The architecture for doing this correctly exists and was built by this lane.**
+
+**What is missing is a provider that can complete the run here.** C-222 measured the pinned local model **`UNMEASURABLE` on this workstation** — 2 of 2 cases never reached a verdict against a 60s policy — and **the pinned evaluation model is part of the benchmark and is not a lane's to change** (§10, ADR-0028).
+
+### The alternatives
+
+| | | |
+|---|---|---|
+| **A** | **Provide a hosted evaluation credential and complete the slice** | The vocabulary change, a re-seeded `explanation_narration@2`, and one recorded evaluation earning the release. **The whole task, done properly, in one slice** |
+| **B** | **Build steps 1–3 and hold the push until a release exists** | The code is ready and nothing ships un-released. **Costs a held branch and gains nothing over A unless the credential is weeks away** |
+| **C** | **Ship the vocabulary change without re-evaluating** | ⛔ **Not proposed.** It breaks narration at runtime, and it is the precise failure §10's release rule exists to prevent |
+
+### Recommendation
+
+**A.** The credential is the only missing input, every other part is decided, and **the capability that makes a hosted evaluation attributable shipped in this lane's last slice.**
+
+**If no credential is available, B** — and TASK-003 is then reported as *implementation complete, release pending*, which is a true statement rather than a finished one.
+
+### Implementation impact
+
+**No code written.** The change is understood and small: one function's attribute vocabulary, a re-seeded dataset, one evaluation. **The cost is the release cycle, not the edit**, and that is the thing the row does not currently say.
+
+## C-330 · TASK-406 measures ICP fit against outcomes, and nothing can say which accounts are in the ICP
+
+| | |
+|---|---|
+| **Raised by** | **Lane B**, 2026-08-05, on claiming TASK-406 and reading the two modules before writing |
+| **Owner** | **Product owner** — it needs a capability nobody owns, which is an assignment question rather than a defect |
+| **Status** | ✅ **`RULED` — 2026-08-05, product owner — and broadened rather than merely answered.** **TASK-406 stays `BLOCKED` exactly as raised.** **Product Office is asked to plan a reusable matching capability as foundational work, and TASK-406 is sequenced after it exists** |
+| **Blocks** | ⚠️ **Not TASK-406 alone. The ruling widened this.** *"The ability to determine whether an account satisfies an ICP criterion is a **foundational platform capability** that multiple future product areas will depend upon"* |
+
+### The ruling, 2026-08-05 — and the correction in it is the valuable half
+
+> **"Do not solve this inside TASK-406. Do not create temporary matching logic. Do not duplicate matching inside `commercial_profile`."**
+>
+> **"No workaround should become permanent architecture."**
+
+**This lane raised it as a TASK-406 dependency and the product owner declined that framing.** Named as depending on it: **ICP Builder · ICP validation · account fit scoring · opportunity prioritization · AI reasoning · buying score · recommendations · backtesting · analytics · executive dashboards · future AI agents.**
+
+**Recommendation A is accepted in substance and reassigned in form.** This lane proposed *"build matching as its own slice, in the module that owns resolution"* and offered to take it since `knowledge_graph` is Lane B's. **The ruling makes it foundational rather than a slice, and gives the planning to Product Office** — which is the difference between a capability designed once for eleven consumers and a capability shaped by the first one that needed it.
+
+**Alternative B is permitted and deliberately not taken.** The product owner: *"a cohort-wide backtest is reasonable **if it is clearly labelled 'overall cohort performance' rather than ICP lift**, but do not spend time implementing that unless it already fits the roadmap."* **It does not — no row asks for it — so this lane built nothing.** The permission is recorded so a future lane knows the shape was allowed and the labelling was the condition.
+
+**This item stays open until the capability exists.** Closing it now would report a dependency as resolved when what happened is that it was correctly reassigned.
+
+### The problem, in one line
+
+> **Lift is `P(win | matches criterion) ÷ P(win)`. Every term needs *"does this account match this criterion?"*, and no component in the repository can answer it.**
+
+**[C-328](#c-328--task-406-asks-commercial_profile-to-read-the-pipeline-which-a-contract-forbids-by-design) verified the import direction and was ruled. This is a second verification and it fails on data rather than on dependencies.** The ruled direction — `opportunity_engine` reads `commercial_profile/public/` — is available and correct. **What travels across it is a description, and a description is not a membership test.**
+
+### Why it cannot be answered today, read out of the modules rather than recalled
+
+| | |
+|---|---|
+| **An ICP is free text, deliberately** | `domain/icp.py`: *"`industries` and `countries` are free text… a seller says 'mid-market fintech in the US and UK', and recording that faithfully is what a module whose job is recording should do"* |
+| **A segment is still a description** | `domain/segment.py`: *"'Mid-market fintech in the US, 100–1000 employees' is a complete description of a segment"* — an ICP has an **identity**, never a **membership list** |
+| **The Knowledge Graph publishes no resolved value** | `knowledge_graph/public/`: *"What they get is **identity and evidence, never a resolved value**"* — so an account's current industry or employee count is not readable across the boundary |
+| **Matching is named, unbuilt and unowned** | `domain/icp.py`, verbatim: *"**Reconciling the two is what matching does**, and matching is not built, is not this module's, and has no owner today. That is recorded as a finding rather than pre-solved here"* |
+
+**The gap is not a missing query. It is a missing capability two modules have each explicitly declined** — and the ICP module recorded the decline as a finding rather than leaving it to be discovered, which is precisely what has now happened.
+
+### The alternatives
+
+| | | |
+|---|---|---|
+| **A** | **Build matching as its own slice, in the module that owns resolution** | Reconciles a free-text criterion against canonical claim vocabulary and publishes a membership answer. **A real capability with real design questions** — fuzzy industry matching, a missing employee count, an account with no claims — deserving its own row and its own review |
+| **B** | **Narrow TASK-406 to what needs no matching** | The aggregate backtest **without** the in-ICP split: win rate and median cycle across decided accounts, which `opportunity_engine` can compute today from `DecidedAccount` alone. **Honest and much smaller — and not what the row asks for**, because every comparison the approved screen shows is *in-ICP versus outside* |
+| **C** | **Match inside this slice** | ⛔ **Not proposed.** It would put resolution in the module that measures, invent a vocabulary reconciliation nobody reviewed, and make one lane's slice the authority on a capability two modules deliberately left open |
+
+### Recommendation
+
+**A, as a separate row, with TASK-406 sequenced behind it.** Matching is the thing of value here; lift is a small calculation on top of it. **Building the calculation first would mean inventing its input**, and the input is the part carrying the design questions.
+
+**If a partial answer is wanted sooner, B is safe** — and must be labelled as what it is, a cohort-wide backtest with no ICP comparison, rather than shipped under a heading the screen would read as ICP fit.
+
+### Trade-offs
+
+**A costs a slice before TASK-406 can start**, and it needs an owner: resolution is the Knowledge Graph's by the ICP module's own reasoning, and `knowledge_graph` is this lane's, **so Lane B can build it if the product owner wants it built.** **B is cheap and lands a real number**, at the cost of the row's central comparison. **Doing nothing leaves an approved screen with no path to its own headline figure.**
+
+### Implementation impact
+
+**No code was written and no dependency added.** The edge verified at C-328 stays correct and unused. **TASK-406's `Non-goals` already exclude fitted weights and drift** — this item concerns the *input* to the measurement rather than its sophistication, and neither option changes the ruled dependency direction.
+
 ## C-329 · Lane B has nothing claimable, and the row that says otherwise names two tasks it cannot take
 
 | | |

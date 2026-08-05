@@ -25,7 +25,7 @@ from fastapi import APIRouter, Query
 from apps.api.composition.accounts import GraphRead
 from modules.knowledge_graph.interface.schemas import (
     AccountIdentityResponse,
-    SearchResultResponse,
+    SearchGroupResponse,
 )
 from signora_platform.api import CurrentWorkspace
 from signora_platform.authorization import Action, Resource
@@ -77,7 +77,7 @@ LimitParam = Annotated[int, Query(ge=1, le=MAX_PAGE_LIMIT)]
 
 @router.get(
     "/workspaces/{workspace_id}/account-search",
-    response_model=list[SearchResultResponse],
+    response_model=list[SearchGroupResponse],
     summary="Find an account by name",
 )
 async def account_search(
@@ -85,7 +85,7 @@ async def account_search(
     queries: GraphRead,
     q: QueryParam,
     limit: LimitParam = 10,
-) -> list[SearchResultResponse]:
+) -> list[SearchGroupResponse]:
     """*"Show me Databricks."* — the question a ranked list cannot answer.
 
     **Its own path rather than a parameter on `/account-identities`.** That
@@ -103,14 +103,26 @@ async def account_search(
     where that differs from what is being shown, and those are the only rows
     worth annotating.
 
-    **Every row says what kind of thing it is**, so results can be grouped by
-    type rather than by which endpoint returned them. **A type Signora cannot
-    search is absent, never an empty group** — an empty group would claim it
-    looked and found nothing, which is a different statement and a false one.
+    **Results arrive grouped by kind, and every kind is present.** ⚠️ **This
+    reverses what this docstring said until 2026-08-05** — *"a type Signora
+    cannot search is absent, never an empty group"* — on the product owner's
+    ruling:
 
-    **Empty is an answer.** No match returns `[]` rather than a 404: the
-    customer asked a well-formed question and *nothing here is called that* is
-    the honest response.
+    > *"Return the group with zero matches rather than omitting it. The
+    > absence of results and the absence of the group represent different
+    > business meanings."*
+
+    **The old rule was not wrong about the danger; it was wrong about the
+    remedy.** An empty group *would* claim Signora looked — so the group now
+    says whether it did. `coverage` carries three states that must not be
+    collapsed: **`searched`** (it looked; `results` may be empty and that is
+    an answer), **`not_applicable`** (it cannot look — search matches a legal
+    name and only a company has one), **`not_requested`** (the caller excluded
+    it). Omitting the group said all three at once, and therefore said none.
+
+    **Empty is an answer.** No match returns a `searched` group with no
+    results rather than a 404: the customer asked a well-formed question and
+    *nothing here is called that* is the honest response.
 
     **Ordered by matched name**, so the same query returns the same rows in the
     same order on every run — a list that reshuffles between keystrokes is one
@@ -119,8 +131,8 @@ async def account_search(
     the results rather than taken on trust.
     """
     context.authorize(Resource.ACCOUNT, Action.READ)
-    found = await queries.find_accounts(context.workspace_id, q, limit=limit)
-    return [SearchResultResponse.from_domain(match) for match in found]
+    found = await queries.find_accounts_grouped(context.workspace_id, q, limit=limit)
+    return [SearchGroupResponse.from_domain(group) for group in found]
 
 
 __all__ = ["router"]

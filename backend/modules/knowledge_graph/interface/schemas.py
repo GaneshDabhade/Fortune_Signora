@@ -15,7 +15,12 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from modules.knowledge_graph.application.queries import AccountIdentity, AccountMatch
+from modules.knowledge_graph.application.queries import (
+    AccountIdentity,
+    AccountMatch,
+    AccountMatchGroup,
+    SearchCoverage,
+)
 from modules.knowledge_graph.domain.identity import EntityKind
 from modules.knowledge_graph.domain.naming import NameAgreement
 
@@ -125,4 +130,45 @@ class SearchResultResponse(BaseModel):
         )
 
 
-__all__ = ["AccountIdentityResponse", "SearchResultResponse"]
+class SearchGroupResponse(BaseModel):
+    """One kind of thing, what Signora did about it, and what it found.
+
+    **The group is present whether or not it has results**, on the product
+    owner's ruling of 2026-08-05: *"the absence of results and the absence of
+    the group represent different business meanings."*
+
+    A surface reads `coverage` before it reads `results`, and says a different
+    sentence for each — *"no companies match «acme»"*, *"Signora does not
+    search technologies by name"*, *"you excluded this"*. **Rendering an empty
+    list without reading `coverage` reproduces exactly the collapse the ruling
+    forbids**, which is why the field is required and carries no default.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    result_type: EntityKind = Field(
+        description="What kind of thing this group is about."
+    )
+    coverage: SearchCoverage = Field(
+        description="Whether Signora looked for this kind, and if not, why not. "
+        "`searched` means it looked and `results` is the answer, empty or not. "
+        "`not_applicable` means it cannot look — search matches a legal name and "
+        "only a company has one. `not_requested` means the caller excluded it. "
+        "Read this before `results`: an empty list means something different in "
+        "each case."
+    )
+    results: list[SearchResultResponse] = Field(
+        description="The matches, in matched-name order. Always empty unless "
+        "`coverage` is `searched`, and empty is a real answer when it is."
+    )
+
+    @classmethod
+    def from_domain(cls, group: AccountMatchGroup) -> "SearchGroupResponse":
+        return cls(
+            result_type=group.kind,
+            coverage=group.coverage,
+            results=[SearchResultResponse.from_domain(m) for m in group.matches],
+        )
+
+
+__all__ = ["AccountIdentityResponse", "SearchGroupResponse", "SearchResultResponse"]

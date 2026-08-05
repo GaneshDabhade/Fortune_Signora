@@ -18,6 +18,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from datetime import datetime
+from enum import StrEnum
 from typing import Any
 from uuid import UUID
 
@@ -185,6 +186,84 @@ class AccountIdentity:
     def is_disputed(self) -> bool:
         """The one state worth interrupting a seller for."""
         return self.agreement is NameAgreement.DISPUTED
+
+
+class SearchCoverage(StrEnum):
+    """Whether Signora looked for this kind of thing, and if not, why not.
+
+    **Ratified 2026-08-05 by the product owner**, answering the contradiction
+    [TASK-408](../../../../docs/BACKLOG.md) was skipped on four times:
+
+    > *"Return the group with zero matches rather than omitting it. The
+    > absence of results and the absence of the group represent different
+    > business meanings."*
+
+    **Three states, and they may not be collapsed.** An empty list can mean
+    *we looked and found nothing*, *we cannot look for this*, or *you did not
+    ask* — and a customer deciding whether to trust a search needs to know
+    which. Omitting the group, which is what shipped before this, said all
+    three at once and therefore said none of them.
+    """
+
+    SEARCHED = "searched"
+    """Signora looked. `matches` may still be empty, and that is an answer."""
+
+    NOT_APPLICABLE = "not_applicable"
+    """Signora cannot look for this kind, and the reason is structural.
+
+    Search matches a **legal name**, and only a company has one. A technology
+    is in the graph and has no legal name, so it is not that the query missed
+    — the question does not apply to it.
+    """
+
+    NOT_REQUESTED = "not_requested"
+    """The caller narrowed the search and excluded this kind.
+
+    **Distinct from `NOT_APPLICABLE` on purpose**: one is a fact about
+    Signora and the other is a fact about the request, and a customer
+    widening their search needs to know which one they can change.
+    """
+
+
+#: What Signora does about each kind the graph knows, declared once.
+#:
+#: **A mapping rather than a branch**, so adding a kind to `EntityKind`
+#: without deciding what search does about it fails a test rather than
+#: silently omitting a group — which is the defect the ruling closed.
+#:
+#: **The order is the render order**, and it is fixed here rather than by
+#: result count: a group that moves when its results change makes the same
+#: query look different for a reason nobody asked about.
+
+
+
+SEARCH_COVERAGE: dict[EntityKind, "SearchCoverage"] = {
+    EntityKind.COMPANY: SearchCoverage.SEARCHED,
+    EntityKind.TECHNOLOGY: SearchCoverage.NOT_APPLICABLE,
+}
+
+
+@dataclass(frozen=True, slots=True)
+class AccountMatchGroup:
+    """One kind of thing, what Signora did about it, and what it found.
+
+    **The group exists whether or not it has results**, which is the whole of
+    the ruling. `matches` is empty for every coverage except `SEARCHED`, and
+    the constructor refuses the combination that would lie.
+    """
+
+    kind: EntityKind
+    coverage: SearchCoverage
+    matches: tuple[AccountMatch, ...] = ()
+
+    def __post_init__(self) -> None:
+        if self.coverage is not SearchCoverage.SEARCHED and self.matches:
+            raise ValueError(
+                f"a {self.coverage} group carries {len(self.matches)} matches. "
+                "Results can only come from a search that happened, and a group that "
+                "reports both that it was not searched and what it found is the "
+                "collapsed state the ruling forbids."
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -385,6 +464,58 @@ class GraphQueries:
             )
             for subject in resolved
             if subject.entity_id in found
+        )
+
+    async def find_accounts_grouped(
+        self, workspace_id: UUID, text: str, *, limit: int
+    ) -> tuple[AccountMatchGroup, ...]:
+        """The same search, said in a way a customer can trust.
+
+        **Every kind the graph knows gets a group**, whether or not it has
+        results, because the product owner ruled that *"the absence of results
+        and the absence of the group represent different business meanings"*
+        (2026-08-05).
+
+        **What each group says, and why it is not a judgement:**
+
+        | Kind | Coverage | Because |
+        |---|---|---|
+        | `COMPANY` | `SEARCHED` | `subjects_named_like` matches a **legal name** claim, and a company is the thing that has one |
+        | `TECHNOLOGY` | `NOT_APPLICABLE` | It is in the graph and has no legal name. **Not a gap and not a miss** — the question does not apply |
+
+        **`NOT_REQUESTED` is defined and never produced here**, because this
+        endpoint takes no kind filter. It exists so that the surface which
+        eventually adds one has a state to report rather than inventing a
+        fourth meaning for an empty list, and so that a reader can tell *"we
+        cannot"* from *"you did not ask"* the day both are possible.
+
+        **This did not merely become buildable; it became worth building.**
+        The flat list this wraps is correct and, with one searchable kind,
+        silently indistinguishable from a search that covers everything.
+        Saying `TECHNOLOGY · not_applicable` out loud is the information that
+        was missing — which is why grouping is not the decorative shape it
+        looks like when only one kind can match.
+
+        **Ordering inside a group is the flat search's, unchanged**: the
+        matched name ascending, deterministic for identical input.
+        """
+        matches = await self.find_accounts(workspace_id, text, limit=limit)
+        by_kind: dict[EntityKind, list[AccountMatch]] = {}
+        for match in matches:
+            by_kind.setdefault(match.kind, []).append(match)
+
+        return tuple(
+            AccountMatchGroup(
+                kind=kind,
+                coverage=coverage,
+                matches=tuple(by_kind.get(kind, ()))
+                if coverage is SearchCoverage.SEARCHED
+                else (),
+            )
+            # Ordered by the enum's own declaration, never by result count:
+            # a group that moves when its results change makes the same query
+            # render differently for a reason nobody asked about.
+            for kind, coverage in SEARCH_COVERAGE.items()
         )
 
     async def relationships(

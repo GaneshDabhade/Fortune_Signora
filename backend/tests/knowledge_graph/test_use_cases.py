@@ -808,3 +808,78 @@ class TestFindingAnAccountByName:
         ]
 
         assert await self._queries(repository).find_accounts(WORKSPACE, "acme", limit=10) == ()
+
+
+class TestTheGroupsSayWhatWasSearched:
+    """[TASK-408](../../../docs/BACKLOG.md), on the product owner's ruling of
+    2026-08-05.
+
+    > *"Return the group with zero matches rather than omitting it. The absence
+    > of results and the absence of the group represent different business
+    > meanings."*
+
+    **Three states that may not be collapsed**, and the reason this is not the
+    decorative grouping it looks like: only companies are searchable, so a flat
+    list is silently indistinguishable from a search that covered everything.
+    Saying `technology · not_applicable` out loud is the information that was
+    missing.
+    """
+
+    async def test_every_kind_the_graph_knows_gets_a_group(self) -> None:
+        from modules.knowledge_graph.application.queries import SEARCH_COVERAGE
+        from modules.knowledge_graph.domain.identity import EntityKind
+
+        assert set(SEARCH_COVERAGE) == set(EntityKind), (
+            "a kind with no declared coverage would be silently omitted, which is "
+            "the omission the ruling closed"
+        )
+
+    def test_a_technology_is_not_applicable_rather_than_empty(self) -> None:
+        """**Not a miss and not a gap.** Search matches a legal name and a
+        technology has none, so the question does not apply to it — which is a
+        different sentence from *"no technologies matched"*."""
+        from modules.knowledge_graph.application.queries import (
+            SEARCH_COVERAGE,
+            SearchCoverage,
+        )
+        from modules.knowledge_graph.domain.identity import EntityKind
+
+        assert SEARCH_COVERAGE[EntityKind.TECHNOLOGY] is SearchCoverage.NOT_APPLICABLE
+        assert SEARCH_COVERAGE[EntityKind.COMPANY] is SearchCoverage.SEARCHED
+
+    def test_a_group_that_was_not_searched_cannot_carry_results(self) -> None:
+        """The guard that makes the three states honest rather than advisory.
+
+        A group reporting both *"I did not look"* and *"here is what I found"*
+        is the collapsed state the ruling forbids, and it is unconstructable
+        rather than merely discouraged (§2).
+        """
+        import pytest
+
+        from modules.knowledge_graph.application.queries import (
+            AccountMatchGroup,
+            SearchCoverage,
+        )
+        from modules.knowledge_graph.domain.identity import EntityKind
+
+        for coverage in (SearchCoverage.NOT_APPLICABLE, SearchCoverage.NOT_REQUESTED):
+            with pytest.raises(ValueError, match="collapsed state"):
+                AccountMatchGroup(
+                    kind=EntityKind.COMPANY,
+                    coverage=coverage,
+                    matches=("anything",),  # type: ignore[arg-type]
+                )
+
+    def test_a_searched_group_may_legitimately_be_empty(self) -> None:
+        """The negative control, and the whole point of the ruling: *searched
+        and found nothing* is an answer, not an absence."""
+        from modules.knowledge_graph.application.queries import (
+            AccountMatchGroup,
+            SearchCoverage,
+        )
+        from modules.knowledge_graph.domain.identity import EntityKind
+
+        group = AccountMatchGroup(
+            kind=EntityKind.COMPANY, coverage=SearchCoverage.SEARCHED
+        )
+        assert group.matches == ()

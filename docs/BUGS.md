@@ -80,6 +80,82 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-325 · B-118's fix allocates Lane B its own database, and the document that tells a lane how to run still names the shared one
+
+| | |
+|---|---|
+| **Module** | Development environment — [`docs/RUNNING.md`](RUNNING.md), the *Running a lane* invocation |
+| **Current assignee** | **QE** — `RUNNING.md` is QE's in the shared-files table (`CLAUDE.md` §20e). **The `infra/` half is already built and correct; nothing is asked of Lane C** |
+| **Severity** | 🟠 — **it makes measurement untrustworthy**, which is [B-118](#b-118--lanes-share-one-postgresql-so-two-suites-running-at-once-fabricate-each-others-failures)'s own severity and for B-118's own reason |
+| **Status** | **`OPEN`** — reported with evidence; **not fixed, because `RUNNING.md` is not this lane's to edit** |
+| **Found** | 2026-08-05 by **Lane B**, when B-118 reproduced against it **after B-118 was marked `FIXED`** |
+
+**Steps to reproduce.** Follow [`RUNNING.md` § Running a lane](RUNNING.md#running-a-lane) exactly, as a lane is required to, and run the suite while another lane runs theirs.
+
+**Expected.** Isolation. B-118 is `FIXED`: *"create separate environment for each lane so that nothing could be shared."*
+
+**Actual.** Contention, exactly as B-118 describes — two failures in modules the run never touched, both passing on an isolated re-run of the same commit.
+
+### The fix is built and the instructions do not reach it
+
+**`infra/` is correct.** `docker-compose.yml` reads `${SIGNORA_POSTGRES_PORT:-5432}` and `${COMPOSE_PROJECT_NAME:-signora-v2}`, and `environments.py` allocates a port per lane:
+
+```
+lane-a | postgres 5732
+lane-b | postgres 5832
+demo   | postgres 6232
+```
+
+**`RUNNING.md` still tells Lane B to use 5432**, in the block a lane copies verbatim:
+
+```
+export SIGNORA_TEST_APP_DATABASE_URL=postgresql+asyncpg://…@localhost:5432/signora_lane_b
+export SIGNORA_TEST_ADMIN_DATABASE_URL=postgresql+asyncpg://…@localhost:5432/signora_lane_b
+export SIGNORA_DATABASE_URL=postgresql+asyncpg://…@localhost:5432/signora_lane_b
+```
+
+**And 5832 is not listening** — only 5432 is. So the separate stack exists in the model and has never been started by the lane it was allocated to, because nothing told that lane to start it.
+
+> **This is the class `CLAUDE.md` §2 names: the repository telling a lane something that is no longer true.** A defect marked `FIXED` whose fix nobody can reach is worse than one still marked open — **every lane reads the register, believes the row, and keeps reproducing the defect while believing it cannot.** It is also why this row exists rather than a re-opening of B-118: **B-118's fix is real and correct**, and re-opening it would misattribute a documentation gap to the engineering that closed it.
+
+### What Lane B is doing meanwhile
+
+**Not editing `RUNNING.md`** — it is QE's, and a lane rewriting another's file is how two records start disagreeing. **Not inventing its own ports either** ([`RUNNING.md`](RUNNING.md#running-a-lane) is authoritative on allocation and `environments.py` already holds the answer).
+
+**Publishing no number measured during contention**, which is B-118's own rule, and re-running in isolation to tell a real failure from a fabricated one.
+
+### B-326 · A git conflict marker is committed inside the defect register
+
+| | |
+|---|---|
+| **Module** | Repository records — `docs/BUGS.md` |
+| **Current assignee** | **QE** — register reconciliation is theirs (`CLAUDE.md` §20e), and this file has no module owner |
+| **Severity** | 🟡 — nothing behaves wrongly; **the repository's own account of itself contains a fragment of a merge that never finished** |
+| **Status** | **`OPEN`** — reported, **not fixed.** One line, one obvious resolution, and still another lane's file |
+| **Found** | 2026-08-05 by Lane B, grepping its own working copy for markers after a run of hand-resolved rebases |
+
+**Steps to reproduce.**
+
+```bash
+git show origin/integration:docs/BUGS.md | grep -n '^>>>>>>>'
+```
+
+**Expected.** Nothing.
+
+**Actual.**
+
+```
+1238:>>>>>>> 603a077 (ADR-0040 proposed — Notifications answers a different question from Attention)
+```
+
+**A closing marker with no opening one**, so the conflict was resolved by hand and one line was missed. It renders as literal text in the middle of the register.
+
+### Why it is worth a row rather than a quiet deletion
+
+**§2: the repository itself should always tell the truth.** A defect register is the document a lane reads to learn what is broken, and **a fragment of an unfinished merge sitting inside it is the register failing at its own job** — mildly, but in the one file whose credibility is the point.
+
+**Not fixed here for the reason this lane has now applied four times**: finding a defect outside your assignment is an obligation to report it, never permission to fix it. `BUGS.md` has no module owner and QE reconciles it at merge, so the deletion is theirs. **It is one line and it is obvious — which is exactly when the rule is easiest to break.**
+
 ### B-324 · TASK-415 made the mock the local default, and evaluation resolves through the same registry
 
 | | |
