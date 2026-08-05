@@ -365,12 +365,19 @@ def build(ref: str, since: str | None = None) -> str:
     if not registry:
         a("  ⚠ registry unreadable or absent — every row below will report `?`.")
     a(f"  {'Module':<23}{'Owner':<8}{'Future':<9}{'Stage':<10}{'Impl':<6}{'Epic':<8}"
-      f"{'Slice':<10}{'QE':<10}{'Blocked':<9}Next milestone")
+      f"{'Slice':<10}{'QE':<10}{'Carries':<9}Next milestone")
     for m in modules + ["product_surface"]:
         e = reg.get(m, {})
         r = next((x for x in rows if x["module"] == m), None)
         st = (r["status"] if r else "—")
         qe = st if st in ("IN VALIDATION", "VERIFIED", "CHANGES REQUESTED") else "—"
+        # **`carries` is not `blocked`, and this column claimed it was.**
+        # The registry field means *this item travels with the module* (D-057)
+        # — C-215 travels with `timeline` and is buildable work; C-214 says in
+        # its own words *"Implementation impact. Blocks nothing"*. Printing
+        # both under a heading reading `Blocked` reported two modules as
+        # obstructed when neither was, and a false blocker is worse than none:
+        # it is a reason not to look.
         blocked = ", ".join(e.get("carries", [])) or (r["blocker"] if r else "—")
         a(f"  {m:<23}{e.get('current_owner','?')[:7]:<8}{e.get('future_owner','?')[:8]:<9}"
           f"{e.get('transition','?')[:9]:<10}{str(e.get('implementation','?'))+'%':<6}"

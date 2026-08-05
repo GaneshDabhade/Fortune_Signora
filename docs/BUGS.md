@@ -899,7 +899,7 @@ An autouse fixture on `TestConcurrencySafety` sets `SIGNORA_DATABASE_URL` to the
 | | |
 |---|---|
 | **Module** | Frontend tooling — `frontend/scripts/auth-migrate.ts`, `frontend/scripts/demo-users.ts`, and the `demo-prepare` target |
-| **Current assignee** | **unassigned** — the frontend foundation's current assignee, when there is one |
+| **Current assignee** | **QE**, joined from [C-216](LANE_COORDINATION.md). ⚠️ **Cross-referenced 2026-08-05 — this bug and that coordination item are the same defect, open in two registers.** C-216 — *"the setup scripts do not load `.env.local`, and fall back silently"* — records **`owner: QE`**, on the grounds that [`RUNNING.md`](RUNNING.md) and the setup scripts are QE's. **This row read `unassigned` because it reasoned from the *frontend foundation*, and the defect is in the scripts rather than in the foundation they configure.** **Not closed as a duplicate**: a bug row and a coordination item answer different questions, and B-105 is where the reproduction lives. **QE decides whether to close one** |
 | **Severity** | 🟠 — **the documented first-run path fails**, and it is the path every new environment takes |
 | **Status** | **`OPEN`** — found by QE while building `make review`, 2026-08-03 |
 | **Found** | 2026-08-03, on a workstation with no `frontend/.env.local`, following `docs/RUNNING.md` exactly |
