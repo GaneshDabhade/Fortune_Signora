@@ -23,13 +23,20 @@ current = "TASK-405"
 next    = "TASK-417"
 future  = ["TASK-905", "TASK-400-A7"]
 
-# **3 of a 5 target — corrected downward the same day it was published.**
-# TASK-904 was `next` and is blocked by two architectural blockers this office
-# did not check before queueing it. **Reported rather than quietly reordered**:
-# the shortfall is real, and the two rulings that clear it are the cheapest in
-# the repository (DECISION_QUEUE.md P1).
-eligible_count = 3
-shortfall      = 2
+# **4 of a 5 target.** TASK-904 was `next` this morning and is blocked by two
+# architectural blockers this office did not check before queueing it.
+# **Reported rather than quietly reordered**: the shortfall is real, and the two
+# rulings that clear it are the cheapest in the repository (DECISION_QUEUE.md P1).
+#
+# ⚠️ **Read 3/shortfall 2 for one commit, against a sequence of four.**
+# TASK-400-A7 was listed in `future` and excluded from the count — a defensible
+# judgement recorded as a number, next to the list it disagreed with.
+# **A stored count beside a derivable one is C-412's defect in this office's own
+# file**, so the dashboard now recomputes it and reports the disagreement rather
+# than trusting the field. **The field stays because it must be checkable against
+# something**; what changed is that nothing reads it without checking.
+eligible_count = 4
+shortfall      = 1
 
 [rationale]
 "TASK-405" = "claimed 2026-08-05 and in implementation — the domain half pushed at acb774b. signal_engine is Lane A's"

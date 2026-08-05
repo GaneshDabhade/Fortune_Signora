@@ -313,10 +313,20 @@ def build(ref: str, since: str | None = None) -> str:
         seq = [t for t in seq if t]
         blocked = q.get("blocked") or []
         val = q.get("in_validation") or []
-        elig = int(q.get("eligible_count", len(seq)))
+        # **The declared count is checked, never trusted.** `lane-a.toml`
+        # declared 3 beside a sequence of 4 for one commit — a judgement about
+        # one entry recorded as a number, next to the list it disagreed with.
+        # **That is C-412's defect in this office's own file**, so the
+        # disagreement is reported rather than resolved silently in either
+        # direction: the field may be right and the list stale, or the reverse.
+        declared = q.get("eligible_count")
+        elig = int(declared) if declared is not None else len(seq)
         target = int(q.get("depth_target", 5))
         mark = "OK" if elig >= target else f"SHORT by {target - elig}"
         a(f"    {lane:<8} {len(seq):>8} {elig:>8} {len(blocked):>8} {len(val):>8}  {elig}/{target}  {mark}")
+        if declared is not None and int(declared) != len(seq):
+            a(f"      DRIFT — declares {declared} eligible, sequences {len(seq)}: "
+              f"{', '.join(seq)}")
     for lane in ("Lane A", "Lane B"):
         if lane not in qs:
             a(f"    {lane:<8} NO QUEUE FILE — absence is a Product Office finding, not an empty queue")
