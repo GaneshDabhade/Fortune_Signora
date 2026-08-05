@@ -27,7 +27,10 @@
 
 | Status | Meaning |
 |---|---|
-| `READY` | **Claimable now.** Every input exists, no decision is outstanding, nobody holds it |
+| `READY` | **Claimable now.** Every input exists, no decision is outstanding, nobody holds it. **Set by Lane C on approving the implementation package** from 2026-08-04 ([D-060](DECISION_REGISTER.md)) — **a statement of fitness, never of priority.** The queue's *order* remains the product owner's |
+| **`PREPARING`** | **The module's owning lane is authoring the implementation package** — reuse audit, slice boundary, contracts, sequencing. **Not claimable**, including by the lane preparing it *(added 2026-08-04, [429](architecture/429-distributed-delivery-model.md))* |
+| **`UNDER REVIEW`** | **Submitted to Product Office.** **The preparing lane does not wait** — it prepares the next slice or implements an already-`READY` one. **Not claimable** |
+| **`REVISION REQUESTED`** | **Lane C, on review.** Governance requires a change and **the reasons are named**; the package returns to `PREPARING`. **Deliberately not `CHANGES REQUESTED`**, which is QE's word for an implementation that did not hold — **different authority, different stage, different subject** |
 | `CLAIMED` | A lane holds it. The lane is named here, and [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) carries the detail. **Implementation begins immediately** |
 | `IN PROGRESS` | Being built. **A claim flows straight into this** — there is no waiting state between them |
 | `IN VALIDATION` | **Implemented and pushed.** Set by the implementing lane, the moment the work exists as commits QE can take. **The lane's responsibility ends here and it claims its next task immediately** |

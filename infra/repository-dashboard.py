@@ -275,7 +275,47 @@ def build(ref: str, since: str | None = None) -> str:
     a(f"  Bug ids {len(set(re.findall(r'B-\d+', bugs)))}")
     a(f"  Open / deferred / awaiting merge   {J}  (DECISION_REGISTER.md — not yet on {ref})")
 
-    a(section("9 · RECENT CHANGES"))
+    # **The two queues Distributed Product Development runs on** (`CLAUDE.md`
+    # §20e). They are computed rather than reported by a lane because each one
+    # measures the office that would be reporting it: **a growing review queue
+    # is Product Office becoming the bottleneck at approval instead of at
+    # authorship**, and a growing synchronization queue is the failure the
+    # model was created to end. **Neither is a lane's claim about itself.**
+    a(section("9 · REVIEW QUEUE"))
+    prep = [(i, ti, s) for i, ti, s in tk if s in ("PREPARING", "UNDER REVIEW", "REVISION REQUESTED")]
+    if prep:
+        for i, ti, s in prep:
+            a(f"  {s:<20} {i:<10} {ti[:44]}")
+        a(f"  awaiting Product Office review: {sum(1 for _,_,s in prep if s == 'UNDER REVIEW')}")
+    else:
+        a("  empty — no package is preparing, under review or awaiting revision.")
+        a("  Correct while every module is still on the pre-transition backlog:")
+        a("  the model switches per module, as each module's queue empties.")
+
+    a(section("10 · SYNCHRONIZATION QUEUE"))
+    # Approved and not yet claimable is the exact gap §20e names: *prepared work
+    # that has not reached `integration` does not exist for planning purposes*.
+    for br in [b for b in sh("git", "for-each-ref", "--format=%(refname:short)",
+                             "refs/remotes/origin").split() if "lane-" in b]:
+        ahead = sh("git", "rev-list", "--count", f"{ref}..{br}").strip() or "0"
+        if ahead != "0":
+            exe = [p for p in sh("git", "diff", "--name-only", f"{ref}...{br}").split()
+                   if not p.startswith("docs/") and not p.endswith(".md")]
+            a(f"  {br:<40} {ahead:>3} ahead   {len(exe)} executable file(s)")
+    a(f"  Measured against {ref}. **A branch ahead of it is not capacity** — it is")
+    a("  planning until QE promotes it (CLAUDE.md §20e, the five decision states).")
+
+    a(section("11 · BOTTLENECK DASHBOARD"))
+    po = len([1 for m in re.findall(r"owner[^|]*product owner", coord, re.I)])
+    a(f"  governance        {len(blockers)} blocker(s) cited on the board: {', '.join(blockers) or '—'}")
+    a(f"                    ~{po} coordination item(s) name the product owner as owner")
+    a(f"  synchronization   {sum(1 for b in sh('git','for-each-ref','--format=%(refname:short)','refs/remotes/origin').split() if 'lane-' in b and sh('git','rev-list','--count',f'{ref}..{b}').strip() not in ('0',''))} lane branch(es) ahead of {ref}")
+    a(f"  ownership         {sum(1 for v in owners.values() if v.startswith('COLLISION'))} collision(s)"
+      f"   {sum(1 for m in modules if m not in owners)} module(s) with no declared assignee")
+    a(f"  architecture      {J}  (a 🔴 change with no ADR is one; a script cannot tell)")
+    a(f"  external          {J}  (a vendor, a credential, a dataset nobody holds)")
+
+    a(section("12 · RECENT CHANGES"))
     if since:
         prev = {i: s for i, _, s in tasks(since)}
         cur = {i: s for i, _, s in tk}

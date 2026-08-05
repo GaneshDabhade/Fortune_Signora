@@ -764,6 +764,60 @@ promoted commit SHA  ==  certified commit SHA
 
 > **Why a stale assignee is worse than a missing one.** A row with no owner is visibly unclaimed and somebody asks. **A row naming a lane that has moved on looks answered** — every lane reads it, believes it, and routes around the work. **C-213 blocked TASK-205 for two days on one word.**
 
+### Distributed Product Development — preparation moves to the implementing lane
+
+**Ratified 2026-08-04, product owner directive. Drafted by Lane C on that instruction.** **The reasoning, the measurements and the transition mechanics are [429](docs/architecture/429-distributed-delivery-model.md); this section is what binds.**
+
+> **The organisation evolves from centralized planning to distributed execution with centralized governance.**
+>
+> **Preparation moves to the lane that will implement it. Review stays with Product Office. Certification stays with QE.**
+
+**The premise was measured before it was recorded.** **12 of 32 task rows carry Lane C's `TASK-4xx` block** — 37.5% of the queue authored by the one office that may not implement any of it — while `integration` stood still for eleven polls and lanes idled on work that existed only on a Product Office branch. **A queue with one author has one author's throughput, however many lanes consume it.** *The issue is not planning quality; the issue is centralized preparation.*
+
+```
+  Approved design ─▶ owning lane prepares ─▶ Lane C reviews ─▶ lane implements ─▶ QE certifies
+                                                   │
+                                            approve · revise
+```
+
+#### The three responsibilities, and they still do not overlap
+
+| | | |
+|---|---|---|
+| **Product Development lanes** | **Prepare *and* build** | **The complete lifecycle of their assigned modules** — studying the approved UI, workflows, backend capability, repository reuse, proposed API changes, implementation plans, implementation, tests, module documentation, module health, technical debt, **and a continuously `READY` pipeline for what they own** |
+| **Lane C — Product Office** | **Governs and reviews** | Architecture · governance · repository health · roadmap · backlog governance · ADR lifecycle · module ownership · dependency management · priority management · release planning · cross-module consistency · Platform Foundation · design conformance · repository conventions · development process · **review of implementation preparation** |
+| **QE** | **Certifies** | **Unchanged in every respect** |
+
+> **Lane C no longer prepares every implementation slice. It reviews preparation created by the lanes that own the modules.** **Lane C may approve, reject, request changes, reprioritize, split, merge or defer** — and **may not become another implementation team.**
+>
+> **A review that rewrites is preparation wearing a review's clothes**, and it restores the bottleneck it was created to remove. **The test before Lane C edits rather than comments: would the package, as submitted, breach a rule the repository can name?** If the answer is *"it is not how I would have done it"*, **the correct output is approval.**
+
+**A Product Development lane may not:** change architecture · redefine module boundaries · modify repository governance · invent a bounded context · ratify an ADR independently · **bypass Product Office review.** **Every one of those was already forbidden**; the list is restated because the lane's new authority makes the boundary worth re-drawing.
+
+#### Three new lifecycle states
+
+**Preparation now happens inside the implementing lane, so it needs states the backlog did not have.**
+
+| State | Set by | Means | Claimable? |
+|---|---|---|---|
+| **`PREPARING`** | **The owning lane** | Authoring the implementation package | **No** |
+| **`UNDER REVIEW`** | **The owning lane**, on submitting | With Product Office. **The lane does not wait** — it prepares the next or implements an already-`READY` slice | **No** |
+| **`REVISION REQUESTED`** | **Lane C** | Governance requires a change, **and the reasons are named.** Returns to `PREPARING` | **No** |
+
+**`READY` is now set by Lane C on approval**, where it was the product owner's. **This is narrower than it looks and transfers no priority:** §20e already grants Lane C *"decompositions of already-approved scope — never new scope, never a reordering."* **`READY` states that a package is fit to implement; position in the queue states what it is worth, and that remains the product owner's.**
+
+> ⚠️ **`REVISION REQUESTED` (Lane C, on a plan) and `CHANGES REQUESTED` (QE, on an implementation) are two states and are never collapsed into one.** Different authority, different stage, different subject — and a board using one word for both cannot answer *"is this waiting on Product Office or on QE?"*
+
+#### The READY pipeline is the owning lane's to maintain
+
+**Every Product Development lane continuously maintains roughly five `READY` slices for its own modules.** **Running dry is a finding, and it is Lane C's to investigate** — synchronization delay · governance dependency · ownership ambiguity · an architectural decision · an external dependency · a missing product decision · sequencing · repository health.
+
+> **Maintaining implementation flow is a Product Office responsibility.** **Lane C removes bottlenecks before creating further governance work** — and *"Product Office had other work"* is never the reason a lane was idle.
+
+#### Transition — per module, and event-driven
+
+**This applies to new work only.** Anything **claimed, in progress, with QE or awaiting promotion continues under the existing model until naturally complete.** **A module switches when its current backlog is exhausted**, so no lane changes model mid-slice.
+
 ### Executable work comes from `integration`, and from nowhere else
 
 **Ratified 2026-08-04, product owner**, after Lane A idled for several reporting cycles waiting on three artifacts that existed only on a Product Office branch.
@@ -843,7 +897,10 @@ promoted commit SHA  ==  certified commit SHA
 
 | State | Set by | Means |
 |---|---|---|
-| `READY` | Product owner | Claimable |
+| **`PREPARING`** | **The owning lane** | Authoring the implementation package. **Not claimable** |
+| **`UNDER REVIEW`** | **The owning lane** | With Product Office. **Not claimable** |
+| **`REVISION REQUESTED`** | **Lane C** | Governance requires a change, and the reasons are named. **Returns to `PREPARING`** |
+| `READY` | **Lane C**, on approving *(was: product owner — see *Distributed Product Development*)* | Claimable. **Fitness, not priority** — the queue's order remains the product owner's |
 | `CLAIMED` | **The lane**, by the Task Claim Protocol | It is yours. **Implementation begins immediately** |
 | `IN PROGRESS` | **The lane**, as work starts | Being built. **A claim flows straight into this** — there is no pause between them unless another rule explicitly requires one |
 | `IN VALIDATION` | **The lane**, the moment it pushes | Implementation, tests, module documentation and Slice Handoff are all complete. **The lane's responsibility for this task has ended** |
@@ -940,7 +997,7 @@ Together these appear in roughly two thirds of all commits. **A lane does not ed
 | [`docs/REPOSITORY_RELEASE_CHECKLIST.md`](docs/REPOSITORY_RELEASE_CHECKLIST.md) | **The lifecycle runbook** — every command and tick-box from validation to Repository Ready | **QE** |
 | `PROJECT_STATUS.md` | **The executive dashboard** — *"where are we?"*, measured | **QE**, at Closeout |
 | [`docs/SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) | **Operational context** — *"what should the next session know?"* | **QE**, at Closeout |
-| [`docs/BACKLOG.md`](docs/BACKLOG.md) | **The READY queue** — *"what is available, and in what order?"* | **Product owner owns scope and order.** **Lane C writes decompositions of already-approved scope** into implementation-ready tasks — never new scope, never a reordering. An implementation lane writes **only** its claim. QE writes nothing |
+| [`docs/BACKLOG.md`](docs/BACKLOG.md) | **The READY queue** — *"what is available, and in what order?"* | **Product owner owns scope and order** — unchanged, and the order *is* the priority. **A Product Development lane writes preparation rows for its own modules** — `PREPARING` → `UNDER REVIEW` — **and its claims** *(from 2026-08-04, Distributed Product Development)*. **Lane C sets `READY` on approval and `REVISION REQUESTED` on rejection**, and still writes decompositions of already-approved scope — **never new scope, never a reordering.** QE writes nothing |
 | [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) | **The execution board, and nothing else** — who is working · on which `TASK-nnn` · on which branch · at what execution status. **It does not define priority** | **The claiming lane**, at once. **QE** reconciles it at Closeout |
 | `docs/architecture/38` · `39` | Design decisions · review findings | **QE**, at merge |
 | The roadmaps | *Scope* is the product owner's · *progress* is QE's | Both, as marked |
@@ -1200,6 +1257,18 @@ Estimated Repository Impact:  Small · Medium · Large · Repository-wide
 > **A decision is authoritative when the product owner rules it. It is *actionable* when `integration` records it.** Those are different days, and **every lane reports both.**
 
 **The Task Claim Protocol claims from `integration`**, so **a `TASK-nnn` existing only on a lane branch is invisible to every lane.** Never write *"ratified"* alone where *"ruled, not yet on `integration`"* is the truth, and **never write *"unblocked"* to mean *"a ruling exists"*.**
+
+#### What each lane reports under Distributed Product Development
+
+**Ratified 2026-08-04, product owner directive.** **The Standard Lane Report block above is unchanged and still opens every report.** These are the sections that follow it, and they differ by lane because the lanes now answer different questions.
+
+| Lane | Adds |
+|---|---|
+| **Product Development lanes** *(A · B)* | **Module Dashboard** — module · epic · active tasks · **preparing · under review · READY** · in progress · QE · completed · blocked. **Task Dashboard** — task · module · epic · status · stage · next action · ETA. Then **repository health · risks · waiting on · next planned slice** |
+| **Lane C** | The existing Executive Summary and Portfolio Dashboard, **plus four repository-wide views only the Product Office can produce**: **Repository Execution Dashboard** *(module · owner · preparing · under review · READY · in progress · QE · completed · blocked)* · **Epic Dashboard** · **Lane Dashboard** *(including capacity)* · **Bottleneck Dashboard** — **naming governance, synchronization, ownership, architecture and external bottlenecks separately.** Plus the **Review Queue** — every package awaiting Product Office review — and the **Synchronization Queue** — everything approved and not yet on `integration` |
+| **QE** | Its existing reporting plus **certification queue · promotion queue · repository health · failed gates · release readiness · regression summary** |
+
+> **The two queues are the model's instrumentation, and they are Lane C's because only Lane C can see them.** **A Review Queue that grows is Product Office becoming the bottleneck again at approval instead of at authorship** — the one risk this model takes. **A Synchronization Queue that grows is the failure the model was created to end.** Reporting both every cycle is what makes either visible before a lane goes idle.
 
 > **This is not a second Slice Handoff, and the two never restate each other** (§2). **The Slice Handoff lives in a commit message and addresses QE and the next assignee.** The Standard Lane Report lives in a *report* and addresses the product owner.
 >

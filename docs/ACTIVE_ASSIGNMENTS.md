@@ -78,6 +78,8 @@
 > **One implementation module → one implementation lane → one current assignee → one source of truth.** **Dual ownership of an implementation module is not permitted** (`CLAUDE.md` §20e, *module assignment is authoritative*).
 >
 > **Responsibility follows the module.** A coordination item, a backlog row or a defect against a module belongs to **its current assignee**, whoever opened it.
+>
+> **From 2026-08-04, ownership means preparation *and* implementation** (`CLAUDE.md` §20e, *Distributed Product Development* · [429](architecture/429-distributed-delivery-model.md)). **The owning lane studies the approved UI, audits reuse, sizes the slice, writes the package, submits it for Product Office review, and then builds it** — and **maintains roughly five `READY` slices for what it owns.** **Lane C reviews and never rewrites.** **A module running dry is a finding, and it is Lane C's to investigate, not the lane's to absorb.**
 
 **Ruled 2026-08-04 by the product owner, superseding the morning's split ruling:** *"we'll continue with Lane B only for some time and will start Lane A later once this conflict issue gets resolved."* **Lane A is paused; every implementation module consolidates on Lane B.**
 

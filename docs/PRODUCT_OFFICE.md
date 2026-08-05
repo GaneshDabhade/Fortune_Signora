@@ -203,6 +203,10 @@ Decisions required    what the product owner must rule before it can start
 
 ### Continuous implementation preparation
 
+> ⚠️ **Superseded per module from 2026-08-04 by Distributed Product Development** (`CLAUDE.md` §20e · [429](architecture/429-distributed-delivery-model.md)). **Preparation of a module's slices belongs to the lane that owns that module**, and Lane C **reviews** it. **This section stays as written and stays binding for two things**: modules whose pre-transition backlog is not yet exhausted, and **cross-cutting or unowned scope, which has no owning lane to prepare it.**
+>
+> **The responsibility it states does not disappear; its subject narrows.** *"Implementation lanes should never wait for discovery"* is still Lane C's to guarantee — **the office simply guarantees it now by reviewing promptly and removing bottlenecks, rather than by authoring every slice.**
+
 **Ratified 2026-08-04, product owner, as a standing responsibility.** *"Implementation lanes should never wait for discovery."* **Lane C stays one or more epics ahead of implementation, permanently.**
 
 > **It does not wait for a decision, an allocation, an idle lane, or approval to begin.** When one initiative reaches **READY**, preparation of the next starts immediately. **Preparation is independent of implementation** — that independence is the whole mechanism.
@@ -355,9 +359,36 @@ Decisions required    what the product owner must rule before it can start
 
 ---
 
+## 6a · Reviewing implementation preparation
+
+**From 2026-08-04, product owner directive** ([429](architecture/429-distributed-delivery-model.md)). **The Product Development lane prepares its own modules; Lane C reviews the package and sets `READY` or `REVISION REQUESTED`.**
+
+**Twelve checks, and each is a question the repository answers rather than an opinion Lane C holds:**
+
+**repository reuse** · **bounded contexts** · **architecture** · **API contracts** · **public contracts** · **dependency correctness** · **domain consistency** · **UI/backend alignment** · **smallest executable slice** · **governance compliance** · **implementation sequencing** · **module boundary.**
+
+> **The one rule that decides whether review stays review:**
+>
+> **Lane C does not rewrite a package unless governance requires it.** The test is *would this, as submitted, breach a rule the repository can name?* — **and if the answer is *"it is not how I would have done it"*, the correct output is approval.**
+>
+> **A review that rewrites is preparation wearing a review's clothes.** It restores the bottleneck the model was created to remove, one round-trip later and with the owning lane's work discarded — **and the owning lane knows its module better, which is the directive's own argument.**
+
+**Two queues are reported every cycle, and Lane C computes both because each measures Lane C:**
+
+| Queue | What a growing one means |
+|---|---|
+| **Review Queue** — packages awaiting Product Office | ⚠️ **Product Office has become the bottleneck again, at approval instead of authorship.** The one risk this model takes |
+| **Synchronization Queue** — approved and not yet on `integration` | **The failure the model was created to end**, recurring |
+
+**Both are emitted by `infra/repository-dashboard.py` §9 and §10** — **computed, never a lane's claim about itself.**
+
+---
+
 ## 7 · What Lane C never does
 
 **Write production code · modify business logic · implement a feature · merge · certify · change module ownership · reprioritize the roadmap · approve an architectural decision · override an implementation lane · bypass the product owner.**
+
+> **And, from 2026-08-04: rewrite an implementation package it was asked to review.** **The review function is new; the prohibition on becoming an implementation team is not.** Lane C gained a review, not a keyboard.
 
 > **Discovering an issue never confers authority to resolve it.** Lane C records the finding with its evidence and a recommendation; the change is made by whoever owns it.
 
