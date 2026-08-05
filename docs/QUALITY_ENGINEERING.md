@@ -33,6 +33,33 @@ QE is the only lane that may merge into `integration`, certify, move `main`, wri
 
 ---
 
+## 0a · Never read a gate's verdict through a pipe
+
+**Ratified by QE, 2026-08-05, after the third instance in one day — and the third defeated a safety gate.**
+
+```bash
+make validate | grep passed        # $? is grep's
+pytest --cov -q | tail -6          # $? is tail's
+certification-guard.py $SHA | head -2 && git merge …   # $? is head's — the merge ran past a REFUSED
+```
+
+| | What it cost |
+|---|---|
+| `tail -6` | A suite that died at 68% was reported green |
+| `grep passed` | A run whose verdict was `FAILED — exit 1` was integrated |
+| **`head -2`** | **The promotion guard said `REFUSED` and the `&&` proceeded anyway** |
+
+> **The first two cost a misreading. The third bypassed the one mechanism standing between an uncertified commit and `main`.** The guarantee held only because the refusal was itself wrong — QE had discarded the certification records moments earlier, so the guard was answering about a tree that no longer held the evidence.
+
+**The rule, and it is mechanical:**
+
+- **A gate's exit code is captured before anything filters its output.** `cmd > file 2>&1; echo "EXIT=$?" >> file` — the verdict and the code live in the same artifact and cannot be read apart.
+- **Never `gate | filter && next-step`.** A pipeline's status is the last stage's, so every `&&` after a filter is unguarded.
+- **Read the verdict line, never the summary line.** `3374 passed` is not a verdict; `FAILED — exit 1` is.
+
+**QE fixed each instance and not the habit, three times.** That is why this is a rule in the operating procedure rather than a note in a commit message.
+
+
 ## 0 · The standing model — QE polls; nobody dispatches it
 
 **Ratified 2026-08-04, product owner.** QE is not a reviewer who validates one branch and stops. **It is a continuous gatekeeper**, and the difference is where the pipeline's motion comes from.

@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `914f1dc`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `56b9c53`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `914f1dc`, 2026-08-05.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `56b9c53`, 2026-08-05.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`914f1dc`** — the certified commit itself |
+| **`main`** | **`56b9c53`** — the certified commit itself |
 | **`integration`** | **ahead of `main`** — Lane A's claim and Lane C's next batch arrived after the snapshot, which is the model working |
-| **Release candidate** | **None pinned.** Cycle 54 promoted **A-ii — a seller can ask who to talk to at an account** |
-| **Certification** | ✅ [`914f1dc466cf`](certification/reports/914f1dc466cf.md) · migration head **`0038`** · protocol **v2** |
+| **Release candidate** | **None pinned.** Cycle 55 promoted **TASK-414's impact analysis and the published queues**, after certification refused once |
+| **Certification** | ✅ [`56b9c5361678`](certification/reports/56b9c5361678.md) · migration head **`0038`** · protocol **v2** · **attempt 2; attempt 1 refused and is recorded** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -28,9 +28,9 @@
 | **Customer value this cycle** | ✅ **Yes.** A seller can open an account, **ask who to talk to**, and see the evidence behind every name — or why a name has none |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
-> ✅ **A seller can ask who to talk to, and the slice changed no domain logic to do it.** A-ii reused the entire reasoning core, three existing ports, 39 published names and two aggregates; what is new is an interface layer, three adapters and one composition root. **Where the lane found an asymmetry in `_widest` it asserted the behaviour rather than altering it** — the right instinct inside reasoning it did not write. **Lane A also resumed and claimed from the queue within minutes of cycle 53 promoting**, which is what the six-module transfer was for.
+> ⚠️ **Certification refused once, two lanes found the defect independently, and QE then defeated its own promotion guard.** `mypy --strict` failed on three unannotated parameters ([B-117](docs/BUGS.md) · [B-323](docs/BUGS.md)); **Lane B found it rebasing and did not fix it, because the file is Lane C's** — obligation to report, never permission to fix. Lane C fixed it in ten minutes with **no relay**. **Then QE piped the guard's verdict into `head`, so an `&&` ran past a `REFUSED`.** The promotion is sound — `promoted == certified`, 357 commits audited clean — but **that is the third exit-code-through-a-pipe error in one day and the first to bypass a safety gate.** Now a rule in [QUALITY_ENGINEERING.md §0a](docs/QUALITY_ENGINEERING.md).
 
-**Repository health:** **3405 backend tests** · **95.26% coverage** *(floor 95)* · **1171 frontend tests** across 55 files · **383 Security Invariants** · mypy strict over **732 files** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **3425 backend tests** · **95.27% coverage** *(floor 95)* · **1171 frontend tests** across 55 files · **383 Security Invariants** · mypy strict over **733 files** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -101,36 +101,43 @@
 
 ---
 
-## 1d · Release summary — 2026-08-05, cycle 54
+## 1d · Release summary — 2026-08-05, cycle 55
 
-**Derived from the promoted commit `914f1dc`.** **Ten promotions.** A customer-visible slice, and a friction QE created for a lane and then had to stop creating.
+**Derived from the promoted commit `56b9c53`.** **Eleven promotions.** Two attempts, one refusal, and the refusal is the useful part.
 
 ### What was promoted
 
-**A-ii — *a seller can open an account and ask who to talk to, and see the evidence behind every name, or why a name has none.*** `GET /workspaces/{id}/accounts/{id}/approach`, reachable by any workspace member; a non-member gets `404`, never `403`.
+**TASK-414's repository impact analysis** — *reports impact and skips nothing*, the first step of [427](docs/architecture/427-impact-based-validation.md) — plus the **published assignment queues**, three coordination items closed that still read `OPEN`, and the governance package's phases 0 and 1.
 
-**The reuse is the notable part.** The whole reasoning core, its three ports, 39 published names, the `BuyingCommittee` and `ProductCatalog` aggregates — all reused. **No domain logic changed.** New: an interface layer, three adapters, one composition root.
+### Certification refused, and everything about the refusal worked
 
-> **Where the lane found an asymmetry in `_widest`, it asserted the behaviour rather than altering it.** That is the correct instinct inside a reasoning core somebody else wrote — a test that pins today's behaviour costs nothing and a silent correction costs everything.
+**Attempt 1 failed on `mypy --strict`**: three `monkeypatch` parameters without annotations. **Attempt 1's `NOT CERTIFIED` record is committed, not discarded** — *succeeded · failed · aborted* stay distinct only if failures are recorded as faithfully as successes.
 
-### A friction QE created, and stopped creating
+**Two lanes found it independently within the hour.** QE certifying; **Lane B rebasing and re-running its gates because *"the rebase carried executable change."*** Lane B's analysis is the better half and the register says so:
 
-**QE pushed a one-line status note to `integration` between validating A-ii and integrating it.** That put Lane B's branch one commit behind and forced an extra rebase — **friction QE reported and had itself caused.**
+> **The gate is `mypy --strict .` from `backend/`, and the difference is `tests/`.** A lane running its own module's suite **never type-checks its own test files.**
 
-QE then attempted to `reset --hard` and force-push `integration` to remove its own note, and **the action was refused.** That refusal was correct: rewriting a shared branch every lane builds on, to save one cheap rebase, is a bad trade in both directions. **Lane B rebased on its own within the minute.**
+**Lane B did not fix it.** The file tests `certification-guard.py`, which is Lane C's under D-022 — *"the judgement about whose file it is is not this lane's to make."* **Lane C fixed it in ten minutes, with no relay from the product owner**, and titled the commit *"the gate I did not run on my own test."*
 
-> **The rule QE adopted: status notes do not go to `integration` mid-cycle.** They belong in Repository Closeout, which lands on `main` after promotion — where they cost nobody a rebase.
+### QE defeated its own promotion guard, and the outcome was sound anyway
 
-### Lane A is back
+```
+REFUSED — 56b9c53 has no certification record.
+   325c814f..56b9c536  main -> main          ← the merge ran regardless
+```
 
-**Lane A resumed and claimed from the queue within minutes of cycle 53 promoting.** The six-module transfer and the board consolidation were built for exactly that, and it happened without a relay.
+**`python3 infra/certification-guard.py $SHA | head -2 && git merge …`** — a pipeline's exit status is its *last stage's*, so `head` returned 0 and the `&&` proceeded past a refusal. The refusal itself was spurious: QE had discarded the certification records seconds earlier, so the guard was answering about a tree that no longer held its own evidence.
+
+**The promotion is sound** — `promoted == certified`, the record restored, the guard re-run cleanly, and `--audit-main` clean across **357 commits**. **But the guard was bypassed by command construction**, and it is the only mechanism between an uncertified commit and `main`.
+
+> **Third instance in one day.** `tail -6` hid a suite that died at 68%; `grep passed` hid a `FAILED — exit 1`; **`head -2` hid a `REFUSED`.** The first two cost a misreading. **QE fixed each instance and not the habit, three times** — which is why it is now [QUALITY_ENGINEERING.md §0a](docs/QUALITY_ENGINEERING.md) rather than another commit message.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3405 backend** · 1171 frontend · **95.26%** · **383 invariants** · **732 files typed** · 35 contracts · `tsc` clean and gated |
-| **Release** | **Twenty-four cycles promoted** · `promoted == certified` ✓ · every gate verdict now carries its own `MAKE_EXIT` |
+| **Technical** | **3425 backend** · 1171 frontend · **95.27%** · **383 invariants** · **733 files typed** · 35 contracts · `tsc` clean and gated |
+| **Release** | **Twenty-five cycles promoted** · `promoted == certified` ✓ · ⚠️ **QE piped the promotion guard's verdict into `head` and an `&&` proceeded past a `REFUSED`** — outcome sound, path not (below) |
 | **Architecture** | Reachability 0 doorless · migration `0038` **reversible, verified this cycle** · event catalog 1 known drift |
 | **Dependency** | 69 items, 31 closed |
 | **Customer Value** | ✅ **Direct.** A renamed company's search result now explains itself. **The first slice today that a salesperson would notice** |
