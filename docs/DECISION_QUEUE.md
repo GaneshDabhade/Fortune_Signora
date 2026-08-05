@@ -2,9 +2,13 @@
 
 **The single place the product owner reviews when making rulings.** Established 2026-08-05 by product owner directive.
 
-> ## ⚠️ One thing is waiting on you.
+> ## ⚠️ Three things are waiting on you, and two arrived from the same method.
 >
-> **[Placing TASK-427](#-task-427--the-people-domains-trigger-has-fired-and-placing-it-is-yours)** — **the People domain.** One row, one position, and **its trigger has already fired.**
+> **① [Placing TASK-427](#-task-427--the-people-domains-trigger-has-fired-and-placing-it-is-yours)** — **the People domain.** One row, one position, and **its trigger has already fired.**
+> **② [TASK-431](#-task-431--six-screens-assert-one-guarantee-and-the-repository-has-no-word-for-it)** — **the highest-value decision on this page.** Six approved screens assert one guarantee; the repository has no representation of it.
+> **③ [TASK-433](#-task-433--segment-already-means-something-else)** — **one word, and it costs a sentence today.**
+>
+> **② and ③ are the first output of [Product-Led Domain Discovery](architecture/442-product-led-domain-discovery.md).** **Both are rulings, not work** — neither asks for anything to be built.
 >
 > ✅ **Both of the items that stood here on 2026-08-05 are ruled and cleared** — **[C-416](LANE_COORDINATION.md)** gave `signora_platform/` a permanent owner and released [TASK-418](BACKLOG.md) with [TASK-901](BACKLOG.md)'s seven slices; **[C-224](LANE_COORDINATION.md)** settled the authorization `Resource`, and `CLAUDE.md` §20a now names it in the carve-out. **Both were ruled by [D-073](DECISION_REGISTER.md).** *(This banner still asked for them the next morning. **`--check` reported C-224 as `STALE` and it was right** — the queue is only true if a ruling removes its own row.)*
 >
@@ -48,6 +52,34 @@
 | **Lanes waiting** | **None yet, and that is the argument for placing it now rather than the argument against.** Epic C is assigned to **Lane A** |
 | **Priority** | **P1 — it is in front of a wave that is claimable today** |
 | **Recommended** | ✅ **Place [TASK-427](BACKLOG.md) in `READY` above [TASK-202](BACKLOG.md).** **Nothing gates it** — no ruling, no provider, no missing module. **Alternative, if wave 2 should not wait**: place it immediately *below* TASK-202 and accept that AI Copilot's phase 4 stalls where phases 1–3 do not |
+
+## 📌 TASK-431 · Six screens assert one guarantee, and the repository has no word for it
+
+**Not a `C-` item — no lane is blocked and nothing is undecided about *whether*.** **The question is the shape**, and it is 🔴, so it is yours.
+
+| | |
+|---|---|
+| **Summary** | **[442 §F1](architecture/442-product-led-domain-discovery.md).** *"Approved before it writes, reversible after it does"* · *"nothing sends without your approval, reversible for 24 hours"* · *"reversible for 24 hours as a single named batch"* · *"attributed, reversible, in the audit log"* · **AI Copilot's 17 surfaces: *"proposes rather than commits… attributable and reversible"***. **Five screens in the design project's own words, plus every AI surface** |
+| **The finding** | **The AI contract and the bulk-edit contract are the same contract**, and that is invisible screen-by-screen — one reads as AI governance, the other as a table feature. **They are one concept: a change that waits for a human, is recorded as one named thing with an author, and can be taken back inside a window** |
+| **Already built** | **More than half.** `Recommendation` proposes · **`MACHINE_AUTHORED = frozenset({Stage.TRACKING})` — *"Intelligence suggests. Humans commit."*** · `actor_id` in **37 files** · **reversal-as-supersession, five times** (`observation` · `signal` · `entity` · `business_event` · opportunity stage) |
+| **Genuinely absent** | **A named unit of change · a window · and the verbs.** The `Action` enum is `read · update · add · remove` — **there is no `approve` and no `withdraw`, so the guarantee cannot currently be *authorized*, let alone recorded** |
+| **Impact** | **Six screens.** **AI Copilot is wave 2 and is the first to need it** |
+| **Blocked tasks** | **[TASK-431](BACKLOG.md).** Nothing is blocked today — **the cost is paid later, and paid five times** |
+| **Lanes waiting** | **None.** This is why it is cheap to rule now |
+| **Priority** | **P1 — the only 🔴 in [442](architecture/442-product-led-domain-discovery.md) with no decision behind it** |
+| **Recommended** | ✅ **(b) — a domain concept in one owning context, consumed through `public/`.** **The reason is the reuse gate, not taste**: *"a port belongs to the module that owns the language it represents"* (§6), and **approval is a language the whole product speaks** — which is exactly what distinguishes it from the five existing supersessions, each of which is one module's own vocabulary. **(a)** puts a shared concept in frozen substrate; **(c)** is the five-implementations outcome, and it is unpickable afterwards because each copy will be load-bearing for its own screen |
+
+## 📌 TASK-433 · `Segment` already means something else
+
+| | |
+|---|---|
+| **Summary** | **[442 §F2](architecture/442-product-led-domain-discovery.md).** The App Shell applies global scope *"before a module renders"* and **all 16 screens inherit it**; **Companies** needs *"saved views and segments"*; **Global Search** needs *"saved and monitored searches"*. **`saved_view`, `saved search`, `monitored` — zero matches repository-wide** |
+| **The collision** | **`commercial_profile` owns `Segment`** — a named ICP segment with its own state machine, meaning ***who buys***. **Companies' "segment" is a saved filter over a list of accounts.** **Two concepts, one word, and the word is already in the ubiquitous language** — §4: *"never repurpose a term from one module inside another"* |
+| **What this does *not* ask** | ⛔ **[O3](DECISION_REGISTER.md) stays deferred.** O3 asked **where shell services live**; this asks **whether a saved view is a domain concept, and what it is called.** *"No further preparation"* is respected — no placement is proposed here |
+| **Impact** | **Five screens**, and the shell inherits into all sixteen |
+| **Lanes waiting** | **None** |
+| **Priority** | **P2 — trivial now, a rename across a bounded context later** |
+| **Recommended** | ✅ **Rule the name before the second one is built.** **Lane C's suggestion is `SavedView` for the filter and `Segment` unchanged for the ICP concept** — the customer says *"my saved view"* and *"my segment"* about different things already, so [ADR-0034](architecture/adr/0034-ubiquitous-language.md)'s test is satisfied without inventing anything |
 
 ## C-225 · Wave 1's technology stack section has no route
 

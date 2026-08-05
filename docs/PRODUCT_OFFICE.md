@@ -345,6 +345,36 @@ Decisions required    what the product owner must rule before it can start
 
 **So: before a screen enters a wave, read its sections against the contracts that would serve them.** Not the module's name, not its endpoint count, not whether it has an `interface/` layer. **Each correction cost a document because it was caught early; either would have cost a slice if caught during implementation.**
 
+### 5e · Product-Led Domain Discovery — planning runs from the finished experience backwards
+
+**Ratified 2026-08-05, product owner directive. A change in planning *methodology*, and explicitly not a change in governance.** The register it produces is [442](architecture/442-product-led-domain-discovery.md), and it is **continuously evolving** rather than a one-time assessment.
+
+> **The approved UI is now the primary source of product requirements.** **Start from the finished product experience and derive the domain model, bounded contexts, entities, workflows, contracts, events, permissions, APIs, AI capabilities and foundation that must exist so the frontend can actually function.**
+
+**What changes is the direction of enquiry.** Product Office was reacting to implementation — *this task needs a contract, this module needs an export, this dependency blocks another task.* **Those responsibilities remain in full.** What is added is the other direction: **given the approved experience, what must exist underneath it?**
+
+**§5b is not superseded and this is the distinction that matters.** *"Think in modules, not screens"* is still how work is **planned and cut**. **Discovery reads the screens; preparation still proceeds module by module** — a screen is where a requirement is *found*, never where a package is *scoped*.
+
+#### The ladder, and the gate at the bottom
+
+**Do not stop at APIs.** *"An endpoint"* is not a finding. **Keep asking until the answer is a domain concept:** what is it showing → what relates to what → what lifecycle exists → what events record the change → who may cause it → what must survive it → **and what would five screens each build separately.** **APIs are outputs of the model, never the model.**
+
+> ## ⛔ **Every rung passes the reuse gate before it becomes a finding: *does the repository already have this, under another name?***
+>
+> **Test by concept, never by the name you expect.** **442 reported triage as missing because `class TriageState` and `class Snoozed` returned nothing** — `signal_engine` has **`Resolution`, `Actioned`, `Assigned`, `Snoozed`, `Dismissed` and `DismissalReason`**, and had them all along. **That is [B-101](BUGS.md) inside the instrument built to find missing concepts**, and it is the failure mode this method is most prone to: **a discovery document that invents a duplicate is worse than no discovery document**, because it arrives with evidence attached.
+
+#### What it is measured by
+
+**Not by rows created.** *"Success is not measured by the number of backlog items created."* **It is measured by whether the backend already contains — or has a planned path toward — the concepts a screen needs, by the time that screen is implemented.** **A discovery that produces one ruling and no tasks has succeeded if it stopped a concept being built twice.**
+
+**The ranking function is [441 §5 · P-01 · Domain precedence](architecture/441-people-roadmap.md), applied as a sort rather than as a rule checked afterwards**: a finding's priority is *how many approved screens would otherwise build their own version of it.*
+
+#### The two boundaries this does not move
+
+**Everything in §5b's last paragraph still binds** — Lane C identifies missing APIs, events, workflows, orchestration, repositories, permissions, integrations, security, validation, public contracts, dependency edges **and now domain concepts**, and nothing else. **It does not redesign UX, and it prepares rather than decides.**
+
+**And a discovery is not a licence to build.** *"Do not implement them immediately. Instead, plan them before dependent work begins."* **A finding becomes a backlog row only when it names its screens, its trigger and its reuse verdict** — and a 🔴 finding with no ruling behind it is stated as alternatives with a recommendation, **never as a design.**
+
 ---
 
 ## 6 · Feature decomposition
