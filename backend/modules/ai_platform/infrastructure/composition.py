@@ -24,8 +24,13 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from modules.ai_platform.application.infer import Infer, InferencePolicy
 from modules.ai_platform.application.narrate import Narrate
 from modules.ai_platform.application.ports import ExplanationSource
-from modules.ai_platform.domain.provider import AIProviderRegistry
+from modules.ai_platform.domain.provider import (
+    AIProviderRegistry,
+    AIRegistrationError,
+    AIVendor,
+)
 from modules.ai_platform.infrastructure.adapters.anthropic import AnthropicAdapter
+from modules.ai_platform.infrastructure.adapters.mock import MockAdapter
 from modules.ai_platform.infrastructure.adapters.ollama import OllamaAdapter
 from modules.ai_platform.infrastructure.prompt_loader import load_prompt_registry
 from modules.ai_platform.infrastructure.repository import (
@@ -53,19 +58,38 @@ def build_provider_registry(
     a clear composition error — rather than a call that travels to a vendor
     and fails there with something less legible.
 
-    There is deliberately **no fallback between them.** Development is Ollama
-    and production is hosted (ADR-0028); a deployed service that could quietly
-    reach a local runtime when its vendor was unreachable would serve
-    customers from a model nothing evaluated.
+    There is deliberately **no fallback between them.** Development is
+    deterministic and production is hosted (ADR-0028); a deployed service that
+    could quietly reach a local runtime when its vendor was unreachable would
+    serve customers from a model nothing evaluated.
+
+    **The environment comes from this module's own `AISettings`**, which reads
+    the same `SIGNORA_ENVIRONMENT` variable the platform does. Reaching into
+    `signora_platform.Settings` for it would be the cross-module configuration
+    read §6 forbids; taking it as a parameter would let a caller forget it,
+    and the one thing this guard may never do is fail open.
     """
     registry = AIProviderRegistry()
-    registry.register(
-        OllamaAdapter(
-            client=client,
-            models=frozenset({settings.ollama_model}),
-            base_url=settings.ollama_base_url,
+    if settings.development_provider == "mock":
+        if settings.environment != "local":
+            raise AIRegistrationError(
+                AIVendor.MOCK,
+                f"the deterministic mock provider was selected in environment "
+                f"'{settings.environment}'. It answers without reaching a model, so a service "
+                "running on it is indistinguishable from one that works — which is "
+                "strictly worse than the outage it would hide. Set "
+                "SIGNORA_DEVELOPMENT_PROVIDER or configure a real provider's "
+                "credentials.",
+            )
+        registry.register(MockAdapter(models=frozenset({settings.ollama_model})))
+    else:
+        registry.register(
+            OllamaAdapter(
+                client=client,
+                models=frozenset({settings.ollama_model}),
+                base_url=settings.ollama_base_url,
+            )
         )
-    )
     if settings.anthropic_api_key:
         registry.register(
             AnthropicAdapter(

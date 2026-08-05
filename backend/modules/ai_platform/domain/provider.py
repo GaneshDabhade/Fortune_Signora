@@ -63,6 +63,28 @@ class AIVendor(StrEnum):
     decision input.** Nothing outside an adapter may branch on it.
     """
 
+    MOCK = "mock"
+    """The deterministic development provider. **Not a vendor, and that is
+    exactly why it is here.**
+
+    Membership above means *architecturally recognised*, and the mock is:
+    `CLAUDE.md` §10 ratifies three execution modes and makes this one the
+    **default for development**, and ADR-0028 as amended names it a
+    first-class development provider implementing this port. So it is not
+    the speculative member the paragraph above forbids — it is a decision
+    already taken, recorded where provenance can read it.
+
+    **The alternative was to let the mock answer as `OLLAMA`, and that would
+    have made every `ai_inference` row assert a runtime that never ran.**
+    §10: *"an incorrect attribution is worse than none, because it misdirects
+    the investigation."* A stub claiming to be a model is the most expensive
+    lie this table could tell.
+
+    **Still never a decision input.** The rule above binds this member
+    hardest: nothing may behave differently because the mock answered, or the
+    deterministic path would stop testing the real one.
+    """
+
     OLLAMA = "ollama"
     """Development only. Never a production dependency (ADR-0028)."""
 

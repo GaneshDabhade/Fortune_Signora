@@ -17,6 +17,8 @@ process's environment — one namespace, several owners.
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -34,6 +36,34 @@ class AISettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="SIGNORA_", env_file=".env", extra="ignore", frozen=True
     )
+
+    #: Which environment this process is. **Read from `SIGNORA_ENVIRONMENT`,
+    #: the same variable `signora_platform.Settings` reads** — the prefixes
+    #: are identical because these are one process's environment with several
+    #: owners, which is what the header above describes.
+    #:
+    #: **Not a copy of the platform's field, and the distinction matters
+    #: under §2.** Neither object stores the other's value; both read one
+    #: source. A module reaching into `signora_platform.Settings` for this
+    #: would be the cross-module configuration read §6 forbids, and would
+    #: touch a frozen substrate (§20a) to do it.
+    #:
+    #: It exists for exactly one guard — the mock must never be registered
+    #: outside a local environment — and a test constructs this object
+    #: directly, so that guard can be made to fail without mutating a global.
+    environment: str = "local"
+
+    #: Which provider serves the development model. **Defaults to the
+    #: deterministic mock**, which is what makes a fresh clone productive
+    #: with no local model (`CLAUDE.md` §10). Set to `"ollama"` to select a
+    #: local runtime deliberately — *"no implementation may assume Ollama is
+    #: installed unless a developer explicitly selects it"*, and before this
+    #: field existed the registry assumed it unconditionally.
+    #:
+    #: **Not a fallback chain.** Exactly one of the two is registered for the
+    #: development model, because the registry refuses two adapters claiming
+    #: one model and would be right to.
+    development_provider: Literal["mock", "ollama"] = "mock"
 
     #: Where a local Ollama server is, for development and evaluation.
     ollama_base_url: str = "http://localhost:11434"

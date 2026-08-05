@@ -1114,3 +1114,46 @@ Three consecutive clean runs of each, mirroring the three consecutive identical 
 `test_no_prompt_the_pipeline_uses_instructs_a_transformation` reads the shipped `@2` files and refuses any prompt containing *"without the brackets"*, *"square bracket"*, *"strip"* or *"remove the"*. A future author reintroducing the workaround fails a test rather than rediscovering the defect.
 
 *1763 tests · 321 invariants · 29 contracts · mypy strict clean · coverage 95.85% · smoke green.*
+
+---
+
+## TASK-415 — the deterministic provider, and the assumption it removed
+
+**Delivered 2026-08-05 by Lane B**, `ai_platform`'s current assignee. The task was approved by the product owner on 2026-08-04 and its package was authored by this lane and reviewed by Product Office, which is the first end-to-end run of the [D-060](../DECISION_REGISTER.md) loop.
+
+### What was actually wrong, and it was not a missing file
+
+The objective — *a developer clones the repository and exercises every AI path without downloading a model* — reads like it needs a new adapter beside the two that exist. **It did not.** `build_provider_registry` registered `OllamaAdapter` **unconditionally**, while Anthropic sat behind `if settings.anthropic_api_key`. So the defect was an existing code path assuming a 4.7GB local runtime, and `CLAUDE.md` §10 names the target directly: *"No implementation may assume Ollama is installed unless a developer explicitly selects it."*
+
+**Adding an adapter without changing that registration would not have worked at all.** `AIProviderRegistry.register` refuses two adapters claiming one model — deliberately, because *"routing would depend on registration order"* — and both the mock and Ollama serve the configured development model. The conditional is therefore a **precondition**, not a preference, and the failure would have been at composition rather than at call time.
+
+### `AIVendor.MOCK`, and why the cheap answer was refused
+
+The mock needs a vendor label: `AIProviderDescriptor` declares one and `InferenceResult` carries it onto every `ai_inference` row. **Reusing `OLLAMA` was available and is wrong** — it would make the operational record assert a runtime that never started, which is §10's *"an incorrect attribution is worse than none, because it misdirects the investigation."*
+
+**The enum's own docstring forbids speculative members**, and Product Office ruled this one is not speculative: §10 ratifies the deterministic mock as one of three execution modes and ADR-0028 as amended names it a first-class development provider. **The member records a decision already taken.** The review attached one condition — *confirm nothing branches on `InferenceResult.vendor`* — and it holds: there is no `if vendor == …` anywhere outside an adapter, and the only branches on the field test it for `None`, which asks *did anything serve this*, a different question.
+
+### The guard, and where its input comes from
+
+**The mock must never be registered outside a local environment**, because a service answering from a deterministic stub is indistinguishable from one that is working — strictly worse than the outage it hides.
+
+The environment is a field on **`AISettings`**, reading `SIGNORA_ENVIRONMENT` — the same variable `signora_platform.Settings` reads, because both objects carry the `SIGNORA_` prefix and this is one process's environment with several owners.
+
+| Rejected | Why |
+|---|---|
+| Read `signora_platform.Settings` | A module reading another module's configuration (§6), and reaching into a frozen substrate to do it (§20a) |
+| Take it as a parameter | A caller can forget a parameter, and **the one thing this guard may never do is fail open** |
+
+**Neither object stores the other's value**; both read one source, which is what keeps this outside §2's duplicated-truth rule. It also stays testable — a test constructs `AISettings(environment="production")` and the guard fires without a global being mutated, which is what stops it becoming a guard that cannot fail.
+
+### Two deviations from the approved package, both stated rather than absorbed
+
+**The sixth knob is derived, not settable.** The row lists *timeout* beside *latency*. They are one fact: a mock scripted to take 5s and time out at 30s would raise a timeout while reporting that it did not. So `latency_ms` decides both — it is what the result reports, and the call raises `AITransientError` when it exceeds the request's own `timeout_seconds`. That is also what a real adapter does, since the budget lives on `InferenceRequest` and an adapter carrying its own would be the duplicated default §2 names.
+
+**`tests/ai_platform/fakes.py::FakeAdapter` was not replaced**, though the package proposed promoting it. Inspecting its 35 call sites changed the conclusion: `FakeAdapter` sets `vendor` freely so tests can assert provenance **across** vendors, while `MockAdapter` fixes it to `MOCK`. They are a scripted stand-in for *any* vendor and *the mock vendor* respectively — different things, not two copies of one, so folding them would have lost coverage rather than removing duplication.
+
+### What a lane arriving cold needs to know
+
+**Development is deterministic by default.** `SIGNORA_DEVELOPMENT_PROVIDER` selects `mock` (the default) or `ollama`; exactly one is registered for the development model, never both. A hosted credential still registers Anthropic alongside either. **Nothing above the port can tell which answered**, which is the property that makes the deterministic path worth having — a mode that skipped the port would prove the mock works and say nothing about the product.
+
+*27 new tests in `tests/ai_platform/test_mock_adapter.py`.*
