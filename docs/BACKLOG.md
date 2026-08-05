@@ -446,8 +446,9 @@
 |---|---|
 | **Module** | Product Surface · `buying_score_engine` owns posture |
 | **Slice** | one slice |
-| **Status** | **`CLAIMED` — Lane A**, 2026-08-05, by the Task Claim Protocol. **`next` in [`queues/lane-a.toml`](coordination/queues/lane-a.toml)**; Product Surface and `buying_score_engine` are both Lane A's |
+| **Status** | **`IN VALIDATION` — Lane A**, 2026-08-05. Claimed and shipped the same day. **`next` in [`queues/lane-a.toml`](coordination/queues/lane-a.toml)**; Product Surface and `buying_score_engine` are both Lane A's |
 | **Notes** | Posture reaches the attention row. **A contraction risk must not be confusable with a low-scoring opportunity** — they mean opposite things to a CRO scanning a list. **The treatment is yours**, within the design system; the ruling is only that they must differ |
+| **Delivered** | **A warning badge reading *At risk*, last in the row's status lane — beside the score**, because the confusion is with a number: a contraction risk ranks next to the weakest opportunities and means the opposite of one. **The M12.3 mark had two holes**: it hung off the catalog's *title*, so a contraction row rendered **unmarked on every first paint** and **permanently** for a score formed under a catalog version that no longer declares its key — and it sat in running text rather than in the lane a scanner reads. **`PostureMark` takes `posture` and no catalog key**, so a second commercial vocabulary in the browser is unconstructable rather than merely tested (§2). **No reordering, no filter, no change to the score, no backend change** — `posture` has been on `AccountAttentionResponse` since M12.3. **Answers [C-011](LANE_COORDINATION.md)**, which QE raised and QE closes. Recorded in [`37-product-surface.md`](architecture/37-product-surface.md) |
 
 ### TASK-906 · M14b names its bounded context
 

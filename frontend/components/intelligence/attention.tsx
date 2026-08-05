@@ -166,16 +166,9 @@ export function WhyNow({ trigger }: { trigger: ScoreTrigger | null }) {
 
 export function Hypothesis({
   signalType,
-  posture,
   title,
 }: {
   signalType: string | null;
-  /** What this hypothesis implies commercially, from the pipeline. **Null with
-   * `signalType`.** This component maps no catalog key to a meaning — that
-   * mapping is the Buying Score Engine's, and a copy here would be a second
-   * commercial vocabulary, wrong the moment the catalog gained a type and
-   * invisible when it did (R9-03). */
-  posture: Posture | null;
   /** From `useSignalCatalog`. `undefined` while it loads or if the key is one
    * this catalog version does not declare — which is a real possibility, since
    * a score records the catalog version it was formed under. */
@@ -189,26 +182,72 @@ export function Hypothesis({
     return <span className="text-sm text-content-subtle">No current reading</span>;
   }
   if (title === undefined) return null;
+  return <span className="text-sm text-content">{title}</span>;
+}
 
-  // **Only contraction is marked**, and that is a product judgement rather
-  // than a derivation. Marking every posture would mark almost every row —
-  // the list is mostly expansion — and this file's own rule already says why:
-  // a badge on every row saying "everything is fine" trains people to stop
-  // reading badges. The marked minority is the signal.
-  if (posture !== 'contractionary') {
-    return <span className="text-sm text-content">{title}</span>;
-  }
-
+/**
+ * Which way this row cuts.
+ *
+ * **A contraction risk and a low-scoring opportunity are opposite facts that
+ * rank next to each other**, because the score orders *attention* and refuses
+ * to sign it — two accounts can score identically and mean opposite things.
+ * Measured on the real twelve, both risk rows sat at positions eleven and
+ * twelve, beside the weakest opportunities on the list. A CRO scanning
+ * downward reads the bottom of a list as *least important*, and for one of
+ * those two rows that is exactly backwards.
+ *
+ * ### Only contraction is marked
+ *
+ * A product judgement rather than a derivation, and the same one this file
+ * makes about evidence: the list is mostly expansion, so marking every posture
+ * would mark almost every row, and a badge on every row saying *everything is
+ * fine* trains people to stop reading badges. **The marked minority is the
+ * signal.**
+ *
+ * ### It reads posture and cannot read anything else
+ *
+ * **This is why it is a component of its own rather than a branch inside
+ * `Hypothesis`, and the reason is stronger than tidiness.** The mapping from a
+ * catalog key to a commercial meaning belongs to the Buying Score Engine; a
+ * copy in the browser would be a second vocabulary, wrong the moment the
+ * catalog gained a type and invisible when it did (R9-03). Taking `posture`
+ * and nothing else makes that copy **unconstructable** rather than merely
+ * tested — the component has no key to pattern-match (§2).
+ *
+ * **And it no longer waits for the catalog.** The mark used to be attached to
+ * the title, so a row whose title had not arrived — every first paint, and
+ * *permanently* for a score formed under a catalog version that no longer
+ * declares its key — rendered as an unmarked row. That is precisely the
+ * confusion the mark exists to prevent, reappearing exactly where nobody was
+ * looking. Posture travels on the wire so that a client never needs the
+ * catalog to know which way a row cuts; it should never have been spent on
+ * making the mark conditional on one.
+ *
+ * ### Where it sits, and why that is the point
+ *
+ * **Immediately left of the score**, in the row's status lane beside
+ * *Contested* and the evidence badge. The confusion is with a number, so the
+ * correction belongs next to the number: *At risk · 31* cannot be read as a
+ * weak opportunity. The hypothesis line still says what happened, in the
+ * catalog's words — **`decision_maker_departed` renders as a neutral sentence
+ * that never says *risk* at all**, so on that row this badge is the only thing
+ * carrying it.
+ */
+export function PostureMark({ posture }: { posture: Posture | null }) {
+  if (posture !== 'contractionary') return null;
   return (
-    <span className="inline-flex items-center gap-1.5 text-sm text-warning">
-      {/* An icon as well as a tone. Colour alone would fail a colour-blind
-          reader, and accessibility is a defect class rather than an
-          enhancement (§20c). `warning`, not `danger`: a contraction risk is a
-          different *kind* of attention, not something that has gone wrong. */}
-      <TrendingDown aria-hidden className="h-3.5 w-3.5 shrink-0" />
-      {title}
-      <span className="sr-only"> — risk to existing revenue</span>
-    </span>
+    <Badge tone="warning">
+      {/* An icon as well as a tone, and words as well as both. Colour alone
+          fails a colour-blind reader, and accessibility is a defect class
+          rather than an enhancement (§20c). `warning`, not `danger`: a
+          contraction risk is a different *kind* of attention, not something
+          that has gone wrong. */}
+      <TrendingDown aria-hidden className="mr-1 h-3 w-3" />
+      At risk
+      {/* Two words fit the badge lane a phone already reflows; the sentence
+          they abbreviate is the one a screen reader hears. */}
+      <span className="sr-only"> to existing revenue</span>
+    </Badge>
   );
 }
 

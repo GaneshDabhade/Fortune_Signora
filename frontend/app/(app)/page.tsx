@@ -12,6 +12,7 @@ import {
   Hypothesis,
   HeldSince,
   Ownership,
+  PostureMark,
   ScoreMovement,
 } from '@/components/intelligence/attention';
 import { DecidedAccounts } from '@/components/intelligence/decided';
@@ -307,11 +308,7 @@ function AccountRow({
             isLoading={namesLoading}
           />
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-            <Hypothesis
-              signalType={account.signal_type}
-              posture={account.posture}
-              title={hypothesis}
-            />
+            <Hypothesis signalType={account.signal_type} title={hypothesis} />
             <ScoreMovement trend={account.trend} change={account.score_change} />
             {/* **Beside what the evidence says, not among the badges.** This
                 is what the *seller* did and when; the badges to the right are
@@ -338,6 +335,13 @@ function AccountRow({
             />
             <ContestedMark contested={account.contested} />
             <EvidenceHealth evidence={account.evidence} />
+            {/* **Last in the lane, so it is the thing next to the number.**
+                The confusion this exists to end is with a *score* — a
+                contraction risk ranks beside the weakest opportunities and
+                means the opposite of one — so the correction belongs where the
+                eye lands after the digits, not in the running text on the
+                left. */}
+            <PostureMark posture={account.posture} />
           </div>
           {/* Right-aligned and tabular so the column reads as a column: at a
               glance the eye follows the digits down the page without the

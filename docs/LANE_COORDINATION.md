@@ -318,7 +318,7 @@ databaseUrl: required(
 | [C-008](#c-008--sellers-cannot-see-what-their-company-sells) | Sellers cannot see what their company sells | Lane B | **Product owner** + QE | **`CLOSED`** — 2026-08-05 · ruled 08-03, stage 1 shipped | Nothing. **Stage 2's grading half waits on [C-002](#c-002--customer-language-has-no-anticorruption-layer)**; its display half is executable |
 | [C-009](#c-009--an-internal-fault-reaches-a-customer-as-a-422) | An internal fault reaches a customer as a `422` | Lane A | **Product owner** (platform §20a) | `OPEN` | Nothing today. Splitting the error hierarchy in any module |
 | [C-010](#c-010--no-lane-is-assignable-to-apps-or-signora_platform-and-a-defect-is-sitting-in-one) | No lane is assignable to `apps/` or `signora_platform/` | QE | **Product owner** | **`RULED`** — 2026-08-05, product owner · `apps/` is assignable | [B-007](BUGS.md) and [B-012](BUGS.md) sit in exactly this gap |
-| [C-011](#c-011--a-contraction-risk-reads-like-a-small-opportunity-on-the-attention-list) | A contraction risk reads like a small opportunity on the attention list | QE | **Product owner** | `OPEN` | R9-03 only. The rest of the surface proceeds |
+| [C-011](#c-011--a-contraction-risk-reads-like-a-small-opportunity-on-the-attention-list) | A contraction risk reads like a small opportunity on the attention list | QE | **QE** — to close | **`READY FOR IMPLEMENTATION`** — ruled as [TASK-905](BACKLOG.md); **implemented 2026-08-05 by Lane A.** ⚠️ **QE raised it, so QE closes it** | R9-03 only. The rest of the surface proceeds |
 | [C-012](#c-012--eventhandler-receives-no-session-so-no-module-handler-is-registered) | `EventHandler` receives no session, so no module handler is registered | QE | **Product owner** (platform §20a) | `WAITING` — RFC queued since M3A | Every module that wants to consume an event |
 | [C-013](#c-013--publishableevent-cannot-be-satisfied-by-a-frozen-dataclass) | `PublishableEvent` cannot be satisfied by a frozen dataclass | QE | **Product owner** (platform §20a) | `WAITING` — RFC queued since M3A | Nothing today; every new event pays the workaround |
 | [C-014](#c-014--accessibility-and-performance-testing-are-qes-and-neither-exists) | Accessibility and performance testing are QE's, and neither exists | QE | **Product owner** (a milestone number) | `OPEN` | Nothing. **§20c already treats an accessibility issue as a defect class** |
@@ -1007,21 +1007,27 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 
 ## C-011 · A contraction risk reads like a small opportunity on the attention list
 
+> ✅ **`READY FOR IMPLEMENTATION` — ruled by the product owner as [TASK-905](BACKLOG.md), and implemented 2026-08-05 by Lane A.** *"A contraction risk must not be confusable with a low-scoring opportunity — they mean opposite things to a CRO scanning a list. **The treatment is yours**, within the design system; the ruling is only that they must differ."*
+>
+> ⚠️ **Not closed here, deliberately. QE raised this item and QE closes it** — *"any lane opens, the named owner answers, **the requesting lane closes**"* (`CLAUDE.md` §20e). This lane implemented the ruling and may not certify its own answer to somebody else's question.
+>
+> **The index row above read `OPEN` while [R-6](#) had already answered it** — the same stale-index class as the eighteen rows corrected on 2026-08-05. Recorded rather than quietly corrected.
+
 | | |
 |---|---|
 | **Decision required** | Whether and how posture is shown on an attention row |
 | **Participating modules** | `buying_score_engine` (owns posture) · the product surface |
-| **Current assignee(s)** | **Product owner** to answer · the product-surface assignee waiting |
+| **Current assignee(s)** | **QE** — to verify and close. Ruled by the product owner; implemented by Lane A |
 | **Blocking** | R9-03 |
-| **Status** | `OPEN` |
+| **Status** | **`READY FOR IMPLEMENTATION`** — **and implemented.** See *Final decision* |
 
 **Current positions.** *Attention is unsigned for every posture and opposing readings never net* holds inside the score, but does not reach the row: a contraction risk currently presents like a low-scoring opportunity, and the two mean opposite things to a CRO scanning a list. The implementing lane's recorded instruction is **do not implement without the ruling**.
 
 **Implementation impact.** A product judgement, not an implementation detail — which is why it has waited rather than been solved locally. Carried from [`SESSION_HANDOFF.md`](SESSION_HANDOFF.md) §7, which had no register to put it in.
 
-**Final decision.** —
+**Final decision.** **They must differ; the treatment is the product surface's.** The product owner ruled the *requirement* and deliberately not the *design* — which is the correct division, because whether two rows are distinguishable is a product question and what distinguishes them is a design one.
 
-**Recorded in.** —
+**Recorded in.** [`37-product-surface.md`](architecture/37-product-surface.md) — *TASK-905, 2026-08-05*. **`PostureMark` takes `posture` and no catalog key**, so the second-vocabulary failure this item was raised against is unconstructable rather than merely tested; it sits **last in the row's status lane, beside the score**, because the confusion is with a number.
 
 ---
 

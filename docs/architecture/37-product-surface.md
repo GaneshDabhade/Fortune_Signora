@@ -779,3 +779,40 @@ So on an expired account the brief said it **twice in one card, three lines apar
 **The keyboard path is the product, not the accessible alternative to it.** ⌘K from anywhere, arrows, Enter, Escape. One implementation serves both a seller who has learned the control and a customer who cannot use a mouse, which is why §20c treats an unreachable control as a defect rather than a missing enhancement.
 
 **An account nobody has named is still a result**, shown as *Unnamed account*. Hiding it would make search quietly disagree with the list that shows it — and A6 is the slice that gives that state a name worth reading.
+
+---
+
+## TASK-905 — a contraction risk stops looking like an opportunity *(2026-08-05)*
+
+**The ruling is [C-011](../LANE_COORDINATION.md), open since the register was created and answered by the product owner as a task**: *"A contraction risk must not be confusable with a low-scoring opportunity — they mean opposite things to a CRO scanning a list. The treatment is yours, within the design system; the ruling is only that they must differ."*
+
+**What a customer sees.** On an account whose leading hypothesis points downward, a **warning badge reading *At risk*** in the row's status lane, immediately left of the score.
+
+### Why the confusion exists at all, and why it is not a bug in the score
+
+**The Buying Score Engine refuses to sign posture into the score** — *"two accounts can score identically and mean opposite things"* — and that refusal is correct. The score orders **attention**, not value. But a list ordered by attention puts a contraction risk **next to the weakest opportunities**: measured against the real twelve, both risk rows sat at positions **eleven and twelve**. A reader scanning downward treats the bottom of a list as *least important*, and for one of those two rows that is exactly backwards.
+
+**So the row must carry what the number deliberately does not.** This is the module's refusal reaching the surface rather than being undone there.
+
+### What was already there, and the two holes it had
+
+**[R9-03](39-product-review-findings.md) marked contraction at M12.3**, inside the hypothesis line, and the product judgement it made is unchanged and correct: **only contraction is marked**, because the list is mostly expansion and a badge on every row saying *everything is fine* trains people to stop reading badges. **The marked minority is the signal.**
+
+| | |
+|---|---|
+| **The mark waited for the catalog** | It hung off the hypothesis **title**, so a row whose title had not arrived rendered **unmarked** — on **every first paint**, and **permanently** for a score formed under a catalog version that no longer declares its key. **Posture travels on the wire precisely so a client never needs the catalog to know which way a row cuts**; spending it on a mark that was conditional on the catalog anyway gave the guarantee away |
+| **It was in the quietest place on the row** | Running text on the left, at the same weight as three other phrases, while the row's **status lane** — where a scanner reads row state, and where *Contested* and the evidence badge already live — said nothing about the one fact that inverts the row's meaning |
+
+### The treatment
+
+**`PostureMark` is a component of its own, and takes `posture` and nothing else.** That is the load-bearing part rather than a tidiness preference: the mapping from a catalog key to a commercial meaning belongs to the Buying Score Engine, and a copy in the browser would be a second vocabulary — wrong the moment the catalog gained a type, and invisible when it did. **A component with no key to pattern-match cannot hold one** (§2, *types should make incorrect architecture impossible*), which retires a test that had been asserting the same property from outside.
+
+**It sits last in the status lane, so it is the thing beside the number.** The confusion is with a *score*, so the correction belongs where the eye lands after the digits: ***At risk · 31*** cannot be read as a weak opportunity.
+
+**The hypothesis line still says what happened, in the catalog's words, and that division of labour is the point.** `decision_maker_departed` **renders as a neutral sentence that never says *risk* at all** — on that row the badge is the only thing carrying it.
+
+**Two words, and a sentence for a screen reader.** The badge lane is `shrink-0` beside the score and already reflows onto a second line at 320px, so the visible text is *At risk* and the sentence it abbreviates — *to existing revenue* — is read out rather than laid out. **An icon as well as a tone as well as words**: colour alone fails a colour-blind reader, and accessibility is a defect class rather than an enhancement (§20c). **`warning`, not `danger`** — a contraction risk is a different *kind* of attention, not something that has gone wrong.
+
+### What this slice deliberately did not do
+
+**No reordering** — marking beats reordering precisely because the ranking is the ranking, and a list whose order depended on posture would be answering a different question. **No filter** — D6's trigger has not fired at twelve accounts. **No change to the score**, which states an ordering and must not start stating a direction. **No backend change**: `posture` has been on `AccountAttentionResponse` since M12.3, so this is a render slice end to end.
