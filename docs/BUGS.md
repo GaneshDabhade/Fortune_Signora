@@ -101,7 +101,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | Platform Foundation — `infra/environment-lease.py` and its tests |
 | **Current assignee** | **Lane C** — Platform Foundation, and the author of the slice |
 | **Severity** | 🟠 · **Blocking Quality Defect** — 14 errors, certification would refuse |
-| **Status** | **`OPEN`** — `CHANGES REQUESTED` on the isolation slice |
+| **Status** | ✅ **`FIXED`** — Lane C, 2026-08-05. **`VERIFIED` is QE's.** **Repaired rather than deleted**: the certification file carried **fourteen** tests to the new file's four — inherited leases, release on failure, the child's environment, partial writes, a live lease not reclaimed, and the `dr`/`smoke` Makefile wiring — so deleting it would have lost ten real properties to fix a fixture. **Its fixture now redirects `LEASE_DIR` instead of a `LEASE` constant that no longer exists**, the four cross-clone tests fold in as their own class, and `backend/tests/test_environment_lease.py` is gone. **One file describes one module.** ✅ **17 lease tests · 101 certification tests · `mypy --strict` 735 files clean · 3446 collected.** ⚠️ **The one gate this clone cannot run is stated rather than skipped silently**: `tests/integration/test_worker_retry.py` needs `database_url`, and **Lane C holds no runtime by governance** — `make doctor` says so. Unchanged by this slice, and last touched at `dc86b34` |
 | **Found** | 2026-08-05 by QE, validating the [B-118](#b-118--lanes-share-one-postgresql-so-two-suites-running-at-once-fabricate-each-others-failures) fix |
 
 **Steps to reproduce.** On `lane-c-sync` at `f81fe13a`:
