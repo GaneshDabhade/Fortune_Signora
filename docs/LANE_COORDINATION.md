@@ -349,6 +349,7 @@ databaseUrl: required(
 | [C-222](#c-222--reasoning1-earns-a-release-under-protocol-2-on-a-model-this-workstation-cannot-measure-in-time) | **`reasoning@1` earns a release under protocol 2, on a model this workstation cannot measure in time** | Lane A | **Product owner** · QE | **`READY FOR IMPLEMENTATION`** — ruled 2026-08-04 | **Only a live G1 inference.** The prompt is refused at runtime until a protocol-2 release exists |
 | [C-223](#c-223--competitor_entry-cannot-be-implemented-across-the-current-dependency-graph) | **`competitor_entry` cannot be implemented across the current dependency graph** | Lane A | **Product office** · Product owner | `OPEN` — [TASK-203](BACKLOG.md) claimed, everything else built | **Only the detection half of Epic D phase 1.** The declaration, its API and its screen are shipped |
 | [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) | **A new write surface needs an authorization `Resource`, and two governance rules disagree about who may add one** | Lane A | **Product owner** | `OPEN` — **nothing is blocked**; [TASK-405](BACKLOG.md) shipped everything except the write route | One route. The `Resource` enum is 🔴 while `policy.csv` is any-lane, and they are one registration in two files |
+| [C-225](#c-225--wave-1s-technology-stack-section-has-no-contract-a-screen-can-reach-and-414-counts-it-twice) | **Wave 1's technology stack section has no contract a screen can reach, and 414 counts it twice** | Lane A | **Lane C** (the 414 correction) · **Lane B** (`knowledge_graph`) · **Product owner** (eleven or wait) | `OPEN` — **nothing is blocked**; the other eleven sections are being built | One section of one screen. `USES_TECHNOLOGY` is derived, stored and public — and no route returns it |
 | [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | M14b is three concerns in one roadmap row, and none has a module | Lane A | **Product owner** (bounded context 🔴) | `OPEN` — **architectural** | **The whole of M14b.** [R-01](architecture/16-architecture-risks.md) has been waiting for it at High/High |
 | [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide) | Identifier allocation is still only *unlikely* to collide | Lane A | **QE** + product owner | `OPEN` — **directed by the product owner** | Nothing built. **The repository scaling past three actors without manual reconciliation** |
 | [C-202](#c-202--four-shared-documents-disagree-and-one-disagrees-with-itself) | Four shared documents disagree, and one disagrees with itself | Lane A | **QE** | `OPEN` — **directed by the product owner** | Nothing built. **A cold session trusting any status in the repository** |
@@ -5033,3 +5034,43 @@ p, member, *, signal, update
 Four named bodies behind one discriminated union on `outcome`, so `{"outcome": "dismissed"}` **with no reason is refused by the schema** rather than by a check somebody remembered to write — the same reason `Dismissed` carries no default in the domain. `actioned` carries nothing; `assigned` carries `to`; `snoozed` carries `until`; `dismissed` carries `reason`.
 
 **They are deliberately not in the code today.** A schema no route can reach is a contract nobody agreed to.
+
+## C-225 · Wave 1's technology stack section has no contract a screen can reach, and 414 counts it twice
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-05, on claiming [TASK-417](BACKLOG.md) and checking each of the twelve sections against the routes that actually ship — **before writing a line** |
+| **Owner** | **Lane C** (the [414](architecture/414-wave-1-account-360.md) correction) · **Lane B** (`knowledge_graph`, if an endpoint is wanted) · **the product owner** (whether wave 1 ships eleven sections or waits) |
+| **Status** | `OPEN` — **[TASK-417](BACKLOG.md) is not blocked.** Eleven of the twelve sections are buildable and are being built |
+| **Blocks** | **One section of one screen** |
+
+### The finding, in one line
+
+**`USES_TECHNOLOGY` is derived, stored and exported through `public/` — and no HTTP route returns it, so the frontend cannot reach it.**
+
+### What exists and what does not
+
+| Layer | State |
+|---|---|
+| `application/relationships.py` | ✅ `TECHNOLOGY_DETECTED` opens a `USES_TECHNOLOGY` edge, `TECHNOLOGY_REMOVED` ends it |
+| `GraphQueries.relationships(workspace_id, entity_id, kind=...)` | ✅ exists, and `GraphQueries` **is** in `knowledge_graph/public/` |
+| `knowledge_graph/interface/router.py` | ❌ serves `account-identities` and `account-search`, **and nothing else** |
+
+**So this is not missing capability. It is a capability with no customer-facing edge** — which is precisely wave 1's premise (*"twelve sections already served by shipped contracts"*) failing for one row.
+
+### 414 already says eleven in one place and twelve in another
+
+[414 §1](architecture/414-wave-1-account-360.md)'s table carries **twelve 🟩 rows**; its own summary line reads **"Eleven 🟩 · two 🟠 · two ➡️ · seven ⬜"**, and [§2](architecture/414-wave-1-account-360.md) says wave 1 delivers *"the eleven 🟩 sections, and nothing else."* **The off-by-one is this row.** The count was taken against the module, and the module is genuinely capable; the check that would have caught it is *"which route returns this?"*
+
+**[TASK-417](BACKLOG.md)'s own row says twelve**, so the discrepancy reaches the task definition too.
+
+### What Lane A is doing meanwhile
+
+**Building the eleven.** The row's escalate clause is explicit — *"a section needs a contract that does not exist. **That is a finding, not an endpoint to add**"* — so no endpoint was added, and `knowledge_graph` is Lane B's in any case.
+
+**Business events with evidence was checked and is *not* a second instance.** Only `GET /business-events/{event_id}` ships, with no per-account list — but `timeline` projects `business_event_detected` carrying `source_ref`, and the shipped evidence drawer already fetches one event on demand when a citation is opened. **The list comes from the timeline and the evidence comes on click**, which is the pattern already on the page. No new contract, and no N+1 on first paint.
+
+### What is asked
+
+1. **Correct 414 and the TASK-417 row to eleven**, so the next reader is not counting a section that cannot be rendered — Lane C.
+2. **Decide whether an account's technology stack is worth an endpoint at all**, and if so whose wave it belongs to. It is a normal `interface/` addition in `knowledge_graph` — a route over a query that already exists and is already public. **Lane A is not proposing to add it**: the module is Lane B's, and finding a defect outside your assignment is not permission to fix it (§20e).
