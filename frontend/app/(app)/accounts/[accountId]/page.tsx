@@ -105,7 +105,16 @@ export default function AccountBriefPage() {
   const viewerId = session?.user.id ?? null;
 
   const { data: score, isLoading, error } = useAccountScore(workspaceId, accountId);
-  const { data: opportunity } = useAccountOpportunity(workspaceId, accountId);
+  const { data: opportunity, error: opportunityError } = useAccountOpportunity(
+    workspaceId,
+    accountId,
+  );
+  // **404 is "nobody has taken this account on"; anything else is an outage.**
+  // The third section on this page to need the split, after narration and
+  // research. Without it the workflow controls simply vanish, and an account
+  // somebody is actively working reads as one nobody has touched.
+  const neverTaken = opportunityError instanceof ApiError && opportunityError.status === 404;
+  const workflowUnavailable = opportunityError !== null && !neverTaken;
   const { data: narration, error: narrationError } = useAccountNarration(
     workspaceId,
     accountId,
@@ -225,6 +234,17 @@ export default function AccountBriefPage() {
               working this account should not have to read a brief to say so;
               a reader who is still deciding scrolls, decides, and comes back
               to a control they have already seen. */}
+          {workflowUnavailable ? (
+            /* **Said, rather than omitted.** The controls must not render —
+               nobody should act on state Signora could not read — but a silent
+               gap tells a seller this account is untouched, which is a claim
+               about their pipeline rather than about our request. */
+            <p className="mt-0.5 text-sm leading-6 text-content-muted">
+              Signora could not load where this account stands. Nothing has changed about
+              the account — reload to try again.
+            </p>
+          ) : null}
+
           {opportunity ? (
             <div className="mt-0.5 flex flex-col gap-2.5">
               <WorkflowStage opportunity={opportunity} viewerId={viewerId} people={people} />

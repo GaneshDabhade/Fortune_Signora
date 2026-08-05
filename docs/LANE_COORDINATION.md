@@ -350,6 +350,7 @@ databaseUrl: required(
 | [C-223](#c-223--competitor_entry-cannot-be-implemented-across-the-current-dependency-graph) | **`competitor_entry` cannot be implemented across the current dependency graph** | Lane A | **Product office** · Product owner | `OPEN` — [TASK-203](BACKLOG.md) claimed, everything else built | **Only the detection half of Epic D phase 1.** The declaration, its API and its screen are shipped |
 | [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) | **A new write surface needs an authorization `Resource`, and two governance rules disagree about who may add one** | Lane A | **Product owner** | `OPEN` — **nothing is blocked**; [TASK-405](BACKLOG.md) shipped everything except the write route | One route. The `Resource` enum is 🔴 while `policy.csv` is any-lane, and they are one registration in two files |
 | [C-225](#c-225--wave-1s-technology-stack-section-has-no-contract-a-screen-can-reach-and-414-counts-it-twice) | **Wave 1's technology stack section has no contract a screen can reach, and 414 counts it twice** | Lane A | **Lane C** (the 414 correction) · **Lane B** (`knowledge_graph`) · **Product owner** (eleven or wait) | `OPEN` — **nothing is blocked**; the other eleven sections are being built | One section of one screen. `USES_TECHNOLOGY` is derived, stored and public — and no route returns it |
+| [C-226](#c-226--six-sections-on-one-page-have-rendered-a-failed-read-as-an-empty-account-and-each-was-fixed-alone) | **Six sections on one page have rendered a failed read as an empty account, and each was fixed alone** | Lane A | **Lane C** | `OPEN` — **nothing is blocked**; every instance found is fixed | Whether *"absence and failure are different"* is a repository invariant, and who writes it. A naive guard would be wrong |
 | [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | M14b is three concerns in one roadmap row, and none has a module | Lane A | **Product owner** (bounded context 🔴) | `OPEN` — **architectural** | **The whole of M14b.** [R-01](architecture/16-architecture-risks.md) has been waiting for it at High/High |
 | [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide) | Identifier allocation is still only *unlikely* to collide | Lane A | **QE** + product owner | `OPEN` — **directed by the product owner** | Nothing built. **The repository scaling past three actors without manual reconciliation** |
 | [C-202](#c-202--four-shared-documents-disagree-and-one-disagrees-with-itself) | Four shared documents disagree, and one disagrees with itself | Lane A | **QE** | `OPEN` — **directed by the product owner** | Nothing built. **A cold session trusting any status in the repository** |
@@ -5074,3 +5075,43 @@ Four named bodies behind one discriminated union on `outcome`, so `{"outcome": "
 
 1. **Correct 414 and the TASK-417 row to eleven**, so the next reader is not counting a section that cannot be rendered — Lane C.
 2. **Decide whether an account's technology stack is worth an endpoint at all**, and if so whose wave it belongs to. It is a normal `interface/` addition in `knowledge_graph` — a route over a query that already exists and is already public. **Lane A is not proposing to add it**: the module is Lane B's, and finding a defect outside your assignment is not permission to fix it (§20e).
+
+## C-226 · Six sections on one page have rendered a failed read as an empty account, and each was fixed alone
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-05, auditing the account brief's sections against [410](architecture/410-approved-ui-specification.md)'s *"27 sections, each in six states"* while building [TASK-417](BACKLOG.md) |
+| **Owner** | **Lane C** — it is a repository-wide frontend invariant, and whether one exists is an architecture question rather than a render slice's |
+| **Status** | `OPEN` — **nothing is blocked.** Every instance found is fixed; this asks whether the *class* should be closed |
+| **Blocks** | Nothing |
+
+### The finding
+
+**One defect has now been found and fixed six times on one screen, by four different slices, and each fix was correct and local.**
+
+| Section | What a failed read rendered | Fixed by |
+|---|---|---|
+| Detected signals | *"nothing to check"* — an outage as a quiet account | An earlier slice, in `ValidationBlock` |
+| The account summary | absence — *"nothing has been written"* | `B-010` / `TASK-004`, via a `404` split |
+| Timeline | absence | `C-024`'s mount, via `isError` |
+| **Observations** | *"Nothing recorded yet"* | **This slice** |
+| **Research** | *"…usually takes a minute or two"* — **and an enabled button offering to spend a worker minute and a model call on a run that may already be in flight** | **This slice** |
+| **Opportunities** | nothing at all — the workflow controls vanish, and an account somebody is working reads as one nobody has touched | **This slice** |
+
+**The shape is identical every time**: a page-level hook is destructured for `data` alone, `undefined` then means both *"the API said there is none"* and *"the request failed"*, and the section's empty branch states the first as a fact.
+
+**Three of the six needed a `404` split, not a boolean** — narration, research and opportunities each have a legitimate *"none exists"* that arrives as an error. So the rule is not *"pass `isError` everywhere"*; it is *"absence and failure are different, and the section must be told which."*
+
+### Why this is raised rather than guarded
+
+**A repository-wide invariant is the obvious answer and is not a render slice's to write.** `no-mock-data.test.tsx` and the design-token check are exactly this shape and both are foundation-level. Asserting a new one from inside TASK-417 would bind every lane that touches an account section, on a rule no one has agreed, which is the *"architecture arriving in a feature"* §20e forbids.
+
+**And a naive guard would be wrong.** *"Every section takes `isError`"* would fail `EntityName`, which is correct as written — it falls back to **the real account identifier, never a placeholder**, so it makes no false claim under any error. A guard that flagged it would teach lanes to add a prop to silence it.
+
+### What is asked
+
+**One decision: is *"a section must distinguish absence from failure"* a repository invariant, and if so who writes it?**
+
+Lane A's recommendation, offered rather than taken: **a page-level test rather than a per-component one.** Render the account brief with every hook erroring and assert the page says so — one test, no new prop on any component, and it cannot be silenced by adding a field. `brief.test.tsx` already has the harness. **Lane A will build it on request**; it is not being built unasked because the assertion would reach sections other lanes own.
+
+**Six occurrences of one defect is not six mistakes.** Each lane read the component in front of it, saw an empty state, and shipped correctly. The register is where a repeated shape stops being individually correct.
