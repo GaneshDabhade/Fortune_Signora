@@ -139,6 +139,33 @@
 
 ---
 
+# 🆕 Raised 2026-08-05 by Lane B, on `lane-b-commercial-profile`
+
+> ⚠️ **Both of these are on a lane branch and not on `integration` yet.** Recorded here because they are yours to rule on and the queue is where you read; **neither is actionable by anyone until QE promotes it.** *(§20e's five states — authoritative when ruled, actionable when integration records it.)*
+
+## `execution_mode` was specified in `CLAUDE.md` §10 and Lane B declined to build it
+
+| | |
+|---|---|
+| **Summary** | **§10 requires six fields on every evaluation record** — *provider · model · version · execution mode · prompt version · protocol version.* **Lane B built `provider` and did not build `execution_mode`** |
+| **Lane B's reason** | *"An evaluation run is in Evaluation mode by construction, so the field would carry one value on every row it could ever have"* — the **decorative** class §2 names. *"The fact anybody needs is whether a real model was measured, and `provider` answers it"* |
+| **Impact** | A constitutional requirement is unmet, **deliberately and with a stated reason** |
+| **Priority** | **P1 — but cheap.** It is a yes or no |
+| **Recommended** | ✅ **Accept the challenge and amend §10 to five fields.** Lane B is right that a column with one possible value records nothing, and **§2 already forbids exactly that.** ⚠️ **But rule it explicitly rather than letting the omission stand** — an unmet constitutional requirement that everyone agrees about is still an unmet constitutional requirement, and **§10 is the document a future lane will read.** **If the mode is meant to vary, say how**, which is Lane B's own framing |
+
+## B-324 · a mock could earn a prompt a real release
+
+| | |
+|---|---|
+| **Summary** | **TASK-415 made the mock the local default; the evaluation entry points resolve through the same registry.** So `make eval-*` on a fresh clone **measures a scripted response** — and `released_for` reads the manifest, **so it could have earned a real release** |
+| **Impact** | **A release rule that can be satisfied by a rehearsal.** The codebase asserted this was impossible in a comment **that stopped being true at TASK-415** |
+| **Priority** | ⚡ **P1 — the highest-severity finding of the day**, and it needs no ruling from you: the design is Lane B's and the review is Lane C's |
+| **Recommended** | **Lane B's proposed shape is right and should be built as its own slice.** The obvious fix — `if report.provider is AIVendor.MOCK` — **was written, failed `TestTheEvaluationFrameworkNamesNoVendor`, and was reverted.** That test is §10's *no `if vendor ==` outside an adapter* in executable form; **the test was right and was not weakened.** The correct shape is **a capability on `AIProviderDescriptor` — *does this adapter measure a real model* — which names no vendor and covers every future stub** |
+
+> ⚠️ **Lane C's review of TASK-415 cleared the package that created this.** The condition I attached — *"confirm nothing reads `InferenceResult.vendor` to choose behaviour"* — **named the right principle and the wrong surface.** I asked what the mock would do to *branching*; **I did not ask what it would do to `released_for`.** **Lane B found it by checking whether an old comment still held**, which is a discipline this review did not apply.
+
+---
+
 # P2 · Blocks a milestone, no lane waiting today
 
 | ID | Summary | Blocks | Priority | Recommended |
