@@ -409,3 +409,48 @@ GET /workspaces/{workspace_id}/accounts/{account_id}/decision-package
 ### What this slice did not do
 
 **No new conclusion, no second inference path, no cross-account ranking, no recommendation** — all four are ruled out by the module's own contract and none was approached. **The domain was not changed.** The one fixture that failed did so because `TemporalExplanation` refuses a first reading with a non-zero delta, which is the invariant working; the fixture was corrected.
+
+---
+
+## Epic G preparation — what a hosted credential will *not* fix
+
+**Prepared 2026-08-05 by Lane B**, on the product owner's instruction not to wait passively for the evaluation credential: *"once the credential is available, execution begins immediately rather than starting investigation."*
+
+**The headline: the credential is necessary and not sufficient.** [TASK-202](../BACKLOG.md)'s first slice is *"evaluate `reasoning@1` under protocol 2"*, and that will fail **whatever provider runs it**, for a reason already recorded in the manifest.
+
+### The evidence, read from `prompts/manifest.json` rather than run
+
+| Model | Protocol | Grounding failures | Coverage |
+|---|---|---|---|
+| `granite3.3:2b` | **1** | **0** | **0.833** ✅ |
+| `qwen2.5:3b` | 1 | 1 | 0.333 |
+| `llama3.2:3b` | 1 | 1 | 0.333 |
+| **`granite3.3:2b`** | **2** | ⚠️ **2 of 2** | ⚠️ **0.0** |
+
+**Same model, same dataset, same prompt.** Under protocol 1 it grounds perfectly; under protocol 2 **every case fails grounding**. `MINIMUM_COVERAGE` is `0.66`, so `reasoning@1` has **no passing protocol-2 evaluation and cannot earn one as written**.
+
+**This reframes [C-222](../LANE_COORDINATION.md).** That item records the blocker as wall-clock time on `llama3.1:8b` — which is true, and is the reason a hosted provider is wanted. It is not the whole blocker: `granite3.3:2b` *completed* under protocol 2 and still failed, so **a second, provider-independent defect sits behind the first.**
+
+### The cause, and the precedent that already solved it
+
+Protocol 2 presents a citation as **a bare copyable token** — `signal_contribution:uuid — summary`, where *"the em dash is load-bearing"*. Protocol 1 wrapped references in square brackets.
+
+**The research prompts hit exactly this and were fixed by a new version, not a tuned one.** `research_synthesis@1` instructed the model to use *"the exact reference inside the square brackets, **without the brackets**"* — a **transformation instruction**, correct under protocol 1 and actively wrong under protocol 2. `research_synthesis@2` replaced it with *"Copy the reference character for character — do not add anything"* **and shows the form**. [28-ai-platform.md](28-ai-platform.md) records the result: the prompt that failed four times in a row then passed, and `test_no_prompt_the_pipeline_uses_instructs_a_transformation` now refuses any prompt containing *"without the brackets"*.
+
+**`reasoning@1` is a different case with the same outcome.** It contains **no transformation instruction** — it says *"cite … by their exact reference strings"* — so it passes that guard. **What it has is no example at all**, and both `@2` prompts added one. A 2B model given a copy instruction and no specimen of what to copy is being asked to infer the form, and under protocol 2 it inferred wrongly on every case.
+
+### What the slice will be, when the credential arrives
+
+1. **Author `reasoning@2`** — `@1`'s rules unchanged, plus *copy character for character* and a worked citation in the protocol-2 form, mirroring `research_synthesis@2`.
+2. **Evaluate it** against `explanation_narration@1` under protocol 2, on a hosted model.
+3. **Point the request path at `@2`** — *"a prompt nothing requests is a dead artifact"* (28-ai-platform.md), which is what left research pointed at `@1` and permanently refused.
+
+**Step 1 is authorable today and is deliberately not done yet.** A prompt version that cannot be evaluated cannot be released, and shipping an unreleasable `@2` would put a dead artifact in the registry — the exact thing step 3 exists to prevent.
+
+### One question that is not a lane's
+
+**Does `reasoning@1` need its own dataset?** TASK-202's first slice says *"author a `reasoning` dataset"*; Lane C withdrew that half deliberately — *"a second copy of an evidence set the module shares on purpose."*
+
+**The evidence favours Lane C, and it is now checkable rather than a matter of taste.** `reasoning@1` takes **`{facts}` and nothing else** — no question, no parameters — so it reads the identical closed evidence set narration does. A `reasoning` dataset would carry the same `facts` and the same `load_bearing`, which is duplicated truth (§2).
+
+**The one place it might matter, recorded rather than resolved:** `coverage` is *the share of load-bearing facts cited*, and `reasoning@1` rule 1 says **"draw exactly one conclusion, not three"**. A correct conclusion may rest on two of three load-bearing facts and score `0.667` — barely over the `0.66` floor. **Narration is rewarded for breadth and reasoning is instructed against it**, so the shared dataset measures them on subtly different terms. That has not caused a failure yet and is not what is breaking protocol 2, so it is written down rather than acted on.
