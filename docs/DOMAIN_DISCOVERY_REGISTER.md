@@ -42,7 +42,7 @@
 | 1 | **Design System v2** | **None** | **None** | ✅ **Requires no backend at all** |
 | 2 | **App Shell** | **Scope** *(period · region · segment · owner)* · **saved view** · **workspace lifecycle** *(trial · seat)* · notification · system status | **Event bus** *(status)* | ⛔ **R-02 · R-04 · R-05.** **All 16 screens inherit this row** |
 | 3 | **Account 360** | Entity · claim · observation · business event · buying score · timeline · research · narration | **Event bus** · **AI Platform** *(grounding)* | ✅ **shipped** · ⛔ **R-01 People** · ⛔ **R-03** for its AI sections |
-| 4 | **Companies** | Account · **saved view** · **named batch, reversible** · import · export **with field-level permission** | — | 🟨 accounts ✅ · ⛔ **R-02 · R-03 · R-09** |
+| 4 | **Companies** | Account · **saved view** · **named batch, reversible** · import · export **with field-level permission** | **ARQ + outbox** *(bulk is background work)* | ✅ **Audited in full — [446](architecture/446-companies-traceability-audit.md).** 9 elements: 5 ✅ · 3 🔴 · **1 ⬜ not yet extractable.** ⛔ **R-02 · R-03 · R-13** · ⚖️ **import challenged — §3** |
 | 5 | **People Intelligence** | **`Person` · `Affiliation` interval** · org chart · relationship | — | ⛔ **R-01** — planned, [441](architecture/441-people-roadmap.md) |
 | 6 | **Opportunity Intelligence** | Opportunity · `Stage` · contribution · **approval** · competitor · **call** | — | ✅ opportunity · ⛔ **R-03 · R-07** |
 | 7 | **Signal Center** | Signal · catalog · **`Resolution`** · **the triage event** · rule precision | **Event bus** | ✅ **domain complete** · ⛔ **R-06** — the event |
@@ -70,6 +70,7 @@
 | **R-02** | **Scope · saved view** | **5 named, and the shell inherits into all 16** | **[TASK-433](BACKLOG.md)** — awaiting a naming ruling |
 | **R-03** | **Proposed → approved → applied → withdrawn** | **6** | **[TASK-431](BACKLOG.md)** — awaiting a shape ruling |
 | **R-01** | **People · Affiliation** | **4 + Executive Dashboard's movements** | ✅ **Ruled [D-074](DECISION_REGISTER.md)** · **[TASK-427–430](BACKLOG.md)** |
+| **R-13** | **The authorization model is short three dimensions** — **spend · field · quantity** | **3 screens, independently** | ⛔ **Casbin's tuple is `(sub, dom, obj, act)`.** Copilot needs *spend*, Companies needs *field* and *quantity*. **An architectural finding, not three feature gaps** |
 | **R-12** | **The six verbs, and *17 surfaces one contract*** | **Every AI surface** | ⛔ **[C-419](LANE_COORDINATION.md)** — six values the design calls closed, and nothing closes them |
 | **R-11** | **Forecast — deal value · plan · fiscal period · team** | **Executive Dashboard, and Opportunity Intelligence shares its aggregates** | ⛔ **[C-418](LANE_COORDINATION.md)** — **the approved UI says *forecast* and `buying_score_engine` refuses to forecast, in writing, twice.** **Four absences, one question** |
 | **R-04** | **Notification** | **4** | ⏸ **Deferred [D-027](DECISION_REGISTER.md).** Recorded, not re-raised |

@@ -413,6 +413,7 @@ Decisions required    what the product owner must rule before it can start
 | 🟡 **Extend** | **The architecture is right. Extend, never duplicate** |
 | 🟠 **Conflicts** | The current design does not support the approved experience. **Recommend evolution, with evidence** |
 | 🔴 **Missing** | Prepare the work |
+| ⬜ **Not yet extractable** | **The repository cannot evidence what the screen does.** ⛔ **Record it. Never resolve it with a plausible guess** ([D-079](DECISION_REGISTER.md)) |
 
 **③ admits exactly one answer** — domain entity · aggregate · value object · workflow · projection · knowledge graph · platform service · AI capability · computed view · external provider · derived data. **Two sources is the defect, not the answer.**
 
@@ -431,6 +432,16 @@ Decisions required    what the product owner must rule before it can start
 > **Never invent a UI element.** **A row for something the repository cannot evidence puts a fabricated requirement into the one document implementation is meant to trust** — which is worse than a missing row, because it will be built.
 >
 > ⚠️ **The approved designs are an external project.** The repository holds **section-level detail for one screen** — Account 360, via [414](architecture/414-wave-1-account-360.md) — **and assertions for the other fifteen.** **Every row cites its evidence, and the audit *is* the extraction**: each screen's matrix becomes the repository's record of that screen's elements.
+
+#### ⚖️ The challenge runs both ways ([D-079](DECISION_REGISTER.md) §6)
+
+> **Do not assume the existing architecture is always correct.** If the approved experience shows a foundational capability is missing or wrongly placed, **bring it forward with evidence.**
+>
+> **And challenge the UI where it encourages duplication or violates an established principle.** **Product Office reconciles product vision with architectural integrity — it does not favour one blindly.**
+
+**[446 §3](architecture/446-companies-traceability-audit.md) is the first exercise of the second half**: *import* reads as a file upload, and built that way it is **a second inbound path for customer data beside the one Epic E1 is building** — two provenance stories for one fact, in a repository built on provenance. **The screen is not wrong; the obvious implementation would be.**
+
+**A challenge is a recommendation with evidence, never a refusal to build.**
 
 #### Findings, in ten categories
 
