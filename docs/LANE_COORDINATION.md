@@ -1735,6 +1735,12 @@ The model is now four: **Integration (catalog) · Connected Account · Grant · 
 
 ## C-019 · A claim is invisible to the step meant to arbitrate it
 
+> ✅ **Lane C finding, 2026-08-05 — this appears already resolved, and closure is recommended.**
+>
+> **Candidate A — *"step 7 pushes the claim to `integration` too"* — is the protocol as it now stands.** `CLAUDE.md` §20e step 7 reads *"Push the claim to `integration`"*, and the blockquote beneath it is **dated 2026-08-02, the same day this item was raised**, describing this item's own incident: *"Observed live: two lanes ran the protocol exactly as written, one claim reached `integration` and the other did not, and the second task sat there looking free while somebody was building it."*
+>
+> **So the fix was made and the item was never closed.** `infra/certification-guard.py --audit-claims` additionally bounds a claim to two files, which is the enforcement half candidate A did not ask for. **Closure is the product owner's; the evidence is here so it costs a reading rather than an investigation.**
+
 | | |
 |---|---|
 | **Owner** | **Product owner** — the Task Claim Protocol is `CLAUDE.md` §20e, governance |
@@ -2086,6 +2092,14 @@ assert set(SignalTypeResponse.model_fields) == {"key", "title"}
 ---
 
 ## C-205 · Is Signora expected to work on a phone?
+
+> ⚠️ **Lane C finding, 2026-08-05 — this was answered by implementation, and the row still reads as an open question.**
+>
+> **Two corrections.** ① **`Blocks` cites `B-019`, which QE renumbered to [B-203](BUGS.md) on 2026-08-02** — `B-019` now names an entirely different finding about the constitution's branch table. ② **[B-203](BUGS.md) is `FIXED` and QE-`VERIFIED`**: Lane A shipped a bottom navigation bar below `md` on 2026-08-03, reading the same `ITEMS` and applying the same guard as the sidebar.
+>
+> **B-203's own `Severity` field says *"whether it is a defect or a non-goal depends on a product decision"* — and that decision is this item.** It was treated as a defect and fixed. **The product is responsive now, and this question was decided by a slice**, which is precisely what the register exists to prevent.
+>
+> **Recommendation: this is a ratification, not a design.** **Ratify that responsive is in scope** and every future responsive decision inherits the answer; **or reverse it**, in which case B-203's fix is scope that should not have shipped and Product Surface needs to know before wave 1. **Either way it stops being an open question, and it is now the third-cheapest row in [`DECISION_QUEUE.md`](DECISION_QUEUE.md).**
 
 > **Renumbered from `C-026` by QE at merge, 2026-08-02.** `C-026` was already allocated to a different finding; the later claim moves, and Lane A's block is `200`+ (`CLAUDE.md` §20e). **The original `C-026` is untouched.**
 

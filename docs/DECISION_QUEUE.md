@@ -151,7 +151,7 @@
 | **C-023** | M13 is ratified architecture, not an executable milestone | Lane A taking M13 as an assignment | **P2** | Confirm; it is bookkeeping |
 | **C-203** | Nothing in the product can render a person's name | Narrowed 2026-08-02 | **P2** | **Rule with C-221** — same root fact |
 | **C-005** | Who owns the signal-profile write path | The first customer-editable relevance profile | **P2** | — |
-| **C-205** | **Is Signora expected to work on a phone?** | [B-019](BUGS.md) and every responsive decision | **P2** | **Yes or no, once.** It is being answered by default today |
+| **C-205** | **Is Signora expected to work on a phone?** | ⚠️ **Nothing — [B-203](BUGS.md) is `FIXED` and `VERIFIED`.** The row cites `B-019`, which QE renumbered on 2026-08-02 | 🥉 **Ratification** | ✅ **Already answered by implementation.** Lane A shipped a bottom nav below `md` on 2026-08-03, and B-203's own row says *"whether it is a defect or a non-goal depends on a product decision"* — **this one.** **Ratify that responsive is in scope**, or reverse it and tell Product Surface before wave 1 |
 
 # P3 · Standing ambiguity, blocks nothing being built
 
@@ -168,7 +168,7 @@
 | **C-009** | An internal fault reaches a customer as a `422` | Nothing today | — |
 | **C-017** | The onboarding honesty principle has no permanent home | Every future onboarding flow, wizard and assistant | **Pairs with C-320** — both are the first hour |
 | **C-007** | The guided first run is a two-lane build | Nothing until M12.5 slice 5 | **Pairs with C-320** |
-| **C-019** | A claim is invisible to the step meant to arbitrate it | Nothing — **"it has already happened once and will happen again"** | **Repository integrity.** Lane C can automate this; no ruling needed |
+| **C-019** | A claim is invisible to the step meant to arbitrate it | Nothing | ✅ **CLOSE IT.** **Already fixed.** §20e step 7 pushes the claim to `integration`, corrected **2026-08-02 — the day this was raised** — and the correction note describes this item's own incident. `--audit-claims` adds the enforcement it did not ask for. **Costs a reading, not an investigation** |
 | **C-006** | Which lane owns `test_api_<module>.py` | Nothing. **A standing ambiguity every feature lane hits** | **One sentence closes it permanently** |
 | **C-204** | The catalog explains nine words to nobody | R5-04 only | — |
 
@@ -186,3 +186,12 @@
 | **P3 — blocks nothing today** | **12** |
 | **Highest single unblock** | **[TASK-900](BACKLOG.md)'s RFC — 4 decisions retired, 7 slices released** |
 | **Cheapest** | **C-206 + C-208 — two sentences, one whole slice** |
+| **Free** | **C-019 — close it; the fix shipped the day it was raised** · **C-205 — ratify; the product is already responsive** |
+
+## ⚠️ A standing hazard this queue exists to surface
+
+**Two of the twenty-eight were not really open.** **C-019 was fixed on the day it was raised and nobody closed it. C-205 was decided by a slice** — [B-203](BUGS.md) treated *"the product has no navigation below 768px"* as a defect and fixed it, **which answers *"is Signora expected to work on a phone?"* by implementation.**
+
+> **A register that accumulates answered items costs the product owner attention on every reading**, and worse, **an item that quietly gets answered by a slice is the failure the register exists to prevent** — it means the decision was made by whoever was closest to the keyboard.
+
+**Lane C audits premises rather than restating titles**, and **`Blocks` fields are the first thing to go stale**: C-205's still names a bug id QE renumbered three days ago.
