@@ -24,8 +24,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 from typing import Final
 
@@ -332,6 +334,55 @@ def _report_impact(rev_range: str) -> None:
 CLAIM_PATHS = ("docs/ACTIVE_ASSIGNMENTS.md", "docs/BACKLOG.md")
 
 
+def _eligible_above(commit: str, lane: str, task: str) -> list[str]:
+    """`READY` tasks in this lane's modules that outrank `task` in the backlog.
+
+    **Phase 1 of the execution-queue migration** (`docs/architecture/434-...`).
+    §20e has always required *"if the highest `READY` task cannot be taken, say
+    why in its backlog note and take the next"* — **and nothing checked it.**
+    Lane A skipped a returned slice on 2026-08-05 and recorded no reason; the
+    skip was correct and the silence was not.
+
+    **Order is the backlog's own order**, because *"the queue order **is** the
+    priority"*. Ownership is joined from `modules.toml`, so this asks the
+    registry rather than restating it (D-062).
+    """
+    # **Read at the commit, never from the working tree.** The first run of this
+    # check judged four claims from 2026-08-02 against today's queue and accused
+    # all four — of skipping tasks that did not exist when they were made. **A
+    # record of what was true then must not be re-scored against now**
+    # (`CLAUDE.md` §2), and a guard that manufactures violations is worse than
+    # no guard, because somebody has to disprove each one.
+    #
+    # It also makes history self-limiting: `modules.toml` did not exist before
+    # 2026-08-04, so a claim older than the registry yields no opinion at all.
+    try:
+        registry = tomllib.loads(_git("show", f"{commit}:docs/coordination/modules.toml"))
+    except (tomllib.TOMLDecodeError, ValueError):
+        return []          # **No registry at that commit, no opinion.**
+    mine = {
+        m for m, e in registry.items()
+        if isinstance(e, dict) and e.get("current_owner") == lane
+    }
+    if not mine:
+        return []
+    backlog = _git("show", f"{commit}:docs/BACKLOG.md")
+    above: list[str] = []
+    for block in re.split(r"(?=^### TASK-)", backlog, flags=re.M):
+        header = re.match(r"### (TASK-\d+)", block)
+        if not header:
+            continue
+        if header.group(1) == task:
+            break          # Everything after this point ranks lower.
+        status = re.search(r"\*\*Status\*\*\s*\|\s*(.+)$", block, re.M)
+        if not status or "`READY`" not in status.group(1):
+            continue
+        module = re.search(r"\*\*Module\*\*\s*\|\s*(.+)$", block, re.M)
+        if module and any(f"`{m}`" in module.group(1) for m in mine):
+            above.append(header.group(1))
+    return above
+
+
 def _claim_commits(rev_range: str) -> list[str]:
     return _git("rev-list", "--reverse", rev_range, "--grep=^Claim TASK-").splitlines()
 
@@ -349,6 +400,28 @@ def _scope_note() -> None:
         print(f"  note — {count} commit(s) on `origin/{ref}` are not in this clone's `{ref}`.\n")
 
 
+def _unexplained_skips(commit: str) -> list[tuple[str, str, str, list[str]]]:
+    """A claim that took lower-ranked work without naming what it passed over.
+
+    **Phase 1 enforcement, and it reports rather than refuses.** The skip Lane A
+    made on 2026-08-05 was *correct* — the task it passed over was blocked on two
+    rulings — and the record was what was missing. **This makes the silence
+    visible; it does not second-guess the choice.**
+
+    A skip is explained if the passed-over task is named anywhere in the commit,
+    message or diff. **Naming it is the whole requirement** — the reason belongs
+    in the backlog note, where a human will read it.
+    """
+    subject = _git("log", "-1", "--format=%s", commit)
+    task = re.search(r"TASK-\d+", subject)
+    body = _git("show", "--format=%B", commit)
+    lane = re.search(r"\*\*(Lane [A-Z])\*\*", body)
+    if not task or not lane:
+        return []
+    above = [t for t in _eligible_above(commit, lane.group(1), task.group(0)) if t not in body]
+    return [(commit[:7], subject, task.group(0), above)] if above else []
+
+
 def _audit_claims() -> int:
     """Every claim commit on `integration` touches the registers and nothing else."""
     _scope_note()
@@ -360,6 +433,7 @@ def _audit_claims() -> int:
         return 0
 
     violations: list[tuple[str, str, list[str]]] = []
+    skips: list[tuple[str, str, str, list[str]]] = []
     for commit in commits:
         changed = [
             line
@@ -369,8 +443,19 @@ def _audit_claims() -> int:
         offending = [path for path in changed if path not in CLAIM_PATHS]
         if offending:
             violations.append((commit[:7], _git("log", "-1", "--format=%s", commit), offending))
+        skips.extend(_unexplained_skips(commit))
 
     print(f"audit — {len(commits)} claim commit(s)\n")
+    if skips:
+        # **Reported, not refused** — phase 1 of 434 is observation. A guard
+        # that starts by rejecting history teaches people to bypass it; this
+        # names the gap and lets the next claim close it.
+        print(f"  {len(skips)} claim(s) took work below a higher `READY` task in the same lane,")
+        print("  without saying why. §20e: *say why in its backlog note and take the next.*\n")
+        for short, subject, task, above in skips:
+            print(f"    · {short}  {subject[:56]}")
+            print(f"        claimed {task}, skipped {', '.join(above[:4])}")
+        print()
     if not violations:
         print(
             "  every one touches only ACTIVE_ASSIGNMENTS.md and BACKLOG.md.\n\n"

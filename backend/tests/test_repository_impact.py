@@ -177,3 +177,59 @@ def test_the_two_classifiers_in_this_file_agree(guard: ModuleType, path: str) ->
     """
     assert path.startswith(guard.CLOSEOUT_PATHS) and path.endswith(guard.CLOSEOUT_SUFFIXES)
     assert sorted(guard._impacts([path])) == ["documentation"]
+
+
+# ── Phase 1: skip-note enforcement ───────────────────────────────────────────
+# `docs/architecture/434-execution-queue-governance-package.md`. §20e has always
+# required that a lane skipping a higher `READY` task say why, and nothing
+# checked it. These fix the two properties that make the check trustworthy: it
+# must be able to fire, and it must never fire on history it cannot judge.
+
+
+def test_the_skip_check_can_actually_fire(guard: ModuleType, monkeypatch) -> None:
+    """**A guard that cannot fail is documentation pretending to be code** (§2).
+
+    The first live run reported nothing, which is the correct answer today and
+    indistinguishable from a check that is wired up wrong.
+    """
+    registry = '[signal_engine]\ncurrent_owner = "Lane A"\n'
+    backlog = (
+        "### TASK-100 · higher\n| **Status** | `READY` |\n| **Module** | `signal_engine` |\n"
+        "### TASK-200 · lower\n| **Status** | `READY` |\n| **Module** | `signal_engine` |\n"
+    )
+    monkeypatch.setattr(
+        guard, "_git",
+        lambda *a: registry if "modules.toml" in a[-1] else backlog if "BACKLOG" in a[-1] else "",
+    )
+    assert guard._eligible_above("deadbee", "Lane A", "TASK-200") == ["TASK-100"]
+
+
+def test_a_skip_is_not_reported_when_the_task_belongs_to_another_lane(
+    guard: ModuleType, monkeypatch
+) -> None:
+    """**Ownership is joined from the registry, not assumed.**
+
+    A lane cannot skip what it was never allowed to take, and reporting that
+    would be the accusation `_eligible_above` exists to avoid.
+    """
+    registry = '[signal_engine]\ncurrent_owner = "Lane B"\n'
+    backlog = "### TASK-100 · higher\n| **Status** | `READY` |\n| **Module** | `signal_engine` |\n"
+    monkeypatch.setattr(
+        guard, "_git",
+        lambda *a: registry if "modules.toml" in a[-1] else backlog if "BACKLOG" in a[-1] else "",
+    )
+    assert guard._eligible_above("deadbee", "Lane A", "TASK-200") == []
+
+
+def test_a_claim_older_than_the_registry_yields_no_opinion(
+    guard: ModuleType, monkeypatch
+) -> None:
+    """**A record of what was true then must not be re-scored against now** (§2).
+
+    The first implementation read the working tree and accused four claims from
+    2026-08-02 of skipping tasks that did not exist when they were made. Reading
+    at the commit makes history self-limiting: `modules.toml` did not exist
+    before 2026-08-04, so an older claim is simply not judged.
+    """
+    monkeypatch.setattr(guard, "_git", lambda *a: "")
+    assert guard._eligible_above("ancient", "Lane A", "TASK-002") == []

@@ -933,6 +933,18 @@ promoted commit SHA  ==  certified commit SHA
 **Do not redesign a stable process without evidence, and do not add a refinement because one is possible.** Every rule here costs a cold session reading time and a lane compliance effort, and the repository is now past the point where more process buys more safety.
 
 **Treat governance as infrastructure and implementation as the primary driver of value.** The repository's success is measured by engineering throughput, feature completion, repository quality and certification reliability — **never by the number of governance refinements introduced.**
+
+#### The governance freeze — ratified 2026-08-05, product owner
+
+> **Product delivery takes priority over governance refinement.** **When we discover a governance weakness during execution, we improve it. We do not pause product development searching for theoretical perfection.**
+
+**Prohibited unless a significant issue is discovered *during implementation*:** **large governance redesigns · workflow redesigns · execution-model redesigns · organizational restructuring.**
+
+**Permitted, always:** **small corrections · bug fixes · clarifications · incremental improvements.**
+
+> **The test is the same one this section already applies, tightened by one word: a governance change now needs an *observed* execution problem, not a foreseeable one.** **Every lane spends the overwhelming majority of its time implementing product functionality rather than refining process** — and **the governance exists to support engineering, never to become engineering.**
+
+**Lane C's standing responsibilities under the freeze**: **backlog health · queue health · execution flow · bottleneck identification · implementation-package review · dependency coordination · keeping every implementation lane continuously supplied with work · protecting repository architecture.** **Evolving the delivery model is not among them**, and **[434](docs/architecture/434-execution-queue-governance-package.md) is the last such initiative until execution produces evidence for another.**
 ### Execution ownership ends at `IN VALIDATION`
 
 **Ratified 2026-08-02, product owner.** Two refinements on one day, and they are one idea: **every lifecycle state has exactly one owner, and a lane's ownership stops the moment the work becomes something QE can take.**
