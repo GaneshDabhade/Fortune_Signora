@@ -17,7 +17,8 @@ opportunity records.** The opportunity is Signora's word for the workflow
 object; the account is what the customer came to look at.
 """
 
-from typing import Annotated
+from datetime import UTC, datetime, timedelta
+from typing import Annotated, Final
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query, status
@@ -33,6 +34,7 @@ from modules.opportunity_engine.interface.schemas import (
     DecidedAccountResponse,
     OpenedOpportunityResponse,
     OpenOpportunityRequest,
+    PipelineHealthResponse,
     RecordDecisionRequest,
     WorkflowStateResponse,
 )
@@ -104,6 +106,69 @@ async def list_accounts(
         next_cursor=encode_cursor(position) if position else None,
         has_more=page.has_more,
     )
+
+
+#: How far back movements are read by default. Two weeks is a fortnight of
+#: standup, which is the meeting this section gets read in.
+DEFAULT_MOVEMENT_WINDOW: Final = timedelta(days=14)
+
+SinceParam = Annotated[datetime | None, Query()]
+MovementLimitParam = Annotated[int, Query(ge=1, le=MAX_PAGE_LIMIT)]
+
+
+@router.get(
+    "/workspaces/{workspace_id}/pipeline-health",
+    response_model=PipelineHealthResponse,
+    summary="How the pipeline is doing — conversion, ageing, movement and who holds what",
+)
+async def pipeline_health(
+    context: CurrentWorkspace,
+    queries: OpportunityRead,
+    since: SinceParam = None,
+    movement_limit: MovementLimitParam = 50,
+) -> PipelineHealthResponse:
+    """*"How are we actually doing?"* — the question a list of accounts cannot answer.
+
+    **Four sections in one response**, because all four are arithmetic over the
+    same append-only table and a screen that opened four connections to render
+    one page would be an N+1 spelt across endpoints.
+
+    | | |
+    |---|---|
+    | **Conversion** | Of the accounts that reached a stage, how many went on. Counted **once per opportunity**, so a reopened account does not inflate the top of the funnel |
+    | **Ageing** | How long the work sitting in each open stage has been sitting there — **median and oldest**, because a median hides the account somebody forgot |
+    | **Owners** | Who is holding what, **unassigned included as its own row** |
+    | **Movement** | What changed since `since`, newest first, each with the reason somebody typed |
+
+    **A rate over nothing is `null`, never `0%`.** A stage nothing has reached
+    has no conversion rate, and a new workspace reading *"0% conversion"* would
+    act on a number measured from no evidence.
+
+    **`since` defaults to a fortnight ago** and is a declared parameter rather
+    than stored read state — the rule established at C-215. Ask for a different
+    window and you get a different answer to the same question, which is what
+    makes two people looking at this screen able to compare notes.
+
+    ⚠️ **The dashboard's fifth section is not here.** *ICP coverage, in versus
+    outside* needs a predicate that can say which cohort an account is in;
+    nothing can currently supply what that predicate reads, so the section is
+    **absent rather than returned as zeroes** — a zero would say *"no accounts
+    match your ICP"*, which is a different statement and a false one.
+
+    **No forecast, no probability, no deal value.** Not an omission — a buying
+    score *"prioritizes commercial attention; it does not forecast a purchase"*,
+    and this endpoint reports what the pipeline **is** rather than what it will
+    be.
+    """
+    context.authorize(Resource.OPPORTUNITY, Action.READ)
+    now = datetime.now(UTC)
+    health = await queries.pipeline_health(
+        context.workspace_id,
+        since=since if since is not None else now - DEFAULT_MOVEMENT_WINDOW,
+        now=now,
+        movement_limit=movement_limit,
+    )
+    return PipelineHealthResponse.from_domain(health)
 
 
 @router.get(

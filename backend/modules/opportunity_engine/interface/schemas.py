@@ -41,6 +41,13 @@ from modules.opportunity_engine.application.queries import (
     OpportunityBrief,
     TrackedOpportunity,
 )
+from modules.opportunity_engine.domain.pipeline_health import (
+    Movement,
+    OwnerLoad,
+    PipelineHealth,
+    StageAgeing,
+    StageConversion,
+)
 from modules.opportunity_engine.domain.opportunity import (
     EvidenceState,
     OpportunityState,
@@ -489,12 +496,177 @@ class AccountOpportunityResponse(BaseModel):
         )
 
 
+class StageConversionResponse(BaseModel):
+    """One step of the funnel."""
+
+    model_config = ConfigDict(frozen=True)
+
+    from_stage: Stage = Field(description="The step being measured from.")
+    to_stage: Stage = Field(description="The step being measured to.")
+    entered: int = Field(
+        description="Accounts that ever reached the first stage. Counted once per "
+        "opportunity, so an account that was closed lost and reopened is one, not two."
+    )
+    advanced: int = Field(description="Of those, how many ever reached the second.")
+    rate: float | None = Field(
+        description="The proportion that advanced, or **null when nothing entered**. "
+        "Null is not zero: a stage nothing has reached has no conversion rate, and "
+        "rendering 0% would invite a comparison against a stage that does."
+    )
+
+    @classmethod
+    def from_domain(cls, conversion: StageConversion) -> "StageConversionResponse":
+        return cls(
+            from_stage=conversion.from_stage,
+            to_stage=conversion.to_stage,
+            entered=conversion.entered,
+            advanced=conversion.advanced,
+            rate=conversion.rate,
+        )
+
+
+class StageAgeingResponse(BaseModel):
+    """How long the work sitting in one stage has been sitting there."""
+
+    model_config = ConfigDict(frozen=True)
+
+    stage: Stage = Field(description="The open stage being aged.")
+    open_count: int = Field(description="How many accounts are in it right now.")
+    median_days: float | None = Field(
+        description="Days in stage, median across those accounts. **Null when the stage "
+        "is empty** — zero days is a real and different answer, meaning work that arrived "
+        "this morning."
+    )
+    oldest_days: float | None = Field(
+        description="The single oldest, because a median hides the one account somebody "
+        "forgot. Null exactly when `median_days` is."
+    )
+
+    @classmethod
+    def from_domain(cls, ageing: StageAgeing) -> "StageAgeingResponse":
+        return cls(
+            stage=ageing.stage,
+            open_count=ageing.open_count,
+            median_days=ageing.median_days,
+            oldest_days=ageing.oldest_days,
+        )
+
+
+class OwnerLoadResponse(BaseModel):
+    """One person's share of the pipeline."""
+
+    model_config = ConfigDict(frozen=True)
+
+    owner_id: UUID | None = Field(
+        description="Who holds this work, or **null for unassigned**. Unassigned is a row "
+        "rather than an omission: it is the column most worth looking at, because nobody "
+        "is working it. Resolve the id to a name through your workspace members list."
+    )
+    open_count: int = Field(description="Accounts they are currently working.")
+    won: int = Field(description="Accounts they closed won.")
+    lost: int = Field(description="Accounts they closed lost.")
+
+    @classmethod
+    def from_domain(cls, load: OwnerLoad) -> "OwnerLoadResponse":
+        return cls(
+            owner_id=load.owner_id,
+            open_count=load.open_count,
+            won=load.won,
+            lost=load.lost,
+        )
+
+
+class MovementResponse(BaseModel):
+    """One thing that changed, and why somebody changed it."""
+
+    model_config = ConfigDict(frozen=True)
+
+    opportunity_id: UUID = Field(description="The opportunity that moved.")
+    account_id: UUID = Field(description="The account it is about.")
+    stage: Stage = Field(description="What it became.")
+    previous_stage: Stage | None = Field(
+        description="What it was. Null for the opening state, which came from nothing."
+    )
+    owner_id: UUID | None = Field(description="Who held it at that moment.")
+    actor_id: UUID | None = Field(
+        description="Who decided it. **Null only when Signora opened it automatically** — "
+        "every stage beyond the first names the person who chose it."
+    )
+    reason: str = Field(
+        description="Why, in the words of whoever decided. Never empty: a workflow state "
+        "cannot be recorded without one."
+    )
+    occurred_at: datetime = Field(description="When the decision was made.")
+
+    @classmethod
+    def from_domain(cls, movement: Movement) -> "MovementResponse":
+        return cls(
+            opportunity_id=movement.opportunity_id,
+            account_id=movement.entity_id,
+            stage=movement.stage,
+            previous_stage=movement.previous_stage,
+            owner_id=movement.owner_id,
+            actor_id=movement.actor_id,
+            reason=movement.reason,
+            occurred_at=movement.occurred_at,
+        )
+
+
+class PipelineHealthResponse(BaseModel):
+    """The Executive Dashboard, in one response.
+
+    ⚠️ **Four sections, and the screen's fifth is absent rather than empty.**
+    *ICP coverage, in versus outside* is not a field here and is not a list of
+    zeroes: nothing can currently decide which cohort an account is in, and a
+    zero would read as *"no accounts match your ICP"* — which is a different
+    claim, and a false one.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    conversions: list[StageConversionResponse] = Field(
+        description="The funnel, in order. Always the same steps, whether or not anything "
+        "has reached them."
+    )
+    ageing: list[StageAgeingResponse] = Field(
+        description="Every open stage, whether or not anything is sitting in it."
+    )
+    owners: list[OwnerLoadResponse] = Field(
+        description="One row per owner, unassigned last. Empty only in a workspace with no "
+        "opportunities at all."
+    )
+    movements: list[MovementResponse] = Field(
+        description="What changed since `movements_since`, newest first, bounded by `limit`. "
+        "A short list means little happened; a full one means you should widen `since` or "
+        "read the accounts directly."
+    )
+    movements_since: datetime = Field(
+        description="The boundary the movements were read from, echoed so you can render "
+        "'since 1 August' without remembering what you asked for."
+    )
+
+    @classmethod
+    def from_domain(cls, health: PipelineHealth) -> "PipelineHealthResponse":
+        return cls(
+            conversions=[StageConversionResponse.from_domain(c) for c in health.conversions],
+            ageing=[StageAgeingResponse.from_domain(a) for a in health.ageing],
+            owners=[OwnerLoadResponse.from_domain(o) for o in health.owners],
+            movements=[MovementResponse.from_domain(m) for m in health.movements],
+            movements_since=health.movements_since,
+        )
+
+
 __all__ = [
     "AccountAttentionResponse",
     "AccountOpportunityResponse",
     "DecidedAccountResponse",
+    "MovementResponse",
     "OpenOpportunityRequest",
     "OpenedOpportunityResponse",
+    "OwnerLoadResponse",
+    "PipelineHealthResponse",
     "RecordDecisionRequest",
+    "StageAgeingResponse",
+    "StageConversionResponse",
     "WorkflowStateResponse",
 ]

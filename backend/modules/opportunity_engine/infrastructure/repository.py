@@ -12,6 +12,7 @@ beside it, so a status and its audit trail cannot disagree.
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 from uuid import UUID
 
@@ -19,6 +20,7 @@ from sqlalchemy import func, select, tuple_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import aliased
 
 from modules.opportunity_engine.domain.opportunity import (
     OPEN_STAGES,
@@ -343,6 +345,131 @@ class SqlOpportunityRepository:
             .order_by(OpportunityModel.generation)
         )
         return tuple(_to_opportunity(row) for row in rows.scalars())
+
+    # ── Pipeline health (TASK-438) ─────────────────────────────────────────
+    #
+    # **Aggregated here rather than in the application layer**, because a
+    # workspace's state log is unbounded and counting it in Python would mean
+    # fetching all of it (§14). Every rule that could be argued with stays in
+    # `domain/pipeline_health.py`; what these methods do is arithmetic
+    # PostgreSQL is better at.
+
+    async def stage_reach(self, workspace_id: UUID) -> dict[Stage, int]:
+        rows = await self._session.execute(
+            select(
+                OpportunityStateModel.stage,
+                func.count(func.distinct(OpportunityStateModel.opportunity_id)),
+            )
+            .where(OpportunityStateModel.workspace_id == workspace_id)
+            .group_by(OpportunityStateModel.stage)
+        )
+        return {Stage(stage): count for stage, count in rows.all()}
+
+    async def stage_advance(self, workspace_id: UUID) -> dict[tuple[Stage, Stage], int]:
+        lower = aliased(OpportunityStateModel)
+        upper = aliased(OpportunityStateModel)
+        rows = await self._session.execute(
+            select(lower.stage, upper.stage, func.count(func.distinct(lower.opportunity_id)))
+            .join(upper, upper.opportunity_id == lower.opportunity_id)
+            .where(
+                lower.workspace_id == workspace_id,
+                # **The join is the whole method**: an opportunity contributes
+                # to a pair only when *both* stages appear in its own history,
+                # which is what makes this different from multiplying two
+                # independent totals together.
+                upper.workspace_id == workspace_id,
+            )
+            .group_by(lower.stage, upper.stage)
+        )
+        return {(Stage(low), Stage(high)): count for low, high, count in rows.all()}
+
+    async def open_stage_entries(self, workspace_id: UUID) -> dict[Stage, tuple[datetime, ...]]:
+        latest = self._latest_sequence()
+        current = aliased(OpportunityStateModel)
+        earlier = aliased(OpportunityStateModel)
+        # When the *current run* of this stage began: the earliest state that
+        # is this stage and has no differently-staged row between it and now.
+        # Expressed as "the highest sequence whose stage differs", plus one.
+        previous_change = (
+            select(
+                earlier.opportunity_id,
+                func.max(earlier.sequence).label("sequence"),
+            )
+            .join(latest, latest.c.opportunity_id == earlier.opportunity_id)
+            .join(
+                current,
+                (current.opportunity_id == earlier.opportunity_id)
+                & (current.sequence == latest.c.sequence),
+            )
+            .where(earlier.workspace_id == workspace_id, earlier.stage != current.stage)
+            .group_by(earlier.opportunity_id)
+            .subquery()
+        )
+        entered = aliased(OpportunityStateModel)
+        rows = await self._session.execute(
+            select(entered.stage, entered.occurred_at)
+            .join(latest, latest.c.opportunity_id == entered.opportunity_id)
+            .outerjoin(previous_change, previous_change.c.opportunity_id == entered.opportunity_id)
+            .where(
+                entered.workspace_id == workspace_id,
+                entered.stage.in_([s.value for s in OPEN_STAGES]),
+                # The first row of the current run. `+ 1` past the last change,
+                # or sequence 0 when the opportunity has never changed stage.
+                entered.sequence == func.coalesce(previous_change.c.sequence + 1, 0),
+            )
+        )
+        entries: dict[Stage, list[datetime]] = {}
+        for stage, occurred_at in rows.all():
+            entries.setdefault(Stage(stage), []).append(occurred_at)
+        return {stage: tuple(moments) for stage, moments in entries.items()}
+
+    async def owner_loads(self, workspace_id: UUID) -> tuple[tuple[UUID | None, Stage, int], ...]:
+        latest = self._latest_sequence()
+        rows = await self._session.execute(
+            select(
+                OpportunityStateModel.owner_id,
+                OpportunityStateModel.stage,
+                func.count(OpportunityStateModel.opportunity_id),
+            )
+            .join(latest, latest.c.opportunity_id == OpportunityStateModel.opportunity_id)
+            .where(
+                OpportunityStateModel.workspace_id == workspace_id,
+                OpportunityStateModel.sequence == latest.c.sequence,
+            )
+            .group_by(OpportunityStateModel.owner_id, OpportunityStateModel.stage)
+        )
+        return tuple((owner, Stage(stage), count) for owner, stage, count in rows.all())
+
+    async def movements_since(
+        self, workspace_id: UUID, since: datetime, *, limit: int
+    ) -> tuple[tuple[Opportunity, OpportunityState, Stage | None], ...]:
+        previous = aliased(OpportunityStateModel)
+        rows = await self._session.execute(
+            select(OpportunityModel, OpportunityStateModel, previous.stage)
+            .join(
+                OpportunityStateModel,
+                OpportunityStateModel.opportunity_id == OpportunityModel.id,
+            )
+            .outerjoin(
+                previous,
+                (previous.opportunity_id == OpportunityStateModel.opportunity_id)
+                & (previous.sequence == OpportunityStateModel.sequence - 1),
+            )
+            .where(
+                OpportunityModel.workspace_id == workspace_id,
+                OpportunityStateModel.occurred_at > since,
+            )
+            .order_by(OpportunityStateModel.occurred_at.desc(), OpportunityStateModel.id.desc())
+            .limit(limit)
+        )
+        return tuple(
+            (
+                _to_opportunity(row[0]),
+                _to_state(row[1]),
+                Stage(row[2]) if row[2] is not None else None,
+            )
+            for row in rows.all()
+        )
 
 
 class SqlOpportunityPolicyRepository:

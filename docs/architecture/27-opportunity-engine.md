@@ -714,3 +714,56 @@ Removing the identifiers makes the messages safe to show, which is this slice. *
 ### What remains genuinely out of scope
 
 **No fitted weights, no refit, no drift** — TASK-406's own non-goals, and they are a model rather than a measurement. **No synonym catalog** — 443 M1, a reviewed artifact, and TASK-434 asserts the limitation in a test so it stays visible.
+
+---
+
+## TASK-438 — the pipeline says how it is doing
+
+**Delivered 2026-08-05 by Lane B.** `GET /workspaces/{id}/pipeline-health`, four sections in one response, and **every figure derived on request from `opportunity_state`** — a table that was already append-only and already carried everything needed.
+
+### Why nothing was stored
+
+**No migration, no table, no column.** Conversion is a set intersection over stages, ageing is a subtraction, movement is a `WHERE occurred_at >`, and a roll-up is a `GROUP BY` — so a stored dashboard row would be a second representation of a fact the state log already holds, and the two would eventually disagree (§2). **The state log is the authoritative representation; this is a view of it.**
+
+### Where the split falls, and why it is not the obvious one
+
+**The counting is in SQL and the rules are in `domain/pipeline_health.py`**, which is deliberately not *"aggregation is infrastructure, so put it all there"*.
+
+| | |
+|---|---|
+| **In the repository** | `GROUP BY`, `COUNT(DISTINCT …)`, the self-join that finds the start of a stage's *current run*. **A workspace's history is unbounded** and counting it in Python would mean fetching all of it (§14) |
+| **In the domain** | Which stages form the funnel · what a conversion is when nothing entered · how a median breaks on an even count · whether `DISMISSED` is a loss |
+
+**The test is whether a customer could argue with it.** Nobody disputes a `COUNT`; people dispute whether a dismissal counts as a loss. **Everything disputable is a pure function with a test naming the sentence a CRO would say.**
+
+### Three rules worth stating, because each had a wrong answer available
+
+**A rate over nothing is `null`, never `0%`.** A new workspace reading *"0% conversion"* would act on a measurement nobody took. This is [TASK-406](../BACKLOG.md)'s discipline — *"a criterion no outcome data supports says so rather than reporting `1.0×`"* — and it is the same defect either way: **a figure invented from no evidence looks exactly like one measured from plenty.**
+
+**`DISMISSED` is counted in neither `won` nor `lost`.** It is a qualification judgement rather than a commercial outcome, and folding it into `lost` would make a rep who triages honestly look like a rep who loses deals — which is precisely the incentive `DISMISSED` exists to avoid creating.
+
+**Ageing measures the *current run* of a stage.** An account closed lost in March and reopened yesterday has been in `TRACKING` for one day. Reporting five months would put the wrong account at the top of the list somebody is meant to chase.
+
+### `now` is a parameter and has no default
+
+Reading the clock inside the query would make two sections of one dashboard disagree by however long the request took, and would stop the same request replaying to the same answer. **A hidden input is an architecture defect, not an implementation detail** (§2) — so the router reads the clock once, at the composition edge, and passes it in.
+
+### ⛔ The fifth section is absent, and absent is not empty
+
+**The approved screen has five sections. This delivers four.** *ICP coverage, in versus outside* needs a predicate that can say which cohort an account is in; the predicate exists and **nothing constructs what it reads**, and this module is forbidden `modules.knowledge_graph` in full ([C-332](../LANE_COORDINATION.md)).
+
+> **It is not returned as zeroes.** A zero would render as *"no accounts match your ICP"* — a different statement, and a false one. **The field is not in the response at all**, which is the only shape that cannot be misread.
+
+⚠️ **[TASK-438](../BACKLOG.md)'s row calls this section *"newly unblocked"* and *"a call to a published predicate"*, and [444 §108](444-executive-dashboard-domain-assessment.md) lists it among *"the five sections that need nothing."* Both were written before C-332 and neither survives checking.** Recorded here rather than corrected there — those are Lane C's documents.
+
+### No forecast, and that is the row's discipline rather than an omission
+
+**No probability, no deal value, no plan, no quarter.** All four are [C-418](../LANE_COORDINATION.md), and `buying_score_engine` refuses the first in writing: a score *"prioritizes commercial attention; it does not forecast a purchase."* **This endpoint reports what the pipeline is, never what it will be.**
+
+### The roll-up by owner exposes nothing new, and that was checked rather than assumed
+
+[C-418](../LANE_COORDINATION.md) records that *"a roll-up by owner is, by construction, everybody's performance on one page"* and that this is the first screen whose data is sensitive between colleagues. **Measured before building it: `OwnerScope.ALL` is already the default on the shipped attention list**, and every member may call it — so every member can already read every account and its `owner_id`, one page at a time. **A roll-up aggregates data the product already discloses**; it discloses no new fact. C-418's concern is real for plans, targets and quotas, **none of which exist**, and 444 reaches the same place: it *"becomes real only if C-418 is answered yes."*
+
+### How to see it
+
+**Settings → nothing.** This is an API slice: `GET /workspaces/{id}/pipeline-health`. Move an account from *tracking* to *engaged* on the accounts list, call it again, and the funnel's first step moves from *0 of 2* to *1 of 2* with the reason you typed at the top of the movement feed. **There is no screen yet, and that is stated rather than dressed up** (§2) — the Executive Dashboard is [410](410-approved-ui-specification.md) #3 and unbuilt.

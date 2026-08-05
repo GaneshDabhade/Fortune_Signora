@@ -9,6 +9,7 @@ is what stops a rebuild path from ever reaching workflow.
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Protocol
 from uuid import UUID
 
@@ -17,6 +18,7 @@ from modules.opportunity_engine.domain.opportunity import (
     Opportunity,
     OpportunityState,
     OwnerScope,
+    Stage,
 )
 from modules.opportunity_engine.domain.policy import WorkspaceOpportunityPolicy
 from signora_platform.pagination import CursorPosition
@@ -122,6 +124,61 @@ class OpportunityRepository(Protocol):
         ...
 
     async def for_entity(self, workspace_id: UUID, entity_id: UUID) -> tuple[Opportunity, ...]: ...
+
+    # ── Pipeline health (TASK-438) ──────────────────────────────────────────
+    #
+    # **Four aggregates, not four page reads.** A dashboard describes a whole
+    # workspace, so the counting belongs in the database; pulling every state
+    # row across this boundary to count it in Python is the unbounded fetch
+    # §14 calls a defect at write time. **What each returns is already
+    # reduced**, and the rules that turn it into a figure live in
+    # `domain/pipeline_health.py` where they can be read and argued with.
+
+    async def stage_reach(self, workspace_id: UUID) -> dict[Stage, int]:
+        """Distinct opportunities that have **ever** reached each stage.
+
+        **Ever, not currently.** A deal that is closed won today also reached
+        `TRACKING` and `ENGAGED`, and a funnel counting only current stages
+        would show every successful account as having skipped the steps it
+        actually went through.
+        """
+        ...
+
+    async def stage_advance(self, workspace_id: UUID) -> dict[tuple[Stage, Stage], int]:
+        """For each ordered pair, opportunities that reached **both**.
+
+        Keyed by the pair rather than derived from `stage_reach`, because
+        *"reached `ENGAGED`"* and *"reached `TRACKING` **and then** `ENGAGED`"*
+        differ for any opportunity created directly into a later stage — and
+        a conversion rate built from two independent totals silently assumes
+        they cannot.
+        """
+        ...
+
+    async def open_stage_entries(self, workspace_id: UUID) -> dict[Stage, tuple[datetime, ...]]:
+        """When each currently-open opportunity entered the stage it is in.
+
+        **The entry into the *current* run of that stage**, not the first time
+        it ever entered — an account that was closed lost in March and
+        reopened yesterday has been in `TRACKING` for one day, and reporting
+        five months would put the wrong account at the top of an ageing list.
+        """
+        ...
+
+    async def owner_loads(self, workspace_id: UUID) -> tuple[tuple[UUID | None, Stage, int], ...]:
+        """Current stage counts per owner, unassigned included as `None`."""
+        ...
+
+    async def movements_since(
+        self, workspace_id: UUID, since: datetime, *, limit: int
+    ) -> tuple[tuple[Opportunity, OpportunityState, Stage | None], ...]:
+        """State changes after `since`, newest first, with the stage each left.
+
+        **Bounded by `limit`.** *"Everything that happened since January"* is
+        an unbounded fetch wearing a date, and a dashboard section that can
+        return a million rows is one that will.
+        """
+        ...
 
 
 class OpportunityPolicyRepository(Protocol):

@@ -31,10 +31,20 @@ from modules.opportunity_engine.application.ports import (
     OpportunityRepository,
 )
 from modules.opportunity_engine.domain.opportunity import (
+    OPEN_STAGES,
     EvidenceState,
     Opportunity,
     OpportunityState,
     OwnerScope,
+    Stage,
+)
+from modules.opportunity_engine.domain.pipeline_health import (
+    Movement,
+    OwnerLoad,
+    PipelineHealth,
+    StageAgeing,
+    funnel,
+    stage_ageing,
 )
 from modules.opportunity_engine.domain.policy import OpportunityPolicy, resolve_policy
 from signora_platform.pagination import CursorPosition
@@ -392,6 +402,96 @@ class OpportunityQueries:
         documentation and support read one definition rather than
         re-describing it."""
         return self._artifact
+
+    async def pipeline_health(
+        self, workspace_id: UUID, *, since: datetime, now: datetime, movement_limit: int = 50
+    ) -> PipelineHealth:
+        """The Executive Dashboard's four sections, in one request.
+
+        **One request, not four.** Every section is arithmetic over the same
+        table, and a screen that opened four connections to render one page
+        would be the N+1 §14 forbids, spelt across endpoints instead of rows.
+
+        **`now` and `since` are parameters with no defaults.** Reading the
+        clock here would make ageing depend on an input nobody declared, which
+        §2 calls an architecture defect — and it would stop the same request
+        replaying to the same answer.
+
+        ⚠️ **Four sections, and the fifth is deliberately absent.** *ICP
+        coverage, in versus outside* is not returned and is not stubbed with
+        zeroes: the predicate that decides the cohorts needs observed
+        attributes nothing constructs, and this module may not reach the one
+        that could ([C-332](../../../../docs/LANE_COORDINATION.md)). **A zero
+        would read as *"no accounts match your ICP"*, which is a different and
+        false statement.**
+        """
+        reach = await self._repository.stage_reach(workspace_id)
+        advanced = await self._repository.stage_advance(workspace_id)
+        entries = await self._repository.open_stage_entries(workspace_id)
+        loads = await self._repository.owner_loads(workspace_id)
+        moved = await self._repository.movements_since(
+            workspace_id, since, limit=movement_limit
+        )
+
+        ageing: list[StageAgeing] = [
+            stage_ageing(stage, entries.get(stage, ()), now=now)
+            # **Sorted so the shape is stable**, and every open stage appears
+            # whether or not anything is sitting in it — an absent row and an
+            # empty one say different things, which is TASK-408's ruling
+            # applied to a dashboard.
+            for stage in sorted(OPEN_STAGES, key=lambda s: s.value)
+        ]
+
+        by_owner: dict[UUID | None, dict[str, int]] = {}
+        for owner_id, stage, count in loads:
+            bucket = by_owner.setdefault(owner_id, {"open": 0, "won": 0, "lost": 0})
+            if stage in OPEN_STAGES:
+                bucket["open"] += count
+            elif stage is Stage.CLOSED_WON:
+                bucket["won"] += count
+            elif stage is Stage.CLOSED_LOST:
+                bucket["lost"] += count
+            # `DISMISSED` is counted in none of the three, deliberately. It is
+            # a qualification judgement rather than a commercial outcome, and
+            # folding it into `lost` would make a rep who triages honestly
+            # look like a rep who loses deals.
+
+        owners = tuple(
+            OwnerLoad(
+                owner_id=owner_id,
+                open_count=counts["open"],
+                won=counts["won"],
+                lost=counts["lost"],
+            )
+            # Unassigned last: it is a real row and it is not a person, so it
+            # sorts apart from the people rather than at an arbitrary position
+            # among them.
+            for owner_id, counts in sorted(
+                by_owner.items(), key=lambda kv: (kv[0] is None, str(kv[0]))
+            )
+        )
+
+        movements = tuple(
+            Movement(
+                opportunity_id=opportunity.id,
+                entity_id=opportunity.entity_id,
+                stage=state.stage,
+                previous_stage=previous,
+                owner_id=state.owner_id,
+                actor_id=state.actor_id,
+                reason=state.reason,
+                occurred_at=state.occurred_at,
+            )
+            for opportunity, state, previous in moved
+        )
+
+        return PipelineHealth(
+            conversions=funnel(reach, advanced),
+            ageing=tuple(ageing),
+            owners=owners,
+            movements=movements,
+            movements_since=since,
+        )
 
 
 def evidence_state(

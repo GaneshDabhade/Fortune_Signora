@@ -21,9 +21,11 @@ from modules.buying_score_engine.public import (
     Trend,
 )
 from modules.opportunity_engine.domain.opportunity import (
+    OPEN_STAGES,
     Opportunity,
     OpportunityState,
     OwnerScope,
+    Stage,
 )
 from modules.opportunity_engine.domain.policy import WorkspaceOpportunityPolicy
 from modules.signal_engine.public import Relevance, SignalType
@@ -259,6 +261,94 @@ class FakeOpportunityRepository:
                 key=lambda o: o.generation,
             )
         )
+
+    # ── Pipeline health (TASK-438) ─────────────────────────────────────────
+    #
+    # **Computed from the same in-memory state list the real one computes from
+    # SQL.** Deliberately not stubbed with fixed answers: a fake that returns
+    # a canned funnel would let the query layer's composition pass while
+    # saying nothing about whether it composed anything correctly.
+
+    def _workspace_states(self, workspace_id: UUID) -> list[OpportunityState]:
+        return [s for s in self.states if s.workspace_id == workspace_id]
+
+    async def stage_reach(self, workspace_id: UUID) -> dict[Stage, int]:
+        reach: dict[Stage, set[UUID]] = {}
+        for state in self._workspace_states(workspace_id):
+            reach.setdefault(state.stage, set()).add(state.opportunity_id)
+        return {stage: len(ids) for stage, ids in reach.items()}
+
+    async def stage_advance(self, workspace_id: UUID) -> dict[tuple[Stage, Stage], int]:
+        reached: dict[UUID, set[Stage]] = {}
+        for state in self._workspace_states(workspace_id):
+            reached.setdefault(state.opportunity_id, set()).add(state.stage)
+        pairs: dict[tuple[Stage, Stage], int] = {}
+        for stages in reached.values():
+            for lower in stages:
+                for upper in stages:
+                    pairs[(lower, upper)] = pairs.get((lower, upper), 0) + 1
+        return pairs
+
+    async def open_stage_entries(self, workspace_id: UUID) -> dict[Stage, tuple[datetime, ...]]:
+        entries: dict[Stage, list[datetime]] = {}
+        for opportunity in self.rows:
+            if opportunity.workspace_id != workspace_id:
+                continue
+            history = sorted(
+                (s for s in self.states if s.opportunity_id == opportunity.id),
+                key=lambda s: s.sequence,
+            )
+            if not history or history[-1].stage not in OPEN_STAGES:
+                continue
+            current = history[-1].stage
+            # Walk back to the start of the *current run* of this stage, so a
+            # reopened account ages from its reopening rather than from the
+            # first time it ever entered.
+            entered = history[-1]
+            for state in reversed(history[:-1]):
+                if state.stage is not current:
+                    break
+                entered = state
+            entries.setdefault(current, []).append(entered.occurred_at)
+        return {stage: tuple(moments) for stage, moments in entries.items()}
+
+    async def owner_loads(self, workspace_id: UUID) -> tuple[tuple[UUID | None, Stage, int], ...]:
+        counts: dict[tuple[UUID | None, Stage], int] = {}
+        for opportunity in self.rows:
+            if opportunity.workspace_id != workspace_id:
+                continue
+            latest = self._latest(opportunity.id)
+            if latest is None:
+                continue
+            key = (latest.owner_id, latest.stage)
+            counts[key] = counts.get(key, 0) + 1
+        return tuple((owner, stage, count) for (owner, stage), count in counts.items())
+
+    async def movements_since(
+        self, workspace_id: UUID, since: datetime, *, limit: int
+    ) -> tuple[tuple[Opportunity, OpportunityState, Stage | None], ...]:
+        by_id = {o.id: o for o in self.rows if o.workspace_id == workspace_id}
+        moved = [
+            state
+            for state in self._workspace_states(workspace_id)
+            if state.occurred_at > since and state.opportunity_id in by_id
+        ]
+        moved.sort(key=lambda s: (s.occurred_at, s.id), reverse=True)
+        result: list[tuple[Opportunity, OpportunityState, Stage | None]] = []
+        for state in moved[:limit]:
+            previous = next(
+                (
+                    s
+                    for s in self.states
+                    if s.opportunity_id == state.opportunity_id
+                    and s.sequence == state.sequence - 1
+                ),
+                None,
+            )
+            result.append(
+                (by_id[state.opportunity_id], state, previous.stage if previous else None)
+            )
+        return tuple(result)
 
 
 class FakePolicyRepository:
