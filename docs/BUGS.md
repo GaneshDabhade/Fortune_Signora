@@ -80,6 +80,46 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-323 · `mypy --strict` fails on `integration`, in the test that proves the skip check can fire
+
+| | |
+|---|---|
+| **Module** | Repository tooling — `backend/tests/test_repository_impact.py`, the suite covering `infra/certification-guard.py` |
+| **Current assignee** | **Lane C** — `infra/`, the `Makefile` and repository process are Platform Foundation ([D-022](DECISION_REGISTER.md)) |
+| **Severity** | 🟠 — **Blocking Quality Defect.** No customer behaviour is wrong; **a required gate fails, so no commit can be certified** |
+| **Status** | **`FIXED`** at `56b9c53` by the lane whose file it is — three annotations. **`VERIFIED` is QE's.** Reported by Lane B and **deliberately not fixed by it**: not this lane's module, and finding a defect is an obligation to report it rather than permission to fix it (§20e). ✅ **Confirmed green from this lane**: `mypy --strict` clean over 733 files |
+| **Found twice within the hour** | **QE opened [B-117](#b-117) certifying; Lane B opened this rebasing.** QE merged the two and kept both rows, deferring to this one on the cause. **Certification of cycle 55 was refused on it**, which is the gate doing precisely what it exists for |
+| **Found** | 2026-08-05, by Lane B, rebasing onto `integration` and re-running the gates because the rebase carried executable change |
+
+**Steps to reproduce.** At `bfbeeef`, from `backend/`:
+
+```bash
+./.venv/bin/mypy --strict .
+```
+
+**Expected.** `Success: no issues found`.
+
+**Actual.**
+
+```
+tests/test_repository_impact.py:189: error: Function is missing a type annotation for one or more parameters  [no-untyped-def]
+tests/test_repository_impact.py:207: error: Function is missing a type annotation for one or more parameters  [no-untyped-def]
+tests/test_repository_impact.py:224: error: Function is missing a type annotation for one or more parameters  [no-untyped-def]
+Found 3 errors in 1 file (checked 733 source files)
+```
+
+### The mechanism, in one line
+
+**Three test functions take `monkeypatch` with no annotation.** `pyproject.toml` runs `mypy --strict`, which requires every parameter to be annotated; the fixture's type is `pytest.MonkeyPatch`.
+
+### Why it is worth more than three annotations
+
+**The three tests are the ones that make the new skip check trustworthy** — *"a guard that cannot fail is documentation pretending to be code"*, in their own docstrings. **They are correct tests, and they were added in the same commit that fixed the guard's false positives.** Nothing about the check is wrong; the gate simply was not run over them.
+
+> **This is [B-115](#b-115--task-301-fails-mypy---strict-on-a-test-helper-narrower-than-the-type-it-builds)'s class again, and Lane B caused that one.** The lesson recorded there was that `mypy --strict modules signora_platform apps` is not the gate — **the gate is `mypy --strict .` from `backend/`, and the difference is `tests/`.** A test file is the easiest place in the repository to miss, because a lane running its own module's suite never type-checks it.
+
+**Not fixed by Lane B.** `infra/` and repository process are Lane C's ([D-022](DECISION_REGISTER.md)), and the file exists to test `certification-guard.py`. **The fix is three annotations; the judgement about whose file it is is not this lane's to make.**
+
 ### B-322 · Duplicate of [B-111](#b-111--tsc---noemit-is-in-no-gate-qe-runs-and-main-is-red) — withdrawn
 
 | | |
