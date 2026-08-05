@@ -43,7 +43,10 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 #: `main()`, so running them dirtied the working tree — a test that mutates the
 #: repository is a defect whatever it asserts. **Both expose a pure `render()`**,
 #: and that is what a generator test should call.
-PRINTING = ("repository-dashboard.py", "decision-queue.py")
+#: **`vocabulary-check.py` joined 2026-08-05, on B-120's own reasoning.**
+#: It was written the same week and nothing executed it — which is the
+#: precise gap this row exists to close, arriving again in a new tool.
+PRINTING = ("repository-dashboard.py", "decision-queue.py", "vocabulary-check.py")
 WRITING = ("implementation-status.py", "project-history.py")
 
 

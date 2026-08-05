@@ -1,0 +1,283 @@
+# Canonical Domain Vocabulary — the authoritative register of business terms.
+#
+# **Established 2026-08-05 by product owner directive** (D-086). A first-class
+# architectural artifact on the same footing as `modules.toml`, the ADRs and the
+# Domain Discovery Register — **not documentation.**
+#
+# **Why a TOML file and not a table in a markdown document.** The directive's
+# objective is *"to prevent vocabulary drift rather than merely reporting it
+# after the fact"*, and the repository already knows what that costs: the
+# frontend's `vocabulary.test.tsx` exists because **"a glossary nobody can
+# violate is documentation pretending to be code"** (ADR-0034). A markdown
+# table is a glossary. **This file is read by `infra/vocabulary-check.py`.**
+#
+# **It complements ADR-0034; it does not replace it.** That ADR governs the
+# words a *customer* sees. This governs the words *bounded contexts* share.
+#
+# ── status ───────────────────────────────────────────────────────────────────
+#   canonical         the one right name for this concept, platform-wide
+#   context-specific  correct inside one module and meaningless outside it
+#   alias             a synonym that resolves to a canonical term
+#   qualified         a bare word that must never appear alone — see `qualifies`
+#   deprecated        was used, is being retired, must not appear in new work
+#   rejected          considered and refused, with the reason recorded
+#   proposed          discovered by an audit, not yet ruled
+#   reserved          named ahead of its capability so nobody else takes it
+#   historical        was true then, is not now — kept so old records stay readable
+#
+# ── concept ──────────────────────────────────────────────────────────────────
+# **Every term carries a stable `concept` identifier** (D-087). **The wording may
+# change; the concept does not.** A rename becomes an edit to `name` while
+# `concept` holds, so documentation, prompts, UI copy and implementation can all
+# cite something that does not move.
+#
+# ── relationships ────────────────────────────────────────────────────────────
+# `parent` · `related` · `consumed_by` · `produces_event`. **Together they make
+# the register a semantic graph rather than a glossary**, and they exist to
+# answer one question before implementation starts:
+#
+#   **"If this concept changes, what else is affected?"**
+#
+# `python3 infra/vocabulary-check.py --impact ICP_EVALUATION` answers it.
+#
+# **`owner` names a bounded context from `modules.toml`, or `platform`.**
+# **A canonical term with no owner is a defect the checker reports.**
+
+version = 1
+updated = 2026-08-05
+
+# ══════════════════════════════════════════════════════════════════════════════
+# The two live collisions, ruled below as recommendations awaiting C-420
+# ══════════════════════════════════════════════════════════════════════════════
+
+[[term]]
+name        = "Owner"
+concept     = "OWNER_AMBIGUOUS"
+status      = "qualified"
+owner       = "platform"
+means       = "AMBIGUOUS ALONE. Two live concepts, both in production."
+qualifies   = ["Workspace Owner", "Account Owner"]
+evidence    = "WorkspaceRole.OWNER is the subject of every policy.csv row. opportunity_state.owner_id is the seller working an account, and OwnerScope is ALL/MINE/UNASSIGNED."
+note        = """The authorization model uses the first and every screen shows
+the second. ⛔ Renaming either is BLACK in the Change Budget — one is a Casbin
+subject across 13 resources, the other is a shipped API field. So the ruling
+must be qualification, and qualification costs nothing: no code changes, and
+new work is refused the bare word."""
+
+[[term]]
+name        = "Workspace Owner"
+concept     = "WORKSPACE_OWNER"
+parent      = ["WORKSPACE"]
+consumed_by = ["AUTHORIZATION"]
+status      = "canonical"
+owner       = "workspace_tenancy"
+means       = "The administrative role that may rename a workspace, add and remove members, and transfer ownership."
+relates_to  = ["Workspace", "Membership"]
+
+[[term]]
+name        = "Account Owner"
+concept     = "ACCOUNT_OWNER"
+parent      = ["OPPORTUNITY"]
+produces_event = ["opportunity.stage_changed"]
+status      = "canonical"
+owner       = "opportunity_engine"
+means       = "The seller who holds an account and whose decisions the account records."
+relates_to  = ["Account", "Opportunity"]
+note        = "OwnerScope's MINE means this, never Workspace Owner."
+
+[[term]]
+name        = "Match"
+concept     = "MATCH_AMBIGUOUS"
+status      = "qualified"
+owner       = "platform"
+means       = "AMBIGUOUS ALONE. Two operations that share no mechanism."
+qualifies   = ["Identity Resolution", "Criteria Evaluation"]
+evidence    = "MatchStrength is a ratified permanent invariant in knowledge_graph. commercial_profile/domain/matching.py evaluates ICP criteria."
+note        = """⚡ The good word already won at the call site: the shipped
+function is `evaluate`, not `match`. Only the filename says matching, and a
+module-internal filename is GREEN."""
+
+[[term]]
+name        = "Identity Resolution"
+concept     = "IDENTITY_RESOLUTION"
+related     = ["ENTITY"]
+produces_event = ["entity.identity_bound", "entity.resolution_ambiguous"]
+status      = "canonical"
+owner       = "knowledge_graph"
+means       = "Deciding whether two records denote the same real-world thing."
+relates_to  = ["Entity", "MatchStrength", "IdentityState"]
+note        = "MatchStrength keeps its name — ratified 2026-07-29 as a permanent invariant, and reopening it is not a vocabulary decision."
+
+[[term]]
+name        = "Criteria Evaluation"
+concept     = "ICP_EVALUATION"
+parent      = ["ICP"]
+related     = ["ACCOUNT", "UNMEASURED"]
+consumed_by = ["ICP_BUILDER_LIFT", "WORKFLOW_RULE", "SEGMENT"]
+status      = "canonical"
+owner       = "commercial_profile"
+means       = "Deciding whether an account satisfies a declared ICP criterion, per criterion, with a reason."
+relates_to  = ["Icp", "Account", "Unmeasured"]
+note        = "Never a score. MatchStrength's invariant applies by analogy: a category with reasons, never a number."
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Canonical terms confirmed by audit — each already owned, none in dispute
+# ══════════════════════════════════════════════════════════════════════════════
+
+[[term]]
+name        = "Execution Context"
+concept     = "EXECUTION_CONTEXT_AMBIGUOUS"
+status      = "qualified"
+owner       = "platform"
+means       = "AMBIGUOUS ALONE. Two live concepts in two modules."
+qualifies   = ["Integration Execution Context", "Workspace Context"]
+evidence    = "integrations/domain/execution.py's ExecutionContext resolves a customer system call. signora_platform/api/dependencies.py's CurrentWorkspace resolves the caller's workspace."
+note = """Found by 452 §1, which nearly conflated them, and owned by 456. ⚡ The
+vocabulary graph should have caught it and did not, because neither term was
+registered — which is how the register earns its next entry."""
+
+[[term]]
+name        = "Integration Execution Context"
+concept     = "INTEGRATION_EXECUTION_CONTEXT"
+related     = ["CONNECTED_ACCOUNT"]
+status      = "canonical"
+owner       = "integrations"
+means       = "The resolved credential and capability context for calling a customer's own system."
+
+[[term]]
+name        = "Workspace Context"
+concept     = "WORKSPACE_CONTEXT"
+parent      = ["WORKSPACE"]
+status      = "canonical"
+owner       = "platform"
+means       = "The verified workspace a request acts in, established before any workspace-owned data is read."
+note = "active_workspace_id is a routing hint, never a grant. Membership is re-verified server-side on every request."
+
+[[term]]
+name = "Signal"
+concept     = "SIGNAL"
+parent      = ["BUSINESS_EVENT"]
+related     = ["BUYING_SCORE"]
+produces_event = ["signal.generated", "signal.scored"]
+status = "canonical"
+owner = "signal_engine"
+means = "A hypothesis about commercial interest, raised from business events, always with evidence."
+relates_to = ["Business Event", "Resolution", "Buying Score"]
+
+[[term]]
+name = "Resolution"
+concept     = "SIGNAL_RESOLUTION"
+parent      = ["SIGNAL"]
+related     = ["DISMISSED"]
+produces_event = ["signal.resolved (MISSING — TASK-432)"]
+status = "context-specific"
+owner = "signal_engine"
+means = "A human decision ending a signal: actioned, assigned, snoozed or dismissed."
+note = "knowledge_graph's ResolutionOutcome is identity resolution. Two contexts, no shared surface — watch, do not rename."
+
+[[term]]
+name = "Dismissed"
+concept     = "DISMISSED"
+related     = ["SIGNAL_RESOLUTION", "OPPORTUNITY"]
+status = "canonical"
+owner = "opportunity_engine"
+means = "Feedback about Signora's judgement, deliberately distinct from CLOSED_LOST, which is a sales outcome."
+note = "✅ THE WORKED EXAMPLE. 417 §2b refused a second dismissal vocabulary for signal-level dismissal before one was written. This register exists to make that the normal case."
+
+[[term]]
+name = "Opportunity"
+concept     = "OPPORTUNITY"
+parent      = ["ACCOUNT"]
+related     = ["ACCOUNT_OWNER", "BUYING_SCORE"]
+produces_event = ["opportunity.created", "opportunity.stage_changed", "opportunity.closed"]
+status = "canonical"
+owner = "opportunity_engine"
+means = "An open or closed commercial pursuit at one account."
+relates_to = ["Account", "Stage", "Account Owner"]
+
+[[term]]
+name = "Workspace"
+concept     = "WORKSPACE"
+produces_event = ["workspace.created", "workspace.member_added"]
+status = "canonical"
+owner = "workspace_tenancy"
+means = "The tenant boundary. A customer says Organization; ADR-0034 governs that translation and it never travels inward."
+
+[[term]]
+name = "Buying Score"
+concept     = "BUYING_SCORE"
+parent      = ["ACCOUNT"]
+related     = ["SIGNAL"]
+produces_event = ["buying_score.updated"]
+status = "canonical"
+owner = "buying_score_engine"
+means = "How much commercial attention an account deserves now, with its contributions."
+note = "⛔ NOT a probability, a likelihood or a prediction — refused in writing, twice, in the module's own code."
+
+[[term]]
+name = "Confidence"
+concept     = "CONFIDENCE_REJECTED"
+status = "rejected"
+owner = "platform"
+means = "REFUSED AS A NAME."
+note = """MatchStrength is "named rather than confidence deliberately —
+confidence invites probabilistic thinking; this is a statement about the match,
+not about the world." Use MatchStrength, Relevance or SupportBasis."""
+
+[[term]]
+name = "Relevance"
+concept     = "RELEVANCE"
+parent      = ["SIGNAL"]
+status = "canonical"
+owner = "signal_engine"
+means = "How central a hypothesis is to this workspace's commercial interest. Declared per workspace, never computed."
+
+[[term]]
+name = "Person"
+concept     = "PERSON"
+related     = ["AFFILIATION"]
+produces_event = ["person.forgotten (RESERVED)"]
+status = "reserved"
+owner = "people"
+means = "Somebody at a target account. RESERVED — the context is ratified in ADR-0400 and unbuilt."
+relates_to = ["Affiliation", "Company", "Buying Committee"]
+note = "⛔ Never a Member. A Member is a customer's employee using Signora; a Person has never heard of Signora. Different lawful basis, different lifecycle, pinned by a test asserting the two are not joinable."
+
+[[term]]
+name = "Affiliation"
+concept     = "AFFILIATION"
+parent      = ["PERSON"]
+related     = ["ACCOUNT"]
+status = "reserved"
+owner = "people"
+means = "person × company × title × interval. RESERVED."
+note = "'Priya left Acme' is not a mutation of Priya — it is an interval closing."
+
+[[term]]
+name = "Stated Absence"
+concept     = "STATED_ABSENCE"
+related     = ["UNMEASURED"]
+status = "proposed"
+owner = "platform"
+means = "A result says what it could not evaluate, so a partial answer never reads as a complete one."
+note = "P-A in the Domain Discovery Register. Seven instances, zero implementations, and no name until this row."
+
+[[term]]
+name = "Unmeasured"
+concept     = "UNMEASURED"
+parent      = ["ICP_EVALUATION"]
+related     = ["STATED_ABSENCE"]
+status = "canonical"
+owner = "commercial_profile"
+means = "A criterion that could not be evaluated. ⛔ NEVER `false` — a matcher that says false where it means 'I could not tell' produces a smaller ICP and a wrong answer."
+relates_to = ["Criteria Evaluation", "Stated Absence"]
+
+[[term]]
+name = "Segment"
+concept     = "SEGMENT"
+parent      = ["ICP"]
+related     = ["ICP_EVALUATION"]
+status = "proposed"
+owner = "commercial_profile"
+means = "DISPUTED. commercial_profile's Segment is a named ICP cohort. Companies' 'segments' may be that, or may be saved filters."
+note = "⬜ Not yet extractable — 446 §0. TASK-433 is the ruling, and the naming question is downstream of a semantic one."

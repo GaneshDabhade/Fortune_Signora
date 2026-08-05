@@ -2,7 +2,9 @@
 
 **The single place the product owner reviews when making rulings.** Established 2026-08-05 by product owner directive.
 
-> ## ⚠️ Three new items. Three others are waiting and you are holding all three deliberately.
+> ## ⚠️ Four items, and one is a Product Office miss. Three others are waiting and you are holding all three deliberately.
+>
+> ⚠️ **[C-332](#c-332--the-predicate-landed-and-task-406-still-cannot-call-it) — Lane B found that a promoted capability has no reachable caller, and it falsifies a claim this office published.** **[TASK-406](BACKLOG.md) is blocked whole.**
 >
 > ⚠️ **[C-419](#c-419--the-six-verbs-have-no-representation-and-17-surfaces-one-contract-is-undecided) — the six verbs have no representation, and mounting the assistant would let every member spend a model call on every page.** **Blocks nothing; wave 2 reaches this screen next.**
 >
@@ -36,6 +38,7 @@
 | **[TASK-400](BACKLOG.md)** | A6 — C-321 ruled |
 | **[TASK-418](BACKLOG.md)** | `signora_platform/` has a permanent owner — **C-416 ruled** ([D-073](DECISION_REGISTER.md)) |
 | **Lane A's resolution route** | The authorization `Resource` — **C-224 ruled**, and `CLAUDE.md` §20a's carve-out now names it |
+| **The vocabulary** | `Owner` and `Match` — **C-420 ruled** ([D-087](DECISION_REGISTER.md)). **Qualified, not renamed** |
 
 **Eight tasks and seven slices, from two sittings.** **A ruled item leaves this file the same day** — its record is [LANE_COORDINATION.md](LANE_COORDINATION.md)'s, and its ruling is [DECISION_REGISTER.md](DECISION_REGISTER.md)'s.
 
@@ -75,6 +78,20 @@
 | **Lanes waiting** | **None.** Lane B is building TASK-406 and would consume this rather than wait for it |
 | **Priority** | **P0 on timing · P3 on difficulty.** Two small slices |
 | **Recommended** | ✅ **Sequence [TASK-434](BACKLOG.md) ahead of TASK-406's backtest slice.** ⚠️ **First slice is a prerequisite regardless of any of this**: **`commercial_profile/public/` publishes thirteen views and *not one is the ICP* — no module can read the criteria at all today**, and every one of the sixteen consumers is blocked on that one missing read port. **[ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md) is the ratified precedent for exactly this shape** |
+
+## C-332 · The predicate landed and TASK-406 still cannot call it
+
+⚠️ **Raised by Lane B, and it falsifies a claim this office published.** **[443](architecture/443-account-matching-capability.md) and [TASK-406](BACKLOG.md)'s row both say *"the per-criterion lift half is unaffected and needs nothing new."* Lane B measured that and it is wrong.**
+
+| | |
+|---|---|
+| **The problem** | **`evaluate(icp, observed)` shipped and is correct. Nothing in the repository constructs an `ObservedAttributes`, and the module ruled to do the measuring is forbidden from every module that could** |
+| **Why this office missed it** | ⚡ **[443](architecture/443-account-matching-capability.md) made the function pure *specifically* to avoid the import contract — *"the facts are handed to it"* — and never asked **who hands them.** **The same class as [ADR-0404](architecture/adr/0404-platform-composition.md)'s §Validation, which checked that `apps/worker` had an owner and never checked who owned the trees the capability reached.** **Twice now: a boundary designed without asking who stands on the other side** |
+| **What is verified** | `ClaimReader.for_subjects` keys on `SubjectRef`, a *provider* identity. **The `entity_id → SubjectRef[]` binding lives only in `knowledge_graph`.** ⛔ **`pyproject.toml` forbids `opportunity_engine → knowledge_graph` in full.** ⛔ **The score carries *"no name, no domain, no industry"*, deliberately.** ⛔ **And [C-328](LANE_COORDINATION.md) already ruled the opposite direction shut** |
+| **Impact** | **[TASK-406](BACKLOG.md) whole — both halves.** Lane B returned it to `BLOCKED` and wrote no code, correctly |
+| **Priority** | **P1 — a promoted capability with no reachable caller** |
+| **Recommended** | ✅ **`knowledge_graph` publishes an `AccountAttributesReader` in its `public/`** — canonical `industry`, `country`, `employee_count` per entity — **and `opportunity_engine` gains a `public/`-only edge.** ⚡ **[ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md) is the exact precedent for a different pair**: a new edge to `public/` alone, the reader shaped as the module's existing `View · Reader` triple, no inner layer reached. **A new cross-module edge is 🔴 and needs an ADR; the shape does not need inventing** |
+| **Alternative, if the edge is refused** | **The projection travels as an event.** ⚠️ **More machinery, and it makes a measurement depend on delivery** — recorded so the cheaper option is a choice rather than an assumption |
 
 ## C-419 · The six verbs have no representation, and *17 surfaces, one contract* is undecided
 

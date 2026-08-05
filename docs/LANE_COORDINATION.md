@@ -2225,6 +2225,7 @@ assert set(SignalTypeResponse.model_fields) == {"key", "title"}
 | [C-417](#c-417--adr-0404-approved-three-platform-capabilities-whose-owner-may-not-finish-two-of-them) | **ADR-0404 approved three platform capabilities whose owner may not finish two of them** | Lane C | **Product owner** | **`READY FOR PRODUCT DECISION`** — four alternatives, a recommendation and the bound that makes it checkable | **[TASK-418](BACKLOG.md) ① and ②, and [TASK-901](BACKLOG.md)'s seven slices behind them.** ④ ships now |
 | [C-418](#c-418--does-signora-forecast-revenue-the-executive-dashboard-says-yes-and-a-ratified-principle-says-no) | **Does Signora forecast revenue? The Executive Dashboard says yes and a ratified principle says no** | Lane C | **Product owner** | **`READY FOR PRODUCT DECISION`** — two answers, a recommendation, and the sequencing each commits to | **Nothing today** — [TASK-438](BACKLOG.md) delivers five of the screen's six sections without it |
 | [C-419](#c-419--the-six-verbs-have-no-representation-and-17-surfaces-one-contract-is-undecided) | **The six verbs have no representation, and *17 surfaces, one contract* is undecided** | Lane C | **Product owner** | **`READY FOR PRODUCT DECISION`** — two halves, a recommendation, and the trade-off stated | **Nothing today.** AI Copilot is wave 2 and [TASK-202](BACKLOG.md) is blocked on C-222 for unrelated reasons |
+| [C-420](#c-420--two-words-carry-two-concepts-each--owner-and-match) | **Two words carry two concepts each — `Owner` and `Match`** | Lane C | **Product owner** | ✅ **`RULED`** — 2026-08-05, [D-087](DECISION_REGISTER.md). Qualified, not renamed | **Nothing.** ⚡ `matching.py` → `evaluation.py` is Lane B's 🟢 |
 
 ### What the audit is asserting, precisely
 
@@ -5627,3 +5628,46 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 ⚠️ **There is no `Resource` for reasoning.** **`Resource.RESEARCH` exists precisely because *"reading an account is free and asking for research spends a model call, and one resource could not express both without making every reader a spender."***
 
 > **AI Copilot is 17 surfaces on pages every member already reads.** **Mounted without the same separation, it grants every member the ability to spend a model call, on every page.** **One `Resource` and two policy lines** — the [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) ruling already makes that a declarative registration a lane may perform.
+
+## C-420 · Two words carry two concepts each — `Owner` and `Match`
+
+**Opened 2026-08-05 · Lane C · current module assignee: `workspace_tenancy` · `opportunity_engine` · `knowledge_graph` · `commercial_profile` · 🟠**
+
+> **Found by building the Canonical Domain Vocabulary ([D-085](DECISION_REGISTER.md)), and the product owner asked for a recommendation on both.** **Neither blocks anything. Both get more expensive with every screen built.**
+
+| | |
+|---|---|
+| **Owner** | **The product owner** — it is a vocabulary ruling across four modules |
+| **Status** | ✅ **`RULED` — product owner, 2026-08-05, [D-087](DECISION_REGISTER.md).** **Both recommendations accepted in substance**: *"Workspace Owner and Account Owner clearly communicate different business meanings while preserving compatibility with existing architecture and APIs… distinguishing Identity Resolution from Criteria Evaluation makes the business intent clearer without reopening settled architectural decisions."* **No shipped API, Casbin subject or ratified invariant is renamed** |
+| **Blocks** | **Nothing.** ⚡ **One follow-on is actionable and is Lane B's 🟢**: `commercial_profile/domain/matching.py` reads `evaluation.py`, **and the window closes the first time another module imports the path** |
+
+### ① `Owner` — recommend **qualification**, and the Change Budget decides it
+
+| | |
+|---|---|
+| **`WorkspaceRole.OWNER`** | **An administrative role**, and **the subject of every row in `policy.csv`** |
+| **`opportunity_state.owner_id`** | ***The seller working an account.*** `OwnerScope` is `ALL` · `MINE` · `UNASSIGNED` |
+| **Where they collide** | **The authorization model uses the first. Every screen shows the second.** *"Who owns this workspace"* and *"who owns this account"* are different questions with one word |
+
+> ⛔ **Renaming either is ⚫ in the Change Budget.** *"Rename an API"* is **never**, and one of these is a **Casbin subject across thirteen resources** while the other is a **shipped API field**. **So the ruling is not *which to rename* — it is whether qualification suffices.**
+
+> ✅ **Recommendation: qualification, and it costs nothing.** **`Workspace Owner` and `Account Owner` become canonical; bare `Owner` becomes `qualified` and is refused in new work.** **No code changes, no migration, no API touched** — what changes is that **UI copy, API documentation, prompts and every future declaration must say which.**
+>
+> ⚠️ **And it matters for AI**: a model reasoning over *"the owner"* across both contexts has no way to know which, **which is question ⑥ of the vocabulary gate arriving as a concrete cost rather than a principle.**
+
+### ② `Match` — recommend **distinguishing**, and one rename is already ⛔ and one is 🟢
+
+| | |
+|---|---|
+| **`MatchStrength`** | **Identity resolution** — *"a property of the rule, not a belief"*. ⛔ **A permanent invariant, ratified 2026-07-29.** **Renaming it reopens a ratified decision and is not a vocabulary matter** |
+| **`commercial_profile/domain/matching.py`** | **Criterion evaluation** — shipped by [TASK-434](BACKLOG.md) |
+
+> ⚡ **The good word already won at the call site.** **The shipped function is `evaluate`, not `match`** — `domain/matching.evaluate`, and `IcpCriteriaView` and `validate_criterion_list` carry no *match* anywhere. **Only the filename says matching.**
+
+> ✅ **Recommendation: `Identity Resolution` and `Criteria Evaluation` are canonical; `Match` is `qualified`.** **`MatchStrength` keeps its name — it is ratified, and its own docstring is why.** **And `matching.py` is a module-internal filename, which is 🟢** — the cheapest possible correction, available for as long as nobody outside the module imports it.
+>
+> ⚠️ **That window is open now and closes the first time another module imports the path.** **Recorded as a trigger rather than a request.**
+
+### What this item is not
+
+⛔ **Not a rename programme.** **Both recommendations avoid touching a shipped API, a Casbin subject or a ratified invariant** — which is the whole reason to rule on vocabulary *before* the next screen rather than after.

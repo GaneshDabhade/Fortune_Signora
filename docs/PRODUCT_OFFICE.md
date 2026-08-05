@@ -467,6 +467,56 @@ Decisions required    what the product owner must rule before it can start
 
 **Reusable domain events, never feature-specific notifications.** **[R-14](DOMAIN_DISCOVERY_REGISTER.md) is what these found**: two screens whose completion point is a human decision, and **neither emits an event because no consumer had appeared when they were built.** **Both now have one.**
 
+#### Partial evaluation must never look complete ([D-081](DECISION_REGISTER.md) §4, [D-082](DECISION_REGISTER.md) §4)
+
+> **Whenever a capability cannot evaluate every criterion, the platform states exactly what it evaluated and what it did not.**
+
+**⚠️ This is not a new principle. It is the most-rediscovered one in the repository** — **[449 §0](architecture/449-account-360-traceability-audit.md) counts seven independent instances**, and **PS-01 stated the rule exactly**: *"if absence and presence carry the same information, render nothing; **if the absence is the finding, say it**. And **absence can never distinguish itself from failure**."*
+
+**PS-01 and PS-02 are the warning**: two slices, two days apart, fixing the identical shape in **adjacent sections of one page**, because the first ended by calling the second *"a different question."* **It was the same question.** **Every audit checks for the eighth instance.**
+
+#### Three standing artifacts ([D-085](DECISION_REGISTER.md))
+
+| | Answers | Where |
+|---|---|---|
+| 🎯 **Trigger Register** | ***What observable condition makes this capability necessary?*** ⛔ **Never an anticipated need** | [Part B-4](DOMAIN_DISCOVERY_REGISTER.md) |
+| 🚦 **Foundation Readiness Matrix** | ***If engineering started this screen today, which foundations are complete and which still need to exist?*** | [Part C-1](DOMAIN_DISCOVERY_REGISTER.md) |
+| 📖 **Canonical Domain Vocabulary** | ***Is this business concept named the same way in every bounded context?*** **Complements [ADR-0034](architecture/adr/0034-ubiquitous-language.md); never replaces it** | [Part B-5](DOMAIN_DISCOVERY_REGISTER.md) |
+
+> **Confidence in the readiness matrix is a statement about *this office's evidence*, not about the screen.** **An unaudited screen is ⬜ and says so** — the same discipline as ⬜ *not yet extractable*, one artifact up.
+
+#### 📄 A Context Definition before implementation ([D-091](DECISION_REGISTER.md))
+
+> **Every foundational capability gets one *before* implementation begins, and it is the implementation contract** — *"rather than allowing individual slices to redefine the capability as they progress."*
+
+**Eleven fields**: purpose · **bounded responsibility** · ⛔ **explicit non-responsibilities** · public interface · owning context · expected consumers · lifecycle · **events produced** · **events consumed** · repository reuse · implementation constraints.
+
+> ⚡ **The non-responsibilities do the work.** **[455](architecture/455-context-definitions-r02-r03.md)'s two definitions are held small entirely by what they refuse**: the saved-view store *"never parses, validates, executes or ranks a declaration"*, and the action batch *"never knows how to reverse"* the change it records.
+
+#### 🔗 Implementation independence ([D-091](DECISION_REGISTER.md) §4)
+
+> **Multiple lanes must be able to build against a capability without coupling to it.** **So slice 1 of every foundational capability is the `public/` contract and nothing else.**
+
+**A consumer lane can compile, type-check and write its tests against a published port before a row is persisted.** ✅ **`lint-imports` proves the coupling never forms and `mypy --strict` proves the contract is honoured** — stronger than a convention, and how this repository already works.
+
+#### ⚖️ Foundation Criticality — five dimensions, not one ([D-089](DECISION_REGISTER.md))
+
+> ***"A capability inherited by many screens is important. A capability without which the platform cannot operate is foundational. Those are related but not identical."***
+
+**Leverage · architectural criticality · risk of delaying · implementation complexity · expected future reuse.** **Scored in the [Domain Coverage Matrix](DOMAIN_DISCOVERY_REGISTER.md).**
+
+#### The shell presents; it does not own
+
+> ***"Is this actually a shell feature? Or is the shell merely the consumer of a reusable platform capability?"***
+
+**[452](architecture/452-app-shell-traceability-audit.md) is the worked example** — background activity looked like a shell widget and is [R-03](DOMAIN_DISCOVERY_REGISTER.md)'s read surface. **[453 §3](architecture/453-opportunity-intelligence-traceability-audit.md) applies the same test to an ordinary screen**, because it decides ownership there too.
+
+#### 📊 Reuse density ([D-082](DECISION_REGISTER.md) §5)
+
+**Per foundational capability: consuming screens · consuming workflows · dependent modules · implementation status · planned wave.** **Maintained in [Part C-2](DOMAIN_DISCOVERY_REGISTER.md), and it becomes the Domain Coverage Matrix at ten screens.**
+
+> **Its purpose is to separate a platform foundation from a feature.** **The first measurement earned itself immediately**: the highest-density concept in the product — **[R-15](DOMAIN_DISCOVERY_REGISTER.md), at seven instances — has zero implementations**, because every instance was written separately.
+
 #### Two sweeps every audit runs ([D-080](DECISION_REGISTER.md) §4, §5)
 
 | | Look for |
@@ -482,11 +532,83 @@ Decisions required    what the product owner must rule before it can start
 
 **A concept that multiple screens require stops being a feature.** **It goes on the [radar](DOMAIN_DISCOVERY_REGISTER.md) as a candidate foundation and is sequenced ahead of its consumers.**
 
+#### After the discovery phase — four standing responsibilities ([D-092](DECISION_REGISTER.md))
+
+**[461](architecture/461-product-led-domain-discovery-review.md) closed the screen-by-screen phase.** **Discovery was a phase; stewardship is not.**
+
+**① Watch the triggers** — ten recorded, two fired. **A trigger firing is the signal to prepare, and nothing else is.**
+**② ⚡ Defend the Context Definitions** — **a capability erodes through its non-responsibilities, one reasonable exception at a time.** **When a slice asks the action batch to know what it is reversing, that is the moment.**
+**③ Audit each newly approved design on arrival**, one at a time — **a screen audited before implementation costs a document; audited after, it costs a slice.**
+**④ Keep the vocabulary graph current and let it fail** — [452](architecture/452-app-shell-traceability-audit.md) found a collision the graph missed because neither term was registered, **and that is how the register earns entries.**
+
+> ⛔ **Stop at 🏛️ Established.** **Re-proving a settled capability is the one activity this office must now refuse.** ***"Once a capability reaches Architecturally Established, the burden of proof shifts from proving it again to protecting its boundaries."***
+
+#### ⚠️ A missed foundation is a Product Office finding ([D-093](DECISION_REGISTER.md))
+
+> ***"If implementation reaches a feature and discovers a missing foundational concept that reasonably should have been identified during Product-Led Domain Discovery, that should be treated as a Product Office finding and analyzed so the methodology continues to improve."***
+
+**[C-332](LANE_COORDINATION.md) is the first, and it arrived on the day the phase closed.** **[461 §9a](architecture/461-product-led-domain-discovery-review.md) records it**: [443](architecture/443-account-matching-capability.md) made a function pure *specifically* to avoid an import contract — *"the facts are handed to it"* — **and never asked who hands them.**
+
+> ⚡ **Second instance of one failure mode**, with [C-417](LANE_COORDINATION.md): **a boundary designed without asking who stands on the other side of it.**
+
+**So every Context Definition now carries one more line: *who constructs each input to this capability's public interface, and may they reach it?*** **A purity that removes an import contract from the implementation can move the problem to the caller.**
+
 #### The success criterion, restated
 
 > **Product implementation becomes largely an exercise in assembling existing capabilities rather than inventing architecture during development.**
 >
 > **An audit that produces no backlog row has succeeded if every element traced to something that already exists.** **[445](architecture/445-ai-copilot-traceability-audit.md) produced none** — twelve elements, and everything missing was already carried by a row somebody else had raised.
+
+### 5g · Canonical Vocabulary Governance — prevention, not detection
+
+**Ratified 2026-08-05, product owner directive ([D-086](DECISION_REGISTER.md)).** *"Our objective is no longer just to detect vocabulary conflicts. Our objective is to **prevent them from being introduced in the first place**."*
+
+> ## **[`docs/coordination/vocabulary.toml`](coordination/vocabulary.toml) is the register, and [`infra/vocabulary-check.py`](../infra/vocabulary-check.py) reads it.**
+>
+> **A TOML file rather than a table, and the reason is the repository's own**: `vocabulary.test.tsx` exists because ***"a glossary nobody can violate is documentation pretending to be code"*** ([ADR-0034](architecture/adr/0034-ubiquitous-language.md)). **A markdown table is a glossary. This is a check.**
+
+**It is a first-class artifact on the footing of `modules.toml`, the ADRs, the Discovery Register, the Readiness Matrix and the Trigger Register.** **It complements [ADR-0034](architecture/adr/0034-ubiquitous-language.md): that governs the words a *customer* sees; this governs the words *bounded contexts share*.**
+
+#### Six questions, before any new term enters the repository
+
+**① Does this concept already exist?** — search entities, value objects, enums, events, aggregates, permissions, workflows, APIs, UI copy, ADRs, the backlog and the register. **Reuse is the default.**
+**② Is this the same concept under a different name?** — *owner · administrator · assignee · responsible · primary · lead · coordinator · manager · custodian*. **Accidental synonym, or genuinely different?**
+**③ Is one word carrying two concepts?** — unify, rename, or **qualify**.
+**④ Is it scoped correctly?** — **`context-specific` where it belongs to one module; `canonical` only where it must be shared.** ⛔ **Avoid unnecessary global vocabulary and duplicated local vocabulary alike.**
+**⑤ Does the name describe responsibility rather than implementation?**
+**⑥ Will future AI reasoning understand it?** — the domain model is increasingly what a model reads.
+
+#### From vocabulary governance to **semantic** governance ([D-087](DECISION_REGISTER.md))
+
+> ***"The objective is no longer simply preventing duplicate words. The objective is preventing duplicate business concepts."*** **Two words may be one concept; one word may be two concepts when qualified.** **Review business meaning, not spelling.**
+
+| | |
+|---|---|
+| 🆔 **Concept Identity** | **Every term carries a stable `concept`** — `PERSON`, `ICP_EVALUATION`, `WORKSPACE_OWNER`. **The wording may change; the concept does not**, so documentation, prompts, UI copy and implementation cite something that does not move, **and a rename stops being a migration** |
+| 🕸️ **Concept relationships** | `parent` · `related` · `consumed_by` · `produces_event`. **The register is a semantic graph, not a glossary** |
+| ❓ **The question it exists to answer** | ***"If this concept changes, what else is affected?"*** — **before implementation begins.** `vocabulary-check.py --impact ICP_EVALUATION` |
+
+> ⚠️ **The impact query walks *inbound* edges, and the direction is the point.** **A term's own `parent` and `related` lists say what it depends on — the easy half.** **What a change *costs* is everything pointing back at it, and no single row can show that.**
+
+#### Vocabulary review is part of every screen audit, not a separate activity
+
+**Four questions on every newly discovered concept:** **is it actually new · does another module already own this *business meaning* · does the repository express the idea differently · should this extend existing vocabulary instead of adding a term.**
+
+#### Eight statuses
+
+**`proposed` · `reserved` · `canonical` · `context-specific` · `alias` · `qualified` · `deprecated` · `rejected` · `historical`** — **an explicit lifecycle, so terminology evolves deliberately rather than by drift.** *(`historical` was added by [D-087](DECISION_REGISTER.md): a word that was true then and is not now, kept so old records stay readable — the vocabulary form of §2's *date a record, never rewrite it*.)* — and **every owned term names a bounded context from `modules.toml`, or `platform` for a word no single module can rule on.**
+
+#### The review gate
+
+> **Before a backlog row introduces terminology: is it already defined · does it conflict · is it reusable · does another module own it · does it need qualification · does it need architectural review?**
+>
+> ## **The preferred outcome is *"no new vocabulary required."***
+
+#### ⚠️ What the checker deliberately does not do
+
+**It makes no judgement it cannot defend from a grep.** **A synonym is a judgement** — question ② is Product Office's, not a script's. **And it fires on a *declaration*, never on a mention**, because a docstring naming another context's concept is how this repository explains itself.
+
+> **Its first run found three things and two were its own bugs**: a `reserved` term names a context that deliberately does not exist yet, and **a *canonical* term appearing in many modules is the success case, not the defect** — `Dismissed` is in `signal_engine` precisely because [417](architecture/417-executable-slice-audit.md) refused a second dismissal vocabulary. **A canonical term spreading is the goal; a context-specific one escaping is the defect.**
 
 ---
 
