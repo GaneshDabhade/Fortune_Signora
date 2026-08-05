@@ -124,7 +124,7 @@ class TestASnoozedSignalComesBack:
     def test_a_snooze_that_has_already_elapsed_is_refused(self) -> None:
         """It would be a no-op wearing the clothes of a decision, and the queue
         would show it as handled while returning it immediately."""
-        with pytest.raises(ResolutionError, match="not after it was recorded"):
+        with pytest.raises(ResolutionError, match="has already elapsed"):
             _resolution(outcome=Snoozed(until=NOW - timedelta(hours=1)))
 
     def test_snoozing_until_the_moment_it_is_recorded_is_refused(self) -> None:
@@ -149,11 +149,11 @@ class TestEveryResolutionIsAttributableAndOrderable:
     def test_a_naive_timestamp_is_refused(self) -> None:
         """A queue that returns snoozed work at a stated time cannot be built
         on a datetime whose meaning depends on where the reader is."""
-        with pytest.raises(ResolutionError, match="without a timezone"):
+        with pytest.raises(ResolutionError, match="with a timezone"):
             _resolution(recorded_at=datetime(2026, 8, 5, 12, 0))
 
     def test_a_naive_snooze_target_is_refused(self) -> None:
-        with pytest.raises(ResolutionError, match="naive"):
+        with pytest.raises(ResolutionError, match="must state when it ends"):
             _resolution(outcome=Snoozed(until=datetime(2026, 8, 12, 9, 0)))
 
     def test_changing_your_mind_names_what_it_replaces(self) -> None:

@@ -33,8 +33,8 @@ from modules.signal_engine.domain.resolution import (
     Dismissed,
     Outcome,
     Resolution,
-    ResolutionError,
     Snoozed,
+    UnreadableOutcomeError,
 )
 from modules.signal_engine.domain.signal import Signal
 from modules.signal_engine.infrastructure.models import (
@@ -309,8 +309,11 @@ def _to_outcome(row: SignalResolutionModel) -> Outcome:
     if row.outcome == _DISMISSED:
         assert row.dismissal_reason is not None
         return Dismissed(reason=DismissalReason(row.dismissal_reason))
-    raise ResolutionError(
-        f"resolution {row.id} records an outcome this build does not know: {row.outcome!r}."
+    # **No identifier, and not a `422`.** A row this build cannot read is a
+    # deployment behind the data, never something the reader did.
+    raise UnreadableOutcomeError(
+        f"A decision recorded against this signal names an outcome this version of "
+        f"Signora does not know: {row.outcome!r}."
     )
 
 
@@ -393,6 +396,22 @@ class SqlResolutionRepository:
     async def history_for_signal(
         self, workspace_id: UUID, signal_id: UUID
     ) -> tuple[Resolution, ...]:
+        """Oldest first, **ordered by the supersession chain rather than by
+        time.**
+
+        `ORDER BY recorded_at, id` looked right and is not. Two corrections
+        made in the same instant — one request, one clock reading — tie on
+        `recorded_at` and fall through to a random UUID, so the audit trail
+        would render in an arbitrary order and a dismissal could appear to
+        follow the decision that replaced it. **A test caught it by fixing the
+        clock**, which is the case a real clock makes rare rather than
+        impossible.
+
+        **The chain is total and cannot tie**: each resolution names exactly
+        the one it replaces, which is why `supersedes` exists. Time is kept
+        only as the tie-break for rows outside the chain, so a row is never
+        dropped from an audit trail on account of being unexpected.
+        """
         rows = await self._session.execute(
             select(SignalResolutionModel)
             .where(
@@ -401,7 +420,7 @@ class SqlResolutionRepository:
             )
             .order_by(SignalResolutionModel.recorded_at, SignalResolutionModel.id)
         )
-        return tuple(_to_resolution(row) for row in rows.scalars())
+        return _in_chain_order(tuple(_to_resolution(row) for row in rows.scalars()))
 
 
 def _discriminator(outcome: Outcome) -> str:
@@ -417,3 +436,30 @@ def _discriminator(outcome: Outcome) -> str:
             return _SNOOZED
         case Dismissed():
             return _DISMISSED
+
+
+def _in_chain_order(resolutions: tuple[Resolution, ...]) -> tuple[Resolution, ...]:
+    """Sort by *what replaced what*, which is the only total order here.
+
+    **Anything not reachable from the chain is appended, never dropped.** A
+    history that silently omitted a row it could not place would be the one
+    kind of bug an audit trail must not have — and the caller cannot tell the
+    difference between a row that does not exist and one this function failed
+    to thread.
+    """
+    if len(resolutions) < 2:
+        return resolutions
+
+    successors = {r.supersedes: r for r in resolutions if r.supersedes is not None}
+    roots = [r for r in resolutions if r.supersedes is None]
+    ordered: list[Resolution] = []
+    seen: set[UUID] = set()
+    for root in roots:
+        current: Resolution | None = root
+        while current is not None and current.id not in seen:
+            ordered.append(current)
+            seen.add(current.id)
+            current = successors.get(current.id)
+    # Orphans keep their time order, behind everything the chain explains.
+    ordered.extend(r for r in resolutions if r.id not in seen)
+    return tuple(ordered)

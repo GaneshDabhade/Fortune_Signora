@@ -68,7 +68,28 @@ MAX_REASON = 500
 
 
 class ResolutionError(ValueError):
-    """A resolution was constructed that nobody could act on or audit."""
+    """**Something the customer described that cannot be recorded** — a
+    dismissal with no reason, a snooze that has already elapsed.
+
+    The message is customer copy: it says which part was wrong and why the
+    product insists on it. Surfaces as `422`.
+    """
+
+
+class UnreadableOutcomeError(ResolutionError):
+    """**Something Signora stored that this build cannot interpret** — an
+    outcome discriminator it does not know.
+
+    **A subclass rather than a sibling**, so every `except ResolutionError`
+    still catches it while the handler's MRO walk finds this type's own row
+    first and answers `500`.
+
+    **The distinction is which of us was wrong**, and it is `B-103`'s exactly:
+    one class carrying both meanings told a seller *"your request was refused"*
+    for a bug in ours. That row was fixed in `ai_research_engine` hours before
+    this file reproduced the same shape — which is the argument for the
+    repository-wide invariant that row's fix deliberately did not write.
+    """
 
 
 @dataclass(frozen=True, slots=True)
@@ -181,21 +202,25 @@ class Resolution:
     payload_version: int = PAYLOAD_VERSION
 
     def __post_init__(self) -> None:
+        # **No identifier in any of these messages.** They were written when
+        # nothing mapped `ResolutionError` to a status code, and naming the
+        # resolution was free; registering the mapping in `interface/errors.py`
+        # is what turned them into customer copy, and the Security Invariant
+        # caught it in the same run. A UUID on a seller's screen is noise they
+        # cannot use — the id is already on the correlation id, the log line
+        # and the row the reader is looking at (R4-03).
         if self.recorded_at.tzinfo is None:
             raise ResolutionError(
-                f"resolution {self.id} is timestamped without a timezone. A queue that returns "
+                "A decision must be timestamped with a timezone. A queue that returns "
                 "snoozed work at a stated time cannot be built on a naive datetime."
             )
         if isinstance(self.outcome, Snoozed):
             if self.outcome.until.tzinfo is None:
-                raise ResolutionError(
-                    f"resolution {self.id} snoozes until a naive datetime."
-                )
+                raise ResolutionError("A snooze must state when it ends, with a timezone.")
             if self.outcome.until <= self.recorded_at:
                 raise ResolutionError(
-                    f"resolution {self.id} snoozes until {self.outcome.until.isoformat()}, "
-                    f"which is not after it was recorded. A snooze that has already elapsed is "
-                    "a no-op wearing the clothes of a decision."
+                    f"A snooze until {self.outcome.until.isoformat()} has already elapsed, "
+                    "so the signal would come straight back. Choose a time in the future."
                 )
 
     @property
@@ -229,4 +254,5 @@ __all__ = [
     "Resolution",
     "ResolutionError",
     "Snoozed",
+    "UnreadableOutcomeError",
 ]

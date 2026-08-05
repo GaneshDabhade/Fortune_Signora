@@ -345,6 +345,7 @@ databaseUrl: required(
 | [C-221](#c-221--epic-cs-first-open-question-is-answered-and-the-answer-blocks-the-epic) | **Epic C's first open question is answered, and the answer blocks the epic** | Lane A | **Product owner** · Lane C | `OPEN` — [TASK-201](BACKLOG.md) claimed and blocked | **All of Epic C's Phases 1–3.** No person name enters the platform at any point |
 | [C-222](#c-222--reasoning1-earns-a-release-under-protocol-2-on-a-model-this-workstation-cannot-measure-in-time) | **`reasoning@1` earns a release under protocol 2, on a model this workstation cannot measure in time** | Lane A | **Product owner** · QE | **`READY FOR IMPLEMENTATION`** — ruled 2026-08-04 | **Only a live G1 inference.** The prompt is refused at runtime until a protocol-2 release exists |
 | [C-223](#c-223--competitor_entry-cannot-be-implemented-across-the-current-dependency-graph) | **`competitor_entry` cannot be implemented across the current dependency graph** | Lane A | **Product office** · Product owner | `OPEN` — [TASK-203](BACKLOG.md) claimed, everything else built | **Only the detection half of Epic D phase 1.** The declaration, its API and its screen are shipped |
+| [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) | **A new write surface needs an authorization `Resource`, and two governance rules disagree about who may add one** | Lane A | **Product owner** | `OPEN` — **nothing is blocked**; [TASK-405](BACKLOG.md) shipped everything except the write route | One route. The `Resource` enum is 🔴 while `policy.csv` is any-lane, and they are one registration in two files |
 | [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | M14b is three concerns in one roadmap row, and none has a module | Lane A | **Product owner** (bounded context 🔴) | `OPEN` — **architectural** | **The whole of M14b.** [R-01](architecture/16-architecture-risks.md) has been waiting for it at High/High |
 | [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide) | Identifier allocation is still only *unlikely* to collide | Lane A | **QE** + product owner | `OPEN` — **directed by the product owner** | Nothing built. **The repository scaling past three actors without manual reconciliation** |
 | [C-202](#c-202--four-shared-documents-disagree-and-one-disagrees-with-itself) | Four shared documents disagree, and one disagrees with itself | Lane A | **QE** | `OPEN` — **directed by the product owner** | Nothing built. **A cold session trusting any status in the repository** |
@@ -4852,3 +4853,77 @@ Two enforcements, either of which is sufficient on its own:
 **Not building it.** `provider_platform` is Lane A's and is in Implementation Waiting on [C-021](#c-021). **Not proposing to take the module either** — that is an ownership transfer, and those need their own ruling rather than arriving inside a slice.
 
 > **The contract is complete either way.** [409](architecture/409-inbound-source-port-contract.md) specifies all seven steps; **who executes steps 3–5 is the product owner's, and until it is answered the customer's CRM has a door and nobody to open it.**
+
+## C-224 · A new write surface needs an authorization `Resource`, and two governance rules disagree about who may add one
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-05, implementing [TASK-405](BACKLOG.md) — reached at the route, after the domain, persistence, use case and read surface were complete and green |
+| **Owner** | **The product owner** — it is an authorization permission and a Change Budget question, and both are explicitly the product owner's |
+| **Status** | `OPEN` — **[TASK-405](BACKLOG.md) is not blocked.** Everything except the write route shipped; nothing is waiting idle |
+| **Blocks** | **One route.** `POST` a resolution. The read surface, the persistence, the use case and the audit trail are all delivered and tested |
+
+### The problem, in one line
+
+**Every write surface in this repository authorizes against its own `Resource`, there is no `signal` one, and the two files needed to add it have two different owners.**
+
+### What was reached
+
+`TASK-405` records a decision about a signal — actioned, assigned, snoozed, dismissed. The handler must call `context.authorize(Resource.?, Action.?)`. The twelve existing resources are `workspace`, `member`, `opportunity`, `account`, `product`, `icp`, `research`, `buying_committee`, `commercial_focus`, `target_account`, `timeline`, `integration`, `competitor`. **None of them is this.**
+
+### Why no existing tuple was reused
+
+| Candidate | Why not |
+|---|---|
+| `account:read` | **A write authorized as a read is a security defect**, not a shortcut |
+| `account:update` | Granted to **no role** in `policy.csv`, so every caller would 403 — and it is far broader than triage, authorizing whatever "editing an account" comes to mean later |
+| `opportunity:update` | **A signal is not an opportunity.** `Resource.ACCOUNT`'s own comment records that identities exist for accounts with no opportunity at all; triage would silently fail on exactly those |
+
+### The two rules, and where they disagree
+
+| | Authority | Source |
+|---|---|---|
+| `signora_platform/authorization/enforcer.py` — the `Resource` enum | **🔴 Product owner + ADR** | `CLAUDE.md` §20e, the Change Budget: *"`signora_platform/**`"* |
+| `signora_platform/authorization/policies/policy.csv` | **Any lane — append-only** | `CLAUDE.md` §20e, *Shared files*: *"Registries every lane extends"* |
+
+**They are one registration in two files.** A policy row naming a resource with no enum member is unreachable; an enum member with no policy row denies everyone. Neither half is useful alone, and the two halves carry opposite authorities.
+
+**§20a does not settle it either.** Its carve-out names *"a new subscription, registering a new event type, adding a worker pool, or extending the Security Invariants suite"* — **not an authorization resource**, and authorization is listed among the frozen substrate in the same section.
+
+### What the repository has actually done, twelve times
+
+Every resource after `workspace` and `member` was added by a feature lane, and three carry an inline justification written by whoever added them — *"a **use** of the platform rather than a change to it (§20a): a new member, no interface reshaped, no existing caller affected — the same category as registering a new event type."*
+
+**That reasoning is sound and it is also a lane's own.** Either it was approved each time and the Change Budget's 🔴 row is understated, or twelve slices took a 🔴 change without an ADR. **Lane A is not going to be the thirteenth on its own authority**, and is not proposing that the earlier twelve were wrong.
+
+### What is asked
+
+**One ruling, and any of the three closes it:**
+
+1. **Registering an authorization `Resource` is a registry extension** — add it to §20a's carve-out list and to the Shared-files row beside `policy.csv`, which is where a lane would look. Lane A adds `SIGNAL` and four policy rows and finishes the route.
+2. **It is 🔴 and stays 🔴** — the product owner approves this instance, and the twelve precedents are recorded as historic rather than as a rule.
+3. **Triage authorizes under an existing resource** the product owner names, accepting the breadth.
+
+### The proposed registration, if (1) or (2)
+
+```
+    #: Registered by TASK-405 — a hypothesis a person triages. Distinct from
+    #: `account` because signals exist for accounts nobody has qualified, and
+    #: triaging one is not editing the company it is about.
+    SIGNAL = "signal"
+```
+
+```csv
+p, owner, *, signal, read
+p, member, *, signal, read
+p, owner, *, signal, update
+p, member, *, signal, update
+```
+
+**`update` rather than `add`**, and granted to `member` as well as `owner`: deciding a signal is ordinary selling work, on the same terms as `opportunity:update`, which both roles hold. A queue only an owner could clear is not a queue.
+
+### The request body Lane A would then define
+
+Four named bodies behind one discriminated union on `outcome`, so `{"outcome": "dismissed"}` **with no reason is refused by the schema** rather than by a check somebody remembered to write — the same reason `Dismissed` carries no default in the domain. `actioned` carries nothing; `assigned` carries `to`; `snoozed` carries `until`; `dismissed` carries `reason`.
+
+**They are deliberately not in the code today.** A schema no route can reach is a contract nobody agreed to.

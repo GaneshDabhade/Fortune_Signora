@@ -35,6 +35,9 @@ from modules.integrations.interface.router import router as integrations_router
 from modules.timeline.interface.router import router as timeline_router
 from modules.knowledge_graph.interface.router import router as knowledge_graph_router
 from modules.sales_engagement.interface.router import router as approach_router
+from modules.signal_engine.interface.errors import (
+    ERROR_MAPPING as SIGNAL_ENGINE_ERRORS,
+)
 from modules.signal_engine.interface.router import router as validation_router
 from modules.opportunity_engine.interface.errors import (
     ERROR_MAPPING as OPPORTUNITY_ENGINE_ERRORS,
@@ -101,6 +104,7 @@ def _error_mappings() -> ErrorMapping:
     mappings.update(COMMERCIAL_PROFILE_ERRORS)
     mappings.update(AI_RESEARCH_ENGINE_ERRORS)
     mappings.update(INTEGRATIONS_ERRORS)
+    mappings.update(SIGNAL_ENGINE_ERRORS)
     return mappings
 
 

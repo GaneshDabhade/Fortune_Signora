@@ -698,3 +698,64 @@ Every signal about an account cites events belonging to that account, so `live_w
 The integration tests therefore ingest at a recent epoch, **the same way the Playground seeder does** — same code path, same scenario file, only the clock differs.
 
 **One test uses the twelve-account `playground@2` cast**, because the two-account baseline holds each hypothesis exactly once and the central R2-01 assertion — *two accounts sharing a hypothesis get identical checks and different evidence* — would otherwise **skip**. A test that skips is a claim nobody checked. Only that one test pays the cost.
+
+---
+
+## A signal ends in a decision — 2026-08-05 (Lane A, TASK-405)
+
+**A signal was raised and never resolved.** The approved Signal Center is *"a triage queue, not a notification list"*, and the difference is what happens after a seller reads one. This adds that: **assign · snooze-until · dismiss-with-reason · actioned**, each attributed and timestamped, and a workspace-scoped read of the queue by state.
+
+### A record beside the signal, never a column on it
+
+A signal records what Signora concluded from evidence at a moment. **A person disagreeing with it later has not changed what was concluded**, so a resolution *refers* to a signal and never edits one — the same shape as a Decision Package naming a score, and for the same reason: editing the record would destroy the only account of what a customer was actually shown.
+
+That makes the acceptance criterion *"resolution never mutates the signal or its evidence"* a property of the schema rather than of the code that writes it. There is no writable path from `signal_resolution` to `signal`, the use case holds a repository with no method that could, and a test reads `to_jsonb(signal)` before and after a dismissal rather than arguing it from the code.
+
+### Two things called *ignoring*, and they are not the same
+
+`Relevance.IGNORED` already existed in this module and is **not** this concept.
+
+| | `Relevance.IGNORED` | A dismissal here |
+|---|---|---|
+| **Scope** | A signal **type**, for a workspace | **One signal** |
+| **Direction** | Prospective — *"never raise this kind"* | Retrospective — *"this one was wrong"* |
+| **Where it lives** | The workspace's profile | The resolution record |
+| **Effect** | Never generated — `Signal` refuses it | It existed, was shown, was judged |
+
+**A workspace that dismisses six `hiring_surge` signals has not said it wants none of them.** Collapsing the two would silently turn feedback about *this account* into configuration about *every* account — a customer's decision, and not an inference this module may make.
+
+`opportunity_engine`'s `Stage.DISMISSED` **is** this concept one level up — *"we should not have been shown this"*, deliberately distinct from `CLOSED_LOST`, one being feedback about Signora's judgement and the other a sales outcome. The vocabulary is reused, not redefined (§4).
+
+### Four types rather than one type with four flags
+
+*"A dismissal cannot be recorded without a reason"* is an invariant, and a `reason: str | None` validated in `__post_init__` is a **check** — something a future caller can pass `None` to and discover at runtime. Four frozen types, each carrying exactly what its outcome needs, make the omission **unconstructable**: `Dismissed` has one field and no default.
+
+The database says the same thing one layer down, and the constraints are written as **equivalences rather than implications** — `(outcome = 'dismissed') = (dismissal_reason IS NOT NULL)`. Both directions hold: a dismissal cannot omit its reason, and an `actioned` row cannot smuggle one in. The type protects the code written today; the constraint protects the row written by whatever writes it next.
+
+`Assigned` is deliberately **not** a closing outcome. Assigning is routing, not resolving, and a queue that treated it as an ending would lose every signal handed to a colleague.
+
+### Queue state is derived, and that is why a snooze returns
+
+State is a function of two things that already exist: the outcome in force, and what time it is. **Storing it would be a second representation of a fact the resolution already carries** (§2), and the two would disagree the first moment a snooze elapsed with nobody writing to the table.
+
+So *"a snoozed signal returns at the stated time with its original evidence intact"* is satisfied by **nothing happening at all**. The same record, read a week later, derives `open` instead of `snoozed`. Nothing runs, nothing regenerates, and the evidence is intact because nothing touched it — the account a seller sees in a fortnight is the one they postponed, not a fresh reading that resembles it.
+
+Currency is resolved before state: a snooze somebody later replaced with a dismissal must not bring the signal back, which it would if state were derived before asking which decision is actually in force.
+
+### Immutable, and correction is a new row
+
+`signora_app` holds `SELECT`, `INSERT` and `DELETE` on `signal_resolution` and **not `UPDATE`**. Changing your mind is a new resolution naming the one it supersedes, worked out by the use case rather than asked of the caller — a caller that had to pass the resolution it replaces would eventually pass the wrong one, and the queue would show two current answers for one signal.
+
+`DELETE` is granted on the terms every other immutable table uses: erasability is a property of the tenancy model, not a statement about what a row means.
+
+### Triage is not exported through `public/`
+
+**No other module may read who dismissed what.** The Buying Score Engine is forbidden from reaching this module's hypotheses at all — *it decides what to track and never forms hypotheses or weighs them* — and a surface that let any consumer see a dismissal would be a surface that let one branch on it. Triage feedback is a customer's account of Signora's judgement; a score that quietly consumed it would be marking its own work.
+
+`SignalQueries` is unchanged and still what `public/` exports. `TriageQueries` is this module's own, served by its own `interface/`.
+
+### What is not built yet, and why
+
+**Recording a decision has no HTTP route.** Every write surface in the repository carries its own authorization `Resource` — `opportunity`, `research`, `icp`, `target_account`, and nine more — and there is no `signal` one. Adding it means editing `signora_platform/authorization/enforcer.py`, which the Change Budget puts at 🔴 (*product owner + ADR*), while `policy.csv` is listed as a registry any lane may extend. **The enum member and the policy rows are one registration in two files with two different authorities**, and that conflict is not a lane's to resolve.
+
+The use case, the error mapping and the persistence are complete and tested; only the route is withheld. [C-224](../LANE_COORDINATION.md) carries the request, the twelve precedents, and the proposed request bodies. **No existing tuple was reused instead** — authorizing a write as `account:read` would be a security defect, and `account:update` is granted to no role and would 403 every caller.
