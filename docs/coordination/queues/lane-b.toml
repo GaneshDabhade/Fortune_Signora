@@ -1,0 +1,20 @@
+# Lane B — assigned execution queue. Advisory (phase 2). Written by Lane C.
+#
+# **Lane B reported AVAILABLE on 2026-08-05 with TASK-408 and TASK-003 both
+# READY in knowledge_graph, which it owns.** Same cause as Lane A's: the rows
+# name a module, and the lane was looking for a row that named the lane.
+
+lane         = "Lane B"
+updated      = 2026-08-05
+depth_target = 5
+
+current = "TASK-408"
+next    = "TASK-003"
+future  = ["TASK-903", "TASK-406", "TASK-415"]
+
+[rationale]
+"TASK-408" = "B-ii, search results are grouped and the ranking explainable — knowledge_graph is Lane B's, and the row records it as partly delivered rather than blocked, so the remainder is claimable"
+"TASK-003" = "the attributes are engineering's words (R11-06) — knowledge_graph. Skipped on 2026-08-02 with C-018 opened; that item is the product owner's and does not block the labelling half"
+"TASK-903" = "a seller can see what their company sells. ⚠️ Cross-lane as written — commercial_profile is Lane B's, the mount is Product Surface which is Lane A's. Lane B builds the read surface; the render follows in Lane A's queue once the endpoint exists"
+"TASK-406" = "an ICP criterion scored against outcomes — commercial_profile. Currently BLOCKED; listed so the sequence is visible"
+"TASK-415" = "the deterministic mock AI provider. ai_platform is review-at-first-implementation and Lane B is its current assignee, so Lane B prepares the package and Lane C reviews (D-060)"

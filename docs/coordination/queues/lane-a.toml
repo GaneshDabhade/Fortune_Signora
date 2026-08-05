@@ -1,0 +1,31 @@
+# Lane A — assigned execution queue.
+#
+# **Phase 2 of the execution-queue migration** (434), approved 2026-08-05 and
+# **advisory**: Lane A still claims by the Task Claim Protocol. This states the
+# intended sequence so the lane does not have to derive it — and so a
+# disagreement between the plan and what the lane would have chosen is free to
+# discover before anyone is required to follow it.
+#
+# **Written by Lane C. No implementation lane writes this file, including its own.**
+# **Ids only, never state** — execution state lives in BACKLOG.md and the board.
+#
+# **Why this file exists at all.** Lane A polled on 2026-08-05 and reported "no
+# new READY task in my six modules" while TASK-904 and TASK-905 were both READY
+# in modules it owns. Nothing was wrong with the lane: the rows name *modules*,
+# ownership is joined from modules.toml, and **the lane was reading for its own
+# name.** Ownership was derivable and not stated where the lane was looking.
+
+lane         = "Lane A"
+updated      = 2026-08-05
+depth_target = 5
+
+current = "TASK-405"
+next    = "TASK-904"
+future  = ["TASK-417", "TASK-905", "TASK-400"]
+
+[rationale]
+"TASK-405" = "already claimed and in implementation — a signal ends in a decision"
+"TASK-904" = "Team Management is buildable now: the blockers raised against it were withdrawn by the lane that raised them, and workspace_tenancy is Lane A's"
+"TASK-417" = "wave 1 of the approved UI — twelve Account 360 sections already served by shipped contracts, and the largest product gap in the repository. Render only, no backend change"
+"TASK-905" = "Product Surface and buying_score_engine, both Lane A's; a contraction risk stops looking like an opportunity"
+"TASK-400" = "returned, and its return reason is spent — B-107 is FIXED and QE-VERIFIED. What remains is C-219 and C-321, two rulings. It sits behind buildable work rather than ahead of it, and moves up the moment either is answered"

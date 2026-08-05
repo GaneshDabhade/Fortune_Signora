@@ -389,7 +389,7 @@
 |---|---|
 | **Module** | `timeline` |
 | **Slice** | S05+ |
-| **Status** | ⚠️ **`READY` — and it names no remaining slice.** Claimed by Lane B 2026-08-05 and **released the same day without code**, because all three answers it inherited resolve to work already done. See the two rows below. **[ADR-0038](architecture/adr/0038-timeline.md) is ratified**, `timeline` is one of the modules [D-065](DECISION_REGISTER.md) leaves with this lane, and **[TASK-900](#task-900--the-platform-learns-to-compose-a-module-into-the-runtime) stood higher and was skipped with its reason recorded.** ⚠️ **[C-215](LANE_COORDINATION.md) travels with the module and is unanswered** — the feed is per-account and the workspace needs it per-seller. **It is inherited, not resolved by claiming**, and this slice will not assume an answer to it |
+| **Status** | **`WAITING`** — **moved out of `READY` by Lane C, 2026-08-05.** ⚠️ **It names no remaining slice, so no lane can claim it**: Lane B took it on 2026-08-05 and released it the same day without code, for exactly that reason. **A row that cannot be started is not `READY`**, and leaving it there made both the queue and the READY count one deeper than they were. **It returns to `READY` when [ADR-0038](architecture/adr/0038-timeline.md)'s remaining slices are named.** *(Original note retained:*  *)* |
 | **Notes** | **Postgres first**; Meilisearch on a stated trigger — *the first customer asking to search or facet a timeline rather than scroll it*. **Ship the six live events**; the seventh joins when M11 resumes. **The customer surface already exists** — CX-03 mounted the feed on the account brief |
 | **On claiming** | Supersedes `TASK-017`, which was waiting on exactly these three answers |
 | ⚠️ **Claimed and released by Lane B, 2026-08-05 — the three answers all resolve to *already done*** | **`S05+` names no slice that exists.** TASK-017 waited on two decisions: the milestone definition and Meilisearch-or-Postgres. **Neither produces work now.** Question 1 → *"built on Postgres"*, and its revisit trigger is **the first customer asking to search or facet a timeline**, which has not happened. Question 2 → *"six shipped"*; the seventh is `recommendation.created` and **awaits M11, which is deferred**. Question 3 → *"does the timeline reach a customer?"* — **it does now.** [45 §6](architecture/45-timeline.md) lists *"no mount point"* as the module's one real gap, and **CX-03 closed it**: `frontend/app/(app)/accounts/[accountId]/page.tsx` renders `AccountHistory` from `useAccountTimeline`, so [C-024](LANE_COORDINATION.md) is resolved |
@@ -514,6 +514,21 @@
 | **Repository reuse** | **The harness is already vendor-neutral** — *"it knows no vendor. It names a model; who serves it is the registry's business."* **Nothing needs building; a default needs choosing** |
 | **Change Budget** | 🟢 for the default. **🔴 if the report gains a vendor field** — that amends ADR-0028 and touches a ratified principle |
 
+
+### TASK-417 · Account 360 renders what the platform already knows
+
+| | |
+|---|---|
+| **Objective** | **Wave 1 of the approved UI, and the first screen built against it.** The approved Account 360 has **27 sections; [414](architecture/414-wave-1-account-360.md) found twelve already served by shipped contracts** — and **none of them is on a screen** |
+| **Module** | **Product Surface** — Lane A's, per [`modules.toml`](coordination/modules.toml) |
+| **Status** | **`READY`** — approved scope, decomposed by Lane C 2026-08-05. **Not new scope**: the designs became authoritative on 2026-08-04 and [412](architecture/412-backend-capability-matrix.md) defined the waves |
+| **Scope** | **Render only.** The twelve sections 414 marks 🟩: header identity · health score · why the score moved · observations · business events with evidence · detected signals · research · the account summary · opportunities · timeline · technology stack · competitors |
+| **Repository reuse** | **Every section consumes a contract that already ships** — `knowledge_graph`, `buying_score_engine`, `observation_engine`, `business_event_engine`, `signal_engine`, `ai_research_engine`, `ai_platform`, `opportunity_engine`, `timeline`, `commercial_profile`. **No backend change, no new endpoint, no new event** |
+| **Non-goals** | ⛔ **The other fifteen sections.** Two are person-dependent ([C-221](LANE_COORDINATION.md)), two belong to later waves, and **seven have no source** — 414 §3. **Building a section with no source is inventing data** (§20c) |
+| **Why it is one slice and one lane** | **The module is the planning unit and the screen is a consumer** ([`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §5b). Every contract is already published, so this crosses no module boundary — **it is a Product Surface slice that reads `public/`** |
+| **Acceptance** | Twelve sections render from live contracts · **a designed empty state where a workspace has no data** · **no mock business data** (§20c) · **the approved design is followed and not reinterpreted** ([410](architecture/410-approved-ui-specification.md)) |
+| **Change Budget** | 🟢 — `frontend/` inside the assigned module |
+| **Escalate if** | A section needs a contract that does not exist. **That is a finding, not an endpoint to add** |
 
 ### TASK-414 · Impact analysis, reported and nothing skipped
 
