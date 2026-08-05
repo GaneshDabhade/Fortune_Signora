@@ -2,9 +2,11 @@
 
 **The single place the product owner reviews when making rulings.** Established 2026-08-05 by product owner directive.
 
-> ## ✅ Nothing is time-critical. Three things are waiting and you are holding all three deliberately.
+> ## ⚠️ One new blocker. Three things are waiting and you are holding all three deliberately.
 >
-> ✅ **The time-critical row is ruled.** **[TASK-434](BACKLOG.md) is `READY` at the head of the queue**, sequenced ahead of TASK-406's backtest by [D-077](DECISION_REGISTER.md) — *"establish the reusable capability once rather than allowing multiple implementations to emerge independently."* **The window closed with the capability on the right side of it.**
+> ⚠️ **[C-417](#c-417--adr-0404-approved-three-platform-capabilities-and-its-owner-may-not-finish-two-of-them) — raised today, and it is in front of seven slices and a starving lane.** **ADR-0404's own §Validation caught it before the first line was written**, which is the good news; **the ADR is Lane C's, which is not.**
+>
+> ✅ **The previously time-critical row is ruled.** **[TASK-434](BACKLOG.md) is `READY` at the head of the queue**, sequenced ahead of TASK-406's backtest by [D-077](DECISION_REGISTER.md) — *"establish the reusable capability once rather than allowing multiple implementations to emerge independently."* **The window closed with the capability on the right side of it.**
 >
 > **① [Placing TASK-427](#-task-427--the-people-domains-trigger-has-fired-and-placing-it-is-yours)** — **the People domain.** Its trigger has already fired.
 > **② [TASK-431](#-task-431--six-screens-assert-one-guarantee-and-the-repository-has-no-word-for-it)** — six approved screens assert one guarantee; the repository has no word for it.
@@ -69,6 +71,21 @@
 | **Lanes waiting** | **None.** Lane B is building TASK-406 and would consume this rather than wait for it |
 | **Priority** | **P0 on timing · P3 on difficulty.** Two small slices |
 | **Recommended** | ✅ **Sequence [TASK-434](BACKLOG.md) ahead of TASK-406's backtest slice.** ⚠️ **First slice is a prerequisite regardless of any of this**: **`commercial_profile/public/` publishes thirteen views and *not one is the ICP* — no module can read the criteria at all today**, and every one of the sixteen consumers is blocked on that one missing read port. **[ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md) is the ratified precedent for exactly this shape** |
+
+## C-417 · ADR-0404 approved three platform capabilities, and its owner may not finish two of them
+
+**Found by running [ADR-0404](architecture/adr/0404-platform-composition.md) §Validation before the first slice — which is what that section is for.** **The ADR is Lane C's own, so this is this office's error surfacing exactly where it was designed to surface.**
+
+| | |
+|---|---|
+| **Summary** | **The platform edit is Lane C's. The proof it worked is five files in `backend/modules/`, and §20e forbids Lane C from touching that tree** — ⚫ *refactor a module you are not assigned* |
+| **Why the halves cannot be split** | **`mypy strict = true` implies `warn_unused_ignores`.** The moment `PublishableEvent`'s members become read-only, the five `# type: ignore[arg-type]` go unused and **the gate fails.** **Platform change and five one-line deletions are one atomic change whether anybody likes it or not.** Capability ① is the same shape — the two `EventHandler` implementations are in `modules/` |
+| **What the modules already said** | **`observation_engine/application/record.py:120`, in the code, before this item existed:** *"the platform's `PublishableEvent` Protocol declares settable members, which frozen domain events cannot satisfy. **Raised as a finding, not fixed here.**"* **Three modules carry that comment. They declined to cross the boundary, correctly — and ADR-0404 is the fix they were waiting for** |
+| **Impact** | **[TASK-418](BACKLOG.md) ① and ②, and [TASK-901](BACKLOG.md)'s seven slices behind them.** ⚠️ **TASK-901's slices are the only prepared work left for Lane A, whose queue is 0 of 5** |
+| **Lanes waiting** | **Lane C now. Lane A when its two in-flight rows land** |
+| **Priority** | **P1 — it is in front of seven slices and a starving lane** |
+| **Recommended** | ✅ **A bounded, named exception**: *the slice may delete `# type: ignore[arg-type]` comments at publish sites and may change no other line in `backend/modules/`*. **Five deleted comments, provably behaviour-free, and a reviewer can verify the bound from the diff alone** — the same standard §20a's carve-out already uses for a `Resource` member. **The alternative that bends no rule delivers the capability never**: those comments have sat there for weeks precisely because no slice makes anybody touch them |
+| ⚠️ **Two corrections to the ADR, same validation** | **It says *"all eight"* ignores; there are **five** at publish sites** — the other three are `provider_normalization` (×2) and `ai_research_engine` and none is at a publish site. **And §Validation checks that `apps/worker/` has an owner but never checks that the *modules* the change reaches have one** — which is the check that would have caught this at ratification |
 
 ## 📌 TASK-431 · Six screens assert one guarantee, and the repository has no word for it
 

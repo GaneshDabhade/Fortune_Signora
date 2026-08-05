@@ -158,7 +158,22 @@ INDEX_ROW = re.compile(r"^\| \[(C-\d+)\]\([^)]*\) \|.*?\| ([^|]*?) \| [^|]*\|\s*
 #: written to catch its cousin**, found by running it rather than by review.
 DECLARED = re.compile(r"`([A-Z][A-Z ]+)`")
 
-_SHUT = {"CLOSED", "RULED", "ANSWERED", "RESOLVED", "SUPERSEDED", "WITHDRAWN"}
+_SHUT = {"CLOSED", "RULED", "ANSWERED", "RESOLVED", "SUPERSEDED", "WITHDRAWN",
+         # **Decided, and therefore not queued.** The lane may proceed; nobody
+         # owes an answer. It is *not* closed — the requesting lane closes it —
+         # but it must never sit on the product owner's page.
+         "READY FOR IMPLEMENTATION"}
+
+#: **The five §20e lifecycle states that mean *somebody still owes an answer*.**
+#: Missing, this set made `READY FOR PRODUCT DECISION` — **the single most open
+#: thing an item can be** — read as shut: `_is_open` found no `OPEN` token, fell
+#: through to the prose, and the prose does not contain the word. **C-417 was
+#: raised, and the check that exists to find unqueued product-owner items said
+#: nothing about it**; C-004 and C-201 had been reporting as INDEX drift for the
+#: same reason. **Found by using the instrument, which is the only way any of
+#: these have been found.**
+_OPEN_STATES = {"OPEN", "READY FOR LANE C", "AWAITING LANE C", "IN ANALYSIS",
+                "READY FOR PRODUCT DECISION"}
 
 
 def _is_open(text: str) -> bool:
@@ -166,7 +181,7 @@ def _is_open(text: str) -> bool:
         state = token.strip()
         if state in _SHUT:
             return False
-        if state == "OPEN":
+        if state in _OPEN_STATES:
             return True
     # **No declared state at all.** Fall back to the prose rather than guess a
     # default: an item with no backticked status is a formatting defect, and

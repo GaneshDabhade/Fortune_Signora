@@ -2220,6 +2220,7 @@ assert set(SignalTypeResponse.model_fields) == {"key", "title"}
 | [C-411](#c-411--three-findings-reported-but-recorded-nowhere-a-lane-would-look) | Three findings reported but recorded nowhere a lane would look | Lane C | **per finding** | `OPEN` | Nothing |
 | [C-412](#c-412--three-backlog-rows-say-ready-and-are-not-claimable) | Three backlog rows say `READY` and are not claimable | Lane C | **Product owner** | `OPEN` — ⚠️ **corrected 2026-08-05**, it named the wrong lane on both pairs | Nothing |
 | [C-413](#c-413--two-lanes-are-assigned-knowledge_graph) | Two lanes are assigned `knowledge_graph` | Lane C | **Product owner** | `OPEN` | Nothing |
+| [C-417](#c-417--adr-0404-approved-three-platform-capabilities-whose-owner-may-not-finish-two-of-them) | **ADR-0404 approved three platform capabilities whose owner may not finish two of them** | Lane C | **Product owner** | **`READY FOR PRODUCT DECISION`** — four alternatives, a recommendation and the bound that makes it checkable | **[TASK-418](BACKLOG.md) ① and ②, and [TASK-901](BACKLOG.md)'s seven slices behind them.** ④ ships now |
 
 ### What the audit is asserting, precisely
 
@@ -5232,3 +5233,62 @@ One entry in `ENTERED_FROM_OUTSIDE`:
 **The list's own comment says it is QE's judgement**, and every entry is *"a claim that something outside the product sends a customer here."* Asserting that claim on QE's behalf is the thing the comment exists to prevent — *"a list that grows without argument is how a check stops meaning anything."*
 
 The argument is above. **The check is working**: it caught a genuinely unreachable route within a minute of the route existing, which is what it is for.
+
+## C-417 · ADR-0404 approved three platform capabilities whose owner may not finish two of them
+
+**Opened 2026-08-05 · Lane C · current module assignee: Lane C (`signora_platform/`) · 🔴**
+
+> **Found by running [ADR-0404](architecture/adr/0404-platform-composition.md) §Validation before the first slice, which is what that section exists for.** **The ADR is Lane C's own** — [435](architecture/435-platform-composition-rfc.md) became it — **so this is this office's error surfacing at the moment the ADR designed to catch it.**
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, claiming [TASK-418](BACKLOG.md) |
+| **Owner** | **The product owner** — it is a Change Budget question, and the Change Budget is theirs |
+| **Blocks** | **[TASK-418](BACKLOG.md) capabilities ① and ②.** **④ is unaffected and ships now** |
+| **Status** | **`READY FOR PRODUCT DECISION`** — alternatives, recommendation and trade-offs below |
+
+### The problem, in one line
+
+> **The platform edit is Lane C's. The proof that it worked is inside five files in `backend/modules/`, and `CLAUDE.md` §20e forbids Lane C from touching that tree — ⚫ *refactor a module you are not assigned*.**
+
+### Why the two halves cannot be separated
+
+**`[tool.mypy] strict = true`, which implies `warn_unused_ignores`.**
+
+**Capability ② makes `PublishableEvent`'s six members read-only properties.** The moment it lands, the five `# type: ignore[arg-type]` at the publish sites become **unused**, and **`mypy --strict` fails the gate.** **So the platform change and the five one-line deletions are one atomic change, whether or not anybody wants them to be.**
+
+**Capability ① has the same shape**: `EventHandler` is `Callable[[EventEnvelope], Awaitable[None]]` in `signora_platform/event_bus/subscriptions.py`, and **the two implementations are `modules/provider_platform/interface/handlers.py` and `modules/ai_research_engine/interface/handlers.py`.** Changing the alias breaks both in the same commit.
+
+### ⚠️ Two corrections to ADR-0404, found by the same validation
+
+| | |
+|---|---|
+| **The count is wrong** | **The ADR says *"all eight `# type: ignore[arg-type]` at publish sites are removable."* There are **five**** — `observation_engine/application/record.py:124` · `signal_engine/application/generate.py:158` · `business_event_engine/application/detect.py:129` · `knowledge_graph/application/resolve.py:329` · `knowledge_graph/application/relationships.py:240`. **The other three are `provider_normalization` (×2) and `ai_research_engine`, and none is at a publish site** |
+| **The ownership question was never asked** | **§Validation ③ checks that `apps/worker/` has an owner. It does not check that the *modules* the change reaches have one** — and that is the check that would have caught this at ratification rather than at implementation |
+
+### What the modules already said
+
+**`observation_engine/application/record.py:120`, in the code, before this item existed:**
+
+> *"the platform's `PublishableEvent` Protocol declares settable members, which frozen domain events cannot satisfy. **Raised as a finding, not fixed here.**"*
+
+**Three modules carry that comment.** **They raised it correctly and declined to cross the boundary, which is the rule working.** **ADR-0404 is the fix they were waiting for, and it cannot land without re-crossing the boundary they refused to cross.**
+
+### Alternatives
+
+| | | Trade-off |
+|---|---|---|
+| **A** | **A bounded, named exception.** Lane C's slice deletes **exactly those five `# type: ignore[arg-type]` comments and nothing else** — no logic, no behaviour, no signature, announced in the commit message and reviewed by QE like any other slice | **Smallest possible change, and it is still a rule bent.** A comment deletion is not a refactor, but the rule says *"a lane never changes a module it is not assigned"* without qualification |
+| **B** | **A coordinated three-lane slice.** Lane C changes the platform; Lane A and Lane B each remove their own module's ignores in the same integration window | **Purest, and it needs three lanes to land inside one gate run.** §20e's *one slice under construction* and the `--ff-only` model both make this expensive |
+| **C** | **Move capability ② out of TASK-418** and let each module lane adopt the read-only Protocol when it next touches its own publish site | **Zero rule bent, and the capability arrives never** — the modules have carried that comment for weeks precisely because no slice makes them touch it |
+| **D** | **Leave the ignores in place** and land the Protocol change alone | ⛔ **Not available.** `warn_unused_ignores` fails the gate. Recorded so nobody re-proposes it |
+
+### Recommendation
+
+> ✅ **A, bounded in writing.** **The change is five deleted comment lines**, it is provably behaviour-free, and **the alternative that bends no rule (C) delivers the capability never.**
+>
+> **The bound that makes it safe is that it is checkable**: *the slice may delete `# type: ignore[arg-type]` comments at publish sites and may change no other line in `backend/modules/`* — **a reviewer can verify that from the diff alone**, which is the standard §20a's carve-out already uses for a `Resource` member.
+
+### Implementation impact
+
+**Capability ④ — `Action.LEAVE` and two policy lines — is entirely inside `signora_platform/authorization/` and is unaffected. Lane C ships it now.** **Capabilities ① and ② wait on this ruling**, and **[TASK-901](BACKLOG.md)'s seven slices wait on them.**
