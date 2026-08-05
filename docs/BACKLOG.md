@@ -293,8 +293,8 @@
 | | |
 |---|---|
 | **Objective** | **Every signal leaves the queue by being actioned, assigned, snoozed or dismissed with a reason** — and the resolution is durable and auditable |
-| **Module** | `signal_engine` — **Lane B's** *(consolidated to Lane B 2026-08-04 — [D-058](DECISION_REGISTER.md))*, via TASK-203 |
-| **Status** | **`READY`**. **Released from Lane A on the 2026-08-04 consolidation ([D-058](DECISION_REGISTER.md)) — the claim carried no code.** Returned to the queue; **Lane B claims it in priority order** rather than inheriting it, because the pull model is what keeps priority the product owner's |
+| **Module** | `signal_engine` — **Lane A's again**, transitioned back on the 2026-08-05 resumption. **`coordination/modules.toml` records `current_owner = "Lane A"`, `transition = "settled"`** — this line said *Lane B's* and was stale, corrected on claiming rather than left to mislead the next reader |
+| **Status** | **`CLAIMED` — Lane A**, 2026-08-05, by the Task Claim Protocol. **Claimed once before and released on the 2026-08-04 consolidation, carrying no code** — so nothing is inherited and nothing was lost |
 | **Assigned** | **Lane A, by the product owner, 2026-08-04** — *"you may proceed with A-iii and A-iv when their corresponding READY task rows exist on integration."* **The rows landed with Lane C's synchronization at `3ab3111`**, which is the condition the ruling named |
 | **Approved screen** | **Signal Center** — *"a triage queue, not a notification list"* |
 | **Scope** | Resolution state for a signal: **assign · snooze-until · dismiss-with-reason · actioned**, each attributed and timestamped. A workspace-scoped read of the queue by state |
