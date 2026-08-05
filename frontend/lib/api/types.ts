@@ -946,3 +946,42 @@ export interface IcpSegmentSummary {
   last_changed_at: string;
   last_changed_by: string;
 }
+
+/**
+ * One recorded change to a company, and who says so.
+ *
+ * **The layer beneath a claim on the brief.** The account header says *"grew
+ * headcount 15% over 32 days"*; this is what that rests on — every observed
+ * transition, with the provider that reported it and the moment it says the
+ * new value became true.
+ *
+ * `previous_value` is `null` on a first sighting, which is **not** the same as
+ * a change from nothing: the first time a provider reports a value there is no
+ * transition, and rendering one would invent a history the pipeline never saw.
+ */
+export interface AccountObservation {
+  id: string;
+  /** What changed — a `ClaimAttribute` key, in the pipeline's vocabulary. */
+  attribute: string;
+  /** Who reported it. Named, because two providers can disagree and a reader
+   * deciding whether to believe a change needs to know whose change it is. */
+  provider: string;
+  /** Whether this is a transition between values or a one-off event. */
+  kind: string;
+  /** Which way it moved, or that it did not move. */
+  direction: string;
+  /** What it was. **Null on a first sighting**, where there is no transition. */
+  previous_value: unknown | null;
+  /** What it became. */
+  current_value: unknown;
+  /** How far it moved, where that is meaningful. Null where it is not — a
+   * change of country has no magnitude, and inventing `1` would be a number a
+   * reader could sort by. */
+  magnitude: number | null;
+  /** When the provider says the new value was true. **Not when Signora saw
+   * it** — those differ, and only one of them is a fact about the company. */
+  observed_at: string;
+  previous_observed_at: string | null;
+  /** When Signora recorded it. */
+  recorded_at: string;
+}

@@ -33,6 +33,7 @@ const research = vi.hoisted(() => vi.fn());
 const accounts = vi.hoisted(() => vi.fn());
 const identities = vi.hoisted(() => vi.fn());
 const timeline = vi.hoisted(() => vi.fn());
+const observations = vi.hoisted(() => vi.fn());
 
 vi.mock('next/navigation', () => ({
   // The attention list and the brief read `?owner=` so a seller's view
@@ -60,6 +61,10 @@ vi.mock('@/lib/query/hooks', () => ({
   useAccountResearch: research,
   useAccounts: accounts,
   useAccountIdentities: identities,
+  // TASK-417 wave 1 — what changed, and who says so. Stubbed rather than
+  // exercised here: this file is about the brief's own sentences, and the
+  // section has its own tests in observations.test.tsx.
+  useAccountObservations: observations,
   useRequestResearch: () => ({ mutate: vi.fn(), isPending: false }),
   // A won account has no legal move, so the brief now renders the way
   // back rather than an empty space (LO-05 F-7, LO-07).
@@ -125,6 +130,7 @@ beforeEach(() => {
   research.mockReturnValue(IDLE);
   accounts.mockReturnValue({ ...IDLE, data: { items: [] } });
   identities.mockReturnValue(IDLE);
+  observations.mockReturnValue(IDLE);
   timeline.mockReturnValue({
     data: { pages: [{ items: [], next_cursor: null, has_more: false }] },
     hasNextPage: false,

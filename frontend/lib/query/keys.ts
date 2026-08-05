@@ -32,6 +32,9 @@ export const queryKeys = {
   accountScore: (workspaceId: string, accountId: string) =>
     ['workspace', workspaceId, 'accounts', accountId, 'score'] as const,
 
+  accountObservations: (workspaceId: string, accountId: string) =>
+    ['workspace', workspaceId, 'accounts', accountId, 'observations'] as const,
+
   accountOpportunity: (workspaceId: string, accountId: string) =>
     ['workspace', workspaceId, 'accounts', accountId, 'opportunity'] as const,
 

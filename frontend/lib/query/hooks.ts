@@ -6,6 +6,7 @@ import type {
   AccountAttention,
   AccountIdentity,
   AccountNarration,
+  AccountObservation,
   AccountOpportunity,
   AccountResearch,
   AccountScore,
@@ -463,5 +464,37 @@ export function useDecidedAccounts(workspaceId: string | null) {
         { workspaceId: workspaceId ?? undefined },
       ),
     enabled: workspaceId !== null,
+  });
+}
+
+/**
+ * How this company has changed, and who says so.
+ *
+ * **The layer beneath a claim the brief makes in one line.** The header says
+ * *"grew headcount 15% over 32 days"*; this is every recorded transition
+ * behind it, each naming the provider that reported it.
+ *
+ * **No polling.** Observations arrive when the pipeline runs, not while a
+ * reader is looking at them, so a refetch interval would cost a request a
+ * minute to re-render an identical list. Research polls because a research run
+ * genuinely finishes while the page is open; this does not.
+ *
+ * A 404 is not retried: an account with nothing recorded is an answer, and
+ * retrying it twice makes an ordinary empty state look like a flaky one.
+ */
+export function useAccountObservations(
+  workspaceId: string | null,
+  accountId: string | null,
+) {
+  return useQuery({
+    queryKey: queryKeys.accountObservations(workspaceId ?? '', accountId ?? ''),
+    queryFn: () =>
+      apiRequest<AccountObservation[]>(
+        `/workspaces/${workspaceId}/accounts/${accountId}/observations`,
+        { workspaceId: workspaceId ?? undefined },
+      ),
+    enabled: workspaceId !== null && accountId !== null,
+    retry: (attempt, error) =>
+      !(error instanceof ApiError && error.status === 404) && attempt < 2,
   });
 }

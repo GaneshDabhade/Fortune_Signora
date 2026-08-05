@@ -20,6 +20,7 @@ import { DecisionHistory } from '@/components/intelligence/decision-history';
 import { EvidenceDrawer, useEvidenceDrawer } from '@/components/intelligence/evidence';
 import { Freshness } from '@/components/intelligence/freshness';
 import { NarrativeBlock } from '@/components/intelligence/narration';
+import { ObservationList } from '@/components/intelligence/observations';
 import { ResearchPanel } from '@/components/intelligence/research';
 import { AccountSequence, nextInSequence } from '@/components/intelligence/sequence';
 import { ValidationBlock } from '@/components/intelligence/validation';
@@ -39,6 +40,7 @@ import {
   useAccounts,
   useAccountIdentities,
   useAccountNarration,
+  useAccountObservations,
   useAccountOpportunity,
   useAccountResearch,
   useAccountScore,
@@ -119,6 +121,7 @@ export default function AccountBriefPage() {
   // Paged rather than fetched whole: an account worked for a year has a long
   // history, and the brief must not wait on all of it to render the rest.
   const timeline = useAccountTimeline(workspaceId, accountId);
+  const observations = useAccountObservations(workspaceId, accountId);
   // **The roster, so an account can be handed to a colleague.** The same query
   // the Team page holds, same cache key, so this costs no request — and
   // TM-01's `member_email` is what makes a name renderable at all.
@@ -386,6 +389,28 @@ export default function AccountBriefPage() {
               rather than data. C — a collapsed disclosure — was refused for
               the reason C-024 itself gives: it would hide the one surface
               that answers *what changed since I last looked* (R9-04). */}
+          {/* **Between the ledger and the record of events** (TASK-417, wave 1
+              of the approved Account 360). The contribution list above says
+              *what Signora weighed*; the timeline below says *what occurred*.
+              This is the layer between them — **the raw provider readings the
+              weighing rests on, each naming the provider that reported it.**
+
+              **It goes above the timeline rather than beside it** because a
+              reader who has just seen a contribution they doubt is asking
+              *"says who?"*, and that question has to be answerable without
+              scrolling past everything that happened this year.
+
+              The endpoint has shipped since M3B and reached no screen —
+              the same shape as [C-024](../../../../docs/LANE_COORDINATION.md),
+              which is what wave 1 exists to close. */}
+          <section className="flex flex-col gap-3">
+            <h2 className="text-sm font-semibold text-content">What changed</h2>
+            <ObservationList
+              observations={observations.data}
+              isLoading={observations.isLoading}
+            />
+          </section>
+
           <section className="flex flex-col gap-3">
             <h2 className="text-sm font-semibold text-content">What has happened</h2>
             <AccountHistory
