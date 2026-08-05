@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `acb774b`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `b871f18`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `acb774b`, 2026-08-05.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `b871f18`, 2026-08-05.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`acb774b`** — the certified commit itself |
+| **`main`** | **`b871f18`** — the certified commit itself |
 | **`integration`** | **ahead of `main`** — Lane A's claim and Lane C's next batch arrived after the snapshot, which is the model working |
-| **Release candidate** | **None pinned.** Cycle 56 promoted **TASK-405 — a signal's resolution, as a record rather than a field** |
-| **Certification** | ✅ [`acb774b28ac7`](certification/reports/acb774b28ac7.md) · migration head **`0038`** · protocol **v2** |
+| **Release candidate** | **None pinned.** Cycle 57 promoted **execution isolation — the workstation lease that stops two clones corrupting each other's runs** |
+| **Certification** | ✅ [`b871f18c808e`](certification/reports/b871f18c808e.md) · migration head **`0038`** · protocol **v2** · **attempt 2; attempt 1 aborted** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -28,9 +28,9 @@
 | **Customer value this cycle** | ✅ **Yes.** A seller can open an account, **ask who to talk to**, and see the evidence behind every name — or why a name has none |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
-> ✅ **The first slice all day that reached QE without a relay, and the first cycle where every gate carried its own exit code.** Lane A's TASK-405 surfaced through the rebuilt watcher — *`STANDING lane-a-product-surface is 1 ahead with 2 executable file(s) and awaits QE`* — rather than through the product owner. **The watcher had been reading a fixed branch list that went stale when Lane C moved branches**, which is why three relays were needed; it now discovers branches dynamically and reports standing state, not only movement.
+> ✅ **QE's own instrument was broken for three hours, and this cycle fixes it.** Validating one slice gave **40 failed**, then **238 failed**, then **1 failed / 3473 passed** — *the same code every time.* [B-118](docs/BUGS.md): four clones share one PostgreSQL because `docker-compose.yml` hard-codes `name: signora-v2` while `environments.py` derives a project per environment and **nothing sets `COMPOSE_PROJECT_NAME`**. **Lane C diagnosed it while QE was blocked by it** — *"an enforcement problem wearing a design problem's clothes"* — and moved the lease from the clone to the workstation. **QE published no contended number and killed no lane's suite to obtain a clean one.**
 
-**Repository health:** **3446 backend tests** · **95.28% coverage** *(floor 95)* · **1171 frontend tests** across 55 files · **383 Security Invariants** · mypy strict over **735 files** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **3451 backend tests** · **95.28% coverage** *(floor 95)* · **1171 frontend tests** across 55 files · **383 Security Invariants** · mypy strict over **735 files** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -101,29 +101,48 @@
 
 ---
 
-## 1d · Release summary — 2026-08-05, cycle 56
+## 1d · Release summary — 2026-08-05, cycle 57
 
-**Derived from the promoted commit `acb774b`.** **Twelve promotions.** The quiet cycle, and that is the news.
+**Derived from the promoted commit `b871f18`.** **Thirteen promotions.** The cycle that repaired the instrument every other cycle depends on.
 
 ### What was promoted
 
-**TASK-405 — *a signal's resolution, as a record rather than a field*.** Lane A's first slice since resuming, in `signal_engine`. Two executable files, no migration.
+**Execution isolation.** The environment lease moved from `REPO_ROOT/.environment-lease` — where **four clones held four leases over one Docker project and none could see another's** — to a path derived from the contended resource itself. **`make validate` is now leased too**, having been the one target that truncates every table after every test and took no lease at all.
 
-### Two mechanisms proved themselves rather than being asserted
+> **Lane C's own line is the best summary: *"It was correct when written. There was one clone."***
 
-| | |
+### The three hours before it, and what they cost
+
+**QE validated one slice three times and got three different answers:**
+
+| Conditions | Result |
 |---|---|
-| **The rebuilt watcher** | Reported *`STANDING lane-a-product-surface is 1 ahead with 2 executable file(s) and awaits QE`* — **the first slice today QE picked up without the product owner relaying it.** The old watcher read a **fixed branch list** that went stale the moment Lane C changed branches |
-| **[§0a](docs/QUALITY_ENGINEERING.md)** | **Every gate in this cycle captured its own exit code** — `MAKE_EXIT`, `GUARD_EXIT`, `MERGE_EXIT`, `PUSH_EXIT`, `REV_EXIT`. Not one verdict was read through a filter |
+| Two suites running | **40 failed** |
+| Deeper overlap | **238 failed** |
+| Quiet database | **1 failed, 3473 passed** |
 
-> **Both were written after they had already cost something.** The watcher after three relays; §0a after `tail`, `grep` and `head` each hid a verdict in one day — the third of them running an `&&` past the promotion guard's `REFUSED`. **A rule earned by an incident is the only kind this repository keeps.**
+**The single failure in the quiet run was the whole bug at 1:3474 scale** — `test_disposable_database.py` hard-codes `signora_certify_selftest01`, so two clones raced on one name. The database was gone seconds later: a race, not a leak.
+
+### What QE did not do, and it is the point
+
+**Did not** kill another lane's suite to obtain a green run. **Did not** publish a contended number. **Did not** file a defect from one — which would have been the third fabricated report of the day, and the first against a lane that had done nothing wrong.
+
+> **The correct response to a broken instrument is to say so, not to read it more carefully.** QE waited 25 minutes for a quiet window, did not get one, and reported *that* as the finding rather than forcing a measurement.
+
+### Certification aborted once, and the abort is the useful record
+
+Attempt 1 died on **`ALTER ROLE signora_app` — "tuple concurrently updated"**. A PostgreSQL role is **cluster-wide**, so no amount of per-database isolation could have prevented it; **only the lease can**.
+
+**And it exposed the fix's bootstrap problem:** QE's tree had the fix, Lane A's clone did not, so **QE took a workstation lease and Lane A took a repository one — two leases over one resource exclude nobody.** The fix takes effect for a lane only once promoted *and* rebased onto. **The window in which it exists but is not universal is the window in which it looks like it does not work**, which is now recorded in B-118 for whoever reads it next.
+
+**Attempt 2 passed while four lane suites ran concurrently** — which attempt 1 did not survive.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3446 backend** · 1171 frontend · **95.28%** · **383 invariants** · **735 files typed** · 35 contracts · `tsc` clean and gated |
-| **Release** | **Twenty-six cycles promoted** · `promoted == certified` ✓ · **every gate in this cycle captured its own exit code** ([§0a](docs/QUALITY_ENGINEERING.md)) |
+| **Technical** | **3451 backend** · 1171 frontend · **95.28%** · **383 invariants** · **735 files typed** · 35 contracts · `tsc` clean and gated |
+| **Release** | **Twenty-seven cycles promoted** · `promoted == certified` ✓ · **one abort recorded as an abort**, not as a failure against the commit |
 | **Architecture** | Reachability 0 doorless · migration `0038` **reversible, verified this cycle** · event catalog 1 known drift |
 | **Dependency** | 69 items, 31 closed |
 | **Customer Value** | ✅ **Direct.** A renamed company's search result now explains itself. **The first slice today that a salesperson would notice** |
