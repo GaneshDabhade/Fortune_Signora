@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `56b9c53`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `acb774b`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `56b9c53`, 2026-08-05.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `acb774b`, 2026-08-05.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`56b9c53`** — the certified commit itself |
+| **`main`** | **`acb774b`** — the certified commit itself |
 | **`integration`** | **ahead of `main`** — Lane A's claim and Lane C's next batch arrived after the snapshot, which is the model working |
-| **Release candidate** | **None pinned.** Cycle 55 promoted **TASK-414's impact analysis and the published queues**, after certification refused once |
-| **Certification** | ✅ [`56b9c5361678`](certification/reports/56b9c5361678.md) · migration head **`0038`** · protocol **v2** · **attempt 2; attempt 1 refused and is recorded** |
+| **Release candidate** | **None pinned.** Cycle 56 promoted **TASK-405 — a signal's resolution, as a record rather than a field** |
+| **Certification** | ✅ [`acb774b28ac7`](certification/reports/acb774b28ac7.md) · migration head **`0038`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -28,9 +28,9 @@
 | **Customer value this cycle** | ✅ **Yes.** A seller can open an account, **ask who to talk to**, and see the evidence behind every name — or why a name has none |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
-> ⚠️ **Certification refused once, two lanes found the defect independently, and QE then defeated its own promotion guard.** `mypy --strict` failed on three unannotated parameters ([B-117](docs/BUGS.md) · [B-323](docs/BUGS.md)); **Lane B found it rebasing and did not fix it, because the file is Lane C's** — obligation to report, never permission to fix. Lane C fixed it in ten minutes with **no relay**. **Then QE piped the guard's verdict into `head`, so an `&&` ran past a `REFUSED`.** The promotion is sound — `promoted == certified`, 357 commits audited clean — but **that is the third exit-code-through-a-pipe error in one day and the first to bypass a safety gate.** Now a rule in [QUALITY_ENGINEERING.md §0a](docs/QUALITY_ENGINEERING.md).
+> ✅ **The first slice all day that reached QE without a relay, and the first cycle where every gate carried its own exit code.** Lane A's TASK-405 surfaced through the rebuilt watcher — *`STANDING lane-a-product-surface is 1 ahead with 2 executable file(s) and awaits QE`* — rather than through the product owner. **The watcher had been reading a fixed branch list that went stale when Lane C moved branches**, which is why three relays were needed; it now discovers branches dynamically and reports standing state, not only movement.
 
-**Repository health:** **3425 backend tests** · **95.27% coverage** *(floor 95)* · **1171 frontend tests** across 55 files · **383 Security Invariants** · mypy strict over **733 files** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **3446 backend tests** · **95.28% coverage** *(floor 95)* · **1171 frontend tests** across 55 files · **383 Security Invariants** · mypy strict over **735 files** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -101,43 +101,29 @@
 
 ---
 
-## 1d · Release summary — 2026-08-05, cycle 55
+## 1d · Release summary — 2026-08-05, cycle 56
 
-**Derived from the promoted commit `56b9c53`.** **Eleven promotions.** Two attempts, one refusal, and the refusal is the useful part.
+**Derived from the promoted commit `acb774b`.** **Twelve promotions.** The quiet cycle, and that is the news.
 
 ### What was promoted
 
-**TASK-414's repository impact analysis** — *reports impact and skips nothing*, the first step of [427](docs/architecture/427-impact-based-validation.md) — plus the **published assignment queues**, three coordination items closed that still read `OPEN`, and the governance package's phases 0 and 1.
+**TASK-405 — *a signal's resolution, as a record rather than a field*.** Lane A's first slice since resuming, in `signal_engine`. Two executable files, no migration.
 
-### Certification refused, and everything about the refusal worked
+### Two mechanisms proved themselves rather than being asserted
 
-**Attempt 1 failed on `mypy --strict`**: three `monkeypatch` parameters without annotations. **Attempt 1's `NOT CERTIFIED` record is committed, not discarded** — *succeeded · failed · aborted* stay distinct only if failures are recorded as faithfully as successes.
+| | |
+|---|---|
+| **The rebuilt watcher** | Reported *`STANDING lane-a-product-surface is 1 ahead with 2 executable file(s) and awaits QE`* — **the first slice today QE picked up without the product owner relaying it.** The old watcher read a **fixed branch list** that went stale the moment Lane C changed branches |
+| **[§0a](docs/QUALITY_ENGINEERING.md)** | **Every gate in this cycle captured its own exit code** — `MAKE_EXIT`, `GUARD_EXIT`, `MERGE_EXIT`, `PUSH_EXIT`, `REV_EXIT`. Not one verdict was read through a filter |
 
-**Two lanes found it independently within the hour.** QE certifying; **Lane B rebasing and re-running its gates because *"the rebase carried executable change."*** Lane B's analysis is the better half and the register says so:
-
-> **The gate is `mypy --strict .` from `backend/`, and the difference is `tests/`.** A lane running its own module's suite **never type-checks its own test files.**
-
-**Lane B did not fix it.** The file tests `certification-guard.py`, which is Lane C's under D-022 — *"the judgement about whose file it is is not this lane's to make."* **Lane C fixed it in ten minutes, with no relay from the product owner**, and titled the commit *"the gate I did not run on my own test."*
-
-### QE defeated its own promotion guard, and the outcome was sound anyway
-
-```
-REFUSED — 56b9c53 has no certification record.
-   325c814f..56b9c536  main -> main          ← the merge ran regardless
-```
-
-**`python3 infra/certification-guard.py $SHA | head -2 && git merge …`** — a pipeline's exit status is its *last stage's*, so `head` returned 0 and the `&&` proceeded past a refusal. The refusal itself was spurious: QE had discarded the certification records seconds earlier, so the guard was answering about a tree that no longer held its own evidence.
-
-**The promotion is sound** — `promoted == certified`, the record restored, the guard re-run cleanly, and `--audit-main` clean across **357 commits**. **But the guard was bypassed by command construction**, and it is the only mechanism between an uncertified commit and `main`.
-
-> **Third instance in one day.** `tail -6` hid a suite that died at 68%; `grep passed` hid a `FAILED — exit 1`; **`head -2` hid a `REFUSED`.** The first two cost a misreading. **QE fixed each instance and not the habit, three times** — which is why it is now [QUALITY_ENGINEERING.md §0a](docs/QUALITY_ENGINEERING.md) rather than another commit message.
+> **Both were written after they had already cost something.** The watcher after three relays; §0a after `tail`, `grep` and `head` each hid a verdict in one day — the third of them running an `&&` past the promotion guard's `REFUSED`. **A rule earned by an incident is the only kind this repository keeps.**
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3425 backend** · 1171 frontend · **95.27%** · **383 invariants** · **733 files typed** · 35 contracts · `tsc` clean and gated |
-| **Release** | **Twenty-five cycles promoted** · `promoted == certified` ✓ · ⚠️ **QE piped the promotion guard's verdict into `head` and an `&&` proceeded past a `REFUSED`** — outcome sound, path not (below) |
+| **Technical** | **3446 backend** · 1171 frontend · **95.28%** · **383 invariants** · **735 files typed** · 35 contracts · `tsc` clean and gated |
+| **Release** | **Twenty-six cycles promoted** · `promoted == certified` ✓ · **every gate in this cycle captured its own exit code** ([§0a](docs/QUALITY_ENGINEERING.md)) |
 | **Architecture** | Reachability 0 doorless · migration `0038` **reversible, verified this cycle** · event catalog 1 known drift |
 | **Dependency** | 69 items, 31 closed |
 | **Customer Value** | ✅ **Direct.** A renamed company's search result now explains itself. **The first slice today that a salesperson would notice** |
