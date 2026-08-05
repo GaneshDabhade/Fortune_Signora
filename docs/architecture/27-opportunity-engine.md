@@ -664,3 +664,47 @@ Removing the identifiers makes the messages safe to show, which is this slice. *
 **The fix is to split the hierarchy** — a base for refusals, which maps to `422`, and a separate one for invariant violations, which does not map at all and becomes a `500`. It is a small change in both modules and it needs one thing this lane cannot supply: **`signora_platform/api/errors.py` registers no catch-all handler**, so an unmapped exception bypasses the standard envelope entirely and returns a bare framework `500`. Splitting the hierarchy without that would trade a wrong code for a wrong envelope.
 
 **Raised as a coordination item rather than half-built**, per the rule that a slice needing another module pauses instead of designing both halves alone.
+
+---
+
+## TASK-406 preparation — the predicate exists; its inputs are the remaining design
+
+**Prepared 2026-08-05 by Lane B**, under the product owner's preparation-first model. TASK-406 is blocked only on sequencing — [TASK-434](../BACKLOG.md) shipped the predicate and is with QE — so this records what the slice will actually be, to eliminate the investigation before it starts.
+
+### Three pieces, and two of them now exist
+
+| | Where | State |
+|---|---|---|
+| **The criteria** | `commercial_profile/public/` `IcpReader` | ✅ **Shipped at TASK-434.** Thirteen views existed and none was the ICP |
+| **The predicate** | `commercial_profile/domain/matching.evaluate` | ✅ **Shipped at TASK-434.** Pure; the caller supplies the facts |
+| **The observed attributes** | — | ⚠️ **Does not exist, and this is the slice** |
+
+**`ObservedAttributes` takes `industry`, `country`, `employees`, and the canonical vocabulary carries all three** — `ClaimAttribute.INDUSTRY`, `COUNTRY`, `EMPLOYEE_COUNT`. So the facts are recorded. **What is missing is the step from claims to a value.**
+
+### Why that step is a design and not a lookup
+
+`knowledge_graph/public/` publishes *"identity and evidence, **never a resolved value**"*, and [22](22-knowledge-graph.md) states the consequence deliberately:
+
+> *"If a downstream module demonstrates it needs a resolved value, that is a **projection to design with its rule stated** — not a convenience method."*
+
+**TASK-406 is that demonstration.** It reads `ClaimSet` for the three attributes and must decide which claim is *the* observed value.
+
+### The precedent is in the same module and is exact
+
+**`select_name` already does this for the account name** and states its rule in the code: *"the most recently observed claim wins… ties break on provider name"*, reporting `NameAgreement` alongside — and it explicitly refuses provider precedence, because *"provider precedence is a customer policy… encoding one here would put an unreviewed judgement in the substrate"*.
+
+**The projection TASK-406 needs is that shape, three more times.** Most-recent-wins, ties on provider, agreement reported. Nothing new is invented and the refusal is inherited: a lane must not rank providers here either.
+
+### The one question the slice must answer, and it is not a lane's to assume
+
+**What does a *disputed* attribute mean to the predicate?** `select_name` can return `DISPUTED` — two providers naming the same company differently. For a name the product shows the newest and says so. For an ICP criterion the question is sharper:
+
+> **If one provider says `Fintech` and another says `Banking`, is the account measured or `UNMEASURED`?**
+
+**Both answers are defensible and they are not equivalent.** Taking the newest makes the verdict decisive on evidence the customer can see is contested. Returning `UNMEASURED` is honest and will mark more accounts unknown than a seller expects.
+
+**Recorded rather than chosen.** TASK-434 deliberately left the `UNMEASURED` policy to *"whichever consumer has a reason for it, stated where a customer can see it"* — and this is the first consumer, so this is where that reason gets written down.
+
+### What remains genuinely out of scope
+
+**No fitted weights, no refit, no drift** — TASK-406's own non-goals, and they are a model rather than a measurement. **No synonym catalog** — 443 M1, a reviewed artifact, and TASK-434 asserts the limitation in a test so it stays visible.

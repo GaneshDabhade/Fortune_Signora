@@ -32,3 +32,29 @@ This lane claimed TASK-406, found that lift needs a predicate nothing could supp
 `IcpReader` is the module's **third published read and its thirteenth view** — and the first that carries the criteria. Until it existed no module could read them at all, which is how sixteen consumers accumulated behind a capability nobody could build. `notes` is **not** published: it exists to be read by a human and is explicitly *"never parsed"*, so publishing it would invite exactly the parsing it forbids.
 
 *+23 tests. 3600 backend passed, coverage 95.37%; `icp_reader.py` 100%, `matching.py` 95%.*
+
+---
+
+## Epic C preparation — the one piece that is this module's, and the question in it
+
+**Prepared 2026-08-05 by Lane B.** [TASK-201](../BACKLOG.md) is blocked on [B-205](../BUGS.md) — three documents disagree about whether the People context is buildable — and the product owner ruled *"do not implement against conflicting governance documents."* **Nothing here implements.** It records what this module's share would be, so that when Lane C reconciles the documents the work is scoped rather than surveyed.
+
+### What TASK-201 names as this module's
+
+*"`commercial_profile` (a stable role id, Lane B's)"* — one item, and it does not exist today.
+
+`CommitteeRole` carries **`title` and `part`, and no identifier**. `BuyingCommitteeRoleView` publishes the same two. So nothing outside this module can refer to a particular seat; it can only describe one.
+
+### Why an id is wanted, and why it is not trivial
+
+Epic C's narrowed scope is **role-based intelligence** — C-221: *"do NOT expand the architecture around people… focus on role-based and organization-level intelligence."* **A role that cannot be named cannot be tracked**, so *"the CFO seat has been vacant since March"* needs the seat to have an identity that survives a re-declaration.
+
+**And that is the difficulty.** A committee is stored as a **versioned JSONB declaration**, so:
+
+- **Existing declarations carry no ids**, and they are immutable historical records — *"a change is a new version, never an edit"*. **Ids cannot be backfilled**, only assigned going forward.
+- **A derived id would not be stable.** `(product_id, title, part)` identifies a seat within a version, but renaming *"VP Finance"* to *"CFO"* would mint a new identity for the same seat — which is precisely the tracking the epic wants, broken.
+- **A minted id must survive the next declaration**, which means the write path has to match an incoming role to an existing one — and matching by title is the same instability wearing a different coat.
+
+> **That is a real design question and it is the whole of this module's piece.** It is recorded now rather than discovered mid-slice, and it is **not** answered here: the shape of a role's identity is architecture, and B-205 shows the surrounding documents do not yet agree on the epic it serves.
+
+**Nothing is blocked on it today.** `BuyingCommitteeRoleView` gaining an `id` is additive (§9), and no consumer asks for one yet.
