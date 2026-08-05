@@ -682,6 +682,21 @@
 | **Objective** | **Support can see a workspace's state without a database client.** Today they cannot, and that is how production credentials end up on a laptop |
 
 
+### TASK-426 · A deletion and retention strategy, before there is data to regret
+
+| | |
+|---|---|
+| **Recommendation** | **[438 §2](architecture/438-platform-initiatives.md) shared foundation S1** — the one row this office proposes out of roughly forty capabilities assessed, and the reason is timing rather than importance |
+| **Module** | ⚠️ **Undecided — a repository-wide policy, not a module.** Likely `signora_platform/db/` *(🔴, frozen)* plus a per-module rule |
+| **Status** | **`SEQUENCED`** — **trigger: whichever comes first —** *(a)* the first customer contract naming a retention or erasure obligation, *(b)* the first workspace deletion request, or *(c)* **migration 0050**, because the cost of this rises with every table |
+| **Objective** | **One answer to: what happens when a workspace, a person or a record must go.** Soft versus hard deletion · cascade order · what survives for audit · restoration · legal hold |
+| **Measured 2026-08-05** | **`deleted_at`, `is_deleted` and `soft delete` appear in ZERO files.** There is no strategy, consistent or otherwise, **and nothing has needed one yet.** Meanwhile **26 tables grant `FOR DELETE` and only 10 grant `FOR UPDATE`** — the repository is **edit-averse, not delete-averse**, so erasure is mechanically possible and only the policy is absent |
+| **Why now rather than at GA** | **The erasure surface is near-zero today.** [C-221](LANE_COORDINATION.md), ruled 2026-08-05, keeps person-level data out of the platform — *"do not expand the architecture around people until we have a reliable provider capability."* **This is the cheapest moment in Signora's life to decide what erasure means**, and every migration after this makes it dearer |
+| **The decision it contains** | **What survives an erasure?** **Immutability says a record of what was true then must not be rewritten** (§2, AC-47). **Erasure says a person's data must go.** Both are correct and they meet in the same row. **Recommended shape: erase the person, keep the event** — a signal that says *a named person changed role* becomes *a role changed*. **The business fact survives; the identity does not** |
+| **Not in scope** | **Backup and restore.** `make dr` proves **restart survival**, not backup, and a backup policy is a separate absence — assessed in [438 §0④](architecture/438-platform-initiatives.md) and **not proposed** |
+| **ADR candidate** | **The erasure/audit boundary.** A retention rule with no executable check is a comment — the same standard [TASK-421](#task-421) sets for PII masking |
+
+
 ### TASK-411 · Usage Accounting — meter what a workspace consumed
 
 | | |
