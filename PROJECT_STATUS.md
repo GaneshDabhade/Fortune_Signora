@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `3ab3111`, 2026-08-04.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `1e55191`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `3ab3111`, 2026-08-04.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `1e55191`, 2026-08-05.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`3ab3111`** — the certified commit itself |
+| **`main`** | **`1e55191`** — the certified commit itself |
 | **`integration`** | **ahead of `main`** — Lane A's claim and Lane C's next batch arrived after the snapshot, which is the model working |
-| **Release candidate** | **None pinned.** Cycle 51 promoted **Lane C's first Platform Foundation batch** — seventeen commits, three repository generators, and the ruling that gave `infra/` an owner |
-| **Certification** | ✅ [`3ab3111c8263`](certification/reports/3ab3111c8263.md) · migration head **`0038`** · protocol **v2** |
+| **Release candidate** | **None pinned.** Cycle 52 promoted **the lane consolidation** — module assignment becomes authoritative, and the board stops showing one lane holding every module |
+| **Certification** | ✅ [`1e5519191208`](certification/reports/1e5519191208.md) · migration head **`0038`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -28,7 +28,7 @@
 | **Customer value this cycle** | ⚠️ **None, and the lane said so first**: *"Nothing a customer can see yet, and that is stated rather than dressed up."* Under §2 this is correct work that has not reached a customer, **recorded as infrastructure rather than reported as a capability** |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
-> ✅ **`infra/` has an owner for the first time, and [C-010](docs/LANE_COORDINATION.md) is closed.** Lane C's remit was expanded by the product owner to **Platform Foundation** — `infra/`, the `Makefile`, environment profiles, launchers, the demo lifecycle. **Four defects had landed in that gap** ([B-007](docs/BUGS.md), [B-012](docs/BUGS.md), [B-013](docs/BUGS.md), [B-014](docs/BUGS.md)) because no lane was assignable to it. **QE's gates were never in the gap and did not move**: the test is not the directory but *whether a change alters what a gate means or merely whether it runs* — a repair so QE can certify is QE's, a new capability is Lane C's.
+> ✅ **The board stopped being wrong, and a lane stopped being blocked by it.** Lane C's consolidation makes **module assignment authoritative** and renders the dashboard from it rather than guessing from the board — an audit found **two rows that disagreed**. Until this promoted, Lane B read a board showing Lane A holding every module and **had nothing it could claim.** The underlying defect is [C-213](docs/LANE_COORDINATION.md): a coordination row copied the assignee alongside the module, the module moved, and only one copy was updated — **two days lost to one word.** [428](docs/architecture/428-lane-coordination-model.md) proposes making that class unrepresentable and **awaits the product owner's ruling.**
 
 **Repository health:** **3374 backend tests** · **95.22% coverage** *(floor 95)* · **1171 frontend tests** across 55 files · **383 Security Invariants** · mypy strict over **722 files** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
@@ -101,36 +101,32 @@
 
 ---
 
-## 1d · Release summary — 2026-08-04, cycle 51
+## 1d · Release summary — 2026-08-05, cycle 52
 
-**Derived from the promoted commit `3ab3111`.** **Seven promotions today.** Seventeen commits, and the one that matters gives `infra/` an owner.
+**Derived from the promoted commit `1e55191`.** **Eight promotions.** This one unblocked a lane that could not see work it was entitled to claim.
 
 ### What was promoted
 
-**Lane C's first Platform Foundation batch**, collapsed from 59 commits to 17 and rebased onto `main` before QE saw it. Three repository generators — `implementation-status.py`, `project-history.py`, `repository-dashboard.py` — twenty-two architecture documents, four ADRs, eight `READY` task rows, and two governance amendments **drafted by Lane C on the product owner's instruction, which is the only route by which `CLAUDE.md` is amended.**
+**The lane consolidation.** Eight commits: module assignment becomes authoritative, the dashboard **reads the assignment table instead of guessing from the board**, an audit of module ownership found **two rows that disagreed**, and [C-213](docs/LANE_COORDINATION.md) is recorded as *unfixable by anyone* — which is why the lanes stopped.
 
-### The gap that closed
+**Also carried:** [427](docs/architecture/427-impact-based-validation.md) impact-based validation and [428](docs/architecture/428-lane-coordination-model.md) the coordination model, both **prepared and awaiting a ruling** — neither is implemented, and the documents say so.
 
-**[C-010](docs/LANE_COORDINATION.md) had been open since 2026-08-01**: `infra/`, the `Makefile` and repository process had **no assignable lane**, and four defects landed there — QE could not fix them because it changes no production code, and no feature lane owned them. **Lane C's remit now covers them.**
+### Why it mattered that this promoted rather than sat
 
-### And the boundary QE asked about, answered before it was filed
+> **Coordination state travels the same pipeline as code**, so a ruling made on one day reaches the lanes when QE promotes it. **Lane B read a board showing Lane A holding every module and had nothing to claim** — not because it was blocked, but because the correction existed only on a Product Office branch.
 
-QE noticed that three `infra/` defects it had fixed hours earlier — [B-112](docs/BUGS.md), [B-114](docs/BUGS.md), [B-116](docs/BUGS.md) — would fall to Lane C under the new ruling, and **declined to open a coordination item because the ruling was still on a lane branch**. Lane C answered it as a Category 1 clarification:
+**That is the invisibility failure [428](docs/architecture/428-lane-coordination-model.md) diagnoses**, observed live while the document describing it waited in the same queue.
 
-> **The test is not the directory. It is whether the change alters what a gate *means* or merely whether it *runs*.** A repair so QE can certify is QE's; a new capability is Lane C's. **And the symmetry is the point: Lane C may not verify governance it authored, and QE may not be made to wait on Lane C to repair the instrument it certifies with.**
+### A gap in QE's own monitoring, found by the product owner
 
-**QE verified it was a clarification rather than a change wearing that word** — it derives from two rules that already exist, and applying it changes what nobody does tomorrow, which is the §2 test.
-
-### Checked beyond the gates
-
-The three generators were **run**, not merely type-checked: all exit 0. **One operational note passed to Lane C rather than filed** — regenerating dirties the working tree, and `make certify` requires a clean one, so a session that regenerates immediately before certifying will hit a confusing `tree_is_clean` failure. No gate invokes them, so nothing is at risk today.
+**QE's watcher fires on branch *movement*.** A branch sitting still while eight commits ahead raises no event — so `lane-c-sync` was invisible to QE for as long as Lane C did not push to it. **A seven-minute standing-state sweep now runs in QE's session runtime**, reading position rather than change. It is **not** in the repository: §20c-2 forbids schedulers there, and this is QE's own polling, like the watcher beside it.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
 | **Technical** | **3374 backend** · 1171 frontend · **95.22%** · **383 invariants** · **722 files typed** · 35 contracts · `tsc` clean and gated |
-| **Release** | **Twenty-one consecutive cycles with no process failure** · `promoted == certified` ✓ · **the SHA was read from the manifest, which is cycle 50's lesson applied** |
+| **Release** | **Twenty-two consecutive cycles with no process failure** · `promoted == certified` ✓ · SHA read from the manifest |
 | **Architecture** | Reachability 0 doorless · migration `0038` **reversible, verified this cycle** · event catalog 1 known drift |
 | **Dependency** | 69 items, 31 closed |
 | **Customer Value** | ✅ **Direct.** A renamed company's search result now explains itself. **The first slice today that a salesperson would notice** |
