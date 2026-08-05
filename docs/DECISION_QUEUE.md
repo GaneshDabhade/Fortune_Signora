@@ -2,9 +2,11 @@
 
 **The single place the product owner reviews when making rulings.** Established 2026-08-05 by product owner directive.
 
-> ## ✅ Nothing is waiting on you.
+> ## ⚠️ Two things are waiting on you.
 >
-> **The 2026-08-05 ruling cleared every actionable item.** **Fourteen approved, three confirmed, eight deferred, three closed** — and the four platform items collapsed into one ADR. **Every remaining row below is either deferred by you or blocks nothing being built.**
+> **① An owner for `signora_platform/`** — [TASK-418](BACKLOG.md) and **[TASK-901](BACKLOG.md)'s seven slices** sit behind it. **② [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-rules-disagree-about-who-may-add-one)** — small, and every future write surface hits it.
+>
+> **The 2026-08-05 ruling cleared every item that existed when it was made.** Two have arrived since. **Fourteen approved, three confirmed, eight deferred, three closed** — and the four platform items collapsed into one ADR. **Every remaining row below is either deferred by you or blocks nothing being built.**
 >
 > **This is the healthy state, not an empty document.** *"Our objective is not to close the maximum number of governance items. Our objective is to maximize engineering throughput."*
 
@@ -26,6 +28,23 @@
 **Two kinds of column.** **Derived** — status, blocks, lanes waiting — computed from [`LANE_COORDINATION.md`](LANE_COORDINATION.md), [`BACKLOG.md`](BACKLOG.md) and [`modules.toml`](coordination/modules.toml). **Judgement** — priority, recommendation, cost — Lane C's.
 
 > **`python3 infra/decision-queue.py --check` fails when this file and the register disagree.** It reported every ruled row still sitting here within a minute of the ruling, which is how this rewrite got scoped.
+
+---
+
+## C-224 · A new write surface needs an authorization `Resource`, and two rules disagree about who may add one
+
+✅ **On `integration` at `b6313ed`** — it promoted with cycle 58, so it is **actionable now**, not pending. *(I first wrote that it was still on a lane branch. It is not; `--check` found it in the register, which is why the check reads the register rather than trusting the queue.)*
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, implementing [TASK-405](BACKLOG.md) — **at the route, after the domain, persistence, use case and read surface were complete and green** |
+| **Summary** | A signal's resolution must call `context.authorize(Resource.?, Action.?)`. **None of the thirteen existing resources is a signal.** Adding one takes **two files with opposite authorities** |
+| **The conflict** | `enforcer.py`'s `Resource` enum is **🔴 — product owner + ADR** *(`signora_platform/**`)*. `policy.csv` is **any lane, append-only** *(§20e, "registries every lane extends")*. **They are one registration in two files**: a policy row naming an absent enum member is unreachable; an enum member with no policy row denies everyone |
+| **Impact** | **One route** — `POST` a resolution. **TASK-405 is not blocked**; everything else shipped |
+| **Lanes waiting** | **Lane A**, for one route. And **every future write surface** hits this |
+| **Priority** | **P2 — small, and it recurs** |
+| **Recommended** | ✅ **Ratify what the repository has already done twelve times.** **Every resource after `workspace` and `member` was added by a feature lane**, three with inline justifications citing §20a — *"a use of the platform rather than a change to it."* **Amend §20a's carve-out to name authorization resources explicitly**, so the practice becomes the written rule instead of twelve separate justifications. **The safety argument points the same way**: an enum member alone **grants nothing** — `policy.csv` grants, and that file is *already* any-lane append-only. **The 🔴 half is the harmless half** |
+
 
 ---
 

@@ -8,6 +8,8 @@
 
 **I placed Account 360 in wave 1 on the grounds that it *"needs no decision from anybody."* That is true of what it can deliver and false of the screen as a whole.**
 
+> ⚠️ **CORRECTED 2026-08-05 — read this before the counts below.** **The buildable set is TEN, not eleven.** The technology stack section is **🟨, not 🟩**: `USES_TECHNOLOGY` is derived, stored and exported through `public/`, and **no HTTP route returns it.** This document also counted it twice. **Every *"eleven"* below means ten.** Full correction in [§ the technology stack section](#-correction-2026-08-05--the-technology-stack-section-is-not-buildable-and-this-document-counted-it-twice) — found by **Lane A at [C-225](../LANE_COORDINATION.md), before writing a line.**
+
 **The approved screen has 27 sections. Reading them individually rather than counting endpoints: eleven are served by modules that exist, and the rest are not.** Two of them are blocked by **O1**, the Person decision, which I named as the wave 6 blocker without noticing it also reaches into wave 1.
 
 > **So wave 1 is a *bounded subset* of Account 360, and the boundary is stated here rather than discovered during implementation.** This is `CLAUDE.md` §2's rule applied to my own recommendation: *"when a slice's demonstration needs a paragraph of architecture, look for the smaller slice inside it."*
@@ -30,7 +32,7 @@
 | **The account summary paragraph** | `ai_platform` `/narration` — `statements`, `facts`, **`evidence_unchanged`**, `prompt`, `model`, `vendor` | 🟩 |
 | **Opportunities** — 3 open, 4 closed in 12 months | `opportunity_engine` `/accounts/{id}/opportunity` | 🟩 |
 | **Timeline** — 412 entries | `timeline` — `kind`, `occurred_at`, `source_module`, `source_ref`, `detail` | 🟩 |
-| **Technology stack** — Salesforce, SAP, Azure, Okta | `knowledge_graph`, `EntityKind.TECHNOLOGY` | 🟩 |
+| ~~**Technology stack** — Salesforce, SAP, Azure, Okta~~ | `knowledge_graph`, `EntityKind.TECHNOLOGY` | ⚠️ **🟨 — corrected 2026-08-05, see below** |
 | **Competitors** — Cadenza, Orbital, in-house build | `commercial_profile` `GET /competitors` — **[ADR-0403](adr/0403-signal-engine-reads-a-declaration.md), ratified and shipped** | 🟩 |
 | **Contacts** — 24 known, 6 on the committee | **Person** — ✅ **ADR-0400 ratified 2026-08-04** | 🟠 |
 | **Org chart** — confirmed vs inferred | **Person** — ✅ **ADR-0400 ratified 2026-08-04** | 🟠 |
@@ -69,6 +71,35 @@
 | **A second narration, score or research call** | All three exist and are published. **Reuse, do not re-derive** |
 | **A single-account identity lookup** | The batch endpoint answers a request for one perfectly well, and `knowledge_graph` says so in the file |
 | **Any write path** | Account 360 in wave 1 is read-only. `TransitionOpportunity` is the opportunity's write surface and belongs to its own slice |
+
+### ⚠️ Correction, 2026-08-05 — the technology stack section is not buildable, and this document counted it twice
+
+**Found by [Lane A at C-225](../LANE_COORDINATION.md), on claiming [TASK-417](../BACKLOG.md) and checking each section against the routes that actually ship — *before writing a line*.** **That is the check this document should have run on itself.**
+
+| Layer | State |
+|---|---|
+| `application/relationships.py` | ✅ `TECHNOLOGY_DETECTED` opens a `USES_TECHNOLOGY` edge; `TECHNOLOGY_REMOVED` ends it |
+| `GraphQueries.relationships(...)` in `knowledge_graph/public/` | ✅ exists |
+| `knowledge_graph/interface/router.py` | ❌ **serves `account-identities` and `account-search`, and nothing else** |
+
+> **So it is not a missing capability. It is a capability with no customer-facing edge** — derived, stored, exported through `public/`, and **unreachable by a browser.**
+
+**This document marked it 🟩 by checking that the module and the entity kind exist.** 🟩 was supposed to mean *served by an endpoint that ships*, **and no endpoint serves it.** **The wrong check produced the right-looking symbol**, which is exactly the class §2 warns about.
+
+**And it was counted twice** — once in the 🟩 list and once again in the running total, so *"eleven sections"* was arithmetic over a set containing a duplicate.
+
+## The count, corrected
+
+| | |
+|---|---|
+| **Buildable in wave 1** | **10 sections** — every one served by a route that ships today |
+| **Technology stack** | **🟨 — needs one route on `knowledge_graph`**, which is **Lane B's**, and is not in wave 1's scope |
+| **Absent by design** | **7 ⬜ sections** — rendered as designed empty states naming what would fill them |
+
+> **[TASK-417](../BACKLOG.md) is not blocked and Lane A is building.** **Ten sections is still the right first slice**, and the correction removes one section rather than the wave.
+
+**The batch endpoint in §2 renders ten, not eleven.** ✅ **No other section in this document was verified by the same wrong method** — each of the other ten names a route in `interface/router.py`, re-checked on 2026-08-05.
+
 
 ## 4 · How the absent sections appear
 
