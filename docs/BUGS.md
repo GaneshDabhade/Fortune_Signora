@@ -126,6 +126,29 @@ Such a row names the code, records **Current assignee: none — not assignable**
 /home/ganesh/Projects/Signora-QE/backend/.venv/bin/pytest --cov
 ```
 
+### The mechanism, found by Lane C — and one test that demonstrates it exactly
+
+**Lane C diagnosed the cause while QE was blocked by the symptom**, and their finding is the better one:
+
+> `infra/docker-compose.yml` line 6 reads **`name: signora-v2`, hard-coded.** `environments.py` derives `compose_project = signora-<name>` per environment. **Repository-wide search for `COMPOSE_PROJECT_NAME`: no results.** So every lane's `docker compose` targets one project and all four clones share one PostgreSQL server.
+>
+> **"It is an enforcement problem wearing a design problem's clothes."**
+
+**The repository already allocates every isolation the directive asks for** — a database, an auth database, a Redis index, a bucket and a compose project, for each of nine environments. **Three of those allocations are ignored by the code that would have to honour them.** Nothing needs designing; something needs wiring.
+
+**`B-118` and `B-317` moved to Lane C as Platform Foundation on the product owner's direction.** QE raised this while blocked by it, and `infra/` is not QE's to change.
+
+#### One test demonstrates it in a single line
+
+```python
+# backend/tests/certification/test_disposable_database.py:87
+name = "signora_certify_selftest01"          # ← fixed, in every clone
+```
+
+**A run on a quiet database gave `1 failed, 3473 passed`** — against **40** and **238** on the same code minutes earlier. **The one failure was this test**, asserting *"a previous run left this behind"*, because Lane A's suite reached the identical hard-coded name at the same moment. The database was **gone seconds later**, which is what a race looks like rather than a leak.
+
+> **That single failure is the whole bug at 1:3474 scale**, and it is the cleanest evidence in this row: **a fixed name is only safe when the server is not shared.**
+
 ### Why this is worse than a failing test
 
 **The failures land in modules the slice never touches** — `simulation`, `sales_engagement`, `knowledge_graph`, `observation_engine` — and they name real-looking causes. **A lane reading that list would chase a phantom in its own code**, and QE reading it would file a defect against a lane that did nothing wrong.
