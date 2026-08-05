@@ -4077,6 +4077,56 @@ KeyError: '0035'
 
 **What this lane is doing meanwhile.** **Epic E1**, which touches no migration yet. **If E1 adds one, this lane will number it after whatever head exists at that rebase and say so** — which is the same rule, applied at the only moment it can be applied correctly.
 
+## C-328 · TASK-406 asks `commercial_profile` to read the pipeline, which a contract forbids by design
+
+| | |
+|---|---|
+| **Raised by** | **Lane B**, 2026-08-05, on claiming [TASK-406](BACKLOG.md) and running the verification its own row demands **before writing a line** |
+| **Owner** | **The product owner** — it decides which module owns a measurement, which is a bounded-context question |
+| **Status** | `OPEN` — **and [TASK-406](BACKLOG.md) is `BLOCKED` on it.** Lane B has written no code and is not proposing to take the decision |
+| **Blocks** | **A-iv only.** Every other slice in `commercial_profile` is unaffected |
+
+### The problem, in one line
+
+> **The ICP is declarable today and nothing tells a customer whether it is any good** — and measuring that requires outcomes the declaring module is architecturally forbidden to see.
+
+**[TASK-406](BACKLOG.md)'s row anticipated this exactly**: *"a read of `opportunity_engine`'s `public/` — **verify the edge exists in [05](architecture/05-module-dependencies.md) before writing it; if it does not, that is a `C-` item, not a new import.**"* **It does not exist. It is refused on purpose**, and the refusal carries its reasoning in `pyproject.toml`:
+
+> *"`commercial_profile` records what a customer declares. **If it could read a signal, a score or an opportunity, "declaration" would quietly become "declaration informed by our own conclusions"** — the module would start computing, and the one boundary it has would be gone."*
+
+**`modules.opportunity_engine` is on that contract's forbidden list in full** — not merely its inner layers — so this is not a `public/` question that a well-behaved import would satisfy.
+
+### The affected modules
+
+| | |
+|---|---|
+| **`commercial_profile`** | Owns the ICP declaration, its versioning and `GET /icp-segments`. **Forbidden from reading eleven pipeline modules**, `opportunity_engine` among them |
+| **`opportunity_engine`** | Owns the outcomes. Publishes `OpportunityQueries`, `Stage`, `TERMINAL_STAGES`, `Qualification` and `TrackedOpportunity`. **Already permitted to read `commercial_profile.public`** — the reverse contract forbids only that module's inner layers |
+
+**The asymmetry is the whole finding: the direction A-iv needs is closed, and the opposite direction is already open.**
+
+### The alternatives
+
+| | | |
+|---|---|---|
+| **A** | **`commercial_profile` reads `opportunity_engine.public`** | ⛔ **Breaks the contract and the principle behind it.** Would require deleting a line whose comment explains why it exists. **Not recommended, and recorded so the option is visibly rejected rather than silently unavailable** |
+| **B** | **The measurement lives in `opportunity_engine`**, reading the ICP through `commercial_profile.public` | ✅ **Uses an edge that already exists**, in the direction already permitted. The module that owns outcomes measures against them; the module that records a declaration goes on only recording it |
+| **C** | **A third module or read model** joining both through their contracts | Architecturally clean and **the largest.** A new bounded context is 🔴, and nothing else yet needs it — the speculative structure §6 refuses |
+
+### The recommendation, which is input and not authority
+
+> **B.** It is the only one that adds no edge, moves no boundary and needs no ADR — **the measurement is a fact about opportunities, and `opportunity_engine` already owns those.** Reading the ICP to score it against outcomes is exactly what its existing permission to read `commercial_profile.public` was written for.
+
+**The trade-off is a real one and is stated rather than buried:** the customer-facing surface is the **ICP Builder**, which is `commercial_profile`'s screen, so under B the value a seller reads is computed by a module they never see named. **That is already true of every derived fact in the product**, and the alternative is worse — a declaring module that grades its own input.
+
+**Implementation impact under B:** no migration, no new table, **no new dependency edge** · lift stays derived rather than stored (§2) · the endpoint's owning module changes, which is the part that is not a lane's to decide.
+
+### What Lane B did instead
+
+**Marked [TASK-406](BACKLOG.md) `BLOCKED`, wrote no code, and claimed the next `READY` row.** §20e: *"a dependency on a decision nobody has made is architectural however small the code would be"* — and *"I could just add it"* is how an architectural blocker becomes a silent design decision inside a feature slice.
+
+---
+
 ## C-326 · Epic E1 has no path for a customer's own system to reach the pipeline
 
 | | |
