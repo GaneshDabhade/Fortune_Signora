@@ -385,6 +385,12 @@ Decisions required    what the product owner must rule before it can start
 
 **A discovery that produces one ruling and no tasks has succeeded if it stopped a concept being built twice.** **A register row is never a task, and rows are never a productivity measure.**
 
+**Six measures, not one** ([D-081](DECISION_REGISTER.md) §6): **architectural surprises prevented · unnecessary capabilities removed before implementation · repository reuse increased · foundational concepts identified early · multiple consumers building on shared capabilities · implementation arriving to find the foundations already there.**
+
+> ### ⛔ **An earlier finding is never preserved because it exists.**
+>
+> ***"The objective is architectural correctness, not historical consistency"*** ([D-081](DECISION_REGISTER.md) §1). **[447](architecture/447-signal-center-traceability-audit.md) invalidated [446](architecture/446-companies-traceability-audit.md) within the hour and that was the most valuable thing it did.** **A register that only accretes is a register nobody can trust to be current.**
+
 **The corollary, and it is the harder half:** **a candidate that turns out to be already built is a *result*, not a wasted pass.** **Six of the fourteen foundations the product owner listed were already in the repository, one is forbidden by the ratified Statelessness principle, and one is declared-and-unbuilt with its reason written into `timeline`'s own code.** **Reporting that ratio honestly is the reuse policy working.**
 
 **The ranking function is [441 §5 · P-01 · Domain precedence](architecture/441-people-roadmap.md), applied as a sort rather than as a rule checked afterwards**: a finding's priority is *how many approved screens would otherwise build their own version of it.*
@@ -446,6 +452,20 @@ Decisions required    what the product owner must rule before it can start
 > **Each time, the screen was right and the obvious implementation was wrong.** **That is the shape to look for**, and it is why the frame matters: *"the UI is wrong"* invites a redesign nobody asked for.
 
 **A challenge is a recommendation with evidence, never a refusal to build.**
+
+#### Before proposing infrastructure — four questions ([D-081](DECISION_REGISTER.md) §2)
+
+> **Does this mechanism already exist elsewhere? · Is there an existing lifecycle expressing the same behaviour? · Can this be a reusable *predicate* rather than a new runtime capability? · Can existing platform behaviour satisfy it?**
+
+**[447 §0](architecture/447-signal-center-traceability-audit.md) is why they are written down.** **[R-03](DOMAIN_DISCOVERY_REGISTER.md) was one audit away from acquiring a scheduler**, and the third question removed it: `Snoozed.until` proves a deadline is a read-time predicate. **`cron`, `scheduled_for`, `wake_at` and `due_at` return zero repository-wide.**
+
+> ## **Removing an unnecessary capability before it is implemented counts as much as finding a missing one** ([D-081](DECISION_REGISTER.md) §6).
+
+#### At every human completion point — four more ([D-081](DECISION_REGISTER.md) §4)
+
+> **Should this emit a business event? · Which downstream consumers require it? · Does an equivalent already exist? · Can existing event infrastructure be reused?**
+
+**Reusable domain events, never feature-specific notifications.** **[R-14](DOMAIN_DISCOVERY_REGISTER.md) is what these found**: two screens whose completion point is a human decision, and **neither emits an event because no consumer had appeared when they were built.** **Both now have one.**
 
 #### Two sweeps every audit runs ([D-080](DECISION_REGISTER.md) §4, §5)
 

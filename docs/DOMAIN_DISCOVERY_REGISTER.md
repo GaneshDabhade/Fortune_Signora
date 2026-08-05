@@ -46,7 +46,7 @@
 | 5 | **People Intelligence** | **`Person` · `Affiliation` interval** · org chart · relationship | — | ⛔ **R-01** — planned, [441](architecture/441-people-roadmap.md) |
 | 6 | **Opportunity Intelligence** | Opportunity · `Stage` · contribution · **approval** · competitor · **call** | — | ✅ opportunity · ⛔ **R-03 · R-07** |
 | 7 | **Signal Center** | Signal · catalog · **`Resolution`** · **the triage event** · rule precision · **snooze** | **Event bus** | ✅ **Audited in full — [447](architecture/447-signal-center-traceability-audit.md).** 10 elements: 6 ✅ · 2 🟡 · 2 🔴, **no new row and no new foundation.** ⚡ **It *supplies* the mechanism R-03 needed** · ⛔ **R-06** the event · 🟡 **R-07 · R-13** |
-| 8 | **ICP Builder** | Icp · criterion · **account matching** · closed-won outcome · lift | — | ✅ declaration · ⛔ **R-00** · 🟨 outcomes |
+| 8 | **ICP Builder** | Icp · criterion · **account matching** · closed-won outcome · lift · **7 criterion groups** | — | ✅ **Audited in full — [448](architecture/448-icp-builder-traceability-audit.md).** 12 elements: 4 ✅ · 1 🔨 · 1 🟠 · 3 🔴 · **3 ⬜.** ⚡ **R-00 shipped and validated here** · ⚡ **R-01 split across M-D/M-E** · ⛔ **R-14** · ⚠️ **3 of 7 criterion groups modelled** |
 | 9 | **Workflow Automation** | Rule as condition tree · **simulation** · **approval** · **account matching** *(a condition)* | **Outbox · relay · ARQ** ✅ **built** | ✅ [ADR-0402](architecture/adr/0402-a-rule-is-data.md) · ⛔ **R-03 · R-00** |
 | 10 | **CRM Integrations** | Connection · source adapter · field mapping · sync health · **account matching on arrival** | **Event bus** | ✅ **[C-326](LANE_COORDINATION.md) ruled** · ⛔ **R-00** |
 | 11 | **AI Copilot** | Six verbs · evidence set · grounding · **scope** · **propose, attribute, reverse** | **AI Platform** ✅ | ✅ **Audited in full — [445](architecture/445-ai-copilot-traceability-audit.md).** 12 elements: 4 ✅ · 4 🟡 · 2 🟠 · 2 🔴, **and no new backlog row.** ⛔ **R-12** *(the verb taxonomy and the surface model — [C-419](LANE_COORDINATION.md))* · ⛔ **R-03 · R-02** · 🟡 **no `ai_reasoning` `Resource`** |
@@ -70,6 +70,7 @@
 | **R-02** | **Scope · saved view** | **5 named, and the shell inherits into all 16** | **[TASK-433](BACKLOG.md)** — awaiting a naming ruling |
 | **R-03** | **Proposed → approved → applied → withdrawn** | **6** | **[TASK-431](BACKLOG.md)** — awaiting a shape ruling. ⚡ **Its deadline half is answered: [447 §0](architecture/447-signal-center-traceability-audit.md) — `Snoozed.until` proves a window is a *read-time predicate*, never a scheduled transition. No scheduler, no timer, no expiry job** |
 | **R-01** | **People · Affiliation** | **4 + Executive Dashboard's movements** | ✅ **Ruled [D-074](DECISION_REGISTER.md)** · **[TASK-427–430](BACKLOG.md)** |
+| **R-14** | **A human completion point that emits no business event** | **2 — Signal Center · ICP Builder** | ⛔ **Not systemic — `opportunity.stage_changed` and `target_accounts_changed` both exist, created when a consumer appeared.** **The rule is checkable: when a screen's completion point is a human decision, ask who downstream is now waiting.** [TASK-432](BACKLOG.md) is the first; `icp.declared` is the second |
 | **R-13** | **The authorization model is short three dimensions** — **spend · field · quantity** | **3 screens, independently** | ⛔ **Casbin's tuple is `(sub, dom, obj, act)`.** Copilot needs *spend*, Companies needs *field* and *quantity*. **An architectural finding, not three feature gaps** |
 | **R-12** | **The six verbs, and *17 surfaces one contract*** | **Every AI surface** | ⛔ **[C-419](LANE_COORDINATION.md)** — six values the design calls closed, and nothing closes them |
 | **R-11** | **Forecast — deal value · plan · fiscal period · team** | **Executive Dashboard, and Opportunity Intelligence shares its aggregates** | ⛔ **[C-418](LANE_COORDINATION.md)** — **the approved UI says *forecast* and `buying_score_engine` refuses to forecast, in writing, twice.** **Four absences, one question** |
@@ -180,6 +181,20 @@
 **R-03 as one composable capability rather than six** · **the audit query surface, which Settings needs as a product surface and operations needs anyway** · **a reviewed vocabulary-agreement catalog, sitting exactly where the Signal Catalog already sits on the least-powerful-author ladder.**
 
 ---
+
+# Part C-2 · 🗺️ The Domain Coverage Matrix — scheduled, not yet due
+
+**Requested by the product owner ([D-081](DECISION_REGISTER.md) §7) *"after 10–15 screens are audited"*, and explicitly *"not necessarily now"*.**
+
+> **Capability × the screens using it × status × planned wave** — *"an architectural map of the entire product."*
+
+| | |
+|---|---|
+| **Due at** | **10 screens.** ✅ **4 audited** — [445](architecture/445-ai-copilot-traceability-audit.md) Copilot · [446](architecture/446-companies-traceability-audit.md) Companies · [447](architecture/447-signal-center-traceability-audit.md) Signal Center · [448](architecture/448-icp-builder-traceability-audit.md) ICP Builder · plus [444](architecture/444-executive-dashboard-domain-assessment.md) Executive Dashboard at screen depth |
+| **Why not now** | **Part B is its ancestor and is already honest at four screens.** **A coverage matrix built at four would show four columns and read as a map of the product** — which is the speculation [D-079](DECISION_REGISTER.md) forbids, one artifact up |
+| **What it will need that Part B lacks** | **The planned wave per capability**, joined from [412](architecture/412-backend-capability-matrix.md), **and the screens-not-yet-audited column stated as unknown rather than empty** |
+
+**Recorded here so it is a commitment with a trigger rather than a good idea in a message.**
 
 # Part D · How this register stays true
 
