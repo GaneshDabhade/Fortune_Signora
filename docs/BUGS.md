@@ -3592,6 +3592,38 @@ cd frontend && npx tsc --noEmit
 
 ---
 
+### B-205 · Three documents disagree about whether the People bounded context is buildable
+
+| | |
+|---|---|
+| **Module** | Repository governance — [`BACKLOG.md`](BACKLOG.md) [TASK-201](BACKLOG.md) and [TASK-427](BACKLOG.md), and [ADR-0400](architecture/adr/0400-person-as-an-entity.md)'s own status block |
+| **Current assignee** | **Lane C** — it authored [441](architecture/441-people-roadmap.md), TASK-427 and the decomposition, and `BACKLOG.md` governance is its own |
+| **Severity** | 🟠 — **a lane acting on the wrong one would create a 🔴 bounded context believing it was unblocked** |
+| **Status** | **`OPEN`** — reported by Lane A, **not fixed**: every row is Lane C's, and finding a defect outside your assignment is an obligation to report it rather than permission to fix it (§20e) |
+| **Found** | 2026-08-05, `1d15198`, by Lane A validating claimability after its queue reached 0 of 5 |
+
+**Steps to reproduce.** Read the three, in this order, on `origin/integration`.
+
+| Says | Where |
+|---|---|
+| *"**Blocked by — Nothing.** No ruling — **ADR-0400 is ratified**"* | [TASK-427](BACKLOG.md) |
+| *"**ADR-0400 is `PROPOSED`, not ratified**, and **it says so in its own status block**"* | [TASK-201](BACKLOG.md) |
+| *"**PRODUCT OWNER APPROVED — 2026-08-04**… **Ratifying this ADR records the bounded context… it neither approves nor unblocks Epic C**"* · *"❓1 is now answered — the provider returns no person name, **which blocks the epic**"* | [ADR-0400](architecture/adr/0400-person-as-an-entity.md) |
+
+**Expected.** One answer to *"may a lane build the `people` bounded context today?"*
+
+**Actual.** Three, and they do not agree.
+
+1. **TASK-201's claim about the ADR is now false.** It says the status block reads `PROPOSED`; the block reads **`PRODUCT OWNER APPROVED`**. The row was right when written and the ADR moved.
+2. **TASK-427 says *nothing* blocks it. The ADR says it neither approves nor unblocks Epic C**, and that ❓1 *"blocks the epic"*. **TASK-427 is the entity — the ADR is explicit that recording the bounded context is not the same as authorising the work**, which is precisely the distinction its own last paragraph draws.
+3. **The ADR's status block is stale about its own location.** It warns *"⚠️ Not yet on `origin/integration` — this file does not exist there"*, and it does exist there. A lane obeying that warning would decline to act on a ruling the repository already carries — **the exact failure [D-076](DECISION_REGISTER.md)'s five decision states exist to prevent, in the file that names them.**
+
+**Why this is 🟠 rather than cosmetic.** A new bounded context is 🔴 — product owner plus ADR. **TASK-427 is the one row of the three a lane would read on claiming**, it is `SEQUENCED` today, and the moment somebody places it, its `Blocked by` cell says *nothing blocks this*. **The safeguard against building a 🔴 on a misreading is that cell, and it currently reads the most permissive of three defensible statements** — which is the failure Lane C named in its own queue an hour earlier: *"the queue must never hold the more optimistic of two defensible readings."*
+
+**Not a coordination item.** Nothing of Lane A's is blocked by it — the queue is empty for unrelated reasons and TASK-427 is `SEQUENCED`, so no lane can claim it today. **This is a defect in what the repository says**, and it will be believed by whoever arrives after the placement.
+
+**For whoever takes it.** The ADR itself is the authority and is the least ambiguous of the three: **recording the decision is not authorising the epic.** TASK-427's `Blocked by` is the cell to correct; TASK-201's sentence about the status block is stale and dated rather than wrong when written; the ADR's *"not yet on integration"* warning has been overtaken and is the cheapest of the three to clear.
+
 ### B-204 · The demo environment shows intelligence about accounts and nothing about the business
 
 | | |
