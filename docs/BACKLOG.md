@@ -222,8 +222,9 @@
 | **Epic** | **Epic C**, [ADR-0400](architecture/adr/0400-person-as-an-entity.md) · [400-epic-c-people.md](architecture/400-epic-c-people.md). **Assigned whole** |
 | **Module** | **A new bounded context — `people`** · `knowledge_graph` (`EntityKind.PERSON`) · `commercial_profile` (a stable role id, Lane B's) · Product Surface |
 | **Status** | ✅ **`READY` — unblocked 2026-08-05, at narrowed scope.** **[C-221](LANE_COORDINATION.md) `APPROVED WITH MODIFICATION`**: *"**Do NOT expand the architecture around people until we have a reliable provider capability.** Epic C should initially focus on **role-based and organization-level intelligence**. Treat named-person intelligence as a future enhancement once supported by provider capabilities. **Avoid speculative architecture.**"* ⛔ **So no `people` bounded context is created**, and nothing models a person's name — **the platform ingests none** ([ADR-0400](architecture/adr/0400-person-as-an-entity.md) ❓1 checked and answered *no*). **What is buildable is what the data already carries**: `title`, `seniority`, `direction`, `occurred_on` |
+| **Decomposed 2026-08-05 — [D-074](DECISION_REGISTER.md)** | **Epic C is four milestones, not one**: **[TASK-427](#task-427--m-d--the-people-domain--a-person-and-an-affiliation-with-an-end)** M-D domain · **[TASK-428](#task-428--m-i--what-the-domain-lets-other-modules-say)** M-I intelligence · **[TASK-429](#task-429--m-e--a-provider-supplies-a-person-identifier)** M-E provider enrichment · **[TASK-430](#task-430--m-u--the-people-experiences-a-customer-opens)** M-U the screens. **This row is not replaced and does not move** — its status, its position and its assignment are exactly as the product owner left them, because **position is priority and priority is not Lane C's.** ⚠️ **The one correction the decomposition makes to the row above: *"Assigned whole"* is no longer true of Epic C.** **A claim on this row means TASK-427 first and TASK-428 S3 second, in that order** — which is a statement of fitness ([D-060](DECISION_REGISTER.md)), never of priority |
 | **Assigned** | **Lane A, directly by the product owner, 2026-08-04**, on Lane C's prepared research, ADR and specification |
-| **Blocked by** | **[C-221](LANE_COORDINATION.md) — ADR-0400's own ❓1, checked first as the ADR instructs, and the answer is *no*.** The platform receives no person name at any point, so an identity model has nothing to identify |
+| **Blocked by** | **[C-221](LANE_COORDINATION.md) — ADR-0400's own ❓1, checked first as the ADR instructs, and the answer is *no*.** The platform receives no person name at any point, so an identity model has nothing to identify. ⚠️ **Narrowed 2026-08-05 by [441 §1](architecture/441-people-roadmap.md): ❓1 gates [TASK-429](#task-429--m-e--a-provider-supplies-a-person-identifier) and everything after it. It does not gate the entity** — an anonymous `Person` with `Affiliation` intervals identifies a role at a company over a period, which is what the pipeline already produces and has nowhere to put |
 | **On claiming** | **ADR-0400 is `PROPOSED`, not ratified**, and it says so in its own status block. A new bounded context is 🔴. The product owner's assignment is the epic approval; **the ADR still needs its ratification stamp, which only the product owner can apply** |
 
 ### TASK-202 · Epic G — Copilot
@@ -697,6 +698,63 @@
 | **Not in scope** | **Backup and restore.** `make dr` proves **restart survival**, not backup, and a backup policy is a separate absence — assessed in [438 §0④](architecture/438-platform-initiatives.md) and **not proposed** |
 | **ADR candidate** | **The erasure/audit boundary.** A retention rule with no executable check is a comment — the same standard [TASK-421](#task-421) sets for PII masking |
 
+
+### TASK-427 · M-D · The People domain — a person, and an affiliation with an end
+
+| | |
+|---|---|
+| **Milestone** | **M-D · People Domain** 🟩 · [441 §1](architecture/441-people-roadmap.md) · stages **S1 · S2** |
+| **Epic** | **Epic C**, decomposed by [D-074](DECISION_REGISTER.md). **[TASK-201](#task-201--epic-c--people-intelligence) is the parent row and is unchanged** |
+| **Module** | **A new bounded context — `people`** · `knowledge_graph` (`EntityKind.PERSON`). **`modules.toml` gains a row when this is placed, not before** |
+| **Status** | **`SEQUENCED`** — **trigger: the first dependent customer-facing capability enters implementation.** ⚠️ **Measured 2026-08-05: the trigger has fired.** **[TASK-202](#task-202--epic-g--copilot) is `READY` and its own row says *"phase 4 needs Epic C"*** — the dependent wrote the dependency down before this decomposition existed |
+| **Objective** | **An anonymous `Person` and an `Affiliation` — *person × company × title × interval*.** *"A VP of Engineering joined Acme in March and left in September"* becomes **queryable**, where today it is an event that passes |
+| **Blocked by** | **Nothing.** No ruling — [ADR-0400](architecture/adr/0400-person-as-an-entity.md) is ratified. **No provider** — the intervals are derived from `RoleChangeValue(title, seniority, direction)` + `occurred_on` + company, **which flow in production today** |
+| **Scope bound — [C-221](LANE_COORDINATION.md), unchanged** | ⛔ **No person's name, anywhere.** *"Role-based and organization-level intelligence"* is exactly what this delivers. **C-221's narrowing is not a constraint on this row — it is its specification** |
+| **Cost, measured** | **`EntityKind.PERSON` — one enum member**, and the docstring reserves it. **`Affiliation` — a new table, never a migration**, because [ADR-0400](architecture/adr/0400-person-as-an-entity.md) stopped a `current_employer` field from ever shipping |
+| **Forbidden in this row** | **No `seniority_score`, no `is_key_contact`, no `priority`, no ordered list read as a ranking.** *"A person is one plausible field away from becoming an influence model."* **Influence is `buying_score_engine`'s and stays there** |
+| **Governance** | **A new bounded context is 🔴 and needs an ADR. [ADR-0400](architecture/adr/0400-person-as-an-entity.md) is that ADR, and it is ratified** |
+| **On placing** | **Moving this to `READY` is the product owner's** — position is priority. **Lane C prepared the row and did not place it** |
+
+### TASK-428 · M-I · What the domain lets other modules say
+
+| | |
+|---|---|
+| **Milestone** | **M-I · People Intelligence** 🟦 · [441 §2](architecture/441-people-roadmap.md) · stages **S3** *(now)* and **S5** *(after TASK-429)* |
+| **Module** | `timeline` · `commercial_profile` *(a stable `CommitteeRole` id)* · `signal_engine` · `people` |
+| **Status** | **`SEQUENCED`** — **trigger: [TASK-427](#task-427--m-d--the-people-domain--a-person-and-an-affiliation-with-an-end) promoted** |
+| **S3 delivers** | **A timeline event with a subject · a committee seat that cites a real affiliation · `new_decision_maker` and `decision_maker_departed` naming what changed.** **Two signals are live and scored today with no subject at all** |
+| **S5 delivers** | **Org chart · relationship graph · champion tracking · executive movement by name.** ⛔ **Gated on [TASK-429](#task-429--m-e--a-provider-supplies-a-person-identifier)** |
+| **Why one row and two stages** | **This is the split the four-milestone separation exists to make visible.** **S3 is C-221's approved scope and needs no provider; S5 is C-221's *"future enhancement once supported by provider capabilities"*.** **A single date for "People Intelligence" would hide a commercial decision sitting in the middle of it** |
+| **Sequencing** | ⚠️ **S3 after [TASK-901](#task-901--seven-modules-consume-the-events-they-declare)** — `runtime-composition` reports **2 of 9** consumers wired, and a projection would land dark |
+| **Cross-module** | **`commercial_profile` gains one field**, on **the trigger that module wrote down itself**: *"the first consumer that needs to cite a particular seat"* |
+
+### TASK-429 · M-E · A provider supplies a person identifier
+
+| | |
+|---|---|
+| **Milestone** | **M-E · Provider Enrichment** 🟩 · [441 §2](architecture/441-people-roadmap.md) · stage **S4** |
+| **Module** | `provider_platform` *(an adapter)* · `provider_normalization` *(a claim attribute)* · `people` |
+| **Status** | **`SEQUENCED`** — **trigger: a provider contract that supplies a person identifier.** ⛔ **A commercial decision, not an engineering one** |
+| **Measured 2026-08-05** | **No person's name enters the platform from any source.** `simulation/generators/enrichment.py` emits `type · title · seniority · occurred_on`; `mappers/enrichment.py` reads `name` for **organisations and technologies only**. **[ADR-0400](architecture/adr/0400-person-as-an-entity.md) ❓1, re-checked and still *no*** |
+| **Provider independence** | ✅ **[D-074](DECISION_REGISTER.md): *"the existence of the People domain must not depend on provider availability."*** **This row exists so that dependency has somewhere to live that is not TASK-427.** `ProviderPersonIdentity` and `IdentityState` are already the provider-neutral shape |
+| **Sequencing** | ⚠️ **[TASK-426](#task-426--a-deletion-and-retention-strategy-before-there-is-data-to-regret) before named people land.** **This is where personal data enters the repository for the first time**, and erasure designed into a bounded context is cheap where retrofitted is not. **`person.forgotten` is TASK-426's first named consumer** |
+| **Also gated here** | **[C-210](DECISION_QUEUE.md) + [C-203](DECISION_QUEUE.md)** — personal data, and rendering a person's name. **Deferred by the product owner *"with future People Intelligence work"*, and this is that row** |
+
+### TASK-430 · M-U · The People experiences a customer opens
+
+| | |
+|---|---|
+| **Milestone** | **M-U · People UI** 🟦 · [441 §2](architecture/441-people-roadmap.md) · stage **S6** |
+| **Module** | Product Surface |
+| **Status** | **`SEQUENCED`** — **trigger: wave 6, unchanged.** [412 §4](architecture/412-backend-capability-matrix.md) |
+| **Delivers** | **The People Intelligence screen · Global Search's people group** |
+| **Position, and why it did not move** | ✅ **[D-074](DECISION_REGISTER.md): *"the customer-facing People Intelligence module may still remain later in the roadmap. The underlying domain should not."*** **The anonymous surface is buildable from S3; the org chart and relationship views additionally need [TASK-429](#task-429--m-e--a-provider-supplies-a-person-identifier)** |
+
+> ### Sequencing principle — **P-01 · Domain precedence** ([D-074](DECISION_REGISTER.md))
+>
+> **A foundational domain is introduced before *multiple* customer-facing capabilities begin building temporary representations of that same concept.**
+>
+> **A temporary representation is a stated absence, a placeholder, or a locally-shaped copy of the concept inside one screen's own module.** **The threshold is two**: one screen shipping an absence is a scope decision, **two is a sequencing defect** — the second is where rework begins. **Checked against [412 §2](architecture/412-backend-capability-matrix.md)'s `Screens` column and §4's wave order, whenever a wave plan is written or amended.** **The full statement and its check are [441 §5](architecture/441-people-roadmap.md).**
 
 > ### Classification — every future initiative carries one ([D-072](DECISION_REGISTER.md))
 >

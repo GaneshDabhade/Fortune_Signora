@@ -240,15 +240,22 @@ def check() -> int:
     stale: list[str] = []
     missing: list[str] = []
 
+    # **`"OPEN" in status.upper()` is B-101, and it was in this file.** C-416's
+    # Status reads *"`RULED` — 2026-08-05, and closed on the same day it was
+    # opened"*: **"opened" contains "OPEN"**, so a ruled item reported as the
+    # product owner's open work with no queue row — the checker inventing the
+    # exact drift it exists to find. `_is_open` reads the *declared* backticked
+    # token first and only falls back to prose, which is why the index checks
+    # below never had this bug. **Every status read here goes through it now.**
     for cid in sorted(q):
         if cid not in reg:
             stale.append(f"{cid} has a row here and no item in LANE_COORDINATION.md")
-        elif "OPEN" not in _clean(reg[cid][1]).upper():
+        elif not _is_open(reg[cid][1]):
             stale.append(f"{cid} is {_clean(reg[cid][1])[:44]!r} — ruled, and still queued")
 
     unowned: list[str] = []
     for cid, (title, status, owner) in sorted(reg.items()):
-        if "OPEN" not in _clean(status).upper():
+        if not _is_open(status):
             continue
         # **An open item naming no owner is the worse case, and it reported
         # `ok` until this existed.** A product-owner item waits on somebody; an

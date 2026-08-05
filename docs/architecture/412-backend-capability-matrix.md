@@ -51,13 +51,26 @@
                      ┌─────────────────────────┐
                      │  ADR-0400 · Person       │ ✅ RATIFIED 2026-08-04 — no longer a blocker
                      └────────────┬─────────────┘
-                          │                │
-                  knowledge_graph      observation_engine
-                          │                │
-                  ┌───────┴────────┐       │
-            People Intelligence   Global Search (3 of 4 types)
-                          │
-                     AI Copilot (committee reasoning)
+                                  │
+                     ┌────────────▼─────────────┐
+                     │  M-D · People Domain     │ 🟩 anonymous Person + Affiliation
+                     │  no blocker · no provider│    ⬆️ MOVED to wave 1.5 (D-074)
+                     └────────────┬─────────────┘
+          ┌──────────┬────────────┼────────────┬──────────────┐
+          │          │            │            │              │
+   knowledge_graph  timeline  commercial_  signal_engine  observation_
+   EntityKind       projection  profile     subject for    engine
+   .PERSON                      seat id     2 live signals
+          │          │            │            │              │
+          └──────────┴────────────┼────────────┴──────────────┘
+                                  │
+                     ┌────────────▼─────────────┐
+                     │  M-I · S3 anonymous      │ 🟦 role-based intelligence
+                     └────────────┬─────────────┘
+       ┌──────────────┬───────────┼────────────┬────────────────┐
+   Account 360    AI Copilot  ICP Builder  Executive Dash   People UI
+   affiliations   committee   4 criteria   "movements"      + Global Search
+   (wave 1 ✅)    (wave 2)    (wave 3)     (wave 4)         (wave 6, unmoved)
 
   ┌──────────────────────┐        ┌──────────────────────────┐
   │  ADR-0040 ⏸ DEFERRED │        │  O3 ⏸ DEFERRED            │
@@ -90,6 +103,12 @@
 
 **Each wave maximises reuse and minimises dependency risk. A wave is not a milestone and names no lane.**
 
+> ⚠️ **Correction 3, 2026-08-05 — the People *domain* precedes wave 2.** **[D-074](../DECISION_REGISTER.md)**, on [440](440-people-roadmap-integration.md)'s measurement: **four screens in waves 1–4 depend on People, and the domain sat at wave 6.** Account 360 already shipped two ⬜ stated absences because of it.
+>
+> **What moved is the domain only.** **Wave 6 keeps the screens** — *"the customer-facing People Intelligence module may still remain later in the roadmap; the underlying domain should not."* **[441](441-people-roadmap.md) is the plan**, at four separate milestones. **The principle that follows is [441 §5 · P-01 · Domain precedence](441-people-roadmap.md), and it now applies to every future amendment of this section.**
+>
+> **All three corrections have the same root**, and it is worth naming once: **waves were placed by reading what a wave delivers, and the misses came from what a wave *consumes*.**
+
 ### Wave 1 — needs no decision from anybody
 
 > **Account 360.** *(One screen. See both corrections below.)*
@@ -104,9 +123,19 @@
 
 **Why it is first and not merely easy:** Account 360 is the flagship record page, and it is the surface that makes every 🟩 module *reachable by a customer for the first time*. **It converts existing intelligence into product without adding any.**
 
+### Wave 1.5 — the People domain, and it contains no screen
+
+> **M-D · People Domain** — an anonymous `Person`, an `Affiliation` interval. **[441](441-people-roadmap.md) S1 · S2**
+
+**Numbered 1.5 rather than 2 deliberately.** **A wave is a set of screens and this contains none** — folding it into wave 2 would put a domain and a screen in one bucket, which is the merge [D-074](../DECISION_REGISTER.md) exists to undo. **It is the first entry in this section that delivers no customer-visible surface**, and it earns that by unblocking four that do.
+
+**Nothing gates it.** No ruling — [ADR-0400](adr/0400-person-as-an-entity.md) is ratified. No provider — **S1–S2 are derived entirely from `RoleChangeValue` + `occurred_on` + company, which flow in production today.** No module that does not exist, beyond the one the ADR approved.
+
 ### Wave 2 — the two interface layers
 
 > **AI Copilot**
+
+⚠️ **Its phase 4 needs Epic C, and [TASK-202](../BACKLOG.md)'s own row said so before wave 1.5 existed.** **That is the dependency the correction above acts on**, written down by the dependent rather than inferred by this document.
 
 **`sales_engagement` and `ai_reasoning_engine` are built, tested, prompt-versioned and unreachable.** The pattern is now at six instances and the fix has never once been a domain change.
 
@@ -134,11 +163,13 @@
 
 **Both are blocked on a signature rather than on engineering.** C-326 has [409](409-inbound-source-port-contract.md) waiting; ADR-0402 is complete with five alternatives assessed. **The moment either is ruled, its wave is ready** — which is why they sit together and late.
 
-### Wave 6 — Person
+### Wave 6 — People experiences
 
-> **People Intelligence · Global Search**
+> **People Intelligence · Global Search** — **M-U, and the screens only**
 
 > ✅ **Unblocked 2026-08-04 — ADR-0400 is ratified.** **This wave's blocker is gone.** Its position is now argued from dependency alone: People supplies the entity Global Search's people group needs, so the order inside the wave stands. Global Search's account group is buildable in wave 3 if wanted; the full four-type surface is here.
+
+> ⚠️ **Amended 2026-08-05 ([D-074](../DECISION_REGISTER.md)) — the domain left; the screens stayed.** **The sentence above was right that this wave's position rests on dependency, and it read the dependency backwards**: it argued People *supplies* Global Search, and concluded People belonged here. **What it did not check is that three earlier waves are supplied too.** **The screens remain correctly placed** — an org chart and a relationship surface additionally need **M-E**, which no wave gates.
 
 ### Wave 7 — Reports
 
@@ -153,6 +184,8 @@
 **They do not front-load the visually impressive.** Executive Dashboard is the screen a buyer sees first and sits in wave 4, because **it needs aggregates that would otherwise be built twice.**
 
 **No wave contains a screen whose blocker is inside it.** A wave that begins by waiting is not a wave.
+
+**And from 2026-08-05, no wave plan ships a *second* stated absence of the same concept** — **[441 §5 · P-01](441-people-roadmap.md)**. The first is a scope decision; the second is where rework starts.
 
 ## 6 · Reuse report
 

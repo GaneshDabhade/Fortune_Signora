@@ -2,11 +2,13 @@
 
 **The single place the product owner reviews when making rulings.** Established 2026-08-05 by product owner directive.
 
-> ## ⚠️ Two things are waiting on you.
+> ## ⚠️ One thing is waiting on you.
 >
-> **① An owner for `signora_platform/`** — [TASK-418](BACKLOG.md) and **[TASK-901](BACKLOG.md)'s seven slices** sit behind it. **② [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-rules-disagree-about-who-may-add-one)** — small, and every future write surface hits it.
+> **[Placing TASK-427](#-task-427--the-people-domains-trigger-has-fired-and-placing-it-is-yours)** — **the People domain.** One row, one position, and **its trigger has already fired.**
 >
-> **The 2026-08-05 ruling cleared every item that existed when it was made.** Two have arrived since. **Fourteen approved, three confirmed, eight deferred, three closed** — and the four platform items collapsed into one ADR. **Every remaining row below is either deferred by you or blocks nothing being built.**
+> ✅ **Both of the items that stood here on 2026-08-05 are ruled and cleared** — **[C-416](LANE_COORDINATION.md)** gave `signora_platform/` a permanent owner and released [TASK-418](BACKLOG.md) with [TASK-901](BACKLOG.md)'s seven slices; **[C-224](LANE_COORDINATION.md)** settled the authorization `Resource`, and `CLAUDE.md` §20a now names it in the carve-out. **Both were ruled by [D-073](DECISION_REGISTER.md).** *(This banner still asked for them the next morning. **`--check` reported C-224 as `STALE` and it was right** — the queue is only true if a ruling removes its own row.)*
+>
+> **The 2026-08-05 rulings cleared every item that existed when they were made.** **Fourteen approved, three confirmed, eight deferred, three closed** — and the four platform items collapsed into one ADR. **Every remaining row below is either deferred by you or blocks nothing being built.**
 >
 > **This is the healthy state, not an empty document.** *"Our objective is not to close the maximum number of governance items. Our objective is to maximize engineering throughput."*
 
@@ -20,8 +22,10 @@
 | **[TASK-406](BACKLOG.md)** | ICP measurement — C-328 ruled, at changed scope |
 | **[TASK-201](BACKLOG.md)** | Epic C — C-221 ruled, at narrowed scope |
 | **[TASK-400](BACKLOG.md)** | A6 — C-321 ruled |
+| **[TASK-418](BACKLOG.md)** | `signora_platform/` has a permanent owner — **C-416 ruled** ([D-073](DECISION_REGISTER.md)) |
+| **Lane A's resolution route** | The authorization `Resource` — **C-224 ruled**, and `CLAUDE.md` §20a's carve-out now names it |
 
-**Six tasks and seven slices, from one sitting.**
+**Eight tasks and seven slices, from two sittings.** **A ruled item leaves this file the same day** — its record is [LANE_COORDINATION.md](LANE_COORDINATION.md)'s, and its ruling is [DECISION_REGISTER.md](DECISION_REGISTER.md)'s.
 
 ## How this stays true
 
@@ -31,20 +35,19 @@
 
 ---
 
-## C-224 · A new write surface needs an authorization `Resource`, and two rules disagree about who may add one
+## 📌 TASK-427 · The People domain's trigger has fired, and placing it is yours
 
-✅ **On `integration` at `b6313ed`** — it promoted with cycle 58, so it is **actionable now**, not pending. *(I first wrote that it was still on a lane branch. It is not; `--check` found it in the register, which is why the check reads the register rather than trusting the queue.)*
+**Not a `C-` item and deliberately** — **nothing is undecided.** [D-074](DECISION_REGISTER.md) ruled the direction; **what is left is a position in the queue, which is a priority act and not Lane C's.**
 
 | | |
 |---|---|
-| **Raised by** | **Lane A**, implementing [TASK-405](BACKLOG.md) — **at the route, after the domain, persistence, use case and read surface were complete and green** |
-| **Summary** | A signal's resolution must call `context.authorize(Resource.?, Action.?)`. **None of the thirteen existing resources is a signal.** Adding one takes **two files with opposite authorities** |
-| **The conflict** | `enforcer.py`'s `Resource` enum is **🔴 — product owner + ADR** *(`signora_platform/**`)*. `policy.csv` is **any lane, append-only** *(§20e, "registries every lane extends")*. **They are one registration in two files**: a policy row naming an absent enum member is unreachable; an enum member with no policy row denies everyone |
-| **Impact** | **One route** — `POST` a resolution. **TASK-405 is not blocked**; everything else shipped |
-| **Lanes waiting** | **Lane A**, for one route. And **every future write surface** hits this |
-| **Priority** | **P2 — small, and it recurs** |
-| **Recommended** | ✅ **Ratify what the repository has already done twelve times.** **Every resource after `workspace` and `member` was added by a feature lane**, three with inline justifications citing §20a — *"a use of the platform rather than a change to it."* **Amend §20a's carve-out to name authorization resources explicitly**, so the practice becomes the written rule instead of twelve separate justifications. **The safety argument points the same way**: an enum member alone **grants nothing** — `policy.csv` grants, and that file is *already* any-lane append-only. **The 🔴 half is the harmless half** |
-
+| **Summary** | **[TASK-427](BACKLOG.md) · M-D · the People domain** is `SEQUENCED` with the trigger *"the first dependent customer-facing capability enters implementation."* ⚠️ **Measured 2026-08-05: fired.** **[TASK-202](BACKLOG.md) is `READY` and its own row says *"phase 4 needs Epic C"*** |
+| **Why it is here rather than in the `READY` queue** | **Your instruction**: *"do not assign implementation immediately… make it part of the planned execution sequence so implementation begins at the correct time."* **The row is prepared and unplaced.** A lane may not insert a `READY` task and Lane C may not reprioritize — **so one move by you is the whole remaining step** |
+| **Impact** | **Four screens across waves 1–4.** Account 360 has already shipped two ⬜ stated absences; **AI Copilot is the next one to pay** |
+| **Blocked tasks** | **[TASK-428](BACKLOG.md) entirely.** TASK-429 and TASK-430 have their own, later triggers |
+| **Lanes waiting** | **None yet, and that is the argument for placing it now rather than the argument against.** Epic C is assigned to **Lane A** |
+| **Priority** | **P1 — it is in front of a wave that is claimable today** |
+| **Recommended** | ✅ **Place [TASK-427](BACKLOG.md) in `READY` above [TASK-202](BACKLOG.md).** **Nothing gates it** — no ruling, no provider, no missing module. **Alternative, if wave 2 should not wait**: place it immediately *below* TASK-202 and accept that AI Copilot's phase 4 stalls where phases 1–3 do not |
 
 ## C-225 · Wave 1's technology stack section has no route
 
@@ -65,7 +68,7 @@
 |---|---|---|
 | **C-320** | No environment can complete a sign-up | **Highest of this group. After the current engineering wave** |
 | **C-322** + **C-002** | *Is an ICP a description or a filter?* · customer-language anticorruption | **When Epic B1 begins. Grouped, not split** |
-| **C-210** + **C-203** | Personal data · rendering a person's name | **With future People Intelligence work**, alongside the narrowed C-221 |
+| **C-210** + **C-203** | Personal data · rendering a person's name | **[TASK-429](BACKLOG.md) — M-E · Provider Enrichment**, which is now the row that carries them. *(Was *"with future People Intelligence work"*; [D-074](DECISION_REGISTER.md) split that into four milestones and **these two belong to exactly one of them** — no person's name exists to render before M-E, and none of M-D or M-I S3 produces one)* |
 | **C-020** | M7 scope | **Explicitly deferred.** ⚠️ Half stale — Timeline has a design, and [C-215](LANE_COORDINATION.md) is queued to Lane B as buildable work |
 | **C-025** | M13 is not a module | Deferred |
 | **C-005** | Who owns the signal-profile write path | **When implementation reaches the feature** |

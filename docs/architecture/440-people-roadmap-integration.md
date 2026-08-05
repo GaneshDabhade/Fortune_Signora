@@ -145,3 +145,18 @@
 **Nothing implemented · nothing assigned · no migration · no ownership change · no queue touched · no new module created.** **`grep` proof: no `docs/coordination/` file differs.**
 
 **The one thing it asks for is a ruling on placement** — **wave 6 → wave 2 for the domain, wave 6 retained for the screen.** **On approval, P1 becomes a backlog row at Epic and Capability level ([D-072](../DECISION_REGISTER.md)), and the owning lane writes the implementation package.**
+
+---
+
+# ⚖️ Ruled 2026-08-05 — approved with a refinement, and the refinement changed the shape
+
+> **[D-074](../DECISION_REGISTER.md) `APPROVED WITH REFINEMENT`.** *"Do not think about this as 'bringing People Intelligence earlier.' Instead, think about it as introducing the People **domain** before its first dependent customer-facing capability."*
+
+**This document asked for one move and got a decomposition instead.** **Epic C is now four milestones with four different triggers** — **People Domain · People Intelligence · People UI · Provider Enrichment** — and *"the distinction should remain explicit throughout the repository."*
+
+**Where §2 was right:** the domain moves ahead of its dependents, and the screen does not move.
+**Where §2 was imprecise, and it matters:** it proposed *"wave 6 → wave 2"*, which would have put a domain and a screen in one wave. **The plan places it at wave 1.5, because a wave is a set of screens and this one contains none** — **re-merging what the ruling separated is exactly the error the ruling was correcting.**
+
+**The plan is [441](441-people-roadmap.md).** §3's phases P1–P6 survive as stages S1–S6; **P5's *"a commercial decision, not engineering"* became a milestone of its own**, so that provider dependency lives somewhere other than on the domain's row: *"the existence of the People domain must not depend on provider availability."*
+
+**And the general rule this document did not think to ask for: [441 §5 · P-01 · Domain precedence](441-people-roadmap.md).**

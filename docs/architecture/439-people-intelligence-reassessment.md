@@ -133,3 +133,15 @@
 | **C-221** | **Unchanged and still correct.** *"Avoid speculative architecture"* is exactly what this concludes |
 
 **The directive asked whether introducing a provider-neutral People domain now is the correct long-term decision. It is — and it was taken on 2026-08-04.** **What remains is a provider, not an architecture.**
+
+---
+
+# 7 · ⚠️ Completed, not reversed — 2026-08-05
+
+**§4's *"build nothing"* rested on a cost-of-waiting analysis that is still correct in every figure it reports** — one enum member, one field, a new table rather than a migration. **It measured the wrong cost.**
+
+> **It measured what changes in the backend when the domain arrives late. It never measured *wave order*** — and **[440](440-people-roadmap-integration.md) found four screens in waves 1–4 depending on a domain scheduled at wave 6**, one of which had already shipped two ⬜ stated absences.
+
+**The cost of arriving late is not paid in the domain. It is paid in every screen that shipped around the gap**, which is why a backend-only assessment could be complete and still reach the wrong recommendation.
+
+**Ruled [D-074](../DECISION_REGISTER.md), 2026-08-05.** **The plan is [441](441-people-roadmap.md); the rule that catches the next instance is [441 §5 · P-01 · Domain precedence](441-people-roadmap.md).** **§1, §2, §3, §5 and the sentence above stand unchanged** — the provider question is real, it still gates named people, and **it now gates [TASK-429](../BACKLOG.md) rather than the entity.**
