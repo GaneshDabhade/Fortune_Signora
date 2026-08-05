@@ -138,7 +138,7 @@ E   AttributeError: <module 'environment_lease'> has no attribute 'LEASE'
 | | |
 |---|---|
 | **Module** | Development environment — `infra/docker-compose.yml`, the shared PostgreSQL instance |
-| **Current assignee** | **QE** — environment isolation and reproducibility are QE's, and this is a repair QE needs in order to certify |
+| **Current assignee** | **Lane C — Platform Foundation**, 2026-08-05, product owner direction. **QE raised it and cannot be the lane that repairs the instrument it certifies with** — it needs this fix in order to certify, which is precisely why it should not also own it. **Assessed in [436](architecture/436-execution-isolation.md)**: root cause is `infra/docker-compose.yml` line 6, `name: signora-v2`, hard-coded — while `environments.py` derives `compose_project` per environment and **nothing in the repository reads it** |
 | **Severity** | 🟠 · **it makes measurement untrustworthy**, which is worse than a failing test: a failing test is information |
 | **Status** | **`OPEN`** — reported with evidence; **no fix attempted yet** |
 | **Found** | 2026-08-05 by QE, validating Lane A's `0039` slice twice and getting two different wrong answers |
@@ -1285,7 +1285,7 @@ winner = pick(claims)          # a second surface deciding which name wins
 | | |
 |---|---|
 | **Module** | Repository tooling — `Makefile`, `infra/environment-lease.py` |
-| **Current assignee** | **QE** — the lease, `RUNNING.md` and repository-wide test infrastructure are QE's |
+| **Current assignee** | **Lane C — Platform Foundation**, 2026-08-05, on the product owner's direction: *"treat this as a repository execution infrastructure issue rather than merely a testing inconvenience… it should be enforced mechanically."* **Was QE's**, and QE raised its larger sibling [B-118](#b-118) **while blocked by it**. `infra/` and the `Makefile` are Lane C's under [D-022](DECISION_REGISTER.md). **Assessed in [436](architecture/436-execution-isolation.md) §③** |
 | **Severity** | 🟠 — **the failure is silent and the result looks like a normal run.** Not 🔴: it needs two concurrent runs in one lane, which is a mistake rather than a routine |
 | **Status** | **`OPEN`** — reported by Lane B, **not fixed.** It is a change to a gate every lane uses |
 | **Found** | 2026-08-03, by Lane B, **by causing it** — a `make test --cov` was running when a targeted `pytest tests/knowledge_graph` was started against the same lane database |
