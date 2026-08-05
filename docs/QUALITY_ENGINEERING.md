@@ -64,6 +64,22 @@ env $(python3 infra/environments.py --exports | grep -v '^#') \
 
 > **`environments.py` announced the fallback every single time**, in the line above the value: *"Named, not silent. Falling back is correct on `integration`; doing it without saying so is how four clones came to share one server."* **It said so. QE did not read it** — the same failure as [§0c](#0c--verify-the-push-landed--capturing-an-exit-code-is-not-reading-it), where an exit code was captured and not read. **Both rules exist because the information was present and unread.**
 
+## 0a-2 · The verdict is not the only thing a gate prints
+
+**Ratified by QE, 2026-08-05, after [B-126](BUGS.md).** [§0a](#0a--never-read-a-gates-verdict-through-a-pipe) says never read a gate's *verdict* through a pipe. **It was read as being about exit codes and headline lines, and it is not enough.**
+
+```bash
+python3 infra/state-check.py | head -14      # ← every `ok` line, and the count
+                                             #   "state-check: 8 advisory finding(s)"
+                                             #   … and none of the eight
+```
+
+**The eight were printed. QE read the eleven `ok` lines above them and stopped.** One of the eight was a real collision on `main`, introduced by the commit being closed out — **found a full cycle later, by running the same command without the `head`.**
+
+> **A gate that says *"8 findings"* has told you a number, not a finding.** The number is a verdict about the run; the findings are the verdict about the repository, and **an advisory list is the only place a check is allowed to be useful.**
+
+**The rule, stated so it cannot be read narrowly again: read every line a gate prints, or capture it to a file and read that file.** `tail`, `head` and `grep` are for *searching* output already read — never for *receiving* it.
+
 ## 0c · Verify the push landed — capturing an exit code is not reading it
 
 **Ratified by QE, 2026-08-05.** [§0a](#0a--never-read-a-gates-verdict-through-a-pipe) says capture every exit code. **This cycle QE captured `PUSH_EXIT=1` correctly and read only the first line of the output**, then certified a commit that was never on `integration`.

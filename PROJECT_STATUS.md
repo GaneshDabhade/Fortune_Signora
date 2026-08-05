@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `6b7b04e`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `4dd2f21`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,20 +12,20 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `6b7b04e`, 2026-08-05.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `4dd2f21`, 2026-08-05.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`6b7b04e`** — the certified commit itself |
-| **`integration`** | **level with `main`** at `6b7b04e`. Both lanes pushed again while the gates ran; those commits are cycle 68's input, which is the model working |
-| **Release candidate** | **None pinned.** Cycle 67 promoted **two lanes in one snapshot** — Lane B's ICP matching and Lane C's *leave without the power to eject* |
-| **Certification** | ✅ [`6b7b04ebba6f`](certification/reports/6b7b04ebba6f.md) · migration head **`0039`** · protocol **v2** |
+| **`main`** | **`4dd2f21`** — the certified commit itself |
+| **`integration`** | **level with `main`** at `4dd2f21`. **All three lanes pushed while the gates ran** — Lane A's TASK-437, Lane B's B-325, Lane C's four audits. Cycle 69's input |
+| **Release candidate** | **None pinned.** Cycle 68 promoted **a check and three preparation documents** — the smallest executable change certified so far, and warranted: it changes what a gate reports |
+| **Certification** | ✅ [`4dd2f21a8ff3`](certification/reports/4dd2f21a8ff3.md) · migration head **`0039`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Lane A and Lane B**, on the product owner's rulings — see §1c. **Lane C is working**, and its output is those rulings' inputs |
-| **Validation queue** | **Two, both arrived during this cycle** — Lane B and Lane C each pushed again while the gates ran. **Cycle 68's input**, and taken on the next pass |
-| **Customer value this cycle** | ⚠️ **Indirect, and said plainly.** An account can now be **asked whether it matches a criterion**, with *unmeasured* kept distinct from *no* — but no screen asks yet. Leaving an organization is **permitted and unreachable**: the grant is real, tested, and has no endpoint until [TASK-437](docs/BACKLOG.md) |
+| **Validation queue** | **Three lanes, all with executable work.** Lane A's **TASK-437** *(a member can leave, and removal starts actually revoking)* · Lane B's **B-325** · Lane C's **four screen audits**. **Cycle 69's input** |
+| **Customer value this cycle** | ⛔ **None, and that is the honest entry.** This cycle promoted a repository check and three preparation documents. **Lane A's TASK-437 — the endpoint that makes last cycle's grant reachable — arrived after the snapshot** and is cycle 69's |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
@@ -101,51 +101,48 @@
 
 ---
 
-## 1d · Release summary — 2026-08-05, cycle 67
+## 1d · Release summary — 2026-08-05, cycle 68
 
-**Derived from the promoted commit `6b7b04e`.** **Twenty-three promotions.** Two lanes in one snapshot again, and **two capabilities that are correct and not yet reachable** — both of which say so themselves.
+**Derived from the promoted commit `4dd2f21`.** **Twenty-four promotions.** **A cycle with no customer-visible change**, warranted by 43 lines that alter what a repository check reports — and two findings QE produced by reading its own output properly for once.
 
 ### What was promoted
 
-**Nine executable files across two lanes.**
+**One executable file — `infra/state-check.py`, +43 lines — and three preparation documents.**
 
-**[TASK-434](docs/BACKLOG.md), Lane B** — *an account can be asked whether it matches a criterion, and only one thing answers.* The ICP became readable through a published port, and the predicate that judges a match is pure. **`unmeasured` is kept distinct from `no`**, which is the invariant the row inherited: free-text `SaaS` against canonical `Computer Software` must not silently drop an account out of its own ICP.
+**[B-205](docs/BUGS.md)'s mechanical half, Lane C.** Lane A found three documents disagreeing about whether the People bounded context was buildable, and one of the three was **an ADR warning that it was not yet on `origin/integration` while it was.** A lane obeying that warning declines to act on a ruling the repository already carries — *the failure the five decision states exist to prevent, sitting in the file that names them.*
 
-**[TASK-418](docs/BACKLOG.md) capability ④, Lane C** — *a person can be permitted to leave, and nobody gains the power to eject.* `Action.LEAVE`, two policy grants, and a Security Invariant that fails without them.
+> **Only half of B-205 was checkable and the lane said which half.** *"Prose disagreeing across three documents is not mechanically checkable; this half is, so this half gets a check."* **A check that could not tell its own fix from the defect would be un-silenceable**, so ✅ and `~~` lines are exempt — the repository's own convention used as the discriminator.
 
-> **The cheap repair was refused, and the reason is the better half of the slice.** Granting `member, member, remove` and scoping it to self in the handler would have made `policy.csv` **assert that a member may eject a colleague** — a line true only because of a check somewhere else. **A policy file is read by people deciding what the product permits.**
+### Was a cycle warranted for 43 lines? Yes, and the rule says why
 
-### Both capabilities are correct and neither is reachable, and both say so
+**`--next-cycle` asks one question: does anything here change what the software does.** A repository check reports differently after this commit than before it, so it does. **The three documents alongside it would not have warranted one on their own** and would have accumulated — which is the rule working in both directions.
 
-| | |
-|---|---|
-| **ICP matching** | Published and tested. **No screen asks the question yet** |
-| **Leaving an organization** | Granted, tested, mutation-checked. **No endpoint calls it** — [TASK-437](docs/BACKLOG.md) is the route, and Lane C created it in the same commit *"so the grant does not dangle"* |
+**This cycle delivered no customer-visible change**, and that is recorded rather than dressed up. **Lane A's [TASK-437](docs/BACKLOG.md) — the endpoint that makes cycle 67's *leave* grant reachable — arrived after the snapshot closed** and is cycle 69's.
 
-**Neither was discovered by QE.** Both lanes stated it in their own Slice Handoff under `Limitations`, and Lane C went further — naming that a granted-but-unroutable action is **the exact shape `46-team-management` §2 already calls a defect**, about a different grant that has sat there for weeks.
+### Two findings, both from reading output QE had been truncating
 
-> **That is the handoff doing its job.** A limitation declared by the lane is a known limitation; the same fact found three slices later is a defect.
+**[B-125](docs/BUGS.md)** — the new check reads `origin/integration` through `git ls-tree`. **In a clone where that ref is absent or stale, it silently treats every document as untracked and never fires.** This is [B-112](docs/BUGS.md)'s class exactly: *a stale clone produces a confident wrong answer rather than a visible failure.*
 
-### The platform change, and why it is inside §20a rather than around it
+**[B-126](docs/BUGS.md)** — **two files claim architecture document `25`**: `25-signal-engine.md` and `25-commercial-profile.md`, the second added by cycle 67's TASK-434. **`state-check.py` reported it at cycle 67's Closeout and QE did not see it, because the output was read through `head -14`.**
 
-`signora_platform/authorization/` is 🔴 by the Change Budget. **This one is permitted and the lane cited which door it used**: [ADR-0404](docs/architecture/adr/0404-platform-composition.md) is the explicitly approved architectural change, `signora_platform/` is Lane C's under [D-073](docs/DECISION_REGISTER.md), and an `Action` member is a **declarative registration** — the same distinction §20a already ratified for `Resource`: *a registration says a thing exists; `policy.csv` decides who may do it.*
+> **That is [§0a](docs/QUALITY_ENGINEERING.md) again — the third time this session a verdict has been read through a pipe that discarded part of it.** The rule said *never read a gate's verdict through a pipe*; it did not say *and that includes the advisory list underneath the verdict*. **It does now.**
 
-**Lane C also corrected ADR-0404 against itself** — its §Validation counted eight publish-site ignores where there are five, and never asked which trees a capability's proof lives in. **That is the check that would have caught [C-417](docs/LANE_COORDINATION.md) at ratification instead of at implementation.**
+### Contention, which is the model working rather than a fault
 
-### One board conflict, resolved by QE
+**Certification aborted twice on the workstation lease**, held by Lane B running consecutive suites — once before `certify`, once between `certify` and `dr`. **QE waited both times and killed nothing.** Total wait ≈ 15 minutes.
 
-Lane B's branch would not rebase: its board row collided with cycle 66's Closeout, which had **removed the TASK-408 row the same file still carried**. Resolved in QE's favour on the promoted fact and in the lane's favour on its own row — **their `IN VALIDATION` kept, the promoted row dropped.** No executable file was touched, and a conflict in a lane's *code* would have gone back to the lane.
+**An abort is not a failure.** The gate never evaluated the repository, so nothing about the commit was learned and nothing about it is recorded — *a failure is a statement about the commit; an abort is a statement about the run.*
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3624 backend** · **1255 frontend** *(ungated)* · **95.37%** · **387 invariants** · **759 files typed** · 35 contracts · `tsc` clean and gated |
-| **Release** | **67 certification runs recorded, 64 certified** · `promoted == certified` ✓ · ⚠️ **[B-123](docs/BUGS.md) open — the frontend suite is in no gate** |
-| **Architecture** | Reachability 0 doorless · migration `0039` **reversible, verified this cycle** · event catalog 1 known drift · ⚠️ **two capabilities shipped without a caller**, both declared |
+| **Technical** | **3624 backend** · **1255 frontend** *(ungated)* · **95.37%** · **387 invariants** · **759 files typed** · 35 contracts · `tsc` clean and gated — **unchanged, correctly: nothing executable in the product moved** |
+| **Release** | **69 certification runs recorded, 65 certified** · `promoted == certified` ✓ · ⚠️ **[B-123](docs/BUGS.md) open — the frontend suite is in no gate** · **2 aborts on the lease, neither a verdict** |
+| **Architecture** | Reachability 0 doorless · migration `0039` **reversible, verified this cycle** · event catalog 1 known drift · ⚠️ **two capabilities shipped without a caller** · ⚠️ **[B-126](docs/BUGS.md) — architecture document `25` claimed twice** |
 | **Dependency** | 69 items, 31 closed |
-| **Customer Value** | ⚠️ **Indirect, and declared.** Both slices are foundations with no caller — ICP matching has no screen, leaving has no endpoint. **Both lanes said so in their own handoff**, which is the difference between a known limitation and a defect found later |
-| **Process** | Clean, with the same cost as cycle 66 and one addition: **neither branch fast-forwarded**, and this time one **conflicted** — on the board row cycle 66's own Closeout had removed. QE resolved it because it is a board conflict; **a conflict in a lane's code goes back to the lane** |
+| **Customer Value** | ⛔ **None this cycle, stated plainly.** A repository check and three preparation documents. **The endpoint that would have made cycle 67 reachable arrived after the snapshot** |
+| **Process** | ⚠️ **Third cycle running, no lane branch fast-forwarded** — and this one conflicted twice, in `BACKLOG.md` and the board, both against states QE's own Closeout had written. **The rebase correctly dropped three duplicate commits** once resolved to the promoted truth. **Two lanes hitting the same friction is evidence** (§20e); it is reported here and not acted on, because acting on it is a governance change and those are the product owner's |
 
 ### Repository Health Trend
 

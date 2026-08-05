@@ -254,6 +254,81 @@ Found 3 errors in 1 file (checked 733 source files)
 **Both are fixed on `integration`** at `b332aea`. Nothing is left for this row to track, and two rows for one defect is the register drifting from the repository.
 
 
+### B-126 · Four architecture document numbers are claimed twice, and QE promoted the newest without seeing the warning
+
+| | |
+|---|---|
+| **Module** | `commercial_profile` documentation — `docs/architecture/25-commercial-profile.md` |
+| **Current assignee** | **Lane B** — it authored the second file |
+| **Severity** | 🟡 · **Non-blocking.** No gate fails; a reference to *"document 25"* is now ambiguous |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-05 by `infra/state-check.py` at cycle 67 Closeout. **Reported then, seen at cycle 68** |
+
+**Steps to reproduce.**
+
+```bash
+ls docs/architecture/25-*
+→ 25-commercial-profile.md   25-signal-engine.md
+python3 infra/state-check.py | grep 'document 25'
+→ Architecture document 25 is claimed by 2 files … the collision class C-201 names
+```
+
+**Expected.** One number, one document. **Actual.** Two, and `main` carries both.
+
+**And `25` is not alone.** Read in full, `state-check.py` reports **four collisions**, three of them older than this cycle:
+
+| Number | Claimed by | Assignee |
+|---|---|---|
+| **`25`** | `25-signal-engine.md` · `25-commercial-profile.md` | **Lane B** — it added the second, 2026-08-05 |
+| **`49`** | `49-end-to-end-product-validation.md` · `49-lead-ownership.md` | **Unassigned — needs a ruling** |
+| **`50`** | `50-product-capability-audit.md` · `50-sales-engagement.md` | **Unassigned — needs a ruling** |
+| **`51`** | `51-implementation-specifications.md` · `51-sales-workspace.md` | **Unassigned — needs a ruling** |
+
+**One row, not four**, because it is one class with one resolution: **architecture document numbers have no allocation block.** `B-`, `C-`, `TASK-` and ADR numbers all do (§20e), and none of them has ever collided since. **Document numbers were left out, and they are the only identifier still allocated by *"the highest number I can see"*** — which is precisely the model §20e replaced after `B-024` was allocated twice.
+
+### The half of this that is QE's
+
+**`state-check.py` printed this at cycle 67's Closeout and QE did not read it**, because the output went through `head -14` and the finding was on line 19. **The hard checks were read; the advisory list underneath them was truncated away.**
+
+> **[§0a](QUALITY_ENGINEERING.md) said *never read a gate's verdict through a pipe*.** It did not say *and that includes everything printed after the verdict*. **This is the third instance this session of a verdict read through something that discarded part of it**, and the first where the discarded part was a real finding about `main`.
+
+**The renumbering itself is a governance choice, not a repair QE may make** — `state-check.py` says so in as many words: *"each of these has more than one correct resolution, and choosing between them is a governance decision."*
+
+
+### B-125 · The new document-location check silently no-ops on a clone without `origin/integration`
+
+| | |
+|---|---|
+| **Module** | `infra/state-check.py` — check 5c-2, added 2026-08-05 |
+| **Current assignee** | **Lane C** — it authored the check, and `infra/` is its Platform Foundation responsibility ([D-022](DECISION_REGISTER.md)) |
+| **Severity** | 🟡 · **Non-blocking.** Advisory tooling, and the failure is *under*-reporting rather than a false alarm |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-05 by QE, validating the check that introduced it |
+
+**Steps to reproduce.**
+
+```python
+tracked = set(_git("ls-tree", "-r", "--name-only", "origin/integration").splitlines())
+for doc in ...:
+    if relative not in tracked:
+        continue          # genuinely absent — the warning is true.
+```
+
+```bash
+git ls-tree -r --name-only origin/nonexistent   # rc 128, stdout empty
+```
+
+**A clone with no `origin/integration`, or one that has not fetched, produces an empty `tracked` set** — so **every document is treated as genuinely absent and the check never fires.** It reports success by reporting nothing.
+
+### This is [B-112](#b-112--the-gatekeeper-answers-from-a-stale-clone)'s class, in the file B-112 was fixed in
+
+**B-112**: `--next-cycle` answered *"Repository Ready"* from stale local refs. The fix was to **refuse when the clone is behind rather than answer from it** — *"a stale clone produces a confident wrong answer rather than a visible failure."*
+
+**The same shape, one file over**: a silent no-op is a confident *absence* of a wrong answer, which is harder to notice than a wrong one.
+
+> **The fix is the same shape too.** Establish the precondition or refuse — `git rev-parse --verify origin/integration` first, and say so when it is missing. **The check is worth having; it just needs to know when it cannot run.**
+
+
 ### B-124 · Backlog rows never reach a terminal state, so seventeen of them describe work that is on `main`
 
 | | |
