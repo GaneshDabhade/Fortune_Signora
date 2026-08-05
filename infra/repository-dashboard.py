@@ -42,7 +42,7 @@ STATUS = re.compile(r"\*\*Status\*\*\s*\|\s*(.+)$", re.M)
 STATE_WORDS = (
     "IN VALIDATION", "CHANGES REQUESTED", "IN PROGRESS", "SEQUENCED", "CLAIMED",
     "BLOCKED", "WAITING", "VERIFIED", "CERTIFIED", "PROMOTED", "DISPOSED",
-    "PREPARING", "UNDER REVIEW", "REVISION REQUESTED", "APPROVED", "READY", "DONE",
+    "PREPARING", "UNDER REVIEW", "REVISION REQUESTED", "APPROVED", "RATIFIED", "READY", "DONE",
 )
 
 # **Which states mean what, for pipeline health** (D-070). Named once here so
@@ -56,7 +56,12 @@ UNDER_REVIEW = ("UNDER REVIEW",)
 # approved still needs its owning lane's implementation package under D-060, so
 # it belongs in the preparation column rather than in the claimable one.
 PREPARING = ("PREPARING", "REVISION REQUESTED", "APPROVED")
-NOT_PIPELINE = ("DONE", "DISPOSED", "SEQUENCED")
+# **`RATIFIED` was invented for TASK-900 and not added here, so the row read
+# `UNKNOWN` for a day.** A task whose deliverable is an approved decision is
+# complete when the decision is ratified — there is no code to promote. The
+# scanner reporting `UNKNOWN` rather than failing is the quieter half of the
+# defect: **an unclassifiable row still counts, it just counts as nothing.**
+NOT_PIPELINE = ("DONE", "DISPOSED", "SEQUENCED", "RATIFIED")
 
 
 def queues(ref: str) -> dict[str, dict]:
