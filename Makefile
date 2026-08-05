@@ -96,8 +96,20 @@ test:
 ## happens to hold. A `.env` pointing at `signora_app` (the correct runtime
 ## value) would otherwise fail migrations with a permissions error that reads
 ## like a broken schema (CLAUDE.md §8).
-DEV_COMPOSE := docker compose -f infra/docker-compose.yml
-OWNER_DATABASE_URL := postgresql+asyncpg://signora:signora@localhost:5432/signora
+##
+## **One stack per lane, from 2026-08-05** — 436 change (2), approved by the
+## product owner. `infra/environments.py --exports` resolves this clone to its
+## environment (from `SIGNORA_ENVIRONMENT`, else the checked-out branch) and
+## emits the project name and host ports. **Nothing here knows the arithmetic
+## and no lane types a port**, which is the difference between an allocation and
+## a convention — the allocation existed for days and nothing read it.
+##
+## On `integration`, `main` or a detached head no environment resolves and the
+## exports name the historical shared stack, out loud.
+SIGNORA_STACK := $(shell python3 infra/environments.py --exports | grep -v '^\#')
+SIGNORA_PG_PORT := $(shell python3 infra/environments.py --exports | sed -n 's/^SIGNORA_POSTGRES_PORT=//p')
+DEV_COMPOSE := env $(SIGNORA_STACK) docker compose -f infra/docker-compose.yml
+OWNER_DATABASE_URL := postgresql+asyncpg://signora:signora@localhost:$(SIGNORA_PG_PORT)/signora
 
 ## Everything a reviewer needs, in one command: stack up, schema migrated,
 ## Better Auth's own tables created, four sign-in accounts, twelve accounts of
@@ -386,9 +398,9 @@ certify: release-preflight
 ##     make e2e-smoke                  the shortest proof the product is alive
 E2E_URL ?= http://localhost:3400
 E2E_DB  ?= signora_lane_b
-E2E_ENV := SIGNORA_TEST_APP_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:5432/$(E2E_DB) \
-           SIGNORA_TEST_ADMIN_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:5432/$(E2E_DB) \
-           SIGNORA_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:5432/$(E2E_DB) \
+E2E_ENV := SIGNORA_TEST_APP_DATABASE_URL=postgresql+asyncpg://signora_app:signora_app_local_dev@localhost:$(SIGNORA_PG_PORT)/$(E2E_DB) \
+           SIGNORA_TEST_ADMIN_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:$(SIGNORA_PG_PORT)/$(E2E_DB) \
+           SIGNORA_DATABASE_URL=postgresql+asyncpg://signora:signora@localhost:$(SIGNORA_PG_PORT)/$(E2E_DB) \
            SIGNORA_APP_URL=$(E2E_URL) \
            SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1
 

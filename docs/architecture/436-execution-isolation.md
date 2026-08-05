@@ -107,7 +107,29 @@ sqlalchemy.exc.InternalError: tuple concurrently updated
 
 > **A resource-level probe would close it durably** — asking PostgreSQL who else is connected, rather than asking a lease file. **Not proposed.** It is speculative work against a transient window, **and change ② makes it moot**: separate clusters have nothing to probe.
 
-## ② The compose project comes from the allocation *(🟠 · closes B-118)*
+## ✅ ② BUILT — 2026-08-05, approved and shipped
+
+**Product owner: *"feel free to create separate environment for each lane so that nothing could be shared and conflicts will be avoided."*** The cost was weighed and accepted.
+
+| | |
+|---|---|
+| **`docker-compose.yml`** | `name: ${COMPOSE_PROJECT_NAME:-signora-v2}` and `${SIGNORA_*_PORT}` on every published port. **Read from the variable rather than removed**, because a `name:` in the file *overrides* `COMPOSE_PROJECT_NAME` — deleting the line would work and stating it wrong would silently keep one project |
+| **`environments.py`** | **PostgreSQL `5432+100n` · Redis `6379+100n` · MinIO `9000/9001+100n`** — the stride web and API already used. Plus `current()`, `--which` and `--exports` |
+| **The `Makefile`** | Derives project and ports from `--exports`. **No target knows the arithmetic and no lane types a port** |
+| **Resolution** | `SIGNORA_ENVIRONMENT` · else **the checked-out branch** · else **nothing**, and the shared stack is named out loud. **It does not guess** — a wrong guess points a suite at another lane's database |
+| **Slot 0** | **Unchanged.** `review` answers on 5432/6379/9000/9001 exactly as before — **a migration nobody has to perform is the only kind that gets performed** |
+
+> **Only host ports needed allocating.** Docker already scopes container names and volumes by project, so four stacks were never going to collide on those — **the ports were the whole of it, and they were the one thing the allocation table did not derive.**
+
+**Verified:** **12 allocation tests** assert that no two environments share any port, **across kinds and not merely within one** — MinIO's console sits one above its API, so a stride that ever narrowed would put one environment's console on the next one's API. **113 certification tests · `mypy --strict` 736 files · `environments.py --check` clean.**
+
+### What this does not do
+
+**It does not migrate existing data.** Each project gets its own volumes, so **every lane runs migrations once against a fresh database.** That was named as a cost before approval and it is still the cost.
+
+**And it does not close the bootstrap window** — a clone that has not rebased still drives `signora-v2`. **Change ② makes contention impossible only once every clone carries it**, which is the same sequencing the rebase notice in each queue describes.
+
+## ~~② The compose project comes from the allocation~~ *(superseded by the section above)*
 
 **`name: signora-v2` is removed and the project name is passed per invocation** from `environments.py`. **Each lane then has its own PostgreSQL container, Redis and MinIO** — and the deadlocks, the missing catalogs and the mid-operation disconnects stop being possible rather than becoming rarer.
 

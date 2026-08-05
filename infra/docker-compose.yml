@@ -3,7 +3,24 @@
 # under the "signora" project name. Keeping this stack separate means the
 # ratified PostgreSQL 17 stack (ADR-0006) can never adopt or destroy that
 # older state.
-name: signora-v2
+#
+# **One project per environment, from 2026-08-05** — 436 change (2), approved by
+# the product owner: *"create separate environment for each lane so that nothing
+# could be shared."* This was a fixed `signora-v2`, so four clones ran
+# `docker compose` against one project and shared one PostgreSQL server: one
+# connection pool, one lock manager, and one **cluster-wide role**. That last one
+# is what aborted certification cycle 57 on `ALTER ROLE signora_app NOBYPASSRLS`,
+# and no per-database separation could ever have reached it.
+#
+# **Read from the variable rather than removed**, because a `name:` in this file
+# *overrides* `COMPOSE_PROJECT_NAME` — so deleting the line would work and
+# stating it wrong would silently keep one project. The default preserves
+# today's behaviour exactly for anyone who sets nothing.
+#
+# Container names and volumes are already scoped by project. **The host port is
+# the only thing four stacks genuinely collide on**, which is why the ports
+# below are the rest of this change.
+name: ${COMPOSE_PROJECT_NAME:-signora-v2}
 
 services:
   postgres:
@@ -13,7 +30,7 @@ services:
       POSTGRES_PASSWORD: signora
       POSTGRES_DB: signora
     ports:
-      - "5432:5432"
+      - "${SIGNORA_POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres17_data:/var/lib/postgresql/data
       # Creates the least-privilege signora_app login role on first init so
@@ -29,7 +46,7 @@ services:
   redis:
     image: redis:7
     ports:
-      - "6379:6379"
+      - "${SIGNORA_REDIS_PORT:-6379}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -43,8 +60,8 @@ services:
       MINIO_ROOT_USER: signora
       MINIO_ROOT_PASSWORD: signora-local-dev
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "${SIGNORA_MINIO_PORT:-9000}:9000"
+      - "${SIGNORA_MINIO_CONSOLE_PORT:-9001}:9001"
     volumes:
       - minio_data:/data
     healthcheck:

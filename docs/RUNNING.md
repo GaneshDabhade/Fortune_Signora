@@ -48,6 +48,21 @@ Everything runs locally. There is no cloud environment and no remote gate ([ADR-
 
 > **The rule this now satisfies:** *every runnable environment must be independently startable, independently stoppable and independently disposable.* An environment that requires another to be stopped first is not isolated; it is merely documented.
 >
+> ### ⚙️ One stack per lane, from 2026-08-05 — read this before the port numbers below
+>
+> **436 change ② is built** (product owner: *"create separate environment for each lane so that nothing could be shared"*). **`infra/docker-compose.yml` no longer hard-codes `name: signora-v2` or its host ports** — both come from the environment this clone resolves to.
+>
+> ```bash
+> python3 infra/environments.py --which     # which environment this clone is
+> python3 infra/environments.py --exports   # its project name and host ports
+> ```
+>
+> **Resolution order:** `SIGNORA_ENVIRONMENT` if set · else **the checked-out branch** (`lane-a-product-surface` → `lane-a`) · else **nothing**, and the historical shared stack is used and named out loud. **A wrong guess would point a suite at another lane's database**, which is the defect this change exists to end, so it does not guess.
+>
+> **PostgreSQL is `5432 + 100n`, Redis `6379 + 100n`, MinIO `9000/9001 + 100n`** — the same stride as web and API. **Slot 0 is unchanged**, so `review` still answers exactly where it always did.
+>
+> ⚠️ **The explicit `localhost:5432` examples further down this file are now correct only for slot 0.** `make` targets derive the port and need no edit; **hand-run commands do.** **Left for QE**, whose file this is — Lane C changed the mechanism and does not rewrite the runbook (§20e).
+
 > **What is still shared is the machine.** Ports, databases, Redis indices and compose projects are isolated; RAM and CPU are not. `make release-preflight` reports memory pressure and names what holds it, because that is the one dimension nothing can allocate away.
 
 ### Check before you start — one second, not five minutes

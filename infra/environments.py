@@ -36,6 +36,8 @@ another's jobs.
 from __future__ import annotations
 
 import argparse
+import os
+import subprocess
 import re
 import sys
 from dataclasses import dataclass
@@ -49,6 +51,21 @@ REPO_ROOT: Final = Path(__file__).resolve().parent.parent
 WEB_BASE: Final = 3000
 API_BASE: Final = 8000
 SLOT_STRIDE: Final = 100
+
+#: **Backing-service host ports, from the same arithmetic as web and API.**
+#:
+#: Approved 2026-08-05 by the product owner — *"create separate environment for
+#: each lane so that nothing could be shared"* — and it is [436](../docs/architecture/436-execution-isolation.md)
+#: change ②. Docker already scopes container names and volumes by project, so
+#: **the host port is the only thing four projects genuinely collide on.**
+#:
+#: Slot 0 keeps today's numbers exactly, so the environment that has always
+#: answered on 5432 still does. **A migration nobody has to perform is the only
+#: kind that gets performed.**
+POSTGRES_BASE: Final = 5432
+REDIS_BASE: Final = 6379
+MINIO_BASE: Final = 9000
+MINIO_CONSOLE_BASE: Final = 9001
 
 
 @dataclass(frozen=True, slots=True)
@@ -93,6 +110,29 @@ class Environment:
         return API_BASE + SLOT_STRIDE * self._ports_from
 
     @property
+    def postgres_port(self) -> int:
+        """**The host port, and therefore the whole of B-118.**
+
+        A PostgreSQL *role* is cluster-wide: two suites reaching `ALTER ROLE`
+        collide however many databases they own, which is what aborted cycle
+        57. **Per-database separation cannot reach a shared cluster; a separate
+        cluster has separate roles.** This is what makes that separation real.
+        """
+        return POSTGRES_BASE + SLOT_STRIDE * self._ports_from
+
+    @property
+    def redis_port(self) -> int:
+        return REDIS_BASE + SLOT_STRIDE * self._ports_from
+
+    @property
+    def minio_port(self) -> int:
+        return MINIO_BASE + SLOT_STRIDE * self._ports_from
+
+    @property
+    def minio_console_port(self) -> int:
+        return MINIO_CONSOLE_BASE + SLOT_STRIDE * self._ports_from
+
+    @property
     def database(self) -> str:
         """The application database. `signora` for slot 0 by history."""
         return "signora" if self.slot == 0 else f"signora_{self.name.replace('-', '_')}"
@@ -123,6 +163,9 @@ class Environment:
     def bucket(self) -> str:
         return f"signora-{self.name}"
 
+
+#: Name → environment, for `SIGNORA_ENVIRONMENT` and for `--check`.
+BY_NAME: Final[dict[str, "Environment"]] = {}
 
 #: **The registry.** Adding an environment is a row here, not a table edit in a
 #: document — and a row is three facts rather than eight columns somebody keeps
@@ -193,6 +236,78 @@ UNSLOTTED: Final = {
 }
 
 BY_NAME: Final = {environment.name: environment for environment in ENVIRONMENTS}
+
+
+BY_NAME.update({e.name: e for e in ENVIRONMENTS})
+
+
+def current() -> Environment | None:
+    """**Which environment this clone is**, without anybody having to remember.
+
+    The product owner approved one stack per lane. **A stack per lane is only
+    real if a lane lands on its own one by default** — a mechanism that has to
+    be typed correctly every time is the manual convention the directive ruled
+    out, wearing a flag.
+
+    Three sources, in order, and each is honest about what it knows:
+
+    **① `SIGNORA_ENVIRONMENT`** — explicit, and it wins. A lane driving a stack
+    that is not its own must be able to say so out loud.
+
+    **② The checked-out branch.** `lane-a-product-surface` → `lane-a`,
+    `lane-qe` → `lane-qe`, `lane-c-sync` → `lane-c`. **This is derivation, not
+    configuration**: the branch already says which lane a clone is, and asking
+    it removes the step somebody would forget.
+
+    **③ Nothing.** On `integration`, `main`, or a detached head, **this returns
+    `None` rather than guessing.** A wrong guess here points a suite at another
+    lane's database, which is the class of defect the whole change exists to
+    end — so the caller falls back to the historical shared stack and says so.
+    """
+    explicit = os.environ.get("SIGNORA_ENVIRONMENT")
+    if explicit:
+        return BY_NAME.get(explicit)
+    try:
+        branch = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            cwd=Path(__file__).resolve().parent.parent,
+            capture_output=True, text=True, check=True,
+        ).stdout.strip()
+    except (subprocess.CalledProcessError, OSError):
+        return None
+    # **Longest first**, so `lane-qe` is not swallowed by a shorter prefix.
+    for environment in sorted(ENVIRONMENTS, key=lambda e: -len(e.name)):
+        if branch == environment.name or branch.startswith(f"{environment.name}-"):
+            return environment
+    return None
+
+
+def _exports() -> int:
+    """The shell environment for this clone's stack, or the historical default.
+
+    Consumed by the Makefile, so **no target has to know the arithmetic** and
+    no lane has to type a port. Prints to stdout for `eval`.
+    """
+    environment = current()
+    if environment is None:
+        # **Named, not silent.** Falling back is correct on `integration`; doing
+        # it without saying so is how four clones came to share one server.
+        print("# no environment derived (not on a lane branch) — historical shared stack")
+        print("COMPOSE_PROJECT_NAME=signora-v2")
+        print(f"SIGNORA_POSTGRES_PORT={POSTGRES_BASE}")
+        print(f"SIGNORA_REDIS_PORT={REDIS_BASE}")
+        print(f"SIGNORA_MINIO_PORT={MINIO_BASE}")
+        print(f"SIGNORA_MINIO_CONSOLE_PORT={MINIO_CONSOLE_BASE}")
+        return 0
+    print(f"# {environment.name} — {environment.purpose}")
+    print(f"COMPOSE_PROJECT_NAME={environment.compose_project}")
+    print(f"SIGNORA_POSTGRES_PORT={environment.postgres_port}")
+    print(f"SIGNORA_REDIS_PORT={environment.redis_port}")
+    print(f"SIGNORA_MINIO_PORT={environment.minio_port}")
+    print(f"SIGNORA_MINIO_CONSOLE_PORT={environment.minio_console_port}")
+    print(f"SIGNORA_WEB_PORT={environment.web_port}")
+    print(f"SIGNORA_API_PORT={environment.api_port}")
+    return 0
 
 
 def _running_md_table() -> dict[str, tuple[int, int, str, int]]:
@@ -292,10 +407,20 @@ def _check() -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="verify the model")
+    parser.add_argument("--exports", action="store_true",
+                        help="shell exports for this clone's stack (for eval)")
+    parser.add_argument("--which", action="store_true",
+                        help="name the environment this clone resolves to")
     args = parser.parse_args()
 
     if args.check:
         return _check()
+    if args.exports:
+        return _exports()
+    if args.which:
+        environment = current()
+        print(environment.name if environment else "none")
+        return 0
 
     print("\n  Signora environments — one identity, everything derived\n")
     header = f"    {'ENVIRONMENT':<10} {'WEB':>5} {'API':>5} {'DATABASE':<18} {'REDIS':>5}  {'COMPOSE PROJECT':<18} OWNER"
