@@ -618,6 +618,70 @@
 
 > **Not `WAITING`, because nothing is undecided, and not `READY`, because nothing may be claimed.** These carry a **trigger** rather than an owner: the work begins when the condition fires, and until then it is preparation the repository holds rather than loses.
 
+### TASK-420 · Epic H — a second hosted vendor reaches production
+
+| | |
+|---|---|
+| **Epic** | **Epic H · AI Platform — providers, policy and safety**, [437](architecture/437-ai-platform-future-epic.md). **Prepared 2026-08-05 on a Product Office directive; not scheduled** |
+| **Module** | `ai_platform` |
+| **Status** | **`SEQUENCED`** — **trigger: the approved UI waves are complete and `product_surface` is no longer the lowest-implementation module** *(45% today; every other module is 50%+)* |
+| **Slice** | one — the OpenAI adapter |
+| **Objective** | **A second hosted vendor serves production traffic with no change above the port.** `OPENAI` is **already ratified in [ADR-0012](architecture/adr/0012-ai-platform-architecture.md)** and *"gains an adapter when a real caller needs them"* |
+| **Why it is first** | **It proves the claim the whole epic rests on.** ADR-0012 says a vendor integrates by describing what it supports; **nothing has ever tested that by adding one.** If anything above the port must change, **that is the finding**, and it is cheaper here than under a deadline |
+| **Not in scope** | **Bedrock and Azure OpenAI.** They are *reserved* rather than recognised, and `AIVendor` says why: *"a member here with no ratified status is a speculative extension point, and the roadmap's no-speculative-ports ruling applies to enums too"* |
+
+### TASK-421 · Epic H — PII never leaves the tenant unmasked
+
+| | |
+|---|---|
+| **Epic** | **Epic H**, [437](architecture/437-ai-platform-future-epic.md) |
+| **Module** | `ai_platform` |
+| **Status** | **`SEQUENCED`** — after [TASK-420](#task-420) |
+| **Objective** | **A masking pass at the port boundary, and a Security Invariant that fails when an unmasked field crosses it** |
+| **Why it is the largest true gap** | **Measured 2026-08-05: `pii`, `redact` and `mask` appear in zero files under `ai_platform`.** Every inference sends an evidence set to a third party and **nothing inspects it first** |
+| **Needs first** | **ADR-C — what is masked, by whom, and how the invariant proves it.** A masking rule with no executable check is a comment |
+
+### TASK-422 · Epic H — a workspace states which providers it allows
+
+| | |
+|---|---|
+| **Epic** | **Epic H**, [437](architecture/437-ai-platform-future-epic.md) |
+| **Module** | ⚠️ **Undecided — that is part of the deliverable.** `workspace_tenancy`, `ai_platform`, or a new context |
+| **Status** | **`SEQUENCED`** — after [TASK-421](#task-421), **and blocked on ADR-B** |
+| **Objective** | Allowed providers · model restrictions · compliance constraints, **per workspace** |
+| **Stays inside the ratified contract** | **Routing by policy is configuration**, which [ADR-0012](architecture/adr/0012-ai-platform-architecture.md) permits. ⛔ **Routing that learns from observed latency or cost is not** — the registry is *"read-only… no adaptive routing that learns from previous calls"* |
+
+### TASK-423 · Epic H — prompt injection is detected and recorded
+
+| | |
+|---|---|
+| **Epic** | **Epic H**, [437](architecture/437-ai-platform-future-epic.md) |
+| **Module** | `ai_platform` |
+| **Status** | **`SEQUENCED`** — after [TASK-421](#task-421) |
+| **Objective** | **Detection and audit before blocking.** *Record what happened; compute judgements where the inputs are actually known* — the discipline `domain/usage.py` already applies to cost |
+| **Measured** | **`injection` and `jailbreak` appear in zero files repository-wide** |
+
+### TASK-424 · Epic H — a workspace has an AI budget
+
+| | |
+|---|---|
+| **Epic** | **Epic H**, [437](architecture/437-ai-platform-future-epic.md) |
+| **Module** | `ai_platform` · usage accounting |
+| **Status** | **`SEQUENCED`** — after [TASK-422](#task-422) |
+| **Objective** | A workspace-level AI budget and its enforcement point |
+| ⚠️ **Not a new metering system** | **`domain/usage.py` already records tokens, latency and retries**, and **[TASK-411](#task-411) is already `SEQUENCED` for usage accounting.** This slice adds a *limit*, not a *meter* — **and pricing stays outside the port**, so a price change re-prices history |
+
+### TASK-425 · A tenant administration surface
+
+| | |
+|---|---|
+| **Recommendation** | **[437 §4](architecture/437-ai-platform-future-epic.md)** — a foundational gap found by repository-wide measurement, **not part of Epic H** |
+| **Module** | Undecided |
+| **Status** | **`SEQUENCED`** — **trigger: the first support request that cannot be answered without database access** |
+| **Measured** | **`tenant admin`, `admin console` and `back-office` appear in zero documents and zero code files** |
+| **Objective** | **Support can see a workspace's state without a database client.** Today they cannot, and that is how production credentials end up on a laptop |
+
+
 ### TASK-411 · Usage Accounting — meter what a workspace consumed
 
 | | |
