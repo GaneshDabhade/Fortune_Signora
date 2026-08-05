@@ -9,13 +9,21 @@ docs/architecture/11-tenancy.md).
 """
 
 import inspect
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from modules.workspace_tenancy.application.use_cases import CreateWorkspaceInput
+from modules.workspace_tenancy.application.use_cases import (
+    AddMemberInput,
+    CreateWorkspaceInput,
+)
+from modules.workspace_tenancy.application.use_cases.leave_workspace import (
+    LeaveWorkspaceCommand,
+)
+from modules.workspace_tenancy.domain.entities import WorkspaceRole
 from modules.workspace_tenancy.infrastructure.composition import (
     build_query_service,
     build_use_cases,
@@ -205,6 +213,101 @@ class TestWorkspaceIsolation:
             session_factory, workspace_id=workspace_id, user_id=owner
         ) as session:
             assert await build_query_service(session).workspace_exists(workspace_id) is True
+
+
+class TestMembershipRevocation:
+    """An ended membership grants nothing, whatever ended it.
+
+    **This is a guarantee rather than a feature, and it is asserted here
+    because the two have different lifetimes.** The feature is *leaving*;
+    the property is that `resolve_role` — the authoritative membership check
+    on every authenticated request — never answers for a membership that has
+    ended. A slice that reshapes the leave endpoint would take a feature test
+    with it, and B-206 is the evidence that nobody would notice: the filter
+    was missing from M1 until 2026-08-05, and `member:remove` revoked nothing
+    for the whole of that time (docs/BUGS.md B-206, B-127).
+
+    **Asserted at the boundary, not through a route**, so it holds for
+    leaving, removal, and any future way a membership ends.
+    """
+
+    async def test_resolve_role_refuses_an_ended_membership(
+        self, session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """The one B-206 got wrong. `get_membership` selected on
+        `(workspace_id, user_id)` alone, so a removed person kept full
+        access — the endpoint had ended their membership and authorization
+        went on answering for it."""
+        owner, member = uuid4(), uuid4()
+        workspace_id = await _create_workspace(session_factory, name="Departures", user_id=owner)
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=owner
+        ) as session:
+            await build_use_cases(session).add_member.execute(
+                AddMemberInput(
+                    workspace_id=workspace_id,
+                    user_id=member,
+                    role=WorkspaceRole.MEMBER,
+                    added_by=owner,
+                ),
+                correlation_id=uuid4(),
+            )
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=member
+        ) as session:
+            assert await build_query_service(session).resolve_role(workspace_id, member) == "member"
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=member
+        ) as session:
+            await build_use_cases(session).leave_workspace.execute(
+                LeaveWorkspaceCommand(workspace_id=workspace_id, user_id=member),
+                now=datetime.now(UTC),
+            )
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=member
+        ) as session:
+            query_service = build_query_service(session)
+
+            assert await query_service.resolve_role(workspace_id, member) is None
+            assert await query_service.get_membership(workspace_id, member) is None
+
+    async def test_the_remaining_owner_is_unaffected(
+        self, session_factory: async_sessionmaker[AsyncSession]
+    ) -> None:
+        """The positive control. A filter that revoked everybody would satisfy
+        the assertion above and take the organization with it."""
+        owner, member = uuid4(), uuid4()
+        workspace_id = await _create_workspace(session_factory, name="Stayers", user_id=owner)
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=owner
+        ) as session:
+            await build_use_cases(session).add_member.execute(
+                AddMemberInput(
+                    workspace_id=workspace_id,
+                    user_id=member,
+                    role=WorkspaceRole.MEMBER,
+                    added_by=owner,
+                ),
+                correlation_id=uuid4(),
+            )
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=member
+        ) as session:
+            await build_use_cases(session).leave_workspace.execute(
+                LeaveWorkspaceCommand(workspace_id=workspace_id, user_id=member),
+                now=datetime.now(UTC),
+            )
+
+        async with tenant_scoped_session(
+            session_factory, workspace_id=workspace_id, user_id=owner
+        ) as session:
+            assert await build_query_service(session).resolve_role(workspace_id, owner) == "owner"
 
 
 class TestRowLevelSecurity:
