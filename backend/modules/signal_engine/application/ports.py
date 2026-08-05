@@ -15,6 +15,7 @@ from uuid import UUID
 
 from modules.signal_engine.domain.catalog import SignalType
 from modules.signal_engine.domain.profile import SignalProfile
+from modules.signal_engine.domain.resolution import Resolution
 from modules.signal_engine.domain.signal import Signal
 
 
@@ -73,3 +74,41 @@ class ProfileRepository(Protocol):
         ...
 
     async def save(self, profile: SignalProfile) -> None: ...
+
+
+class ResolutionRepository(Protocol):
+    """Persistence for how a signal left the queue.
+
+    **No update method, like the two above and for a sharper reason.** A
+    resolution records what somebody decided and when; an editable one is a
+    record nobody could cite. Changing your mind is a new resolution naming the
+    one it supersedes, which is also what keeps a regretted dismissal readable
+    rather than gone.
+
+    **Nothing here writes to a signal.** The acceptance criterion *"resolution
+    never mutates the signal or its evidence"* is visible in the shape of this
+    port: there is no method that could.
+    """
+
+    async def record(self, resolution: Resolution) -> None:
+        """Append one decision."""
+        ...
+
+    async def current_for_signals(
+        self, workspace_id: UUID, signal_ids: Sequence[UUID]
+    ) -> dict[UUID, Resolution]:
+        """The resolution in force for each of these signals, keyed by signal.
+
+        **Superseded resolutions are excluded, and a signal nobody has decided
+        about is absent rather than present with a null.** An absent key means
+        *"still open"*, which is not the same fact as a decision to do nothing
+        and must not be readable as one.
+        """
+        ...
+
+    async def history_for_signal(
+        self, workspace_id: UUID, signal_id: UUID
+    ) -> tuple[Resolution, ...]:
+        """Every decision ever recorded about this signal, oldest first —
+        *"nothing is deleted: every resolution is auditable."*"""
+        ...

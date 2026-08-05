@@ -82,3 +82,84 @@ class SignalModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMixin):
     supersedes: Mapped[UUID | None] = mapped_column(
         PGUUID(as_uuid=True), ForeignKey("signal.id", ondelete="SET NULL"), nullable=True
     )
+
+
+class SignalResolutionModel(Base, WorkspaceScopedMixin, TimestampMixin, AuditMixin):
+    """How a signal left the queue. **A record beside the signal, never a
+    column on it.**
+
+    The signal states what Signora concluded from evidence at a moment; a
+    person disagreeing with it later has not changed what was concluded. So
+    nothing here writes to `signal`, and the acceptance criterion *"resolution
+    never mutates the signal or its evidence"* is a property of the schema
+    rather than of the code that writes it.
+
+    **Shaped after `opportunity_state`, deliberately.** That table is this
+    concept one level up — an append-only, human-authored decision with an
+    explicit `actor_id` and its own `occurred_at`, rather than leaning on the
+    audit columns. Two records of the same kind should read the same way.
+
+    **The one difference is stricter, not looser**: `actor_id` is `NOT NULL`
+    here with no exemption. `opportunity_state` permits exactly one
+    machine-authored stage; **no outcome in this table may be authored by
+    Signora**, so the column that would carry the exception does not allow it.
+    """
+
+    __tablename__ = "signal_resolution"
+    __table_args__ = (
+        CheckConstraint(
+            "outcome IN ('actioned', 'assigned', 'snoozed', 'dismissed')",
+            name="ck_signal_resolution_outcome_known",
+        ),
+        # **Each payload present exactly when its outcome requires it, and
+        # absent otherwise.** Written as an equivalence rather than an
+        # implication so both directions hold: a `dismissed` row cannot omit
+        # its reason, and an `actioned` row cannot smuggle one in. The domain
+        # makes the omission unconstructable; this makes it unstorable, which
+        # is what a second writer would eventually need.
+        CheckConstraint(
+            "(outcome = 'assigned') = (assigned_to IS NOT NULL)",
+            name="ck_signal_resolution_assignment_names_somebody",
+        ),
+        CheckConstraint(
+            "(outcome = 'snoozed') = (snoozed_until IS NOT NULL)",
+            name="ck_signal_resolution_snooze_states_a_time",
+        ),
+        CheckConstraint(
+            "(outcome = 'dismissed') = (dismissal_reason IS NOT NULL)",
+            name="ck_signal_resolution_dismissal_gives_a_reason",
+        ),
+        CheckConstraint(
+            "dismissal_reason IS NULL OR length(trim(dismissal_reason)) > 0",
+            name="ck_signal_resolution_reason_is_not_blank",
+        ),
+        # A snooze that has already elapsed is a no-op wearing the clothes of
+        # a decision: the queue would show it handled and return it at once.
+        CheckConstraint(
+            "snoozed_until IS NULL OR snoozed_until > recorded_at",
+            name="ck_signal_resolution_snooze_is_not_already_over",
+        ),
+    )
+
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    signal_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), ForeignKey("signal.id", ondelete="CASCADE"), nullable=False
+    )
+    outcome: Mapped[str] = mapped_column(String(16), nullable=False)
+    assigned_to: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), nullable=True)
+    snoozed_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    dismissal_reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    #: **Never nullable and never the platform.** Every outcome here is a
+    #: human judgement; a machine-authored one would be Signora marking its
+    #: own work.
+    actor_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    #: When the person decided — **not `created_at`**, which is when the row
+    #: reached the database. `opportunity_state.occurred_at` separates the two
+    #: for the same reason, and a snooze compares against this one.
+    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    supersedes: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("signal_resolution.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    payload_version: Mapped[int] = mapped_column(Integer, nullable=False)

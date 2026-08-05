@@ -1,13 +1,15 @@
-"""Persistence for signals and profiles.
+"""Persistence for signals, profiles and resolutions.
 
-**Two repositories, deliberately.** Signals are derived and rebuildable;
-profiles are customer-authored and cannot be regenerated from anything.
-Keeping them apart makes it impossible to write a rebuild that quietly
-discards a customer's configuration.
+**Three repositories, deliberately, because the three hold different kinds of
+truth.** Signals are derived and rebuildable; profiles are customer-authored
+and cannot be regenerated from anything; resolutions are decisions people made
+about a signal. Keeping them apart makes it impossible to write a rebuild that
+quietly discards a customer's configuration — or the record of what they
+decided.
 
-Neither offers an update method. Immutability is enforced at the database
-by the absent UPDATE grant (migration 0012); not offering the method here
-means nobody writes code that would fail at runtime.
+**None offers an update method.** Immutability is enforced at the database by
+the absent UPDATE grant (migrations 0012 and 0039); not offering the method
+here means nobody writes code that would fail at runtime.
 """
 
 from __future__ import annotations
@@ -24,8 +26,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from modules.business_event_engine.public import BusinessEventType
 from modules.signal_engine.domain.catalog import Relevance, SignalType
 from modules.signal_engine.domain.profile import ProfileEntry, SignalProfile
+from modules.signal_engine.domain.resolution import (
+    Actioned,
+    Assigned,
+    DismissalReason,
+    Dismissed,
+    Outcome,
+    Resolution,
+    ResolutionError,
+    Snoozed,
+)
 from modules.signal_engine.domain.signal import Signal
-from modules.signal_engine.infrastructure.models import SignalModel, SignalProfileModel
+from modules.signal_engine.infrastructure.models import (
+    SignalModel,
+    SignalProfileModel,
+    SignalResolutionModel,
+)
 
 SYSTEM_USER_ID = UUID("00000000-0000-0000-0000-000000000001")
 
@@ -254,3 +270,150 @@ class SqlProfileRepository:
             )
         )
         await self._session.flush()
+
+
+#: The stored discriminator for each outcome. **One table, not four**, because
+#: they are four shapes of the same fact — *how this signal left the queue* —
+#: and a queue read that had to union four tables would be reading one concept
+#: through four doors.
+_ACTIONED = "actioned"
+_ASSIGNED = "assigned"
+_SNOOZED = "snoozed"
+_DISMISSED = "dismissed"
+
+
+def _to_outcome(row: SignalResolutionModel) -> Outcome:
+    """Rebuild the outcome from its discriminator and payload.
+
+    **Raises rather than defaulting on an unknown discriminator.** A row this
+    code cannot interpret is a deployment reading data written by a newer one,
+    and returning `Actioned()` for it would silently tell a customer their
+    signal was handled.
+    """
+    # **`if`, not `match`.** A bare name in a `case` is a capture pattern, so
+    # `case _ACTIONED` would bind the discriminator and match everything —
+    # every row would read back as actioned, and the first branch would have
+    # answered *"somebody handled it"* for a dismissal. `ruff` refused it
+    # (`N806`) before a test could.
+    if row.outcome == _ACTIONED:
+        return Actioned()
+    if row.outcome == _ASSIGNED:
+        # The check constraint makes this non-null for this outcome; the
+        # assertion is what tells `mypy` so, and would fire only if the
+        # constraint had been dropped.
+        assert row.assigned_to is not None
+        return Assigned(to=row.assigned_to)
+    if row.outcome == _SNOOZED:
+        assert row.snoozed_until is not None
+        return Snoozed(until=row.snoozed_until)
+    if row.outcome == _DISMISSED:
+        assert row.dismissal_reason is not None
+        return Dismissed(reason=DismissalReason(row.dismissal_reason))
+    raise ResolutionError(
+        f"resolution {row.id} records an outcome this build does not know: {row.outcome!r}."
+    )
+
+
+def _to_resolution(row: SignalResolutionModel) -> Resolution:
+    return Resolution(
+        id=row.id,
+        workspace_id=row.workspace_id,
+        signal_id=row.signal_id,
+        outcome=_to_outcome(row),
+        actor_id=row.actor_id,
+        recorded_at=row.recorded_at,
+        supersedes=row.supersedes,
+        payload_version=row.payload_version,
+    )
+
+
+class SqlResolutionRepository:
+    """How a signal left the queue.
+
+    **A third repository rather than a method on the signal one**, on the rule
+    the module already follows: signals are derived and rebuildable, profiles
+    are customer-authored, and these are decisions people made. A rebuild that
+    could reach a resolution is a rebuild that could discard one.
+
+    No update method, and no method that writes a signal.
+    """
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def record(self, resolution: Resolution) -> None:
+        outcome = resolution.outcome
+        self._session.add(
+            SignalResolutionModel(
+                id=resolution.id,
+                workspace_id=resolution.workspace_id,
+                signal_id=resolution.signal_id,
+                outcome=_discriminator(outcome),
+                assigned_to=outcome.to if isinstance(outcome, Assigned) else None,
+                snoozed_until=outcome.until if isinstance(outcome, Snoozed) else None,
+                dismissal_reason=(outcome.reason.text if isinstance(outcome, Dismissed) else None),
+                actor_id=resolution.actor_id,
+                recorded_at=resolution.recorded_at,
+                supersedes=resolution.supersedes,
+                payload_version=resolution.payload_version,
+                # **The audit columns name the same person, not the platform.**
+                # `SYSTEM_USER_ID` appears above because a signal is machine-
+                # authored; nothing in this table is.
+                created_by=resolution.actor_id,
+                updated_by=resolution.actor_id,
+            )
+        )
+        await self._session.flush()
+
+    async def current_for_signals(
+        self, workspace_id: UUID, signal_ids: Sequence[UUID]
+    ) -> dict[UUID, Resolution]:
+        """**A signal with no key is open**, and that is deliberately not the
+        same as one resolved to do nothing.
+
+        Currency is *"nothing supersedes it"*, read the way this module already
+        reads it for signals — the superseded set, excluded — rather than by a
+        flag a writer has to remember to clear.
+        """
+        if not signal_ids:
+            return {}
+        replaced = select(SignalResolutionModel.supersedes).where(
+            SignalResolutionModel.workspace_id == workspace_id,
+            SignalResolutionModel.supersedes.is_not(None),
+        )
+        rows = await self._session.execute(
+            select(SignalResolutionModel).where(
+                SignalResolutionModel.workspace_id == workspace_id,
+                SignalResolutionModel.signal_id.in_(list(signal_ids)),
+                SignalResolutionModel.id.not_in(replaced),
+            )
+        )
+        return {row.signal_id: _to_resolution(row) for row in rows.scalars()}
+
+    async def history_for_signal(
+        self, workspace_id: UUID, signal_id: UUID
+    ) -> tuple[Resolution, ...]:
+        rows = await self._session.execute(
+            select(SignalResolutionModel)
+            .where(
+                SignalResolutionModel.workspace_id == workspace_id,
+                SignalResolutionModel.signal_id == signal_id,
+            )
+            .order_by(SignalResolutionModel.recorded_at, SignalResolutionModel.id)
+        )
+        return tuple(_to_resolution(row) for row in rows.scalars())
+
+
+def _discriminator(outcome: Outcome) -> str:
+    """**Exhaustive by construction.** `Outcome` is a closed union, so `mypy`
+    refuses this function if a fifth member is ever added without a branch
+    here — which is the point of the union being closed."""
+    match outcome:
+        case Actioned():
+            return _ACTIONED
+        case Assigned():
+            return _ASSIGNED
+        case Snoozed():
+            return _SNOOZED
+        case Dismissed():
+            return _DISMISSED

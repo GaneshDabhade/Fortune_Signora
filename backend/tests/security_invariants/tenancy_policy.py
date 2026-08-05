@@ -73,6 +73,11 @@ TENANT_OWNED_TABLES: Final[frozenset[str]] = frozenset(
         # **customer-authored** table in the platform — not derived data.
         "signal",
         "signal_profile",
+        # How a signal leaves the queue (TASK-405), migration 0039. A record
+        # *beside* the signal, never a column on it: the signal states what
+        # Signora concluded from evidence, and a person disagreeing with it
+        # later has not changed what was concluded.
+        "signal_resolution",
         # Buying Score Engine (M5B), migration 0013. `workspace_scoring_model`
         # is the **second** customer-authored table — a workspace's own
         # weighting, which cannot be regenerated from anything.
@@ -257,6 +262,13 @@ REQUIRED_POLICY_COMMANDS: Final[frozenset[str]] = frozenset({"SELECT", "INSERT",
 # historical signal unexplainable, because the reason it exists would have
 # changed underneath it (migration 0012; M5A ruling).
 #
+# `signal_resolution` records one person's decision about one signal. Changing
+# your mind is a *new* row naming the one it supersedes, so the queue can show
+# what is true now while the history of how it got there stays readable — and a
+# dismissal somebody regretted cannot quietly cease to exist. Editable, it
+# would be the one record of what a customer decided that nobody could cite
+# (migration 0039; TASK-405).
+#
 # `ai_inference` is Signora's account of its own behaviour. The ungrounded
 # rate read from an editable table would be a number nobody could defend —
 # and the rows worth editing are exactly the embarrassing ones (migration
@@ -296,6 +308,7 @@ IMMUTABLE_TENANT_TABLES: Final[frozenset[str]] = frozenset(
         "business_event",
         "signal",
         "signal_profile",
+        "signal_resolution",
         "buying_score",
         "workspace_scoring_model",
         "opportunity",
