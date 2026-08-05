@@ -1004,6 +1004,8 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 
 ## C-012 · `EventHandler` receives no session, so no module handler is registered
 
+> ✅ **Answered by [435 · Platform composition](architecture/435-platform-composition-rfc.md)**, [TASK-900](BACKLOG.md), Lane C 2026-08-05 — **awaiting product owner approval.** **Four items, one RFC**, because deciding them separately is how the substrate drifts.
+
 | | |
 |---|---|
 | **Decision required** | How a handler participates in the dispatcher's transaction — RFC required (§20a) |
@@ -1046,6 +1048,8 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 ---
 
 ## C-013 · `PublishableEvent` cannot be satisfied by a frozen dataclass
+
+> ✅ **Answered by [435 · Platform composition](architecture/435-platform-composition-rfc.md)**, [TASK-900](BACKLOG.md), Lane C 2026-08-05 — **awaiting product owner approval.** **Four items, one RFC**, because deciding them separately is how the substrate drifts.
 
 | | |
 |---|---|
@@ -1818,6 +1822,8 @@ It is also the failure mode this repository keeps finding in a different coat: [
 
 ## C-021 · An event handler cannot reach a provider adapter
 
+> ✅ **Answered by [435 · Platform composition](architecture/435-platform-composition-rfc.md)**, [TASK-900](BACKLOG.md), Lane C 2026-08-05 — **awaiting product owner approval.** **Four items, one RFC**, because deciding them separately is how the substrate drifts.
+
 | | |
 |---|---|
 | **Owner** | **Product owner** — `apps/worker/` has no assignable lane ([C-010](#c-010), [TASK-006](BACKLOG.md)) |
@@ -2447,6 +2453,8 @@ Alembic's `down_revision` is a linear chain: **a gap is a broken graph, not an o
 ---
 
 ## C-207 · Casbin cannot express an action on yourself
+
+> ✅ **Answered by [435 · Platform composition](architecture/435-platform-composition-rfc.md)**, [TASK-900](BACKLOG.md), Lane C 2026-08-05 — **awaiting product owner approval.** **Four items, one RFC**, because deciding them separately is how the substrate drifts.
 
 | | |
 |---|---|

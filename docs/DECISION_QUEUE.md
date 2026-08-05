@@ -119,7 +119,19 @@
 
 # 🧩 Collapsed — four decisions, one RFC
 
+✅ **DELIVERED 2026-08-05 — [435 · Platform composition](architecture/435-platform-composition-rfc.md). Awaiting your approval.**
+
 **[TASK-900](BACKLOG.md) closes [C-012](LANE_COORDINATION.md), [C-013](LANE_COORDINATION.md), [C-021](LANE_COORDINATION.md) and [C-207](LANE_COORDINATION.md).** Approved to Lane C on 2026-08-05.
+
+**Three questions are asked of you at the end of the document**, and the rest is evidence:
+
+| | |
+|---|---|
+| **①** | **Approve the four capabilities, or any subset** — they are separable, and **③ needs nothing from you but an owner for `apps/worker/`** |
+| **②** | **Confirm the single-shape handler in capability 1** — the one deviation from *additive only*. **Blast radius measured at two functions** |
+| **③** | **May a sole owner leave a workspace?** Recommendation: **the policy permits it and the handler refuses the last owner**, because a workspace invariant does not belong in the authorization model |
+
+> **Two findings worth your attention even before the approval.** **C-021 is not a platform blocker** — the field it needs is in `apps/worker/`, which §20a does not freeze; **it is an ownership gap ([C-010](LANE_COORDINATION.md)) wearing an architecture gap's clothes.** And **capability 3 dissolves entirely once capability 1 lands**, which is only visible reading the four together.
 
 > **This is the highest-leverage item in the repository on both sides at once.** It removes **four decisions** from this queue, and **[TASK-901](BACKLOG.md) — seven independently certifiable slices — is blocked on it.** One approval, four rulings retired and seven slices released.
 
