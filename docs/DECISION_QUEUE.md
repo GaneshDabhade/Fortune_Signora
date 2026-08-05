@@ -2,7 +2,9 @@
 
 **The single place the product owner reviews when making rulings.** Established 2026-08-05 by product owner directive.
 
-> ## ⚠️ Two new items. Three others are waiting and you are holding all three deliberately.
+> ## ⚠️ Three new items. Three others are waiting and you are holding all three deliberately.
+>
+> ⚠️ **[C-419](#c-419--the-six-verbs-have-no-representation-and-17-surfaces-one-contract-is-undecided) — the six verbs have no representation, and mounting the assistant would let every member spend a model call on every page.** **Blocks nothing; wave 2 reaches this screen next.**
 >
 > ⚠️ **[C-418](#c-418--does-signora-forecast-revenue) — the Executive Dashboard's first word is *forecast* and a ratified principle refuses to forecast.** **Blocks nothing** — five of the screen's six sections ship without it — **and it decides four missing concepts at once.**
 >
@@ -73,6 +75,20 @@
 | **Lanes waiting** | **None.** Lane B is building TASK-406 and would consume this rather than wait for it |
 | **Priority** | **P0 on timing · P3 on difficulty.** Two small slices |
 | **Recommended** | ✅ **Sequence [TASK-434](BACKLOG.md) ahead of TASK-406's backtest slice.** ⚠️ **First slice is a prerequisite regardless of any of this**: **`commercial_profile/public/` publishes thirteen views and *not one is the ICP* — no module can read the criteria at all today**, and every one of the sixteen consumers is blocked on that one missing read port. **[ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md) is the ratified precedent for exactly this shape** |
+
+## C-419 · The six verbs have no representation, and *17 surfaces, one contract* is undecided
+
+**Found by [445](architecture/445-ai-copilot-traceability-audit.md) — the first Screen-by-Screen Domain Traceability Audit, on the screen wave 2 reaches next.**
+
+| | |
+|---|---|
+| **Two halves** | **[410](architecture/410-approved-ui-specification.md) asserts *"**six verbs and no others**"* and *"17 surfaces, one contract."*** ⛔ **No verb taxonomy exists in any `domain/` layer** — six values the design calls closed, and nothing closes them. **And seventeen endpoints is seventeen chances for one of the five guarantees to differ, with no way to check that it did not** |
+| **What already argues one way** | ✅ **The guarantees are already single** — `GroundedOutput`, `EvidenceRef`, `SupportBasis` and the never-repairing validator are one implementation each. **The contract is a platform capability in substance today** |
+| **Impact** | **Nothing blocked.** [TASK-202](BACKLOG.md) waits on C-222 for unrelated reasons |
+| **Lanes waiting** | **None** |
+| **Priority** | **P2 — free now, and it decides a module's published language** |
+| **Recommended** | ✅ **The verb taxonomy and surface identifier go in `ai_reasoning_engine`'s `public/`; the 17 surfaces are consumers, not variants.** **§6's rule, not preference**: *"a port belongs to the module that owns the language it represents."* **Put it in the frontend and the closed set stops being closed the first time a screen wants a seventh.** **Trade-off stated: one parameterised route reads less obviously than seventeen named ones** — and the repository took that trade before, deliberately: the provider registry *"exposes `for_model(model)` and no vendor-keyed lookup, so business code that cannot name a vendor cannot branch on one"* |
+| ⚠️ **A separate, cheaper finding** | **There is no `Resource` for reasoning.** `Resource.RESEARCH` exists because *"reading an account is free and asking for research spends a model call… without it every reader becomes a spender."* **AI Copilot is 17 surfaces on pages every member already reads** — mounted without the same separation, **it grants every member the ability to spend, on every page.** **One `Resource` and two policy lines**, which [C-224](LANE_COORDINATION.md) already makes a lane's to register |
 
 ## C-418 · Does Signora forecast revenue?
 

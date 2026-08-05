@@ -2223,6 +2223,7 @@ assert set(SignalTypeResponse.model_fields) == {"key", "title"}
 | [C-413](#c-413--two-lanes-are-assigned-knowledge_graph) | Two lanes are assigned `knowledge_graph` | Lane C | **Product owner** | `OPEN` | Nothing |
 | [C-417](#c-417--adr-0404-approved-three-platform-capabilities-whose-owner-may-not-finish-two-of-them) | **ADR-0404 approved three platform capabilities whose owner may not finish two of them** | Lane C | **Product owner** | **`READY FOR PRODUCT DECISION`** — four alternatives, a recommendation and the bound that makes it checkable | **[TASK-418](BACKLOG.md) ① and ②, and [TASK-901](BACKLOG.md)'s seven slices behind them.** ④ ships now |
 | [C-418](#c-418--does-signora-forecast-revenue-the-executive-dashboard-says-yes-and-a-ratified-principle-says-no) | **Does Signora forecast revenue? The Executive Dashboard says yes and a ratified principle says no** | Lane C | **Product owner** | **`READY FOR PRODUCT DECISION`** — two answers, a recommendation, and the sequencing each commits to | **Nothing today** — [TASK-438](BACKLOG.md) delivers five of the screen's six sections without it |
+| [C-419](#c-419--the-six-verbs-have-no-representation-and-17-surfaces-one-contract-is-undecided) | **The six verbs have no representation, and *17 surfaces, one contract* is undecided** | Lane C | **Product owner** | **`READY FOR PRODUCT DECISION`** — two halves, a recommendation, and the trade-off stated | **Nothing today.** AI Copilot is wave 2 and [TASK-202](BACKLOG.md) is blocked on C-222 for unrelated reasons |
 
 ### What the audit is asserting, precisely
 
@@ -5525,3 +5526,43 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 **Every authorization grant today is workspace-wide — `p, member, *, opportunity, read`.** **A roll-up by owner is, by construction, everybody's performance on one page**, and **this is the first approved screen whose data is sensitive *between colleagues* rather than between tenants.** **No `Resource` exists for a plan, a target or a forecast.**
 
 **Recorded rather than proposed** — it becomes real only on answer **A**. **Coverage and ageing are facts about accounts, not about people.**
+
+## C-419 · The six verbs have no representation, and *17 surfaces, one contract* is undecided
+
+**Opened 2026-08-05 · Lane C · current module assignee: `ai_reasoning_engine` (Lane B) · 🟠**
+
+> **Found by [445](architecture/445-ai-copilot-traceability-audit.md), the first Screen-by-Screen Domain Traceability Audit ([D-078](DECISION_REGISTER.md)).** **AI Copilot is wave 2 — the next screen implementation reaches.**
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, auditing the screen before implementation reached it |
+| **Owner** | **The product owner** — it decides a module's published language and a platform boundary |
+| **Blocks** | **Nothing today.** [TASK-202](BACKLOG.md) is blocked on [C-222](#c-222--reasoning1-earns-a-release-under-protocol-2-on-a-model-this-workstation-cannot-measure-in-time) for unrelated reasons |
+| **Status** | **`READY FOR PRODUCT DECISION`** |
+
+### Two halves, and the second cannot be answered without the first
+
+**[410](architecture/410-approved-ui-specification.md) asserts *"**six verbs and no others** — Explain · Summarize · Predict · Recommend · Generate · Reason"* and *"17 surfaces, one contract."***
+
+| | |
+|---|---|
+| **① The verbs have no representation** | ⛔ **No verb, intent or capability taxonomy exists in any `domain/` layer.** **Six named values the design calls closed, and nothing closes them** |
+| **② One route or seventeen** | **The contract is five guarantees** — inherits scope, cites what it read, states confidence with its basis, proposes rather than commits, is attributable and reversible. **Seventeen endpoints is seventeen chances for one of them to differ, and no way to check that it did not** |
+
+### ✅ What already argues for one side
+
+**The guarantees are *already* one implementation.** `GroundedOutput`, `EvidenceRef`, `SupportBasis` and the never-repairing validator are single and shared. **The contract is a platform capability in substance today** — what is undecided is whether the *surface* is a parameter of one route or a convention across seventeen.
+
+### Recommendation
+
+> ✅ **The verb taxonomy and the surface identifier belong to `ai_reasoning_engine`'s `public/`, and the 17 surfaces are consumers rather than variants.**
+>
+> **The reason is §6's rule, not preference:** *"a port belongs to the module that owns the language it represents."* ***Explain · Summarize · Predict · Recommend · Generate · Reason* is that module's language.** Put it in the frontend and **the closed set stops being closed the first time a screen needs a seventh.**
+
+**Trade-off, stated:** one route with a verb parameter is **less obvious to read** than seventeen named endpoints. **The repository has already taken that trade once and recorded why** — the AI provider registry *"exposes `for_model(model)` and no vendor-keyed lookup, so business code that cannot name a vendor cannot branch on one."* **A surface that cannot name itself cannot diverge from the contract.**
+
+### The permission finding, which is separate and cheaper
+
+⚠️ **There is no `Resource` for reasoning.** **`Resource.RESEARCH` exists precisely because *"reading an account is free and asking for research spends a model call, and one resource could not express both without making every reader a spender."***
+
+> **AI Copilot is 17 surfaces on pages every member already reads.** **Mounted without the same separation, it grants every member the ability to spend a model call, on every page.** **One `Resource` and two policy lines** — the [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) ruling already makes that a declarative registration a lane may perform.

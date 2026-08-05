@@ -395,6 +395,55 @@ Decisions required    what the product owner must rule before it can start
 
 **And a discovery is not a licence to build.** *"Do not implement them immediately. Instead, plan them before dependent work begins."* **A finding becomes a backlog row only when it names its screens, its trigger and its reuse verdict** — and a 🔴 finding with no ruling behind it is stated as alternatives with a recommendation, **never as a design.**
 
+### 5f · The Screen-by-Screen Domain Traceability Audit
+
+**Ratified 2026-08-05, product owner directive ([D-078](DECISION_REGISTER.md)). Permanent, and an extension of §5e rather than a replacement.**
+
+> **Every approved UI screen undergoes a complete architectural traceability audit *before implementation reaches it*.** **When implementation begins on a screen, the required domain model and platform foundations should already exist.**
+
+**Every screen is its own investigation. Never assume another screen covered it** — the convergences in [442 §Part B](DOMAIN_DISCOVERY_REGISTER.md) were found by auditing screens separately and *then* reading across them, and they would have been invisible either way alone.
+
+#### The seven columns
+
+**Every element gets a row: ① what is displayed · ② the *business* concept it represents, never the UI · ③ its single source of truth · ④ the repository verdict · ⑤ the owning module · ⑥ every consumer, not just this screen · ⑦ whether it must exist before implementation reaches it.**
+
+| Verdict | Means |
+|---|---|
+| ✅ **Exists** | Nothing required |
+| 🟡 **Extend** | **The architecture is right. Extend, never duplicate** |
+| 🟠 **Conflicts** | The current design does not support the approved experience. **Recommend evolution, with evidence** |
+| 🔴 **Missing** | Prepare the work |
+
+**③ admits exactly one answer** — domain entity · aggregate · value object · workflow · projection · knowledge graph · platform service · AI capability · computed view · external provider · derived data. **Two sources is the defect, not the answer.**
+
+#### Workflows are audited too, and they find what fields cannot
+
+**Twelve dimensions: inputs · outputs · business events · state transitions · domain rules · validation · permissions · side effects · notifications · AI interactions · background jobs · audit.**
+
+> **[445 §2](architecture/445-ai-copilot-traceability-audit.md) is the worked example.** Two gaps appeared only when the flow was read end to end — **nothing records that a question was asked**, and **nothing separates reading an answer from spending a model call.** **Neither is a field, so neither could appear in the matrix.**
+
+#### The reuse search, and it is exhaustive before anything is proposed
+
+**Eight searches: bounded contexts · platform capabilities · domain concepts · value objects · workflows · business events · projections · existing ADRs.** **Only after all eight is new work proposed.**
+
+#### ⛔ The rule that protects the matrix
+
+> **Never invent a UI element.** **A row for something the repository cannot evidence puts a fabricated requirement into the one document implementation is meant to trust** — which is worse than a missing row, because it will be built.
+>
+> ⚠️ **The approved designs are an external project.** The repository holds **section-level detail for one screen** — Account 360, via [414](architecture/414-wave-1-account-360.md) — **and assertions for the other fifteen.** **Every row cites its evidence, and the audit *is* the extraction**: each screen's matrix becomes the repository's record of that screen's elements.
+
+#### Findings, in ten categories
+
+**Existing · extension candidates · architectural evolution · missing foundational capabilities · missing workflows · missing entities · missing business events · missing permissions · missing projections · missing platform capabilities.**
+
+**A concept that multiple screens require stops being a feature.** **It goes on the [radar](DOMAIN_DISCOVERY_REGISTER.md) as a candidate foundation and is sequenced ahead of its consumers.**
+
+#### The success criterion, restated
+
+> **Product implementation becomes largely an exercise in assembling existing capabilities rather than inventing architecture during development.**
+>
+> **An audit that produces no backlog row has succeeded if every element traced to something that already exists.** **[445](architecture/445-ai-copilot-traceability-audit.md) produced none** — twelve elements, and everything missing was already carried by a row somebody else had raised.
+
 ---
 
 ## 6 · Feature decomposition

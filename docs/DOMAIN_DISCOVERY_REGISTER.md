@@ -49,7 +49,7 @@
 | 8 | **ICP Builder** | Icp · criterion · **account matching** · closed-won outcome · lift | — | ✅ declaration · ⛔ **R-00** · 🟨 outcomes |
 | 9 | **Workflow Automation** | Rule as condition tree · **simulation** · **approval** · **account matching** *(a condition)* | **Outbox · relay · ARQ** ✅ **built** | ✅ [ADR-0402](architecture/adr/0402-a-rule-is-data.md) · ⛔ **R-03 · R-00** |
 | 10 | **CRM Integrations** | Connection · source adapter · field mapping · sync health · **account matching on arrival** | **Event bus** | ✅ **[C-326](LANE_COORDINATION.md) ruled** · ⛔ **R-00** |
-| 11 | **AI Copilot** | Six verbs · evidence set · grounding · **scope** · **propose, attribute, reverse** | **AI Platform** ✅ | ✅ **AI complete** · ⛔ **R-03 · R-02** |
+| 11 | **AI Copilot** | Six verbs · evidence set · grounding · **scope** · **propose, attribute, reverse** | **AI Platform** ✅ | ✅ **Audited in full — [445](architecture/445-ai-copilot-traceability-audit.md).** 12 elements: 4 ✅ · 4 🟡 · 2 🟠 · 2 🔴, **and no new backlog row.** ⛔ **R-12** *(the verb taxonomy and the surface model — [C-419](LANE_COORDINATION.md))* · ⛔ **R-03 · R-02** · 🟡 **no `ai_reasoning` `Resource`** |
 | 12 | **AI Research** | `ResearchRequest` + its **state machine** · plan · synthesis · **preserved edits** · recorded refusal | **AI Platform** ✅ | ✅ **built** · ⛔ **R-03** *(a preserved edit is a supersession)* |
 | 13 | **Global Search** | Four object types · **saved and monitored search** | — | ✅ 1 of 4 · ⛔ **R-01 · R-07 · R-02** |
 | 14 | **Executive Dashboard** | **Stage history ✅ · owner ✅ · in-ICP cohort ✅** · deal value · plan · fiscal period · team · **movement** | — | ✅ **5 of 6 sections buildable — [444](architecture/444-executive-dashboard-domain-assessment.md), [TASK-438](BACKLOG.md).** ⛔ **R-11** *(forecast — [C-418](LANE_COORDINATION.md))* · ⛔ **R-01** *(movements are affiliation intervals)* · ✅ **R-00 promoted** |
@@ -70,6 +70,7 @@
 | **R-02** | **Scope · saved view** | **5 named, and the shell inherits into all 16** | **[TASK-433](BACKLOG.md)** — awaiting a naming ruling |
 | **R-03** | **Proposed → approved → applied → withdrawn** | **6** | **[TASK-431](BACKLOG.md)** — awaiting a shape ruling |
 | **R-01** | **People · Affiliation** | **4 + Executive Dashboard's movements** | ✅ **Ruled [D-074](DECISION_REGISTER.md)** · **[TASK-427–430](BACKLOG.md)** |
+| **R-12** | **The six verbs, and *17 surfaces one contract*** | **Every AI surface** | ⛔ **[C-419](LANE_COORDINATION.md)** — six values the design calls closed, and nothing closes them |
 | **R-11** | **Forecast — deal value · plan · fiscal period · team** | **Executive Dashboard, and Opportunity Intelligence shares its aggregates** | ⛔ **[C-418](LANE_COORDINATION.md)** — **the approved UI says *forecast* and `buying_score_engine` refuses to forecast, in writing, twice.** **Four absences, one question** |
 | **R-04** | **Notification** | **4** | ⏸ **Deferred [D-027](DECISION_REGISTER.md).** Recorded, not re-raised |
 | **R-05** | **Workspace lifecycle** | **Settings + the shell all 16 inherit** | 🟨 **[438 Epic I](architecture/438-platform-initiatives.md)** — **the shell is its first consumer, not billing** |
