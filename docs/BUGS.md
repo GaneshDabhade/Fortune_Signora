@@ -314,7 +314,7 @@ grep -rn "ended" backend/tests/security_invariants/ | wc -l
 | **Module** | `commercial_profile` documentation — `docs/architecture/25-commercial-profile.md` |
 | **Current assignee** | **Lane B** — it authored the second file |
 | **Severity** | 🟡 · **Non-blocking.** No gate fails; a reference to *"document 25"* is now ambiguous |
-| **Status** | **`OPEN`** |
+| **Status** | **`FIXED` for `25` — Lane B, 2026-08-05.** ⚠️ **And the collision was the smaller half.** **`40-commercial-profile.md` already existed and is this module's design doc** — so `25-commercial-profile.md` was not merely misnumbered, it was **a second design document for one module**, which is the duplicated-truth defect (§2) rather than an identifier clash. **Its two sections are merged into `40` and the file is deleted.** **No new number was allocated**, which is the right outcome while document numbers still have no allocation block. **`49`, `50` and `51` are untouched — they need the ruling this row asks for, and `VERIFIED` is QE's** |
 | **Found** | 2026-08-05 by `infra/state-check.py` at cycle 67 Closeout. **Reported then, seen at cycle 68** |
 
 **Steps to reproduce.**
