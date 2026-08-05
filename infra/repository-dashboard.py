@@ -225,12 +225,29 @@ def build(ref: str, since: str | None = None) -> str:
     a(f"  Overall implementation     {J}  (estimate)")
     a(f"  Highest priority work      {J}")
 
-    a(section("2 · MODULE PORTFOLIO"))
-    a(f"  {'Module':<23}{'Lane':<23}{'Epic':<9}{'Task':<10}{'Status':<14}Blocker")
+    a(section("2 · REPOSITORY EXECUTION DASHBOARD"))
+    # **The future owner and the transition point are read from 430, never
+    # hardcoded here** — a recommendation lives in the document the product
+    # owner rules on, and a copy in a generator would be the second
+    # representation §2 forbids. **A plan the script cannot find prints `?`
+    # rather than a guess**: absence is reported, never defaulted (the
+    # `missing_gates` rule, ADR-0032).
+    plan = show(ref, "docs/architecture/430-module-ownership-transition-plan.md")
+    future, when = {}, {}
+    for line in plan.splitlines():
+        cells = [c.strip() for c in line.split("|")]
+        if len(cells) > 9 and cells[1].startswith("`"):
+            mod = cells[1].strip("`* ")
+            future[mod] = re.sub(r"[*⚠️ ]", "", cells[7]).split("(")[0].strip() or "?"
+            when[mod] = re.sub(r"\*\*", "", cells[8]).split("—")[0].strip() or "?"
+    a(f"  {'Module':<23}{'Owner':<9}{'Future':<9}{'Trans':<7}{'Task':<10}{'Prep':<6}{'Rev':<5}{'Status':<14}Blocked")
     for m in modules:
         r = next((x for x in rows if x["module"] == m), None)
-        a(f"  {m:<23}{owners.get(m,'—')[:22]:<23}{(r['epic'] if r else '—'):<9}"
-          f"{(r['task'] if r else '—'):<10}{(r['status'] if r else '—'):<14}{(r['blocker'] if r else '—')}")
+        st = r["status"] if r else "—"
+        a(f"  {m:<23}{owners.get(m,'—')[:8]:<9}{future.get(m,'?')[:8]:<9}{when.get(m,'?')[:6]:<7}"
+          f"{(r['task'] if r else '—'):<10}{'0':<6}{'0':<5}{st[:13]:<14}{(r['blocker'] if r else '—')}")
+    a(f"  Future owner and transition point are read from 430, not stored here.")
+    a("  Prep/Rev are 0 until a module's pre-transition backlog empties (D-060).")
 
     a(section("3 · EPIC DASHBOARD"))
     a(f"  {'Epic':<10}{'Owner':<9}{'Status':<14}{'Task':<10}Blocker")
