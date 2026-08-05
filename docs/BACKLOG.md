@@ -81,15 +81,17 @@
 | **A6** needs identity | **Not built.** `AccountIdentityResponse.agreement` is the raw material | The render (Lane A). **Backend is `knowledge_graph` — unassigned** |
 | **B2** first run | **Built by Lane A** — `first-run.test.tsx`, D36 | — |
 
-> **This lane is not proceeding into Lane A's modules on the strength of a directive that predates the collision.** One assignee per module is §20e's hardest invariant, and the product owner's own instruction in the same assignment was *"do not quietly bypass module boundaries."* **[C-323](LANE_COORDINATION.md) asks which way to resolve it**; the two backends in unassigned `knowledge_graph` are claimable meanwhile.
+> **Recorded 2026-08-03, and correct on that day.** *"This lane is not proceeding into Lane A's modules on the strength of a directive that predates the collision. One assignee per module is §20e's hardest invariant, and the product owner's own instruction in the same assignment was 'do not quietly bypass module boundaries.' [C-323](LANE_COORDINATION.md) asks which way to resolve it; the two backends in unassigned `knowledge_graph` are claimable meanwhile."*
+>
+> ✅ **Resolved 2026-08-04 by the consolidation ([D-058](DECISION_REGISTER.md)), and the caution is withdrawn.** **Every module named here is Lane B's**, so proceeding into them crosses no boundary and bypasses nothing. **[C-323](LANE_COORDINATION.md) asked which way to resolve a two-lane collision and there is no longer a collision to resolve** — it closes as overtaken, not as answered. **The whole of Epic A's remaining scope is one lane's**, which is what the row above could not assume when it was written.
 
 ### TASK-400 · Epic A completion — the surfaces that expose what the platform already knows
 
 | | |
 |---|---|
 | **Epic** | **Epic A remainder**, [51-implementation-specifications.md](architecture/51-implementation-specifications.md). **Assigned whole, not sliced** |
-| **Module** | `provider_platform` (A7) · Product Surface (A6 render) — **both Lane A's** |
-| **Status** | **`IN VALIDATION` — Lane A**, 2026-08-03. **Implementation Complete (Pending External Dependencies)**: **A7's backend shipped** at `d8f5832`; **A7's render is blocked on [C-219](LANE_COORDINATION.md)** (Lane C, the `subject`↔entity join) and **A6 on [C-321](LANE_COORDINATION.md)** (the product owner). **No executable work remains inside this scope** |
+| **Module** | `provider_platform` (A7) · Product Surface (A6 render) — **both Lane B's** *(consolidated to Lane B 2026-08-04 — [D-058](DECISION_REGISTER.md))* |
+| **Status** | **`CHANGES REQUESTED` — transferred to Lane B**, 2026-08-04. *(consolidated to Lane B 2026-08-04 — [D-058](DECISION_REGISTER.md))* **A7's backend shipped** at `d8f5832`, and the return is [B-107](BUGS.md): ten tests in that slice have never passed. **A7's render is blocked on [C-219](LANE_COORDINATION.md)** (Lane C, the `subject`↔entity join) and **A6 on [C-321](LANE_COORDINATION.md)** (the product owner) — **neither moved with the transfer.** §20e sends returned work to the implementing lane, and **Lane B addresses it before claiming from the queue** |
 | **Assigned** | **Lane A, by Lane C 2026-08-03**, answering [C-217](LANE_COORDINATION.md). Decomposition of Epic A, **already approved by the product owner** — not new scope |
 
 **Epic A verified slice by slice, across every branch, before assigning:**
@@ -215,7 +217,7 @@
 |---|---|
 | **Epic** | **Epic C**, [ADR-0400](architecture/adr/0400-person-as-an-entity.md) · [400-epic-c-people.md](architecture/400-epic-c-people.md). **Assigned whole** |
 | **Module** | **A new bounded context — `people`** · `knowledge_graph` (`EntityKind.PERSON`) · `commercial_profile` (a stable role id, Lane B's) · Product Surface |
-| **Status** | **`CLAIMED` — Lane A**, 2026-08-04. **Immediately `BLOCKED`** — see below |
+| **Status** | **`BLOCKED` — [C-221](LANE_COORDINATION.md)**, which is the product owner's. **Released from Lane A on the 2026-08-04 consolidation ([D-058](DECISION_REGISTER.md)) — the claim carried no code.** **It returns to the queue blocked rather than ready, and the transfer changed nothing about why**: no person's name enters the platform at any point, so an identity model still has nothing to identify. **A consolidation moves who would build it, never whether it can be built** |
 | **Assigned** | **Lane A, directly by the product owner, 2026-08-04**, on Lane C's prepared research, ADR and specification |
 | **Blocked by** | **[C-221](LANE_COORDINATION.md) — ADR-0400's own ❓1, checked first as the ADR instructs, and the answer is *no*.** The platform receives no person name at any point, so an identity model has nothing to identify |
 | **On claiming** | **ADR-0400 is `PROPOSED`, not ratified**, and it says so in its own status block. A new bounded context is 🔴. The product owner's assignment is the epic approval; **the ADR still needs its ratification stamp, which only the product owner can apply** |
@@ -226,8 +228,8 @@
 |---|---|
 | **Epic** | **Epic G**, [404-epic-g-copilot.md](architecture/404-epic-g-copilot.md). **Assigned whole** |
 | **Module** | `ai_reasoning_engine` · `ai_platform` (evaluation) · Product Surface |
-| **Status** | **`CLAIMED` — Lane A**, 2026-08-04, by the Task Claim Protocol |
-| **Assigned** | **Lane A, directly by the product owner, 2026-08-04.** No ADR: no boundary moves and every decision it needs is already ratified |
+| **Status** | **`READY`**. **Released from Lane A on the 2026-08-04 consolidation ([D-058](DECISION_REGISTER.md)) — the claim carried no code.** Returned to the queue; **Lane B claims it in priority order** rather than inheriting it, because the pull model is what keeps priority the product owner's. |
+| **Assigned** | **Unclaimed.** Approved by the product owner 2026-08-04; **approval survives the transfer, the claim does not.** No ADR: no boundary moves and every decision it needs is already ratified |
 | **Validated on claiming** | **Every claim in Lane C's preparation checked against the manifests, and all hold.** `reasoning@1` has four recorded evaluations, **all against `explanation_narration`'s dataset**, on 2B and 3B models; **no `reasoning` dataset exists**; the three sibling prompts hold protocol-2 releases on `llama3.1:8b` at coverage 1.0 with zero grounding failures; and **all twelve evaluations across four manifests are Ollama models** |
 | **First slice** | **Author a `reasoning` dataset and evaluate `reasoning@1` under protocol 2** — the work [TASK-013](#task-013) records as a product decision when it is a measurement nobody has taken |
 | **Known workstation limit** | ⚠️ **`llama3.1:8b` was measured *unmeasurable* on this machine during SE-09c** — 7 of 10 calls exceeded the 90s budget and the harness abandoned the run. The pinned model is part of the benchmark and is **not** a lane's to change ([ADR-0028](architecture/adr/0028-model-runtime-by-environment.md)); reported as an observation about the machine |
@@ -238,8 +240,8 @@
 |---|---|
 | **Epic** | **Epic D**, [403-epic-d-risk.md](architecture/403-epic-d-risk.md). **Assigned whole**; Phase 1 is the independent slice |
 | **Module** | `commercial_profile` (a fifth declaration) · `signal_engine` (a catalog row) · Product Surface |
-| **Status** | **`CLAIMED` — Lane A**, 2026-08-04, by the Task Claim Protocol |
-| **Assigned** | **Lane A, directly by the product owner, 2026-08-04.** No ADR, deliberately: no boundary moves, no new bounded context, no new dependency |
+| **Status** | **`READY`**. **Released from Lane A on the 2026-08-04 consolidation ([D-058](DECISION_REGISTER.md)) — the claim carried no code.** Returned to the queue; **Lane B claims it in priority order** rather than inheriting it, because the pull model is what keeps priority the product owner's. |
+| **Assigned** | **Unclaimed.** Approved by the product owner 2026-08-04; **approval survives the transfer, the claim does not.** No ADR, deliberately: no boundary moves, no new bounded context, no new dependency |
 | **First slice** | **Competitor entry** — the customer declares which technologies are competitors; `TECHNOLOGY_ADOPTED` for a declared competitor raises a **contractionary** `competitor_entry` signal, and the account becomes `contested`. **The detection half already exists** |
 | **On claiming** | **Validate before building**, in this order: that `competitor` genuinely appears nowhere · that the four existing declarations share one shape a fifth can follow · that `TECHNOLOGY_ADOPTED` carries a resolvable technology identity rather than a free string · and that **no threshold enters code** — `signal_engine` keeps them in a reviewed catalog |
 | **Not in scope** | **Usage decline** — Lane C recommends dropping it and Lane A agrees on the evidence: it needs product telemetry the platform has never had. **Champion departure** is blocked on Epic C (no person name exists); **renewal approaching** on E1 (only a CRM knows contract dates) |
@@ -250,7 +252,7 @@
 | | |
 |---|---|
 | **Recommendation** | **[417 §4, slice A-i](architecture/417-executable-slice-audit.md)** — *"`interface/` for `ai_reasoning_engine`"*, Lane C, 2026-08-04. **Priority 1** in [417 §6](architecture/417-executable-slice-audit.md) |
-| **Module** | `ai_reasoning_engine` — **Lane A's**, via [TASK-202](#task-202) |
+| **Module** | `ai_reasoning_engine` — **Lane B's** *(consolidated to Lane B 2026-08-04 — [D-058](DECISION_REGISTER.md))*, via [TASK-202](#task-202) |
 | **Slice** | one slice |
 | **Status** | **`IN VALIDATION` — Lane A**, 2026-08-04 |
 | **Assigned** | **Lane A, by the product owner, 2026-08-04** — *"The Product Owner approves the READY implementation slices prepared by Product Office. Claim the READY items in priority order."* |
@@ -266,12 +268,12 @@
 | | |
 |---|---|
 | **Recommendation** | **[417 §4, slice A-ii](architecture/417-executable-slice-audit.md)** — *"`interface/` for `sales_engagement`"*, Lane C, 2026-08-04. **Priority 1**, paired with [TASK-204](#task-204) |
-| **Module** | `sales_engagement` — **Lane A's**, which built it ([50-sales-engagement.md](architecture/50-sales-engagement.md)) |
+| **Module** | `sales_engagement` — **Lane B's** *(consolidated to Lane B 2026-08-04 — [D-058](DECISION_REGISTER.md))*. Built by Lane A ([50-sales-engagement.md](architecture/50-sales-engagement.md)) — **authorship does not move assignment, and assignment does not move authorship** |
 | **Slice** | one slice |
-| **Status** | **`BLOCKED` — [C-213](LANE_COORDINATION.md)**, found on starting 2026-08-04, once [TASK-204](#task-204) reached `IN VALIDATION` |
+| **Status** | **`READY`** — **unblocked 2026-08-04 by the consolidation.** It waited on [C-213](LANE_COORDINATION.md), the Buying Committee export from `commercial_profile.public`, **which was a cross-lane dependency only for as long as there were two lanes.** `sales_engagement` and `commercial_profile` are now the same assignee, so **the export and its consumer are one lane's change** — the adapter `application/ports.py` predicted: *"a separate, small change once the export exists."* **This is the consolidation's one genuine unblocking, and it is the only one** |
 | **Assigned** | **Lane A, by the product owner, 2026-08-04**, in the same ruling as [TASK-204](#task-204) |
 | **What is missing** | **The contract is published and unreachable, and that is only half of it.** `public/` exports 39 names — `Approach`, `ApproachBrief`, `NextAction`, `Recommendation`, `Risk`, `ProductFit`, `RankedRole` among them — and the module has no `interface/`. **But `AssembleApproach` also requires three ports — `CommitteeReader`, `EvidenceReader`, `PortfolioReader` — and none has an implementation anywhere in the repository** |
-| **Why it is blocked rather than large** | **Two of the three ports need exports `commercial_profile.public` does not have** — nothing about the Buying Committee, nothing about the portfolio. That is [C-213](LANE_COORDINATION.md), opened by Lane A on 2026-08-03, owner **Lane B**, still open. `application/ports.py` predicted exactly this: *"the adapter that satisfies it is a separate, small change **once the export exists**."* **Writing it now would invent the shape of an export another lane has not written** (§20e), so the slice stops here |
+| **Why it was blocked, and why it no longer is** | **Two of the three ports needed exports `commercial_profile.public` did not have** — nothing about the Buying Committee, nothing about the portfolio. That is [C-213](LANE_COORDINATION.md), opened by Lane A on 2026-08-03. `application/ports.py` predicted exactly this: *"the adapter that satisfies it is a separate, small change **once the export exists**."* **What made it a blocker was that the export and its consumer sat in two lanes** — writing it would have invented the shape of another lane's contract (§20e). **The 2026-08-04 consolidation removed that condition rather than answering the question**: one lane now holds both, so the export is an ordinary change inside its own module |
 | **What 417 got wrong, recorded rather than absorbed** | ⚠️ **A-ii's reuse column reads *"25+ exported types, unchanged"* and rates the slice executable.** True of the contract, not of the module: the outward half was deliberately never written. **This is the second optimistic reuse column in 417 §4** — [TASK-204](#task-204)'s was optimistic in the harmless direction and this one is not |
 | **In scope** | An interface layer over the module's **existing** `public/` · the endpoint conventions of [19-api-conventions.md](architecture/19-api-conventions.md) |
 | **Not in scope** | **Any change to `public/`.** It is complete, 39 names, and this slice consumes it rather than growing it. **No new domain concept** — 417's own finding is that the pattern has never once required a domain change across six instances |
@@ -282,8 +284,8 @@
 | | |
 |---|---|
 | **Objective** | **Every signal leaves the queue by being actioned, assigned, snoozed or dismissed with a reason** — and the resolution is durable and auditable |
-| **Module** | `signal_engine` — **Lane A's**, via TASK-203 |
-| **Status** | **`CLAIMED` — Lane A**, 2026-08-04, by the Task Claim Protocol |
+| **Module** | `signal_engine` — **Lane B's** *(consolidated to Lane B 2026-08-04 — [D-058](DECISION_REGISTER.md))*, via TASK-203 |
+| **Status** | **`READY`**. **Released from Lane A on the 2026-08-04 consolidation ([D-058](DECISION_REGISTER.md)) — the claim carried no code.** Returned to the queue; **Lane B claims it in priority order** rather than inheriting it, because the pull model is what keeps priority the product owner's |
 | **Assigned** | **Lane A, by the product owner, 2026-08-04** — *"you may proceed with A-iii and A-iv when their corresponding READY task rows exist on integration."* **The rows landed with Lane C's synchronization at `3ab3111`**, which is the condition the ruling named |
 | **Approved screen** | **Signal Center** — *"a triage queue, not a notification list"* |
 | **Scope** | Resolution state for a signal: **assign · snooze-until · dismiss-with-reason · actioned**, each attributed and timestamped. A workspace-scoped read of the queue by state |
@@ -301,8 +303,8 @@
 | | |
 |---|---|
 | **Objective** | **A criterion states what it predicts, measured against closed-won.** The ICP is declarable today and **nothing tells a customer whether it is any good** |
-| **Module** | `commercial_profile` — **Lane A's**, via TASK-203 |
-| **Status** | **`CLAIMED` — Lane A**, 2026-08-04, by the Task Claim Protocol |
+| **Module** | `commercial_profile` — **Lane B's** *(consolidated to Lane B 2026-08-04 — [D-058](DECISION_REGISTER.md))*, via TASK-203 |
+| **Status** | **`READY`**. **Released from Lane A on the 2026-08-04 consolidation ([D-058](DECISION_REGISTER.md)) — the claim carried no code.** Returned to the queue; **Lane B claims it in priority order** rather than inheriting it, because the pull model is what keeps priority the product owner's |
 | **Assigned** | **Lane A, by the product owner, 2026-08-04** — *"you may proceed with A-iii and A-iv when their corresponding READY task rows exist on integration."* **The rows landed with Lane C's synchronization at `3ab3111`**, which is the condition the ruling named |
 | **Approved screen** | **ICP Builder** — *"every criterion is scored against closed-won evidence, not opinion"* |
 | **Scope** | Per-criterion lift against decided opportunities, with its sample size · the aggregate backtest — **win rate and median cycle, in-ICP versus outside** |

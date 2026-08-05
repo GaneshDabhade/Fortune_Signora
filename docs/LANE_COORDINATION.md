@@ -89,7 +89,9 @@
 
 ### C-213 — the Buying Committee is not exported from `commercial_profile.public`
 
-**Opened 2026-08-03 · Lane A · current module assignee: Lane A (`commercial_profile`) · 🟠**
+**Opened 2026-08-03 · Lane A · current module assignee: Lane B (`commercial_profile`) · 🟠 — `CLOSED` 2026-08-04**
+
+> ✅ **Closed by the consolidation, not by an answer** ([D-058](DECISION_REGISTER.md)). **This item existed because the export and its only consumer sat in two different lanes.** `commercial_profile` and `sales_engagement` are both Lane B's from 2026-08-04, so **there is no cross-lane contract left to agree** — the export is an ordinary change inside one module, and [TASK-205](BACKLOG.md) is `READY`. **Three assignees in two days is the record worth keeping**: Lane B, then Lane A by rule, then Lane B by consolidation. **The item never moved and the answer never changed** — only who could act, which is exactly what [428](architecture/428-lane-coordination-model.md) proposes to stop storing by hand.
 
 > ⚠️ **Reassigned 2026-08-04, by rule rather than by ruling** ([C-414](#c-414--c-213-is-unfixable-by-anyone-and-that-is-why-the-lanes-stopped)). This row read *"owner: Lane B"*, which was correct when `commercial_profile` was Lane B's. **`CLAUDE.md` §20e — *module assignment is authoritative*: responsibility follows the module.** Lane A holds `commercial_profile` and therefore holds this.
 
@@ -139,7 +141,9 @@
 
 ### C-215 — the Timeline feed is per-account, and the workspace needs it per-seller
 
-**Opened 2026-08-03 · Lane A · current module assignee: unassigned (`timeline`) · 🟠**
+**Opened 2026-08-03 · Lane A · current module assignee: Lane B (`timeline`) · 🟠**
+
+> **Assigned 2026-08-04 by the consolidation** ([D-058](DECISION_REGISTER.md)). `timeline` was unassigned; **every implementation module is Lane B's**, so this item has a current assignee for the first time since it was opened. **It is still not answered** — whoever builds [TASK-902](BACKLOG.md) inherits it with the module, exactly as the correction below required.
 
 > ⚠️ **Corrected 2026-08-04** ([C-414](#c-414--c-213-is-unfixable-by-anyone-and-that-is-why-the-lanes-stopped)). This read *"owner: Lane B"*; **`timeline` is assigned to no lane today.** Under `CLAUDE.md` §20e — *module assignment is authoritative* — **whichever lane claims [TASK-902](BACKLOG.md) inherits this item with the module.** Naming a lane that does not hold it is the same defect C-213 carried.
 
