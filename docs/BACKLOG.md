@@ -750,6 +750,22 @@
 | **Delivers** | **The People Intelligence screen · Global Search's people group** |
 | **Position, and why it did not move** | ✅ **[D-074](DECISION_REGISTER.md): *"the customer-facing People Intelligence module may still remain later in the roadmap. The underlying domain should not."*** **The anonymous surface is buildable from S3; the org chart and relationship views additionally need [TASK-429](#task-429--m-e--a-provider-supplies-a-person-identifier)** |
 
+### TASK-434 · An account can be asked whether it matches a criterion, and only one thing answers
+
+| | |
+|---|---|
+| **Discovery** | **[443](architecture/443-account-matching-capability.md)** — the first assessment produced under [D-075](DECISION_REGISTER.md)'s Product-Led Domain Discovery |
+| **Milestone** | **Domain** ([D-075](DECISION_REGISTER.md)'s separation) — **not Intelligence, not Customer Experience.** It renders nothing |
+| **Module** | ⚠️ **`commercial_profile` — and *not* because [TASK-406](#task-406--a-iv--an-icp-criterion-is-scored-against-outcomes) needs it first.** **The criterion vocabulary is defined there** (`industries` · `countries` · `EmployeeRange` · `validate_criterion_list`) **and evaluating elsewhere means a second copy of it** |
+| **Status** | **`SEQUENCED`** — **trigger: before [TASK-406](#task-406--a-iv--an-icp-criterion-is-scored-against-outcomes)'s backtest slice.** ⚠️ **Measured 2026-08-05: TASK-406 is `IN PROGRESS` and its acceptance criterion is *"the backtest reports both cohorts, never in-ICP alone"* — which requires this predicate. No matching code is on `integration` yet, so the window is open and it is open by days** |
+| **The insight that makes it fit** | **The import contract forbids `commercial_profile` from *reading* the pipeline. It does not forbid it from being *given* facts.** **`evaluate(criteria, attributes) -> tuple[CriterionVerdict, ...]` is pure** — it imports nothing, queries nothing, knows no module, and **the caller supplies the attributes**. ✅ **Zero new dependency edges. `lint-imports` needs no amendment** |
+| **Two slices** | **① Publish `IcpReader` + `IcpView` from `commercial_profile/public/`.** ⚠️ **Thirteen views are published and not one is the ICP — no module can read the criteria at all today.** [ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md) is the ratified precedent for this exact shape. **② The pure evaluation** |
+| **⛔ The invariant it inherits** | **A match is a category with reasons and is never a number.** `MatchStrength` — *"a semantic category, never a number"*, ratified 2026-07-29 — and `Relevance`: *"a number invites weighting, weighting invites thresholds, and a threshold here would be a propensity judgement in the wrong module."* **A fit score would be a second propensity model competing with `buying_score_engine`** |
+| **⛔ And the one that must be in the type** | **`unmeasured`, never `false`.** The customer declares free text — *"validated, never normalised"* — and the pipeline observes canonical `INDUSTRY`. **`SaaS` versus `Computer Software` returns `False` under string equality and the account silently drops out of its own ICP.** **A matcher that says `false` where it means *I could not tell* produces a smaller ICP, a cleaner backtest and a wrong answer**, and it is invisible from the result |
+| **Not in scope** | **No synonym catalog** *(443 M1 — build it when `unmeasured` shows it is losing accounts, and it is a **reviewed catalog**, never a model)* · **no discovery** *(M3 — [50 §23](architecture/50-sales-engagement.md) already classifies the trigger)* · **no lift, no backtest** *(M4 is TASK-406 and is a **consumer** of this, not a sibling)* · **no fit score** |
+| **Consumers, measured** | **16** — ICP Builder · TASK-406 · `FitDimension` *(already written down in [50 §23](architecture/50-sales-engagement.md))* · Account 360 · Companies · Segments · Executive Dashboard · Opportunity prioritization · Buying Score · AI Copilot · AI Reasoning · AI Research cohorts · Recommendations · Reports · **Workflow rule conditions** · **Epic E1 CRM arrival**. **Four were on no list** |
+| **Governance** | 🟠 — **the module's own `public/`, announced in the commit message.** **Not 🔴: no new bounded context, no new edge, no ADR** |
+
 ### TASK-432 · A triaged signal says so, and the pipeline hears it
 
 | | |

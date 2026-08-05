@@ -2,13 +2,15 @@
 
 **The single place the product owner reviews when making rulings.** Established 2026-08-05 by product owner directive.
 
-> ## ⚠️ Three things are waiting on you, and two arrived from the same method.
+> ## ⏱️ One thing is time-critical. Three others are waiting and none of them is urgent.
 >
-> **① [Placing TASK-427](#-task-427--the-people-domains-trigger-has-fired-and-placing-it-is-yours)** — **the People domain.** One row, one position, and **its trigger has already fired.**
-> **② [TASK-431](#-task-431--six-screens-assert-one-guarantee-and-the-repository-has-no-word-for-it)** — **the highest-value decision on this page.** Six approved screens assert one guarantee; the repository has no representation of it.
-> **③ [TASK-433](#-task-433--segment-already-means-something-else)** — **one word, and it costs a sentence today.**
+> > **⏱️ [TASK-434](#-task-434--the-only-time-critical-row-on-this-page) — account matching. [TASK-406](BACKLOG.md) is `IN PROGRESS` today and its backtest needs a predicate that does not exist.** **No matching code is on `integration` yet, so the first copy has not been written — and sixteen consumers would inherit it.** **The ownership question is answered ([443](architecture/443-account-matching-capability.md)) and needs no ruling; the *sequencing* is yours.**
 >
-> **② and ③ are the first output of [Product-Led Domain Discovery](architecture/442-product-led-domain-discovery.md).** **Both are rulings, not work** — neither asks for anything to be built.
+> **① [Placing TASK-427](#-task-427--the-people-domains-trigger-has-fired-and-placing-it-is-yours)** — **the People domain.** Its trigger has already fired.
+> **② [TASK-431](#-task-431--six-screens-assert-one-guarantee-and-the-repository-has-no-word-for-it)** — six approved screens assert one guarantee; the repository has no word for it.
+> **③ [TASK-433](#-task-433--segment-already-means-something-else)** — one word, and it costs a sentence today.
+>
+> **①–③ are held in the planned sequence at your instruction** — *"I will review their individual architectural shape separately."* **Discovery has not waited on them** ([D-075](DECISION_REGISTER.md)): **[443](architecture/443-account-matching-capability.md) was produced while they sat here.**
 >
 > ✅ **Both of the items that stood here on 2026-08-05 are ruled and cleared** — **[C-416](LANE_COORDINATION.md)** gave `signora_platform/` a permanent owner and released [TASK-418](BACKLOG.md) with [TASK-901](BACKLOG.md)'s seven slices; **[C-224](LANE_COORDINATION.md)** settled the authorization `Resource`, and `CLAUDE.md` §20a now names it in the carve-out. **Both were ruled by [D-073](DECISION_REGISTER.md).** *(This banner still asked for them the next morning. **`--check` reported C-224 as `STALE` and it was right** — the queue is only true if a ruling removes its own row.)*
 >
@@ -52,6 +54,21 @@
 | **Lanes waiting** | **None yet, and that is the argument for placing it now rather than the argument against.** Epic C is assigned to **Lane A** |
 | **Priority** | **P1 — it is in front of a wave that is claimable today** |
 | **Recommended** | ✅ **Place [TASK-427](BACKLOG.md) in `READY` above [TASK-202](BACKLOG.md).** **Nothing gates it** — no ruling, no provider, no missing module. **Alternative, if wave 2 should not wait**: place it immediately *below* TASK-202 and accept that AI Copilot's phase 4 stalls where phases 1–3 do not |
+
+## ⏱️ TASK-434 · The only time-critical row on this page
+
+**Not a shape question — you asked Product Office to determine the architectural home and [443](architecture/443-account-matching-capability.md) determines it, at 🟠 with no ADR and no new dependency edge.** **What is yours is *when*.**
+
+| | |
+|---|---|
+| **Why now** | **[TASK-406](BACKLOG.md) is `IN PROGRESS` with Lane B**, and its acceptance criterion is *"**the backtest reports both cohorts, never in-ICP alone**"* — **which requires a predicate deciding which an account is.** **Measured on `integration`: no matching code has landed.** The window is open **by days** |
+| **Impact if it closes** | **Sixteen consumers** inherit whichever interpretation TASK-406's backtest happened to need — including **Workflow rule conditions**, **Epic E1's CRM arrival** and **AI Research cohorts**, none of which was on any list |
+| **The ownership answer** | **`commercial_profile`, and explicitly *not* because TASK-406 needs it first** — **the criterion vocabulary is defined there and evaluating elsewhere means a second copy of it.** **The move that makes it fit: the contract forbids that module from *reading* the pipeline and does not forbid it from being *given* facts.** **`evaluate(criteria, attributes)` is pure** — zero new edges, `lint-imports` unchanged |
+| **⚠️ The finding that makes it foundational** | **The two sides do not speak the same language.** A customer types `SaaS`; a provider reports `Computer Software`; **string equality returns `False` and the account silently drops out of its own ICP.** **`unmeasured` must be a value in the type, never `false`** |
+| **Blocked tasks** | **None today.** **This is the argument for acting, not against it** |
+| **Lanes waiting** | **None.** Lane B is building TASK-406 and would consume this rather than wait for it |
+| **Priority** | **P0 on timing · P3 on difficulty.** Two small slices |
+| **Recommended** | ✅ **Sequence [TASK-434](BACKLOG.md) ahead of TASK-406's backtest slice.** ⚠️ **First slice is a prerequisite regardless of any of this**: **`commercial_profile/public/` publishes thirteen views and *not one is the ICP* — no module can read the criteria at all today**, and every one of the sixteen consumers is blocked on that one missing read port. **[ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md) is the ratified precedent for exactly this shape** |
 
 ## 📌 TASK-431 · Six screens assert one guarantee, and the repository has no word for it
 

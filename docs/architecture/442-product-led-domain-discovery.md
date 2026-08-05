@@ -311,6 +311,24 @@
 
 ---
 
+## 🔭 The radar — capabilities under assessment, and where each one is
+
+**[D-075](../DECISION_REGISTER.md) made this method permanent.** **A capability enters the radar when the approved product experience implies it and the repository has not decided where it lives; it leaves when it is ruled, built, or measured away.**
+
+| Capability | Assessment | State |
+|---|---|---|
+| **Account matching / ICP matching** | **[443](443-account-matching-capability.md)** — **16 consumers, four on no list, one being implemented today.** Decomposed into vocabulary agreement · evaluation · discovery · measurement | ✅ **Assessed.** Ownership determined at 🟠 · **[TASK-434](../BACKLOG.md)** · **timing is the product owner's** |
+| **F1 · proposed → approved → applied → withdrawn** | §F1 above | **[TASK-431](../BACKLOG.md)** — awaiting a shape ruling |
+| **F2 · scope and saved views** | §F2 above | **[TASK-433](../BACKLOG.md)** — awaiting a naming ruling |
+| **F3 · the triage event** | §F3 above | **[TASK-432](../BACKLOG.md)** — `SEQUENCED`, no ruling needed |
+| **People — domain · intelligence · enrichment · experience** | **[441](441-people-roadmap.md)** | ✅ **Ruled [D-074](../DECISION_REGISTER.md)** — **[TASK-427–430](../BACKLOG.md)** |
+
+> ### The separation this radar enforces, on every row
+>
+> **[D-075](../DECISION_REGISTER.md) generalised [D-074](../DECISION_REGISTER.md)'s four milestones beyond People:** **Domain · Intelligence · Provider Enrichment · Customer Experience** are **separate milestones with separate triggers**, and *"we should avoid coupling foundational domain work with customer-facing screens simply because they happen to be related."*
+>
+> **Applied to 443 immediately, and it is what keeps that row honest**: **[TASK-434](../BACKLOG.md) is `Domain`.** **It renders nothing, it is not ICP Builder, and it is not TASK-406's backtest** — which is exactly why it may be sequenced ahead of both.
+
 # 7 · How this document stays true
 
 **It is a register, not a report.** **It is re-measured whenever a screen is prepared, a wave is amended, or a domain concept lands** — and every row states what was measured and when, so a stale row is visible rather than merely wrong.
