@@ -343,7 +343,7 @@ databaseUrl: required(
 | [C-205](#c-205--is-signora-expected-to-work-on-a-phone) | Is Signora expected to work on a phone? | Lane A | **Product owner** | **`ANSWERED` 2026-08-03 — yes, a phone is in scope** | **Unblocks CX-07**, which is a milestone rather than a slice. [B-019](BUGS.md) is confirmed a defect |
 | [C-217](#c-217--lane-a-is-available-and-requests-its-next-product-surface-epic) | **Lane A is AVAILABLE and requests its next Product Surface epic** | Lane A | **Lane C** | **`OPEN` — answered once, re-opened 2026-08-03.** [TASK-400](BACKLOG.md) assigned and its executable half shipped; **Lane A is `AVAILABLE` again** | **Lane A's entire implementation capacity.** TASK-400 is *Implementation Complete (Pending External Dependencies)* — the rest is [C-219](#c-219--task-400s-two-halves-are-not-equally-buildable) and [C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name), neither Lane A's |
 | [C-218](#c-218--a-lane-can-report-available-and-the-office-that-assigns-cannot-see-it) | **A lane can report `AVAILABLE`, and the office that assigns cannot see it** | Lane A | **Lane C** (model) · **QE** (mechanism) | `OPEN` | **Every lane's idle time, structurally.** [C-217](#c-217--lane-a-is-available-and-requests-its-next-product-surface-epic) is the worked example: raised, pushed, invisible |
-| [C-219](#c-219--task-400s-two-halves-are-not-equally-buildable) | **TASK-400's two halves are not equally buildable** | Lane A | **Product owner** (A6) · **Lane C** (A7 join) | **`RULED`** — 2026-08-05 · no decision required | **A6 only.** Its own specification says [C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name) *"must be answered first"* |
+| [C-219](#c-219--task-400s-two-halves-are-not-equally-buildable) | **TASK-400's two halves are not equally buildable** | Lane A | **Lane C** — the join proposal is with them | **`READY FOR LANE C`** — 2026-08-05 · A6 unblocked and ruled; ⚠️ **the join proposal Lane A owed is now brought**, four polls late, and recommends surfacing freshness per target account rather than per entity | **A6 only.** Its own specification says [C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name) *"must be answered first"* |
 | [C-220](#c-220--two-lanes-have-both-written-a-document-50-and-a-document-51) | **Two lanes have both written a document `50` and a document `51`** | Lane A | **QE** · Lane C | `OPEN` | Nothing today. **`state-check` at the merge that brings both branches together** |
 | [C-221](#c-221--epic-cs-first-open-question-is-answered-and-the-answer-blocks-the-epic) | **Epic C's first open question is answered, and the answer blocks the epic** | Lane A | **Product owner** · Lane C | **`RULED`** — 2026-08-05 · narrowed scope | **All of Epic C's Phases 1–3.** No person name enters the platform at any point |
 | [C-222](#c-222--reasoning1-earns-a-release-under-protocol-2-on-a-model-this-workstation-cannot-measure-in-time) | **`reasoning@1` earns a release under protocol 2, on a model this workstation cannot measure in time** | Lane A | **Product owner** · QE | **`READY FOR IMPLEMENTATION`** — ruled 2026-08-04 | **Only a live G1 inference.** The prompt is refused at runtime until a protocol-2 release exists |
@@ -4716,6 +4716,41 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 **Lane A is therefore building the half that needs no ruling** — `attempted_at` on `provider_watermark`, written on every completed run, inside `provider_platform`, which is Lane A's. **The render waits on the join**, and Lane A will bring Lane C a proposal rather than assume one.
 
 **The word *checked* does not ship until it is true.** A4 refuses it and `freshness.test.tsx` asserts the refusal; that test is updated by the render slice, never worked around.
+
+---
+
+### The join proposal Lane A owes — brought 2026-08-05, four polls late
+
+**This is the proposal C-219 records as owed, and its lateness is this lane's finding rather than Lane C's.** The item has read *"Lane A will bring Lane C a proposal"* since 2026-08-03, and the queue's `[[held]]` entry has said *"no proposal has been brought"* on every poll since. **Lane C was never the one holding this.**
+
+#### What the repository actually contains, read rather than recalled
+
+| Where | What it knows | What it does **not** |
+|---|---|---|
+| `provider_watermark` | `(workspace, provider, capability, **subject**, position, attempted_at)`. **The only place `attempted_at` lives** | Any entity id |
+| `provider_sync` | provider · capability · status · timings · counts | **No subject at all** — the sentence A4 already relies on, now confirmed against the columns |
+| `raw_provider_record` | `external_id` — the **provider's** id for the record — and `sync_id` | **Which subject was requested.** The request's input is not stored on its output |
+| `knowledge_graph` | Entities bound by **`(provider, provider_external_id)`** (`repository.entities_for_subjects`) | Any typed subject string |
+
+> **The two identifier spaces never meet.** The watermark holds a string the customer typed; the entity holds an identifier the provider issued; **nothing records that a request for *"Datadog"* returned external id `co_9f3`.** The join does not exist to be found — it would have to be created.
+
+#### Three ways to create it, and one of them is refused outright
+
+**① Match the entity's claimed names against `watermark.subject`.** ❌ **Refused, and not on cost.** *"Datadog, Inc."* is not *"Datadog"*; an entity found under a former name matches nothing; casing and punctuation decide correctness. **The failure is silent and confident** — it renders *"checked 2 hours ago"* against the wrong company, or *"never checked"* against one that was. That is precisely what A7's own risk line forbids — *ship the word `checked` only once it is true* — and it re-performs resolution in a second place by a **weaker method than the resolver's**, which inverts §2's least-powerful-author rule: a string comparison guessing what the resolver already computed.
+
+**② Record the binding where it is known.** A sync for subject *S* holds *S* in hand and receives records carrying external ids. **Persist `(workspace, provider, subject, provider_external_id)` as an output of the sync**, and the path becomes entity → identity binding → subject → watermark. ✅ **Deterministic, replayable, and authored by the component that actually has the fact.** ❌ A new table, a migration and a write on the ingest path — 🟠, and `provider_platform`'s, so Lane A's to build. ⚠️ It is **many-to-many**: one subject yields many external ids, and two spellings of one company reach one entity, so an entity's *last checked* is *the most recent `attempted_at` across the subjects that produced it*. Well-defined, and worth stating before anybody assumes a single row.
+
+**③ Surface the fact against the declaration instead of the entity** — **C-219's own second alternative**, *"a decision to surface the fact per target account rather than per account entity."* ✅ **No join, no schema change, no migration, buildable today**: the declared-target list is keyed by subject, which is the watermark's key. ✅ **Truthful by construction** — the customer asked Signora to watch *"Datadog"*, and the product says when it last tried to read *"Datadog"*. ❌ It does not put the fact on the brief, which is where §A7 put it.
+
+#### Recommendation — ③ now; ② only when a screen demands it. ① never
+
+**The fact `attempted_at` records is *"when did we last try to read this subject"*, and a subject is a declaration rather than an entity.** Rendering it against the declaration is not a workaround — **it is the fact in its own vocabulary**, and it needs no identifier that does not already exist.
+
+**The asymmetry that decides it**: an entity can exist having never been a target — it arrived through another capability — and *last checked* is **meaningless** for that entity, not merely unknown. **The subject is the thing that gets checked; the entity is what was learned from it.** A brief-level rendering would therefore have to say *nothing to report* for a whole class of accounts and could never explain why.
+
+**② is the right answer if and when the product genuinely needs entity-level freshness** — and building it before a screen asks is speculative architecture for a question nobody has posed (§6). **The trigger to reconsider is explicit: a screen that must state freshness for an account reached through something other than a target declaration.**
+
+**What Lane A asks of Lane C:** ratify ③ as A7's render target, or name the screen that requires ②. **Either answer unblocks the render; this lane is not waiting on which.**
 
 ---
 
