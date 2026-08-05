@@ -178,6 +178,43 @@ Found 3 errors in 1 file (checked 733 source files)
 **Both are fixed on `integration`** at `b332aea`. Nothing is left for this row to track, and two rows for one defect is the register drifting from the repository.
 
 
+### B-123 · The frontend suite is in no gate, and a failing test is on a lane branch right now
+
+| | |
+|---|---|
+| **Module** | Repository tooling — the certification gate set, and `make validate` |
+| **Current assignee** | **QE** — the gate set is QE's |
+| **Severity** | 🟠 · **Blocking Quality Defect class** — **1235 frontend tests and nothing runs them** |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-05 by QE, running `vitest` by hand on a slice whose tests are entirely frontend |
+
+**Steps to reproduce.**
+
+```bash
+grep -oE 'name="[a-z-]+"' backend/tests/certification/__main__.py | sort -u
+→ import-linter · mypy · pytest · security-invariants · smoke · tsc
+```
+
+**No `vitest`.** And `make validate` runs the backend suite and `tsc` — **also no `vitest`**, asserted deliberately by `test_it_runs_the_two_gates_it_claims_and_no_others`.
+
+### This is [B-111](#b-111--tsc---noemit-is-in-no-gate-qe-runs-and-main-is-red)'s class, one level over
+
+**B-111**: `tsc --noEmit` was in the Definition of Done and in no gate, and `main` reached a state where it failed. **The fix added `tsc` and stopped there.** `vitest` was never added, so **the same hole remains for the 1235 tests that check what a customer sees.**
+
+> **`smoke` cannot cover it**: `.dockerignore` excludes `tests/`, which is the same reason it could not see `tsc` failures — recorded in B-111 and still true.
+
+**A slice whose tests are entirely frontend passes `make validate` completely** — as [TASK-903/904/905](BACKLOG.md) just did at **3573 backend, unchanged**, because eleven executable files were all frontend and four of them were the tests.
+
+### What it caught the moment it was run by hand
+
+```
+FAIL tests/components/reachability.test.tsx > the live repository > has no route without an entrance
+  → expected '…Customer Reachability…' to match /No entrance at all\s+0/
+```
+
+**A real finding, and arguably a correct one**: the slice adds `/join/[workspaceId]`, which is reached from an **invitation email** and deliberately has no in-app entrance. **The check does not know that yet.** Whether the route needs an exemption or the check needs widening is the implementing lane's call — but **nothing in the repository would have asked the question.**
+
+
 ### B-121 · QE validated on the shared stack all day, because its branch name derives nothing
 
 | | |
