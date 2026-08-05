@@ -94,6 +94,45 @@ Such a row names the code, records **Current assignee: none — not assignable**
 **Both are fixed on `integration`** at `b332aea`. Nothing is left for this row to track, and two rows for one defect is the register drifting from the repository.
 
 
+### B-119 · The lease fix left its old test behind, and two test files now describe one module
+
+| | |
+|---|---|
+| **Module** | Platform Foundation — `infra/environment-lease.py` and its tests |
+| **Current assignee** | **Lane C** — Platform Foundation, and the author of the slice |
+| **Severity** | 🟠 · **Blocking Quality Defect** — 14 errors, certification would refuse |
+| **Status** | **`OPEN`** — `CHANGES REQUESTED` on the isolation slice |
+| **Found** | 2026-08-05 by QE, validating the [B-118](#b-118--lanes-share-one-postgresql-so-two-suites-running-at-once-fabricate-each-others-failures) fix |
+
+**Steps to reproduce.** On `lane-c-sync` at `f81fe13a`:
+
+```bash
+make validate
+→ 3438 passed, 14 errors
+```
+
+**Actual — all fourteen in one file, all the same:**
+
+```
+ERROR tests/certification/test_environment_lease.py …
+E   AttributeError: <module 'environment_lease'> has no attribute 'LEASE'
+```
+
+### The cause is the fix's own good idea, half-applied
+
+**The lease moved from a module-level constant to a computed path** — `LEASE` became `_lease_path()`, so that every clone driving one Docker project resolves the same file. **That is the whole point of B-118 and it is right.**
+
+**A new test file was added** at `backend/tests/test_environment_lease.py`. **The old one was not removed**: `backend/tests/certification/test_environment_lease.py` still references `LEASE` in **eight** places, and it is now the only thing in the repository that believes the constant exists.
+
+> **Two test files now describe one module, and one of them is wrong.** §2 — *truth has exactly one authoritative representation.* The fix should delete the old file or move its surviving cases into the new one; **keeping both is the duplicated truth the principle forbids, and the stale copy is the one that fails.**
+
+### This is signal, and QE says so explicitly because the last three runs were not
+
+**3438 passed. Fourteen errors, one file, one deterministic `AttributeError`.** That is nothing like [B-118](#b-118--lanes-share-one-postgresql-so-two-suites-running-at-once-fabricate-each-others-failures)'s signature — 40 then 238 failures scattered across six unrelated modules with deadlocks and missing catalogs. **A real defect names one cause in one place and reproduces.**
+
+**Nothing else in the slice is in question.** The lease relocation itself is correct, well-argued, and is the fix QE has been blocked by.
+
+
 ### B-118 · Lanes share one PostgreSQL, so two suites running at once fabricate each other's failures
 
 | | |
