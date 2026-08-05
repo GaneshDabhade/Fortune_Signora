@@ -45,7 +45,7 @@
 | 4 | **Companies** | Account · **saved view** · **named batch, reversible** · import · export **with field-level permission** | **ARQ + outbox** *(bulk is background work)* | ✅ **Audited in full — [446](architecture/446-companies-traceability-audit.md).** 9 elements: 5 ✅ · 3 🔴 · **1 ⬜ not yet extractable.** ⛔ **R-02 · R-03 · R-13** · ⚖️ **import challenged — §3** |
 | 5 | **People Intelligence** | **`Person` · `Affiliation` interval** · org chart · relationship | — | ⛔ **R-01** — planned, [441](architecture/441-people-roadmap.md) |
 | 6 | **Opportunity Intelligence** | Opportunity · `Stage` · contribution · **approval** · competitor · **call** | — | ✅ opportunity · ⛔ **R-03 · R-07** |
-| 7 | **Signal Center** | Signal · catalog · **`Resolution`** · **the triage event** · rule precision | **Event bus** | ✅ **domain complete** · ⛔ **R-06** — the event |
+| 7 | **Signal Center** | Signal · catalog · **`Resolution`** · **the triage event** · rule precision · **snooze** | **Event bus** | ✅ **Audited in full — [447](architecture/447-signal-center-traceability-audit.md).** 10 elements: 6 ✅ · 2 🟡 · 2 🔴, **no new row and no new foundation.** ⚡ **It *supplies* the mechanism R-03 needed** · ⛔ **R-06** the event · 🟡 **R-07 · R-13** |
 | 8 | **ICP Builder** | Icp · criterion · **account matching** · closed-won outcome · lift | — | ✅ declaration · ⛔ **R-00** · 🟨 outcomes |
 | 9 | **Workflow Automation** | Rule as condition tree · **simulation** · **approval** · **account matching** *(a condition)* | **Outbox · relay · ARQ** ✅ **built** | ✅ [ADR-0402](architecture/adr/0402-a-rule-is-data.md) · ⛔ **R-03 · R-00** |
 | 10 | **CRM Integrations** | Connection · source adapter · field mapping · sync health · **account matching on arrival** | **Event bus** | ✅ **[C-326](LANE_COORDINATION.md) ruled** · ⛔ **R-00** |
@@ -68,7 +68,7 @@
 |---|---|---|---|
 | **R-00** | **Account matching** | **16** — and **4 were on no list** | ✅ **Ruled and sequenced, [D-077](DECISION_REGISTER.md).** **[TASK-434](BACKLOG.md) is `READY` at the head, ahead of [TASK-406](BACKLOG.md)'s backtest** — *"establish the reusable capability once rather than allowing multiple implementations to emerge independently."* **[443](architecture/443-account-matching-capability.md)** |
 | **R-02** | **Scope · saved view** | **5 named, and the shell inherits into all 16** | **[TASK-433](BACKLOG.md)** — awaiting a naming ruling |
-| **R-03** | **Proposed → approved → applied → withdrawn** | **6** | **[TASK-431](BACKLOG.md)** — awaiting a shape ruling |
+| **R-03** | **Proposed → approved → applied → withdrawn** | **6** | **[TASK-431](BACKLOG.md)** — awaiting a shape ruling. ⚡ **Its deadline half is answered: [447 §0](architecture/447-signal-center-traceability-audit.md) — `Snoozed.until` proves a window is a *read-time predicate*, never a scheduled transition. No scheduler, no timer, no expiry job** |
 | **R-01** | **People · Affiliation** | **4 + Executive Dashboard's movements** | ✅ **Ruled [D-074](DECISION_REGISTER.md)** · **[TASK-427–430](BACKLOG.md)** |
 | **R-13** | **The authorization model is short three dimensions** — **spend · field · quantity** | **3 screens, independently** | ⛔ **Casbin's tuple is `(sub, dom, obj, act)`.** Copilot needs *spend*, Companies needs *field* and *quantity*. **An architectural finding, not three feature gaps** |
 | **R-12** | **The six verbs, and *17 surfaces one contract*** | **Every AI surface** | ⛔ **[C-419](LANE_COORDINATION.md)** — six values the design calls closed, and nothing closes them |

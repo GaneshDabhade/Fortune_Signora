@@ -433,15 +433,28 @@ Decisions required    what the product owner must rule before it can start
 >
 > ⚠️ **The approved designs are an external project.** The repository holds **section-level detail for one screen** — Account 360, via [414](architecture/414-wave-1-account-360.md) — **and assertions for the other fifteen.** **Every row cites its evidence, and the audit *is* the extraction**: each screen's matrix becomes the repository's record of that screen's elements.
 
-#### ⚖️ The challenge runs both ways ([D-079](DECISION_REGISTER.md) §6)
+#### ⚖️ Challenge the *implementation*, not the screen ([D-080](DECISION_REGISTER.md) §3)
 
 > **Do not assume the existing architecture is always correct.** If the approved experience shows a foundational capability is missing or wrongly placed, **bring it forward with evidence.**
 >
-> **And challenge the UI where it encourages duplication or violates an established principle.** **Product Office reconciles product vision with architectural integrity — it does not favour one blindly.**
+> **And the other half is narrower than [D-079](DECISION_REGISTER.md) first framed it.** ⚠️ ***"Continue challenging implementations, not the UI."*** **The approved UI describes the intended product experience. It does not prescribe implementation** — so the target of a challenge is **the obvious implementation**, never the screen.
+>
+> **Product Office reconciles product vision with architectural integrity — it does not favour one blindly.**
 
-**[446 §3](architecture/446-companies-traceability-audit.md) is the first exercise of the second half**: *import* reads as a file upload, and built that way it is **a second inbound path for customer data beside the one Epic E1 is building** — two provenance stories for one fact, in a repository built on provenance. **The screen is not wrong; the obvious implementation would be.**
+**Two worked examples, and both take the same form.** **[446 §3](architecture/446-companies-traceability-audit.md)**: *import* reads as a file upload, and built that way it is a second inbound path for customer data — **two provenance stories for one fact.** **[447 §3](architecture/447-signal-center-traceability-audit.md)**: *"snoozed signals return at the stated time"* reads as a scheduler, **and `signal_engine` already answered it with a read-time predicate that needs no scheduler at all.**
+
+> **Each time, the screen was right and the obvious implementation was wrong.** **That is the shape to look for**, and it is why the frame matters: *"the UI is wrong"* invites a redesign nobody asked for.
 
 **A challenge is a recommendation with evidence, never a refusal to build.**
+
+#### Two sweeps every audit runs ([D-080](DECISION_REGISTER.md) §4, §5)
+
+| | Look for |
+|---|---|
+| **Lifecycle** | **temporal workflows · background execution · scheduled transitions · long-running operations · reversible actions · approval workflows · compensation workflows** |
+| **Authorization, beyond CRUD** | **spend · field-level · quantity or bulk · AI capability · workflow · approval** |
+
+> **Ask of each: should this become a reusable platform authorization capability, or is it feature-specific?** ⚠️ **[447 §5](architecture/447-signal-center-traceability-audit.md) shows the discipline cuts both ways** — Signal Center's authorization gap is *a missing `Resource`*, which is **the existing model applied**, not a new dimension. **Not every authorization gap is architectural, and saying so is what keeps [R-13](DOMAIN_DISCOVERY_REGISTER.md) honest.**
 
 #### Findings, in ten categories
 
