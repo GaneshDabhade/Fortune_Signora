@@ -53,6 +53,22 @@ ENTERED_FROM_OUTSIDE: Final = {
     "/sign-up": "linked from marketing and from /sign-in",
     "/verify-email": "reached from the verification email, by design",
     "/reset-password": "reached from the password-reset email, by design",
+    # **The same class as the two above, and the reason is stronger here.** An
+    # invitation link is the *only* way in: this is the one screen in Signora
+    # shown to somebody who is not a member of the workspace it is about, so an
+    # in-product entrance would have to live inside a tenant the reader cannot
+    # yet see. `ConsoleInvitationDelivery` emits `{app_url}/join/{workspace_id}`.
+    #
+    # **Declared by Lane A on QE's explicit delegation** (B-123, 2026-08-05):
+    # *"widening the check or exempting the route is this lane's call — QE will
+    # not decide which."* This lane had argued at C-227 that the declaration was
+    # QE's, on the strength of the comment above; **QE overruled that and the
+    # overrule is right** — the lane that knows why a route has no entrance is
+    # the lane that built it.
+    "/join/[workspaceId]": (
+        "reached from the invitation link, by design — the only screen shown to "
+        "somebody who is not yet a member of the workspace it names"
+    ),
 }
 
 

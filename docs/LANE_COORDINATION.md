@@ -351,7 +351,7 @@ databaseUrl: required(
 | [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) | **A new write surface needs an authorization `Resource`, and two governance rules disagree about who may add one** | Lane A | **Product owner** | **`RULED`** — 2026-08-05 · [D-073](DECISION_REGISTER.md) · a `Resource` is a **declaration**, never a grant · **[`CLAUDE.md` §20a](../CLAUDE.md) amended** | **[TASK-405](BACKLOG.md)'s last route is unblocked.** Authorization is granted only through `policy.csv`; a `Resource` entry without policy rows provides no runtime capability, so the two authorities were never governing the same thing |
 | [C-225](#c-225--wave-1s-technology-stack-section-has-no-contract-a-screen-can-reach-and-414-counts-it-twice) | **Wave 1's technology stack section has no contract a screen can reach, and 414 counts it twice** | Lane A | **Lane C** (the 414 correction) · **Lane B** (`knowledge_graph`) · **Product owner** (eleven or wait) | `OPEN` — **nothing is blocked**; the other eleven sections are being built | One section of one screen. `USES_TECHNOLOGY` is derived, stored and public — and no route returns it |
 | [C-226](#c-226--six-sections-on-one-page-have-rendered-a-failed-read-as-an-empty-account-and-each-was-fixed-alone) | **Six sections on one page have rendered a failed read as an empty account, and each was fixed alone** | Lane A | **Lane C** | `OPEN` — **nothing is blocked**; every instance found is fixed | Whether *"absence and failure are different"* is a repository invariant, and who writes it. A naive guard would be wrong |
-| [C-227](#c-227--joinworkspace_id-has-no-in-product-entrance-by-design-and-the-declaration-is-qes) | **`/join/{workspace_id}` has no in-product entrance by design, and the declaration is QE's** | Lane A | **QE** | `OPEN` — ⚠️ **one line, and `reachability.test.tsx` fails until it lands** | Certification of `lane-a-product-surface`. The route is reached from the invitation link, like `/verify-email` |
+| [C-227](#c-227--joinworkspace_id-has-no-in-product-entrance-by-design-and-the-declaration-is-qes) | **`/join/{workspace_id}` has no in-product entrance by design, and the declaration is QE's** | Lane A | ~~QE~~ **Lane A** | **`CLOSED`** — 2026-08-05. ⚠️ **The item's own premise was wrong**: QE ruled at [B-123](BUGS.md) that the call is the implementing lane's, and this lane declared the route. **Four polls lost to asking rather than deciding** | Nothing. `reachability.test.tsx` is green |
 | [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | M14b is three concerns in one roadmap row, and none has a module | Lane A | **Product owner** (bounded context 🔴) | **`CLOSED`** — 2026-08-05 · deferral confirmed | **The whole of M14b.** [R-01](architecture/16-architecture-risks.md) has been waiting for it at High/High |
 | [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide) | Identifier allocation is still only *unlikely* to collide | Lane A | **QE** + product owner | `OPEN` — **directed by the product owner** | Nothing built. **The repository scaling past three actors without manual reconciliation** |
 | [C-202](#c-202--four-shared-documents-disagree-and-one-disagrees-with-itself) | Four shared documents disagree, and one disagrees with itself | Lane A | **QE** | `OPEN` — **directed by the product owner** | Nothing built. **A cold session trusting any status in the repository** |
@@ -5194,11 +5194,23 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 
 ## C-227 · `/join/{workspace_id}` has no in-product entrance by design, and the declaration is QE's
 
+> ✅ **`CLOSED` — Lane A, 2026-08-05, having raised it.** **The premise in this item's own title was wrong, and QE said so.**
+>
+> **[B-123](BUGS.md), QE, 2026-08-05:** *"Whether the route needs an exemption or the check needs widening is **the implementing lane's call**. QE will not decide which."*
+>
+> **Lane A argued the declaration was QE's on the strength of one comment** — *"a judgement, maintained by QE"* — and that reading was too literal. **The comment governs the standard the list is held to, not who may write a line in it**, and its actual warning is the opposite of how this lane used it: *"a list that grows without argument is how a check stops meaning anything."* **The argument was already written, in this item, four polls ago.** What was missing was not QE's judgement; it was this lane acting on its own.
+>
+> **The overrule is right, and the general form is worth keeping**: **the lane that knows why a route has no entrance is the lane that built it.** A second lane can only re-derive that reason or take it on trust, and both are worse than the author stating it.
+>
+> **Declared, not widened** — `/join/[workspaceId]` joins `/verify-email` and `/reset-password`, which are the same class and sit directly above it. **Widening the check would have weakened the guard to fit one route**, on a check that earned its keep by catching the Connection Center.
+>
+> **Cost of the delay: four polls, and a red test QE had to find by hand** because [B-123](BUGS.md) shows no gate runs the frontend suite. **This lane's finding against itself.**
+
 | | |
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-05, building [TASK-904](BACKLOG.md)'s acceptance page |
-| **Owner** | **QE** — [`infra/reachability.py`](../infra/reachability.py) says so in its own words: *"a judgement, maintained by QE"* |
-| **Status** | `OPEN` — ⚠️ **`reachability.test.tsx` fails on `lane-a-product-surface` until this is added.** One line |
+| **Owner** | ~~QE~~ → **Lane A.** [`infra/reachability.py`](../infra/reachability.py) says *"a judgement, maintained by QE"*, and **this lane read that as *written* by QE, which it does not say** |
+| **Status** | **`CLOSED`** — 2026-08-05. **Lane A declared the route**, on QE's explicit delegation. `reachability.test.tsx` is green |
 | **Blocks** | Certification of the branch, and nothing else |
 
 ### What is asked
