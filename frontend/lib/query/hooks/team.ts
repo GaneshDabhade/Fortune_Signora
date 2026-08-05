@@ -243,3 +243,30 @@ export function useOrganizationHistory(workspaceId: string | null) {
     enabled: workspaceId !== null,
   });
 }
+
+/**
+ * Join an organization you were invited to.
+ *
+ * **The only mutation in the product performed by somebody who is not yet a
+ * member**, which is why it takes the workspace as an argument rather than
+ * reading the active one — there is no active one until this succeeds.
+ *
+ * **No invitation id.** The offer is found by the verified email claim on the
+ * caller's own token, so the link carries a workspace and nothing else
+ * (`C-208`). An id in the URL would look like a secret while being none.
+ *
+ * On success every workspace-scoped list is invalidated: the person now
+ * belongs somewhere they did not a moment ago, and the shell's own workspace
+ * list is the first thing that has to know.
+ */
+export function useAcceptInvitation(workspaceId: string | null) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      apiRequest<Membership>(`/workspaces/${workspaceId}/invitations/accept`, {
+        method: 'POST',
+        workspaceId: workspaceId ?? undefined,
+      }),
+    onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.workspaces() }),
+  });
+}

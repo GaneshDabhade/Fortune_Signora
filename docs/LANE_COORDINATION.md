@@ -351,6 +351,7 @@ databaseUrl: required(
 | [C-224](#c-224--a-new-write-surface-needs-an-authorization-resource-and-two-governance-rules-disagree-about-who-may-add-one) | **A new write surface needs an authorization `Resource`, and two governance rules disagree about who may add one** | Lane A | **Product owner** | **`RULED`** — 2026-08-05 · [D-073](DECISION_REGISTER.md) · a `Resource` is a **declaration**, never a grant · **[`CLAUDE.md` §20a](../CLAUDE.md) amended** | **[TASK-405](BACKLOG.md)'s last route is unblocked.** Authorization is granted only through `policy.csv`; a `Resource` entry without policy rows provides no runtime capability, so the two authorities were never governing the same thing |
 | [C-225](#c-225--wave-1s-technology-stack-section-has-no-contract-a-screen-can-reach-and-414-counts-it-twice) | **Wave 1's technology stack section has no contract a screen can reach, and 414 counts it twice** | Lane A | **Lane C** (the 414 correction) · **Lane B** (`knowledge_graph`) · **Product owner** (eleven or wait) | `OPEN` — **nothing is blocked**; the other eleven sections are being built | One section of one screen. `USES_TECHNOLOGY` is derived, stored and public — and no route returns it |
 | [C-226](#c-226--six-sections-on-one-page-have-rendered-a-failed-read-as-an-empty-account-and-each-was-fixed-alone) | **Six sections on one page have rendered a failed read as an empty account, and each was fixed alone** | Lane A | **Lane C** | `OPEN` — **nothing is blocked**; every instance found is fixed | Whether *"absence and failure are different"* is a repository invariant, and who writes it. A naive guard would be wrong |
+| [C-227](#c-227--joinworkspace_id-has-no-in-product-entrance-by-design-and-the-declaration-is-qes) | **`/join/{workspace_id}` has no in-product entrance by design, and the declaration is QE's** | Lane A | **QE** | `OPEN` — ⚠️ **one line, and `reachability.test.tsx` fails until it lands** | Certification of `lane-a-product-surface`. The route is reached from the invitation link, like `/verify-email` |
 | [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | M14b is three concerns in one roadmap row, and none has a module | Lane A | **Product owner** (bounded context 🔴) | **`CLOSED`** — 2026-08-05 · deferral confirmed | **The whole of M14b.** [R-01](architecture/16-architecture-risks.md) has been waiting for it at High/High |
 | [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide) | Identifier allocation is still only *unlikely* to collide | Lane A | **QE** + product owner | `OPEN` — **directed by the product owner** | Nothing built. **The repository scaling past three actors without manual reconciliation** |
 | [C-202](#c-202--four-shared-documents-disagree-and-one-disagrees-with-itself) | Four shared documents disagree, and one disagrees with itself | Lane A | **QE** | `OPEN` — **directed by the product owner** | Nothing built. **A cold session trusting any status in the repository** |
@@ -5149,3 +5150,32 @@ Four named bodies behind one discriminated union on `outcome`, so `{"outcome": "
 Lane A's recommendation, offered rather than taken: **a page-level test rather than a per-component one.** Render the account brief with every hook erroring and assert the page says so — one test, no new prop on any component, and it cannot be silenced by adding a field. `brief.test.tsx` already has the harness. **Lane A will build it on request**; it is not being built unasked because the assertion would reach sections other lanes own.
 
 **Six occurrences of one defect is not six mistakes.** Each lane read the component in front of it, saw an empty state, and shipped correctly. The register is where a repeated shape stops being individually correct.
+
+## C-227 · `/join/{workspace_id}` has no in-product entrance by design, and the declaration is QE's
+
+| | |
+|---|---|
+| **Raised by** | **Lane A**, 2026-08-05, building [TASK-904](BACKLOG.md)'s acceptance page |
+| **Owner** | **QE** — [`infra/reachability.py`](../infra/reachability.py) says so in its own words: *"a judgement, maintained by QE"* |
+| **Status** | `OPEN` — ⚠️ **`reachability.test.tsx` fails on `lane-a-product-surface` until this is added.** One line |
+| **Blocks** | Certification of the branch, and nothing else |
+
+### What is asked
+
+One entry in `ENTERED_FROM_OUTSIDE`:
+
+```python
+    "/join/*": "reached from the invitation link, by design",
+```
+
+### Why the route has no entrance, and must not be given one
+
+**Nobody navigates to *"join an organization"* from inside the product.** The page is reached from the link `ConsoleInvitationDelivery` sends, exactly as `/verify-email` and `/reset-password` are reached from their emails — the two entries directly above where this one belongs.
+
+**And an in-product entrance is not available even in principle.** It would have to list the invitations addressed to the reader, across workspaces they are not in — the cross-workspace inbox [C-208](#c-208--a-tenant-scoped-row-whose-only-legitimate-reader-is-outside-the-tenant) refused, and the one screen in Signora that would read outside a tenant.
+
+### Why Lane A did not add the line
+
+**The list's own comment says it is QE's judgement**, and every entry is *"a claim that something outside the product sends a customer here."* Asserting that claim on QE's behalf is the thing the comment exists to prevent — *"a list that grows without argument is how a check stops meaning anything."*
+
+The argument is above. **The check is working**: it caught a genuinely unreachable route within a minute of the route existing, which is what it is for.
