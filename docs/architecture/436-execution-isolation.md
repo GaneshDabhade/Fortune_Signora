@@ -74,6 +74,39 @@ LEASE: Final = REPO_ROOT / ".environment-lease"
 
 **The holder record already carries what a second lane needs** — pid, label, start time. It gains the clone path, because *"leased by `certify`"* is not actionable when four checkouts can say it.
 
+## ⚡ Cycle 57 settled the argument for ②, and it is not the argument I made
+
+**2026-08-05, certifying change ① itself:**
+
+```
+sqlalchemy.exc.InternalError: tuple concurrently updated
+[SQL: ALTER ROLE signora_app NOBYPASSRLS]
+```
+
+> **A PostgreSQL role is cluster-wide.** Two suites reaching `ALTER ROLE` together collide **however many databases they each own.**
+
+**I argued for ② on connection pools, lock managers and `DROP DATABASE WITH FORCE` — all of which are contention.** **`ALTER ROLE` is not contention. It is a shared object that per-database isolation cannot separate at all**, and no amount of care inside a database reaches it.
+
+**That changes what the two options actually offer:**
+
+| | `ALTER ROLE` collisions |
+|---|---|
+| **The lease alone** (serialised runs) | **Prevented** — one suite at a time, so nothing collides |
+| **Change ②** (a cluster per lane) | **Impossible** — separate clusters have separate roles |
+| **Today** | **Live.** It aborted a certification |
+
+**So both options still work, and the choice is unchanged in shape — but the thing being bought is larger than I described.** ② does not merely reduce interference; **it removes a class of shared object the lease can only ever serialise around.**
+
+## ⚠️ And change ① has a bootstrap window, which QE found by hitting it
+
+> **A workstation lease only excludes clones that hold it.** QE's tree carried the fix; **Lane A's did not, because it is not promoted.** QE took a workstation-scoped lease, Lane A took a repository-scoped one, and **two leases over one resource exclude nobody.**
+
+**This is not fixable from inside the fix, and it is worth saying why rather than attempting it.** The old lease lives at `REPO_ROOT/.environment-lease` — **a clone that has not rebased looks only inside itself.** Nothing a new clone writes can be seen by it. **Compatibility in that direction does not exist.**
+
+**So the window closes by sequencing, not by code:** **every lane rebases onto the promoted fix before running a suite.** Until then, contention persists **and looks exactly like the fix not working** — which is the failure mode QE named and the reason this is recorded here rather than left to be rediscovered.
+
+> **A resource-level probe would close it durably** — asking PostgreSQL who else is connected, rather than asking a lease file. **Not proposed.** It is speculative work against a transient window, **and change ② makes it moot**: separate clusters have nothing to probe.
+
 ## ② The compose project comes from the allocation *(🟠 · closes B-118)*
 
 **`name: signora-v2` is removed and the project name is passed per invocation** from `environments.py`. **Each lane then has its own PostgreSQL container, Redis and MinIO** — and the deadlocks, the missing catalogs and the mid-operation disconnects stop being possible rather than becoming rarer.

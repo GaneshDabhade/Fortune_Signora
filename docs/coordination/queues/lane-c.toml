@@ -14,6 +14,28 @@
 #
 # **Ids only, never state.** Written 2026-08-05 under D-070.
 
+# ══════════════════════════════════════════════════════════════════════════════
+# ⚠️  NOTICE — 2026-08-05 · rebase before you run a suite
+#
+# The workstation lease (B-118, 436 change ①) is on `integration` at 551e1a7.
+# **A workstation lease only excludes clones that hold it.** A clone that has
+# not rebased still writes its lease into its own directory, where no other
+# clone can see it — so two leases cover one PostgreSQL server and exclude
+# nobody.
+#
+# Cycle 57 aborted on exactly this: `ALTER ROLE signora_app NOBYPASSRLS` —
+# `tuple concurrently updated` — because a PostgreSQL role is **cluster-wide**
+# and two suites reached it together. QE's tree had the fix; Lane A's did not.
+#
+# **So: `git fetch && git rebase origin/integration` before `make test`,
+# `make certify`, or any pytest run.** Until every clone carries the fix,
+# contention persists and looks exactly like the fix not working.
+#
+# Removed once all lanes are level. **This is sequencing, not code** — a clone
+# that has not rebased looks only inside itself, and nothing the new lease
+# writes can be seen by it.
+# ══════════════════════════════════════════════════════════════════════════════
+
 lane         = "Lane C"
 updated      = 2026-08-05
 depth_target = 5
