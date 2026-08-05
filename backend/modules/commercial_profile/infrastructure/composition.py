@@ -34,6 +34,7 @@ from modules.commercial_profile.infrastructure.repository import (
 )
 from modules.commercial_profile.infrastructure.catalog_reader import SqlProductCatalogReader
 from modules.commercial_profile.infrastructure.committee_reader import SqlBuyingCommitteeReader
+from modules.commercial_profile.infrastructure.icp_reader import SqlIcpReader
 from modules.commercial_profile.infrastructure.segment_repository import SqlSegmentReader
 from modules.commercial_profile.infrastructure.target_account_reader import (
     SqlTargetAccountReader,
@@ -154,3 +155,16 @@ def build_buying_committee_reader(session: AsyncSession) -> SqlBuyingCommitteeRe
 def build_product_catalog_reader(session: AsyncSession) -> SqlProductCatalogReader:
     """The module's fourth published read side."""
     return SqlProductCatalogReader(session)
+
+
+def build_icp_reader(session: AsyncSession) -> SqlIcpReader:
+    """The ideal customer, for whoever needs to evaluate an account against it.
+
+    **Published at TASK-434, and the reader is only half of the capability.**
+    The other half is `domain/matching.evaluate`, which is pure and takes the
+    observed attributes as an argument — so a consumer reads the criteria
+    through this port and supplies the facts itself. That split is what keeps
+    the comparison in the module that owns the vocabulary without that module
+    ever reaching into the pipeline.
+    """
+    return SqlIcpReader(session)

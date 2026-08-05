@@ -269,6 +269,74 @@ class ProductCatalogReader(Protocol):
         ...
 
 
+
+@dataclass(frozen=True, slots=True)
+class IcpCriteriaView:
+    """What a customer said their ideal customer looks like, for one product.
+
+    **The thirteenth published view and the first that is the ICP.** Thirteen
+    views were published before this one and not one carried the criteria, so
+    **no module could read them at all** — which is why sixteen consumers were
+    counted waiting on a capability nobody could build
+    ([443](../../../../docs/architecture/443-account-matching-capability.md)).
+
+    **Free text, and it stays free text across the boundary.** `industries`
+    and `countries` are exactly what the seller typed. Normalising them here
+    would put a second vocabulary in the module whose whole job is recording
+    the first one, and a consumer receiving *"mid-market fintech"* needs to
+    know that is a person's phrase rather than a canonical value.
+
+    **`notes` is deliberately absent.** It exists to be read by a human —
+    *"only where they already run Salesforce"* — and is explicitly *"never
+    parsed"*. Publishing it would invite exactly the parsing it forbids.
+    """
+
+    product_id: UUID
+    industries: tuple[str, ...]
+    countries: tuple[str, ...]
+    #: Inclusive bounds, either of which may be absent — *"anything over 500"*
+    #: is a real answer. Published as two integers rather than the domain's
+    #: `EmployeeRange` for the reason every view here exists: a consumer
+    #: should not inherit this module's constructors or its validation.
+    employees_minimum: int | None
+    employees_maximum: int | None
+
+
+@dataclass(frozen=True, slots=True)
+class IcpView:
+    """Every product's ideal customer, in the version in force."""
+
+    workspace_id: UUID
+    version: int
+    criteria: tuple[IcpCriteriaView, ...]
+
+
+class IcpReader(Protocol):
+    """The read side of the ideal customer.
+
+    **Published because sixteen consumers are waiting**, which is the only
+    reason the header above gives for a contract existing — and the largest
+    count any surface in this module has had before it was built.
+
+    **A reader, and deliberately not a matcher.** Whether an account satisfies
+    these criteria is answered by `evaluate` in this module's `domain`, which
+    is pure and takes the observed attributes as an argument. Putting the
+    comparison behind this port would make the module *fetch* what it needs to
+    compare against, and fetching from the pipeline is precisely what its
+    import contract forbids.
+    """
+
+    async def current(self, workspace_id: UUID) -> IcpView | None:
+        """The declaration in force, or ``None`` when there has never been one.
+
+        **`None` rather than an empty tuple**, on the same terms as every
+        reader above: a workspace that has never described who buys from it is
+        in a state to wait in, not one to reason from — and an account
+        evaluated against no criteria at all would come back `UNMEASURED`
+        three times, which is true but useless.
+        """
+        ...
+
 __all__ = [
     "BuyingCommitteeReader",
     "BuyingCommitteeRoleView",
@@ -276,6 +344,9 @@ __all__ = [
     "DeclaredCompetitorListView",
     "DeclaredCompetitorReader",
     "DeclaredCompetitorView",
+    "IcpCriteriaView",
+    "IcpReader",
+    "IcpView",
     "ProductCatalogReader",
     "ProductCatalogView",
     "ProductCommitteeView",
