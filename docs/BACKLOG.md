@@ -314,7 +314,8 @@
 |---|---|
 | **Objective** | **A criterion states what it predicts, measured against closed-won.** The ICP is declarable today and **nothing tells a customer whether it is any good** |
 | **Module** | `commercial_profile` — **Lane B's** *(consolidated to Lane B 2026-08-04 — [D-058](DECISION_REGISTER.md))*, via TASK-203 |
-| **Status** | **`CLAIMED` — Lane B**, 2026-08-05, by the Task Claim Protocol. **Released from Lane A on the 2026-08-04 consolidation ([D-058](DECISION_REGISTER.md)) — the claim carried no code**, and [D-065](DECISION_REGISTER.md) keeps `commercial_profile` with this lane because it holds active work there. **[TASK-405](#task-405--a-iii--a-signal-ends-in-a-decision) stands higher and was skipped with its reason recorded** — `signal_engine` transitions to Lane A |
+| **Status** | **`BLOCKED` — [C-328](LANE_COORDINATION.md)**, 2026-08-05. Claimed by Lane B that day and **released without a line of code**, because the verification this row itself demands came back refused |
+| **Why it is blocked** | The row says *"a read of `opportunity_engine`'s `public/` — **verify the edge exists before writing it; if it does not, that is a `C-` item, not a new import**."* **It does not exist, and it is refused on purpose.** `pyproject.toml`'s contract *"commercial_profile declares; it never reads the pipeline"* lists `modules.opportunity_engine` **in full**, not merely its inner layers, and states why: *"if it could read a signal, a score or an opportunity, 'declaration' would quietly become 'declaration informed by our own conclusions'."* **The direction A-iv needs is closed; the opposite direction is already open** — `opportunity_engine` may read `commercial_profile.public` today. [C-328](LANE_COORDINATION.md) carries the alternatives, a recommendation and the trade-offs; **which module owns the measurement is a bounded-context decision and not a lane's** |
 | **Assigned** | **Lane A, by the product owner, 2026-08-04** — *"you may proceed with A-iii and A-iv when their corresponding READY task rows exist on integration."* **The rows landed with Lane C's synchronization at `3ab3111`**, which is the condition the ruling named |
 | **Approved screen** | **ICP Builder** — *"every criterion is scored against closed-won evidence, not opinion"* |
 | **Scope** | Per-criterion lift against decided opportunities, with its sample size · the aggregate backtest — **win rate and median cycle, in-ICP versus outside** |
@@ -371,6 +372,7 @@
 | **Status** | `READY` |
 | **Notes** | Four capabilities in one RFC: a session on `EventHandler` · `PublishableEvent` satisfiable by a frozen dataclass · a port from a handler to a provider adapter · a self-directed Casbin action. **Additive only** — a module not using one behaves identically |
 | **On claiming** | **The RFC lands before any module is rewired.** §20a's approval branch means approved *then* implemented. Closes [C-012](LANE_COORDINATION.md), [C-013](LANE_COORDINATION.md), [C-021](LANE_COORDINATION.md), [C-207](LANE_COORDINATION.md) |
+| ⏭️ **Skipped by Lane B, 2026-08-05, with the reason recorded** | **A platform-wide RFC is architecture preparation, not a feature lane's slice.** It is 🔴 `signora_platform`, it decides four capabilities at once and closes four `C-` items, and [D-065](DECISION_REGISTER.md) delegates task assignment to Lane C. **A lane writing the RFC that governs the substrate every module imports is the failure §20a exists to prevent**, even with ADR-0100 R-1's approval in hand. **[TASK-902](#task-902--m7-timeline--the-remaining-slices) was claimed instead** |
 
 ### TASK-901 · Seven modules consume the events they declare
 
@@ -387,7 +389,7 @@
 |---|---|
 | **Module** | `timeline` |
 | **Slice** | S05+ |
-| **Status** | `READY` — **[ADR-0038](architecture/adr/0038-timeline.md) is ratified** |
+| **Status** | **`CLAIMED` — Lane B**, 2026-08-05, by the Task Claim Protocol. **[ADR-0038](architecture/adr/0038-timeline.md) is ratified**, `timeline` is one of the modules [D-065](DECISION_REGISTER.md) leaves with this lane, and **[TASK-900](#task-900--the-platform-learns-to-compose-a-module-into-the-runtime) stood higher and was skipped with its reason recorded.** ⚠️ **[C-215](LANE_COORDINATION.md) travels with the module and is unanswered** — the feed is per-account and the workspace needs it per-seller. **It is inherited, not resolved by claiming**, and this slice will not assume an answer to it |
 | **Notes** | **Postgres first**; Meilisearch on a stated trigger — *the first customer asking to search or facet a timeline rather than scroll it*. **Ship the six live events**; the seventh joins when M11 resumes. **The customer surface already exists** — CX-03 mounted the feed on the account brief |
 | **On claiming** | Supersedes `TASK-017`, which was waiting on exactly these three answers |
 
