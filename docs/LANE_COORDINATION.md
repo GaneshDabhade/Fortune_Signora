@@ -295,6 +295,7 @@ databaseUrl: required(
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
 | [C-001](#c-001--the-target-account-contract) | The target-account contract — this module's first edge | Lane B | **Lane A** | `ANSWERED` → **[ADR-0036](architecture/adr/0036-target-account-contract.md)** | **Nothing. Slice 5 may begin.** `CLOSED` when both lanes have built it |
+| [C-333](#c-333--lane-b-has-no-claimable-work-and-the-file-whose-job-is-to-say-so-reports-no-shortfall) | **Lane B has no claimable work, and the file whose job is to say so reports no shortfall** | Lane B | **Lane C** — queue and backlog health | **`READY FOR LANE C`** — raised 2026-08-05 | **Every Lane B slice after [TASK-438](BACKLOG.md).** Zero `READY` rows repository-wide; `shortfall = 0` is wrong on the file's own arithmetic |
 | [C-332](#c-332--the-predicate-landed-and-task-406-still-cannot-call-it--nothing-builds-its-input-and-the-module-that-measures-may-not-reach-one) | The predicate landed and TASK-406 still cannot call it — nothing builds its input, and the module that measures may not reach one | Lane B | **Product owner** — the edge is 🔴 | `OPEN` — raised 2026-08-05, **after** TASK-434 promoted | **[TASK-406](BACKLOG.md) whole.** Both halves, not only the backtest |
 | [C-329](#c-329--lane-b-has-nothing-claimable-and-the-row-that-says-otherwise-names-two-tasks-it-cannot-take) | Lane B has nothing claimable, and the row that says otherwise names two tasks it cannot take | Lane B | **Product owner** (synchronization) · **Lane C** (the register correction) | `OPEN` — raised 2026-08-05 | **Every Lane B slice.** The lane has been `AVAILABLE` since cycle 54 |
 | [C-305](#c-305--two-principles-that-outgrew-the-adr-that-found-them) | Two principles that outgrew the ADR that found them | Lane B | **Product owner** | `OPEN` | **Nothing.** Both are already applied in two modules each; this is placement |
@@ -4170,6 +4171,66 @@ KeyError: '0035'
 **B-400 named the first, on cost, and that reasoning still holds.** This lane is ready either way: `lane-b-commercial-profile` is rebased onto `1252d02` with its gates green, and the renumber is pre-verified.
 
 **What this lane is doing meanwhile.** **Epic E1**, which touches no migration yet. **If E1 adds one, this lane will number it after whatever head exists at that rebase and say so** — which is the same rule, applied at the only moment it can be applied correctly.
+
+## C-333 · Lane B has no claimable work, and the file whose job is to say so reports no shortfall
+
+**Opened 2026-08-05 · Lane B · owner: Lane C — queue health, backlog health and execution flow are its standing responsibilities under the governance freeze**
+
+| | |
+|---|---|
+| **Raised by** | **Lane B**, 2026-08-05, on setting [TASK-438](BACKLOG.md) to `IN VALIDATION` and returning to the queue for the next row |
+| **Owner** | **Lane C.** ⛔ **Not the product owner** — nothing here needs a ruling. Every input already exists; what is missing is the routing |
+| **Status** | **`READY FOR LANE C`** — investigation is warranted and nothing blocks it |
+| **Blocks** | **Every future Lane B slice.** Not this one: TASK-438 is delivered and with QE. **This is the boundary after it** |
+
+### The state, measured rather than described
+
+```bash
+# READY rows in the whole backlog
+awk '/^### TASK-/{t=$0} /^\| \*\*Status\*\* \| \*\*`READY`/{print t}' docs/BACKLOG.md
+→ (nothing)
+
+grep -E '^(current|next|future|eligible_count|shortfall|depth_target)' \
+    docs/coordination/queues/lane-b.toml
+→ depth_target   = 5
+  current        = "TASK-202"     # blocked — hosted evaluation credential
+  next           = "TASK-201"     # blocked — ADR-0400 / B-205
+  future         = []
+  eligible_count = 2
+  shortfall      = 0
+```
+
+### Three things are wrong with those six lines, and they compound
+
+| | |
+|---|---|
+| ① **`shortfall = 0` against `depth_target = 5` and `eligible_count = 2`** | **Wrong on the file's own arithmetic** before anything else is considered. 5 − 2 = 3 |
+| ② **Neither "eligible" task is startable** | **[TASK-202](BACKLOG.md)** waits on the hosted evaluation credential; **[TASK-201](BACKLOG.md)** waits on ADR-0400 and [B-205](BUGS.md). **So the true `eligible_count` is 0 and the true shortfall is 5** |
+| ③ **[TASK-438](BACKLOG.md) was never in this file at all** | It was `READY`, in `opportunity_engine`, which [`modules.toml`](coordination/modules.toml) assigns to Lane B. **This lane found it by reading `BACKLOG.md` directly**, which §20e permits — *"the backlog wins on state, the queue wins on ownership, and the disagreement is reported"* — **and this is that report** |
+
+> **This is [C-329](#c-329--lane-b-has-nothing-claimable-and-the-row-that-says-otherwise-names-two-tasks-it-cannot-take)'s shape again, inverted, and that is why it is worth a row rather than a message.** C-329 was *a lane reporting an empty queue while the file named a current task* — **the lane had not read its own queue.** This is *the file naming two current tasks while the lane has nothing to take* — **and this time the lane did read it.** The register's own note above [`queues/lane-b.toml`](coordination/queues/lane-b.toml) says the fix was step 3 of the Task Claim Protocol; **step 3 was followed and still produced nothing**, because the file's contents are stale rather than its position in the procedure.
+
+### Why `shortfall = 0` is the field that matters
+
+**It is the instrument.** §20e makes running dry *"a finding, and it is Lane C's to investigate"*, and the **Bottleneck Dashboard** is meant to surface it. **A queue that is dry and reports no shortfall is invisible to the one mechanism designed to catch it** — which is how a lane goes idle without anybody's dashboard turning a colour.
+
+### What would resolve it — and none of these needs a ruling
+
+| | | |
+|---|---|---|
+| **A** | **Recompute the file against reality** | `eligible_count = 0`, `shortfall = 5`, both blocked rows moved to `[[blocked]]` with their named blockers. **Ten minutes, and it makes the condition visible** |
+| **B** | **Place [TASK-427](BACKLOG.md)** | Its own `[[blocked]]` entry says *"NOT blocked on a decision — D-074 ruled the direction and 441 is the plan… What remains is one act, and it is a priority act."* ⚠️ **That act is the product owner's, and Lane C may not perform it — but Lane C can ask for it**, which is the routing this item is about |
+| **C** | **Approve preparation Lane B authors for its own modules** | Under *Distributed Product Development* the owning lane prepares and Lane C sets `READY`. **Lane B has four modules and can write rows for them** — see below |
+
+### What Lane B will do meanwhile, so this is not a lane waiting to be fed
+
+**Nothing is invented and nothing is claimed.** §20e is explicit: *"a lane never begins work when no `READY` task exists"*, and *"`AVAILABLE` with an empty queue is a correct repository state, not a stalled one."*
+
+**What this lane can do without a ruling is prepare**, which the product owner has already directed as the operating model — *"continue preparing everything that does not require executing"*. **Preparation for every blocked row is already complete and on `main`**: [27](architecture/27-opportunity-engine.md) for TASK-406, [40](architecture/40-commercial-profile.md) for Epic C, [29](architecture/29-ai-reasoning-engine.md) for Epic G. **There is no fourth thing to prepare** — which is precisely why this item exists rather than a fourth preparation commit.
+
+### Implementation impact
+
+**None. No code, no contract, no schema.** This is a routing and bookkeeping item, and it is filed here rather than raised in a report because **a dependency stated in a report reaches one reader, and a dependency stated in the register reaches whoever is on Lane C next week** (§20e — the register exists so no dependency disappears because the lane that found it could not fix it).
 
 ## C-332 · The predicate landed and TASK-406 still cannot call it — nothing builds its input, and the module that measures may not reach one
 

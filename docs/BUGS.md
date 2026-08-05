@@ -80,6 +80,59 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-327 · Three documents say the Executive Dashboard's ICP section is buildable, and a coordination item on `integration` says it is not
+
+| | |
+|---|---|
+| **Module** | Repository records — [`BACKLOG.md`](BACKLOG.md)'s TASK-438 row · [444](architecture/444-executive-dashboard-domain-assessment.md) · [448](architecture/448-icp-builder-traceability-audit.md) · [`DOMAIN_DISCOVERY_REGISTER.md`](DOMAIN_DISCOVERY_REGISTER.md) |
+| **Current assignee** | **Lane C** — all four are its documents, and the registers are its to reconcile |
+| **Severity** | 🟠 · **Wrong information a lane would act on.** It already produced a `READY` row with an unbuildable section |
+| **Status** | **`OPEN`** — reported with evidence, **not fixed: another lane's documents** |
+| **Found** | 2026-08-05 by Lane B, claiming [TASK-438](BACKLOG.md) and reading its acceptance before writing |
+| **Commit found** | `f14db51e` — and [C-332](LANE_COORDINATION.md) landed at `714f4663`, **one commit earlier** |
+
+**Steps to reproduce.**
+
+```bash
+git log --oneline --reverse 714f4663..f14db51e
+→ 714f4663 C-332 — the predicate is on main and nothing can call it
+  ...
+  f14db51e 448 — ICP Builder, and the screen the product owner named split R-01 in two
+
+grep -c "C-332" docs/architecture/448-icp-builder-traceability-audit.md
+→ 0
+```
+
+**Expected.** A document merged after C-332 either reflects it or says why not.
+**Actual.** Four records assert the opposite of it, and none mentions it.
+
+### The four claims, and what each would cause
+
+| Where | What it says | What it causes |
+|---|---|---|
+| **[TASK-438](BACKLOG.md)**, *"The fifth, newly unblocked"* | *"**ICP coverage** — ⚡ TASK-434 is `PROMOTED`, so *in-ICP versus outside* is **a call to a published predicate***" | **The most expensive one.** A `READY` row telling the claiming lane that a section needs nothing |
+| **[444 §108](architecture/444-executive-dashboard-domain-assessment.md)** | TASK-438 is *"**the five sections that need nothing** — conversion, ageing, movement, roll-up by owner, ICP coverage… **it needs no answer from anybody**"* | The row above derives from this |
+| **[448 §7](architecture/448-icp-builder-traceability-audit.md)** | **R-00 matching — ✅ *"Shipped. Validated by the screen that needed it most"*** | Tells the cross-screen view a capability is available |
+| **[`DOMAIN_DISCOVERY_REGISTER.md`](DOMAIN_DISCOVERY_REGISTER.md)** row 8 · row 14 | *"⚡ R-00 shipped and validated here"* · Executive Dashboard *"**in-ICP cohort ✅**"* | **Sixteen consumers read R-00 to decide whether they are blocked** |
+
+### Why the claim does not survive checking
+
+**What shipped at [TASK-434](BACKLOG.md) is a predicate.** `evaluate(icp, observed)` is correct, promoted, and takes an `ObservedAttributes`.
+
+> **Nothing in `backend/modules/` constructs one**, and the only module that could — `knowledge_graph`, which alone holds the `entity_id → SubjectRef` binding `ClaimReader` needs — is **forbidden to `opportunity_engine` in full.** [05](architecture/05-module-dependencies.md) gives that module one upstream edge and it is the Buying Score Engine.
+
+**"Shipped" is true of the predicate and false of the capability**, and the register does not distinguish them — which is the whole defect. **A predicate nothing can call is a foundation, not a capability**, and [443 §2](architecture/443-account-matching-capability.md) already said so by decomposing matching into four milestones: **M2 shipped, M4 is TASK-406, and the step that turns claims into the values M2 compares is in neither.**
+
+### It is not hypothetical — it has already cost something
+
+**Lane B claimed TASK-438 on the strength of that row**, discovered the fifth section on the reuse audit, and **delivered four sections rather than five**. That is the cheap outcome. **The expensive one was available**: a lane that trusted *"a call to a published predicate"* would have built the arithmetic and met the missing input at the end.
+
+### The fix, and it is one line of judgement rather than four edits
+
+**Decide what R-00 means, then say it once.** *"Shipped"* is defensible for M2 and misleading for the capability — so the register needs the distinction it currently collapses. **The three documents downstream then derive from it**, which is [§2](../CLAUDE.md)'s rule: truth has exactly one authoritative representation.
+
+**Not fixed here.** All four are Lane C's, and a lane rewriting another's records is how two accounts of one fact begin. **Recorded in [27](architecture/27-opportunity-engine.md)** — this module's own design doc — **so the next assignee inherits the correction even if this row is still open.**
+
 ### B-325 · B-118's fix allocates Lane B its own database, and the document that tells a lane how to run still names the shared one
 
 | | |
