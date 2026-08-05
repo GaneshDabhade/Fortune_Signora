@@ -1,6 +1,14 @@
 # Lane B — assigned execution queue.
 #
 # **Written by Lane C. No implementation lane writes this file, including its own.**
+#
+# **Ids are real `TASK-nnn`, never synthetic.** These carried `TASK-903-stage2`,
+# `TASK-400-A7` and `TASK-902-C215` for a few hours — convenient for naming a
+# narrowed scope and wrong: §20e says a row references a `TASK-nnn` because
+# **an id is immutable and a title drifts**, and a queue id the backlog does not
+# have matches nothing. The dashboard's orphan check found it by reporting
+# TASK-903 as `READY` and in no queue while it sat at the top of one.
+# **The narrowing lives in `[rationale]`, which is where a scope belongs.**
 # **Ids only, never state** — execution state lives in BACKLOG.md and the board.
 #
 # **Read this file when you poll.** It answers "what do I build next" without
@@ -50,7 +58,7 @@ depth_target = 5
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-415"
 next    = "TASK-408"
-future  = ["TASK-416", "TASK-902-C215"]
+future  = ["TASK-416", "TASK-902"]
 
 # **4 of a 5 target.** Two corrections on 2026-08-05, in opposite directions.
 #
@@ -70,7 +78,7 @@ shortfall      = 1
 [rationale]
 "TASK-408" = "B-ii, search results are grouped and the ranking explainable. knowledge_graph is Lane B's, and the row records it as partly delivered rather than blocked, so the remainder is claimable. This has been claimable since 2026-08-05 and has not been claimed"
 "TASK-415" = "the deterministic mock AI provider — a first-class development provider implementing the existing provider port, not a test double. ai_platform is review-at-first-implementation and Lane B is its current assignee, so under D-060 Lane B prepares the package and Lane C reviews it"
-"TASK-902-C215" = "the Timeline feed, workspace-scoped. ⚠️ Recovered 2026-08-05 from a register row nothing could read: C-215 is written as `### C-215 —` while the convention is `## C-nnn ·`, so infra/decision-queue.py never saw it and neither did this queue. It is NOT a decision awaiting a ruling — it is a finished specification awaiting a lane. It names the signature (feed_for_workspace(workspace_id, *, entity_ids=None, since=None, after, limit)), the endpoint (GET /workspaces/{id}/timeline), the index it needs ((workspace_id, occurred_at, id), because the existing one is entity-leading), and its own scope bound (read-only, no new judgement — Timeline ranks nothing and explains nothing, and this must not become the place that starts). timeline is Lane B's. Lane A raised it and correctly did not build it: a lane never changes a module it is not assigned. ⛔ NOT blocked on C-020 — that item blocks M7's undefined remaining scope, and this slice needs none of it. Blocks SW-02 and SW-06."
+"TASK-902" = "the Timeline feed, workspace-scoped. ⚠️ Recovered 2026-08-05 from a register row nothing could read: C-215 is written as `### C-215 —` while the convention is `## C-nnn ·`, so infra/decision-queue.py never saw it and neither did this queue. It is NOT a decision awaiting a ruling — it is a finished specification awaiting a lane. It names the signature (feed_for_workspace(workspace_id, *, entity_ids=None, since=None, after, limit)), the endpoint (GET /workspaces/{id}/timeline), the index it needs ((workspace_id, occurred_at, id), because the existing one is entity-leading), and its own scope bound (read-only, no new judgement — Timeline ranks nothing and explains nothing, and this must not become the place that starts). timeline is Lane B's. Lane A raised it and correctly did not build it: a lane never changes a module it is not assigned. ⛔ NOT blocked on C-020 — that item blocks M7's undefined remaining scope, and this slice needs none of it. Blocks SW-02 and SW-06."
 "TASK-416" = "an evaluation run states which provider served it. Four of the six required fields already exist; `provider` and `execution_mode` are the whole of the change. Prepared by Lane B, reviewed by Lane C, same loop as TASK-415"
 
 # ── Owned, not startable ─────────────────────────────────────────────────────

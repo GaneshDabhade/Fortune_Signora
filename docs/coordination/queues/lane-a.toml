@@ -1,6 +1,14 @@
 # Lane A — assigned execution queue.
 #
 # **Written by Lane C. No implementation lane writes this file, including its own.**
+#
+# **Ids are real `TASK-nnn`, never synthetic.** These carried `TASK-903-stage2`,
+# `TASK-400-A7` and `TASK-902-C215` for a few hours — convenient for naming a
+# narrowed scope and wrong: §20e says a row references a `TASK-nnn` because
+# **an id is immutable and a title drifts**, and a queue id the backlog does not
+# have matches nothing. The dashboard's orphan check found it by reporting
+# TASK-903 as `READY` and in no queue while it sat at the top of one.
+# **The narrowing lives in `[rationale]`, which is where a scope belongs.**
 # **Ids only, never state** — execution state lives in BACKLOG.md and the board.
 #
 # **Read this file when you poll.** It answers "what do I build next" without
@@ -43,7 +51,7 @@ depth_target = 5
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-405"
 next    = "TASK-417"
-future  = ["TASK-903-stage2", "TASK-905", "TASK-400-A7"]
+future  = ["TASK-903", "TASK-905", "TASK-400"]
 
 # **5 of a 5 target**, reached by finding work rather than by lowering the bar:
 # TASK-903's stage 2 moved here from Lane B, where it had been queued on a
@@ -68,8 +76,8 @@ shortfall      = 0
 "TASK-405" = "claimed 2026-08-05 and in implementation — the domain half pushed at acb774b. signal_engine is Lane A's"
 "TASK-417" = "wave 1 of the approved UI — twelve Account 360 sections already served by shipped contracts. Render only, no backend change. 26 screens are approved and 0 are implemented, which is the largest single gap in the repository"
 "TASK-905" = "a contraction risk stops looking like an opportunity. Product Surface and buying_score_engine, both Lane A's. TASK-203 records this as the half of Epic D that still carries value"
-"TASK-903-stage2" = "the declarations on the account brief. ⚠️ Moved here from Lane B's queue on 2026-08-05, and it was never a two-lane build after 2026-08-03. C-008 was RULED by the product owner — option C now, option D next — and stage 1 shipped as CX-05 at e3516c4: /business, member-reachable, five declarations rather than four. So commercial_profile owes nothing. Lane A's own repository check says stage 2 'is one lane, not two: stage 1 needed no backend change and the display half of stage 2 needs none either.' Product Surface is Lane A's. ⛔ SCOPE BOUND: anything asserting 'this account matches this ICP' is still blocked on C-002 and is NOT in this slice — display the declarations, assert no match"
-"TASK-400-A7" = "the backend half only — `attempted_at` on `provider_watermark`, written on every completed run, inside provider_platform. C-219 states it directly: 'Lane A is therefore building the half that needs no ruling.' Sequencing only; Lane C is not writing the package"
+"TASK-903" = "the declarations on the account brief. ⚠️ Moved here from Lane B's queue on 2026-08-05, and it was never a two-lane build after 2026-08-03. C-008 was RULED by the product owner — option C now, option D next — and stage 1 shipped as CX-05 at e3516c4: /business, member-reachable, five declarations rather than four. So commercial_profile owes nothing. Lane A's own repository check says stage 2 'is one lane, not two: stage 1 needed no backend change and the display half of stage 2 needs none either.' Product Surface is Lane A's. ⛔ SCOPE BOUND: anything asserting 'this account matches this ICP' is still blocked on C-002 and is NOT in this slice — display the declarations, assert no match"
+"TASK-400" = "the backend half only — `attempted_at` on `provider_watermark`, written on every completed run, inside provider_platform. C-219 states it directly: 'Lane A is therefore building the half that needs no ruling.' Sequencing only; Lane C is not writing the package"
 
 [[blocked]]
 task    = "TASK-904"
