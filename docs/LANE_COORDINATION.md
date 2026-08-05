@@ -295,6 +295,7 @@ databaseUrl: required(
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
 | [C-001](#c-001--the-target-account-contract) | The target-account contract — this module's first edge | Lane B | **Lane A** | `ANSWERED` → **[ADR-0036](architecture/adr/0036-target-account-contract.md)** | **Nothing. Slice 5 may begin.** `CLOSED` when both lanes have built it |
+| [C-332](#c-332--the-predicate-landed-and-task-406-still-cannot-call-it--nothing-builds-its-input-and-the-module-that-measures-may-not-reach-one) | The predicate landed and TASK-406 still cannot call it — nothing builds its input, and the module that measures may not reach one | Lane B | **Product owner** — the edge is 🔴 | `OPEN` — raised 2026-08-05, **after** TASK-434 promoted | **[TASK-406](BACKLOG.md) whole.** Both halves, not only the backtest |
 | [C-329](#c-329--lane-b-has-nothing-claimable-and-the-row-that-says-otherwise-names-two-tasks-it-cannot-take) | Lane B has nothing claimable, and the row that says otherwise names two tasks it cannot take | Lane B | **Product owner** (synchronization) · **Lane C** (the register correction) | `OPEN` — raised 2026-08-05 | **Every Lane B slice.** The lane has been `AVAILABLE` since cycle 54 |
 | [C-305](#c-305--two-principles-that-outgrew-the-adr-that-found-them) | Two principles that outgrew the ADR that found them | Lane B | **Product owner** | `OPEN` | **Nothing.** Both are already applied in two modules each; this is placement |
 | [C-304](#c-304--a-standing-review-question-that-has-already-paid-for-itself) | A standing review question that has already paid for itself | Lane B | **Product owner** | `OPEN` — **challenged and sharpened 2026-08-02.** It produces noise in the general form; the narrow one survives | **Nothing.** One line of review practice, wherever it belongs |
@@ -4167,6 +4168,68 @@ KeyError: '0035'
 **B-400 named the first, on cost, and that reasoning still holds.** This lane is ready either way: `lane-b-commercial-profile` is rebased onto `1252d02` with its gates green, and the renumber is pre-verified.
 
 **What this lane is doing meanwhile.** **Epic E1**, which touches no migration yet. **If E1 adds one, this lane will number it after whatever head exists at that rebase and say so** — which is the same rule, applied at the only moment it can be applied correctly.
+
+## C-332 · The predicate landed and TASK-406 still cannot call it — nothing builds its input, and the module that measures may not reach one
+
+| | |
+|---|---|
+| **Raised by** | **Lane B**, 2026-08-05, on resuming [TASK-406](BACKLOG.md) after [TASK-434](BACKLOG.md) was promoted — reading the two contracts before writing, exactly as [C-328](#c-328--task-406-asks-commercial_profile-to-read-the-pipeline-which-a-contract-forbids-by-design) and [C-330](#c-330--task-406-measures-icp-fit-against-outcomes-and-nothing-can-say-which-accounts-are-in-the-icp) were raised |
+| **Owner** | **The product owner** — it needs a dependency edge that the ratified graph does not contain, which is 🔴 and never a lane's |
+| **Status** | **`OPEN`** — **TASK-406 returns to `BLOCKED` and no code is written.** ⚠️ **This is not a re-raise of C-330.** That item asked for the predicate; the predicate exists and is on `main`. **This is about the two things either side of it** |
+| **Blocks** | **[TASK-406](BACKLOG.md) whole — both halves, not only the backtest.** The row's *"the per-criterion lift half is unaffected and needs nothing new"* is **measurably wrong**, and that is the most useful thing in this item |
+
+### The problem, in one line
+
+> **`evaluate(icp, observed)` shipped and is correct. Nothing in the repository constructs an `ObservedAttributes`, and the module ruled to do the measuring is forbidden from every module that could.**
+
+### What was verified, out of the code rather than recalled
+
+| | |
+|---|---|
+| **The predicate is real and promoted** | `commercial_profile/domain/matching.py` at `fec8b5b2`. It takes `ProductIcp` and `ObservedAttributes` and **is pure by design** — *"the facts are handed to it"* |
+| **Nothing hands them to it** | `ObservedAttributes(industry, country, employees)` has **no producer anywhere in `backend/modules/`.** The claims exist — `ClaimAttribute.INDUSTRY`, `COUNTRY`, `EMPLOYEE_COUNT` — but **a claim set is not a value**, and choosing among disagreeing providers is a projection with a rule, not a lookup |
+| **Only one module can make that projection** | `ClaimReader.for_subjects` keys on **`SubjectRef`** — a *provider* identity. **The `entity_id → SubjectRef[]` binding lives only in `knowledge_graph`** (`identity_binding`, `_subjects()` in its `application/queries.py`) |
+| ⛔ **And `opportunity_engine` may not reach it** | `pyproject.toml` forbids `modules.opportunity_engine` → **`modules.knowledge_graph` in full**, not merely its inner layers. [05](architecture/05-module-dependencies.md) agrees and is narrower still: **its only upstream edge is Buying Score Engine** |
+| ⛔ **And the score carries nothing** | `buying_score_engine/domain/score.py`, verbatim: *"no name, no domain, no industry"* — **deliberately**, so a score row never becomes an account record |
+| ⛔ **And the other direction is already ruled shut** | [C-328](#c-328--task-406-asks-commercial_profile-to-read-the-pipeline-which-a-contract-forbids-by-design): `commercial_profile` may not read the pipeline. **That ruling is correct and is not being reopened** |
+
+**So the ruled design — `opportunity_engine` measures, reading the ICP through `commercial_profile/public/` — is available for the *criteria* and closed for the *facts*.** A description crosses the boundary; the values to compare it against cannot.
+
+### Why the lift half is blocked too, which the backlog row denies
+
+**[C-330](#c-330--task-406-measures-icp-fit-against-outcomes-and-nothing-can-say-which-accounts-are-in-the-icp) already stated it and the amendment overlooked it:**
+
+> *"Lift is `P(win | matches criterion) ÷ P(win)`. **Every term** needs *"does this account match this criterion?"*"*
+
+**Both of TASK-406's halves are the same question asked twice** — per criterion, and rolled up per cohort. **Neither is buildable without a producer of observed attributes.** A lane taking the row at its word would build the arithmetic, discover the input on the last day, and either stop or invent one.
+
+### The alternatives
+
+| | | |
+|---|---|---|
+| **A** | **`knowledge_graph` publishes the projection**, and `opportunity_engine` gains an edge to its `public/` | The projection genuinely belongs there — **`select_name` is the exact precedent**, resolving one attribute with its rule stated, reporting `NameAgreement`, and refusing provider precedence because *"provider precedence is a customer policy."* ⛔ **But it needs a new ratified edge**, and the contract forbidding it carries reasoning |
+| **B** | **`opportunity_engine` declares an `AccountAttributeReader` port in its own vocabulary**, satisfied by an adapter wired at the composition root | **No module-to-module import is added** — the port is `opportunity_engine`'s language (§6, *a port belongs to the module that owns the language*) and the adapter lives outside both. **The `ExplanationSource` precedent is exact.** Still introduces a runtime edge absent from [05](architecture/05-module-dependencies.md), so **still 🔴** |
+| **C** | **An event-carried projection** — `knowledge_graph` publishes attributes, `opportunity_engine` keeps a local copy | ⛔ **Two representations of one fact** (§2). Adds a table and a staleness window to answer a question that is already answerable live |
+| **D** | **Narrow TASK-406 to the cohort-wide backtest** — win rate and median cycle over all decided accounts, no ICP split | **Computable today from `DecidedAccount` alone, with no new edge.** ⛔ **Does not satisfy the row** — *"the backtest reports both cohorts, never in-ICP alone"* — and the product owner has already bounded it: *"reasonable if it is clearly labelled as 'overall cohort performance' rather than ICP lift, but do not spend time implementing that unless it already fits the roadmap"* |
+
+### The recommendation, which is input and not authority
+
+> **B, and A as the thing B is wired to.**
+
+**The projection belongs in `knowledge_graph`** — it owns identity, it owns claim selection, and it has already solved this shape once for the name. **The edge belongs to a port rather than an import**, because that is the only option that lets `opportunity_engine` state what it needs in its own words without learning that a Knowledge Graph exists.
+
+**Two design questions come with A and neither is a lane's to settle**, both recorded in [27](architecture/27-opportunity-engine.md) during preparation:
+
+1. **When two providers disagree — `Fintech` against `Banking` — is the account measured or `UNMEASURED`?** Both are defensible and they are not equivalent. Deciding is decisive on contested evidence; abstaining is honest and will mark more accounts unknown than a seller expects.
+2. **`select_name` refuses provider precedence as *"a customer policy."*** If that holds here, the projection needs the same refusal, and the tie-break must be stated where a customer can read it.
+
+### The trade-offs
+
+**B costs one port, one adapter and a ratified edge before TASK-406 can start** — and the edge is the part that is not a lane's. **A without B would put `modules.knowledge_graph` in `opportunity_engine`'s imports**, which is the line C-328's reasoning was written to hold. **D lands a real number this week and is not the number the approved screen shows.** **Doing nothing leaves the ICP Builder's headline figure with no path to itself for a third consecutive item.**
+
+### Implementation impact
+
+**No code was written and no dependency added.** **TASK-434 is unaffected and stays correct** — a pure predicate with no producer is not a defect, it is a foundation with its next milestone unbuilt, and 443 §7 sequenced it that way deliberately. **What this item asks for is 443's missing rung**: M2 shipped, M4 is TASK-406, and **the step that turns claims into the values M2 compares was folded into M1 and deferred behind a trigger that TASK-406 does not satisfy** — *"when exact agreement is measurably losing accounts."* **That trigger is about synonyms. This is about there being no value to synonymise.**
 
 ## C-331 · TASK-003 changes what the model is shown, which un-releases the narration prompt
 

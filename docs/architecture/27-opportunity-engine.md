@@ -671,6 +671,12 @@ Removing the identifiers makes the messages safe to show, which is this slice. *
 
 **Prepared 2026-08-05 by Lane B**, under the product owner's preparation-first model. TASK-406 is blocked only on sequencing — [TASK-434](../BACKLOG.md) shipped the predicate and is with QE — so this records what the slice will actually be, to eliminate the investigation before it starts.
 
+> ⚠️ **Corrected the same day, on resuming after TASK-434 was promoted.** *"Blocked only on sequencing"* was **wrong**, and the correction is the reason this section exists at all: **the projection below is not merely undesigned, it is unreachable from here.** `ClaimReader.for_subjects` keys on a **provider** identity, the `entity_id → SubjectRef` binding lives only in `knowledge_graph`, and **`pyproject.toml` forbids `modules.opportunity_engine` → `modules.knowledge_graph` in full** — [05](05-module-dependencies.md) gives this module **one** upstream edge and it is the Buying Score Engine. **Raised as [C-332](../LANE_COORDINATION.md); a new edge is 🔴 and no code was written.**
+>
+> **The correction is dated rather than rewritten** (`CLAUDE.md` §2). The design below stands and is what the slice becomes **once an edge exists** — the finding is that reading a claim set from here is not currently permitted, not that the projection was the wrong idea.
+>
+> ⛔ **And it blocks both halves.** The backlog's *"the per-criterion lift half is unaffected and needs nothing new"* does not survive arithmetic: lift is `P(win | matches criterion) ÷ P(win)`, and **every term needs the predicate**, which needs these attributes. [C-330](../LANE_COORDINATION.md) said so before TASK-434 was written; the amendment overlooked it.
+
 ### Three pieces, and two of them now exist
 
 | | Where | State |
