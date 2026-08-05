@@ -178,6 +178,44 @@ Found 3 errors in 1 file (checked 733 source files)
 **Both are fixed on `integration`** at `b332aea`. Nothing is left for this row to track, and two rows for one defect is the register drifting from the repository.
 
 
+### B-120 · The repository's self-describing generators have no tests, and have been wrong three times
+
+| | |
+|---|---|
+| **Module** | Platform Foundation — `infra/repository-dashboard.py`, `infra/decision-queue.py`, `infra/implementation-status.py`, `infra/project-history.py` |
+| **Current assignee** | **Lane C** — Platform Foundation |
+| **Severity** | 🟡 — wrong but survivable. **These are not gates**, so a wrong figure blocks nothing; it misinforms |
+| **Status** | **`OPEN`** — observation, **not a blocker.** The slice that prompted it was validated and promoted |
+| **Found** | 2026-08-05 by QE, validating Lane C's register-audit slice |
+
+**Steps to reproduce.**
+
+```bash
+grep -rl "repository-dashboard\|decision-queue" backend/tests/
+→ (no results)
+```
+
+**Four generators produce the documents the repository uses to describe itself, and no test executes any of them.** They are outside the coverage gate's scope (`modules`, `signora_platform`, `apps`), so their absence is invisible to every measurement QE publishes.
+
+### The evidence is Lane C's own commit titles
+
+| | |
+|---|---|
+| *"**Implemented 0 was hardcoded**, and wave 1 made it false"* | A count that was a literal |
+| *"**Integrated 0 while wave 1 sat on `main`** — the label meant one thing, the data another"* | A field name that did not match its contents |
+| *"**Eighteen index rows disagreed with their own item bodies**"* | A summary that had drifted from its detail |
+
+> **Three wrong outputs, each caught by a person reading them.** That is exactly the detection method §2 rejects elsewhere — *"a violation that is unrepresentable beats one that is merely discouraged"* — and each of these was **representable, shipped, and found later.**
+
+### Why QE is recording it rather than blocking on it
+
+**A wrong dashboard is not a wrong product.** These generate documentation, not behaviour; no gate consumes them, and the slice that prompted this row passed every gate and was promoted. **Blocking on it would be QE deciding a priority that is not QE's.**
+
+**But the repository's own standard is unambiguous** — *"no change ships without tests"* (§11) — and the exemption these enjoy is accidental rather than reasoned: they sit in `infra/`, which the coverage gate does not scope. **A generator asserting `implemented: 0` while wave 1 sits on `main` is the repository telling a reader something untrue about itself**, which is the defect class §2 exists for.
+
+**One test per generator that runs it and asserts one derived figure against a known input** would have caught all three.
+
+
 ### B-119 · The lease fix left its old test behind, and two test files now describe one module
 
 | | |
