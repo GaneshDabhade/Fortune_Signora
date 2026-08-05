@@ -409,7 +409,10 @@
 |---|---|
 | **Module** | `timeline` |
 | **Slice** | S05+ |
-| **Status** | **`WAITING`** — **moved out of `READY` by Lane C, 2026-08-05.** ⚠️ **It names no remaining slice, so no lane can claim it**: Lane B took it on 2026-08-05 and released it the same day without code, for exactly that reason. **A row that cannot be started is not `READY`**, and leaving it there made both the queue and the READY count one deeper than they were. **It returns to `READY` when [ADR-0038](architecture/adr/0038-timeline.md)'s remaining slices are named.** *(Original note retained:*  *)* |
+| **Status** | ⚰️ **`DISPOSED` — Lane C, 2026-08-05, on the product owner's instruction**: *"Continue treating TASK-902 as unavailable **until Product Office decomposes or disposes it. Do not invent remaining scope.**"* **Disposed rather than decomposed, because `S05+` names no slice and never did** — the row's own audit below resolves all three of TASK-017's questions to *already done*, and **the only unbuilt capability it found is [C-215](LANE_COORDINATION.md), which is a written specification rather than a remainder of M7.** **That work is now [TASK-435](#task-435--a-seller-sees-what-changed-across-every-account-they-hold), on its own trigger.** ⚠️ **A row that has been claimed and released once for naming nothing is not a queue entry; it is the [C-412](LANE_COORDINATION.md) defect**, and this office left it `WAITING` when it should have ended it |
+| ⚠️ **The error this corrects, and it was Lane C's** | **`lane-b.toml` carried TASK-902 as executable on the grounds that *"C-215 is a finished specification"*, while `BACKLOG.md` said `WAITING`.** **Both statements were defensible and the queue must not hold the more optimistic one** — that is inventing remaining scope, which is exactly what the instruction forbids. **The specification being finished makes it a *new row*, not a live one** |
+| **Superseded by** | **[TASK-435](#task-435--a-seller-sees-what-changed-across-every-account-they-hold)** — one slice, fully specified, with a named trigger |
+| **Prior status, retained as the dated record** | **`WAITING`** — **moved out of `READY` by Lane C, 2026-08-05.** ⚠️ **It names no remaining slice, so no lane can claim it**: Lane B took it on 2026-08-05 and released it the same day without code, for exactly that reason. **A row that cannot be started is not `READY`**, and leaving it there made both the queue and the READY count one deeper than they were. **It returns to `READY` when [ADR-0038](architecture/adr/0038-timeline.md)'s remaining slices are named.** *(Original note retained:*  *)* |
 | **Notes** | **Postgres first**; Meilisearch on a stated trigger — *the first customer asking to search or facet a timeline rather than scroll it*. **Ship the six live events**; the seventh joins when M11 resumes. **The customer surface already exists** — CX-03 mounted the feed on the account brief |
 | **On claiming** | Supersedes `TASK-017`, which was waiting on exactly these three answers |
 | ⚠️ **Claimed and released by Lane B, 2026-08-05 — the three answers all resolve to *already done*** | **`S05+` names no slice that exists.** TASK-017 waited on two decisions: the milestone definition and Meilisearch-or-Postgres. **Neither produces work now.** Question 1 → *"built on Postgres"*, and its revisit trigger is **the first customer asking to search or facet a timeline**, which has not happened. Question 2 → *"six shipped"*; the seventh is `recommendation.created` and **awaits M11, which is deferred**. Question 3 → *"does the timeline reach a customer?"* — **it does now.** [45 §6](architecture/45-timeline.md) lists *"no mount point"* as the module's one real gap, and **CX-03 closed it**: `frontend/app/(app)/accounts/[accountId]/page.tsx` renders `AccountHistory` from `useAccountTimeline`, so [C-024](LANE_COORDINATION.md) is resolved |
@@ -505,6 +508,19 @@
 | **Notes** | Assert that no task is claimed twice and that every `CLAIMED` row has a matching lane on the board. **A slice, not a Closeout** — `infra/` decides whether gates pass ([B-014](BUGS.md)). *Partly delivered 2026-08-02; what remains is the id-level checking* |
 
 ---
+
+### TASK-436 · `provider_platform` declares which adapters exist, and builds its own registry
+
+| | |
+|---|---|
+| **Why this row exists at all** | ⚠️ **[TASK-419](#task-419--a-handler-can-reach-a-provider-adapter) is `BLOCKED` on this work, and this work had no id.** TASK-419's module is **`apps/` — Lane C's** ([C-010](LANE_COORDINATION.md)), so **Lane A could not claim it**, while `lane-a.toml` listed it as Lane A's next-but-two. **A queue pointing a lane at another lane's row is [C-412](LANE_COORDINATION.md)**, and this office wrote it |
+| **Module** | **`provider_platform`** — [`modules.toml`](coordination/modules.toml) records it as **Lane A** |
+| **Status** | **`READY`** — **decomposition of already-approved scope, never new scope** ([ADR-0404](architecture/adr/0404-platform-composition.md) capability 3, ratified 2026-08-05). **Position is the product owner's**; this row is placed last in `READY` and reorders nothing |
+| **Objective** | **A typed `Settings` for `provider_platform` choosing which provider adapters exist, and a `build_provider_registry` at its composition root** |
+| **Why here rather than in the platform** | **§10, quoted**: *configuration is always a typed Settings object **owned by the module that owns the behaviour***, and *"no module ever learns where another module's configuration came from."* **`provider_platform` owns provider behaviour** |
+| **Measured before queueing** | **`SimulatedProviderAdapter` is constructed at 3 sites, all under `backend/tests/`.** **No composition root builds a provider registry today** — which is the correction ADR-0404 §capability 3 already carries |
+| **Releases** | **[TASK-419](#task-419--a-handler-can-reach-a-provider-adapter)** — Lane C then adds the `WorkerRuntime` field, **and only then**. **One slice here unblocks the other lane's row** |
+| **Governance** | 🟠 — the module's own `infrastructure/` and its composition root, **announced in the commit message.** **Not 🔴: `signora_platform/` is untouched**, which is the whole point of §10's placement rule |
 
 ## SEQUENCED — prepared, and waiting on a named trigger
 
@@ -766,6 +782,22 @@
 | **Status** | **`SEQUENCED`** — **trigger: wave 6, unchanged.** [412 §4](architecture/412-backend-capability-matrix.md) |
 | **Delivers** | **The People Intelligence screen · Global Search's people group** |
 | **Position, and why it did not move** | ✅ **[D-074](DECISION_REGISTER.md): *"the customer-facing People Intelligence module may still remain later in the roadmap. The underlying domain should not."*** **The anonymous surface is buildable from S3; the org chart and relationship views additionally need [TASK-429](#task-429--m-e--a-provider-supplies-a-person-identifier)** |
+
+
+### TASK-435 · A seller sees what changed across every account they hold
+
+| | |
+|---|---|
+| **Supersedes** | **[TASK-902](#task-902--m7-timeline--the-remaining-slices)**, disposed 2026-08-05. **This is the one slice that row was standing in front of** |
+| **Module** | `timeline` |
+| **Status** | **`SEQUENCED`** — **trigger: [SW-02](architecture/51-sales-workspace.md) is scheduled.** [C-215](LANE_COORDINATION.md) blocks SW-02 and SW-06 **and blocks nothing else** — SW-03, SW-04 and SW-05 compose over `GET /accounts`, which is already workspace-scoped |
+| **Specification** | **[C-215](LANE_COORDINATION.md), and it is complete** — the signature, the endpoint, the index and its own scope bound are all named. **Product Office wrote no new scope here; it moved written scope onto a row that can carry a trigger** |
+| **The gap** | **`GET /workspaces/{id}/accounts/{account_id}/timeline` is the only timeline endpoint**, hard-scoped `WHERE workspace_id = … AND entity_id = …`. ***"Three Target Accounts became significantly more active since you last looked"* is a query across everything a seller holds, and there is no way to ask it.** The browser alternative is one request per account — **the N+1 pattern §14 calls *a defect at write time, not a future task*** |
+| **Contract** | **`feed_for_workspace(workspace_id, *, entity_ids=None, since=None, after, limit)`** beside the existing `feed`, as **`GET /workspaces/{id}/timeline`**. **Same entry shape, same cursor, same ordering** |
+| **New index** | **`(workspace_id, occurred_at, id)`** — the existing index is entity-leading and cannot serve this |
+| **⛔ Non-goals** | **Read-only, no new judgement.** *"Timeline ranks nothing and explains nothing, and this must not become the place that starts."* **No stored read state** — `since` is a **declared input**, so [TASK-016](#task-016)'s per-user read state is not a prerequisite and **a server-side read state later changes no contract** |
+| **Reuse** | **Nine projection rules, migration `0026` with forced RLS and no `UPDATE` grant, nine worker subscriptions and the feed component are all built.** This adds a second read path over the same table |
+| **Governance** | 🟠 — the module's own `public/`, a new endpoint and a migration, **announced in the commit message.** **No ADR: [ADR-0038](architecture/adr/0038-timeline.md) already governs the module and no boundary moves** |
 
 ### TASK-432 · A triaged signal says so, and the pipeline hears it
 

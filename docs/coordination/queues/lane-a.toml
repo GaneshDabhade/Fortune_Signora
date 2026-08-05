@@ -49,68 +49,82 @@ updated      = 2026-08-05
 depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
-current = "TASK-904"
-next    = "TASK-905"
-future  = ["TASK-903", "TASK-400", "TASK-419"]
+current = "TASK-400"
+next    = "TASK-436"
+future  = []
 
-# **5 of a 5 target**, reached by finding work rather than by lowering the bar:
-# TASK-903's stage 2 moved here from Lane B, where it had been queued on a
-# premise that stopped being true on 2026-08-03.
+# ⚠️ **Rewritten 2026-08-05. This file declared 5 eligible and none of the five
+# was startable.** Every row is now checked against BACKLOG.md rather than
+# against what this file said yesterday.
 #
-# TASK-904 was `next` this morning and is blocked by two architectural blockers
-# this office did not check before queueing it. **Reported rather than quietly
-# reordered**, and the two rulings that clear it are the cheapest in the
-# repository (DECISION_QUEUE.md P1).
+#   TASK-904  was `current`   →  IN VALIDATION, with QE
+#   TASK-905  was `next`      →  CLAIMED
+#   TASK-903  was in `future` →  CLAIMED
+#   TASK-419  was in `future` →  NOT LANE A'S ROW. Its module is `apps/`, which
+#                                modules.toml records as Lane C. **A queue
+#                                pointing a lane at another lane's row is C-412**
 #
-# ⚠️ **Read 3/shortfall 2 for one commit, against a sequence of four.**
-# TASK-400-A7 was listed in `future` and excluded from the count — a defensible
-# judgement recorded as a number, next to the list it disagreed with.
-# **A stored count beside a derivable one is C-412's defect in this office's own
-# file**, so the dashboard now recomputes it and reports the disagreement rather
-# than trusting the field. **The field stays because it must be checkable against
-# something**; what changed is that nothing reads it without checking.
-eligible_count = 5
-shortfall      = 0
+# **The work Lane A can actually do behind TASK-419 had no id**, which is why
+# TASK-419 looked like a Lane A row: **TASK-436 now carries it** — a typed
+# Settings for provider_platform and a build_provider_registry at its own
+# composition root. **One slice here unblocks Lane C's TASK-419.**
+#
+# ⚠️ **The two synthetic ids are gone.** `TASK-400-A7-render` and `TASK-400-A6`
+# are not TASK-nnn, and §20e says a row references a real id because **an id is
+# immutable and a title drifts**. The narrowing they carried is real and moves
+# into TASK-400's rationale and its blocked entry, keyed to the id that exists.
+#
+# 🔴 **CAPACITY FINDING — 2 eligible against a target of 5.** Not a lane
+# behaviour; a Product Office planning finding. Stated in full below.
+eligible_count = 2
+shortfall      = 3
 
 [rationale]
-#: TASK-417 shipped 2026-08-05 — wave 1 complete, ten sections, and the audit
-#: found three more instances of C-226's class on a page already fixed for it
-#: three times. Kept here for one cycle so the sequence reads continuously.
-"TASK-417" = "Account 360 — wave 1 of the approved UI, claimed 2026-08-05. Twelve sections already served by shipped contracts, render only. 26 screens are approved and 0 are implemented, and this is the first one being built"
-"TASK-904" = "an organization can grow. ✅ CLAIMED 2026-08-05, straight from this queue with no round-trip. UNBLOCKED 2026-08-05 — C-206 and C-208 both ruled. Invitation lifecycle belongs to Signora; acceptance gets an explicit authenticated-but-not-member state and a minimum read path. ⚠️ signora_platform/db/ is frozen: a named single-purpose path, never a general RLS change"
-"TASK-905" = "a contraction risk stops looking like an opportunity. Product Surface and buying_score_engine, both Lane A's. This is C-011 in a task, and TASK-203 records it as the half of Epic D that still carries value"
-"TASK-903" = "the declarations on the account brief — stage 2 only. C-008 was ruled 2026-08-03 and stage 1 shipped as CX-05; the product owner confirmed the ruling stands on 2026-08-05. One lane, not two: no backend change. ⛔ SCOPE BOUND: C-002 is DEFERRED and still load-bearing — display the declarations, assert no match"
-"TASK-419" = "ADR-0404 capability 3, provider_platform's half. A typed Settings choosing which provider adapters exist, and a build_provider_registry at its composition root. §10: configuration is a typed Settings object owned by the module that owns the behaviour, and provider_platform is Lane A's. Measured before queueing: SimulatedProviderAdapter is constructed only in tests, 3 sites, all under backend/tests/. Lane C follows with the WorkerRuntime field once this exists"
+"TASK-436" = "provider_platform declares which adapters exist and builds its own registry — ADR-0404 capability 3, this module's half. §10: configuration is always a typed Settings object owned by the module that owns the behaviour, and provider_platform is Lane A's. Measured before queueing: SimulatedProviderAdapter is constructed at 3 sites, all under backend/tests/, and no composition root builds a provider registry. ✅ RELEASES TASK-419, which is Lane C's row and is blocked on exactly this. ⛔ signora_platform/ is untouched"
 "TASK-400" = "Epic A completion. ✅ A6 UNBLOCKED 2026-08-05 — C-321 ruled, Lane B's six answers adopted whole. A7's backend needs no ruling; A7's render still waits on the subject↔entity join proposal this lane owes Lane C, which is C-219 and is not the product owner's"
 
 
-# ── Held inside TASK-400, so the narrowing is checkable ──────────────────────
+# ── In progress with this lane — listed so nothing here reads as claimable ────
 [[held]]
-task    = "TASK-400-A7-render"
-blocker = ["the `subject` ↔ entity join"]
-owner   = "Lane A proposes · Lane C reviews"
-note    = "C-219: 'the render waits on the join, and Lane A will bring Lane C a proposal rather than assume one.' This is the D-060 loop, and Lane C is not the one holding it — no proposal has been brought. The word `checked` does not ship until it is true; freshness.test.tsx asserts the refusal and is updated by the render slice, never worked around"
+task = "TASK-905"
+note = "a contraction risk stops looking like an opportunity. CLAIMED 2026-08-05. This is C-011 in a task, and TASK-203 records it as the half of Epic D that still carries value"
 
 [[held]]
-task    = "TASK-400-A6"
-blocker = ["C-321"]
-owner   = "Product owner"
-note    = "51-implementation-specifications.md §A6 says it twice in its own words — 'depends entirely on the C-321 ruling' and 'the clearest case in the roadmap of a decision blocking a build.' Narrowing A6 to the render does not escape it: what to render IS the ruling"
+task = "TASK-903"
+note = "the declarations on the account brief — stage 2 only. CLAIMED 2026-08-05. C-008 was ruled 2026-08-03 and stage 1 shipped as CX-05. ⛔ SCOPE BOUND: C-002 is DEFERRED and still load-bearing — display the declarations, assert no match"
 
-# ── Owned, not startable ─────────────────────────────────────────────────────
-# Listed so the lane never rediscovers a dependency by claiming into it.
+# ── Blocked, keyed to real ids ───────────────────────────────────────────────
+[[blocked]]
+task    = "TASK-400"
+blocker = ["C-219", "C-321"]
+owner   = "Lane A proposes, Lane C reviews (C-219) · Product owner (C-321)"
+note    = "Epic A completion, and it is PARTLY startable — which is why it is `current` rather than here alone. QE returned it CHANGES REQUESTED and §20e says a returned task is addressed first. ⛔ TWO PARTS ARE HELD INSIDE IT. A7's render waits on the subject↔entity join: C-219 says 'the render waits on the join, and Lane A will bring Lane C a proposal rather than assume one' — this is the D-060 loop and Lane C is not holding it, because no proposal has been brought. The word `checked` does not ship until it is true; freshness.test.tsx asserts the refusal and is updated by the render slice, never worked around. A6 waits on C-321: 51-implementation-specifications.md §A6 says it twice in its own words — 'depends entirely on the C-321 ruling' and 'the clearest case in the roadmap of a decision blocking a build.' Narrowing A6 to the render does not escape it: what to render IS the ruling"
 
 # ── With QE ──────────────────────────────────────────────────────────────────
 [[in_validation]]
-task = "TASK-200"
-note = "CX-07, the Responsive Product Surface. All four slices with QE"
+task = "TASK-904"
+note = "an organization can grow — invitation lifecycle and acceptance"
 
 [[in_validation]]
-task = "TASK-204"
-note = "A-i — the AI Reasoning Engine reaches a customer. Built by Lane A; ai_reasoning_engine is Lane B's under D-058, and authorship does not move assignment"
+task = "TASK-417"
+note = "Account 360, wave 1 of the approved UI. Ten sections shipped; 26 screens approved"
 
-[[blocked]]
-task    = "TASK-901"
-blocker = ["TASK-418"]
-owner   = "Product owner — an owner for signora_platform/"
-note    = "seven modules consume the events they declare. ADR-0404 approved the capabilities on 2026-08-05 and TASK-418 builds them; three of the four live in signora_platform/, which has no assignable owner. C-010 asked about apps/ AND signora_platform/ and the ruling named apps/ only. Seven slices sit behind one unassigned directory."
+[[in_validation]]
+task = "TASK-405"
+note = "A-iii — a signal ends in a decision. C-224 was raised from inside this slice and is now RULED"
+
+# ── 🔴 Capacity finding — reported, not absorbed ─────────────────────────────
+[capacity_finding]
+raised                  = 2026-08-05
+assigned_queue_size     = 2
+immediately_executable  = 2
+blocked_assignments     = 1
+reason_not_replenished  = "Lane A's six modules have no other unclaimed row. Every Lane A row on the board is CLAIMED, IN VALIDATION, or DONE — the lane shipped its queue rather than stalled in it."
+dependencies            = [
+  "C-219 — the subject↔entity join proposal Lane A owes Lane C. Holds TASK-400's A7 render.",
+  "C-321 — ruled, and A6's render scope still reads from it. Holds TASK-400's A6.",
+]
+product_office_item     = "TASK-436 — created today, and it is the only new eligible row this office could find without inventing scope."
+slices_released         = "C-219 → 1 (TASK-400 A7 render). TASK-436 → 1 here, plus TASK-419 for Lane C. No other dependency releases Lane A work."
+primary_bottleneck      = "Not a dependency — a backlog depth problem. Lane A's modules are ahead of their prepared work, and the Product Office queue for those modules is genuinely empty rather than blocked."
+recommended_action      = "Product Office prepares the next Product Surface and signal_engine slices. This is Lane C's to fix and it is not blocked on the product owner."

@@ -57,8 +57,8 @@ depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-434"
-next    = "TASK-902"
-future  = ["TASK-201", "TASK-202"]
+next    = "TASK-202"
+future  = ["TASK-201"]
 
 # **Rewritten 2026-08-05 after D-077. Four rows moved and every move is checked
 # against BACKLOG.md rather than against this file's own memory.**
@@ -83,19 +83,24 @@ future  = ["TASK-201", "TASK-202"]
 # **Their `blocked` entries went with them — C-018 and C-328 are both ruled**,
 # and each rationale below already said so while the array still said blocked.
 #
+# **TASK-902 left `next`, and it was Lane C's own error.** This file called it
+# executable because *"C-215 is a finished specification"* while BACKLOG.md said
+# `WAITING`. **The queue must never hold the more optimistic of two defensible
+# readings** — that is inventing remaining scope. TASK-902 is DISPOSED and the
+# real work is TASK-435, SEQUENCED on SW-02.
+#
 # **TASK-408 left `next` too — this lane claimed it mid-edit.** Caught on the
 # rebase that followed QE's Closeout rebuild, before this file was published.
 # **A queue that names a claimed task as the next one to take is worse than no
 # queue**, which is the whole reason `current` is checked against BACKLOG.md
 # rather than against what this file said an hour ago.
-eligible_count = 4
+eligible_count = 3
 shortfall      = 0
 
 [rationale]
 "TASK-434" = "an account can be asked whether it matches a criterion, and only one thing answers. ⏱️ PLACED AT THE HEAD BY THE PRODUCT OWNER, 2026-08-05 (D-077) — not by Lane C, and position is priority. It is the prerequisite of the backtest half of TASK-406, which this lane holds. TWO SLICES: ① publish IcpReader + IcpView from commercial_profile/public/ — thirteen views are published and not one is the ICP, so no module can read the criteria at all; ADR-0403 is the ratified precedent for this exact shape. ② the pure evaluation. ⛔ TWO INVARIANTS, both ratified elsewhere and neither negotiable: a match is a CATEGORY WITH REASONS and never a number (MatchStrength, Relevance — 'a number invites weighting, weighting invites thresholds'), and `unmeasured` must be a VALUE IN THE TYPE, never `false` — the customer declares free text and the pipeline observes canonical INDUSTRY, so 'SaaS' vs 'Computer Software' returns False under string equality and the account silently drops out of its own ICP. ✅ ZERO NEW DEPENDENCY EDGES: the import contract forbids commercial_profile READING the pipeline and does not forbid it being GIVEN facts — evaluate(criteria, attributes) is pure and lint-imports needs no amendment. ⛔ NOT IN SCOPE: no synonym catalog, no discovery, no lift, no fit score. 443 is the assessment; sixteen consumers are measured there"
 "TASK-201" = "Epic C — People Intelligence. ✅ UNBLOCKED 2026-08-05 at NARROWED scope, and DECOMPOSED the same day by D-074 into TASK-427 (domain) · TASK-428 (intelligence) · TASK-429 (provider enrichment) · TASK-430 (the screens). ⚠️ TASK-201 is NOT replaced and does not move — its status, position and assignment are the product owner's and unchanged. A claim on it means TASK-427 first and TASK-428 stage 3 second, in that order, which is a statement of fitness and never of priority. ⛔ TASK-427 is not yet claimable: its trigger has fired but the product owner has not placed it. C-221 stands and its narrowing IS the plan — role-based and organization-level intelligence, no person's name anywhere"
 "TASK-202" = "Epic G — Copilot. ✅ UNBLOCKED 2026-08-05, verified on origin/integration rather than inferred: mock.py exists, AIVendor.MOCK is in the enum, and provider is on the evaluation report. C-222 was ruled 2026-08-04 and TASK-415/416 are the mechanism it depends on — both this lane's own, both now landed. The rows read IN VALIDATION, which is not promoted, so this was checked against the tree a lane claims from"
-"TASK-902" = "the Timeline feed, workspace-scoped — C-215, a finished specification rather than a decision. It names the signature, the endpoint, the index and its own scope bound. ⛔ NOT blocked on C-020, which the product owner deferred explicitly on 2026-08-05 and which blocks M7's undefined remainder, not this slice"
 
 # ── Owned, not startable ─────────────────────────────────────────────────────
 

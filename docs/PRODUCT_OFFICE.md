@@ -528,6 +528,31 @@ Decisions required    what the product owner must rule before it can start
 
 **1** Lane Status · **2** Product Owner Dashboard · **3** Executive Summary *(≤5 bullets)* · **4** Priority Dashboard *(P0–P4)* · **5** Dependency Matrix *(a table)* · **6** Lane Availability · **7** Implementation Detail · **8** Decisions Made · **9** Risks *(≤3)* · **10** Final Status Line *(one sentence)*.
 
+### Execution Buffer Health — mandatory whenever a lane reports `WAITING`, `BLOCKED` or `IDLE`
+
+**Ratified 2026-08-05, product owner.** ***"A lane becoming idle is not merely an implementation event — it is a planning signal."*** **The goal is to make repository throughput measurable.**
+
+```text
+Execution Buffer Health
+  Assigned queue size:
+  Immediately executable:
+  Blocked assignments:
+  Dependencies preventing execution:
+  Estimated slices released by resolving each dependency:
+  Primary bottleneck:
+  Recommended Product Office action:
+```
+
+**And when a lane's queue is exhausted because everything left is blocked, that is *not normal lane behaviour*.**
+
+> ## **An exhausted queue is a Product Office capacity finding, and it is stated as one.**
+>
+> **Assigned queue exhausted · the reason it cannot be replenished · which dependency prevents replenishment · which Product Office backlog item resolves it · how many slices that would release.**
+
+**The five fields live in the lane's queue file as a `[capacity_finding]` table**, not only in a report — **a finding that exists only in prose is a finding nothing can check.** `lane-a.toml` carries the first one.
+
+> ⚠️ **The distinction that makes the finding useful.** *"Blocked"* and *"empty"* are different diagnoses and only one of them is the product owner's. **Lane A's queue on 2026-08-05 was neither** — its rows were `CLAIMED`, `IN VALIDATION` or another lane's, and **the honest bottleneck was that Product Office had not prepared the next slices.** **Reporting that as a dependency would have pointed at the wrong person.**
+
 ### The rules that carry the weight
 
 | | |
