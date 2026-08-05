@@ -16,6 +16,7 @@ import {
   ScoreMovement,
 } from '@/components/intelligence/attention';
 import { DecidedAccounts } from '@/components/intelligence/decided';
+import { NeedsIdentity } from '@/components/intelligence/needs-identity';
 import { NothingRaises, TriageStrip } from '@/components/intelligence/triage';
 import { EntityName } from '@/components/intelligence/entity-name';
 import { NoWorkspace } from '@/components/workspace/no-workspace';
@@ -78,7 +79,11 @@ export default function AttentionPage() {
   // Names arrive in a second request and the rows do not wait for them: the
   // score and the reason are what a seller triages on, and blocking the list
   // on a name would trade the decision for the label.
-  const { data: identities, isLoading: namesLoading } = useAccountIdentities(
+  const {
+    data: identities,
+    isLoading: namesLoading,
+    isError: namesFailed,
+  } = useAccountIdentities(
     activeWorkspace?.id ?? null,
     (data?.items ?? []).map((account) => account.account_id),
   );
@@ -119,12 +124,38 @@ export default function AttentionPage() {
   // **Filtered here rather than re-fetched.** The question is a view over the
   // list a seller already has; asking the server again would make a filter cost
   // a round trip and could return a differently-ordered list mid-triage.
-  const shown = useMemo(
+  const filtered = useMemo(
     () =>
       raised === null
         ? (data?.items ?? [])
         : (data?.items ?? []).filter((account) => raises(account, raised)),
     [data, raised],
+  );
+
+  /**
+   * **A6 — unnamed records leave the working list** ([C-321](../../../docs/LANE_COORDINATION.md),
+   * ruled 2026-08-05: *appear yes · working list no · score yes · workable
+   * never*).
+   *
+   * **The partition runs only once names have actually arrived**, and that
+   * guard is the whole risk in this change rather than a defensive habit. An
+   * identity request in flight, or one that failed, makes every account look
+   * unnamed — so partitioning eagerly would move the entire working list into
+   * *Needs identity* on first paint, and leave it there permanently if the
+   * request errored. **A seller would open Signora to an empty call list and a
+   * queue of everything**, which is a worse product than the one this fixes.
+   *
+   * So the rule is: **while names are loading or their read failed, nothing
+   * moves.** The list behaves exactly as it did before A6, which is the state
+   * this page has shipped in for three milestones.
+   */
+  const partition = !namesLoading && !namesFailed && identities !== undefined;
+  const named = (account: AccountAttention) =>
+    !partition || (identities?.get(account.account_id)?.name ?? null) !== null;
+  const shown = useMemo(() => filtered.filter(named), [filtered, partition, identities]);
+  const unnamed = useMemo(
+    () => filtered.filter((account) => !named(account)),
+    [filtered, partition, identities],
   );
 
   const { data: decidedIdentities } = useAccountIdentities(
@@ -233,6 +264,13 @@ export default function AttentionPage() {
           ))}
         </ol>
       ) : null}
+
+      {/* **Below the working list and above what was decided** (A6). This is
+          live intelligence a seller cannot act on; the section below is a
+          record of what they already did. Both are off the call list, and they
+          are off it for opposite reasons — one has nobody to call, the other
+          has already been answered. */}
+      <NeedsIdentity accounts={unnamed} identities={identities} />
 
       {/* **Below the list, because that is where a reader finishes.** The
           question this answers — *wait, what did I just dismiss?* — is asked

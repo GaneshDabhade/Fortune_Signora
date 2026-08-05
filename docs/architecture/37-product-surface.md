@@ -858,3 +858,38 @@ C-008 says *"the buying committee **where contacts appear**"* — **and no conta
 ### What it did not need
 
 **No backend change · no new endpoint · no new hook · no `keys.ts` entry · no permission change.** `policy.csv` has granted `member` read on `product` and `buying_committee` since those slices shipped, `useProductCatalog` and `useBuyingCommittee` already existed for `/business`, and the brief is a top-level route that no guard restricts. **The part label is imported from `components/commercial/vocabulary`**, where `/business` reads it, rather than restated — a second mapping of `CommitteePart` to English would be wrong the moment a part is added and invisible when it is.
+
+---
+
+## TASK-400 · A6 — a company nobody can name leaves the working list *(2026-08-05)*
+
+**[C-321](../LANE_COORDINATION.md), ruled 2026-08-05**, wearing a slice's name. Six sub-questions, and the ruling adopted Lane B's answers whole: **appear yes · working list no · score yes · opportunity no · workable never · `Needs identity`, its own queue.**
+
+**What a customer sees.** Accounts no source has named leave the morning list and appear below it under **Needs identity**, keeping their score and offering no action.
+
+### Identity and significance are different axes, and the list was multiplying them into one number
+
+`70b04700` has four weeks of elevated research on Design Systems, **peaked at 87**, and has no name ([PX-301](../PRODUCT_EXPERIENCE.md)). **That combination is genuinely interesting and genuinely not actionable** — and the working list offered *"I'm working this"* on it. **A button that cannot work, pressed by somebody who then has nothing to do.**
+
+### The score is kept, unchanged, and that is the ruling rather than an omission
+
+*Contribute to a score?* — **yes**, because **the score measures evidence and the evidence is real**. Discounting it here would be a render overruling a reviewed scoring model, which is not a screen's to do. What changes is not the number but the claim the list makes about it: **this is no longer a call list**.
+
+### The guard is the whole risk in the change
+
+**The partition runs only once names have actually arrived.** An identity request in flight — or one that failed — makes **every** account look unnamed, so an eager partition would empty the working list on first paint and leave a queue of everything, permanently, for as long as an outage lasted. **A seller would open Signora to an empty call list.** That is a worse product than the one A6 fixes, and it is the failure mode a reviewer would never see in a green test run against loaded data.
+
+**So while names are loading or their read failed, nothing moves** and the page behaves exactly as it has for three milestones. Asserted three ways: in flight, errored, and all-named.
+
+### It is a read today, and the limit is stated rather than papered over
+
+C-321 says *"`Needs identity` — **a queue with its own workflow**, not a filter"*, and **the workflow was not specified — because there is nothing yet for a customer to do about it.** Signora has no capability by which a person names an account. **A6's own reuse audit reached the same place**: the derivable read *"is worthless without knowing what the queue does"*, so it was recorded rather than built.
+
+**This builds the four answers that were ruled and invents no fifth.** *Opportunity: no* and the qualification rule behind it are `opportunity_engine`'s and `knowledge_graph`'s — **Lane B's**, and not this lane's to encode. **When a naming capability exists, this section is where its action belongs.**
+
+### Two small decisions worth recording
+
+| | |
+|---|---|
+| **Not `EntityName`, and deliberately not a link** | That component renders a truncated id as an *openable* heading, which is right on the working list — an unnamed account is the one a seller most wants to open, and withholding the link would hide the page that explains why. **Here the row is already the statement.** Dressing an id as a name would put the id back in the position the name would occupy |
+| **A source count, never a judgement** | Four sources reporting on one unnamed record is a different thing from one, and it is the only signal a reader has about whether this is worth anybody's time. **The product does not say which, because it has no basis to** |

@@ -271,3 +271,112 @@ describe('an empty view is not an empty workspace — LO-03 corrected', () => {
     expect(screen.getByText('Nothing needs your attention')).toBeInTheDocument();
   });
 });
+
+describe('A6 — an unnamed record leaves the working list', () => {
+  /**
+   * **C-321, ruled 2026-08-05**: *appear yes · working list no · score yes ·
+   * workable never*. The partition happens on this page, and the way it can go
+   * wrong is not the partition itself — it is running it before the names have
+   * arrived.
+   */
+  const NAMED = 'aaaaaaaa-1111-4111-8111-111111111111';
+  const NAMELESS = '70b04700-2222-4222-8222-222222222222';
+
+  function row(accountId: string, id: string) {
+    return {
+      id,
+      account_id: accountId,
+      score: 87,
+      trend: null,
+      score_change: null,
+      signal_type: null,
+      contested: false,
+      posture: null,
+      evidence: 'current',
+      stage: 'tracking',
+      owner_id: null,
+      opened_at: '2026-07-01T00:00:00Z',
+      since: '2026-07-01T00:00:00Z',
+    };
+  }
+
+  function named(accountId: string, name: string | null) {
+    return [
+      accountId,
+      {
+        account_id: accountId,
+        name,
+        agreement: name === null ? 'unknown' : 'agreed',
+        source_count: 2,
+        source: name === null ? null : 'clearbit',
+        observed_at: null,
+        last_observed_at: '2026-07-28T00:00:00Z',
+      },
+    ] as const;
+  }
+
+  beforeEach(() => {
+    workspaceContext.mockReturnValue({
+      activeWorkspace: { id: 'cccccccc-3333-4333-8333-333333333333', name: 'Acme' },
+      isLoading: false,
+    });
+    accounts.mockReturnValue({
+      ...IDLE,
+      data: { items: [row(NAMED, 'r1'), row(NAMELESS, 'r2')], next_cursor: null },
+    });
+  });
+
+  it('moves it into Needs identity once the names have arrived', () => {
+    identities.mockReturnValue({
+      ...IDLE,
+      data: new Map([named(NAMED, 'Datadog'), named(NAMELESS, null)]),
+    });
+
+    render(withQuery(<AttentionPage />));
+
+    expect(screen.getByRole('heading', { name: /needs identity/i })).toBeVisible();
+    expect(screen.getByText('70b04700')).toBeInTheDocument();
+    expect(screen.getByText('Datadog')).toBeInTheDocument();
+  });
+
+  it('moves nothing while the names are still in flight', () => {
+    /**
+     * **The whole risk in this change.** An identity request in flight makes
+     * every account look unnamed, so an eager partition would empty the
+     * working list on first paint and show a queue of everything — a worse
+     * product than the one A6 fixes.
+     */
+    identities.mockReturnValue({ ...IDLE, isLoading: true });
+
+    render(withQuery(<AttentionPage />));
+
+    expect(screen.queryByRole('heading', { name: /needs identity/i })).not.toBeInTheDocument();
+    // **Both rows are still on the working list rather than nowhere.** The
+    // name itself is a skeleton at this moment — `EntityName` is given
+    // `isLoading` and draws one — so the row is counted by its score, which
+    // does not wait for a name and never did.
+    expect(screen.getAllByText('87')).toHaveLength(2);
+  });
+
+  it('moves nothing when the names could not be read at all', () => {
+    // Permanent rather than transient, and therefore worse: a failed identity
+    // read would leave every account parked in Needs identity for as long as
+    // the outage lasted.
+    identities.mockReturnValue({ ...IDLE, isError: true });
+
+    render(withQuery(<AttentionPage />));
+
+    expect(screen.queryByRole('heading', { name: /needs identity/i })).not.toBeInTheDocument();
+  });
+
+  it('shows no queue when every account has a name', () => {
+    identities.mockReturnValue({
+      ...IDLE,
+      data: new Map([named(NAMED, 'Datadog'), named(NAMELESS, 'Vercel')]),
+    });
+
+    render(withQuery(<AttentionPage />));
+
+    expect(screen.queryByRole('heading', { name: /needs identity/i })).not.toBeInTheDocument();
+  });
+});
