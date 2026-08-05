@@ -58,10 +58,20 @@ export function ResearchPanel({
   research,
   onRequest,
   isRequesting,
+  isError = false,
 }: {
   research: AccountResearch | null;
   onRequest: () => void;
   isRequesting: boolean;
+  /**
+   * **The read failed — which is not the same as nobody having asked.**
+   * Without this the panel showed `Invitation` for both, so an outage read as
+   * *"research has never been run here"* and offered a button that could start
+   * a second run beside one already in flight. The caller distinguishes a
+   * `404` (genuinely never asked) from anything else, exactly as the narration
+   * block above it does.
+   */
+  isError?: boolean;
 }) {
   const [open, setOpen] = useState<ResearchFinding | null>(null);
   const artifact = research?.artifact ?? null;
@@ -71,11 +81,22 @@ export function ResearchPanel({
     <section className="flex flex-col gap-3">
       <div className="flex items-baseline justify-between gap-4">
         <h2 className="text-sm font-semibold text-content">Deeper research</h2>
-        <Ask research={research} onRequest={onRequest} isRequesting={isRequesting} />
+        <Ask
+          research={research}
+          onRequest={onRequest}
+          isRequesting={isRequesting}
+          isError={isError}
+        />
       </div>
 
       <div className="flex flex-col gap-3 rounded-md border border-border bg-surface-raised px-4 py-3.5">
-        {research === null ? <Invitation /> : <Status research={research} />}
+        {isError ? (
+          <Unavailable />
+        ) : research === null ? (
+          <Invitation />
+        ) : (
+          <Status research={research} />
+        )}
 
         {artifact !== null ? (
           <>
@@ -105,6 +126,21 @@ export function ResearchPanel({
  * is, in the words the catalog uses for its own questions, so the button above
  * is a decision a reader can make rather than a gamble.
  */
+/**
+ * **An outage, said as one.** The wording follows `ValidationBlock`'s
+ * `Unavailable` rather than inventing a second phrasing for the same fact
+ * (§2), and it says nothing about whether research exists — because when this
+ * renders, Signora does not know.
+ */
+function Unavailable() {
+  return (
+    <p className="text-[0.9375rem] leading-6 text-content-muted">
+      Signora could not load the research for this account. Nothing has changed about
+      the account — reload to try again.
+    </p>
+  );
+}
+
 function Invitation() {
   return (
     <p className="text-[0.9375rem] leading-6 text-content-muted">
@@ -171,10 +207,12 @@ function Ask({
   research,
   onRequest,
   isRequesting,
+  isError,
 }: {
   research: AccountResearch | null;
   onRequest: () => void;
   isRequesting: boolean;
+  isError: boolean;
 }) {
   const status: ResearchStatus | null = research?.status ?? null;
   const inFlight = status === 'requested' || status === 'running';
@@ -184,7 +222,12 @@ function Ask({
       variant="secondary"
       size="sm"
       onClick={onRequest}
-      disabled={inFlight || isRequesting}
+      /* **Disabled when the read failed, and that is the safety half of the
+         fix.** `inFlight` is derived from a status this component could not
+         load, so on an error it is `false` and the button reads as available —
+         offering to start a run that may already be in flight. A minute of a
+         worker and a model call is not something to spend on a guess. */
+      disabled={inFlight || isRequesting || isError}
     >
       <Search aria-hidden className="h-3.5 w-3.5" />
       {inFlight

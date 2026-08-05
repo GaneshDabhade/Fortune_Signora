@@ -118,7 +118,12 @@ export default function AccountBriefPage() {
     workspaceId,
     accountId,
   );
-  const { data: research } = useAccountResearch(workspaceId, accountId);
+  const { data: research, error: researchError } = useAccountResearch(workspaceId, accountId);
+  // **404 is "nobody has asked yet"; anything else is an outage.** The same
+  // split the narration block above makes, and for the same reason: without it
+  // both render as absence, and absence here is an invitation to start a run
+  // that may already exist.
+  const neverResearched = researchError instanceof ApiError && researchError.status === 404;
   const requestResearch = useRequestResearch(workspaceId, accountId);
   // Paged rather than fetched whole: an account worked for a year has a long
   // history, and the brief must not wait on all of it to render the rest.
@@ -354,6 +359,7 @@ export default function AccountBriefPage() {
               findings point down into it. */}
           <ResearchPanel
             research={research ?? null}
+            isError={researchError !== null && !neverResearched}
             onRequest={() => requestResearch.mutate()}
             isRequesting={requestResearch.isPending}
           />

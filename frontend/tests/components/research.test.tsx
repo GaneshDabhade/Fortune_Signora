@@ -252,3 +252,42 @@ describe('provenance is on the page', () => {
     expect(screen.getByText(/research_synthesis@2/)).toBeVisible();
   });
 });
+
+describe('a research read that failed is not an account nobody has researched', () => {
+  /**
+   * **Found by auditing wave 1 against 410's "each in six states", not by a
+   * failure.** The panel took `research` and no error, so a failed fetch
+   * arrived as `null` — indistinguishable from *"nobody has asked yet"* — and
+   * rendered the invitation to start a run.
+   *
+   * Two things were wrong with that, and the second is the expensive one: the
+   * sentence was false, and the button beside it was enabled. `inFlight` is
+   * derived from a status the component could not load, so on an error it is
+   * `false` and the control offers to spend a worker minute and a model call
+   * on a run that may already be underway.
+   */
+  it('says the read failed rather than inviting a run', () => {
+    render(
+      <ResearchPanel research={null} onRequest={() => {}} isRequesting={false} isError />,
+    );
+
+    expect(screen.getByText(/could not load the research/i)).toBeInTheDocument();
+    expect(screen.queryByText(/usually takes a minute or two/i)).not.toBeInTheDocument();
+  });
+
+  it('does not offer to start one it cannot see the state of', () => {
+    render(
+      <ResearchPanel research={null} onRequest={() => {}} isRequesting={false} isError />,
+    );
+
+    expect(screen.getByRole('button', { name: /research/i })).toBeDisabled();
+  });
+
+  it('still invites a run when nobody has genuinely asked', () => {
+    /** The 404 case, which the caller separates. This must keep working. */
+    render(<ResearchPanel research={null} onRequest={() => {}} isRequesting={false} />);
+
+    expect(screen.getByText(/usually takes a minute or two/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /research/i })).toBeEnabled();
+  });
+});
