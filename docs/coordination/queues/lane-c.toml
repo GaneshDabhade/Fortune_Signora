@@ -18,12 +18,20 @@ lane         = "Lane C"
 updated      = 2026-08-05
 depth_target = 5
 
-current = "TASK-900"
-next    = "C-219"
-future  = ["C-221"]
+current = ""
+next    = ""
+future  = []
 
-eligible_count = 3
-shortfall      = 2
+# **0 of 5, and the honest number.** This read 3 while all three entries were
+# blocked on somebody else — the same defect this office corrected in C-412,
+# in Lane A's queue and in its own `eligible_count` today. **`eligible` means
+# startable now**, and a queue that counts blocked work is a queue that reports
+# a lane as busy while it waits.
+#
+# **§20e: `AVAILABLE` with an empty queue is a correct repository state, not a
+# stalled one** — every remaining item has an owner who is not this lane.
+eligible_count = 0
+shortfall      = 5
 
 [rationale]
 "TASK-900" = "the platform composition RFC. ⚡ The highest-leverage row in the backlog: TASK-901 is seven independently certifiable slices and is BLOCKED on this one. Lane B skipped it and was right to — a feature lane writing the RFC that governs the substrate every module imports is the failure §20a exists to prevent. It has sat READY and unclaimed because every lane is correct to refuse it. Lane C authors the RFC, the product owner approves it, an implementation lane rewires. ADR-0100 R-1 already approved the 🔴"
@@ -33,6 +41,24 @@ shortfall      = 2
 "C-221" = "Epic C — People Intelligence. C-221 is owned by the product owner for the epic and by Lane C for the specification. The specification half is unwritten, and TASK-201 is BLOCKED behind it. This is a Lane C blocker sitting in front of an implementation lane's work, which outranks anything discretionary in this queue"
 #: not sequenced — see [[held]] below.
 "_TASK-413" = "change-aware validation — frontend-only skips. SEQUENCED with a trigger that has not fired: a measured certification wall-clock cost. Listed so the sequence is visible; it does not start on a schedule"
+
+[[held]]
+task    = "TASK-900"
+blocker = ["product owner approval of 435"]
+owner   = "Product owner"
+note    = "The RFC is written and pushed. The task is the RFC only — no module is rewired by it — so the deliverable is complete and nothing further is startable here. Three questions are asked at the end of the document."
+
+[[held]]
+task    = "C-219"
+blocker = ["Lane A's join proposal"]
+owner   = "Lane A proposes · Lane C reviews"
+note    = "C-219: `the render waits on the join, and Lane A will bring Lane C a proposal rather than assume one.` No proposal has arrived. Lane C is the reviewer here, not the author, and writing the proposal would be this office doing the preparation D-060 moved to the lanes."
+
+[[held]]
+task    = "C-221"
+blocker = ["the product owner's ruling on Epic C's scope"]
+owner   = "Product owner (the epic) · Lane C (the specification)"
+note    = "Lane C owns the specification half and cannot write it. The two options differ by an order of magnitude — acquire a provider capability that carries person names, or narrow Epic C to role changes without identity — and choosing between them is the epic's scope. Specifying for one before the ruling would decide it by implementation."
 
 # ── Delivered, and the remainder is not this lane's to schedule ──────────────
 [[held]]
