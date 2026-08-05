@@ -94,6 +94,59 @@ Such a row names the code, records **Current assignee: none — not assignable**
 **Both are fixed on `integration`** at `b332aea`. Nothing is left for this row to track, and two rows for one defect is the register drifting from the repository.
 
 
+### B-117 · `test_repository_impact.py` fails `mypy --strict` — three unannotated `monkeypatch` parameters
+
+| | |
+|---|---|
+| **Module** | Platform Foundation — `backend/tests/test_repository_impact.py` |
+| **Current assignee** | **Lane C** — Platform Foundation, and the author of the slice |
+| **Severity** | 🟠 · **Blocking Quality Defect** — a failing type check prevents promotion (`CLAUDE.md` §20e) |
+| **Status** | **`OPEN`** — certification refused; `integration` is at `bfbeeef6` and **not promotable** |
+| **Found** | 2026-08-05 by QE, certifying cycle 55 |
+
+**Steps to reproduce.**
+
+```bash
+cd backend && uv run mypy --strict .
+```
+
+**Expected.** Clean — `CLAUDE.md` §19 lists `mypy --strict` among the conditions for a slice to be implementation-complete.
+
+**Actual.**
+
+```
+tests/test_repository_impact.py:189: error: Function is missing a type annotation for one or more parameters  [no-untyped-def]
+tests/test_repository_impact.py:207: error: …
+tests/test_repository_impact.py:224: error: …
+Found 3 errors in 1 file (checked 733 source files)
+```
+
+**The fix is three annotations.** `monkeypatch` needs `pytest.MonkeyPatch`:
+
+```python
+def test_the_skip_check_can_actually_fire(
+    guard: ModuleType, monkeypatch: pytest.MonkeyPatch
+) -> None:
+```
+
+### Why `make validate` did not catch it, and that is not a gap
+
+**`make validate` runs the suite and `tsc`; `mypy` belongs to certification** — asserted deliberately by `test_it_runs_the_two_gates_it_claims_and_no_others`, so that stage 1 does not become a slow second certification. **The gate that owns this check ran and refused.** Nothing failed to work.
+
+### One observation on the gate's message, and QE is not fixing it
+
+Certification reported:
+
+```
+mypy                no summary line
+  · gate 'mypy' failed: no summary line
+```
+
+**That reads like a parsing glitch when the truth is three type errors.** `CLAUDE.md` §10 — *failure attribution must be truthful; an error must never name a component that was not involved* — and *"an incorrect attribution is worse than none, because it misdirects the investigation."* A reader would go looking at the gate before looking at their code.
+
+**Recorded rather than repaired.** The gate ran and refused correctly, so this is a diagnostic improvement rather than *a repair so QE can certify* — which puts it on Lane C's side of the [D-022 clarification](../CLAUDE.md), not QE's.
+
+
 ### B-116 · The safe database route existed only for the whole suite, so every narrower question left it
 
 | | |
