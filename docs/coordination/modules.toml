@@ -134,7 +134,7 @@ context = "Structured, single-call reasoning"
 current_owner = "Lane B"
 future_owner = "Lane A"
 transition = "gated"
-gate = "TASK-204 promoted, then Lane A resumes"
+gate = "TASK-202 completes — Lane B claimed it 2026-08-05"
 implementation = 65
 basis = "A-i shipped — Signora's conclusion reaches a customer"
 last_work = "Lane A — A-i"
@@ -142,10 +142,10 @@ next_milestone = "TASK-202, Epic G"
 
 [ai_research_engine]
 context = "Agentic, multi-step research"
-current_owner = "Lane B"
+current_owner = "Lane A"
 future_owner = "Lane A"
-transition = "gated"
-gate = "Lane A resumes"
+transition = "settled"
+transitioned = 2026-08-05  # gate was Lane A resuming, and nothing was in flight
 implementation = 55
 basis = "R4-02 and R4-03 shipped"
 last_work = "Lane A — R4-03"
@@ -153,10 +153,10 @@ next_milestone = "per-cohort research, wave 3 of 416"
 
 [signal_engine]
 context = "A watched change becomes something worth acting on"
-current_owner = "Lane B"
+current_owner = "Lane A"
 future_owner = "Lane A"
-transition = "gated"
-gate = "TASK-405 completes if claimed, then Lane A resumes"
+transition = "settled"
+transitioned = 2026-08-05  # Lane A resumed; TASK-405 was unclaimed, so the gate was clear
 implementation = 55
 basis = "Epic D phase 1 — competitor entry; TECHNOLOGY_ADOPTED and RETIRED already consumed"
 last_work = "Lane A — Epic D"
@@ -164,10 +164,10 @@ next_milestone = "TASK-405 — a signal ends in a decision"
 
 [buying_score_engine]
 context = "Posture — how ready an account is, and why now"
-current_owner = "Lane B"
+current_owner = "Lane A"
 future_owner = "Lane A"
-transition = "gated"
-gate = "Lane A resumes"
+transition = "settled"
+transitioned = 2026-08-05  # gate was Lane A resuming, and nothing was in flight
 implementation = 60
 basis = "Epic D contribution; trigger already sourced from BuyingScore rather than paraphrased"
 last_work = "Lane A — Epic D"
@@ -178,7 +178,7 @@ context = "What the customer sells, and to whom"
 current_owner = "Lane B"
 future_owner = "Lane A"
 transition = "gated"
-gate = "TASK-406 completes if claimed, then Lane A resumes"
+gate = "TASK-205 completes — Lane B claimed it 2026-08-05 and is inside this module"
 implementation = 75
 basis = "M12.5 slices 1-5 shipped — catalog, ICP, buying committee, business priorities, target accounts"
 last_work = "Lane A — Epic D"
@@ -190,7 +190,7 @@ context = "What a seller should do next, and why"
 current_owner = "Lane B"
 future_owner = "Lane A"
 transition = "gated"
-gate = "TASK-205 completes if claimed, then Lane A resumes"
+gate = "TASK-205 completes — Lane B claimed it 2026-08-05"
 implementation = 60
 basis = "SE-09d shipped; A-ii unbuilt — 39 exported names with no interface layer"
 last_work = "Lane A — SE-09d"
@@ -200,10 +200,12 @@ note = "must move together with commercial_profile — an unstabilized interface
 
 [provider_platform]
 context = "Third-party data acquisition, precedence and dispatch"
-current_owner = "Lane B"
+current_owner = "Lane A"
 future_owner = "Lane A"
-transition = "gated"
-gate = "TASK-400 returns from CHANGES REQUESTED, then Lane A resumes"
+transition = "settled"
+transitioned = 2026-08-05  # B-107 is FIXED and QE-VERIFIED, so the return reason is gone.
+# Lane A wrote A7 and wrote the ten tests — the cheapest possible direction for
+# a returned slice, and 430 warned only against the opposite one.
 implementation = 80
 basis = "PP-01/02/04/05/06 built; PP-03 suspended; A7 shipped"
 last_work = "Lane A — A7"
@@ -212,10 +214,10 @@ carries = ["C-021", "B-107"]
 
 [workspace_tenancy]
 context = "The tenancy root — workspace identity and membership"
-current_owner = "Lane B"
+current_owner = "Lane A"
 future_owner = "Lane A"
-transition = "gated"
-gate = "Lane A resumes"
+transition = "settled"
+transitioned = 2026-08-05  # gate was Lane A resuming, and nothing was in flight
 implementation = 70
 basis = "TM-06 shipped; Team Management buildable — its blockers were withdrawn by the lane that raised them"
 last_work = "Lane A — TM-06"
@@ -260,10 +262,10 @@ note = "sits exactly on the seam — inputs observation_engine and knowledge_gra
 
 [product_surface]
 context = "Every screen, the shell, routing and the customer's vocabulary"
-current_owner = "Lane B"
+current_owner = "Lane A"
 future_owner = "Lane A"
-transition = "gated"
-gate = "TASK-200 and TASK-400's A6 promoted, then Lane A resumes"
+transition = "settled"
+transitioned = 2026-08-05  # travels with provider_platform: TASK-400 spans both
 implementation = 45
 basis = "CX-07, PS-01..08, CX-01..03 shipped; 26 approved screens, 0 implemented against the approved specification"
 last_work = "Lane A — CX-07"
