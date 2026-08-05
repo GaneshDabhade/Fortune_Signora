@@ -158,6 +158,31 @@
 
 ---
 
+# 7 · ⚖️ Ruled 2026-08-05 — and the challenge was aimed at the wrong target
+
+**The product owner adjusted this section, and the adjustment is right. Recorded before the argument it replaces, because a reader should meet the ruling first.**
+
+> *"I **do not** want Product Office to avoid decomposition because of potential staleness. **Long-term roadmap decomposition is a Product Office responsibility. Implementation package preparation remains an implementation lane responsibility.**"*
+>
+> **Decompose to: Epics · Capabilities · high-level backlog items · dependencies · milestones · architectural sequencing.**
+> **Do not prepare: detailed implementation slices for work far from execution.**
+
+## The concession, precisely
+
+**My evidence supported a narrower claim than the one I made.** **Every example I cited was detail-level staleness** — [C-008](../LANE_COORDINATION.md) was a *lane name*, [C-412](../LANE_COORDINATION.md) a *pair of assignees*, [414](414-wave-1-account-360.md) a *section count*. **Not one was an epic that stopped being true.**
+
+> **An epic-level statement does not decay the way a slice does.** *"Signora needs a deletion strategy before GA"* is as true in twelve months as today. *"TASK-903 is Lane B's, two slices, gated on an endpoint"* was wrong within two days.
+>
+> **I generalised from three data points that all sat at one level, to a claim about every level.** The failure I measured was real; **the conclusion I drew from it was too wide.**
+
+**And the bottleneck argument settles the rest:** *"The problem we had earlier was not decomposition — it was that implementation lanes were waiting for Product Office to prepare work. Our new operating model removes that bottleneck."* **[D-060](../DECISION_REGISTER.md) moved package authoring to the lanes**, so roadmap decomposition no longer sits in front of anybody. **It did when I formed the habit of resisting it.**
+
+**§8 below is what this office now maintains: a living roadmap at the stable level.**
+
+---
+
+# 7a · The original challenge, kept as the dated record
+
 # 7 · My second challenge — the volume
 
 **The directive names roughly forty capabilities across three initiatives. I have decomposed almost none of them into tasks, deliberately, and this is where I ask you to disagree if you want more.**
@@ -188,3 +213,98 @@
 | **No new module, context or service** | **Not one** — every proposal above extends something that exists, or is refused |
 | **No ADR written** | Two are *candidates*: **the erasure/audit boundary**, and **API versioning policy** |
 | **No regression** | **Nothing executable changed** |
+
+---
+
+# 8 · The living roadmap — Epics and Capabilities
+
+**Ratified level of detail** ([D-072](../DECISION_REGISTER.md)): **Epics · Capabilities · high-level items · dependencies · milestones · sequencing.** **Implementation slices are the owning lane's**, written when the initiative becomes active.
+
+**Every initiative carries one of four classifications**, per the ruling:
+
+| | Meaning |
+|---|---|
+| 🟦 **Customer Product** | A customer interacts with it |
+| 🟧 **Internal Operations** | Only Signora sees it — **"Signora Operations"**, never *Studio* |
+| 🟩 **Platform / Foundation** | Substrate every module uses |
+| ⬜ **Architecture / Governance** | A decision or a rule, not a surface |
+
+## Epic H · AI Platform — providers, policy and safety 🟩
+
+**Decomposed at slice level already** ([437](437-ai-platform-future-epic.md), [TASK-420–424](../BACKLOG.md)) **because its trigger is the nearest of any initiative here.**
+
+| Capability | | Depends on |
+|---|---|---|
+| A second hosted vendor in production | 🟩 | — |
+| PII never leaves the tenant unmasked | 🟩 | — |
+| Workspace provider policy | 🟦 | ADR-B |
+| Injection detection and audit | 🟩 | PII |
+| Workspace AI budget | 🟦 | policy · [TASK-411](../BACKLOG.md) |
+| ⛔ **Memory · caching · adaptive routing** | ⬜ | **One state decision. Not capabilities until it is answered** |
+
+## Epic I · Data governance and the record's lifecycle ⬜🟩
+
+**Trigger: the first retention obligation, the first deletion request, or migration 0050.**
+
+| Capability | | Depends on |
+|---|---|---|
+| **The deletion and retention strategy** — [TASK-426](../BACKLOG.md) | ⬜ | — · **everything below depends on it** |
+| Workspace lifecycle states — suspend · archive · restore | 🟩 | strategy |
+| Erasure and data export | 🟦 | strategy · lifecycle |
+| An audit query surface | 🟧 | — |
+| Backup policy and restore verification | 🟩 | — · **distinct from `make dr`** |
+| Legal hold | 🟦 | strategy |
+
+> **The strategy is the only one worth writing now**, and §7's ruling does not change that: **it is a decision, not a slice, and the level is right.**
+
+## Epic J · Signora Operations 🟧
+
+**Internal only. Trigger: the first support request that cannot be answered without database access.**
+
+| Capability | | Depends on |
+|---|---|---|
+| **An operator identity — S5** | 🟧 | — · **the prerequisite for everything else here** |
+| Workspace state, read-only — [TASK-425](../BACKLOG.md) | 🟧 | operator identity |
+| Audit lookup and support notes | 🟧 | operator identity · audit surface |
+| Billing administration | 🟧 | [TASK-411/412](../BACKLOG.md) |
+| Feature flags and staged rollout | 🟩 | — · **propose when a slice needs one** |
+| Platform health — providers, queues, jobs | 🟧 | — |
+| Impersonation | 🟧 | operator identity · **a security ruling first** |
+| Maintenance mode and announcements | 🟧 | outbound delivery |
+
+> ⚠️ **The ordering is the finding.** **Everything in this epic assumes somebody logged in who is not a customer, and that person does not exist in the model.** **Build S5 first or build tenancy violations.**
+
+## Epic K · Extensibility 🟦
+
+**Trigger: the first customer or partner who needs to integrate.**
+
+| Capability | | Depends on |
+|---|---|---|
+| **Outbound webhooks** | 🟦 | **the outbox chain — already built** · deletion strategy |
+| Rate limiting | 🟩 | — · ⚠️ **a GA prerequisite regardless of this epic** |
+| Public API versioning policy | ⬜ | — · one ADR |
+| Further connectors | 🟦 | **`IntegrationSourceAdapter` — already the architecture** |
+| Agent framework · MCP | 🟩 | **[437](437-ai-platform-future-epic.md)'s state decision** |
+| ⛔ SDK · GraphQL · plugins · marketplace | 🟦 | **A customer. Each first version is wrong without one** |
+
+## Cross-epic dependencies, stated once
+
+```
+S1 deletion strategy ──▶ Epic I entirely ──▶ webhooks (Epic K)
+S5 operator identity ──▶ Epic J entirely
+outbox (built)       ──▶ webhooks · notifications · announcements
+437 state decision   ──▶ AI memory/caching · agent framework
+TASK-411 usage       ──▶ AI budget · billing administration
+```
+
+**Four shared foundations sit in front of eleven capabilities.** **That is the argument for a roadmap at this level: the dependencies are visible, and they are what a slice-level plan would have buried.**
+
+## Milestone sequencing
+
+| Wave | | Gate |
+|---|---|---|
+| **Current** | Approved UI · core product | — |
+| **Next** | **Epic H** | UI waves complete; `product_surface` no longer lowest |
+| **Pre-GA** | **S1 · S5 · rate limiting** | **The three that get more expensive with delay** |
+| **GA** | Epic I · Epic J | A contract, an obligation, or a support burden |
+| **Post-GA** | Epic K | A customer who needs to integrate |

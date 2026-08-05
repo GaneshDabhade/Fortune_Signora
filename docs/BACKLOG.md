@@ -697,6 +697,13 @@
 | **ADR candidate** | **The erasure/audit boundary.** A retention rule with no executable check is a comment — the same standard [TASK-421](#task-421) sets for PII masking |
 
 
+> ### Classification — every future initiative carries one ([D-072](DECISION_REGISTER.md))
+>
+> 🟦 **Customer Product** — a customer interacts with it · 🟧 **Internal Operations** — only Signora sees it · 🟩 **Platform / Foundation** — substrate every module uses · ⬜ **Architecture / Governance** — a decision or a rule, not a surface
+>
+> **The roadmap at Epic and Capability level lives in [438 §8](architecture/438-platform-initiatives.md).** **Rows here stay high-level for work far from execution**; the owning lane writes the implementation package when an initiative becomes active — **which is [D-060](DECISION_REGISTER.md) unchanged, applied to the roadmap.**
+
+
 ### TASK-411 · Usage Accounting — meter what a workspace consumed
 
 | | |

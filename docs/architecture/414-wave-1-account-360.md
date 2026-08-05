@@ -101,6 +101,31 @@
 **The batch endpoint in §2 renders ten, not eleven.** ✅ **No other section in this document was verified by the same wrong method** — each of the other ten names a route in `interface/router.py`, re-checked on 2026-08-05.
 
 
+## ✅ Construction rule — absence and failure are different, and the section must be told which
+
+**Answering [C-226](../LANE_COORDINATION.md), raised by Lane A on 2026-08-05 while building this wave.** ⚠️ **C-226 is on `lane-a-product-surface` and not yet on `integration`, so this answers the question for *wave 1* and does not yet assert a repository invariant** — that belongs in the item, when the item lands.
+
+> **The finding: one defect found and fixed six times on one screen, by four different slices, each fix correct and local.** Detected signals · the account summary · Timeline · Observations · Research · Opportunities. **Every time, a page-level hook was destructured for `data` alone, `undefined` then meant both *"the API said there is none"* and *"the request failed"*, and the empty branch stated the first as a fact.**
+
+**The rule for every section in this wave:**
+
+> **A failed read may never render as an absence.** A section receives enough to distinguish *the request failed* from *there is nothing*, **and says which.**
+
+**Not *"pass `isError` everywhere"*, and Lane A's reasoning for that is the load-bearing half:** **three of the six needed a `404` split rather than a boolean** — narration, research and opportunities each have a legitimate *"none exists"* that arrives as an error. **The shape varies; the obligation does not.**
+
+### Why a page-level assertion rather than a per-component prop
+
+✅ **Lane A's recommendation is adopted for this wave.** **Render the account brief with every hook erroring and assert the page says so** — one test, no new prop on any component, `brief.test.tsx` already has the harness.
+
+> **And the argument against the naive guard is the one that decides it.** *"Every section takes `isError`"* **would flag `EntityName`, which is correct as written** — it falls back to **the real account identifier, never a placeholder**, so it makes no false claim under any error. **A guard that flagged it would teach lanes to add a prop to silence it.**
+>
+> **That is a guard producing a false positive teaching people to bypass it**, and this office met the same shape today in its own skip check — which read a lane's name out of a compliment and accused a claim of skipping another lane's task. **A check that cries wolf is worse than no check, because somebody has to disprove each one.**
+
+**Who writes it: Lane A**, in `brief.test.tsx`, which it owns and which already has the harness. **The rule is this office's; the assertion is the lane's.** ⚠️ **The test asserts over sections other lanes own — which is exactly why Lane A asked rather than built**, and it is right that a wave-1 test may assert wave-1's page.
+
+> **Six occurrences is not six mistakes.** Each lane read the component in front of it, saw an empty state, and shipped correctly. **Whether this generalises past wave 1 is C-226's question and is answered when C-226 reaches `integration`.**
+
+
 ## 4 · How the absent sections appear
 
 **The approved design already answers this, and it is the reason wave 1 is honest rather than partial.**
