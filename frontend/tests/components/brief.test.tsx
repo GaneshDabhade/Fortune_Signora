@@ -458,3 +458,48 @@ describe('the brief says how current its evidence is — A4', () => {
     expect(screen.getByText('No evidence collected yet')).toBeVisible();
   });
 });
+
+describe('an account with no data still says what it has no data about — TASK-417', () => {
+  /**
+   * **Wave 1's acceptance criterion, made executable.** The row asks for *"a
+   * designed empty state where a workspace has no data"*, and the whole
+   * `beforeEach` above already renders exactly that workspace — every hook
+   * idle, every list empty. Until now nothing asserted the page survived it;
+   * it merely happened to.
+   *
+   * **The failure this guards is a section that vanishes.** A brief that drops
+   * *What changed* when nothing has changed teaches a reader that the section
+   * does not exist, and on the day it fills up they will not know to look. A
+   * heading with an explanation beneath it is the difference between *"nothing
+   * has happened here"* and *"this product does not do that"*.
+   */
+  it('keeps every derived section on the page', () => {
+    render(withQuery(<AccountBriefPage />));
+
+    for (const heading of ['What contributed', 'What changed', 'What has happened']) {
+      expect(screen.getByRole('heading', { name: heading })).toBeVisible();
+    }
+  });
+
+  it('explains the emptiness rather than leaving a blank', () => {
+    render(withQuery(<AccountBriefPage />));
+
+    // The observations section says what it was told, which is not the same
+    // claim as nothing having happened at the company.
+    expect(screen.getByText(/not the same as nothing having happened/i)).toBeVisible();
+  });
+
+  it('omits the competitor list, because that one is a declaration', () => {
+    /**
+     * **The deliberate exception, asserted so it stays deliberate.** Every
+     * other section here is derived *about this account*, so its absence is a
+     * fact worth stating. The competitor list is a workspace declaration: a
+     * card explaining its own absence would appear on every account of every
+     * workspace that has not filled it in, and the place to prompt for a
+     * declaration is the page where declarations are made.
+     */
+    render(withQuery(<AccountBriefPage />));
+
+    expect(screen.queryByText(/who you compete against/i)).not.toBeInTheDocument();
+  });
+});
