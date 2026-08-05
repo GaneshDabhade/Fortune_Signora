@@ -83,27 +83,18 @@
 
 **Ruled 2026-08-04 by the product owner, superseding the morning's split ruling:** *"we'll continue with Lane B only for some time and will start Lane A later once this conflict issue gets resolved."* **Lane A is paused; every implementation module consolidates on Lane B.**
 
-| Module | Current assignee | Note |
-|---|---|---|
-| `commercial_profile` | **Lane B** | held by Lane A for seven hours on [C-415](LANE_COORDINATION.md) |
-| `knowledge_graph` | **Lane B** | held by Lane A for seven hours, resolving [C-413](LANE_COORDINATION.md) |
-| `signal_engine` | **Lane B** | from Lane A |
-| `opportunity_engine` | **Lane B** | from Lane A |
-| `ai_reasoning_engine` | **Lane B** | from Lane A |
-| `sales_engagement` | **Lane B** | carries TASK-205, now unblocked |
-| `ai_platform` | **Lane B** | from Lane A |
-| `provider_platform` | **Lane B** | carries [C-021](LANE_COORDINATION.md), the product owner's |
-| `integrations` | **Lane B** | unchanged — Lane B's throughout |
-| `provider_normalization` | **Lane B** | unchanged — Lane B's throughout |
-| `timeline` | **Lane B** | **was unassigned** — carries [C-215](LANE_COORDINATION.md) |
-| `workspace_tenancy` | **Lane B** | **was unassigned** |
-| `observation_engine` | **Lane B** | **was unassigned** |
-| `business_event_engine` | **Lane B** | **was unassigned** |
-| `buying_score_engine` | **Lane B** | **was unassigned** |
-| `ai_research_engine` | **Lane B** | **was unassigned** |
-| **Product Surface** | **Lane B** | carries [C-025](LANE_COORDINATION.md) · [C-008](LANE_COORDINATION.md) |
-| `infra/` · `Makefile` · repository process · `signora_platform/simulation` | **Lane C** | unchanged — Platform Foundation, [D-022](DECISION_REGISTER.md) |
-| — | **Lane A holds no module** | **`PAUSED`**, not idle and not available |
+> **The table that stood here is gone, and that is the point.**
+
+**[`docs/coordination/modules.toml`](coordination/modules.toml) is the authoritative module ownership registry** *(product owner, 2026-08-04 — step 1 of [428](architecture/428-lane-coordination-model.md))*. **A markdown table here and a registry there would be two representations of one fact**, and the copy nobody maintains is the one somebody reads — **which is C-213, exactly.**
+
+**Render the current state with `python3 infra/repository-dashboard.py` §2**, which reads the registry and joins the execution board for epic, slice, QE status and blocker. **`_owners()` reads the registry too**, so a collision is detected against the declared owner rather than against another board row.
+
+| The registry holds | The board holds |
+|---|---|
+| module · bounded context · **current owner** · **future owner** · transition stage · gate · review owner · implementation estimate · next milestone | **who is working, on which `TASK-nnn`, on which branch, at what status** |
+| Changes when the **product owner** rules an assignment | Changes when a **lane** claims or finishes |
+
+> **Ownership precedence, ratified 2026-08-04**: **product architecture → bounded context → long-term maintenance responsibility → repository continuity → historical implementation evidence.** **Git history is evidence; it is not governance.**
 
 > **Nothing is unassigned any more, and that is the change worth noticing.** The previous table left six modules **Unassigned — claimable by either implementation lane**, which was a correct answer while there were two lanes. **With one implementation lane there is no allocation left to get wrong**, and the entire class of defect this consolidation is a response to — a row naming a lane that has moved on — has no way to occur.
 

@@ -16,13 +16,27 @@
 
 > **No module moves on this document.** **Eleven of seventeen recommend Lane A, which is `PAUSED`** — so **the plan executes nothing until the product owner resumes Lane A**, and until then today's assignment is also the correct assignment. **That is the controlled sequence the product owner recommended**, and it falls out of the plan rather than being imposed on it.
 
-## 2 · How the recommendation was derived — evidence, not preference
+## 2 · What determines ownership — corrected 2026-08-04
 
-**The directive's own philosophy supplies the rule:** *"The engineer who owns a module is best positioned to understand existing implementation."*
+> ⚠️ **The first version of this section made recent `git` history the primary basis. The product owner corrected it, and the correction is the more important half of this document.**
+>
+> **"Git history is evidence. It is not governance."**
 
-> **So the recommendation follows the most recent real work in each module**, read mechanically from `git log` and attributed by **identifier block** (§20e: `TASK-2xx`/`A-`/`LO`/`SE`/`PS`/`PP`/`CX`/`TM` → Lane A · `TASK-3xx`/`M7`/`M12.5`/`M13` → Lane B). **Not from preference, and not from the historical split, which is what produced C-213.**
+**Ownership is determined in this precedence, and a lower rung is consulted only when the ones above it do not decide:**
 
-**Two modules had no post-lane work and were placed by dependency cohesion instead. Both are flagged as arguable.**
+| | Rung | What it asks |
+|---|---|---|
+| **1** | **Product architecture** | Where does this sit in the system the product owner is building? |
+| **2** | **Bounded context** | Which ubiquitous language does it speak? [04-modules.md](04-modules.md) is authoritative |
+| **3** | **Long-term maintenance responsibility** | Who will still be answering for this in six months? |
+| **4** | **Repository continuity** | Who holds the context that would otherwise be rebuilt? |
+| **5** | **Historical implementation evidence** | Who last worked here — read from `git log`, attributed by identifier block |
+
+**Why the correction matters rather than being a wording change.** **Recent commits describe who was *available*, not who should be *responsible*.** A module can be touched last by whichever lane happened to be free, and **promoting that accident to governance would make ownership a function of scheduling** — which is precisely the confusion between *a lane is temporary* and *a module is permanent* that §20e exists to prevent.
+
+> **The product owner's worked example:** *"if `workspace_tenancy` becomes a foundational platform module used across the product, you may eventually decide it belongs with Platform or another lane regardless of who committed there recently."* **That row now carries the flag rather than the inference**, and rung 1 will decide it.
+
+**The registry records both.** [`docs/coordination/modules.toml`](../coordination/modules.toml) carries `last_work` as evidence at rung 5 and **never as the reason for an assignment on its own.**
 
 ## 3 · The plan
 
@@ -35,8 +49,8 @@
 | `knowledge_graph` | Lane B | Global Search shipped | TASK-301 | `IN VALIDATION` | — | **Lane B** | **T0** | **No move.** Lane B's most recent work, and **11 backlog references — the most of any module**, so continuity is worth most here |
 | `observation_engine` | Lane B | A5 backend — 13 fields computed since M4 | — | — | — | **Lane B** | **T0** | **No move** |
 | `timeline` | Lane B | M7 S01–S04a shipped | TASK-902 `READY` | — | [C-215](../LANE_COORDINATION.md) | **Lane B** | **T0** | **No move.** C-215 travels with the module, as [D-057](../DECISION_REGISTER.md) requires |
-| `business_event_engine` | Lane B | M12.3-era; no post-lane work | — | — | — | ⚠️ **Lane B** *(arguable)* | **T0** | **Placed by cohesion, not evidence.** Its **inputs** are `observation_engine` and `knowledge_graph`, both Lane B; its **output** feeds `signal_engine`, Lane A. **It sits exactly on the seam and either placement is defensible** — flagged rather than asserted |
-| `ai_platform` | Lane B | M12.3-era; no post-lane work | — | — | [C-214](../LANE_COORDINATION.md) | ⚠️ **Lane A** *(arguable)* | **T3 — Lane A resumes** | **Placed by cohesion**: its only consumers are `ai_reasoning_engine` and `ai_research_engine`, both recommended Lane A. **C-214 already names its owner as *"whoever is assigned `ai_platform`"*** — the derived form [428](428-lane-coordination-model.md) argues for, and it needs no edit whichever way this is ruled |
+| `business_event_engine` | Lane B | M12.3-era; no post-lane work | — | — | — | ⏸️ **undecided** | **Review at first implementation** | **Deliberately unassigned** *(product owner, 2026-08-04)*. Its **inputs** are `observation_engine` and `knowledge_graph`, both Lane B; its **output** feeds `signal_engine`, future Lane A. **It sits exactly on the seam, and rather than guess, ownership is decided when implementation reaches it** — **evidence over prediction** |
+| `ai_platform` | Lane B | M12.3-era; no post-lane work | — | — | [C-214](../LANE_COORDINATION.md) | ⏸️ **undecided** | **Review at first implementation** | **Deliberately unassigned** *(product owner, 2026-08-04)*. Cohesion argues Lane A — its only consumers are `ai_reasoning_engine` and `ai_research_engine` — **but no evidence exists yet and prediction is not required.** **C-214 already names its owner as *"whoever is assigned `ai_platform`"*** — the derived form [428](428-lane-coordination-model.md) argues for, and **it needs no edit whichever way this is eventually ruled** |
 | `ai_reasoning_engine` | Lane B | A-i shipped — Signora's conclusion reaches a customer | TASK-204 · TASK-202 | `IN VALIDATION` | — | **Lane A** | **T1 → T3** | **TASK-204 must promote first**, then Lane A must resume. **Two gates, both external to this plan** |
 | `ai_research_engine` | Lane B | R4-02/03 shipped | — | — | — | **Lane A** | **T3 — Lane A resumes** | **Nothing in flight.** The move is safe the moment Lane A exists |
 | `opportunity_engine` | Lane B | **Lead Lifecycle feature-complete for v1** — 9 slices | Lead lifecycle | `IN VALIDATION` | — | **Lane A** | **T1 → T3** | **§19–§29 of its design doc are an explicit handover package** — *what the module owns, its ten invariants, its contracts, five user walks, eighteen journeys*. **This is the module best prepared to change hands**, and it was written that way deliberately |

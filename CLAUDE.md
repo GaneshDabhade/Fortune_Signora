@@ -818,6 +818,30 @@ promoted commit SHA  ==  certified commit SHA
 
 **This applies to new work only.** Anything **claimed, in progress, with QE or awaiting promotion continues under the existing model until naturally complete.** **A module switches when its current backlog is exhausted**, so no lane changes model mid-slice.
 
+### Ownership is determined by architecture, and recorded in one registry
+
+**Ratified 2026-08-04, product owner**, on [430](docs/architecture/430-module-ownership-transition-plan.md).
+
+> **[`docs/coordination/modules.toml`](docs/coordination/modules.toml) is the authoritative module ownership registry.** Every ownership view — the execution dashboard, the transition plan, the board — **derives from it.** **No document restates an assignee**, and a coordination item, backlog row or defect names its **module**; the assignee is joined at render time.
+>
+> **This is what C-213 cost and what closes it:** an assignee copied into a row, correct on 2026-08-03 and stale by 2026-08-04, blocking TASK-205 for two days. **A stale assignee is now unrepresentable rather than merely detectable.**
+
+**Ownership is determined in this precedence:** **① product architecture · ② bounded context · ③ long-term maintenance responsibility · ④ repository continuity · ⑤ historical implementation evidence.**
+
+> **Git history is evidence. It is not governance.** Recent commits describe who was *available*, not who should be *responsible* — **and promoting that accident to governance would make ownership a function of scheduling**, which is the exact confusion between *a lane is temporary* and *a module is permanent* that this section exists to prevent.
+
+**Ownership optimises for cohesion, never for arithmetic.** **An uneven split is acceptable when it reflects the product's natural architecture** — continuity, repository knowledge, reuse, implementation quality and long-term maintainability are what it buys, and **capacity is managed through epic sequencing rather than by redistributing modules to even a count.**
+
+#### Do not divide ownership across an interface that has not yet stabilized
+
+**A standing rule, ratified 2026-08-04 after [C-213](docs/LANE_COORDINATION.md).**
+
+> **Two modules with a published-but-unbuilt contract between them belong to one lane.**
+
+**A boundary across a *built* contract is ordinary** — that is what `public/` is for. **A boundary across one that still has to be designed is a coordination item on day one**, because neither lane may invent the other's shape and neither can proceed without it. **C-213 is the worked example**: `commercial_profile` held the export, `sales_engagement` held the only consumer, the contract was published and unbuilt, and **the slice stopped for two days on a change that took minutes once one lane held both.**
+
+**When ownership is genuinely unclear, leave it unassigned and mark it *review at first implementation*.** **Ownership becomes obvious when implementation reaches a module; predicting it earlier buys nothing and can be wrong** — **evidence over prediction.**
+
 ### Executable work comes from `integration`, and from nowhere else
 
 **Ratified 2026-08-04, product owner**, after Lane A idled for several reporting cycles waiting on three artifacts that existed only on a Product Office branch.

@@ -1,0 +1,266 @@
+# The module ownership registry — the authoritative source.
+#
+# Ratified 2026-08-04, product owner: *"define ownership in a single
+# authoritative registry with fields such as module, bounded context, current
+# owner, future owner, transition stage, review owner. Then generate the
+# ownership dashboards from that registry. This keeps ownership as structured
+# repository metadata rather than something inferred from reports or commit
+# history."*
+#
+# This is step 1 of `docs/architecture/428-lane-coordination-model.md`, and the
+# defect it closes is C-213: an assignee copied into a coordination row, correct
+# on 2026-08-03 and stale by 2026-08-04, which blocked TASK-205 for two days.
+#
+# **Nothing stores an assignee twice.** A coordination item, a backlog row or a
+# defect names its *module*; the assignee is joined from here when a view is
+# rendered. Moving a module is a one-line edit and every view follows.
+#
+# **Only what cannot be derived is stored.** Epic, active slice, execution
+# status, QE status and blocking dependency are read from the execution board,
+# because storing them here would be the second representation `CLAUDE.md` §2
+# forbids — and the copy nobody maintains is the one somebody will read.
+#
+# Read with stdlib `tomllib`. PyYAML is not a declared project dependency and
+# adding one is a red-budget change requiring an ADR (§6).
+#
+# ── Who writes this file ────────────────────────────────────────────────────
+# The product owner. Module assignment is authoritative and is theirs alone
+# (D-057). Lane C drafts a change and never lands one unruled.
+#
+# ── The ownership precedence ────────────────────────────────────────────────
+# Ratified 2026-08-04, product owner, correcting 430's original basis:
+#
+#   1. Product architecture
+#   2. Bounded context
+#   3. Long-term maintenance responsibility
+#   4. Repository continuity
+#   5. Historical implementation evidence
+#
+# **Git history is evidence. It is not governance.** `last_work` below records
+# the evidence at rung 5 and is never the reason for an assignment on its own.
+#
+# ── implementation ──────────────────────────────────────────────────────────
+# **A Lane C estimate, banded to the nearest 5, and the one non-computed field
+# here.** A module has no denominator in the repository — there is no recorded
+# "planned total" to divide by — so this cannot be arithmetic and is not
+# presented as any. `basis` records what it was read from. `PROJECT_STATUS.md`
+# remains authoritative for measured progress (§20e), and this never contradicts
+# it.
+
+[meta]
+ratified = 2026-08-04
+precedence = ["product architecture", "bounded context", "long-term maintenance", "repository continuity", "historical evidence"]
+# Every module's review owner today. Named once rather than repeated per row —
+# a constant copied sixteen times is sixteen chances to disagree with itself.
+default_review_owner = "Lane C"
+
+# Transition stages, and the vocabulary is closed:
+#   settled      current owner is the steady-state owner; nothing moves
+#   gated        future owner differs; the gate names what must happen first
+#   review-at-first-implementation
+#                deliberately unassigned. Ownership becomes obvious when
+#                implementation reaches it — evidence over prediction
+
+# ── Ingestion and the data platform ─────────────────────────────────────────
+
+[integrations]
+context = "Customer-held systems — CRM, calendar, mail"
+current_owner = "Lane B"
+future_owner = "Lane B"
+transition = "settled"
+implementation = 50
+basis = "Epic E1 built end to end; nothing customer-visible yet, and the lane said so first"
+last_work = "Lane B — the connection lifecycle"
+next_milestone = "C-300 ruled: who builds 409's steps 3-5"
+
+[provider_normalization]
+context = "Vendor payloads become canonical claims"
+current_owner = "Lane B"
+future_owner = "Lane B"
+transition = "settled"
+implementation = 65
+basis = "TASK-301 shipped; E1's canonical shape with no vocabulary extension"
+last_work = "Lane B — TASK-301"
+next_milestone = "follows integrations"
+
+[knowledge_graph]
+context = "Entity identity — which company is this provider talking about"
+current_owner = "Lane B"
+future_owner = "Lane B"
+transition = "settled"
+implementation = 70
+basis = "resolution, bindings and claim-set query built; Global Search shipped; pgvector embeddings planned, not built"
+last_work = "Lane B — TASK-301"
+next_milestone = "embeddings, or A5/A6 backends"
+note = "11 backlog references — the most of any module, so continuity is worth most here"
+
+[observation_engine]
+context = "The atomic factual history of change over time"
+current_owner = "Lane B"
+future_owner = "Lane B"
+transition = "settled"
+implementation = 75
+basis = "thirteen fields computed since M4; A5 backend shipped"
+last_work = "Lane B — A5 backend"
+next_milestone = "none scheduled"
+
+[timeline]
+context = "What has happened to an account, readable in order"
+current_owner = "Lane B"
+future_owner = "Lane B"
+transition = "settled"
+implementation = 55
+basis = "M7 S01-S04a shipped; TASK-902 is the remainder"
+last_work = "Lane B — M7-S03"
+next_milestone = "TASK-902"
+carries = ["C-215"]
+
+# ── Intelligence and the product surface ────────────────────────────────────
+
+[opportunity_engine]
+context = "Qualification, and the lifecycle of a lead"
+current_owner = "Lane B"
+future_owner = "Lane A"
+transition = "gated"
+gate = "Lead lifecycle promoted, then Lane A resumes"
+implementation = 90
+basis = "Lead Lifecycle feature-complete for v1 — nine slices, LO-08 parked deliberately"
+last_work = "Lane A — LO-09"
+next_milestone = "LO-08, once waiting is modelled cross-cuttingly"
+note = "design doc §19-§29 are an explicit handover package — the module best prepared to change hands"
+
+[ai_reasoning_engine]
+context = "Structured, single-call reasoning"
+current_owner = "Lane B"
+future_owner = "Lane A"
+transition = "gated"
+gate = "TASK-204 promoted, then Lane A resumes"
+implementation = 65
+basis = "A-i shipped — Signora's conclusion reaches a customer"
+last_work = "Lane A — A-i"
+next_milestone = "TASK-202, Epic G"
+
+[ai_research_engine]
+context = "Agentic, multi-step research"
+current_owner = "Lane B"
+future_owner = "Lane A"
+transition = "gated"
+gate = "Lane A resumes"
+implementation = 55
+basis = "R4-02 and R4-03 shipped"
+last_work = "Lane A — R4-03"
+next_milestone = "per-cohort research, wave 3 of 416"
+
+[signal_engine]
+context = "A watched change becomes something worth acting on"
+current_owner = "Lane B"
+future_owner = "Lane A"
+transition = "gated"
+gate = "TASK-405 completes if claimed, then Lane A resumes"
+implementation = 55
+basis = "Epic D phase 1 — competitor entry; TECHNOLOGY_ADOPTED and RETIRED already consumed"
+last_work = "Lane A — Epic D"
+next_milestone = "TASK-405 — a signal ends in a decision"
+
+[buying_score_engine]
+context = "Posture — how ready an account is, and why now"
+current_owner = "Lane B"
+future_owner = "Lane A"
+transition = "gated"
+gate = "Lane A resumes"
+implementation = 60
+basis = "Epic D contribution; trigger already sourced from BuyingScore rather than paraphrased"
+last_work = "Lane A — Epic D"
+next_milestone = "TASK-905"
+
+[commercial_profile]
+context = "What the customer sells, and to whom"
+current_owner = "Lane B"
+future_owner = "Lane A"
+transition = "gated"
+gate = "TASK-406 completes if claimed, then Lane A resumes"
+implementation = 75
+basis = "M12.5 slices 1-5 shipped — catalog, ICP, buying committee, business priorities, target accounts"
+last_work = "Lane A — Epic D"
+next_milestone = "TASK-406, and ADR-0041's ratification"
+paired_with = "sales_engagement"
+
+[sales_engagement]
+context = "What a seller should do next, and why"
+current_owner = "Lane B"
+future_owner = "Lane A"
+transition = "gated"
+gate = "TASK-205 completes if claimed, then Lane A resumes"
+implementation = 60
+basis = "SE-09d shipped; A-ii unbuilt — 39 exported names with no interface layer"
+last_work = "Lane A — SE-09d"
+next_milestone = "TASK-205 — A-ii"
+paired_with = "commercial_profile"
+note = "must move together with commercial_profile — an unstabilized interface runs between them (C-213)"
+
+[provider_platform]
+context = "Third-party data acquisition, precedence and dispatch"
+current_owner = "Lane B"
+future_owner = "Lane A"
+transition = "gated"
+gate = "TASK-400 returns from CHANGES REQUESTED, then Lane A resumes"
+implementation = 80
+basis = "PP-01/02/04/05/06 built; PP-03 suspended; A7 shipped"
+last_work = "Lane A — A7"
+next_milestone = "C-021 ruled: the dispatch direction"
+carries = ["C-021", "B-107"]
+
+[workspace_tenancy]
+context = "The tenancy root — workspace identity and membership"
+current_owner = "Lane B"
+future_owner = "Lane A"
+transition = "gated"
+gate = "Lane A resumes"
+implementation = 70
+basis = "TM-06 shipped; Team Management buildable — its blockers were withdrawn by the lane that raised them"
+last_work = "Lane A — TM-06"
+next_milestone = "TASK-904 — an organization can grow"
+note = "flagged by the product owner as a candidate for Platform if it becomes foundational across the product — revisit before Lane A resumes"
+
+# ── Deliberately unassigned ─────────────────────────────────────────────────
+# Ratified 2026-08-04, product owner: *"Do not force a decision today. Leave
+# these explicitly marked as Review at first implementation rather than
+# assigning them prematurely. We will prefer evidence over prediction."*
+
+[ai_platform]
+context = "Vendor abstraction, model-centric resolution, the prompt registry"
+current_owner = "Lane B"
+future_owner = "undecided"
+transition = "review-at-first-implementation"
+implementation = 75
+basis = "provider registry, evaluation harness and prompt lifecycle built"
+last_work = "M12.3 — pre-lane; no lane-attributable work exists"
+next_milestone = "whichever module first needs a change here"
+carries = ["C-214"]
+note = "consumers are ai_reasoning_engine and ai_research_engine, both future Lane A — cohesion argues Lane A, and no evidence exists yet"
+
+[business_event_engine]
+context = "What a change means in business terms"
+current_owner = "Lane B"
+future_owner = "undecided"
+transition = "review-at-first-implementation"
+implementation = 60
+basis = "M12.3-era; consumed by signal_engine today"
+last_work = "M12.3 — pre-lane; no lane-attributable work exists"
+next_milestone = "whichever module first needs a change here"
+note = "sits exactly on the seam — inputs observation_engine and knowledge_graph are Lane B, output feeds signal_engine, future Lane A"
+
+# ── Not a production module ─────────────────────────────────────────────────
+
+[product_surface]
+context = "Every screen, the shell, routing and the customer's vocabulary"
+current_owner = "Lane B"
+future_owner = "Lane A"
+transition = "gated"
+gate = "TASK-200 and TASK-400's A6 promoted, then Lane A resumes"
+implementation = 45
+basis = "CX-07, PS-01..08, CX-01..03 shipped; 26 approved screens, 0 implemented against the approved specification"
+last_work = "Lane A — CX-07"
+next_milestone = "wave 1 of 412"
+carries = ["C-025", "C-008"]
+note = "not a backend module; the largest continuity cost in the table if it moves wrongly"

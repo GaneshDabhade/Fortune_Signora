@@ -334,7 +334,7 @@
 |---|---|
 | **Objective** | **`make demo` stops printing two commands for a human to run.** Today it prepares and then prints `uvicorn …` and `npm run dev`; `make review` needs neither |
 | **Module** | `infra/` — **Lane C's**, from 2026-08-04 |
-| **Status** | **`CLAIMED` — Lane C**, 2026-08-04, by the Task Claim Protocol |
+| **Status** | **`IN VALIDATION` — Lane C**, 2026-08-04. **The row is added and derives cleanly**: slot 7, port block 8 — web **3800**, API **8800**, database **`signora_demo`**, Redis index **7**, compose project **`signora-demo`**, owner **Lane C**, **coexists**. **No collision on any axis.** **No launcher** — that is [TASK-410](#task-410). ⚠️ **`--check` now reports two undocumented environments and one is pre-existing**: `lane-c` has derived ports 3500/8500 while [`RUNNING.md`](RUNNING.md) records *none*. **Both are QE's to write** — `RUNNING.md` is QE's file (`CLAUDE.md` §20e), so the check reports and does not repair |
 | **Scope** | A `demo` entry in `infra/environments.py`'s profile table — slot, purpose, owner, port slot, coexistence. **The model only** |
 | **Dependencies** | **None** |
 | **Repository reuse** | **`environments.py` is Phase 1 of the Environment Framework and already models exactly this.** Adding a profile is a row, not a design |

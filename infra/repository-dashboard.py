@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import tomllib
 import subprocess
 import sys
 from collections import Counter
@@ -85,7 +86,7 @@ def tasks(ref: str) -> list[tuple[str, str, str]]:
     return out
 
 
-def _owners(board: str, modules: list[str]) -> dict[str, str]:
+def _owners(board: str, modules: list[str], registry: dict) -> dict[str, str]:
     """Which lane a board row names for each module.
 
     Parsed from the execution board rather than assumed, because assignment is
@@ -95,27 +96,20 @@ def _owners(board: str, modules: list[str]) -> dict[str, str]:
     resolved** — that is the one-assignee-per-module invariant, and a dashboard
     that hid a breach of it would be hiding the thing worth seeing.
     """
-    # **The assignment table is authoritative and is read first.** Board rows
-    # answer *"who is working?"*, which is a different question — a module with
-    # an assignee and no active slice has no board row at all, and inferring
-    # assignment from the board therefore reported fourteen assigned modules as
-    # unassigned the moment work consolidated onto one lane.
+    # **`docs/coordination/modules.toml` is the registry and is read first**
+    # (product owner, 2026-08-04). Board rows answer *"who is working?"*, which
+    # is a different question — a module with an assignee and no active slice
+    # has no board row at all, and inferring assignment from the board reported
+    # fourteen assigned modules as unassigned the moment work consolidated.
     #
-    # **This is the smallest instance of what `docs/architecture/428` proposes**:
-    # one place holds the fact, and everything else derives from it rather than
-    # restating it (`CLAUDE.md` §2).
-    declared: dict[str, str] = {}
-    in_table = False
-    for line in board.splitlines():
-        if line.startswith("## Module assignment"):
-            in_table = True
-            continue
-        if in_table:
-            if line.startswith("#"):
-                break
-            row = re.match(r"\|\s*`([a-z_]+)`\s*\|\s*\*\*(Lane [A-Z]|Unassigned)\*\*", line)
-            if row and row.group(1) in modules:
-                declared[row.group(1)] = row.group(2)
+    # **This function previously scraped a markdown table in the execution
+    # board.** That table and the registry would have been two representations
+    # of one fact, which is C-213 exactly (§2).
+    declared: dict[str, str] = {
+        m: e["current_owner"]
+        for m, e in registry.items()
+        if isinstance(e, dict) and "current_owner" in e
+    }
 
     found: dict[str, set[str]] = {m: set() for m in modules}
     for line in board.splitlines():
@@ -199,7 +193,14 @@ def build(ref: str, since: str | None = None) -> str:
     bugs = show(ref, "docs/BUGS.md")
 
     modules = sorted({q.split("/")[2] for q in ls(ref, "backend/modules") if q.count("/") > 2})
-    owners = _owners(board, modules)
+    # **The registry, loaded once and passed down.** Read failures are reported
+    # where the table is printed, never swallowed into an empty dict that would
+    # read as "nothing is assigned".
+    try:
+        registry = tomllib.loads(show(ref, "docs/coordination/modules.toml"))
+    except (tomllib.TOMLDecodeError, ValueError):
+        registry = {}
+    owners = _owners(board, modules, registry)
     endpoints = sum(len(re.findall(r"^@router\.", show(ref, f"backend/modules/{m}/interface/router.py"), re.M)) for m in modules)
     adrs = [q for q in ls(ref, "docs/architecture/adr") if re.search(r"/\d{4}-", q)]
     routes = len([q for q in ls(ref, "frontend/app") if q.endswith("page.tsx")])
@@ -226,28 +227,44 @@ def build(ref: str, since: str | None = None) -> str:
     a(f"  Highest priority work      {J}")
 
     a(section("2 · REPOSITORY EXECUTION DASHBOARD"))
-    # **The future owner and the transition point are read from 430, never
-    # hardcoded here** — a recommendation lives in the document the product
-    # owner rules on, and a copy in a generator would be the second
-    # representation §2 forbids. **A plan the script cannot find prints `?`
-    # rather than a guess**: absence is reported, never defaulted (the
-    # `missing_gates` rule, ADR-0032).
-    plan = show(ref, "docs/architecture/430-module-ownership-transition-plan.md")
-    future, when = {}, {}
-    for line in plan.splitlines():
-        cells = [c.strip() for c in line.split("|")]
-        if len(cells) > 9 and cells[1].startswith("`"):
-            mod = cells[1].strip("`* ")
-            future[mod] = re.sub(r"[*⚠️ ]", "", cells[7]).split("(")[0].strip() or "?"
-            when[mod] = re.sub(r"\*\*", "", cells[8]).split("—")[0].strip() or "?"
-    a(f"  {'Module':<23}{'Owner':<9}{'Future':<9}{'Trans':<7}{'Task':<10}{'Prep':<6}{'Rev':<5}{'Status':<14}Blocked")
-    for m in modules:
+    # **Ownership is read from `docs/coordination/modules.toml`, the registry**
+    # (product owner, 2026-08-04 — 428 step 1). It was previously scraped out of
+    # 430's markdown table, and before that inferred from board rows: three
+    # representations of one fact, which is how C-213 happened.
+    #
+    # **Only what cannot be derived is read from the registry.** Epic, active
+    # slice, execution status, QE status and blocker still come from the
+    # execution board, because they change per slice and storing them twice
+    # would recreate the defect this closes (§2).
+    #
+    # **A module absent from the registry prints `?`, never a default** —
+    # absence is reported rather than read as agreement (ADR-0032's
+    # `missing_gates`, and `36-empty-array-checks.md`).
+    reg = {k: v for k, v in registry.items() if k != "meta"}
+    meta = registry.get("meta", {})
+    if not registry:
+        a("  ⚠ registry unreadable or absent — every row below will report `?`.")
+    a(f"  {'Module':<23}{'Owner':<8}{'Future':<9}{'Stage':<10}{'Impl':<6}{'Epic':<8}"
+      f"{'Slice':<10}{'QE':<10}{'Blocked':<9}Next milestone")
+    for m in modules + ["product_surface"]:
+        e = reg.get(m, {})
         r = next((x for x in rows if x["module"] == m), None)
-        st = r["status"] if r else "—"
-        a(f"  {m:<23}{owners.get(m,'—')[:8]:<9}{future.get(m,'?')[:8]:<9}{when.get(m,'?')[:6]:<7}"
-          f"{(r['task'] if r else '—'):<10}{'0':<6}{'0':<5}{st[:13]:<14}{(r['blocker'] if r else '—')}")
-    a(f"  Future owner and transition point are read from 430, not stored here.")
-    a("  Prep/Rev are 0 until a module's pre-transition backlog empties (D-060).")
+        st = (r["status"] if r else "—")
+        qe = st if st in ("IN VALIDATION", "VERIFIED", "CHANGES REQUESTED") else "—"
+        blocked = ", ".join(e.get("carries", [])) or (r["blocker"] if r else "—")
+        a(f"  {m:<23}{e.get('current_owner','?')[:7]:<8}{e.get('future_owner','?')[:8]:<9}"
+          f"{e.get('transition','?')[:9]:<10}{str(e.get('implementation','?'))+'%':<6}"
+          f"{(r['epic'] if r else '—')[:7]:<8}{(r['task'] if r else '—'):<10}{qe[:9]:<10}"
+          f"{blocked[:8]:<9}{e.get('next_milestone','—')[:34]}")
+    missing = [m for m in modules if m not in reg]
+    if missing:
+        a(f"  ⚠ absent from the registry: {', '.join(missing)}")
+    a(f"  Review owner: {meta.get('default_review_owner','?')}."
+      f"  Ownership precedence: {' > '.join(meta.get('precedence', ['?']))}.")
+    a("  Impl is a Lane C estimate, banded to 5 — a module has no denominator in")
+    a("  the repository. PROJECT_STATUS.md remains authoritative for measured progress.")
+    a("  Preparing/Under review are 0 repository-wide until a module's")
+    a("  pre-transition backlog empties (D-060) — see §9.")
 
     a(section("3 · EPIC DASHBOARD"))
     a(f"  {'Epic':<10}{'Owner':<9}{'Status':<14}{'Task':<10}Blocker")
