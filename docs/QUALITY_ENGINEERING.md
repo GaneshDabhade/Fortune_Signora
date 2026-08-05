@@ -33,6 +33,37 @@ QE is the only lane that may merge into `integration`, certify, move `main`, wri
 
 ---
 
+## 0d · Validate on QE's own stack; certify on the default one
+
+**Ratified by QE, 2026-08-05, closing [B-121](BUGS.md).** The environment derivation keys off the **branch name**. QE validates a lane's tree by pointing a throwaway branch — `qe-validate` — at their tip, and **that name derives nothing**:
+
+```bash
+git checkout qe-validate && python3 infra/environments.py --exports
+→ # no environment derived (not on a lane branch) — historical shared stack
+→ COMPOSE_PROJECT_NAME=signora-v2 · SIGNORA_POSTGRES_PORT=5432
+```
+
+**So every QE validation ran on the shared stack while the lanes moved onto their own** — which is why [B-118](BUGS.md) kept reproducing after it was fixed. **The fix worked; QE was not standing in it.**
+
+### The two halves are different, and conflating them broke a gate
+
+| | |
+|---|---|
+| **`make validate`** | A six-minute suite that runs **while lanes work**. **Use QE's own stack** — `signora-lane-qe`, PostgreSQL **5632**, Redis **6579** |
+| **`make certify`** | Also drives the **production stack** on 3100/8100 via `docker-compose.prod.yml`. **Never force `COMPOSE_PROJECT_NAME` onto it** — renaming the project globally makes `smoke` start a stack the preflight and teardown do not recognise, and it fails at *4 stages in 27s* instead of 24 in ~140s |
+
+**Falling back to the shared stack is correct for `certify` and for `integration`**, which `environments.py` states in as many words. **The defect was only ever `validate`.**
+
+### Bring QE's stack up once per session
+
+```bash
+git checkout lane-qe    # the one branch name that derives QE's environment
+env $(python3 infra/environments.py --exports | grep -v '^#') \
+    docker compose -f infra/docker-compose.yml up -d --wait
+```
+
+> **`environments.py` announced the fallback every single time**, in the line above the value: *"Named, not silent. Falling back is correct on `integration`; doing it without saying so is how four clones came to share one server."* **It said so. QE did not read it** — the same failure as [§0c](#0c--verify-the-push-landed--capturing-an-exit-code-is-not-reading-it), where an exit code was captured and not read. **Both rules exist because the information was present and unread.**
+
 ## 0c · Verify the push landed — capturing an exit code is not reading it
 
 **Ratified by QE, 2026-08-05.** [§0a](#0a--never-read-a-gates-verdict-through-a-pipe) says capture every exit code. **This cycle QE captured `PUSH_EXIT=1` correctly and read only the first line of the output**, then certified a commit that was never on `integration`.
