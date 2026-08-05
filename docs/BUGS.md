@@ -94,6 +94,55 @@ Such a row names the code, records **Current assignee: none — not assignable**
 **Both are fixed on `integration`** at `b332aea`. Nothing is left for this row to track, and two rows for one defect is the register drifting from the repository.
 
 
+### B-118 · Lanes share one PostgreSQL, so two suites running at once fabricate each other's failures
+
+| | |
+|---|---|
+| **Module** | Development environment — `infra/docker-compose.yml`, the shared PostgreSQL instance |
+| **Current assignee** | **QE** — environment isolation and reproducibility are QE's, and this is a repair QE needs in order to certify |
+| **Severity** | 🟠 · **it makes measurement untrustworthy**, which is worse than a failing test: a failing test is information |
+| **Status** | **`OPEN`** — reported with evidence; **no fix attempted yet** |
+| **Found** | 2026-08-05 by QE, validating Lane A's `0039` slice twice and getting two different wrong answers |
+
+**Steps to reproduce.** Have two lanes run `make validate` at the same time. Each creates its *own* disposable database, so this looks safe. It is not: **they share one PostgreSQL server, one connection pool, one lock manager.**
+
+**Actual — two runs of the same commit, minutes apart:**
+
+| Run | Result | While |
+|---|---|---|
+| 1 | **40 failed, 87 errors** | Lane A's own suite running |
+| 2 | **238 failed, 22 errors** | Lane A's suite still running, deeper overlap |
+
+```
+21 × asyncpg.exceptions.DeadlockDetectedError
+13 × asyncpg.exceptions.InvalidCatalogNameError    ← "database does not exist"
+ 3 × ConnectionDoesNotExistError: connection was closed in the middle of operation
+```
+
+**Confirmed from the process table, not inferred:**
+
+```
+/home/ganesh/Projects/LaneA/signora-lane-a/backend/.venv/bin/pytest --cov
+/home/ganesh/Projects/Signora-QE/backend/.venv/bin/pytest --cov
+```
+
+### Why this is worse than a failing test
+
+**The failures land in modules the slice never touches** — `simulation`, `sales_engagement`, `knowledge_graph`, `observation_engine` — and they name real-looking causes. **A lane reading that list would chase a phantom in its own code**, and QE reading it would file a defect against a lane that did nothing wrong.
+
+> **This class has now come close to producing a fabricated defect report three times in one day.** Twice the cause was QE's own invocation ([B-116](#b-116--the-safe-database-route-existed-only-for-the-whole-suite-so-every-narrower-question-left-it), and the shared-database runs that preceded `make validate`). **This time the cause was another lane doing its job correctly**, which is the version no amount of QE discipline can prevent.
+
+**The instance is the boundary that is missing.** [RE-03](RELEASE_ENGINEERING.md) and [B-116](#b-116--the-safe-database-route-existed-only-for-the-whole-suite-so-every-narrower-question-left-it) gave every run its own *database*; **isolation stops at the schema.** Deadlock detection, connection limits and `DROP DATABASE … WITH (FORCE)` all operate at the *server*, and that is still shared.
+
+### What QE is doing about it now, and what it is not
+
+**Not doing:** killing another lane's suite to obtain a green run. *"Never stop somebody else's review session to obtain a green pipeline"* (product owner) — and the same reasoning covers a lane's validation. **Not doing:** publishing any number measured during contention.
+
+**Doing:** waiting for a quiet instance, bounded — **because the honest possibility is that no quiet window exists.** With three active lanes each validating, contention may be the normal state rather than the exception, and *"QE cannot obtain a trustworthy measurement while lanes are working"* would be a far more serious finding than any slice waiting behind it.
+
+**This row exists before the fix, deliberately.** Lane A and Lane B were both running suites while it was written. **Either could be reading a contended failure list right now**, and a lane chasing a phantom in its own module is the cost this record is meant to prevent.
+
+
 ### B-117 · `test_repository_impact.py` fails `mypy --strict` — three unannotated `monkeypatch` parameters
 
 | | |
