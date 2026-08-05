@@ -56,57 +56,73 @@ updated      = 2026-08-05
 depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
-current = "TASK-416"
-next    = "TASK-408"
-future  = ["TASK-406", "TASK-003", "TASK-201", "TASK-902", "TASK-202"]
+current = "TASK-434"
+next    = "TASK-902"
+future  = ["TASK-201", "TASK-202"]
 
-# **4 of a 5 target.** Two corrections on 2026-08-05, in opposite directions.
+# **Rewritten 2026-08-05 after D-077. Four rows moved and every move is checked
+# against BACKLOG.md rather than against this file's own memory.**
 #
-# **TASK-903 left.** It was `next` on the premise that `commercial_profile` owes
-# a read surface. **It does not — that shipped as CX-05 at `e3516c4` on
-# 2026-08-03.** What remains is stage 2, the declarations *on the account
-# brief*, which needs **no backend change**, so it is Product Surface work and
-# moved to Lane A — whose queue had been carrying it as `blocked` on an endpoint
-# nobody needs to build. **One stale row, two lanes wrong in opposite ways.**
+# **TASK-434 is `current`, and the product owner placed it — not Lane C.**
+# D-077: *"treat TASK-434 as a prerequisite foundational capability and sequence
+# it ahead of TASK-406's dependent implementation work."* **It is the
+# prerequisite of the slice this lane is already inside**, which is why it
+# arrives at the head rather than in `future`.
 #
-# **TASK-902 arrived, narrowed.** It was `WAITING` on C-020, and C-020 blocks
-# M7's undefined remaining scope rather than this slice. **C-215 is a finished
-# specification** and it was invisible to tooling because of a heading shape.
-eligible_count = 7
+# **TASK-416 left `current` — it is `IN VALIDATION`** and now sits below with the
+# rest of QE's queue. It had been `current` while its own rationale in this file
+# said *"claimed and delivered"*. **A queue whose `current` disagrees with its
+# own note is the C-329 defect**, and it was here in this file.
+#
+# **TASK-003 and TASK-406 left `future` — both are `IN PROGRESS` with this
+# lane.** ⚠️ **TASK-003 was nearly removed on the wrong grounds**: the claim
+# commit reads *"Claim TASK-003"* with no lane in the subject, and checking the
+# backlog rather than the commit title is what caught it. **B-101 avoided by
+# looking at the row.**
+#
+# **Their `blocked` entries went with them — C-018 and C-328 are both ruled**,
+# and each rationale below already said so while the array still said blocked.
+#
+# **TASK-408 left `next` too — this lane claimed it mid-edit.** Caught on the
+# rebase that followed QE's Closeout rebuild, before this file was published.
+# **A queue that names a claimed task as the next one to take is worse than no
+# queue**, which is the whole reason `current` is checked against BACKLOG.md
+# rather than against what this file said an hour ago.
+eligible_count = 4
 shortfall      = 0
 
 [rationale]
-"TASK-416" = "an evaluation says which provider served it — claimed and delivered 2026-08-05. ✅ execution_mode is REMOVED from the mandatory fields: the product owner accepted this lane's challenge — a field constant for every possible record carries no information. CLAUDE.md §10 is amended to five"
-"TASK-408" = "B-ii, search results are grouped and the ranking explainable. knowledge_graph is Lane B's and the row records it as partly delivered, so the remainder is claimable. Claimable since 2026-08-05 and not yet claimed"
-"TASK-406" = "an ICP criterion scored against outcomes. ✅ UNBLOCKED 2026-08-05 — C-328 ruled: do not introduce the forbidden dependency; commercial_profile declares, opportunity_engine measures. ⚠️ SCOPE CHANGED by the ruling — this is no longer a commercial_profile slice. This lane stopped at the boundary and was right to"
-"TASK-003" = "the attributes are engineering's words. ✅ UNBLOCKED 2026-08-05 — C-018 ruled: customer-facing terminology belongs in explanation.py, business language never leaks inward. ADR-0034 holds and AC-28 is untouched"
-"TASK-201" = "Epic C — People Intelligence. ✅ UNBLOCKED 2026-08-05 at NARROWED scope. ⛔ No `people` bounded context is created and nothing models a person's name — the platform ingests none. Role-based and organization-level intelligence only: title, seniority, direction, occurred_on, which is what the data already carries. Named-person intelligence waits on a provider capability. Avoid speculative architecture"
+"TASK-434" = "an account can be asked whether it matches a criterion, and only one thing answers. ⏱️ PLACED AT THE HEAD BY THE PRODUCT OWNER, 2026-08-05 (D-077) — not by Lane C, and position is priority. It is the prerequisite of the backtest half of TASK-406, which this lane holds. TWO SLICES: ① publish IcpReader + IcpView from commercial_profile/public/ — thirteen views are published and not one is the ICP, so no module can read the criteria at all; ADR-0403 is the ratified precedent for this exact shape. ② the pure evaluation. ⛔ TWO INVARIANTS, both ratified elsewhere and neither negotiable: a match is a CATEGORY WITH REASONS and never a number (MatchStrength, Relevance — 'a number invites weighting, weighting invites thresholds'), and `unmeasured` must be a VALUE IN THE TYPE, never `false` — the customer declares free text and the pipeline observes canonical INDUSTRY, so 'SaaS' vs 'Computer Software' returns False under string equality and the account silently drops out of its own ICP. ✅ ZERO NEW DEPENDENCY EDGES: the import contract forbids commercial_profile READING the pipeline and does not forbid it being GIVEN facts — evaluate(criteria, attributes) is pure and lint-imports needs no amendment. ⛔ NOT IN SCOPE: no synonym catalog, no discovery, no lift, no fit score. 443 is the assessment; sixteen consumers are measured there"
+"TASK-201" = "Epic C — People Intelligence. ✅ UNBLOCKED 2026-08-05 at NARROWED scope, and DECOMPOSED the same day by D-074 into TASK-427 (domain) · TASK-428 (intelligence) · TASK-429 (provider enrichment) · TASK-430 (the screens). ⚠️ TASK-201 is NOT replaced and does not move — its status, position and assignment are the product owner's and unchanged. A claim on it means TASK-427 first and TASK-428 stage 3 second, in that order, which is a statement of fitness and never of priority. ⛔ TASK-427 is not yet claimable: its trigger has fired but the product owner has not placed it. C-221 stands and its narrowing IS the plan — role-based and organization-level intelligence, no person's name anywhere"
 "TASK-202" = "Epic G — Copilot. ✅ UNBLOCKED 2026-08-05, verified on origin/integration rather than inferred: mock.py exists, AIVendor.MOCK is in the enum, and provider is on the evaluation report. C-222 was ruled 2026-08-04 and TASK-415/416 are the mechanism it depends on — both this lane's own, both now landed. The rows read IN VALIDATION, which is not promoted, so this was checked against the tree a lane claims from"
 "TASK-902" = "the Timeline feed, workspace-scoped — C-215, a finished specification rather than a decision. It names the signature, the endpoint, the index and its own scope bound. ⛔ NOT blocked on C-020, which the product owner deferred explicitly on 2026-08-05 and which blocks M7's undefined remainder, not this slice"
 
 # ── Owned, not startable ─────────────────────────────────────────────────────
 
 [[blocked]]
-task    = "TASK-003"
-blocker = ["C-018"]
+task    = "TASK-427"
+blocker = ["placement"]
 owner   = "Product owner"
-note    = "the attributes are engineering's words. C-018 — nobody owns the customer-facing name of an attribute — is OPEN and names this task in its Blocks field"
+note    = "M-D, the People domain. NOT blocked on a decision — D-074 ruled the direction and 441 is the plan. It is SEQUENCED and its trigger has fired: TASK-202 is READY and its own row says 'phase 4 needs Epic C'. What remains is one act, and it is a priority act: moving the row to READY and placing it. Lane C prepared it and may not place it"
 
-[[blocked]]
-task    = "TASK-406"
-blocker = ["C-328"]
-owner   = "Product owner"
-note    = "an ICP criterion scored against outcomes. Raised by Lane B itself on claiming and running the verification"
+# ── In progress with this lane — listed so nothing here reads as claimable ────
+[[held]]
+task = "TASK-408"
+note = "B-ii, search results are grouped and the ranking explainable. IN PROGRESS — claimed by this lane 2026-08-05 the moment the ruling landed. It had been `next` in this file and was claimed while Lane C was editing the same file; corrected before publishing, because a queue naming a claimed task as the next one to take is worse than no queue"
 
+[[held]]
+task = "TASK-406"
+note = "an ICP criterion scored against outcomes. IN PROGRESS. ⚠️ ITS BACKTEST HALF NOW CONSUMES TASK-434 — 'the backtest reports both cohorts, never in-ICP alone' needs a predicate deciding which an account is, and D-077 sequenced that capability ahead of this slice so it is established once rather than five times. ⛔ Do not inline an in-ICP test here; read commercial_profile/public/. ✅ The per-criterion lift half is unaffected and needs nothing new. C-328 is RULED and its blocked entry is removed"
 
-[[blocked]]
-task    = "TASK-201"
-blocker = ["C-221"]
-owner   = "Product owner (the epic) · Lane C (the specification)"
-note    = "Epic C — People Intelligence. A new bounded context. Lane C owns the specification half and has not written it"
-
+[[held]]
+task = "TASK-003"
+note = "the attributes are engineering's words. IN PROGRESS with this lane, claimed from the top of the queue 2026-08-05. C-018 is RULED — customer-facing terminology belongs in explanation.py and business language never leaks inward; ADR-0034 holds and AC-28 is untouched. Its blocked entry is removed"
 
 # ── With QE ──────────────────────────────────────────────────────────────────
+[[in_validation]]
+task = "TASK-416"
+note = "an evaluation run states which provider served it. ✅ execution_mode REMOVED from the mandatory fields — this lane challenged it and the product owner agreed: a field constant for every possible record carries no information. CLAUDE.md §10 is amended to five"
+
 [[in_validation]]
 task = "TASK-300"
 note = "Epic A — surface what already exists. Six slices across four modules"

@@ -66,7 +66,7 @@
 
 | | Concept | Consumers | State |
 |---|---|---|---|
-| **R-00** | **Account matching** | **16** — and **4 were on no list** | **[443](architecture/443-account-matching-capability.md) · [TASK-434](BACKLOG.md)** · ⏱️ **one consumer is in implementation now** |
+| **R-00** | **Account matching** | **16** — and **4 were on no list** | ✅ **Ruled and sequenced, [D-077](DECISION_REGISTER.md).** **[TASK-434](BACKLOG.md) is `READY` at the head, ahead of [TASK-406](BACKLOG.md)'s backtest** — *"establish the reusable capability once rather than allowing multiple implementations to emerge independently."* **[443](architecture/443-account-matching-capability.md)** |
 | **R-02** | **Scope · saved view** | **5 named, and the shell inherits into all 16** | **[TASK-433](BACKLOG.md)** — awaiting a naming ruling |
 | **R-03** | **Proposed → approved → applied → withdrawn** | **6** | **[TASK-431](BACKLOG.md)** — awaiting a shape ruling |
 | **R-01** | **People · Affiliation** | **4 + Executive Dashboard's movements** | ✅ **Ruled [D-074](DECISION_REGISTER.md)** · **[TASK-427–430](BACKLOG.md)** |
@@ -103,7 +103,26 @@
 
 # Part C · The architectural radar
 
-**Eight categories, on the product owner's instruction.** **A row enters when the approved experience implies it and the repository has not decided where it lives. It leaves when it is ruled, built, or measured away.**
+**Eight categories, on the product owner's instruction.** **A row enters by the test below and leaves when it is ruled, built, or measured away.**
+
+## What gets on the radar — the four questions ([D-077](DECISION_REGISTER.md))
+
+| Ask | And if the answer is |
+|---|---|
+| **Is this a screen-specific feature?** | **Yes → it is not a radar row.** It is the screen's, and the owning lane's package |
+| **Is this a reusable domain capability?** | **Yes → radar** |
+| **Is this actually a platform service?** | **Yes → radar**, and the bar is higher: 🔴, and the substrate is frozen |
+| **Should this exist before multiple consumers require it?** | **Yes → radar, and it is a sequencing row rather than a capability row** |
+
+> **The fourth question is the one that changes the schedule**, and it is [P-01](architecture/441-people-roadmap.md) asked prospectively rather than detected afterwards. **`R-00` and `R-01` both entered on it.**
+
+## Before proposing anything — the reuse ordering, and it is an order
+
+> **① Reuse an existing bounded context → ② extend an existing domain concept → ③ evolve an existing platform capability → ④ only then propose something new.**
+>
+> ***"The preferred outcome is always architectural evolution rather than architectural duplication."***
+
+**Applied to the directive's own fourteen candidates, this stopped at ① or ② for eight of them** — six already built, one forbidden, one declared-and-unbuilt. **A candidate that stops at ① is the register working, not a wasted pass.**
 
 ### ⛔ Missing foundational concepts
 
@@ -123,7 +142,7 @@
 
 | | |
 |---|---|
-| **R-00** | ⏱️ **[TASK-406](BACKLOG.md) is `IN PROGRESS` and needs the predicate.** **The window is open by days** |
+| **R-00** | ✅ **Caught and corrected, [D-077](DECISION_REGISTER.md).** **[TASK-406](BACKLOG.md) was `IN PROGRESS` and needed the predicate; measured at ruling time, no matching code had reached `integration`.** **The window closed with the capability on the right side of it** |
 | **R-01** | ✅ **Corrected by [D-074](DECISION_REGISTER.md)** — wave 6 → wave 1.5, ahead of four dependents |
 | **R-05** | **Scheduled inside a future data-governance epic; the App Shell inherits into all 16 screens.** **The ordering is the finding, not the capability** |
 

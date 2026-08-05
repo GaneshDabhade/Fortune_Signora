@@ -2,15 +2,15 @@
 
 **The single place the product owner reviews when making rulings.** Established 2026-08-05 by product owner directive.
 
-> ## ⏱️ One thing is time-critical. Three others are waiting and none of them is urgent.
+> ## ✅ Nothing is time-critical. Three things are waiting and you are holding all three deliberately.
 >
-> > **⏱️ [TASK-434](#-task-434--the-only-time-critical-row-on-this-page) — account matching. [TASK-406](BACKLOG.md) is `IN PROGRESS` today and its backtest needs a predicate that does not exist.** **No matching code is on `integration` yet, so the first copy has not been written — and sixteen consumers would inherit it.** **The ownership question is answered ([443](architecture/443-account-matching-capability.md)) and needs no ruling; the *sequencing* is yours.**
+> ✅ **The time-critical row is ruled.** **[TASK-434](BACKLOG.md) is `READY` at the head of the queue**, sequenced ahead of TASK-406's backtest by [D-077](DECISION_REGISTER.md) — *"establish the reusable capability once rather than allowing multiple implementations to emerge independently."* **The window closed with the capability on the right side of it.**
 >
 > **① [Placing TASK-427](#-task-427--the-people-domains-trigger-has-fired-and-placing-it-is-yours)** — **the People domain.** Its trigger has already fired.
 > **② [TASK-431](#-task-431--six-screens-assert-one-guarantee-and-the-repository-has-no-word-for-it)** — six approved screens assert one guarantee; the repository has no word for it.
 > **③ [TASK-433](#-task-433--segment-already-means-something-else)** — one word, and it costs a sentence today.
 >
-> **①–③ are held in the planned sequence at your instruction** — *"I will review their individual architectural shape separately."* **Discovery has not waited on them** ([D-075](DECISION_REGISTER.md)): **[443](architecture/443-account-matching-capability.md) was produced while they sat here.**
+> **①–③ are held in the planned sequence at your instruction** — *"I will review their individual architectural shape separately."* **Discovery has not waited on them** ([D-075](DECISION_REGISTER.md)): **[443](architecture/443-account-matching-capability.md) and the [Domain Discovery Register](DOMAIN_DISCOVERY_REGISTER.md) were both produced while they sat here.**
 >
 > ✅ **Both of the items that stood here on 2026-08-05 are ruled and cleared** — **[C-416](LANE_COORDINATION.md)** gave `signora_platform/` a permanent owner and released [TASK-418](BACKLOG.md) with [TASK-901](BACKLOG.md)'s seven slices; **[C-224](LANE_COORDINATION.md)** settled the authorization `Resource`, and `CLAUDE.md` §20a now names it in the carve-out. **Both were ruled by [D-073](DECISION_REGISTER.md).** *(This banner still asked for them the next morning. **`--check` reported C-224 as `STALE` and it was right** — the queue is only true if a ruling removes its own row.)*
 >
