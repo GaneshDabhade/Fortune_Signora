@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `3c12b5d`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `f7a0d1d`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `3c12b5d`, 2026-08-05.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `f7a0d1d`, 2026-08-05.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`3c12b5d`** — the certified commit itself |
+| **`main`** | **`f7a0d1d`** — the certified commit itself |
 | **`integration`** | **ahead of `main`** — Lane A's claim and Lane C's next batch arrived after the snapshot, which is the model working |
-| **Release candidate** | **None pinned.** Cycle 61 promoted **TASK-417 — wave 1 complete, and the audit of what was already built** |
-| **Certification** | ✅ [`3c12b5d20960`](certification/reports/3c12b5d20960.md) · migration head **`0039`** · protocol **v2** |
+| **Release candidate** | **None pinned.** Cycle 62 promoted **the coordination register auditing itself**, and [B-120](docs/BUGS.md) alongside it |
+| **Certification** | ✅ [`f7a0d1dad6f8`](certification/reports/f7a0d1dad6f8.md) · migration head **`0039`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -28,7 +28,7 @@
 | **Customer value this cycle** | ✅ **Yes.** A seller can open an account, **ask who to talk to**, and see the evidence behind every name — or why a name has none |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
-> ✅ **Wave 1 is complete, and QE re-measured rather than reusing a green.** Lane A's earlier pass had been taken before Lane B's mock provider and a Closeout landed between them, so **it measured a different program.** Re-validated on the tree that would merge: **3540 backend, 1202 frontend, 747 files typed.** **Their own commit names the more interesting half** — *"wave 1 is complete, and the audit is the half worth reporting"* — a lane reporting what it found already built rather than only what it added.
+> ✅ **QE recorded a finding without blocking on it, and the lane fixed it within the hour.** [B-120](docs/BUGS.md): four generators produce the documents the repository uses to describe itself and **no test executed any of them** — invisible to every published figure, because `infra/` is outside the coverage gate's scope. **The evidence was the lane's own commit titles**: *Implemented 0 was hardcoded* · *Integrated 0 while wave 1 sat on `main`* · *Eighteen index rows disagreed with their own item bodies*. **Three wrong outputs, each caught by a person reading them.** Lane C's answer — *"the generators are tested, and the tests found two more gaps"* — is the return on recording it.
 
 **Repository health:** **3540 backend tests** · **95.28% coverage** *(floor 95)* · **1202 frontend tests** across 57 files · **386 Security Invariants** · mypy strict over **747 files** · migrations `0000`–`0039`, **verified reversible this cycle** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
@@ -101,30 +101,28 @@
 
 ---
 
-## 1d · Release summary — 2026-08-05, cycle 61
+## 1d · Release summary — 2026-08-05, cycle 62
 
-**Derived from the promoted commit `3c12b5d`.** **Seventeen promotions.** Wave 1 closes, and every gate in the cycle was verified rather than inferred.
+**Derived from the promoted commit `f7a0d1d`.** **Eighteen promotions.** A register that audits itself, and a QE observation that paid within the hour.
 
 ### What was promoted
 
-**TASK-417 — wave 1 complete.** Eight commits, eleven executable files: what changed and who says so · who you compete against, *said as the declaration it is* · an empty account **asserted rather than merely survived** · an outage that stops reading as a quiet account · an unreadable opportunity that stops reading as an untouched one.
+**The coordination register auditing itself** — *"eighteen index rows disagreed with their own item bodies"*, found by tooling rather than by a reader tripping over it. Plus the dashboard corrections behind *"Implemented 0 was hardcoded"* and *"Integrated 0 while wave 1 sat on `main`."*
 
-> **Four of those five are about a screen telling the truth when it has nothing, or when something failed.** An empty state that is tested, an outage that is distinguished from silence, a failure that stops inviting a pointless retry. That is the difference between a surface that works and one that is merely populated.
+### [B-120](docs/BUGS.md) — recorded, not blocked on, and answered immediately
 
-### QE re-measured instead of reusing a pass
+**Four generators produce the repository's self-description and no test executed any of them.** They sit outside the coverage gate's scope, so the gap was invisible to every figure QE publishes.
 
-Lane A's earlier green was taken **before** Lane B's mock provider and a Closeout landed between them. **A pass measures a program, not a branch name** — so QE discarded it and re-validated on the tree that would actually merge.
+> **QE did not block on it.** A wrong dashboard is not a wrong product: no gate consumes these, the slice passed everything, and blocking would have been QE setting a priority that is not QE's. **The row states the standard — *no change ships without tests* — and notes the exemption was accidental rather than reasoned.**
 
-### And §0c was applied on the cycle that wrote it
-
-Every push in this cycle ended by comparing local and origin: `local 3c12b5d2 · origin 3c12b5d2`. **One cycle earlier, that same step certified a commit that was never on `integration`.**
+**Lane C answered within the hour: *"the generators are tested, and the tests found two more gaps."*** Two further defects surfaced by the tests that were written because a row was filed. **That is the whole argument for recording an observation you have decided not to act on.**
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
 | **Technical** | **3540 backend** · **1202 frontend** · **95.28%** · **386 invariants** · **747 files typed** · 35 contracts · `tsc` clean and gated |
-| **Release** | **Thirty-one cycles promoted** · `promoted == certified` ✓ · **[§0c](docs/QUALITY_ENGINEERING.md) applied on the cycle that produced it** — every push verified by comparing refs |
+| **Release** | **Thirty-two cycles promoted** · `promoted == certified` ✓ · every gate, guard and push verified by its own exit code and by comparing refs |
 | **Architecture** | Reachability 0 doorless · migration `0038` **reversible, verified this cycle** · event catalog 1 known drift |
 | **Dependency** | 69 items, 31 closed |
 | **Customer Value** | ✅ **Direct.** A renamed company's search result now explains itself. **The first slice today that a salesperson would notice** |
