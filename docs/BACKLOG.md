@@ -519,7 +519,7 @@
 
 | | |
 |---|---|
-| **Status** | **`READY`** — **no trigger, no decision outstanding.** Step 1 of [427](architecture/427-impact-based-validation.md) |
+| **Status** | **`IN VALIDATION` — Lane C**, 2026-08-05. **The analysis is emitted at every `--next-cycle` and nothing is skipped.** **`certification-guard.py`'s classifier was extended; no second one was written.** Unknown paths escalate to `platform`; `infra/`, the `Makefile` and `tests/certification/` escalate unconditionally; profiles compose as a **union**. ⚠️ **The first real run found a disagreement, which is exactly what step 1 is for**: `CLAUDE.md` is not under `docs/`, so the impact rules escalated it to `platform` while `_is_closeout` — three hundred lines above, in the same file — treated it as non-executable. **Two classifiers, disagreeing on their first disagreement.** **The documentation rule now derives from `CLOSEOUT_PATHS`/`CLOSEOUT_SUFFIXES` rather than restating them**, and a test pins the agreement. **13 tests** |
 | **Module** | `infra/` · `backend/tests/certification/` — **Lane C's** under [D-022](DECISION_REGISTER.md), **and QE's gates stay QE's** |
 | **Objective** | **Every certification reports which validations the change required. Every validation still runs.** |
 | **Scope** | Extend `--next-cycle`'s path classifier to emit the impact set and the computed profile. **Report only** |

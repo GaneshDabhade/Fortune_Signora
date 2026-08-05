@@ -272,3 +272,26 @@ last_work = "Lane A — CX-07"
 next_milestone = "wave 1 of 412"
 carries = ["C-025", "C-008"]
 note = "not a backend module; the largest continuity cost in the table if it moves wrongly"
+
+# ── Platform Foundation — not production modules ────────────────────────────
+# **Phase 0 of the execution-queue migration** ([434](../architecture/434-execution-queue-governance-package.md)),
+# approved 2026-08-05. These rows exist so that **every task is attributable to
+# a lane by machine.** Without them Lane C's own tasks resolved to no lane, and
+# the queue-depth measurement that found Lane A short could not be computed for
+# Lane C at all — **a registry that cannot describe the lane maintaining it.**
+#
+# They are deliberately *not* production modules and carry no `future_owner`:
+# Lane C's Platform Foundation remit is permanent ([D-022](../DECISION_REGISTER.md)),
+# so there is no transition to describe.
+
+[platform_foundation]
+context = "Environment framework, repository tooling, developer commands"
+current_owner = "Lane C"
+future_owner = "Lane C"
+transition = "settled"
+implementation = 60
+basis = "Environment Framework phases 1-2 built; the demo profile and make doctor are IN VALIDATION"
+paths = ["infra/", "Makefile", "backend/signora_platform/simulation/"]
+last_work = "Lane C — TASK-409, TASK-410, TASK-414"
+next_milestone = "TASK-410 follow-on; the demo launcher"
+note = "not a production module — Lane C may never touch backend/modules/ (CLAUDE.md §20e)"

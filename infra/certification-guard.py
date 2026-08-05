@@ -27,6 +27,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from typing import Final
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = REPO_ROOT / "certification" / "manifest.json"
@@ -191,6 +192,140 @@ def _is_closeout(commit: str) -> tuple[bool, list[str]]:
     return (not offending and bool(changed)), offending
 
 
+# ── Repository impact, reported and never applied ─────────────────────────────
+#
+# TASK-414, step 1 of `docs/architecture/427-impact-based-validation.md`.
+#
+# **This reports. It skips nothing.** `REQUIRED_GATES` stays a frozenset of six,
+# `make certify` keeps no options, and every gate still runs. The whole value is
+# evidence: **weeks of runs in which the computed profile can be compared against
+# a full one that actually happened.** If the classifier disagrees with reality
+# even once, the framework is not ready — and finding that out costs nothing,
+# because everything ran anyway.
+#
+# **It extends this file's classifier rather than adding a second one.**
+# `_is_closeout` and `--audit-main` already decide by path, and two classifiers
+# would eventually disagree — with the unmaintained one deciding what to skip.
+
+#: Ordered, because the first match wins and the dangerous ones must be first.
+#: **Gate paths are matched before anything else**: `infra/`, the `Makefile` and
+#: the certification package decide what a gate *means*, so a change to one is
+#: platform-impacting whatever else it looks like. B-014 is what that costs when
+#: it is not enforced — a gate fix classified as a Closeout.
+IMPACT_RULES: Final = (
+    ("platform", ("infra/", "Makefile", "backend/tests/certification/")),
+    ("security", ("backend/signora_platform/auth/", "backend/tests/security_invariants/")),
+    ("platform", ("backend/signora_platform/",)),
+    ("persistence", ("backend/migrations/",)),
+    ("frontend", ("frontend/",)),
+)
+
+#: Checked after the prefix rules, because these are properties of a path
+#: anywhere in the tree rather than of a directory.
+IMPACT_CONTAINS: Final = (
+    ("security", ("tenancy_policy.py", "policy.csv")),
+    ("event", ("domain/events.py",)),
+    ("contract", ("/public/", "apps/api/composition/")),
+    ("prompt", ("/prompts/", "/evaluation/")),
+)
+
+#: **Every executable profile carries these, and no computation removes one.**
+#: `CLAUDE.md` §11: a Security Invariant failure means a guarantee the
+#: architecture depends on has stopped holding. A framework that could reason
+#: its way out of them would have inverted their purpose.
+ALWAYS: Final = frozenset({"state-check", "doc-drift", "security-invariants"})
+
+PROFILE_GATES: Final = {
+    "documentation": frozenset({"state-check", "doc-drift"}),
+    "frontend": ALWAYS | {"tsc", "eslint", "frontend-suite", "accessibility", "reachability"},
+    "prompt": ALWAYS | {"pytest", "mypy", "prompt-evaluation"},
+    "module": ALWAYS | {"pytest", "mypy", "import-linter", "reachability", "runtime-composition"},
+    "contract": ALWAYS | {"pytest", "mypy", "import-linter", "smoke", "runtime-composition"},
+    "event": ALWAYS | {"pytest", "mypy", "import-linter", "event-catalog", "runtime-composition"},
+    "persistence": ALWAYS | {"pytest", "mypy", "migration-reversibility", "smoke", "dr"},
+    "security": ALWAYS | {"pytest", "mypy", "import-linter", "tsc", "smoke", "dr"},
+    "platform": ALWAYS | {"pytest", "mypy", "tsc", "eslint", "import-linter", "smoke", "dr",
+                          "frontend-suite", "migration-reversibility", "event-catalog",
+                          "reachability", "runtime-composition", "prompt-evaluation"},
+}
+
+
+def _impacts(paths: list[str]) -> dict[str, set[str]]:
+    """Which impacts a set of changed paths carries, and which path caused each.
+
+    **An unrecognised path is `platform`, never `none`.** A new directory must
+    not silently reduce validation — that is how the matrix goes wrong without
+    anybody editing it, and it is the `missing_gates` rule applied to
+    classification rather than to execution.
+    """
+    found: dict[str, set[str]] = {}
+    for path in paths:
+        hits = {
+            impact
+            for impact, prefixes in IMPACT_RULES
+            if path.startswith(prefixes)
+        } | {
+            impact
+            for impact, needles in IMPACT_CONTAINS
+            if any(n in path for n in needles)
+        }
+        if path.startswith("backend/modules/"):
+            hits.add("module")
+        # **Documentation is decided by the test `_is_closeout` already uses**,
+        # not by a second list. The first real run of this analysis classified
+        # `CLAUDE.md` as `platform` — it is not under `docs/` — while
+        # `_is_closeout` classified the same file as non-executable. **Two
+        # classifiers in one file, disagreeing on their first disagreement.**
+        # That is the exact failure this design was written to avoid, so the
+        # rule is shared rather than restated.
+        if not hits and path.startswith(CLOSEOUT_PATHS) and path.endswith(CLOSEOUT_SUFFIXES):
+            hits = {"documentation"}
+        if not hits:
+            hits = {"platform"}
+        for impact in hits:
+            found.setdefault(impact, set()).add(path)
+    return found
+
+
+def _profile(impacts: set[str]) -> tuple[str, frozenset[str]]:
+    """The profile a change would compute to, and the gates it names.
+
+    **Union, never intersection.** A slice touching two areas gets both sets —
+    stated because the opposite is the single easiest bug to write here.
+    """
+    if not impacts:
+        return "documentation", PROFILE_GATES["documentation"]
+    gates: frozenset[str] = frozenset()
+    for impact in impacts:
+        gates |= PROFILE_GATES.get(impact, PROFILE_GATES["platform"])
+    name = "platform" if "platform" in impacts else "+".join(sorted(impacts))
+    return name, gates
+
+
+def _report_impact(rev_range: str) -> None:
+    """Print the impact analysis. **Changes nothing about what runs.**"""
+    paths = sorted({p for p in _git("diff", "--name-only", rev_range).splitlines() if p})
+    if not paths:
+        return
+    found = _impacts(paths)
+    name, gates = _profile(set(found))
+    print(f"\n  Repository impact — {len(paths)} path(s)")
+    for impact in sorted(found):
+        causes = sorted(found[impact])
+        shown = ", ".join(causes[:2]) + (f" (+{len(causes) - 2})" if len(causes) > 2 else "")
+        print(f"    {impact:<14} {shown}")
+    print(f"\n  Profile that WOULD apply: {name}")
+    print(f"  Gates it names ({len(gates)}): {', '.join(sorted(gates))}")
+    missing = ALWAYS - gates
+    if missing:  # Unreachable by construction; a guard that cannot fail is
+        # documentation pretending to be code, so it reports rather than asserts.
+        print(f"  REFUSED — profile omits {sorted(missing)}, which is never permitted.")
+    print(
+        "\n  Reported only. Nothing is skipped, REQUIRED_GATES is unchanged, and"
+        "\n  `make certify` still has no options (TASK-414 — step 1 of 427).\n"
+    )
+
+
 # A claim commit is the one thing a feature lane may push to `integration`, so it
 # is bounded to the two registers. Anything else in it is code arriving on a
 # shared branch without a gate.
@@ -323,8 +458,9 @@ def _next_cycle() -> int:
         )
         return 0
 
+    _report_impact("main..integration")
     print(
-        f"\nCERTIFICATION CYCLE AVAILABLE — snapshot at "
+        f"CERTIFICATION CYCLE AVAILABLE — snapshot at "
         f"{_git('rev-parse', 'integration')[:7]} and begin at stage 0."
     )
     return 0
