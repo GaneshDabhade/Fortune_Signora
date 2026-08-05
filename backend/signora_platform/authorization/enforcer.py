@@ -91,6 +91,26 @@ class Action(StrEnum):
     UPDATE = "update"
     ADD = "add"
     REMOVE = "remove"
+    #: Registered by ADR-0404 capability 4, closing C-207. A self-directed
+    #: action, and distinct from `REMOVE` because the two differ in who the
+    #: target is rather than in what happens: `remove` acts on somebody else
+    #: and is an administrative power, `leave` acts on the caller and is not.
+    #: Granting `member, member, remove` to express it would have made the
+    #: policy file assert that a member may eject a colleague, which is false.
+    #:
+    #: **The scoping to self is the endpoint's, not the policy's.** Leaving
+    #: takes no target, so identity never enters the request tuple —
+    #: `model.conf` keeps `sub` as the caller's *role*, and membership stays in
+    #: PostgreSQL under RLS rather than being mirrored into Casbin, where two
+    #: sources of truth would eventually drift.
+    #:
+    #: **The sole-owner invariant is deliberately not here.** *"An owner may
+    #: leave. A workspace may never become ownerless. Enforce the invariant in
+    #: the application layer rather than the authorization engine"* — a
+    #: workspace invariant hidden in the policy model is invisible to anyone
+    #: reading the workspace. `Membership.LastOwnerCannotLeaveError` is where
+    #: it lives.
+    LEAVE = "leave"
 
 
 class AuthorizationDeniedError(Exception):

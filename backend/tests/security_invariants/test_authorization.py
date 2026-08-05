@@ -102,6 +102,45 @@ class TestCasbinEnforcement:
                 role="member", workspace_id=workspace_id, resource=resource, action=action
             ), f"a member was permitted to {action} {resource}"
 
+    def test_anybody_may_leave_and_nobody_gains_the_power_to_eject(
+        self, authorizer: CasbinAuthorizer
+    ) -> None:
+        """**ADR-0404 capability 4, and the statement it was careful not to make.**
+
+        Leaving is self-directed: both roles hold it, because a member who
+        could not leave would be held in a workspace by the software, and an
+        owner who could not leave would be a person the product refuses to let
+        resign.
+
+        **`remove` is the administrative power and stays owner-only.** The
+        cheap repair for C-207 was to grant `member, member, remove` and scope
+        it to self in the handler — which would have made this file assert
+        that a member may eject a colleague. A policy file is read by people
+        deciding what the product permits, and a line that is true only
+        because of a check somewhere else is a line that misleads them.
+
+        The sole-owner invariant is deliberately absent here and asserted in
+        `workspace_tenancy` instead: an owner *may* leave, and a workspace may
+        never become ownerless, which is a fact about a workspace rather than
+        about a role.
+        """
+        workspace_id = uuid4()
+
+        for role in ("member", "owner"):
+            assert authorizer.is_allowed(
+                role=role,
+                workspace_id=workspace_id,
+                resource=Resource.MEMBER,
+                action=Action.LEAVE,
+            ), f"a {role} could not leave"
+
+        assert not authorizer.is_allowed(
+            role="member",
+            workspace_id=workspace_id,
+            resource=Resource.MEMBER,
+            action=Action.REMOVE,
+        ), "leaving was expressed as a removal grant, which says something false"
+
     def test_an_unrecognised_role_is_denied_everything(self, authorizer: CasbinAuthorizer) -> None:
         """Policy must fail closed. A role added to the domain model but not
         to the policy gets nothing, rather than inheriting a permissive

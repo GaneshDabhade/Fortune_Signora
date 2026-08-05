@@ -49,7 +49,7 @@ updated      = 2026-08-05
 depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
-current = ""
+current = "TASK-437"
 next    = ""
 future  = []
 
@@ -76,11 +76,13 @@ future  = []
 #
 # 🔴 **CAPACITY FINDING — 2 eligible against a target of 5.** Not a lane
 # behaviour; a Product Office planning finding. Stated in full below.
-eligible_count = 0
-shortfall      = 5
+eligible_count = 1
+shortfall      = 4
 
 [rationale]
-# **Empty, and that is the finding.** Both rows this file listed were claimed
+"TASK-437" = "a member can leave an organization, and the last owner cannot. UNBLOCKED 2026-08-05 by TASK-418 capability ④, which Lane C shipped the same day — Action.LEAVE and its two policy grants exist and a Security Invariant asserts them. ⚠️ THIS ROW EXISTS SO CAPABILITY ④ DOES NOT BECOME A DANGLING GRANT: 46-team-management §2 already names that exact shape as a defect — a reviewed authorization grant for an operation the system cannot perform. ✅ MOST OF IT IS BUILT: Membership models departure, LastOwnerCannotLeaveError already exists and is already raised by demote and remove, and this module has 13 endpoints to pattern-match. ⛔ THE INVARIANT GOES IN THE APPLICATION LAYER, never in the authorization engine — an owner may leave, a workspace may never become ownerless, and a workspace invariant hidden in the policy model is invisible to anyone reading the workspace"
+
+# **Was empty, and that was the finding.** Both rows this file listed were claimed
 # within the hour of being listed — which is the queue working — and nothing
 # replaced them, which is the queue's owner not keeping up.
 
@@ -126,14 +128,14 @@ note = "A-iii — a signal ends in a decision. C-224 was raised from inside this
 [capacity_finding]
 raised                  = 2026-08-05
 revised                 = 2026-08-05
-assigned_queue_size     = 0
-immediately_executable  = 0
+assigned_queue_size     = 1
+immediately_executable  = 1
 blocked_assignments     = 0
 reason_not_replenished  = "Not blocked — empty. Lane A shipped TASK-903, TASK-904, TASK-905 and TASK-400's A6 in one day and claimed TASK-436 within the hour of this office creating it. Every Lane A row on the board is IN PROGRESS, IN VALIDATION or DONE. The lane outran its prepared work."
 dependencies            = [
   "TASK-418 — Lane C's own, and the only row that refills this lane. It releases TASK-901, whose seven slices include signal_engine, buying_score_engine, ai_research_engine and provider_platform, all Lane A's.",
 ]
-product_office_item     = "TASK-418, claimed by Lane C today. No other prepared row exists for Lane A's six modules."
+product_office_item     = "TASK-418, claimed AND its capability ④ shipped by Lane C the same day — which produced TASK-437, the first refill. Capabilities ① and ② wait on C-417, and TASK-901's seven slices behind them are still the bulk of this lane's future work."
 slices_released         = "TASK-418 → TASK-901's seven slices, of which four sit in Lane A's modules."
 primary_bottleneck      = "Lane C. The office that reports this finding is the one holding the row that resolves it, and it spent the preceding cycles on discovery instead."
 recommended_action      = "Lane C claims and ships TASK-418 before preparing anything else. Stated plainly because a finding that names somebody else would be wrong."

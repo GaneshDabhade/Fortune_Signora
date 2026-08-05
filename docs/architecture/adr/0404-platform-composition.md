@@ -82,4 +82,12 @@ p, owner,  *, member, leave
 **③** `apps/worker/` is outside every §20a-frozen path, and `modules.toml` names its owner.
 **④** `Action` gains exactly one member; **`policy.csv` grants no `member, member, remove`.**
 
+> ⚠️ **Correction, 2026-08-05, from running these four.** **② failed, and it failed twice.**
+>
+> **The count is wrong: there are *five* `# type: ignore[arg-type]` at publish sites, not eight** — `observation_engine/application/record.py:124` · `signal_engine/application/generate.py:158` · `business_event_engine/application/detect.py:129` · `knowledge_graph/application/resolve.py:329` · `knowledge_graph/application/relationships.py:240`. **The other three are `provider_normalization` (×2) and `ai_research_engine`, and none is at a publish site.**
+>
+> **And the ownership question was never asked.** **③ checks that `apps/worker/` has an owner; nothing checks that the *modules* a capability reaches have one.** **All five files are in `backend/modules/`, which Lane C — this ADR's author and `signora_platform/`'s owner — may never touch**, and `mypy strict`'s `warn_unused_ignores` makes the platform change and the five deletions one atomic commit. **[C-417](../../LANE_COORDINATION.md) carries the ruling; capabilities ① and ② wait on it. ④ shipped.**
+>
+> **A future §Validation should ask which trees a capability's proof lives in, and who owns each.**
+
 **Any validation that fails is a `C-` item, not an improvisation** — the rule [ADR-0403](0403-signal-engine-reads-a-declaration.md) established and the reason two of its five corrected its own first draft.
