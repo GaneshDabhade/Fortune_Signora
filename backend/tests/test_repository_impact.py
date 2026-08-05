@@ -223,6 +223,55 @@ def test_a_skip_is_not_reported_when_the_task_belongs_to_another_lane(
     assert guard._eligible_above("deadbee", "Lane A", "TASK-200") == []
 
 
+def test_the_claiming_lane_is_read_from_the_row_the_claim_added(
+    guard: ModuleType, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """**A claim asserts who it is in one place: the board row it adds.**
+
+    This read `**Lane [A-Z]**` from anywhere in `git show`, **which includes the
+    diff**, and a claim's diff quotes other lanes constantly. Lane C's TASK-900
+    claim explains that *Lane B skipped this row and was right to*; the guard
+    read `Lane B`, joined Lane B's eleven modules, and reported the claim as
+    skipping `TASK-203` — **a task in a module Lane C does not own, taken from a
+    sentence praising the lane that does.**
+
+    The prose here is deliberately hostile: it names Lane B twice, in bold, and
+    **before** the added row. Ranking by position would still be wrong; only the
+    added-row anchor is right.
+    """
+    show = (
+        "Claim TASK-900 — the RFC\n\n"
+        "**Lane B** skipped this row and **Lane B** was right to.\n\n"
+        "diff --git a/docs/ACTIVE_ASSIGNMENTS.md b/docs/ACTIVE_ASSIGNMENTS.md\n"
+        "+| **Lane C** | TASK-900 | `lane-c-sync` |\n"
+    )
+    monkeypatch.setattr(
+        guard, "_git",
+        lambda *a: "Claim TASK-900 — the RFC" if "%s" in a else show,
+    )
+    seen: list[str] = []
+    monkeypatch.setattr(guard, "_eligible_above",
+                        lambda c, lane, t: seen.append(lane) or [])  # type: ignore[func-returns-value]
+    guard._unexplained_skips("deadbee")
+    assert seen == ["Lane C"], f"joined the wrong lane's modules: {seen}"
+
+
+def test_a_claim_that_adds_no_board_row_is_not_judged(
+    guard: ModuleType, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """**No row, no assertion of identity, no opinion.**
+
+    The anchor must fail closed. A commit whose subject looks like a claim but
+    which adds no `| **Lane X** |` row has not said which lane it is, and
+    guessing from prose is the defect above.
+    """
+    monkeypatch.setattr(
+        guard, "_git",
+        lambda *a: "Claim TASK-900 — the RFC\n\n**Lane B** is mentioned only in prose.\n",
+    )
+    assert guard._unexplained_skips("deadbee") == []
+
+
 def test_a_claim_older_than_the_registry_yields_no_opinion(
     guard: ModuleType, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -415,7 +415,18 @@ def _unexplained_skips(commit: str) -> list[tuple[str, str, str, list[str]]]:
     subject = _git("log", "-1", "--format=%s", commit)
     task = re.search(r"TASK-\d+", subject)
     body = _git("show", "--format=%B", commit)
-    lane = re.search(r"\*\*(Lane [A-Z])\*\*", body)
+    # **The claiming lane comes from the board row this commit *added*, never
+    # from the text anywhere in it.** Searching `body` for `**Lane X**` searched
+    # the diff too, and a claim's diff quotes other lanes constantly — Lane C's
+    # TASK-900 claim explains that *Lane B skipped this row and was right to*,
+    # so the guard read `Lane B`, joined Lane B's eleven modules, and accused
+    # the claim of skipping `TASK-203`. **A guard that manufactures violations
+    # is worse than no guard**, which this function's own docstring says about
+    # the last time it did this.
+    #
+    # An added `| **Lane X** |` cell is the claim asserting who it is, in the
+    # one file that is authoritative about execution. Nothing else qualifies.
+    lane = re.search(r"^\+\|\s*\*\*(Lane [A-Z])\*\*\s*\|", body, re.M)
     if not task or not lane:
         return []
     above = [t for t in _eligible_above(commit, lane.group(1), task.group(0)) if t not in body]
