@@ -125,14 +125,14 @@ containers = [
     "modules.ai_research_engine",
     "modules.timeline",
     "modules.integrations",
-    # **`modules.sales_engagement` is deliberately not here yet.** The
-    # layered contract requires every layer to exist. At SE-09c this module
-    # has `domain`, `application`, `public`, `infrastructure` and
-    # `evaluation` — but **still no `interface`**, because it owns no fact
-    # and therefore has nothing to expose over HTTP yet. Creating an empty
-    # package to satisfy a linter would be a placeholder pretending to be
-    # structure. **Added the moment SE-03 gives it an interface**, and the
-    # forbidden-module contract below binds it in the meantime.
+    # **Added at A-ii, which is the moment the comment below anticipated.**
+    # The module was absent because the layered contract requires every layer
+    # to exist and this one had no `interface` — it owned no fact and had
+    # nothing to expose over HTTP, and an empty package created to satisfy a
+    # linter would have been a placeholder pretending to be structure. The
+    # approach read path gives it one, so the layered contract now binds it
+    # exactly as it binds every sibling.
+    "modules.sales_engagement",
 ]
 layers = [
     # Optional and topmost. `evaluation/` is the harness plus each consuming

@@ -34,6 +34,7 @@ from modules.integrations.interface.errors import (
 from modules.integrations.interface.router import router as integrations_router
 from modules.timeline.interface.router import router as timeline_router
 from modules.knowledge_graph.interface.router import router as knowledge_graph_router
+from modules.sales_engagement.interface.router import router as approach_router
 from modules.signal_engine.interface.router import router as validation_router
 from modules.opportunity_engine.interface.errors import (
     ERROR_MAPPING as OPPORTUNITY_ENGINE_ERRORS,
@@ -158,6 +159,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(research_router)
     app.include_router(timeline_router)
     app.include_router(integrations_router)
+    app.include_router(approach_router)
 
     @app.get("/health", response_model=HealthResponse, tags=["operations"])
     async def health() -> HealthResponse:
