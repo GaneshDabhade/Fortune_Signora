@@ -334,6 +334,49 @@ def main() -> int:
                 f"Backlog: {len(known)} task(s), {ready} READY, no task claimed twice."
             )
 
+    # 5c-2 — a document warning that it is not on `integration`, while it is.
+    #
+    # **[B-205](../docs/BUGS.md), raised by Lane A.** `ADR-0400`'s status block
+    # read *"⚠️ Not yet on `origin/integration` — this file does not exist
+    # there. A lane may act on it only once QE has merged this branch"* for a
+    # day after QE had. **A lane obeying that warning declines to act on a
+    # ruling the repository already carries**, which is the failure the five
+    # decision states exist to prevent — sitting in the file that names them.
+    #
+    # **Two instances in one status block, same day, same cause**: a warning
+    # written about a branch state and never revisited once the state changed.
+    # **Prose disagreeing across three documents is not mechanically checkable;
+    # this half is**, so this half gets a check.
+    stale_location = re.compile(
+        r"not yet on\s+`?(?:origin/)?integration`?|does not (?:yet )?exist (?:on|there)",
+        re.I,
+    )
+    tracked = set(_git("ls-tree", "-r", "--name-only", "origin/integration").splitlines())
+    for doc in sorted((REPO_ROOT / "docs").rglob("*.md")):
+        relative = doc.relative_to(REPO_ROOT).as_posix()
+        if relative not in tracked:
+            continue          # genuinely absent — the warning is true.
+        # **Line by line, and a line carrying ✅ or ~~ is exempt.** The first
+        # version of this check flagged the very document it was written for:
+        # the correction *quotes* the warning it replaced — dating a record
+        # rather than erasing it, which §2 requires — and a whole-file search
+        # cannot tell a live warning from a historical one. **The repository's
+        # own convention is the discriminator**: ✅ marks a resolved claim and
+        # `~~` marks a withdrawn one, and both are used consistently enough to
+        # rely on. **A check that cannot distinguish its own fix from the
+        # defect would be un-silenceable, and an un-silenceable check is one
+        # people learn to read past.**
+        for line in doc.read_text(errors="replace").splitlines()[:40]:
+            if "✅" in line or "~~" in line:
+                continue
+            if stale_location.search(line):
+                findings.append(
+                    f"{relative} warns that it is not on `origin/integration`, and it "
+                    f"is. A lane obeying the warning would decline to act on a ruling "
+                    f"the repository already carries."
+                )
+                break
+
     # 5d — structural corruption in a register, which no gate reads.
     #
     # A malformed table survived four certifications on `main`: a reconciliation

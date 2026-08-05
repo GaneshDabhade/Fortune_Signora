@@ -2,7 +2,7 @@
 
 ## Status
 
-**PRODUCT OWNER APPROVED — 2026-08-04.** ⚠️ **Not yet on `origin/integration`** — this file does not exist there. **The ruling is authoritative; the repository does not yet record it.** A lane may act on it only once QE has merged this branch ([`PRODUCT_OFFICE.md`](../../PRODUCT_OFFICE.md) §11c). Drafted by Lane C — Product Office. **Epic F is unblocked from a Product Office perspective.**
+**PRODUCT OWNER APPROVED — 2026-08-04.** ✅ **On `origin/integration` since 2026-08-05, and actionable.** *(This block warned that the file was absent there for a day after it arrived — [B-205](../../BUGS.md)'s class, found by the `state-check` guard that item produced.)* §11c). Drafted by Lane C — Product Office. **Epic F is unblocked from a Product Office perspective.**
 
 > **Phases 1–4 depend on nothing unbuilt**, which is what this ADR was written to achieve: §2 makes `workflow` publish an event rather than call a notifier, so **Notifications stops being a blocker and becomes a subscriber.** ❓1 remains a phase-5 sequencing question and blocks nothing.
 

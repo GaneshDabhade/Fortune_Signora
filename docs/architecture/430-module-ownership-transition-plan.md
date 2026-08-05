@@ -10,7 +10,7 @@
 
 | | |
 |---|---|
-| **Interim owner** | **Who holds it today.** **Lane B, every production module** — [D-058](../DECISION_REGISTER.md), and **not yet on `integration`** |
+| **Interim owner** | **Who holds it today.** **Lane B, every production module** — [D-058](../DECISION_REGISTER.md). ✅ **On `integration`, and the *"not yet"* that stood here is cleared 2026-08-05** — [B-205](../BUGS.md)'s class, caught by the guard that item produced. ⚠️ **And the fact itself has moved on**: [D-065](../DECISION_REGISTER.md) transitioned six modules to Lane A. **[`modules.toml`](../coordination/modules.toml) is authoritative; this row is a dated record** |
 | **Recommended steady-state owner** | **Who should prepare and build it once both Product Development lanes are running.** A recommendation, ruled by nobody yet |
 | **Transition point** | **The event after which the move is safe.** Never a date |
 

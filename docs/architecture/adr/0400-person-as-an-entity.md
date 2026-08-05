@@ -2,17 +2,27 @@
 
 ## Status
 
-**PRODUCT OWNER APPROVED — 2026-08-04.** ⚠️ **Not yet on `origin/integration`** — this file does not exist there. **The ruling is authoritative; the repository does not yet record it.** A lane may act on it only once QE has merged this branch ([`PRODUCT_OFFICE.md`](../../PRODUCT_OFFICE.md) §11c). Drafted by Lane C — Product Office. **Person becomes a first-class entity within the approved bounded context, and all future preparation proceeds on that assumption.**
+**PRODUCT OWNER APPROVED — 2026-08-04.** ✅ **On `origin/integration` since 2026-08-05, and actionable.** *(This block warned ⚠️ "not yet on `origin/integration` — this file does not exist there" for a day after it did. **A lane obeying that warning would have declined to act on a ruling the repository already carried** — the exact failure the five decision states exist to prevent, in the file that names them. Found by Lane A as [B-205](../../BUGS.md).)* Drafted by Lane C — Product Office. **Person becomes a first-class entity within the approved bounded context, and all future preparation proceeds on that assumption.**
 
 > **It was the only architectural blocker in all 26 approved screens.** Ratification releases Epic C, People Intelligence, half of Global Search, the four *Decision makers* criteria in the ICP Builder, and Account 360's contacts and org-chart sections. **[C-221](../../LANE_COORDINATION.md) is answered by it and needs no separate ruling.**
 
-**Complete: five alternatives assessed, one recommended.** ⚠️ **❓1 is now answered — the provider returns no person name** ([C-221](../../LANE_COORDINATION.md)), which blocks the *epic*. **Ratifying this ADR records the bounded context so it is not re-derived when the epic resumes; it neither approves nor unblocks Epic C.**
+**Complete: five alternatives assessed, one recommended.** ⚠️ **❓1 is answered — the provider returns no person name** ([C-221](../../LANE_COORDINATION.md)).
+
+> ## ⚠️ Superseded in part, 2026-08-05 — [D-074](../../DECISION_REGISTER.md)
+>
+> **This block said ratification *"neither approves nor unblocks Epic C"*, and that ❓1 *"blocks the epic"*. Both were true when written and a later product-owner decision changed them.**
+>
+> **[D-074](../../DECISION_REGISTER.md), ruled 2026-08-05:** *"I approve moving the **People domain** implementation earlier in the roadmap. **I am not approving the full People Intelligence feature set.**"*
+>
+> **So the approval this ADR declined to give now exists, and it is scoped**: **the domain is approved; the feature set is not.** **[441](../441-people-roadmap.md) separates them into four milestones with four triggers, and ❓1 gates [TASK-429](../../BACKLOG.md) — provider enrichment — rather than the entity**, because an anonymous `Person` with `Affiliation` intervals needs no person name and is derived from data that already flows.
+>
+> **What still holds unchanged:** *ratifying this ADR is not approving the epic*. **It is [D-074](../../DECISION_REGISTER.md) that approves the domain, not this ratification** — and a row citing this ADR as its authority to build is citing the wrong document. **[TASK-427](../../BACKLOG.md) now cites D-074.**
 
 > **Lane C prepares decisions; the product owner makes them.** This ADR exists so the lane that eventually owns Epic C **inherits a decision rather than re-debating one**. It follows the route [ADR-0035](0035-commercial-profile.md) and [ADR-0038](0038-timeline.md) took: draft first, ratify, then build — **never the other way round.**
 >
 > **Epic C is unapproved scope** ([Pack I](../../DECISION_PACKS.md)). Ratifying this ADR does not approve the epic; approving the epic does not ratify this ADR. **Both are the product owner's, and they are separate.**
 
-⚠️ **`../51-implementation-specifications.md` does not resolve on this branch** — Epic C's specification lives on `lane-b-commercial-profile` and reaches `main` at the next merge. The link is correct and left intact; **everything relied on is quoted inline.**
+✅ **`../51-implementation-specifications.md` resolves — it reached `integration` and the warning that said otherwise is cleared, 2026-08-05.** *(Second stale-location claim in this status block, same day, same cause: a warning written about a branch state and never revisited once the state changed.)*
 
 **Three questions are deliberately left open and marked ❓.** Each is a product or legal call, not an architectural one.
 
