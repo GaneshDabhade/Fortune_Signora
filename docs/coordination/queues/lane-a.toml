@@ -49,9 +49,9 @@ updated      = 2026-08-05
 depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
-current = "TASK-417"
-next    = "TASK-904"
-future  = ["TASK-905", "TASK-903", "TASK-400", "TASK-419"]
+current = "TASK-904"
+next    = "TASK-905"
+future  = ["TASK-903", "TASK-400", "TASK-419"]
 
 # **5 of a 5 target**, reached by finding work rather than by lowering the bar:
 # TASK-903's stage 2 moved here from Lane B, where it had been queued on a
@@ -69,22 +69,20 @@ future  = ["TASK-905", "TASK-903", "TASK-400", "TASK-419"]
 # file**, so the dashboard now recomputes it and reports the disagreement rather
 # than trusting the field. **The field stays because it must be checkable against
 # something**; what changed is that nothing reads it without checking.
-eligible_count = 6
+eligible_count = 5
 shortfall      = 0
 
 [rationale]
+#: TASK-417 shipped 2026-08-05 — wave 1 complete, ten sections, and the audit
+#: found three more instances of C-226's class on a page already fixed for it
+#: three times. Kept here for one cycle so the sequence reads continuously.
 "TASK-417" = "Account 360 — wave 1 of the approved UI, claimed 2026-08-05. Twelve sections already served by shipped contracts, render only. 26 screens are approved and 0 are implemented, and this is the first one being built"
-"TASK-904" = "an organization can grow. ✅ UNBLOCKED 2026-08-05 — C-206 and C-208 both ruled. Invitation lifecycle belongs to Signora; acceptance gets an explicit authenticated-but-not-member state and a minimum read path. ⚠️ signora_platform/db/ is frozen: a named single-purpose path, never a general RLS change"
+"TASK-904" = "an organization can grow. ✅ CLAIMED 2026-08-05, straight from this queue with no round-trip. UNBLOCKED 2026-08-05 — C-206 and C-208 both ruled. Invitation lifecycle belongs to Signora; acceptance gets an explicit authenticated-but-not-member state and a minimum read path. ⚠️ signora_platform/db/ is frozen: a named single-purpose path, never a general RLS change"
 "TASK-905" = "a contraction risk stops looking like an opportunity. Product Surface and buying_score_engine, both Lane A's. This is C-011 in a task, and TASK-203 records it as the half of Epic D that still carries value"
 "TASK-903" = "the declarations on the account brief — stage 2 only. C-008 was ruled 2026-08-03 and stage 1 shipped as CX-05; the product owner confirmed the ruling stands on 2026-08-05. One lane, not two: no backend change. ⛔ SCOPE BOUND: C-002 is DEFERRED and still load-bearing — display the declarations, assert no match"
 "TASK-419" = "ADR-0404 capability 3, provider_platform's half. A typed Settings choosing which provider adapters exist, and a build_provider_registry at its composition root. §10: configuration is a typed Settings object owned by the module that owns the behaviour, and provider_platform is Lane A's. Measured before queueing: SimulatedProviderAdapter is constructed only in tests, 3 sites, all under backend/tests/. Lane C follows with the WorkerRuntime field once this exists"
 "TASK-400" = "Epic A completion. ✅ A6 UNBLOCKED 2026-08-05 — C-321 ruled, Lane B's six answers adopted whole. A7's backend needs no ruling; A7's render still waits on the subject↔entity join proposal this lane owes Lane C, which is C-219 and is not the product owner's"
 
-[[blocked]]
-task    = "TASK-904"
-blocker = ["C-206", "C-208"]
-owner   = "Product owner"
-note    = "an organization can grow. ⚠️ Removed from `next` on 2026-08-05, hours after being put there. Its slice is 'invitation table · acceptance · members list' and TWO of those three are held: C-206 blocks inviting anybody, C-208 blocks accepting. Both are Kind: Architectural blocker — §20e stops implementation rather than resuming it when something frees up. The row's own notes state answers to both ('Signora owns the invitation'; 'acceptance matches against the email claim in the verified JWT'), and a backlog row proposing an answer is not the register recording one — that is precisely the decide-by-implementation this office exists to prevent. THE ANSWERS ARE GOOD AND THE RULINGS ARE CHEAP: see DECISION_QUEUE.md P1, where these are the top two rows. The members list third is genuinely unblocked (46 §7) and is not worth splitting out for one third of a slice"
 
 # ── Held inside TASK-400, so the narrowing is checkable ──────────────────────
 [[held]]

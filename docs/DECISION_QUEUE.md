@@ -46,6 +46,15 @@
 | **Recommended** | ✅ **Ratify what the repository has already done twelve times.** **Every resource after `workspace` and `member` was added by a feature lane**, three with inline justifications citing §20a — *"a use of the platform rather than a change to it."* **Amend §20a's carve-out to name authorization resources explicitly**, so the practice becomes the written rule instead of twelve separate justifications. **The safety argument points the same way**: an enum member alone **grants nothing** — `policy.csv` grants, and that file is *already* any-lane append-only. **The 🔴 half is the harmless half** |
 
 
+## C-225 · Wave 1's technology stack section has no route
+
+✅ **Answered by delivery.** Wave 1 shipped **ten sections, not eleven** — [414](architecture/414-wave-1-account-360.md) was corrected before anything was built, and **Lane A built the ten.** **The product owner's half of this item — *does wave 1 ship the subset or wait* — is answered by the subset having shipped.** What remains is **Lane B's**: whether `knowledge_graph` gets a route for `USES_TECHNOLOGY`, which is a capability with no customer-facing edge. **No decision needed from you.**
+
+## C-329 · Lane B had nothing claimable, and the row that said otherwise
+
+✅ **Substance addressed 2026-08-05.** Both halves were acted on: **[C-412](LANE_COORDINATION.md) was corrected** — it named the wrong lane on *both* pairs — and **`lane-c-product-office` was measured and holds nothing** *(59 ahead, 268 behind, zero files newer)*. **Closure is Lane B's**, which raised it. **No decision needed from you.**
+
+
 ---
 
 # ⏸️ Deferred by you — do not work these

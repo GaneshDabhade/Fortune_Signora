@@ -136,6 +136,65 @@ def register() -> dict[str, tuple[str, str, str]]:
 CLOSED_MARKER = re.compile(r"^#{1,3} Closed\b", re.M | re.I)
 
 
+#: The register's summary table — `| [C-nnn](#anchor) | … | status | blocks |`.
+#: **A second representation of a status the item body already carries**, and
+#: therefore the shape this repository keeps paying for: C-213 stored an
+#: assignee beside a module, C-412 stored one beside a task, and this stores a
+#: status beside an item. **Eighteen rows disagreed when it was first measured**
+#: — eleven of them because a ruling was recorded in the body and not the index.
+#:
+#: **Not removed, because the index is what a lane reads first.** Compared
+#: instead, so the lag between a ruling and the index is visible in one command
+#: rather than discovered by a lane claiming into it — which is how Lane A
+#: found C-206 and C-208 *"a day late"*.
+INDEX_ROW = re.compile(r"^\| \[(C-\d+)\]\([^)]*\) \|.*?\| ([^|]*?) \| [^|]*\|\s*$", re.M)
+
+
+#: The declared state is the first backticked token, never a word in the prose.
+#: **Substring matching flagged C-226 on its first run**: its status reads
+#: *"`OPEN` — nothing is blocked… this asks whether the class should be closed"*,
+#: and the word *closed* in an explanation made an open item read as shut.
+#: **That is [B-101](../docs/BUGS.md) — counting by substring — inside the check
+#: written to catch its cousin**, found by running it rather than by review.
+DECLARED = re.compile(r"`([A-Z][A-Z ]+)`")
+
+_SHUT = {"CLOSED", "RULED", "ANSWERED", "RESOLVED", "SUPERSEDED", "WITHDRAWN"}
+
+
+def _is_open(text: str) -> bool:
+    for token in DECLARED.findall(text):
+        state = token.strip()
+        if state in _SHUT:
+            return False
+        if state == "OPEN":
+            return True
+    # **No declared state at all.** Fall back to the prose rather than guess a
+    # default: an item with no backticked status is a formatting defect, and
+    # reading it as open is the safer of the two wrong answers.
+    upper = _clean(text).upper()
+    return "OPEN" in upper
+
+
+def index_disagreements(reg: dict[str, tuple[str, str, str]]) -> list[str]:
+    """Items whose summary row and body disagree about being open."""
+    text = REGISTER.read_text()
+    out: list[str] = []
+    for m in INDEX_ROW.finditer(text):
+        cid, shown = m.group(1), m.group(2)
+        if cid not in reg:
+            continue
+        # **Absent is not closed.** Six items carry no `Status` field at all,
+        # and reading an empty string as *not open* would report every one of
+        # them as drift — the `missing_gates` rule, which this repository has
+        # paid for nine times in CHECK constraints and once in this module.
+        if not _clean(reg[cid][1]).strip():
+            continue
+        if _is_open(shown) != _is_open(reg[cid][1]):
+            out.append(f"{cid} index says {_clean(shown).strip()[:28]!r}, "
+                       f"body says {_clean(reg[cid][1]).strip()[:28]!r}")
+    return out
+
+
 def queued() -> set[str]:
     """Ids the queue presents as rows — headings, plus the inline groupings.
 
@@ -188,7 +247,11 @@ def check() -> int:
         if cid not in q:
             missing.append(f"{cid} is OPEN and the product owner's, with no row: {title[:52]}")
 
+    drift = index_disagreements(reg)
+
     print(f"decision-queue: {len(q)} row(s) against {len(reg)} item(s)")
+    for line in drift:
+        print(f"  INDEX    {line}")
     for line in stale:
         print(f"  STALE    {line}")
     for line in missing:
@@ -196,7 +259,7 @@ def check() -> int:
     for line in unowned:
         print(f"  UNOWNED  {line}")
 
-    if not stale and not missing and not unowned:
+    if not stale and not missing and not unowned and not drift:
         print("  ok   every queued row is open, and every open product-owner item is queued.")
         return 0
 
@@ -204,7 +267,7 @@ def check() -> int:
     # good news; a missing row means this office has not triaged something yet.
     # Neither is a reason to refuse a commit, and making it one would turn the
     # product owner's review queue into a gate on other people's work.
-    print(f"\ndecision-queue: {len(stale) + len(missing) + len(unowned)} finding(s) — advisory, never repaired here")
+    print(f"\ndecision-queue: {len(stale) + len(missing) + len(unowned) + len(drift)} finding(s) — advisory, never repaired here")
     return 0
 
 
