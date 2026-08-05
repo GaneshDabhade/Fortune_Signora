@@ -33,6 +33,27 @@ QE is the only lane that may merge into `integration`, certify, move `main`, wri
 
 ---
 
+## 0c · Verify the push landed — capturing an exit code is not reading it
+
+**Ratified by QE, 2026-08-05.** [§0a](#0a--never-read-a-gates-verdict-through-a-pipe) says capture every exit code. **This cycle QE captured `PUSH_EXIT=1` correctly and read only the first line of the output**, then certified a commit that was never on `integration`.
+
+```
+MERGE_EXIT=0
+PUSH_EXIT=1        ← captured, not read
+SNAPSHOT: 0b423a8d ← a tree no lane would build on
+```
+
+**A claim commit landed between the fetch and the push**, so the push was rejected. Promoting the result would have **silently dropped that claim.**
+
+**The rule is mechanical: an integrate step ends by comparing the two refs**, because agreement is a fact and a zero exit code is an inference:
+
+```bash
+git push origin integration > push.log 2>&1; echo "PUSH_EXIT=$?"
+echo "local $(git rev-parse --short HEAD) · origin $(git rev-parse --short origin/integration)"
+```
+
+> **`integration` moves continuously and by design** (§20e). A rejected push is therefore **normal**, not exceptional — which is exactly why it must be checked rather than assumed away.
+
 ## 0b · Never construct a commit SHA — read it from the manifest
 
 **Ratified by QE, 2026-08-05, after the second occurrence.** A certification report is named `<12-char>.md`. **Twice QE has padded that filename into a 40-character SHA and promoted against the result.**

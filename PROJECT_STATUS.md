@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `5bc5c79`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `8ea9db8`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `5bc5c79`, 2026-08-05.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `8ea9db8`, 2026-08-05.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`5bc5c79`** — the certified commit itself |
+| **`main`** | **`8ea9db8`** — the certified commit itself |
 | **`integration`** | **ahead of `main`** — Lane A's claim and Lane C's next batch arrived after the snapshot, which is the model working |
-| **Release candidate** | **None pinned.** Cycle 59 promoted **one compose project per environment — B-118's root cause, removed rather than mitigated** |
-| **Certification** | ✅ [`5bc5c79df331`](certification/reports/5bc5c79df331.md) · migration head **`0039`** · protocol **v2** |
+| **Release candidate** | **None pinned.** Cycle 60 promoted **TASK-415 — a developer can run every AI path without downloading a model** |
+| **Certification** | ✅ [`8ea9db842f12`](certification/reports/8ea9db842f12.md) · migration head **`0039`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -28,9 +28,9 @@
 | **Customer value this cycle** | ✅ **Yes.** A seller can open an account, **ask who to talk to**, and see the evidence behind every name — or why a name has none |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
-> ✅ **[B-118](docs/BUGS.md)'s root cause is removed, not mitigated.** `docker-compose.yml` hard-coded `name: signora-v2`, so four clones drove one project — one connection pool, one lock manager, and **one cluster-wide role**, which is what aborted cycle 57 on `ALTER ROLE` where no per-database separation could ever have reached. It now reads `${COMPOSE_PROJECT_NAME:-signora-v2}` with ports defaulting to today's values, so **an unset environment behaves exactly as before** and nothing existing is orphaned.
+> ⚠️ **QE read a failed push as a successful one, and certified a commit that was not on `integration`.** `PUSH_EXIT=1` was captured correctly and QE read only the first line of the output. Certification then ran against a tree no lane would build on, and promoting it would have **silently dropped a claim commit.** Caught before promotion, the run stopped, `integration` reset to its true head, and nothing unsound reached `main`. **Capturing an exit code is necessary and not sufficient** — [§0a](docs/QUALITY_ENGINEERING.md) says capture it; this says read it.
 
-**Repository health:** **3512 backend tests** · **95.26% coverage** *(floor 95)* · **1171 frontend tests** across 55 files · **386 Security Invariants** · mypy strict over **745 files** · migrations `0000`–`0039`, **verified reversible this cycle** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **3540 backend tests** · **95.28% coverage** *(floor 95)* · **1196 frontend tests** across 57 files · **386 Security Invariants** · mypy strict over **747 files** · migrations `0000`–`0039`, **verified reversible this cycle** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -101,34 +101,40 @@
 
 ---
 
-## 1d · Release summary — 2026-08-05, cycle 59
+## 1d · Release summary — 2026-08-05, cycle 60
 
-**Derived from the promoted commit `5bc5c79`.** **Fifteen promotions.** The second half of the isolation work, and the first clean use of a rule written an hour earlier.
+**Derived from the promoted commit `8ea9db8`.** **Sixteen promotions.** A developer-experience unlock, and a QE error caught one step before it would have mattered.
 
 ### What was promoted
 
-**One compose project per environment.** `docker-compose.yml` had `name: signora-v2` hard-coded while `environments.py` derived a project per environment and nothing set `COMPOSE_PROJECT_NAME` — so four clones shared **one PostgreSQL server, one connection pool, one lock manager and one cluster-wide role.**
+**TASK-415 — a deterministic mock AI provider.** *A developer can run every AI path without downloading a model.* It sits behind the AI Provider Port as an adapter, which is the only place it may sit: **scripted fakes and real models solve different problems, and the separation is permanent** (§10). A fake never invents a quantity unless told to, so it verifies engineering behaviour and never AI quality.
 
-**Cycle 57's lease made contention *detectable*. This makes it *impossible*.**
+**3540 backend (+28) · 1196 frontend (+25) · 747 files typed.**
 
-> **Backward compatible by construction:** `name: ${COMPOSE_PROJECT_NAME:-signora-v2}`, ports defaulting to their current values. An unset environment behaves exactly as it did, so no running stack is orphaned by the change.
+### QE reported a failed push as successful
 
-**Lane C's comment names the evidence directly** — *"that last one is what aborted certification cycle 57 on `ALTER ROLE signora_app NOBYPASSRLS`, and no per-database separation could ever have reached it."* **QE's abort report fed straight into the fix**, with no relay.
+```
+MERGE_EXIT=0
+PUSH_EXIT=1        ← read as success
+SNAPSHOT: 0b423a8d ← not on origin/integration
+```
 
-### §0b earned its keep on its first cycle
+**A claim commit had landed between QE's fetch and its push.** The push was rejected; QE read the first line of the output and proceeded. **Certification then ran for several minutes against a commit no lane would build on**, and promoting it would have dropped that claim silently.
 
-The promotion SHA was read from the manifest's *passing* run and the guard's exit code was captured. **One cycle earlier, the same step promoted against a hand-built SHA that shared its first twelve characters with the real one.**
+> **Caught before promotion.** The run was stopped, stray processes and containers checked, `integration` reset to its true head, and Lane B — who *did* fast-forward — was taken instead. **Nothing unsound reached `main`, and no work was lost.**
 
-### Three lanes, one fast-forward at a time
+**The lesson is narrower than [§0a](docs/QUALITY_ENGINEERING.md) and follows from it:** capturing an exit code is necessary and **not sufficient**. This cycle QE captured `PUSH_EXIT` correctly and then did not read it. **Every integrate step now verifies that local and origin agree afterwards**, which is a fact rather than an inference.
 
-All three were current and validated; **integrating Lane C put the other two behind again.** That is the linear-history model working rather than failing — and QE did not hold the slice to batch them, because §20e takes a slice at `IN VALIDATION` at once, and a three-slice cycle makes a failure ambiguous between three authors.
+### Lane A's slice grew while it waited
+
+Lane A is **7 behind and 11 executable files ahead**, having pushed five more commits without rebasing. **Their earlier measurements no longer survive**, because Lane B's executable slice now sits between them — so QE will re-validate rather than carry a stale pass forward.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3512 backend** · 1171 frontend · **95.26%** · **386 invariants** · **745 files typed** · 35 contracts · `tsc` clean and gated |
-| **Release** | **Twenty-nine cycles promoted** · `promoted == certified` ✓ · **[§0b](docs/QUALITY_ENGINEERING.md) used on its first cycle** — SHA read from the manifest, guard exit captured |
+| **Technical** | **3540 backend** · **1196 frontend** · **95.28%** · **386 invariants** · **747 files typed** · 35 contracts · `tsc` clean and gated |
+| **Release** | **Thirty cycles promoted** · `promoted == certified` ✓ · ⚠️ **QE reported a failed push as successful** and certified a commit that was not on `integration` — caught and aborted before promotion (below) |
 | **Architecture** | Reachability 0 doorless · migration `0038` **reversible, verified this cycle** · event catalog 1 known drift |
 | **Dependency** | 69 items, 31 closed |
 | **Customer Value** | ✅ **Direct.** A renamed company's search result now explains itself. **The first slice today that a salesperson would notice** |
