@@ -17,9 +17,9 @@ from modules.provider_platform.domain.provider import ProviderCapability, Provid
 from modules.provider_platform.domain.sync import (
     ProviderSync,
     RawProviderRecord,
+    SyncFailureKind,
     SyncWatermark,
 )
-from modules.provider_platform.domain.sync import SyncFailureKind
 from modules.provider_platform.domain.targets import TargetSyncState
 
 
@@ -92,9 +92,7 @@ class SyncReporter(Protocol):
     happened to one workspace; these are how the platform is behaving.
     """
 
-    def sync_completed(
-        self, *, provider: ProviderName, duration_ms: int, records: int
-    ) -> None: ...
+    def sync_completed(self, *, provider: ProviderName, duration_ms: int, records: int) -> None: ...
 
     def sync_failed(
         self, *, provider: ProviderName, kind: SyncFailureKind, duration_ms: int

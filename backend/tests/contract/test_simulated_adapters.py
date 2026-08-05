@@ -17,7 +17,8 @@ import pytest
 from modules.provider_platform.infrastructure.adapters.simulated.adapter import (
     SimulatedProviderAdapter,
 )
-from modules.provider_platform.public import ProviderAdapter, ProviderCapability, ProviderName
+from modules.provider_platform.infrastructure.composition import SIMULATED_PROVIDERS
+from modules.provider_platform.public import ProviderAdapter, ProviderName
 from signora_platform.simulation import (
     ClockMode,
     DeliveryPlan,
@@ -26,14 +27,6 @@ from signora_platform.simulation import (
     build_timeline,
     load,
     load_scenario,
-)
-from signora_platform.simulation.generators import (
-    ApolloFixtureGenerator,
-    BomboraFixtureGenerator,
-    BuiltWithFixtureGenerator,
-    CoreSignalFixtureGenerator,
-    CrunchbaseFixtureGenerator,
-    PayloadGenerator,
 )
 from tests.contract.provider_contract import ProviderContractSuite
 
@@ -47,11 +40,18 @@ REPLAY = ReplayRecord(
 )
 
 
-def _adapter(
-    provider: ProviderName,
-    capability: ProviderCapability,
-    generator: PayloadGenerator,
-) -> ProviderAdapter:
+def _adapter(provider: ProviderName) -> ProviderAdapter:
+    """One adapter, built exactly as the composition root builds it.
+
+    **The capability and the generator come from `SIMULATED_PROVIDERS`**, which
+    is the table `build_provider_registry` reads. This suite used to hand-write
+    both per class — five pairs, restated — and a capability moving in
+    production would have left the contract suite testing the old one and
+    passing (`CLAUDE.md` §2, *truth has exactly one authoritative
+    representation*). **A provider added to that table is now contract-tested by
+    existing.**
+    """
+    capability, generator = SIMULATED_PROVIDERS[provider]
     timeline = build_timeline(
         load_scenario("baseline", 1),
         load("baseline", 1),
@@ -65,40 +65,41 @@ def _adapter(
     return SimulatedProviderAdapter(
         provider=provider,
         capabilities=frozenset({capability}),
-        generator=generator,
+        generator=generator(),
         plan=DeliveryPlan(timeline, page_size=1),
         replay=REPLAY,
     )
 
 
+def test_every_recognised_provider_has_an_adapter() -> None:
+    """**`ProviderName` and `SIMULATED_PROVIDERS` are equal, and nothing else
+    made them stay equal.**
+
+    A provider with a ratified qualification record and no generator can be
+    selected in configuration, and `build_provider_registry` refuses it at
+    startup — correct, and late. This is the same fact caught in a suite rather
+    than in a deployment, and it is the reason that refusal is not the only
+    guard.
+    """
+    assert set(SIMULATED_PROVIDERS) == set(ProviderName)
+
+
 class TestApolloSimulated(ProviderContractSuite):
     @pytest.fixture
     def adapter(self) -> ProviderAdapter:
-        return _adapter(
-            ProviderName.APOLLO,
-            ProviderCapability.COMPANY_ENRICHMENT,
-            ApolloFixtureGenerator(),
-        )
+        return _adapter(ProviderName.APOLLO)
 
 
 class TestCoreSignalSimulated(ProviderContractSuite):
     @pytest.fixture
     def adapter(self) -> ProviderAdapter:
-        return _adapter(
-            ProviderName.CORESIGNAL,
-            ProviderCapability.WORKFORCE,
-            CoreSignalFixtureGenerator(),
-        )
+        return _adapter(ProviderName.CORESIGNAL)
 
 
 class TestBomboraSimulated(ProviderContractSuite):
     @pytest.fixture
     def adapter(self) -> ProviderAdapter:
-        return _adapter(
-            ProviderName.BOMBORA,
-            ProviderCapability.BEHAVIOURAL_INTENT,
-            BomboraFixtureGenerator(),
-        )
+        return _adapter(ProviderName.BOMBORA)
 
 
 class TestBuiltWithSimulated(ProviderContractSuite):
@@ -107,18 +108,10 @@ class TestBuiltWithSimulated(ProviderContractSuite):
         # BuiltWith has no step in the baseline scenario; an adapter with an
         # empty timeline must still satisfy the contract. A provider with
         # nothing to report is a normal state, not an error.
-        return _adapter(
-            ProviderName.BUILTWITH,
-            ProviderCapability.TECHNOGRAPHICS,
-            BuiltWithFixtureGenerator(),
-        )
+        return _adapter(ProviderName.BUILTWITH)
 
 
 class TestCrunchbaseSimulated(ProviderContractSuite):
     @pytest.fixture
     def adapter(self) -> ProviderAdapter:
-        return _adapter(
-            ProviderName.CRUNCHBASE,
-            ProviderCapability.CAPITAL_EVENTS,
-            CrunchbaseFixtureGenerator(),
-        )
+        return _adapter(ProviderName.CRUNCHBASE)

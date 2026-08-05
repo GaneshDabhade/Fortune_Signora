@@ -585,3 +585,36 @@ Measured against the twelve seeded accounts, not asserted:
 ### The rule this review establishes
 
 **A simulator gap is only a gap when a shipped or next-slice capability cannot be demonstrated without it.** Everything else is a note. The Playground earned its milestone by finding F-10, D17, D18, D19, D22 and F-9 — and the way it keeps earning it is by growing *after* the product asks a question the data cannot answer, never before.
+
+---
+
+## Composition — which adapters a process serves *(TASK-436, 2026-08-05)*
+
+**[ADR-0404](adr/0404-platform-composition.md) capability 3, and until now no composition root built a provider registry at all.** `ProviderRegistry` has existed in the domain since M2; nothing constructed one outside a test. **[TASK-419](../BACKLOG.md) sized its own half as *"`WorkerRuntime` gains a `providers` field, built at the worker's composition root exactly as the API's registry already is"* — and the registry that sentence compares it to is the AI Platform's.** A different thing with a similar name, which is why the two halves separated.
+
+**`build_provider_registry(settings)`** — `modules/provider_platform/infrastructure/composition.py`. Selection is configuration and nothing else; every layer below receives a `ProviderAdapter` and cannot tell what is behind it.
+
+### Two settings objects, and the split was made by a Security Invariant
+
+**The first draft put `scenario`, `seed` and `page_size` on `ProviderSettings`**, and `TestPipelineNeutrality::test_only_the_composition_root_knows_a_simulator_exists` refused the file.
+
+**The refusal was right for a better reason than the one that made it fail.** It matched on the word; **the actual defect was that those fields are not *provider* configuration.** A real vendor adapter needs an API key and a base URL and has no use for a seed — so a `ProviderSettings` holding them is a settings object that knows a simulator exists, and every process reading it inherits that knowledge.
+
+| | Owns | Reads |
+|---|---|---|
+| **`ProviderSettings`** · `infrastructure/settings.py` | `environment` · `providers` | `SIGNORA_ENVIRONMENT` · `SIGNORA_PROVIDERS` |
+| **`SimulationSettings`** · `infrastructure/adapters/simulated/settings.py` | `scenario` · `scenario_version` · `seed` · `page_size` | `SIGNORA_SIMULATION_*` |
+
+**§6 one level down: the adapter that reads a value owns it.** When a production adapter is written it brings its own settings object beside itself, and **neither of the other two files changes** — which is the test of whether the split was drawn in the right place.
+
+### The guard that may never fail open
+
+**A simulated adapter registered outside a local environment raises `ProviderRegistrationError` at startup.** The same invariant §10 states for the AI mock, and the stakes are higher: a deployed service answering from the simulator returns well-formed enrichment, intent and funding events about real companies a customer named. **It is indistinguishable from one that is working**, and every score, signal and opportunity built on it is fabricated with nothing downstream able to tell.
+
+**The guard is on registering a simulator, not on the environment.** A deployed process with `SIGNORA_PROVIDERS` empty has nothing to fabricate and is allowed — refusing it would be the guard exceeding its own reason, and the refusal message names that escape.
+
+### One table, and the contract suite reads it
+
+**`SIMULATED_PROVIDERS` maps each provider to its capability and its generator.** The mapping previously existed only in `tests/contract/test_simulated_adapters.py`, hand-written five times; **a copy in production code would have been a second answer to *"what does Apollo do?"***, and the two would have disagreed the first time a capability moved (§2).
+
+**The suite now reads the table**, so a provider added to it is contract-tested by existing — and `test_every_recognised_provider_has_an_adapter` asserts `ProviderName` and `SIMULATED_PROVIDERS` stay equal, which is the same fact `build_provider_registry` refuses at startup, caught in a suite instead of in a deployment.
