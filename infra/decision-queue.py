@@ -175,6 +175,21 @@ def _is_open(text: str) -> bool:
     return "OPEN" in upper
 
 
+def index_absences(reg: dict[str, tuple[str, str, str]]) -> list[str]:
+    """Open items the summary table does not list at all.
+
+    **The drift check compares rows that exist, so an item with no row was never
+    compared** — 25 of 82 when this was first measured, including C-328 which the
+    product owner had ruled that morning and C-412 which this office had
+    corrected. **Absence is not a pass**, and a lane reading the index first
+    cannot see what the index omits.
+    """
+    listed = {m.group(1) for m in INDEX_ROW.finditer(REGISTER.read_text())}
+    return [f"{cid} is OPEN and has no row in the summary index: {reg[cid][0][:46]}"
+            for cid in sorted(set(reg) - listed)
+            if _clean(reg[cid][1]).strip() and _is_open(reg[cid][1])]
+
+
 def index_disagreements(reg: dict[str, tuple[str, str, str]]) -> list[str]:
     """Items whose summary row and body disagree about being open."""
     text = REGISTER.read_text()
@@ -248,10 +263,13 @@ def check() -> int:
             missing.append(f"{cid} is OPEN and the product owner's, with no row: {title[:52]}")
 
     drift = index_disagreements(reg)
+    absent = index_absences(reg)
 
     print(f"decision-queue: {len(q)} row(s) against {len(reg)} item(s)")
     for line in drift:
         print(f"  INDEX    {line}")
+    for line in absent:
+        print(f"  UNLISTED {line}")
     for line in stale:
         print(f"  STALE    {line}")
     for line in missing:
@@ -259,7 +277,7 @@ def check() -> int:
     for line in unowned:
         print(f"  UNOWNED  {line}")
 
-    if not stale and not missing and not unowned and not drift:
+    if not stale and not missing and not unowned and not drift and not absent:
         print("  ok   every queued row is open, and every open product-owner item is queued.")
         return 0
 
@@ -267,7 +285,7 @@ def check() -> int:
     # good news; a missing row means this office has not triaged something yet.
     # Neither is a reason to refuse a commit, and making it one would turn the
     # product owner's review queue into a gate on other people's work.
-    print(f"\ndecision-queue: {len(stale) + len(missing) + len(unowned) + len(drift)} finding(s) — advisory, never repaired here")
+    print(f"\ndecision-queue: {len(stale) + len(missing) + len(unowned) + len(drift) + len(absent)} finding(s) — advisory, never repaired here")
     return 0
 
 

@@ -3,11 +3,11 @@
 > ⚙️ **GENERATED — do not edit by hand.** Rebuild with `python3 infra/project-history.py`.
 > **Manual edits are lost on the next run.**
 
-> Built at `94c159f`. **Significant events only** — ADRs, completed repository cycles and schema changes.
+> Built at `f7a0d1d`. **Significant events only** — ADRs, completed repository cycles and schema changes.
 > **This is not a changelog.** `git log` is the complete record; **a second copy of it would be a duplicate
 > representation** (`CLAUDE.md` §2), and a history listing every commit teaches the reader to stop reading.
 
-**48 ADRs · 39 decided · 46 completed cycles · 39 migrations.**
+**49 ADRs · 40 decided · 56 completed cycles · 40 migrations.**
 
 ## Architectural decisions, in order
 
@@ -39,6 +39,7 @@
 | 2026-08-04 | `0401` | a customers crm is not a provider | PRODUCT OWNER APPROVED |
 | 2026-08-04 | `0402` | a rule is data | PRODUCT OWNER APPROVED |
 | 2026-08-04 | `0403` | signal engine reads a declaration | RATIFIED |
+| 2026-08-05 | `0404` | platform composition | RATIFIED |
 | — | `0001` | backend language and runtime | Accepted |
 | — | `0002` | web framework and api style | Accepted |
 | — | `0003` | package and dependency management | Accepted |
@@ -112,14 +113,24 @@
 | 2026-08-04 | Repository Closeout — dd91c62, a connection says whether it actually works |
 | 2026-08-04 | Repository Closeout — ea35fbe, and a cycle with nothing to demonstrate |
 | 2026-08-04 | Repository Closeout — f7439ca, and a runbook step that had been passing on memory |
+| 2026-08-05 | Repository Closeout — 1e55191, and a lane stops being blocked by the board |
+| 2026-08-05 | Repository Closeout — 3c12b5d, wave 1 complete and a green discarded |
+| 2026-08-05 | Repository Closeout — 56b9c53, and the guard QE piped into head |
+| 2026-08-05 | Repository Closeout — 5bc5c79, and B-118 stops being reachable |
+| 2026-08-05 | Repository Closeout — 8ea9db8, and an exit code captured but not read |
+| 2026-08-05 | Repository Closeout — 914f1dc, a seller can ask who to talk to |
+| 2026-08-05 | Repository Closeout — 9ce7b77, a lane resumes and QE misread its own gate |
+| 2026-08-05 | Repository Closeout — 9ff285d, and the guard caught the same mistake twice |
+| 2026-08-05 | Repository Closeout — acb774b, the quiet cycle, and that is the news |
+| 2026-08-05 | Repository Closeout — b871f18, the cycle that repaired the instrument |
 
 ## Schema history
 
-**39 migrations.** The chain is linear by construction — Alembic's `down_revision` makes a gap a
+**40 migrations.** The chain is linear by construction — Alembic's `down_revision` makes a gap a
 broken graph rather than a cosmetic oddity, which is why migrations are the one identifier exempt from the
 per-lane block rule (`CLAUDE.md` §20e).
 
-First: `0000_platform_event_bus_outbox`  ·  Latest: `0038_connection_probe`
+First: `0000_platform_event_bus_outbox`  ·  Latest: `0039_signal_resolution`
 
 ## What is deliberately absent
 

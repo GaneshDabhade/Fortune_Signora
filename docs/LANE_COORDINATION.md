@@ -2210,6 +2210,9 @@ assert set(SignalTypeResponse.model_fields) == {"key", "title"}
 | [C-025](#c-025--the-catalog-explains-nine-words-to-nobody) | **Product** | **Yes, unchanged** | `SignalTypeResponse` still declares `{"key", "title"}`; the Security Invariant still asserts it; `why_it_matters` still reaches no customer. **One sentence unblocks it either way**, and the implementation is written and reverted |
 | [C-026](#c-026--is-signora-expected-to-work-on-a-phone) | **Product** | **Yes, unchanged** | Still no supported viewport in any document. `app-shell.tsx` unchanged on every branch. **Raised the same day; nothing could have moved** |
 | [C-008](#c-008--sellers-cannot-see-what-their-company-sells) | **Product** | **Yes, unchanged** | `frontend/lib/state/permissions.ts` is **byte-identical across all four branches** — the guard, and therefore the contradiction with `policy.csv`, is exactly as described |
+| [C-411](#c-411--three-findings-reported-but-recorded-nowhere-a-lane-would-look) | Three findings reported but recorded nowhere a lane would look | Lane C | **per finding** | `OPEN` | Nothing |
+| [C-412](#c-412--three-backlog-rows-say-ready-and-are-not-claimable) | Three backlog rows say `READY` and are not claimable | Lane C | **Product owner** | `OPEN` — ⚠️ **corrected 2026-08-05**, it named the wrong lane on both pairs | Nothing |
+| [C-413](#c-413--two-lanes-are-assigned-knowledge_graph) | Two lanes are assigned `knowledge_graph` | Lane C | **Product owner** | `OPEN` | Nothing |
 
 ### What the audit is asserting, precisely
 
