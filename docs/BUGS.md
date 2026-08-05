@@ -124,6 +124,23 @@ export SIGNORA_DATABASE_URL=postgresql+asyncpg://…@localhost:5432/signora_lane
 
 **Publishing no number measured during contention**, which is B-118's own rule, and re-running in isolation to tell a real failure from a fabricated one.
 
+### ⚠️ Measured 2026-08-05 — it is wider than this row says, and the evidence is deterministic
+
+**This row blamed `RUNNING.md`. The `Makefile` target has the same defect, and that is the half a lane cannot read its way past.**
+
+| | |
+|---|---|
+| **`make test`** | `cd backend && … uv run pytest --cov` — **passes no database URL at all**, so `tests/conftest.py` falls back to its literal default: `…@localhost:5432/signora`, the historical shared stack |
+| **`make demo-prepare`** | `SIGNORA_DATABASE_URL=$(OWNER_DATABASE_URL)`, where `OWNER_DATABASE_URL` derives its port from `infra/environments.py --exports` — **correctly lane-aware** |
+
+**Two targets in one file, one resolving the lane's allocation and one ignoring it.** So a lane that reads `infra/`, trusts the allocation and runs the documented gate **still lands on 5432** — the instructions are not the only thing pointing at the shared database.
+
+**What it produced here, and it is not contention:** **62 failures, deterministic, `relation "signal_resolution" does not exist"`** — the shared database sits at migration `0038` while `integration` is at `0039`. **That reads exactly like a broken tree** and is a stale schema on a database this lane was never allocated.
+
+**Confirmed by fixing only the environment:** the lane's own stack brought up at **5832**, migrated to head, suite re-run with the three `SIGNORA_TEST_*` URLs pointed at it — **3624 passed, 1 skipped, coverage 95.37%.** **Nothing in the tree changed between the two runs.**
+
+**Still not fixed by this lane.** `RUNNING.md` is QE's and the `Makefile` is Platform Foundation's ([D-022](DECISION_REGISTER.md)) — **but the gate half is QE's under §20e's own test**: this changes whether a gate *runs* against the right database, not what it *means*.
+
 ### B-326 · A git conflict marker is committed inside the defect register
 
 | | |
