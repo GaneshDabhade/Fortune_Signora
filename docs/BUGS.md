@@ -165,6 +165,23 @@ E   AttributeError: <module 'environment_lease'> has no attribute 'LEASE'
 /home/ganesh/Projects/Signora-QE/backend/.venv/bin/pytest --cov
 ```
 
+### The fix has a bootstrap problem, and cycle 57 hit it
+
+**Certifying the fix itself aborted**, on a shared object no per-database isolation could have protected:
+
+```
+sqlalchemy.exc.InternalError: tuple concurrently updated
+[SQL: ALTER ROLE signora_app NOBYPASSRLS]
+```
+
+**A PostgreSQL role is cluster-wide.** Two suites reaching `ALTER ROLE` together collide however many databases they each own — so **the lease, not the database, is the only mechanism that can prevent this**, which is what Lane C's fix does.
+
+> **But a workstation lease only excludes clones that hold it.** QE's tree had the fix; **Lane A's clone did not**, because it is not promoted yet. QE took a workstation-scoped lease, Lane A took a repository-scoped one, and **two leases over one resource exclude nobody.**
+
+**Recorded as an abort, not a failure** — the gate never evaluated the repository, it was interrupted by a resource another clone was using, and no certification record was written. *A failure is a statement about the commit; an abort is a statement about the run.*
+
+**The sequencing consequence, for whoever schedules this:** the fix takes effect for a lane **only once it has promoted and that lane has rebased onto it.** Until every clone carries it, contention persists exactly as before — and the window in which the fix exists but is not yet universal is the window in which it looks like it does not work.
+
 ### The mechanism, found by Lane C — and one test that demonstrates it exactly
 
 **Lane C diagnosed the cause while QE was blocked by the symptom**, and their finding is the better one:
