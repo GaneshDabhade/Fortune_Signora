@@ -15,6 +15,7 @@ import {
   ReadingValidity,
   ScoreArithmetic,
 } from '@/components/intelligence/contributions';
+import { CompetitorContext } from '@/components/intelligence/competitors';
 import { EntityName } from '@/components/intelligence/entity-name';
 import { DecisionHistory } from '@/components/intelligence/decision-history';
 import { EvidenceDrawer, useEvidenceDrawer } from '@/components/intelligence/evidence';
@@ -47,6 +48,7 @@ import {
   useAccountValidation,
   useRequestResearch,
 } from '@/lib/query/hooks';
+import { useCompetitors } from '@/lib/query/hooks/commercial';
 import { useAccountTimeline } from '@/lib/query/hooks/timeline';
 import { useWorkspaceMembers } from '@/lib/query/hooks/team';
 import { scopeFrom } from '@/lib/state/owner-scope';
@@ -122,6 +124,7 @@ export default function AccountBriefPage() {
   // history, and the brief must not wait on all of it to render the rest.
   const timeline = useAccountTimeline(workspaceId, accountId);
   const observations = useAccountObservations(workspaceId, accountId);
+  const competitors = useCompetitors(workspaceId);
   // **The roster, so an account can be handed to a colleague.** The same query
   // the Team page holds, same cache key, so this costs no request — and
   // TM-01's `member_email` is what makes a name renderable at all.
@@ -389,6 +392,18 @@ export default function AccountBriefPage() {
               rather than data. C — a collapsed disclosure — was refused for
               the reason C-024 itself gives: it would hide the one surface
               that answers *what changed since I last looked* (R9-04). */}
+          {/* **Last of the argument, before the record of events** (TASK-417).
+              A workspace declaration rather than an account fact, so it sits
+              after everything Signora derived about *this* company — a reader
+              who has not yet seen the evidence should not meet a list of
+              names first and carry it into the rest of the page.
+
+              It renders nothing when nothing is declared. A section explaining
+              its own absence on every account of a workspace that has not
+              filled this in is noise on the screen a seller lives on; the
+              declaration page is where that prompt belongs. */}
+          <CompetitorContext competitors={competitors.data} />
+
           {/* **Between the ledger and the record of events** (TASK-417, wave 1
               of the approved Account 360). The contribution list above says
               *what Signora weighed*; the timeline below says *what occurred*.
