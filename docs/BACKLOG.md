@@ -482,6 +482,33 @@
 
 ## SEQUENCED — prepared, and waiting on a named trigger
 
+### TASK-415 · A deterministic mock AI provider, and development stops needing a model
+
+| | |
+|---|---|
+| **Objective** | **A developer can clone the repository, run the stack, and exercise every AI path without downloading a model.** Today `build_provider_registry` registers exactly two adapters — Anthropic and Ollama — so the running application has no deterministic option |
+| **Module** | `ai_platform` |
+| **Status** | **`PREPARED`** — [431](architecture/431-ai-execution-modes.md). **Not `READY`**: it needs the product owner's ruling on the policy, and it is the first task written under [D-060](DECISION_REGISTER.md)'s new model, so **the owning lane prepares the package and Lane C reviews it** |
+| **Scope** | `modules/ai_platform/infrastructure/adapters/mock.py`, implementing the **existing** `AIProviderAdapter` port. Configurable **content · failure · latency · token usage · timeout · retry count**. Registered by `build_provider_registry` **only when explicitly configured** |
+| **Repository reuse** | **The port is unchanged** — one `describe`, one `complete`. **The failure taxonomy already exists**: `AITransientError` · `AIRateLimitedError` · `AIPermanentError` · `AIOutputUnusableError`. **`tests/ai_platform/fakes.py` already does half of this** and its behaviour is promoted rather than rewritten. **`signora_platform/simulation/faults.py` is the proven pattern** at the data-provider boundary |
+| **Non-goals** | ⛔ **No streaming simulation. No tool-call simulation.** The port has neither, deliberately — *"a wider port would force every future vendor to implement methods most of them do not have, and the usual outcome is adapters raising `NotImplementedError`, which is a contract that lies."* **The mock must never lead the port** |
+| **Acceptance** | The stack runs and every AI path answers with **no Ollama and no API key** · each of the six knobs is independently settable · **a Security Invariant asserts the mock is never registered in a production configuration** |
+| **Why that invariant is not optional** | `build_provider_registry` already warns that a service which *"could quietly reach a local runtime when its vendor was unreachable would serve customers from a model nothing evaluated."* **A mock makes that failure worse**: a production service answering from a deterministic stub would be indistinguishable from one that worked |
+| **Change Budget** | 🟠 — a new adapter is an adapter registration, which [ADR-0028](architecture/adr/0028-model-runtime-by-environment.md) already governs. **No port change, no new bounded context, no new dependency** |
+| **Escalate if** | The port needs to change. **That is a different task and an ADR** |
+
+### TASK-416 · An evaluation run states which provider served it
+
+| | |
+|---|---|
+| **Objective** | Evaluation should **name its provider rather than inherit one.** `__main__.py` reads `model = args.model or settings.ollama_model` — **`--model` already works, so this is a default, not a constraint** |
+| **Module** | `ai_platform` (evaluation) |
+| **Status** | **`WAITING`** — on the question in [431 §7](architecture/431-ai-execution-modes.md), which is the product owner's |
+| **The question** | **`report.py` deliberately names no vendor**: *"nothing in evaluation may: the run asked for a model."* **Model-centric resolution is a ratified permanent principle** (`CLAUDE.md` §10). **Reproducibility wants to know what served a run; the principle says the model already is that.** **Likely they agree** — `claude-sonnet-4-5` names its server as precisely as `llama3.1:8b` does — **and if so this is a default change and nothing more** |
+| **Repository reuse** | **The harness is already vendor-neutral** — *"it knows no vendor. It names a model; who serves it is the registry's business."* **Nothing needs building; a default needs choosing** |
+| **Change Budget** | 🟢 for the default. **🔴 if the report gains a vendor field** — that amends ADR-0028 and touches a ratified principle |
+
+
 ### TASK-414 · Impact analysis, reported and nothing skipped
 
 | | |

@@ -4609,6 +4609,18 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 
 ## C-222 · `reasoning@1` earns a release under protocol 2, on a model this workstation cannot measure in time
 
+> ### Re-read 2026-08-04 under the AI Execution Modes directive — [431 §5](architecture/431-ai-execution-modes.md)
+>
+> **This item is not a fact about `reasoning@1`. It is a fact about `llama3.1:8b` on this workstation.**
+>
+> **The prompt passes protocol 2 on quality** — 0 grounding failures, 0 schema failures, `EARNED`. **It fails only on wall-clock**, against a local runtime **the product will never use in production** ([ADR-0028](architecture/adr/0028-model-runtime-by-environment.md): *"Ollama is a development dependency, never a production one"*).
+>
+> **Under Evaluation Mode with a configurable provider, `reasoning@1` can be evaluated against a hosted model.** The Anthropic adapter **already exists and is already registered when credentials are present.** **No timeout is tuned, no prompt is re-authored, no rule is bent** — the *pairing* changes, and a pairing is what an evaluation record names.
+>
+> **Still the product owner's to rule, and deliberately not inferred from the policy.** `CLAUDE.md` §10: *"the pinned evaluation model is part of the benchmark… changing the model is an architectural decision that belongs to the product owner, never to a coding session working around slow hardware."* **The directive is that decision at policy level; C-222 needs it at the level of this pairing.**
+>
+> **What closing it releases:** Epic G's runtime refusal. `require_model` refuses `reasoning@1` until a protocol-2 release exists, and **that has been true since 2026-08-04.**
+
 | | |
 |---|---|
 | **Owner** | **Product owner** (recording the measurement) · **QE** (whether the manifest may hold it) |
