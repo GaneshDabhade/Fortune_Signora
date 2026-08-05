@@ -237,6 +237,24 @@ def board_rows(board: str) -> list[dict[str, str]]:
     return out
 
 
+#: Backlog rows that render approved UI. **Named here rather than inferred from
+#: a title**, because a heuristic over titles would silently miscount the day
+#: somebody words one differently — and this figure is the product's headline
+#: gap, so a quiet miscount is the expensive kind.
+UI_WAVE_TASKS: frozenset[str] = frozenset({"TASK-417"})
+
+
+def _ui_implemented(tk: list[tuple[str, str, str]]) -> int:
+    """Wave rows a lane has finished — past `CLAIMED`, whatever comes next."""
+    done = ("IN VALIDATION", "VERIFIED", "CERTIFIED", "PROMOTED", "DONE")
+    return sum(1 for i, _, s in tk if i in UI_WAVE_TASKS and s in done)
+
+
+def _ui_integrated(tk: list[tuple[str, str, str]]) -> int:
+    promoted = ("VERIFIED", "CERTIFIED", "PROMOTED", "DONE")
+    return sum(1 for i, _, s in tk if i in UI_WAVE_TASKS and s in promoted)
+
+
 def bar(pct: int, width: int = 10) -> str:
     filled = max(0, min(width, round(pct / 100 * width)))
     return "█" * filled + "░" * (width - filled)
@@ -283,7 +301,7 @@ def build(ref: str, since: str | None = None) -> str:
     a(f"  Measured        {ref} @ {head}   (main @ {main_head})")
     a(f"  Modules {len(modules)}   Epics {len(epics)}   Tasks {len(tk)}   ADRs {len(adrs)}")
     a(f"  Endpoints {endpoints}   Frontend routes {routes}   Active lanes {len(lanes)}")
-    a(f"  Approved UI screens 26   Implemented 0")
+    a(f"  Approved UI screens 26   Implemented {_ui_implemented(tk)}   (wave rows in BACKLOG.md)")
     a(f"  Open blockers on the board: {', '.join(blockers) if blockers else 'none'}")
     a(f"  Repository health          {J}")
     a(f"  Overall implementation     {J}  (estimate)")
@@ -432,7 +450,16 @@ def build(ref: str, since: str | None = None) -> str:
     a(f"  Product Office intervention required?  {J}")
 
     a(section("7 · UI IMPLEMENTATION"))
-    a("  Approved 26 · Implemented 0 · Integrated 0 · QE certified 0")
+    # **`Implemented 0` was hardcoded and became false the hour wave 1 landed.**
+    # A constant in a dashboard is a stored fact with no expiry — the defect
+    # C-213 and C-412 both were, committed here by the office that closed them.
+    # **Counted from the wave rows instead**, so the day a wave completes this
+    # line changes without anybody remembering to change it.
+    a(f"  Approved 26 · Implemented {_ui_implemented(tk)} · "
+      f"Integrated {_ui_integrated(tk)} · QE certified {J}")
+    a("  Implemented counts a UI wave row past CLAIMED; integrated counts it")
+    a("  promoted. **26 is from 410 and is the one figure still stated** — an")
+    a("  approved screen is a design fact, and nothing in the repository counts it.")
     a(f"  Frontend routes on {ref}: {routes}  (all classified REPLACE — 413)")
     a(f"  READY for implementation   {J}   Deferred by ruling 3")
 
