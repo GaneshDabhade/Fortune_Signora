@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `8ea9db8`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `3c12b5d`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `8ea9db8`, 2026-08-05.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `3c12b5d`, 2026-08-05.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`8ea9db8`** — the certified commit itself |
+| **`main`** | **`3c12b5d`** — the certified commit itself |
 | **`integration`** | **ahead of `main`** — Lane A's claim and Lane C's next batch arrived after the snapshot, which is the model working |
-| **Release candidate** | **None pinned.** Cycle 60 promoted **TASK-415 — a developer can run every AI path without downloading a model** |
-| **Certification** | ✅ [`8ea9db842f12`](certification/reports/8ea9db842f12.md) · migration head **`0039`** · protocol **v2** |
+| **Release candidate** | **None pinned.** Cycle 61 promoted **TASK-417 — wave 1 complete, and the audit of what was already built** |
+| **Certification** | ✅ [`3c12b5d20960`](certification/reports/3c12b5d20960.md) · migration head **`0039`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -28,9 +28,9 @@
 | **Customer value this cycle** | ✅ **Yes.** A seller can open an account, **ask who to talk to**, and see the evidence behind every name — or why a name has none |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
-> ⚠️ **QE read a failed push as a successful one, and certified a commit that was not on `integration`.** `PUSH_EXIT=1` was captured correctly and QE read only the first line of the output. Certification then ran against a tree no lane would build on, and promoting it would have **silently dropped a claim commit.** Caught before promotion, the run stopped, `integration` reset to its true head, and nothing unsound reached `main`. **Capturing an exit code is necessary and not sufficient** — [§0a](docs/QUALITY_ENGINEERING.md) says capture it; this says read it.
+> ✅ **Wave 1 is complete, and QE re-measured rather than reusing a green.** Lane A's earlier pass had been taken before Lane B's mock provider and a Closeout landed between them, so **it measured a different program.** Re-validated on the tree that would merge: **3540 backend, 1202 frontend, 747 files typed.** **Their own commit names the more interesting half** — *"wave 1 is complete, and the audit is the half worth reporting"* — a lane reporting what it found already built rather than only what it added.
 
-**Repository health:** **3540 backend tests** · **95.28% coverage** *(floor 95)* · **1196 frontend tests** across 57 files · **386 Security Invariants** · mypy strict over **747 files** · migrations `0000`–`0039`, **verified reversible this cycle** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **3540 backend tests** · **95.28% coverage** *(floor 95)* · **1202 frontend tests** across 57 files · **386 Security Invariants** · mypy strict over **747 files** · migrations `0000`–`0039`, **verified reversible this cycle** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -101,40 +101,30 @@
 
 ---
 
-## 1d · Release summary — 2026-08-05, cycle 60
+## 1d · Release summary — 2026-08-05, cycle 61
 
-**Derived from the promoted commit `8ea9db8`.** **Sixteen promotions.** A developer-experience unlock, and a QE error caught one step before it would have mattered.
+**Derived from the promoted commit `3c12b5d`.** **Seventeen promotions.** Wave 1 closes, and every gate in the cycle was verified rather than inferred.
 
 ### What was promoted
 
-**TASK-415 — a deterministic mock AI provider.** *A developer can run every AI path without downloading a model.* It sits behind the AI Provider Port as an adapter, which is the only place it may sit: **scripted fakes and real models solve different problems, and the separation is permanent** (§10). A fake never invents a quantity unless told to, so it verifies engineering behaviour and never AI quality.
+**TASK-417 — wave 1 complete.** Eight commits, eleven executable files: what changed and who says so · who you compete against, *said as the declaration it is* · an empty account **asserted rather than merely survived** · an outage that stops reading as a quiet account · an unreadable opportunity that stops reading as an untouched one.
 
-**3540 backend (+28) · 1196 frontend (+25) · 747 files typed.**
+> **Four of those five are about a screen telling the truth when it has nothing, or when something failed.** An empty state that is tested, an outage that is distinguished from silence, a failure that stops inviting a pointless retry. That is the difference between a surface that works and one that is merely populated.
 
-### QE reported a failed push as successful
+### QE re-measured instead of reusing a pass
 
-```
-MERGE_EXIT=0
-PUSH_EXIT=1        ← read as success
-SNAPSHOT: 0b423a8d ← not on origin/integration
-```
+Lane A's earlier green was taken **before** Lane B's mock provider and a Closeout landed between them. **A pass measures a program, not a branch name** — so QE discarded it and re-validated on the tree that would actually merge.
 
-**A claim commit had landed between QE's fetch and its push.** The push was rejected; QE read the first line of the output and proceeded. **Certification then ran for several minutes against a commit no lane would build on**, and promoting it would have dropped that claim silently.
+### And §0c was applied on the cycle that wrote it
 
-> **Caught before promotion.** The run was stopped, stray processes and containers checked, `integration` reset to its true head, and Lane B — who *did* fast-forward — was taken instead. **Nothing unsound reached `main`, and no work was lost.**
-
-**The lesson is narrower than [§0a](docs/QUALITY_ENGINEERING.md) and follows from it:** capturing an exit code is necessary and **not sufficient**. This cycle QE captured `PUSH_EXIT` correctly and then did not read it. **Every integrate step now verifies that local and origin agree afterwards**, which is a fact rather than an inference.
-
-### Lane A's slice grew while it waited
-
-Lane A is **7 behind and 11 executable files ahead**, having pushed five more commits without rebasing. **Their earlier measurements no longer survive**, because Lane B's executable slice now sits between them — so QE will re-validate rather than carry a stale pass forward.
+Every push in this cycle ended by comparing local and origin: `local 3c12b5d2 · origin 3c12b5d2`. **One cycle earlier, that same step certified a commit that was never on `integration`.**
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3540 backend** · **1196 frontend** · **95.28%** · **386 invariants** · **747 files typed** · 35 contracts · `tsc` clean and gated |
-| **Release** | **Thirty cycles promoted** · `promoted == certified` ✓ · ⚠️ **QE reported a failed push as successful** and certified a commit that was not on `integration` — caught and aborted before promotion (below) |
+| **Technical** | **3540 backend** · **1202 frontend** · **95.28%** · **386 invariants** · **747 files typed** · 35 contracts · `tsc` clean and gated |
+| **Release** | **Thirty-one cycles promoted** · `promoted == certified` ✓ · **[§0c](docs/QUALITY_ENGINEERING.md) applied on the cycle that produced it** — every push verified by comparing refs |
 | **Architecture** | Reachability 0 doorless · migration `0038` **reversible, verified this cycle** · event catalog 1 known drift |
 | **Dependency** | 69 items, 31 closed |
 | **Customer Value** | ✅ **Direct.** A renamed company's search result now explains itself. **The first slice today that a salesperson would notice** |
