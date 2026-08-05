@@ -295,3 +295,44 @@ paths = ["infra/", "Makefile", "backend/signora_platform/simulation/"]
 last_work = "Lane C — TASK-409, TASK-410, TASK-414"
 next_milestone = "TASK-410 follow-on; the demo launcher"
 note = "not a production module — Lane C may never touch backend/modules/ (CLAUDE.md §20e)"
+
+# ── apps/ — the composition roots ────────────────────────────────────────────
+# **[C-010](../LANE_COORDINATION.md) ruled 2026-08-05**: *"`apps/` is now a
+# first-class assignable module. Record ownership in modules.toml."*
+#
+# **It had no assignable lane, and that was the whole of [C-021](../LANE_COORDINATION.md).**
+# 435 carried C-021 as a platform blocker for three days; the field it needed is
+# in `apps/worker/`, which §20a does not freeze. **An ownership gap wearing an
+# architecture gap's clothes**, and this row is what closes it.
+#
+# **Owner: Lane C — Platform Foundation.** By the ratified precedence
+# ([D-061](../DECISION_REGISTER.md)): `apps/` is **not a bounded context** and
+# not a product module — it is where modules are wired together, which is the
+# same class of thing as `infra/` and the `Makefile`. Long-term maintenance sits
+# with whoever maintains composition, and that is this lane.
+#
+# ⚠️ **AND THE HALF THAT MATTERS FOR THROUGHPUT, which is §20a's own text rather
+# than a new rule:** *"What the freeze does **not** prohibit: adding a new
+# subscription, registering a new event type, adding a worker pool… **Those are
+# uses of the platform, not changes to it.**"*
+#
+# **So any lane registers its own module's subscription, router or pool without
+# a handoff.** Lane C owns the *shape* of the composition roots — their
+# structure, their runtime object, their startup — and **owning the shape must
+# never mean owning every line every lane needs to add.**
+#
+# **The test this exists to pass:** [TASK-901](../BACKLOG.md) is seven slices and
+# every one registers a subscription. **If each needed a cross-lane handoff, this
+# row would have cost more than the gap it closes.**
+[apps]
+context = "Composition roots — apps/api/ and apps/worker/. Where modules are wired, never where behaviour lives"
+current_owner = "Lane C"
+future_owner = "Lane C"
+transition = "settled"
+implementation = 70
+basis = "API and worker composition roots built; WorkerRuntime lacks the provider registry (C-021, ADR-0404 capability 3)"
+paths = ["backend/apps/"]
+carries = ["C-010"]
+last_work = "M1.3A — pre-lane"
+next_milestone = "ADR-0404 capability 3 — a `providers` field on WorkerRuntime"
+note = "a lane registering its own subscription, router or pool needs no handoff (CLAUDE.md §20a — those are uses of the platform, not changes to it). Lane C owns the shape, never every line added to it"

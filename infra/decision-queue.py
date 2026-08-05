@@ -128,9 +128,22 @@ def register() -> dict[str, tuple[str, str, str]]:
     return out
 
 
+#: **A closed list is a record, not a queue**, and reading past this marker made
+#: every item the product owner had just closed report as STALE — the queue
+#: asking for a ruling that had been made, which is the exact failure this
+#: module exists to catch. `LANE_COORDINATION.md` already uses a `## Closed`
+#: marker for the same reason.
+CLOSED_MARKER = re.compile(r"^#{1,3} Closed\b", re.M | re.I)
+
+
 def queued() -> set[str]:
-    """Ids the queue presents as rows — headings, plus the P3/P2 inline lists."""
+    """Ids the queue presents as rows — headings, plus the inline groupings.
+
+    **Everything after the `Closed` marker is history and is not read.**
+    """
     text = QUEUE.read_text()
+    if m := CLOSED_MARKER.search(text):
+        text = text[: m.start()]
     return set(ROW.findall(text)) | set(INLINE.findall(text))
 
 

@@ -221,7 +221,7 @@
 |---|---|
 | **Epic** | **Epic C**, [ADR-0400](architecture/adr/0400-person-as-an-entity.md) · [400-epic-c-people.md](architecture/400-epic-c-people.md). **Assigned whole** |
 | **Module** | **A new bounded context — `people`** · `knowledge_graph` (`EntityKind.PERSON`) · `commercial_profile` (a stable role id, Lane B's) · Product Surface |
-| **Status** | **`BLOCKED` — [C-221](LANE_COORDINATION.md)**, which is the product owner's. **Released from Lane A on the 2026-08-04 consolidation ([D-058](DECISION_REGISTER.md)) — the claim carried no code.** **It returns to the queue blocked rather than ready, and the transfer changed nothing about why**: no person's name enters the platform at any point, so an identity model still has nothing to identify. **A consolidation moves who would build it, never whether it can be built** |
+| **Status** | ✅ **`READY` — unblocked 2026-08-05, at narrowed scope.** **[C-221](LANE_COORDINATION.md) `APPROVED WITH MODIFICATION`**: *"**Do NOT expand the architecture around people until we have a reliable provider capability.** Epic C should initially focus on **role-based and organization-level intelligence**. Treat named-person intelligence as a future enhancement once supported by provider capabilities. **Avoid speculative architecture.**"* ⛔ **So no `people` bounded context is created**, and nothing models a person's name — **the platform ingests none** ([ADR-0400](architecture/adr/0400-person-as-an-entity.md) ❓1 checked and answered *no*). **What is buildable is what the data already carries**: `title`, `seniority`, `direction`, `occurred_on` |
 | **Assigned** | **Lane A, directly by the product owner, 2026-08-04**, on Lane C's prepared research, ADR and specification |
 | **Blocked by** | **[C-221](LANE_COORDINATION.md) — ADR-0400's own ❓1, checked first as the ADR instructs, and the answer is *no*.** The platform receives no person name at any point, so an identity model has nothing to identify |
 | **On claiming** | **ADR-0400 is `PROPOSED`, not ratified**, and it says so in its own status block. A new bounded context is 🔴. The product owner's assignment is the epic approval; **the ADR still needs its ratification stamp, which only the product owner can apply** |
@@ -314,7 +314,7 @@
 |---|---|
 | **Objective** | **A criterion states what it predicts, measured against closed-won.** The ICP is declarable today and **nothing tells a customer whether it is any good** |
 | **Module** | `commercial_profile` — **Lane B's** *(consolidated to Lane B 2026-08-04 — [D-058](DECISION_REGISTER.md))*, via TASK-203 |
-| **Status** | **`BLOCKED` — [C-328](LANE_COORDINATION.md)**, 2026-08-05. Claimed by Lane B that day and **released without a line of code**, because the verification this row itself demands came back refused |
+| **Status** | ✅ **`READY` — unblocked 2026-08-05.** **[C-328](LANE_COORDINATION.md) `APPROVED`**: *"**Do not introduce the forbidden dependency.** `commercial_profile` declares. `opportunity_engine` measures. Maintain the existing dependency direction."* **Lane B stopped at the boundary and was right to** — the refusal in `pyproject.toml` stands, and **the measurement moves to the module that already sees outcomes**, reading the declaration through `commercial_profile.public`. ⚠️ **Scope changed by the ruling**: this is no longer a `commercial_profile` slice |
 | **Why it is blocked** | The row says *"a read of `opportunity_engine`'s `public/` — **verify the edge exists before writing it; if it does not, that is a `C-` item, not a new import**."* **It does not exist, and it is refused on purpose.** `pyproject.toml`'s contract *"commercial_profile declares; it never reads the pipeline"* lists `modules.opportunity_engine` **in full**, not merely its inner layers, and states why: *"if it could read a signal, a score or an opportunity, 'declaration' would quietly become 'declaration informed by our own conclusions'."* **The direction A-iv needs is closed; the opposite direction is already open** — `opportunity_engine` may read `commercial_profile.public` today. [C-328](LANE_COORDINATION.md) carries the alternatives, a recommendation and the trade-offs; **which module owns the measurement is a bounded-context decision and not a lane's** |
 | **Assigned** | **Lane A, by the product owner, 2026-08-04** — *"you may proceed with A-iii and A-iv when their corresponding READY task rows exist on integration."* **The rows landed with Lane C's synchronization at `3ab3111`**, which is the condition the ruling named |
 | **Approved screen** | **ICP Builder** — *"every criterion is scored against closed-won evidence, not opinion"* |
@@ -369,7 +369,7 @@
 |---|---|
 | **Module** | `signora_platform` — 🔴, and **explicitly approved** by [ADR-0100](architecture/adr/0100-delegated-dependency-rulings.md) R-1 |
 | **Slice** | **The RFC only.** No rewiring in this task |
-| **Status** | ✅ **`CLAIMED` — Lane C**, 2026-08-05, by the Task Claim Protocol. ✅ **The RFC is written — [435 · Platform composition](architecture/435-platform-composition-rfc.md), 2026-08-05 — and awaits product owner approval.** **Assigned by the product owner the same day**: *"TASK-900 remains with Lane C. This is Product Office / Platform Foundation work and should not be moved to an implementation lane."* ⚡ **[TASK-901](#task-901) is seven independently certifiable slices and is `BLOCKED` on this one**, and the RFC closes **[C-012](LANE_COORDINATION.md), [C-013](LANE_COORDINATION.md), [C-021](LANE_COORDINATION.md) and [C-207](LANE_COORDINATION.md)** — **four decisions retired by one approval.** **Lane B skipped it and was right to**: a feature lane writing the RFC that governs the substrate every module imports is what §20a exists to prevent. **The RFC lands before any module is rewired**, and **no production code is written by this office in any step** |
+| **Status** | ✅ **`RATIFIED` — the RFC is approved and the task is complete.** [435](architecture/435-platform-composition-rfc.md) → **[ADR-0404](architecture/adr/0404-platform-composition.md)**, product owner 2026-08-05: all four capabilities approved, **the single handler shape adopted** (*"we should not support two implementation patterns permanently"*), and the sole-owner question ruled — *"an owner may leave; a workspace may never become ownerless; enforce the invariant in the application layer rather than the authorization engine."* **Four coordination items close on it: [C-012](LANE_COORDINATION.md), [C-013](LANE_COORDINATION.md), [C-021](LANE_COORDINATION.md), [C-207](LANE_COORDINATION.md).** **No module was rewired and no production code was written by this office** — [TASK-901](#task-901) is where the rewiring happens |
 | ⚡ **Why this is the highest-leverage row in the backlog** | **[TASK-901](#task-901) is *seven independently certifiable slices* and is `BLOCKED` on this one.** Nothing else in the repository converts a single decision into that much executable work. **Both lanes are at a four-of-five buffer and this is where the fifth through eleventh slices come from** |
 | **Notes** | Four capabilities in one RFC: a session on `EventHandler` · `PublishableEvent` satisfiable by a frozen dataclass · a port from a handler to a provider adapter · a self-directed Casbin action. **Additive only** — a module not using one behaves identically |
 | **On claiming** | **The RFC lands before any module is rewired.** §20a's approval branch means approved *then* implemented. Closes [C-012](LANE_COORDINATION.md), [C-013](LANE_COORDINATION.md), [C-021](LANE_COORDINATION.md), [C-207](LANE_COORDINATION.md) |
@@ -381,7 +381,7 @@
 |---|---|
 | **Module** | Seven pipeline modules, **one per slice** |
 | **Slice** | **Seven independently certifiable slices**, not one |
-| **Status** | `BLOCKED` on TASK-900 — listed here so the sequence is visible |
+| **Status** | ⚡ **`READY` — unblocked 2026-08-05, and this is the largest single release of work in the repository.** **[TASK-900](#task-900)'s RFC is `RATIFIED` as [ADR-0404](architecture/adr/0404-platform-composition.md)**, so the four capabilities it waited on exist as an approved contract. **Seven independently certifiable slices, one per pipeline module** — claimable one at a time by whichever lane owns each module in [`modules.toml`](coordination/modules.toml). ⚠️ **Capability 1 changes `EventHandler`'s shape**, so **the two existing handlers migrate in the first slice that lands** — `_run_requested_research` and `_project_to_timeline`. **Run [ADR-0404](architecture/adr/0404-platform-composition.md) §Validation before the first slice**; a failure there is a `C-` item, never an improvisation |
 | **Notes** | After each, `make runtime-composition` is measured and **`BLOCKED_BY_C012` shrinks by exactly one.** A module leaving that list is how the architecture records that it now expects live consumption |
 
 ### TASK-902 · M7 Timeline — the remaining slices
@@ -414,7 +414,7 @@
 |---|---|
 | **Module** | `workspace_tenancy` |
 | **Slice** | invitation table · acceptance · members list |
-| **Status** | `READY` |
+| **Status** | ✅ **`READY` — unblocked 2026-08-05.** Both architectural blockers are ruled. **[C-206](LANE_COORDINATION.md) `APPROVED`**: *"Invitation lifecycle belongs to Signora. Authentication proves identity. **Workspace membership, invitations and tenancy belong to Signora.**"* **[C-208](LANE_COORDINATION.md) `APPROVED`**: *"Introduce an explicit authenticated-but-not-member state. **Do not weaken general RLS.** Provide only the minimum read path required for invitation acceptance."* ⚠️ **`signora_platform/db/` is frozen (§20a)** — the new state is a named, single-purpose read path, never a general policy change |
 | **Notes** | **Signora owns the invitation.** An `invitation` table keyed by email; acceptance matches a pending row against the **`email` claim already in the verified JWT**. **Better Auth's `organization` plugin is not adopted** — migration `0005` revokes `signora_app` from the `auth` schema, so plugin-owned membership is membership the Python tier cannot read, and §13 requires it re-verified every request |
 | **On claiming** | **v1 delivery is a shareable link, not email.** No transactional-email dependency is added. **That half is judgement** and is the ruling to challenge first if you would rather ship with email |
 
@@ -462,7 +462,7 @@
 |---|---|
 | **Module** | `knowledge_graph` |
 | **Slice** | KG-01 |
-| **Status** | `READY` |
+| **Status** | ✅ **`READY` — unblocked 2026-08-05.** **[C-018](LANE_COORDINATION.md) `APPROVED`**: *"Customer-facing terminology belongs in `explanation.py`. **Business language should never leak inward.**"* **The label is composed where the sentence is composed**, so [ADR-0034](architecture/adr/0034-ubiquitous-language.md)'s rule that translation never travels inward into `knowledge_graph` holds, and **AC-28 is untouched** |
 | **Notes** | 🟡. [ADR-0034](architecture/adr/0034-ubiquitous-language.md)'s customer vocabulary reaches attribute names, and nothing enforces it there yet |
 | **Skipped by Lane A**, 2026-08-02 | **Not claimable as written — [C-018](LANE_COORDINATION.md) opened.** Every available implementation contradicts something already written: `knowledge_graph` publishing labels contradicts AC-28 (*an entity is an identity, not a record*) and ADR-0034 (*the translation never travels inward*); translating in the browser contradicts [R11-06](architecture/39-product-review-findings.md) itself (*never in the browser*); the third option — a reviewed catalog of attribute labels — does not exist. **R11-06 also records itself as a deliberate trade-off** whose milestone is *"on evidence from a real reviewer"*, and no reviewer evidence has been recorded, so the trigger may not have fired. Lane A took **TASK-004** instead |
 
@@ -516,6 +516,33 @@
 | **Repository reuse** | **The harness is already vendor-neutral** — *"it knows no vendor. It names a model; who serves it is the registry's business."* **Nothing needs building; a default needs choosing** |
 | **Change Budget** | 🟢 for the default. **🔴 if the report gains a vendor field** — that amends ADR-0028 and touches a ratified principle |
 
+
+### TASK-418 · The platform gains the four capabilities ADR-0404 approved
+
+| | |
+|---|---|
+| **Recommendation** | **Decomposition of already-approved scope** — [ADR-0404](architecture/adr/0404-platform-composition.md), ratified 2026-08-05. **No new scope.** Lane C, decomposing rather than deciding (§20e) |
+| **Module** | ⚠️ **`signora_platform/` — and it has no assignable owner.** See below |
+| **Slice** | **Three platform edits, one slice.** Capability 3 is separate — it is in `apps/`, which is Lane C's |
+| **Status** | 🔴 **`BLOCKED` — on an owner for `signora_platform/`** |
+| **Why this exists** | **[TASK-901](#task-901) is the module-side consumption — seven slices that use the capabilities.** Nothing was the platform-side change that *creates* them, and ADR-0404 approved a contract with no row to build it. **A ratified ADR with no task is how an approval quietly becomes a plan nobody executes** |
+| **In scope** | **① `EventHandler` takes the dispatcher's session** — `event_bus/subscriptions.py`, and `dispatch.py:116` passes it. **The two existing handlers migrate here**, not in TASK-901 · **② `PublishableEvent`'s six members become read-only properties** — `event_bus/publisher.py`, and **the eight `# type: ignore[arg-type]` are deleted in the same slice, which is how the change is proven** · **④ `Action.LEAVE` plus two policy lines** — `authorization/enforcer.py` and `policy.csv` |
+| **Not in scope** | **Capability 3** (`WorkerRuntime.providers`) — `apps/` is Lane C's under [C-010](LANE_COORDINATION.md) and it is Lane C's to build · **any module rewiring** — that is TASK-901 · **`model.conf`** — the request tuple does not change, deliberately |
+| **On claiming** | **Run [ADR-0404](architecture/adr/0404-platform-composition.md) §Validation first — all four.** Two of ADR-0403's five corrected its own first draft. **A validation that fails is a `C-` item, never an improvisation** |
+| ⚠️ **The blocker, and it is one line of ownership** | **[C-010](LANE_COORDINATION.md) asked about `apps/` *and* `signora_platform/`. The 2026-08-05 ruling named `apps/` only.** `modules.toml` allocates just `backend/signora_platform/simulation/` to Platform Foundation; **the event bus and the authorization engine belong to nobody.** **Three of ADR-0404's four capabilities live there**, so **seven slices sit behind one unassigned directory** |
+
+### TASK-419 · A handler can reach a provider adapter
+
+| | |
+|---|---|
+| **Recommendation** | **Decomposition of already-approved scope** — [ADR-0404](architecture/adr/0404-platform-composition.md) capability 3. **No new scope** |
+| **Module** | **`apps/`** — [`modules.toml`](coordination/modules.toml) records it as **Lane C**, from [C-010](LANE_COORDINATION.md), ruled 2026-08-05 |
+| **Slice** | one slice |
+| **Status** | ✅ **`READY` — Lane C.** **The one quarter of ADR-0404 that is not blocked**, because `apps/` now has an owner and `signora_platform/` does not |
+| **In scope** | **`WorkerRuntime` gains a `providers` field**, built at the worker's composition root exactly as the API's registry already is |
+| **Not in scope** | **A new enqueue path.** ADR-0404 dissolves that half: with capability 1 the handler already holds a tenant-scoped session inside its own pool, so **it performs the sync where it stands.** `event_bus/queue.py` stays the relay's and the outbox remains the only way work is scheduled |
+| **On claiming** | **Validate ③ first** — `apps/worker/` is outside every §20a-frozen path, and `modules.toml` names its owner. Both hold today; **check rather than assume** |
+| **Why it is separate from [TASK-418](#task-418)** | **Different directory, different ownership state.** Bundling them would put a buildable slice behind an unassigned one, which is the shape [C-412](LANE_COORDINATION.md) named |
 
 ### TASK-417 · Account 360 renders what the platform already knows
 

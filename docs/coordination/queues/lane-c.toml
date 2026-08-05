@@ -40,7 +40,7 @@ lane         = "Lane C"
 updated      = 2026-08-05
 depth_target = 5
 
-current = ""
+current = "TASK-419"
 next    = ""
 future  = []
 
@@ -52,15 +52,11 @@ future  = []
 #
 # **§20e: `AVAILABLE` with an empty queue is a correct repository state, not a
 # stalled one** — every remaining item has an owner who is not this lane.
-eligible_count = 0
-shortfall      = 5
+eligible_count = 1
+shortfall      = 4
 
 [rationale]
-"TASK-900" = "the platform composition RFC. ⚡ The highest-leverage row in the backlog: TASK-901 is seven independently certifiable slices and is BLOCKED on this one. Lane B skipped it and was right to — a feature lane writing the RFC that governs the substrate every module imports is the failure §20a exists to prevent. It has sat READY and unclaimed because every lane is correct to refuse it. Lane C authors the RFC, the product owner approves it, an implementation lane rewires. ADR-0100 R-1 already approved the 🔴"
-"B-118" = "lanes share one PostgreSQL, so two suites fabricate each other's failures. Moved to Lane C 2026-08-05 by product owner direction — repository execution infrastructure, not a testing inconvenience. QE raised it and cannot own the repair of the instrument it certifies with. Assessed in 436: root cause is docker-compose.yml line 6, `name: signora-v2` hard-coded, while environments.py derives compose_project per environment and nothing reads it. ⛔ Change ② needs product owner approval — four container sets on one workstation is a cost, not a detail"
-"B-317" = "make test takes no environment lease. The smaller radius of the same defect: five Makefile targets already acquire the lease and this one does not, and bare pytest bypasses the Makefile entirely. 436 §③ — the conftest guard that already refuses to truncate without SIGNORA_ALLOW_DESTRUCTIVE_TESTS is the precedent and the right shape"
-"C-219" = "TASK-400's A7 render waits on the `subject` ↔ entity join, and the item says Lane A brings Lane C a proposal. No proposal has arrived. Lane C is not the blocker today, but it is the reviewer, and the item should say which it is waiting on rather than reading as jointly owned"
-"C-221" = "Epic C — People Intelligence. C-221 is owned by the product owner for the epic and by Lane C for the specification. The specification half is unwritten, and TASK-201 is BLOCKED behind it. This is a Lane C blocker sitting in front of an implementation lane's work, which outranks anything discretionary in this queue"
+"TASK-419" = "ADR-0404 capability 3 — a `providers` field on WorkerRuntime, built at the worker composition root as the API's registry already is. ✅ apps/ became a first-class assignable module on 2026-08-05 (C-010) and is Lane C's, so this is buildable now. It is the one quarter of ADR-0404 that is not blocked on an owner for signora_platform/"
 #: not sequenced — see [[held]] below.
 "_TASK-413" = "change-aware validation — frontend-only skips. SEQUENCED with a trigger that has not fired: a measured certification wall-clock cost. Listed so the sequence is visible; it does not start on a schedule"
 

@@ -47,6 +47,8 @@
 
 #### C-210 — will Signora hold personal data?
 
+> ⏸️ **`DEFERRED` — product owner, 2026-08-05.** *"Keep grouped with future People Intelligence work"*, alongside [C-203](#c-203) and the narrowed [C-221](#c-221).
+
 **Opened 2026-08-03 · Lane A · owner: product owner · 🔴 architectural**
 
 **The problem.** Sales Engagement Intelligence was assigned to answer *"who should I contact?"*, and **the platform has no people**. `EntityKind` is `COMPANY | TECHNOLOGY`, and the exclusion is deliberate and documented twice: *"claims carry role changes but no person identifier, so there is no identity to resolve"*, and *"naming an individual would put **personal data in a module with no lawful basis declared for holding it**."*
@@ -475,6 +477,8 @@ This is **Provider Platform's defect, not a contract problem**, and it does not 
 
 ## C-002 · Customer language has no anticorruption layer
 
+> ⏸️ **`DEFERRED` — product owner, 2026-08-05.** *"Keep grouped **with [C-322](#c-322)**. Do not split. Review when Epic B1 begins."* ⚠️ **Still the live scope bound on [TASK-903](BACKLOG.md)**: display the declarations, assert no match.
+
 | | |
 |---|---|
 | **Owner** | **Product owner** — needs an ADR |
@@ -546,6 +550,8 @@ Provider Normalization is an **anticorruption layer for vendor vocabulary** — 
 ---
 
 ## C-005 · Who owns the signal-profile write path
+
+> ⏸️ **`DEFERRED` — product owner, 2026-08-05.** *"Leave open until implementation reaches the feature."*
 
 | | |
 |---|---|
@@ -673,6 +679,8 @@ Lane A's call, and the answer is no change. [D38](architecture/38-product-design
 
 ## C-008 · Sellers cannot see what their company sells
 
+> ✅ **`CLOSED` — product owner, 2026-08-05.** *"Previous Product Owner ruling stands. Stage 1 has shipped."* Option C shipped as CX-05 at `e3516c4`. **Stage 2 is [TASK-903](BACKLOG.md), queued to Lane A.**
+
 > ✅ **Lane C finding, 2026-08-05 — this was ruled and shipped, and the row still reads `OPEN`. Closure recommended.**
 >
 > **[TASK-903](BACKLOG.md)'s own repository check, Lane A, 2026-08-03:** *"[C-008] was ruled by the product owner — **option C now, option D next** — and stage 1 shipped as **CX-05** at `e3516c4`: `/business`, member-reachable, **five** declarations rather than four. **The granted read is no longer unreachable.**"*
@@ -688,7 +696,7 @@ Lane A's call, and the answer is no change. [D38](architecture/38-product-design
 | **Owner** | **Product owner** (the decision) + **QE** (the frozen foundation) — *Integrator reassigned 2026-08-02, role abolished* |
 | **Requesting lane** | Lane B |
 | **Category** | Product decision · frontend foundation |
-| **Status** | `OPEN` |
+| **Status** | **`CLOSED`** — 2026-08-05, product owner |
 | **Blocks** | Nothing being built. It affects every AE and SDR, every day |
 | **Raised** | `80d9511`, in the slice-4 product review |
 
@@ -931,13 +939,15 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 
 ## C-010 · No lane is assignable to `apps/` or `signora_platform/`, and a defect is sitting in one
 
+> ✅ **`RULED` — product owner, 2026-08-05.** *"`apps/` is now a first-class assignable module. Record ownership in modules.toml."* **Recorded: `[apps]`, Lane C — Platform Foundation.** ⚠️ **And §20a's own text keeps throughput**: adding a subscription, router or pool is *a use of the platform, not a change to it*, so **any lane registers its own without a handoff.** This closes [C-021](#c-021)'s real content.
+
 | | |
 |---|---|
 | **Decision required** | How is code that belongs to no module assigned when it needs a fix? |
 | **Participating modules** | none — `signora_platform/` (frozen, §20a) · `apps/` (composition root) · the frontend foundation (frozen, §20c) |
 | **Current assignee(s)** | **Product owner** to answer · QE waiting |
 | **Blocking** | [B-003](BUGS.md), which currently has no route to a fix |
-| **Status** | `OPEN` |
+| **Status** | **`RULED`** — 2026-08-05, product owner |
 
 **Current positions.** QE's position is that this is a structural gap rather than a missing decision: every other defect resolves to a module, and a module resolves to a current assignee, but this code is deliberately outside the module structure. Absent an answer QE will leave such rows unassigned indefinitely, which is honest and useless.
 
@@ -1015,6 +1025,8 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 
 ## C-012 · `EventHandler` receives no session, so no module handler is registered
 
+> ✅ **`CLOSED` by [ADR-0404](architecture/adr/0404-platform-composition.md) — product owner, 2026-08-05.** **Four items, one approval.** [435](architecture/435-platform-composition-rfc.md) was ratified whole: all four capabilities approved, **the single handler shape adopted** — *"we should not support two implementation patterns permanently"* — and the sole-owner question ruled. **[TASK-901](BACKLOG.md)'s seven slices are released.** *Nothing is implemented by the ADR; it authorises the contract.*
+
 > ✅ **Answered by [435 · Platform composition](architecture/435-platform-composition-rfc.md)**, [TASK-900](BACKLOG.md), Lane C 2026-08-05 — **awaiting product owner approval.** **Four items, one RFC**, because deciding them separately is how the substrate drifts.
 
 | | |
@@ -1023,7 +1035,7 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 | **Participating modules** | `signora_platform` (frozen) · every module that publishes |
 | **Current assignee(s)** | **Product owner** — RFC |
 | **Blocking** | The deployed worker consumes nothing; M5B's staleness sweep is unscheduled |
-| **Status** | `WAITING` |
+| **Status** | **`CLOSED`** — 2026-08-05, ADR-0404 |
 
 **Current positions.** A handler must work in the *same transaction* as the dispatcher's idempotency claim; the registry's signature is `(envelope) -> None`. The pipeline is exercised end to end through its real handlers in the integration suite and `make smoke`, **so every gate is green while the deployed worker consumes nothing** — the reason this has survived since M3A.
 
@@ -1060,6 +1072,8 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 
 ## C-013 · `PublishableEvent` cannot be satisfied by a frozen dataclass
 
+> ✅ **`CLOSED` by [ADR-0404](architecture/adr/0404-platform-composition.md) — product owner, 2026-08-05.** **Four items, one approval.** [435](architecture/435-platform-composition-rfc.md) was ratified whole: all four capabilities approved, **the single handler shape adopted** — *"we should not support two implementation patterns permanently"* — and the sole-owner question ruled. **[TASK-901](BACKLOG.md)'s seven slices are released.** *Nothing is implemented by the ADR; it authorises the contract.*
+
 > ✅ **Answered by [435 · Platform composition](architecture/435-platform-composition-rfc.md)**, [TASK-900](BACKLOG.md), Lane C 2026-08-05 — **awaiting product owner approval.** **Four items, one RFC**, because deciding them separately is how the substrate drifts.
 
 | | |
@@ -1068,7 +1082,7 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 | **Participating modules** | `signora_platform` (frozen) · eight publishing modules |
 | **Current assignee(s)** | **Product owner** — RFC |
 | **Blocking** | nothing; eight modules carry a `# type: ignore` at their publish site |
-| **Status** | `WAITING` |
+| **Status** | **`CLOSED`** — 2026-08-05, ADR-0404 |
 
 **Current positions.** Small, contained, identical in every module — which is exactly why it has survived eight milestones. Queued alongside [C-012](#c-004--eventhandler-receives-no-session-so-no-module-handler-is-registered) because both touch the same frozen surface and should be decided together.
 
@@ -1152,6 +1166,8 @@ The full proposal — hierarchy, status mappings, envelope behaviour, logging le
 ---
 
 ## C-020 · M7 has no scope, and Timeline has no design
+
+> ⏸️ **`DEFERRED` — product owner, 2026-08-05, explicitly.** ⚠️ Half of its premise is already stale — Timeline has [45-timeline.md](architecture/45-timeline.md) and a ratified ADR-0038 — and **[C-215](#c-215) is queued to Lane B as buildable work.**
 
 | | |
 |---|---|
@@ -1315,6 +1331,8 @@ Every built module has one, marked *as built*: `22`–`29`, `33`, and `40-commer
 ---
 
 ## C-025 · M13 is not a module, and its consumers do not exist yet
+
+> ⏸️ **`DEFERRED` — product owner, 2026-08-05.**
 
 | | |
 |---|---|
@@ -1746,6 +1764,8 @@ The model is now four: **Integration (catalog) · Connected Account · Grant · 
 
 ## C-019 · A claim is invisible to the step meant to arbitrate it
 
+> ✅ **`CLOSED` — product owner, 2026-08-05.** *"The corrected Task Claim Protocol and certification guard already implement the intended behaviour."* Step 7 pushes the claim to `integration`, corrected **the day this was raised**, and `--audit-claims` added the enforcement it never asked for.
+
 > ✅ **Lane C finding, 2026-08-05 — this appears already resolved, and closure is recommended.**
 >
 > **Candidate A — *"step 7 pushes the claim to `integration` too"* — is the protocol as it now stands.** `CLAUDE.md` §20e step 7 reads *"Push the claim to `integration`"*, and the blockquote beneath it is **dated 2026-08-02, the same day this item was raised**, describing this item's own incident: *"Observed live: two lanes ran the protocol exactly as written, one claim reached `integration` and the other did not, and the second task sat there looking free while somebody was building it."*
@@ -1757,7 +1777,7 @@ The model is now four: **Integration (catalog) · Connected Account · Grant · 
 | **Owner** | **Product owner** — the Task Claim Protocol is `CLAUDE.md` §20e, governance |
 | **Requesting lane** | Lane B |
 | **Category** | Repository process · the claim protocol |
-| **Status** | `OPEN` |
+| **Status** | **`CLOSED`** — 2026-08-05, product owner |
 | **Blocks** | Nothing. **It has already happened once**, and it will happen again on every concurrent claim |
 | **Raised** | 2026-08-02, by Lane B, immediately after losing a race the protocol did not detect |
 
@@ -1792,12 +1812,14 @@ It is also the failure mode this repository keeps finding in a different coat: [
 **Lane A opened `C-018` on its branch while Lane B was reading `integration`, where the highest was `C-017`.** Lane B has taken `C-019` rather than `C-018` — having seen Lane A's branch — but a lane that only read `integration` would have allocated `C-018` twice. **QE has already had to renumber this register once for exactly this reason.** Whatever resolves the claim race should resolve id allocation with it: both are *"two lanes writing to a shared namespace on branches neither can see."*
 ## C-018 · Nobody owns the customer-facing name of an attribute
 
+> ✅ **`RULED` — product owner, 2026-08-05.** *"Customer-facing terminology belongs in `explanation.py`. **Business language should never leak inward.**"* **[TASK-003](BACKLOG.md) is unblocked.** ADR-0034 holds and AC-28 is untouched.
+
 | | |
 |---|---|
 | **Owner** | **Product owner**, with `knowledge_graph`'s assignee |
 | **Requesting lane** | Lane A |
 | **Category** | Ownership · vocabulary · module boundary |
-| **Status** | `OPEN` |
+| **Status** | **`RULED`** — 2026-08-05, product owner |
 | **Blocks** | **[TASK-003](BACKLOG.md)**, which cannot be implemented without the answer |
 | **Raised** | 2026-08-02, during the Task Claim Protocol's pre-claim review of TASK-003 |
 
@@ -1839,6 +1861,8 @@ It is also the failure mode this repository keeps finding in a different coat: [
 
 ## C-021 · An event handler cannot reach a provider adapter
 
+> ✅ **`CLOSED` by [ADR-0404](architecture/adr/0404-platform-composition.md) — product owner, 2026-08-05.** **Four items, one approval.** [435](architecture/435-platform-composition-rfc.md) was ratified whole: all four capabilities approved, **the single handler shape adopted** — *"we should not support two implementation patterns permanently"* — and the sole-owner question ruled. **[TASK-901](BACKLOG.md)'s seven slices are released.** *Nothing is implemented by the ADR; it authorises the contract.*
+
 > ✅ **Answered by [435 · Platform composition](architecture/435-platform-composition-rfc.md)**, [TASK-900](BACKLOG.md), Lane C 2026-08-05 — **awaiting product owner approval.** **Four items, one RFC**, because deciding them separately is how the substrate drifts.
 
 | | |
@@ -1846,7 +1870,7 @@ It is also the failure mode this repository keeps finding in a different coat: [
 | **Owner** | **Product owner** — `apps/worker/` has no assignable lane ([C-010](#c-010), [TASK-006](BACKLOG.md)) |
 | **Requesting lane** | Lane A |
 | **Category** | Composition root · background work · module boundary |
-| **Status** | `OPEN` |
+| **Status** | **`CLOSED`** — 2026-08-05, ADR-0404 |
 | **Kind** | **Architectural blocker** (`CLAUDE.md` §20e). No accepted architecture exists for the next step, so implementation stops rather than resuming when something frees up |
 | **Blocks** | **The last step of PP-02, and the whole of PP-03.** Everything above it is built and tested; nothing yet reads a company a customer declared |
 | **Raised** | 2026-08-02, while wiring the target-account consumer |
@@ -1917,12 +1941,14 @@ It is also the failure mode this repository keeps finding in a different coat: [
 
 ## C-023 · M13 is ratified architecture, not an executable milestone
 
+> ✅ **`CONFIRMED` — product owner, 2026-08-05.** Bookkeeping; M13 remains ratified architecture rather than an executable milestone.
+
 | | |
 |---|---|
 | **Owner** | **Product owner** |
 | **Requesting lane** | Lane A |
 | **Category** | Milestone definition · module ownership · sequencing |
-| **Status** | `OPEN` |
+| **Status** | **`RULED`** — 2026-08-05, confirmed |
 | **Blocks** | Lane A taking M13 as its execution assignment while `provider_platform` waits on [C-021](#c-021) |
 | **Raised** | 2026-08-02, on the product owner's direction to *"claim the first implementation slice of M13 **if** it is fully defined, executable, approved, and no other lane owns it"* |
 
@@ -1967,6 +1993,8 @@ It is also the failure mode this repository keeps finding in a different coat: [
 ---
 
 ## C-203 · Nothing in the product can render a person's name
+
+> ⏸️ **`DEFERRED` — product owner, 2026-08-05.** Grouped with [C-210](#c-210) and future People Intelligence work.
 
 > **Renumbered from `C-024` by QE at merge, 2026-08-02.** `C-024` was already allocated to a different finding; the later claim moves, and Lane A's block is `200`+ (`CLAUDE.md` §20e). **The original `C-024` is untouched.**
 
@@ -2104,6 +2132,8 @@ assert set(SignalTypeResponse.model_fields) == {"key", "title"}
 
 ## C-205 · Is Signora expected to work on a phone?
 
+> ✅ **`CLOSED` — product owner, 2026-08-05.** *"**Responsive web is officially part of Signora.** We are building a responsive web application. **Native mobile applications remain a future roadmap item.**"* **Every future responsive decision inherits this**, and B-203's fix is scope that should have shipped.
+
 > ⚠️ **Lane C finding, 2026-08-05 — this was answered by implementation, and the row still reads as an open question.**
 >
 > **Two corrections.** ① **`Blocks` cites `B-019`, which QE renumbered to [B-203](BUGS.md) on 2026-08-02** — `B-019` now names an entirely different finding about the constitution's branch table. ② **[B-203](BUGS.md) is `FIXED` and QE-`VERIFIED`**: Lane A shipped a bottom navigation bar below `md` on 2026-08-03, reading the same `ITEMS` and applying the same guard as the sidebar.
@@ -2119,7 +2149,7 @@ assert set(SignalTypeResponse.model_fields) == {"key", "title"}
 | **Owner** | **Product owner** |
 | **Requesting lane** | Lane A |
 | **Category** | Product scope · frontend foundation |
-| **Status** | `OPEN` |
+| **Status** | **`CLOSED`** — 2026-08-05, product owner |
 | **Blocks** | [B-019](BUGS.md), and every responsive decision in Product Surface |
 | **Raised** | 2026-08-02, during a production-UI review |
 
@@ -2218,6 +2248,8 @@ assert set(SignalTypeResponse.model_fields) == {"key", "title"}
 
 ## C-200 · M14b is three concerns in one roadmap row, and none of them has a module
 
+> ✅ **`CLOSED` — product owner, 2026-08-05.** *"Previous deferral confirmed."* [D-029](DECISION_REGISTER.md) stands; [TASK-906](BACKLOG.md) stays `WAITING` on *implementation naturally reaching M14b*.
+
 > **First identifier from Lane A's allocated block (`200+`), per `CLAUDE.md`'s identifier-block rule ratified 2026-08-02.**
 
 | | |
@@ -2225,7 +2257,7 @@ assert set(SignalTypeResponse.model_fields) == {"key", "title"}
 | **Owner** | **Product owner** — a new bounded context is 🔴 and needs an ADR |
 | **Requesting lane** | Lane A |
 | **Category** | Bounded context · module boundary · milestone scope |
-| **Status** | `OPEN` |
+| **Status** | **`CLOSED`** — 2026-08-05, product owner |
 | **Kind** | **Architectural blocker** (`CLAUDE.md` §20e). No accepted architecture exists for the next step |
 | **Blocks** | **The whole of M14b.** Every candidate first slice decides the boundary by implementing it |
 | **Raised** | 2026-08-02, at the close of the M14b domain discovery — [42-billing-and-entitlements.md](architecture/42-billing-and-entitlements.md) |
@@ -2398,6 +2430,8 @@ Alembic's `down_revision` is a linear chain: **a gap is a broken graph, not an o
 
 ## C-206 · Is an invitation Better Auth's or Signora's?
 
+> ✅ **`RULED` — product owner, 2026-08-05.** *"**Invitation lifecycle belongs to Signora.** Authentication proves identity. **Workspace membership, invitations and tenancy belong to Signora.**"* **[TASK-904](BACKLOG.md) is unblocked.** §13 stands — auth is bought; **tenancy is not auth.**
+
 > **Was `C-202b` for part of one cycle.** QE renumbered Lane A's earlier items to `C-203`–`C-205` at merge while this was being written, so it takes the next free number in Lane A's block. **Cited nowhere else at the time of renaming.**
 
 | | |
@@ -2405,7 +2439,7 @@ Alembic's `down_revision` is a linear chain: **a gap is a broken graph, not an o
 | **Owner** | **Product owner** — a new vendor capability, and an amendment to [ADR-0010](architecture/adr/0010-identity-and-access.md) |
 | **Requesting lane** | Lane A |
 | **Category** | Build vs buy · cross-tier boundary · authentication |
-| **Status** | `OPEN` |
+| **Status** | **`RULED`** — 2026-08-05, product owner |
 | **Kind** | **Architectural blocker.** No accepted architecture exists for the next step |
 | **Blocks** | **Inviting anybody.** Not the members list, which [46-team-management.md](architecture/46-team-management.md) §7 shows is now unblocked |
 | **Raised** | 2026-08-02, at the close of Team Management discovery |
@@ -2479,6 +2513,8 @@ Alembic's `down_revision` is a linear chain: **a gap is a broken graph, not an o
 
 ## C-207 · Casbin cannot express an action on yourself
 
+> ✅ **`CLOSED` by [ADR-0404](architecture/adr/0404-platform-composition.md) — product owner, 2026-08-05.** **Four items, one approval.** [435](architecture/435-platform-composition-rfc.md) was ratified whole: all four capabilities approved, **the single handler shape adopted** — *"we should not support two implementation patterns permanently"* — and the sole-owner question ruled. **[TASK-901](BACKLOG.md)'s seven slices are released.** *Nothing is implemented by the ADR; it authorises the contract.*
+
 > ✅ **Answered by [435 · Platform composition](architecture/435-platform-composition-rfc.md)**, [TASK-900](BACKLOG.md), Lane C 2026-08-05 — **awaiting product owner approval.** **Four items, one RFC**, because deciding them separately is how the substrate drifts.
 
 | | |
@@ -2486,7 +2522,7 @@ Alembic's `down_revision` is a linear chain: **a gap is a broken graph, not an o
 | **Owner** | **Product owner** — `signora_platform/authorization/` is frozen (§20a) |
 | **Requesting lane** | Lane A |
 | **Category** | Authorization model · platform freeze |
-| **Status** | `OPEN` |
+| **Status** | **`CLOSED`** — 2026-08-05, ADR-0404 |
 | **Kind** | **Architectural blocker** |
 | **Blocks** | **Leaving an organization**, and every self-directed operation Signora will ever have |
 | **Raised** | 2026-08-02, implementing the first Team Management slice |
@@ -2549,12 +2585,14 @@ Alembic's `down_revision` is a linear chain: **a gap is a broken graph, not an o
 
 ## C-208 · A tenant-scoped row whose only legitimate reader is outside the tenant
 
+> ✅ **`RULED` — product owner, 2026-08-05.** *"Introduce an explicit **authenticated-but-not-member** state. **Do not weaken general RLS.** Provide only the **minimum read path** required for invitation acceptance."* ⚠️ `signora_platform/db/` is frozen (§20a): a named single-purpose path, never a policy change.
+
 | | |
 |---|---|
 | **Owner** | **Product owner** — it is a tenancy-model question, and `signora_platform/db/` is frozen (§20a) |
 | **Requesting lane** | Lane A |
 | **Category** | Tenancy · Row-Level Security |
-| **Status** | `OPEN` |
+| **Status** | **`RULED`** — 2026-08-05, product owner |
 | **Kind** | **Architectural blocker** |
 | **Blocks** | **Accepting an invitation.** Nothing else in Team Management |
 | **Raised** | 2026-08-02, planning TM-03's acceptance endpoint |
@@ -3878,6 +3916,8 @@ That is fixed at the root (`browserEnvironment()` in `tests/e2e/fixtures/environ
 
 ## C-320 · No environment can complete a sign-up, so nobody has reviewed the first hour
 
+> ⏸️ **`DEFERRED` — product owner, 2026-08-05.** *"Highest priority within this tier. **Schedule after the current engineering wave.**"*
+
 | | |
 |---|---|
 | **Raised by** | Lane B, 2026-08-03, Product Experience Review 3 |
@@ -3901,11 +3941,13 @@ That is fixed at the root (`browserEnvironment()` in `tests/e2e/fixtures/environ
 
 ## C-321 · What should Signora do with a company it cannot name?
 
+> ✅ **`RULED` — product owner, 2026-08-05.** *"Adopt Lane B's proposed behaviour. Proceed."* All six sub-answers stand: appear **yes** · working list **no** · score **yes** · opportunity **no** · workable **never** · **`Needs identity`, its own queue.** **[TASK-400](BACKLOG.md)'s A6 half is unblocked.**
+
 | | |
 |---|---|
 | **Raised by** | Lane B, 2026-08-03, Product Experience Reviews 1–3 |
 | **Owner** | **Product owner**, with `knowledge_graph` and `opportunity_engine` |
-| **Status** | `OPEN` |
+| **Status** | **`RULED`** — 2026-08-05, product owner |
 | **Blocks** | **Epic A's A6**, which is this item under a slice's name *(raised from* nothing today, *2026-08-03)*. Also [PX-301](PRODUCT_EXPERIENCE.md) and [PX-316](PRODUCT_EXPERIENCE.md) |
 
 **The question**, and it is a product-philosophy one rather than a screen fix: **identity and significance are different axes, and the attention list currently multiplies them into one number.**
@@ -3947,6 +3989,8 @@ A record can be highly significant and unidentifiable — `70b04700` has four we
 > **Lane B has built nothing against this and is not proceeding on an assumption.** The derivable read is three lines on top of `identities()` and is worthless without knowing what the queue *does*, so it is recorded rather than built.
 
 ## C-322 · Is an ICP a description, or a filter?
+
+> ⏸️ **`DEFERRED` — product owner, 2026-08-05.** *"Keep grouped **with [C-002](#c-002)**. Do not split. **Review when Epic B1 begins.**"*
 
 | | |
 |---|---|
@@ -4112,11 +4156,13 @@ KeyError: '0035'
 
 ## C-328 · TASK-406 asks `commercial_profile` to read the pipeline, which a contract forbids by design
 
+> ✅ **`RULED` — product owner, 2026-08-05.** *"**Do not introduce the forbidden dependency.** `commercial_profile` declares. `opportunity_engine` measures. Maintain the existing dependency direction."* **Lane B stopped at the boundary and was right to.** [TASK-406](BACKLOG.md) is unblocked at changed scope.
+
 | | |
 |---|---|
 | **Raised by** | **Lane B**, 2026-08-05, on claiming [TASK-406](BACKLOG.md) and running the verification its own row demands **before writing a line** |
 | **Owner** | **The product owner** — it decides which module owns a measurement, which is a bounded-context question |
-| **Status** | `OPEN` — **and [TASK-406](BACKLOG.md) is `BLOCKED` on it.** Lane B has written no code and is not proposing to take the decision |
+| **Status** | **`RULED`** — 2026-08-05, product owner |
 | **Blocks** | **A-iv only.** Every other slice in `commercial_profile` is unaffected |
 
 ### The problem, in one line
@@ -4541,11 +4587,13 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 
 ## C-219 · TASK-400's two halves are not equally buildable
 
+> ✅ **`RULED` — product owner, 2026-08-05.** *"No Product Owner decision required. Proceed exactly as documented."* A7 proceeds; A6 is unblocked by [C-321](#c-321); **the render still waits on the join proposal Lane A owes Lane C.**
+
 | | |
 |---|---|
 | **Owner** | **Product owner** (A6, via [C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name)) · **Lane C** (A7's join, and the assignment) |
 | **Requesting lane** | Lane A |
-| **Status** | `OPEN` — **A7 proceeding, A6 held** |
+| **Status** | **`RULED`** — 2026-08-05, no decision required |
 | **Raised** | 2026-08-03, on claiming [TASK-400](BACKLOG.md) and reading the specification it cites |
 
 **Lane A claimed TASK-400 and is implementing A7. A6 is held, and this says why rather than quietly doing half an epic.**
@@ -4603,12 +4651,14 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 
 ## C-221 · Epic C's first open question is answered, and the answer blocks the epic
 
+> ✅ **`RULED WITH MODIFICATION` — product owner, 2026-08-05.** *"**Do NOT expand the architecture around people until we have a reliable provider capability.** Epic C should initially focus on **role-based and organization-level intelligence**. Treat named-person intelligence as a future enhancement. **Avoid speculative architecture.**"* ⛔ **No `people` bounded context is created.** **[TASK-201](BACKLOG.md) is unblocked at narrowed scope** — and **Lane C's specification half is answered by the narrowing itself**, so nothing is owed here.
+
 | | |
 |---|---|
 | **Owner** | **Product owner** (the epic) · **Lane C** (the specification) |
 | **Requesting lane** | Lane A |
 | **Category** | Product scope · provider contract |
-| **Status** | `OPEN` — **[TASK-201](BACKLOG.md) claimed and blocked** |
+| **Status** | **`RULED`** — 2026-08-05, product owner, at narrowed scope |
 | **Blocks** | **All of Epic C's Phases 1–3.** Phase 4 was already conditional |
 | **Raised** | 2026-08-04, doing exactly what [ADR-0400](architecture/adr/0400-person-as-an-entity.md) instructs before any code |
 

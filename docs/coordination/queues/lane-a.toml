@@ -49,9 +49,9 @@ updated      = 2026-08-05
 depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
-current = "TASK-405"
-next    = "TASK-417"
-future  = ["TASK-903", "TASK-905", "TASK-400"]
+current = "TASK-417"
+next    = "TASK-904"
+future  = ["TASK-905", "TASK-903", "TASK-400"]
 
 # **5 of a 5 target**, reached by finding work rather than by lowering the bar:
 # TASK-903's stage 2 moved here from Lane B, where it had been queued on a
@@ -73,11 +73,11 @@ eligible_count = 5
 shortfall      = 0
 
 [rationale]
-"TASK-405" = "claimed 2026-08-05 and in implementation — the domain half pushed at acb774b. signal_engine is Lane A's"
-"TASK-417" = "wave 1 of the approved UI — twelve Account 360 sections already served by shipped contracts. Render only, no backend change. 26 screens are approved and 0 are implemented, which is the largest single gap in the repository"
-"TASK-905" = "a contraction risk stops looking like an opportunity. Product Surface and buying_score_engine, both Lane A's. TASK-203 records this as the half of Epic D that still carries value"
-"TASK-903" = "the declarations on the account brief. ⚠️ Moved here from Lane B's queue on 2026-08-05, and it was never a two-lane build after 2026-08-03. C-008 was RULED by the product owner — option C now, option D next — and stage 1 shipped as CX-05 at e3516c4: /business, member-reachable, five declarations rather than four. So commercial_profile owes nothing. Lane A's own repository check says stage 2 'is one lane, not two: stage 1 needed no backend change and the display half of stage 2 needs none either.' Product Surface is Lane A's. ⛔ SCOPE BOUND: anything asserting 'this account matches this ICP' is still blocked on C-002 and is NOT in this slice — display the declarations, assert no match"
-"TASK-400" = "the backend half only — `attempted_at` on `provider_watermark`, written on every completed run, inside provider_platform. C-219 states it directly: 'Lane A is therefore building the half that needs no ruling.' Sequencing only; Lane C is not writing the package"
+"TASK-417" = "Account 360 — wave 1 of the approved UI, claimed 2026-08-05. Twelve sections already served by shipped contracts, render only. 26 screens are approved and 0 are implemented, and this is the first one being built"
+"TASK-904" = "an organization can grow. ✅ UNBLOCKED 2026-08-05 — C-206 and C-208 both ruled. Invitation lifecycle belongs to Signora; acceptance gets an explicit authenticated-but-not-member state and a minimum read path. ⚠️ signora_platform/db/ is frozen: a named single-purpose path, never a general RLS change"
+"TASK-905" = "a contraction risk stops looking like an opportunity. Product Surface and buying_score_engine, both Lane A's. This is C-011 in a task, and TASK-203 records it as the half of Epic D that still carries value"
+"TASK-903" = "the declarations on the account brief — stage 2 only. C-008 was ruled 2026-08-03 and stage 1 shipped as CX-05; the product owner confirmed the ruling stands on 2026-08-05. One lane, not two: no backend change. ⛔ SCOPE BOUND: C-002 is DEFERRED and still load-bearing — display the declarations, assert no match"
+"TASK-400" = "Epic A completion. ✅ A6 UNBLOCKED 2026-08-05 — C-321 ruled, Lane B's six answers adopted whole. A7's backend needs no ruling; A7's render still waits on the subject↔entity join proposal this lane owes Lane C, which is C-219 and is not the product owner's"
 
 [[blocked]]
 task    = "TASK-904"
@@ -109,3 +109,9 @@ note = "CX-07, the Responsive Product Surface. All four slices with QE"
 [[in_validation]]
 task = "TASK-204"
 note = "A-i — the AI Reasoning Engine reaches a customer. Built by Lane A; ai_reasoning_engine is Lane B's under D-058, and authorship does not move assignment"
+
+[[blocked]]
+task    = "TASK-901"
+blocker = ["TASK-418"]
+owner   = "Product owner — an owner for signora_platform/"
+note    = "seven modules consume the events they declare. ADR-0404 approved the capabilities on 2026-08-05 and TASK-418 builds them; three of the four live in signora_platform/, which has no assignable owner. C-010 asked about apps/ AND signora_platform/ and the ruling named apps/ only. Seven slices sit behind one unassigned directory."

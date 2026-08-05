@@ -56,9 +56,9 @@ updated      = 2026-08-05
 depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
-current = "TASK-415"
+current = "TASK-416"
 next    = "TASK-408"
-future  = ["TASK-416", "TASK-902"]
+future  = ["TASK-406", "TASK-003", "TASK-201", "TASK-902"]
 
 # **4 of a 5 target.** Two corrections on 2026-08-05, in opposite directions.
 #
@@ -72,14 +72,16 @@ future  = ["TASK-416", "TASK-902"]
 # **TASK-902 arrived, narrowed.** It was `WAITING` on C-020, and C-020 blocks
 # M7's undefined remaining scope rather than this slice. **C-215 is a finished
 # specification** and it was invisible to tooling because of a heading shape.
-eligible_count = 4
-shortfall      = 1
+eligible_count = 6
+shortfall      = 0
 
 [rationale]
-"TASK-408" = "B-ii, search results are grouped and the ranking explainable. knowledge_graph is Lane B's, and the row records it as partly delivered rather than blocked, so the remainder is claimable. This has been claimable since 2026-08-05 and has not been claimed"
-"TASK-415" = "the deterministic mock AI provider — a first-class development provider implementing the existing provider port, not a test double. ai_platform is review-at-first-implementation and Lane B is its current assignee, so under D-060 Lane B prepares the package and Lane C reviews it"
-"TASK-902" = "the Timeline feed, workspace-scoped. ⚠️ Recovered 2026-08-05 from a register row nothing could read: C-215 is written as `### C-215 —` while the convention is `## C-nnn ·`, so infra/decision-queue.py never saw it and neither did this queue. It is NOT a decision awaiting a ruling — it is a finished specification awaiting a lane. It names the signature (feed_for_workspace(workspace_id, *, entity_ids=None, since=None, after, limit)), the endpoint (GET /workspaces/{id}/timeline), the index it needs ((workspace_id, occurred_at, id), because the existing one is entity-leading), and its own scope bound (read-only, no new judgement — Timeline ranks nothing and explains nothing, and this must not become the place that starts). timeline is Lane B's. Lane A raised it and correctly did not build it: a lane never changes a module it is not assigned. ⛔ NOT blocked on C-020 — that item blocks M7's undefined remaining scope, and this slice needs none of it. Blocks SW-02 and SW-06."
-"TASK-416" = "an evaluation run states which provider served it. Four of the six required fields already exist; `provider` and `execution_mode` are the whole of the change. Prepared by Lane B, reviewed by Lane C, same loop as TASK-415"
+"TASK-416" = "an evaluation says which provider served it — claimed and delivered 2026-08-05. ✅ execution_mode is REMOVED from the mandatory fields: the product owner accepted this lane's challenge — a field constant for every possible record carries no information. CLAUDE.md §10 is amended to five"
+"TASK-408" = "B-ii, search results are grouped and the ranking explainable. knowledge_graph is Lane B's and the row records it as partly delivered, so the remainder is claimable. Claimable since 2026-08-05 and not yet claimed"
+"TASK-406" = "an ICP criterion scored against outcomes. ✅ UNBLOCKED 2026-08-05 — C-328 ruled: do not introduce the forbidden dependency; commercial_profile declares, opportunity_engine measures. ⚠️ SCOPE CHANGED by the ruling — this is no longer a commercial_profile slice. This lane stopped at the boundary and was right to"
+"TASK-003" = "the attributes are engineering's words. ✅ UNBLOCKED 2026-08-05 — C-018 ruled: customer-facing terminology belongs in explanation.py, business language never leaks inward. ADR-0034 holds and AC-28 is untouched"
+"TASK-201" = "Epic C — People Intelligence. ✅ UNBLOCKED 2026-08-05 at NARROWED scope. ⛔ No `people` bounded context is created and nothing models a person's name — the platform ingests none. Role-based and organization-level intelligence only: title, seniority, direction, occurred_on, which is what the data already carries. Named-person intelligence waits on a provider capability. Avoid speculative architecture"
+"TASK-902" = "the Timeline feed, workspace-scoped — C-215, a finished specification rather than a decision. It names the signature, the endpoint, the index and its own scope bound. ⛔ NOT blocked on C-020, which the product owner deferred explicitly on 2026-08-05 and which blocks M7's undefined remainder, not this slice"
 
 # ── Owned, not startable ─────────────────────────────────────────────────────
 
@@ -134,3 +136,9 @@ note = "A-ii — Sales Engagement reaches a customer"
 task     = "TASK-203"
 by       = "Lane C, 2026-08-05"
 note     = "Epic D — Risk Intelligence. Claimed and released the same day: the reuse audit the row itself demanded found all seven elements built. The row's own finding is decisive — 'Epic D has no unbuilt, unblocked slice under this task id.' Phase 1 is TASK-905 (Lane A's), phase 4 needs E1 and phase 5 needs Epic C. Removed from the eligible set rather than left READY, because a READY row that cannot be started is the C-412 defect"
+
+[[blocked]]
+task    = "TASK-901"
+blocker = ["TASK-418"]
+owner   = "Product owner — an owner for signora_platform/"
+note    = "seven modules consume the events they declare. ADR-0404 approved the capabilities on 2026-08-05 and TASK-418 builds them; three of the four live in signora_platform/, which has no assignable owner. C-010 asked about apps/ AND signora_platform/ and the ruling named apps/ only. Seven slices sit behind one unassigned directory."
