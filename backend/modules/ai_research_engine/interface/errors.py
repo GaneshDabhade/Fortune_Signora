@@ -10,7 +10,10 @@ from fastapi import status
 
 from modules.ai_research_engine.application.queries import ResearchArtifactMissing
 from modules.ai_research_engine.application.request import NoOpportunityToResearch
-from modules.ai_research_engine.domain.request import ResearchRequestError
+from modules.ai_research_engine.domain.request import (
+    ResearchRequestError,
+    ResearchRequestInvariantError,
+)
 from signora_platform.api import ErrorMapping
 
 ERROR_MAPPING: ErrorMapping = {
@@ -22,9 +25,22 @@ ERROR_MAPPING: ErrorMapping = {
     # 404**: the customer asked correctly and the platform lost something, and
     # answering "not found" would attribute our fault to their request.
     ResearchArtifactMissing: (status.HTTP_500_INTERNAL_SERVER_ERROR, "research_artifact_missing"),
-    # Everything the domain refuses — an illegal status change, a state whose
-    # fields contradict its status. Registered last in the source but never
-    # last in effect: handler lookup walks the exception's MRO, so the row
-    # above still wins for its own type.
+    # A state the platform should never have been able to construct. **500,
+    # like `ResearchArtifactMissing` above and for the same reason**: the
+    # customer did nothing wrong, and telling them their request was refused
+    # sends support to look at their data for a bug in ours (`B-103`).
+    #
+    # **This row is what splits the two meanings**, not the exception's
+    # position in the file. `ResearchRequestInvariantError` subclasses
+    # `ResearchRequestError`, and handler lookup walks the MRO, so the more
+    # specific type finds this row before reaching the one below.
+    ResearchRequestInvariantError: (
+        status.HTTP_500_INTERNAL_SERVER_ERROR,
+        "research_request_invalid",
+    ),
+    # Everything the domain refuses **because of something the customer did** —
+    # asking a settled request to change again. Registered last in the source
+    # but never last in effect: handler lookup walks the exception's MRO, so
+    # the rows above still win for their own types.
     ResearchRequestError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "research_request_refused"),
 }

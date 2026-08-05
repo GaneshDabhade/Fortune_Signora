@@ -1065,7 +1065,7 @@ Both values are now **getters** — required at point of *use*, not point of *re
 | **Module** | `opportunity_engine` · `ai_research_engine` — **the same shape in both, arrived at independently** |
 | **Current assignee** | **Unassigned.** Neither module has a current lane; whoever is next assigned fixes it |
 | **Severity** | 🟠 — **the product tells a customer something false about their own request** |
-| **Status** | `OPEN` |
+| **Status** | **`FIXED` in `ai_research_engine` — Lane A**, 2026-08-05. **`OPEN` in `opportunity_engine`**, which is Lane B's and untouched here. **The row stays open** until both halves are closed; only QE closes it. `ResearchRequestInvariantError` splits the invariant from the refusal and maps to `500 research_request_invalid`; the 422 refusal is unchanged, as the row requires. Regression test: `tests/ai_research_engine/test_error_attribution.py`. **Not generalised into a repository-wide invariant** — one asserted from here would fail Lane B's build for a half they have not taken (§20e) |
 | **Found** | 2026-08-03, by QE, re-validating [C-009](LANE_COORDINATION.md) against current code |
 
 **Steps to reproduce.** Trigger any condition that raises a domain invariant rather than a domain refusal — for example a negative generation or a negative state sequence.

@@ -109,7 +109,31 @@ _ALLOWED: Final[dict[ResearchStatus, frozenset[ResearchStatus]]] = {
 
 
 class ResearchRequestError(ValueError):
-    """A request was asked to do something its history does not permit."""
+    """A request was asked to do something its history does not permit.
+
+    **Something the customer did**, and the message is written to be read by
+    them: asking a completed request to start again is a reasonable thing to
+    try and a reasonable thing to be told no about. Surfaces as `422`.
+    """
+
+
+class ResearchRequestInvariantError(ResearchRequestError):
+    """**Something Signora did.** A state the platform should never have been
+    able to construct — a negative sequence, a completed request with no
+    artifact, a failure with no reason.
+
+    **A subclass rather than a sibling** (`B-103`). Every `except
+    ResearchRequestError` still catches it, which is correct — both are still
+    "this state is not permitted" — while the handler lookup walks the
+    exception's MRO and finds this type's own row first, so only the meaning
+    that reaches a customer differs.
+
+    **The distinction is which of us was wrong.** One class carrying both
+    meanings told a seller *"your request was refused"* for a bug in our code:
+    support looks at their data, and the defect is in ours. §10 — *"an
+    incorrect attribution is worse than none, because it misdirects the
+    investigation"* — and this one misdirected it at the customer.
+    """
 
 
 @dataclass(frozen=True, slots=True)
@@ -157,10 +181,14 @@ class ResearchRequestState:
     detail: str | None = None
 
     def __post_init__(self) -> None:
+        # **Every check here is an invariant, not a refusal.** Nothing a
+        # customer can send reaches this constructor — states are built by the
+        # use case and the worker — so each of these means Signora built
+        # something it should not have been able to build.
         if self.sequence < 0:
-            raise ResearchRequestError("a state's sequence cannot be negative.")
+            raise ResearchRequestInvariantError("a state's sequence cannot be negative.")
         if (self.status is ResearchStatus.COMPLETED) != (self.task_id is not None):
-            raise ResearchRequestError(
+            raise ResearchRequestInvariantError(
                 "a completed request names its artifact and no other status has one. "
                 f"Status {self.status.value!r} with an artifact named would make "
                 "'is there something to read?' answerable two different ways."
@@ -170,7 +198,7 @@ class ResearchRequestState:
         # that accepted what the table refuses would fail at the last
         # possible moment, in a worker, with a constraint name for a message.
         if (self.status is ResearchStatus.FAILED) != bool((self.detail or "").strip()):
-            raise ResearchRequestError(
+            raise ResearchRequestInvariantError(
                 "a failed request states why, and only a failed request does. "
                 f"Status {self.status.value!r} with detail {self.detail!r} would either "
                 "hide a reason or invent one."
