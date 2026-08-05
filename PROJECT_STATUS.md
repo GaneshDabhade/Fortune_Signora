@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `f7a0d1d`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `3e4a924`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `f7a0d1d`, 2026-08-05.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `3e4a924`, 2026-08-05.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`f7a0d1d`** — the certified commit itself |
+| **`main`** | **`3e4a924`** — the certified commit itself |
 | **`integration`** | **ahead of `main`** — Lane A's claim and Lane C's next batch arrived after the snapshot, which is the model working |
-| **Release candidate** | **None pinned.** Cycle 62 promoted **the coordination register auditing itself**, and [B-120](docs/BUGS.md) alongside it |
-| **Certification** | ✅ [`f7a0d1dad6f8`](certification/reports/f7a0d1dad6f8.md) · migration head **`0039`** · protocol **v2** |
+| **Release candidate** | **None pinned.** Cycle 63 promoted **[B-120](docs/BUGS.md)'s answer and D-073** — the generators are tested, and `signora_platform/` has an owner |
+| **Certification** | ✅ [`3e4a924e7793`](certification/reports/3e4a924e7793.md) · migration head **`0039`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -28,9 +28,9 @@
 | **Customer value this cycle** | ✅ **Yes.** A seller can open an account, **ask who to talk to**, and see the evidence behind every name — or why a name has none |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
-> ✅ **QE recorded a finding without blocking on it, and the lane fixed it within the hour.** [B-120](docs/BUGS.md): four generators produce the documents the repository uses to describe itself and **no test executed any of them** — invisible to every published figure, because `infra/` is outside the coverage gate's scope. **The evidence was the lane's own commit titles**: *Implemented 0 was hardcoded* · *Integrated 0 while wave 1 sat on `main`* · *Eighteen index rows disagreed with their own item bodies*. **Three wrong outputs, each caught by a person reading them.** Lane C's answer — *"the generators are tested, and the tests found two more gaps"* — is the return on recording it.
+> ✅ **The last unassignable code in the repository now has an owner.** D-073 makes `backend/signora_platform/` **Lane C's**, on the same rationale as `apps/` — *"shared infrastructure, not a bounded context… platform ownership must remain stable and independent of feature ownership."* **[C-010](docs/LANE_COORDINATION.md) closes**, and with it the gap that swallowed four defects because no lane could touch them. ⚠️ **Ownership is not approval**: §20a still freezes the tree and every change still needs an RFC. **And [B-120](docs/BUGS.md) is answered** — the generators are tested, by tests that assert *derivation rather than values*, so a hardcoded figure fails whatever number it holds.
 
-**Repository health:** **3540 backend tests** · **95.28% coverage** *(floor 95)* · **1202 frontend tests** across 57 files · **386 Security Invariants** · mypy strict over **747 files** · migrations `0000`–`0039`, **verified reversible this cycle** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **3551 backend tests** · **95.28% coverage** *(floor 95)* · **1202 frontend tests** across 57 files · **386 Security Invariants** · mypy strict over **748 files** · migrations `0000`–`0039`, **verified reversible this cycle** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -101,28 +101,28 @@
 
 ---
 
-## 1d · Release summary — 2026-08-05, cycle 62
+## 1d · Release summary — 2026-08-05, cycle 63
 
-**Derived from the promoted commit `f7a0d1d`.** **Eighteen promotions.** A register that audits itself, and a QE observation that paid within the hour.
+**Derived from the promoted commit `3e4a924`.** **Nineteen promotions.** A row QE filed comes back as tests, and the repository's last ownerless code gets an owner.
 
 ### What was promoted
 
-**The coordination register auditing itself** — *"eighteen index rows disagreed with their own item bodies"*, found by tooling rather than by a reader tripping over it. Plus the dashboard corrections behind *"Implemented 0 was hardcoded"* and *"Integrated 0 while wave 1 sat on `main`."*
+**[B-120](docs/BUGS.md)'s answer** — `test_repository_generators.py`, and **the tests found two more gaps** while being written. Their design is the part worth keeping: **they assert *derivation*, not values.** A test checking `implemented == 47` would merely have hardcoded the thing that was wrong; asserting the figure is derived fails whatever number it holds.
 
-### [B-120](docs/BUGS.md) — recorded, not blocked on, and answered immediately
+**D-073** — `backend/signora_platform/` is **Lane C's**, permanently, on the same rationale as `apps/`. **[C-010](docs/LANE_COORDINATION.md) closes**: the gap where `signora_platform/`, `apps/` and repository process belonged to no lane, and four defects landed in it precisely because nobody could touch them.
 
-**Four generators produce the repository's self-description and no test executed any of them.** They sit outside the coverage gate's scope, so the gap was invisible to every figure QE publishes.
+> ⚠️ **Ownership is not approval.** §20a still freezes the platform and every change still needs an RFC. What changed is that a defect there now has somebody to go to.
 
-> **QE did not block on it.** A wrong dashboard is not a wrong product: no gate consumes these, the slice passed everything, and blocking would have been QE setting a priority that is not QE's. **The row states the standard — *no change ships without tests* — and notes the exemption was accidental rather than reasoned.**
+### A finding QE checked before raising
 
-**Lane C answered within the hour: *"the generators are tested, and the tests found two more gaps."*** Two further defects surfaced by the tests that were written because a row was filed. **That is the whole argument for recording an observation you have decided not to act on.**
+C-010's closure appeared to make `CLAUDE.md`'s *"defects in code that belongs to no module"* section describe a state that no longer exists — a §2 defect, and QE's to report rather than fix. **The section had already been removed.** A finding raised against text that is no longer there is noise wearing diligence's clothes, and one grep was the whole cost of not filing it.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3540 backend** · **1202 frontend** · **95.28%** · **386 invariants** · **747 files typed** · 35 contracts · `tsc` clean and gated |
-| **Release** | **Thirty-two cycles promoted** · `promoted == certified` ✓ · every gate, guard and push verified by its own exit code and by comparing refs |
+| **Technical** | **3551 backend** · **1202 frontend** · **95.28%** · **386 invariants** · **748 files typed** · 35 contracts · `tsc` clean and gated |
+| **Release** | **Thirty-three cycles promoted** · `promoted == certified` ✓ · every gate, guard and push verified by its own exit code and by comparing refs |
 | **Architecture** | Reachability 0 doorless · migration `0038` **reversible, verified this cycle** · event catalog 1 known drift |
 | **Dependency** | 69 items, 31 closed |
 | **Customer Value** | ✅ **Direct.** A renamed company's search result now explains itself. **The first slice today that a salesperson would notice** |
