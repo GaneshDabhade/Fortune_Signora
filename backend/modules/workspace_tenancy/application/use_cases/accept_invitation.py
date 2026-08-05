@@ -38,15 +38,22 @@ enforced here:
 * the claim must be **verified** — an unverified address is an assertion by the
   person making it, and accepting on one would let anybody type their way into
   a customer's data;
-* it must **match** the invited address, compared through `normalize_email` so
-  two spellings of one address cannot be two different answers.
+* the offer is **looked up by that address**, through `normalize_email`, so
+  two spellings of one address cannot be two different answers — and reading
+  somebody else's invitation is not a check that could be forgotten, it is a
+  query that does not exist.
 
 ### Already a member is a success, not a failure
 
 Somebody who follows the link twice, or who was added directly while an
 invitation stood, has the membership the invitation offered. Refusing the
 second attempt would show an error for a state that is exactly what was asked
-for. **The invitation is settled and the existing membership returned.**
+for.
+
+**The membership check therefore runs before the offer is looked for.** The
+offer is found by address among *live* invitations, and acceptance settles it —
+so a second click finds nothing, and without this ordering the person would be
+told there is no invitation to a workspace they are already in.
 """
 
 from __future__ import annotations
@@ -68,28 +75,20 @@ from modules.workspace_tenancy.domain.invitation import (
 
 
 class InvitationNotFoundError(InvitationError):
-    """No such invitation in this workspace.
+    """This workspace has no standing offer to this address.
 
-    **Deliberately indistinguishable from an invitation addressed to somebody
-    else** — see `NotYoursToAcceptError`. Both answer `404`, because telling
-    the two apart would turn this endpoint into a way to ask *"does this
-    workspace hold an invitation with this id?"*
+    **One sentence covering every reason**, and that is the design rather than
+    laziness: never invited, already accepted, withdrawn. Telling them apart
+    would answer *"has this workspace invited this person?"* to anybody who can
+    sign in — a fact about a customer's hiring.
+
+    **Expiry is the deliberate exception** and is raised by the aggregate with
+    its own words. An expired offer is one the person genuinely held, and
+    *"that expired"* is the only refusal here that tells them what to do next.
     """
 
     def __init__(self) -> None:
-        super().__init__("That invitation does not exist, or it is not yours to accept.")
-
-
-class NotYoursToAcceptError(InvitationError):
-    """The invitation names a different address.
-
-    **The same message and the same status as a missing invitation.** A
-    distinct one would confirm to a stranger that a particular workspace had
-    invited a particular person, which is a fact about a customer's hiring.
-    """
-
-    def __init__(self) -> None:
-        super().__init__("That invitation does not exist, or it is not yours to accept.")
+        super().__init__("There is no invitation to this organization for your address.")
 
 
 class UnverifiedEmailError(InvitationError):
@@ -110,7 +109,6 @@ class UnverifiedEmailError(InvitationError):
 @dataclass(frozen=True, slots=True)
 class AcceptInvitationInput:
     workspace_id: UUID
-    invitation_id: UUID
     #: The authenticated caller. **From the verified token, never a request
     #: body** — a user id a caller could choose is a user id they would choose
     #: somebody else's.
@@ -148,34 +146,40 @@ class AcceptInvitationUseCase:
         if not input_.email_verified:
             raise UnverifiedEmailError()
 
+        # **Membership is checked before the offer is looked for, and that
+        # ordering is load-bearing.** `find_live` excludes accepted offers, so
+        # somebody following their link a second time finds nothing — and would
+        # be told there is no invitation, for a workspace they are already in.
+        # An integration test caught exactly that when this use case moved from
+        # an id lookup to an address lookup; the unit tests did not, because the
+        # fake had already returned before reaching the repository.
+        #
+        # A member asking to accept is told what is true: they are a member.
+        existing = await self._memberships.get(input_.workspace_id, input_.user_id)
+        if existing is not None:
+            return existing
+
+        # **The offer is looked up by the caller's own verified address**, not
+        # by an identifier in the link. That is what makes *"this is not yours"*
+        # unreachable rather than checked: there is no code path here that can
+        # read somebody else's invitation, so no check to forget.
+        #
+        # It also matches the link the product actually sends —
+        # `/join/{workspace_id}`, carrying no invitation id — because the id
+        # would look like a secret while being none. At most one live offer per
+        # address exists, guaranteed by the partial unique index that
+        # `find_live` mirrors.
+        #
         # **There is deliberately no workspace-existence check.** The first
         # draft had one, and an integration test caught it: `workspace`'s
         # row-level security is *membership-based*, so the accepter — who is by
         # definition not a member — could never pass it, and every acceptance
-        # answered `workspace_not_found`. It also leaked a distinct code for a
-        # workspace the caller cannot see.
-        #
-        # **The invitation read is the existence proof.** An invitation cannot
-        # exist without its workspace, and one that cannot be found is
-        # `InvitationNotFoundError` — the same 404 as every other refusal here.
-        invitation = await self._invitations.get(input_.workspace_id, input_.invitation_id)
+        # answered `workspace_not_found`.
+        invitation = await self._invitations.find_live(
+            input_.workspace_id, normalize_email(input_.email)
+        )
         if invitation is None:
             raise InvitationNotFoundError()
-
-        # **Compared normalized, on both sides.** The stored address was
-        # normalized when the invitation was written; the claim is normalized
-        # here, so `Ada@Example.COM` accepting an invitation to
-        # `ada@example.com` is one person and not two.
-        if normalize_email(input_.email) != normalize_email(invitation.invited_email):
-            raise NotYoursToAcceptError()
-
-        # **Before the pending check, not after.** Somebody who follows the
-        # link a second time has what the invitation offered, and an
-        # `InvitationNotPendingError` would report a failure for the state they
-        # asked for. The membership they already hold is the honest answer.
-        existing = await self._memberships.get(input_.workspace_id, input_.user_id)
-        if existing is not None:
-            return existing
 
         # Refuses expired, revoked and already-accepted, each with its own
         # sentence — the aggregate owns that distinction and this does not
@@ -208,6 +212,5 @@ __all__ = [
     "AcceptInvitationInput",
     "AcceptInvitationUseCase",
     "InvitationNotFoundError",
-    "NotYoursToAcceptError",
     "UnverifiedEmailError",
 ]

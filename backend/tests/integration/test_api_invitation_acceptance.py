@@ -94,14 +94,16 @@ async def _accept(
     client: AsyncClient,
     key_pair: KeyPair,
     workspace_id: UUID,
-    invitation_id: UUID,
     *,
     user_id: UUID | None = None,
     email: str = INVITED,
     email_verified: bool = True,
 ) -> Any:
+    """**The link carries a workspace and nothing else.** `/join/{workspace_id}`
+    is what `ConsoleInvitationDelivery` already sends, and the offer is found by
+    the caller's verified address rather than by an id in a URL."""
     return await client.post(
-        f"/workspaces/{workspace_id}/invitations/{invitation_id}/accept",
+        f"/workspaces/{workspace_id}/invitations/accept",
         headers=_auth(
             key_pair, user_id or uuid4(), email=email, email_verified=email_verified
         ),
@@ -117,7 +119,7 @@ class TestTheInvitedPersonCanJoin:
         path this request cannot see the row addressed to it."""
         workspace_id, invitation_id = await _workspace_with_invitation(client, key_pair)
 
-        response = await _accept(client, key_pair, workspace_id, invitation_id)
+        response = await _accept(client, key_pair, workspace_id)
 
         assert response.status_code == 200, response.text
         assert response.json()["workspace_id"] == str(workspace_id)
@@ -131,7 +133,7 @@ class TestTheInvitedPersonCanJoin:
         workspace_id, invitation_id = await _workspace_with_invitation(client, key_pair)
         joining = uuid4()
 
-        await _accept(client, key_pair, workspace_id, invitation_id, user_id=joining)
+        await _accept(client, key_pair, workspace_id, user_id=joining)
         members = await client.get(
             f"/workspaces/{workspace_id}/members",
             headers=_auth(key_pair, joining, email=INVITED),
@@ -148,10 +150,10 @@ class TestTheInvitedPersonCanJoin:
         joining = uuid4()
 
         first = await _accept(
-            client, key_pair, workspace_id, invitation_id, user_id=joining
+            client, key_pair, workspace_id, user_id=joining
         )
         second = await _accept(
-            client, key_pair, workspace_id, invitation_id, user_id=joining
+            client, key_pair, workspace_id, user_id=joining
         )
 
         assert first.status_code == 200, first.text
@@ -168,7 +170,7 @@ class TestHoldingTheLinkIsNotBeingTheAddressee:
         workspace_id, invitation_id = await _workspace_with_invitation(client, key_pair)
 
         response = await _accept(
-            client, key_pair, workspace_id, invitation_id, email="mallory@elsewhere.com"
+            client, key_pair, workspace_id, email="mallory@elsewhere.com"
         )
 
         assert response.status_code == 404, response.text
@@ -181,7 +183,7 @@ class TestHoldingTheLinkIsNotBeingTheAddressee:
         workspace_id, invitation_id = await _workspace_with_invitation(client, key_pair)
 
         response = await _accept(
-            client, key_pair, workspace_id, invitation_id, email_verified=False
+            client, key_pair, workspace_id, email_verified=False
         )
 
         assert response.status_code == 403, response.text
@@ -200,7 +202,6 @@ class TestHoldingTheLinkIsNotBeingTheAddressee:
             client,
             key_pair,
             workspace_id,
-            invitation_id,
             user_id=stranger,
             email="mallory@elsewhere.com",
         )
@@ -216,19 +217,12 @@ class TestHoldingTheLinkIsNotBeingTheAddressee:
     ) -> None:
         """**Acceptance never reads across tenants.** Naming one workspace
         while holding another's invitation must find nothing."""
-        _, invitation_id = await _workspace_with_invitation(client, key_pair)
-        other_workspace, _ = await _workspace_with_invitation(client, key_pair)
+        await _workspace_with_invitation(client, key_pair)
+        other_workspace, _ = await _workspace_with_invitation(
+            client, key_pair, invited="someone.else@example.com"
+        )
 
-        response = await _accept(client, key_pair, other_workspace, invitation_id)
-
-        assert response.status_code == 404, response.text
-
-    async def test_an_invented_invitation_is_refused(
-        self, client: AsyncClient, key_pair: KeyPair
-    ) -> None:
-        workspace_id, _ = await _workspace_with_invitation(client, key_pair)
-
-        response = await _accept(client, key_pair, workspace_id, uuid4())
+        response = await _accept(client, key_pair, other_workspace)
 
         assert response.status_code == 404, response.text
 
@@ -239,9 +233,12 @@ class TestHoldingTheLinkIsNotBeingTheAddressee:
         person?"* to somebody who cannot see the workspace."""
         workspace_id, invitation_id = await _workspace_with_invitation(client, key_pair)
 
-        missing = await _accept(client, key_pair, workspace_id, uuid4())
+        empty, _ = await _workspace_with_invitation(
+            client, key_pair, invited="someone.else@example.com"
+        )
+        missing = await _accept(client, key_pair, empty)
         theirs = await _accept(
-            client, key_pair, workspace_id, invitation_id, email="mallory@elsewhere.com"
+            client, key_pair, workspace_id, email="mallory@elsewhere.com"
         )
 
         assert missing.status_code == theirs.status_code
@@ -257,8 +254,6 @@ class TestTheEndpointRequiresAuthentication:
         membership — which is the whole and only difference."""
         workspace_id, invitation_id = await _workspace_with_invitation(client, key_pair)
 
-        response = await client.post(
-            f"/workspaces/{workspace_id}/invitations/{invitation_id}/accept"
-        )
+        response = await client.post(f"/workspaces/{workspace_id}/invitations/accept")
 
         assert response.status_code == 401, response.text

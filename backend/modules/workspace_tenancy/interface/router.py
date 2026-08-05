@@ -437,14 +437,12 @@ __all__ = ["router"]
 
 
 @router.post(
-    "/workspaces/{workspace_id}/invitations/{invitation_id}/accept",
+    "/workspaces/{workspace_id}/invitations/accept",
     response_model=MembershipResponse,
     status_code=status.HTTP_200_OK,
     summary="Join an organization you were invited to",
 )
-async def accept_invitation(
-    context: CurrentUser, workspace_id: UUID, invitation_id: UUID
-) -> MembershipResponse:
+async def accept_invitation(context: CurrentUser, workspace_id: UUID) -> MembershipResponse:
     """**The one handler in Signora served to somebody outside the workspace.**
 
     Everything else on this router takes `CurrentWorkspace`, which verifies
@@ -459,10 +457,11 @@ async def accept_invitation(
     claim**: the invitation names an address, and the use case refuses unless
     the caller is proved to be it.
 
-    **Naming a workspace and an invitation is not authority.** Both travel in a
-    URL — forwarded, screenshotted, left in a shared browser — and neither is a
-    secret. Guessing them yields a transaction that can read one row the
-    guesser cannot act on.
+    **The link carries a workspace and nothing else** — `/join/{workspace_id}`,
+    which is what the product already sends. There is no invitation id, because
+    an id in a URL looks like a secret while being none: **the offer is found by
+    the caller's own verified address**, and at most one live offer per address
+    exists. Somebody who forwards their link gives away nothing.
 
     **Following the link twice succeeds.** Somebody who already holds the
     membership the invitation offered gets it back rather than an error, and
@@ -472,7 +471,6 @@ async def accept_invitation(
         membership = await build_use_cases(session).accept_invitation.execute(
             AcceptInvitationInput(
                 workspace_id=workspace_id,
-                invitation_id=invitation_id,
                 # **All three from the verified token, never from a body.** A
                 # user id a caller could supply is a user id they would supply
                 # somebody else's.

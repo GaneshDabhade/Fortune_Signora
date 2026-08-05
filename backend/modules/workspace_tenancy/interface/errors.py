@@ -10,7 +10,6 @@ from fastapi import status
 
 from modules.workspace_tenancy.application.use_cases.accept_invitation import (
     InvitationNotFoundError,
-    NotYoursToAcceptError,
     UnverifiedEmailError,
 )
 from modules.workspace_tenancy.domain.exceptions import (
@@ -28,12 +27,12 @@ ERROR_MAPPING: ErrorMapping = {
     WorkspaceNotFoundError: (status.HTTP_404_NOT_FOUND, "workspace_not_found"),
     DuplicateMembershipError: (status.HTTP_409_CONFLICT, "membership_already_exists"),
     InvalidWorkspaceNameError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid_workspace_name"),
-    # **404, and the same code for both** — an invitation that does not exist
-    # and one addressed to somebody else answer identically. Telling them apart
-    # would answer *"has this workspace invited this person?"* to somebody who
-    # cannot see the workspace, which is a fact about a customer's hiring.
+    # **404, covering never invited, already accepted and withdrawn alike.**
+    # Telling them apart would answer *"has this workspace invited this
+    # person?"* to anybody who can sign in, which is a fact about a customer's
+    # hiring. Expiry is the deliberate exception below — it is the one refusal
+    # that tells somebody what to do next.
     InvitationNotFoundError: (status.HTTP_404_NOT_FOUND, "invitation_not_found"),
-    NotYoursToAcceptError: (status.HTTP_404_NOT_FOUND, "invitation_not_found"),
     # **403, not 404, and it leaks nothing** — unlike the two above, this is
     # the caller's own address and they already know it. Saying so is the only
     # way they can act on it.

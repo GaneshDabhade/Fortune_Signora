@@ -22,7 +22,6 @@ from modules.workspace_tenancy.application.use_cases.accept_invitation import (
     AcceptInvitationInput,
     AcceptInvitationUseCase,
     InvitationNotFoundError,
-    NotYoursToAcceptError,
     UnverifiedEmailError,
 )
 from modules.workspace_tenancy.domain.entities import Membership, WorkspaceRole
@@ -145,10 +144,9 @@ def _invitation(workspace_id: UUID, *, email: str = INVITED, **overrides: object
     return Invitation(**{**defaults, **overrides})  # type: ignore[arg-type]
 
 
-def _input(workspace_id: UUID, invitation_id: UUID, **overrides: object) -> AcceptInvitationInput:
+def _input(workspace_id: UUID, **overrides: object) -> AcceptInvitationInput:
     defaults: dict[str, object] = {
         "workspace_id": workspace_id,
-        "invitation_id": invitation_id,
         "user_id": uuid4(),
         "email": INVITED,
         "email_verified": True,
@@ -168,7 +166,7 @@ class TestTheOfferBecomesAMembership:
         await invitations.add(invitation)
 
         membership = await use_case.execute(
-            _input(workspace_id, invitation.id), now=NOW, correlation_id=uuid4()
+            _input(workspace_id), now=NOW, correlation_id=uuid4()
         )
 
         assert membership.workspace_id == workspace_id
@@ -188,7 +186,7 @@ class TestTheOfferBecomesAMembership:
         await invitations.add(invitation)
 
         membership = await use_case.execute(
-            _input(workspace_id, invitation.id), now=NOW, correlation_id=uuid4()
+            _input(workspace_id), now=NOW, correlation_id=uuid4()
         )
 
         assert membership.role is WorkspaceRole.OWNER
@@ -205,7 +203,7 @@ class TestTheOfferBecomesAMembership:
         await invitations.add(invitation)
 
         await use_case.execute(
-            _input(workspace_id, invitation.id), now=NOW, correlation_id=uuid4()
+            _input(workspace_id), now=NOW, correlation_id=uuid4()
         )
 
         assert [i.accepted_at for i in invitations.settled] == [NOW]
@@ -225,14 +223,19 @@ class TestNamingTheLinkIsNotAuthorityToUseIt:
         memberships: FakeMembershipRepository,
     ) -> None:
         """**The test this file exists for.** Holding the link is not being the
-        person it was sent to."""
+        person it was sent to.
+
+        **And it is now unreachable rather than refused.** The offer is looked
+        up by the caller's own verified address, so there is no query here that
+        could return somebody else's invitation — which is why this asserts
+        *not found* rather than *not yours*."""
         workspace_id = await _workspace(workspaces)
         invitation = _invitation(workspace_id)
         await invitations.add(invitation)
 
-        with pytest.raises(NotYoursToAcceptError):
+        with pytest.raises(InvitationNotFoundError):
             await use_case.execute(
-                _input(workspace_id, invitation.id, email="mallory@elsewhere.com"),
+                _input(workspace_id, email="mallory@elsewhere.com"),
                 now=NOW,
                 correlation_id=uuid4(),
             )
@@ -256,7 +259,7 @@ class TestNamingTheLinkIsNotAuthorityToUseIt:
 
         with pytest.raises(UnverifiedEmailError):
             await use_case.execute(
-                _input(workspace_id, invitation.id, email_verified=False),
+                _input(workspace_id, email_verified=False),
                 now=NOW,
                 correlation_id=uuid4(),
             )
@@ -279,34 +282,32 @@ class TestNamingTheLinkIsNotAuthorityToUseIt:
 
         with pytest.raises(InvitationNotFoundError):
             await use_case.execute(
-                _input(mine, invitation.id), now=NOW, correlation_id=uuid4()
+                _input(mine), now=NOW, correlation_id=uuid4()
             )
 
-    async def test_a_missing_invitation_and_somebody_elses_read_identically(
+    async def test_never_invited_and_invited_someone_else_are_one_answer(
         self,
         use_case: AcceptInvitationUseCase,
         workspaces: FakeWorkspaceRepository,
         invitations: FakeInvitationRepository,
     ) -> None:
-        """**One sentence for both.** Distinguishing them would answer *"has
-        this workspace invited this person?"* to somebody who cannot see the
-        workspace — a fact about a customer's hiring."""
-        workspace_id = await _workspace(workspaces)
-        invitation = _invitation(workspace_id)
-        await invitations.add(invitation)
+        """**One sentence for every reason there is no offer.** Distinguishing
+        them would answer *"has this workspace invited this person?"* to
+        anybody who can sign in."""
+        empty = await _workspace(workspaces)
+        with_offer = await _workspace(workspaces)
+        await invitations.add(_invitation(with_offer))
 
-        with pytest.raises(InvitationNotFoundError) as missing:
+        with pytest.raises(InvitationNotFoundError) as never:
+            await use_case.execute(_input(empty), now=NOW, correlation_id=uuid4())
+        with pytest.raises(InvitationNotFoundError) as theirs:
             await use_case.execute(
-                _input(workspace_id, uuid4()), now=NOW, correlation_id=uuid4()
-            )
-        with pytest.raises(NotYoursToAcceptError) as theirs:
-            await use_case.execute(
-                _input(workspace_id, invitation.id, email="mallory@elsewhere.com"),
+                _input(with_offer, email="mallory@elsewhere.com"),
                 now=NOW,
                 correlation_id=uuid4(),
             )
 
-        assert str(missing.value) == str(theirs.value)
+        assert str(never.value) == str(theirs.value)
 
     async def test_an_unknown_workspace_is_refused_as_a_missing_invitation(
         self, use_case: AcceptInvitationUseCase
@@ -321,7 +322,7 @@ class TestNamingTheLinkIsNotAuthorityToUseIt:
         cannot see. **The invitation read is the existence proof.**
         """
         with pytest.raises(InvitationNotFoundError):
-            await use_case.execute(_input(uuid4(), uuid4()), now=NOW, correlation_id=uuid4())
+            await use_case.execute(_input(uuid4()), now=NOW, correlation_id=uuid4())
 
 
 class TestTheAddressIsComparedAsOneAddress:
@@ -340,7 +341,7 @@ class TestTheAddressIsComparedAsOneAddress:
         await invitations.add(invitation)
 
         membership = await use_case.execute(
-            _input(workspace_id, invitation.id, email="  Ada@Example.COM "),
+            _input(workspace_id, email="  Ada@Example.COM "),
             now=NOW,
             correlation_id=uuid4(),
         )
@@ -363,24 +364,35 @@ class TestASettledOfferCannotBeUsedAgain:
 
         with pytest.raises(InvitationNotPendingError):
             await use_case.execute(
-                _input(workspace_id, invitation.id),
+                _input(workspace_id),
                 now=NOW + timedelta(days=8),
                 correlation_id=uuid4(),
             )
 
-    async def test_a_revoked_invitation_is_refused(
+    async def test_a_revoked_invitation_reads_as_no_invitation(
         self,
         use_case: AcceptInvitationUseCase,
         workspaces: FakeWorkspaceRepository,
         invitations: FakeInvitationRepository,
     ) -> None:
+        """**Withdrawn is not distinguished from never invited, deliberately.**
+
+        `find_live` excludes revoked offers, so this arrives as *no
+        invitation* — and that is the answer worth giving. An administrator
+        who withdraws an offer has decided the person should not join; a
+        message saying *"that was withdrawn"* would confirm to whoever is
+        holding the link that the workspace had once invited that address.
+
+        **Expiry is the exception**, asserted above: nobody decided it, and it
+        is the one refusal that tells a person what to do next.
+        """
         workspace_id = await _workspace(workspaces)
         invitation = _invitation(workspace_id, revoked_at=NOW)
         await invitations.add(invitation)
 
-        with pytest.raises(InvitationNotPendingError):
+        with pytest.raises(InvitationNotFoundError):
             await use_case.execute(
-                _input(workspace_id, invitation.id), now=NOW, correlation_id=uuid4()
+                _input(workspace_id), now=NOW, correlation_id=uuid4()
             )
 
 
@@ -409,7 +421,7 @@ class TestFollowingTheLinkTwiceIsNotAnError:
         await memberships.add(already)
 
         membership = await use_case.execute(
-            _input(workspace_id, invitation.id, user_id=joining),
+            _input(workspace_id, user_id=joining),
             now=NOW,
             correlation_id=uuid4(),
         )
@@ -440,7 +452,7 @@ class TestFollowingTheLinkTwiceIsNotAnError:
         await memberships.add(already)
 
         await use_case.execute(
-            _input(workspace_id, invitation.id, user_id=joining),
+            _input(workspace_id, user_id=joining),
             now=NOW,
             correlation_id=uuid4(),
         )
