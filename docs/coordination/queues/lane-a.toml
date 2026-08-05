@@ -49,8 +49,8 @@ updated      = 2026-08-05
 depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
-current = "TASK-400"
-next    = "TASK-436"
+current = ""
+next    = ""
 future  = []
 
 # ⚠️ **Rewritten 2026-08-05. This file declared 5 eligible and none of the five
@@ -76,22 +76,31 @@ future  = []
 #
 # 🔴 **CAPACITY FINDING — 2 eligible against a target of 5.** Not a lane
 # behaviour; a Product Office planning finding. Stated in full below.
-eligible_count = 2
-shortfall      = 3
+eligible_count = 0
+shortfall      = 5
 
 [rationale]
-"TASK-436" = "provider_platform declares which adapters exist and builds its own registry — ADR-0404 capability 3, this module's half. §10: configuration is always a typed Settings object owned by the module that owns the behaviour, and provider_platform is Lane A's. Measured before queueing: SimulatedProviderAdapter is constructed at 3 sites, all under backend/tests/, and no composition root builds a provider registry. ✅ RELEASES TASK-419, which is Lane C's row and is blocked on exactly this. ⛔ signora_platform/ is untouched"
-"TASK-400" = "Epic A completion. ✅ A6 UNBLOCKED 2026-08-05 — C-321 ruled, Lane B's six answers adopted whole. A7's backend needs no ruling; A7's render still waits on the subject↔entity join proposal this lane owes Lane C, which is C-219 and is not the product owner's"
+# **Empty, and that is the finding.** Both rows this file listed were claimed
+# within the hour of being listed — which is the queue working — and nothing
+# replaced them, which is the queue's owner not keeping up.
 
 
 # ── In progress with this lane — listed so nothing here reads as claimable ────
 [[held]]
+task = "TASK-400"
+note = "Epic A completion. IN PROGRESS — claimed 2026-08-05, and A6 delivered the same day. C-219 was brought four polls late and is now with Lane C for review, which releases the A7 render"
+
+[[held]]
+task = "TASK-436"
+note = "provider_platform declares which adapters exist. CLAIMED 2026-08-05, within the hour of this office creating the row. Releases TASK-419, which is Lane C's"
+
+[[held]]
 task = "TASK-905"
-note = "a contraction risk stops looking like an opportunity. CLAIMED 2026-08-05. This is C-011 in a task, and TASK-203 records it as the half of Epic D that still carries value"
+note = "a contraction risk stops looking like an opportunity. SHIPPED 2026-08-05, IN VALIDATION. This is C-011 in a task, and TASK-203 records it as the half of Epic D that still carries value"
 
 [[held]]
 task = "TASK-903"
-note = "the declarations on the account brief — stage 2 only. CLAIMED 2026-08-05. C-008 was ruled 2026-08-03 and stage 1 shipped as CX-05. ⛔ SCOPE BOUND: C-002 is DEFERRED and still load-bearing — display the declarations, assert no match"
+note = "the declarations on the account brief — stage 2 only. SHIPPED 2026-08-05, IN VALIDATION. ⚠️ This CLOSED TASK-007, which had sat in BACKLOG.md WAITING saying stage 2 was unplaced while it was being built. C-008 was ruled 2026-08-03 and stage 1 shipped as CX-05. ⛔ SCOPE BOUND: C-002 is DEFERRED and still load-bearing — display the declarations, assert no match"
 
 # ── Blocked, keyed to real ids ───────────────────────────────────────────────
 [[blocked]]
@@ -116,15 +125,15 @@ note = "A-iii — a signal ends in a decision. C-224 was raised from inside this
 # ── 🔴 Capacity finding — reported, not absorbed ─────────────────────────────
 [capacity_finding]
 raised                  = 2026-08-05
-assigned_queue_size     = 2
-immediately_executable  = 2
-blocked_assignments     = 1
-reason_not_replenished  = "Lane A's six modules have no other unclaimed row. Every Lane A row on the board is CLAIMED, IN VALIDATION, or DONE — the lane shipped its queue rather than stalled in it."
+revised                 = 2026-08-05
+assigned_queue_size     = 0
+immediately_executable  = 0
+blocked_assignments     = 0
+reason_not_replenished  = "Not blocked — empty. Lane A shipped TASK-903, TASK-904, TASK-905 and TASK-400's A6 in one day and claimed TASK-436 within the hour of this office creating it. Every Lane A row on the board is IN PROGRESS, IN VALIDATION or DONE. The lane outran its prepared work."
 dependencies            = [
-  "C-219 — the subject↔entity join proposal Lane A owes Lane C. Holds TASK-400's A7 render.",
-  "C-321 — ruled, and A6's render scope still reads from it. Holds TASK-400's A6.",
+  "TASK-418 — Lane C's own, and the only row that refills this lane. It releases TASK-901, whose seven slices include signal_engine, buying_score_engine, ai_research_engine and provider_platform, all Lane A's.",
 ]
-product_office_item     = "TASK-436 — created today, and it is the only new eligible row this office could find without inventing scope."
-slices_released         = "C-219 → 1 (TASK-400 A7 render). TASK-436 → 1 here, plus TASK-419 for Lane C. No other dependency releases Lane A work."
-primary_bottleneck      = "Not a dependency — a backlog depth problem. Lane A's modules are ahead of their prepared work, and the Product Office queue for those modules is genuinely empty rather than blocked."
-recommended_action      = "Product Office prepares the next Product Surface and signal_engine slices. This is Lane C's to fix and it is not blocked on the product owner."
+product_office_item     = "TASK-418, claimed by Lane C today. No other prepared row exists for Lane A's six modules."
+slices_released         = "TASK-418 → TASK-901's seven slices, of which four sit in Lane A's modules."
+primary_bottleneck      = "Lane C. The office that reports this finding is the one holding the row that resolves it, and it spent the preceding cycles on discovery instead."
+recommended_action      = "Lane C claims and ships TASK-418 before preparing anything else. Stated plainly because a finding that names somebody else would be wrong."

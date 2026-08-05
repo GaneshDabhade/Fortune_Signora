@@ -126,7 +126,9 @@
 
 # 📎 Standing — blocks nothing being built
 
-**C-003** three wire codes for one condition · **C-006** which lane owns `test_api_<module>.py` *(16 files)* · **C-007** the guided first run is a two-lane build · **C-009** an internal fault reaches a customer as a `422` · **C-011** a contraction risk reads like a small opportunity *(**[TASK-905](BACKLOG.md)** is this, queued to Lane A)* · **C-014** accessibility and performance testing · **C-017** the onboarding honesty principle · **C-204** the catalog explains nine words to nobody · **C-211** where an approach brief lives · **C-212** which product an opportunity is about · **C-223** `competitor_entry` across a boundary *(**resolved in principle by C-328's ruling** — same shape, same answer)*
+> ✅ **C-011 left this list 2026-08-05, closed by delivery.** It was *"a contraction risk reads like a small opportunity"*, and **[TASK-905](BACKLOG.md) is that item built** — shipped by Lane A the same day. **`--check` reported it as ruled-and-still-queued within the hour**, which is the queue doing its job: **an item that resolves by delivery leaves no ruling behind**, so nothing but the checker would have noticed.
+
+**C-003** three wire codes for one condition · **C-006** which lane owns `test_api_<module>.py` *(16 files)* · **C-007** the guided first run is a two-lane build · **C-009** an internal fault reaches a customer as a `422` · **C-014** accessibility and performance testing · **C-017** the onboarding honesty principle · **C-204** the catalog explains nine words to nobody · **C-211** where an approach brief lives · **C-212** which product an opportunity is about · **C-223** `competitor_entry` across a boundary *(**resolved in principle by C-328's ruling** — same shape, same answer)*
 
 > **No action, by ruling:** *"Continue collecting evidence. Do not spend engineering effort on these until implementation naturally reaches them."*
 
