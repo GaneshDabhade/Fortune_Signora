@@ -343,7 +343,7 @@ databaseUrl: required(
 | [C-219](#c-219--task-400s-two-halves-are-not-equally-buildable) | **TASK-400's two halves are not equally buildable** | Lane A | **Product owner** (A6) · **Lane C** (A7 join) | `OPEN` — **A7 proceeding, A6 held** | **A6 only.** Its own specification says [C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name) *"must be answered first"* |
 | [C-220](#c-220--two-lanes-have-both-written-a-document-50-and-a-document-51) | **Two lanes have both written a document `50` and a document `51`** | Lane A | **QE** · Lane C | `OPEN` | Nothing today. **`state-check` at the merge that brings both branches together** |
 | [C-221](#c-221--epic-cs-first-open-question-is-answered-and-the-answer-blocks-the-epic) | **Epic C's first open question is answered, and the answer blocks the epic** | Lane A | **Product owner** · Lane C | `OPEN` — [TASK-201](BACKLOG.md) claimed and blocked | **All of Epic C's Phases 1–3.** No person name enters the platform at any point |
-| [C-222](#c-222--reasoning1-earns-a-release-under-protocol-2-on-a-model-this-workstation-cannot-measure-in-time) | **`reasoning@1` earns a release under protocol 2, on a model this workstation cannot measure in time** | Lane A | **Product owner** · QE | `OPEN` — [TASK-202](BACKLOG.md) claimed, Epic G proceeds | **Only a live G1 inference.** The prompt is refused at runtime until a protocol-2 release exists |
+| [C-222](#c-222--reasoning1-earns-a-release-under-protocol-2-on-a-model-this-workstation-cannot-measure-in-time) | **`reasoning@1` earns a release under protocol 2, on a model this workstation cannot measure in time** | Lane A | **Product owner** · QE | **`READY FOR IMPLEMENTATION`** — ruled 2026-08-04 | **Only a live G1 inference.** The prompt is refused at runtime until a protocol-2 release exists |
 | [C-223](#c-223--competitor_entry-cannot-be-implemented-across-the-current-dependency-graph) | **`competitor_entry` cannot be implemented across the current dependency graph** | Lane A | **Product office** · Product owner | `OPEN` — [TASK-203](BACKLOG.md) claimed, everything else built | **Only the detection half of Epic D phase 1.** The declaration, its API and its screen are shipped |
 | [C-200](#c-200--m14b-is-three-concerns-in-one-roadmap-row-and-none-of-them-has-a-module) | M14b is three concerns in one roadmap row, and none has a module | Lane A | **Product owner** (bounded context 🔴) | `OPEN` — **architectural** | **The whole of M14b.** [R-01](architecture/16-architecture-risks.md) has been waiting for it at High/High |
 | [C-201](#c-201--identifier-allocation-is-still-only-unlikely-to-collide) | Identifier allocation is still only *unlikely* to collide | Lane A | **QE** + product owner | `OPEN` — **directed by the product owner** | Nothing built. **The repository scaling past three actors without manual reconciliation** |
@@ -4258,7 +4258,7 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 | | |
 |---|---|
 | **Raised by** | Lane C, 2026-08-04 |
-| **Status** | **`OPEN` — product owner.** Every assignment involved is theirs |
+| **Status** | ✅ **`READY FOR IMPLEMENTATION`** — **ruled 2026-08-04** ([D-056](DECISION_REGISTER.md)). **Superseded in substance by [D-058](DECISION_REGISTER.md) and [D-065](DECISION_REGISTER.md)**, which consolidated and then partially re-split the same modules. **Found stale by the 2026-08-05 portfolio audit** |
 | **Class** | **Ownership Decision** |
 
 **Measured from the board on `origin/integration`:**
@@ -4285,7 +4285,7 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 | | |
 |---|---|
 | **Raised by** | Lane C, 2026-08-04 |
-| **Status** | **`OPEN`** — **product owner**, because both assignments are theirs |
+| **Status** | ✅ **`READY FOR IMPLEMENTATION`** — **ruled 2026-08-04** ([D-056](DECISION_REGISTER.md)): `knowledge_graph` → Lane A, and consolidated to Lane B the same day by [D-058](DECISION_REGISTER.md). **The register said `OPEN` for a day after the ruling** — found by the 2026-08-05 portfolio audit, and it is the C-213 defect wearing the opposite coat: **an item that looks unanswered when it has been answered** |
 | **Class** | **Ownership Decision** ([`PRODUCT_OFFICE.md`](PRODUCT_OFFICE.md) §1) |
 | **Severity** | ⚠️ **It breaches §20e's hardest invariant** — *one session per lane, and **one assignee per module at a time*** |
 
