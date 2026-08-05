@@ -20,20 +20,28 @@ depth_target = 5
 
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-405"
-next    = "TASK-904"
-future  = ["TASK-417", "TASK-905", "TASK-400-A7"]
+next    = "TASK-417"
+future  = ["TASK-905", "TASK-400-A7"]
 
-# **5 of a 5 target.** TASK-400 is carried at narrowed scope rather than as a
-# whole, because C-219 already says which of its halves is held and which is not.
-eligible_count = 5
-shortfall      = 0
+# **3 of a 5 target — corrected downward the same day it was published.**
+# TASK-904 was `next` and is blocked by two architectural blockers this office
+# did not check before queueing it. **Reported rather than quietly reordered**:
+# the shortfall is real, and the two rulings that clear it are the cheapest in
+# the repository (DECISION_QUEUE.md P1).
+eligible_count = 3
+shortfall      = 2
 
 [rationale]
 "TASK-405" = "claimed 2026-08-05 and in implementation — the domain half pushed at acb774b. signal_engine is Lane A's"
-"TASK-904" = "an organization can grow. workspace_tenancy is Lane A's. The blockers raised against it were withdrawn by the lane that raised them"
 "TASK-417" = "wave 1 of the approved UI — twelve Account 360 sections already served by shipped contracts. Render only, no backend change. 26 screens are approved and 0 are implemented, which is the largest single gap in the repository"
 "TASK-905" = "a contraction risk stops looking like an opportunity. Product Surface and buying_score_engine, both Lane A's. TASK-203 records this as the half of Epic D that still carries value"
 "TASK-400-A7" = "the backend half only — `attempted_at` on `provider_watermark`, written on every completed run, inside provider_platform. C-219 states it directly: 'Lane A is therefore building the half that needs no ruling.' Sequencing only; Lane C is not writing the package"
+
+[[blocked]]
+task    = "TASK-904"
+blocker = ["C-206", "C-208"]
+owner   = "Product owner"
+note    = "an organization can grow. ⚠️ Removed from `next` on 2026-08-05, hours after being put there. Its slice is 'invitation table · acceptance · members list' and TWO of those three are held: C-206 blocks inviting anybody, C-208 blocks accepting. Both are Kind: Architectural blocker — §20e stops implementation rather than resuming it when something frees up. The row's own notes state answers to both ('Signora owns the invitation'; 'acceptance matches against the email claim in the verified JWT'), and a backlog row proposing an answer is not the register recording one — that is precisely the decide-by-implementation this office exists to prevent. THE ANSWERS ARE GOOD AND THE RULINGS ARE CHEAP: see DECISION_QUEUE.md P1, where these are the top two rows. The members list third is genuinely unblocked (46 §7) and is not worth splitting out for one third of a slice"
 
 # ── Held inside TASK-400, so the narrowing is checkable ──────────────────────
 [[held]]
