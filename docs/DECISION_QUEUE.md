@@ -162,7 +162,7 @@
 | **C-207** | **Casbin cannot express an action on yourself** | Leaving an organization, **and every self-directed operation Signora will ever have** | ✅ **Collapses into [TASK-900](BACKLOG.md)'s RFC** — capability 4. **Do not rule separately** |
 | **C-219** | TASK-400's two halves are not equally buildable | Nothing directly — **it is the item that narrowed A7 from A6** | **No ruling needed.** A6 is C-321; A7's render waits on a join proposal **Lane A owes Lane C**, not on you |
 | **C-223** | `competitor_entry` cannot be implemented across the current boundary | **Only Epic D phase 1's detection half** — declaration, API and screen ship | **Rule with C-328.** Same shape: a module asked to read across a boundary that refuses on purpose |
-| **C-008** | **Sellers cannot see what their company sells** | Nothing being built — **affects every AE and SDR, every day** | **The highest-value P3 by customer impact.** Promote to P2 the moment a lane has capacity |
+| **C-008** | **Sellers cannot see what their company sells** | Nothing | ✅ **CLOSE IT.** **Ruled by you on 2026-08-03 — *option C now, option D next* — and stage 1 shipped as CX-05 at `e3516c4`**: `/business`, member-reachable, five declarations. All three of its questions are answered or moot. **Stage 2 is now Lane A's [TASK-903-stage2](coordination/queues/lane-a.toml)** |
 | **C-002** | Customer language has no anticorruption layer | Nothing in M12.5 — **must be answered before anything matches an account against an ICP** | **Rule with C-322**; both are what an ICP *means* |
 | **C-003** | Three wire codes for one condition | Nothing — **"but it gets worse with every slice"** | Cheap to fix, cheaper the sooner |
 | **C-009** | An internal fault reaches a customer as a `422` | Nothing today | — |
@@ -186,11 +186,21 @@
 | **P3 — blocks nothing today** | **12** |
 | **Highest single unblock** | **[TASK-900](BACKLOG.md)'s RFC — 4 decisions retired, 7 slices released** |
 | **Cheapest** | **C-206 + C-208 — two sentences, one whole slice** |
-| **Free** | **C-019 — close it; the fix shipped the day it was raised** · **C-205 — ratify; the product is already responsive** |
+| **Free** | **C-019 · C-008 — close both** · **C-205 — ratify** |
 
 ## ⚠️ A standing hazard this queue exists to surface
 
-**Two of the twenty-eight were not really open.** **C-019 was fixed on the day it was raised and nobody closed it. C-205 was decided by a slice** — [B-203](BUGS.md) treated *"the product has no navigation below 768px"* as a defect and fixed it, **which answers *"is Signora expected to work on a phone?"* by implementation.**
+**Three of the twenty-eight were not really open, and each was stale for a different reason.**
+
+| | | |
+|---|---|---|
+| **C-019** | **Fixed the day it was raised** | §20e step 7 was corrected 2026-08-02 and **nobody closed the item** |
+| **C-008** | **You ruled it on 2026-08-03 and stage 1 shipped** | The ruling was recorded in a **backlog row**, not in the register — so the register never learned |
+| **C-205** | **Decided by a slice** | [B-203](BUGS.md) treated *"no navigation below 768px"* as a defect and fixed it, **answering *"is Signora expected to work on a phone?"* by implementation** |
+
+> **C-008 is the instructive one.** **The ruling existed, in writing, in [TASK-903](BACKLOG.md)'s row, from the lane that checked it.** It never reached [`LANE_COORDINATION.md`](LANE_COORDINATION.md), so **the register kept asking a question the product owner had already answered — and this office kept forwarding it.**
+>
+> **And it cost more than attention.** TASK-903 sat in Lane B's queue as a read surface `commercial_profile` no longer owed, **while Lane A's queue carried it as `blocked` on an endpoint that had shipped two days earlier.** One stale row, two lanes mis-sequenced.
 
 > **A register that accumulates answered items costs the product owner attention on every reading**, and worse, **an item that quietly gets answered by a slice is the failure the register exists to prevent** — it means the decision was made by whoever was closest to the keyboard.
 

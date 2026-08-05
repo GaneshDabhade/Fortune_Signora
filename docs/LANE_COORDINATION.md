@@ -672,6 +672,16 @@ Lane A's call, and the answer is no change. [D38](architecture/38-product-design
 
 ## C-008 · Sellers cannot see what their company sells
 
+> ✅ **Lane C finding, 2026-08-05 — this was ruled and shipped, and the row still reads `OPEN`. Closure recommended.**
+>
+> **[TASK-903](BACKLOG.md)'s own repository check, Lane A, 2026-08-03:** *"[C-008] was ruled by the product owner — **option C now, option D next** — and stage 1 shipped as **CX-05** at `e3516c4`: `/business`, member-reachable, **five** declarations rather than four. **The granted read is no longer unreachable.**"*
+>
+> **So question 1 is answered (yes, read-only), question 2 is answered (`/business`, not `/settings`), and question 3 is moot** — the API was not narrowed. **What remains is stage 2, the declarations on the account brief**, and Lane A's check settles the shape of that too: *"one lane, not two — stage 1 needed no backend change and the display half of stage 2 needs none either."*
+>
+> **Two consequences this office got wrong until now.** ① **TASK-903 was queued to Lane B as a read surface `commercial_profile` no longer owes.** Moved to Lane A as `TASK-903-stage2`. ② **Lane A's queue carried it as `blocked` awaiting an endpoint that shipped two days earlier.** Both corrected.
+>
+> ⛔ **The one live boundary:** *"anything asserting **this account matches this ICP** is still blocked on [C-002](#c-002)"* — carried into the queue entry as an explicit scope bound so the slice does not walk into it.
+
 | | |
 |---|---|
 | **Owner** | **Product owner** (the decision) + **QE** (the frozen foundation) — *Integrator reassigned 2026-08-02, role abolished* |

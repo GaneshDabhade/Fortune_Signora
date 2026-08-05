@@ -21,12 +21,16 @@ depth_target = 5
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-405"
 next    = "TASK-417"
-future  = ["TASK-905", "TASK-400-A7"]
+future  = ["TASK-903-stage2", "TASK-905", "TASK-400-A7"]
 
-# **4 of a 5 target.** TASK-904 was `next` this morning and is blocked by two
-# architectural blockers this office did not check before queueing it.
-# **Reported rather than quietly reordered**: the shortfall is real, and the two
-# rulings that clear it are the cheapest in the repository (DECISION_QUEUE.md P1).
+# **5 of a 5 target**, reached by finding work rather than by lowering the bar:
+# TASK-903's stage 2 moved here from Lane B, where it had been queued on a
+# premise that stopped being true on 2026-08-03.
+#
+# TASK-904 was `next` this morning and is blocked by two architectural blockers
+# this office did not check before queueing it. **Reported rather than quietly
+# reordered**, and the two rulings that clear it are the cheapest in the
+# repository (DECISION_QUEUE.md P1).
 #
 # ⚠️ **Read 3/shortfall 2 for one commit, against a sequence of four.**
 # TASK-400-A7 was listed in `future` and excluded from the count — a defensible
@@ -35,13 +39,14 @@ future  = ["TASK-905", "TASK-400-A7"]
 # file**, so the dashboard now recomputes it and reports the disagreement rather
 # than trusting the field. **The field stays because it must be checkable against
 # something**; what changed is that nothing reads it without checking.
-eligible_count = 4
-shortfall      = 1
+eligible_count = 5
+shortfall      = 0
 
 [rationale]
 "TASK-405" = "claimed 2026-08-05 and in implementation — the domain half pushed at acb774b. signal_engine is Lane A's"
 "TASK-417" = "wave 1 of the approved UI — twelve Account 360 sections already served by shipped contracts. Render only, no backend change. 26 screens are approved and 0 are implemented, which is the largest single gap in the repository"
 "TASK-905" = "a contraction risk stops looking like an opportunity. Product Surface and buying_score_engine, both Lane A's. TASK-203 records this as the half of Epic D that still carries value"
+"TASK-903-stage2" = "the declarations on the account brief. ⚠️ Moved here from Lane B's queue on 2026-08-05, and it was never a two-lane build after 2026-08-03. C-008 was RULED by the product owner — option C now, option D next — and stage 1 shipped as CX-05 at e3516c4: /business, member-reachable, five declarations rather than four. So commercial_profile owes nothing. Lane A's own repository check says stage 2 'is one lane, not two: stage 1 needed no backend change and the display half of stage 2 needs none either.' Product Surface is Lane A's. ⛔ SCOPE BOUND: anything asserting 'this account matches this ICP' is still blocked on C-002 and is NOT in this slice — display the declarations, assert no match"
 "TASK-400-A7" = "the backend half only — `attempted_at` on `provider_watermark`, written on every completed run, inside provider_platform. C-219 states it directly: 'Lane A is therefore building the half that needs no ruling.' Sequencing only; Lane C is not writing the package"
 
 [[blocked]]
@@ -65,12 +70,6 @@ note    = "51-implementation-specifications.md §A6 says it twice in its own wor
 
 # ── Owned, not startable ─────────────────────────────────────────────────────
 # Listed so the lane never rediscovers a dependency by claiming into it.
-
-[[blocked]]
-task    = "TASK-903"
-blocker = ["TASK-903 read surface, Lane B"]
-owner   = "Lane B"
-note    = "a seller can see what their company sells. Two-lane by construction: commercial_profile is Lane B's and the mount is Product Surface, Lane A's. Lane A's half is gated on the endpoint existing, not on a ruling. It enters `future` the day Lane B's half is IN VALIDATION"
 
 # ── With QE ──────────────────────────────────────────────────────────────────
 [[in_validation]]
