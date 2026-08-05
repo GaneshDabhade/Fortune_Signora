@@ -101,7 +101,7 @@ Such a row names the code, records **Current assignee: none — not assignable**
 | **Module** | Platform Foundation — `backend/tests/test_repository_impact.py` |
 | **Current assignee** | **Lane C** — Platform Foundation, and the author of the slice |
 | **Severity** | 🟠 · **Blocking Quality Defect** — a failing type check prevents promotion (`CLAUDE.md` §20e) |
-| **Status** | **`OPEN`** — certification refused; `integration` is at `bfbeeef6` and **not promotable** |
+| **Status** | ✅ **`FIXED`** — Lane C, 2026-08-05. **Three `monkeypatch` parameters annotated `pytest.MonkeyPatch`.** `mypy --strict .` from `backend/`: **733 source files, no issues.** 27 tests still pass. **`VERIFIED` is QE's to set** |
 | **Found** | 2026-08-05 by QE, certifying cycle 55 |
 
 **Steps to reproduce.**

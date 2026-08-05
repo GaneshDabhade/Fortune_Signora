@@ -186,7 +186,9 @@ def test_the_two_classifiers_in_this_file_agree(guard: ModuleType, path: str) ->
 # must be able to fire, and it must never fire on history it cannot judge.
 
 
-def test_the_skip_check_can_actually_fire(guard: ModuleType, monkeypatch) -> None:
+def test_the_skip_check_can_actually_fire(
+    guard: ModuleType, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """**A guard that cannot fail is documentation pretending to be code** (§2).
 
     The first live run reported nothing, which is the correct answer today and
@@ -205,7 +207,7 @@ def test_the_skip_check_can_actually_fire(guard: ModuleType, monkeypatch) -> Non
 
 
 def test_a_skip_is_not_reported_when_the_task_belongs_to_another_lane(
-    guard: ModuleType, monkeypatch
+    guard: ModuleType, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """**Ownership is joined from the registry, not assumed.**
 
@@ -222,7 +224,7 @@ def test_a_skip_is_not_reported_when_the_task_belongs_to_another_lane(
 
 
 def test_a_claim_older_than_the_registry_yields_no_opinion(
-    guard: ModuleType, monkeypatch
+    guard: ModuleType, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """**A record of what was true then must not be re-scored against now** (§2).
 
