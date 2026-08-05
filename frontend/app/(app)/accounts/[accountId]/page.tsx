@@ -423,6 +423,7 @@ export default function AccountBriefPage() {
             <ObservationList
               observations={observations.data}
               isLoading={observations.isLoading}
+              isError={observations.isError}
             />
           </section>
 

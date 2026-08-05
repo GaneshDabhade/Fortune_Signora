@@ -144,12 +144,34 @@ function ObservationRow({ observation }: { observation: AccountObservation }) {
   );
 }
 
+/**
+ * **A failed fetch is not an empty account**, and the section must not say it
+ * is. Rendering an outage as *"nothing recorded yet"* tells a reader the
+ * company is quiet when what happened is that Signora could not answer — and
+ * the sentence they take away is a claim about their customer.
+ *
+ * `ValidationBlock` learned this on the same page: *"the section used to
+ * render all three as absence, which made an outage indistinguishable from a
+ * quiet account."* The wording here follows its `Unavailable` treatment rather
+ * than inventing a second way of saying the same thing.
+ */
+function Unavailable() {
+  return (
+    <p className="text-sm leading-6 text-content-muted">
+      Signora could not load what changed at this account. Nothing has changed about the
+      account — reload to try again.
+    </p>
+  );
+}
+
 export function ObservationList({
   observations,
   isLoading,
+  isError = false,
 }: {
   observations: AccountObservation[] | undefined;
   isLoading: boolean;
+  isError?: boolean;
 }) {
   return (
     <Card>
@@ -158,7 +180,8 @@ export function ObservationList({
       </CardHeader>
       <CardBody>
         {isLoading && <SkeletonText lines={3} />}
-        {!isLoading && (observations === undefined || observations.length === 0) && (
+        {!isLoading && isError && <Unavailable />}
+        {!isLoading && !isError && (observations === undefined || observations.length === 0) && (
           /* **An answer, not a failure.** An account no provider has reported a
              change about is an ordinary state — most accounts, most weeks — and
              an error-shaped empty state would teach a reader to distrust the
@@ -168,7 +191,7 @@ export function ObservationList({
             description="No provider has reported a change to this company. That is not the same as nothing having happened — it is what Signora has been told."
           />
         )}
-        {!isLoading && observations !== undefined && observations.length > 0 && (
+        {!isLoading && !isError && observations !== undefined && observations.length > 0 && (
           <ul className="-my-3">
             {observations.map((observation) => (
               <ObservationRow key={observation.id} observation={observation} />

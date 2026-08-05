@@ -139,3 +139,40 @@ describe('an attribute nobody has written copy for', () => {
     expect(attributeLabel('employee_count')).toBe('Headcount');
   });
 });
+
+describe('a failed fetch is not an empty account', () => {
+  /**
+   * **The defect this closes, found by reading 410 rather than by a failure.**
+   * The section shipped handling loading, empty and populated — and rendered a
+   * failed request as "Nothing recorded yet". A reader would take away a claim
+   * about their customer that Signora never made.
+   *
+   * `ValidationBlock` learned this on the same page: *"the section used to
+   * render all three as absence, which made an outage indistinguishable from a
+   * quiet account."*
+   */
+  it('says Signora could not load it, not that nothing happened', () => {
+    render(<ObservationList observations={undefined} isLoading={false} isError />);
+
+    expect(screen.getByText(/could not load what changed/i)).toBeInTheDocument();
+    expect(screen.queryByText('Nothing recorded yet')).not.toBeInTheDocument();
+  });
+
+  it('does not blame the account for a failure of ours', () => {
+    render(<ObservationList observations={undefined} isLoading={false} isError />);
+
+    expect(screen.getByText(/Nothing has changed about the account/i)).toBeInTheDocument();
+  });
+
+  it('shows nothing stale beside the failure', () => {
+    /**
+     * A cached list rendered under an error message reads as current. If the
+     * fetch failed, the list is not the answer to the question just asked.
+     */
+    render(
+      <ObservationList observations={[observation()]} isLoading={false} isError />,
+    );
+
+    expect(screen.queryByText('Headcount')).not.toBeInTheDocument();
+  });
+});
