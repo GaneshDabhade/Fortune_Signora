@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `69a7f11`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `772eebe`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,45 +12,45 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `69a7f11`, 2026-08-05.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `772eebe`, 2026-08-05.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`69a7f11`** — the certified commit itself |
-| **`integration`** | **ahead of `main`** — Lane A's claim and Lane C's next batch arrived after the snapshot, which is the model working |
-| **Release candidate** | **None pinned.** Cycle 65 promoted **three Lane A slices**, and a returned test fixed by declaring the route rather than weakening the check |
-| **Certification** | ✅ [`69a7f11823e8`](certification/reports/69a7f11823e8.md) · migration head **`0039`** · protocol **v2** |
+| **`main`** | **`772eebe`** — the certified commit itself |
+| **`integration`** | **level with `main`** at `772eebe`. Lane B's TASK-434 and Lane C's M14 slice arrived after the snapshot and are cycle 67's input, which is the model working |
+| **Release candidate** | **None pinned.** Cycle 66 promoted **two lanes in one snapshot** — Lane A's provider registry and Lane B's grouped, explainable search |
+| **Certification** | ✅ [`772eebeac975`](certification/reports/772eebeac975.md) · migration head **`0039`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Lane A and Lane B**, on the product owner's rulings — see §1c. **Lane C is working**, and its output is those rulings' inputs |
-| **Validation queue** | **Empty.** Lane A and Lane B are both building claimed tasks; **Lane C is documentation-only** and carries nothing to certify |
-| **Customer value this cycle** | ✅ **Yes.** A seller can open an account, **ask who to talk to**, and see the evidence behind every name — or why a name has none |
+| **Validation queue** | **Two, both arrived during this cycle.** Lane B's **TASK-434** *(an account can be asked whether it matches a criterion)* and Lane C's **M14** *(a person can be permitted to leave)*. Cycle 67's input, and taken on the next pass |
+| **Customer value this cycle** | ✅ **Yes.** A search that finds nothing of a kind now **says so instead of hiding the kind** — three states a seller can tell apart. The provider registry is composition and reaches a customer only through what it unblocks |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
 > ⚠️ **The frontend suite is in no gate, and running it by hand caught a failure on its first use** ([B-123](docs/BUGS.md)). `certify` gates on pytest, invariants, mypy, import-linter, `tsc` and smoke; `validate` runs the backend suite and `tsc`. **Neither runs `vitest`** — so **1255 frontend tests are run by nobody**, and a slice whose tests are entirely frontend passes `make validate` completely. **This is [B-111](docs/BUGS.md)'s class one level over**: that row found `tsc` in the Definition of Done and in no gate, and the fix added `tsc` and stopped.
 
-**Repository health:** **3573 backend tests** · **95.38% coverage** *(floor 95)* · **1255 frontend tests** across 60 files *(**ungated** — [B-123](docs/BUGS.md))* · **386 Security Invariants** · mypy strict over **752 files** · migrations `0000`–`0039`, **verified reversible this cycle** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **3600 backend tests** · **95.36% coverage** *(floor 95)* · **1255 frontend tests** across 60 files *(**ungated** — [B-123](docs/BUGS.md))* · **386 Security Invariants** · mypy strict over **755 files** · migrations `0000`–`0039`, **verified reversible this cycle** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 138s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
 ## 1a · Lane dashboard — who is moving what, right now
 
+**Module assignment is [`modules.toml`](docs/coordination/modules.toml)'s and is not restated here** (`CLAUDE.md` §20e). This table records execution.
+
 | | **Lane A** | **Lane B** | **Lane C** | **QE** |
 |---|---|---|---|---|
-| **Module** | Product Surface · Provider Platform · Connection Experience | Integrations · Timeline | **None — prepares, never builds** | The repository |
-| **Milestone** | M12.3 · M2.1 · M13 (frontend) | M13 · M7 · M14a | — | — |
-| **Current slice** | **Team Management** — Phases 1–3, discovery complete | **AVAILABLE** — both held tasks are with QE | **Wave 1 packaging** — Account 360, Platform Foundation | Cycle 45 Closeout |
-| **Execution phase** | **Discovery** | **Available** | **Preparing** | **Certified · Promoted** |
-| **Blocked?** | **Yes — rulings** ([C-021](docs/LANE_COORDINATION.md) · [C-200](docs/LANE_COORDINATION.md) · [C-206](docs/LANE_COORDINATION.md) · [C-207](docs/LANE_COORDINATION.md)) | On one signature for Epic E1 | No | No |
-| **Branch** | Level with `main` | **Fast-forwarded onto `f7439ca`** | **153 behind** — rebases at its next Startup | Level with `main` |
-| **Validation status** | Promoted — **all documentation** | Promoted | **Deferred** — documentation-only, nothing to certify | — |
-| **Major objective** | Make the product surface usable end to end | Make a customer's own systems reachable | **Turn open questions into decisions the product owner can sign** | Keep `main` certified and moving |
-| **Next executable work** | **TM invitations — buildable now**, no ruling needed | Next `READY` task | Not applicable | Next candidate on arrival |
+| **Last promoted** | **[TASK-436](docs/BACKLOG.md)** — `provider_platform` builds its own registry | **[TASK-408](docs/BACKLOG.md)** — grouped, explainable search | — *(its M14 slice is queued, not yet certified)* | **Cycle 66** |
+| **Execution phase** | **Building** | **Building** | **Building** | **Certified · Promoted · Closed out** |
+| **Branch** | `772eebe` — **level with `main`**, self-synchronized | **4 ahead** — [TASK-434](docs/BACKLOG.md), 3 executable files | **1 ahead** — M14 authorization, 3 executable files | Level with `main` |
+| **Validation status** | ✅ **Promoted this cycle** | ✅ **Promoted this cycle**; **next slice queued** | **Queued for cycle 67** | — |
+| **Blocked?** | **No** | **No** | **No** | **No** |
+| **Waiting on QE?** | No | **Yes** — TASK-434 | **Yes** — M14 | — |
+| **Next executable work** | Next `READY` task in a module it holds | Already building the next | Already building the next | **Cycle 67, on the next pass** |
 
-> **Two lanes are waiting on rulings, and Lane C exists to shorten that wait.** Its four pushes this cycle are decision packages — *"five blocking items reduced to four decisions, three of them signatures"* — which is the routing model working exactly as designed: implementation stops less often because the investigation is delegated rather than queued behind the product owner.
+> **Both promoted branches had to be rebased by QE**, which is the one process cost of the cycle and is recorded as such rather than smoothed over. Neither rebase conflicted and neither changed a byte of executable content — checked, not assumed — but **step 4 of a lane's Completion sequence is *rebase onto `integration`*, and a branch that will not fast-forward has not finished it.**
 >
-> **This is not idling and must not be read as it.** A lane whose next step needs a ruling is correct to write the discovery and stop. **The cost lands on the repository, not the lane** — and §1c is where it is counted.
+> **Nothing is waiting on the product owner to release it.** All three lanes are building; two carry finished slices that arrived after the snapshot closed, which is the fine clock working rather than a queue forming.
 
 ---
 
@@ -101,21 +101,29 @@
 
 ---
 
-## 1d · Release summary — 2026-08-05, cycle 65
+## 1d · Release summary — 2026-08-05, cycle 66
 
-**Derived from the promoted commit `69a7f11`.** **Twenty-one promotions.** Three slices, a returned test fixed in the right place, and a gate gap found by its absence.
+**Derived from the promoted commit `772eebe`.** **Twenty-two promotions.** Two lanes certified in one snapshot, and the first cycle whose candidate QE had to build itself.
 
 ### What was promoted
 
-**Fifteen executable files across TASK-903, TASK-904 and TASK-905** — the join page, *what you sell reaching the account you are selling it to*, and *a contraction risk that stops looking like a weak opportunity*. **1255 frontend tests, up 53.**
+**Eleven executable files across two lanes, in one snapshot.**
 
-### The returned test, and why the fix was the right one
+**[TASK-408](docs/BACKLOG.md), Lane B** — *a search that finds nothing of a kind now says so instead of hiding the kind.* Zero matches, not applicable and not requested are three different answers, and a seller can tell them apart.
 
-`reachability.test.tsx` asserts **no route without an entrance**. The slice adds `/join/[workspaceId]`, which arrives by **invitation email** and deliberately has none.
+**[TASK-436](docs/BACKLOG.md), Lane A** — a Signora process decides which data providers it draws from **by configuration**, and **refuses at startup to run on simulated providers anywhere but a developer's own machine.** This is composition; it reaches a customer through what it unblocks, and the row says so.
 
-> **Lane A declared the route in `infra/reachability.py` rather than weakening the assertion.** The check now *knows* the route is entrance-less instead of failing to notice — and their commit retracted their own earlier premise: *"C-227's premise was mine and wrong."*
+> **A Security Invariant refused Lane A's first draft and was right for a better reason than the one that made it fail.** `scenario`, `seed` and `page_size` were on `ProviderSettings`; the test matched on the word *simulat*. The actual defect is that those are one implementation's configuration and not the provider's — so they moved beside the adapter that reads them. **The invariant was not weakened; the leak moved.**
 
-### [B-123](docs/BUGS.md) — the suite that caught it is run by nothing
+### The candidate QE had to build
+
+**Neither branch fast-forwarded.** Lane A sat two commits behind, Lane B twelve, and `integration` moved twice more while the suite ran.
+
+**The rebases were mechanical and conflict-free**, and the check that made that safe is worth recording: after re-rebasing onto the moved head, `git diff --stat <validated> <candidate> -- backend frontend` was **empty**. Only documentation and Lane C's already-promoted `decision-queue.py` differed, so **the validated tree and the certified tree are the same program** and the suite did not need re-running before `certify`.
+
+> **This is the fine clock working as designed** (`CLAUDE.md` §20e). `integration` moved three times during the cycle and the snapshot never chased it — the arrivals became cycle 67's input by virtue of arriving after it.
+
+### [B-123](docs/BUGS.md) — still open, and still run by hand
 
 ```
 certify:   pytest · security-invariants · mypy · import-linter · tsc · smoke
@@ -123,20 +131,18 @@ validate:  backend suite · tsc
 vitest:    absent from both
 ```
 
-**A slice whose tests are entirely frontend passes `make validate` completely** — which is exactly what this one did at **3573 backend, unchanged**: eleven of the original executable files were frontend and four were the tests. **QE noticed only because the backend count did not move.**
-
-**`smoke` cannot cover it** — `.dockerignore` excludes `tests/`, the same reason recorded in B-111 and still true. **The row is QE's and remains open.**
+**Neither lane touched a frontend file this cycle**, so the 1255 tests are unchanged — but they are unchanged because nothing ran them, which is precisely the row. **QE ran `vitest` by hand again: 60 files, 1255 passed.** The row stays open until a gate does it.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3573 backend** · **1255 frontend** *(ungated)* · **95.38%** · **386 invariants** · **752 files typed** · 35 contracts · `tsc` clean and gated |
-| **Release** | **Thirty-five cycles promoted** · `promoted == certified` ✓ · ⚠️ **[B-123](docs/BUGS.md) open — the frontend suite is in no gate** |
-| **Architecture** | Reachability 0 doorless · migration `0038` **reversible, verified this cycle** · event catalog 1 known drift |
+| **Technical** | **3600 backend** · **1255 frontend** *(ungated)* · **95.36%** · **386 invariants** · **755 files typed** · 35 contracts · `tsc` clean and gated |
+| **Release** | **66 certification runs recorded, 63 certified** · `promoted == certified` ✓ · ⚠️ **[B-123](docs/BUGS.md) open — the frontend suite is in no gate** |
+| **Architecture** | Reachability 0 doorless · migration `0039` **reversible, verified this cycle** · event catalog 1 known drift |
 | **Dependency** | 69 items, 31 closed |
-| **Customer Value** | ✅ **Direct.** A renamed company's search result now explains itself. **The first slice today that a salesperson would notice** |
-| **Process** | Clean — **one defect found by a gate, corrected by the lane and revalidated within the hour.** `CHANGES REQUESTED` cost Lane B one commit and no stop |
+| **Customer Value** | ✅ **Direct.** A search that finds nothing of a kind says so instead of hiding the kind — **three states a seller can tell apart.** The provider registry is composition and reaches nobody yet, which its row states rather than implies |
+| **Process** | Clean, with one cost worth naming: **neither lane's branch fast-forwarded**, so QE rebased both. The rebases were conflict-free and the executable diff against the validated tree was **empty** — but a lane that hands QE an un-fast-forwardable branch has not finished its step 4 |
 
 ### Repository Health Trend
 

@@ -254,6 +254,47 @@ Found 3 errors in 1 file (checked 733 source files)
 **Both are fixed on `integration`** at `b332aea`. Nothing is left for this row to track, and two rows for one defect is the register drifting from the repository.
 
 
+### B-124 · Backlog rows never reach a terminal state, so seventeen of them describe work that is on `main`
+
+| | |
+|---|---|
+| **Module** | Repository process — [`BACKLOG.md`](BACKLOG.md)'s execution states, and `infra/state-check.py` |
+| **Current assignee** | **QE** — terminal execution states are QE's exclusively (`CLAUDE.md` §20e) |
+| **Severity** | 🟡 · **Non-blocking.** Nothing fails; the repository simply asserts something untrue about itself |
+| **Status** | **`OPEN`** |
+| **Found** | 2026-08-05 by QE, during cycle 66 Closeout, while setting `PROMOTED` on the two rows it had just certified |
+
+**Steps to reproduce.**
+
+```bash
+# every row still in a non-terminal state
+grep -n '^| \*\*Status\*\* |' docs/BACKLOG.md | grep -E 'IN VALIDATION|IN PROGRESS'
+# then, for any id it names
+git log main --oneline --grep=TASK-903 | grep -v ' Claim '
+→ fourteen commits on main
+```
+
+**Expected.** A row whose work is on `main` reads `PROMOTED` or `DONE`.
+
+**Actual.** **Seventeen rows read `IN VALIDATION` or `IN PROGRESS` while carrying implementation commits on `main`** — TASK-300, TASK-402, TASK-301, TASK-407, TASK-200, TASK-204, TASK-205, TASK-405, TASK-409, TASK-410, TASK-903, TASK-904, TASK-905, TASK-415, TASK-416, TASK-417, TASK-414.
+
+### Why it accumulates rather than being an oversight
+
+**The lifecycle has no step that writes the terminal state.** Repository Closeout activity 3 reconciles [`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md) — *"promoted claims marked `COMPLETE` and then removed"* — and **says nothing about the backlog row**, which is a different file with a different lifecycle. The lane sets `IN VALIDATION` and its responsibility ends there by rule; QE removes the board row; **nobody is sent back to the backlog.**
+
+> **Lane C found the same class from the other end** at `1d15198`, *"Queue reconciliation — four rows reported outstanding work that had already been done"* — the queue files had it too. **Two registers drifting the same way is the tell that the process, not either lane, is what is missing a step.**
+
+### Why QE did not simply mass-correct the seventeen
+
+**A `grep` proves commits mention the id. It does not prove the task's scope is complete**, and at least one row — [TASK-400](BACKLOG.md) — is explicitly part-delivered with its other half held on a coordination item. **Marking that `PROMOTED` would replace one false statement with a worse one.**
+
+**Each row needs its completeness confirmed by the lane that built it**, and then the terminal state set by QE. **The two rows certified in cycle 66 were set directly**, because QE measured those itself.
+
+### The fix worth making
+
+**A check, not a habit.** `infra/state-check.py` already compares the documents against git; it should refuse a Closeout that leaves a backlog row in a non-terminal state while `git log main --grep=<id>` shows implementation commits. **A rule kept by discipline can be kept by a machine instead** (`CLAUDE.md` §20e) — and this one has not been kept by discipline for at least seventeen rows.
+
+
 ### B-123 · The frontend suite is in no gate, and a failing test is on a lane branch right now
 
 | | |
