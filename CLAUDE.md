@@ -355,7 +355,14 @@ After the freeze, Claude must not modify `signora_platform/` internals except fo
 - **Production defects** — the platform is demonstrably wrong or losing data. A module finding the platform inconvenient is not a defect.
 - **Explicitly approved architectural changes** — raised through the RFC process in `docs/architecture/01-overview.md` and approved before implementation, never decided inside a coding session.
 
-What the freeze does **not** prohibit: adding a new subscription, registering a new event type, adding a worker pool, or extending the Security Invariants suite. Those are uses of the platform, not changes to it.
+What the freeze does **not** prohibit: adding a new subscription, registering a new event type, adding a worker pool, **declaring a new authorization `Resource`**, or extending the Security Invariants suite. Those are uses of the platform, not changes to it.
+
+> ⚠️ **`Resource` added 2026-08-05, ruled by the product owner at [C-224](docs/LANE_COORDINATION.md), and the distinction is the whole of it.**
+> **Adding a `Resource` enum member is a *declarative registration*, never an authorization grant.** **Authorization is granted only through `policy.csv`** — *"a `Resource` entry without policy grants provides no runtime capability."*
+>
+> **The conflict this settles:** the enum sat in `signora_platform/**` (🔴, product owner + ADR) while `policy.csv` is a registry every lane extends. **One registration, two files, opposite authorities** — a policy row naming an absent member is unreachable, and a member with no policy row denies everyone. **They were never governing the same thing: one declares that a resource exists, the other decides who may act on it.**
+>
+> **Evidence, and it is why the ruling ratifies rather than changes:** **every `Resource` after `workspace` and `member` was added by a feature lane** — twelve of them, three carrying an inline §20a justification. **The practice was already this; the rule now says so.** **Do not reopen this** unless a future architectural change genuinely invalidates the assumption.
 
 What it does prohibit: reshaping a platform interface because one module would find a different shape convenient, adding a parameter for a single caller, or "small" refactors of platform internals bundled into a module's milestone. If a module cannot be built without changing the platform, that is a finding to raise — it usually means either the module or the platform is modelled wrongly, and both answers belong to the architecture, not to the module's implementation.
 

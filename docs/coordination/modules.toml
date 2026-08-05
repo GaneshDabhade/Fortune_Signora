@@ -291,7 +291,26 @@ future_owner = "Lane C"
 transition = "settled"
 implementation = 60
 basis = "Environment Framework phases 1-2 built; the demo profile and make doctor are IN VALIDATION"
-paths = ["infra/", "Makefile", "backend/signora_platform/simulation/"]
+paths = ["infra/", "Makefile", "backend/signora_platform/"]
+# **`backend/signora_platform/` entire, from 2026-08-05** ([D-073](../DECISION_REGISTER.md),
+# [C-416](../LANE_COORDINATION.md)). This read `signora_platform/simulation/` — one
+# subdirectory — so the event bus and the authorization engine belonged to nobody,
+# and [TASK-418](../BACKLOG.md) sat blocked with [TASK-901](../BACKLOG.md)'s seven
+# slices behind it.
+#
+# **Product owner: *"`signora_platform` is shared infrastructure, not a bounded
+# context… Platform ownership must remain stable and independent of feature
+# ownership."*** Same rationale as `apps/`, one ruling later.
+#
+# ⚠️ **Ownership is not a licence to change it.** §20a still freezes this tree:
+# Lane C owns the architecture and every change still needs an approved RFC —
+# [ADR-0404](../architecture/adr/0404-platform-composition.md) is what makes
+# TASK-418 buildable, not this row. **What changed is that the work now has an
+# owner; what did not change is what the owner may do without approval.**
+#
+# **And feature lanes still consume it without a handoff** — §20a's own text:
+# adding a subscription, an event type or a worker pool is *a use of the
+# platform, not a change to it*.
 last_work = "Lane C — TASK-409, TASK-410, TASK-414"
 next_milestone = "TASK-410 follow-on; the demo launcher"
 note = "not a production module — Lane C may never touch backend/modules/ (CLAUDE.md §20e)"

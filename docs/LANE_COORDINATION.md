@@ -4417,6 +4417,35 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 
 **The smallest question for the product owner:** **does Lane B keep `commercial_profile` and `knowledge_graph`, or does Lane A?** Either answer restores flow; **the current state — where both are Lane A's in practice and Lane B's in the register — is the only one that does not.**
 
+
+## C-416 · `signora_platform/` had no assignable owner, and seven slices sat behind it
+
+> ✅ **`RULED` — product owner, 2026-08-05.** *"Assign `backend/signora_platform/` to **Lane C (Platform Foundation)** as the permanent governance and architectural owner… `signora_platform` is shared infrastructure, not a bounded context… **Platform ownership must remain stable and independent of feature ownership.**"*
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, 2026-08-05, on the product owner's instruction: *"If no coordination item exists for this ownership, create one so the decision becomes permanently traceable instead of remaining implicit inside [TASK-418](BACKLOG.md)."* |
+| **Owner** | **Product owner** — ruled |
+| **Status** | **`RULED`** — 2026-08-05, and **closed on the same day it was opened.** Recorded for traceability, not for deliberation |
+| **Blocks** | ~~**[TASK-418](BACKLOG.md)**, and **[TASK-901](BACKLOG.md)'s seven independently certifiable slices behind it**~~ — **released by this ruling** |
+
+### Why it existed
+
+**[C-010](#c-010) asked about `apps/` *and* `signora_platform/`. The 2026-08-05 ruling named `apps/`.** [`modules.toml`](coordination/modules.toml) allocated only `backend/signora_platform/simulation/` to Platform Foundation — **so the event bus and the authorization engine belonged to nobody**, and **three of [ADR-0404](architecture/adr/0404-platform-composition.md)'s four capabilities live there.**
+
+> **It had no item of its own, which is why it stopped surfacing.** It lived inside a task row, and a blocker recorded only in the thing it blocks is invisible to every register that lists blockers. **That is [C-411](#c-411)'s class** — *a finding that exists only where nobody looks has not been reported.*
+
+### What the ruling changes, and what it does not
+
+| | |
+|---|---|
+| ✅ **Changes** | `signora_platform/` has a permanent architectural owner. **[TASK-418](BACKLOG.md) is buildable and [TASK-901](BACKLOG.md) is released** |
+| ⛔ **Does not change** | **§20a still freezes the tree.** Ownership is not a licence — every change still needs an approved RFC, and [ADR-0404](architecture/adr/0404-platform-composition.md) is what makes TASK-418 buildable, **not this row** |
+| ⛔ **Does not change** | **Feature lanes still consume the platform without a handoff.** §20a: adding a subscription, an event type or a worker pool is *a use of the platform, not a change to it* |
+| ⛔ **Does not change** | **Lane C may still never write production code inside a product module** (§20e). `signora_platform/` is not one |
+
+---
+
 ## C-413 · Two lanes are assigned `knowledge_graph`
 
 > ✅ **ANSWERED 2026-08-04 — `knowledge_graph` is Lane A's.** The product owner standardised module assignment ([`ACTIVE_ASSIGNMENTS.md`](ACTIVE_ASSIGNMENTS.md)). **Option A, which Lane C recommended, on the evidence Lane B's own row called its hold *"(claimed — unassigned)"*.**
@@ -4967,11 +4996,13 @@ Two enforcements, either of which is sufficient on its own:
 
 ## C-224 · A new write surface needs an authorization `Resource`, and two governance rules disagree about who may add one
 
+> ✅ **`RULED` — product owner, 2026-08-05.** *"Adding a new `Resource` enum member is a **declarative registration**, not an authorization grant. Authorization is granted only through `policy.csv`. A `Resource` entry without policy grants provides no runtime capability."* **So the procedural conflict is removed without weakening anything**: the declaration is architectural, the grant is the policy file, and the two authorities stop contradicting each other because they were never governing the same thing. **[TASK-405](BACKLOG.md)'s remaining route is unblocked**, and *"future lanes do not reopen this question"* — recorded in `CLAUDE.md` §20a.
+
 | | |
 |---|---|
 | **Raised by** | **Lane A**, 2026-08-05, implementing [TASK-405](BACKLOG.md) — reached at the route, after the domain, persistence, use case and read surface were complete and green |
 | **Owner** | **The product owner** — it is an authorization permission and a Change Budget question, and both are explicitly the product owner's |
-| **Status** | `OPEN` — **[TASK-405](BACKLOG.md) is not blocked.** Everything except the write route shipped; nothing is waiting idle |
+| **Status** | **`RULED`** — 2026-08-05, product owner |
 | **Blocks** | **One route.** `POST` a resolution. The read surface, the persistence, the use case and the audit trail are all delivered and tested |
 
 ### The problem, in one line
