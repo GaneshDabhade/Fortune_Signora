@@ -474,6 +474,7 @@ Each update includes: milestone status (Completed / In Progress / Blocked) · co
 | **Definition of Done · slice completion** | §19 · §20e *Completion* | — |
 | **Change Budget** | §20e | — |
 | **Work allocation** | §20e *Nobody assigns; lanes pull* | [`docs/BACKLOG.md`](docs/BACKLOG.md) — **the READY queue**, prioritized by the product owner |
+| **Product-Led Domain Discovery** | §20e *Four responsibilities* — **Lane C prepares** | [`docs/DOMAIN_DISCOVERY_REGISTER.md`](docs/DOMAIN_DISCOVERY_REGISTER.md) — the register · [`PRODUCT_OFFICE.md` §5e](docs/PRODUCT_OFFICE.md) — the method. **The primary planning methodology from 2026-08-05, [D-076](docs/DECISION_REGISTER.md)** |
 | **Claiming a task** | §20e *The Task Claim Protocol* | the claim commit itself — **atomic, because a push is** |
 | **Task lifecycle states · who sets each** | §20e *Execution ownership ends at `IN VALIDATION`* | [`docs/BACKLOG.md`](docs/BACKLOG.md) · [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) — the two legends |
 | **Lane assignment** | §20e *Modules are permanent* | [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) — **the execution board**, written by the claiming lane |
@@ -1069,6 +1070,7 @@ Together these appear in roughly two thirds of all commits. **A lane does not ed
 | [`docs/SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) | **Operational context** — *"what should the next session know?"* | **QE**, at Closeout |
 | [`docs/BACKLOG.md`](docs/BACKLOG.md) | **The READY queue** — *"what is available, and in what order?"* | **Product owner owns scope and order** — unchanged, and the order *is* the priority. **A Product Development lane writes preparation rows for its own modules** — `PREPARING` → `UNDER REVIEW` — **and its claims** *(from 2026-08-04, Distributed Product Development)*. **Lane C sets `READY` on approval and `REVISION REQUESTED` on rejection**, and still writes decompositions of already-approved scope — **never new scope, never a reordering.** QE writes nothing |
 | [`docs/ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md) | **The execution board, and nothing else** — who is working · on which `TASK-nnn` · on which branch · at what execution status. **It does not define priority** | **The claiming lane**, at once. **QE** reconciles it at Closeout |
+| [`docs/DOMAIN_DISCOVERY_REGISTER.md`](docs/DOMAIN_DISCOVERY_REGISTER.md) | **The screen → domain map and the architectural radar** — *"which domain capabilities and platform services does each approved screen require, and where is each of those?"*. **It indexes assessments; it never restates one, and a row is never a task** | **Lane C**, continuously *(2026-08-05, [D-076](docs/DECISION_REGISTER.md))* |
 | `docs/architecture/38` · `39` | Design decisions · review findings | **QE**, at merge |
 | The roadmaps | *Scope* is the product owner's · *progress* is QE's | Both, as marked |
 | `PRODUCT_DIFFERENTIATORS.md` | Product strategy | Product owner |

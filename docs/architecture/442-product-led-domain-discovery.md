@@ -311,23 +311,19 @@
 
 ---
 
-## 🔭 The radar — capabilities under assessment, and where each one is
+## 🔭 The radar lives in the register, not here
 
-**[D-075](../DECISION_REGISTER.md) made this method permanent.** **A capability enters the radar when the approved product experience implies it and the repository has not decided where it lives; it leaves when it is ruled, built, or measured away.**
+**[D-076](../DECISION_REGISTER.md) made this method the primary planning methodology and gave it a standing artifact.**
 
-| Capability | Assessment | State |
-|---|---|---|
-| **Account matching / ICP matching** | **[443](443-account-matching-capability.md)** — **16 consumers, four on no list, one being implemented today.** Decomposed into vocabulary agreement · evaluation · discovery · measurement | ✅ **Assessed.** Ownership determined at 🟠 · **[TASK-434](../BACKLOG.md)** · **timing is the product owner's** |
-| **F1 · proposed → approved → applied → withdrawn** | §F1 above | **[TASK-431](../BACKLOG.md)** — awaiting a shape ruling |
-| **F2 · scope and saved views** | §F2 above | **[TASK-433](../BACKLOG.md)** — awaiting a naming ruling |
-| **F3 · the triage event** | §F3 above | **[TASK-432](../BACKLOG.md)** — `SEQUENCED`, no ruling needed |
-| **People — domain · intelligence · enrichment · experience** | **[441](441-people-roadmap.md)** | ✅ **Ruled [D-074](../DECISION_REGISTER.md)** — **[TASK-427–430](../BACKLOG.md)** |
+> ### **[`docs/DOMAIN_DISCOVERY_REGISTER.md`](../DOMAIN_DISCOVERY_REGISTER.md) is authoritative** for the screen → domain map and for the architectural radar. **This document keeps its dated findings and their evidence; it does not carry a second copy of the index** (§2, *truth has exactly one authoritative representation*).
 
-> ### The separation this radar enforces, on every row
+**F1, F2 and F3 above appear there as `R-03`, `R-02` and `R-06`, and [443](443-account-matching-capability.md)'s capability as `R-00`.** **A finding is written here once, with its measurement, and indexed there for as long as it is live.**
+
+> ### The separation the register enforces on every row
 >
 > **[D-075](../DECISION_REGISTER.md) generalised [D-074](../DECISION_REGISTER.md)'s four milestones beyond People:** **Domain · Intelligence · Provider Enrichment · Customer Experience** are **separate milestones with separate triggers**, and *"we should avoid coupling foundational domain work with customer-facing screens simply because they happen to be related."*
 >
-> **Applied to 443 immediately, and it is what keeps that row honest**: **[TASK-434](../BACKLOG.md) is `Domain`.** **It renders nothing, it is not ICP Builder, and it is not TASK-406's backtest** — which is exactly why it may be sequenced ahead of both.
+> **Applied to [443](443-account-matching-capability.md) immediately, and it is what keeps that row honest**: **[TASK-434](../BACKLOG.md) is `Domain`.** **It renders nothing, it is not ICP Builder, and it is not TASK-406's backtest** — which is exactly why it may be sequenced ahead of both.
 
 # 7 · How this document stays true
 

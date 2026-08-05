@@ -363,9 +363,29 @@ Decisions required    what the product owner must rule before it can start
 >
 > **Test by concept, never by the name you expect.** **442 reported triage as missing because `class TriageState` and `class Snoozed` returned nothing** — `signal_engine` has **`Resolution`, `Actioned`, `Assigned`, `Snoozed`, `Dismissed` and `DismissalReason`**, and had them all along. **That is [B-101](BUGS.md) inside the instrument built to find missing concepts**, and it is the failure mode this method is most prone to: **a discovery document that invents a duplicate is worse than no discovery document**, because it arrives with evidence attached.
 
-#### What it is measured by
+#### The standing artifact — ratified [D-076](DECISION_REGISTER.md)
 
-**Not by rows created.** *"Success is not measured by the number of backlog items created."* **It is measured by whether the backend already contains — or has a planned path toward — the concepts a screen needs, by the time that screen is implemented.** **A discovery that produces one ruling and no tasks has succeeded if it stopped a concept being built twice.**
+> **[`docs/DOMAIN_DISCOVERY_REGISTER.md`](DOMAIN_DISCOVERY_REGISTER.md) is the register, and it is Lane C's.** **Part A** maps every approved screen to the domain capabilities and platform services it requires · **Part B** reads the product as one system · **Part C** is the architectural radar.
+
+**Discovery became the *primary* planning methodology on 2026-08-05, not an additional one.** **Two sentences frame it and each guards a different failure:**
+
+> **The architecture enables the product** — *"the product should not be constrained by accidental gaps in today's backend."* **And the backend does not mirror pixels** — *"your responsibility is to derive the correct **reusable** domain."*
+
+**Without the first, the product is quietly cut down to what the backend already does. Without the second, the domain becomes a transcription of a layout** — sixteen screens, sixteen shapes, and the reuse policy is gone.
+
+**Study the product as one coherent system.** *"Do not analyse screens independently."* **The most valuable findings only appear when the `required` column is read down rather than across** — [442 §F1](architecture/442-product-led-domain-discovery.md) is the worked example: the AI contract and the bulk-edit contract are the same contract, and screen-by-screen they are two requirements.
+
+**The radar runs ahead, in eight categories**: missing concepts · concepts needing evolution · **concepts arriving too late** · reusable capabilities · cross-module dependencies · regression risks · sequencing · platform opportunities. ***"Do not wait until engineering becomes blocked."***
+
+#### What it is measured by, and the metric changed
+
+> ## **Success is whether implementation reaches a feature and finds the foundations already there.**
+>
+> ***"Success is not measured by the number of backlog items created."*** **An architectural surprise during implementation is a miss by this office, and it is the only miss that counts.**
+
+**A discovery that produces one ruling and no tasks has succeeded if it stopped a concept being built twice.** **A register row is never a task, and rows are never a productivity measure.**
+
+**The corollary, and it is the harder half:** **a candidate that turns out to be already built is a *result*, not a wasted pass.** **Six of the fourteen foundations the product owner listed were already in the repository, one is forbidden by the ratified Statelessness principle, and one is declared-and-unbuilt with its reason written into `timeline`'s own code.** **Reporting that ratio honestly is the reuse policy working.**
 
 **The ranking function is [441 §5 · P-01 · Domain precedence](architecture/441-people-roadmap.md), applied as a sort rather than as a rule checked afterwards**: a finding's priority is *how many approved screens would otherwise build their own version of it.*
 
