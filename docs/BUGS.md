@@ -129,6 +129,16 @@ def test_the_skip_check_can_actually_fire(
 ) -> None:
 ```
 
+### Duplicated as [B-323](#b-323--mypy---strict-fails-on-integration-in-the-test-that-proves-the-guard-fires), and Lane B's analysis is the better one
+
+**Two lanes found this within the hour, independently** — QE certifying, Lane B rebasing onto `bfbeeef` and re-running its gates because *"the rebase carried executable change."* **Both rows stand; neither is retired**, and this one defers to theirs on the cause:
+
+> **The gate is `mypy --strict .` from `backend/`, and the difference is `tests/`.** A lane running its own module's suite **never type-checks its own test files** — which is why *"a test file is the easiest place in the repository to miss."*
+
+**That is [B-115](#b-115--task-301-fails-mypy---strict-on-a-test-helper-narrower-than-the-type-it-builds)'s class, and Lane B caused that one.** They named the connection themselves rather than waiting for QE to.
+
+**Lane B did not fix it, and was right not to.** The file tests `certification-guard.py`; `infra/` and repository process are Lane C's under D-022. *"The judgement about whose file it is is not this lane's to make."* **Finding a defect outside your assignment is an obligation to report it, never permission to fix it** (`CLAUDE.md` §20e) — applied exactly.
+
 ### Why `make validate` did not catch it, and that is not a gap
 
 **`make validate` runs the suite and `tsc`; `mypy` belongs to certification** — asserted deliberately by `test_it_runs_the_two_gates_it_claims_and_no_others`, so that stage 1 does not become a slow second certification. **The gate that owns this check ran and refused.** Nothing failed to work.
