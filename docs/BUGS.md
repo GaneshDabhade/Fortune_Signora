@@ -278,7 +278,7 @@ Found 3 errors in 1 file (checked 733 source files)
 | **Module** | `backend/tests/security_invariants/` — the suite, which is QE's |
 | **Current assignee** | **QE** |
 | **Severity** | 🟡 · **Non-blocking.** The behaviour is correct and tested. The *guarantee* is not where §11 puts it |
-| **Status** | **`OPEN`** |
+| **Status** | ✅ **`FIXED` — QE, cycle 70, 2026-08-05**, certified at `ce1a658`. **387 → 389 invariants**, mutation-checked |
 | **Found** | 2026-08-05 by QE, certifying cycle 69 — the invariant count did not move while a tenancy defect was being fixed |
 
 **Steps to reproduce.**
