@@ -278,8 +278,13 @@ Three development lanes work the same repository at once (`CLAUDE.md` §20e). **
 | **QE** | `lane-qe` | 3200 | 8200 | `signora_lane_qe` | 1 |
 | **Lane A — Product Surface** | `lane-a-product-surface` | 3300 | 8300 | `signora_lane_a` | 2 |
 | **Lane B — Commercial Profile** | `lane-b-commercial-profile` | 3400 | 8400 | `signora_lane_b` | 3 |
-| **Lane C** — *Product Office & Architecture Office* | `lane-c` | **none** | **none** | **none** | **none** |
+| **Lane C** — *Product Office & Platform Foundation* | `lane-c` | 3500 | 8500 | `signora_lane_c` | 4 |
+| **Demo** — *the seeded product, for a non-engineer* | any | **3800** | **8800** | `signora_demo` | 7 |
 | **Lane D** | *unclaimed* | 3600 | 8600 | `signora_lane_d` | 5 |
+
+> **`lane-c` gained a runtime on 2026-08-05, and the row that said *none* was correct when it was written.** Lane C owned no module and needed no ports; **Platform Foundation changed that** — it now builds `infra/`, the launchers and the demo lifecycle, and cannot test a launcher it cannot run. **`demo` is a profile rather than a lane**, which is why it names no branch.
+>
+> **This table is a rendering of `infra/environments.py`, not an independent source.** `make environments ARGS="--check"` compares them and **named these two rows as QE's to write** — the derivation had them and the rendering did not. **When they differ, somebody edited the rendering** (§2).
 | **Lane E** | *unclaimed* | 3700 | 8700 | `signora_lane_e` | 6 |
 
 > **Lane C is allocated nothing, and that is correct.** It owns no production module and runs no production code, so it needs a clone, a branch, the documentation and repository access — **no ports, no database, no Redis index, no MinIO bucket, no compose project.** It is the first lane whose onboarding is *simpler* than the one before it, and the row records the absence so nobody allocates it a block out of symmetry.
