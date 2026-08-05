@@ -235,8 +235,14 @@ transition = "review-at-first-implementation"
 implementation = 75
 basis = "provider registry, evaluation harness and prompt lifecycle built"
 last_work = "M12.3 — pre-lane; no lane-attributable work exists"
-next_milestone = "whichever module first needs a change here"
+next_milestone = "TASK-415 — the deterministic mock provider"
 carries = ["C-214"]
+# **The trigger has fired.** This row said ownership would be decided when
+# implementation reached the module. TASK-415 is that implementation, approved
+# 2026-08-04. **Lane B is the current assignee and prepares the package.** The
+# steady-state owner is still the product owner's to rule — recorded here so the
+# decision is taken knowingly rather than settled by whoever happened to build it.
+trigger_fired = 2026-08-04
 note = "consumers are ai_reasoning_engine and ai_research_engine, both future Lane A — cohesion argues Lane A, and no evidence exists yet"
 
 [business_event_engine]

@@ -78,3 +78,67 @@ Adding a further production vendor requires a new adapter behind the existing `A
 - The `AIProviderAdapter` contract suite runs against **both** adapters, unchanged — the keystone test, borrowed directly from the provider layer, where one shared suite across simulated and real adapters is the only mechanism that catches drift between paths.
 - Ollama is documented as a development prerequisite; the deterministic gates never require it.
 - ADR-0012 remains Accepted and is amended, not superseded: its vendor strategy, embeddings decision, and prompt-registry decision are untouched.
+
+---
+
+## Amendment — 2026-08-04: three execution modes, and a deterministic default
+
+**Ratified by the product owner. Drafted by Lane C on that instruction, assessed in [431](../431-ai-execution-modes.md).**
+
+> **This ADR is amended, not superseded.** Every decision above stands: **Ollama is a development dependency and never a production one**, there is **no fallback between runtimes**, selection is **configuration rather than code**, and **no business behaviour branches on which vendor served a call.**
+>
+> **What is added is the adapter this ADR reasoned about and did not build.**
+
+### What this ADR got right, and the one thing it left open
+
+**Its own consequence already states the property the amendment enforces:** *"Ollama is documented as a development prerequisite; **the deterministic gates never require it**."* **That was true and is still true** — the contract suite runs `OllamaAdapter` over `httpx.MockTransport` and reaches no network, and the Security Invariants never call a model.
+
+**And its alternatives table evaluated *"a scripted fake adapter instead of a real local model"* and concluded "Both exist, for different jobs."** **That conclusion was correct. The fake was then placed in `backend/tests/`, where the running application cannot reach it** — so `make test` never needed Ollama and `make up` always did.
+
+> **The gap was never a decision. It was an adapter.**
+
+### The three modes
+
+| Mode | Provider | What it is for |
+|---|---|---|
+| **Development** — *the default* | **The deterministic mock provider** | Backend, frontend, business logic, workflows, API, repository tests. **Development must never require a locally running LLM** unless a developer is explicitly testing provider integration |
+| **Evaluation** | **Configurable** — mock · Ollama · Anthropic · OpenAI · Azure OpenAI · Bedrock · Vertex AI · future adapters. **Locally, the mock is the default** | Prompt, provider and model quality. **Evaluation never forces a provider** |
+| **Production** | **Customer-configured** | **The only mode whose behaviour represents production** |
+
+**The three concerns these separate are different and must not share an execution path:** **functional correctness** · **provider integration** · **model quality.** Business logic is testable without any LLM; prompt quality is measurable without business workflows; provider integration is testable without prompt quality.
+
+### The mock follows the contract; the contract never follows the mock
+
+> **The mock provider implements only capabilities the `AIProviderAdapter` port already defines.** **The port is not widened to satisfy it.**
+
+**No streaming. No tool calling. No speculative provider features.** The port's own reasoning is why: *"a wider port would force every future vendor to implement methods most of them do not have, and the usual outcome is adapters raising `NotImplementedError`, **which is a contract that lies**."*
+
+**When the contract evolves, the mock evolves with it — in the same change, and never before it.**
+
+### Production safety is a repository invariant
+
+> **The mock provider must never be available in production.** **A production deployment configured to use it fails fast, with a diagnostic that names the cause.**
+
+**Enforced by configuration *and* by an automated check**, because this ADR already names the failure mode it protects against: a service that *"could quietly reach a local runtime when its vendor was unreachable would serve customers from a model nothing evaluated."* **A mock makes that failure strictly worse** — a production service answering from a deterministic stub is **indistinguishable from one that is working.** **A guarantee that cannot fail is documentation pretending to be code** (`CLAUDE.md` §2), so this is a Security Invariant rather than a comment.
+
+### The evaluation record gains two fields
+
+**Every evaluation record captures: provider · model · version where available · execution mode · prompt version · protocol version.**
+
+**Four of the six already exist**, and one is stronger than asked for:
+
+| Field | Status |
+|---|---|
+| **model** · **prompt version** · **protocol version** | ✅ **Already recorded.** `model`, `prompt_version`, `rendering_protocol_version` — the last *"stamped from the running protocol rather than carried in"* |
+| **prompt fingerprint** | ✅ **Stronger than requested** — *"two runs claiming version 1 with different fingerprints measured two different prompts"* |
+| **provider** · **execution mode** | ⚠️ **New. The whole of the change** |
+
+> **This does not weaken model-centric resolution, and the distinction is the product owner's:** **provider and execution mode are *operational metadata about a run*, not inputs to a decision.** **Business behaviour still may not branch on a vendor**, no `if vendor ==` appears outside an adapter, and the harness still *"names a model; who serves it is the registry's business."* **What changes is that a record can say what served it** — which is provenance, and provenance is what makes a run reproducible.
+
+### Consequences of the amendment
+
+- **A fresh clone is productive with no local model.** Configure a development profile and work.
+- **Hosted providers become optional for development** rather than an alternative to Ollama.
+- **`reasoning@1`'s release path stops depending on this workstation's wall-clock** — [C-222](../../LANE_COORDINATION.md).
+- **`make eval` locally defaults to the mock**, and a run that means to measure a model says so.
+- **Ollama remains supported and stops being assumed.** **No implementation may assume it is installed unless a developer explicitly selects it.**

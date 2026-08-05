@@ -4617,7 +4617,9 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 >
 > **Under Evaluation Mode with a configurable provider, `reasoning@1` can be evaluated against a hosted model.** The Anthropic adapter **already exists and is already registered when credentials are present.** **No timeout is tuned, no prompt is re-authored, no rule is bent** — the *pairing* changes, and a pairing is what an evaluation record names.
 >
-> **Still the product owner's to rule, and deliberately not inferred from the policy.** `CLAUDE.md` §10: *"the pinned evaluation model is part of the benchmark… changing the model is an architectural decision that belongs to the product owner, never to a coding session working around slow hardware."* **The directive is that decision at policy level; C-222 needs it at the level of this pairing.**
+> ✅ **Ruled 2026-08-04.** The evaluation provider is configurable; **the deterministic mock is the local default**; another provider may be chosen explicitly where credentials exist. **`reasoning@1` is re-evaluated under a chosen provider, and the record names it** — provider · model · version · execution mode · prompt version · protocol version. **No timeout was tuned and no prompt re-authored**, which is what [TASK-013](BACKLOG.md)'s prohibition was protecting.
+>
+> **The original note is kept as the dated record of why it was not inferred.** `CLAUDE.md` §10: *"the pinned evaluation model is part of the benchmark… changing the model is an architectural decision that belongs to the product owner, never to a coding session working around slow hardware."* **The directive is that decision at policy level; C-222 needs it at the level of this pairing.**
 >
 > **What closing it releases:** Epic G's runtime refusal. `require_model` refuses `reasoning@1` until a protocol-2 release exists, and **that has been true since 2026-08-04.**
 
@@ -4626,7 +4628,7 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 | **Owner** | **Product owner** (recording the measurement) · **QE** (whether the manifest may hold it) |
 | **Requesting lane** | Lane A |
 | **Category** | Release rule · evaluation policy |
-| **Status** | `OPEN` — **[TASK-202](BACKLOG.md) claimed; Epic G proceeds on everything this does not block** |
+| **Status** | ✅ **`READY FOR IMPLEMENTATION`** — **ruled by the product owner 2026-08-04.** *"Reasoning evaluations shall no longer depend on a local Ollama runtime. The evaluation provider is now configurable."* **Not `CLOSED`**: the dependency is resolved and **the re-evaluation has not been run**, so closing it would report work that has not happened |
 | **Blocks** | **Only a live G1 inference.** `require_model` refuses `reasoning@1` at runtime until a protocol-2 release exists |
 | **Raised** | 2026-08-04, running the re-run [29-ai-reasoning-engine.md](architecture/29-ai-reasoning-engine.md) asked for |
 
