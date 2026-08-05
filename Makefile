@@ -68,8 +68,18 @@ down:
 	@python3 infra/environment-lease.py run down -- docker compose --env-file infra/.env.prod-local -f infra/docker-compose.prod.yml down -v --remove-orphans
 
 ## Backend suite. Truncates its target database — hence the explicit opt-in.
+##
+## **Leased, from 2026-08-05 ([B-317](docs/BUGS.md)).** Five targets already
+## acquired the lease and this one did not, while being the one that truncates
+## every table after every test. Two runs would delete each other's fixtures
+## mid-suite and **neither would say so** — the Makefile recorded that exact
+## failure beside the lease itself, as cycle 25's `pytest 134 passed` against a
+## suite of 2589.
+##
+## The lease is now workstation-scoped, so this also refuses to start while
+## another *clone* holds the environment ([B-118](docs/BUGS.md)).
 test:
-	@cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run pytest --cov
+	@python3 infra/environment-lease.py run test -- sh -c 'cd backend && SIGNORA_ALLOW_DESTRUCTIVE_TESTS=1 uv run pytest --cov'
 
 ## The Product Playground — twelve accounts through the real pipeline.
 ##

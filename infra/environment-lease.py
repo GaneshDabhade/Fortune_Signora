@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 """**One operation owns the shared environment at a time, and the second refuses.**
 
-The repository has exactly one production stack, one set of review ports and one
-test database. `certify`, `smoke`, `dr`, `up` and `down` all mutate them, and
-until now **nothing knew who was using them.**
+The **workstation** has exactly one production stack, one set of review ports and
+one PostgreSQL server. `certify`, `smoke`, `dr`, `up` and `down` all mutate
+them, and until now **nothing knew who was using them.**
+
+**Workstation, not repository — corrected 2026-08-05, and the distinction is
+[B-118](../docs/BUGS.md).** The lease lived at `REPO_ROOT/.environment-lease`,
+so four clones held four leases over one Docker project and none could see
+another's. It now lives beside the resource and is named for it, so every
+checkout driving `signora-v2` computes the same path.
 
 **RE-02 was written as *"a lock around `make certify`"*, and challenging it
 showed that would not have prevented the incident it came from.** Cycle 25's
@@ -35,6 +41,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import signal
 import subprocess
 import sys
@@ -44,7 +51,68 @@ from pathlib import Path
 from typing import Any, Final
 
 REPO_ROOT: Final = Path(__file__).resolve().parent.parent
-LEASE: Final = REPO_ROOT / ".environment-lease"
+
+#: **The lease belongs to the contended resource, and the resource is not the
+#: clone.** This was `REPO_ROOT / ".environment-lease"`, so every checkout held
+#: its own and none could see another's — Lane A holding the environment was
+#: invisible to QE *by construction*. [B-118](../docs/BUGS.md) is what that
+#: cost: two runs of one commit, minutes apart, gave 40 failures and then 238,
+#: with 21 deadlocks and 13 missing catalogs, because two clones were driving
+#: one PostgreSQL server.
+#:
+#: **The module's own argument, applied once more.** It reasoned that a lease
+#: belongs to the environment rather than to a command, because cycle 25 was
+#: contaminated by `smoke` and `down` running *beside* a certification. The same
+#: step says it belongs to the **workstation** rather than to the clone: the
+#: contended object is one Docker project, and it does not become four because
+#: four directories reference it. **It was correct when written. There was one
+#: clone.**
+#:
+#: `XDG_RUNTIME_DIR` first because it is per-user, already exists, and is
+#: cleaned on logout; `/tmp` is the portable fallback. **Never the home
+#: directory** — a lease that survives a reboot is a lease that outlives the
+#: containers it describes.
+LEASE_DIR: Final = Path(
+    os.environ.get("XDG_RUNTIME_DIR") or os.environ.get("TMPDIR") or "/tmp"
+) / "signora-leases"
+
+
+def _resource() -> str:
+    """**What is actually shared**, and therefore what the lease is named for.
+
+    The Docker Compose project: two containers of the same name in two projects
+    are two containers; in one project they are one. Every clone pointing at
+    `signora-v2` computes the same lease path and arbitrates correctly, and the
+    day [436](../docs/architecture/436-execution-isolation.md) change ② lands,
+    each project gets its own path with no edit here.
+
+    **Overridable, because a lane must be able to say which stack it drives.**
+    """
+    return os.environ.get("COMPOSE_PROJECT_NAME") or _compose_project_from_file() or "signora-v2"
+
+
+def _compose_project_from_file() -> str | None:
+    """The `name:` line of the compose file, read rather than assumed.
+
+    **Parsed with a regex rather than a YAML library on purpose:** PyYAML is not
+    a declared dependency, adding one for six characters is a 🔴 that would need
+    an ADR, and `tomllib` does not read YAML. One anchored line is enough, and
+    an unreadable file falls back rather than crashing a gate.
+    """
+    compose = REPO_ROOT / "infra" / "docker-compose.yml"
+    try:
+        for line in compose.read_text().splitlines():
+            if m := re.match(r"^name:\s*(\S+)\s*$", line):
+                return m.group(1)
+    except OSError:
+        return None
+    return None
+
+
+def _lease_path() -> Path:
+    LEASE_DIR.mkdir(parents=True, exist_ok=True)
+    return LEASE_DIR / f"{_resource()}.lease"
+
 
 #: Passed to the child so a gate that shells out to another gate does not
 #: deadlock against itself. `certify` runs `smoke.sh` inside its own run, and
@@ -71,10 +139,11 @@ def _alive(pid: int) -> bool:
 
 
 def _read() -> dict[str, Any] | None:
-    if not LEASE.exists():
+    lease = _lease_path()
+    if not lease.exists():
         return None
     try:
-        return json.loads(LEASE.read_text())
+        return json.loads(lease.read_text())
     except json.JSONDecodeError:
         # A partial write from a process killed mid-acquire. Treat as absent
         # rather than as a permanent block.
@@ -89,16 +158,19 @@ def holder() -> dict[str, Any] | None:
     if current is None:
         return None
     if not _alive(int(current.get("pid", -1))):
-        LEASE.unlink(missing_ok=True)
+        _lease_path().unlink(missing_ok=True)
         return None
     return current
 
 
 def _describe(current: dict[str, Any]) -> str:
     started = current.get("started_at", "?")
+    clone = current.get("clone")
+    where = "" if clone in (None, str(REPO_ROOT)) else f"\n    in {clone}"
+    mine = "  (this clone)" if clone == str(REPO_ROOT) else ""
     return (
         f"    {current.get('label', '?')}  pid {current.get('pid', '?')}"
-        f"  since {started}"
+        f"  since {started}{mine}{where}"
     )
 
 
@@ -119,12 +191,17 @@ def acquire(label: str) -> str:
         )
         raise SystemExit(4)
     identifier = uuid.uuid4().hex[:12]
-    LEASE.write_text(
+    _lease_path().write_text(
         json.dumps(
             {
                 "id": identifier,
                 "label": label,
                 "pid": os.getpid(),
+                # **Which checkout, because four can now answer.** "leased by
+                # certify, pid 8231" was actionable when one clone existed; it
+                # sends the reader to their own `ps` output when four do.
+                "clone": str(REPO_ROOT),
+                "resource": _resource(),
                 "started_at": datetime.now(UTC).isoformat(timespec="seconds"),
             },
             sort_keys=True,
@@ -139,7 +216,7 @@ def release(identifier: str | None = None, *, force: bool = False) -> None:
     if current is None:
         return
     if force or identifier is None or current.get("id") == identifier:
-        LEASE.unlink(missing_ok=True)
+        _lease_path().unlink(missing_ok=True)
 
 
 def run(label: str, command: list[str]) -> int:
