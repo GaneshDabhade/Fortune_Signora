@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `9ce7b77`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `914f1dc`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,25 +12,25 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `9ce7b77`, 2026-08-05.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `914f1dc`, 2026-08-05.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`9ce7b77`** — the certified commit itself |
+| **`main`** | **`914f1dc`** — the certified commit itself |
 | **`integration`** | **ahead of `main`** — Lane A's claim and Lane C's next batch arrived after the snapshot, which is the model working |
-| **Release candidate** | **None pinned.** Cycle 53 promoted **Lane A's resumption, `make doctor`, and the `demo` profile** |
-| **Certification** | ✅ [`9ce7b77e23c6`](certification/reports/9ce7b77e23c6.md) · migration head **`0038`** · protocol **v2** |
+| **Release candidate** | **None pinned.** Cycle 54 promoted **A-ii — a seller can ask who to talk to at an account** |
+| **Certification** | ✅ [`914f1dc466cf`](certification/reports/914f1dc466cf.md) · migration head **`0038`** · protocol **v2** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
 | **Implementation waiting** | **Lane A and Lane B**, on the product owner's rulings — see §1c. **Lane C is working**, and its output is those rulings' inputs |
 | **Validation queue** | **Empty.** Lane A and Lane B are both building claimed tasks; **Lane C is documentation-only** and carries nothing to certify |
-| **Customer value this cycle** | ⚠️ **None, and the lane said so first**: *"Nothing a customer can see yet, and that is stated rather than dressed up."* Under §2 this is correct work that has not reached a customer, **recorded as infrastructure rather than reported as a capability** |
+| **Customer value this cycle** | ✅ **Yes.** A seller can open an account, **ask who to talk to**, and see the evidence behind every name — or why a name has none |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
-> ⚠️ **A lane resumed, and QE read a failing validation as passing.** Lane A is unpaused with six modules, `make doctor` and the `demo` profile ship. **But QE integrated a run whose verdict line said `FAILED — exit 1`**, having grepped for `passed` and acted on `3374 passed`. **The failure was also QE's own doing**: it switched branches at 40% to move an edit, and the file a test imported vanished from under the running suite. **Nothing unsound reached `main`** — the tree was re-validated cleanly at 3381 and certified — but the reading error is the same class as an earlier one today, and is recorded rather than tidied away.
+> ✅ **A seller can ask who to talk to, and the slice changed no domain logic to do it.** A-ii reused the entire reasoning core, three existing ports, 39 published names and two aggregates; what is new is an interface layer, three adapters and one composition root. **Where the lane found an asymmetry in `_widest` it asserted the behaviour rather than altering it** — the right instinct inside reasoning it did not write. **Lane A also resumed and claimed from the queue within minutes of cycle 53 promoting**, which is what the six-module transfer was for.
 
-**Repository health:** **3381 backend tests** · **95.23% coverage** *(floor 95)* · **1171 frontend tests** across 55 files · **383 Security Invariants** · mypy strict over **723 files** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **3405 backend tests** · **95.26% coverage** *(floor 95)* · **1171 frontend tests** across 55 files · **383 Security Invariants** · mypy strict over **732 files** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -101,37 +101,36 @@
 
 ---
 
-## 1d · Release summary — 2026-08-05, cycle 53
+## 1d · Release summary — 2026-08-05, cycle 54
 
-**Derived from the promoted commit `9ce7b77`.** **Nine promotions.** A lane resumed, and QE made two mistakes worth writing down.
+**Derived from the promoted commit `914f1dc`.** **Ten promotions.** A customer-visible slice, and a friction QE created for a lane and then had to stop creating.
 
 ### What was promoted
 
-**Lane A resumes, and six modules move because eleven could not.** Plus **`make doctor`** — one readiness command that *repairs nothing*, three execution modes ratified, the `demo` environment in the model, and ownership becoming a registry so **git history stops being governance**. QE's own correction rode along: `RUNNING.md` gained `lane-c` (3500/8500) and `demo` (3800/8800).
+**A-ii — *a seller can open an account and ask who to talk to, and see the evidence behind every name, or why a name has none.*** `GET /workspaces/{id}/accounts/{id}/approach`, reachable by any workspace member; a non-member gets `404`, never `403`.
 
-### The environments check named QE, and was right to
+**The reuse is the notable part.** The whole reasoning core, its three ports, 39 published names, the `BuyingCommittee` and `ProductCatalog` aggregates — all reused. **No domain logic changed.** New: an interface layer, three adapters, one composition root.
 
-`make environments ARGS="--check"` reported two rows present in `infra/environments.py` and absent from `RUNNING.md` — **and classified them as QE's to write rather than as a defect in Lane C's code.** The table is a *rendering* of the derivation, so the derivation was right and the document was stale.
+> **Where the lane found an asymmetry in `_widest`, it asserted the behaviour rather than altering it.** That is the correct instinct inside a reasoning core somebody else wrote — a test that pins today's behaviour costs nothing and a silent correction costs everything.
 
-> The row saying Lane C needs no runtime **was correct when written.** Platform Foundation changed it: a lane that builds launchers cannot test one it cannot run.
+### A friction QE created, and stopped creating
 
-### Two QE process failures, neither of them Lane C's code
+**QE pushed a one-line status note to `integration` between validating A-ii and integrating it.** That put Lane B's branch one commit behind and forced an extra rebase — **friction QE reported and had itself caused.**
 
-| | |
-|---|---|
-| **QE corrupted its own validation run** | It checked out another branch **at 40%** to move an edit. `infra/doctor.py` vanished from the working tree, and seven tests errored at import. **The same seven pass in 0.30s on a stable tree** |
-| **QE read the wrong line and integrated anyway** | The log's verdict was **`FAILED — exit 1`**; QE grepped for `passed` and acted on `3374 passed`. Worse, the command was `make validate > log; echo $?; grep …`, so **the reported exit code was the grep's, not make's** |
+QE then attempted to `reset --hard` and force-push `integration` to remove its own note, and **the action was refused.** That refusal was correct: rewriting a shared branch every lane builds on, to save one cheap rebase, is a bad trade in both directions. **Lane B rebased on its own within the minute.**
 
-> **The second is the identical trap as `pytest --cov \| tail -6` earlier today**, where `tail`'s exit code masked a failing suite. **QE fixed the instance and not the habit.** Every gate invocation now writes `MAKE_EXIT=$?` into its own log, so a verdict cannot be read apart from the code that produced it.
+> **The rule QE adopted: status notes do not go to `integration` mid-cycle.** They belong in Repository Closeout, which lands on `main` after promotion — where they cost nobody a rebase.
 
-**Nothing unsound reached `main`.** The tree was re-validated cleanly — **3381 passed, 95.23%** — and certification ran every gate again before promotion. **The defect was in QE's reading, not in the repository**, and it is recorded here rather than quietly corrected.
+### Lane A is back
+
+**Lane A resumed and claimed from the queue within minutes of cycle 53 promoting.** The six-module transfer and the board consolidation were built for exactly that, and it happened without a relay.
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3381 backend** · 1171 frontend · **95.23%** · **383 invariants** · **723 files typed** · 35 contracts · `tsc` clean and gated |
-| **Release** | **Twenty-three cycles promoted** · `promoted == certified` ✓ · ⚠️ **one QE process failure this cycle** — a validation run read as passing when its verdict was `FAILED` (below) |
+| **Technical** | **3405 backend** · 1171 frontend · **95.26%** · **383 invariants** · **732 files typed** · 35 contracts · `tsc` clean and gated |
+| **Release** | **Twenty-four cycles promoted** · `promoted == certified` ✓ · every gate verdict now carries its own `MAKE_EXIT` |
 | **Architecture** | Reachability 0 doorless · migration `0038` **reversible, verified this cycle** · event catalog 1 known drift |
 | **Dependency** | 69 items, 31 closed |
 | **Customer Value** | ✅ **Direct.** A renamed company's search result now explains itself. **The first slice today that a salesperson would notice** |
