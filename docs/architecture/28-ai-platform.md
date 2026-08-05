@@ -1157,3 +1157,33 @@ The environment is a field on **`AISettings`**, reading `SIGNORA_ENVIRONMENT` �
 **Development is deterministic by default.** `SIGNORA_DEVELOPMENT_PROVIDER` selects `mock` (the default) or `ollama`; exactly one is registered for the development model, never both. A hosted credential still registers Anthropic alongside either. **Nothing above the port can tell which answered**, which is the property that makes the deterministic path worth having — a mode that skipped the port would prove the mock works and say nothing about the product.
 
 *27 new tests in `tests/ai_platform/test_mock_adapter.py`.*
+
+---
+
+## TASK-416 — an evaluation states which provider served it, and a hazard it uncovered
+
+**Delivered 2026-08-05 by Lane B**, taken as `next` the moment TASK-415 left the lane.
+
+### The change is small and the finding is not
+
+`provider` is now recorded on every `Evaluation`, **read back from what actually answered** rather than passed in: `Infer` already records the vendor on each call, `RunLog` holds those records, and the harness asks it. That is the least-powerful-author rule applied — the adapter that served the call is the only component that knows, and letting the composition root *state* a provider would produce provenance nobody checked.
+
+**Optional, because of immutability rather than convenience.** Twelve evaluations were recorded before this field existed. They are historical facts and are never edited (§2); backfilling would invent provenance for runs nobody observed, which is worse than the gap because a reader could not tell the two apart. `None` means *recorded before this was captured*, and says so.
+
+**`RunLog.provider()` returns `None` for a mixed run rather than picking one.** A registry serves one adapter per model, so two vendors across one run means something changed mid-run and neither name describes it.
+
+### `execution_mode` was not built, and this is the argument for not building it
+
+431 §7 asks for provider **and** execution mode. **An evaluation run is in Evaluation mode by construction**, so the field would carry the same value on every row it is ever written to — a field that cannot vary, which is the Decorative Logic class §2 names. **The fact anybody actually needs is whether the run measured a real model, and `provider` answers it.** Raised rather than decided: if the mode is meant to vary, the row should say how.
+
+### B-324 — the hazard TASK-415 created, and the fix that was refused
+
+**Preparing this slice found a defect in the previous one.** TASK-415 made the mock the local default; the evaluation entry points resolve through the same registry; so `make eval-*` on a fresh clone measures a scripted response — and `Prompt.released_for` reads the manifest, so it could have **earned a real release**.
+
+**The codebase asserted this could not happen, in a comment.** `evaluation/__main__.py` read *"Nothing here constructs an adapter, so nothing here can construct a fake"* — true when written, false after TASK-415, and found by checking whether it was still true. The comment now records what changed instead of claiming a guarantee the code no longer makes.
+
+**The obvious fix was written and then reverted.** `if report.provider is AIVendor.MOCK` in `record()` failed `TestTheEvaluationFrameworkNamesNoVendor` within the hour — evaluation code *"may not name a vendor, name a concrete adapter, or reach a vendor's URL"*, which is §10's *no `if vendor == …` outside an adapter* in executable form. **The test was right and was not weakened** (§11).
+
+> **The correct shape is a capability on `AIProviderDescriptor`** — *does this adapter measure a real model?* — exactly as `domain/provider.py` prescribes: *"Capabilities first, identity last."* It names no vendor and covers every future stub rather than the one that exists today. **That is a second change to a published domain type in one day and belongs in its own reviewed slice**, so it is filed as [B-324](../BUGS.md) with the design named rather than appended here.
+
+*+2 tests. 3474 backend passed, coverage 95.30%, 737 files mypy clean, 35 contracts, frontend 1171.*

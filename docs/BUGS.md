@@ -80,6 +80,50 @@ Such a row names the code, records **Current assignee: none — not assignable**
 
 ## Open
 
+### B-324 · TASK-415 made the mock the local default, and evaluation resolves through the same registry
+
+| | |
+|---|---|
+| **Module** | `ai_platform` — `evaluation/release.py`, `evaluation/__main__.py` |
+| **Current assignee** | **Lane B** — the module's current assignee, **and the lane that caused it** |
+| **Severity** | 🟠 — **it makes a measurement untrustworthy**, and the untrustworthy result is one that *passes* |
+| **Status** | **`OPEN`** — **reported with the fix designed and deliberately not shipped.** [TASK-416](BACKLOG.md) records the provider on every evaluation, so a mock-served run is now **visible**; **refusing one needs a change to `AIProviderDescriptor` and is not in this slice** (below) |
+| **Found** | 2026-08-05, by this lane, **preparing TASK-416's package** — reading how a provider would be recorded, not by a test failing |
+
+**Steps to reproduce.** On a fresh clone at `32b6467`, with no Ollama and no API key:
+
+```bash
+cd backend && uv run python -m modules.ai_platform.evaluation --prompt explanation_narration --record
+```
+
+**Expected.** A refusal. Nothing about a scripted response is evidence.
+
+**Actual, before the fix.** The run resolves the **deterministic mock**, measures whatever content the mock was configured to return, and **records it into the manifest as an evaluation.**
+
+### Why it is worse than a wrong number
+
+**`Prompt.released_for` reads that list.** An evaluation in the manifest is what makes a `(model, dataset)` pairing usable, so a scripted response could have **earned a real release** — and a release is what the runtime checks before letting a prompt reach a customer. `CLAUDE.md` §10: *"a quality measurement taken against a fake measures the fake"*, and the mock's grounding and schema failures are a property of its script, not of the prompt.
+
+### What caused it, precisely
+
+**[TASK-415](BACKLOG.md) did**, and this lane wrote it. Before that slice `build_provider_registry` could not produce a mock at all, so the hazard did not exist. Making the mock the local default was correct and approved; **what was missed is that the evaluation entry points resolve through that same registry.**
+
+> **The codebase said it could not happen, in a comment.** `evaluation/__main__.py` read *"Nothing here constructs an adapter, so nothing here can construct a fake."* **True when written, false after TASK-415** — the exact class §2 names: *a comment justifying a guarantee the code no longer makes is a false claim sitting in the codebase.* It was found by reading that comment and checking whether it was still true.
+
+### What TASK-416 does about it, and what it deliberately does not
+
+**Done: the run is visible.** Every evaluation now records which provider served it, so a mock-served measurement is identifiable in the manifest rather than indistinguishable from a real one.
+
+**Not done: it is not yet refused** — and the reason is worth reading, because the obvious fix is wrong.
+
+> **The first attempt was `if report.provider is AIVendor.MOCK` in `record()`, and a Security Invariant refused it within the hour.** `TestTheEvaluationFrameworkNamesNoVendor` states that evaluation code *"may not name a vendor, name a concrete adapter, or reach a vendor's URL"*, and `CLAUDE.md` §10 says the same thing generally: **no `if vendor == …` outside an adapter.** The check was reverted rather than the test weakened (§11).
+
+**The correct shape is a capability, not an identity**, and `domain/provider.py` already prescribes it: *"Capabilities first, identity last. A future vendor integrates by describing what it supports, never by requiring conditional logic elsewhere."* So the refusal reads a flag on `AIProviderDescriptor` — *does this adapter measure a real model?* — which names no vendor and **covers every future stub automatically** rather than the one that exists today.
+
+**That is a second change to a published domain type in one day**, after `AIVendor.MOCK`, and it needs the same review rather than being appended to a slice at the end of a session. **Filed here so it cannot be lost, with the design named so the next lane does not rediscover it.**
+
+⚠️ **Until it lands, the hazard is real on a fresh clone**: `make eval-*` with default settings measures the mock. **The mitigation available today is the visibility this slice added**, plus the manifest's own record — a reader can now tell.
+
 ### B-323 · `mypy --strict` fails on `integration`, in the test that proves the skip check can fire
 
 | | |

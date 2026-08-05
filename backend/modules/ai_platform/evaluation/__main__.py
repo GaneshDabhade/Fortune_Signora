@@ -86,7 +86,14 @@ async def main(argv: list[str] | None = None) -> int:
 
     async with httpx.AsyncClient() as client:
         # One registry, built by the module that owns vendors. Nothing here
-        # constructs an adapter, so nothing here can construct a fake.
+        # constructs an adapter.
+        #
+        # **It used to say "so nothing here can construct a fake", and that
+        # stopped being true at TASK-415** (B-324): the deterministic mock is
+        # now the local development default, and this registry will serve it.
+        # A comment asserting a guarantee the code no longer makes is the
+        # false claim §2 forbids, so the guarantee moved to where it can be
+        # enforced instead — `record()` refuses a mock-served run.
         providers = build_provider_registry(settings, client=client)
 
         # One prompt registry in two roles, and one `RunLog` in two: the

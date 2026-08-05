@@ -99,6 +99,9 @@ class Harness:
         ]
 
         report = EvaluationReport(
+            # Read back from what actually answered, never passed in: the
+            # adapter that served the call is the only component that knows.
+            provider=self._run_log.provider(),
             prompt_name=prompt_name,
             prompt_version=prompt_version,
             prompt_fingerprint=prompt.fingerprint,

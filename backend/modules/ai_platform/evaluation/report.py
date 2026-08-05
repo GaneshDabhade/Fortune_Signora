@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from datetime import date
 
 from modules.ai_platform.domain.prompt import Evaluation
+from modules.ai_platform.domain.provider import AIVendor
 from modules.ai_platform.domain.record import InferenceOutcome
 from modules.ai_platform.domain.rendering import PROMPT_RENDERING_PROTOCOL_VERSION
 from modules.ai_platform.evaluation.rubric import RUBRIC_VERSION, criteria
@@ -106,6 +107,11 @@ class EvaluationReport:
     rubric_version: int
     evaluated_on: date
     results: tuple[CaseResult, ...]
+    #: Which vendor served the run, read back from what actually answered.
+    #: ``None`` when nothing reached a vendor — an unreleased prompt or an
+    #: unregistered model fails before a call is made, and naming a provider
+    #: for that run would attribute it to a component never involved (§10).
+    provider: AIVendor | None = None
 
     @property
     def sample_size(self) -> int:
@@ -173,6 +179,7 @@ class EvaluationReport:
             # is the one place that can state it without being told.
             rendering_protocol_version=PROMPT_RENDERING_PROTOCOL_VERSION,
             retries=self.retries,
+            provider=self.provider.value if self.provider else None,
         )
 
     def render(self) -> str:

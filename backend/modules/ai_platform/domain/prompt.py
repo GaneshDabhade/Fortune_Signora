@@ -134,6 +134,19 @@ class Evaluation:
     #: run that needed retries stays distinguishable from a clean one after
     #: the terminal that printed it is closed.
     retries: int = 0
+    #: Which vendor served the run. **Provenance, never a criterion** — it is
+    #: absent from `passed` below and must stay absent, or a prompt could earn
+    #: a release from whichever provider happened to be configured (§10,
+    #: vendor neutrality).
+    #:
+    #: **Optional, and the reason is immutability rather than convenience.**
+    #: Twelve evaluations were recorded before this field existed. They are
+    #: historical facts and are never edited (§2), and backfilling a provider
+    #: onto them would invent provenance for runs nobody observed — which is
+    #: worse than the gap, because a reader could not tell the two apart.
+    #: ``None`` therefore means *recorded before this was captured*, and says
+    #: so honestly.
+    provider: str | None = None
 
     def __post_init__(self) -> None:
         if not self.model.strip() or not self.dataset.strip():

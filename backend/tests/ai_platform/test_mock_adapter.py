@@ -28,6 +28,7 @@ from modules.ai_platform.domain.provider import (
     InferenceRequest,
     ModelNotRegisteredError,
 )
+from modules.ai_platform.evaluation.run_log import RunLog
 from modules.ai_platform.infrastructure.adapters.mock import MockAdapter
 from modules.ai_platform.infrastructure.composition import build_provider_registry
 from modules.ai_platform.infrastructure.settings import AISettings
@@ -276,3 +277,10 @@ class TestItIsRefusedOutsideALocalEnvironment:
             registry = AIProviderRegistry()
             with pytest.raises(ModelNotRegisteredError):
                 registry.for_model(settings.anthropic_model)
+
+
+class TestTheRunLogReadsBackWhatServedTheRun:
+    def test_no_calls_means_no_provider(self) -> None:
+        """An unreleased prompt fails before anything is served. Naming a
+        provider there would attribute a run to a component never involved."""
+        assert RunLog().provider() is None
