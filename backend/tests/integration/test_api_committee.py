@@ -17,7 +17,14 @@ from uuid import UUID, uuid4
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
 from apps.api.main import create_app
+from modules.commercial_profile.domain.committee import CommitteePart
+from modules.commercial_profile.infrastructure.composition import (
+    build_buying_committee_reader,
+    build_product_catalog_reader,
+)
 from signora_platform.settings import Settings
 from signora_platform.tests.keys import (
     TEST_AUDIENCE,
@@ -573,3 +580,129 @@ class TestTheWireContract:
             for term in ("score", "rank", "weight", "influence", "priority", "seniority")
             if term in field.casefold()
         }
+
+
+class TestThePublishedRead:
+    """`BuyingCommitteeReader` and `ProductCatalogReader`, over the whole stack.
+
+    **Exercised through the API that declares, never by inserting a row.** A
+    view assembled from data that arrived by a private door proves the door.
+    Both readers are what A-ii's `AssembleApproach` consumes, and this is the
+    first time either surface has had a counterparty.
+    """
+
+    async def test_it_publishes_the_committee_in_force(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        user = uuid4()
+        workspace = await _workspace(client, key_pair, user)
+        product = await _sell(client, key_pair, user, workspace)
+        await _declare(
+            client,
+            key_pair,
+            user,
+            workspace,
+            committees=[
+                _committee(
+                    product,
+                    {"title": "VP of Revenue Operations", "part": "economic_buyer"},
+                    {"title": "Head of Security", "part": "gatekeeper"},
+                )
+            ],
+            expected_version=0,
+        )
+
+        async with admin_session_factory() as session:
+            view = await build_buying_committee_reader(session).current(workspace)
+
+        assert view is not None
+        assert view.workspace_id == workspace
+        assert view.version == 1
+        assert [committee.product_id for committee in view.committees] == [product]
+        assert [role.title for role in view.committees[0].roles] == [
+            "VP of Revenue Operations",
+            "Head of Security",
+        ]
+
+    async def test_a_part_crosses_as_the_string_it_was_declared_as(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**Not the enum.** A consumer keys on the string and treats an
+        unrecognised one as a seat it has no rule for, so this module may add a
+        sixth part without re-releasing everything that reads it."""
+        user = uuid4()
+        workspace = await _workspace(client, key_pair, user)
+        product = await _sell(client, key_pair, user, workspace)
+        await _declare(
+            client,
+            key_pair,
+            user,
+            workspace,
+            committees=[_committee(product, {"title": "CFO", "part": "economic_buyer"})],
+            expected_version=0,
+        )
+
+        async with admin_session_factory() as session:
+            view = await build_buying_committee_reader(session).current(workspace)
+
+        assert view is not None
+        part = view.committees[0].roles[0].part
+        assert part == "economic_buyer"
+        assert isinstance(part, str) and not isinstance(part, CommitteePart)
+
+    async def test_it_answers_none_before_anything_is_declared(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**`None`, not an empty tuple.** A workspace that has never said how
+        a purchase gets decided is a state to wait in, not one to reason from —
+        and `AssembleApproach` is entitled to tell the two apart."""
+        workspace = await _workspace(client, key_pair, uuid4())
+
+        async with admin_session_factory() as session:
+            view = await build_buying_committee_reader(session).current(workspace)
+
+        assert view is None
+
+    async def test_it_publishes_the_catalog_by_identity_and_name(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        """**And nothing else.** `description` is stored and deliberately not
+        published: inferring which product an account is about needs identity
+        and a name, and prose would invite reasoning from a sentence this
+        module never promised to keep stable."""
+        user = uuid4()
+        workspace = await _workspace(client, key_pair, user)
+        product = await _sell(client, key_pair, user, workspace)
+
+        async with admin_session_factory() as session:
+            view = await build_product_catalog_reader(session).current(workspace)
+
+        assert view is not None
+        assert view.version == 1
+        assert [(entry.id, entry.name) for entry in view.products] == [(product, "Revenue Cloud")]
+        assert not hasattr(view.products[0], "description")
+
+    async def test_the_catalog_answers_none_before_anything_is_declared(
+        self,
+        client: AsyncClient,
+        key_pair: KeyPair,
+        admin_session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        workspace = await _workspace(client, key_pair, uuid4())
+
+        async with admin_session_factory() as session:
+            view = await build_product_catalog_reader(session).current(workspace)
+
+        assert view is None

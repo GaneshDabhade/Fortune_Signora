@@ -32,6 +32,8 @@ from modules.commercial_profile.infrastructure.repository import (
     SqlProductCatalogRepository,
     SqlTargetAccountListRepository,
 )
+from modules.commercial_profile.infrastructure.catalog_reader import SqlProductCatalogReader
+from modules.commercial_profile.infrastructure.committee_reader import SqlBuyingCommitteeReader
 from modules.commercial_profile.infrastructure.segment_repository import SqlSegmentReader
 from modules.commercial_profile.infrastructure.target_account_reader import (
     SqlTargetAccountReader,
@@ -137,3 +139,18 @@ def build_declared_competitor_reader(session: AsyncSession) -> SqlDeclaredCompet
     calls this, and the consumer never learns that any of it is backed by SQL.
     """
     return SqlDeclaredCompetitorReader(session)
+
+
+def build_buying_committee_reader(session: AsyncSession) -> SqlBuyingCommitteeReader:
+    """The module's third published read side.
+
+    Built here for the reason the first two are: Sales Engagement depends on
+    the `BuyingCommitteeReader` Protocol in `public/`, its composition root
+    calls this, and it never learns that any of it is backed by SQL.
+    """
+    return SqlBuyingCommitteeReader(session)
+
+
+def build_product_catalog_reader(session: AsyncSession) -> SqlProductCatalogReader:
+    """The module's fourth published read side."""
+    return SqlProductCatalogReader(session)

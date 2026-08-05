@@ -10,6 +10,16 @@ is the speculative abstraction §6 forbids.
 since M2.1 and nothing has ever supplied one. It is published because somebody
 is waiting for it, which is the only good reason a contract exists.
 
+**The paragraph above is the record of why this surface was small, and the
+rule in it is what widened it.** The buying committee and the product catalog
+are published from A-ii, on exactly the test it states: Sales Engagement's
+`AssembleApproach` cannot be assembled without them, and its own
+`application/ports.py` has named the absence since SE-01 — *"the adapter that
+satisfies it is a separate, small change once the export exists."* **The
+ideal customer and the commercial focus stay unpublished**, because nothing
+consumes them yet and a reader with no counterparty is still the speculative
+abstraction §6 forbids.
+
 ### What this surface is, and what it can never become
 
 **It answers *"which companies did the customer name?"* and nothing else.**
@@ -169,10 +179,107 @@ class DeclaredCompetitorReader(Protocol):
         ...
 
 
+@dataclass(frozen=True, slots=True)
+class BuyingCommitteeRoleView:
+    """One seat on a Buying Committee.
+
+    **`part` travels as the string this module declared, never as its enum.**
+    Publishing `CommitteePart` would export a vocabulary this module intends to
+    extend, and every consumer would then have to be re-released to add a sixth
+    value — which is the coupling a published contract exists to avoid. A
+    consumer keys on the string and treats one it does not recognise as a seat
+    it has no rule for, which is the correct behaviour for a vocabulary that
+    grew.
+
+    **No person, and there is no field for one.** A role is a slot, and the
+    platform holds no person's name at any point.
+    """
+
+    title: str
+    part: str
+
+
+@dataclass(frozen=True, slots=True)
+class ProductCommitteeView:
+    """Who decides about one product."""
+
+    product_id: UUID
+    roles: tuple[BuyingCommitteeRoleView, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class BuyingCommitteeView:
+    """Who decides about each of the workspace's products, in the version in
+    force."""
+
+    workspace_id: UUID
+    version: int
+    committees: tuple[ProductCommitteeView, ...]
+
+
+class BuyingCommitteeReader(Protocol):
+    """The read side of the buying committee.
+
+    **Published because somebody is waiting for it**, which is the only reason
+    the header above gives for a contract existing. Sales Engagement's
+    `CommitteeReader` has declared this need since SE-01 and named the absence
+    in its own docstring; the counterparty this surface was waiting for is
+    now built.
+    """
+
+    async def current(self, workspace_id: UUID) -> BuyingCommitteeView | None:
+        """The declaration in force, or ``None`` when there has never been one.
+
+        **`None` rather than an empty tuple**, on the same terms as the two
+        readers above: a workspace that has never described how a purchase gets
+        decided is in a state to wait in, not one to reason from.
+        """
+        ...
+
+
+@dataclass(frozen=True, slots=True)
+class ProductView:
+    """One product the customer sells."""
+
+    id: UUID
+    name: str
+
+
+@dataclass(frozen=True, slots=True)
+class ProductCatalogView:
+    """Everything the workspace sells, in the version in force."""
+
+    workspace_id: UUID
+    version: int
+    products: tuple[ProductView, ...]
+
+
+class ProductCatalogReader(Protocol):
+    """The read side of the product catalog.
+
+    **Deliberately name and identity, and nothing else.** The catalog also
+    holds what a product is for and how it is described; a consumer inferring
+    *which* product an account is about needs neither, and a wider view would
+    invite one to reason from a description this module never promised to keep
+    stable.
+    """
+
+    async def current(self, workspace_id: UUID) -> ProductCatalogView | None:
+        """The catalog in force, or ``None`` when nothing has been declared."""
+        ...
+
+
 __all__ = [
+    "BuyingCommitteeReader",
+    "BuyingCommitteeRoleView",
+    "BuyingCommitteeView",
     "DeclaredCompetitorListView",
     "DeclaredCompetitorReader",
     "DeclaredCompetitorView",
+    "ProductCatalogReader",
+    "ProductCatalogView",
+    "ProductCommitteeView",
+    "ProductView",
     "TargetAccountListView",
     "TargetAccountReader",
     "TargetAccountView",
