@@ -295,6 +295,7 @@ databaseUrl: required(
 | Id | What | Requester | Owner | Status | Blocks |
 |---|---|---|---|---|---|
 | [C-001](#c-001--the-target-account-contract) | The target-account contract — this module's first edge | Lane B | **Lane A** | `ANSWERED` → **[ADR-0036](architecture/adr/0036-target-account-contract.md)** | **Nothing. Slice 5 may begin.** `CLOSED` when both lanes have built it |
+| [C-329](#c-329--lane-b-has-nothing-claimable-and-the-row-that-says-otherwise-names-two-tasks-it-cannot-take) | Lane B has nothing claimable, and the row that says otherwise names two tasks it cannot take | Lane B | **Product owner** (synchronization) · **Lane C** (the register correction) | `OPEN` — raised 2026-08-05 | **Every Lane B slice.** The lane has been `AVAILABLE` since cycle 54 |
 | [C-305](#c-305--two-principles-that-outgrew-the-adr-that-found-them) | Two principles that outgrew the ADR that found them | Lane B | **Product owner** | `OPEN` | **Nothing.** Both are already applied in two modules each; this is placement |
 | [C-304](#c-304--a-standing-review-question-that-has-already-paid-for-itself) | A standing review question that has already paid for itself | Lane B | **Product owner** | `OPEN` — **challenged and sharpened 2026-08-02.** It produces noise in the general form; the narrow one survives | **Nothing.** One line of review practice, wherever it belongs |
 | [C-307](#c-307--signora-cannot-say-who-anybody-is) | Signora cannot say who anybody is | Lane B | **Product owner** | `OPEN` — **blocking, discovered during implementation.** Same class as [C-302](#c-302--a-notification-is-per-person-and-workspace-rls-is-not-enough) | **All of User Profile.** The first table is user-scoped, and the tenancy model has no classification for one |
@@ -4153,6 +4154,61 @@ KeyError: '0035'
 **B-400 named the first, on cost, and that reasoning still holds.** This lane is ready either way: `lane-b-commercial-profile` is rebased onto `1252d02` with its gates green, and the renumber is pre-verified.
 
 **What this lane is doing meanwhile.** **Epic E1**, which touches no migration yet. **If E1 adds one, this lane will number it after whatever head exists at that rebase and say so** — which is the same rule, applied at the only moment it can be applied correctly.
+
+## C-329 · Lane B has nothing claimable, and the row that says otherwise names two tasks it cannot take
+
+| | |
+|---|---|
+| **Raised by** | **Lane B**, 2026-08-05, on being asked whether it had documented what it was waiting on. **It had not, and that is the finding** |
+| **Owner** | **Product owner** — synchronization priority is theirs (§20e) · **Lane C** for the register correction, which is their row |
+| **Status** | `OPEN` |
+| **Blocks** | **Every Lane B slice.** The lane has been `AVAILABLE` with nothing verifiable to claim since cycle 54 |
+
+### Two facts, both measured from `origin/integration` today
+
+**1 · The prepared work is on a branch and has never reached `integration`.**
+
+```
+origin/lane-c-product-office   5ecd2da   57 commits ahead of origin/integration
+origin/integration             fa26a8e
+```
+
+ADR-0300's Option A ruling, [409](architecture/409-inbound-source-port-contract.md)'s contract and every task row drafted alongside them exist **only there**. `CLAUDE.md` §20e is unambiguous about what that means:
+
+> *"Executable work comes from `integration`, and from nowhere else… Product Office branches are planning artifacts, not execution contracts. A lane does not monitor one, does not wait on one, and does not treat work found on one as claimable."*
+
+**The Task Claim Protocol reads `integration`**, so none of it is claimable however complete it is. [422](architecture/422-synchronization-plan.md) is the plan to collapse the 57 into six and is itself on that branch.
+
+**2 · [C-412](#c-412--three-backlog-rows-say-ready-and-are-not-claimable) is the row a reader would consult to answer *"does Lane B have work?"*, and its answer is stale.**
+
+It names **TASK-003 and TASK-904** as Lane B's remaining claimable rows. Both fail, for different reasons:
+
+| Row | C-412 says | Is |
+|---|---|---|
+| **TASK-003** — R11-06 attribute vocabulary | Claimable, Lane B | ⚠️ **Its own backlog note says *"Not claimable as written — [C-018](#c-018) opened"***, and C-018 is still `OPEN`. **One file, two answers** — the exact defect C-412 was written to name |
+| **TASK-904** — an organization can grow | Claimable, Lane B | ⚠️ **`workspace_tenancy`, and [`modules.toml`](coordination/modules.toml) records `current_owner = "Lane A"`.** One lane per module |
+
+**So Lane B's claimable count from that row is zero, not two.** This is not a criticism of C-412 — it was correct when written and `modules.toml` became authoritative afterwards ([D-061](DECISION_REGISTER.md)). **It is the failure mode C-213 cost two days to teach**: a row naming an assignee that has moved *looks answered*.
+
+### Why this is a coordination item rather than a line in a lane report
+
+**§20e already rules the condition, and names who reports it:**
+
+> *"Whenever an implementation lane has been idle for more than one reporting cycle because `READY` work exists only outside `integration`, synchronizing that work becomes the highest repository priority"* — and **"Lane C reports this condition itself and does not wait to be told."**
+
+**It has been true for several cycles and recorded in no document a lane reads.** That is precisely [C-411](#c-411--three-findings-reported-but-recorded-nowhere-a-lane-would-look)'s finding class — *a finding that exists only in a commit message has not been reported* — committed here by the lane that raised nothing about its own idleness while raising items about everything else.
+
+### What closes it
+
+**Either** the Product Office set reaches `origin/integration` **or** one `READY` row exists there for a module `modules.toml` records as Lane B's. **Either is sufficient; neither is this lane's to perform.**
+
+### What this row deliberately does not do
+
+**It does not claim from the branch**, does not propose a module transfer, and **does not amend C-412** — that row is Lane C's, and a lane correcting another lane's register entry is how two records start disagreeing. The correction is named here for its owner to apply.
+
+### Already documented elsewhere, and not restated here
+
+[C-300](#c-300--provider-platform-owns-the-half-of-the-inbound-path-lane-b-may-not-build) (409 steps 3–5) · [C-321](#c-321--what-should-signora-do-with-a-company-it-cannot-name) and [C-219](#c-219--task-400s-two-halves-are-not-equally-buildable) (TASK-400's halves) · [C-222](#c-222--reasoning1-earns-a-release-under-protocol-2-on-a-model-this-workstation-cannot-measure-in-time) (Epic G) · [C-104](#c-104--may-a-request-handler-call-a-vendor-synchronously-when-the-answer-is-the-request) · [C-328](#c-328--task-406-asks-commercial_profile-to-read-the-pipeline-which-a-contract-forbids-by-design). **Every one of those is open and owned. None of them is why the queue is empty** — this row is.
 
 ## C-328 · TASK-406 asks `commercial_profile` to read the pipeline, which a contract forbids by design
 
