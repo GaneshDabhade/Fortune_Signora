@@ -40,7 +40,7 @@ lane         = "Lane C"
 updated      = 2026-08-05
 depth_target = 5
 
-current = "TASK-419"
+current = ""
 next    = ""
 future  = []
 
@@ -52,11 +52,10 @@ future  = []
 #
 # **§20e: `AVAILABLE` with an empty queue is a correct repository state, not a
 # stalled one** — every remaining item has an owner who is not this lane.
-eligible_count = 1
-shortfall      = 4
+eligible_count = 0
+shortfall      = 5
 
 [rationale]
-"TASK-419" = "ADR-0404 capability 3 — a `providers` field on WorkerRuntime, built at the worker composition root as the API's registry already is. ✅ apps/ became a first-class assignable module on 2026-08-05 (C-010) and is Lane C's, so this is buildable now. It is the one quarter of ADR-0404 that is not blocked on an owner for signora_platform/"
 #: not sequenced — see [[held]] below.
 "_TASK-413" = "change-aware validation — frontend-only skips. SEQUENCED with a trigger that has not fired: a measured certification wall-clock cost. Listed so the sequence is visible; it does not start on a schedule"
 
@@ -122,3 +121,9 @@ standing = [
   "coordinate dependencies",
   "keep implementation lanes continuously supplied with work",
 ]
+
+[[blocked]]
+task    = "TASK-419"
+blocker = ["provider_platform's Settings and registry builder — Lane A's"]
+owner   = "Lane A first, then Lane C"
+note    = "ADR-0404 capability 3. Rescoped 2026-08-05 before a line was written: the ADR said the registry is built at the worker composition root `exactly as the API's registry already is`, and no composition root builds a ProviderRegistry anywhere. That sentence compared it to ai_platform's AI provider registry -- a different thing with a similar name, and the collision is live at apps/worker/subscriptions.py:153. SimulatedProviderAdapter is constructed only in tests and provider_platform has no Settings object. §10 puts a typed Settings with the module that owns the behaviour, which is Lane A's. Only the WorkerRuntime field is apps/. A field pointing at a registry nothing populates is the decorative class §2 forbids, so the halves are sequenced."

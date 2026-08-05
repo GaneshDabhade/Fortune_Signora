@@ -538,11 +538,14 @@
 | **Recommendation** | **Decomposition of already-approved scope** — [ADR-0404](architecture/adr/0404-platform-composition.md) capability 3. **No new scope** |
 | **Module** | **`apps/`** — [`modules.toml`](coordination/modules.toml) records it as **Lane C**, from [C-010](LANE_COORDINATION.md), ruled 2026-08-05 |
 | **Slice** | one slice |
-| **Status** | ✅ **`READY` — Lane C.** **The one quarter of ADR-0404 that is not blocked**, because `apps/` now has an owner and `signora_platform/` does not |
-| **In scope** | **`WorkerRuntime` gains a `providers` field**, built at the worker's composition root exactly as the API's registry already is |
+| **Status** | ⏸️ **`BLOCKED` — on `provider_platform`'s half, which is Lane A's.** ⚠️ **Rescoped 2026-08-05, before a line was written.** [ADR-0404](architecture/adr/0404-platform-composition.md) sized this as *"`WorkerRuntime` gains a `providers` field, built at the worker's composition root exactly as the API's registry already is"* — **and no composition root builds a `ProviderRegistry` anywhere.** The registry that sentence compared it to is `ai_platform`'s **AI** provider registry: a different thing with a similar name, and **the collision is live in one file** — `apps/worker/subscriptions.py:153` already passes `providers=` to `Infer` |
+| **Measured** | **`SimulatedProviderAdapter` is constructed only in tests** *(3 sites, all under `backend/tests/`)*. **`provider_platform` has no `Settings` object.** `build_run_sync` takes an `adapter` a caller supplies, and **no caller in `apps/` supplies one** |
+| **In scope — Lane C** | **A `provider_registry` field on `WorkerRuntime`**, populated at the worker composition root. **Named `provider_registry`, not `providers`**, because that name is taken in the same file by the AI registry |
+| **Blocked on — Lane A** | **A typed `Settings` for `provider_platform` choosing which adapters exist, and a `build_provider_registry` at its composition root.** §10: *configuration is always a typed Settings object **owned by the module that owns the behaviour***. `provider_platform` is Lane A's |
 | **Not in scope** | **A new enqueue path.** ADR-0404 dissolves that half: with capability 1 the handler already holds a tenant-scoped session inside its own pool, so **it performs the sync where it stands.** `event_bus/queue.py` stays the relay's and the outbox remains the only way work is scheduled |
 | **On claiming** | **Validate ③ first** — `apps/worker/` is outside every §20a-frozen path, and `modules.toml` names its owner. Both hold today; **check rather than assume** |
-| **Why it is separate from [TASK-418](#task-418)** | **Different directory, different ownership state.** Bundling them would put a buildable slice behind an unassigned one, which is the shape [C-412](LANE_COORDINATION.md) named |
+| **Why it is separate from [TASK-418](#task-418)** | **Different directory, different ownership state.** Bundling would put a buildable slice behind an unassigned one — [C-412](LANE_COORDINATION.md)'s shape |
+| **Why it is sequenced, not bundled** | **A `WorkerRuntime` field pointing at a registry nothing populates is the decorative class §2 forbids.** Lane A's half lands first; this one follows and is then a genuinely small slice |
 
 ### TASK-417 · Account 360 renders what the platform already knows
 

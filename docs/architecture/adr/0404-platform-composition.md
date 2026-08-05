@@ -36,7 +36,13 @@ Its members become read-only properties.
 
 ### 3 · A handler reaches a provider adapter — closes C-021
 
-**`WorkerRuntime` gains a `providers` field**, built at the worker's composition root as the API's registry already is.
+**`WorkerRuntime` gains a provider-registry field**, populated at the worker's composition root.
+
+> ⚠️ **Correction, 2026-08-05, before a line was written.** This ADR said *"built at the worker's composition root **exactly as the API's registry already is**"* — **and no composition root builds a `ProviderRegistry` anywhere.** The registry I was comparing it to is `ai_platform`'s **AI** provider registry, which is a different thing with a similar name. **`SimulatedProviderAdapter` is constructed only in tests, and `provider_platform` has no `Settings` object at all.**
+>
+> **So capability 3 is larger than one field and it is cross-lane.** A typed `Settings` choosing which adapters exist belongs to **the module that owns the behaviour** (§10) — that is `provider_platform`, **Lane A's**. Only the `WorkerRuntime` field is `apps/`, which is Lane C's.
+>
+> **The decision stands; the sizing was wrong.** [TASK-419](../../BACKLOG.md) carries the correction, and **the two halves are sequenced rather than bundled** — a `WorkerRuntime` field pointing at a registry nothing populates would be the decorative class §2 forbids.
 
 > ⚠️ **This was never a platform change.** `WorkerRuntime` lives in **`apps/worker/`, which §20a does not freeze** — its own text says adding a subscription or a pool is *a use of the platform, not a change to it*. **C-021 was an ownership gap ([C-010](../../LANE_COORDINATION.md)) wearing an architecture gap's clothes**, and C-010 is now ruled: **`apps/` is a first-class assignable module.**
 

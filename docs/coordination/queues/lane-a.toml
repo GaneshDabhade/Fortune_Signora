@@ -51,7 +51,7 @@ depth_target = 5
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-417"
 next    = "TASK-904"
-future  = ["TASK-905", "TASK-903", "TASK-400"]
+future  = ["TASK-905", "TASK-903", "TASK-400", "TASK-419"]
 
 # **5 of a 5 target**, reached by finding work rather than by lowering the bar:
 # TASK-903's stage 2 moved here from Lane B, where it had been queued on a
@@ -69,7 +69,7 @@ future  = ["TASK-905", "TASK-903", "TASK-400"]
 # file**, so the dashboard now recomputes it and reports the disagreement rather
 # than trusting the field. **The field stays because it must be checkable against
 # something**; what changed is that nothing reads it without checking.
-eligible_count = 5
+eligible_count = 6
 shortfall      = 0
 
 [rationale]
@@ -77,6 +77,7 @@ shortfall      = 0
 "TASK-904" = "an organization can grow. ✅ UNBLOCKED 2026-08-05 — C-206 and C-208 both ruled. Invitation lifecycle belongs to Signora; acceptance gets an explicit authenticated-but-not-member state and a minimum read path. ⚠️ signora_platform/db/ is frozen: a named single-purpose path, never a general RLS change"
 "TASK-905" = "a contraction risk stops looking like an opportunity. Product Surface and buying_score_engine, both Lane A's. This is C-011 in a task, and TASK-203 records it as the half of Epic D that still carries value"
 "TASK-903" = "the declarations on the account brief — stage 2 only. C-008 was ruled 2026-08-03 and stage 1 shipped as CX-05; the product owner confirmed the ruling stands on 2026-08-05. One lane, not two: no backend change. ⛔ SCOPE BOUND: C-002 is DEFERRED and still load-bearing — display the declarations, assert no match"
+"TASK-419" = "ADR-0404 capability 3, provider_platform's half. A typed Settings choosing which provider adapters exist, and a build_provider_registry at its composition root. §10: configuration is a typed Settings object owned by the module that owns the behaviour, and provider_platform is Lane A's. Measured before queueing: SimulatedProviderAdapter is constructed only in tests, 3 sites, all under backend/tests/. Lane C follows with the WorkerRuntime field once this exists"
 "TASK-400" = "Epic A completion. ✅ A6 UNBLOCKED 2026-08-05 — C-321 ruled, Lane B's six answers adopted whole. A7's backend needs no ruling; A7's render still waits on the subject↔entity join proposal this lane owes Lane C, which is C-219 and is not the product owner's"
 
 [[blocked]]
