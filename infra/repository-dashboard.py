@@ -95,6 +95,28 @@ def _owners(board: str, modules: list[str]) -> dict[str, str]:
     resolved** — that is the one-assignee-per-module invariant, and a dashboard
     that hid a breach of it would be hiding the thing worth seeing.
     """
+    # **The assignment table is authoritative and is read first.** Board rows
+    # answer *"who is working?"*, which is a different question — a module with
+    # an assignee and no active slice has no board row at all, and inferring
+    # assignment from the board therefore reported fourteen assigned modules as
+    # unassigned the moment work consolidated onto one lane.
+    #
+    # **This is the smallest instance of what `docs/architecture/428` proposes**:
+    # one place holds the fact, and everything else derives from it rather than
+    # restating it (`CLAUDE.md` §2).
+    declared: dict[str, str] = {}
+    in_table = False
+    for line in board.splitlines():
+        if line.startswith("## Module assignment"):
+            in_table = True
+            continue
+        if in_table:
+            if line.startswith("#"):
+                break
+            row = re.match(r"\|\s*`([a-z_]+)`\s*\|\s*\*\*(Lane [A-Z]|Unassigned)\*\*", line)
+            if row and row.group(1) in modules:
+                declared[row.group(1)] = row.group(2)
+
     found: dict[str, set[str]] = {m: set() for m in modules}
     for line in board.splitlines():
         if not line.startswith("| **Lane") and not line.startswith("| **QE"):
@@ -111,7 +133,18 @@ def _owners(board: str, modules: list[str]) -> dict[str, str]:
                 found[m].add(lane)
     out = {}
     for m, lanes in found.items():
-        if len(lanes) == 1:
+        # **A board row disagreeing with the declared assignee is the collision
+        # worth reporting**, and it is a different defect from two lanes rowed
+        # against one module: it means somebody is working inside a module they
+        # are not assigned, which is §20e's hardest invariant breached.
+        if m in declared:
+            stray = lanes - {declared[m]}
+            out[m] = (
+                f"COLLISION: {declared[m]} declared, {'/'.join(sorted(stray))} rowed"
+                if stray
+                else declared[m]
+            )
+        elif len(lanes) == 1:
             out[m] = next(iter(lanes))
         elif len(lanes) > 1:
             out[m] = "COLLISION: " + "/".join(sorted(lanes))
