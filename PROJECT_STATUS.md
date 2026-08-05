@@ -2,7 +2,7 @@
 
 > **The executive dashboard, and QE's alone to write** (`CLAUDE.md` §20e). A feature lane never edits it: repository-wide state is a property of everything merged together, and only the session that ran the gates on `main` has seen it. **A dashboard assembled from lane reports is a sum of intentions.**
 >
-> **Measured against `main` at `3e4a924`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
+> **Measured against `main` at `839e8b0`, 2026-08-05.** Every figure below is read from the promoted commit — never carried forward from a plan, never copied from a development report. **QE re-measures at every promotion**, during Repository Closeout (lifecycle stage 5).
 >
 > **This file answers one question — *"where are we?"*** Repository state · current milestone · overall completion · milestone progress · repository health · certification status · current blockers · active work · recently completed work · recommended next work.
 >
@@ -12,14 +12,14 @@
 
 ## 1 · Repository — the one-minute view
 
-**Measured from the promoted commit `3e4a924`, 2026-08-05.** Every figure is read from the repository, never carried forward.
+**Measured from the promoted commit `839e8b0`, 2026-08-05.** Every figure is read from the repository, never carried forward.
 
 | | |
 |---|---|
-| **`main`** | **`3e4a924`** — the certified commit itself |
+| **`main`** | **`839e8b0`** — the certified commit itself |
 | **`integration`** | **ahead of `main`** — Lane A's claim and Lane C's next batch arrived after the snapshot, which is the model working |
-| **Release candidate** | **None pinned.** Cycle 63 promoted **[B-120](docs/BUGS.md)'s answer and D-073** — the generators are tested, and `signora_platform/` has an owner |
-| **Certification** | ✅ [`3e4a924e7793`](certification/reports/3e4a924e7793.md) · migration head **`0039`** · protocol **v2** |
+| **Release candidate** | **None pinned.** Cycle 64 promoted **TASK-904 — an invitation becomes a membership**, the one handler served to somebody outside the workspace |
+| **Certification** | ✅ [`839e8b02aad1`](certification/reports/839e8b02aad1.md) · migration head **`0039`** · protocol **v2** · **attempt 4; three prior attempts were QE's own errors** |
 | **Release phase** | **Ready.** All seven lifecycle stages complete |
 | **Promotion** | `promoted == certified` ✓ · `--audit-main`: **clean, none outside a certified snapshot** |
 | **Blocking Quality Defects** | **None** |
@@ -28,9 +28,9 @@
 | **Customer value this cycle** | ✅ **Yes.** A seller can open an account, **ask who to talk to**, and see the evidence behind every name — or why a name has none |
 | **Overall progress** | **~81%** by engineering effort — an estimate, and marked as one. **Unchanged for six cycles, correctly** |
 
-> ✅ **The last unassignable code in the repository now has an owner.** D-073 makes `backend/signora_platform/` **Lane C's**, on the same rationale as `apps/` — *"shared infrastructure, not a bounded context… platform ownership must remain stable and independent of feature ownership."* **[C-010](docs/LANE_COORDINATION.md) closes**, and with it the gap that swallowed four defects because no lane could touch them. ⚠️ **Ownership is not approval**: §20a still freezes the tree and every change still needs an RFC. **And [B-120](docs/BUGS.md) is answered** — the generators are tested, by tests that assert *derivation rather than values*, so a hardcoded figure fails whatever number it holds.
+> ⚠️ **Four QE errors in one cycle, and every guard caught one.** QE forced an environment override onto a command that also drives the production stack (**smoke refused**), read a preflight *warning* as a refusal, **mutated the tree under a running certification**, and launched a fourth run on top of the third (**the lease refused it**). **The commit under test was never implicated once.** A `CERTIFIED` result from the disturbed run was **discarded rather than used** — attempt 4 returned identical figures, so the discard cost time and not accuracy. **[B-121](docs/BUGS.md)** is the root: QE validated on a branch name the environment derivation does not know, so **every QE run today used the shared stack** while the lanes moved off it.
 
-**Repository health:** **3551 backend tests** · **95.28% coverage** *(floor 95)* · **1202 frontend tests** across 57 files · **386 Security Invariants** · mypy strict over **748 files** · migrations `0000`–`0039`, **verified reversible this cycle** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
+**Repository health:** **3573 backend tests** · **95.38% coverage** *(floor 95)* · **1202 frontend tests** across 57 files · **386 Security Invariants** · mypy strict over **752 files** · migrations `0000`–`0039`, **verified reversible this cycle** · **35 import-linter contracts**, 0 broken · `tsc --noEmit` clean *(gated since [B-111](docs/BUGS.md))* · migrations `0000`–`0037`, **verified reversible to base and back this cycle** · smoke 24 stages in 192s · **disaster recovery passed** — 5 restart stages, nothing lost · **17 module directories** · **44 ADRs** · **54 numbered architecture documents**.
 
 ---
 
@@ -101,28 +101,45 @@
 
 ---
 
-## 1d · Release summary — 2026-08-05, cycle 63
+## 1d · Release summary — 2026-08-05, cycle 64
 
-**Derived from the promoted commit `3e4a924`.** **Nineteen promotions.** A row QE filed comes back as tests, and the repository's last ownerless code gets an owner.
+**Derived from the promoted commit `839e8b0`.** **Twenty promotions.** A security-sensitive slice that holds up under reading, and four QE errors that never reached it.
 
 ### What was promoted
 
-**[B-120](docs/BUGS.md)'s answer** — `test_repository_generators.py`, and **the tests found two more gaps** while being written. Their design is the part worth keeping: **they assert *derivation*, not values.** A test checking `implemented == 47` would merely have hardcoded the thing that was wrong; asserting the figure is derived fails whatever number it holds.
+**TASK-904 — an invitation becomes a membership.** *"The one handler in Signora served to somebody outside the workspace"*, and the design is right for a reason worth recording:
 
-**D-073** — `backend/signora_platform/` is **Lane C's**, permanently, on the same rationale as `apps/`. **[C-010](docs/LANE_COORDINATION.md) closes**: the gap where `signora_platform/`, `apps/` and repository process belonged to no lane, and four defects landed in it precisely because nobody could touch them.
+| | |
+|---|---|
+| `CurrentUser`, not `CurrentWorkspace` | Deliberate — **membership is what the caller is asking for**, so the dependency that verifies it would refuse them |
+| No Casbin `authorize` | Deliberate — Casbin answers *"may this role do this?"* and **there is no role yet** |
+| Authority is the **verified email claim** | `email_verified` checked, then `normalize_email(claim) == normalize_email(invited)` — **both enforced in code, not merely documented** |
+| RLS | `set_config(…, true)` — transaction-local, as §8 requires |
+| `user_id` and `email` | From the verified token, **never a body** |
 
-> ⚠️ **Ownership is not approval.** §20a still freezes the platform and every change still needs an RFC. What changed is that a defect there now has somebody to go to.
+> **QE read this one rather than only gating it.** The docstring claims a security property; the enforcement is in the use case, in that order, before any membership exists. *"Naming a workspace and an invitation is not authority"* — and RLS scopes the read, so a mismatched pair finds nothing.
 
-### A finding QE checked before raising
+### Four QE errors, four guards
 
-C-010's closure appeared to make `CLAUDE.md`'s *"defects in code that belongs to no module"* section describe a state that no longer exists — a §2 defect, and QE's to report rather than fix. **The section had already been removed.** A finding raised against text that is no longer there is noise wearing diligence's clothes, and one grep was the whole cost of not filing it.
+| | |
+|---|---|
+| Forced `COMPOSE_PROJECT_NAME` onto `certify` | **`smoke` failed** — certify also drives the production stack |
+| Read *"working tree dirty — certify will refuse it"* as a refusal | It was a **warning**; the run was still going |
+| Cleaned the tree **under that running certification** | Broke QE's own rule from three cycles earlier |
+| Launched a fourth run on top of it | **The lease refused it** — Lane C's cycle-57 fix, catching its beneficiary |
+
+**QE checked the lease holder's pid before considering `--force`, and found it alive.** Forcing would have produced exactly the contamination the message describes.
+
+### And a `CERTIFIED` result was thrown away
+
+Attempt 2 passed. **QE discarded it**, because the `tree_clean` condition had been made true *mid-run* by QE's own cleanup. **Attempt 4 returned identical figures** — 3573, 95.38%, 24 smoke stages — so the discard cost seven minutes and nothing else. **"Very probably sound" is not the standard applied to three lanes today.**
 
 ### Repository Health — six dimensions
 
 | | |
 |---|---|
-| **Technical** | **3551 backend** · **1202 frontend** · **95.28%** · **386 invariants** · **748 files typed** · 35 contracts · `tsc` clean and gated |
-| **Release** | **Thirty-three cycles promoted** · `promoted == certified` ✓ · every gate, guard and push verified by its own exit code and by comparing refs |
+| **Technical** | **3573 backend** · **1202 frontend** · **95.38%** · **386 invariants** · **752 files typed** · 35 contracts · `tsc` clean and gated |
+| **Release** | **Thirty-four cycles promoted** · `promoted == certified` ✓ · ⚠️ **four QE errors in one cycle, and every guard caught one** |
 | **Architecture** | Reachability 0 doorless · migration `0038` **reversible, verified this cycle** · event catalog 1 known drift |
 | **Dependency** | 69 items, 31 closed |
 | **Customer Value** | ✅ **Direct.** A renamed company's search result now explains itself. **The first slice today that a salesperson would notice** |
