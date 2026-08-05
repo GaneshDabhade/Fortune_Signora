@@ -31,14 +31,14 @@ from __future__ import annotations
 
 import argparse
 import re
-import subprocess
-import sys
+import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 QUEUE = ROOT / "docs" / "DECISION_QUEUE.md"
 REGISTER = ROOT / "docs" / "LANE_COORDINATION.md"
 BACKLOG = ROOT / "docs" / "BACKLOG.md"
+MODULES = ROOT / "docs" / "coordination" / "modules.toml"
 
 # **A heading, never a mention.** Counting `C-\d+` anywhere would find every
 # cross-reference in the prose and call each one a row — B-101's shape, and the
@@ -71,7 +71,24 @@ SPLIT = re.compile(r"(?=^#{2,4} C-\d+ [·—-])", re.M)
 # The `###` block writes its metadata as one bold line rather than a table:
 # `**Opened 2026-08-03 · Lane A · current module assignee: Lane B · 🟠**`.
 OPENED = re.compile(r"\*\*Opened[^*]*\*\*")
-ASSIGNEE = re.compile(r"current module assignee:\s*([^·*(]+)")
+# **Both spellings, because both are used and reading one of them invented
+# five ownerless items.** `owner: product owner` · `current module assignee:
+# Lane B`. Missing these reported C-210, C-211, C-212 and C-216 as owned by
+# nobody when their own first line names an owner.
+ASSIGNEE = re.compile(r"(?:current module assignee|owner):\s*([^·*(]+)")
+# **An owner deferred to the registry is owned, not unowned.** C-214 says
+# *"owner: whoever is assigned `ai_platform`"* — which is the **correct** form
+# under D-062: name the module and join, never store a lane's name. Reading it
+# as ownerless punished the one row that got the rule right.
+DEFERRED = re.compile(r"whoever is assigned\s*`?([a-z_]+)`?", re.I)
+
+
+def _resolve(owner: str, registry: dict[str, object]) -> str:
+    if m := DEFERRED.search(owner):
+        entry = registry.get(m.group(1))
+        if isinstance(entry, dict) and (lane := entry.get("current_owner")):
+            return f"{lane} (via modules.toml — {m.group(1)})"
+    return owner
 
 
 def register() -> dict[str, tuple[str, str, str]]:
@@ -83,13 +100,23 @@ def register() -> dict[str, tuple[str, str, str]]:
     `LANE_COORDINATION.md` reported 78 items and this module reported 71.
     """
     text = REGISTER.read_text()
+    try:
+        registry = tomllib.loads(MODULES.read_text())
+    except (OSError, tomllib.TOMLDecodeError):
+        registry = {}      # **No registry, no opinion** — never a default owner.
     out: dict[str, tuple[str, str, str]] = {}
     for block in SPLIT.split(text):
         m = ITEM.search(block)
         if not m:
             continue
         status = _field(block, "Status")
-        owner = _field(block, "Owner") or _field(block, "Raised by")
+        # **Three field names, and each one I missed invented ownerless items.**
+        # `Owner` · `Current assignee(s)` · `Raised by`. Reading only the first
+        # two reported C-010, C-011 and C-014 as owned by nobody while all three
+        # say **Product owner** under `Current assignee(s)`.
+        owner = (_field(block, "Owner")
+                 or _field(block, r"Current assignee\(s\)")
+                 or _field(block, "Raised by"))
         if not status and (opened := OPENED.search(block)):
             # **No table, so the bold line is the record.** An item in this
             # block is open unless its own text says it closed — the same
@@ -97,7 +124,7 @@ def register() -> dict[str, tuple[str, str, str]]:
             status = "OPEN" if "closed" not in opened.group(0).lower() else "CLOSED"
             if a := ASSIGNEE.search(opened.group(0)):
                 owner = a.group(1).strip()
-        out[m.group(1)] = (m.group(2).strip(), status, owner)
+        out[m.group(1)] = (m.group(2).strip(), status, _resolve(owner, registry))
     return out
 
 

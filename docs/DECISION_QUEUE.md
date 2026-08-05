@@ -174,24 +174,34 @@
 
 ---
 
-# 🚨 Unowned · eight open items nobody is waiting on
+# Seven items were invisible to tooling — and every one of them has an owner
 
-**Found 2026-08-05, and it is the worst class in the register.** A product-owner item waits on somebody. **An unowned item waits on nobody**, and nothing was looking for that until `--check` learned to.
+**C-210 through C-216 are written as `### C-nnn — title`** while the register's convention is `## C-nnn · title`. `infra/decision-queue.py` split on a pattern that cannot match them, so **it reported 71 items against a file holding 78** — and every audit run before this one was against a register missing seven rows.
 
-| ID | Summary | Why it matters |
-|---|---|---|
-| **C-010** | **No lane is assignable to `apps/` or `signora_platform/`** | ⚡ **[435](architecture/435-platform-composition-rfc.md) names this as C-021's real content.** Assign an owner and capability 3 needs nothing else |
-| **C-214** | `Evaluation` assumes one rendering protocol, and a second now exists | **The board reports `ai_platform` blocked on it** — a blocker with no owner |
-| **C-216** | The setup scripts do not load `.env.local`, and fall back silently | ⚠️ **This is [B-105](BUGS.md)** — the same defect open in two registers, unassigned in both |
-| **C-210** | **Will Signora hold personal data?** | **Rule with [C-221](#) and C-203** — one question, three rows |
-| **C-011** | A contraction risk reads like a small opportunity | **[TASK-905](BACKLOG.md) is this**, and it is queued to Lane A |
-| **C-212** | Which product is an opportunity about? | — |
-| **C-211** | Where does an approach brief live? | — |
-| **C-014** | Accessibility and performance testing are QE's | — |
+**The tool now matches the register as it is rather than as it wishes it looked.** Normalising the headings would break every `#c-215-…` anchor pointing at them.
 
-> **Six of these were invisible to tooling until today.** **C-210–C-216 are written as `### C-nnn — title`** while the register's convention is `## C-nnn · title`, so `infra/decision-queue.py` split on a pattern that cannot match them and **reported 71 items against a file holding 78.**
->
-> **The tool now matches the register as it is rather than as it wishes it looked** — normalising the headings would break every `#c-215-…` anchor pointing at them.
+| ID | Summary | Owner | Why it matters |
+|---|---|---|---|
+| **C-010** | **No lane is assignable to `apps/` or `signora_platform/`** | **Product owner** | ⚡ **[435](architecture/435-platform-composition-rfc.md) names this as C-021's real content.** One assignment and capability 3 needs nothing else |
+| **C-214** | `Evaluation` assumes one rendering protocol, and a second now exists | **Lane B**, joined from [`modules.toml`](coordination/modules.toml) | ⚠️ **It says *"Implementation impact. Blocks nothing"* — and the board reports `ai_platform` blocked on it.** A false blocker |
+| **C-216** | The setup scripts do not load `.env.local`, and fall back silently | **QE** | ⚠️ **This is [B-105](BUGS.md)** — the same defect open in two registers |
+| **C-210** | **Will Signora hold personal data?** | Product owner | **Rule with C-221 and C-203** — one question, three rows |
+| **C-211** | Where does an approach brief live? | Product owner | — |
+| **C-212** | Which product is an opportunity about? | Product owner | — |
+| **C-011** | A contraction risk reads like a small opportunity | Product owner | **[TASK-905](BACKLOG.md) is this**, queued to Lane A |
+| **C-014** | Accessibility and performance testing are QE's | Product owner · QE | — |
+
+## ⚠️ I reported eight of these as unowned. That was my tooling, not the register
+
+**Every open item in this repository names an owner.** The count went **8 → 3 → 0** across three fixes in one sitting, and each fix exposed the next assumption:
+
+| | What I had missed |
+|---|---|
+| **8 → 3** | The `###` block writes ownership in its **bold opening line** (`owner: product owner`), not a table. I read only `current module assignee:` |
+| **3 → 0** | C-010, C-011 and C-014 use **`Current assignee(s)`** — a third field name — and all three say **Product owner** |
+| **And one that deserved better** | **C-214 says *"owner: whoever is assigned `ai_platform`"*** — which is the **correct** form under [D-062](DECISION_REGISTER.md): name the module, join the registry, never store a lane's name. **My checker called the one row that got the rule right ownerless.** It now joins through `modules.toml`, which resolves it to Lane B |
+
+> **The lesson is the one this repository keeps paying for, inverted.** I have spent today finding places where a document asserted something the code contradicted. **Here the documents were right and my reader was wrong** — and it produced a confident, specific, entirely false finding that I put in front of the product owner. **A tool that parses one of three spellings does not report "I could not tell"; it reports zero, which reads exactly like an answer.**
 
 ## ⚡ And one of the seven was not a decision at all
 
