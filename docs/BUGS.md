@@ -429,8 +429,8 @@ git log main --oneline --grep=TASK-903 | grep -v ' Claim '
 |---|---|
 | **Module** | Repository tooling — the certification gate set, and `make validate` |
 | **Current assignee** | **QE** — the gate set is QE's |
-| **Severity** | 🟠 · **Blocking Quality Defect class** — **1235 frontend tests and nothing runs them** |
-| **Status** | **`OPEN`** |
+| **Severity** | 🟡 · **was 🟠.** Stage 1 runs the suite from cycle 71, so *nothing runs them* is no longer true — what remains is that **certification does not** |
+| **Status** | **`OPEN` — half fixed.** ✅ `make validate` runs `vitest`, cycle 71, certified at the commit below. ⚠️ **`REQUIRED_GATES` still six**, and making it seven needs a ruling — see the bottom of this row |
 | **Found** | 2026-08-05 by QE, running `vitest` by hand on a slice whose tests are entirely frontend |
 
 **Steps to reproduce.**
@@ -440,7 +440,28 @@ grep -oE 'name="[a-z-]+"' backend/tests/certification/__main__.py | sort -u
 → import-linter · mypy · pytest · security-invariants · smoke · tsc
 ```
 
-**No `vitest`.** And `make validate` runs the backend suite and `tsc` — **also no `vitest`**, asserted deliberately by `test_it_runs_the_two_gates_it_claims_and_no_others`.
+**No `vitest`.** And `make validate` ran the backend suite and `tsc` — **also no `vitest`**, asserted deliberately by what was then `test_it_runs_the_two_gates_it_claims_and_no_others`.
+
+### ✅ Half closed, 2026-08-05, cycle 71 — stage 1 now runs it
+
+```
+1  migrate       signora_validate_<commit>
+2  tsc --noEmit  clean
+3  vitest        Tests  1255 passed (1255)      ← added
+4  suite         the whole suite, with coverage
+```
+
+**`vitest` meets the admission rule `validate.py` already applies to `tsc`**: needs nothing, takes seconds, in no other gate. **Skipped for a subset run** — `-m security_invariant` is a question about the backend, and answering it with the whole frontend suite is the padding that teaches people to reach for `--quick`.
+
+**The summary line is read, never assumed.** A reporter change that stopped printing totals must produce a line that *says* it found nothing rather than one that looks like a pass — [B-125](#b-125--the-new-document-location-check-silently-no-ops-on-a-clone-without-originintegration)'s class, and the branch has its own test so it is not decorative.
+
+### ⚠️ The other half stays open, and it is not a coding session's to close
+
+**`REQUIRED_GATES` is deliberately untouched.** Adding a seventh gate would make **every certification record ever written unsatisfied** — none of them ran it, `missing_gates` would be non-empty, and `is_certified` would read false across the whole history that `--audit-main` walks.
+
+**The record format anticipates this**: `RECORD_VERSION` exists *"so that a reader can tell a missing field from one that never existed."* Making the required set version-aware is the shape of the fix — **and it changes what certification means** ([ADR-0032](architecture/adr/0032-release-certification.md)), which is a product-owner decision rather than one taken inside a slice.
+
+> **So a frontend regression can still reach `main` if QE's stage 1 is skipped**, and the honest scope of this fix is: **it will not reach `main` through a validation QE actually ran.** That is most of the exposure and not all of it.
 
 ### This is [B-111](#b-111--tsc---noemit-is-in-no-gate-qe-runs-and-main-is-red)'s class, one level over
 

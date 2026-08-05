@@ -41,11 +41,33 @@ safe route existed only for the whole suite**, so any narrower question left it
 ([B-116](../docs/BUGS.md)).
 
 **It is not a second certification.** It runs the suite, because that is the
-gate that needs a database — plus **`tsc --noEmit`**, added 2026-08-04 for the
-opposite reason: it needs *nothing*, takes seconds, and was in no gate QE ran.
-`main` reached a state where it failed a check the Definition of Done requires
-of every lane ([B-111](../docs/BUGS.md)), and QE's own stage 1 could not have
-caught it.
+gate that needs a database — plus two that need *nothing* and are here for the
+opposite reason: they take seconds and were in no gate QE ran.
+
+**`tsc --noEmit`**, added 2026-08-04. `main` reached a state where it failed a
+check the Definition of Done requires of every lane
+([B-111](../docs/BUGS.md)), and QE's own stage 1 could not have caught it.
+
+**`vitest`**, added 2026-08-05. **1255 frontend tests were run by nobody**
+([B-123](../docs/BUGS.md)) — a slice whose tests are entirely frontend passed
+this command completely, and QE noticed only because the backend count had not
+moved. One hand-run caught a real failure immediately.
+
+**The admission rule this file already applies**, and both satisfy it: *needs
+nothing, takes seconds, in no other gate.* `lint-imports` and `mypy` stay out
+because they belong to certification, and the image build stays out because it
+needs a Docker stack.
+
+> **`smoke` cannot cover `vitest`** for the same reason it cannot cover `tsc`:
+> `.dockerignore` excludes `tests/`, so the one gate that compiles the frontend
+> never sees a test file.
+>
+> ⚠️ **This closes stage 1 and not certification.** `REQUIRED_GATES` is
+> deliberately untouched: adding a seventh would make **every certification
+> record ever written unsatisfied**, because none of them ran it — and
+> versioning the requirement set changes what certification *means*
+> (ADR-0032), which is not a coding session's to decide. **B-123 stays open
+> for that half.**
 """
 
 from __future__ import annotations
@@ -74,6 +96,20 @@ def _disposable() -> object:
     from tests.certification import database
 
     return database
+
+
+def _vitest_summary(output: str) -> str:
+    """The counted line, or the honest admission that it could not be found.
+
+    **Never `"clean"` unconditionally.** A reporter change that stopped printing
+    the totals would leave this reporting success for a run it could not read —
+    the silent no-op class ([B-125](../docs/BUGS.md)), and the reason the fallback
+    names itself rather than guessing.
+    """
+    for line in output.splitlines():
+        if "Tests" in line and "passed" in line:
+            return line.strip()
+    return "passed — no summary line found in the reporter's output"
 
 
 def main() -> int:
@@ -136,9 +172,30 @@ def main() -> int:
             return 1
         print("     clean")
 
+        # **Also before the suite, and for the same reason as `tsc`.** Seconds,
+        # no database, no stack — and until 2026-08-05 nothing ran it at all, so
+        # a slice whose tests were entirely frontend passed this command
+        # completely (B-123). Skipped for a subset run: `-m security_invariant`
+        # is a question about the backend, and answering it with the whole
+        # frontend suite is the padding that teaches people to pass `--quick`.
+        if not forwarded:
+            print("  3  vitest")
+            frontend = subprocess.run(
+                ["npx", "vitest", "run", "--reporter=dot"],
+                cwd=REPO_ROOT / "frontend",
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if frontend.returncode:
+                print(f"     FAILED\n\n{frontend.stdout}{frontend.stderr}")
+                return 1
+            print(f"     {_vitest_summary(frontend.stdout)}")
+
         measured = "--cov" in command
         scope = " ".join(forwarded) if forwarded else "the whole suite"
-        print(f"  3  suite         {scope}, {'with' if measured else 'without'} coverage\n")
+        step = "4" if not forwarded else "3"
+        print(f"  {step}  suite         {scope}, {'with' if measured else 'without'} coverage\n")
         result = subprocess.run(command, cwd=BACKEND, env=environment, check=False)
 
     print(

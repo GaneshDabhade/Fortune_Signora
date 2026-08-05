@@ -81,13 +81,30 @@ def test_the_database_is_named_for_the_commit_and_not_for_certification(
     assert 'replace("certify", "validate")' in source
 
 
-def test_it_runs_the_two_gates_it_claims_and_no_others(validate: ModuleType) -> None:
+def test_the_vitest_summary_is_read_and_never_assumed(validate: ModuleType) -> None:
+    """**The fallback exists because the silent no-op class does** ([B-125](../../docs/BUGS.md)).
+
+    Printing `"clean"` unconditionally would report success for a run this
+    could not read — so a reporter change that stopped printing totals must
+    produce a line that *says* it found nothing, not one that looks like a pass.
+    """
+    reported = "   Test Files  60 passed (60)\n      Tests  1255 passed (1255)\n"
+    counted = validate._vitest_summary(reported)
+    assert counted == "Tests  1255 passed (1255)"
+
+    unreadable = validate._vitest_summary("some future reporter said nothing useful\n")
+    assert "no summary line found" in unreadable
+    assert "clean" not in unreadable
+
+
+def test_it_runs_the_three_gates_it_claims_and_no_others(validate: ModuleType) -> None:
     """**Scope, asserted so it cannot drift.**
 
-    **Two gates, and the reasons are opposite.** The suite is here because it
-    needs a database; `tsc --noEmit` is here because it needs *nothing* — it
-    takes seconds, and it was in no gate QE ran until `main` was found failing
-    it ([B-111](../../docs/BUGS.md)).
+    **Three gates, and the reasons split two ways.** The suite is here because
+    it needs a database; `tsc --noEmit` and `vitest` are here because they need
+    *nothing* — seconds each, and each was in no gate QE ran until something on
+    `main` was found failing it ([B-111](../../docs/BUGS.md), then
+    [B-123](../../docs/BUGS.md), where 1255 frontend tests were run by nobody).
 
     **Everything else stays out.** `lint-imports` and `mypy` belong to
     certification; the image build needs a Docker stack. Folding them in would
@@ -97,7 +114,9 @@ def test_it_runs_the_two_gates_it_claims_and_no_others(validate: ModuleType) -> 
     > **This test was written asserting *one* gate and passed on a technicality
     > when the second arrived** — `npx` is not `npm`. A guard that survives the
     > change it was written to catch is Decorative Logic, so its premise is
-    > restated rather than left to coincidence.
+    > restated rather than left to coincidence. **Restated a second time when
+    > `vitest` arrived**, for the same reason and before the same coincidence
+    > could repeat: `"npm run"` would not have caught `npx vitest run` either.
 
     **Parsed, not grepped.** A first version searched the file text and failed
     on the module docstring, which *names* those gates in the sentence saying it
@@ -116,6 +135,7 @@ def test_it_runs_the_two_gates_it_claims_and_no_others(validate: ModuleType) -> 
     }
     assert any("tsc" in text for text in literals), "the tsc gate disappeared"
     assert any("pytest" in text for text in literals), "the suite gate disappeared"
+    assert any("vitest" in text for text in literals), "the vitest gate disappeared"
     for absent in ("lint-imports", "mypy", "docker", "npm run"):
         assert not any(absent in text for text in literals), (
             f"validate.py has grown a {absent!r} gate; it runs the suite and tsc, nothing else"
