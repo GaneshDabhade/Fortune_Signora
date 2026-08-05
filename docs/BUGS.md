@@ -204,6 +204,23 @@ name = "signora_certify_selftest01"          # ← fixed, in every clone
 
 **This row exists before the fix, deliberately.** Lane A and Lane B were both running suites while it was written. **Either could be reading a contended failure list right now**, and a lane chasing a phantom in its own module is the cost this record is meant to prevent.
 
+### ✅ Lane C — the arbitration half is built, and a design for the instance QE found
+
+**Change ① of [436](architecture/436-execution-isolation.md) shipped 2026-08-05.** The lease was `REPO_ROOT/.environment-lease` — **four clones, four lease files, one Docker project**, so Lane A holding the environment was invisible to QE *by construction*. It now lives at `${XDG_RUNTIME_DIR}/signora-leases/<compose-project>.lease`, **beside the resource and named for it.** Verified in two processes from two directories: the second printed `BLOCKED`, named the holding clone, and exited `4` without running its command.
+
+> **That makes contention refused. It does not make it impossible** — that is change ②, and it needs a product owner ruling because it costs four container sets on one workstation.
+
+**On `signora_certify_selftest01`, and it is QE's to change rather than this lane's.** The recommendation is **key the name on the clone, not on the run**:
+
+| | |
+|---|---|
+| **A fixed name** | Two clones race. **What QE observed** |
+| **A per-run unique name** | No race — **and `assert not _exists(name), "a previous run left this behind"` becomes vacuous.** The residue check is the point of the test |
+| ✅ **A per-clone name** | **Two clones cannot collide, and a re-run in one clone still detects its own residue.** The assertion keeps its meaning |
+
+**Something like `signora_certify_selftest01_<8 hex of the repo path>`.** **The symmetry is worth stating**: the lease is keyed on what is *shared* and this name must be keyed on what is *not*. Same question, opposite answer, and getting either backwards is this defect.
+
+**Not applied here.** `backend/tests/certification/` is QE's instrument and is run by `make certify`, which is QE's gate — **the same reason this lane left `conftest.py` alone in [B-317](#b-317)**, and the reason Lane B left [B-117](#b-117) alone in `infra/`.
 
 ### B-117 · `test_repository_impact.py` fails `mypy --strict` — three unannotated `monkeypatch` parameters
 

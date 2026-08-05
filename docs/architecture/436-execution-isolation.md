@@ -108,4 +108,20 @@ LEASE: Final = REPO_ROOT / ".environment-lease"
 **① Approve change ② — four container sets on one workstation — or refuse it and take serialisation instead.** **This is the only one with a cost you should weigh rather than delegate.**
 **② Confirm B-317 and B-118 move to Lane C** as Platform Foundation. Both currently read `QE`, and QE raised B-118 while blocked by it.
 
-**Changes ①, ③ and ④ need no ruling** — they are `infra/`, `Makefile` and test infrastructure under [D-022](../DECISION_REGISTER.md), and none of them changes what a lane may do. **They begin on approval of this document.**
+## ⚠️ Correction, 2026-08-05 — two of these four are not Lane C's to make
+
+**This document said changes ①, ③ and ④ *"need no ruling — they are `infra/`, `Makefile` and test infrastructure under [D-022](../DECISION_REGISTER.md)"*. That was wrong about ownership, written by the office that has spent two days correcting other people's ownership rows.**
+
+| | Change | Lives in | Whose |
+|---|---|---|---|
+| **①** | The lease moves to the workstation | `infra/environment-lease.py` | ✅ **Lane C — shipped** |
+| **②** | The compose project comes from the allocation | `infra/docker-compose.yml`, `Makefile` | **Lane C — awaiting your ruling** |
+| **③** | `make test` acquires the lease | `Makefile` | ✅ **Lane C — shipped** |
+| **③b** | Bare `pytest` refuses under a held lease | **`backend/tests/conftest.py`** | ⚠️ **QE.** Changes startup for every lane on every targeted run |
+| **④** | Certification asserts its own isolation | **`backend/tests/certification/`** | ⚠️ **QE.** It is the instrument QE certifies with |
+
+> **D-022 gives this lane `infra/`, the `Makefile` and repository tooling. It does not give it the certification package or the suite's fixtures**, and *"test infrastructure"* was a phrase broad enough to hide the difference from me while I wrote it.
+
+**So the split is two and two.** **Lane C's half is one shipped change and one ruling.** **QE's half is designed here in full — including the `signora_certify_selftest01` naming in [B-118](../BUGS.md) — and scheduled by QE.**
+
+**That is the same rule Lane B applied to [B-117](../BUGS.md) in this office's file and Lane A applied to `opportunity_engine` in [B-103](../BUGS.md) this morning.** **A document proposing work in another lane's files is a recommendation, however correct** — and this one had quietly promoted itself to a plan.
