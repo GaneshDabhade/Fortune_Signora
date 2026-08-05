@@ -892,8 +892,9 @@ promoted commit SHA  ==  certified commit SHA
 |---|---|---|
 | 1 | **Synchronize** | `git fetch origin && git checkout integration && git pull --ff-only` |
 | 2 | **Rebase** | `git checkout <lane-branch> && git rebase integration`. Resolve your own conflicts |
-| 3 | **Read [`BACKLOG.md`](docs/BACKLOG.md)** | The whole `READY` section, in order |
-| 4 | **Select** | The **highest** `READY` task that has **no active assignee**, **no unmet dependency**, and **is not already claimed** |
+| 3 | **Read your queue first** | **[`docs/coordination/queues/lane-<a\|b>.toml`](docs/coordination/queues/)** — `current`, then `next`, then `future`, **in that order.** It is written by Lane C, holds **every task you are eligible to start**, and its `blocked` array names the rest with each blocker's owner. **Ids only; execution state is still the backlog's** |
+| 3b | **Then read [`BACKLOG.md`](docs/BACKLOG.md)** | The whole `READY` section, in order. **The queue tells you which rows are yours; the row tells you what the work is.** If the two disagree, **the backlog wins on state and the queue wins on ownership** — and **report the disagreement**, because one of them is stale |
+| 4 | **Select** | The **highest** entry in your queue that is **not already claimed.** If your queue is empty or absent, fall back to the backlog: the highest `READY` task in a module [`modules.toml`](docs/coordination/modules.toml) assigns to you, with **no active assignee**, **no unmet dependency**, and **not already claimed** |
 | 5 | **Record the claim** | Update **only your own row** in [`ACTIVE_ASSIGNMENTS.md`](docs/ACTIVE_ASSIGNMENTS.md), naming the `TASK-nnn`, and mark the task `CLAIMED` in the backlog |
 | 6 | **Commit it alone** | **A standalone commit containing nothing but the claim.** `Claim TASK-002 — <title>` |
 | 7 | **Push the claim to `integration`** | `git checkout integration && git merge --ff-only <lane-branch> && git push origin integration`, then push your lane branch. **This is the moment the claim exists** — and it must exist *where every other lane will look* |
@@ -1009,6 +1010,10 @@ promoted commit SHA  ==  certified commit SHA
 **A lane never invents work · never reprioritizes · never reopens completed work · never waits for permission while `READY` work exists.** And the symmetric rule, which matters just as much: **a lane never begins work when no `READY` task exists.** Both halves protect the same thing — **the product owner owns priority**, and a lane that manufactures its own next task has taken it, however useful the task looked.
 
 **`AVAILABLE` with an empty queue is a correct repository state, not a stalled one** (ratified 2026-08-02, product owner). The remaining work is being implemented, awaiting QE, blocked, or awaiting a decision — and **each of those has an owner who is not this lane.** Saying so and stopping is the honest report; finding something to do is not.
+
+> ⚠️ **But "my queue is empty" is now a claim with a file behind it** (2026-08-05, [D-070](docs/DECISION_REGISTER.md)). **Read `docs/coordination/queues/lane-<a|b>.toml` before reporting it.** On 2026-08-05 both lanes reported empty queues **while both queue files named a current task**, and Lane B's report at [C-329](docs/LANE_COORDINATION.md) reasoned about five coordination items without mentioning `TASK-408` — which was sitting in its own queue as `current`.
+>
+> **The lanes were not wrong to look where they looked.** The procedure pointed at the backlog, the backlog rows name **modules**, and ownership had to be joined from the registry to see them. **Derivable is not visible**, and the office that made it derivable owns that. **Step 3 above is the fix**; this note is why it is there.
 
 #### What continuous execution means for the branch
 

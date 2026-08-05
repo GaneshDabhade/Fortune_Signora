@@ -1,20 +1,101 @@
-# Lane B — assigned execution queue. Advisory (phase 2). Written by Lane C.
+# Lane B — assigned execution queue.
 #
-# **Lane B reported AVAILABLE on 2026-08-05 with TASK-408 and TASK-003 both
-# READY in knowledge_graph, which it owns.** Same cause as Lane A's: the rows
-# name a module, and the lane was looking for a row that named the lane.
+# **Written by Lane C. No implementation lane writes this file, including its own.**
+# **Ids only, never state** — execution state lives in BACKLOG.md and the board.
+#
+# **Read this file when you poll.** It answers "what do I build next" without
+# deriving anything. Ownership is joined from modules.toml; you do not have to
+# join it yourself, and you should not have to look for a row that names you.
+#
+# **Continuously populated** (D-070, product owner 2026-08-05): every eligible
+# task is listed, not a batch of five. `blocked` names the rest and why.
+#
+# **The moment `current` leaves this lane, take `next`.** Do not wait for Lane C.
+#
+# ⚠️ **Corrected 2026-08-05 after Lane B reported an empty queue at C-329.**
+# The previous version listed TASK-003 as `next`. C-018 is OPEN, is the product
+# owner's, and its own `Blocks` field says TASK-003 cannot be implemented
+# without the answer. **Lane C had judged the labelling half separable and put
+# that judgement above the register's own statement.** Removed. TASK-408 was
+# `current` throughout and remains claimable — it is not mentioned in C-329,
+# which is the second half of the same defect: a queue nobody reads is a queue
+# that was not published, however correct its contents.
 
 lane         = "Lane B"
 updated      = 2026-08-05
 depth_target = 5
 
+# ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-408"
-next    = "TASK-003"
-future  = ["TASK-903", "TASK-406", "TASK-415"]
+next    = "TASK-903"
+future  = ["TASK-415", "TASK-416"]
+
+# **4 of a 5 target.** The shortfall is not a preparation gap: five of this
+# lane's tasks are blocked and every one of those blockers is upstream.
+eligible_count = 4
+shortfall      = 1
 
 [rationale]
-"TASK-408" = "B-ii, search results are grouped and the ranking explainable — knowledge_graph is Lane B's, and the row records it as partly delivered rather than blocked, so the remainder is claimable"
-"TASK-003" = "the attributes are engineering's words (R11-06) — knowledge_graph. Skipped on 2026-08-02 with C-018 opened; that item is the product owner's and does not block the labelling half"
-"TASK-903" = "a seller can see what their company sells. ⚠️ Cross-lane as written — commercial_profile is Lane B's, the mount is Product Surface which is Lane A's. Lane B builds the read surface; the render follows in Lane A's queue once the endpoint exists"
-"TASK-406" = "an ICP criterion scored against outcomes — commercial_profile. Currently BLOCKED; listed so the sequence is visible"
-"TASK-415" = "the deterministic mock AI provider. ai_platform is review-at-first-implementation and Lane B is its current assignee, so Lane B prepares the package and Lane C reviews (D-060)"
+"TASK-408" = "B-ii, search results are grouped and the ranking explainable. knowledge_graph is Lane B's, and the row records it as partly delivered rather than blocked, so the remainder is claimable. This has been claimable since 2026-08-05 and has not been claimed"
+"TASK-903" = "a seller can see what their company sells — the read surface on commercial_profile, which is Lane B's. Lane A mounts it afterwards; the split follows the standing rule not to divide ownership across an interface that has not stabilized, by sequencing the two halves rather than sharing one"
+"TASK-415" = "the deterministic mock AI provider — a first-class development provider implementing the existing provider port, not a test double. ai_platform is review-at-first-implementation and Lane B is its current assignee, so under D-060 Lane B prepares the package and Lane C reviews it"
+"TASK-416" = "an evaluation run states which provider served it. Four of the six required fields already exist; `provider` and `execution_mode` are the whole of the change. Prepared by Lane B, reviewed by Lane C, same loop as TASK-415"
+
+# ── Owned, not startable ─────────────────────────────────────────────────────
+
+[[blocked]]
+task    = "TASK-003"
+blocker = ["C-018"]
+owner   = "Product owner"
+note    = "the attributes are engineering's words. C-018 — nobody owns the customer-facing name of an attribute — is OPEN and names this task in its Blocks field"
+
+[[blocked]]
+task    = "TASK-406"
+blocker = ["C-328"]
+owner   = "Product owner"
+note    = "an ICP criterion scored against outcomes. Raised by Lane B itself on claiming and running the verification"
+
+[[blocked]]
+task    = "TASK-202"
+blocker = ["TASK-415", "TASK-416"]
+owner   = "Lane B — itself"
+note    = "Epic G — Copilot. ⚠️ Reclassified 2026-08-05. The row says BLOCKED on C-222 and C-222 has read READY FOR IMPLEMENTATION since it was ruled on 2026-08-04: the evaluation provider is configurable and reasoning@1 is re-evaluated under a chosen provider. What actually remains is the mechanism that ruling depends on — the deterministic mock and the provider field on the evaluation record, which are TASK-415 and TASK-416, both Lane B's and both in `future` above. This is not a decision dependency and has not been one for a day. Lane B unblocks Epic G by building its own next two slices"
+
+[[blocked]]
+task    = "TASK-201"
+blocker = ["C-221"]
+owner   = "Product owner (the epic) · Lane C (the specification)"
+note    = "Epic C — People Intelligence. A new bounded context. Lane C owns the specification half and has not written it"
+
+[[blocked]]
+task    = "TASK-902"
+blocker = ["C-020"]
+owner   = "Product owner"
+note    = "M7 Timeline, the remaining slices. Moved out of READY to WAITING by Lane C 2026-08-05 — two open decisions and Meilisearch unprovisioned"
+
+# ── With QE ──────────────────────────────────────────────────────────────────
+[[in_validation]]
+task = "TASK-300"
+note = "Epic A — surface what already exists. Six slices across four modules"
+
+[[in_validation]]
+task = "TASK-402"
+note = "Epic E1 — a customer's CRM becomes a source Signora can read"
+
+[[in_validation]]
+task = "TASK-301"
+note = "Global Search"
+
+[[in_validation]]
+task = "TASK-407"
+note = "B-i — a connection says whether it actually works"
+
+[[in_validation]]
+task = "TASK-205"
+note = "A-ii — Sales Engagement reaches a customer"
+
+# ── Closed by evidence, not by delivery ──────────────────────────────────────
+[[disposed]]
+task     = "TASK-203"
+by       = "Lane C, 2026-08-05"
+note     = "Epic D — Risk Intelligence. Claimed and released the same day: the reuse audit the row itself demanded found all seven elements built. The row's own finding is decisive — 'Epic D has no unbuilt, unblocked slice under this task id.' Phase 1 is TASK-905 (Lane A's), phase 4 needs E1 and phase 5 needs Epic C. Removed from the eligible set rather than left READY, because a READY row that cannot be started is the C-412 defect"

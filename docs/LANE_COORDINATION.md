@@ -4330,7 +4330,26 @@ It read *"the smaller slice inside it does not exist."* **It did.** That claim c
 
 **TASK-901 is correctly `BLOCKED` on TASK-900 and is listed here only so the chain is visible.**
 
-> **What remains genuinely claimable is four, split by module ownership rather than pooled:** **Lane A** — TASK-903 and TASK-905 *(Product Surface, `commercial_profile`, `buying_score_engine`)*; **Lane B** — TASK-003 and TASK-904 *(`knowledge_graph`, `workspace_tenancy`)*. **Both below the five-slice target.**
+> ~~**What remains genuinely claimable is four, split by module ownership rather than pooled:** **Lane A** — TASK-903 and TASK-905; **Lane B** — TASK-003 and TASK-904.~~ **⚠️ Struck 2026-08-05 — wrong on both pairs.** See the correction below.
+
+### ⚠️ Correction, 2026-08-05 — this row's own claimable split named the wrong lane twice
+
+**Found by Lane B at [C-329](#c-329), reading this row against [`modules.toml`](coordination/modules.toml) and declining to amend it** because it is Lane C's row. **It was right to report and right not to fix.** Lane B named `TASK-904`; **checking the other pair found the same defect mirrored**, which a single-row report would not have surfaced.
+
+| Row | This item said | [`modules.toml`](coordination/modules.toml) says | |
+|---|---|---|---|
+| **TASK-903** | Lane A | `commercial_profile` → **Lane B** | ❌ |
+| **TASK-904** | Lane B | `workspace_tenancy` → **Lane A** | ❌ |
+| **TASK-905** | Lane A | Product Surface · `buying_score_engine` → **Lane A** | ✅ |
+| **TASK-003** | Lane B | `knowledge_graph` → **Lane B** | ✅ — but **not claimable**: [C-018](#c-018) is `OPEN` and its own `Blocks` field names this task |
+
+**Corrected split, joined from the registry rather than restated:** **Lane A** — TASK-904, TASK-905, TASK-417 · **Lane B** — TASK-408, TASK-903, TASK-203, TASK-415, TASK-416.
+
+**The cause is exactly [C-213](#c-213)'s, committed by the office that closed it.** This row **stored an assignee beside a task** on 2026-08-04. `modules.toml` became authoritative on 2026-08-05, ownership moved, and **the stored copy went on reading as an answer.** A derived field written down once is a stale field with no expiry.
+
+> **So the rule C-213 established applies to prose and not only to tables:** **never write a lane's name next to a task.** Name the module. **The registry is the only place a lane's name is allowed to be the answer**, and anywhere else it is a cache nobody invalidates.
+
+**Also corrected: TASK-003 is not claimable and this row implied it was.** [C-018](#c-018) — *"nobody owns the customer-facing name of an attribute"* — is `OPEN`, is the product owner's, and its `Blocks` field says TASK-003 *"cannot be implemented without the answer."* **Lane C's execution queue listed it as Lane B's `next` on the reasoning that the labelling half was separable. That was Lane C's judgement placed above the register's own statement, and the register wins.** Removed from the queue; **the split above is the corrected one.**
 
 > **The general finding, and it is worth more than the three rows:** **`READY` is a status a row carries; *claimable* is a fact about a particular lane on a particular day.** One-lane-per-module means a pooled count is always wrong, and **a status that its own file contradicts is worse than an absent one** — a lane reads it, plans around it, and discovers the truth after claiming.
 

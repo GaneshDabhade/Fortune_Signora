@@ -1,0 +1,57 @@
+# Lane C — Product Office · Platform Foundation. Assigned execution queue.
+#
+# **This lane writes its own queue, and that is the one asymmetry in the model.**
+# It is recorded here rather than left implicit, because an office that assigns
+# work to itself has removed its own check. Two things bound it:
+#
+#   **① Everything here is `infra/`, repository tooling, or architecture
+#   preparation** — the three things D-022 and §20a place with this lane. **No
+#   row in this file may name a product module**, and none does.
+#
+#   **② TASK-900 is flagged in its own backlog row as a self-assignment**, in
+#   the row itself rather than only here, so the product owner meets the fact
+#   where they would already be reading and can overrule it in one edit.
+#
+# **Ids only, never state.** Written 2026-08-05 under D-070.
+
+lane         = "Lane C"
+updated      = 2026-08-05
+depth_target = 5
+
+current = "TASK-900"
+next    = "C-219"
+future  = ["C-221", "TASK-413"]
+
+eligible_count = 4
+shortfall      = 1
+
+[rationale]
+"TASK-900" = "the platform composition RFC. ⚡ The highest-leverage row in the backlog: TASK-901 is seven independently certifiable slices and is BLOCKED on this one. Lane B skipped it and was right to — a feature lane writing the RFC that governs the substrate every module imports is the failure §20a exists to prevent. It has sat READY and unclaimed because every lane is correct to refuse it. Lane C authors the RFC, the product owner approves it, an implementation lane rewires. ADR-0100 R-1 already approved the 🔴"
+"C-219" = "TASK-400's A7 render waits on the `subject` ↔ entity join, and the item says Lane A brings Lane C a proposal. No proposal has arrived. Lane C is not the blocker today, but it is the reviewer, and the item should say which it is waiting on rather than reading as jointly owned"
+"C-221" = "Epic C — People Intelligence. C-221 is owned by the product owner for the epic and by Lane C for the specification. The specification half is unwritten, and TASK-201 is BLOCKED behind it. This is a Lane C blocker sitting in front of an implementation lane's work, which outranks anything discretionary in this queue"
+"TASK-413" = "change-aware validation — frontend-only skips. SEQUENCED with a trigger that has not fired: a measured certification wall-clock cost. Listed so the sequence is visible; it does not start on a schedule"
+
+# ── Delivered, awaiting QE ───────────────────────────────────────────────────
+[[in_validation]]
+task = "TASK-409"
+note = "a `demo` profile in the environment allocator"
+
+[[in_validation]]
+task = "TASK-410"
+note = "one `make doctor`"
+
+[[in_validation]]
+task = "TASK-414"
+note = "impact analysis, reported and nothing skipped"
+
+# ── Standing, not a task ─────────────────────────────────────────────────────
+# **These have no backlog row and should not get one.** They are the office's
+# continuous responsibilities under the governance freeze, listed so that
+# "Lane C is busy" is never an unexamined claim.
+standing = [
+  "maintain backlog health and queue health",
+  "monitor execution flow and identify bottlenecks",
+  "review implementation packages under D-060",
+  "coordinate dependencies",
+  "keep implementation lanes continuously supplied with work",
+]

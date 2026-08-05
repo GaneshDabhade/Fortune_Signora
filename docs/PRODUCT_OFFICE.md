@@ -612,6 +612,50 @@ Decisions required    what the product owner must rule before it can start
 
 > **Claimable, not prepared.** A slice on a Lane C branch is not a slice a lane can take — `CLAUDE.md` §20e's five states, and the distinction Lane A's challenge established. **Counting preparation as buffer is how this office would fool itself.**
 
+### 12a · The pipeline is continuous, never a batch
+
+**Ratified 2026-08-05, product owner — [D-070](DECISION_REGISTER.md).**
+
+> **"Do not wait because the current queues look sufficient."** **"The moment one item leaves `PREPARING`, the next candidate should enter `PREPARING`."** **"I do not want only 2 or 3 assigned tasks… If twenty tasks are independently executable, then twenty tasks should already be assigned."**
+
+**The five-slice target is a floor, not a cap.** Every eligible task is assigned to a lane queue the moment it becomes eligible. **A queue is never trimmed to look tidy.**
+
+**The eligibility test, and all five must hold:**
+
+| | Test | Checked against |
+|---|---|---|
+| ① | **Approved** | `BACKLOG.md` status, or a product owner ruling |
+| ② | **No unresolved architectural dependency** | `LANE_COORDINATION.md`, the item's own `Blocks` field |
+| ③ | **No product owner decision pending** | the blocker's `Owner` row |
+| ④ | **Assignable safely** | [`modules.toml`](coordination/modules.toml), joined — **never a stored assignee** |
+| ⑤ | **Violates no ownership or governance rule** | §20e, §20a, the change budget |
+
+> **A task failing only ② or ③ is not dropped — it is carried in the queue's `blocked` array with its blocker and that blocker's owner.** **Everything a lane owns appears in one file**, so a dependency is visible before it is met rather than discovered on claiming.
+
+**And the narrowing rule, which is where most of the buffer actually comes from:** **a task whose halves have different blockers is carried at the buildable half's scope, not held whole.** `TASK-400` is the worked example — [C-219](LANE_COORDINATION.md) says *"A7 proceeding, A6 held"*, and reading the item rather than the row's status field moved a whole task from `blocked` to `future`. **This is sequencing, not preparation: Lane C narrows the scope and names the evidence; the owning lane still writes the package** ([D-060](DECISION_REGISTER.md) is untouched).
+
+### 12b · A shortfall is a finding, and it names its cause
+
+**Below the five-slice target, the report says so** — per lane, with the number, and **with the reason attributed.**
+
+> **The distinction that makes the finding useful:** **a shortfall caused by under-preparation is this office's defect.** **A shortfall caused by an unanswered ruling is not** — and reporting the two the same way would hide the only one anybody can act on.
+
+**So every shortfall is reported with the blocked tasks that would clear it and who owns each blocker.** **If the blocked column is upstream, the finding is addressed upward, not absorbed.**
+
+### 12c · A dependency never idles a lane that owns other work
+
+**When an assigned task becomes blocked:** ① **document the dependency** · ② **follow dependency resolution** (§1) · ③ **ownership does not change** unless the product owner decides otherwise · ④ **the lane moves to its next assigned task immediately.**
+
+> **Nothing waits for Lane C in that sequence**, which is the point. **The lane advances first and the paperwork follows.**
+
+### 12d · Derivable is not visible
+
+**The queue files exist so no lane has to join ownership to find its own work.** Both lanes idled on 2026-08-05 with claimable tasks in modules they owned, **because the backlog rows name modules and the lanes were reading for their own name.**
+
+> **A queue nobody reads is a queue that was not published, however correct its contents.** [C-329](LANE_COORDINATION.md) — Lane B reported an empty queue **while `lane-b.toml` named `TASK-408` as its current task.** The file was on `integration` and the polling procedure did not point at it.
+
+**So publishing is not complete until the procedure a lane runs names the file.** §20e's polling steps are the delivery mechanism; the file is only the payload.
+
 ### Synchronization is a first-class concern, and it is Lane C's to notice
 
 **Prepared work that cannot reach `integration` is unavailable, and unavailable work is indistinguishable from work that does not exist.**

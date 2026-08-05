@@ -41,8 +41,43 @@ TASK_HDR = re.compile(r"^### (TASK-\d+)\s*·\s*(.+)$", re.M)
 STATUS = re.compile(r"\*\*Status\*\*\s*\|\s*(.+)$", re.M)
 STATE_WORDS = (
     "IN VALIDATION", "CHANGES REQUESTED", "IN PROGRESS", "SEQUENCED", "CLAIMED",
-    "BLOCKED", "WAITING", "VERIFIED", "CERTIFIED", "PROMOTED", "READY", "DONE",
+    "BLOCKED", "WAITING", "VERIFIED", "CERTIFIED", "PROMOTED", "DISPOSED",
+    "PREPARING", "UNDER REVIEW", "REVISION REQUESTED", "APPROVED", "READY", "DONE",
 )
+
+# **Which states mean what, for pipeline health** (D-070). Named once here so
+# the report and the arithmetic cannot drift apart — the failure C-412 recorded
+# was two places disagreeing about what `READY` meant for a particular lane.
+IN_IMPLEMENTATION = ("CLAIMED", "IN PROGRESS")
+WITH_QE = ("IN VALIDATION",)
+CERTIFIED = ("VERIFIED", "CERTIFIED", "PROMOTED", "DONE")
+UNDER_REVIEW = ("UNDER REVIEW",)
+# **`APPROVED` is preparation, not readiness.** A task the product owner has
+# approved still needs its owning lane's implementation package under D-060, so
+# it belongs in the preparation column rather than in the claimable one.
+PREPARING = ("PREPARING", "REVISION REQUESTED", "APPROVED")
+NOT_PIPELINE = ("DONE", "DISPOSED", "SEQUENCED")
+
+
+def queues(ref: str) -> dict[str, dict]:
+    """Each lane's assigned execution queue, read at `ref`.
+
+    **Absent is not empty.** A missing queue file returns no entry at all rather
+    than a lane with zero work, because those two report identically and mean
+    opposite things: one is a lane with nothing to do, the other is a lane the
+    Product Office has not written a queue for. The second is the finding.
+    """
+    out: dict[str, dict] = {}
+    for path in ls(ref, "docs/coordination/queues"):
+        if not path.endswith(".toml"):
+            continue
+        try:
+            q = tomllib.loads(show(ref, path))
+        except tomllib.TOMLDecodeError:
+            continue
+        if lane := q.get("lane"):
+            out[lane] = q
+    return out
 
 
 def sh(*args: str) -> str:
@@ -61,11 +96,23 @@ def ls(ref: str, path: str) -> list[str]:
 
 
 def tasks(ref: str) -> list[tuple[str, str, str]]:
-    """Every task, with the *first* state word its Status line carries.
+    """Every task, with the state its Status line *declares*.
 
     First rather than last: a row reading ``READY -- after B-400`` is `READY`,
     and the qualifier is a note. Scanning for the last match would silently
     reclassify it.
+
+    **Backticked first, and this is not a style preference.** Scanning the whole
+    line for any state word classified `TASK-415` as `UNDER REVIEW` because its
+    status *explains* the D-060 loop — *"the assignee prepares, marks it `UNDER
+    REVIEW`, and Lane C reviews"*. **A mention is not a declaration**, and
+    counting by substring is [B-101](../docs/BUGS.md) exactly: nine bug rows in
+    two lifecycle states at once because a cell saying *"`FIXED` — `VERIFIED` is
+    QE's to set"* contains both words.
+
+    The repository writes a declared state in backticks, every time. So the
+    backticked words are read first and a bare scan is the fallback — which
+    keeps older rows working without letting prose vote.
     """
     text = show(ref, "docs/BACKLOG.md")
     blocks = re.split(r"(?=^### TASK-)", text, flags=re.M)
@@ -78,10 +125,21 @@ def tasks(ref: str) -> list[tuple[str, str, str]]:
         state = "UNKNOWN"
         if s:
             line = s.group(1)
-            for w in STATE_WORDS:
-                if w in line:
-                    state = w
+            # **In the order the line writes them, not the order this module
+            # lists them.** Ranking by STATE_WORDS made `TASK-415` `UNDER
+            # REVIEW`: its line declares `APPROVED` first and mentions `UNDER
+            # REVIEW` afterwards while explaining the loop, and a fixed
+            # precedence let the later mention outrank the earlier declaration.
+            quoted = [q.strip() for q in re.findall(r"`([A-Z][A-Z ]+)`", line)]
+            for q in quoted:
+                if q in STATE_WORDS:
+                    state = q
                     break
+            else:
+                for w in STATE_WORDS:
+                    if w in line:
+                        state = w
+                        break
         out.append((m.group(1), m.group(2).strip()[:58], state))
     return out
 
@@ -226,6 +284,58 @@ def build(ref: str, since: str | None = None) -> str:
     a(f"  Overall implementation     {J}  (estimate)")
     a(f"  Highest priority work      {J}")
 
+    # **Every report carries this** (D-070, product owner 2026-08-05):
+    # *"Product Office should always be thinking several steps ahead."* The
+    # thirteen lines below are the ones asked for, computed rather than stated,
+    # so a shortfall is arithmetic instead of an opinion about how busy we feel.
+    a(section("1a · PIPELINE HEALTH"))
+    qs = queues(ref)
+    live = [(i, ti, s) for i, ti, s in tk if s not in NOT_PIPELINE]
+    po_wait = [i for i, _, s in tk if s == "BLOCKED"]
+    a(f"  Total repository tasks                {len(tk)}")
+    a(f"  In implementation                     {sum(by[s] for s in IN_IMPLEMENTATION)}")
+    a(f"  Under Product Office review           {sum(by[s] for s in UNDER_REVIEW)}")
+    a(f"  Preparing (lane-authored)             {sum(by[s] for s in PREPARING)}")
+    a(f"  Waiting for QE                        {sum(by[s] for s in WITH_QE)}")
+    a(f"  Certified / promoted / done           {sum(by[s] for s in CERTIFIED)}")
+    a(f"  Blocked                               {by['BLOCKED']}")
+    a(f"  Not in the pipeline (done/disposed)   {sum(by[s] for s in NOT_PIPELINE)}")
+    a("  Tasks by lifecycle state:")
+    for s, n in by.most_common():
+        a(f"    {s:<20} {n}")
+
+    a("")
+    a("  Per lane — buffer against the five-slice target:")
+    a(f"    {'Lane':<8} {'assigned':>8} {'eligible':>8} {'blocked':>8} {'with QE':>8}  buffer")
+    for lane in sorted(qs) or []:
+        q = qs[lane]
+        seq = [q.get("current")] + [q.get("next")] + list(q.get("future") or [])
+        seq = [t for t in seq if t]
+        blocked = q.get("blocked") or []
+        val = q.get("in_validation") or []
+        elig = int(q.get("eligible_count", len(seq)))
+        target = int(q.get("depth_target", 5))
+        mark = "OK" if elig >= target else f"SHORT by {target - elig}"
+        a(f"    {lane:<8} {len(seq):>8} {elig:>8} {len(blocked):>8} {len(val):>8}  {elig}/{target}  {mark}")
+    for lane in ("Lane A", "Lane B"):
+        if lane not in qs:
+            a(f"    {lane:<8} NO QUEUE FILE — absence is a Product Office finding, not an empty queue")
+
+    # **Prepared-but-unassigned should be zero and is worth computing anyway.**
+    # A READY task in nobody's queue is exactly the C-412 defect: a row that
+    # advertises work while no lane can see that it is theirs.
+    queued = {t for q in qs.values()
+              for t in ([q.get("current"), q.get("next")] + list(q.get("future") or [])
+                        + [b.get("task") for b in (q.get("blocked") or [])]) if t}
+    orphan = [i for i, _, s in tk if s == "READY" and i not in queued]
+    a("")
+    a(f"  Eligible for preparation              {len(claimable)}")
+    a(f"  Prepared but not yet assigned         {len(orphan)}   (target 0)")
+    for i in orphan:
+        a(f"    ORPHAN {i} — READY and in no lane queue")
+    a(f"  Awaiting a product owner decision     {len(po_wait)}   {', '.join(po_wait) or '—'}")
+    a(f"  Estimated remaining prepared work     {J}  per lane, in slices — no denominator exists")
+
     a(section("2 · REPOSITORY EXECUTION DASHBOARD"))
     # **Ownership is read from `docs/coordination/modules.toml`, the registry**
     # (product owner, 2026-08-04 — 428 step 1). It was previously scraped out of
@@ -329,15 +439,37 @@ def build(ref: str, since: str | None = None) -> str:
     a(section("10 · SYNCHRONIZATION QUEUE"))
     # Approved and not yet claimable is the exact gap §20e names: *prepared work
     # that has not reached `integration` does not exist for planning purposes*.
+    # **Corrected 2026-08-05: a commit count is not evidence of content.**
+    # This section reported `lane-c-product-office  59 ahead` every run, and Lane
+    # B read it at C-329 as "the Product Office document set has never reached
+    # integration" — a reasonable inference from the only number on offer, and
+    # wrong. The branch is 59 ahead and 243 behind, and **not one file on it is
+    # newer than integration's copy.** It holds nothing; it is abandoned, which
+    # is a different finding with a different owner.
+    #
+    # **So `holds` is computed per file rather than per commit**: a file counts
+    # only when the branch's newest commit touching it is not reachable from
+    # `ref` *and* `ref` has not touched it since. Ahead-ness measures divergence;
+    # this measures whether anything would be lost by deleting the branch.
     for br in [b for b in sh("git", "for-each-ref", "--format=%(refname:short)",
                              "refs/remotes/origin").split() if "lane-" in b]:
         ahead = sh("git", "rev-list", "--count", f"{ref}..{br}").strip() or "0"
-        if ahead != "0":
-            exe = [p for p in sh("git", "diff", "--name-only", f"{ref}...{br}").split()
-                   if not p.startswith("docs/") and not p.endswith(".md")]
-            a(f"  {br:<40} {ahead:>3} ahead   {len(exe)} executable file(s)")
+        if ahead == "0":
+            continue
+        behind = sh("git", "rev-list", "--count", f"{br}..{ref}").strip() or "0"
+        changed = sh("git", "diff", "--name-only", f"{ref}...{br}").split()
+        exe = [p for p in changed if not p.startswith("docs/") and not p.endswith(".md")]
+        holds = [p for p in changed
+                 if sh("git", "rev-list", "--count", f"{ref}..{br}", "--", p).strip() not in ("0", "")
+                 and sh("git", "rev-list", "--count", f"{br}..{ref}", "--", p).strip() in ("0", "")]
+        a(f"  {br:<40} {ahead:>3} ahead  {behind:>3} behind   "
+          f"{len(holds)} file(s) newer here   {len(exe)} executable")
+        if not holds:
+            a("      holds nothing this ref lacks — ABANDONED, not synchronization backlog")
     a(f"  Measured against {ref}. **A branch ahead of it is not capacity** — it is")
     a("  planning until QE promotes it (CLAUDE.md §20e, the five decision states).")
+    a("  **And a branch ahead of it does not necessarily hold anything.** Ahead-ness")
+    a("  is divergence; the file count is what would be lost by deleting it.")
 
     a(section("11 · BOTTLENECK DASHBOARD"))
     po = len([1 for m in re.findall(r"owner[^|]*product owner", coord, re.I)])
