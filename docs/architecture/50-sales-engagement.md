@@ -925,3 +925,116 @@ under version 1 is not comparable with one under version 2, and recording that i
 what stops the improvement reading as the model getting better. **The two runs on
 record stand as written** — they are true accounts of what happened, they would
 both score better today, and neither is re-run to make them look so.
+
+---
+
+## 29 · A-ii — the module becomes reachable
+
+**Built 2026-08-05 (TASK-205), and it is the first slice that puts any of the
+twenty-eight sections above in front of a customer.**
+
+> **`public/` had published thirty-nine names since SE-01 and nothing could
+> reach one of them.** The reasoning core, the recommendation, the fit
+> inference, the synthesis contract and two evaluated prompts were all built,
+> reviewed and tested — behind a module with **no `interface/` directory**. It
+> was the fifth instance of the pattern this repository keeps producing: a
+> module complete to its own boundary with no way in.
+
+### What was actually missing, and it was not the interface
+
+**`AssembleApproach` declares three ports and none of them had an
+implementation anywhere in the repository.** `application/ports.py` said so in
+its own docstring and predicted the remedy exactly:
+
+> *"The Buying Committee is not exported from `commercial_profile.public`
+> today, and Commercial Profile is another lane's module. Declaring the need
+> here means the reasoning core is built, tested and reviewable now, and **the
+> adapter that satisfies it is a separate, small change once the export
+> exists**."*
+
+**That prediction held without amendment.** The export arrived, and the three
+adapters are ninety lines of translation in
+`infrastructure/readers.py` — no new domain concept, no change to `public/`,
+and no second definition of anything.
+
+| Port | Satisfied by | Reading |
+|---|---|---|
+| `CommitteeReader` | `CommercialProfileCommittee` | `commercial_profile.public.BuyingCommitteeReader` |
+| `EvidenceReader` | `BusinessEventEvidenceReader` | `business_event_engine.public.BusinessEventQueries` |
+| `PortfolioReader` | `CommercialProfilePortfolio` | `commercial_profile.public.ProductCatalogReader` |
+
+**Every one reads another module through `public/` only**, and the import
+contract enforces it rather than trusting it — *"sales engagement reaches every
+module it reasons from only through `public/`"*.
+
+### Two translations that are decisions, not plumbing
+
+**`part` crosses as a string.** Commercial Profile owns the vocabulary and
+intends to extend it; publishing `CommitteePart` would force a re-release of
+every consumer the day a sixth part is declared. `CommitteeRoleRef.part` was
+already typed `str` for this reason, and `_BEARS_ON` already ranks an unmapped
+part on title evidence alone — **so a vocabulary that grows degrades gracefully
+rather than breaking.**
+
+**`corroborating_providers` becomes a count.** The Business Event Engine
+publishes which providers agreed; nothing here is entitled to branch on which
+vendor did, and a count is all the ranking uses.
+
+### The route
+
+`GET /workspaces/{id}/accounts/{id}/approach` — the ranked committee, the
+evidence that ranked each seat, what the platform cannot answer, what argues
+against approaching, and one recommendation.
+
+**It reads and never writes**, and it holds no provider. Assembling an approach
+is deterministic; the synthesis that turns it into prose is a separate use case
+with its own composition root, and keeping them apart is what stops a read path
+acquiring a model call (§7).
+
+**There is no `404`.** An account with nothing declared receives its roles
+unranked, each carrying `why_not` — *"no evidence names your CFO"* is more
+useful to a seller than a blank screen, and it is the sentence a ranked list
+structurally cannot carry.
+
+**`product_id` is the seller's override**, and supplying it means the portfolio
+is never consulted: `fits` returns empty, because showing a ranking beside
+somebody's own answer invites them to re-litigate a decision they already made.
+
+### The layered import contract, and why the module was absent from it
+
+`pyproject.toml` had excluded `modules.sales_engagement` with its reason
+written down — the module *"owns no fact and therefore has nothing to expose
+over HTTP yet"*, and an empty package created to satisfy a linter would be *"a
+placeholder pretending to be structure"*. **It is added here, which is the
+event that comment anticipated**, not a contract being widened to fit.
+
+### One asymmetry, recorded rather than fixed
+
+> **The same account answers two different ways depending on whether the seller
+> named a product.**
+
+With an override and no evidence, every declared role returns unranked with its
+`why_not`. **Without one, `fit()` produces nothing, `_widest` returns `()` by
+its own last line, and the seller sees no roles at all.**
+
+**The domain's reasoning covers a *tie*** — *"a seller looking at a tie should
+still see which roles the evidence names"* — **and this is the case below a
+tie, where there is nothing to rank.** It is asserted as it behaves in
+`test_api_approach.py` and left alone: A-ii is an interface layer over an
+existing contract, and changing `_widest` is a domain decision this slice does
+not own.
+
+**It is worth deciding, because the first customer to meet it is every new
+workspace** — one with committees declared and no CRM connected, which is the
+state every account is in on day one.
+
+### What a lane arriving cold needs to know
+
+- **The three adapters translate and decide nothing.** Filtering a committee to
+  one product is selection; the ranking, the parts that bear on a purchase and
+  the reasons a role did not rank all live in `domain/` and are reviewed there.
+- **`public/` was not touched** and is not this slice's to grow — thirty-nine
+  names, complete since SE-01.
+- **The synthesis path is still unreachable.** A-ii exposes the deterministic
+  reasoning; `SE-09a`–`SE-09d`'s prose has no route, and giving it one means
+  deciding where a model call belongs on a request path.
