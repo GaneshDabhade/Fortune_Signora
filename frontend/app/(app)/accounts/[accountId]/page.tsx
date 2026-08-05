@@ -22,6 +22,7 @@ import { EvidenceDrawer, useEvidenceDrawer } from '@/components/intelligence/evi
 import { Freshness } from '@/components/intelligence/freshness';
 import { NarrativeBlock } from '@/components/intelligence/narration';
 import { ObservationList } from '@/components/intelligence/observations';
+import { WhatYouSell } from '@/components/intelligence/offering';
 import { ResearchPanel } from '@/components/intelligence/research';
 import { AccountSequence, nextInSequence } from '@/components/intelligence/sequence';
 import { ValidationBlock } from '@/components/intelligence/validation';
@@ -48,7 +49,11 @@ import {
   useAccountValidation,
   useRequestResearch,
 } from '@/lib/query/hooks';
-import { useCompetitors } from '@/lib/query/hooks/commercial';
+import {
+  useBuyingCommittee,
+  useCompetitors,
+  useProductCatalog,
+} from '@/lib/query/hooks/commercial';
 import { useAccountTimeline } from '@/lib/query/hooks/timeline';
 import { useWorkspaceMembers } from '@/lib/query/hooks/team';
 import { scopeFrom } from '@/lib/state/owner-scope';
@@ -139,6 +144,11 @@ export default function AccountBriefPage() {
   const timeline = useAccountTimeline(workspaceId, accountId);
   const observations = useAccountObservations(workspaceId, accountId);
   const competitors = useCompetitors(workspaceId);
+  // **Workspace declarations, not account facts** — the same list on every
+  // brief, which is why both read a workspace-scoped query and neither takes
+  // an `accountId`. Stage 2 of [C-008](../../../../docs/LANE_COORDINATION.md).
+  const catalog = useProductCatalog(workspaceId);
+  const committee = useBuyingCommittee(workspaceId);
   // **The roster, so an account can be handed to a colleague.** The same query
   // the Team page holds, same cache key, so this costs no request — and
   // TM-01's `member_email` is what makes a name renderable at all.
@@ -428,7 +438,33 @@ export default function AccountBriefPage() {
               its own absence on every account of a workspace that has not
               filled this in is noise on the screen a seller lives on; the
               declaration page is where that prompt belongs. */}
-          <CompetitorContext competitors={competitors.data} />
+          {/* **Stage 2 of [C-008](../../../../docs/LANE_COORDINATION.md), and
+              it belongs beside the competitor list rather than anywhere else
+              on this page.** Both are workspace declarations — identical on
+              every account, describing the business rather than this company —
+              so grouping them keeps one boundary legible: everything above is
+              what Signora derived about *this* account, and these two are what
+              the customer told us about themselves.
+
+              **Before competitors**, because *what we sell and who signs for
+              it* is the frame a seller reads *who we are up against* inside.
+
+              ⛔ **No ideal customer here, and that is the ruling rather than a
+              layout choice.** An ICP rendered beside a real company is a
+              comparison a reader completes whether or not the product does,
+              and matching waits on
+              [C-002](../../../../docs/LANE_COORDINATION.md). `/business` is
+              where a seller reads it and makes that comparison knowingly. */}
+          <WhatYouSell
+            catalog={catalog.data}
+            committee={committee.data}
+            isError={catalog.isError || committee.isError}
+          />
+
+          <CompetitorContext
+            competitors={competitors.data}
+            isError={competitors.isError}
+          />
 
           {/* **Between the ledger and the record of events** (TASK-417, wave 1
               of the approved Account 360). The contribution list above says

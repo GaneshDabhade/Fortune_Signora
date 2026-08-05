@@ -87,3 +87,28 @@ describe('a workspace that has declared nothing', () => {
     expect(container).toBeEmptyDOMElement();
   });
 });
+
+describe('a failed read is not a workspace that declared nothing', () => {
+  it('says so rather than falling silent', () => {
+    /**
+     * **[C-226](../../../docs/LANE_COORDINATION.md)'s class, found in this
+     * section by TASK-903** — which put a second declaration on the same page
+     * and had to decide the question for it. Silence made an outage
+     * indistinguishable from an empty declaration, and both rendered as no
+     * section at all.
+     */
+    render(<CompetitorContext competitors={undefined} isError />);
+
+    expect(
+      screen.getByText(/could not load who your organization competes against/i),
+    ).toBeVisible();
+  });
+
+  it('does not tell a customer their declaration was lost', () => {
+    render(<CompetitorContext competitors={undefined} isError />);
+
+    expect(screen.getByText(/has been lost/i)).toHaveTextContent(
+      /nothing.*has been lost/i,
+    );
+  });
+});

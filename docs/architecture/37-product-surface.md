@@ -816,3 +816,45 @@ So on an expired account the brief said it **twice in one card, three lines apar
 ### What this slice deliberately did not do
 
 **No reordering** — marking beats reordering precisely because the ranking is the ranking, and a list whose order depended on posture would be answering a different question. **No filter** — D6's trigger has not fired at twelve accounts. **No change to the score**, which states an ordering and must not start stating a direction. **No backend change**: `posture` has been on `AccountAttentionResponse` since M12.3, so this is a render slice end to end.
+
+---
+
+## TASK-903 — what you sell reaches the account you are selling it to *(2026-08-05)*
+
+**Stage 2 of [C-008](../LANE_COORDINATION.md), and the ruling named its contents exactly**: *"in-context placement of the **two declarations that need no matching**: the buying committee where contacts appear, and what we sell on the brief. **Explicitly not** *'this account fits ICP X'*, which waits on [C-002](../LANE_COORDINATION.md)."*
+
+**What a customer sees.** On the account brief, below everything Signora derived: **a *What you sell* card** listing the workspace's products, each with the roles that have to agree — and, beneath it, the competitor list that was already there.
+
+### The two questions it closes, at the moment they are asked
+
+C-008 recorded them against the personas: the AE's *"which of our products is this account even a candidate for?"* and the SDR's *"who normally has to sign off on a deal like this?"* **Stage 1 made both answerable and only by leaving the account** — `/business` is a page a seller has to go to, and the questions arrive while looking at a company. **That gap is the whole argument for option D over option C**, and it is what this slice closes.
+
+### The ideal customer is deliberately absent, and it is the one decision here worth defending
+
+`/business` shows *who buys it* — industries, countries, company size — beside each product. **This does not**, and the ruling lists two declarations rather than three for the reason.
+
+**An ICP rendered beside a real company is a comparison the reader completes whether or not the product does.** Signora would then be understood to have made a claim it never made and cannot support: comparing a real company to a description is **matching**, matching has no owner, and it is explicitly not Commercial Profile's — *the module records and computes nothing* ([ADR-0035](adr/0035-commercial-profile.md)). **A seller who wants the ideal customer opens `/business` and makes that comparison knowingly**, which is a different act from being shown one.
+
+**The component takes no ICP prop at all**, so the boundary is in the type rather than in a reviewer's memory (§2).
+
+### The committee is here because contacts are not anywhere
+
+C-008 says *"the buying committee **where contacts appear**"* — **and no contacts appear in Signora.** No person's name enters the platform from any source: [ADR-0400](adr/0400-person-as-an-entity.md)'s own first question, checked and answered *no*, and the People domain is [TASK-427](../BACKLOG.md), `SEQUENCED`.
+
+**The declaration answers the seller's question without them.** *Who normally has to sign off* is a statement about **roles**, and the committee is roles by construction — *"a role, never a person"*. **Naming which individual holds each seat is the part that needs people**, and it belongs to Epic C.
+
+### Where it sits, and why beside the competitor list
+
+**Both are workspace declarations** — identical on every account, describing the business rather than this company. Grouping them keeps one boundary legible: **everything above is what Signora derived about *this* account; these two are what the customer told us about themselves.** *What you sell* leads, because it is the frame a seller reads *who we are up against* inside.
+
+**Each carries the sentence that stops it being read as an account fact**, which is the same device the competitor section already used: *"your declared catalog, the same on every account. Signora has not said this account is a candidate for any of it."*
+
+### A defect this slice found in the section it sat next to
+
+**[C-226](../LANE_COORDINATION.md)'s class, in `CompetitorContext`** — a section this lane wrote three days earlier. **A failed read and a workspace that has declared nothing both rendered as silence**, so an outage was indistinguishable from an empty declaration on the one screen where a seller would act on the difference.
+
+**Found by having to decide the question for the new section** rather than by looking for it, which is the argument for C-226 being a class worth naming: it is invisible until a second instance forces the choice. Both sections now say when a read failed, and both say *nothing you declared has been lost* — because nothing was written, and a sentence implying otherwise sends somebody to re-type a catalog that is still there.
+
+### What it did not need
+
+**No backend change · no new endpoint · no new hook · no `keys.ts` entry · no permission change.** `policy.csv` has granted `member` read on `product` and `buying_committee` since those slices shipped, `useProductCatalog` and `useBuyingCommittee` already existed for `/business`, and the brief is a top-level route that no guard restricts. **The part label is imported from `components/commercial/vocabulary`**, where `/business` reads it, rather than restated — a second mapping of `CommitteePart` to English would be wrong the moment a part is added and invisible when it is.

@@ -39,9 +39,30 @@ import type { DeclaredCompetitors } from '@/lib/api/types';
  */
 export function CompetitorContext({
   competitors,
+  isError = false,
 }: {
   competitors: DeclaredCompetitors | undefined;
+  /** **Absence and failure are two different facts** ([C-226](../../../docs/LANE_COORDINATION.md)).
+   * Added in TASK-903, which put a second declaration on this page and found
+   * this one had the class it was written to avoid: a failed read and a
+   * workspace that has declared nothing both rendered as silence, so an outage
+   * was indistinguishable from an empty declaration on the one screen where a
+   * seller would act on it. */
+  isError?: boolean;
 }) {
+  if (isError) {
+    return (
+      <Card>
+        <CardBody>
+          <p className="text-sm leading-6 text-content-muted">
+            Signora could not load who your organization competes against. Nothing your
+            organization has declared has been lost — reload to try again.
+          </p>
+        </CardBody>
+      </Card>
+    );
+  }
+
   /**
    * **Version 0 means nothing has been declared** — which the type documents
    * as different from a customer who declared an empty list. Either way there
