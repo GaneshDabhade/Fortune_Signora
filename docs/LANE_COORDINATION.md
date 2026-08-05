@@ -2222,6 +2222,7 @@ assert set(SignalTypeResponse.model_fields) == {"key", "title"}
 | [C-412](#c-412--three-backlog-rows-say-ready-and-are-not-claimable) | Three backlog rows say `READY` and are not claimable | Lane C | **Product owner** | `OPEN` — ⚠️ **corrected 2026-08-05**, it named the wrong lane on both pairs | Nothing |
 | [C-413](#c-413--two-lanes-are-assigned-knowledge_graph) | Two lanes are assigned `knowledge_graph` | Lane C | **Product owner** | `OPEN` | Nothing |
 | [C-417](#c-417--adr-0404-approved-three-platform-capabilities-whose-owner-may-not-finish-two-of-them) | **ADR-0404 approved three platform capabilities whose owner may not finish two of them** | Lane C | **Product owner** | **`READY FOR PRODUCT DECISION`** — four alternatives, a recommendation and the bound that makes it checkable | **[TASK-418](BACKLOG.md) ① and ②, and [TASK-901](BACKLOG.md)'s seven slices behind them.** ④ ships now |
+| [C-418](#c-418--does-signora-forecast-revenue-the-executive-dashboard-says-yes-and-a-ratified-principle-says-no) | **Does Signora forecast revenue? The Executive Dashboard says yes and a ratified principle says no** | Lane C | **Product owner** | **`READY FOR PRODUCT DECISION`** — two answers, a recommendation, and the sequencing each commits to | **Nothing today** — [TASK-438](BACKLOG.md) delivers five of the screen's six sections without it |
 
 ### What the audit is asserting, precisely
 
@@ -5471,3 +5472,56 @@ The argument is above. **The check is working**: it caught a genuinely unreachab
 ### Implementation impact
 
 **Capability ④ — `Action.LEAVE` and two policy lines — is entirely inside `signora_platform/authorization/` and is unaffected. Lane C ships it now.** **Capabilities ① and ② wait on this ruling**, and **[TASK-901](BACKLOG.md)'s seven slices wait on them.**
+
+## C-418 · Does Signora forecast revenue? The Executive Dashboard says yes and a ratified principle says no
+
+**Opened 2026-08-05 · Lane C · current module assignee: `opportunity_engine` (Lane B) · `buying_score_engine` (Lane A) · 🔴**
+
+> **Found by [444](architecture/444-executive-dashboard-domain-assessment.md), assessing one approved screen to its domain.** **Not by implementation reaching it** — which is the point of the method.
+
+| | |
+|---|---|
+| **Raised by** | **Lane C**, Product-Led Domain Discovery |
+| **Owner** | **The product owner.** It is a product decision with a ratified engineering principle on one side of it |
+| **Blocks** | **Nothing today.** **[TASK-438](BACKLOG.md) delivers five of the screen's sections without it** |
+| **Status** | **`READY FOR PRODUCT DECISION`** |
+
+### The conflict, in two quotations
+
+> **[410](architecture/410-approved-ui-specification.md) describes the screen as *"CEO/CRO homepage — **forecast**, risk, ageing, movements."***
+>
+> **`buying_score_engine/domain/events.py`: *"**No probability, no likelihood, no prediction.** A buying score prioritizes commercial attention; **it does not forecast a purchase**."*** **`domain/score.py` repeats it: *"They do not estimate probability."***
+
+**The approved UI's first word contradicts a ratified principle, in the module a forecast would naturally come from, and nothing in the repository says which wins.**
+
+### Four absences, and they are one question
+
+| | Measured across every `domain/` layer |
+|---|---|
+| **A deal has no value** | `Opportunity` carries eleven fields and **no amount, no currency, no expected close date** |
+| **There is no plan** | **`quota`, `target_amount`, `forecast` return nothing.** *"Projection against a plan"* needs a plan |
+| **There is no period** | **`fiscal` returns zero.** A quarter is a workspace declaration and nothing declares one |
+| **There is no team** | **No `Team`, no `manager_id`, no `reports_to`.** [MC-6](PRODUCT_EXPERIENCE.md) said it first: *"the buyer is a CRO and there is no screen addressed to one"* |
+
+> **Answer the question and all four follow, or none do.** **That is why this is one item and not four**, and why answering it early is cheap.
+
+### The two answers, and what each commits to
+
+| | | Consequences |
+|---|---|---|
+| **A** | **Yes — Signora forecasts** | **A deal needs a value and a close date; a workspace needs a fiscal calendar; somebody needs a plan; and the probability principle must be amended or the model must live somewhere that is not `buying_score_engine`.** ⚠️ **And the value must come from the customer's CRM, not a text box** — [ADR-0036](architecture/adr/0036-target-account-contract.md)'s standard: *"asking them… would be asking a customer to do resolution, and resolution quality is Signora's competence, not theirs."* **A number typed into Signora is a second copy of one that already exists, and the two will disagree.** **So A sequences behind Epic E1** ([TASK-402](BACKLOG.md), `IN VALIDATION`) — **a forecast built before E1 lands is a forecast over numbers nobody entered** |
+| **B** | **No — it reports pipeline health** | **Nothing is built and nothing is renamed except the screen's own description.** **Conversion, ageing, movement, roll-up and ICP coverage are all buildable today** and are what a CRO actually acts on. **The ratified principle stands untouched** |
+
+### Recommendation
+
+> ✅ **B for now, and A only behind Epic E1 — stated as a sequence rather than as a refusal.**
+>
+> **The evidence is that five of the screen's sections are buildable today and none of them is a forecast.** **[417](architecture/417-executable-slice-audit.md) reached the same split independently** — *"coverage, conversion, ageing and movement are arithmetic over stages and dates; **the AI projection is BLOCKED BY PRODUCT**."*
+>
+> **A forecast is the one thing on this screen that Signora would be worse at than the CRM the customer already owns**, until E1 gives it the numbers. **Building it first inverts that.**
+
+### The consequence nobody has hit yet
+
+**Every authorization grant today is workspace-wide — `p, member, *, opportunity, read`.** **A roll-up by owner is, by construction, everybody's performance on one page**, and **this is the first approved screen whose data is sensitive *between colleagues* rather than between tenants.** **No `Resource` exists for a plan, a target or a forecast.**
+
+**Recorded rather than proposed** — it becomes real only on answer **A**. **Coverage and ageing are facts about accounts, not about people.**

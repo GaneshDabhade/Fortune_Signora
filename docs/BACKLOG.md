@@ -540,6 +540,22 @@
 | **Delivered** | **`POST /workspaces/{id}/membership/leave`** — no target, no body, no reason. The membership is found from the workspace and the verified token, so **there is no identifier to substitute and no ownership check that could be written wrongly.** The last-owner refusal is the domain's, reused from `Membership.end` rather than restated. 🔴 **The slice found [B-206](BUGS.md) in its own module**: `WorkspaceQueryService.get_membership` — the request-time membership check — **never filtered ended memberships, so removal did not revoke access.** `SqlMembershipRepository.get` did filter, and documented that exact outcome as its reason: two reads of one fact, and authorization consulted the unfiltered one. Fixed, with end-to-end regression tests for both the removed and the departed case. 🟠 **`LastOwnerCannotLeaveError` was mapped to no status code**, so *"Make somebody else an owner first"* reached customers as **500 "An unexpected error occurred."** Now `409`, which repairs `remove` and `demote` too. **`MembershipResponse` gained `ended_at`**, which `remove`'s docstring already claimed. **`make validate` PASSED — 3651 tests, clean migrate, clean `tsc`** |
 | **Governance** | 🟠 — the module's own layers and a route, **announced in the commit message.** **No ADR: the model question was C-207 and it is closed** |
 
+### TASK-438 · The Executive Dashboard's five sections that need nothing new
+
+| | |
+|---|---|
+| **Discovery** | **[444](architecture/444-executive-dashboard-domain-assessment.md)** — the Executive Dashboard assessed to its domain |
+| **Approved screen** | **Executive Dashboard** — [410](architecture/410-approved-ui-specification.md) #3, *"CEO/CRO homepage"* |
+| **Module** | `opportunity_engine` — **Lane B's** · a read of `commercial_profile.public` for the ICP predicate |
+| **Status** | **`READY`** — **decomposition of already-approved scope, and it needs an answer from nobody.** **Position is the product owner's**; placed last in `READY`, reordering nothing |
+| **Delivers** | **Stage conversion · ageing · movement since a date · roll-up by owner · ICP coverage, in versus outside** |
+| **Why it needs nothing new** | **One table already carries it.** `opportunity_state` is append-only with **`sequence · stage · owner_id · actor_id · reason · occurred_at`** — conversion is a sequence walk, ageing is a delta between consecutive rows, movement is `occurred_at > :since` with `reason` explaining each one, and **roll-up needs no new field because `owner_id` is already on every row** |
+| **The fifth, newly unblocked** | **ICP coverage** — ⚡ **[TASK-434](#task-434--an-account-can-be-asked-whether-it-matches-a-criterion-and-only-one-thing-answers) is `PROMOTED`**, so *in-ICP versus outside* is a call to a published predicate rather than a second interpretation |
+| **Reuse** | **`GET /accounts` and `GET /accounts/decided` are published and workspace-scoped.** `since` is a **declared parameter**, never stored read state — the rule [C-215](LANE_COORDINATION.md) established |
+| **⛔ Not in scope, and this is the discipline of the row** | **No forecast · no probability · no deal value · no plan · no quarter.** **All five are [C-418](LANE_COORDINATION.md), and they are one question rather than five.** ⚠️ **`buying_score_engine` refuses probability in writing** — *"No probability, no likelihood, no prediction"* — **so a probability added here contradicts a ratified principle** |
+| **⛔ And no second aggregation** | **Opportunity Intelligence needs the same aggregates**, which is why [412](architecture/412-backend-capability-matrix.md) puts both in wave 4. **Whatever this builds, that screen reads** |
+| **Governance** | 🟠 — the module's own layers and read endpoints, **announced in the commit message.** **No ADR: no boundary moves, and the `commercial_profile.public` edge exists** |
+
 ## SEQUENCED — prepared, and waiting on a named trigger
 
 ### TASK-415 · A deterministic mock AI provider, and development stops needing a model

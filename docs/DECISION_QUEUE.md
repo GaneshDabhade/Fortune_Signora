@@ -2,7 +2,9 @@
 
 **The single place the product owner reviews when making rulings.** Established 2026-08-05 by product owner directive.
 
-> ## ⚠️ One new blocker. Three things are waiting and you are holding all three deliberately.
+> ## ⚠️ Two new items. Three others are waiting and you are holding all three deliberately.
+>
+> ⚠️ **[C-418](#c-418--does-signora-forecast-revenue) — the Executive Dashboard's first word is *forecast* and a ratified principle refuses to forecast.** **Blocks nothing** — five of the screen's six sections ship without it — **and it decides four missing concepts at once.**
 >
 > ⚠️ **[C-417](#c-417--adr-0404-approved-three-platform-capabilities-and-its-owner-may-not-finish-two-of-them) — raised today, and it is in front of seven slices and a starving lane.** **ADR-0404's own §Validation caught it before the first line was written**, which is the good news; **the ADR is Lane C's, which is not.**
 >
@@ -71,6 +73,20 @@
 | **Lanes waiting** | **None.** Lane B is building TASK-406 and would consume this rather than wait for it |
 | **Priority** | **P0 on timing · P3 on difficulty.** Two small slices |
 | **Recommended** | ✅ **Sequence [TASK-434](BACKLOG.md) ahead of TASK-406's backtest slice.** ⚠️ **First slice is a prerequisite regardless of any of this**: **`commercial_profile/public/` publishes thirteen views and *not one is the ICP* — no module can read the criteria at all today**, and every one of the sixteen consumers is blocked on that one missing read port. **[ADR-0403](architecture/adr/0403-signal-engine-reads-a-declaration.md) is the ratified precedent for exactly this shape** |
+
+## C-418 · Does Signora forecast revenue?
+
+**Found by [444](architecture/444-executive-dashboard-domain-assessment.md), assessing the Executive Dashboard to its domain — not by implementation reaching it.**
+
+| | |
+|---|---|
+| **The conflict, in two quotations** | **[410](architecture/410-approved-ui-specification.md) describes the screen as *"CEO/CRO homepage — **forecast**, risk, ageing, movements."*** **`buying_score_engine` says, twice, in its own code: *"**No probability, no likelihood, no prediction.** A buying score prioritizes commercial attention; **it does not forecast a purchase**."*** **The approved UI's first word contradicts a ratified principle, in the module the forecast would come from** |
+| **Four absences, one question** | **`Opportunity` has no amount, no currency and no close date · `quota`/`target_amount`/`forecast` return nothing · `fiscal` returns zero · there is no `Team`, no `manager_id`, no `reports_to`.** **Answer the question and all four follow, or none do** |
+| **Impact** | **None today.** **[TASK-438](BACKLOG.md) delivers five of the screen's sections without it** — conversion, ageing, movement, roll-up by owner, and ICP coverage |
+| **Lanes waiting** | **None** |
+| **Priority** | **P2 — cheap now, and it decides four things at once** |
+| **Recommended** | ✅ **B for now — pipeline health — and A only behind Epic E1**, stated as a sequence rather than a refusal. **A forecast needs a deal value, and the value must come from the customer's CRM rather than a text box** ([ADR-0036](architecture/adr/0036-target-account-contract.md): *"asking them would be asking a customer to do resolution"*). **A forecast built before [TASK-402](BACKLOG.md) lands is a forecast over numbers nobody entered.** ⚠️ **[417](architecture/417-executable-slice-audit.md) reached the same split independently** — *"the AI projection is BLOCKED BY PRODUCT"* |
+| **The consequence nobody has hit** | **Every grant today is workspace-wide.** **A roll-up by owner is everybody's performance on one page**, and this is **the first approved screen whose data is sensitive between colleagues rather than between tenants.** **Recorded, not proposed — it becomes real only on answer A** |
 
 ## C-417 · ADR-0404 approved three platform capabilities, and its owner may not finish two of them
 

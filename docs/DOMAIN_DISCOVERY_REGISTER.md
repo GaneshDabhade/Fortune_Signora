@@ -52,7 +52,7 @@
 | 11 | **AI Copilot** | Six verbs · evidence set · grounding · **scope** · **propose, attribute, reverse** | **AI Platform** ✅ | ✅ **AI complete** · ⛔ **R-03 · R-02** |
 | 12 | **AI Research** | `ResearchRequest` + its **state machine** · plan · synthesis · **preserved edits** · recorded refusal | **AI Platform** ✅ | ✅ **built** · ⛔ **R-03** *(a preserved edit is a supersession)* |
 | 13 | **Global Search** | Four object types · **saved and monitored search** | — | ✅ 1 of 4 · ⛔ **R-01 · R-07 · R-02** |
-| 14 | **Executive Dashboard** | Quarter aggregate · plan · **movement** · **in-ICP cohort** | — | ⛔ aggregates · ⛔ **R-01** *(movements are affiliation intervals)* · ⛔ **R-00** |
+| 14 | **Executive Dashboard** | **Stage history ✅ · owner ✅ · in-ICP cohort ✅** · deal value · plan · fiscal period · team · **movement** | — | ✅ **5 of 6 sections buildable — [444](architecture/444-executive-dashboard-domain-assessment.md), [TASK-438](BACKLOG.md).** ⛔ **R-11** *(forecast — [C-418](LANE_COORDINATION.md))* · ⛔ **R-01** *(movements are affiliation intervals)* · ✅ **R-00 promoted** |
 | 15 | **Reports** | Report definition · block · materialised rendering · **permission-respecting share** | — | ⛔ **R-08.** **And no second aggregation** |
 | 16 | **Settings** | Workspace · membership · invitation · role · **audit trail** · **seats** | — | ✅ **13 endpoints** · ⛔ **R-05 · R-10** |
 
@@ -70,6 +70,7 @@
 | **R-02** | **Scope · saved view** | **5 named, and the shell inherits into all 16** | **[TASK-433](BACKLOG.md)** — awaiting a naming ruling |
 | **R-03** | **Proposed → approved → applied → withdrawn** | **6** | **[TASK-431](BACKLOG.md)** — awaiting a shape ruling |
 | **R-01** | **People · Affiliation** | **4 + Executive Dashboard's movements** | ✅ **Ruled [D-074](DECISION_REGISTER.md)** · **[TASK-427–430](BACKLOG.md)** |
+| **R-11** | **Forecast — deal value · plan · fiscal period · team** | **Executive Dashboard, and Opportunity Intelligence shares its aggregates** | ⛔ **[C-418](LANE_COORDINATION.md)** — **the approved UI says *forecast* and `buying_score_engine` refuses to forecast, in writing, twice.** **Four absences, one question** |
 | **R-04** | **Notification** | **4** | ⏸ **Deferred [D-027](DECISION_REGISTER.md).** Recorded, not re-raised |
 | **R-05** | **Workspace lifecycle** | **Settings + the shell all 16 inherit** | 🟨 **[438 Epic I](architecture/438-platform-initiatives.md)** — **the shell is its first consumer, not billing** |
 
