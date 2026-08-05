@@ -33,6 +33,29 @@ QE is the only lane that may merge into `integration`, certify, move `main`, wri
 
 ---
 
+## 0b · Never construct a commit SHA — read it from the manifest
+
+**Ratified by QE, 2026-08-05, after the second occurrence.** A certification report is named `<12-char>.md`. **Twice QE has padded that filename into a 40-character SHA and promoted against the result.**
+
+```bash
+# WRONG — the report's name is 12 characters; the rest is invention
+CERT=9ff285d09ed5e6b2bbb2e29a1ff86d0e46bcb0bb
+
+# RIGHT — the manifest records the commit the gates actually ran against
+CERT=$(python3 -c "
+import json,pathlib
+runs=json.loads(pathlib.Path('certification/manifest.json').read_text())
+runs = runs if isinstance(runs,list) else runs.get('runs',[])
+ok=[r for r in runs if all(g.get('passed') for g in (r.get('gates') or []))]
+print(ok[-1]['commit'])")
+```
+
+> **The invented SHA and the real one shared their first twelve characters** — `9ff285d09ed5` — because that is what the filename supplies. **Every human-readable rendering of both is identical**, and only the guard could tell them apart.
+
+**Both times the guard refused, and it is the reason nothing unsound reached `main`.** The first time ([cycle 50](../PROJECT_STATUS.md)) QE piped the refusal into `head` and promoted anyway; the second time `GUARD_EXIT` was captured and QE stopped. **§0a is what turned the same mistake from an incident into a caught error.**
+
+**And select the *passing* run, not the last one.** A manifest holds refusals too — cycle 55's `NOT CERTIFIED` sits in it by design — so `runs[-1]` is the wrong commit whenever the most recent attempt failed.
+
 ## 0a · Never read a gate's verdict through a pipe
 
 **Ratified by QE, 2026-08-05, after the third instance in one day — and the third defeated a safety gate.**
