@@ -174,6 +174,33 @@
 
 ---
 
+# 🚨 Unowned · eight open items nobody is waiting on
+
+**Found 2026-08-05, and it is the worst class in the register.** A product-owner item waits on somebody. **An unowned item waits on nobody**, and nothing was looking for that until `--check` learned to.
+
+| ID | Summary | Why it matters |
+|---|---|---|
+| **C-010** | **No lane is assignable to `apps/` or `signora_platform/`** | ⚡ **[435](architecture/435-platform-composition-rfc.md) names this as C-021's real content.** Assign an owner and capability 3 needs nothing else |
+| **C-214** | `Evaluation` assumes one rendering protocol, and a second now exists | **The board reports `ai_platform` blocked on it** — a blocker with no owner |
+| **C-216** | The setup scripts do not load `.env.local`, and fall back silently | ⚠️ **This is [B-105](BUGS.md)** — the same defect open in two registers, unassigned in both |
+| **C-210** | **Will Signora hold personal data?** | **Rule with [C-221](#) and C-203** — one question, three rows |
+| **C-011** | A contraction risk reads like a small opportunity | **[TASK-905](BACKLOG.md) is this**, and it is queued to Lane A |
+| **C-212** | Which product is an opportunity about? | — |
+| **C-211** | Where does an approach brief live? | — |
+| **C-014** | Accessibility and performance testing are QE's | — |
+
+> **Six of these were invisible to tooling until today.** **C-210–C-216 are written as `### C-nnn — title`** while the register's convention is `## C-nnn · title`, so `infra/decision-queue.py` split on a pattern that cannot match them and **reported 71 items against a file holding 78.**
+>
+> **The tool now matches the register as it is rather than as it wishes it looked** — normalising the headings would break every `#c-215-…` anchor pointing at them.
+
+## ⚡ And one of the seven was not a decision at all
+
+**[C-215](LANE_COORDINATION.md) — the Timeline feed is per-account and the workspace needs it per-seller — is a finished specification awaiting a lane.** It names the signature, the endpoint, the index it needs and its own scope bound. **`timeline` is Lane B's; Lane A raised it and correctly did not build it.**
+
+> **It needed no ruling from you. It needed a queue entry**, and it has one: **[`lane-b.toml`](coordination/queues/lane-b.toml) `TASK-902-C215`**, which takes Lane B from 3/5 to 4/5. **It sat unqueued because of a heading shape.**
+
+---
+
 ## Summary
 
 | | |

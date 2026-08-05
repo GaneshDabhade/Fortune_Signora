@@ -45,7 +45,19 @@ BACKLOG = ROOT / "docs" / "BACKLOG.md"
 # reason `_queued` reads only what the document presents as a row.
 ROW = re.compile(r"^#{2,3}\s*(?:🥇\s*)?(C-\d+)\s*·", re.M)
 INLINE = re.compile(r"\*\*(C-\d+)\*\*")
-ITEM = re.compile(r"^## (C-\d+) · (.+?)$", re.M)
+# **Two heading shapes, because the register has two and pretending otherwise
+# hid seven items.** The convention is `## C-nnn · title`; C-210 through C-216
+# were written as `### C-nnn — title` (and C-210 as `####`), with an em-dash and
+# a deeper level. **This module read only the convention and reported 71 items
+# while the file held 78** — so the decision queue was audited against a
+# register missing seven rows, one of which (C-215) is fully specified,
+# claimable, and was sitting unqueued while its lane ran at three of five.
+#
+# **Matched rather than normalised.** Rewriting another lane's headings would
+# break every `#c-215-…` anchor that links to them. A tool that only reads what
+# it wishes the file looked like is the same defect as a guard pointed at the
+# wrong ref.
+ITEM = re.compile(r"^#{2,4} (C-\d+) [·—-] (.+?)$", re.M)
 TASK_HDR = re.compile(r"^### (TASK-\d+)\s*·", re.M)
 
 
@@ -54,16 +66,38 @@ def _field(block: str, name: str) -> str:
     return m.group(1) if m else ""
 
 
+SPLIT = re.compile(r"(?=^#{2,4} C-\d+ [·—-])", re.M)
+
+# The `###` block writes its metadata as one bold line rather than a table:
+# `**Opened 2026-08-03 · Lane A · current module assignee: Lane B · 🟠**`.
+OPENED = re.compile(r"\*\*Opened[^*]*\*\*")
+ASSIGNEE = re.compile(r"current module assignee:\s*([^·*(]+)")
+
+
 def register() -> dict[str, tuple[str, str, str]]:
-    """Every coordination item: id -> (title, status, owner)."""
+    """Every coordination item: id -> (title, status, owner).
+
+    **Splitting on the convention alone swallowed seven items.** `^## C-\\d+`
+    cannot match `### C-211`, so C-210–C-216 were absorbed into whichever `##`
+    block preceded them and never appeared as rows at all — while
+    `LANE_COORDINATION.md` reported 78 items and this module reported 71.
+    """
     text = REGISTER.read_text()
     out: dict[str, tuple[str, str, str]] = {}
-    for block in re.split(r"(?=^## C-\d+)", text, flags=re.M):
+    for block in SPLIT.split(text):
         m = ITEM.search(block)
         if not m:
             continue
+        status = _field(block, "Status")
         owner = _field(block, "Owner") or _field(block, "Raised by")
-        out[m.group(1)] = (m.group(2).strip(), _field(block, "Status"), owner)
+        if not status and (opened := OPENED.search(block)):
+            # **No table, so the bold line is the record.** An item in this
+            # block is open unless its own text says it closed — the same
+            # default the tabled rows carry, stated rather than inferred.
+            status = "OPEN" if "closed" not in opened.group(0).lower() else "CLOSED"
+            if a := ASSIGNEE.search(opened.group(0)):
+                owner = a.group(1).strip()
+        out[m.group(1)] = (m.group(2).strip(), status, owner)
     return out
 
 
@@ -98,8 +132,16 @@ def check() -> int:
         elif "OPEN" not in _clean(reg[cid][1]).upper():
             stale.append(f"{cid} is {_clean(reg[cid][1])[:44]!r} — ruled, and still queued")
 
+    unowned: list[str] = []
     for cid, (title, status, owner) in sorted(reg.items()):
         if "OPEN" not in _clean(status).upper():
+            continue
+        # **An open item naming no owner is the worse case, and it reported
+        # `ok` until this existed.** A product-owner item waits on somebody; an
+        # unowned one waits on nobody, and nothing in the repository was
+        # looking for that. Five of the seven `###` items are in this state.
+        if not _clean(owner).strip():
+            unowned.append(f"{cid} is OPEN and names no owner: {title[:52]}")
             continue
         if "product owner" not in _clean(owner).lower():
             continue
@@ -111,8 +153,10 @@ def check() -> int:
         print(f"  STALE    {line}")
     for line in missing:
         print(f"  MISSING  {line}")
+    for line in unowned:
+        print(f"  UNOWNED  {line}")
 
-    if not stale and not missing:
+    if not stale and not missing and not unowned:
         print("  ok   every queued row is open, and every open product-owner item is queued.")
         return 0
 
@@ -120,7 +164,7 @@ def check() -> int:
     # good news; a missing row means this office has not triaged something yet.
     # Neither is a reason to refuse a commit, and making it one would turn the
     # product owner's review queue into a gate on other people's work.
-    print(f"\ndecision-queue: {len(stale) + len(missing)} finding(s) — advisory, never repaired here")
+    print(f"\ndecision-queue: {len(stale) + len(missing) + len(unowned)} finding(s) — advisory, never repaired here")
     return 0
 
 

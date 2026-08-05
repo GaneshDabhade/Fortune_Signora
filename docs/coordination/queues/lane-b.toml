@@ -28,21 +28,27 @@ depth_target = 5
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-415"
 next    = "TASK-408"
-future  = ["TASK-416"]
+future  = ["TASK-416", "TASK-902-C215"]
 
-# **3 of a 5 target, and TASK-903 left this queue on 2026-08-05.**
-# It was `next` here on the premise that `commercial_profile` owes a read
-# surface. **It does not — that shipped as CX-05 at `e3516c4` on 2026-08-03.**
-# What remains is stage 2, the declarations *on the account brief*, which needs
-# **no backend change**, so it is Product Surface work and moved to Lane A.
-# **Lane A's queue had it as `blocked` waiting for an endpoint nobody needs to
-# build**, which is the same error twice in one file.
-eligible_count = 3
-shortfall      = 2
+# **4 of a 5 target.** Two corrections on 2026-08-05, in opposite directions.
+#
+# **TASK-903 left.** It was `next` on the premise that `commercial_profile` owes
+# a read surface. **It does not — that shipped as CX-05 at `e3516c4` on
+# 2026-08-03.** What remains is stage 2, the declarations *on the account
+# brief*, which needs **no backend change**, so it is Product Surface work and
+# moved to Lane A — whose queue had been carrying it as `blocked` on an endpoint
+# nobody needs to build. **One stale row, two lanes wrong in opposite ways.**
+#
+# **TASK-902 arrived, narrowed.** It was `WAITING` on C-020, and C-020 blocks
+# M7's undefined remaining scope rather than this slice. **C-215 is a finished
+# specification** and it was invisible to tooling because of a heading shape.
+eligible_count = 4
+shortfall      = 1
 
 [rationale]
 "TASK-408" = "B-ii, search results are grouped and the ranking explainable. knowledge_graph is Lane B's, and the row records it as partly delivered rather than blocked, so the remainder is claimable. This has been claimable since 2026-08-05 and has not been claimed"
 "TASK-415" = "the deterministic mock AI provider — a first-class development provider implementing the existing provider port, not a test double. ai_platform is review-at-first-implementation and Lane B is its current assignee, so under D-060 Lane B prepares the package and Lane C reviews it"
+"TASK-902-C215" = "the Timeline feed, workspace-scoped. ⚠️ Recovered 2026-08-05 from a register row nothing could read: C-215 is written as `### C-215 —` while the convention is `## C-nnn ·`, so infra/decision-queue.py never saw it and neither did this queue. It is NOT a decision awaiting a ruling — it is a finished specification awaiting a lane. It names the signature (feed_for_workspace(workspace_id, *, entity_ids=None, since=None, after, limit)), the endpoint (GET /workspaces/{id}/timeline), the index it needs ((workspace_id, occurred_at, id), because the existing one is entity-leading), and its own scope bound (read-only, no new judgement — Timeline ranks nothing and explains nothing, and this must not become the place that starts). timeline is Lane B's. Lane A raised it and correctly did not build it: a lane never changes a module it is not assigned. ⛔ NOT blocked on C-020 — that item blocks M7's undefined remaining scope, and this slice needs none of it. Blocks SW-02 and SW-06."
 "TASK-416" = "an evaluation run states which provider served it. Four of the six required fields already exist; `provider` and `execution_mode` are the whole of the change. Prepared by Lane B, reviewed by Lane C, same loop as TASK-415"
 
 # ── Owned, not startable ─────────────────────────────────────────────────────
@@ -71,11 +77,6 @@ blocker = ["C-221"]
 owner   = "Product owner (the epic) · Lane C (the specification)"
 note    = "Epic C — People Intelligence. A new bounded context. Lane C owns the specification half and has not written it"
 
-[[blocked]]
-task    = "TASK-902"
-blocker = ["C-020"]
-owner   = "Product owner"
-note    = "M7 Timeline, the remaining slices. Moved out of READY to WAITING by Lane C 2026-08-05 — two open decisions and Meilisearch unprovisioned"
 
 # ── With QE ──────────────────────────────────────────────────────────────────
 [[in_validation]]
