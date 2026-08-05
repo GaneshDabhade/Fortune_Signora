@@ -250,9 +250,22 @@ def _ui_implemented(tk: list[tuple[str, str, str]]) -> int:
     return sum(1 for i, _, s in tk if i in UI_WAVE_TASKS and s in done)
 
 
-def _ui_integrated(tk: list[tuple[str, str, str]]) -> int:
-    promoted = ("VERIFIED", "CERTIFIED", "PROMOTED", "DONE")
-    return sum(1 for i, _, s in tk if i in UI_WAVE_TASKS and s in promoted)
+def _ui_integrated() -> int:
+    """Wave rows a lane has finished **and `main` carries.**
+
+    **Measured at `origin/main`, not read from a state word.** The first version
+    counted rows reading `VERIFIED` or `PROMOTED`, and reported `Integrated 0`
+    while wave 1 sat on `main` — because QE reconciles a row at Closeout and the
+    code arrives before the word does. **The label said *integrated* and the
+    number measured *reconciled*.**
+
+    This is the same shape as the hardcoded `Implemented 0` it replaced, one
+    level down: a figure that answers a different question than its name.
+    """
+    started = ("CLAIMED", "IN PROGRESS", "IN VALIDATION", "CHANGES REQUESTED",
+               "VERIFIED", "CERTIFIED", "PROMOTED", "DONE")
+    return sum(1 for i, _, s in tasks("origin/main")
+               if i in UI_WAVE_TASKS and s in started)
 
 
 def bar(pct: int, width: int = 10) -> str:
@@ -456,10 +469,12 @@ def build(ref: str, since: str | None = None) -> str:
     # **Counted from the wave rows instead**, so the day a wave completes this
     # line changes without anybody remembering to change it.
     a(f"  Approved 26 · Implemented {_ui_implemented(tk)} · "
-      f"Integrated {_ui_integrated(tk)} · QE certified {J}")
-    a("  Implemented counts a UI wave row past CLAIMED; integrated counts it")
-    a("  promoted. **26 is from 410 and is the one figure still stated** — an")
-    a("  approved screen is a design fact, and nothing in the repository counts it.")
+      f"Integrated {_ui_integrated()} · QE certified {J}")
+    a("  Implemented counts a UI wave row past CLAIMED at the measured ref.")
+    a("  Integrated counts it present on `origin/main` — **the code arrives**")
+    a("  **before the reconciled word does**, and the label must mean the code.")
+    a("  26 is from 410 and is the one figure still stated: an approved screen")
+    a("  is a design fact, and nothing in the repository counts it.")
     a(f"  Frontend routes on {ref}: {routes}  (all classified REPLACE — 413)")
     a(f"  READY for implementation   {J}   Deferred by ruling 3")
 
