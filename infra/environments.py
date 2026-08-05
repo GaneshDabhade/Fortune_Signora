@@ -142,6 +142,28 @@ ENVIRONMENTS: Final = (
     Environment("lane-c", 4, "Development — free implementation slot", "—", port_slot=5),
     Environment("lane-d", 5, "Development — free implementation slot", "—", port_slot=6),
     Environment("lane-e", 6, "Development — free implementation slot", "—", port_slot=7),
+    #: **The demo environment — the model only** (TASK-409). It is slotted
+    #: rather than unslotted because everything about it *does* derive from a
+    #: slot: its own seeded database, its own Redis index, its own compose
+    #: project. `prod-local` is unslotted because its database and Redis are
+    #: private to its own project and a slot would make this model assert names
+    #: that are not the ones it uses — **that exception is not this one.**
+    #:
+    #: **Slot 7 and port block 8, and the two differ deliberately.** Slot 7 is
+    #: the first free Redis index; port block 8 is the first free port block,
+    #: because block 1 belongs to `prod-local`, which holds no slot. **The
+    #: divergence between slot and port block is pre-existing and documented
+    #: above — this row inherits it rather than introducing it.**
+    #:
+    #: **It coexists.** A demonstration a product owner cannot start without
+    #: stopping something else is the collision that took 3000/8000 out of
+    #: service, and *every runnable environment must be independently startable,
+    #: independently stoppable and independently disposable.*
+    #:
+    #: **No launcher, deliberately** — that is TASK-410's shape. A row here is a
+    #: reservation of ports, a database and an index; nothing starts because of
+    #: it, and nothing may until the launcher is designed.
+    Environment("demo", 7, "Seeded demonstration of shipped capability", "Lane C", port_slot=8),
 )
 
 #: **Deliberately outside the slot table, and no longer colliding.**
@@ -208,6 +230,7 @@ def _check() -> int:
 
     documented = _running_md_table()
     aliases = {
+        "Demo": "demo",
         "Human review": "review",
         "QE": "lane-qe",
         "Lane A — Product Surface": "lane-a",
@@ -216,6 +239,25 @@ def _check() -> int:
         "Lane D": "lane-d",
         "Lane E": "lane-e",
     }
+    # **An environment the document has never heard of.** The loop below walks
+    # what `RUNNING.md` documents, so a row added here and nowhere else was
+    # simply not checked — **absence read as agreement**, the defect
+    # `missing_gates` exists to refuse (ADR-0032) and the one
+    # `36-empty-array-checks.md` found nine times in shipped constraints.
+    #
+    # **It reports rather than repairs, because `RUNNING.md` is QE's file**
+    # (`CLAUDE.md` §20e). Lane C may add the model row and may not write the
+    # document that describes it, so the correct output is a finding addressed
+    # to the lane that owns the document.
+    for environment in ENVIRONMENTS:
+        if environment.name not in {aliases.get(label) for label in documented}:
+            problems.append(
+                f"'{environment.name}' is in the derivation and not in RUNNING.md's "
+                f"table — web {environment.web_port}, API {environment.api_port}, "
+                f"database {environment.database}, Redis {environment.redis_index}. "
+                f"RUNNING.md is QE's to write; this is a finding for QE, not a defect here."
+            )
+
     for label, (web, api, database, redis) in documented.items():
         name = aliases.get(label)
         if name is None or name not in BY_NAME:
