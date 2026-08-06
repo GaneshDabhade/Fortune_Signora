@@ -1152,3 +1152,23 @@ An invitation is **two facts with two owners**, and separating them dissolves mo
 
 **Every fact in those tests is produced through the API** — invitations sent and accepted, people leaving — because a history assembled from rows inserted behind the product would prove the assembly and not the recording (§20e).
 
+## The saved view's contract, and nothing else — 2026-08-06 (Lane A, TASK-449)
+
+**[R-02](../DOMAIN_DISCOVERY_REGISTER.md) is measured as the highest-leverage capability in the product** — four screens wrote its definition independently, and sixteen inherit the shell that needs it. **It was blocked on one word**, and [D-112](../DECISION_REGISTER.md) ruled it: ✅ **`SavedView`**, with ⛔ **`Segment` left alone** as `commercial_profile`'s ICP cohort rather than overloaded.
+
+**This module publishes four types and stops there** — `SavedViewView`, `SavedViewListView`, `SavedViewReader`, `SavedViewWriter`. **No table, no endpoint, no implementation**, and that is the deliverable rather than a staging post: a consumer lane can compile, type-check and test against the port **before a row is ever persisted**, while `lint-imports` proves the coupling never forms in the wrong direction.
+
+**The edge already runs.** `opportunity_engine/application/transition.py` imports `WorkspaceQueryPort` from `workspace_tenancy.public` today, so **no import contract needed amending** for this.
+
+### What the contract refuses, and why each refusal is in the types
+
+| | |
+|---|---|
+| **The declaration is opaque** | ⛔ *Never parses, validates, executes, ranks or optimises it, and never learns what `filter` or `sort` mean.* **The moment this store could call a declaration invalid, `workspace_tenancy` would be responsible for another module's semantics** — the boundary `commercial_profile` keeps by never reading the pipeline. Asserted by a test that fails if a `filters` or `sort` field ever appears |
+| **No results, ever** | A saved view is a question somebody wrote down; running it belongs to whichever module owns the answer |
+| **No `update` on the writer** | **The absence is the design.** A change is `save` with `supersedes` — `IcpDeclaration`'s shape for its reason: a colleague who acted on a view last week needs it to still mean what it meant. **A port offering `update` would make immutability a rule somebody remembers rather than one the contract cannot express** |
+| **Reader and writer are separate** | Every member reads what their workspace shares; creating one is an act with an author. **One port would make every reader a writer** |
+| **No events** | **[P-C](../DOMAIN_DISCOVERY_REGISTER.md): an event exists when a consumer appears, and none has.** A context definition is exactly where a speculative event catalog is otherwise born |
+
+**Ten tests hold those refusals**, because a `Protocol` nothing asserts is a suggestion — and these are the non-responsibilities that erode *"one reasonable exception at a time"*.
+
