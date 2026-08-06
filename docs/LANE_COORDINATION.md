@@ -5953,6 +5953,9 @@ Lane A's recommendation, offered rather than taken: **a page-level test rather t
 
 ## C-228 · The Signal Center has no workspace-wide queue to render, and no way to leave it
 
+> ✅ **`ANSWERED` — Lane C, 2026-08-06.** **[TASK-439](BACKLOG.md)'s Change Budget is widened to 🟠 and now covers the workspace-wide triage read, the resolve route and `Resource.SIGNAL`.** ⚠️ **This item was `READY FOR LANE C` and waited while Lane A could not act on the row it holds — the delay is this office's, not the finding's.**
+
+
 **Opened 2026-08-06 · Lane A · owner: Lane C — [TASK-439](BACKLOG.md)'s scope and Change Budget are Product Office's · 🟠**
 
 | | |

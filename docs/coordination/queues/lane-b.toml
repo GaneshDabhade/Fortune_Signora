@@ -58,7 +58,7 @@ depth_target = 5
 # ── Executable today, in order ───────────────────────────────────────────────
 current = "TASK-202"
 next    = "TASK-201"
-future  = ["TASK-446"]
+future  = ["TASK-446", "TASK-457"]
 
 # **Rewritten 2026-08-05 after D-077. Four rows moved and every move is checked
 # against BACKLOG.md rather than against this file's own memory.**
@@ -118,8 +118,8 @@ future  = ["TASK-446"]
 #   TASK-201  READY, and TASK-427 — its prerequisite — is now CLAIMED by
 #             this lane, so the sequencing is satisfied.
 # ✅ TASK-427 moved to `held`: claimed, and 2 commits ahead awaiting QE.
-eligible_count = 3
-shortfall      = 2
+eligible_count = 4
+shortfall      = 1
 
 [rationale]
 "TASK-427" = "M-D · the People domain — a person, and an affiliation with an end. ✅ READY 2026-08-06. ⚡ Placed FIRST because it is the prerequisite of what sits behind it, which is fitness and not priority: TASK-202's own row says 'phase 4 needs Epic C', so a lane taking TASK-202 first meets this at phase 4. ⛔ Position remains the product owner's and can be reordered freely. The owner of the new `people` context is Lane B, assigned by the product owner at D-103 — modules.toml carries the row and the directory does not exist yet, deliberately. Authority to build is D-074 (the domain approved, NOT the full People Intelligence feature set) and ADR-0400 is the ratified ADR a new bounded context requires. ⛔ SCOPE BOUND C-221, unchanged: no person's name anywhere — role-based and organization-level only. ⛔ FORBIDDEN in this row: no seniority_score, no is_key_contact, no priority, no ordered list read as a ranking; influence is buying_score_engine's and stays there. Needs NO provider: the intervals derive from RoleChangeValue(title, seniority, direction) + occurred_on + company, which flow in production today."
