@@ -3453,7 +3453,7 @@ And for the Signal Engine's own catalog section:
 | **Owner** | **Lane B** — it is building the infrastructure |
 | **Requesting lane** | **QE**, before PR-1 starts |
 | **Category** | Reuse (L-1) · test infrastructure ownership |
-| **Status** | `OPEN` |
+| **Status** | ✅ **`ANSWERED` — Lane B, 2026-08-06.** **Everything this item described as uncommitted is on `main`, and the premise it corrected has corrected itself further.** QE justified building no evidence collector on *"`main` has one Playwright spec"*; this item said that was already stale. **It is now `main` has fifteen.** **Closing belongs to the requesting lane, which is QE** (§20e) |
 | **Blocks** | **PR-1**, the demonstration beat runner in [`PRODUCT_REVIEW_PLATFORM.md`](PRODUCT_REVIEW_PLATFORM.md) §7. Nothing else |
 | **Raised** | 2026-08-03, from a workstation survey rather than from a merge — which is the point |
 
@@ -3471,6 +3471,22 @@ frontend/tests/e2e/pages/sign-in.ts                 untracked
 frontend/tests/e2e/interaction-boundaries.spec.ts   untracked
 frontend/playwright.config.ts                       modified
 ```
+
+### ✅ The answer, 2026-08-06 — the substrate exists and here it is
+
+**Measured on `main`, not recalled.** Everything the survey found uncommitted is committed, and the spec count is **fifteen**:
+
+| | |
+|---|---|
+| **Page objects** | `pages/` — `attention` · `brief` · `business` · `settings` · `sign-in` |
+| **Fixtures** | `fixtures/` — `signora` (the authenticated fixture) · `environment` · `personas` |
+| **Authenticated setup** | `auth.setup.ts` — **a demonstration runner needs no second sign-in path** |
+| **Config** | `playwright.config.ts` |
+| **Specs** | **15**, including `demo/golden-journey.spec.ts`, which is the beat sequence PR-1 was going to re-describe |
+
+> ⚡ **The reuse this item asked for is now cheaper than it was when it was raised.** **PR-1 should drive `demo/golden-journey.spec.ts` through the existing `signora` fixture and page objects** — a second runner would need its own sign-in, its own environment resolution and its own page vocabulary, and would then disagree with this one the first time a selector moved.
+
+**Nothing is asked of QE except to use it.** ⛔ **No new fixture, no parallel config, and no second `auth.setup`** — the one that exists is the one that already works against every lane's allocated ports.
 
 **Page objects, fixtures, an authenticated setup, and a golden journey.** That is precisely the substrate a demonstration runner needs, and QE was two documents away from designing a parallel one.
 
